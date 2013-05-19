@@ -1,0 +1,424 @@
+>>
+    // AutoComplete - match any part of user.fullName
+    public JTextField createAutoCompleteTextField() {
+        JTextField txtAutoComplete = new JTextField() {
+            @Override
+            public Dimension getMaximumSize() {
+                return super.getPreferredSize();
+            }
+        };
+        txtAutoComplete.setColumns(14);
+        txtAutoComplete.setToolTipText("Search for Item Category");
+    
+        JList jlist = new JList();
+        
+        AutoCompleteList autoCompleteList = new AutoCompleteList(txtAutoComplete, jlist, true) {
+            ArrayList<TreeSearchItem> alList = new ArrayList<TreeSearchItem>();
+
+            // data structure used for search data
+            class TreeSearchItem implements Comparable {
+                User user;
+                String sortValue;
+                int pos; // start pos
+                String display;
+                public TreeSearchItem(String sortValue, String display, User user) {
+                    this.sortValue = sortValue;
+                    this.display = display;
+                    this.user = user;
+                }
+                
+                @Override
+                public int compareTo(Object o) {
+                    if (sortValue != null && o instanceof TreeSearchItem) {
+                        return this.sortValue.compareTo( ((TreeSearchItem)o).sortValue);
+                    }
+                    return -1;
+                }
+            }
+            
+            @Override
+            protected String[] getSearchData(String text, int offset) {
+                alList.clear();
+
+                if (offset == 0) return null;
+                if (text == null || text.length() < 1) return null;
+
+                if (offset < text.length()) {
+                    text = text.substring(0, offset);  // cursor could be in middle of text
+                }
+
+                text = text.toUpperCase();
+                for (User user : getUsers()) {
+                    String s = user.getFullName();
+                    if (s == null) continue;
+                    int pos = s.toUpperCase().indexOf(text);
+                    if (pos >= 0) {
+                        TreeSearchItem tsi = new TreeSearchItem(s.substring(pos).toUpperCase(), null, user);
+                        
+                        tsi.pos = pos;
+                        tsi.display = "<html>";
+                        tsi.display += s.substring(0, pos);
+                        tsi.display += "<b style='background:yellow'>"+s.substring(pos, pos + text.length())+"</b>";
+                        tsi.display += s.substring(pos + text.length());
+                        
+                        alList.add(tsi);
+                    }
+                }
+
+                Collections.sort(alList);
+                String[] ss = new String[alList.size()];
+                for (int i=0; i<ss.length; i++) {
+                    TreeSearchItem tsi = alList.get(i);
+                    ss[i] = tsi.display;
+                }
+                return ss;
+            }
+            @Override
+            protected String getClosestMatch(String text) {
+                if (text == null || text.length() == 0) return null;
+                String[] ss = getSearchData(text, text.length());
+                if (ss.length == 0) return null;
+                
+                TreeSearchItem tsi = alList.get(0);
+                
+                return tsi.user.getFullName().substring(tsi.pos);
+            }
+            
+            @Override
+            protected String getTextForSelectedValue(int pos, String value) {
+                if (pos >= 0 && pos < alList.size()) {
+                    TreeSearchItem tsi = alList.get(pos);
+                    return tsi.user.getFullName();
+                }
+                return value;
+            }
+            @Override
+            protected void onValueSelected(int pos, String value) {
+                //System.out.println("onValueSelected => "+value+"  "+pos);
+                if (pos >= 0 && pos < alList.size()) {
+                    // show tree node
+                    TreeSearchItem tsi = alList.get(pos);
+                    getUsers().setAO(tsi.user);
+                    UserJfc.this.onGoto();
+                }
+            }
+            @Override
+            protected String getToolTipText(int pos) {
+                String s = null;
+                if (pos >= 0) {
+                    TreeSearchItem tsi = alList.get(pos);
+                    s = OAString.fmt(tsi.user.getFullName());
+                    if (tsi.user.getInactiveDate() != null) {
+                        s += "<br>Inactive: "+ tsi.user.getInactiveDate();
+                    }
+                }
+                return "<html>"+s;
+            }
+        };
+        autoCompleteList.setShowOne(true);
+        return txtAutoComplete;
+    }
+
+
+
+
+
+
+
+>> ItemCategory is recursive
+
+    public JTextField getAutoCompleteTextField() {
+        if (txtAutoComplete != null) return txtAutoComplete;
+        txtAutoComplete = new JTextField() {
+            @Override
+            public Dimension getMaximumSize() {
+                return super.getPreferredSize();
+            }
+        };
+        txtAutoComplete.setColumns(14);
+        txtAutoComplete.setToolTipText("Search for Item Category");
+    
+        JList jlist = new JList() {
+            
+        };
+        // jlist.setBackground(Color.yellow);
+        
+        AutoCompleteList autoCompleteList = new AutoCompleteList(txtAutoComplete, jlist, true) {
+            // data structure used for search data
+            class TreeSearchItem implements Comparable {
+                ItemCategory itemCategory;
+                String sortValue;
+                int pos; // start pos
+                String display;
+                public TreeSearchItem(String sortValue, String display, ItemCategory itemCategory) {
+                    this.sortValue = search;
+                    this.display = display;
+                    this.itemCategory = itemCategory;
+                }
+                
+                @Override
+                public int compareTo(Object o) {
+                    if (sortValue != null && o instanceof TreeSearchItem) {
+                        return this.sortValue.compareTo( ((TreeSearchItem)o).sortValue);
+                    }
+                    return -1;
+                }
+            }
+            
+            ArrayList<TreeSearchItem> alList = new ArrayList<TreeSearchItem>();
+            
+            // recursive search through ItemCategories
+            private void find(String search, Hub<ItemCategory> hub) {
+                for (ItemCategory itemCategory : hub) {
+                    String s = itemCategory.getName();
+                    if (s == null) continue;
+                    int pos = s.toUpperCase().indexOf(search);
+                    if (pos >= 0) {
+                        TreeSearchItem tsi = new TreeSearchItem(s.substring(pos).toUpperCase(), null, itemCategory);
+                        
+                        tsi.pos = pos;
+                        tsi.display = "<html>";
+                        tsi.display += s.substring(0, pos);
+                        tsi.display += "<b style='background:yellow'>"+s.substring(pos, pos + search.length())+"</b>";
+                        tsi.display += s.substring(pos + search.length());
+                        
+                        alList.add(tsi);
+                    }
+                    find(search , itemCategory.getItemCategories());
+                }
+            }
+            
+            @Override
+            protected String[] getSearchData(String text, int offset) {
+                alList.clear();
+                
+                if (offset == 0) return null;
+                if (text == null || text.length() < 1) return null;
+
+                if (offset < text.length()) {
+                    text = text.substring(0, offset);  // cursor could be in middle of text
+                }
+
+                text = text.toUpperCase();
+                find(text, getRootItemCategories());
+                
+                Collections.sort(alList);
+                String[] ss = new String[alList.size()];
+                for (int i=0; i<ss.length; i++) {
+                    TreeSearchItem tsi = alList.get(i);
+                    ss[i] = tsi.display;
+                }
+                return ss;
+            }
+            @Override
+            protected String getClosestMatch(String text) {
+                if (text == null || text.length() == 0) return null;
+                String[] ss = getSearchData(text, text.length());
+                if (ss.length == 0) return null;
+                
+                TreeSearchItem tsi = alList.get(0);
+                
+                return tsi.itemCategory.getName().substring(tsi.pos);
+            }
+            
+            @Override
+            protected String getTextForSelectedValue(int pos, String value) {
+                if (pos >= 0 && pos < alList.size()) {
+                    TreeSearchItem tsi = alList.get(pos);
+                    return tsi.itemCategory.getName();
+                }
+                return value;
+            }
+            @Override
+            protected void onValueSelected(int pos, String value) {
+                //System.out.println("onValueSelected => "+value+"  "+pos);
+                if (pos >= 0 && pos < alList.size()) {
+                    // show tree node
+                    TreeSearchItem tsi = alList.get(pos);
+
+                    if (tsi.itemCategory.getParentItemCategory() == null) {
+                        getItemCategories().setSharedHub(getRootItemCategories());
+                    }
+                    else {
+                        getItemCategories().setSharedHub(tsi.itemCategory.getParentItemCategory().getItemCategories());
+                    }
+                    getItemCategories().setAO(tsi.itemCategory);
+                    ItemCategoryJfc.this.onGoto();
+                }
+            }
+            @Override
+            protected String getToolTipText(int pos) {
+                String s = null;
+                if (pos >= 0) {
+                    TreeSearchItem tsi = alList.get(pos);
+                    s = OAString.fmt(tsi.itemCategory.getName());
+                    ItemCategory ic = tsi.itemCategory.getParentItemCategory();
+                    for (int i=0 ;ic!=null; i++) {
+                        s = " | " + s;
+                        s = ic.getName() + s;
+                        ic = ic.getParentItemCategory();
+                    }
+                    
+                    s += "<br>"+ OAString.fmt(tsi.itemCategory.getDescription());
+                }
+                return "<html>"+s;
+            }
+        };
+        autoCompleteList.setShowOne(true);
+        return txtAutoComplete;
+    }
+    
+
+>> from VetPlan find client or pet
+
+
+    private JTextField txtTreeSearch;
+    public JTextField getTreeSearchTextField() {
+        if (txtTreeSearch == null) {
+            txtTreeSearch = new JTextField(); 
+            txtTreeSearch.setColumns(4);
+            txtTreeSearch.setToolTipText("Search open list for client or pet");
+            setupTreeSearchTextField(txtTreeSearch);
+        }
+        return txtTreeSearch;
+    }
+    private void setupTreeSearchTextField(JTextField txt) {
+        JList jlist = new JList();
+        // jlist.setBackground(Color.yellow);
+        
+        AutoCompleteList autoCompleteList = new AutoCompleteList(txt, jlist, true) {
+            // data structure used for search data
+            class TreeSearchItem implements Comparable {
+                String search;   // sort value
+                String display;
+                Client client;
+                Pet pet;
+                
+                public TreeSearchItem(String search, String display, Client client, Pet pet) {
+                    this.search = search;
+                    this.display = display;
+                    this.client = client;
+                    this.pet = pet;
+                }
+                
+                @Override
+                public int compareTo(Object o) {
+                    if (o instanceof TreeSearchItem) {
+                        return this.search.compareTo( ((TreeSearchItem)o).search);
+                    }
+                    return -1;
+                }
+            }
+            
+            ArrayList<TreeSearchItem> alList = new ArrayList<TreeSearchItem>();
+            
+            // AutoComplete for open client list searching
+            @Override
+            protected String[] getSearchData(String text, int offset) {
+                alList.clear();
+                
+                if (offset == 0) return null;
+                if (text == null || text.length() < 1) return null;
+
+                if (offset < text.length()) {
+                    text = text.substring(0, offset);  // cursor could be in middle of text
+                }
+
+                text = text.toUpperCase();
+                
+                for (Client c : getOpenClients()) {
+                    String s = c.getFirstName();
+                    boolean b = false;
+                    if (s != null && s.toUpperCase().startsWith(text)) {
+                        TreeSearchItem tsi = new TreeSearchItem(s.toUpperCase(), null, c, null);
+                        alList.add(tsi);
+                        tsi.display = "<html><u>"+s+"</u> "+OAString.fmt(c.getLastName());
+                    }
+                    s = c.getLastName();
+                    if (s != null && s.toUpperCase().startsWith(text)) {
+                        TreeSearchItem tsi = new TreeSearchItem(s.toUpperCase(), null, c, null);
+                        alList.add(tsi);
+                        tsi.display = "<html>"+OAString.fmt(c.getFirstName())+" <u>"+s+"</u>";
+                    }
+                    for (Pet p : c.getPets()) {
+                        if (p.getInactiveDate() != null) continue;
+                        s = p.getName();
+                        String name = s;
+                        if (s == null || !s.toUpperCase().startsWith(text)) {
+                            s = p.getName();
+                            name = s;
+                            if (s == null || !s.toUpperCase().startsWith(text)) s = null;
+                        }
+                        
+                        if (s != null) {
+                            TreeSearchItem tsi = new TreeSearchItem(s.toUpperCase(), null, c, p);
+                            alList.add(tsi);
+                            s =  "<html>"+OAString.fmt(c.getFirstName())+" "+OAString.fmt(c.getLastName());
+                            Species sp = p.getSpecies();
+                            if (sp != null) {
+                                ImageStore is = sp.getIconImageStore();
+                                if (is != null) {
+                                    s += " - "+ImageStoreDelegate.getHtmlImg(is, 12, 12);
+                                }
+                            }
+                            s += " <u>" + name + "</u>";
+                            tsi.display = s;
+                        }
+                    }
+                }
+                Collections.sort(alList);
+                String[] ss = new String[alList.size()];
+                for (int i=0; i<ss.length; i++) {
+                    TreeSearchItem tsi = alList.get(i);
+                    ss[i] = tsi.display;
+                }
+                return ss;
+            }
+            @Override
+            protected String getClosestMatch(String text) {
+                if (text == null || text.length() == 0) return null;
+                String[] ss = getSearchData(text, text.length());
+                if (ss.length == 0) return null;
+                
+                int pos = ss[0].indexOf("<u>");
+                if (pos < 0) return null;
+                
+                int pos1 = ss[0].indexOf("</u>", pos+3);
+                if (pos1 < 0) return null;
+                String s = ss[0].substring(pos+3, pos1);
+                return s;
+            }
+            
+            @Override
+            protected String getTextForSelectedValue(int pos, String value) {
+                if (value == null) return null;
+                
+                int pos1 = value.indexOf("<u>");
+                if (pos1 < 0) return null;
+                
+                int pos2 = value.indexOf("</u>", pos1+3);
+                if (pos2 < 0) return null;
+                
+                return value.substring(pos1+3, pos2);
+            }
+            @Override
+            protected void onValueSelected(int pos, String value) {
+                //System.out.println("onValueSelected => "+value+"  "+pos);
+                if (pos >= 0 && pos < alList.size()) {
+                    // show tree node
+                    Object[] objs;
+                    TreeSearchItem tsi = alList.get(pos);
+                    if (tsi.pet != null) objs = new Object[] {tsi.client, tsi.pet};
+                    else objs = new Object[] {tsi.client};
+                    
+                    VetPlanJfc.this.getTree().setSelectedNode(objs);
+                    VetPlanJfc.this.getTree().requestFocus();
+                }
+            }
+        };
+        autoCompleteList.setShowOne(true);
+    }
+
+
+    
+    

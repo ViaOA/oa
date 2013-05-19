@@ -1,0 +1,31 @@
+
+
+// used by Vetjobs
+
+        ZipEntry zipEntry = null;
+        ZipInputStream zis = null;
+        try {
+            zis = new ZipInputStream(new FileInputStream(file));
+            for ( ;; ) {
+                zipEntry = zis.getNextEntry();
+                if (zipEntry == null) break;
+                System.out.println(zipEntry.getName());
+                zis.closeEntry();
+                break;
+            }
+        }
+        finally {
+            if (zis != null) {
+                zis.close();
+            }
+        }
+
+        BufferedReader br;
+        if (zipEntry != null) {
+            ZipFile zip = new ZipFile(file);
+            InputStream inputStream = zip.getInputStream(zipEntry);
+            br = new BufferedReader(new InputStreamReader(inputStream));
+        }
+        else {
+            br = new BufferedReader(new FileReader(file));
+        }

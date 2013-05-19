@@ -1,0 +1,24 @@
+
+
+
+
+        OADataSourceJDBC oads = getOADataSourceJDBC();
+        for (Entry<Class, Integer> entry : hash.entrySet()) {
+            oads.setNextNumber(entry.getKey(), entry.getValue()+1);
+        }
+
+qqqqqqq
+
+        for (String topicName : hmLBMReceiver.keySet()) {
+            ...            
+        }
+
+
+
+         Map stateMap = messageStateCache.getMessagingState();
+         Iterator states = stateMap.entrySet().iterator();
+         TRILBMTradingEngineHeartbeat heartbeat = null;
+         while(states.hasNext())
+         {
+            Map.Entry next = (Map.Entry)states.next();
+        

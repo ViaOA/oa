@@ -1,0 +1,11 @@
+
+Valid CSS for OAHTMLTextPane
+
+
+>> Create a background image, no repeat
+
+  <body style="background-image: url('oaproperty://com.tmgsc.hifive.model.oa.ImageStore/Bytes?3'); background-repeat: no-repeat;">
+
+
+>> positio
+

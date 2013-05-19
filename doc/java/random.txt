@@ -1,0 +1,16 @@
+
+
+
+        // randomize the list, so that other MRs wont have the same ordering - musical chairs  :)
+        int x = fileNames.length;
+        String[] fns = new String[x];
+        for (int i=x; i>0; i--) {
+            int rand = (int) (Math.random() * i);
+            fns[i-1] = fileNames[rand];
+            fileNames[rand] = fileNames[i-1];  // shrink the list 
+        }
+        fileNames = fns;
+        
+
+        
+        

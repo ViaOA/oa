@@ -1,0 +1,51 @@
+
+
+    public void test() throws Exception {
+        FileInputStream fis = new FileInputStream("\\temp\\vetjobs_file.txt");
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+
+        try {
+            for (int i = 0;; i++) {
+                String line = br.readLine();
+                if (line == null) break;
+                System.out.println(i+") "+line);
+            }
+        }
+        catch (Exception e) {
+            System.out.println("error: "+e);
+            e.printStackTrace();
+        }
+
+    }
+
+
+qqqqqqqqqqqqqqqqqqqqq
+
+
+        FileInputStream fis = new FileInputStream("/temp/te/BrentMgr.input.audit.bin.54");
+        DataInputStream dis = new DataInputStream(fis); 
+
+        
+        try {
+            for (int i=0; ;i++) {
+
+                int x = dis.readInt();
+                
+                byte[] bs = new byte[x];
+                
+                dis.readFully(bs, 4, x-4);
+                SocketMessageObjectOutputStream.putInt(bs, 0, x);
+                
+                SocketMessage sm = SocketMessageDelegate.convertFromBytes(bs);
+System.out.println(i+") size="+sm._fullLength+", function="+sm._functionName);                
+            }
+        }
+        catch (EOFException e) {
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        
+        
+        

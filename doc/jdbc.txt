@@ -1,0 +1,4 @@
+
+
+
+http://docs.oracle.com/javase/1.5.0/docs/guide/jdbc/getstart/mapping.html#table1

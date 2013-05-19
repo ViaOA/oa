@@ -1,0 +1,20 @@
+
+
+http://docs.oracle.com/javase/tutorial/networking/nifs/index.html
+
+InetAddress address = InetAddress.getByName(args[0]);
+
+        try {
+            InetAddress localHost = InetAddress.getLocalHost();
+            hostName = localHost.getHostName();
+            hostIpAddress = localHost.getHostAddress();
+        }
+        catch (Exception e) {
+        }
+
+
+qqqqqqqq
+
+        InetAddress localHost = InetAddress.getLocalHost();
+        System.out.println(localHost.getHostName());
+        System.out.println(localHost.getHostAddress());         

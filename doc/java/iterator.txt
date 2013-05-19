@@ -1,0 +1,66 @@
+
+
+        Map<String, String> map = OAString.getHTMLAttributeMap(s);
+        for (Map.Entry<String, String> ex : map.entrySet()) {
+            String sx = ex.getKey();
+            if (!sx.equalsIgnoreCase("style")) continue;
+            
+        }
+
+
+
+* which HashMap
+        for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
+            e.getValue().setForm(form);
+        }
+
+
+* see concurrent.txt
+        for (Map.Entry<Hub, OADateTime> entry : this.hmHub.entrySet()) { 
+            OADateTime dt = entry.getValue();
+            if (dt.after(dtCheck)) {
+                hmHub.remove(entry.getKey());
+            }
+        }
+
+* 
+        Set<Map.Entry<OASelect, Void>> set = hmSelect.entrySet();
+        for (Iterator it = set.iterator() ; it.hasNext(); ) {
+            it.next();
+            ..
+            it.remove();
+            
+        }
+
+>>  from OASelectManager
+
+    private static ConcurrentHashMap<OASelect, Void> hmSelect = new ConcurrentHashMap<OASelect, Void>(23, .75f, 3);
+    protected static void performCleanup() {
+        LOG.fine("checking selects");
+        long time = new Date().getTime();
+        time -= (timeLimitInSeconds * 1000);
+
+        int iTotal = hmSelect.size();
+        Set<Map.Entry<OASelect, Void>> set = hmSelect.entrySet();
+        
+        for (Iterator<Map.Entry<OASelect, Void>> it = set.iterator() ; it.hasNext(); ) {
+            Map.Entry<OASelect, Void> me = it.next();
+            OASelect sel = me.getKey();
+            iTotal++;
+            if (sel.isCancelled()) {
+                it.remove();
+                continue;
+            }
+            
+            if (!sel.hasBeenStarted()) continue;
+            
+            long t = sel.getLastReadTime();
+            if (t == 0) continue;
+            
+            if (t < time) {
+                sel.cancel();
+                it.remove();
+            }
+        }
+        LOG.fine("done, before="+iTotal+", after="+hmSelect.size());
+    }

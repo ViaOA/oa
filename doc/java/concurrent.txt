@@ -1,0 +1,273 @@
+
+
+>> ReentrantReadWriteLock
+
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+    try {
+        lock.readLock().lock();
+        .. qqq
+    }
+    finally {
+        lock.readLock().unlock();
+    }
+
+    try {
+        lock.writeLock().lock();
+        .. qqq
+    }
+    finally {
+        lock.writeLock().unlock();
+    }
+
+
+
+>> ArrayBlockingQueue<T>
+
+    private ArrayBlockingQueue<Pet> quePetExamLoader = new ArrayBlockingQueue<Pet>(10);
+
+    add, remove, element         <- throws exception
+    offer, poll, peek            <- returns immediately, might not have performed operation
+    put, take                    <- blocks
+    offer(time..), poll(time..)  <- blocks for time       
+
+
+    
+    // ** Inserts the specified element at the tail of this queue, waiting for space to become available if the queue is full.    
+    quePetExamLoader.put(pet);
+
+    
+    // Inserts the specified element into this queue if it is possible to do so immediately without violating capacity restrictions, 
+    //   returning true upon success and false if no space is currently available    
+    boolean b = quePetExamLoader.offer(pet);
+
+    // Inserts the specified element into this queue, waiting up to the specified wait time if necessary for space to become available.
+    b = quePetExamLoader.offer(pet, long timeout, TimeUnit unit);
+
+    // Inserts the specified element into this queue if it is possible to do so
+    //  immediately without violating capacity restrictions, returning true upon success
+    //  else throws exception
+    quePetExamLoader.add(pet);
+
+
+
+    // ** Retrieves and removes the head of this queue, waiting if necessary
+    Pet pet = quePetExamLoader.take();
+
+
+    // removes next, null if none available
+    E poll()
+    E poll(long timeout, TimeUnit unit)
+
+
+    >> more
+    peek (does not remove)
+    drainTo
+    poll
+    remove
+    contains
+
+
+
+>> ConcurrentHashMap<K,V>
+    // includes extra constructor param for an estimate on number of trhreads that will be using it
+    
+    private ConcurrentHashMap<Hub, OADateTime> hmHub = new ConcurrentHashMap<Hub, OADateTime>(53, .75f, 3);
+    
+    public void addQuery(Hub hub) {
+        OASelect sel = hub.getSelect();
+        if (sel.hasMore()) {
+            hmHub.put(hub, new OADateTime());
+        }
+    }
+    protected void expireQueries() {
+        OADateTime dtCheck = new OADateTime();
+        dtCheck = (OADateTime) dtCheck.addMonths(5);
+        for (Map.Entry<Hub, OADateTime> entry : this.hmHub.entrySet()) { 
+            OADateTime dt = entry.getValue();
+            if (dt.after(dtCheck)) {
+                hmHub.remove(entry.getKey());
+            }
+        }
+    }
+    
+    
+    
+    
+>> CopyOnWriteArrayList<E>
+
+
+
+
+>> CountDownLatch
+    // A synchronization aid that allows one or more threads to wait until a set of operations being performed 
+       in other threads completes
+    
+    CountDownLatch startSignal = new CountDownLatch(1);
+    
+    startSignal.await();  // waits until countDown is 0
+    
+    startSignal.countDown();  // deincrement
+    
+    
+>> CyclicBarrier
+    // waits until the number of calls to await reach 'x'.  Has a constructor option to add a runnable that will atuo run. 
+    //   reset() allows it to be reused.
+
+    CyclicBarrier barrier = new CyclicBarrier(int x)
+    
+    barrier.await();  // increments counter and waits
+    
+    
+>> DelayQueue<E extends Delayed>
+
+
+>> Semaphore
+    
+    new Semaphore(cnt)
+    
+    acquire
+    tryAcquire
+    
+    release
+    
+    
+>> SynchronousQueue<E>
+    // blocking queue where inserts must wait for remove
+    
+    // only inserts if there is a thread waiting to recv
+    b = offer(E) 
+    
+    // waits for recv to take object
+    put(E)  
+    
+    
+    // waits to recv object
+    E = take()
+    
+    // checks to recv object, returns null if none available
+    E = poll(), (long timeout, TimeUnit unit)
+    
+    drainTo() ...
+    
+>> Exchange
+    // used by threads to swap values    
+    
+
+>> LinkedBlockingDeque<E>
+>> LinkedBlockingQueue<E>
+>> PriorityBlockingQueue
+
+
+>> skipList - sorted list, use instead of tree ? 
+    private ConcurrentSkipListSet<MSLog> listMSLog = new ConcurrentSkipListSet<LoadLog.MSLog>();
+    
+    ConcurrentSkipListMap
+
+
+
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+    private ExecutorService executorService;
+
+    protected ExecutorService getExecutorService() {
+        if (executorService != null) return executorService;
+
+        ThreadFactory tf = new ThreadFactory() {
+            int cnt;
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r, "GSMRServer.ExecutorService."+cnt++);
+                t.setDaemon(true);
+                t.setPriority(Thread.NORM_PRIORITY);
+                return t;
+            }
+        };
+        executorService = new ThreadPoolExecutor(2, 50, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), tf)  {
+            @Override
+            public Future<?> submit(Runnable task) {
+                return super.submit(task);
+            }
+        };
+        return executorService;
+    }
+
+    .....
+    
+        getExecutorService().submit(new Runnable() {
+            @Override
+            public void run() {
+                onRemoteMethodCall(gsRequest);
+            }
+        });
+        
+    
+
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+    // used for invoking MarketServer methods
+    private ExecutorService executorService; 
+    
+    private ExecutorService getExecutorService() {
+        if (executorService == null) {
+            LOG.fine("createing ExecutorService");
+            executorService = Executors.newCachedThreadPool(new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    String name = "MarketServerController.Invoke." + aiThreadId.incrementAndGet();
+                    LOG.fine("creating new Thread for ExecutorService, name="+name);
+                    Thread thread = new Thread(r, name);
+                    return thread;
+                }
+            });
+        }
+        return executorService;
+    }
+    
+    private InvokeResultHolder invokeMethod(final TRIMarketServerInterface triMarketServer, final ClientRequest clientRequest) throws Throwable {
+        // this will run the request in another thread
+        Future<InvokeResultHolder> future = getExecutorService().submit(new Callable<InvokeResultHolder>() {
+            @Override
+            public InvokeResultHolder call() {
+                InvokeResultHolder resultHolder = new InvokeResultHolder();
+                try {
+                    Object obj = clientRequest.method.invoke(triMarketServer, clientRequest.arguments);
+                    resultHolder.result = obj;
+                    resultHolder.success = true;
+                }
+                catch (Throwable t) {
+                    Throwable tx = t.getCause();
+                    if (tx != null) t = tx;
+                    resultHolder.throwable = t;  // catch throwable from actual method call on TRIMarketServer instance
+                }
+                return resultHolder;
+            }
+        });
+
+        // get response
+        InvokeResultHolder resultHolder;
+        try {
+            resultHolder = future.get(clientRequest.timeOutSeconds, TimeUnit.SECONDS);
+            if (!future.isDone()) {
+                future.cancel(true);
+            }
+        }
+        catch (Throwable e) {
+            LOG.log(Level.WARNING, "Error waiting for method to complete, method="+clientRequest.method.getName(), e);
+            System.out.println("RequestController.invokeMethod exception="+e);
+            resultHolder = null;
+        }
+        return resultHolder;
+    }
+
+    // used to store results from invoking methods from thread pool. 
+    private static class InvokeResultHolder {
+        boolean success;
+        Object result;
+        Throwable throwable;
+    }
+
+
+
+
+

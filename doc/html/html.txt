@@ -1,0 +1,27 @@
+
+
+DOM Events
+    http://www.w3schools.com/jsref/dom_obj_event.asp    
+
+
+http://www.htmldog.com/examples/
+
+
+<div id="calendar1" style="position: relative; left: 40px; top: 40px;"></div>
+
+
+
+//qqqqqqqqqq OARadio
+
+        rad = new OARadio();
+        form.add("radT",rad);
+
+
+        <tr>
+            <td style='padding-left:15px;'>
+                <nobr>
+                    <input id='radT' type="radio" name="radgrp" value="<%=form.getRadio("radT").getValue()%>" />
+                    <label for="radT">Traditional Card</label>
+                </nobr>
+            </td>
+        </tr>

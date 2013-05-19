@@ -1,0 +1,78 @@
+
+
+
+    // Edit Panel      
+    public JPanel getEditPanel() {
+        if (panel != null) return panel;
+        panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(5,5, 3,3));
+        
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.insets = new Insets(1, 3, 1, 3);
+        gc.anchor = gc.NORTHWEST;
+        JLabel lbl;
+        OATextField txt;
+        OATextArea txta;
+        
+        lbl = new JLabel(DisplayName+" Name:");
+        txt = getNameTextField();
+        lbl.setLabelFor(txt);
+        panel.add(lbl, gc);
+        gc.gridwidth = gc.REMAINDER;
+        panel.add(txt, gc);
+        gc.gridwidth = 1;
+        
+        /*
+        // auto-adjust textarea
+        lbl = new JLabel("Description:");
+        lbl.setLabelFor(getDescriptionTextArea());
+        panel.add(lbl, gc);
+        gc.weightx = gc.weighty = 1.0;
+        gc.fill = gc.BOTH;
+        panel.add(new JScrollPane(getDescriptionTextArea()), gc);
+        gc.fill = gc.NONE;
+
+        lbl = new JLabel("");
+        gc.gridwidth = gc.REMAINDER;
+        panel.add(lbl, gc);
+        gc.gridwidth = 1;
+        gc.weightx = gc.weighty = 0f;
+        */
+        
+        // take up remaining space
+        lbl = new JLabel("");
+        gc.gridwidth = gc.REMAINDER;
+        gc.weightx = gc.weighty = 1.0;
+        panel.add(lbl, gc);
+        
+        
+        
+        JPanel pan = new JPanel(new BorderLayout());
+        pan.add(panel, BorderLayout.NORTH);
+        panel = pan;
+        
+        JTabbedPane tab = getTabbedPane();
+
+        
+        tab.addTab("Description", null, new JScrollPane(createDescriptionTextArea()), null);
+        
+        tab.addTab("Sub Categories", null, getSubItemCategoryPanel(), null);
+        
+        tab.addTab("Items", null, getItemPanel(), null);
+
+        panel.add(tab, BorderLayout.CENTER);
+
+        return panel;
+    }
+    protected OATextField getNameTextField() {
+        if (txtName == null) {
+            txtName = createNameTextField();
+        }
+        return txtName;
+    }
+
+    
+    
+    
+    
+    

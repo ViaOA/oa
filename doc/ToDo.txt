@@ -1,0 +1,407 @@
+
+
+report button
+oaBldr
+    method - if command, allow confirm message
+    custom objects for input
+    create an overlay layer
+    no reverse links
+    xml option?
+
+wizard dialog
+   custom oa object
+   
+
+
+
+
+
+"Object Arcanum"
+
+OA Import/export tool
+    prop editor
+
+
+xml output: need to use namespace to replace com.viaoa.build.model, com.viao.hub, etc.
+    option to compress (no indentations)
+
+
+use Softreference instead of weakReference for OAObject many links that are cached
+
+
+tabbedPane listener
+    disable, etc
+    each tab = hub.pos
+    tab text, icon, color, etc
+
+PasswordTextField in table bug
+    when typing, the first char gets removed
+
+
+QueryConverter
+    need to allow for ex: "customer.orders.orderItems [= null]"
+        use "[NOT} EXIST", need to also use left joins if prop path
+
+
+
+oa.jfc - invoke in awt-thread
+    problems that are caused when clientThread processes events that set swing components
+        ex: HtmlTextpane deadlock that was found, when calling setText in clientThread
+
+OAClipboardManager
+   Cut/Copy/Paste
+     need a supply a custom callback object to handle copy/clone, delete, etc
+
+
+need to send rootHub info to cs.Client from server
+    
+
+Allow One2Many to have One side method not created
+    example: ExamItem.notes has many ImageStores
+    this will require a link table
+
+
+bug: oaCheckBox in table that has enable=false can still be checked
+bug?: oaTextArea - escape removes text when autocomplete is showing 
+
+
+bug: tree needs to be syncd with AO
+
+bug: DnD on a splitTable does not autoscroll
+
+OA - use PW encryption to store pw - not real pw
+
+
+Test Table onDoubleClick command - check to see if button isVisible and enabled
+    also List, tree, etc
+
+
+picture toolbar enable
+
+run server with metal l&f
+
+move old components into backup
+
+
+go through all components
+
+add Doc back into jfc components 
+
+UI Logs
+
+how to deal with images - icons
+
+sample code
+
+
+vp.ExamVisitTabbedPane
+    button, menuitem - update panel open/close, up/down, etc
+
+check parent enabled?
+    parent.setEnabled() ... needs to loop through and update children
+        if OAJFC, then needs to somehow call he controller.update 
+
+
+
+need to enable/disable Drag/Drop
+
+
+Hub.find - needs to be able to uses Hubs in the property path
+    ex: a client from hubOpenClient, client.getPets().find(exams.endDate, null) to find any pet with any exam with endDate=null
+        hmmm, could be needed indexes soon
+
+
+create oa.jfc.HubListener to manage oa.jfc components
+    process all using swing thread
+
+
+synchronization of changes
+    OATextArea
+        String getValueToUse(String origValue, String currentValue, String newValue)
+        onValueChangedWhileEditing()
+
+Need same for HTMLTextPane
+
+OA Distributed (load balanced) servers
+
+
+Tree changes need to be changed to invokeAndWait
+    OATreeModel.java
+    ** check other OAJFC components
+        table, list, combo, etc 
+     
+
+ThreadSafe!!
+
+
+Create diagram for HTML reports
+    converter
+    UI component
+    printing, etc 
+
+       
+
+JFC mouse over affects
+    create mouse over affect for Tree, table, labels, textfields, list, etc
+        like CDI SchedulerTable
+    
+
+editor
+    imageEditor dlg, add ok, cancel button
+    dont save image if ok was not selected
+    need a way to find out when an image is removed from a document
+        might need to scan elements to find images    
+
+
+
+
+OABldr
+    add OAType binary (blob)
+        generators, etc
+    
+OADataSourceJDBC
+    support Image loading/storing in blob - using stream
+    
+
+   pstmt = con.prepareStatement(
+        "INSERT INTO TeeColor VALUES( ?, ? )" );
+
+      for (int i = 0; i < asColors.length; i++)
+      {
+        pstmt.setString( 1, asColors[i] );
+
+        fImage = new File( asImages[i] );
+        isImage = new FileInputStream( fImage );
+        pstmt.setBinaryStream( 2, 
+           isImage, (int)( fImage.length() ) );
+
+        iRowCount += 
+        pstmt.executeUpdate();
+      }
+        
+File image = new File("D:\\Projects\\kodejava\\web\\images\\java.gif"); 
+fis = new FileInputStream(image); 
+stmt.setBinaryStream(3, fis, (int) image.length()); 
+stmt.execute();         
+        
+
+// Saving Image to DB
+BufferedImage img = (BufferedImage)value;
+if(img != null) {
+ByteArrayOutputStream baos = new ByteArrayOutputStream(8192);
+ImageIO.write(img, "jpg", baos);  // mig
+byte[] buffer = baos.toByteArray();
+baos.close();
+ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
+((PreparedStatement)ps).setBinaryStream(index[0], bais, buffer.length);
+bais.close();
+
+
+
+
+
+OAHTMLTextPane
+    image handling controller
+        store in DB
+        client-server
+        
+        
+        OAHTMLTextPane.getImage(...) replace to supply images from DB,etc
+        OAHTMLTextPaneController.onInsertImage(...) inserts new image        
+    
+
+
+
+
+
+
+========= START -- Verify this 
+HubEventDelegate.java
+    public static void addHubListener(Hub thisHub, HubListener hl, String property)
+                     removeHubListener(...) 
+
+    qqq remove or clean up
+    public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] properties)
+
+HubCalcEventListener.java
+
+OAObjectEventDelegate.java
+    sendHubPropertyChange
+
+========= END -- Verify this 
+
+
+
+
+
+
+
+Hub.vecAdd, vecRemove need to be synchronized within code
+
+System.getProperty("line.separator")
+
+
+
+
+
+put flag in OASelect to know if it has been ran or not
+
+Hub. option to not use a Hashtable(?)
+
+Use resource file
+Use Local setup
+
+DataSource needs to get reference properties from hashLink, not by calling getProperty().  A key might be all that is stored and
+  calling getProperty() will "go" get the value instead of just returning the key
+
+** cut down the amount of HubEvents
+
+Create OAUnDo manager so that it will plug into OAObject - OAObjectUndoDelegate
+
+Have OABuilder generate Datasource that it can set properties at a field level, since it will be in the
+   same package as the OAObjects and will have access to the protected fields/properties
+
+?? create OAObject methods that can be overwritten allowSave, Delete, Cancel
+
+could there be a problem when reading in a serialized object as it is changed by another thread?
+
+clean up OAObjectInfo
+
+> 20100307 OAObjectInfoDelegate
+loading annotation into OAObjectInfo - OAAnnotationDelegate.update(oi, clazz)
+
+> 20100417
+updated OAString.soundex(...) to use rules from http://www.archives.gov/genealogy/census/soundex.html
+  
+> 20100430
+added OAConverterEnum
+
+> 20100514
+    support for BLOB <-> byte[]
+        ResultSetIterator, InsertDelegate
+
+> 20100824 Tues
+    created jdbd.db.DataAccessObject
+    
+    
+    Changes for OADataSourceJDBC, Added Table.DataAccessObject
+        SelectDelegate            
+            select() 
+        QueryConverter
+            use table.DataAccessObject if available
+                for getColumns             
+        ResultSetIterator
+            needs to use table.DataAccessObject 
+                allow DataAccessObject as constructor param
+                for select columns
+                for load resultSet into object
+
+> 20100827 Fri
+    Tested M2M Datasource updates
+        using VP                
+                    
+> 20100905 Sun
+    HubDetailDelegate.getDetailHub(..) - was not created by first going to first datau.sharedHub
+
+> 20100908 Wed                        
+> 20100909 Thur                
+
+    OAHTMLConterter
+        create a preprocessor
+            to verify and load a tree of blocks, begin/end tags, etc
+
+        created OAHTMLConterterTree
+            OAHTMLConverter.createTree(html) will preprocess
+    
+        verify that fmt is loaded correctly - that surrounding ' and " are removed
+    
+        node.afterText 
+            include in each iteration of "foreach"
+            dont include if child nodes are not executed - if, ifnot, ifequuas
+
+        OAHTMLConterter
+            have OAHTMLReport preprocess htmlTemplates
+    OAHTMLReport
+        preprocess/create tree for reports        
+        
+> 20100910 Fri
+    Undo change from 20100905 Sun
+        HubDetailDelegate.getDetailHub(..) - was not created by first going to first datau.sharedHub
+        
+    Hub2ImageHandler
+        support for "oaproperty://"
+
+> 20100930 Thur
+    replaced OAObject.copyInto with createCopy 
+        needs to run on server
+            new OAObjectMessage.CREATECOPY
+
+> 20101004 Mon        
+    change to sorted Hub, restructures whole tree
+        changed OATreeModel case Invoker.MOVED from sending structure change event to sending remove + insert events.  
+
+> 20101012 Tues
+    bug: removing from serverRoot.openCustHub not removing n clients
+        serverRoot.isLocalOnly needs to be false
+                  
+> 20101021 Thur
+    oaObj.getHub(name, sortBy, bSeq) added to set up hubSeq
+    remove autoSequence from code gen
+    
+    
+> 20101109 Tues
+    adding editable, visible hub/property to jfc
+        JFCController
+        LabelController, OALabel
+        TextFieldController, OATextField
+        HTMLTextPaneController
+    
+    Hub2CustomComboBox => CustomComboBoxController 
+        OACustomComboBox
+            OADateComboBox
+            OAColorComboBox
+            OATreeComboBox
+            OATableComboBox
+     
+> 20101110 Wed    
+    OACustomCombo
+    ListController
+        OAList
+    Hub2FormattedTextField
+        OAFormattedTextField
+    
+    
+> 20101111 Thur
+    JFC OA UI oomponents, and Hub2X Controllers -> XController
+    
+> 20101217-19
+HubCalcEventListener - replaced
+    create HubListenerTree to control hub listeners.
+    all dependent properties are put in tree, using HubMerger for propertyPaths
+        very efficient - shares common paths
+        removes dependent listeners on hub.removeListener(hl)
+    HubListenerTree allows dynamic creation of property with dependent propertyPaths
+        if dependent pp is changed, then a propertyChanged event is sent to AO of main property
+    moved HubCalcEventListener.java to hold directory        
+    OAObjectEventDelegat - updated to use new HubListenerTree         
+    HubDataUnique - replace vecListener with treeListener                
+    OATableColumn - replaced using hubMerger with hubListener(prop, path)
+            
+> 20110607
+
+TextField - on [enter] select all
+insert mailto, or link into HTMLEditor
+
+> 20110702 Sat
+OAObjectCacheDelegate
+    use readwriteLock for get(..), etc
+        created TreeMapHolder
+        
+        
+        
+        
+        
+            
+            
+            
+            

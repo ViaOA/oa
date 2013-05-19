@@ -1,0 +1,46 @@
+
+
+
+
+
+
+Selectors:  http://api.jquery.com/category/selectors/
+
+http://api.jquery.com/category
+
+
+$("input[type='text']:enabled:first").focus();
+
+
+<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
+
+
+Events: 
+    http://api.jquery.com/category/events/
+    
+    
+
+
+        <% if (!OAString.isEmpty(errorMessage)) { %>
+            // $('#errorMessage').html("<%= errorMessage %>");
+//            $('#errorMessage').css("display", "block");
+        <% } %>
+        
+        <% if (!OAString.isEmpty(message)) { %>
+            $('#message').css("visibility", "visible");
+            $('#message').html("<b><%= message %></b>");
+        <% } %>
+
+
+$('.myCheckbox').attr('checked','checked')
+
+$('.myCheckbox').css('color','red')
+
+
+ThemeRoller themes/theme switching
+
+
+http://jqueryui.com/docs/Theming/ThemeSwitcher
+http://docs.jquery.com/UI/Theming/ThemeSwitcher
+
+

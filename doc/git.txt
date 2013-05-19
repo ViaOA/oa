@@ -1,0 +1,218 @@
+
+
+https://github.com/
+
+tutorials
+    http://git-scm.com/book/en/Getting-Started-Git-Basics
+    http://www.vogella.com/articles/Git/article.html
+
+    EGit
+        http://www.eclipse.org/egit/documentation/
+
+git config --list
+
+git init
+    creates a new git directory, with a subdir .git
+    
+git status
+
+git help <cmd>
+    git <cmd> --help    
+    
+git add <fname>
+    add to staging
+
+git commit [-m 'comment']
+git commit -a -m 'added new benchmarks'
+    commit all changes, not just staged
+git commit --amend
+    add to last commit
+
+git reset HEAD benchmarks.rb
+    unstage a file
+git checkout -- benchmarks.rb
+    restore to version before current modifications    
+    
+git checkout <tag>    
+
+git checkout --track origin/serverfix
+
+git diff
+    difference between local copy and committed
+
+git diff --cached
+git diff --staged
+    compares staged with commited
+    
+to see diff with remote
+    git branch -a  # get list of remotes
+        ex:
+            * master
+              remotes/origin/HEAD -> origin/master
+              remotes/origin/master
+    git diff remotes/origin/Head    
+
+git remote 
+    
+git clone git://github.com/schacon/grit.git
+
+git clone git@gitorious.intcx.net:marketrouter/gsmr.git
+
+
+.gitignore
+    create this file to add ignore files names
+    # are comments
+    use '/' for dir, ex: lib/
+    '!' is for not
+    
+git checkout fname
+    restore
+
+git rm [-f] <fname> 
+git rm --cached <fname>
+git rm \*~
+
+git mv file_from file_to
+
+
+***************
+git log --graph --oneline
+***************
+git log
+
+git log -p -2
+    shows diff changes, in last two entries
+    
+git log --pretty=oneline  short,full,fuller    
+    
+git log --pretty=format:"%h - %an, %ar : %s"
+        Option  Description of Output
+        %H  Commit hash
+        %h  Abbreviated commit hash
+        %T  Tree hash
+        %t  Abbreviated tree hash
+        %P  Parent hashes
+        %p  Abbreviated parent hashes
+        %an Author name
+        %ae Author e-mail
+        %ad Author date (format respects the --date= option)
+        %ar Author date, relative
+        %cn Committer name
+        %ce Committer email
+        %cd Committer date
+        %cr Committer date, relative
+        %s  Subject    
+
+git log --pretty=format:"%h %s" --graph
+    http://git-scm.com/book/en/Git-Basics-Viewing-the-Commit-History
+
+git log --since=2.weeks
+    -(n)    Show only the last n commits
+    --since, --after    Limit the commits to those made after the specified date.
+    --until, --before   Limit the commits to those made before the specified date.
+    --author    Only show commits in which the author entry matches the specified string.
+    --committer Only show commits in which the committer entry matches the specified 
+
+
+gitk
+    visual log
+    accepts same optiosn as git log
+    
+git remote -v   
+    default is "origin"
+    http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
+git remote add pb git://github.com/paulboone/ticgit.git
+git remote rm pb
+
+git fetch [pb]
+
+git pull [pb]
+    includes merging
+
+git push [remote-name] [branch-name]
+git push origin master
+
+git remote show origin
+
+git tag
+git tag -l 'v1.4.2.*'
+
+git tag -a v1.4 -m 'my new version'
+
+git show v1.4
+
+git tag -a v1.2 -m 'version msg' 9fceb02
+    tag a previous version
+
+git push origin [tagname]
+    use this for tag - by default, tags are not included in pushes
+
+git push origin --tags
+    push all new tags
+    
+
+git branch
+    list branches
+git branch <name>
+    create new branch
+git branch -d <name>
+    delete branch
+git branch -va
+
+git checkout <branch>
+git checkout -b iss53
+    create a new branch 'iss53' and switch to it
+    
+git merge hotfix    
+    merge 'hotfix' branch to current branch
+    then delete the branch
+        git branch -d hotfix         
+
+    if there are any conflicts, they will be reported
+    and git status will show that the merge is in progress (paused, to be fixed)
+    
+git mergetool
+
+git branch --merged
+git branch --no-merged
+
+git diff origin/master 
+    origin is where the repo is located
+    
+git fetch <origin>
+    sync with server, without causing a merge, etc    
+
+git pull 
+    updates local
+    
+git rebase
+    apply changes to a branch unto another branch, as if it was added that way    
+    
+git push (remote) (branch)
+    copy my branch to remote server
+
+git push origin :serverfix
+    the ':' is the command to  delete the local branch
+        see bottom: http://git-scm.com/book/en/Git-Branching-Remote-Branches
+
+git checkout -b serverfix origin/serverfix
+    creates a new branch with source from origin/serverfix
+
+git checkout --track origin/serverfix
+    get from server
+
+git rebase <branch>
+    http://git-scm.com/book/en/Git-Branching-Rebasing
+
+
+Eclipse egit
+    tutorial: http://www.vogella.com/articles/EGit/article.html
+
+git tutorial
+    http://www.vogella.com/articles/Git/article.html
+
+
+
+
+
+

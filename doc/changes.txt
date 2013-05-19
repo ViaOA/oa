@@ -1,0 +1,376 @@
+qqqqq  OAObject.delete, when null=ing out a reference, only update the datasource fkey and not 
+             call save() on the whole object.  Add OADataSource.removeReference(object, "prop name"),
+               ex: ds.removeReference(obj, "department") - might need to update link table.
+
+
+2007/09/22
+> backed up
+> changes to 
+
+2007/09
+> added gui.html classes
+
+2007/01/05
+> OATreeNode create width.  Used by toString(tnd) to pad w/ spaces or to truncate
+> Hub2TreeNode added code to listen to property, so that calc properties work again.
+
+2007/01/03
+> Hub setPropertyToMaster()
+> Hub firePropertyChange() now calls propertyChangeDupChain() before calling event listeners.
+
+2006/12/21
+> OATreeNode fixed bug, renderer was not calling getIcon()
+> OATreeNode getImage(obj, default), getToolTipText(obj, default) used to get name of image for a node.
+> OATreeNode.getFont(obj, font), getToolTipText(obj, ttt), getBack/ForegroundColor(), getIconColor()
+> OATree.clearChildNodeAO() bug when tree has recursive nodes
+
+2006/12/15
+> OADataSourceJDBC convertToString() added maxLength parameter
+> OADateTime created methods setTime(OATime) and setDate(OADate)
+> OADateChooser - works with OADate or OADateTime
+
+2006/12/14
+> OADataSourceJDBC insert and update need to truncate strings if > maxLen
+
+2006/12/13
+> OAPopupTree - added clear and close buttons and option to show clear button or not.
+
+2006/12/11
+> OATable.column only change/expand path if it is linked to table.hub
+> Hub2CustomComboBox was not displaying property
+> OATreeComboBox clearValue() so that value can be set to null.
+> OAComboBox.processChar() to go to row with letter typed
+
+2006/12/10
+> OAConverter added new method toDataSourceString(fromClass, propertyPath, value)
+> OADataSource added support for new toDataSourceString() method
+> OAObject create metod setFinalizeSave(boolean) to know if finalized objects should be saved.
+> OAComboBox added allowClearButton(), added onClear() to overwrite to remove value
+> OAPropertyPathComboBox added popup buttons close,clear
+
+2006/12/06
+> OADataSourceJDBC bUseBackslashEscape=false for Derby
+
+2006/12/03
+> OAPlainDocument, Hub2TextField
+
+2006/12/01
+> OAPlainDocument checks for valid chars, max length
+> Hub2TextField uses OAPlainDocument, also uses dataSource max length
+
+2006/11/29
+> OAList added Double click information/methods
+
+2006/11/08
+> OADataSourceJDBC.next() did not convert to OADateTime
+> QueryConverter - fixed bug when creating join for super class.
+> OADataSourceJDBC.next() for objects with sub/superClass, needs to check HubController for each
+
+2006/11/07
+> OAString.lineBreak() fixed bug
+
+2006/11/06
+> OADataSourceJDBC insert() now uses assignedByDatabase to skip column
+
+2006/10/27
+> OADateChooser created callback shouldHighlite(OADate date, boolean bDefault)
+> OADateChooser shows the leading and trailing days on the calendar
+> Hub.select() will not throw exception if DataSource is null.
+
+2006/10/26
+> Hub2ToggleButton.isSelected(Object, b) hook into getting selected value.
+> Hub2ToggleButton - if offValue is set to null, then any non-null is true
+
+2006/10/25
+> OAComparator now allows for asc/desc per property
+> Hub.sort would keep it sorted on server only.  Changed so that it will sort on client if masterObject is null.
+
+2006/10/19
+> OATreeNode.verifyHub() getMasterHub() != null made it skip the 
+
+2006/10/18
+> OAObject - created "Hub = findUncachedHub()" to know if object needs to be added to serverCache
+> Hub - select(), added call to OAObject.removeHub() when clearing list.
+
+2006/10/17
+> created OAConverter.toDataSourceString(class, prop, value)
+> OAObjectServerImpl fixed datasource select that returned null, caused npe
+> OAObject() constructor changed so that addToCache is called before Datasource initialize
+
+2006/10/16
+> OAObject.getPropertyAsString() changed so that it will return a string, not object
+> HubFilter.initialize() will now setAO(null) if AO is not in hub after load is done.
+
+2006/10/13
+> OATable columns now use button renderer and display sorting icon.  Multiple 
+     columns can be sorted, icons has a #.
+
+2006/10/12
+> Hub.move() if posFrom < posTo, then posTo--
+> OALable getTabelCellRenderer was not displaying color/icon correctly
+> OATable.setupTableHeader() added support to show component toolTipText
+> OATable - created get/setAllowSorting() to sort on clicking or ctrl clicking columns
+> Hub.sort() if not masterObject, then dont sort on server
+
+2006/10/08
+> removed com.viaoa.hub.HubGuiAdapter, moved to com.viaoa.hub
+> added new property methods for font,colors,tooltip, etc.
+> replaced com.viaoa.hub.HubGuiAdapter with com.viaoa.gui.Hub2Gui
+> totally "revamped" OAGui components to use Hub2Gui
+
+2006/10/06
+> OATreeNode if background color, then setOpaque(true)
+> OATreeNode setIconColorPropertyPath() to draw a colored icon
+> OATreeNode added support for multiple image icons
+> OATreeNode changing iconProperty* to imagePropery*
+
+2006/10/05
+> OATable getValue() had bug when using a hub for combo that was not linked.
+> OAComboBox.getTableRenderer had bug when using a hub that was not linked
+> HubGuiAdapter ImageClassPath, RootImageClassPath added to get image from jar file, or classpath
+> OAComboBox.setImageClassPath()
+> HubGuiAdapter.getIcon() nows ImageClassPath, etc.
+
+2006/10/03
+> HubGuiAdapter getGetMethod() fixed null ptr error if actualHub not being used.
+> OATreeNode added Fore/BackgroundColorPropertyPath
+> OATreeNode added ToolTipTextPropertyPath, Font
+> Added set/getUseIcon() to both OATree, OATreeNode
+> OATree.valueChangedImpl() calls clearChildNodeAO() to clear childNodes Active Object
+> OATree.is/setValueChanging() to "know" when node has been selected, and the nodes are being updated.
+> OATree.expand/collapseAll()
+> OAList add setNullDescription("value")
+
+2006/10/01
+> OADataSourceJDBC - added bSupportsAutoAssign,so that database will assign the number (AutoIncrement, ex: SQL Serv)
+> OAString.lineBreak(line, width, sep, maxLines) break a line into seperate lines.
+
+2006/09/28
+> OAConnection Access (ODBC/JDBC) does not support [prepared]statements with autogenerated key option
+> OAClient processException() was not being called when receiving EXCEPTION message
+> OACOnverter.convert() had bug where it returned null when the value was a subclass.  It will now return value.
+> OAProperties added setProperty() method, to call put()
+
+2006/09/27
+> OADataSourceJDBC Access (ODBC/JDBC) does not support [prepared]statements with autogenerated key option
+
+2006/09/26
+> OAObject - onSave(), onDelete()  check objectInfo.getUseDataSource
+> Hub - select() checks objectInfo.getUseDataSource
+> OADataSourceJDBC.select() - if using a 2nd query, have it created by queryConverter, in case superClass is involved
+> OAXMLWriter.removeCascade() - added so that OAObject.log() does not cache objects that are written to log file.
+> OAXMLWriter - added WRITE_NONEW_KEYONLY, so that Hub does not write new objects.  Used in OAObject.log() for M2M links
+
+2006/09/25
+> OAIndexPropertyDef added property bCaseSensitive
+> OAPropertyDef added property bCaseSensitive
+> SqlXGenerator checks indexes to see if Property needs a seperate lower case "mirror" column
+> OAObject.getObject(), calls getUseDataSource() before using datasource
+
+2006/09/24
+> OAObject.OALogRecord to track save/delete
+> OAObject.createXMLLogFile(fname) created
+> OAObject log() write save/delete to xml file.
+> OAObject.onSave() calls log(true) to save as xml version
+> OAObject.onDelete() calls log(false)
+> DataSourceGenerator - createColumn now checks to set case sensitive column
+
+2006/09/22
+> Column.columnLowerName;  // name of column in table that stores in lowercase, for case sensitive Databases
+> QueryConverter now checks columnLowerName 
+> OADataSourceJDBC.bCaseSensitive, lowerCaseFunction
+> OADataSourceJDBC set Derby to use case sensitive
+> OADataSourceJDBC insert/update now work with columnLowerName
+
+2006/09/14
+> OASelect add setParams() to include where variables to replace '?'
+> OADataSource added support for count() and select() to use object[] params, and param for where clause
+> QueryConverted added parseParams() to put ? params into where clause
+> OADataSourceClient added support for count/select with params
+> OAObjectServerImpl added support for DataSource count to include params
+> OAClient Datasource now works with count/select that uses params
+> OADataSourceNextNumber supports count/select with params
+> OADataSourceJDBC created convertToString(OAObject obj)
+
+2006/09/13
+> QueryConverter.parseOrderBy() now allows for using sql functions.
+	ex: UPPER(LastName)
+> Hub.keepSorted(String s) so that sort order can be redefined
+
+2006/09/12
+> OADataSourceJDBC next() converting CLOB using subString starts at 1, not 0
+
+2006/09/06
+> OADataSource.bEnable flag to turn on/off
+> OADataSourceJDBC, changed time formatting for sql to be '0' padded
+
+2006/09/05
+> OADataSourceJDBC added Indexes to Table
+> DataSource added Indexes for tables
+> OADataSourceJDBC.verify() now checking indexes
+> OADataSourceJDBC.next() converts a column.value of type Boolean to correct param
+	type for the method call.
+
+2006/09/04
+> OADataSourceJDBC adding support for Derby database
+
+2006/09/03
+> OAObject.isClientThread() created
+> OAObject.isServer() created
+
+2006/08/28
+> OAObjectServer added methods to send/get multiple messages at a time
+
+2006/08/22
+> Saved to SVN, starting debug version of OA
+> backed up to: c:\backup\oa\oa_20060822_1646.zip
+> OAObject.bServerCache set as transient, is only set on the computer that created the object, and only
+	if it is from a workstation that needs to make sure that it exists on server, until added to a hub.
+> OAObject started to add Logging
+
+2006/08/17
+> OAClient.clearSentMessages() created to release msg when getMessage error happens.
+> Hub.version set to 608170
+
+2006/08/16
+> OADataSourceClient.INITIALIZEOBJECT reinstated, so that a new OAObject can be initialized
+
+2006/08/15
+> OAConverter.toString() if null conversion and value != null, then calls value.toString()
+
+2006/08/14
+> OATable.addColumn - added parameter for Format
+
+2006/08/11
+> OAObject.lockHashLink - now uses Integer(guid) as the key for locks.  Previously, it used
+     the object itself, but if the pKey changed, then it could not be found.
+> OAClientInfo - created to be passed to/from OAServer and OAClient to collect information.
+
+2006/08/06 
+> OADataSourceJDBC - removed code in next() that is handled in OAObject.setProperty()
+> OADataSourceJDBC - create isDirty() method
+> OADataSourceJDBC - add/removeDirtyClass now is overloaded to include Thread
+
+2006/08/04
+> OAObject.readObject changed so that when it reads a weakRef it will call the get method
+    so that it will not be garbage collected.
+
+2006/07/31
+> new oa.jar will require workstation installs, not backwards compatible
+> major update on oasync classes 
+
+2006/07/26
+> OAObjectServer added status, and statusTypes
+> OAObjectServer added dtStart/End, user
+> OAServer removed showUsers, added vecRemoved for list of removed connections
+> OAObjectServer add user
+> OAObjectServer setUser(object user)
+> OAClient.setUser(object)
+> OAServer & OAObjectServer changed sendMessage() to return the position of the message within the client queue
+
+2006/07/25
+> OAObject.addHub calls OAClient.removeFromCache(this)
+> OAObjectServerImpl has checks for timeouts
+> OAServerImpl removed check for objectServ timeout
+> OAServerImpl added more info to getInfo methods
+> OAObjectMessage removed bWait & bOnly
+> OAObjectMessage.getMessage(int totalThreadCount, int waitThreadCount), added parameters to known how many
+	threads OAClient is using.
+
+2006/07/20
+> updated subversion
+> major rework on OAClient
+
+2006/07/18
+> OAClient(), empty param for OAServerImpl so that aOAServer will use a pre-existing local client.
+> OAServerImpl will now use an existing OAClient if it exists, instead of creating a new one.
+
+
+2006/07/17
+> OAClient.addShutdownHook(t) created to disconnect a client from server
+> OAClient.createThreadChecker, used to start new getMessage threads if there are no getMessage() being called.
+> OAClient.addToCache() checks to see if messages are being suppressed.
+> OAObjectServerImpl.isInCache() created
+> OAServerImpl.sendMessage() now checks to see if a propertyChange is for a cached object.
+    if so, then it does not need to send to other clients, only local OAClient.
+
+2006/06/26
+HubMerger.add() checks to see if object is in hub before calling hub.add().  This was a
+problem when a client is disconnected from server and hubs are reselected.
+
+2006/06/22
+> OAClient.run(), remove thread when catching exception
+OAClient.handelXXXException() methods now do not throw, but allow for subclass to overwrite.
+OAClient.isSending() created to know if messages are currently being sent to server
+> OAObjectServerImpl - methods that cant find object from HubController now call datasource.
+> OAClient created handleProcessMessageException
+> reworked run() method
+> OAClient.sendMessage() needs to throw and error if client disconnects
+             
+2006/06/18
+OAObject.finalize() added CASCADE to save()
+OAObject.cascadeDelete() changed so that a link is not retrieved unlesss it is needed.
+OAObject.getHub() calls OALinkInfo.cache(h) on each call
+>> 2006/06/16
+> OALinkInfo - made vecCache transient so that it would not be passing over rmi with Hub.
+> OAObjectServerImpl.getDetail - if object is not found in HubController, then it will
+be retrieved from datasource.  
+> OAObject getObject - if client was used and null was returned, it would use datasource to 
+get object.  Changed this to not use datasource.
+
+2006/06/15
+> OAObject.readResolve now sets guid=0 so that finalize does not process the object.
+> OALinkInfo.setCacheSize - if running as a server, then size is doubled.
+> Hub.insert() fixed problem where oaclient got an error that it could not insert an object
+into the hub.  It was timing problem, where a detail hub that shared this hub was changed
+while the method was being processed.
+Using datamaster from getDataMaster() can/will return the datam from a detail Hub that is sharing. 
+This detailHub could be changed to point to a different hub while the method that is using it is
+being executed.  This was a thread problem, that now only uses the fact that a hub has a masterHub
+Methods changed: insert(), setPropertyToMaster(), canAdd(), 
+
+2006/06/14 bug fix
+OAPassword used in a OATable column
+isValid() returns false during Hub2TextField.saveChanges2(), causing it to not save
+the user input.  Changed to ignore isValid if using an OAPasswordField.  Need to find
+out why not valid.
+
+
+PREVIOUS
+
+OAObject =======
+2004/01/21 OAObject subclasses MUST use getObject() and getHub() to get reference objects.  If not, then the
+           method isLoaded() will return false.
+2004/01/21 create hashDelete to know if an object is being delete
+2004/01/21 added isDeleting()
+2004/01/21 updateLink() - if owned, recursive and deleting, then dont add to owner hub
+2003/10/15 hashLoad uses either OAObject or currentThread()
+2003/10/16 added support for OAUndoManager for PropertyChanges
+2003/10/16 added localGuidCounter (negative counter) for local objects when a client is being used
+2003/10/21 removed undo support and put into com.viaoa.gui
+2003/10/22 changed cascadeSave so that ALLNEW will save new objects in an object hubs
+2003/10/23 isMethodEnabled(methodName) Used to enable/disable a method from being enabled.  Defaults: true.
+Can include calculated properties to know when value might be changed.
+2003/10/24 added support for HubController.getIgnoreEvents() so that events are not sent
+2003/11/02 constructor - HubController.addObject(this) is called after DataSource initializes object
+2003/11/10 xml write needs to save propertys that are OAObjects and not in the LinkInfos (needed by OABuilder.ModelChange.object)
+2003/11/10 xml write, when saving object key only, it did not save parent key.
+2003/11/11 xml write, all objects need to save full key.  Cant wait for parent to be resolved
+2003/11/13 found bug isLoaded().  PropertyName was not converted to uppercase before putting into hashLink
+2003/11/15 setup equals() to call OAObjectKey.equals()
+2003/11/23 changed copyInto to use get/setProperty
+2003/12/17 added getPropertyNames -> calls getObjectInfo().getPropertyNames()
+2004/01/27 updateKey() if change is coming from the server, then it has already been verified
+2004/02/04 hashInitialize, isInitializing() to track if object is in the constructor
+2004/02/04 constructor makes sure that setLoading is true
+2004/02/25 removed bFlag, since it is not thread safe.
+2004/02/25 changed isLoading() to also check hashInitialize
+2004/02/25 constructor, removed adding object to hashLoad since object is added to hashInitialize and isLoading() will now check it.
+2004/02/26 add property thread to OACascade so that an getCascade() can get OACascade by the thread.  This
+           is needed by methods that are within a cascade, but are not sent the OACascade in the method call
+2004/02/26 localGuidCounter was not static.
+2004/06/13 moved isInitializing() out of isLoading().  Changed all code that uses isLoading() to also call isInitializing()
+2004/06/30 copyInto() now makes copy of all references that are owned. Added option for properties to exclude.
+2004/07/07 updateLink not called for clients
+2004/08/23 added setSkipInitialize(), which causes constructor to skip setup
+

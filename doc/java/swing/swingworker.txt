@@ -1,0 +1,153 @@
+
+
+>> simple
+        
+        // Void is the return type, Point is the publish/process type
+        SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+            @Override
+           protected Void doInBackground() throws Exception {
+                afterLoginInit();
+                return null;
+           }
+           @Override
+           protected void process(List<Void> chunks) {
+           }
+           @Override
+           protected void done() {
+               getFrameController().getFrame().setProcessing(false);
+               LOG.info(Resource.getValue(Resource.APP_Welcome, ""));
+           }
+        };
+        sw.execute();
+        try {
+            sw.get(); // to get/wait for returned object
+        }
+        catch (Exception e) {
+            obj[0] = false;
+            LOG.log(Level.WARNING, "error in after login", e);
+        }
+
+
+
+>> wait dialog
+        final OAWaitDialog dlgWait = new OAWaitDialog(SwingUtilities.getWindowAncestor(getMainPanel()));
+        dlgWait.setStatus("Selecting "+DisplayNamePlural+" ... please wait ...");
+        dlgWait.setTitle(""+DisplayName+" Search");
+        final Object lock = new Object();
+        
+        SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+           @Override
+           protected Void doInBackground() throws Exception {
+                performSearch();
+                if (!dlgWait.wasCancelled()) {
+                }
+                return null;
+           }
+           @Override
+           protected void done() {
+               synchronized (lock) {
+                   dlgWait.setVisible(false);
+               }
+               if (dlgWait.wasCancelled()) {
+               }
+               else if (getSearchHub().getSize() == 0) {
+                   String msg = "No "+DisplayNamePlural+" were found.";
+                   JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(getMainPanel()),
+                           msg, DisplayName+" Search",
+                           JOptionPane.WARNING_MESSAGE
+                   );
+               }
+               else {
+                   getHub().setPos(0);
+                   getTable().requestFocusInWindow();
+               }
+           }
+        };
+        sw.execute();
+        synchronized (lock) {
+            if (sw.getState() != StateValue.DONE) {
+                dlgWait.setVisible(true);
+            }
+        }
+
+
+>> animate window 
+        // Void is the return type, Point is the publish/process type
+        SwingWorker<Void, Point> sw = new SwingWorker<Void, Point>() {
+            @Override
+           protected Void doInBackground() throws Exception {
+                PointerInfo pi = MouseInfo.getPointerInfo();
+                Point pt = pi.getLocation();
+                for (int x=0, y=0; x < pt.x || y < pt.y; x+=250, y+=50) {
+                    try {
+                        
+                        //qqqq
+                        x = pt.x; 
+                        y = pt.y;
+
+                        Thread.sleep(75);
+                        publish( new Point(Math.min(x, pt.x), Math.min(y, pt.y)) );
+                    }
+                    catch (Exception e) {
+                    }
+                }
+                return null;
+           }
+           @Override
+           protected void process(List<Point> chunks) {
+               for (Point pt : chunks) {
+                   frm.setLocation(pt);
+               }
+                
+           }
+           @Override
+           protected void done() {
+           }
+        };
+        sw.execute();
+        // sw.get(); // to get/wait for returned object        
+        
+
+==============================
+
+        final OAWaitDialog dlgWait = new OAWaitDialog(SwingUtilities.getWindowAncestor(getMainPanel()));
+        dlgWait.setStatus("Selecting Users ... please wait ...");
+        dlgWait.setTitle("User Search");
+        final Object lock = new Object();
+        
+        SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+            @Override
+           protected Void doInBackground() throws Exception {
+                performSearch();
+                if (!dlgWait.wasCancelled()) {
+                }
+                return null;
+           }
+           @Override
+           protected void done() {
+               synchronized (lock) {
+                   dlgWait.setVisible(false);
+               }
+               if (dlgWait.wasCancelled()) {
+               }
+               else if (getSearchHub().getSize() == 0) {
+                   String msg = "No Users were found.";
+                   JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(getMainPanel()), 
+                           msg, "User Search",
+                           JOptionPane.WARNING_MESSAGE
+                   );
+               }
+               else {
+                   getSearchHub().setPos(0);
+                   getTable().requestFocusInWindow();
+               }
+           }
+        };
+        sw.execute();
+        synchronized (lock) {
+            if (sw.getState() != StateValue.DONE) {
+                dlgWait.setVisible(true);
+            }
+        }
+
+        

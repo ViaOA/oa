@@ -1,0 +1,78 @@
+findFileName = "OA[a-zA-Z0-9.]{6}\\.class"; // works        
+findFileName = "OA[^$]{12,}\\.class";  // works     
+findFileName = "OA.*\\.class";  // works        
+
+s.matches("[\\d]+[\\s]*pt") 
+
+String[] ipOctets = s.split("\\.");
+
+
+findFileName = "OA[a-zA-Z0-9.]{6}\\.class";        
+findFileName = "OA[^$]{12,}\\.class";      
+findFileName = "OA.*\\.class";         
+this.pattern = Pattern.compile(findFileName);
+        
+Matcher m = pattern.matcher("toolbar.html");
+boolean b = m.matches();
+
+qqqqqqqqqqqq
+
+
+http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html
+
+http://www.mkyong.com/regular-expressions/10-java-regular-expression-examples-you-should-know/
+
+
+        matchListenTopic = "ICE\\." + this.environmentName + "\\.TRADING\\.MR\\..*\\.NOTIFICATION";
+        if (!topic.matches(matchListenTopic)) return; 
+        String[] ss = topic.split("\\.");
+        if (ss == null || ss.length < 5) return;
+        String mrId = ss[4];
+
+
+http://java.sun.com/developer/technicalArticles/releases/1.4regex/
+http://www.vogella.de/articles/JavaRegularExpressions/article.html
+
+
+Method Description 
+s.matches("regex")    Evaluates if "regex" matches s. Returns only true if the WHOLE string can be matched  
+s.split("regex")      Creates array with substrings of s divided at occurance of "regex". "regex" is not included in the result.  
+s.replace("regex"),      "replacement" Replaces "regex" with "replacement 
+
+
+
+Regular Expression Description 
+.   Matches any sign 
+^regex    regex must match at the beginning of the line 
+regex$    Finds regex must match at the end of the line 
+[abc]    Set definition, can match the letter a or b or c  
+[abc][vz]    Set definition, can match a or b or c followed by either v or z  
+[^abc]     When a "^" appears as the first character inside [] when it negates the pattern. This can match any character except a or b or c  
+[a-d1-7]       Ranges, letter between a and d and figures from 1 to 7, will not match d1  
+X|Z        Finds X or Z 
+XZ         Finds X directly followed by Z 
+$         Checks if a line end follows 
+
+
+
+Regular Expression Description 
+\d Any digit, short for [0-9] 
+\D A non-digit, short for [^0-9] 
+\s A whitespace character, short for [ \t\n\x0b\r\f] 
+\S A non-whitespace character, for short for [^\s] 
+\w A word character, short for [a-zA-Z_0-9] 
+\W A non-word character [^\w] 
+\S+ Several non-whitespace characters 
+
+
+Regular Expression Description Examples 
+* Occurs zero or more times, is short for {0,}  X* - Finds no or several letter X, .* - any character sequence  
++ Occurs one or more times, is short for {1,}  X+ - Finds one or several letter X  
+? Occurs no or one times, ? is short for {0,1}  X? -Finds no or exactly one letter X  
+{X} Occurs X number of times, {} describes the order of the preceding liberal  \d{3} - Three digits, .{10} - any character sequence of length 10  
+{X,Y} .Occurs between X and Y times,  \d{1,4}- \d must occur at least once and at a maximum of four  
+*? ? after a qualifier makes it a "reluctant quantifier", it tries to find the smallest match.    
+
+
+
+

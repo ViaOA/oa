@@ -1,0 +1,149 @@
+
+
+
+        @Override
+        public String getToolTipText(Object object, String defaultValue) {
+            if (!(object instanceof Client)) return defaultValue;
+            
+            Client client = (Client) object;
+            String msg = client.getFullName();
+            for (int i=0; ;i++) {
+                Pet pet = client.getPets().getAt(i);
+                if (pet == null) break;
+                if (pet.getInactiveDate() != null) continue;
+                msg += "<br>";
+                
+                if (i > 8) {
+                    msg += client.getPets().getSize() + " total pets";
+                    break;
+                }
+                
+                
+                Species sp = pet.getSpecies();
+                if (sp != null && sp.getIconImageStore() != null) {
+>>> ImageStoreDelegate for <img> from oaObj.property                 
+                    msg += ImageStoreDelegate.getHtmlImg(sp.getIconImageStore(), 15, 12);
+                }
+                
+                boolean b = false;
+                for (Exam exam : pet.getExams()) {
+                    if (exam.getEndDate() == null) {
+                        b = true;
+                        break;
+                    }
+                }
+                if (b) msg += "<b>";
+                msg += PetDelegate.getDisplayName(pet);
+                if (b) {
+                    msg += "</b> ";
+>>> OAImageUtil for <img> from jar classpath                 
+                    msg += OAImageUtil.getHtmlForJarImg(Resource.getJarImageDir(), "exam.jpg", 15, 10);
+                    msg += "<small><i>open exam</i></small>";
+                }
+            }
+            return "<html>"+msg;
+        }
+
+
+
+===> ImageStoreDelegate
+
+msg += ImageStoreDelegate.getHtmlImg(sp.getIconImageStore(), 15, 12);
+
+ 
+
+                Species sp = p.getSpecies();
+                if (sp != null) {
+                    ImageStore is = sp.getIconImageStore();
+                    if (is != null) {
+                        s += " - "+ImageStoreDelegate.getHtmlImg(is, 12, 12);
+                    }
+                }
+                s += "<u>" + name + "</u>";
+
+
+==============
+
+
+s3 += "<img src='oaproperty://com.vetplan.oa.ImageStore/bytes?id="+is.getId()+"'> ";
+
+
+            public String getToolTipText(Object object, String defaultValue) {
+                if (!(object instanceof Client)) return defaultValue;
+                
+                Client client = (Client) object;
+                String msg = client.getFullName();
+                for (Pet pet : client.getPets()) {
+                    if (pet.getInactiveDate() == null) {
+                        msg += "<br>";
+                        Species sp = pet.getSpecies();
+                        if (sp != null && sp.getIconImageStore() != null) {
+                            msg += "<img src='oaproperty://com.vetplan.oa.ImageStore/bytes?id="+sp.getIconImageStore().getId()+"'> ";
+... use this instead                            
+msg += ImageStoreDelegate.getHtmlImg(sp.getIconImageStore(), 15, 12);
+                            
+                        }
+                        msg += PetDelegate.getDisplayName(pet);
+                    }
+                }
+                return "<html>"+msg;
+            }
+
+            
+===============
+
+
+
+    @Override
+    public String getToolTipText(Object object, String defaultValue) {
+        if (!(object instanceof Client)) return defaultValue;
+        
+        Client client = (Client) object;
+        String msg = client.getFullName();
+        for (int i=0; ;i++) {
+            Pet pet = client.getPets().getAt(i);
+            if (pet == null) break;
+            if (pet.getInactiveDate() != null) continue;
+            msg += "<br>";
+            
+            if (i > 8) {
+                msg += client.getPets().getSize() + " total pets";
+                break;
+            }
+            
+            Species sp = pet.getSpecies();
+            if (sp != null && sp.getIconImageStore() != null) {
+                int h = 0;
+                int w = 0;
+                try {
+                    BufferedImage bi = OAImageUtil.convertToBufferedImage(sp.getIconImageStore().getBytes());
+                    h = bi.getHeight();
+                    w = bi.getWidth();
+                    if (h > 16) {
+                        w = (int) (w * (16.0d/h));
+                        h = 16;
+                    }
+                }
+                catch (Exception e) {}
+                String s;
+                if (h > 0) s = "height='" + h + "' width='" + w + "'";
+                else s = "";
+                msg += "<img src='oaproperty://com.vetplan.oa.ImageStore/bytes?id="+sp.getIconImageStore().getId()+"' "+s+"> ";
+            }
+    
+            boolean b = false;
+            for (Exam exam : pet.getExams()) {
+                if (exam.getEndDate() == null) {
+                    b = true;
+                    break;
+                }
+            }
+            if (b) msg += "<b>";
+            msg += PetDelegate.getDisplayName(pet);
+            if (b) {
+                msg += "</b>";
+                msg += (" <img src='classpath://com.vetplan.view.image/exam.jpg' height='10' width='8'>");
+                msg += "<small><i>open exam</i></small>";
+            }
+        }
+            

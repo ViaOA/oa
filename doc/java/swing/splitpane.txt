@@ -1,0 +1,35 @@
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, null, null);//qqqqqqqq
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerSize(6);
+        splitPane.setResizeWeight(1.0);
+
+
+
+/*
+
+Top/Left component gets extra space by default, will be set to preferred size
+
+*/
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(getTree()), getCardPanel());
+        
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerSize(8);
+        
+        splitPane.setLeftComponent(bar);
+        
+        int w = OATable.getCharWidth(outlookBar, outlookBar.getFont(), 33);
+        
+        splitPane.setDividerLocation(w);
+
+        splitPane.setResizeWeight(1.0);  // give top extra space
+
+
+        // the preferredSize is used to set the initial size
+        //   if it is too large, then it could "crowd" out the other side of the splitPane
+        //   this code will set it small, and also set the resizeWeight to give it all of the extra space.
+        //   this can be used so that the other side will be set to preferred size, and this side will get all extra space.
+        pan.setPreferredSize(new Dimension(20,20));
+
+

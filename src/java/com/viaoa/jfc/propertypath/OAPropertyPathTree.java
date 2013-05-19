@@ -1,0 +1,502 @@
+package com.viaoa.jfc.propertypath;
+
+/*
+This software and documentation is the confidential and proprietary
+information of ViaOA, Inc. ("Confidential Information").
+You shall not disclose such Confidential Information and shall use
+it only in accordance with the terms of the license agreement you
+entered into with ViaOA, Inc..
+
+ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
+SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
+SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
+THIS SOFTWARE OR ITS DERIVATIVES.
+
+Copyright (c) 2001 ViaOA, Inc.
+All rights reserved.
+*/
+import java.awt.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTree;
+import javax.swing.event.*;
+import javax.swing.tree.*;
+
+import com.viaoa.hub.*;
+import com.viaoa.jfc.*;
+import com.viaoa.jfc.propertypath.model.oa.*;
+import com.viaoa.jfc.tree.*;
+import com.viaoa.util.OAString;
+
+/**
+    Used to create a Tree for selecting ObjectDef, PropertyDef, CalcPropertyDef, etc.
+    <pre>
+    tree = new OAPropertyPathTree(hubObjectDef, bShowAll, bShowCalc, bShowProps, bShowMany, bShowOne) {
+        public void propertyPathCreated(OAPropertyPath pp) {
+            OAObject oa = (OAObject) hub.getAO();
+            if (oa != null) oa.setProperty(property, pp);
+            // if in a OATreeComboBox: comboBox.hidePopup();
+        }
+    };
+    tree.setColumns(40);
+    </pre>
+    @see #propertyPathCreated to caputre selected tree node
+*/
+public class OAPropertyPathTree extends OATree {
+    private Hub<ObjectDef> hubObjectDef;
+    private boolean bShowAll;         // show all objectDefs, not just activeObject
+    private boolean bShowCalc=true;
+    private boolean bShowProps=true;
+    private boolean bAllowMany, bAllowOne;
+    private boolean bRecursive;
+    private Hub hubFindObjectDef;
+    private Hub<ObjectDef> hubAdditionalObjectDefs;  // additonal list of ObjectDefs that can be selected (does not allow expanding)
+    private boolean bLookupProperty; // used for PropertyPath.lookupProperty, if this PP does not "start with" the objectDef
+
+    public OAPropertyPathTree(Hub hubObjectDef, boolean bShowAll, boolean bShowCalc, boolean bShowProps, boolean bAllowMany, boolean bAllowOne) {
+        this(hubObjectDef, bShowAll, bShowCalc, bShowProps, bAllowMany, bAllowOne, true);
+    }
+    
+    /**
+     * If true, then this propertyPathTree is used to select lookup ObjectDefs as the root nodes.
+     */
+    public void setUseAsLookups(boolean b) {
+        bLookupProperty = b;
+    }
+    
+    /**
+        Recursive tree to select an OAPropertyDef from.
+        @param hubObjectDef is root hub where the active object is the "starting" point for finding a property.
+        @param bShowAll used for tree rootNode.showAll().  If tree then all OAObjectDefs will be shown.
+               If false, then only the active object is shown.
+        @param bShowCalc flag to know if calculated properties should be shown.
+        @parma bShowProps if false, then only OAObjectDef objects will be shown.
+        @param bAllowMany if true the Links of type MANY are listed
+        @param bAllowOne if true the Links of type ONE are listed
+        @param bRecursive if true, then allows to drill into link properties
+    */
+    public OAPropertyPathTree(Hub hubObjectDef, boolean bShowAll, boolean bShowCalc, boolean bShowProps, boolean bAllowMany, boolean bAllowOne, boolean bRecursive) {
+        super(18, 32);
+        this.hubObjectDef = hubObjectDef;
+        this.bShowAll = bShowAll;
+        this.bShowCalc = bShowCalc;
+        this.bShowProps = bShowProps;
+        this.bAllowMany = bAllowMany;
+        this.bAllowOne = bAllowOne;
+        String cpp;
+
+        setAllowDnD(false);
+
+        OATreeNode nodeObject = new OATreeNode(ObjectDef.PROPERTY_DisplayName, hubObjectDef) {
+            @Override
+            public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                comp = super.getTreeCellRendererComponent(comp, tree, value, selected, expanded, leaf, row, hasFocus);
+                if (value instanceof OATreeNodeData) {
+                    value = ((OATreeNodeData) value).getObject();
+                }
+                OAPropertyPathTree.this.updateTreeCellRendererComponent(comp, value);
+                return comp;
+            }
+        };
+        
+        URL url = OAPropertyPathTree.class.getResource("image/objectIcon.gif");
+        ImageIcon ii = new ImageIcon(url);
+        nodeObject.setIcon(ii);
+        
+        nodeObject.setShowAll(bShowAll);
+
+        OATreeNode nodeProp, nodeCalc;
+        nodeProp = nodeCalc = null;
+        if (bShowProps) {
+            // nodeProp = new OATreeNode("properties.name");
+            
+            cpp = OAString.cpp(ObjectDef.PROPERTY_PropertyDefs, PropertyDef.PROPERTY_DisplayName);
+            nodeProp = new PropertyTreeNode(cpp) {
+                @Override
+                public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                    comp = super.getTreeCellRendererComponent(comp, tree, value, selected, expanded, leaf, row, hasFocus);
+                    if (value instanceof OATreeNodeData) {
+                        value = ((OATreeNodeData) value).getObject();
+                    }
+                    OAPropertyPathTree.this.updateTreeCellRendererComponent(comp, value);
+                    return comp;
+                }
+            };
+
+            url = OAPropertyPathTree.class.getResource("image/propertyIcon.gif");
+            ii = new ImageIcon(url);
+            nodeProp.setIcon(ii);
+            nodeObject.add(nodeProp);
+            if (bShowCalc) {
+                cpp = OAString.cpp(ObjectDef.PROPERTY_CalcPropertyDefs, CalcPropertyDef.PROPERTY_DisplayName);                
+                nodeCalc = new OATreeNode(cpp) {
+                    @Override
+                    public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                        comp = super.getTreeCellRendererComponent(comp, tree, value, selected, expanded, leaf, row, hasFocus);
+                        if (value instanceof OATreeNodeData) {
+                            value = ((OATreeNodeData) value).getObject();
+                        }
+                        OAPropertyPathTree.this.updateTreeCellRendererComponent(comp, value);
+                        return comp;
+                    }
+                };
+                url = OAPropertyPathTree.class.getResource("image/calcPropertyIcon.gif");
+                ii = new ImageIcon(url);
+                nodeCalc.setIcon(ii);
+                Font font = this.getFont();
+                font = font.deriveFont(Font.ITALIC);
+                nodeCalc.setFont(font);
+                nodeObject.add(nodeCalc);
+            }
+        }
+
+        String strLinkType = null;
+        if (bAllowMany) {
+            if (bAllowOne) strLinkType = ObjectDef.PROPERTY_LinkPropertyDefs;
+            else strLinkType = ObjectDef.PROPERTY_ManyLinkPropertyDefs;
+        }
+        else {
+            if (bAllowOne) strLinkType = ObjectDef.PROPERTY_OneLinkPropertyDefs;
+        }
+        
+        if (strLinkType != null) {
+            OATreeNode nodeLink = null;
+            cpp = OAString.cpp(strLinkType, LinkPropertyDef.PROPERTY_Name);
+            nodeLink = new OATreeNode(cpp) {
+                @Override
+                public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                    comp = super.getTreeCellRendererComponent(comp, tree, value, selected, expanded, leaf, row, hasFocus);
+                    if (value instanceof OATreeNodeData) {
+                        value = ((OATreeNodeData) value).getObject();
+                    }
+                    OAPropertyPathTree.this.updateTreeCellRendererComponent(comp, value);
+                    return comp;
+                }
+            };
+            url = OAPropertyPathTree.class.getResource("image/linkIcon.gif");
+            ii = new ImageIcon(url);
+            nodeLink.setIcon(ii);
+            nodeObject.add(nodeLink);
+
+            if (bRecursive) {
+                OATreeNode node1, node2, node3;
+                node1 = node2 = node3 = null;
+                if (bShowProps) {
+                    cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_PropertyDefs, PropertyDef.PROPERTY_Name); 
+                    node1 = new PropertyTreeNode(cpp);
+                    url = OAPropertyPathTree.class.getResource("image/propertyIcon.gif");
+                    ii = new ImageIcon(url);
+                    node1.setIcon(ii);
+                    nodeLink.add(node1);
+                    if (bShowCalc) {
+                        url = OAPropertyPathTree.class.getResource("image/calcPropertyIcon.gif");
+                        ii = new ImageIcon(url);
+                        
+                        cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_CalcPropertyDefs, PropertyDef.PROPERTY_Name);
+                        node2 = new OATreeNode(cpp);
+                        node2.setIcon(ii);
+                        nodeLink.add(node2);
+                    }
+                }
+
+
+                cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, strLinkType, LinkPropertyDef.PROPERTY_Name);
+                node3 = new OATreeNode(cpp) {
+                    @Override
+                    public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                        comp = super.getTreeCellRendererComponent(comp, tree, value, selected, expanded, leaf, row, hasFocus);
+                        if (value instanceof OATreeNodeData) {
+                            value = ((OATreeNodeData) value).getObject();
+                        }
+                        OAPropertyPathTree.this.updateTreeCellRendererComponent(comp, value);
+                        return comp;
+                    }
+                };
+                url = OAPropertyPathTree.class.getResource("image/linkIcon.gif");
+                ii = new ImageIcon(url);
+                node3.setIcon(ii);
+                nodeLink.add(node3);
+
+                // make recursive
+                if (bShowProps) {
+                    node3.add(node1);
+                    if (bShowCalc) node3.add(node2);
+                }
+                node3.add(node3);
+            }
+        }
+        add(nodeObject);
+    }
+
+    public void updateTreeCellRendererComponent(Component comp, Object value) {
+        if (hubFindObjectDef == null) return;
+        if (value instanceof LinkPropertyDef && comp instanceof JLabel) {
+            LinkPropertyDef lp = (LinkPropertyDef) value;
+            if (lp.getObjectDef() == hubFindObjectDef.getAO()) {
+                comp.setFont(comp.getFont().deriveFont(Font.BOLD));
+            }
+        }
+    }
+
+    
+    /**
+     *  additonal list of ObjectDefs that can be selected (does not allow expanding)
+     * @param hub list of objectDefs to include at the root level.
+     */
+    public void setAdditionalObjectDefs(Hub<ObjectDef> hubAdditionalObjectDefs) {
+        if (this.hubAdditionalObjectDefs != null) return; //qqq remove/replace not done
+        this.hubAdditionalObjectDefs = hubAdditionalObjectDefs;
+        if (hubAdditionalObjectDefs != null) {
+            OATreeNode node = new OATreeNode(ObjectDef.PROPERTY_DisplayName, hubAdditionalObjectDefs);
+            URL url = OAPropertyPathTree.class.getResource("image/objectIcon.gif");
+            ImageIcon ii = new ImageIcon(url);
+            node.setIcon(ii);
+            add(node);
+        }
+    }
+    public Hub getAdditionalObjectDefs() {
+        return hubAdditionalObjectDefs;
+    }
+    
+    /**
+        Uses the ActiveObject of hub to be the only ObjectDef that can be selected.  
+        This is used to select a path that ends with a specific ObjectDef.
+    */
+    public void setFindObjectDefHub(Hub hub) {
+        hubFindObjectDef = hub;
+    }
+    
+    @Override
+    protected boolean isValidSelection(TreeSelectionEvent e) {
+        if (e == null) return false;
+        TreePath tp = e.getNewLeadSelectionPath();
+        if (tp == null) return false; 
+
+        if (hubFindObjectDef == null) return true;
+        
+        Object[] objs = tp.getPath();
+        OATreeNodeData tnd = (OATreeNodeData) objs[objs.length-1];
+        Object obj = tnd.getObject();
+
+        ObjectDef findObjectDef = (ObjectDef) hubFindObjectDef.getAO();
+        if (findObjectDef == null) return false;
+        if (!(obj instanceof LinkPropertyDef)) return false;
+        LinkPropertyDef lpd = (LinkPropertyDef) obj;
+        if (lpd.getObjectDef() != findObjectDef) return false;
+
+        return true;
+    }
+    
+    public void nodeSelected(TreeSelectionEvent e) {
+        // super.nodeSelected(e);  // dont call, it will set Active objects
+        TreePath tp = e.getNewLeadSelectionPath();
+        if (tp != null) {
+            Object[] objs = tp.getPath();
+            OATreeNodeData tnd = (OATreeNodeData) objs[objs.length-1];
+            Object obj = tnd.getObject();
+            
+            if (bRecursive && !(obj instanceof PropertyDef) && !(obj instanceof CalcPropertyDef)) {
+                if (bShowProps || bShowCalc) return;
+                // otherwise, select LinkDef
+                if (hubFindObjectDef != null) {
+                    ObjectDef findObjectDef = (ObjectDef) hubFindObjectDef.getAO();
+                    if (findObjectDef != null) {
+                        LinkPropertyDef lpd = (LinkPropertyDef) obj;
+                        if (lpd.getObjectDef() != findObjectDef) return;
+                    }
+                }
+            }
+                    
+            String propertyPath = "";
+            boolean bLookup = bLookupProperty;
+            
+            ObjectDef od = null;
+            
+            //was: for (int i=((lookupProperty||(objs.length==2))?1:2); i<objs.length; i++) {
+            for (int i=1; i<objs.length; i++) {
+                tnd = (OATreeNodeData) objs[i];
+                obj = tnd.getObject();
+                if (obj instanceof LinkPropertyDef) {
+                    if (propertyPath.length() > 0) propertyPath += '.';
+                    propertyPath += ((LinkPropertyDef) obj).getName();
+                }
+                else if (obj instanceof PropertyDef) {
+                    if (propertyPath.length() > 0) propertyPath += '.';
+                    propertyPath += ((PropertyDef) obj).getName();
+                }
+                else if (obj instanceof CalcPropertyDef) {
+                    if (propertyPath.length() > 0) propertyPath += '.';
+                    propertyPath += ((CalcPropertyDef) obj).getName();
+                }
+                else if (obj instanceof ObjectDef) {
+                    if (i==1) {
+                        od = (ObjectDef) obj; 
+                    }
+                    else {
+                        if (propertyPath.length() > 0) propertyPath += '.';
+                        propertyPath += ((ObjectDef) obj).getName();
+                    }
+                }
+            }
+            if (propertyPath.length() == 0) {
+                if (od == null) return;
+                bLookup = true;
+            }
+            
+            propertyPathCreated(propertyPath);
+        }
+    }
+
+    /** Can be overwritten to know when a new OAPropertyPath is created. */
+    public void propertyPathCreated(String propertyPath) {
+        
+    }
+
+    /**
+     * Used to select the tree node for a specific propertyPath
+     */
+    public void selectPropertyPath(String propertyPath) {
+
+        // convert path into objects used in tree
+        ArrayList<Object> al = new ArrayList<Object>();
+        
+        ObjectDef od = null;
+        
+        OATreeNodeData nodeData = (OATreeNodeData) getModel().getRoot();
+
+        if (!bShowAll) {
+            od = (ObjectDef) hubObjectDef.getAO();
+            if (od == null) return;
+            al.add(od);
+            nodeData = nodeData.getChild(0);
+        }
+        if (nodeData == null) return;
+        
+        StringTokenizer st = new StringTokenizer(propertyPath, ".");
+        for (int i=0; st.hasMoreTokens(); i++) {
+
+            String value = st.nextToken();
+            if (od == null) {
+                od = (ObjectDef) hubObjectDef.find(ObjectDef.PROPERTY_Name, value);
+                if (od == null) break;
+                int pos = hubObjectDef.getPos(od);
+                if (pos < 0) break;
+                for (int j=pos; j<nodeData.getChildCount(); j++) {
+                    nodeData = nodeData.getChild(j);
+                    if (nodeData.object == od) break;
+                    nodeData = null;
+                }
+                if (nodeData == null) break;
+                al.add(od);
+            }
+            else {
+                // try to find as a property
+                Hub h = od.getPropertyDefs();
+                PropertyDef prop = (PropertyDef) h.find(PropertyDef.PROPERTY_Name, value);
+                if (prop != null) {
+                    OATreeNodeData tnd = null;
+                    for (int j=0; j<nodeData.getChildCount(); j++) {
+                        tnd = nodeData.getChild(j);
+                        if (tnd.object == prop) break; 
+                        tnd = null;
+                    }
+                    if (tnd == null) break;
+                    nodeData = tnd;
+                    al.add(prop);
+                }
+                else {
+                    // try to find as a calc property
+                    h = od.getCalcPropertyDefs();
+                    CalcPropertyDef calc = (CalcPropertyDef) h.find(CalcPropertyDef.PROPERTY_Name, value);
+                    if (calc != null) {
+                        OATreeNodeData tnd = null;
+                        for (int j=0; nodeData != null && j<nodeData.getChildCount(); j++) {
+                            tnd = nodeData.getChild(j);
+                            if (tnd.object == calc) break;
+                            tnd = null;
+                        }
+                        if (tnd == null) break;
+                        nodeData = tnd;
+                        if (nodeData == null) break;
+                        al.add(calc);
+                    }
+                    else {
+                        // try to find as a link
+                        h = od.getLinkPropertyDefs();
+                        LinkPropertyDef lp = (LinkPropertyDef) h.find(LinkPropertyDef.PROPERTY_Name, value);
+                        if (lp != null) {
+                            OATreeNodeData tnd = null;
+                            for (int j=0; j<nodeData.getChildCount(); j++) {
+                                tnd = nodeData.getChild(j);
+                                if (tnd.object == lp) break;
+                                tnd = null;
+                            }
+                            if (tnd == null) break;
+                            nodeData = tnd;
+                            al.add(lp);
+                            od = lp.getObjectDef();
+                        }
+                        else {  // not found
+                            if (i == 0) {
+                                if (hubAdditionalObjectDefs != null) {
+                                    for (ObjectDef odx : hubAdditionalObjectDefs) {
+                                        if (value.equalsIgnoreCase(odx.getName())) {
+                                            al.clear();
+                                            al.add(odx);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        setSelectedNode(al.toArray());
+    }
+
+    class PropertyTreeNode extends OATreeNode {
+        MyTreeRenderer propertyTreeRenderer = new MyTreeRenderer();            
+
+        public PropertyTreeNode(String pp) {
+            super(pp);
+        }
+        
+        @Override
+        public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            if (value instanceof OATreeNodeData) {
+                value = ((OATreeNodeData) value).getObject();
+            }
+            if (!(value instanceof PropertyDef)) return comp;
+            PropertyDef pd = (PropertyDef) value;
+            
+            propertyTreeRenderer.add(comp, BorderLayout.CENTER);
+            propertyTreeRenderer.lbl1.setIcon( ((JLabel)comp).getIcon() );
+            ((JLabel)comp).setIcon(null);
+
+            return propertyTreeRenderer;
+        }
+    };
+
+    class MyTreeRenderer extends JComponent {
+        JLabel lbl1, lbl2;
+        public MyTreeRenderer() {
+            lbl1 = new JLabel();
+            lbl2 = new JLabel();
+            setLayout(new BorderLayout(1, 0));
+            add(lbl1, BorderLayout.WEST);
+            add(lbl2, BorderLayout.EAST);
+            setBorder(null);
+        }
+    };
+}
+

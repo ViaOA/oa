@@ -1,0 +1,32 @@
+
+>> see also frame
+
+
+    public JDialog getDialog() {
+        if (dialog != null) return dialog;
+        dialog = new JDialog(JfcDelegate.getDialogWindow(), DisplayName+" Search", ModalityType.APPLICATION_MODAL);
+        
+        dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+        
+        dialog.setLayout(new BorderLayout());
+        dialog.add(getMainPanel(), BorderLayout.CENTER);
+        dialog.pack();
+
+        Component comp = dialog.getParent();
+        if (comp != null) dialog.setLocationRelativeTo(comp);
+        
+        
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (!ItemSearchJfc.this.bSelected) {
+                    ItemSearchJfc.this.onCancel();
+                }
+            }@Override
+            public void windowOpened(WindowEvent e) {
+                ItemSearchJfc.this.bSelected = false;
+            }
+        });
+        return dialog;
+    }
+

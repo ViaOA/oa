@@ -1,0 +1,26 @@
+
+
+
+public static void ensureDefaultGUIFontSize() {
+    Toolkit toolkit = Toolkit.getDefaultToolkit();
+    Font guiFont = (Font) toolkit.getDesktopProperty("win.defaultGUI.font");
+    Font iconFont = (Font) toolkit.getDesktopProperty("win.icon.font");
+    if (guiFont.getSize() < iconFont.getSize()) {
+        invokeDeclaredMethod("setDesktopProperty", Toolkit.class, 
+            toolkit, "win.defaultGUI.font", iconFont);
+    }
+}
+
+*** >> calling a method that is not accessible
+private static void invokeDeclaredMethod(String methodName,
+        Class<?> clazz, Object instance, String propertyName,
+        Object propertyValue) {
+    try {
+        Method method = clazz.getDeclaredMethod(methodName, String.class, Object.class);
+        method.setAccessible(true);
+        method.invoke(instance, propertyName, propertyValue);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        LOG.finer("forcing desktop property failed " + e.getStackTrace());
+    }
+
+}

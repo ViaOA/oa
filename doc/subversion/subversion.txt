@@ -1,0 +1,146 @@
+
+
+20130119
+
+
+
+
+
+====================================================================
+Subversion with Apache WebServer 
+====================================================================
+see: http://svnbook.red-bean.com/en/1.5/svn.serverconfig.httpd.html
+see: http://svn.spears.at/
+
+
+Step 1 
+Copy the files mod_authz_svn.so and mod_dav_svn.so from C:\Program Files\Subversion\httpd into C:\Program Files\Apache Software foundation\Apache2.2\modules . 
+
+Step 2 
+Modify the C:\Program Files\Apache Software foundation\Apache2.2\conf\httpd.conf file: 
+
+Insert
+Add the modules to the Apache server 
+    LoadModule  dav_module             modules/mod_dav.so
+    LoadModule  dav_svn_module         modules/mod_dav_svn.so
+
+    <Location /svn>
+      DAV svn
+      SVNParentPath /projects/subversion
+      SVNListParentPath on
+      
+      AuthzSVNAccessFile svn-auth-file.txt
+      
+      AuthType Digest
+      AuthName "Subversion repository"
+      #?? AuthDigestDomain /svn/
+      AuthUserFile svn-auth-file
+      Require valid-user
+    </Location>
+    CustomLog logs/svn_logfile "%t %u %{SVN-ACTION}e" env=SVN-ACTION
+
+
+Step 3
+create svn user access file for apache
+    C:\Program Files\Apache Software Foundation\Apache2.2\bin>
+    htpasswd -c ../svn-auth-file vvia  
+    htpasswd ../svn-auth-file guest    (pw: guest, for read only)
+
+
+Step 4
+create svn access file  "svn-auth-file.txt"
+
+    [/]
+    vvia = rw
+    guest = r
+    * = r
+
+
+qqqqqq
+
+
+Add the modules to the Apache server 
+    LoadModule  dav_module             modules/mod_dav.so
+    LoadModule  dav_svn_module         modules/mod_dav_svn.so
+    LoadModule  authz_svn_module       modules/mod_authz_svn.so
+
+    
+Add the Access lines to the <Directory> sections, to protect your system.
+<Directory />
+    Options FollowSymLinks
+    AllowOverride None
+    Order Allow,Deny
+    Allow from 10.0.1
+</Directory>
+    
+    
+    
+
+
+qqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqq
+
+Installig Subversion:
+
+Windows Explorer: tortoise
+
+Eclipse plugin:
+
+
+Creating new repository:
+    c:\projets\subversion
+    create a directory, ex: "Superlite"
+        go into new dir
+    use windows explorer to create new repository
+    change:
+        conf\passwd
+            add: vvia = vince1
+        conf\svnserver.conf
+            anon-access = none
+            auth-access = write
+            password-db = passwd
+            
+
+
+Importing into repository:
+    make a copy of directory, ex: temp\superlite
+    right click on superlite, and choose import
+        choose superlite/trunk
+        
+
+Checkout from repository:
+    URL of repository:
+    svn://www.viaoa.com/vetplan/trunk
+    
+    Checkout directory:
+    C:\temp\test\vetplan  -> creates as "vetplan"
+    
+    
+    add other "ignored" folders
+        bin
+        dist
+        runtime
+
+
+
+
+connect to server, using svn repo browser:   svn://www.viaoa.com/viaoa
+
+
+>> Svn checkout from repository:
+    URL of repository:
+    svn://www.viaoa.com/vetplan/trunk
+    
+    Checkout directory:
+    C:\temp\test\vetplan  -> creates as "vetplan"
+    
+    
+    add other "ignored" folders
+        bin
+        dist
+        runtime
+
+
+Create tag
+    create directory "tags" at same level as "trunk"
+    ex: file:///C:/Projects/subversion/superlite/tags/version-1.0.0

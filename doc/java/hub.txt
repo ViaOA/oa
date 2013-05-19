@@ -1,0 +1,31 @@
+
+
+
+>> Hub copy
+
+    public Hub<TemplateCategory> getSortTemplateCategories() {
+        if (hubSortTemplateCategory == null) {
+            hubSortTemplateCategory = new Hub<TemplateCategory>(TemplateCategory.class);
+            new HubCopy(getTemplateCategories(), hubSortTemplateCategory, true);
+        }
+        return hubSortTemplateCategory;
+    }
+
+>> DetailHub
+
+    private DetailHub<ExamItem> hubExamItem;
+
+    public DetailHub<ExamItem> getExamItems() {
+        if (hubExamItem == null) {
+            hubExamItem = new DetailHub<ExamItem>(getExams(), Exam.PROPERTY_ExamItems);
+        }
+        return hubExamItem;
+    }
+    
+    
+    
+    
+    
+    
+    
+    

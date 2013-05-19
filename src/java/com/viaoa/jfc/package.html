@@ -1,0 +1,96 @@
+<!--
+-->
+
+<html>
+<body>
+
+Java Swing UI components, that bind to OAModels (OAObjects and Hub collections).
+<p>
+All binding is based on object names, property names, and property paths.
+<p>
+A <b>property path</b> is a dot (".") separated list of property names that are used to navigate 
+from a root Class to a property value.  To go from object to object, reference property names are used.
+<p>
+<b>Example:</b> Binding an Object to a GUI Component
+<p>
+&nbsp;&nbsp;&nbsp;<img src="doc-files/gui1.gif">
+<br>
+Bind an object property to a TextField component.
+<p>
+
+&nbsp;&nbsp;&nbsp;<img src="doc-files/gui3.gif">
+<br>
+Both objects are observable - they will send events whenever a change is made.
+Listeners can be set up to react to these events.
+
+<p>
+&nbsp;&nbsp;&nbsp;<img src="doc-files/gui4.gif">
+<br>
+A single object (connector) can be used to act as a controller, handling events and updating.
+<p>
+
+&nbsp;&nbsp;&nbsp;<img src="doc-files/gui5.gif">
+<br>
+Using OAReflective classes, a connector can be created that can work with any object OAModel.
+<p>
+
+Once the connector is created, it is used as the controlling object when subclassing the GUI component.
+In this example, the JTextField component is subclassed into OATextField.  OATextField has internal
+constructors and methods used to automatically bind any object property to it.
+<p>
+
+<b><i>Custom Renderers</i></b><br>
+The OA JFC Components have methods that make it easy to customize how the component renders an
+objects value.
+
+<p>
+<b><i>Data Converters</i></b><br>
+Most JFC Components display values using Strings.  The OAConverter Classes in the com.viaoa.Util package is
+used to automatically convert from Strings to any data type.  Custom Format Strings can be used to determine
+how the String should be displayed.
+<p>
+
+<b><i>Custom Editors</i></b><br>
+Some JFC Components, like JTable and JTree allow for custom Editors that can be used to edit the 
+value displayed in a Cell or Node.  The OA Components are set up so that any of the OA JFC Components
+can be used as a Column, thus it is able to act as the editor.
+<p>
+
+
+<b><i>Base Controller Class</i></b><br>
+OAGuiAdapter in the com.viaoa.hub package has most of the core functionality used by the
+GUI Components.  Methods for formatting, getting/setting property values, setting image/icons, etc.
+<p>
+
+<b><i>Automatically include Images/Icons</i></b><br>
+Components that can include an image/icon have methods for setting the property in the object
+that has the image name (setImageProperty).  Also, the directory where the images are stored can be
+set by using the setImagePath method.
+<p>
+
+<b><i>Component Width based on average character width</i></b><br>
+Most of the components width can be specified in character width, as opposed to pixels.
+<p>
+
+<b><i>Automatic support for Drag and Drop (DND)</i></b><br>
+Components allow for turning on/off drag and/or drop support.  Options also include if a dropped object
+should be removed from the source.
+<p>
+
+<b><i>Automatic support Undo/Redo</i></b><br>
+OA includes an OAUndoManager that OA Components automatically use for allowing Undo and Redo for edits/changes.
+<p>
+
+<b><i>Custom Combo Box popups</i></b><br>
+Dropdown/popup for ComboBox can be customized to show any component, that can also be bound to any object.
+<p>
+
+<b><i>Much more ...</i></b><br>
+Building software using OA GUI Components, OAObjects and Hubs can eliminate most fo the programming 
+associated with building GUI applications.
+<p>
+
+</body>
+</html>
+
+

@@ -1,0 +1,374 @@
+package com.viaoa.jsp;
+
+import java.util.Enumeration;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.viaoa.hub.Hub;
+import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectCacheDelegate;
+import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAObjectKeyDelegate;
+import com.viaoa.util.OAConv;
+import com.viaoa.util.OAString;
+
+/**
+ * Controls an html input type=checkbox
+ * 
+ * bind to hub, property
+ * show/hide, that can be bound to property
+ * enabled, that can be bound to property
+ * ajax submit on change
+ * 
+ * @author vvia
+ */
+public class OACheckBox implements OAJspComponent, OATableEditor {
+    private static final long serialVersionUID = 1L;
+
+    protected Hub<?> hub;
+    protected String id;
+    protected String propertyPath;
+    protected String visiblePropertyPath;
+    protected String enablePropertyPath;
+    protected OAForm form;
+    protected boolean bEnabled = true;
+    protected boolean bVisible = true;
+    protected boolean bAjaxSubmit;
+    protected boolean bSubmit;
+
+    private Object onValue=true, offValue=false;
+    private boolean bChecked;
+    private boolean bLastChecked;
+    protected String groupName;
+    private boolean bFocus;
+    protected String forwardUrl;
+    
+    public OACheckBox(String id, Hub hub, String propertyPath) {
+        this.id = groupName = id;
+        this.hub = hub;
+        setPropertyPath(propertyPath);
+    }
+    
+    public OACheckBox(String id) {
+        this.id = groupName = id;
+    }
+    
+    public void setOnValue(Object obj) {
+        this.onValue = obj;
+    }
+    public void setOffValue(Object obj) {
+        this.offValue = obj;
+    }
+    
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+    public String getGroupName() {
+        return groupName;
+    }
+    
+    @Override
+    public boolean isChanged() {
+        return (bChecked == bLastChecked);
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void reset() {
+        bChecked = bLastChecked;
+    }
+
+    @Override
+    public void setForm(OAForm form) {
+        this.form = form;
+    }
+    @Override
+    public OAForm getForm() {
+        return this.form;
+    }
+
+    @Override
+    public boolean _beforeSubmit() {
+        return true;
+    }
+
+    private boolean bWasSubmitted;
+    
+    @Override
+    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp) {
+
+        String s = req.getParameter("oacommand");
+        bWasSubmitted  = (id != null && id.equals(s));
+        
+        Enumeration enumx = req.getParameterNames();
+        String name = null;
+        OAObject obj = null;
+        bChecked = false;
+        for ( ; enumx.hasMoreElements(); ) {
+            name = (String) enumx.nextElement();
+
+            if (!name.equals(getGroupName())) continue; 
+
+            String[] values = req.getParameterValues(name);
+            if (values == null) continue;
+            boolean b = false;
+            for (String sx: values) {
+                if (sx.toUpperCase().startsWith(id.toUpperCase())) {
+                    b = true;
+                    name = sx;
+                    break;
+                }
+            }
+            if (!b) continue;
+            
+            if (name.equalsIgnoreCase(id)) {
+                bChecked = true;
+                if (hub != null) { 
+                    obj = (OAObject) hub.getAO();
+                }
+                break;
+            }
+            else {
+                if (name.toUpperCase().startsWith(id.toUpperCase()+"_")) {
+                    s = name.substring(id.length()+1);
+                    
+                    if (s.startsWith("guid.")) {
+                        s = s.substring(5);
+                        OAObjectKey k = new OAObjectKey(null, OAConv.toInt(s), true);
+                        obj = OAObjectCacheDelegate.get(hub.getObjectClass(), k);
+                    }
+                    else {
+                        obj = OAObjectCacheDelegate.get(hub.getObjectClass(), s);
+                    }
+                    bChecked = true;
+                    lastAjaxSent = null;  
+                    break;
+                }
+            }
+        }
+        if (hub != null) {
+            if (obj != null) updateProperty(obj, bChecked);
+        }
+        return bWasSubmitted;
+    }
+    
+    
+    protected void updateProperty(OAObject obj, boolean bSelected) {
+        if (obj != null) obj.setProperty(propertyPath, bChecked?onValue:offValue);
+    }
+
+    public boolean isChecked() {
+        return bChecked;
+    }
+    public void setChecked(boolean b) {
+        lastAjaxSent = null;  
+        this.bChecked = b;
+    }
+    
+    @Override
+    public String _afterSubmit(String forwardUrl) {
+        if (bWasSubmitted) {
+            String furl = getForwardUrl();
+            if (furl != null) forwardUrl = furl;
+            return onSubmit(forwardUrl); 
+        }
+        return forwardUrl;
+    }
+
+    @Override
+    public String onSubmit(String forwardUrl) {
+        return forwardUrl;
+    }
+
+    public void setForwardUrl(String forwardUrl) {
+        this.forwardUrl = forwardUrl;
+    }
+    public String getForwardUrl() {
+        return this.forwardUrl;
+    }
+    
+    public void setAjaxSubmit(boolean b) {
+        bAjaxSubmit = b;
+    }
+    public boolean getAjaxSubmit() {
+        return bAjaxSubmit;
+    }
+    public void setSubmit(boolean b) {
+        bSubmit = b;
+    }
+    public boolean getSubmit() {
+        return bSubmit;
+    }
+    
+    @Override
+    public String getScript() {
+        lastAjaxSent = null;
+        StringBuilder sb = new StringBuilder(1024);
+        sb.append(getAjaxScript());
+        // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
+        if (bAjaxSubmit) {
+            sb.append("$('#"+id+"').change(function() {$('#oacommand').val('"+id+"'); ajaxSubmit(); return false;});\n");
+        }
+        else if (getSubmit()) {
+            sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+        }
+        if (getSubmit() || getAjaxSubmit()) {
+            sb.append("$('#"+id+"').addClass('oaSubmit');\n");
+        }
+        if (bFocus) {
+            sb.append("$('#"+id+"').focus();\n");
+            bFocus = false;
+        }
+
+        // sb.append("$('#"+id+"').on('blur', ajaxSubmit);\n");
+        String js = sb.toString();
+        return js;
+    }
+
+    @Override
+    public String getVerifyScript() {
+        return null;
+    }
+    private String name;
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    private String lastAjaxSent;
+    
+    @Override
+    public String getAjaxScript() {
+        String js = getThisJavaScript();
+        
+        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
+        else lastAjaxSent = js;
+        return js;
+    }
+
+    protected String getThisJavaScript() {
+        StringBuilder sb = new StringBuilder(1024);
+        
+        String ids = id;
+        boolean bValue = false;
+        
+        if (hub != null && !OAString.isEmpty(propertyPath)) {
+            OAObject obj = (OAObject) hub.getAO();
+            if (obj != null) {
+                OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
+                Object[] objs = key.getObjectIds();
+                if (objs != null && objs.length > 0 && objs[0] != null) {
+                    ids += "_" + objs[0];
+                }
+                else {
+                    ids += "_guid."+key.getGuid();
+                }
+            }
+            
+            if (obj != null) {
+                Object objx = obj.getProperty(propertyPath);
+                bValue = (onValue == objx || (onValue != null && onValue.equals(objx)));
+            }
+            else {
+                bValue = (onValue == obj || (onValue != null && onValue.equals(obj)));
+            }
+        }
+        else {
+            bValue = isChecked();
+        }
+
+        sb.append("$('#"+id+"').attr('name', '"+groupName+"');\n");
+        sb.append("$('#"+id+"').attr('value', '"+ids+"');\n");
+
+        bLastChecked = bValue;        
+        
+        if (bValue) sb.append("$('#"+id+"').attr('checked', 'checked');\n");
+        else sb.append("$('#"+id+"').removeAttr('checked');\n");
+        
+        if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
+        else sb.append("$('#"+id+"').attr('disabled', 'disabled');\n");
+
+        if (bVisible) sb.append("$('#"+id+"').show();");
+        else sb.append("$('#"+id+"').hide();");
+
+
+        String js = sb.toString();
+        return js;
+    }
+    
+    
+    @Override
+    public void setEnabled(boolean b) {
+        this.bEnabled = b;
+    }
+    @Override
+    public boolean getEnabled() {
+        if (!bEnabled) return false;
+        if (hub == null) return bEnabled;
+
+        OAObject obj = (OAObject) hub.getAO();
+        if (obj == null) return false;
+        
+        if (OAString.isEmpty(enablePropertyPath)) return bEnabled;
+        
+        Object value = obj.getPropertyAsString(enablePropertyPath);
+        boolean b = OAConv.toBoolean(value);
+        return b;
+    }
+
+    @Override
+    public void setVisible(boolean b) {
+        lastAjaxSent = null;  
+        this.bVisible = b;
+    }
+    @Override
+    public boolean getVisible() {
+        if (!bVisible) return false;
+        if (hub == null) return bVisible;
+        
+        if (OAString.isEmpty(visiblePropertyPath)) return bVisible;
+        
+        OAObject obj = (OAObject) hub.getAO();
+        if (obj == null) return false;
+        
+        Object value = obj.getPropertyAsString(visiblePropertyPath);
+        boolean b = OAConv.toBoolean(value);
+        return b;
+    }
+
+
+    public String getPropertyPath() {
+        return propertyPath;
+    }
+    public void setPropertyPath(String propertyPath) {
+        this.propertyPath = propertyPath;
+    }
+    public String getVisiblePropertyPath() {
+        return visiblePropertyPath;
+    }
+    public void setVisiblePropertyPath(String visiblePropertyPath) {
+        this.visiblePropertyPath = visiblePropertyPath;
+    }
+    public String getEnablePropertyPath() {
+        return enablePropertyPath;
+    }
+    public void setEnablePropertyPath(String enablePropertyPath) {
+        this.enablePropertyPath = enablePropertyPath;
+    }
+    public void setFocus(boolean b) {
+        this.bFocus = b;
+    }
+
+    @Override
+    public String getTableEditorHtml() {
+        String s = "<input id='"+id+"' type='checkbox'>";
+        return s;
+    }
+}

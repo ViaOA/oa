@@ -1,0 +1,75 @@
+
+        pan = new JPanel(new BorderLayout());
+        pan.add(new OAScroller(getHealthMapImagePanelController().getToolBar()), BorderLayout.NORTH);
+        pan.add(new JScrollPane(getHealthMapImagePanelController().getOAImagePanel()), BorderLayout.CENTER);
+        tab.addTab("HealthMap Image", icon, new JScrollPane(pan), "Image used on HealthMap report");
+
+
+----------
+
+
+    public OAImagePanelController getIconImagePanelController() {
+        if (controlIconImagePanel != null) return controlIconImagePanel;
+        
+        controlIconImagePanel = new OAImagePanelController() {
+            @Override
+            public void onSave() {
+                // replaces saving to file
+                saveImage();                    
+            }
+            @Override
+            protected void onDelete() {
+                super.onDelete();
+                saveImage();  // image will be null
+            }
+            @Override  // an image has been choosen from fileChooser
+            public void setImage(String imageName, Image image) {
+                super.setImage(imageName, image);
+                saveImage();
+            }
+            @Override
+            protected void onImageChanged() {
+                saveImage();
+            }
+            protected void saveImage() {
+                Client Client = (Client) getHub().getAO();
+                if (Client == null) return;
+                Image image = controlIconImagePanel.getBufferedImage();
+
+                ImageStore imgStore = Client.getIconImageStore();
+                if (imgStore == null) {
+                    if (image == null) return;
+                    imgStore = new ImageStore();
+                    Client.setIconImageStore(imgStore);
+                }
+                ImageStoreDelegate.setImage(imgStore, image);
+            }
+        };
+        EnabledController ec = new EnabledController(null) {
+            @Override
+            protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+                ClientJfc.this.controlIconImagePanel.setEnabled(bIsCurrentlyEnabled);
+                return bIsCurrentlyEnabled;
+            }
+        };
+        ec.add(getHub());
+        ec.add(ModelDelegate.getUserAccessHub(), UserAccess.PROPERTY_IsUser);
+        
+        
+        //create hubExam listener to set Image on changeAO
+        getHub().addHubListener(new HubListenerAdapter() {
+            @Override
+            public void afterChangeActiveObject(HubEvent evt) {
+                Image img = null;
+                Client Client = getHub().getAO();
+                if (Client != null) {
+                    ImageStore imgStore = Client.getIconImageStore();
+                    if (imgStore != null) {
+                        img = ImageStoreDelegate.getImage(imgStore);
+                    }
+                }
+                controlIconImagePanel.setImage(img);
+            }
+        });
+        return controlIconImagePanel;
+    }

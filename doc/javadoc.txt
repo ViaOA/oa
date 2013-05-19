@@ -1,0 +1,7 @@
+
+
+Use this for links within text/description
+    {@link LogFactory#setLogFactory}
+
+
+

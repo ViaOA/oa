@@ -1,0 +1,60 @@
+
+
+        JToolBar toolBar = new JToolBar();
+        toolBar.setMargin(new Insets(0,5,0,0));
+        toolBar.setBorderPainted(true);
+        toolBar.setFloatable(false);
+
+        JButton cmd;
+
+        ButtonGroup bg = new ButtonGroup();
+        
+        JToggleButton tog = new JToggleButton(Resource.getJarIcon("ClientText.gif"));
+        bg.add(tog);
+        OAButton.setup(tog);
+        tog.setToolTipText("Client Description");
+        tog.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(cardPanel, "client");
+                setActiveEditor(htmlClient);
+            }
+        });
+        toolBar.add(tog);
+        tog.setSelected(true);
+
+        tog = new JToggleButton(Resource.getJarIcon("InstructionText.gif"));
+        bg.add(tog);
+        OAButton.setup(tog);
+        tog.setToolTipText("Client Instructions/Prescription Information");
+        tog.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(cardPanel, "instruction");
+                setActiveEditor(htmlInstruction);
+            }
+        });
+        toolBar.add(tog);
+
+
+        tog = new JToggleButton(Resource.getJarIcon("MedicalText.gif"));
+        bg.add(tog);
+        OAButton.setup(tog);
+        tog.setToolTipText("Medical Description");
+        tog.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(cardPanel, "tech");
+                setActiveEditor(htmlMedical);
+            }
+        });
+        toolBar.add(tog);
+
+        tog = new JToggleButton(Resource.getJarIcon("CommentText.gif"));
+        bg.add(tog);
+        OAButton.setup(tog);
+        tog.setToolTipText("Comments");
+        tog.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(cardPanel, "comment");
+                setActiveEditor(htmlComment);
+            }
+        });
+        toolBar.add(tog);

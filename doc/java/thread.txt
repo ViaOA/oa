@@ -1,0 +1,91 @@
+
+Volatile
+   http://www.ibm.com/developerworks/java/library/j-jtp06197/index.html
+   http://blog.webscale.co.in/?p=19
+   double-check locking
+   
+
+
+>> Thread
+
+
+
+>> SwingWorker
+    ** see swing/swingworker.txt
+
+
+>> Future<V>
+    // result from an executed service
+
+    cancel(boolean mayInterruptIfRunning) 
+    
+    get()
+    get(long timeout, TimeUnit unit) 
+    
+    isCancelled, isDone
+
+
+>> Callable<V> 
+    // interface with callable method
+    call()
+    
+
+>> FutureTask<V>
+
+    FutureTask<String> future =
+       new FutureTask<String>(new Callable<String>() {
+         public String call() {
+           return searcher.search(target);
+       }});
+     executor.execute(future);
+     
+     <V> get()
+
+
+>> ExecutorCompletionService<V>
+    // submits x amount of callable objects to a threads
+    
+    // ex:  r = ecs.take().get();  -- take will get next executeThread callable object
+    
+    
+>> Executors
+    // factory
+    // converts runnable to callable
+    // thread factory
+    // ExecutorService
+    // privilegedCallable
+    // single thread factory
+    
+    
+>> ThreadPoolExecutor
+    // create using Executors factory to create
+    
+
+>> StackTrace  
+
+    public static String getAllStackTraces() {
+        String result = "";
+        String s = "DumpAllStackTraces "+(new OADateTime());
+        result += s + "\n";
+
+        Map<Thread,StackTraceElement[]> map = Thread.getAllStackTraces();
+        Iterator it = map.entrySet().iterator();
+        for (int i=1 ; it.hasNext(); i++) {
+            Map.Entry me = (Map.Entry) it.next();
+            Thread t = (Thread) me.getKey();
+            s = i+") " + t.getName();
+            result += s + "\n";
+            
+            StackTraceElement[] stes = (StackTraceElement[]) me.getValue();
+            if (stes == null) continue;
+            for (StackTraceElement ste : stes) {
+                s = "  "+ste.getClassName()+" "+ste.getMethodName()+" "+ste.getLineNumber();
+                result += s + "\n";
+            }
+        }
+        return result;
+    }
+    
+    
+    
+    

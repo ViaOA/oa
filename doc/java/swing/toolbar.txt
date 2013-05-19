@@ -1,0 +1,375 @@
+
+
+        JToolBar tb = new JToolBar(JToolBar.HORIZONTAL);
+        tb.setFloatable(false);
+        tb.setRollover(true);
+
+
+>> User
+        JToolBar toolBar = new JToolBar();
+        toolBar.setBorderPainted(false);
+        toolBar.setFloatable(true);
+        toolBar.setRollover(true);
+        
+        toolBar.add(new JLabel(UserJfc.DisplayName+":"));
+        toolBar.add(Box.createHorizontalStrut(7));
+        OAComboBox cbo = ui.createComboBox();
+        cbo.setMaximumSize(cbo.getPreferredSize());
+        toolBar.add(cbo);
+        toolBar.add(Box.createHorizontalStrut(24));
+        
+        toolBar.add(new JLabel("Search:"));
+        toolBar.add(Box.createHorizontalStrut(7));
+        toolBar.add(ui.createAutoCompleteTextField());
+        toolBar.add(ui.createSearchButton());
+        toolBar.add(Box.createHorizontalStrut(24));
+        
+        OACheckBox chk = new OACheckBox(ModelDelegate.getUserAccessHub(), UserAccess.PROPERTY_IsAdmin);
+        chk.setText("Admin access");
+        toolBar.add(chk);
+        toolBar.add(Box.createHorizontalGlue());
+        
+        frm.add(new OAScroller(toolBar), BorderLayout.NORTH);
+
+
+
+>> ItemType
+        JToolBar toolBar = new JToolBar();
+        toolBar.setBorderPainted(false);
+        toolBar.setFloatable(true);
+        toolBar.setRollover(true);
+        
+        toolBar.add(new JLabel(ItemTypeJfc.DisplayName+":"));
+        toolBar.add(Box.createHorizontalStrut(7));
+        OAComboBox cbo = ui.createComboBox();
+        cbo.setMaximumSize(cbo.getPreferredSize());
+        toolBar.add(cbo);
+        toolBar.add(Box.createHorizontalStrut(24));
+
+        OACheckBox chk = new OACheckBox(ModelDelegate.getUserAccessHub(), UserAccess.PROPERTY_IsAdmin);
+        chk.setText("Admin access");
+        toolBar.add(chk);
+        toolBar.add(Box.createHorizontalGlue());
+
+        frm.add(new OAScroller(toolBar), BorderLayout.NORTH);
+
+
+
+>> OABuilderFrame
+
+    protected void setupToolBar() {
+        if (toolBar != null) return;
+        toolBar = new JToolBar();
+        // toolBar.setMargin(new Insets(1,3,1,1));
+         toolBar.setBorderPainted(false);
+        toolBar.setFloatable(true);
+        toolBar.setRollover(true);
+
+        URL url;
+
+        url = OABuilderFrame.class.getResource("image/New.gif");
+        cmdNewModel = new OAButton(new ImageIcon(url));
+        cmdNewModel.setToolTipText("Create a new Object Model");
+        cmdNewModel.setFocusable(false);
+        cmdNewModel.setToolTipText("Create a new Model");
+        toolBar.add(cmdNewModel);
+
+        url = OABuilderFrame.class.getResource("image/Open.gif");
+        cmdOpenModel = new JButton(new ImageIcon(url));
+        cmdOpenModel.setToolTipText("Open an Object Model from file");
+        cmdOpenModel.setFocusable(false);
+        toolBar.add(cmdOpenModel);
+
+        url = OABuilderFrame.class.getResource("image/Save.gif");
+        cmdSaveModel = new JButton(new ImageIcon(url));
+        cmdSaveModel.setToolTipText("Save Object Model to file");
+        cmdSaveModel.setFocusable(false);
+        toolBar.add(cmdSaveModel);
+
+        toolBar.addSeparator();
+
+        url = OABuilderFrame.class.getResource("image/Cut.gif");
+        cmdCut = new JButton(new ImageIcon(url));
+        cmdCut.setFocusable(false);
+        cmdCut.setToolTipText("Cut to Clipboard");
+        toolBar.add(cmdCut);
+
+        url = OABuilderFrame.class.getResource("image/Copy.gif");
+        cmdCopy = new JButton(new ImageIcon(url));
+        cmdCopy.setFocusable(false);
+        cmdCopy.setToolTipText("Copy to Clipboard");
+        toolBar.add(cmdCopy);
+
+        url = OABuilderFrame.class.getResource("image/Paste.gif");
+        cmdPaste = new JButton(new ImageIcon(url));
+        cmdPaste.setToolTipText("Paste from Clipboard");
+        cmdPaste.setFocusable(false);
+        toolBar.add(cmdPaste);
+
+        toolBar.add(Box.createHorizontalGlue());
+        
+        
+        toolBar.addSeparator();
+
+        url = OABuilderFrame.class.getResource("image/Help.gif");
+        cmdHelp = new JButton(new ImageIcon(url));
+        cmdHelp.setFocusable(false);
+        cmdHelp.setToolTipText("OABuilder Help");
+        toolBar.add(cmdHelp);
+
+        url = OABuilderFrame.class.getResource("image/CSHelp.gif");
+        cmdContextHelp = new JButton(new ImageIcon(url));
+        cmdContextHelp.setToolTipText("Context sensitive help");
+        cmdContextHelp.setFocusable(false);
+        toolBar.add(cmdContextHelp);
+    }
+
+>> OABuilder desktop
+
+    protected JToolBar getDesktopToolBar() {
+        if (toolBarWorkspace != null) return toolBarWorkspace;
+        JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL) {
+            /* 20100925 was: before OAScroller
+            public Dimension getPreferredSize() {
+                // HACK: I had to add a toolbar filler that has max width of 32k so that the comboboxes are not resized
+                //            when the frame width is increased.
+                Dimension d = super.getPreferredSize();
+                d.width = 50;
+                return d;
+            }
+            */
+        };
+        this.toolBarWorkspace = toolBar; 
+        
+        // toolBar.setMargin(new Insets(1,3,1,1));
+        // toolBar.setBorderPainted(true);
+        toolBar.setFloatable(false);
+        toolBar.setRollover(true);
+
+        URL url;
+
+        url = OABuilderFrame.class.getResource("image/NewObject.gif");
+        cmdNewObject = new OAButton(new ImageIcon(url));
+        // cmdNewObject = new OAButton(Resource.getJarIcon("objectIcon.gif"));
+        cmdNewObject.setToolTipText("Create a new Object");
+        cmdNewObject.setFocusable(false);
+        toolBar.add(cmdNewObject);
+
+        url = OABuilderFrame.class.getResource("image/LinkMode.gif");
+        cmdLinkMode = new JToggleButton(new ImageIcon(url));
+        // cmdLinkMode = new JToggleButton(Resource.getJarIcon("linkIcon.gif"));
+        cmdLinkMode.setToolTipText("Link Objects together");
+        cmdLinkMode.setFocusable(false);
+        toolBar.add(cmdLinkMode);
+
+        cmdPropertyEditor = new JButton(Resource.getJarIcon("Property.gif"));
+        cmdPropertyEditor.setFocusable(false);
+        cmdPropertyEditor.setToolTipText("Properties");
+        toolBar.add(cmdPropertyEditor);
+
+        toolBar.addSeparator();
+
+        url = OABuilderFrame.class.getResource("image/PrintPreview.gif");
+        cmdPrintPreview = new JButton(new ImageIcon(url));
+        cmdPrintPreview.setToolTipText("Print Preview Object Model");
+        cmdPrintPreview.setFocusable(false);
+        toolBar.add(cmdPrintPreview);
+
+        url = OABuilderFrame.class.getResource("image/Print.gif");
+        cmdPrint = new JButton(new ImageIcon(url));
+        cmdPrint.setToolTipText("Print Object Model");
+        cmdPrint.setFocusable(false);
+        toolBar.add(cmdPrint);
+
+        url = OABuilderFrame.class.getResource("image/pdf.gif");
+        cmdSaveAsPdf = new JButton(new ImageIcon(url));
+        cmdSaveAsPdf.setToolTipText("Save as Pdf file");
+        cmdSaveAsPdf.setFocusable(false);
+        toolBar.add(cmdSaveAsPdf);
+        
+        
+        toolBar.addSeparator();
+        toolBar.add(Box.createHorizontalStrut(15));         
+        
+        JLabel lbl = new JLabel(" scale: ");
+        lbl.setToolTipText("Zoom In/Out");
+        toolBar.add(lbl);
+
+        cboScale = new OAComboBox() {
+            @Override
+            public Dimension getMaximumSize() {
+                Dimension d = getPreferredSize();
+                return d;
+            }
+        };
+        cboScale.setToolTipText("Zoom In/Out");
+        cboScale.setColumns(6);
+        cboScale.setPopupColumns(8);
+        cboScale.setFocusable(false);
+        cboScale.setUndoDescription("Change to model scale");
+        toolBar.add(cboScale);
+
+        toolBar.add(Box.createHorizontalStrut(12));         
+
+        lbl = new JLabel(" Model: ");
+        lbl.setToolTipText("List of Models that are currently open");
+        toolBar.add(lbl);
+        cboModel = new OAComboBox() {
+            @Override
+            public Dimension getMaximumSize() {
+                Dimension d = getPreferredSize();
+                return d;
+            }
+        };
+        cboModel.setColumns(22);
+        cboModel.setPopupColumns(34);
+        cboModel.setFocusable(false);
+        cboModel.setEnableUndo(false);
+        toolBar.add(cboModel);
+        toolBar.add(Box.createHorizontalStrut(10));
+
+        url = OAButton.class.getResource("icons/find.png");
+        lbl = new JLabel(new ImageIcon(url));
+        lbl.setToolTipText("Search for Object by name");
+        toolBar.add(lbl);
+
+        OATextFieldAutoCompleteList txtac = new OATextFieldAutoCompleteList() {
+            @Override
+            protected String[] getSearchData(String text, int offset) {
+                return OABuilderFrame.this.getSearchData(text, offset);
+            }
+            @Override
+            protected Object getPropertyValueForText(String code) {
+                return OABuilderFrame.this.getPropertyValueForText(code);
+            }
+            @Override
+            protected String getClosestMatch(String value) {
+                return OABuilderFrame.this.getClosestMatch(value);
+            }
+            @Override
+            public Dimension getMaximumSize() {
+                Dimension d = getPreferredSize();
+                d.width += 24;
+                return d;
+            }
+        };
+        txtac.setColumns(11);
+        txtac.setToolTipText("Search for Object by name");
+        toolBar.add(txtac);
+        
+            
+        toolBar.addSeparator();
+        toolBar.add(Box.createHorizontalStrut(9));         
+        
+        toolBar.add(getObjectColorButton());
+        
+        toolBar.add(Box.createHorizontalStrut(12));         
+        
+        ArrayList<JButton> al = new ArrayList<JButton>(20); 
+        toolBar.add(new JLabel("Size: "));
+        
+        OAMultiButtonSplitButton cmdSplit = new OAMultiButtonSplitButton();
+        cmdSplit.setAllowChangeMasterButton(true);
+        cmdSplit.setShowTextInSelectedButton(false);
+        OAButton.setup(cmdSplit);
+        toolBar.add(cmdSplit);
+        
+        OAButton cmd = new OAButton(Resource.getJarIcon("alignVert.gif"));
+        cmd.setToolTipText("Resize selected objects to Largest Height");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SizeLargestHeight);
+        al.add(cmd);
+        cmdSplit.addButton(cmd, true);
+
+        cmd = new OAButton(Resource.getJarIcon("alignHort.gif"));
+        cmd.setToolTipText("Resize selected objects to Largest Width");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SizeLargestWidth);
+        cmdSplit.addButton(cmd);
+        al.add(cmd);
+
+        cmd = new OAButton(Resource.getJarIcon("alignBottom.gif"));
+        cmd.setToolTipText("Resize selected objects to Smallest Height");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SizeSmallestHeight);
+        al.add(cmd);
+        cmdSplit.addButton(cmd);
+
+        cmd = new OAButton(Resource.getJarIcon("alignLeft.gif"));
+        cmd.setToolTipText("Resize selected objects to Smallest Width");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SizeSmallestWidth);
+        al.add(cmd);
+        cmdSplit.addButton(cmd);
+
+       toolBar.add(Box.createHorizontalStrut(12));         
+        
+        //***************** Align
+        toolBar.add(new JLabel("Align: "));
+        cmdSplit = new OAMultiButtonSplitButton();
+        cmdSplit.setAllowChangeMasterButton(true);
+        cmdSplit.setShowTextInSelectedButton(false);
+        OAButton.setup(cmdSplit);
+        toolBar.add(cmdSplit);
+
+        cmd = new OAButton(Resource.getJarIcon("alignTop.gif"));
+        cmd.setToolTipText("Align selected objects to the Top most selected object");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_AlignTop);
+        al.add(cmd);
+        cmdSplit.addButton(cmd, true);
+
+        cmd = new OAButton(Resource.getJarIcon("alignLeft.gif"));
+        cmd.setToolTipText("Align selected objects to the Left most selected object");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_AlignLeft);
+        al.add(cmd);
+        cmdSplit.addButton(cmd);
+
+        cmd = new OAButton(Resource.getJarIcon("alignBottom.gif"));
+        cmd.setToolTipText("Align selected objects to the Bottom most selected object");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_AlignBottom);
+        al.add(cmd);
+        cmdSplit.addButton(cmd);
+        
+        cmd = new OAButton(Resource.getJarIcon("alignRight.gif"));
+        cmd.setToolTipText("Align selected objects to the Right most selected object");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_AlignRight);
+        al.add(cmd);
+        cmdSplit.addButton(cmd);
+
+        toolBar.add(Box.createHorizontalStrut(12));         
+        
+
+        //***************** Space
+        toolBar.add(new JLabel("Spacing: "));
+        cmdSplit = new OAMultiButtonSplitButton();
+        cmdSplit.setAllowChangeMasterButton(true);
+        cmdSplit.setShowTextInSelectedButton(false);
+        OAButton.setup(cmdSplit);
+        toolBar.add(cmdSplit);
+        cmd = new OAButton(Resource.getJarIcon("alignVert.gif"));
+        cmd.setToolTipText("Evenly space selected objects Vertically");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SpaceVert);
+        al.add(cmd);
+        cmdSplit.addButton(cmd, true);
+
+        cmd = new OAButton(Resource.getJarIcon("alignHort.gif"));
+        cmd.setToolTipText("Evenly space selected objects Hortizontally");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SpaceHort);
+        al.add(cmd);
+        cmdSplit.addButton(cmd);
+
+        
+        
+        toolBar.add(Box.createHorizontalGlue());
+        
+        /* was:  20100925
+        // Hack: this will keep the comboBoxes from getting resized to a larger width.
+        Dimension minSize = new Dimension(5, 1);
+        Dimension prefSize = new Dimension(Short.MAX_VALUE, 1);
+        Dimension maxSize = new Dimension(Short.MAX_VALUE, 1);
+        toolBar.add(new Box.Filler(minSize, prefSize, maxSize));
+        */
+
+        splitButtons = new JButton[al.size()];
+        al.toArray(splitButtons);
+        
+        return toolBar;
+    }
+    
+    

@@ -1,0 +1,233 @@
+
+===== Links to ALL ==========
+
+git: https://gitorious.intcx.net/marketrouter/gsmr
+        pw: Object7&
+
+Maven repo: https://maven.intcx.net
+            https://maven.intcx.net/content/repositories/
+            https://maven.intcx.net/content/repositories/public
+            https://maven.intcx.net/content/repositories/releases
+            https://maven.intcx.net/content/repositories/snapshots
+            https://maven.intcx.net/content/repositories/snapshots/com/theice/gsmr/
+
+******
+https://maven.intcx.net/content/groups/public-snapshots/com/theice/msg/icemessage/12.700.01-SNAPSHOT/
+
+Jenkins moving IDM - (oracle)
+    https://rv-mg-mind-02.intcx.net/login?from=/
+
+Identity manager
+    https://aaa.intcx.net/oim/faces/pages/Login.jspx?_afrLoop=27740081764341418&_afrWindowMode=0&_adf.ctrl-state=12zjd07bi8_4
+    vvia, Object1*
+    name of pet = Mayling, fav movie=Bucket List
+
+
+
+Jenkins: https://coin.intcx.net/job/gsmr/
+
+Hudson: https://rv-mg-mind-02.intcx.net
+        pick environment to deploy to
+
+
+
+==== Documentation ==========
+    http://www.sonatype.com/books/mvnref-book/reference/
+POM
+    http://maven.apache.org/ref/3.0.4/maven-model/index.html
+    http://maven.apache.org/pom.html (not as good)
+=============================
+
+Starteam
+    https://maven.intcx.net/content/repositories/releases/com/cpex/starteam/
+
+LBM
+    https://maven.intcx.net/content/repositories/public/com/29west/lbm/LBM-SunOS64-lib/5.1/
+        LBM-SunOS64-lib-5.1.zip
+    
+    https://maven.intcx.net/content/repositories/public/com/29west/ums/5.1/
+        ums-5.1.jar
+------------
+
+Notes with Chris Holden:
+    Build -> https://coin.intcx.net/job/gsmr/ 
+    Deploy for MRTest -> https://pdk-np-mind-01/view/MRTest/job/MRTest%20GSMR/ 
+
+
+GIT
+    https://gitorious.intcx.net/marketrouter/gsmr
+    Vincent.Via@theice.com  Object7&
+
+? https://rv-mg-mind-01.intcx.net/
+
+
+GSMR project
+    /pom.xml
+        parent that has child modules
+        defines repos
+    gsmr/pom.xml
+        creates gsmr.jar
+    gsmr-assembly
+
+assembly
+    defines all installed files
+    resources.xml - where to put the files
+
+build = https://coin.intcx.net/job/gsmr
+    runs mvn clean deploy
+
+Hudson - 
+    used to deploy
+    need to get access from CM
+    separate url per environment 
+    https://rv-mg-mind-01.intcx.net
+
+ICEgsmr - Solaris packaging
+    Scott M wrote plugin for this
+    
+========================    
+
+
+ICE Maven repo
+    https://maven.intcx.net
+    https://maven.intcx.net/content/repositories/releases
+
+Plugins:  http://maven.apache.org/plugins/index.html
+
+POM:  http://maven.apache.org/pom.html
+
+Phases:  run goals, ex: jar:jar
+
+    validate: validate the project is correct and all necessary information is available
+    compile: compile the source code of the project
+    test: test the compiled source code using a suitable unit testing framework. These tests should not require the code be packaged or deployed
+    package: take the compiled code and package it in its distributable format, such as a JAR.
+    integration-test: process and deploy the package if necessary into an environment where integration tests can be run
+    verify: run any checks to verify the package is valid and meets quality criteria
+    install: install the package into the local repository, for use as a dependency in other projects locally
+    deploy: done in an integration or release environment, copies the final package to the remote repository for sharing with other developers and projects.
+    clean: cleans up artifacts created by prior builds
+    site: generates site documentation for this project
+        
+target directory - output
+
+
+mvn install -X
+    > X is the debug option
+
+
+describe a plug-in
+    mvn help:describe -Dplugin=exec -Dfull
+    
+        http://www.sonatype.com/books/mvnex-book/reference/customizing-sect-custom-exec.html    
+
+
+mvn dependency:resolve
+
+mvn dependency:tree
+
+mvn test
+    included when running package or install
+
+mvn compile
+
+
+Surefire unit tests
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>   <-- ignore failures -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+    see: http://maven.apache.org/plugins/maven-surefire-plugin/
+    
+
+skipping tests
+    mvn install -Dmaven.test.skip=true
+      or:
+      
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </build>
+          
+    
+Exec plugin
+    see: http://www.sonatype.com/books/mvnex-book/reference/customizing-sect-custom-exec.html
+    
+
+Assemble    
+    mvn install assembly:assembly
+    see: http://www.sonatype.com/books/mvnex-book/reference/customizing-sect-custom-packaged.html
+
+
+Servlet, JSP, Jetty plugins, dependencies
+    see: http://www.sonatype.com/books/mvnex-book/reference/web-sect-adding-j2ee-depend.html
+    mvn jetty:run
+    
+
+20121106 Tuesday notes
+
+    *** POM model description ***
+        http://maven.apache.org/ref/3.0.4/maven-model/maven.html
+        
+    *** directory layout ***        
+        http://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html        
+        
+20130416 Tuesday
+    Eclipse
+        plugin:
+            http://maven.apache.org/eclipse-plugin.html
+        
+            *** http://maven.apache.org/plugins/maven-eclipse-plugin/
+                
+        
+        tutorial:
+            ** http://www.sonatype.com/books/m2eclipse-book/reference/
+            http://viralpatel.net/blogs/generate-dynamic-web-project-maven-eclipse-wtp/
+        
+            http://stackoverflow.com/questions/310720/get-source-jar-files-attached-to-eclipse-for-maven-managed-dependencies
+        mvn eclipse:eclipse -DdownloadSources=true
+        mvn eclipse:eclipse -DdownloadJavadocs=true
+        mvn eclipse:eclipse -DdownloadSources -DdownloadJavadocs        
+    
+        <project>
+            ...
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-eclipse-plugin</artifactId>
+                        <configuration>
+                            <downloadSources>true</downloadSources>
+                            <downloadJavadocs>true</downloadJavadocs>
+                            ... other stuff ...
+                        </configuration>
+                    </plugin>
+                </plgins>
+            </build>
+            ...
+        </project>    
+        
+
+
+
+
+
+
+
+
+     

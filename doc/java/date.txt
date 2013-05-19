@@ -1,0 +1,23 @@
+
+See: format.txt
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HHmmss");
+        
+
+
+exam.getDate(),OADateTime.getFormat(java.text.DateFormat.LONG)
+
+> 
+    SimpleDateFormat fmt = new SimpleDateFormat("MM/dd HH:mm:ss.SSS");
+    fmt.format(new Date(_receiveBeginTime))
+
+
+
+    Date beginDate = new Date(101, 0, 1, 0, 0, 0);  // Jan 1, 2001
+    
+    Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.getDefault());
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(beginDate);
+    cal.set(Calendar.MILLISECOND, 0);
+    beginDate = cal.getTime();
+

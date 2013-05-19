@@ -1,0 +1,65 @@
+
+
+        tabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JTabbedPane t = (JTabbedPane) e.getSource();
+                int x = t.getSelectedIndex();
+                
+            }
+        });
+        
+
+
+
+
+    public JTabbedPane getTabbedPane() {
+        if (tabbedPane == null) {
+            tabbedPane = new JTabbedPane();
+            tabbedPane.setFocusable(true);
+            tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+            
+            getEditPanel().setBorder(new EmptyBorder(5,5,2,2));
+            tabbedPane.addTab("Settings", null, new JScrollPane(getEditPanel()), null);
+            
+            
+            JPanel pan = new JPanel(new BorderLayout());
+            OAHTMLTextPane htmlPane = createHTMLTextPane(ExamItem.PROPERTY_ClientDescription);
+            pan.add(new OAScroller(htmlPane.getToolBar()), BorderLayout.NORTH);
+            pan.add(new JScrollPane(htmlPane), BorderLayout.CENTER);
+            Icon icon = Resource.getJarIcon("note.jpg");
+            icon = new ScaledImageIcon(icon, 32, 20);
+            tabbedPane.addTab("Client Descripton", icon, pan, "Client Description");
+
+            pan = new JPanel(new BorderLayout());
+            htmlPane = createHTMLTextPane(ExamItem.PROPERTY_Instruction);
+            pan.add(new OAScroller(htmlPane.getToolBar()), BorderLayout.NORTH);
+            pan.add(new JScrollPane(htmlPane), BorderLayout.CENTER);
+            tabbedPane.addTab("Instructions", icon, pan, null);
+            
+            pan = new JPanel(new BorderLayout());
+            htmlPane = createHTMLTextPane(ExamItem.PROPERTY_TechDescription);
+            pan.add(new OAScroller(htmlPane.getToolBar()), BorderLayout.NORTH);
+            pan.add(new JScrollPane(htmlPane), BorderLayout.CENTER);
+            tabbedPane.addTab("Medical", icon, pan, "Medical Description");
+
+            pan = new JPanel(new BorderLayout());
+            htmlPane = createHTMLTextPane(ExamItem.PROPERTY_Comment);
+            pan.add(new OAScroller(htmlPane.getToolBar()), BorderLayout.NORTH);
+            pan.add(new JScrollPane(htmlPane), BorderLayout.CENTER);
+            tabbedPane.addTab("Comments", icon, pan, null);
+            
+            pan = new JPanel(new BorderLayout());
+            pan.add(new OAScroller(getImagePanelController().getToolBar()), BorderLayout.NORTH);
+            pan.add(new JScrollPane(getImagePanelController().getOAImagePanel()), BorderLayout.CENTER);
+            icon = Resource.getJarIcon("image.jpg");
+            icon = new ScaledImageIcon(icon, 32, 20);
+            tabbedPane.addTab("Picture", icon, pan, null);
+            
+        }            
+        return tabbedPane;
+    }
+
+    
+    
+    

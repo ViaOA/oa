@@ -1,0 +1,22 @@
+
+
+Create Server:
+
+    see OATemplate HelloInterface and Hello
+    
+    1: create interface that extends Remote
+    2: create an implemenation class that uses ws annoations
+        ex @webservice
+           use @WebMethod(exclude=true) for methods not to make available
+    
+
+Create Client
+    
+    see OATemplate HelloClient
+
+    1: import from the  webservice WSDL 
+
+wsimport -p com.template.webservice.client.hello.wsimport -d /projects/java/oatemplate/bin -s /projects/java/oatemplate/src http://localhost:8081/ws/hello?WSDL
+
+    2: create a simple client to create a *Service.get*Port.callMethod(..)    
+    

@@ -1,0 +1,67 @@
+
+
+
+    public JButton getNewButton() {
+        if (cmdNew == null) {
+
+            URL url = OAButton.class.getResource("icons/New.gif");
+            cmdNew = new JButton("New", new ImageIcon(url));
+
+            cmdNew.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onNew();
+                }
+            });
+            new ButtonController(getHub(), cmdNew);
+            OAButton.setup(cmdNew);
+            cmdNew.setFocusPainted(true);
+            
+
+            new EnabledController(cmdNew, ModelDelegate.getUserAccessHub(), UserAccess.PROPERTY_IsUser);
+        }
+        return cmdNew;
+    }
+
+
+
+
+qqqqqqqqqq
+
+        JToolBar tb = new JToolBar(JToolBar.HORIZONTAL);
+        tb.setFloatable(false);
+        tb.setRollover(true);
+
+        cmd = new OAButton(hubNameValue, OACommand.NEW);
+        cmd.setFocusComponent(txt);
+        cmd.setText("");
+        cmd.setAnytime(true);
+        cmd.setup();
+        cmd.setFocusComponent(txtNameValue);
+        tb.add(cmd);
+
+        cmd = new OAButton(hubNameValue, OACommand.DELETE);
+        cmd.setup();
+        cmd.setText("");
+        cmd.setFocusable(false);
+        tb.add(cmd);
+
+        cmd = new OAButton(hubNameValue, OACommand.UP);
+        cmd.setText("");
+        cmd.setFocusable(false);
+        cmd.setup();
+        tb.add(cmd);
+        
+        cmd = new OAButton(hubNameValue, OACommand.DOWN);
+        cmd.setText("");
+        cmd.setFocusable(false);
+        cmd.setup();
+        tb.add(cmd);
+        
+        p.add(tb, BorderLayout.SOUTH);
+
+
+
+
+
+

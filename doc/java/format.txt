@@ -1,0 +1,193 @@
+
+    Format String Symbol Meaning (same as DecimalFormat)
+    <pre>
+    0      a digit, if no digit exists, then '0' will be used. 
+                ex: '000' for 38 = '038'
+    #      a digit, zero shows as absent
+                ex: '#' for 8204 = '8204'
+    .      placeholder for decimal separator
+    ,      placeholder for grouping separator.
+    ;      separates formats.
+    -      default negative prefix.
+    %      multiply by 100 and show as percentage
+    (\u2030) ‰ multiply by 1000 and show as per mille
+    (\u00A4) ¤ currency sign; replaced by currency symbol; if
+            doubled, replaced by international currency symbol.
+            If present in a pattern, the monetary decimal separator
+            is used instead of the decimal separator.
+    X      any other characters can be used in the prefix or suffix
+    '      used to quote special characters in a prefix or suffix.
+    
+    Examples:
+    IntegerFormat     = #,###
+    DecimalFormat     = #,##0.00
+    MoneyFormat       = \u00A4#,##0.00
+    BooleanFormat     = true;false;null
+
+
+
+String.format
+    http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html
+    http://www.xinotes.org/notes/note/1195/
+
+        // format string, datetime with ms
+
+        tsx = String.format("%1$tm/%1$td-%1$tH:%1$tM:%1$tS:%1$tL", new Date(timex));
+
+        String.format("method=%s, start=%2$tm/%2$td-%2$tH:%2$tM:%2$tS:%2$tL", methodName, new Date(msStart));
+
+
+
+String custNo = dlg.getCustomerNumberTextField().getText();
+custNo = OAString.format(custNo, "6R 0");
+
+
+ "totalObjectsWritten="+OAString.format(totalObjectsWritten,"#,###"));
+
+
+exam.getDate(), OADateTime.getFormat(java.text.DateFormat.LONG)
+
+
+long lx = System.currentTimeMillis();
+...        
+lx = System.currentTimeMillis() - lx;
+double d = (lx/1000.0d);
+System.out.printf("OATable.editCellAt row="+row+",  --> %.2f\n", d);        
+
+        log(String.format("GSvsMS loginDiff=%,.3fms, isLoggedIn=%,.3fms, logoutDiff=%,.3fms", 
+                (nsGs[0]-msMs[0])/Math.pow(10, 6), 
+                (nsGs[1]-msMs[1])/Math.pow(10, 6), 
+                (nsGs[2]-msMs[2])/Math.pow(10, 6) ) 
+        );
+
+
+see:  http://download.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html
+
+
+DATE *** TIME 
+
+   private static SimpleDateFormat datetimeFormatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+   
+      Date timeNow = new Date();
+      _startTime = datetimeFormatter.format(timeNow);
+
+
+    static SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
+    static SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm:ss");
+    static SimpleDateFormat datetimeFormatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+    static SimpleDateFormat datetimeMsFormatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SSS");
+    static SimpleDateFormat datetimezoneFormatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z");
+    static SimpleDateFormat datetimezoneMsFormatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SSS z");
+    static SimpleDateFormat cymdhmsFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
+    static SimpleDateFormat cymdhmFormatter = new SimpleDateFormat("yyyyMMddHHmm");
+    static SimpleDateFormat cymdFormatter = new SimpleDateFormat("yyyyMMdd");
+    static SimpleDateFormat ymdFormatter = new SimpleDateFormat("yyMMdd");
+    static SimpleDateFormat mdFormatter = new SimpleDateFormat("MMdd");
+    static SimpleDateFormat hmsFormatter = new SimpleDateFormat("HHmmss");
+
+
+
+        DecimalFormat fmt = new DecimalFormat();
+        fmt.applyPattern("#,###");
+
+
+System.out.printf ("1.0/2.0 = %09.3f %n", q);
+
+
+http://download.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html
+
+       System.out.printf( "%,d\n", 58625 );
+      System.out.printf( "%,.2f\n", 58625.21 );
+      System.out.printf( "%,.2f", 12345678.9 )
+
+
+            System.out.printf(i+") FileName=%s %s%n", fname, fmtDatetime.format(date));
+
+System.out.printf("total files=%,d, total socketMessages=%,d, Total time=%,d seconds%n", i, tcnt, diff);
+
+
+
+
+Format ==========
+%[argument_index$][flags][width][.precision]conversion
+
+The optional argument_index is a decimal integer indicating the position of the argument in the argument list. 
+The first argument is referenced by "1$", the second by "2$", etc.
+
+conversion:  (the uppercase code will make the output uppercase)
+'b', 'B'  boolean => "true" or "false"
+'h', 'H'  uses Integer.toHexString
+'s', 'S'  string
+'c', 'C'  char
+'d'       integer      <====qqqqqqqqqqqqqqqqqqqqq
+'o'       octal integer
+'x', 'X'  hexadecimal integer 
+'e', 'E'  number in scientific notation
+'f'       floating point
+'g', 'G'  number in scientific notation
+'a', 'A'  hexadecimal floating-point number with a significand and an exponent 
+'t', 'T'  prefix used for date/time,  
+            Calendar c = ...; (can also use Date, etc)
+               String s = String.format("Duke's Birthday: %1$tm %1$te,%1$tY", c);  -> 't' is for time, 'm'=minutes, 'e'=, 'Y'=year
+'%'       output the percent character "\u0025" 
+'n'       line separator
+
+Flag:
+'-'    left justified
+'+'    result will include a sign
+' '    include a leading space for positive numbers
+'0'    zero padded
+','    grouping separator
+'('    negative numbers will be enclosed in "()"
+    
+
+
+
+InetAddress inet = InetAddress.getLocalHost();
+byte[] bs = inet.getAddress();
+String s = String.format("%03d%03d", (int)bs[2], (int)bs[3]);
+
+
+formatter.format("Source: %1$-100s RecNum: %2$10s MsgID: %3$20s RefID: %4$20s Function: %5$-20s",
+
+
+qqqqqq
+
+        SimpleDateFormat fmt = new SimpleDateFormat("MMdd_HHmmss");
+        fname = "StackTraces_"+fmt.format(new Date())+".txt";
+        File file = new File(fname);
+        PrintWriter pw = new PrintWriter(file);
+        pw.println(s);
+        pw.close();
+   
+   
+// example
+    public String toLogString() {
+        // 10/10|10:43:02.801|method=requestIsUserLoggedIntoRouter|args=4|total=603,741,049ns|exception=|attempt=1|server=987654322|total=603,631,434ns|result=Success
+   
+        String msg = String.format("%1$tm/%1$td|%1$tH:%1$tM:%1$tS.%1$tL", new Date(msStart));
+        msg += String.format("|method=%s", methodName);
+        msg += String.format("|args=%d", (arguments==null?0:arguments.length) );
+        msg += String.format("|total=%,dns", (nsEnd-nsStart));
+        msg += String.format("|size=%,d", bsReply==null?0:bsReply.length);
+        msg += String.format("|exception=%s", (exception==null?"":exception.toString()) );
+        
+        for (int i=0; ; i++) {
+            Attempt at;
+            if (previousAttempts == null && i > 0) break;
+            else if (previousAttempts == null) at = lastAttempt;
+            else if (i == previousAttempts.length) at = lastAttempt;
+            else if (i > previousAttempts.length) break;
+            else at = previousAttempts[i];
+    
+            msg += String.format("|attempt=%d|server=%d|total=%,dns|result=%s", 
+                    i+1, at.gsmrServer.getFromId(), at.nsEnd-at.nsStart, (at.result==null?"":at.result.toString()) );
+        }
+        return msg;
+    }
+   
+   
+   
+   
+   
+   

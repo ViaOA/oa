@@ -1,0 +1,26 @@
+
+
+
+from Chase ===================
+-Dprogram.name=run.sh -server -DMonitoringID=eConfirmJBoss -d64 -XX:NewSize=1536m -XX:MaxNewSize=1536m -Xms6144m -Xmx6144m -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:/var/opt/jboss-eap-4.3/server/econfirm.theice.com/log/2013-03-20-0812-p dk-dm-ecas-01_gc-output.log -Dc
+om.theice.econfirm.jmxagent.hostname=pdk-dm-ecas-01 -Djava.rmi.server.hostname=pdk-dm-ecas-01 -javaagent:/var/opt/jboss-eap-4.3/server/econfirm.theice.com/conf/econfirm-jmxa gent.jar -Dcom.theice.econfirm.jmxagent.port=33980 -Djavax.net.ssl.keyStore=/var/opt/jboss-eap-4.3/server/econfirm.theice.com/conf /keystore.pkcs12 -Djavax.net.ssl.trustStore=/var/opt/jboss-ea
+p-4.3/server/econfirm.theice.com/conf/truststore.jks -Djavax.net.ssl.keyStoreType=PKCS12 -Djavax.net.ssl.trustStoreType=JKS
+
+
+
+
+GSMR Server ===================
+
+CONSOLE_LOG="${ROOTDIR}/logs/${TODAY}-Router_${UNIQUE_NAME}_console-${GOTIME}.log"
+echo "Console log fileName=${CONSOLE_LOG}"
+
+GC_LOG="${ROOTDIR}/logs/${TODAY}-Router_${UNIQUE_NAME}_gc-${GOTIME}.log"
+GC_FLAGS="-verbose:gc -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:${GC_LOG}"
+
+DEBUG_PORT=$((5000+$INSTANCE_NUMBER-1))
+DEBUG_OPTIONS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${DEBUG_PORT}"
+
+JVM_HEAP="-Xms512m -Xmx2048m"
+ 
+${JAVA_HOME}/bin/java -server -d64 ${JVM_HEAP} -cp jar/\* ${DEBUG_OPTIONS} ${GC_FLAGS} com.theice.gsmr.server.Startup > ${CONSOLE_LOG} 2>&1 &
+

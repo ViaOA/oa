@@ -1,0 +1,80 @@
+>> SwingUtilities.getRoot(editor)
+
+
+>>OAJFCUtil>>
+
+    OAJFCUtil.getWindow(getEditPanel())
+    
+    showSystemInfo()
+    
+    LookAndFeel information
+    
+    
+    
+>> invoke+wait 
+
+        try {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                initFrame();
+            }
+            else {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        initFrame();
+                    }
+                });
+            }
+        }
+        catch (Exception e) {
+            LOG.log(Level.WARNING, "exception starting", e);
+            return false;
+        }
+
+>> invokeLater
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getFrameController().getFrame().setProcessing(false);
+                LOG.info(Resource.getValue(Resource.APP_Welcome, ""));
+            }
+        });
+        
+    
+>> set L&F
+
+    public void setLookAndFeel(String laf) {
+        laf = null; //qqqqqqq Client frame controller has X.setDefaultLookAndFeelDecorated(true) for Frm and Dlg
+        
+        if (laf == null) {
+            laf = Resource.getValue(Resource.APP_LookAndFeel, (String) null);
+            if (laf == null || laf.trim().length() == 0) {
+                laf = UIManager.getSystemLookAndFeelClassName();
+            }
+        }
+        
+        laf = UIManager.getCrossPlatformLookAndFeelClassName();
+        
+        try {
+            UIManager.setLookAndFeel(laf);
+            // SwingUtilities.updateComponentTreeUI(comp/frm/dlg/window/etc)
+            /*qqq            
+            if (controlClientFrame != null) getClientFrameController().updateUI();
+            if (controlAdminDialog != null) getAdminDialogController().updateUI();
+            // if (controlReport != null) getReportController().updateUI();
+            if (controlAbout != null) getAboutController().updateUI();
+            if (controlHelp != null) getHelpController().updateUI();
+             */            
+            Resource.setValue(Resource.TYPE_Client, Resource.APP_LookAndFeel, laf);
+            
+            Resource.save();
+            LOG.config("L&F set to "+laf);
+        }
+        catch (Exception e) {
+            LOG.log(Level.CONFIG, "Error setting L&F to "+laf, e);
+        }
+        finally {
+        }
+    }
+    
+    

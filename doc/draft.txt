@@ -1,0 +1,255 @@
+
+
+
+
+Connect to Java
+
+Object Model to Application
+
+DataSource
+  JDBC
+  XML
+  
+Java Server Pages
+
+Java Foundation Classes
+
+Deploy
+  Web 
+
+
+
+
+Model is the application
+  model controls application
+  throwaway apps
+  independent UI/DS
+  
+
+OA fills in the gaps
+... between objects
+... between objects and ds
+... between objects and jfc, jsp
+
+
+OA plugs your objects into
+... ds = ds independent
+... excep handling
+... logging
+... other applications, client/server
+... any other tech (XML, app servers, etc)
+... security
+
+OA is all about relationships
+... 1to1, etc
+... recursive
+... cascading
+... owner
+
+OA makes it
+... scalable single, multiple, web, etc
+... flexible - model controls app
+... portable -
+
+OA automates
+... design
+...
+
+Benefits
+... Spend more time on app, less on coding
+
+Natural
+... connect existing tech and Java API
+... small, easy to learn
+... uses simple concepts used in all programming
+
+
+
+Core concepts
+all programming can be broken down to some simple concepts
+basic level: object, collection, relationships, events
+this lets it work with any other object
+
+Relationships "The Wiring"
+... 1 to 1, etc
+... recursive
+... cascading
+... owner
+
+Data storage/retreival
+object approach
+object queries
+natural
+
+
+
+
+
+
+**********
+
+
+create better software
+Makes everyone more productive
+users - easier to see application and give feed back
+analyst - design on fly
+prod man - less code to manage
+programmers - less errors, concentrate on application, better coding habits
+isolate custom code to assure best possible solution
+
+Built in layers
+built from the perspective of an indiv object, then built to work with other objects and API
+packages - core api for building appl
+tools - visual designers and code generators
+
+
+
+
+
+
+
+
+
+
+Automated
+object to object
+    OAObject, HUb
+    
+Object to DS
+
+Object to JFC
+Object to JSP
+App to App
+
+Independent - tech that plugs in
+security
+ds
+client/server
+app server
+sys integration
+
+
+
+
+
+
+
+What were the main goals when it was developed?
+make software dev more productive, less errors, easier to maintain/modify, protable, 
+produce better applications with more features
+concentrate more on app and less on tech
+
+
+
+
+What secrets were discovered while creating OA?
+ojb is the app
+
+
+How is it different from other tools?
+
+Who are competitors?
+
+Why would programmers want to learn another tool?
+
+What are the basic concepts for using OA?
+
+What is layered technology?
+
+How quickly can you see results?
+
+How hard is it to learn?
+
+What about existing code and legacy system?
+
+
+
+
+
+
+
+
+OA is a group of Java Classes and Tools that help increase software development
+
+
+Make software development more productive and successful
+better organized, consistent code
+automate as much code as possible
+
+make generic to be able to use for any application
+natural for programmer
+scalable, flexible.  Go from design to application as quick as possible
+
+
+Object Model controlled application
+
+Build base "generic" object "OAObject" and Collection that would automatically work with any other object, including 
+existing Java API classes. 
+
+Automate object relationships - 1 to 1, 1 to Many, many to many, recursive, cascading, owner, master/detail, linked, shared
+
+Object interfaces for other API to plug into, so that objects could be independent from specific technology.
+
+make programmer friendly - easy to learn and easy to not use
+
+Free up the programmer as much as possible so that they can concentrate on application and value added features
+
+make as small and "basic" as possible, emphazing reusablity
+
+Eliminate as much code as possible by automating
+
+objects that would autom work with 
+database/ds - query off of OM, not ds structure.  Isolate from DS structure and "rules".  Be able to 
+change DS without changing application -> DS indepentent 
+
+User Interface Indepentent / Throwaway applications
+Client GUI: gui components to work with objects. OM configured to control application
+
+be able to create cookie cutter applications
+be able to create throwaway applications
+
+Web UI:  OM controls application.  Objects to organiz layers of access (Sys, App, Sess), Frames, Forms
+
+UI components to use on web/xml pages
+
+Custom Security interface that could plug into application without changing application.  Security indepentent model
+
+Exception handling - controlled way for handling all errors and communicating with user and Logging
+
+Build tools for visual developing applications
+
+lessen the gap between buy verses build
+
+
+
+
+
+
+
+
+
+
+----- What we built --------------
+
+
+
+Why
+
+
+How
+
+fill in gaps between existing tech.  Most of code is spent doing this.  Makes it familar and easy to learn for developers
+
+everything works with objects
+
+allow objects to automatically work together 
+model work
+
+
+
+Benefits
+
+concentrate more on application and less on tech
+spend time on value added features
+
+

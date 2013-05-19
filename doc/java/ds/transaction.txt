@@ -1,0 +1,22 @@
+
+
+
+
+
+        OATransaction tran = new OATransaction(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
+        try {
+            tran.start();
+            ServerRoot sr = ServerDelegate.getServerRoot();
+            sr.save(OAObject.CASCADE_ALL_LINKS);
+            Hub h = ServerDelegate.getProductionDates();
+            h.saveAll(OAObject.CASCADE_ALL_LINKS);
+            h = ServerDelegate.getDeliveryDates();
+            h.saveAll(OAObject.CASCADE_ALL_LINKS);
+            tran.commit();
+        }
+        catch (Exception e) {
+            System.out.println("Exception: "+e);
+            e.printStackTrace();
+            tran.rollback();
+            throw e;
+        }

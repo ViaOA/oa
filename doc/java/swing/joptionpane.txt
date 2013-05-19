@@ -1,0 +1,53 @@
+
+
+
+
+JOptionPane.showMessageDialog(frmSales, "Please enter selection data.");
+
+
+>> confirm
+
+    int x = JOptionPane.showConfirmDialog(getFrame(), 
+            "Would you like to clear the existing customer", "Customer Search",
+            JOptionPane.YES_NO_OPTION , JOptionPane.QUESTION_MESSAGE);
+    
+    if (x == JOptionPane.YES_OPTION) .. 
+
+
+
+    .. SwingUtilities.getWindowAncestor(getMainPanel()
+
+>> message
+
+    String msg = "Not found.";
+    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(getMainPanel()),
+            msg, "Title ",
+            JOptionPane.WARNING_MESSAGE
+    );
+
+    
+
+>> input
+
+    int x = modelApp.getObjectDefHub().getSize();
+    Object[] objs = new Object[x];
+    for (int i=0; i<x; i++) {
+        ObjectDef od = (ObjectDef) modelApp.getObjectDefHub().elementAt(i);
+        if (od != null) objs[i] = od.getName();
+    }
+
+    String name = (String) JOptionPane.showInputDialog(frm, "Select Object to Link with "+od.getName(), "Create a new Link", JOptionPane.PLAIN_MESSAGE, null, objs, null);
+    if (name == null) return;
+    
+    
+    
+    int i = JOptionPane.showOptionDialog(frm, "msg here?", "title",
+            JOptionPane.YES_NO_CANCEL_OPTION , JOptionPane.QUESTION_MESSAGE, null, null, null);
+    if (i == JOptionPane.CANCEL_OPTION) return false;
+    if (i == JOptionPane.YES_OPTION) ...
+    if (i == JOptionPane.NO_OPTION) ...
+    
+    
+    
+    
+    

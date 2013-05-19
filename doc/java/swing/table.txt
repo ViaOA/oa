@@ -1,0 +1,146 @@
+
+**
+    column = table.convertColumnIndexToModel(column);
+
+
+>> new set toolTipText
+            @Override
+            public String getToolTipText(int row, int col, String defaultValue) {
+                Client client = ClientSearchJfc.this.getHub().getAt(row);
+                String msg = ClientDelegate.getToolTipText(client, false);  // false=done check exams
+                return super.getToolTipText(row, col, defaultValue);
+            }
+
+
+>> setting toolTipText for a table row
+            @Override
+            public Component getRenderer(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component comp = super.getRenderer(table, value, isSelected, hasFocus, row, column);
+                Client client = ClientJfc.this.getHub().getAt(row);
+                String msg = ClientDelegate.getToolTipText(client, false);
+                setToolTipText(msg);
+                return comp;
+            }
+
+
+
+>> ItemType
+
+    public JScrollPane getTableScrollPane() {
+        if (spTable == null) {
+            spTable = new OATableScrollPane(getTable(), 1) {  // set number of fixed columns
+                @Override
+                protected OATable createFixedTable(OATable mainTable) {
+                    tableFixed = new OATable(getItemCategories()) {
+                        public Component getRenderer(JTable table,Object value, boolean isSelected, boolean hasFocus,int row, int column) {
+                            Component comp = super.getRenderer(table, value, isSelected, hasFocus, row, column);
+                            if (!(comp instanceof JLabel)) return comp;
+
+                            column = table.convertColumnIndexToModel(column);
+                            JLabel lbl = (JLabel) comp;
+                           
+                            if (column == 0) {  // line counter
+                                lbl.setText((row+1)+"");
+                                if (!hasFocus) lbl.setForeground(Color.gray);
+                            }
+                            return lbl;
+                        }
+                        @Override
+                        public void onDoubleClick() {
+                            ItemTypeJfc.this.onShowEditPanel();
+                        }
+                    };
+                    setupTablePopupMenu(tableFixed);
+                    return tableFixed;
+                }
+            };
+        }
+        return spTable;
+    }
+
+
+    public OATable getTable() {
+        if (table != null) return table;
+        
+        table = new OATable(getSortHub()) {
+            // note: fixed table will take columns from this table
+            @Override
+            public Component getRenderer(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component comp = super.getRenderer(table, value, isSelected, hasFocus, row, column);
+                if (!(comp instanceof JLabel)) return comp;
+
+                column = table.convertColumnIndexToModel(column);
+                JLabel lbl = (JLabel) comp;
+                
+                return lbl;
+            }
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return super.isCellEditable(row, column);
+            }
+            @Override
+            public TableCellEditor getCellEditor(int row, int column) {
+                return super.getCellEditor(row, column);
+            }
+            @Override
+            public boolean getAllowDrop(Hub hubDrag, Object objectDrag, Hub hubDrop) {
+                return super.getAllowDrop(hubDrag, objectDrag, hubDrop);
+            }
+            @Override
+            public void onDoubleClick() {
+                ItemTypeJfc.this.onShowEditPanel();
+            }
+        };
+        
+        // table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.setAllowDnD(true);
+        table.setRemoveDragObject(true);
+        table.setAllowSorting(true);
+        table.setColumnProperties(ModelDelegate.getProperties(), "ItemType");
+        table.setDoubleClickButton(getGotoButton());
+        
+        table.addColumn("#", 4, new OALabel(getHub(), ItemType.PROPERTY_Id));
+        table.addColumn("Name", 28, createNameTextField());
+
+        // table.setSelectHub(getSelectItemTypes());
+        setupTablePopupMenu(table);
+
+        
+        return table;
+    }
+
+    
+    protected void setupTablePopupMenu(final OATable table) {
+        MouseAdapter ma = new MouseAdapter() {
+            private JPopupMenu pmenu;
+            @Override
+            public void mouseReleased(MouseEvent me) {
+                // check to see if popup menu should be displayed
+                if ( (me.getModifiers() & Event.META_MASK) == 0) return;
+                if (!me.isPopupTrigger()) return;
+
+                Point pt = me.getPoint();
+                int row = table.rowAtPoint(pt);
+                getItemCategories().setAO(row);
+                if (pmenu == null) pmenu = createTablePopupMenu();
+                pmenu.show(table, pt.x, pt.y);
+            }
+        };
+        table.addMouseListener(ma);
+    }
+    
+    // Table menu      
+    public JPopupMenu createTablePopupMenu() {
+        JPopupMenu pmenuTitleNode = new JPopupMenu();
+        pmenuTitleNode.add(createGotoMenuItem());
+        
+        OAMenuItem mi = createNewMenuItem(false);
+        mi.setFocusComponent(getTableNameTextField());
+        pmenuTitleNode.add(mi);
+        
+        pmenuTitleNode.add(createDeleteMenuItem());
+        return pmenuTitleNode;
+    }
+    
+    
+    

@@ -1,0 +1,39 @@
+
+
+
+>> Lock
+    lock()
+    Condition c = l.newCondition()  // creates a seperate object that can be locked on
+    lockInterruptibly()  // lock if not interrupted 
+    
+    
+    tryLock
+    tryLock(long time, TimeUnit unit)
+    
+    unlock()
+
+
+>> ReentrantLock
+    // ex:
+    ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    
+    rwl.readLock().lock();
+    
+    rwl.readLock().unlock();
+    
+    rwl.writeLock().lock();
+    
+    rwl.writeLock().unlock();
+        
+    
+
+
+>>  ReadWriteLock  interface
+    // pair of locks - multiple reads, single write
+    
+    
+
+
+
+
+

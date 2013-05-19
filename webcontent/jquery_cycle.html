@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>jQuery Cycle : &lt;default&gt;</title>
+<script type='text/javascript' src='scripts/jquery-1.6.min.js'></script>
+<script type='text/javascript' src='scripts/jquery.cycle.all.js'></script>
+<style type="text/css">
+#slideshow {
+	padding: 10px;
+	margin: 0;
+}
+
+#slideshow-caption {
+	padding: 0;
+	margin: 0;
+}
+
+#slideshow img,#slideshow div {
+	padding: 10px;
+	background-color: #eeeeee;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	margin: 0;
+}
+</style>
+</head>
+
+<body>
+	<script type="text/javascript">
+		slideshowAddCaption = true;
+		$(document).ready(function() {
+			$('#slideshow').cycle({
+				after : slideshowOnCycleAfter, //the function that is triggered after each transition
+				autostop : false, // true to end slideshow after X transitions (where X == slide count) 
+				fx : 'blindX',// name of transition effect 
+				pause : false, // true to enable pause on hover 
+				randomizeEffects : true, // valid when multiple effects are used; true to make the effect sequence random 
+				speed : 1000, // speed of the transition (any valid fx speed value) 
+				sync : true, // true if in/out transitions should occur simultaneously 
+				timeout : 3000, // milliseconds between slide transitions (0 to disable auto advance) 
+				fit : true,
+				height : '200px',
+				width : '200px' // container width (if the 'fit' option is true, the slides will be set to this width as well) 
+			});
+		});
+		function slideshowOnCycleAfter() {
+			if (slideshowAddCaption == true) {
+				$('#slideshow-caption').html(this.title);
+			}
+		}
+	</script>
+	<div id="slideshow">
+		<!--All elements inside this will become slides-->
+		<img src="images/beach1.jpg" width="100" height="100"
+			title="caption for image1" /> <img src="images/beach2.jpg"
+			width="300" height="300" title="caption for image2" /> <img
+			src="images/beach3.jpg" width="200" height="200"
+			title="caption for image3" />
+		<div title="sample title">you can add blocks of text instead!</div>
+		<img src="images/beach4.jpg" width="200" height="200"
+			title="caption for image4" /> <img src="images/beach5.jpg"
+			width="200" height="200" title="caption for image5" />
+
+	</div>
+	<!--It is safe to delete this if captions are disabled-->
+	<div id="slideshow-caption"></div>
+</body>
+</html>

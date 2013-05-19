@@ -1,0 +1,59 @@
+
+
+Eclipse MarketPlace installer
+        this will add MarketPlace to the Help menu
+    select Help/Install New Software
+    work with: http://download.eclipse.org/releases/juno
+    do search for "marketplace" and install
+
+EGit
+    get from Help/MarketPlace
+    
+M2E for Maven plugin
+
+Subversion plugin
+    subversion client adapter (required)
+    subversion Java HL (required)
+    subclipse
+
+Quickmarks plugin
+    2012/08/14
+    Download from:
+    http://sourceforge.net/projects/eclipse-tools/files/quickmarks/
+    v.3.0.2
+    
+    ** unzip and add directories in zip file to: "features", and "plugins" under eclipse directory
+    
+    C:\eclipse\plugins
+    C:\eclipse\features
+
+     
+Export general/preferences from existing Eclipse and import into new     
+     
+
+installing JavaScript support
+    Add JavaScript to program
+        right click on project to add JavaScript
+            Configure, "convert to javascript project"
+
+    right click on project
+        go to properties
+            under javascript / include path - add libraries
+            
+            
+Add JQuery plug-in
+    install plugin
+        help / Eclipse MarketPlace
+            search for JQuery to install JSDT jquery plugin
+    once it is loaded then use
+        right click on project
+            go to properties
+                under javascript / include path - add jquery lib
+    
+    also:
+        https://maven.intcx.net/content/repositories/snapshots    
+    
+fast view bar
+
+    
+                 

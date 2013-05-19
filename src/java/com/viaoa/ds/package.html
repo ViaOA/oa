@@ -1,0 +1,115 @@
+<html>
+<body>
+
+Interface used for storing and retrieving Objects from a persistent datasource in a way that is independent from
+the Objects.  
+
+<p>
+An OADataSource is used to initialize, insert, update, delete and query Objects without using 
+datasource/database specific commands or query languages.
+
+<p>
+A datasource is any form of service that provides persistent storage and retrieval of data.  The 
+most common datasource is for databases that use SQL and have a JDBC driver.  Other types of storage 
+could be flat files, XML, streaming to other systems, application servers, web services, legacy 
+systems, object-relational engines, etc.
+
+<p>
+OADataSource subclasses self-register themselves with the static OADataSource.  This static OADataSource 
+can then be used to find a OADataSource based on the Class of the Object that is being used.
+
+<p>
+Applications can be created that are independent of the datasource.  At any time, a new OADataSource can be
+used without affecting the existing application or objects.  
+
+<p>
+Currently, OA supplies the following OADataSources: </br>
+OADataSourceNextNumber: used as a <i>fake</i> datasource. <br>
+OADataSourceJDBC: used to work with any JDBC driver, any Relational Database <br>
+OADataSourceClient: allows a Client application to use the OADataSource on the Server.  (See OAClient, OAServer)
+
+<p>
+<b>Queries/Selects</b><br>
+The OADataSource Class offers the functionality to query a datasource based on the structure of 
+the Object structure and not on the Datasource structure.  Results from a query are returned 
+in Objects instead of data or resultsets
+
+<p>
+Queries are based on using a form of Object Query Language.  <i>Property Paths</i> are used to build "Where" and "Sort 
+Order" clauses.
+
+A <b>property path</b> is a dot (".") separated list of property names that are used to navigate 
+from a root Class to a property value.  To go from object to object, reference property names are used.
+    
+<p>
+<ul>
+<li>All property names and connectors names are case insensitive.
+<li>Can use the following connectors "AND", "&&", "||", "OR", "(", ")"
+<li>Can use "=", "==", "!=", "<", "<=", ">", ">=", "LIKE", "%" (wildcard), "null" (any case)
+<li>For convenience use OAConverter.toDataSourceString(value) to convert to String.
+<li>For convenience use OAConverter.toDataSourceString(propertyName,value) to convert to a String that
+will be expanded to be "propertyName =
+<li>"ASC" ascending, "DESC" descending can be used with Order By properties.
+</ul>
+
+When retrieving/selecting Objects from datasource, if the retrieved object is for an OAObject that 
+already exists in memory, the object in memory will be used instead of creating a duplicate object.
+
+<p>
+<i>OASelect query object</i><br>
+The OASelect Class can be used for creating datasource independent Object Queries.  OASelect manages 
+a query by working directly with a OADataSource.  The Hub Collection Class uses OASelect 
+to perform its queries.<br>
+Note: OASelect is a convenience object and is not required for querying an OADataSource 
+(OADataSources can be used directly).
+
+<p>
+OADataSource has <i>Pass-through</i> methods, that can be used to run a native command on the datasource.
+<p>
+OADataSource can automatically create autonumber values for object identifier properties.  
+A GUID (Global Identifier) can also be included so that the assigned value is unique across multiple
+datasources.
+<p>
+OADataSources can use log files to report all changes made to datasource.
+
+
+<p>
+<b>Main Classes in this package</b> 
+<p>
+&nbsp;&nbsp;&nbsp;<img src="doc-files/oaobject3.gif">
+
+<p>
+<b>OADataSource</b> is an abstract Class that defines a datasource independent interface for
+data storage and retrieval.  OADataSource manages all registered OADataSources.
+<p>
+<b>OASelect</b> works with OADataSource, used to build and manage datasource independent queries that 
+return Objects.
+
+<p>
+<b>OAObject, Hub Collection and OADataSource</b>
+<p>
+The OADataSource interface was created to offer OA the ability to persist and query objects, eliminating all
+of the code that is usually required to work with a datasource/database.  By establishing an
+interface, the datasource is totally separated from the objects and application.  
+A makes it very easy to replace an existing OADataSource with a new one.  For example, replace a
+datasource that stored objects in a binary format (using object serialization), with a SQL Database.  Or, 
+change database from one vendor to a different vendor.
+
+<p>
+OAObject automatically works with OADataSource for initializing new object, save(), delete(), 
+getObject(), getHub(), and validating property Id changes.
+<p>
+OAObject calls OADataSource.getDataSource(Class) to receive the OADataSource that is registered to manage a 
+particular its Class.  This OAObject then uses this DataSource to initialize, save, delete.<br>
+
+<p>
+Hub automatically works with OADataSources for select() queries, using the OASelect Class.
+
+
+
+
+
+</body>
+</html>
+
+

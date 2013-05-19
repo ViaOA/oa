@@ -1,0 +1,42 @@
+
+>> FormattedTextField
+        OAFormattedTextField ftxt;
+        ftxt = new OAFormattedTextField(hubClient, Client.PROPERTY_Phone, 13, "(###) ###-####", "0123456789", true, true);
+
+
+>> TextArea
+    public OATextArea createDescriptionTextArea() {
+        OATextArea txta = new OATextArea(getItemCategories(), ItemCategory.PROPERTY_Description, 4, 24);
+        txta.setWrapStyleWord(true);
+        txta.setLineWrap(true);
+        // txta.setToolTipText("The reason why user is inactive.");
+        txta.setBorder(new EmptyBorder(3,3,2,2));
+        txta.setEnabled(ModelDelegate.getUserAccessHub(), UserAccess.PROPERTY_IsAdmin);
+        setup(txta);
+        return txta;
+    }
+
+
+
+>> User.lastName
+
+    public OATextField createLastNameTextField() {
+        OATextField txtLastName = new OATextField(getUsers(), User.PROPERTY_LastName, 22) {
+            @Override
+            protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+                return super.isEnabled(bIsCurrentlyEnabled);
+            }
+            @Override
+            protected boolean isVisible(boolean bIsCurrentlyVisible) {
+                return super.isVisible(bIsCurrentlyVisible);
+            }
+            @Override
+            protected String isValid(Object object, Object value) {
+                return super.isValid(object, value);
+            }
+        };
+        txtLastName.setFormat(null);
+        txtLastName.setToolTipText("");
+        txtLastName.setEnabled(getUserAccessHub(), UserAccess.PROPERTY_IsAdmin);
+        return txtLastName;
+    }
