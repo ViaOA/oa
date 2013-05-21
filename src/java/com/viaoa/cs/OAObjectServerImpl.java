@@ -39,9 +39,9 @@ import com.viaoa.hub.Hub;
     Created by OAServerImpl.
     <p>
     See OAObjectServer for complete documentation.
-    @see OAObjectServer 
+    @see OAObjectServerInterface 
 */
-public class OAObjectServerImpl extends UnicastRemoteObject implements OAObjectServer, Unreferenced {
+public class OAObjectServerImpl implements OAObjectServerInterface {
 
     private static Logger LOG = Logger.getLogger(OAObjectServerImpl.class.getName());
 
@@ -78,16 +78,7 @@ public class OAObjectServerImpl extends UnicastRemoteObject implements OAObjectS
     private TreeMap<Integer, Boolean> treeSerialized = new TreeMap<Integer, Boolean>();
     private ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
 
-    public OAObjectServerImpl(OAServerImpl oaServer, int port) throws RemoteException {
-        super(port);
-        id = ++gid;
-        dtStart = new OADateTime();
-        this.oaServer = oaServer;
-        LOG.config("created id=" + id);
-    }
-
-    public OAObjectServerImpl(OAServerImpl oaServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+    public OAObjectServerImpl(OAServerImpl oaServer) {
         id = ++gid;
         dtStart = new OADateTime();
         this.oaServer = oaServer;
@@ -698,7 +689,7 @@ public class OAObjectServerImpl extends UnicastRemoteObject implements OAObjectS
      * Called by RMI when disconnected.
      * RMI callback.
      */
-    @Override
+//qqqqqqqqqqqqqqqqqqqq
     public void unreferenced() {
         if (bConnected) LOG.warning("bConnected is still true, but object is being unreferenced.  will disconnect client " + id);
         disconnected();

@@ -281,7 +281,7 @@ public class OAClientDelegate {
 	    }
 	}
 	
-	public static boolean isLocal(OAObjectServer os) {
+	public static boolean isLocal(OAObjectServerInterface os) {
 	    OAClient c = OAClient.getClient();
 	    return (c != null && c.oaObjectServer == os);
 	}

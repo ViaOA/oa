@@ -21,7 +21,7 @@ public abstract class OAClientMessageHandler implements Runnable {
 	private volatile int waitCnt;  // only changed inside of synchronized THREADLOCK
 	private int osId;
     private ArrayList<OAObjectMessage> alSend = new ArrayList(37);
-    private OAObjectServer oaObjectServer;
+    private OAObjectServerInterface oaObjectServer;
     private volatile OAClientThread currentThread;
 	private int cntThread;
 	private long timeLastGet;
@@ -32,7 +32,7 @@ public abstract class OAClientMessageHandler implements Runnable {
 	private long msgSentMs;
     private Thread.UncaughtExceptionHandler exceptionHandler;
     
-	public OAClientMessageHandler(int osId, OAClientMessageReader msgReader, OAObjectServer objectServer) {
+	public OAClientMessageHandler(int osId, OAClientMessageReader msgReader, OAObjectServerInterface objectServer) {
 		LOG.config("Starting, osId="+osId);
 		this.osId = osId;
 		this.msgReader = msgReader;

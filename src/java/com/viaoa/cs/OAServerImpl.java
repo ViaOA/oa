@@ -27,24 +27,22 @@ import java.rmi.server.*;
 
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.annotation.RemoteInterface;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 
 /** 
-     OAServer is a RMI Distributed Object used for creating Client/Server applications that automatically
+     OAServer is a Distributed Object used for creating Client/Server applications that automatically
      stay synchronized, and supports distributed method calls, database access, and more.  
      <p>
      OAServer is responsible for creating and managing OAObjectServer objects for each connection.  OAServer 
      sends and receives messages from OAObjectServer.
 */
-public class OAServerImpl extends UnicastRemoteObject implements OAServer {
+public class OAServerImpl implements OAServerInterface {
     private static Logger LOG = Logger.getLogger(OAServerImpl.class.getName());
     
-    Vector<OAObjectServer> vecObjectServer = new Vector<OAObjectServer>();  // keeps all OAObjectServer objects created for this jvm instance.
+    Vector<OAObjectServerInterface> vecObjectServer = new Vector<OAObjectServerInterface>();  // keeps all OAObjectServer objects created for this jvm instance.
     OAObjectPublisher publisher;
-    RMIClientSocketFactory csf;
-    RMIServerSocketFactory ssf;
-    int port;
 
     private Object LOCKQueue = new Object();
     private static int QueueSize = 15000;
@@ -58,34 +56,17 @@ public class OAServerImpl extends UnicastRemoteObject implements OAServer {
     private boolean bHoldSend;
     private int sendCount;
 
-    
     // used by readMessages
     private int readCount;
     private int readWaitCount;
     private int readMultilpleCount;  // number of reads that were able to get multiple messages
     
-    
-    
-    public OAServerImpl() throws RemoteException {
-        this(OAClient.port, null, null);
-    }
-    
-    public OAServerImpl(int port) throws RemoteException {
-        this(port, null, null);
-    }
-
-    public OAServerImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
-        LOG.config("start, port="+port+", customerSocketFactories="+(csf!=null||ssf!=null));
+    public OAServerImpl()  {
         LOG.config("queueSize="+QueueSize);
-        this.port = port;
-        this.csf = csf;
-        this.ssf = ssf;
         OAObjectCacheDelegate.setDefaultAddMode(OAObjectCacheDelegate.IGNORE_DUPS);
         serverImpl = this;
     }
 
-    // 20120403
     private static OAServerImpl serverImpl;
     public static OAServerImpl getOASeverImpl() {
         return serverImpl;
@@ -101,10 +82,8 @@ public class OAServerImpl extends UnicastRemoteObject implements OAServer {
         Create a new OAObjectServer object for an OAClient.  This is automatically created by
         OAClient.
     */
-    public OAObjectServer getOAObjectServer() throws RemoteException {
-        OAObjectServerImpl os;
-        if (ssf != null) os = new OAObjectServerImpl(this, port, csf, ssf);
-        else os = new OAObjectServerImpl(this, port);
+    public OAObjectServerInterface getOAObjectServer() throws RemoteException {
+        OAObjectServerImpl os = new OAObjectServerImpl(this);
         
         os.queueLoadPos = this.queueLoadPos;
         

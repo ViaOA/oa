@@ -20,6 +20,7 @@ package com.viaoa.cs;
 import java.rmi.*;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.annotation.RemoteInterface;
 
 /** 
     RMI Class used between OAClient and OAServer.
@@ -27,10 +28,11 @@ import com.viaoa.object.*;
     <p>
     OAObjectServer has a <i>queue</i> of messages that it recieves from OAServer.  These messages
     are then retrieved by OAClient.  OAClient uses OAObjectServer to send messages to OAServer.
-    @see OAServer
+    @see OAServerInterface
     @see OAClient
 */
-public interface OAObjectServer extends Remote {
+@RemoteInterface
+public interface OAObjectServerInterface {
     /** 
         Unique Identifier assigned by OAObjectServer when it is created by OAServer 
     */

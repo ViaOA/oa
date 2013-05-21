@@ -18,7 +18,7 @@ public class OAClientMessageReader {
     private OAObjectMessage[] msgQueue = new OAObjectMessage[QueueSize];
     private boolean bStop;
     private Thread thread;
-	protected OAObjectServer oaObjectServer;  // rmi object used to send messages
+	protected OAObjectServerInterface oaObjectServer;  // rmi object used to send messages
     private Object LOCK = new Object();
     private int nextPos;
     private int loadPos;
@@ -26,7 +26,7 @@ public class OAClientMessageReader {
     private boolean bWaiting, bServerWaiting;
 
 
-    protected OAClientMessageReader(OAObjectServer oaObjectServer) {
+    protected OAClientMessageReader(OAObjectServerInterface oaObjectServer) {
     	this.oaObjectServer = oaObjectServer;
     	LOG.config("max size for client Queue="+QueueSize);
     }

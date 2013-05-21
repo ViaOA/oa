@@ -7,7 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines a DataSource table used by an OAObject. 
+ * Defines a DataSource table used by an OAObject.
+ *  
  * @author vvia
  */
 @Documented

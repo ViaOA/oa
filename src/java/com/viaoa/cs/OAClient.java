@@ -32,8 +32,11 @@ import java.rmi.registry.*;
 import java.rmi.server.*;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.ds.cs.OADataSourceClient;
 
 /**
@@ -45,7 +48,7 @@ public class OAClient {
     
     protected String serverName;  // name of server that this client has connected with
 	static OAClient oaClient;
-	protected OAObjectServer oaObjectServer;  // rmi object used to send messages
+	protected OAObjectServerInterface oaObjectServer;  // rmi object used to send messages
     protected int osId;  // Identifier assigned to OAObjectServer by OAServer
     protected boolean bIsServer; // used by OALock to know if OAClient is running in same VM as OAServer
     protected boolean bWasConnected;  // flag to know if client had been connected, used when a disconnect happens
@@ -109,32 +112,19 @@ public class OAClient {
         LOG.config("serverName="+serverName+" portNumber="+portNumber);
         this.serverName = serverName;
         if (oaClient != null && oaClient.bIsServer) this.bIsServer = true;
-        if (!connect(portNumber, false, null)) throw new RuntimeException("Can not connect to server "+ serverName + " on port "+port);
+        if (!connect(portNumber)) throw new RuntimeException("Can not connect to server "+ serverName + " on port "+port);
     }
 
 
     /**
-	    Create a new OAClient that connects to OAServer on serverName
-	    @param serverName name or ip address of computer that is running OAServer
-	    @param portNumber port to connect to, default is 1099.
-	*/
-	public OAClient(String serverName, int portNumber, RMIClientSocketFactory csf) throws Exception {
-	    LOG.config("serverName="+serverName+" portNumber="+portNumber+", CustomSocketFactory="+(csf!=null));
-	    this.serverName = serverName;
-	    if (oaClient != null && oaClient.bIsServer) this.bIsServer = true;
-	    if (!connect(portNumber, false, csf)) throw new RuntimeException("Can not connect to server "+ serverName + " on port "+port);
-	}
-    
-    
-    /**
         Used internally by OAServer to start a client on same VM as server.  
         Note: Server must also have an OAClient running on the server, so that changes made by clients can be made on server. 
     */
-    public OAClient(OAServer server) {
+    public OAClient(OAServerInterface server) {
         LOG.config("creating for OAServer");
         bIsServer = true;
 		try {
-			OAObjectServer os = server.getOAObjectServer();
+			OAObjectServerInterface os = server.getOAObjectServer();
 	    	setOAObjectServer(os);
 		}
 		catch (Exception e) {
@@ -149,7 +139,7 @@ public class OAClient {
         @return true if connection was successful, else false
     */
     public boolean connect() {
-        return connect(port, true, null);
+        return connect(port);
     }
 
     /**
@@ -157,51 +147,31 @@ public class OAClient {
         @return true is connection was sucessful, else false
     */
     public boolean connect(int portNumber) {
-    	return connect(portNumber, false, null);
-    }
-
-    /**
-        Connect to OAServer using specified port.
-        @param portNumber port to connect to OAServer
-        @param bAllowIncr if true and port is not valid, then ports in increments of incrPort up to a max of maxPort.
-        @return true is connection was successful, else false
-    */
-    protected boolean connect(int portNumber, boolean bAllowIncr, RMIClientSocketFactory csf) {
         for (;;) {
-        	LOG.config("connect portNumber="+portNumber+", allowIncr="+bAllowIncr+", customSocketFactory="+(csf!=null));
+        	LOG.config("connect portNumber="+portNumber);
             try {
                 this.port = portNumber;
                 LOG.config("connecting to "+serverName+":"+portNumber);
 
-                String s = "rmi://" + serverName + ":"+portNumber+"/OAServer";  // name used by Naming.rebind
-                s = OAServer_BindName;
-            	LOG.config("performing lookup="+s);
-            	
-                Properties currentProperties = System.getProperties();
-                currentProperties.put("java.rmi.server.hostname", serverName);
-            	
-                Registry registry;
-            	if (csf != null) registry = LocateRegistry.getRegistry(serverName, port, csf);
-            	else registry = LocateRegistry.getRegistry(serverName, port);
-                OAServer oaServer = (OAServer) registry.lookup(s);
-                //was: OAServer oaServer = (OAServer) Naming.lookup(s);
+                MultiplexerClient client = new MultiplexerClient(serverName, port);
+                client.start();
+                RemoteMultiplexerClient remoteClient = new RemoteMultiplexerClient(client);
+                
+                LOG.config("performing lookup="+OAServer_BindName);
+                OAServerInterface oaServer = (OAServerInterface) remoteClient.lookup(OAServer_BindName);
 
                 LOG.config("getting OAObjectServer from OAServer");
-                
-                OAObjectServer serv = (OAObjectServer) oaServer.getOAObjectServer();
+                OAObjectServerInterface serv = (OAObjectServerInterface) oaServer.getOAObjectServer();
                 this.oaObjectServer = null;
                 setOAObjectServer(serv);
 
                 LOG.config("connection to server successful");
-                
                 break;
             }
             catch (Exception e) {
-                if (bAllowIncr) {
-                	LOG.log(Level.WARNING, "connect portNumber="+portNumber, e);
-                    portNumber += incrPort;
-                    if (portNumber < maxPort) continue;
-                }
+            	LOG.log(Level.WARNING, "connect portNumber="+portNumber, e);
+                portNumber += incrPort;
+                if (portNumber < maxPort) continue;
             	LOG.log(Level.WARNING, "connect portNumber="+portNumber, e);
                 return false;
             }
@@ -209,7 +179,8 @@ public class OAClient {
         return true;
     }
 
-    
+
+
 
     /**
         Returns true if connection to OAServer was ever established.
@@ -265,7 +236,7 @@ public class OAClient {
     /**
      * The remote object used for distributed methods from the client to the server.
      */
-    protected OAObjectServer getOAObjectServer() {
+    protected OAObjectServerInterface getOAObjectServer() {
         return oaObjectServer;
     }
     
@@ -273,7 +244,7 @@ public class OAClient {
         Called internally to set the OAObjectServer, which is the RMI object used to communicate with
         Server.
     */
-    protected void setOAObjectServer(OAObjectServer objServ) {
+    protected void setOAObjectServer(OAObjectServerInterface objServ) {
         LOG.config("internally setting OAObjectServer");
     	if (oaObjectServer != null) return;
     	
@@ -1448,7 +1419,7 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
     /** 20120326 used by getProxy, to send method calls to server
      * 
      * @return new instance of clazz
-     * @see OAServer#registerForRemoteMethodCall to register the implmentation object.
+     * @see OAServerInterface#registerForRemoteMethodCall to register the implmentation object.
      */
     public Object lookupProxy(final String remoteObjectName, final Class interfaceClass) {
         Object proxy = hmProxy.get(remoteObjectName);
