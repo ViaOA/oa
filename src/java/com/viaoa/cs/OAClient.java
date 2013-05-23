@@ -71,6 +71,10 @@ public class OAClient {
     private HashSet<Integer> hashServerSideCache = new HashSet<Integer>(379, .75f);
     
     
+    private MultiplexerClient multiplexerClient;
+    private RemoteMultiplexerClient remoteMultiplexerClient;
+    
+    
     /**
         Returns OAClient that is connected to OAServer.
     */
@@ -115,7 +119,6 @@ public class OAClient {
         if (!connect(portNumber)) throw new RuntimeException("Can not connect to server "+ serverName + " on port "+port);
     }
 
-
     /**
         Used internally by OAServer to start a client on same VM as server.  
         Note: Server must also have an OAClient running on the server, so that changes made by clients can be made on server. 
@@ -133,7 +136,7 @@ public class OAClient {
 		}
     }
 
-    
+
     /**
         Connect to OAServer using default port.
         @return true if connection was successful, else false
@@ -153,12 +156,10 @@ public class OAClient {
                 this.port = portNumber;
                 LOG.config("connecting to "+serverName+":"+portNumber);
 
-                MultiplexerClient client = new MultiplexerClient(serverName, port);
-                client.start();
-                RemoteMultiplexerClient remoteClient = new RemoteMultiplexerClient(client);
+                getMultiplexerClient().start();
                 
                 LOG.config("performing lookup="+OAServer_BindName);
-                OAServerInterface oaServer = (OAServerInterface) remoteClient.lookup(OAServer_BindName);
+                OAServerInterface oaServer = (OAServerInterface) getRemoteObject(OAServer_BindName);
 
                 LOG.config("getting OAObjectServer from OAServer");
                 OAObjectServerInterface serv = (OAObjectServerInterface) oaServer.getOAObjectServer();
@@ -179,7 +180,26 @@ public class OAClient {
         return true;
     }
 
+    /**
+     * Get a remote object from server.
+     */
+    public Object getRemoteObject(String name) throws Exception {
+        Object objx = getRemoteMultiplexerClient().lookup(name);
+        return objx;
+    }
 
+    public MultiplexerClient getMultiplexerClient() {
+        if (multiplexerClient == null) {
+            multiplexerClient = new MultiplexerClient(serverName, port);
+        }
+        return multiplexerClient;
+    }
+    public RemoteMultiplexerClient getRemoteMultiplexerClient() {
+        if (remoteMultiplexerClient == null) {
+            remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient());
+        }
+        return remoteMultiplexerClient;
+    }
 
 
     /**
@@ -194,10 +214,14 @@ public class OAClient {
     */
     public boolean isConnected() {
     	boolean result;
+    	
         if (bStop || oaObjectServer == null) return false;
         try {
-            oaObjectServer.getId();
-            result = true;
+            result = multiplexerClient != null && multiplexerClient.isConnected();
+            if (result) {
+                oaObjectServer.getId();
+                result = true;
+            }
         }
         catch (Exception e) {
         	result = false;
