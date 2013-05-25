@@ -1,4 +1,4 @@
-package com.viaoa.comm.multiplexer.io;
+package com.theice.comm.multiplexer.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -228,7 +228,10 @@ public class MultiplexerSocketController implements Serializable {
         return this._connectionId;
     }
 
-    protected MultiplexerOutputStreamController getOutputStreamController() {
+    /**
+     * Used to control the real outputstream. 
+     * */
+    public MultiplexerOutputStreamController getOutputStreamController() { 
         if (_outputStreamController == null) {
             synchronized (_LockStreamController) {
                 if (_outputStreamController == null) {
@@ -264,10 +267,10 @@ public class MultiplexerSocketController implements Serializable {
                 }
 
                 @Override
-                protected void closeSocket(int id) {
+                protected void closeSocket(int id, boolean bSendCommand) {
                     VirtualSocket vs = getSocketHashtable().get(id);
                     try {
-                        if (vs != null) vs.close();
+                        if (vs != null) vs.close(bSendCommand);
                     }
                     catch (Exception e) {
                     }
@@ -367,7 +370,12 @@ public class MultiplexerSocketController implements Serializable {
             @Override
             public synchronized void close() throws IOException {
                 super.close(); // default behavior is to mark socket as closed
-                MultiplexerSocketController.this.closeSocket(this);
+                MultiplexerSocketController.this.closeSocket(this, true);
+            }
+            @Override
+            public synchronized void close(boolean bSendCommand) throws IOException {
+                super.close(); // default behavior is to mark socket as closed
+                MultiplexerSocketController.this.closeSocket(this, bSendCommand);
             }
 
             @Override
@@ -470,9 +478,9 @@ public class MultiplexerSocketController implements Serializable {
         return vs;
     }
 
-    protected void closeSocket(VirtualSocket vs) throws IOException {
+    protected void closeSocket(VirtualSocket vs, boolean bSendCommand) throws IOException {
         LOG.fine("closing vsocket, connectionId="+_connectionId+", id="+vs._id);
-        if (_bIsClient) {
+        if (bSendCommand) {
             getOutputStreamController().sendCommand(CMD_CloseVSocket, vs._id);
         }
         synchronized (vs._lockObject) {

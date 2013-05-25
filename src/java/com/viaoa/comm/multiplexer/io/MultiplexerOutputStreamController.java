@@ -1,4 +1,4 @@
-package com.viaoa.comm.multiplexer.io;
+package com.theice.comm.multiplexer.io;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.io.IOException;
  * 
  * @author vvia
  */
-class MultiplexerOutputStreamController {
+public class MultiplexerOutputStreamController {
 
     /** outputstream for "real" socket. */
     private DataOutputStream _dataOutputStream;
@@ -27,6 +27,20 @@ class MultiplexerOutputStreamController {
     private int _iWriteFlush; // counter
     private boolean _needsFlush;
 
+    /**
+     * Throttle to limit the number of MB per second, calculated 10 times per second.
+     * if 0 then no limit.
+     */
+    private int mbThrottleLimitPerSecond;
+    private int iThrottleLimitPerFractionSecond; // number of bytes per 1/iThrottleGrandularity second
+
+    
+    /**
+     *  how often to check (times per second) for throttling
+     *  Max value should not be greater then 1000 (which is a single milisecond).
+     */
+    private final int iThrottleFractionOfSecond = 250; // this will use 1000/250 = 4 miliseconds
+    
     /** used to synchronize access to outputstream by vsockets. */
     private final transient Object WRITELOCK = new Object();
 
@@ -37,6 +51,23 @@ class MultiplexerOutputStreamController {
         this._bWritingLock = true;
     }
 
+    /**
+     * Throttle to limit the number of MB per second, calculated 10 times per second.
+     * if 0 then no limit.
+     * Each write will check to see if the max has been written for the current time slice (10th sec),
+     * and sleep for the remainder if the limit has been exceeded.
+     */
+    public void setThrottleLimit(int mbPerSecond) {
+        mbThrottleLimitPerSecond = mbPerSecond;
+        if (mbPerSecond > 0) {
+            iThrottleLimitPerFractionSecond = (mbPerSecond * 1024 * 1024) / iThrottleFractionOfSecond;
+        }
+        else iThrottleLimitPerFractionSecond = 0;
+    }
+    public int getThrottleLimit() {
+        return mbThrottleLimitPerSecond;
+    }
+    
     /**
      * The real outputstream that is shared by vsockets.
      */
@@ -95,9 +126,35 @@ class MultiplexerOutputStreamController {
         outputStream.writeInt(len); // header
 
         outputStream.write(bs, offset, len);
+
+        // this is to throttle the amount of data that can be written per fraction of a second (ex: 10x = 100ms)
+        if (iThrottleLimitPerFractionSecond > 0) {
+            throttleTotalBytesWritten += len;
+            long msNow = System.currentTimeMillis();
+            if (throttleLastMs == 0) throttleLastMs = msNow; 
+            long msDiff = msNow - throttleLastMs; 
+            if (msDiff >= (1000/iThrottleFractionOfSecond)) {  // compare in miliseconds
+                // reset
+                throttleTotalBytesWritten = len;
+                throttleLastMs = msNow;
+            }
+            else if (throttleTotalBytesWritten > iThrottleLimitPerFractionSecond) {
+                // need to sleep for remainder of fraction of second
+                int msSleep = (int) ((1000/iThrottleFractionOfSecond) - msDiff);
+                try {
+                    Thread.sleep(msSleep);
+                }
+                catch (InterruptedException e) {}
+                throttleTotalBytesWritten = (throttleTotalBytesWritten - iThrottleLimitPerFractionSecond);
+                throttleLastMs = msNow + msSleep;
+            }
+        }
         releaseOutputStream(true); // this will flush
     }
-
+    // used to track throttling
+    private long throttleLastMs;
+    private long throttleTotalBytesWritten;
+    
     /**
      * Used to determine the max size that can be written to real socket per request. This is a
      * recommendation, and is not enforced when writing to the real outputstream.

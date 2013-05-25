@@ -1,4 +1,4 @@
-package com.viaoa.remote.multiplexer.info;
+package com.theice.remote.multiplexer.info;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.ReferenceQueue;
@@ -7,10 +7,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import com.viaoa.remote.multiplexer.annotation.RemoteInterface;
-import com.viaoa.remote.multiplexer.annotation.RemoteMethod;
-import com.viaoa.remote.multiplexer.annotation.RemoteParameter;
-
+import com.theice.remote.multiplexer.annotation.RemoteInterface;
+import com.theice.remote.multiplexer.annotation.RemoteMethod;
+import com.theice.remote.multiplexer.annotation.RemoteParameter;
 
 /**
  * Internal information about a remote Object. 
@@ -51,6 +50,9 @@ public class BindInfo {
         return mi;
     }
     
+    /**
+     * used to initialize the information about the methods for the bind class.
+     */
     public synchronized void loadMethodInfo() {
         if (interfaceClass == null) return;
         hmNameToMethod = new HashMap<String, MethodInfo>(23, .75f);

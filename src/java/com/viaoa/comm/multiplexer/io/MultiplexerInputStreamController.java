@@ -1,4 +1,4 @@
-package com.viaoa.comm.multiplexer.io;
+package com.theice.comm.multiplexer.io;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -242,7 +242,7 @@ abstract class MultiplexerInputStreamController {
             createNewSocket(_connectionId, param, serverSocketName);
             break;
         case MultiplexerSocketController.CMD_CloseVSocket:
-            closeSocket(param);
+            closeSocket(param, false);
             break;
         case MultiplexerSocketController.CMD_CloseRealSocket:
             closeRealSocket();
@@ -263,7 +263,7 @@ abstract class MultiplexerInputStreamController {
     protected abstract void createNewSocket(int connectionId, int id, String serverSocketName);
 
     /** Called by processCommand to close an existing vsocket. */
-    protected abstract void closeSocket(int id);
+    protected abstract void closeSocket(int id, boolean bSendCommand);
 
     /** Called by processCommand to close the "real" socket. */
     protected abstract void closeRealSocket();

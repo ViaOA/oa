@@ -1,18 +1,19 @@
-package com.viaoa.remote.multiplexer.io;
+package com.theice.remote.multiplexer.io;
+
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Customized from BufferedOutputStream, but uses a pool of buffers so that it does not have 
+ * Customized from BufferedOutputStream, but uses a shared pool of buffers so that it does not have 
  * to create a new one each time. Also removed sync on methods, since this is only used by one
  * thread at a time.
  * 
  * @author vvia
  */
 public class RemoteBufferedOutputStream extends FilterOutputStream {
-    private static final int TotalBuffers = 10;
+    private static final int TotalBuffers = 18;
     private static final int BufferSize = 1024 * 8;
     protected byte[] bsBuffer;
     protected int count;
@@ -46,10 +47,11 @@ public class RemoteBufferedOutputStream extends FilterOutputStream {
         return null;
     }
     protected static void releasePoolBuffer(byte[] bs) {
+        if (bs == null) return;
         synchronized (Lock) {
             for (int i = 0; i < TotalBuffers; i++) {
                 if (buffers[i] == bs) {
-                    if (isUsed[i]) isUsed[i] = false;
+                    isUsed[i] = false;
                     break;
                 }
             }
@@ -63,55 +65,68 @@ public class RemoteBufferedOutputStream extends FilterOutputStream {
         }
         return bs;
     }
-    protected void releaseBuffer(byte[] bs) {
-        if (!bOwnedBuffer) {
-            releasePoolBuffer(bs);
+
+    private void freeBuffer() {
+        if (!bOwnedBuffer && bsBuffer != null) {
+            releasePoolBuffer(bsBuffer);
+            bsBuffer = null;
         }
+    }
+    
+    @Override
+    public void close() throws IOException {
+        freeBuffer();
+        super.close();
     }
 
     @Override
-    public void close() throws IOException {
-        super.close();
-        releaseBuffer(bsBuffer);
+    protected void finalize() throws Throwable {
+        freeBuffer();
+        super.finalize();
     }
-
-    /** Flush the internal buffer */
-    private void flushBuffer() throws IOException {
-        if (count > 0) {
+    
+    /** writes the internal buffer to output, and resets position to 0 */
+    private void writeBuffer() throws IOException {
+        if (count > 0 && bsBuffer != null) {
             out.write(bsBuffer, 0, count);
             count = 0;
-            releaseBuffer(bsBuffer);
         }
     }
 
     public void write(int b) throws IOException {
-        if (count == 0) {
+        if (bsBuffer == null) {
             bsBuffer = getBuffer();
         }
         else if (count >= bsBuffer.length) {
-            flushBuffer();
+            writeBuffer();
         }
         bsBuffer[count++] = (byte) b;
     }
 
     public void write(byte b[], int off, int len) throws IOException {
-        if (count == 0) {
+        if (bsBuffer == null) {
             bsBuffer = getBuffer();
         }
         if (len >= bsBuffer.length) {
-            if (count > 0) flushBuffer();
+            if (count > 0) {
+                writeBuffer();
+            }
             out.write(b, off, len);
             return;
         }
         if (len > bsBuffer.length - count) {
-            flushBuffer();
+            writeBuffer();
         }
         System.arraycopy(b, off, bsBuffer, count, len);
         count += len;
     }
 
+    /**
+     * Overwritten to include freeing the byte[] buffer from the shared pool.
+     */
     public void flush() throws IOException {
-        flushBuffer();
+        writeBuffer();
         out.flush();
+        freeBuffer();  // good chance that it is not needed anymore
     }
 }

@@ -1,4 +1,4 @@
-package com.viaoa.remote.multiplexer;
+package com.theice.remote.multiplexer;
 
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
@@ -16,15 +16,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.viaoa.comm.multiplexer.MultiplexerServer;
-import com.viaoa.comm.multiplexer.io.VirtualServerSocket;
-import com.viaoa.comm.multiplexer.io.VirtualSocket;
-import com.viaoa.remote.multiplexer.info.BindInfo;
-import com.viaoa.remote.multiplexer.info.RequestInfo;
-import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
-import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
-import com.viaoa.util.OACircularQueue;
-import com.viaoa.util.OACompressWrapper;
+import com.theice.comm.multiplexer.MultiplexerServer;
+import com.theice.comm.multiplexer.io.VirtualServerSocket;
+import com.theice.comm.multiplexer.io.VirtualSocket;
+import com.theice.remote.multiplexer.info.BindInfo;
+import com.theice.remote.multiplexer.info.RequestInfo;
+import com.theice.remote.multiplexer.io.RemoteObjectInputStream;
+import com.theice.remote.multiplexer.io.RemoteObjectOutputStream;
+import com.theice.util.CircularQueue;
+import com.theice.util.ICompressWrapper;
 
 /**
  * Server component used to allow remoting method calls with Clients.
@@ -66,7 +66,7 @@ public class RemoteMultiplexerServer {
     private ConcurrentHashMap<BindInfo, Object> hmBindObject = new ConcurrentHashMap<BindInfo, Object>();
     
     // CircularQueues used for broadcast remote objects
-    private ConcurrentHashMap<BindInfo, OACircularQueue<RequestInfo>> hmBroadcastCircularQueue = new ConcurrentHashMap<BindInfo, OACircularQueue<RequestInfo>>();
+    private ConcurrentHashMap<BindInfo, CircularQueue<RequestInfo>> hmBroadcastCircularQueue = new ConcurrentHashMap<BindInfo, CircularQueue<RequestInfo>>();
      
     // Java instance used to broadcast messages to clients
     private ConcurrentHashMap<Class, BindInfo> hmBroadcastClass = new ConcurrentHashMap<Class, BindInfo>();
@@ -257,7 +257,7 @@ public class RemoteMultiplexerServer {
             for (int i=0; i<ri.methodInfo.compressedParams.length && i<ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
                 if (!ri.methodInfo.compressedParams[i]) continue;
-                ri.args[i] = ((OACompressWrapper) ri.args[i]).getObject();
+                ri.args[i] = ((ICompressWrapper) ri.args[i]).getObject();
             }            
         }
 
@@ -287,7 +287,7 @@ public class RemoteMultiplexerServer {
                             obj = bindz.getObject();
                             bindx = session.createBindInfo(bindName, obj, ri.methodInfo.remoteParams[i]);
 
-                            final OACircularQueue<RequestInfo> cque = hmBroadcastCircularQueue.get(bindz);
+                            final CircularQueue<RequestInfo> cque = hmBroadcastCircularQueue.get(bindz);
                             // set up thread that will get messages from queue and send to client
                             Thread t = new Thread(new Runnable() {
                                 @Override
@@ -348,7 +348,7 @@ public class RemoteMultiplexerServer {
                 session.hmBindObject.put(bindx, ri.response);  // make sure it wont get gc'd
             }
             else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
-                ri.response = new OACompressWrapper(ri.response);
+                ri.response = new ICompressWrapper(ri.response);
             }
         }
     }
@@ -470,7 +470,7 @@ public class RemoteMultiplexerServer {
             for (int i=0; i<ri.methodInfo.compressedParams.length && i<ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
                 if (ri.methodInfo.compressedParams[i]) {
-                    ri.args[i] = new OACompressWrapper(ri.args[i]);
+                    ri.args[i] = new ICompressWrapper(ri.args[i]);
                 }
             }            
         }
@@ -534,7 +534,7 @@ public class RemoteMultiplexerServer {
                 ri.response = bindx.getObject();
             }
             else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
-                ri.response = ((OACompressWrapper) ri.response).getObject();
+                ri.response = ((ICompressWrapper) ri.response).getObject();
             }
         }
     }
@@ -635,7 +635,7 @@ public class RemoteMultiplexerServer {
      * All methods that are invoked are added to a circular queue that can then be 
      * sent to clients that have sent an implementation to the server as a remote object.
      */
-    public Object createProxyForBroadcast(Class interfaceClass, int queueSize) {
+    public Object createProxyForBroadcast(Class interfaceClass) {
         final String bindName = "broadcast." + aiBindCount.incrementAndGet();
         InvocationHandler handler = new InvocationHandler() {
             @Override
@@ -649,7 +649,7 @@ public class RemoteMultiplexerServer {
         hmBindObject.put(bind, obj);
         
         // this is the queue where all invoked messages will be put - for clients to pick up
-        OACircularQueue<RequestInfo> cque = new OACircularQueue<RequestInfo>(queueSize) {
+        CircularQueue<RequestInfo> cque = new CircularQueue<RequestInfo>(500) {
         };
         hmBroadcastCircularQueue.put(bind, cque);        
 
@@ -702,7 +702,7 @@ public class RemoteMultiplexerServer {
             for (int i=0; i<ri.methodInfo.compressedParams.length && i<ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
                 if (ri.methodInfo.compressedParams[i]) {
-                    ri.args[i] = new OACompressWrapper(ri.args[i]);
+                    ri.args[i] = new ICompressWrapper(ri.args[i]);
                 }
             }            
         }
@@ -729,7 +729,7 @@ public class RemoteMultiplexerServer {
         }
 
         // put "ri" in circular queue for clients to pick up.        
-        OACircularQueue<RequestInfo> cque = hmBroadcastCircularQueue.get(ri.bind);        
+        CircularQueue<RequestInfo> cque = hmBroadcastCircularQueue.get(ri.bind);        
         cque.addMessageToQueue(ri);
     }
 
@@ -790,6 +790,7 @@ public class RemoteMultiplexerServer {
             boolean bRequestedNew = false;
             boolean bWaitedForFirst = false;
             for (int i=0 ;socket == null; i++) {
+                boolean bRequestNew = false;
                 synchronized (alSocketFromStoC) {
                     if (bDisconnected) {
                         throw new Exception("closed connection/session="+connectionId);
@@ -800,12 +801,8 @@ public class RemoteMultiplexerServer {
                     }            
                     else if (x == 1 && !bRequestedNew) {
                         // request client to open more CtoS sockets
+                        bRequestNew = true;
                         socket = alSocketFromStoC.get(0);
-                        RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket);
-                        oos.writeBoolean(true); // this will tell client to create more StoC sockets
-                        oos.flush();
-                        socket = null;
-                        bRequestedNew = true;
                     }
                     else if (x == 0 && !bWaitedForFirst) { 
                         alSocketFromStoC.wait(250);
@@ -818,16 +815,27 @@ public class RemoteMultiplexerServer {
                         alSocketFromStoC.wait(100);
                     }
                 }
+                if (bRequestNew) {
+                    RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket);
+                    oos.writeBoolean(true); // this will tell client to create more StoC sockets
+                    oos.flush();
+                    socket = null;
+                    bRequestedNew = true;
+                }
             }
             return socket;
         }
         
-        public void releaseSocketForStoC(VirtualSocket socket) {
+        public void releaseSocketForStoC(VirtualSocket socket) throws Exception {
             if (socket == null) return;
             synchronized (alSocketFromStoC) {
-                alSocketFromStoC.add(socket);
-                alSocketFromStoC.notifyAll();
+                if (alSocketFromStoC.size() < 3) { 
+                    alSocketFromStoC.add(socket);
+                    alSocketFromStoC.notifyAll();
+                    return;
+                }
             }
+            socket.close();
         }
         public void addSocketForStoC(VirtualSocket socket) {
             if (socket == null) return;
@@ -856,7 +864,7 @@ public class RemoteMultiplexerServer {
 
 
         // used to send broadcast messages to client
-        public void writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String clientBindName) throws Exception {
+        public void writeQueueMessages(final CircularQueue<RequestInfo> cque, final String clientBindName) throws Exception {
             long qpos = cque.getHeadPostion();
             // todo: need a way to stop messages
             

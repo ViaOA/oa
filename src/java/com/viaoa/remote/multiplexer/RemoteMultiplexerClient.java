@@ -1,4 +1,4 @@
-package com.viaoa.remote.multiplexer;
+package com.theice.remote.multiplexer;
 
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
@@ -15,14 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.viaoa.comm.multiplexer.MultiplexerClient;
-import com.viaoa.comm.multiplexer.io.VirtualSocket;
-import com.viaoa.remote.multiplexer.info.BindInfo;
-import com.viaoa.remote.multiplexer.info.RequestInfo;
-import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
-import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
-import com.viaoa.util.OACompressWrapper;
-
+import com.theice.comm.multiplexer.MultiplexerClient;
+import com.theice.comm.multiplexer.io.VirtualSocket;
+import com.theice.remote.multiplexer.info.BindInfo;
+import com.theice.remote.multiplexer.info.RequestInfo;
+import com.theice.remote.multiplexer.io.RemoteObjectInputStream;
+import com.theice.remote.multiplexer.io.RemoteObjectOutputStream;
+import com.theice.util.ICompressWrapper;
 
 /**
  * Remoting client, that allows a client to access Objects on a server, and call methods on those
@@ -218,7 +217,7 @@ public class RemoteMultiplexerClient {
             for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
                 if (ri.methodInfo.compressedParams[i]) {
-                    ri.args[i] = new OACompressWrapper(ri.args[i]);
+                    ri.args[i] = new ICompressWrapper(ri.args[i]);
                 }
             }
         }
@@ -234,7 +233,9 @@ public class RemoteMultiplexerClient {
                 Object objx = bindx != null ? bindx.weakRef.get() : null;
                 if (bindx == null || objx == null) {
                     bindx = createBindInfo(createBindName(ri), ri.args[i], ri.methodInfo.remoteParams[i], false);
-                    createSocketForStoC(); // to process message from server to this object
+                    if (!bFirstStoCsocketCreated) {
+                        createSocketForStoC(); // to process message from server to this object
+                    }
                 }
                 ri.args[i] = bindx.name;
             }
@@ -273,7 +274,7 @@ public class RemoteMultiplexerClient {
                 ri.response = bindx.getObject();
             }
             else if (ri.response != null && ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
-                ri.response = ((OACompressWrapper) ri.response).getObject();
+                ri.response = ((ICompressWrapper) ri.response).getObject();
             }
         }
         return true;
@@ -310,6 +311,8 @@ public class RemoteMultiplexerClient {
 
     // used to assign unique int for each StoC vsocket 
     private AtomicInteger aiCountForStoC = new AtomicInteger();
+    // flag to know if the initial StoC vsocket has been created
+    private volatile boolean bFirstStoCsocketCreated;
     /**
      * These are vsockets used to listen/wait for method calls from server.
      * This is used when a client sends a remote object to the server, so that server
@@ -338,6 +341,7 @@ public class RemoteMultiplexerClient {
         });
         t.setName("VSocket_StoC." + socket.getConnectionId() + "." + socket.getId());
         t.start();
+        bFirstStoCsocketCreated = true;
         // LOG.config("created Server to Client socket and thread, connectionId=" + socket.getConnectionId() + ", vid=" + id);
     }
 
@@ -418,12 +422,18 @@ public class RemoteMultiplexerClient {
             return;
         }
 
+        Object remoteObject = ri.bind.getObject();
+        if (remoteObject == null) {
+            ri.exceptionMessage = "remote Object has been garbage collected";
+            return;
+        }
+        
         // check for compressed params
         if (ri.methodInfo.compressedParams != null && ri.args != null) {
             for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
                 if (!ri.methodInfo.compressedParams[i]) continue;
-                ri.args[i] = ((OACompressWrapper) ri.args[i]).getObject();
+                ri.args[i] = ((ICompressWrapper) ri.args[i]).getObject();
             }
         }
 
@@ -449,7 +459,6 @@ public class RemoteMultiplexerClient {
                 ri.args[i] = bindx.getObject();
             }
         }
-
         ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
 
         if (ri.response != null && ri.methodInfo.remoteReturn != null) {
@@ -462,7 +471,7 @@ public class RemoteMultiplexerClient {
             ri.responseBindName = bindx.name;  // this will be the return value
         }
         else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
-            ri.response = new OACompressWrapper(ri.response);
+            ri.response = new ICompressWrapper(ri.response);
         }
     }
 

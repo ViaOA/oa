@@ -1,13 +1,13 @@
-package com.viaoa.remote.multiplexer.info;
+package com.theice.remote.multiplexer.info;
 
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.theice.comm.multiplexer.io.VirtualSocket;
 
 /**
- * This is used to capture information for each request.
+ * This is used to track and capture information for each request.
  * @author vvia
  */
 public class RequestInfo {

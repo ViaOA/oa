@@ -1,4 +1,4 @@
-package com.viaoa.comm.multiplexer.io;
+package com.theice.comm.multiplexer.io;
 
 import java.net.*;
 import java.io.*;
@@ -170,4 +170,5 @@ public abstract class VirtualSocket extends Socket {
 
     public abstract void write(int b) throws IOException;
 
+    public abstract void close(boolean bSendCommand) throws IOException;
 }

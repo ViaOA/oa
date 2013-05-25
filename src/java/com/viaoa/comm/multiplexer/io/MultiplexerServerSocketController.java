@@ -1,4 +1,4 @@
-package com.viaoa.comm.multiplexer.io;
+package com.theice.comm.multiplexer.io;
 
 import java.io.*;
 import java.net.*;
@@ -154,6 +154,21 @@ public class MultiplexerServerSocketController {
         }
     }
 
+    // used by multiplexerOutputStream
+    private int mbThrottleLimit;
+
+    /**
+     * Used to set the limit on the number of bytes that can be written per second (in MB).  
+     * @see MultiplexerOutputStreamController#
+     */
+    public void setThrottleLimit(int mbPerSecond) {
+        mbThrottleLimit = mbPerSecond;
+    }
+    public int getThrottleLimit() {
+        return mbThrottleLimit;
+    }
+    
+    
     /**
      * This is internally called when a new "real" client socket connection is accepted on the server.
      * This will create a MultiplexerSocketController (ISC) to manage the connection. The ISC will then
@@ -214,6 +229,8 @@ public class MultiplexerServerSocketController {
                 return MultiplexerServerSocketController.this.getInvalidConnectionMessage();
             }
         };
+        sc.getOutputStreamController().setThrottleLimit(getThrottleLimit());
+        
         // add the socketcontroller to list.
         add(sc);
     }

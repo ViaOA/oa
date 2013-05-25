@@ -1,4 +1,4 @@
-package com.viaoa.remote.multiplexer.io;
+package com.theice.remote.multiplexer.io;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.theice.comm.multiplexer.io.VirtualSocket;
 
 /**
  * Used internally for remoting objects between clients and servers.
@@ -35,8 +35,8 @@ public class RemoteObjectOutputStream extends ObjectOutputStream {
         // 95000ns rt
         // super( new BufferedOutputStream(socket.getOutputStream()) );
         
-        // fastest: 76000 rt (less gc)       
-        super( new RemoteBufferedOutputStream(socket.getOutputStream()) );
+        // fastest: 76000 rt (plus less gc)
+        super(new RemoteBufferedOutputStream(socket.getOutputStream()));
         this.hmClassDesc = hmClassDesc;
         this.aiClassDesc = aiClassDesc;
     }
@@ -49,10 +49,10 @@ public class RemoteObjectOutputStream extends ObjectOutputStream {
     @Override
     public void flush() throws IOException {
         super.flush();
-
-        // has to be done after it has been fully written, to avoid race condition
         if (hmTemp == null) return;
         
+        // now that the objects have been sent with any new classDesc, add them to the hm 
+        // has to be done after it has been fully written, to avoid race condition
         for (Map.Entry<String, Integer> entry : hmTemp.entrySet()) {
            hmClassDesc.put(entry.getKey(), entry.getValue()); 
         }
@@ -79,7 +79,7 @@ public class RemoteObjectOutputStream extends ObjectOutputStream {
             else {
                 id = aiClassDesc.getAndIncrement();
                 if (hmTemp == null) hmTemp = new HashMap<String, Integer>();
-                hmTemp.put(s, id); 
+                hmTemp.put(s, id);
             }
             writeInt(-1);
             writeInt(id);

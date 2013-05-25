@@ -1,4 +1,4 @@
-package com.viaoa.remote.multiplexer.io;
+package com.theice.remote.multiplexer.io;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Used internally for remoting objects between clients and servers.
+ * Since we are controlling both sides of the comm, we are able to reduce a lot
+ * of the overhead - ex: sending header information and class descriptions,  
  * @author vvia
  */
 public class RemoteObjectInputStream extends ObjectInputStream {
@@ -40,6 +42,8 @@ public class RemoteObjectInputStream extends ObjectInputStream {
         }
         return osc;
     }
+
+    // faster then using readUTF
     public String readAsciiString() throws IOException {
         short x = readShort();
         if (x == 0) return null;

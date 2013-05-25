@@ -1,12 +1,12 @@
-package com.viaoa.comm.multiplexer;
+package com.theice.comm.multiplexer;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
 import java.util.logging.Logger;
 
-import com.viaoa.comm.multiplexer.io.MultiplexerSocketController;
-import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.theice.comm.multiplexer.io.VirtualSocket;
+import com.theice.comm.multiplexer.io.MultiplexerSocketController;
 
 /**
  * Creates multiplexed sockets over a single socket. This is used so that a client can have multiple
@@ -44,6 +44,9 @@ public class MultiplexerClient {
      * Controls the real socket, and manages the multiplexed "virtual" sockets.
      */
     private MultiplexerSocketController _controlSocket;
+
+    // used by multiplexerOutputStream
+    private int mbThrottleLimit;
 
     /**
      * Create a new client.
@@ -83,8 +86,27 @@ public class MultiplexerClient {
         _socket.setTcpNoDelay(true);
 
         _controlSocket = new MultiplexerSocketController(_socket);
+        setThrottleLimit(this.mbThrottleLimit);
     }
 
+    /**
+     * Used to set the limit on the number of bytes that can be written per second (in MB).  
+     * @see MultiplexerOutputStreamController#
+     */
+    public void setThrottleLimit(int mbPerSecond) {
+        mbThrottleLimit = mbPerSecond;
+        if (_controlSocket != null) {
+            _controlSocket.getOutputStreamController().setThrottleLimit(mbThrottleLimit);
+        }
+    }
+    public int getThrottleLimit() {
+        if (_controlSocket != null) {
+            mbThrottleLimit = _controlSocket.getOutputStreamController().getThrottleLimit();
+        }
+        return mbThrottleLimit;
+    }
+
+    
     /**
      * Create a socket to a VServerSocket. The server socket must be created on the server first.
      * 

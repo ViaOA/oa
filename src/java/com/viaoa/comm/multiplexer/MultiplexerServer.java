@@ -1,4 +1,4 @@
-package com.viaoa.comm.multiplexer;
+package com.theice.comm.multiplexer;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -6,9 +6,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
 
-import com.viaoa.comm.multiplexer.io.MultiplexerServerSocketController;
-import com.viaoa.comm.multiplexer.io.VirtualServerSocket;
-
+import com.theice.comm.multiplexer.io.VirtualServerSocket;
+import com.theice.comm.multiplexer.io.MultiplexerServerSocketController;
 
 /**
  * Used for creating a multiplexed ServerSockets, so that a client can have multiple socket connections
@@ -42,6 +41,7 @@ public class MultiplexerServer {
      */
     private boolean _bAllowConnections;
 
+    
     /**
      * The single/only "Real" serversocket that is accepting new connections in behalf of other
      * VServerSockets (virtual server sockets).
@@ -77,6 +77,17 @@ public class MultiplexerServer {
         LOG.fine("host=" + host + ", port=" + port);
     }
 
+    /**
+     * Used to set the limit on the number of bytes that can be written per second (in MB).  
+     * @see MultiplexerOutputStreamController#
+     */
+    public void setThrottleLimit(int mbPerSecond) throws Exception {
+        getServerSocketController().setThrottleLimit(mbPerSecond);
+    }
+    public int getThrottleLimit() throws Exception {
+        return getServerSocketController().getThrottleLimit();
+    }
+    
     /**
      * This must be called to enable serverSocket to begin accepting new connections.
      * 
