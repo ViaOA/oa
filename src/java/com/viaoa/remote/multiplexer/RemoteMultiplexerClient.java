@@ -1,4 +1,4 @@
-package com.theice.remote.multiplexer;
+package com.viaoa.remote.multiplexer;
 
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
@@ -15,13 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.theice.comm.multiplexer.MultiplexerClient;
-import com.theice.comm.multiplexer.io.VirtualSocket;
-import com.theice.remote.multiplexer.info.BindInfo;
-import com.theice.remote.multiplexer.info.RequestInfo;
-import com.theice.remote.multiplexer.io.RemoteObjectInputStream;
-import com.theice.remote.multiplexer.io.RemoteObjectOutputStream;
-import com.theice.util.ICompressWrapper;
+import com.viaoa.comm.multiplexer.MultiplexerClient;
+import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.remote.multiplexer.info.BindInfo;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
+import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
+import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
+import com.viaoa.util.OACompressWrapper;
 
 /**
  * Remoting client, that allows a client to access Objects on a server, and call methods on those
@@ -72,13 +72,17 @@ public class RemoteMultiplexerClient {
         this.multiplexerClient = multiplexerClient;
     }
 
+    public MultiplexerClient getMultiplexerClient() {
+        return multiplexerClient;
+    }
+    
     /**
      * Get the real socket.
      */
     public Socket getSocket() {
         return multiplexerClient.getSocket();
     }
-
+    
     /** create a name that will be unique on the server. */
     protected String createBindName(RequestInfo ri) {
         String bindName = "C." + ri.socket.getConnectionId() + "." + aiBindCount.incrementAndGet();
@@ -217,7 +221,7 @@ public class RemoteMultiplexerClient {
             for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
                 if (ri.methodInfo.compressedParams[i]) {
-                    ri.args[i] = new ICompressWrapper(ri.args[i]);
+                    ri.args[i] = new OACompressWrapper(ri.args[i]);
                 }
             }
         }
@@ -274,7 +278,7 @@ public class RemoteMultiplexerClient {
                 ri.response = bindx.getObject();
             }
             else if (ri.response != null && ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
-                ri.response = ((ICompressWrapper) ri.response).getObject();
+                ri.response = ((OACompressWrapper) ri.response).getObject();
             }
         }
         return true;
@@ -433,7 +437,7 @@ public class RemoteMultiplexerClient {
             for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
                 if (!ri.methodInfo.compressedParams[i]) continue;
-                ri.args[i] = ((ICompressWrapper) ri.args[i]).getObject();
+                ri.args[i] = ((OACompressWrapper) ri.args[i]).getObject();
             }
         }
 
@@ -471,7 +475,7 @@ public class RemoteMultiplexerClient {
             ri.responseBindName = bindx.name;  // this will be the return value
         }
         else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
-            ri.response = new ICompressWrapper(ri.response);
+            ri.response = new OACompressWrapper(ri.response);
         }
     }
 

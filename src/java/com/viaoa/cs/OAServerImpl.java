@@ -20,14 +20,8 @@ package com.viaoa.cs;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
-
 import java.lang.reflect.Method;
-import java.rmi.*;
-import java.rmi.server.*;
-
-
 import com.viaoa.object.*;
-import com.viaoa.remote.multiplexer.annotation.RemoteInterface;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 
@@ -42,9 +36,9 @@ public class OAServerImpl implements OAServerInterface {
     private static Logger LOG = Logger.getLogger(OAServerImpl.class.getName());
     
     Vector<OAObjectServerInterface> vecObjectServer = new Vector<OAObjectServerInterface>();  // keeps all OAObjectServer objects created for this jvm instance.
-    OAObjectPublisher publisher;
 
     private Object LOCKQueue = new Object();
+//qqqq use circular queue    
     private static int QueueSize = 15000;
     private OAObjectMessage[] msgQueue = new OAObjectMessage[QueueSize];
     
@@ -53,7 +47,6 @@ public class OAServerImpl implements OAServerInterface {
     private int queueNextSequence;
     private volatile int queueReset;  // incremented whenever the queueLoadPos is changed
     private OAObjectMessage msgErrorOverrun;  // sent to clients if they are too far behind on the queue
-    private boolean bHoldSend;
     private int sendCount;
 
     // used by readMessages
@@ -72,37 +65,17 @@ public class OAServerImpl implements OAServerInterface {
         return serverImpl;
     }
     
-    
-    public String test() throws RemoteException {
-        LOG.fine("called");
-        return "OAServerImpl.test() called";
-    }
-
-    /**
-        Create a new OAObjectServer object for an OAClient.  This is automatically created by
-        OAClient.
-    */
-    public OAObjectServerInterface getOAObjectServer() throws RemoteException {
-        OAObjectServerImpl os = new OAObjectServerImpl(this);
-        
-        os.queueLoadPos = this.queueLoadPos;
-        
-        LOG.config("OAServer.getOAObjectServer() New Client Connection #"+os.getId()+" queuePos="+os.queueLoadPos);
-        
-        vecObjectServer.addElement(os);
-        if (publisher != null) publisher.addUser(os);
-        
-        return os;
-    }
-
-    public void setHoldSendMessages(boolean b) {
-        LOG.info("called");
+    @Override
+    public OAObjectServerInterface createOAObjectServer(OAClientInfo ci) {
+        OAObjectServerImpl objServer = new OAObjectServerImpl(this, ci.getId());
+        objServer.queueLoadPos = this.queueLoadPos;
         synchronized(vecObjectServer) {
-            bHoldSend = b;
-            vecObjectServer.notify();
+            vecObjectServer.add(objServer);
         }
-    }
-
+        LOG.config("OAServer.getOAObjectServer() New Client Connection #"+objServer.getId()+" queuePos="+this.queueLoadPos);
+        return objServer;
+    }    
+    
     protected OAObjectServerImpl getOAObjectServer(int id) {
         //LOG.fine("id="+id);
         synchronized(vecObjectServer) {
@@ -133,39 +106,6 @@ public class OAServerImpl implements OAServerInterface {
             os.saveCache(cascade, iCascadeRule);
         }
     }
-
-    
-    public OAClientInfo[] getClientInfos() {
-        
-        // disconnect user if they have not recvd msg in last 5 mintues
-       
-        OAClientInfo[] cis; 
-        synchronized (vecObjectServer) {
-            int x = vecObjectServer.size();
-            cis = new OAClientInfo[x]; 
-            long timeout = System.currentTimeMillis() + (5 * 60 * 1000);
-            for (int i=0; i<x; i++) {
-                OAObjectServerImpl os = (OAObjectServerImpl) vecObjectServer.elementAt(i);
-                if (os == null) continue;
-
-                // check for disconnects
-                if (os.bConnected && !os.bGettingMessagesNow) {
-                    if (os.timeLastGetMessages > 0 && os.timeLastGetMessages < timeout) {
-                        try {
-LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout=" + timeout + ", will NOT disconnect user, os.id="+os.id);
-//qqqq                            os.disconnected();
-                        }
-                        catch (Exception e) {
-                        }
-                    }
-                }
-                
-                cis[i] = os.getClientInfo();
-                os.updateClientInfo();
-            }
-        }
-        return cis;
-    }
     protected long getQueueLoadPos() {
         return queueLoadPos;
     }
@@ -174,17 +114,6 @@ LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout="
     /** called by OAObjectServer.sendMessage() to send message to other clients */
     protected void sendMessage(OAObjectServerImpl objServ, OAObjectMessage msg) {
         sendCount++;
-
-        // LOG.finer("cnt="+sendCount+", id="+objServ.id+", msg="+msg);
-        for (;bHoldSend;) {
-            try {
-                synchronized(vecObjectServer) {
-                    if (bHoldSend) vecObjectServer.wait(500);
-                }
-            }
-            catch (InterruptedException e) {
-            }
-        }
 
         synchronized (LOCKQueue) {
             if (msg.bPrivate) {
@@ -236,7 +165,9 @@ LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout="
         if (amt > QueueSize || (os.status != OAObjectServerImpl.STATUS_CONNECTED)) {
             if (msgErrorOverrun == null) {
                 msgErrorOverrun = new OAObjectMessage();
+/*qqqqqqqqq                
                 msgErrorOverrun.type = OAObjectMessage.ERROR;
+*/                
                 msgErrorOverrun.pos = OAObjectMessage.ERROR_ServerQueueOverrun;
             }
             if (os.status == OAObjectServerImpl.STATUS_CONNECTED) {
@@ -246,7 +177,7 @@ LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout="
                 try {
                     os.close();
                 }
-                catch (RemoteException re) {}
+                catch (Exception re) {}
             }
             return new OAObjectMessage[] {msgErrorOverrun};
         }
@@ -318,7 +249,6 @@ LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout="
     
     protected void onClose(OAObjectServerImpl objectServer) {
         LOG.config("client connection closed, connection "+objectServer.id);
-        if (publisher != null) publisher.removeUser(objectServer, objectServer.user);
         vecObjectServer.removeElement(objectServer);
     }
     
@@ -355,12 +285,6 @@ LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout="
     }
     
     //============== Publisher Method ====================    
-    public void setPublisher(OAObjectPublisher pub) {
-        LOG.config("publisher="+pub);
-        if (publisher != null) throw new RuntimeException("OAServer.setPublisher() Publisher has already been assigned");
-        this.publisher = pub;
-    }
-
     
     private static ConcurrentHashMap<String, Object> hmRemoteMethodImpl = new ConcurrentHashMap<String, Object>();
     /**
@@ -377,12 +301,12 @@ LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout="
         hmRemoteMethodImpl.remove(objectName);
     }
 
-    public Object remoteMethodCall(OAObjectServerImpl os, String objectName, String methodName, Object[] arguments) throws RemoteException {
+    public Object remoteMethodCall(OAObjectServerImpl os, String objectName, String methodName, Object[] arguments) {
         LOG.fine(String.format("clientId=%d, objectName=%s, methodName=%s", os.getId(), objectName, methodName));
 
         Object obj = hmRemoteMethodImpl.get(objectName);
         
-        if (obj == null) throw new RemoteException("Remote object not found for objectName="+objectName);
+        if (obj == null) throw new RuntimeException("Remote object not found for objectName="+objectName);
         try {
             Method method = OAReflect.getMethod(obj.getClass(), methodName);
             method.setAccessible(true);
@@ -390,7 +314,7 @@ LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout="
             return result;
         }
         catch (Exception e) {
-            throw new RemoteException("Remote exception for objectName="+objectName+", method="+methodName, e);
+            throw new RuntimeException("Remote exception for objectName="+objectName+", method="+methodName, e);
         }
     }
     
@@ -399,31 +323,22 @@ LOG.fine("timeout, timeLastGetMessages=" + os.timeLastGetMessages + ", timeout="
     public void getInfo(Vector vec, boolean bIncludeClosed) {
         //LOG.fine("called");
         int x = vecObjectServer.size();
-        if (bHoldSend) vec.add("Queue is currently on HOLD");
-        
         
         vec.add("Message Sends = " + OAString.format(sendCount,"#,###"));
         vec.add("Message Reads = " + OAString.format(readCount, "#,###"));
         vec.add("Message Read Multiples = " + OAString.format(readMultilpleCount,"#,###"));
         vec.add("Message Read Wait Count = " + OAString.format(readWaitCount,"#,###"));
         vec.add("Current QueueLoadPos = " + OAString.format(queueLoadPos,"#,###"));
-        
-        for (int i=0; i<x; i++) {
-            OAObjectServerImpl os = (OAObjectServerImpl) vecObjectServer.elementAt(i);
-            if (os != null && (bIncludeClosed || os.bConnected)) {
-                try {
-                    os.updateClientInfo();
-                    String[] ss = os.asStrings();
-                    if (ss == null) vec.add("User "+os.getId()+" has not been initialized from client");
-                    for (int j=0; ss != null && j<ss.length; j++) {
-                        vec.addElement(ss[j]);
-                    }
-                }
-                catch (Exception e) {
-                    LOG.log(Level.WARNING, "Error in OAServerImpl getInfo",e);
-                }
-            }
-        }
+    }
+
+    @Override
+    public OAClientInfo updateClientInfo(OAClientInfo ci) {
+        return ci;
+    }
+
+    @Override
+    public String ping(String msg) {
+        return msg;
     }
 }
 

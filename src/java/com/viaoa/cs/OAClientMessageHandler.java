@@ -19,7 +19,7 @@ public abstract class OAClientMessageHandler implements Runnable {
     private Object THREADLOCK = new Object();
     private ArrayList alThread = new ArrayList(23);  // pool of threads used to process messages
 	private volatile int waitCnt;  // only changed inside of synchronized THREADLOCK
-	private int osId;
+	private final int osId;
     private ArrayList<OAObjectMessage> alSend = new ArrayList(37);
     private OAObjectServerInterface oaObjectServer;
     private volatile OAClientThread currentThread;
@@ -402,7 +402,6 @@ public abstract class OAClientMessageHandler implements Runnable {
 	                case OAObjectMessage.DATASOURCE:
 	                case OAObjectMessage.GETDETAIL:
 	                case OAObjectMessage.GETOBJECT:
-	                case OAObjectMessage.GETPUBLISHEROBJECT:
 	                    continue;
 	                }
 	            }

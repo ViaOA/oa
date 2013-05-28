@@ -1,4 +1,4 @@
-package com.theice.remote.multiplexer.io;
+package com.viaoa.remote.multiplexer.io;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.theice.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.comm.multiplexer.io.VirtualSocket;
 
 /**
  * Used internally for remoting objects between clients and servers.

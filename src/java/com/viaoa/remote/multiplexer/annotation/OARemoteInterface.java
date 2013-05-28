@@ -1,4 +1,4 @@
-package com.theice.remote.multiplexer.annotation;
+package com.viaoa.remote.multiplexer.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -14,6 +14,6 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RemoteInterface {
+public @interface OARemoteInterface {
 
 }

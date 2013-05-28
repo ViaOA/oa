@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.cs;
 
 import java.io.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.object.*;
@@ -40,31 +41,21 @@ public class OAObjectMessage implements Serializable {
     static final public int SAVE = 6; 
     static final public int DELETE = 7; 
     
-    
     // All of these are used to request objects/services from server
-    static final public int GETPUBLISHEROBJECT = 8; 
-    static final public int GETOBJECT = 9; 
-    static final public int GETDETAIL = 10; 
-    static final public int CREATENEWOBJECT = 11;
-    static final public int CREATECOPY = 12;
-    static final public int DATASOURCE = 13;
+    static final public int GETOBJECT = 8; 
+    static final public int GETDETAIL = 9; 
+    static final public int CREATENEWOBJECT = 10;
+    static final public int CREATECOPY = 11;
+    static final public int DATASOURCE = 12;
     
-    static final public int SORT = 14;
-    static final public int EXCEPTION = 15;
-    static final public int CLIENTINFO = 16;
-    static final public int CUSTOM = 17;  // this will be processed by OAClient.processCustom(), so that it can be overwritten on clients
-    static final public int ERROR = 18;
-    static final public int DELETEALL = 19; 
-    static final public int REMOTEMETHODCALL = 20; 
+    static final public int SORT = 13;
+    static final public int DELETEALL = 14; 
     
     
     public static String[] msgTypes = { 
-        "PROPERTY_CHANGE","ADD","INSERT","REMOVE","MOVE","REMOVEOBJECT",
-        "SAVE", "DELETE",
-        "GETPUBLISHEROBJECT", "GETOBJECT","GETDETAIL", "CREATENEWOBJECT", "CREATCOPY", "DATASOURCE",
-        "SORT", "EXCEPTION", "CLIENTINFO", "CUSTOM", "ERROR", "DELETEALL", "REMOTEMETHODCALL"
+        "PROPERTY_CHANGE","ADD","INSERT","REMOVE","MOVE","REMOVEOBJECT","SAVE", "DELETE",
+        "GETOBJECT","GETDETAIL", "CREATENEWOBJECT", "CREATCOPY", "DATASOURCE", "SORT", "DELETEALL"
     };
-    
     
     // used by type=ERROR, store as pos=#
     static final public int ERROR_ServerQueueOverrun = 1; // queue loadPos on server is greater then this queue size for current client. 
@@ -76,8 +67,7 @@ public class OAObjectMessage implements Serializable {
     
     
     
-    static private int gid;
-    static final private Object LOCK = new Object();
+    static private AtomicInteger aiId = new AtomicInteger();
 
     protected int id; // unique for client 
     protected int type;
@@ -85,26 +75,24 @@ public class OAObjectMessage implements Serializable {
     protected OAObjectKey objectKey, masterObjectKey;
     protected String property;
     protected Object newValue;  // new property value, or Object to Add/Insert
-    protected int objectServerId; // set by OAObjectServer
+    public int objectServerId; // set by OAObjectServer
     protected int pos, posTo;
     boolean bReceived;  // used by OAClient
     
     // server side info
-    boolean bPrivate;  // if this is only for this user/client - dont send to other clients
+    public boolean bPrivate;  // if this is only for this user/client - dont send to other clients
     
     // flag to tell the ClientMessageHandler that it will be notified when it is ok to continue 
     //     with next msg in the queue.
     transient boolean bWillNotifyWhenProcessed; 
-    int seq; // set by server.  NOTE: this can be set to 0 (when int hits max value, server will set back to 0)
+    public int seq; // set by server.  NOTE: this can be set to 0 (when int hits max value, server will set back to 0)
 
     // 20090817 flag to know when change has been applied on the server.
     transient boolean bAppliedOnServer;  // used by OAServerImpl, OAClientMessageHandler
     
     
     public OAObjectMessage() {
-        synchronized (LOCK) {
-            id = ++gid;
-        }
+        id = aiId.incrementAndGet();
         if (OAClient.isServer()) {
             // since this is being created on the server, then the change has already taken place. 
             bAppliedOnServer = true;  
@@ -199,23 +187,16 @@ public class OAObjectMessage implements Serializable {
     }
 
     protected void setDefaults() {
-if (type == OAObjectMessage.DATASOURCE) {
-    int x = 4;
-    x++;
-}
         // flag as private, dont send to other clients
         switch (type) {
         case OAObjectMessage.GETDETAIL:
         case OAObjectMessage.GETOBJECT:
         case OAObjectMessage.CREATENEWOBJECT:
-        case OAObjectMessage.CLIENTINFO:
         case OAObjectMessage.SAVE: 
         case OAObjectMessage.DELETE:
-        case OAObjectMessage.GETPUBLISHEROBJECT:
         case OAObjectMessage.CREATECOPY:
         case OAObjectMessage.DATASOURCE:
         case OAObjectMessage.DELETEALL:
-        case OAObjectMessage.REMOTEMETHODCALL:
             this.bPrivate = true;
             break;
         default:

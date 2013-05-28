@@ -18,13 +18,9 @@ All rights reserved.
 package com.viaoa.cs;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
-import java.lang.reflect.Method;
-import java.rmi.*;
-import java.rmi.server.*;
 
 import com.viaoa.object.*;
 import com.viaoa.util.*;
@@ -47,7 +43,6 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
 
     OAServerImpl oaServer;
     Vector vecLock = new Vector(5, 5); // used by oaServer to store locks for this user
-    static private int gid;
     protected int id;
     boolean bGettingMessagesNow;
     long timeLastGetMessages;
@@ -72,21 +67,20 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
     private Hashtable<String, Iterator> hashIterator = new Hashtable<String, Iterator>(); // used to store DB
     private int selectCount;
     protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
-    private OAClientInfo clientInfo;
 
     // tracks guid for all oaObjects serialized, the Boolean: true=all references have been sent, false=object has been sent (mihgt not have all references)
     private TreeMap<Integer, Boolean> treeSerialized = new TreeMap<Integer, Boolean>();
     private ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
 
-    public OAObjectServerImpl(OAServerImpl oaServer) {
-        id = ++gid;
-        dtStart = new OADateTime();
+    public OAObjectServerImpl(OAServerImpl oaServer, int connectionId) {
         this.oaServer = oaServer;
+        this.id = connectionId;
+        dtStart = new OADateTime();
         LOG.config("created id=" + id);
     }
 
     /** unique identifier set by OAServer */
-    public int getId() throws RemoteException {
+    public int getId() {
         return id;
     }
 
@@ -95,7 +89,7 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
     }
 
     /** disconnect from OAServer */
-    public void close() throws RemoteException {
+    public void close() {
         internalClose();
     }
 
@@ -122,7 +116,7 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
         send message back, since it can be changed during the process.
         @param bFrontOfQueue if this message is in response to a message received by OAClient
     */
-    public @Override void sendMessage(final OAObjectMessage msg) throws RemoteException {
+    public @Override void sendMessage(final OAObjectMessage msg) {
         cntMsgSent++;
         msg.objectServerId = this.id;
         process(msg);
@@ -131,7 +125,7 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
     int cntx;
 
     // 20120628 processes message at the "right time".  see: sendMessage(..), getMessages(..)
-    protected void process(final OAObjectMessage msg) throws RemoteException {
+    protected void process(final OAObjectMessage msg) {
         if (msg == null) return;
 
         if (msg.type == OAObjectMessage.GETDETAIL) {
@@ -140,12 +134,6 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
             // get the object
             Object detailValue = getDetail(msg.masterClass, msg.masterObjectKey, msg.property);
             Object objMaster = OAObjectCacheDelegate.get(msg.masterClass, msg.masterObjectKey);
-            if (oaServer.publisher != null) { // this will allow publisher to determine how reference properties are sent
-                if (objMaster != null) {
-                    Object objx = oaServer.publisher.getDetail(objMaster, msg.property, detailValue);
-                    if (objx != null) detailValue = objx;
-                }
-            }
 
             if (msg.newValue != null && objMaster instanceof OAObject) {
                 Object[] params = (Object[]) msg.newValue;
@@ -169,13 +157,6 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
         }
         if (msg.type == OAObjectMessage.DATASOURCE) {
             msg.newValue = datasource(msg.pos, (Object[]) msg.newValue);
-        }
-        else if (msg.type == OAObjectMessage.GETPUBLISHEROBJECT) {
-            if (oaServer.publisher == null) msg.newValue = null;
-            else msg.newValue = oaServer.publisher.getObject(id, msg.objectClass, (Object[]) msg.newValue);
-        }
-        else if (msg.type == OAObjectMessage.REMOTEMETHODCALL) {
-            msg.newValue = remoteMethodCall((String) ((Object[]) msg.newValue)[0], (String) ((Object[]) msg.newValue)[1], (Object[]) ((Object[]) msg.newValue)[2]);
         }
         else if (msg.type == OAObjectMessage.CREATECOPY) {
             OAObject obj = OAObjectCacheDelegate.getObject(msg.objectClass, msg.objectKey);
@@ -221,12 +202,6 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
                 }
             }
         }
-        else if (msg.type == OAObjectMessage.CLIENTINFO) {
-            this.clientInfo = (OAClientInfo) msg.newValue;
-            clientInfo.lastClientUpdateReceived = new OADateTime();
-            if (msg.pos != 1) msg.newValue = null;
-            updateClientInfo();
-        }
     }
 
     /** waits for OAServer to send a message and then returns it to OAClient.run().
@@ -234,7 +209,7 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
     will call wait() and will be notified by addMessage() when new msg is added.
     */
     public @Override
-    OAObjectMessage[] getMessages() throws RemoteException {
+    OAObjectMessage[] getMessages() {
         // LOG.finer("called");
         
         int nextSeq = 0;
@@ -266,21 +241,21 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
         close();
     }
 
-    public void lock(Class clazz, Object[] objectIds, Object miscObject) throws RemoteException {
+    public void lock(Class clazz, Object[] objectIds, Object miscObject) {
         Object obj = OAObjectCacheDelegate.get(clazz, objectIds);
         if (obj != null) {
             oaServer.lock(this, obj, miscObject); // this will add to list of locks
         }
     }
 
-    public void unlock(Class clazz, Object[] objectIds) throws RemoteException {
+    public void unlock(Class clazz, Object[] objectIds) {
         Object obj = OAObjectCacheDelegate.get(clazz, objectIds);
         if (obj != null) {
             oaServer.unlock(this, obj);
         }
     }
 
-    public boolean isLocked(Class clazz, Object[] objectIds) throws RemoteException {
+    public boolean isLocked(Class clazz, Object[] objectIds) {
         Object obj = OAObjectCacheDelegate.get(clazz, objectIds);
         if (obj != null) {
             return oaServer.isLocked(obj);
@@ -288,13 +263,13 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
         return false;
     }
 
-    public OALock getLock(Class clazz, Object[] objectIds) throws RemoteException {
+    public OALock getLock(Class clazz, Object[] objectIds) {
         Object obj = OAObjectCacheDelegate.get(clazz, objectIds);
         if (obj != null) return oaServer.getLock(obj);
         return null;
     }
 
-    public Object[] getAllLockedObjects() throws RemoteException {
+    public Object[] getAllLockedObjects() {
         return oaServer.getAllLockedObjects();
     }
 
@@ -317,12 +292,12 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
     /** return directly to calling program.  Can also use sendMessage(msg) and get return value
         from OAClient.getMessage().newValue, if request needs to be synchronized with queue (ex: OADataSourceClient.IT_NEXT, since it returns an object)
     */
-    public Object datasource(OAObjectMessage msg) throws RemoteException {
+    public Object datasource(OAObjectMessage msg) {
         return datasource(msg.pos, (Object[]) msg.newValue);
     }
 
     /** called by OADataSourceClient, OAClient to "talk" with OADataSource on Server */
-    public Object datasource(int command, Object[] objects) throws RemoteException {
+    public Object datasource(int command, Object[] objects) {
         Object obj = null;
         Class clazz, masterClass;
         OADataSource ds;
@@ -575,7 +550,7 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
         return obj;
     }
 
-    public int getNextFiftyObjectGuids() throws RemoteException {
+    public int getNextFiftyObjectGuids() {
         return OAObjectDelegate.getNextFiftyGuids();
     }
 
@@ -606,7 +581,7 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
     }
 
     /** used by OAObject to add an object to cache on Server */
-    public int addToCache(Object obj) throws RemoteException {
+    public int addToCache(Object obj) {
         // NOTE: need to have OAObject.bCachedOnServer=true set by Client.
         // see: OAObjectCSDelegate.addedToCache((OAObject) msg.newValue); // flag obj to know that it is cached on server for this client.
         if (obj == null) return 0;
@@ -645,7 +620,7 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
     }
 
     /** used by OAObject to remove an object from cache on Server */
-    public int removeFromCache(Class clazz, OAObjectKey[] keys) throws RemoteException {
+    public int removeFromCache(Class clazz, OAObjectKey[] keys) {
         for (int i = 0; keys != null && i < keys.length; i++) {
             OAObjectKey key = keys[i];
             OAObject obj = OAObjectCacheDelegate.get(clazz, key);
@@ -655,35 +630,6 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
         return hashCache.size();
     }
 
-    // created and sent by client
-    protected OAClientInfo getClientInfo() {
-        return clientInfo;
-    }
-
-    protected void updateClientInfo() {
-        if (clientInfo == null) return;
-        clientInfo.id = this.id;
-        clientInfo.created = dtStart;
-        clientInfo.cacheSize = hashCache.size();
-        if (timeLastGetMessages > 0) {
-            clientInfo.lastGetMessageOnServer = new OADateTime(timeLastGetMessages);
-        }
-        clientInfo.ended = dtEnd;
-        clientInfo.connectionStatus = STATUS[status];
-        clientInfo.msgSent = cntMsgSent;
-        clientInfo.msgReceived = cntMsgReceived;
-        if (dtEnd == null) clientInfo.serverQueueSize = (int) (oaServer.getQueueLoadPos() - this.queueLoadPos);
-        else clientInfo.serverQueueSize = 0;
-    }
-
-    protected String asString() {
-        return getClientInfo().asString();
-    }
-
-    protected String[] asStrings() {
-        if (clientInfo == null) return null;
-        return getClientInfo().asStrings();
-    }
 
     /**
      * Called by RMI when disconnected.
@@ -710,27 +656,6 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
     public void unbind(String objectName) {
         LOG.fine(String.format("Unbind object, clientId=%d, name=%s", id, objectName));
         hmRemoteMethodImpl.remove(objectName);
-    }
-
-    public Object remoteMethodCall(String objectName, String methodName, Object[] arguments) throws RemoteException {
-        LOG.fine(String.format("clientId=%d, objectName=%s, methodName=%s", getId(), objectName, methodName));
-
-        // make sure all changes are broadcast to clients
-        OAClientDelegate.processIfServer();
-
-        Object obj = hmRemoteMethodImpl.get(objectName);
-        if (obj == null) {
-            return oaServer.remoteMethodCall(this, objectName, methodName, arguments);
-        }
-        try {
-            Method method = OAReflect.getMethod(obj.getClass(), methodName, arguments);
-            method.setAccessible(true);
-            Object result = method.invoke(obj, arguments);
-            return result;
-        }
-        catch (Exception e) {
-            throw new RemoteException("Remote exception for objectName=" + objectName + ", method=" + methodName, e);
-        }
     }
 
 
@@ -1059,5 +984,22 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
         os.setCallback(callback);
         return os;
     }
+
+    public void updateClientInfo(OAClientInfo clientInfo) {
+        if (clientInfo == null) return;
+        clientInfo.id = this.id;
+        clientInfo.created = dtStart;
+        clientInfo.cacheSize = hashCache.size();
+        if (timeLastGetMessages > 0) {
+            clientInfo.lastGetMessageOnServer = new OADateTime(timeLastGetMessages);
+        }
+        clientInfo.ended = dtEnd;
+        clientInfo.connectionStatus = STATUS[status];
+        clientInfo.msgSent = cntMsgSent;
+        clientInfo.msgReceived = cntMsgReceived;
+        if (dtEnd == null) clientInfo.serverQueueSize = (int) (oaServer.getQueueLoadPos() - this.queueLoadPos);
+        else clientInfo.serverQueueSize = 0;
+    }
+
     
 }

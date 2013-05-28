@@ -1,12 +1,12 @@
-package com.theice.comm.multiplexer;
+package com.viaoa.comm.multiplexer;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
 import java.util.logging.Logger;
 
-import com.theice.comm.multiplexer.io.VirtualSocket;
-import com.theice.comm.multiplexer.io.MultiplexerSocketController;
+import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.comm.multiplexer.io.MultiplexerSocketController;
 
 /**
  * Creates multiplexed sockets over a single socket. This is used so that a client can have multiple

@@ -1,21 +1,18 @@
 package com.viaoa.cs;
 
 import java.util.*;
-import java.io.*;
 
+import com.viaoa.hub.HubListenerTree;
+import com.viaoa.hub.HubMerger;
 import com.viaoa.object.*;
 import com.viaoa.annotation.OAClass;
 import com.viaoa.annotation.OAId;
 import com.viaoa.annotation.OAProperty;
-import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
 /**
  * Information about OAClient and OAObjectServer, sent to the server to update the client stats.
  */
-//public class OAClientInfo extends OAObject implements Serializable {
-
-
 @OAClass(
     shortName = "ci",
     displayName = "OAClientInfo",
@@ -31,6 +28,7 @@ public class OAClientInfo extends OAObject {
     String hostName;
     String ipAddress;
     OADateTime created;
+    OADateTime ended;
     OADateTime lastClientUpdate;
     OADateTime lastClientUpdateReceived;
     String userId;
@@ -40,7 +38,6 @@ public class OAClientInfo extends OAObject {
     int cacheSize;   // on server
     OADateTime lastGetMessageOnServer;  // last time getMessage was called on the server
     String connectionStatus;
-    OADateTime ended;
     int msgSent;  // msg sent by client
     int msgReceived;  // msg recvd by client
     long msgSentMs;
@@ -207,7 +204,6 @@ public class OAClientInfo extends OAObject {
 
     
     public String asString() {
-    	
         StringBuilder sb = new StringBuilder(2048);
         sb.append("Id=" + id);
         sb.append(", user="+ userId);
@@ -240,7 +236,6 @@ public class OAClientInfo extends OAObject {
         sb.append(", hubListenerCnt="+hubListenerCount);
         sb.append(", hubMergerHubListenerCnt="+hubMergerHubListenerCount);
         
-        
 		return sb.toString();
     }
     public String[] asStrings() {
@@ -252,8 +247,6 @@ public class OAClientInfo extends OAObject {
 		return ss;
     }
 
+    
 }
-
-
-
 

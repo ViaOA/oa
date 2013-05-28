@@ -1,4 +1,4 @@
-package com.theice.remote.multiplexer.info;
+package com.viaoa.remote.multiplexer.info;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.ReferenceQueue;
@@ -7,9 +7,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import com.theice.remote.multiplexer.annotation.RemoteInterface;
-import com.theice.remote.multiplexer.annotation.RemoteMethod;
-import com.theice.remote.multiplexer.annotation.RemoteParameter;
+import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
+import com.viaoa.remote.multiplexer.annotation.OARemoteParameter;
 
 /**
  * Internal information about a remote Object. 
@@ -79,7 +79,7 @@ public class BindInfo {
             boolean bRemote = false;
             Class c = method.getReturnType();
             if (c != null && !c.isPrimitive()) {
-                RemoteInterface rc = (RemoteInterface) c.getAnnotation(RemoteInterface.class);
+                OARemoteInterface rc = (OARemoteInterface) c.getAnnotation(OARemoteInterface.class);
                 bRemote = (rc != null);
             }
             if (bRemote) {
@@ -96,7 +96,7 @@ public class BindInfo {
                 }
             }
 
-            RemoteMethod remoteMethod = method.getAnnotation(RemoteMethod.class);
+            OARemoteMethod remoteMethod = method.getAnnotation(OARemoteMethod.class);
             if (remoteMethod != null) {
                 if (remoteMethod.compressedReturnValue()) {
                     if (mi.remoteReturn == null) {
@@ -115,11 +115,11 @@ public class BindInfo {
             for (int i=0; i<x; i++) {
                 boolean bCompressed = false;
                 
-                RemoteInterface rc = (RemoteInterface) cs[i].getAnnotation(RemoteInterface.class);
+                OARemoteInterface rc = (OARemoteInterface) cs[i].getAnnotation(OARemoteInterface.class);
                 bRemote = (rc != null) && !cs[i].isPrimitive();
 
                 if (anns[i] != null && anns[i].length > i) {
-                    RemoteParameter rp = (RemoteParameter)(anns[i][0]);
+                    OARemoteParameter rp = (OARemoteParameter)(anns[i][0]);
                     if (rp != null) {
                         bCompressed = rp.compressed();
                     }

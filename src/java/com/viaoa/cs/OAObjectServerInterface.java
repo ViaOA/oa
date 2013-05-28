@@ -17,10 +17,10 @@ All rights reserved.
 */ 
 package com.viaoa.cs;
 
-import java.rmi.*;
+import com.viaoa.object.OALock;
+import com.viaoa.object.OAObjectKey;
+import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
-import com.viaoa.object.*;
-import com.viaoa.remote.multiplexer.annotation.RemoteInterface;
 
 /** 
     RMI Class used between OAClient and OAServer.
@@ -31,78 +31,75 @@ import com.viaoa.remote.multiplexer.annotation.RemoteInterface;
     @see OAServerInterface
     @see OAClient
 */
-@RemoteInterface
+@OARemoteInterface
 public interface OAObjectServerInterface {
     /** 
         Unique Identifier assigned by OAObjectServer when it is created by OAServer 
     */
-    public int getId() throws RemoteException;
+    public int getId();
     
     /** 
         Send message to OAServer.  
         Used by OAObject, Hub, HubController, OAClientDataSource, and custom calls to OAObjectPublisher. 
     */
-    public void sendMessage(OAObjectMessage msg) throws RemoteException;
+    public void sendMessage(OAObjectMessage msg);
     
     
     /** 
     Used by OAClient to receive message from OAObjectServer.
 	*/
-	public OAObjectMessage[] getMessages() throws RemoteException;
+	public OAObjectMessage[] getMessages();
     
     /**
         Lock object on OAServer.
     */
-    public void lock(Class clazz, Object[] objectIds, Object miscObject) throws RemoteException;
+    public void lock(Class clazz, Object[] objectIds, Object miscObject);
 
     /**
         Unlock object on OAServer.
     */
-    public void unlock(Class clazz, Object[] objectIds) throws RemoteException;
+    public void unlock(Class clazz, Object[] objectIds);
 
     /**
         Calls isLocked for object on OAServer.
     */
-    public boolean isLocked(Class clazz, Object[] objectIds) throws RemoteException;
+    public boolean isLocked(Class clazz, Object[] objectIds);
 
     /**
         Calls getLocked for object on OAServer.
     */
-    public OALock getLock(Class clazz, Object[] objectIds) throws RemoteException;
+    public OALock getLock(Class clazz, Object[] objectIds);
 
     /**
         Calls getAllLockedObjects on OAServer.
     */
-    public Object[] getAllLockedObjects() throws RemoteException;
+    public Object[] getAllLockedObjects();
     
     /**
         Called by OAClient to close the connection with OAServer.
     */
-    public void close() throws RemoteException;
+    public void close();
 
     /**
         Used by OAObject to assign a guid to a new object 
     */
-    public int getNextFiftyObjectGuids() throws RemoteException;
+    public int getNextFiftyObjectGuids();
     
     /**
         Send an OADataSource command to be processed by OADataSource on OAServer.
     */
-    public Object datasource(OAObjectMessage msg) throws RemoteException;
+    public Object datasource(OAObjectMessage msg);
 
 
     /**
         Add an object to client cache on server.
     */
-    public int addToCache(Object obj) throws RemoteException;
+    public int addToCache(Object obj);
 
     /**
         Remove an object from client cache on server.
     */
-    public int removeFromCache(Class clazz, OAObjectKey[] keys) throws RemoteException;
-
-    // public void setUser(Object user) throws RemoteException;
-
+    public int removeFromCache(Class clazz, OAObjectKey[] keys);
     
 }
 

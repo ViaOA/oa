@@ -5,6 +5,19 @@ Volatile
    double-check locking
    
 
+>> Shutdown hook
+        // this will be started by Runtime when program is exiting - including when control 'C' is used
+        if (threadShutDown == null) {
+            threadShutDown = new Thread(new Runnable() {
+                public void run() {
+                    // System.out.println("OAClient.shutDownHook called");
+                    if (oaClient != null && !oaClient.bIsServer) oaClient.close(false);
+                }
+            }, "OAClient.shutDown");
+            threadShutDown.setDaemon(true);
+            Runtime.getRuntime().addShutdownHook(threadShutDown);
+        }
+
 
 >> Thread
 

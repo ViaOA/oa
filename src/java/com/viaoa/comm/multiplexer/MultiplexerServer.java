@@ -1,4 +1,4 @@
-package com.theice.comm.multiplexer;
+package com.viaoa.comm.multiplexer;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -6,14 +6,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
 
-import com.theice.comm.multiplexer.io.VirtualServerSocket;
-import com.theice.comm.multiplexer.io.MultiplexerServerSocketController;
+import com.viaoa.comm.multiplexer.io.VirtualServerSocket;
+import com.viaoa.comm.multiplexer.io.MultiplexerServerSocketController;
 
 /**
- * Used for creating a multiplexed ServerSockets, so that a client can have multiple socket connections
- * to multiple "virtual" server sockets through a single real socket.
+ * Used for creating a multiplexed ServerSockets, so that a client can have multiple 
+ * "virtual" server sockets through a single real socket.
  * <p>
- * The MultiplexerServer can be used to have multiple serversockets that an MultiplexerClient can make
+ * The MultiplexerServer can be used to have multiple serversockets that a MultiplexerClient can then make
  * many connections through a single real socket. <br>
  * This is useful for situations where multiple real connections are undesired because of
  * routing/loadbalance and connection management issues.
@@ -70,11 +70,18 @@ public class MultiplexerServer {
      *            port number to connect to
      * @see #start() call start to allow new connections from clients.
      */
-    public MultiplexerServer(String host, int port) throws Exception {
-        if (host == null) host = InetAddress.getLocalHost().getHostAddress();
+    public MultiplexerServer(String host, int port) {
+        try {
+            if (host == null) host = InetAddress.getLocalHost().getHostAddress();
+        }
+        catch (Exception e) {
+        }
         this._host = host;
         this._port = port;
         LOG.fine("host=" + host + ", port=" + port);
+    }
+    public MultiplexerServer(int port) {
+        this(null, port);
     }
 
     /**
@@ -105,6 +112,10 @@ public class MultiplexerServer {
         LOG.fine("start completed");
     }
 
+    public void stop() throws Exception {
+        getServerSocketController().close();
+    }
+    
     /**
      * @return true if serverSocket is accepting new connnections.
      */

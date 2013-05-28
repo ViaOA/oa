@@ -24,16 +24,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.net.InetAddress;
 import java.rmi.*;
-import java.rmi.registry.*;
-import java.rmi.server.*;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
-import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
@@ -46,23 +41,16 @@ import com.viaoa.ds.cs.OADataSourceClient;
 public class OAClient {
 	private static Logger LOG = Logger.getLogger(OAClient.class.getName());
     
-    protected String serverName;  // name of server that this client has connected with
-	static OAClient oaClient;
-	protected OAObjectServerInterface oaObjectServer;  // rmi object used to send messages
-    protected int osId;  // Identifier assigned to OAObjectServer by OAServer
-    protected boolean bIsServer; // used by OALock to know if OAClient is running in same VM as OAServer
-    protected boolean bWasConnected;  // flag to know if client had been connected, used when a disconnect happens
-    protected boolean bStop;
+    static OAClient oaClient;
 
-    public static int port = 1099; // java.rmi.registry.Registry;  // port for OAClient, OAServer and RMIRegister to use
-    public static int maxPort = 1099; // if port is being used, keep trying up to maxPort
-    public static int incrPort = 1; // amount of increments to get to maxPort
+    protected String serverName;  // name of server that this client has connected with
+    protected int port;
+	protected OAObjectServerInterface oaObjectServer;  // rmi object used to send messages
+
 
     OAClientMessageHandler clientMessageHandler;
     OAClientMessageReader clientMessageReader;
     public static final String OAServer_BindName = "OAServer";
-    private Thread threadShutDown;
-    private OAClientMonitor clientMonitor;
     
     /* keeps track of which objects (using oaobj.guid) were created locally or for the local instance,
        and will need to be stored on serverside cache whenever the object is not in a Hub,
@@ -70,143 +58,78 @@ public class OAClient {
     */
     private HashSet<Integer> hashServerSideCache = new HashSet<Integer>(379, .75f);
     
-    
     private MultiplexerClient multiplexerClient;
     private RemoteMultiplexerClient remoteMultiplexerClient;
+    private OAServerInterface oaServer;
     
     
     /**
         Returns OAClient that is connected to OAServer.
     */
     public static OAClient getClient() {
-        // LOG.finest(Thread.currentThread().getName());
         return oaClient;
     }
 
-    /**
-        Create a new OAClient that connects to OAServer on serverName
-        @param serverName name or ip address of computer that is running OAServer
-    */
-    public OAClient(String serverName) throws Exception {
-    	LOG.config("serverName="+serverName);
-    	this.serverName = serverName;
-    	this.bIsServer = (oaClient != null && oaClient.bIsServer);
-        if (!connect()) {
-        	String s = "Can not connect to server "+ serverName + " on port "+port;
-        	LOG.warning(s);
-        	throw new RuntimeException(s);
-        }
+    public OAClient(String serverHostName, int port) {
+        this.serverName = serverHostName;
+        this.port = port;
     }
-
-    /**
-     * Unique identifier assigned by the server.
-     * @return
-     */
-    public int getId() {
-    	// LOG.finer("osId="+osId);
-        return osId;
-    }
-
-    /**
-        Create a new OAClient that connects to OAServer on serverName
-        @param serverName name or ip address of computer that is running OAServer
-        @param portNumber port to connect to, default is 1099.
-    */
-    public OAClient(String serverName, int portNumber) throws Exception {
-        LOG.config("serverName="+serverName+" portNumber="+portNumber);
-        this.serverName = serverName;
-        if (oaClient != null && oaClient.bIsServer) this.bIsServer = true;
-        if (!connect(portNumber)) throw new RuntimeException("Can not connect to server "+ serverName + " on port "+port);
-    }
-
+    
     /**
         Used internally by OAServer to start a client on same VM as server.  
         Note: Server must also have an OAClient running on the server, so that changes made by clients can be made on server. 
     */
-    public OAClient(OAServerInterface server) {
+    public OAClient(OAServerInterface server) throws Exception {
         LOG.config("creating for OAServer");
-        bIsServer = true;
-		try {
-			OAObjectServerInterface os = server.getOAObjectServer();
-	    	setOAObjectServer(os);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Error: "+e);
-		}
+        OAObjectServerInterface os = server.createOAObjectServer(getClientInfo());
+        setOAObjectServer(os);
+        updateClientInfo();
     }
-
-
-    /**
-        Connect to OAServer using default port.
-        @return true if connection was successful, else false
-    */
-    public boolean connect() {
-        return connect(port);
+    
+    
+    public void start() throws Exception {
+        getMultiplexerClient().start();
+        oaServer = (OAServerInterface) getRemoteMultiplexerClient().lookup(OAServer_BindName);
+        OAObjectServerInterface os = (OAObjectServerInterface) oaServer.createOAObjectServer(getClientInfo());
+        setOAObjectServer(os);
+        updateClientInfo();
     }
-
-    /**
-        Connect to OAServer using specified port.
-        @return true is connection was sucessful, else false
-    */
-    public boolean connect(int portNumber) {
-        for (;;) {
-        	LOG.config("connect portNumber="+portNumber);
-            try {
-                this.port = portNumber;
-                LOG.config("connecting to "+serverName+":"+portNumber);
-
-                getMultiplexerClient().start();
-                
-                LOG.config("performing lookup="+OAServer_BindName);
-                OAServerInterface oaServer = (OAServerInterface) getRemoteObject(OAServer_BindName);
-
-                LOG.config("getting OAObjectServer from OAServer");
-                OAObjectServerInterface serv = (OAObjectServerInterface) oaServer.getOAObjectServer();
-                this.oaObjectServer = null;
-                setOAObjectServer(serv);
-
-                LOG.config("connection to server successful");
-                break;
-            }
-            catch (Exception e) {
-            	LOG.log(Level.WARNING, "connect portNumber="+portNumber, e);
-                portNumber += incrPort;
-                if (portNumber < maxPort) continue;
-            	LOG.log(Level.WARNING, "connect portNumber="+portNumber, e);
-                return false;
-            }
+    public void updateClientInfo() throws Exception {
+        OAClientInfo ci = getClientInfo();
+        OAClientInfoDelegate.update(ci);
+        if (oaServer != null) { 
+            this.clientInfo = oaServer.updateClientInfo(ci); // send to server and have it updated and returned
         }
-        return true;
     }
 
-    /**
-     * Get a remote object from server.
-     */
-    public Object getRemoteObject(String name) throws Exception {
-        Object objx = getRemoteMultiplexerClient().lookup(name);
-        return objx;
+    public void stop() throws Exception {
+        getMultiplexerClient().close();
     }
-
-    public MultiplexerClient getMultiplexerClient() {
-        if (multiplexerClient == null) {
-            multiplexerClient = new MultiplexerClient(serverName, port);
-        }
-        return multiplexerClient;
+    public void close() throws Exception {
+        getMultiplexerClient().close();
     }
+    
     public RemoteMultiplexerClient getRemoteMultiplexerClient() {
         if (remoteMultiplexerClient == null) {
             remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient());
         }
         return remoteMultiplexerClient;
     }
+    public MultiplexerClient getMultiplexerClient() {
+        if (multiplexerClient == null) {
+            multiplexerClient = new MultiplexerClient(serverName, port);
+        }
+        return multiplexerClient;
+    }
 
 
+    
     /**
-        Returns true if connection to OAServer was ever established.
-    */
-    public boolean wasConnected() {
-        return bWasConnected;
+     * Unique identifier assigned by the server.
+     */
+    public int getId() {
+        if (remoteMultiplexerClient == null) return 0;
+        return remoteMultiplexerClient.getMultiplexerClient().getConnectionId();
     }
 
     /**
@@ -215,13 +138,9 @@ public class OAClient {
     public boolean isConnected() {
     	boolean result;
     	
-        if (bStop || oaObjectServer == null) return false;
+        if (oaObjectServer == null) return false;
         try {
-            result = multiplexerClient != null && multiplexerClient.isConnected();
-            if (result) {
-                oaObjectServer.getId();
-                result = true;
-            }
+            result = remoteMultiplexerClient != null && remoteMultiplexerClient.getMultiplexerClient().isConnected();
         }
         catch (Exception e) {
         	result = false;
@@ -230,32 +149,6 @@ public class OAClient {
         return result;
     }
 
-    /**
-        @param tryTimes number of times to try to reconnect
-        @param tryInterval number of miliseconds to wait between retrying.
-    */
-    public boolean isConnected(int tryTimes, int tryInterval) {
-    	boolean result=false;
-        for (int i=0; i<tryTimes; i++) {
-            if (bStop || oaObjectServer == null) break;
-            try {
-                oaObjectServer.getId();
-                result = true;
-                break;
-            }
-            catch (Exception e) {
-            }
-            synchronized(this) {
-                try {
-                    this.wait(tryInterval);
-                }
-                catch (Exception e) {
-                }
-            }
-        }
-    	//LOG.fine("returning "+result);
-        return false;
-    }
 
     /**
      * The remote object used for distributed methods from the client to the server.
@@ -270,24 +163,7 @@ public class OAClient {
     */
     protected void setOAObjectServer(OAObjectServerInterface objServ) {
         LOG.config("internally setting OAObjectServer");
-    	if (oaObjectServer != null) return;
-    	
-    	if (oaClient != null) {
-    		oaClient.close();
-    		oaClient = null;
-    	}
-         
-        bWasConnected = true;
-        // 20110128 move after reader and handler are created
-        //was: oaClient = this;
         oaObjectServer = objServ;
-        try {
-            osId = objServ.getId();
-        }
-        catch (RemoteException e) {
-        	LOG.log(Level.WARNING, "error getting id from ObjectServer", e);
-            throw new RuntimeException(e);
-        }
         
         LOG.config("creating ClientMessageReader");
         clientMessageReader = new OAClientMessageReader(objServ) {
@@ -298,7 +174,7 @@ public class OAClient {
             }
         };
         LOG.config("creating ClientMessageHandler");
-        clientMessageHandler = new OAClientMessageHandler(osId, clientMessageReader, objServ) {
+        clientMessageHandler = new OAClientMessageHandler(getId(), clientMessageReader, objServ) {
         	@Override
         	protected void process(OAObjectMessage msg) {
         		OAClient.this.process(msg);
@@ -311,110 +187,26 @@ public class OAClient {
         	}
         };
 
-        // 20110128 moved to after handler and reader have been created
+        // after handler and reader have been created
         oaClient = this;
-        
-        
-        
-        LOG.config("creating OAClient.shutDown thread");
-        // this will be started by Runtime when program is exiting - including when control 'C' is used
-        if (threadShutDown == null) {
-	        threadShutDown = new Thread(new Runnable() {
-	            public void run() {
-	                // System.out.println("OAClient.shutDownHook called");
-	            	if (oaClient != null && !oaClient.bIsServer) oaClient.close(false);
-	            }
-	        }, "OAClient.shutDown");
-	        threadShutDown.setDaemon(true);
-	        Runtime.getRuntime().addShutdownHook(threadShutDown);
-        }
 
         LOG.config("starting MessageReader");
         clientMessageReader.start();
         LOG.config("starting MessageHandler");
         clientMessageHandler.start();
         
-        LOG.config("creating and starting ClientMonitorr");
-    	clientMonitor = new OAClientMonitor(this, 30);
-  
-//System.out.println("OAClient is not starting clientMonitor");//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    	
-    	clientMonitor.start();
-        
         LOG.config("completed");
-    }
-
-
-    /**
-        Used to have the OAClient getMessage() loop exit, calls close().
-        @see #close
-    */
-    public void stop() {
-    	LOG.config("calling close");
-        close();
-    }
-
-    /**
-        Flag to know that stop() has been called.
-        @see #close
-    */
-    public boolean isStopped() {
-        return bStop;
-    }
-
-    public boolean isClosed() {
-        return bStop;
-    }
-
-    /**
-        Notifies and disconnects OAClient from OAServer.
-    */
-    public void close() {
-    	close(true);
-    }
-    private void close(final boolean bLog) {
-    	if (bStop) return;
-    	if (bLog) LOG.config("stopping OAClient");
-        this.bStop = true;
-
-        if (oaClient == this) {
-        	// oaClient = null;  // dont set to null, so that it wont look like a server/standalone app
-	        if (oaObjectServer != null) {
-	            try {
-	            	if (clientMessageHandler != null) clientMessageHandler.stop(bLog);
-	            	if (clientMessageReader != null) clientMessageReader.stop(bLog);
-	            	oaObjectServer.close();
-	            }
-	            catch (RemoteException e) {
-	            	if (bLog) LOG.log(Level.FINE, "close exception, not critical", e);
-	            }
-	            finally {
-	            	oaObjectServer = null;
-	            }
-	        }
-        }
-    	if (bLog) LOG.config("OAClient has been stopped");
     }
 
 
     /** returns true if client is running in same VM as OAServer */
     public static boolean isServer() {
-    	boolean b;
-    	if (oaClient == null) b = true;
-    	else {
-    		b = oaClient.bIsServer;
-    	}
-    	//LOG.finer("returning="+b);
-        return b;
+        if (oaClient == null) return true;
+        return oaClient.remoteMultiplexerClient == null;
     }
     /** returns true if client is running on a workstation, and not as the server. */
     public static boolean isWorkstation() {
-    	boolean b;
-    	if (oaClient == null) b = false;
-    	else {
-    		b = !oaClient.bIsServer;
-    	}
-    	//LOG.finer("returning="+b);
-        return b;
+        return !isServer();
     }
 
     /** Returns true if current thread is a member of OAClient thread pool.
@@ -438,7 +230,6 @@ public class OAClient {
     	//LOG.fine("called");
     	if (clientMessageHandler != null) clientMessageHandler.clearSentMessages(msg);
     }
-    
 
 int qqq;    
     protected void process(OAObjectMessage msg) {
@@ -447,7 +238,7 @@ int qqq;
             //LOG.finer("msg="+msg+", thread="+threadClient.getName());
     	}
 if ( ((++qqq) % 100) == 0 ) {    	
- //   System.out.println(qqq+") "+(new OATime()).toString()+" msg="+msg);
+    // System.out.println(qqq+") "+(new OATime()).toString()+" msg="+msg);
 }
 
     	try {
@@ -471,15 +262,11 @@ if ( ((++qqq) % 100) == 0 ) {
                 case OAObjectMessage.SORT:
                 	processSort(msg);
                     break;
-                case OAObjectMessage.EXCEPTION:
-                    processException(msg);
-                    break;
-                case OAObjectMessage.CUSTOM:
-                    processCustom(msg);
-                    break;
+/*qqqqqq                    
                 case OAObjectMessage.ERROR:
                     processError(msg);
                     break;
+*/                    
             }
         }
         catch (Exception e) {
@@ -664,7 +451,6 @@ if ( ((++qqq) % 100) == 0 ) {
     	// LOG.finer("msg="+msg);
     	msg.beforeSend();
         try {
-        	if (bStop) return msg;
         	return clientMessageHandler.sendMessage(msg);
         }
         catch (Exception ex) {
@@ -674,91 +460,6 @@ if ( ((++qqq) % 100) == 0 ) {
         return msg;
     }
 
-
-    /**
-     * @param clazz
-     * @param objectIds
-     * @param bGetFast if true (default) then OAServer will return it in the front of the queue
-     * @return
-     */
-    public Object getPublisherObject(Class clazz, Object[] objectIds) {
-    	// LOG.fine("class="+clazz+", objectIds="+objectIds);
-    	OAObjectMessage msg = new OAObjectMessage();
-        msg.type = msg.GETPUBLISHEROBJECT;
-        msg.objectClass = clazz;
-        msg.newValue = objectIds;
-        sendMessage(msg);
-        
-        Object obj =  msg.newValue;
-        if (obj instanceof OAObjectSerializer) obj = ((OAObjectSerializer)obj).getObject();
-        return obj;
-    }
-
-    /**
-        Used to get Object from OAServer.publisher
-        @see OAObjectPublisher#getObject
-    */
-    public Object getPublisherObject(Class clazz) {
-        return this.getPublisherObject(clazz, new Object[] {} );
-    }
-
-    /**
-        Used to get Object from OAServer.publisher
-        @see OAObjectPublisher#getObject
-    */
-    public Object getPublisherObject(Class clazz, Object objectId) {
-        return this.getPublisherObject(clazz, new Object[] {objectId} );
-    }
-
-
-    /**
-        Used to get Object from OAServer.publisher
-        @see OAObjectPublisher#getObject
-    */
-    public Object getPublisherObject(String cmd) {
-        return this.getPublisherObject(null, new Object[] {cmd} );
-    }
-
-    /**
-        Used to get Object from OAServer.publisher
-        @see OAObjectPublisher#getObject
-    */
-    public Object sendPublisherMessage(String cmd, Object obj) {
-        return this.getPublisherObject(null, new Object[] {cmd, obj} );
-    }
-
-
-    /**
-        Used to get Object from OAServer.publisher
-        @see OAObjectPublisher#getObject
-    */
-    public Object sendPublisherCommand(String cmd) {
-        return this.getPublisherObject(null, new Object[] {cmd} );
-    }
-
-    /**
-        Used to get Object from OAServer.publisher
-        @see OAObjectPublisher#getObject
-    */
-    public Object sendPublisherCommand(String cmd, Object obj) {
-        return this.getPublisherObject(null, new Object[] {cmd, obj} );
-    }
-
-    /**
-        Used to get Object from OAServer.publisher
-        @see OAObjectPublisher#getObject
-    */
-    public Object sendPublisherCommand(String cmd, Object[] objects) {
-        Object[] objs;
-        if (objects == null) objs = new Object[1];
-        else {
-            objs = new Object[objects.length + 1];
-            System.arraycopy(objects, 0, objs, 1, objects.length);
-        }
-        objs[0] = cmd;
-
-        return this.getPublisherObject(null, objs );
-    }
 
 
     /**
@@ -896,10 +597,8 @@ int dsCnt=0;
         }
         try {
             LOG.finer(Thread.currentThread().getName()+" command ="+command);//qqqqq
-            if (!bStop) {
-            	if (msg.isFastDataSourceCommand()) return oaObjectServer.datasource(msg);
-            	else sendMessage(msg);
-            }
+        	if (msg.isFastDataSourceCommand()) return oaObjectServer.datasource(msg);
+        	else sendMessage(msg);
         }
         catch (Exception e) {
         	LOG.log(Level.WARNING, "", e);
@@ -1288,6 +987,7 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
         if (bSendException) return;
         bSendException = true;
     	LOG.fine("msg="+s+", exception="+e+", bFromServer="+bFromServer);
+/*qqqqqqqq    	
         OAObjectMessage msg = new OAObjectMessage();
         msg.property = s;
         msg.type = OAObjectMessage.EXCEPTION;
@@ -1299,36 +999,12 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
         catch (Exception ex) {
         }
         sendMessage(msg);
+*/        
         bSendException = false;
     }
 
-    public int getMessageSentCount() {
-    	if (clientMessageHandler == null) return 0;
-    	return clientMessageHandler.getMessageSentCount();
-    }
-    public int getMessageReceivedCount() {
-    	if (clientMessageHandler == null) return 0;
-    	return clientMessageHandler.getMessageReceivedCount();
-    }
-    public int getSendClientInfoCount() {
-    	if (clientMonitor == null) return 0;
-    	return clientMonitor.getSendClientInfoCount();
-    }
-
-    public OAClientInfo getClientInfo() {
-    	if (clientMonitor == null) return null;
-    	return clientMonitor.getClientInfo();
-    }
-    
-    public void updateClientInfo() {
-    	if (clientMonitor == null) return;
-    	clientMonitor.updateClientInfo(true);
-    }
-    
     
     // ========================= Mehtods to Overwrite ===============================
-    
-    
     /**
      * Works with sendException() to allow other clients (and server) to get exceptions.
     */
@@ -1341,7 +1017,6 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
     */
     public void handleError(int msgErrorCode) {
     	LOG.severe("received OAObjectMessage.ERROR, code="+msgErrorCode+", closing connection");
-    	close();
     }
 
     /**
@@ -1351,7 +1026,7 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
     	be waiting on a return message.
 	*/
 	public void handleGetMessageException(OAObjectMessage msg, Exception e) {
-	    if (bStop || oaClient == null) return;
+	    if (oaClient == null) return;
 	    LOG.log(Level.WARNING, "msg="+msg, e);
 	}
 
@@ -1360,7 +1035,7 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
     Called when sendMessage throws an exception.  By default, this will print error message.
     */
     public void handleSendMessageException(OAObjectMessage msg, Exception e) {
-	    if (bStop || oaClient == null) return;
+	    if (oaClient == null) return;
 	    LOG.log(Level.WARNING, "msg="+msg, e);
     }
 
@@ -1368,28 +1043,18 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
     Called when processing a message from OAClientMessageReader throws an exception.  By default, this will print error message.
     */
     public void handleProcessMessageException(OAObjectMessage msg, Exception e) {
-	    if (bStop || oaClient == null) return;
+	    if (oaClient == null) return;
 	    LOG.log(Level.WARNING, "msg="+msg, e);
     }
     
     
     
     public void handleDataSourceException(int command, Exception e) {
-	    if (bStop || oaClient == null) return;
+	    if (oaClient == null) return;
 	    LOG.log(Level.WARNING, "command="+command, e);
     }
 
     
-    /**
-     * Called when OAObjectMessage.type = CUSTOM.
-     * This can be used to have messages sent to all clients.  
-     * When creating the OAClient, you will need to overwrite this method
-     * to handle the custom message.
-     */
-    protected void processCustom(OAObjectMessage msg) throws Exception {
-    	LOG.fine("msg="+msg);
-    }
-
     /**
      * Called when OAObjectMessage.type = ERROR.
      * The error code is stored in msg.pos
@@ -1421,13 +1086,14 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
         return OAClientDelegate.processIfServer();
     }
     
+//qqqqqqqqqqqqqq    
     /** 20120326 used by getProxy, to send method calls to server
      * 
      * @param clazz Class for interface to create a proxy instance
      * @param methodName
      * @param args
      * @return
-     */
+     *
     public Object remoteMethodCall(String remoteObjectName, String methodName, Object[] args) {
         // LOG.fine("class="+clazz+", objectIds="+objectIds);
         OAObjectMessage msg = new OAObjectMessage();
@@ -1438,35 +1104,41 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
         Object obj =  msg.newValue;
         return obj;
     }
-
+*/
     private static ConcurrentHashMap<String, Object> hmProxy = new ConcurrentHashMap<String, Object>();
     /** 20120326 used by getProxy, to send method calls to server
      * 
      * @return new instance of clazz
      * @see OAServerInterface#registerForRemoteMethodCall to register the implmentation object.
      */
-    public Object lookupProxy(final String remoteObjectName, final Class interfaceClass) {
+    public Object lookupRemote(final String remoteObjectName) throws Exception {
         Object proxy = hmProxy.get(remoteObjectName);
         if (proxy != null) return proxy;
 
-        InvocationHandler handler = new InvocationHandler() {
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (method == null) return null;
-                String methodName = method.getName();
-                LOG.fine("onInvoke, method=" + methodName);
-
-                Object result = remoteMethodCall(remoteObjectName, method.getName(), args);
-                return result;
-            }
-        };
+        proxy = getRemoteMultiplexerClient().lookup(remoteObjectName);
         
-        proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
         hmProxy.put(remoteObjectName, proxy);
-        LOG.fine(String.format("Created proxy instance, remoteObjectName=%s, interfaceClass=%s", remoteObjectName, interfaceClass.getName()));
+        LOG.fine(String.format("Created proxy instance, remoteObjectName=%s, class=%s", remoteObjectName, proxy==null?"null":proxy.getClass().getName()));
         return proxy;
     }
 
+    private OAClientInfo clientInfo;
+    public OAClientInfo getClientInfo() {
+        if (clientInfo == null) {
+            clientInfo = new OAClientInfo();
+            clientInfo.setId(getId());
+            try {
+                clientInfo.hostName = InetAddress.getLocalHost().getHostName();
+                clientInfo.ipAddress = InetAddress.getLocalHost().getHostAddress();
+                clientInfo.setUserName(System.getProperty("user.name"));
+            }
+            catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
+        return clientInfo;
+    }
+    
 }
 
 

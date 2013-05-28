@@ -17,31 +17,30 @@ All rights reserved.
 */ 
 package com.viaoa.cs;
 
-import java.rmi.*;
-
-import com.viaoa.remote.multiplexer.annotation.RemoteInterface;
-
+import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
 /** 
-     OAServer is a single RMI Distributed Object used for creating Client/Server applications that automatically
+     OAServer is a single Remote Object used for creating Client/Server applications that automatically
      stay synchronized.  
      <p>
      OAServer is responsible for creating and managing OAObjectServer objects for each connection.  OAServer 
      sends and receives messages from OAObjectServer to communicate with OAClient objects.
 */
-@RemoteInterface
+@OARemoteInterface
 public interface OAServerInterface {
     /**
         Create a new OAObjectServer object for an OAClient.  This is automatically created by
         OAClient.
     */
-    public OAObjectServerInterface getOAObjectServer() throws RemoteException;
+    public OAObjectServerInterface createOAObjectServer(OAClientInfo ci);
+
+    public OAClientInfo updateClientInfo(OAClientInfo ci);
     
     /**
         Method used to test if OAServer is working correctly.
     */
-    public String test() throws RemoteException;
-
+    public String ping(String msg);
+    
 
 }
 

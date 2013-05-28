@@ -1,4 +1,4 @@
-package com.theice.remote.multiplexer.info;
+package com.viaoa.remote.multiplexer.info;
 
 import java.lang.reflect.Method;
 

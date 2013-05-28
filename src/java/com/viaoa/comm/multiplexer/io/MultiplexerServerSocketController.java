@@ -1,4 +1,4 @@
-package com.theice.comm.multiplexer.io;
+package com.viaoa.comm.multiplexer.io;
 
 import java.io.*;
 import java.net.*;
@@ -46,7 +46,7 @@ public class MultiplexerServerSocketController {
     /**
      * sequential counter used for assigning id number to socketcontrollers.
      */
-    private int _cntSocketController;
+    private int _cntSocketController; // note: first connection needs to start at "1", since server is assumed to be "0"
 
     /**
      * total valid sockets created.
@@ -176,7 +176,7 @@ public class MultiplexerServerSocketController {
      * method is thread safe, since only one accept() can be done at a time.
      */
     protected void onAcceptRealClientConnection(final Socket socket) throws IOException {
-        _cntSocketController++;
+        _cntSocketController++;  
 
         final int connectionId = _cntSocketController;
 
@@ -386,6 +386,7 @@ public class MultiplexerServerSocketController {
             catch (Exception e) {
             }
         }
+        _serverSocket.close();
     }
 
     public void onClientConnect(Socket socket, int connectionId) {
