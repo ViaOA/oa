@@ -31,7 +31,6 @@ public class DiscoveryServer {
      * 
      * @param serverPort port that the server will broadcast on.
      * @param clientPort port that client broadcasts on.
-     * @param msg message to broadcast
      */
     public DiscoveryServer(int serverPort, int clientPort) {
         LOG.config(String.format("serverPort=%d, clientPort=%d", serverPort, clientPort));
@@ -39,6 +38,21 @@ public class DiscoveryServer {
         this.portReceive = clientPort;
     }
 
+    public void setMessage(String msg) {
+        this.msg = msg;
+    }
+    public String getMessage() {
+        if (msg == null) {
+            try {
+                InetAddress inetAddress = InetAddress.getLocalHost();
+                this.msg = inetAddress.getHostAddress();
+            }
+            catch (Exception e) {
+            }
+        }
+        return this.msg;
+    }
+    
     /**
      * Runs thread to send udp broadcast messages, and listen for discoveryClient requests. 
      */
@@ -47,12 +61,6 @@ public class DiscoveryServer {
         LOG.fine("starting thread that will send out broadcast messages, and listen for discoveryClient msgs");
         bStarted = true;
         final int iStartStop = aiStartStop.incrementAndGet();
-
-        if (sockSend == null) {
-            sockSend = new DatagramSocket();
-            inetAddress = InetAddress.getLocalHost();
-            msg = inetAddress.getHostAddress();
-        }
         
         Thread t = new Thread(new Runnable() {
             @Override
@@ -71,8 +79,9 @@ public class DiscoveryServer {
 
     protected void runSend(int iStartStop) throws Exception {
         byte[] bsReceive = new byte[1024];
+        int amt = 8;
         for (int i = 0; bStarted && iStartStop == aiStartStop.get(); i++) {
-            for (int j = 0; j < 8 && bStarted && iStartStop == aiStartStop.get(); j++) {
+            for (int j = 0; j < amt && bStarted && iStartStop == aiStartStop.get(); j++) {
                 send();
                 Thread.sleep(250);
             }
@@ -82,11 +91,23 @@ public class DiscoveryServer {
             DatagramPacket dpReceive = new DatagramPacket(bsReceive, bsReceive.length);
             sockReceive.receive(dpReceive);
             String s = new String(dpReceive.getData());
-            LOG.fine("received: " + s);
+            LOG.fine("received client message: " + s);
+            if (!shouldRespond(s)) amt = 0;
+            else amt = 2;
         }
         LOG.config("thread stopped");
     }
 
+    /**
+     * callback method used to determine if a send message should go out for the given 
+     * client message that was received.
+     * @param msg message received from client "where are you"
+     * @return true (default) if this server should broadcast a "here I am" message
+     */
+    public boolean shouldRespond(String msg) {
+        return true;
+    }
+    
     public void stop() {
         bStarted = false;
         aiStartStop.getAndIncrement();
@@ -94,8 +115,8 @@ public class DiscoveryServer {
     }
     
     public synchronized void send() throws Exception {
-        LOG.finer("Sending: " + msg);
-        byte[] bsSend = msg.getBytes();
+        LOG.finer("Sending: " + getMessage());
+        byte[] bsSend = getMessage().getBytes();
         DatagramPacket sendPacket = new DatagramPacket(bsSend, bsSend.length, inetAddress, portSend);
         sockSend.send(sendPacket);
     }

@@ -26,6 +26,7 @@ public class DiscoveryClient {
     private HashSet<String> hmServer = new HashSet<String>();
     private volatile boolean bStarted;
     private AtomicInteger aiStartStop = new AtomicInteger();
+    private String msg;
 
     /**
      * 
@@ -40,6 +41,21 @@ public class DiscoveryClient {
         this.portReceive = serverPort;
     }
 
+    public void setMessage(String msg) {
+        this.msg = msg;
+    }
+    public String getMessage() {
+        if (msg == null) {
+            try {
+                inetAddress = InetAddress.getLocalHost();
+                this.msg = inetAddress.getHostAddress();
+            }
+            catch (Exception e) {
+            }
+        }
+        return this.msg;
+    }
+    
     /**
      * Runs thread to send udp broadcast messages, and listen for discoveryServer messages.
      */
@@ -64,8 +80,9 @@ public class DiscoveryClient {
         t.start();
     }
 
+    
     protected void runReceive(int iStartStop) throws Exception {
-        byte[] bsSend = inetAddress.getHostAddress().getBytes();
+        byte[] bsSend = getMessage().getBytes();
         DatagramPacket sendPacket = new DatagramPacket(bsSend, bsSend.length, inetAddress, portSend);
         for (int j = 0; j < 4 && bStarted; j++) {
             sockSend.send(sendPacket);
@@ -80,12 +97,12 @@ public class DiscoveryClient {
             DatagramPacket dpReceive = new DatagramPacket(bsReceive, bsReceive.length);
             sockReceive.receive(dpReceive);
 
-            String server = new String(dpReceive.getData());
-            LOG.finer("Received: " + server);
+            String serverMsg = new String(dpReceive.getData());
+            LOG.finer("Received: " + serverMsg);
 
-            if (!hmServer.contains(server)) {
-                hmServer.add(server);
-                onNewServer(server);
+            if (!hmServer.contains(serverMsg)) {
+                hmServer.add(serverMsg);
+                onNewServerMessage(serverMsg);
             }
 
             /*
@@ -106,8 +123,8 @@ public class DiscoveryClient {
      * This should be overwritten to capture all new servers.
      * @param serverHostName
      */
-    public void onNewServer(String serverHostName) {
-        System.out.println("New Server: " + serverHostName);
+    public void onNewServerMessage(String serverMessage) {
+        System.out.println("New Server Message: " + serverMessage);
     }
 
     public static void main(String args[]) throws Exception {
