@@ -56,6 +56,9 @@ public abstract class OACircularQueue<TYPE> {
         this.queueSize = queueSize;
         msgQueue = (TYPE[]) Array.newInstance(classType, queueSize);
     }
+    public int getSize() {
+        return queueSize;
+    }
     
     
     public long getHeadPostion() {
