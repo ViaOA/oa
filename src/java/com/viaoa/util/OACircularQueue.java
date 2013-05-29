@@ -137,4 +137,15 @@ public abstract class OACircularQueue<TYPE> {
         }
         return msgs;
     }
+
+    /**
+     * Get message at position in queue
+     * @param pos is actual array position, must be less then queSize, else null is returned. 
+     * @return
+     */
+    public TYPE getMessagesAtPos(int pos) {
+        if (pos < 0 || pos >= msgQueue.length) return null;
+        TYPE x = msgQueue[pos];
+        return x;
+    }   
 }
