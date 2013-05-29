@@ -36,6 +36,11 @@ public class DiscoveryServer {
         LOG.config(String.format("serverPort=%d, clientPort=%d", serverPort, clientPort));
         this.portSend = serverPort;
         this.portReceive = clientPort;
+        try {
+            inetAddress = InetAddress.getLocalHost();
+        }
+        catch (Exception e) {
+        }
     }
 
     public void setMessage(String msg) {
@@ -43,12 +48,7 @@ public class DiscoveryServer {
     }
     public String getMessage() {
         if (msg == null) {
-            try {
-                InetAddress inetAddress = InetAddress.getLocalHost();
-                this.msg = inetAddress.getHostAddress();
-            }
-            catch (Exception e) {
-            }
+            this.msg = inetAddress.getHostAddress();
         }
         return this.msg;
     }
@@ -66,7 +66,7 @@ public class DiscoveryServer {
             @Override
             public void run() {
                 try {
-                    DiscoveryServer.this.runSend(iStartStop);
+                    DiscoveryServer.this.run(iStartStop);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -77,7 +77,11 @@ public class DiscoveryServer {
         t.start();
     }
 
-    protected void runSend(int iStartStop) throws Exception {
+    /**
+     * Called by start, to listen for clients, and respond by sending out message.
+     * @param iStartStop used to know when to stop.
+     */
+    protected void run(int iStartStop) throws Exception {
         byte[] bsReceive = new byte[1024];
         int amt = 8;
         for (int i = 0; bStarted && iStartStop == aiStartStop.get(); i++) {
@@ -114,11 +118,16 @@ public class DiscoveryServer {
         LOG.config("stopping");
     }
     
-    public synchronized void send() throws Exception {
+    public void send() throws Exception {
         LOG.finer("Sending: " + getMessage());
         byte[] bsSend = getMessage().getBytes();
         DatagramPacket sendPacket = new DatagramPacket(bsSend, bsSend.length, inetAddress, portSend);
-        sockSend.send(sendPacket);
+        if (sockSend == null) {
+            sockSend = new DatagramSocket(portSend);
+        }
+        synchronized (sockSend) {
+            sockSend.send(sendPacket);
+        }
     }
     
     public static void main(String args[]) throws Exception {

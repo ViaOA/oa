@@ -92,6 +92,7 @@ public class DiscoveryClient {
         byte[] bsReceive = new byte[1024];
         for (; bStarted && iStartStop == aiStartStop.get();) {
             if (sockReceive == null) {
+                LOG.finer("Sending: "+getMessage());
                 sockReceive = new DatagramSocket(portReceive);
             }
             DatagramPacket dpReceive = new DatagramPacket(bsReceive, bsReceive.length);

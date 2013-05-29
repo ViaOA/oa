@@ -11,6 +11,13 @@ Maven repo: https://maven.intcx.net
             https://maven.intcx.net/content/repositories/snapshots
             https://maven.intcx.net/content/repositories/snapshots/com/theice/gsmr/
 
+
+Deploy using Jenkins 
+PDK
+            https://pdk-np-mind-01/job/LoadTest%20GSMR/
+
+
+
 ******
 https://maven.intcx.net/content/groups/public-snapshots/com/theice/msg/icemessage/12.700.01-SNAPSHOT/
 
