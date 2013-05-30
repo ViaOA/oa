@@ -155,7 +155,7 @@ public class OAObjectServerImpl implements OAObjectServerInterface {
         else if (msg.type == OAObjectMessage.GETOBJECT) {
             msg.newValue = OAObjectReflectDelegate.getObject(msg.objectClass, msg.objectKey);
         }
-        if (msg.type == OAObjectMessage.DATASOURCE) {
+        else if (msg.type == OAObjectMessage.DATASOURCE) {
             msg.newValue = datasource(msg.pos, (Object[]) msg.newValue);
         }
         else if (msg.type == OAObjectMessage.CREATECOPY) {

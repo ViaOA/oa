@@ -46,6 +46,7 @@ public class OAClient {
     protected String serverName;  // name of server that this client has connected with
     protected int port;
 	protected OAObjectServerInterface oaObjectServer;  // rmi object used to send messages
+    private OAClientInfo clientInfo;
 
 
     OAClientMessageHandler clientMessageHandler;
@@ -1122,7 +1123,6 @@ LOG.finer("Removing>"+(xxcnt1)+"  "+oaObj);
         return proxy;
     }
 
-    private OAClientInfo clientInfo;
     public OAClientInfo getClientInfo() {
         if (clientInfo == null) {
             clientInfo = new OAClientInfo();
