@@ -186,7 +186,6 @@ public class MultiplexerSocketController implements Serializable {
                 dataOutputStream.flush();
                 throw new Exception("Invalid connection, failed handshake");
             }
-
             // handshaking code that runs on the server side of the socket
             // send assigned id to client.
             dataOutputStream.writeInt(_connectionId);
@@ -207,7 +206,7 @@ public class MultiplexerSocketController implements Serializable {
      * @return true if client is a valid vsoceket, else returns false.
      * @throws IOException
      */
-    private boolean verifyServerSideHandshake() throws IOException {
+    protected boolean verifyServerSideHandshake() throws IOException {
         boolean bResult = false;
 
         for (int i = 0;; i++) {

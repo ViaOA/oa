@@ -180,14 +180,20 @@ public class MultiplexerServerSocketController {
 
         final int connectionId = _cntSocketController;
 
-        onClientConnect(socket, connectionId);
-
         /**
          * This will create a new SocketController that will manage the new connection. Methods are
          * overwritten to so that new MultiplexerSocket connections can be given to the correct
          * MultiplexerServerSocket.
          */
         MultiplexerSocketController sc = new MultiplexerSocketController(socket, connectionId) {
+            @Override
+            protected boolean verifyServerSideHandshake() throws IOException {
+                boolean b = super.verifyServerSideHandshake();
+                if (b) {
+                    onClientConnect(socket, connectionId);
+                }
+                return b;
+            }
             @Override
             protected VirtualSocket createSocket(int connectionId, int id, String serverSocketName) throws IOException {
                 // The Multiplexer sockets that are created on the client need to be sent to the
@@ -299,6 +305,7 @@ public class MultiplexerServerSocketController {
      * Removes a SocketController from list.
      */
     protected void remove(MultiplexerSocketController vsc) {
+        if (vsc == null) return;
         boolean b;
         synchronized (_alSocketController) {
             b = _alSocketController.remove(vsc);
@@ -312,7 +319,9 @@ public class MultiplexerServerSocketController {
                 }
             }
         }
-        onClientDisconnet(vsc.getId());
+        if (vsc.isValid()) {
+            onClientDisconnet(vsc.getId());
+        }
     }
 
     /**
