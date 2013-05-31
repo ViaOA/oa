@@ -54,11 +54,6 @@ public class MultiplexerServerSocketController {
     private int _totalValidSocketsCreated;
 
     /**
-     * total invalid sockets created.
-     */
-    private int _totalInvalidSocketsCreated;
-
-    /**
      * Thread that listens for new client connections, named: "MultiplexerServerSocket.Accept"
      */
     private Thread _threadAccept;
@@ -190,6 +185,7 @@ public class MultiplexerServerSocketController {
             protected boolean verifyServerSideHandshake() throws IOException {
                 boolean b = super.verifyServerSideHandshake();
                 if (b) {
+                    _totalValidSocketsCreated++;
                     onClientConnect(socket, connectionId);
                 }
                 return b;
@@ -287,18 +283,11 @@ public class MultiplexerServerSocketController {
      */
     protected void add(MultiplexerSocketController vsc) {
         synchronized (_alSocketController) {
-            _totalValidSocketsCreated++;
             _alSocketController.add(vsc);
         }
         synchronized (TIMEOUTLOCK) {
             TIMEOUTLOCK.notify();
         }
-        /*
-         * Log.error("ServerSocketController: new connection, Id="+vsc.getId() +
-         * ", inetAddress="+vsc.getInetAddress() + ", isValid=checking" +
-         * ", valid="+_totalValidSocketsCreated + ", invalid="+_totalInvalidSocketsCreated +
-         * ", active="+_alSocketController.size());
-         */
     }
 
     /**
@@ -308,18 +297,9 @@ public class MultiplexerServerSocketController {
         if (vsc == null) return;
         boolean b;
         synchronized (_alSocketController) {
-            b = _alSocketController.remove(vsc);
-            if (b) {
-                if (!vsc.isValid()) {
-                    _totalInvalidSocketsCreated++;
-                    _totalValidSocketsCreated--;
-                }
-                else {
-                    b = false; // dont display log message.
-                }
-            }
+            b = _alSocketController.remove(vsc) && vsc.isValid();
         }
-        if (b && vsc.isValid()) {
+        if (b) {
             onClientDisconnet(vsc.getId());
         }
     }

@@ -871,6 +871,8 @@ public class RemoteMultiplexerServer {
             for (;;) {
                 RequestInfo[] ris = cque.getMessages(qpos, 50);
                 VirtualSocket vsocket = getSocketForStoC();
+                if (vsocket.isClosed()) return;
+
                 for (RequestInfo ri : ris) {
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     oos.writeBoolean(false); // flag to know this is a method call
