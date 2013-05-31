@@ -41,6 +41,7 @@ import com.viaoa.util.OACompressWrapper;
  * that have it.
  * </ol>
  * 
+ * 
  * @author vvia
  */
 public class RemoteMultiplexerServer {
@@ -581,9 +582,14 @@ public class RemoteMultiplexerServer {
         }
         return null;
     }
-    
+
     /**
      * Register/Bind an Object so that it can used by clients
+     * @param name
+     * @param obj remote object to create
+     * @param interfaceClass
+     * 
+     * Important: a weakref is used to store the remote object "obj"
      */
     public void bind(String name, Object obj, Class interfaceClass) {
         BindInfo bind = createBindInfo(name, obj, interfaceClass);
@@ -606,6 +612,7 @@ public class RemoteMultiplexerServer {
      * @param name of object.
      * @param obj instance
      * @param interfaceClass the Interface of the obj.  This is used when creating the proxy instance. 
+     * Important: a weakref is used to store the remote object "obj"
      */
     protected BindInfo createBindInfo(String name, Object obj, Class interfaceClass) {
         if (name == null || interfaceClass == null) {

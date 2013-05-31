@@ -405,6 +405,14 @@ public class RemoteMultiplexerClient {
             }
             oos.flush();
         }
+        else {
+            if (ri.exception != null) {
+                LOG.warning("error processing StoC, exception="+ri.exception.toString());
+            }
+            else if (ri.exceptionMessage != null) {
+                LOG.warning("error processing StoC, exception="+ri.exceptionMessage);
+            }
+        }
         ri.nsEnd = System.nanoTime();
 
         afterInvokForStoC(ri);

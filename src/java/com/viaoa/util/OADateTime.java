@@ -61,6 +61,7 @@ import java.sql.Time;
     "hh 'o''clock' a, zzzz"           ->>  12 o'clock PM, Pacific Daylight Time
     "K:mm a, z"                       ->>  0:00 PM, PST
     "yyyy.MMMMM.dd GGG hh:mm aaa"    ->>  1996.July.10 AD 12:08 PM
+    "yyyy.MM.dd HH:mm:ss.SSS"
     </pre>
 
     <br>
