@@ -289,6 +289,7 @@ public class RemoteMultiplexerServer {
 
                             final OACircularQueue<RequestInfo> cque = hmBroadcastCircularQueue.get(bindz);
                             // set up thread that will get messages from queue and send to client
+                            final String threadName = "Client."+ri.connectionId+"."+ri.bindName;
                             Thread t = new Thread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -296,12 +297,11 @@ public class RemoteMultiplexerServer {
                                         session.writeQueueMessages(cque, bindName);
                                     }
                                     catch (Exception e) {
-                                        int xx = 0;
-                                        xx = 4;
+                                        LOG.log(Level.WARNING, "broadcast thread exception, thread="+threadName+", thread is stopping, which will stop message from being sent to this client", e);
                                     }
                                 }
                             });
-                            t.setName("Client."+ri.connectionId+"."+ri.bindName);
+                            t.setName(threadName);
                             t.start();
                         }
                         else {

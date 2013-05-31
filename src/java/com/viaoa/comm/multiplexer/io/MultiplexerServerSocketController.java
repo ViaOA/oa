@@ -319,7 +319,7 @@ public class MultiplexerServerSocketController {
                 }
             }
         }
-        if (vsc.isValid()) {
+        if (b && vsc.isValid()) {
             onClientDisconnet(vsc.getId());
         }
     }
