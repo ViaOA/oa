@@ -103,6 +103,8 @@ public class RemoteMultiplexerClient {
         VirtualSocket socket = getSocketForCtoS();
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
         oos.writeBoolean(false); // true: method call, false: get interface class
+        // 20130601 added new boolean 
+        oos.writeBoolean(true) ; // get interface name
         oos.writeAsciiString(lookupName);
         oos.flush();
 
@@ -436,7 +438,18 @@ public class RemoteMultiplexerClient {
 
         Object remoteObject = ri.bind.getObject();
         if (remoteObject == null) {
-            ri.exceptionMessage = "remote Object has been garbage collected";
+
+            // 20130601 send message to server to remove session thread for broadcast object
+            VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
+            RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
+            oos.writeBoolean(false); // not a method call
+            oos.writeBoolean(false); // remove StoC thread
+            oos.writeAsciiString(ri.bind.name);
+            oos.flush();
+            releaseSocketForCtoS(socket);
+            
+            
+            ri.exceptionMessage = "remote Object has been garbage collected, message sent to server to stop thread";
             return;
         }
         

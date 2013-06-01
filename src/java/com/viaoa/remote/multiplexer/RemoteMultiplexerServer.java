@@ -180,16 +180,18 @@ public class RemoteMultiplexerServer {
             ri.vsocketId = ri.socket.getId();
             
             Session session = getSession(ri.connectionId);
+            boolean bShouldReturnValue;
             try {
-                processNextRequestForCtoS(ri, session);
+                bShouldReturnValue = processNextRequestForCtoS(ri, session);
             }
             catch (Exception e) {
+                bShouldReturnValue = true;
                 ri.exception = e;
             }
 
             long t1 = System.nanoTime();                
             // return response
-            if (ri.methodInfo == null || !ri.methodInfo.streaming) {
+            if (bShouldReturnValue && (ri.methodInfo == null || !ri.methodInfo.streaming)) {
                 RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, session.hmClassDescOutput, session.aiClassDescOutput);
                 oos.writeBoolean(ri.exception == null && ri.exceptionMessage == null);
                 Object resp;
@@ -212,24 +214,35 @@ public class RemoteMultiplexerServer {
             afterInvokeForCtoS(ri);
         }
     }
-    protected void processNextRequestForCtoS(final RequestInfo ri, final Session session) throws Exception {
+    protected boolean processNextRequestForCtoS(final RequestInfo ri, final Session session) throws Exception {
         RemoteObjectInputStream ois = new RemoteObjectInputStream(ri.socket, session.hmClassDescInput);
       
         // wait for next message
-        boolean b = ois.readBoolean();  // true: method, false: get interface class
+        boolean b = ois.readBoolean();  // true: method, false: get interface class or drop StoC thread
         ri.msStart = System.currentTimeMillis();
         ri.nsStart = System.nanoTime();
  
-        if (!b) {  // lookup, needs to return Java Interface class.
+        if (!b) {  
+            // 20130601 added extra boolean
+            b = ois.readBoolean();
+            if (b) {
+                // lookup, needs to return Java Interface class.
+                ri.bindName = ois.readAsciiString();
+                BindInfo bind = getBindInfo(ri.bindName);
+                if (bind != null) {
+                    ri.response = bind.interfaceClass;
+                }
+                else {
+                    ri.exceptionMessage = "object not found"; 
+                }
+                return true;
+            }
+            // 20130601 
+            // remove StoC thread used for broadcast object
             ri.bindName = ois.readAsciiString();
-            BindInfo bind = getBindInfo(ri.bindName);
-            if (bind != null) {
-                ri.response = bind.interfaceClass;
-            }
-            else {
-                ri.exceptionMessage = "object not found"; 
-            }
-            return;
+            session.removeBindInfo(ri.bindName);
+            
+            return false;  // do not respond
         }
 
         
@@ -243,14 +256,14 @@ public class RemoteMultiplexerServer {
         
         if (ri.bind == null) {
             ri.exceptionMessage = "bind Object not found";
-            return;
+            return true;
         }
         ri.object = ri.bind.getObject();
         ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
         if (ri.methodInfo != null) ri.method = ri.methodInfo.method;
         if (ri.method == null) {
             if (ri.exceptionMessage == null) ri.exceptionMessage = "method not found";
-            return;
+            return true;
         }
 
         // check for compressed params
@@ -352,6 +365,7 @@ public class RemoteMultiplexerServer {
                 ri.response = new OACompressWrapper(ri.response);
             }
         }
+        return true;
     }
     
     /**
@@ -771,6 +785,10 @@ public class RemoteMultiplexerServer {
             if (name == null) return null;
             return hmNameToBind.get(name);
         }
+        protected BindInfo removeBindInfo(String name) {
+            if (name == null) return null;
+            return hmNameToBind.remove(name);
+        }
         protected BindInfo getBindInfo(Object obj) {
             if (obj == null) return null;
             for (BindInfo bindx : hmNameToBind.values()) {
@@ -835,6 +853,7 @@ public class RemoteMultiplexerServer {
         
         public void releaseSocketForStoC(VirtualSocket socket) throws Exception {
             if (socket == null) return;
+            if (socket.isClosed()) return;
             synchronized (alSocketFromStoC) {
                 if (alSocketFromStoC.size() < 3) { 
                     alSocketFromStoC.add(socket);
@@ -878,9 +897,12 @@ public class RemoteMultiplexerServer {
             for (;;) {
                 RequestInfo[] ris = cque.getMessages(qpos, 50);
                 VirtualSocket vsocket = getSocketForStoC();
-                if (vsocket.isClosed()) return;
 
                 for (RequestInfo ri : ris) {
+//qqqqqqqqqqqqqqvvvvvvv client needs to send msg to remove                    
+                    if (vsocket.isClosed()) return;
+                    if (getBindInfo(clientBindName) == null) return;
+                    
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     oos.writeBoolean(false); // flag to know this is a method call
                     oos.writeBoolean(false); // do not return a response
