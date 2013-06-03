@@ -1,5 +1,11 @@
 
 
+
+<%
+    request.getRequestDispatcher("ssi.html").include(request, response);        
+%>
+
+
     response.sendRedirect("someUrl");
 
 <%

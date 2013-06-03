@@ -75,6 +75,11 @@ public class RemoteMultiplexerServer {
 
     // track connections
     private ConcurrentHashMap<Integer, Session> hmSession = new ConcurrentHashMap<Integer, Session>();
+
+    // types of commands sent from Client to server
+    static final byte CtoS_Command_RunMethod = 0; 
+    static final byte CtoS_Command_GetInterfaceClass = 1; 
+    static final byte CtoS_Command_RemoveSessionBroadcastThread = 2; 
     
     /**
      * Create a new RemoteServer using multiplexer.
@@ -214,29 +219,31 @@ public class RemoteMultiplexerServer {
             afterInvokeForCtoS(ri);
         }
     }
+    
+    
     protected boolean processNextRequestForCtoS(final RequestInfo ri, final Session session) throws Exception {
         RemoteObjectInputStream ois = new RemoteObjectInputStream(ri.socket, session.hmClassDescInput);
       
         // wait for next message
-        boolean b = ois.readBoolean();  // true: method, false: get interface class or drop StoC thread
+        // 20130601 changed from boolean to byte
+        byte bCommand = ois.readByte();
         ri.msStart = System.currentTimeMillis();
         ri.nsStart = System.nanoTime();
  
-        if (!b) {  
-            // 20130601 added extra boolean
-            b = ois.readBoolean();
-            if (b) {
-                // lookup, needs to return Java Interface class.
-                ri.bindName = ois.readAsciiString();
-                BindInfo bind = getBindInfo(ri.bindName);
-                if (bind != null) {
-                    ri.response = bind.interfaceClass;
-                }
-                else {
-                    ri.exceptionMessage = "object not found"; 
-                }
-                return true;
+        // 20130601 added extra boolean
+        if (bCommand == CtoS_Command_GetInterfaceClass) {  
+            // lookup, needs to return Java Interface class.
+            ri.bindName = ois.readAsciiString();
+            BindInfo bind = getBindInfo(ri.bindName);
+            if (bind != null) {
+                ri.response = bind.interfaceClass;
             }
+            else {
+                ri.exceptionMessage = "object not found"; 
+            }
+            return true;
+        }
+        if (bCommand == CtoS_Command_RemoveSessionBroadcastThread) {
             // 20130601 
             // remove StoC thread used for broadcast object
             ri.bindName = ois.readAsciiString();
@@ -244,7 +251,8 @@ public class RemoteMultiplexerServer {
             
             return false;  // do not respond
         }
-
+        
+        // else: bCommand = CtoS_Command_RunMethod
         
         ri.bindName = ois.readAsciiString();
         
@@ -461,6 +469,10 @@ public class RemoteMultiplexerServer {
     private final Object stuntObject = new Object();
     protected void onInvokeForStoC(Session session, RequestInfo ri) throws Exception {
         ri.bind = session.getBindInfo(ri.bindName);
+        if (ri.bind == null) {
+            ri.exceptionMessage = "object was remved on client (GCd)";
+            return;
+        }
         if (ri.bind != null) {
             ri.methodInfo = ri.bind.getMethodInfo(ri.method);
         }
@@ -899,9 +911,8 @@ public class RemoteMultiplexerServer {
                 VirtualSocket vsocket = getSocketForStoC();
 
                 for (RequestInfo ri : ris) {
-//qqqqqqqqqqqqqqvvvvvvv client needs to send msg to remove                    
                     if (vsocket.isClosed()) return;
-                    if (getBindInfo(clientBindName) == null) return;
+                    if (getBindInfo(clientBindName) == null) return; // client has removed it
                     
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     oos.writeBoolean(false); // flag to know this is a method call

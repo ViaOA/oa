@@ -15,5 +15,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OARemoteInterface {
-
+    
+    /**
+     * Used to have all methods sent async and have the return value
+     * use a single queue to return the value.
+     */
+    boolean async() default false;
 }

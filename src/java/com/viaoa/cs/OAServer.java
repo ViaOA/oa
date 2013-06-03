@@ -30,6 +30,10 @@ public class OAServer {
         this.port = port;
     }
     
+    public void setInvalidConnectionMessage(String msg) {
+        getMultiplexerServer().setInvalidConnectionMessage(msg);
+    }
+    
     // tracks each client connection
     class ClientSession {
         final int connectionId;   // from multiplexer connection

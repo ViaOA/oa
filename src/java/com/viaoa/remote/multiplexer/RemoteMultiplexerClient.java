@@ -22,6 +22,8 @@ import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.OACompressWrapper;
+import static com.viaoa.remote.multiplexer.RemoteMultiplexerServer.*;
+
 
 /**
  * Remoting client, that allows a client to access Objects on a server, and call methods on those
@@ -102,9 +104,9 @@ public class RemoteMultiplexerClient {
 
         VirtualSocket socket = getSocketForCtoS();
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
-        oos.writeBoolean(false); // true: method call, false: get interface class
-        // 20130601 added new boolean 
-        oos.writeBoolean(true) ; // get interface name
+        
+        // 20130601 changed from boolean to byte
+        oos.writeByte(CtoS_Command_GetInterfaceClass); // 0=method, 1=get interface class, 2=remove session bindInfo
         oos.writeAsciiString(lookupName);
         oos.flush();
 
@@ -249,7 +251,8 @@ public class RemoteMultiplexerClient {
 
         long ns1 = System.nanoTime();
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
-        oos.writeBoolean(true); // flag for method
+        // 20130601 changed from boolean to byte
+        oos.writeByte(CtoS_Command_RunMethod);
         oos.writeAsciiString(ri.bind.name);
         oos.writeAsciiString(ri.methodNameSignature);
         oos.writeObject(ri.args);
@@ -393,16 +396,16 @@ public class RemoteMultiplexerClient {
                 else {
                     resp = new Exception(ri.exception.toString() + ", info: " + ri.toLogString());
                 }
-                oos.writeBoolean(false);
+                oos.writeBoolean(false); // false=error
                 oos.writeObject(resp);
             }
             else if (ri.exceptionMessage != null) {
-                oos.writeBoolean(false);
+                oos.writeBoolean(false);  // false=error
                 Exception ex = new Exception(ri.exceptionMessage + ", info: " + ri.toLogString());
                 oos.writeObject(ex);
             }
             else {
-                oos.writeBoolean(true);
+                oos.writeBoolean(true);  // true=success
                 oos.writeObject(ri.response);
             }
             oos.flush();
@@ -438,16 +441,13 @@ public class RemoteMultiplexerClient {
 
         Object remoteObject = ri.bind.getObject();
         if (remoteObject == null) {
-
-            // 20130601 send message to server to remove session thread for broadcast object
+            // 20130601 send message to server to remove client remote object from session
             VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
             RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
-            oos.writeBoolean(false); // not a method call
-            oos.writeBoolean(false); // remove StoC thread
+            oos.writeByte(CtoS_Command_RemoveSessionBroadcastThread);
             oos.writeAsciiString(ri.bind.name);
             oos.flush();
             releaseSocketForCtoS(socket);
-            
             
             ri.exceptionMessage = "remote Object has been garbage collected, message sent to server to stop thread";
             return;

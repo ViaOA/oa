@@ -304,6 +304,16 @@ public class OAForm extends OABase implements Serializable {
             if (!OAString.isEmpty(s)) sb.append(s + "\n");
             if (comp instanceof OAJspMultipartInterface) {
                 sb.append("    $('#"+id+"').attr('enctype', 'multipart/form-data');\n");
+                // 20130602 support submit fileInput
+                sb.append("    $('#"+id+"').attr('action', 'oaform.jsp?oaform="+getId()+"');\n");
+                
+//qqqqqqqqqqqqqqqqq                
+// qqqqqqq from html.OAImage, need to get clicked button ? not sure
+                // if it is in data submitted
+//String s = "\"oaform.jsp?oaform="+getForm().getUrl()+"&"+getName()+"=1\"";
+//s += " onMouseOver=\"this.href='oaform.jsp?oaform="+getForm().getUrl()+"&"+getName()+"=1&oatop='+setOA()+'&oatarget='+this.target+'&oaname='+window.name;\"";
+                
+                
                 break;
             }
         }

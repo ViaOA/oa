@@ -5,6 +5,7 @@ findFileName = "OA.*\\.class";  // works
 s.matches("[\\d]+[\\s]*pt") 
 
 String[] ipOctets = s.split("\\.");
+String[] ipOctets = s.split("\\t");
 
 
 findFileName = "OA[a-zA-Z0-9.]{6}\\.class";        
