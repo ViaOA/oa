@@ -1,5 +1,20 @@
 
 
+JSP tags
+    http://www.tutorialspoint.com/jsp/page_directive.htm
+    
+    
+Important NOTE:
+    this is needed for includes to work
+    
+    <%@ page buffer="none" %>    
+    
+      ex:
+         request.getRequestDispatcher("ssi.html").include(request, response);
+
+    
+    <%@ page buffer="8kb" %>
+
 
 <%
     request.getRequestDispatcher("ssi.html").include(request, response);        

@@ -1,0 +1,11 @@
+
+
+gss.lt.ll.intcx.net 
+
+
+
+This is needed for Operator to work:
+
+    make sure you have these entries in services file in C: C:\WINDOWS\system32\drivers\etc.
+        netldi10         10077/tcp
+        netldi2x         10078/tcp

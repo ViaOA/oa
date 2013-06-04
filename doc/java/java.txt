@@ -4,4 +4,10 @@
 java -classpath "test\*" com.vetjobs.control.DBController
 
 
+"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
+
+-Xmx1500m -Xms256m
+
+
+
 
