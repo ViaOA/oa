@@ -2,7 +2,7 @@
 See: format.txt
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HHmmss");
-        
+
 
 
 exam.getDate(),OADateTime.getFormat(java.text.DateFormat.LONG)

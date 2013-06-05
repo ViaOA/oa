@@ -25,7 +25,6 @@ import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.OACircularQueue;
 import com.viaoa.util.OACompressWrapper;
-import com.viaoa.util.OAString;
 
 /**
  * Server component used to allow remoting method calls with Clients.
@@ -785,7 +784,7 @@ public class RemoteMultiplexerServer {
         ConcurrentHashMap<String, Integer> hmClassDescOutput = new ConcurrentHashMap<String, Integer>();
         AtomicInteger aiClassDescOutput = new AtomicInteger();
         ConcurrentHashMap<Integer, ObjectStreamClass> hmClassDescInput = new ConcurrentHashMap<Integer, ObjectStreamClass>();
-       
+
         // remote objects
         ConcurrentHashMap<String, BindInfo> hmNameToBind = new ConcurrentHashMap<String, BindInfo>();
         // list of vsockets used for calling methods on client
@@ -901,16 +900,23 @@ public class RemoteMultiplexerServer {
             return bind;
         }
 
+        public void writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String clientBindName) throws Exception {
+            // have all messages sent using single vsocket
+            VirtualSocket vsocket = getSocketForStoC();
+            try {
+                _writeQueueMessages(cque, clientBindName, vsocket);
+            }
+            finally {
+                releaseSocketForStoC(vsocket);
+            }
+        }
 
         // used to send broadcast messages to client
-        public void writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String clientBindName) throws Exception {
+        private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String clientBindName, VirtualSocket vsocket) throws Exception {
             long qpos = cque.getHeadPostion();
-            // todo: need a way to stop messages
-            
+
             for (;;) {
                 RequestInfo[] ris = cque.getMessages(qpos, 50);
-                VirtualSocket vsocket = getSocketForStoC();
-
                 for (RequestInfo ri : ris) {
                     if (vsocket.isClosed()) return;
                     if (getBindInfo(clientBindName) == null) return; // client has removed it
@@ -924,7 +930,6 @@ public class RemoteMultiplexerServer {
                     oos.flush();
                     qpos++;
                 }
-                releaseSocketForStoC(vsocket);
             }
         }
     }
