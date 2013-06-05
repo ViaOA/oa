@@ -658,6 +658,23 @@ public class RemoteMultiplexerServer {
         return bind;
     }
 
+//qqqqqqqqqqqqqq    
+    public void bindQueue(String bindName, int queueSize, Class interfaceClass) {
+        BindInfo bind = createBindInfo(bindName, obj, interfaceClass);
+        hmBindObject.put(bind, obj);
+        
+        // this is the queue where all invoked messages will be put - for clients to pick up
+        OACircularQueue<RequestInfo> cque = new OACircularQueue<RequestInfo>(queueSize) {
+        };
+        hmBroadcastCircularQueue.put(bind, cque);        
+
+        // need to be able to lookup based on class        
+        hmBroadcastClass.put(interfaceClass, bind);
+        
+        
+    }
+
+    
     
     /**
      * This is used for async broadcasts from server to clients.
