@@ -22,5 +22,5 @@ public class MethodInfo {
     public boolean[] compressedParams;
     
     // true if dont wait for return value (void methods)
-    public boolean streaming;
+    public boolean noReturnValue;
 }

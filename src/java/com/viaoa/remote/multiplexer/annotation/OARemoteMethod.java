@@ -19,6 +19,7 @@ public @interface OARemoteMethod {
     // true if the return value should be compressed when it is transmitted
     boolean compressedReturnValue() default false;
 
-    // true if return value should not be returned (async)
-    boolean streaming() default false;
+    // true if return value should not be returned
+    boolean noReturnValue() default false;
 }
+

@@ -103,7 +103,7 @@ public class BindInfo {
                         mi.compressedReturn = true;
                     }
                 }
-                mi.streaming = remoteMethod.streaming();
+                mi.noReturnValue = remoteMethod.noReturnValue();
             }
 
             // check to see if any of the params are remote

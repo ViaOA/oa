@@ -259,7 +259,7 @@ public class RemoteMultiplexerClient {
         oos.flush();
         ri.nsWrite = System.nanoTime() - ns1;
 
-        if (ri.methodInfo == null || !ri.methodInfo.streaming) {
+        if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
             RemoteObjectInputStream ois = new RemoteObjectInputStream(ri.socket, hmClassDescInput);
             if (!ois.readBoolean()) {
                 ri.exception = (Exception) ois.readObject();
@@ -386,7 +386,7 @@ public class RemoteMultiplexerClient {
             ri.exception = e;
         }
 
-        if (bSendResponse && (ri.methodInfo == null || !ri.methodInfo.streaming)) {
+        if (bSendResponse && (ri.methodInfo == null || !ri.methodInfo.noReturnValue)) {
             RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
             if (ri.exception != null) {
                 Object resp;

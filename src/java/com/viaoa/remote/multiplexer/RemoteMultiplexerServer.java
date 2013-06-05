@@ -25,6 +25,7 @@ import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.OACircularQueue;
 import com.viaoa.util.OACompressWrapper;
+import com.viaoa.util.OAString;
 
 /**
  * Server component used to allow remoting method calls with Clients.
@@ -196,7 +197,7 @@ public class RemoteMultiplexerServer {
 
             long t1 = System.nanoTime();                
             // return response
-            if (bShouldReturnValue && (ri.methodInfo == null || !ri.methodInfo.streaming)) {
+            if (bShouldReturnValue && (ri.methodInfo == null || !ri.methodInfo.noReturnValue)) {
                 RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, session.hmClassDescOutput, session.aiClassDescOutput);
                 oos.writeBoolean(ri.exception == null && ri.exceptionMessage == null);
                 Object resp;
@@ -347,7 +348,7 @@ public class RemoteMultiplexerServer {
             ri.exception = new Exception(tx.toString(), tx);
         }
         
-        if (ri.methodInfo == null || !ri.methodInfo.streaming) {
+        if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
             if (ri.response != null && ri.methodInfo.remoteReturn != null) {
                 BindInfo bindx = getBindInfo(ri.response);
                 Object objx = bindx != null ? bindx.weakRef.get() : null; // make sure obj is not gc'd
@@ -534,7 +535,7 @@ public class RemoteMultiplexerServer {
         oos.writeObject(ri.args);
         oos.flush();
         
-        if (ri.methodInfo == null || !ri.methodInfo.streaming) {
+        if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
             RemoteObjectInputStream ois = new RemoteObjectInputStream(ri.socket, session.hmClassDescInput);
             if (ois.readBoolean()) {
                 ri.response = ois.readObject();
