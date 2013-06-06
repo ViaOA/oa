@@ -157,6 +157,7 @@ public class MultiplexerServerSocketController {
      * @see MultiplexerOutputStreamController#
      */
     public void setThrottleLimit(int mbPerSecond) {
+        LOG.config("new value="+mbPerSecond);
         mbThrottleLimit = mbPerSecond;
     }
     public int getThrottleLimit() {

@@ -85,10 +85,21 @@ public class MultiplexerClient {
         _socket = new Socket(_host, _port);
         _socket.setTcpNoDelay(true);
 
-        _controlSocket = new MultiplexerSocketController(_socket);
+        _controlSocket = new MultiplexerSocketController(_socket) {
+            protected void onSocketException(Exception e) {
+                MultiplexerClient.this.onSocketException(e);
+            };
+        };
         setThrottleLimit(this.mbThrottleLimit);
     }
 
+    /**
+     * Called when there is a socket exception
+     */
+    protected void onSocketException(Exception e) {
+    };
+    
+    
     /**
      * Used to set the limit on the number of bytes that can be written per second (in MB).  
      * @see MultiplexerOutputStreamController#
