@@ -1,0 +1,44 @@
+
+
+http://www.adminschoice.com/crontab-quick-reference/
+
+examples:
+    http://www.thegeekstuff.com/2009/06/15-practical-crontab-examples/
+
+* each user has it's own crontab
+
+view:  crontab -l
+edit:  -e   (uses vi)
+
+other users crontabs:  crontab -u sathiya -l
+
+
+
+example: in Dev2
+
+[helpdesk@rv-dv2-gsmr-01 gsmr\>crontab -l
+#Nightly log cleanup
+40 21 * * 1-5 /var/opt/gsmr/log-cleanup.sh
+#Monday through Friday bounce
+30 21 * * 1-5 /var/opt/gsmr/gsmr.sh stop
+35 21 * * 1-5 /var/opt/gsmr/gsmr.sh start
+
+format:
+min -> 35  (0-59)
+  hour -> 21  (0-23)
+    day of month -> *  (1-31)
+        month -> *  (1-12)
+           day of week -> 1-5  (0 to 6)
+              command -> /var/opt/... 
+
+              
+
+Installing Crontab From a Cron File
+
+    crontab cron-file.txt
+    
+    * this will remove previous crontab
+    
+    
+              
+              
