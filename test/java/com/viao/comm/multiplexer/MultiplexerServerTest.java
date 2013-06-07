@@ -1,4 +1,4 @@
-package com.theice.comm.multiplexer;
+package com.viao.comm.multiplexer;
 
 import java.net.Socket;
 import java.util.logging.ConsoleHandler;
@@ -6,32 +6,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.*;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-
-import com.theice.comm.multiplexer.MultiplexerServer;
-import com.theice.comm.multiplexer.io.VirtualServerSocket;
+import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.comm.multiplexer.io.VirtualServerSocket;
 
 public class MultiplexerServerTest {
     private static Logger LOG = Logger.getLogger(MultiplexerServerTest.class.getName());
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-    @After
-    public void tearDown() throws Exception {
-    }
-    
-    //@Test
     public void test() throws Exception {
         LOG.config("Starting");
         MultiplexerServer server = new MultiplexerServer("localhost", 1099) {
@@ -100,7 +80,7 @@ public class MultiplexerServerTest {
     
     
     public static void main(String[] args) throws Exception {
-        Logger log = Logger.getLogger("com.theice");
+        Logger log = Logger.getLogger("com.viaoa");
         log.setLevel(Level.FINE);
         ConsoleHandler ch = new ConsoleHandler();
         ch.setLevel(Level.FINE);

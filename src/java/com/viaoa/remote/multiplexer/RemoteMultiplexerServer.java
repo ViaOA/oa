@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.comm.multiplexer.io.VirtualServerSocket;
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.cs.OAObjectMessage;
 import com.viaoa.remote.multiplexer.info.BindInfo;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
@@ -80,6 +81,12 @@ public class RemoteMultiplexerServer {
     static final byte CtoS_Command_RunMethod = 0; 
     static final byte CtoS_Command_GetInterfaceClass = 1; 
     static final byte CtoS_Command_RemoveSessionBroadcastThread = 2; 
+
+    // circular queue used for all async messages
+    // this will allow them to be ordered
+    private static int AsyncQueueSize = 15000;
+    private OACircularQueue<RequestInfo> cqueAsync;
+    
     
     /**
      * Create a new RemoteServer using multiplexer.
@@ -90,6 +97,17 @@ public class RemoteMultiplexerServer {
         this.multiplexerServer = server;
     }
 
+    /**
+     * Circular queue used for async messages.
+     */
+    public OACircularQueue<RequestInfo> getAsyncQueue() {
+        if (cqueAsync == null) {
+            cqueAsync = new OACircularQueue<RequestInfo>(AsyncQueueSize) {
+            };
+        }
+        return cqueAsync;
+    }
+    
     /**
      * This can be called when  MultiplexerServer.onClientDisconnet(..) is called.
      * If this is not called, then the next socket.IO method will throw an IOException.
@@ -196,7 +214,7 @@ public class RemoteMultiplexerServer {
 
             long t1 = System.nanoTime();                
             // return response
-            if (bShouldReturnValue && (ri.methodInfo == null || !ri.methodInfo.noReturnValue)) {
+            if (bShouldReturnValue && (ri.methodInfo == null || !ri.methodInfo.noReturnValue) && !ri.methodInfo.useAsyncQueue) {
                 RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, session.hmClassDescOutput, session.aiClassDescOutput);
                 oos.writeBoolean(ri.exception == null && ri.exceptionMessage == null);
                 Object resp;
@@ -214,8 +232,14 @@ public class RemoteMultiplexerServer {
                 oos.writeObject(resp);
                 oos.flush();
             }
+            else if (bShouldReturnValue && ri.methodInfo.useAsyncQueue) {            
+                // 20130605 add to async queue            
+                getAsyncQueue().addMessageToQueue(ri);
+            }
+            
             ri.nsEnd = System.nanoTime();
             ri.nsWrite = ri.nsEnd - t1;
+            
             afterInvokeForCtoS(ri);
         }
     }
@@ -658,24 +682,6 @@ public class RemoteMultiplexerServer {
         return bind;
     }
 
-//qqqqqqqqqqqqqq    
-    public void bindQueue(String bindName, int queueSize, Class interfaceClass) {
-        BindInfo bind = createBindInfo(bindName, obj, interfaceClass);
-        hmBindObject.put(bind, obj);
-        
-        // this is the queue where all invoked messages will be put - for clients to pick up
-        OACircularQueue<RequestInfo> cque = new OACircularQueue<RequestInfo>(queueSize) {
-        };
-        hmBroadcastCircularQueue.put(bind, cque);        
-
-        // need to be able to lookup based on class        
-        hmBroadcastClass.put(interfaceClass, bind);
-        
-        
-    }
-
-    
-    
     /**
      * This is used for async broadcasts from server to clients.
      * This allows the server to call methods that can be invoked on any/all clients.

@@ -164,8 +164,14 @@ abstract class MultiplexerInputStreamController {
      * able to read this amount.
      */
     int read(VirtualSocket vs, byte[] bs, int off, int len) throws IOException {
-        int x = _read(vs, bs, off, len);
-        _releaseInputStream(vs);
+//qqqqqqqqqqvvvvvvvvvvvvvv        
+        int x;
+        try {
+            x = _read(vs, bs, off, len);
+        }
+        finally {
+            _releaseInputStream(vs);
+        }
         return x;
     }
 

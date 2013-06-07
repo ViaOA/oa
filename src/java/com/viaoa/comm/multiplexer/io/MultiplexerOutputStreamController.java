@@ -111,6 +111,7 @@ public class MultiplexerOutputStreamController {
         while (pos < fullLength);
     }
 
+//qqqqqqvvvvvvvvvv
     /**
      * Called by write() to output a "chunk" of the data. Locking/Synchronizing the outputstream is
      * accomplished by calling getOutputStream().
@@ -121,10 +122,16 @@ public class MultiplexerOutputStreamController {
         // getOutputStream is synchronized until it is released, this will make sure that there are
         // no other threads using the shared objects
         DataOutputStream outputStream = getOutputStream();
-
+        try {
+            _write(vs, bs, offset, len, outputStream);
+        }
+        finally {
+            releaseOutputStream(true); // this will flush
+        }
+    }    
+    private void _write(VirtualSocket vs, byte[] bs, int offset, int len, DataOutputStream outputStream) throws IOException {
         outputStream.writeInt(vs._id); // header
         outputStream.writeInt(len); // header
-
         outputStream.write(bs, offset, len);
 
         // this is to throttle the amount of data that can be written per fraction of a second (ex: 10x = 100ms)
@@ -149,7 +156,6 @@ public class MultiplexerOutputStreamController {
                 throttleLastMs = msNow + msSleep;
             }
         }
-        releaseOutputStream(true); // this will flush
     }
     // used to track throttling
     private long throttleLastMs;
@@ -212,17 +218,21 @@ public class MultiplexerOutputStreamController {
     private void releaseOutputStream(boolean bFlush) throws IOException {
         if (_bIsClosed) return;
         synchronized (WRITELOCK) {
-            if (bFlush || _needsFlush) {
-                if (_writeLockWaitingCount == 0 || ((++_iWriteFlush % 5) == 0)) {
-                    _needsFlush = false;
-                    _iWriteFlush = 0;
-                    _dataOutputStream.flush();
+//qqqqqqqqqqq VVVVVVVVVV
+            try {
+                if (bFlush || _needsFlush) {
+                    if (_writeLockWaitingCount == 0 || ((++_iWriteFlush % 5) == 0)) {
+                        _needsFlush = false;
+                        _iWriteFlush = 0;
+                        _dataOutputStream.flush();
+                    }
+                    else _needsFlush = true;
                 }
-                else _needsFlush = true;
             }
-
-            _bWritingLock = false;
-            WRITELOCK.notify();
+            finally {
+                _bWritingLock = false;
+                WRITELOCK.notify();
+            }
         }
     }
 
@@ -249,17 +259,21 @@ public class MultiplexerOutputStreamController {
      */
     protected void sendCommand(int cmd, int param, String serverSocketName) throws IOException {
         if (this._bIsClosed) return;
-
+//vvvvvvvvqqqqqqqqqq
         getOutputStream();
-        // this needs to match what is read by readRealSocket, which is Short + Integer + Integer.
-        _dataOutputStream.writeInt(MultiplexerSocketController.CMD_Command);
-        _dataOutputStream.writeInt(cmd);
-        _dataOutputStream.writeInt(param);
-        if (serverSocketName != null) {
-            _dataOutputStream.writeInt(serverSocketName.length());
-            _dataOutputStream.writeBytes(serverSocketName);
+        try {
+            // this needs to match what is read by readRealSocket, which is Short + Integer + Integer.
+            _dataOutputStream.writeInt(MultiplexerSocketController.CMD_Command);
+            _dataOutputStream.writeInt(cmd);
+            _dataOutputStream.writeInt(param);
+            if (serverSocketName != null) {
+                _dataOutputStream.writeInt(serverSocketName.length());
+                _dataOutputStream.writeBytes(serverSocketName);
+            }
         }
-        releaseOutputStream(true);
+        finally {
+            releaseOutputStream(true);
+        }
     }
 
 }

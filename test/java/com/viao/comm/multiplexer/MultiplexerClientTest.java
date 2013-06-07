@@ -1,4 +1,4 @@
-package com.theice.comm.multiplexer;
+package com.viao.comm.multiplexer;
 
 import java.net.Socket;
 import java.util.logging.ConsoleHandler;
@@ -6,7 +6,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.*;
 
-import com.theice.comm.multiplexer.MultiplexerClient;
+import com.viaoa.comm.multiplexer.MultiplexerClient;
+
 
 public class MultiplexerClientTest {
     private static Logger LOG = Logger.getLogger(MultiplexerClientTest.class.getName());
@@ -60,7 +61,7 @@ public class MultiplexerClientTest {
     public static void main(String[] args) throws Exception {
         ConsoleHandler ch = new ConsoleHandler();
         ch.setLevel(Level.FINE);
-        Logger log = Logger.getLogger("com.theice");
+        Logger log = Logger.getLogger("com.viaoa");
         log.setLevel(Level.FINE);
         log.addHandler(ch);
         
