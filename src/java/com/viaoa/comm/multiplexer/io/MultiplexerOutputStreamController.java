@@ -111,7 +111,6 @@ public class MultiplexerOutputStreamController {
         while (pos < fullLength);
     }
 
-//qqqqqqvvvvvvvvvv
     /**
      * Called by write() to output a "chunk" of the data. Locking/Synchronizing the outputstream is
      * accomplished by calling getOutputStream().
@@ -218,7 +217,6 @@ public class MultiplexerOutputStreamController {
     private void releaseOutputStream(boolean bFlush) throws IOException {
         if (_bIsClosed) return;
         synchronized (WRITELOCK) {
-//qqqqqqqqqqq VVVVVVVVVV
             try {
                 if (bFlush || _needsFlush) {
                     if (_writeLockWaitingCount == 0 || ((++_iWriteFlush % 5) == 0)) {
@@ -259,7 +257,6 @@ public class MultiplexerOutputStreamController {
      */
     protected void sendCommand(int cmd, int param, String serverSocketName) throws IOException {
         if (this._bIsClosed) return;
-//vvvvvvvvqqqqqqqqqq
         getOutputStream();
         try {
             // this needs to match what is read by readRealSocket, which is Short + Integer + Integer.

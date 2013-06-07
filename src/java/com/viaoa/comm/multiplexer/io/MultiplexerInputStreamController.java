@@ -21,10 +21,12 @@ abstract class MultiplexerInputStreamController {
     private boolean _bIsClosed;
 
     /**
-     * Max amount of time that real socket will wait for an vsocket to read real data from real
-     * inputstream
+     * Max amount of time that real socket will wait for an vsocket to read real data from real inputstream
+     * 
+     * one second would be more then enough, since data is "chunked", but the thread could be
+     * "busy" outside of reading teh data.
      */
-    private final int _timeoutSeconds = 30;
+    private final int _timeoutSeconds = 5;
 
     /** Lock used to manage access to inputstream. */
     private final transient Object READLOCK = new Object();
@@ -164,7 +166,6 @@ abstract class MultiplexerInputStreamController {
      * able to read this amount.
      */
     int read(VirtualSocket vs, byte[] bs, int off, int len) throws IOException {
-//qqqqqqqqqqvvvvvvvvvvvvvv        
         int x;
         try {
             x = _read(vs, bs, off, len);
