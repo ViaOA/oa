@@ -3,6 +3,7 @@ package com.viaoa.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 
@@ -16,18 +17,18 @@ import java.util.logging.Logger;
 public abstract class OACircularQueue<TYPE> {
     private static Logger LOG = Logger.getLogger(OACircularQueue.class.getName());
     
-    private int queueSize;
-    private Object LOCKQueue = new Object();
+    private volatile int queueSize;
+    private final Object LOCKQueue = new Object();
     
-    private TYPE[] msgQueue;
+    private volatile TYPE[] msgQueue;
 
     /** running value that keeps next position to insert a message.
      *  Uses module queueSize to determine the array position.  
     */
-    private long queueHeadPosition;  
+    private volatile long queueHeadPosition;  
 
     // flag to know if there are threads waiting to get a message
-    private boolean queueWaitFlag;
+    private volatile boolean queueWaitFlag;
 
     private Class<TYPE> classType;
 
@@ -81,13 +82,18 @@ public abstract class OACircularQueue<TYPE> {
         }
     }
     
+//qqqqq    
+private final AtomicInteger ai = new AtomicInteger();    
     /**
      * Add a new message to the queue.
      */
     public void addMessageToQueue(TYPE msg) {
         synchronized(LOCKQueue) {
             int posHead = (int) (queueHeadPosition++ % queueSize);
-            if (queueHeadPosition < 0) queueHeadPosition = posHead + 1;
+ai.incrementAndGet();//qqqqqqqqqqqqqq            
+            if (queueHeadPosition < 0) {
+                queueHeadPosition = posHead + 1;
+            }
             msgQueue[posHead] = msg;
             if (queueWaitFlag) {
                 queueWaitFlag = false;
@@ -146,54 +152,91 @@ public abstract class OACircularQueue<TYPE> {
      * @param maxWait if no messages are available, wait this amount of miliseconds for an available message.
      */
     public TYPE[] getMessages(long posTail, int maxReturnAmount, int maxWait) throws Exception {
-        for (;;) {
-            TYPE[] msgs =  _getMessages(posTail, maxReturnAmount, maxWait);
+long hx = queueHeadPosition;
+int xz = maxWait;
+        TYPE[] msgs = null;
+int i=0;        
+        for ( ;; i++) {
+            msgs =  _getMessages(posTail, maxReturnAmount, maxWait);
+
             if (msgs != null || maxWait == 0) {
-                return msgs;
+                break;
             }
             // else it waited until a message was available and then returned w/o message
             //   or waited maxWait and then returned.
             // ... need to loop again w/o a wait to get any added message(s)
             maxWait = 0;
         }
+//qqqqqqqqq
+if (msgs == null) {
+    int xx = 4;
+    xx++;
+}
+        return msgs;
     }
     
-    private TYPE[] _getMessages(long posTail, int maxReturnAmount, int maxWait) throws Exception {
-        TYPE[] msgs = null;
-
+    private TYPE[] _getMessages(long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
+        int amt;
         synchronized(LOCKQueue) {
             if ((posTail + queueSize) <= queueHeadPosition) {
                 throw new Exception("message queue overrun");
             }
-            int amt = (int) (queueHeadPosition - posTail);
+            else {
+                if (posTail > queueHeadPosition) {
+int xx = 4;
+xx++;
+                    posTail = queueHeadPosition; //qqqqq throw exception instead
+                }
+            }
+            amt = (int) (queueHeadPosition - posTail);
             if (maxReturnAmount > 0 && amt > maxReturnAmount) {
                 amt = maxReturnAmount;
             }
             
-            if (amt == 0 && maxWait == 0) {
-                // no-op
-            }
-            else if (amt > 0) {
-                msgs = (TYPE[]) Array.newInstance(classType, amt);
-                for (int i=0; i<amt; i++) {
-                    msgs[i] = msgQueue[ (int) (posTail++ % queueSize) ]; 
-                }
-            }
-            else {
+            if (amt == 0 && maxWait != 0) {
                 // need to wait
+long holdx = queueHeadPosition;            
+long msx = System.nanoTime();
+boolean bwaited = false;
                 queueWaitFlag = true;
                 try {
                     if (maxWait > 0) { 
                         LOCKQueue.wait(maxWait);
                     }
                     else {
-                        LOCKQueue.wait();
+bwaited=true;
+                        for (;;) {
+                            LOCKQueue.wait();
+                            if (posTail != queueHeadPosition) break; // protect from spurious wakeup (yes, it happens)
+                        }
                     }
                 }
                 catch (Exception e) {
+                    e.printStackTrace();
+System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxvvvvvvvv");
                 }
+long msz = System.nanoTime();
+long diff = msz - msx;
+if (queueHeadPosition == holdx) {
+    int xx = 4;
+    xx++;
+}
+            }
+            else {
+if (amt < 1) {                
+int xx = 4;
+xx++;
+}
             }
         }
+        TYPE[] msgs;
+        if (amt > 0) {
+            msgs = (TYPE[]) Array.newInstance(classType, amt);
+            for (int i=0; i<amt; i++) {
+                msgs[i] = msgQueue[ (int) (posTail++ % queueSize) ]; 
+            }
+        }
+        else msgs = null;
         return msgs;
     }
 

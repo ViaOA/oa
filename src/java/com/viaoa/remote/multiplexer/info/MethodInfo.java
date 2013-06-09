@@ -24,6 +24,4 @@ public class MethodInfo {
     // true if dont wait for return value (void methods)
     public boolean noReturnValue;
 
-    // 20130605 add to async queue            
-    public boolean useAsyncQueue;
 }

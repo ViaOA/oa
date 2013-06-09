@@ -24,6 +24,7 @@ public class RequestInfo {
     public BindInfo bind;
     public VirtualSocket socket;
     public int connectionId;
+    public int messageId;
     public int vsocketId;
     public int threadId;  // if StoC, then the Thread #
     
@@ -39,6 +40,11 @@ public class RequestInfo {
     public Exception exception;
     public String exceptionMessage;
     public Object response;
+    public boolean responseReturned;
+    
+//qqqqqqqqq    
+    public boolean asyncProcessedByServer; //qqqqqqqqqqqqqq
+// this is flagged by server side OAClient processing    
     
     public RequestInfo() {
         this.cnt = aiCount.incrementAndGet();
