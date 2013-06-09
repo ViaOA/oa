@@ -420,16 +420,23 @@ public class RemoteMultiplexerClient {
         ri.bindName = ois.readAsciiString();
         ri.bind = getBindInfo(ri.bindName);
 //qqqq        
+        boolean b;
         if (ri.bind.asyncQueueName != null) {
+            b = ois.readBoolean();
+        }
+        else b = false;
+        if (b) { // private message for this client only
             byte bx = ois.readByte();
-            Object objx = ois.readObject();
-            if (bx == 0) ri.exception = (Exception) objx;
-            else if (bx == 1) ri.exceptionMessage = (String) objx;
-            else ri.response = objx;
+            if (bx != 3) {
+                Object objx = ois.readObject();
+                if (bx == 0) ri.exception = (Exception) objx;
+                else if (bx == 1) ri.exceptionMessage = (String) objx;
+                else ri.response = objx;
+            }
             ri.messageId = ois.readInt();
-        
+
             RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
-            //qqqqqqqq            
+//qqqqqqqq            
             if (rix == null) {
                 ri.exceptionMessage = "StoC requestInfo not found";  
             }
@@ -446,6 +453,7 @@ public class RemoteMultiplexerClient {
             afterInvokForStoC(ri);
             return;
         }
+        
         ri.methodNameSignature = ois.readAsciiString();
         ri.args = (Object[]) ois.readObject();
 

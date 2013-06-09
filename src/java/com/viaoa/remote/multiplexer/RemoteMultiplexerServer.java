@@ -691,28 +691,25 @@ public class RemoteMultiplexerServer {
         hmNameToBind.put(name, bind);
 //qqqqqqqqqqqqqqqqqqqq1        
         if (bind.asyncQueueName != null) {
-            OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(bind.asyncQueueName); 
+            OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(bind.asyncQueueName);
+            
             if (cq == null) {
-                cq = new OACircularQueue<RequestInfo>(getAsyncCircularQueueSize(bind.asyncQueueName)) { //qqqqqqqqqqqqqqq
+                cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) { //qqqqqqqqqqqqqqq
                 };
+qqqqqqqqq put this in bindInof object                
                 hmAsnycCircularQueue.put(bind.asyncQueueName, cq);             
             }
         }
         return bind;
     }
     
-    protected int getAsyncCircularQueueSize(String queueName) {
-        return 500;
-    }
-    
-    
     /**
      * Used so that clients can send broadcasts to all clients.
      */
-    protected void createClientBroadcast(final String bindName, Class interfaceClass) {
+    public void createClientBroadcast(final String bindName, Class interfaceClass) {
         BindInfo bind = createBindInfo(bindName, null, interfaceClass);
         if (bind.asyncQueueName == null) {
-            throw new RuntimeException("class must have and async queue name assigned, using OARemoteInterface annotation");
+            throw new RuntimeException("class must have an async queue name assigned, using OARemoteInterface annotation");
         }
         bind.asyncPublic = true;  // send to all clients
     }
@@ -739,9 +736,14 @@ public class RemoteMultiplexerServer {
         Object obj = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
         BindInfo bind = createBindInfo(bindName, obj, interfaceClass);
         hmBindObject.put(bind, obj);
+
+       
+        if (bind.asyncQueueName == null) {
+            throw new RuntimeException("class must have an async queue name assigned, using OARemoteInterface annotation");
+        }
         
         // this is the queue where all invoked messages will be put - for clients to pick up
-        OACircularQueue<RequestInfo> cque = new OACircularQueue<RequestInfo>(500) {
+        OACircularQueue<RequestInfo> cque = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
         };
         hmBroadcastCircularQueue.put(bind, cque);        
 
@@ -971,7 +973,7 @@ public class RemoteMultiplexerServer {
         }
 
         // used to send broadcast messages to client
-        private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String clientBindName, VirtualSocket vsocket, long qpos) throws Exception {
+        private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String bindName, VirtualSocket vsocket, long qpos) throws Exception {
             int connectionId = vsocket.getConnectionId();
             for (;;) {
                 RequestInfo[] ris = cque.getMessages(qpos, 50, 1000);
@@ -991,25 +993,30 @@ public class RemoteMultiplexerServer {
                     
 //qqqqqqqqqqqqq  this is not used for async, need a way for async queue
                     if (ri.bind.asyncQueueName == null) {
-                        if (getBindInfo(clientBindName) == null) return; // client has removed it
+                        if (getBindInfo(bindName) == null) return; // client has removed it
                     }
                     
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     oos.writeBoolean(false); // flag to know this is a method call
                     oos.writeBoolean(false); // do not return a response
-                    oos.writeAsciiString(clientBindName);
+                    oos.writeAsciiString(bindName);
 //qqqqqq
                     if (ri.bind.asyncQueueName != null && !ri.bind.asyncPublic) {
-                        if (ri.exception != null) oos.writeByte(0); 
-                        else if (ri.exceptionMessage != null) oos.writeByte(1); 
-                        else oos.writeByte(2); 
+                        oos.writeBoolean(true); // private message for this client only
+                        if (ri.bind.usesObject() || (ri.connectionId != connectionId)) {
+                            if (ri.exception != null) oos.writeByte(0); 
+                            else if (ri.exceptionMessage != null) oos.writeByte(1); 
+                            else oos.writeByte(2); 
 
-                        if (ri.exception != null) oos.writeObject(ri.exception); 
-                        else if (ri.exceptionMessage != null) oos.writeObject(ri.exceptionMessage); 
-                        else oos.writeObject(ri.response); 
+                            if (ri.exception != null) oos.writeObject(ri.exception); 
+                            else if (ri.exceptionMessage != null) oos.writeObject(ri.exceptionMessage); 
+                            else oos.writeObject(ri.response);
+                        }
+                        else oos.writeByte(3); 
                         oos.writeInt(ri.messageId);
                     }
                     else {
+                        oos.writeBoolean(false); // public for all clients
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
                         oos.writeObject(ri.args);
                     }

@@ -25,6 +25,7 @@ public class BindInfo {
     public short id;
     public String name;
     public String asyncQueueName;
+    public int asyncQueueSize;
     public boolean asyncPublic;  // if async queue and all Client should be sent messages
     public WeakReference weakRef;
     public Class interfaceClass; // used to create the proxy
@@ -47,6 +48,9 @@ public class BindInfo {
         if (weakRef != null) return weakRef.get();
         return null;
     }
+    public boolean usesObject() {
+        return (weakRef != null);
+    }
     public void setInterfaceClass(Class c) {
         interfaceClass = c;
         if (c == null) {
@@ -56,6 +60,7 @@ public class BindInfo {
             OARemoteInterface ri = (OARemoteInterface) interfaceClass.getAnnotation(OARemoteInterface.class);
             if (ri != null) {
                 asyncQueueName = ri.asyncQueueName();
+                asyncQueueSize = ri.asyncQueueSize();
             }
         }
     }

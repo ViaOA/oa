@@ -12,6 +12,8 @@ public class ServerTest {
         
         RemoteTestImpl rt = new RemoteTestImpl();
         rms.bind("test", rt, RemoteTestInterface.class);
+        
+        rms.createClientBroadcast("clientBroadcsst", RemoteTestInterface.class);
     }
     
     public static void main(String[] args) throws Exception {
