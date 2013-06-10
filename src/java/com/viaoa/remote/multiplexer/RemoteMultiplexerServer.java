@@ -66,9 +66,6 @@ public class RemoteMultiplexerServer {
     // used to hold all objects from the "bind()" method.
     private ConcurrentHashMap<BindInfo, Object> hmBindObject = new ConcurrentHashMap<BindInfo, Object>();
     
-    // CircularQueues used for broadcast remote objects
-    private ConcurrentHashMap<BindInfo, OACircularQueue<RequestInfo>> hmBroadcastCircularQueue = new ConcurrentHashMap<BindInfo, OACircularQueue<RequestInfo>>();
-     
     // Java instance used to broadcast messages to clients
     private ConcurrentHashMap<Class, BindInfo> hmBroadcastClass = new ConcurrentHashMap<Class, BindInfo>();
         
@@ -347,7 +344,7 @@ public class RemoteMultiplexerServer {
                             obj = bindz.getObject();
                             bindx = session.createBindInfo(bindName, obj, ri.methodInfo.remoteParams[i]);
 
-                            final OACircularQueue<RequestInfo> cque = hmBroadcastCircularQueue.get(bindz);
+                            final OACircularQueue<RequestInfo> cque = hmAsnycCircularQueue.get(bindz.asyncQueueName);
                             final long qPos = cque.getHeadPostion();
                             // set up thread that will get messages from queue and send to client
                             final String threadName = "Client."+ri.connectionId+"."+ri.bindName;
@@ -374,6 +371,15 @@ public class RemoteMultiplexerServer {
                 ri.args[i] = bindx.getObject();
             }
         }
+        
+//qqqqqqqqq
+        if (ri.bind.asyncQueueName != null) {
+            if (!ri.bind.usesObject()) {
+                // client broadcast message
+                return true;
+            }
+        }
+        
         
         int x = (ri.args == null) ? 0 : ri.args.length;
         try {
@@ -696,7 +702,6 @@ public class RemoteMultiplexerServer {
             if (cq == null) {
                 cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) { //qqqqqqqqqqqqqqq
                 };
-qqqqqqqqq put this in bindInof object                
                 hmAsnycCircularQueue.put(bind.asyncQueueName, cq);             
             }
         }
@@ -737,16 +742,10 @@ qqqqqqqqq put this in bindInof object
         BindInfo bind = createBindInfo(bindName, obj, interfaceClass);
         hmBindObject.put(bind, obj);
 
-       
         if (bind.asyncQueueName == null) {
             throw new RuntimeException("class must have an async queue name assigned, using OARemoteInterface annotation");
         }
         
-        // this is the queue where all invoked messages will be put - for clients to pick up
-        OACircularQueue<RequestInfo> cque = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
-        };
-        hmBroadcastCircularQueue.put(bind, cque);        
-
         // need to be able to lookup based on class        
         hmBroadcastClass.put(interfaceClass, bind);
         
@@ -823,8 +822,8 @@ qqqqqqqqq put this in bindInof object
             }
         }
 
-        // put "ri" in circular queue for clients to pick up.        
-        OACircularQueue<RequestInfo> cque = hmBroadcastCircularQueue.get(ri.bind);        
+        // put "ri" in circular queue for clients to pick up.       
+        OACircularQueue<RequestInfo> cque = hmAsnycCircularQueue.get(ri.bind.asyncQueueName);        
         cque.addMessageToQueue(ri);
     }
     
@@ -976,15 +975,28 @@ qqqqqqqqq put this in bindInof object
         private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String bindName, VirtualSocket vsocket, long qpos) throws Exception {
             int connectionId = vsocket.getConnectionId();
             for (;;) {
+                if (vsocket.isClosed()) {
+                    return;
+                }
+
                 RequestInfo[] ris = cque.getMessages(qpos, 50, 1000);
                 if (ris == null) {
-                    if (vsocket.isClosed()) return;
                     continue;
                 }
+
+if (connectionId == 1) {
+    System.out.println("qpos"+qpos);
+}
+                
                 qpos += ris.length;
                 for (RequestInfo ri : ris) {
                     if (vsocket.isClosed()) return;
-//qqqqqq                    
+//qqqqqq
+                    
+if (connectionId == 1) {
+    System.out.println("msgId="+ri.messageId);
+}
+                    
                     if (ri.bind.asyncQueueName != null) {
                         if (!ri.bind.asyncPublic && ri.connectionId != connectionId) {
                             continue;
@@ -1013,6 +1025,11 @@ qqqqqqqqq put this in bindInof object
                             else oos.writeObject(ri.response);
                         }
                         else oos.writeByte(3); 
+                        oos.writeInt(ri.messageId);
+                    }
+                    else if (ri.bind.asyncQueueName != null && (ri.connectionId == connectionId)) {
+                        oos.writeBoolean(true); // private message for this client only
+                        oos.writeByte(3); 
                         oos.writeInt(ri.messageId);
                     }
                     else {

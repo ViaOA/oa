@@ -10,10 +10,10 @@ public class ServerTest {
         RemoteMultiplexerServer rms = new RemoteMultiplexerServer(ms);
         rms.start();
         
-        RemoteTestImpl rt = new RemoteTestImpl();
-        rms.bind("test", rt, RemoteTestInterface.class);
+        RemoteTestImpl remoteTest = new RemoteTestImpl();
+        rms.bind("test", remoteTest, RemoteTestInterface.class);
         
-        rms.createClientBroadcast("clientBroadcsst", RemoteTestInterface.class);
+        rms.createClientBroadcast("clientBroadcast", RemoteTestInterface.class);
     }
     
     public static void main(String[] args) throws Exception {

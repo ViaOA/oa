@@ -3,9 +3,7 @@ package com.viaoa.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-
 
 /**
  * Thread safe Circular Queue.
@@ -82,15 +80,15 @@ public abstract class OACircularQueue<TYPE> {
         }
     }
     
-//qqqqq    
-private final AtomicInteger ai = new AtomicInteger();    
     /**
      * Add a new message to the queue.
      */
     public void addMessageToQueue(TYPE msg) {
+        addMessage(msg);
+    }
+    public void addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
             int posHead = (int) (queueHeadPosition++ % queueSize);
-ai.incrementAndGet();//qqqqqqqqqqqqqq            
             if (queueHeadPosition < 0) {
                 queueHeadPosition = posHead + 1;
             }
@@ -152,11 +150,8 @@ ai.incrementAndGet();//qqqqqqqqqqqqqq
      * @param maxWait if no messages are available, wait this amount of miliseconds for an available message.
      */
     public TYPE[] getMessages(long posTail, int maxReturnAmount, int maxWait) throws Exception {
-long hx = queueHeadPosition;
-int xz = maxWait;
         TYPE[] msgs = null;
-int i=0;        
-        for ( ;; i++) {
+        for ( ;; ) {
             msgs =  _getMessages(posTail, maxReturnAmount, maxWait);
 
             if (msgs != null || maxWait == 0) {
@@ -167,11 +162,6 @@ int i=0;
             // ... need to loop again w/o a wait to get any added message(s)
             maxWait = 0;
         }
-//qqqqqqqqq
-if (msgs == null) {
-    int xx = 4;
-    xx++;
-}
         return msgs;
     }
     
@@ -183,9 +173,7 @@ if (msgs == null) {
             }
             else {
                 if (posTail > queueHeadPosition) {
-int xx = 4;
-xx++;
-                    posTail = queueHeadPosition; //qqqqq throw exception instead
+                    throw new IllegalArgumentException("posTail should not be larger then headPos");
                 }
             }
             amt = (int) (queueHeadPosition - posTail);
@@ -195,38 +183,16 @@ xx++;
             
             if (amt == 0 && maxWait != 0) {
                 // need to wait
-long holdx = queueHeadPosition;            
-long msx = System.nanoTime();
-boolean bwaited = false;
                 queueWaitFlag = true;
-                try {
-                    if (maxWait > 0) { 
-                        LOCKQueue.wait(maxWait);
-                    }
-                    else {
-bwaited=true;
-                        for (;;) {
-                            LOCKQueue.wait();
-                            if (posTail != queueHeadPosition) break; // protect from spurious wakeup (yes, it happens)
-                        }
+                if (maxWait > 0) { 
+                    LOCKQueue.wait(maxWait);
+                }
+                else {
+                    for (;;) {
+                        LOCKQueue.wait();
+                        if (posTail != queueHeadPosition) break; // protect from spurious wakeup (yes, it happens)
                     }
                 }
-                catch (Exception e) {
-                    e.printStackTrace();
-System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxvvvvvvvv");
-                }
-long msz = System.nanoTime();
-long diff = msz - msx;
-if (queueHeadPosition == holdx) {
-    int xx = 4;
-    xx++;
-}
-            }
-            else {
-if (amt < 1) {                
-int xx = 4;
-xx++;
-}
             }
         }
         TYPE[] msgs;

@@ -95,6 +95,51 @@ public class RemoteMultiplexerClient {
     }
 
     /**
+     * Create a remote object that is sent to all clients.
+     * @param lookupName name used on server, see: RemoteMultiplexerServer.createClientBroadcast
+     * @param callback an impl used when receiving messages from other clients
+     */
+    public Object createClientBroadcastProxy(final String lookupName, Object callback) throws Exception {
+        Object proxyInstance = hmLookup.get(lookupName);
+        if (proxyInstance != null) return proxyInstance;
+        LOG.fine("lookupName=" + lookupName);
+
+        VirtualSocket socket = getSocketForCtoS();
+        RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
+        
+        oos.writeByte(CtoS_Command_GetInterfaceClass); // 0=method, 1=get interface class, 2=remove session bindInfo
+        oos.writeAsciiString(lookupName);
+        oos.flush();
+
+        RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
+        if (!ois.readBoolean()) {
+            Exception ex = (Exception) ois.readObject();
+            throw ex;
+        }
+        Class c = (Class) ois.readObject();
+        releaseSocketForCtoS(socket);
+        LOG.fine("lookupName=" + lookupName + ", interface class=" + c);
+
+        proxyInstance = createProxyForCtoS(lookupName, c);
+        hmLookup.put(lookupName, proxyInstance);
+        
+        if (!c.isAssignableFrom(callback.getClass())) {
+            throw new Exception("callback must be same class as "+c);
+        }
+        
+        BindInfo bindx = getBindInfo(callback);
+        Object objx = bindx != null ? bindx.weakRef.get() : null;
+        if (bindx == null || objx == null) {
+            bindx = createBindInfo(lookupName, callback, c);
+            if (!bFirstStoCsocketCreated) {
+                createSocketForStoC(); // to process message from server to this object
+            }
+        }
+        return proxyInstance;
+    }    
+    
+    
+    /**
      * Get a remote object from the server.
      * 
      * @param lookupName
@@ -182,13 +227,20 @@ public class RemoteMultiplexerClient {
                 releaseSocketForCtoS(socket);
                 socket = null;
                 synchronized (ri) {
+System.out.println("waiting for msgId="+ri.messageId);                
+                    
                     if (!ri.responseReturned) {
-                        ri.wait(20000); //qqqqq  
+                        ri.wait(30000); //qqqqq  
                     }
                 }
-                //qqqqqqqqqqqqqq                
+                //qqqqqqqq                
                 if (!ri.responseReturned) {
-                    ri.exceptionMessage = "timeout waiting on async response from server";
+//qqqqqqq turn this back on                    
+//                    ri.exceptionMessage = "timeout waiting on async response from server";
+System.out.println("Returned for msgId="+ri.messageId+" ***** TIMED OUT");                
+                }
+                else {
+System.out.println("Returned for msgId="+ri.messageId);                
                 }
             }
             
@@ -419,6 +471,12 @@ public class RemoteMultiplexerClient {
 
         ri.bindName = ois.readAsciiString();
         ri.bind = getBindInfo(ri.bindName);
+//qqq
+        if (ri.bind == null) {
+            return;  // broadcast message not set up for this client
+        }
+        
+        
 //qqqq        
         boolean b;
         if (ri.bind.asyncQueueName != null) {
@@ -435,6 +493,13 @@ public class RemoteMultiplexerClient {
             }
             ri.messageId = ois.readInt();
 
+//qqqqqqqqq            
+if (ri.connectionId == 1) {
+    System.out.println("StoC for msgId="+ri.messageId);
+}
+else System.out.println("other StoC, msgId="+ri.messageId);
+            
+            
             RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
 //qqqqqqqq            
             if (rix == null) {
@@ -453,6 +518,11 @@ public class RemoteMultiplexerClient {
             afterInvokForStoC(ri);
             return;
         }
+        
+  //qqqqqqqqq            
+if (ri.connectionId == 1) {
+    System.out.println("recvd client broadcast message from another client");
+}
         
         ri.methodNameSignature = ois.readAsciiString();
         ri.args = (Object[]) ois.readObject();
