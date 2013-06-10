@@ -11,11 +11,11 @@ public class ServerTest {
         rms.start();
         
         RemoteTestImpl remoteTest = new RemoteTestImpl();
-        rms.bind("test", remoteTest, RemoteTestInterface.class);
+        rms.createLookup("test", remoteTest, RemoteTestInterface.class);
         
         rms.createClientBroadcast("clientBroadcast", RemoteTestInterface.class);
         
-        final BroadcastInterface bc = (BroadcastInterface) rms.createProxyForBroadcast(BroadcastInterface.class);
+        final BroadcastInterface bc = (BroadcastInterface) rms.createServerBroadcast("broadcast", BroadcastInterface.class);
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {

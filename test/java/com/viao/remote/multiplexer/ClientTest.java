@@ -8,20 +8,17 @@ public class ClientTest {
     RemoteTestInterface remoteTest;
     RemoteTestInterface clientBroadcast;
     RemoteTestInterface clientBroadcastCallback;
+    BroadcastInterface broadcast;
     
     public void test() throws Exception {
         MultiplexerClient ms = new MultiplexerClient("localhost", 1099);
         ms.start();
         RemoteMultiplexerClient rmc = new RemoteMultiplexerClient(ms);
         
-//qqqqqqqqqqqqqqqqq        
-        BroadcastInterface broadcast = new BroadcastImpl();
-        
-//        rmc.broadcast(broadcast);
-        
+        broadcast = new BroadcastImpl();
+        rmc.lookupServerBroadcast("broadcast", broadcast);
         
         remoteTest = (RemoteTestInterface) rmc.lookup("test");
-        
         clientBroadcastCallback = new RemoteTestImpl() {
             @Override
             public String ping(String msg) {
@@ -30,17 +27,26 @@ public class ClientTest {
             }
         };
         
-        clientBroadcast = (RemoteTestInterface) rmc.createClientBroadcastProxy("clientBroadcast", clientBroadcastCallback);
+        clientBroadcast = (RemoteTestInterface) rmc.createClientBroadcast("clientBroadcast", clientBroadcastCallback);
         
+
+        for (int i=0; i<1; i++) {
+            final int id = i;
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    test1(id);
+                }
+            });
+            t.start();
+        }
 
         for (int i=0; i<5; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    test1(id);  // 2 stops 1
-                    //test1(id);
-                    //test2(id);
+                    test2(id);
                 }
             });
             t.start();
@@ -105,5 +111,6 @@ System.out.println("");
     public static void main(String[] args) throws Exception {
         ClientTest test = new ClientTest();
         test.test();
+        for (;;) Thread.sleep(10000);
     }
 }

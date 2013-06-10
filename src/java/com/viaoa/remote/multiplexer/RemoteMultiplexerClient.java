@@ -100,7 +100,7 @@ public class RemoteMultiplexerClient {
      * @param callback an impl used when receiving messages from other clients
      * @see RemoteMultiplexerServer#createClientBroadcast(String, Class)
      */
-    public Object createClientBroadcastProxy(final String lookupName, Object callback) throws Exception {
+    public Object createClientBroadcast(final String lookupName, Object callback) throws Exception {
         Object proxyInstance = hmLookup.get(lookupName);
         if (proxyInstance != null) return proxyInstance;
         LOG.fine("lookupName=" + lookupName);
@@ -175,6 +175,38 @@ public class RemoteMultiplexerClient {
         return proxyInstance;
     }
 
+    
+    public boolean lookupServerBroadcast(final String lookupName, Object impl) throws Exception {
+        LOG.fine("lookupName=" + lookupName);
+
+        if (!bFirstStoCsocketCreated) {
+            createSocketForStoC(); // to process message from server to this object
+        }
+        
+        VirtualSocket socket = getSocketForCtoS();
+        RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
+        
+        oos.writeByte(CtoS_Command_GetServerBroadcastClass);
+        oos.writeAsciiString(lookupName);
+        oos.flush();
+
+        RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
+        if (!ois.readBoolean()) {
+            Exception ex = (Exception) ois.readObject();
+            throw ex;
+        }
+        Class c = (Class) ois.readObject();
+        releaseSocketForCtoS(socket);
+        LOG.fine("lookupName=" + lookupName + ", interface class=" + c);
+        if (c == null) return false;
+        
+        createBindInfo(lookupName, impl, c);
+
+        hmLookup.put(lookupName, impl);
+        
+        return true;
+    }
+    
     /**
      * Create a proxy instance for an Object that is on the server. This is used for lookups and when
      * the server returns a remote instance. All methods that are called on the proxy will be sent to
@@ -434,6 +466,7 @@ System.out.println("Returned for msgId="+ri.messageId);
                 for (;;) {
                     try {
                         if (socket.isClosed()) break;
+                        
                         processMessageForStoC(socket, id);
                     }
                     catch (Exception e) {
@@ -450,6 +483,48 @@ System.out.println("Returned for msgId="+ri.messageId);
         // LOG.config("created Server to Client socket and thread, connectionId=" + socket.getConnectionId() + ", vid=" + id);
     }
 
+//qqqqqqqqqqqqq  
+    private final Object LockThread = new Object();
+    private AtomicInteger aiClientThreadCount = new AtomicInteger();
+    private RemoteClientThread getRemoteClientThread() {
+qqqqqqqqqq use a thread list, etc        
+        RemoteClientThread t = createRemoteClientThread();
+        return t;
+    }
+    private RemoteClientThread createRemoteClientThread() {
+        RemoteClientThread t = new RemoteClientThread() {
+            @Override
+            public void run() {
+                for (;;) {
+                    synchronized (Lock) {
+                        try {
+                            if (ri == null) {
+                                Lock.wait();
+                            }
+                            if (ri != null) {
+                                processMessageForStoC2(ri, false);
+                                ri = null;
+                                Lock.notify();
+                            }
+                        }
+                        catch (Exception e) {}
+                    }
+                }
+            }
+            @Override
+            public void startNextMessage() {
+                synchronized (Lock) {
+                    Lock.notify();
+                }
+            }
+        };
+        t.setName("RemoteClientThread."+aiClientThreadCount.getAndIncrement());
+        t.start();
+        return t;
+    }
+    
+    
+    
     protected void processMessageForStoC(final VirtualSocket socket, int threadId) throws Exception {
         if (socket.isClosed()) return;
 
@@ -494,12 +569,6 @@ System.out.println("Returned for msgId="+ri.messageId);
             }
             ri.messageId = ois.readInt();
 
-//qqqqqqqqq            
-if (ri.connectionId == 1) {
-    System.out.println("StoC for msgId="+ri.messageId);
-}
-else System.out.println("other StoC, msgId="+ri.messageId);
-            
             
             RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
 //qqqqqqqq            
@@ -520,22 +589,28 @@ else System.out.println("other StoC, msgId="+ri.messageId);
             return;
         }
         
-//qqq
-if ("test".equals(ri.bindName)) {
-    int xx = 4;
-    xx++;
-}
-        
-  //qqqqqqqqq            
-if (ri.connectionId == 1) {
-    System.out.println("recvd client broadcast message from another client");
-}
-        
+
         ri.methodNameSignature = ois.readAsciiString();
         ri.args = (Object[]) ois.readObject();
 
         beforeInvokForStoC(ri);
 
+//qqqqqqqqqvvvvvvvvvvvvvv
+        if (ri.bind.asyncQueueName != null) {
+            RemoteClientThread t = getRemoteClientThread();
+            synchronized (t.Lock) {
+                t.ri = ri;
+                t.Lock.notify();
+                t.Lock.wait(250);
+            }
+        }
+        else {
+            processMessageForStoC2(ri, bSendResponse);
+        }
+    }
+    
+    protected void processMessageForStoC2(RequestInfo ri, boolean bSendResponse) throws Exception {
+    
         try {
             processMessageForStoC(ri);
         }
@@ -544,7 +619,7 @@ if (ri.connectionId == 1) {
         }
 
         if (bSendResponse && (ri.methodInfo == null || !ri.methodInfo.noReturnValue)) {
-            RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
+            RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
             if (ri.exception != null) {
                 Object resp;
                 if (ri.exception instanceof Serializable) {

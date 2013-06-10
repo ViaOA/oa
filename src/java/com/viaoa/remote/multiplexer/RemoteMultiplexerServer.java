@@ -63,12 +63,10 @@ public class RemoteMultiplexerServer {
     private ConcurrentHashMap<String, BindInfo> hmNameToBind = new ConcurrentHashMap<String, BindInfo>();
     // used to manage GC for remote objects.  See performDGC.
     private ReferenceQueue referenceQueue = new ReferenceQueue();
-    // used to hold all objects from the "bind()" method.
+
+    // used to hold all objects from the "bind()" method, so that they will not get gc'd
     private ConcurrentHashMap<BindInfo, Object> hmBindObject = new ConcurrentHashMap<BindInfo, Object>();
     
-    // Java instance used to broadcast messages to clients
-    private ConcurrentHashMap<Class, BindInfo> hmBroadcastClass = new ConcurrentHashMap<Class, BindInfo>();
-        
     // used for queued messages 
     private ConcurrentHashMap<String, OACircularQueue<RequestInfo>> hmAsnycCircularQueue = new ConcurrentHashMap<String, OACircularQueue<RequestInfo>>();
 
@@ -78,8 +76,9 @@ public class RemoteMultiplexerServer {
     // types of commands sent from Client to server
     static final byte CtoS_Command_RunMethod = 0; 
     static final byte CtoS_Command_GetInterfaceClass = 1; 
-    static final byte CtoS_Command_RemoveSessionBroadcastThread = 2; 
-
+    static final byte CtoS_Command_RemoveSessionBroadcastThread = 2;
+    static final byte CtoS_Command_GetServerBroadcastClass = 3;
+    
     
     /**
      * Create a new RemoteServer using multiplexer.
@@ -246,6 +245,21 @@ public class RemoteMultiplexerServer {
             }
             return true;
         }
+        if (bCommand == CtoS_Command_GetServerBroadcastClass) {
+            // lookup, needs to return Java Interface class.
+            ri.bindName = ois.readAsciiString();
+            BindInfo bind = getBindInfo(ri.bindName);
+            if (bind != null) {
+                ri.response = bind.interfaceClass;
+            }
+            else {
+                ri.exceptionMessage = "object not found"; 
+            }
+//qqqqqqqqqqq
+            // start sending messaeges to client
+            session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
+            return true;
+        }
         if (bCommand == CtoS_Command_RemoveSessionBroadcastThread) {
             // remove StoC thread used for broadcast object
             ri.bindName = ois.readAsciiString();
@@ -309,35 +323,8 @@ public class RemoteMultiplexerServer {
                     }
                     else bindx = null;
                     if (bindx == null) {
-                        Object obj;
-                        final BindInfo bindz = hmBroadcastClass.get(ri.methodInfo.remoteParams[i]);
-                        if (bindz != null) {
-                            // this is a server side broadcast object.
-                            obj = bindz.getObject();
-                            bindx = session.createBindInfo(bindName, obj, ri.methodInfo.remoteParams[i]);
-
-                            final OACircularQueue<RequestInfo> cque = hmAsnycCircularQueue.get(bindz.asyncQueueName);
-                            final long qPos = cque.getHeadPostion();
-                            // set up thread that will get messages from queue and send to client
-                            final String threadName = "Client."+ri.connectionId+"."+ri.bindName;
-                            Thread t = new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        session.writeQueueMessages(cque, bindName, qPos);
-                                    }
-                                    catch (Exception e) {
-                                        LOG.log(Level.WARNING, "broadcast thread exception, thread="+threadName+", thread is stopping, which will stop message from being sent to this client", e);
-                                    }
-                                }
-                            });
-                            t.setName(threadName);
-                            t.start();
-                        }
-                        else {
-                            obj = createProxyForStoC(session, ri.methodInfo.remoteParams[i], bindName);
-                            bindx = session.createBindInfo(bindName, obj, ri.methodInfo.remoteParams[i]);
-                        }
+                        Object obj = createProxyForStoC(session, ri.methodInfo.remoteParams[i], bindName);
+                        bindx = session.createBindInfo(bindName, obj, ri.methodInfo.remoteParams[i]);
                     }
                 }
                 ri.args[i] = bindx.getObject();
@@ -702,8 +689,13 @@ public class RemoteMultiplexerServer {
      * All methods that are invoked are added to a circular queue that can then be 
      * sent to clients that have sent an implementation to the server as a remote object.
      */
-    public Object createProxyForBroadcast(Class interfaceClass) {
-        final String bindName = "broadcast." + aiBindCount.incrementAndGet();
+    public Object createServerBroadcast(final String bindName, Class interfaceClass) {
+        if (bindName == null || interfaceClass == null) return null;
+        BindInfo bi = getBindInfo(bindName);
+        if (bi != null) {
+            return bi.getObject();
+        }
+        
         InvocationHandler handler = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -713,15 +705,12 @@ public class RemoteMultiplexerServer {
         };
         Object obj = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
         BindInfo bind = createBindInfo(bindName, obj, interfaceClass);
-        hmBindObject.put(bind, obj);
-
         if (bind.asyncQueueName == null) {
             throw new RuntimeException("class must have an async queue name assigned, using OARemoteInterface annotation");
         }
-        
-        // need to be able to lookup based on class        
-        hmBroadcastClass.put(interfaceClass, bind);
-        
+        bind.asyncPublic = true;  // send to all clients
+
+        hmBindObject.put(bind, obj); // hold from getting gc'd
         return obj;
     }
     protected Object onInvokeForBroadcast(Object proxy, String bindName, Method method, Object[] args) {
