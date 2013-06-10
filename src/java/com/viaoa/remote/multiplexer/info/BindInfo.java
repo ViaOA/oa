@@ -62,6 +62,7 @@ public class BindInfo {
             OARemoteInterface ri = (OARemoteInterface) interfaceClass.getAnnotation(OARemoteInterface.class);
             if (ri != null) {
                 asyncQueueName = ri.asyncQueueName();
+                if (asyncQueueName != null && asyncQueueName.length() == 0) asyncQueueName = null;
                 asyncQueueSize = ri.asyncQueueSize();
             }
         }

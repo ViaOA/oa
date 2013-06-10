@@ -98,6 +98,7 @@ public class RemoteMultiplexerClient {
      * Create a remote object that is sent to all clients.
      * @param lookupName name used on server, see: RemoteMultiplexerServer.createClientBroadcast
      * @param callback an impl used when receiving messages from other clients
+     * @see RemoteMultiplexerServer#createClientBroadcast(String, Class)
      */
     public Object createClientBroadcastProxy(final String lookupName, Object callback) throws Exception {
         Object proxyInstance = hmLookup.get(lookupName);
@@ -518,6 +519,12 @@ else System.out.println("other StoC, msgId="+ri.messageId);
             afterInvokForStoC(ri);
             return;
         }
+        
+//qqq
+if ("test".equals(ri.bindName)) {
+    int xx = 4;
+    xx++;
+}
         
   //qqqqqqqqq            
 if (ri.connectionId == 1) {
