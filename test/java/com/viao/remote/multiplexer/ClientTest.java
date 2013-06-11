@@ -30,7 +30,7 @@ public class ClientTest {
         clientBroadcast = (RemoteTestInterface) rmc.createClientBroadcast("clientBroadcast", clientBroadcastCallback);
         
 
-        for (int i=0; i<2; i++) {
+        for (int i=0; i<1; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override
@@ -41,7 +41,7 @@ public class ClientTest {
             t.start();
         }
 
-        for (int i=0; i<3; i++) {
+        for (int i=0; i<0; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override
@@ -77,8 +77,7 @@ public class ClientTest {
 
             try {
                 String msg = remoteTest.ping(s);
-//                if (b) System.out.println("ping "+msg+", thread="+id);
-System.out.println("");                
+                if (b) System.out.println("ping "+msg+", thread="+id);
 //                Thread.sleep(250);
             }
             catch (Exception e) {
@@ -99,12 +98,14 @@ System.out.println("");
                 msLast = ms;
                 iLast = i;
             }
+            /*
             try {
                 Thread.sleep(200);
             }
             catch (Exception e) {
                 // TODO: handle exception
             }
+            */
         }
     }    
     

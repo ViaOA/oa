@@ -522,8 +522,6 @@ public class RemoteMultiplexerClient {
         return t;
     }
     
-    
-    
     protected void processMessageForStoC(final VirtualSocket socket, int threadId) throws Exception {
         if (socket.isClosed()) return;
 
