@@ -4,9 +4,9 @@ import com.viaoa.remote.multiplexer.info.RequestInfo;
 
 public class RemoteClientThread extends Thread {
     
-    public final Object Lock = new Object();
+    final Object Lock = new Object();
     
-    public volatile RequestInfo ri;
+    volatile RequestInfo ri;
     
     public void startNextMessage() {
         

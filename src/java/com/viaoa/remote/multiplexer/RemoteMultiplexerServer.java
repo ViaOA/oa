@@ -1,5 +1,6 @@
 package com.viaoa.remote.multiplexer;
 
+
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
@@ -77,6 +78,7 @@ public class RemoteMultiplexerServer {
     static final byte CtoS_Command_GetInterfaceClass = 1; 
     static final byte CtoS_Command_RemoveSessionBroadcastThread = 2;
     static final byte CtoS_Command_GetServerBroadcastClass = 3;
+    static final byte CtoS_Command_GetClientBroadcastClass = 4;
     
     
     /**
@@ -238,6 +240,21 @@ public class RemoteMultiplexerServer {
             BindInfo bind = getBindInfo(ri.bindName);
             if (bind != null) {
                 ri.response = bind.interfaceClass;
+            }
+            else {
+                ri.exceptionMessage = "object not found"; 
+            }
+            return true;
+        }
+        if (bCommand == CtoS_Command_GetClientBroadcastClass) {  
+            ri.bindName = ois.readAsciiString();
+            BindInfo bind = getBindInfo(ri.bindName);
+            if (bind != null) {
+                ri.response = bind.interfaceClass;
+                // check to see if it is a broadcast
+                if (bind.asyncQueueName != null) {
+                    session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
+                }
             }
             else {
                 ri.exceptionMessage = "object not found"; 
@@ -858,12 +875,12 @@ public class RemoteMultiplexerServer {
                     else if (x == 1 && !bRequestedNew) {
                         // request client to open more CtoS sockets
                         bRequestNew = true;
-                        socket = alSocketFromStoC.get(0);
+                        socket = alSocketFromStoC.remove(0);
                     }
                     else if (x == 0 && !bWaitedForFirst) { 
                         alSocketFromStoC.wait(250);
                         bWaitedForFirst = true;
-                    }            
+                    }       
                     else if (x == 0 && i > 10) { 
                         throw new Exception("no StoC sockets available for connection/session="+connectionId);
                     }
@@ -875,8 +892,9 @@ public class RemoteMultiplexerServer {
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket);
                     oos.writeBoolean(true); // this will tell client to create more StoC sockets
                     oos.flush();
-                    socket = null;
                     bRequestedNew = true;
+                    releaseSocketForStoC(socket);
+                    socket = null;
                 }
             }
             return socket;
@@ -959,6 +977,7 @@ public class RemoteMultiplexerServer {
         // used to send broadcast messages to client
         private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String bindName, VirtualSocket vsocket, long qpos) throws Exception {
             int connectionId = vsocket.getConnectionId();
+            
             for (;;) {
                 if (vsocket.isClosed()) {
                     return;

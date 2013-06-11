@@ -108,7 +108,7 @@ public class RemoteMultiplexerClient {
         VirtualSocket socket = getSocketForCtoS();
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
         
-        oos.writeByte(CtoS_Command_GetInterfaceClass); // 0=method, 1=get interface class, 2=remove session bindInfo
+        oos.writeByte(CtoS_Command_GetClientBroadcastClass);
         oos.writeAsciiString(lookupName);
         oos.flush();
 
@@ -260,7 +260,7 @@ public class RemoteMultiplexerClient {
                 socket = null;
                 synchronized (ri) {
                     if (!ri.responseReturned) {
-                        ri.wait(15000); //qqqqq  
+                        ri.wait(15000);  // 15 second timeout
                     }
                 }
                 if (!ri.responseReturned) {
@@ -451,15 +451,22 @@ public class RemoteMultiplexerClient {
         // accept new connections
         Thread t = new Thread(new Runnable() {
             public void run() {
+                int errorCnt = 0;
+                long msLastError = 0;
                 for (;;) {
                     try {
                         if (socket.isClosed()) break;
-                        
                         processMessageForStoC(socket, id);
                     }
                     catch (Exception e) {
                         if (!socket.isClosed()) {
-                            LOG.log(Level.WARNING, "Exception in StoC thread", e);
+                            errorCnt++;
+                            long ms = System.currentTimeMillis();
+                            if (msLastError == 0 || ms-msLastError > 5000 || errorCnt > 50) {
+                                LOG.log(Level.WARNING, "Exception in StoC thread, errorCnt="+errorCnt, e);
+                                if (errorCnt > 50) break;
+                                msLastError = ms;
+                            }
                         }
                     }
                 }
@@ -524,7 +531,6 @@ public class RemoteMultiplexerClient {
     
     protected void processMessageForStoC(final VirtualSocket socket, int threadId) throws Exception {
         if (socket.isClosed()) return;
-
         RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
         if (ois.readBoolean()) {
             // server is requesting another vsocket "stoc"
@@ -545,9 +551,12 @@ public class RemoteMultiplexerClient {
         ri.bindName = ois.readAsciiString();
         ri.bind = getBindInfo(ri.bindName);
         if (ri.bind == null) {
-            return;  // broadcast message not set up for this client
+            // broadcast message not set up for this client
+            ois.readBoolean(); // will be false
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+            return;  
         }
-        
         
         boolean b;
         if (ri.bind.asyncQueueName != null) {
@@ -587,8 +596,7 @@ public class RemoteMultiplexerClient {
 
         beforeInvokForStoC(ri);
 
-//qqqqqqqqqvvvvvvvvvvv remove "false"       
-        if (false && ri.bind.asyncQueueName != null) {
+        if (ri.bind.asyncQueueName != null) {
             RemoteClientThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
                 t.Lock.notify();
