@@ -30,7 +30,7 @@ public class ClientTest {
         clientBroadcast = (RemoteTestInterface) rmc.createClientBroadcast("clientBroadcast", clientBroadcastCallback);
         
 
-        for (int i=0; i<1; i++) {
+        for (int i=0; i<2; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override
@@ -41,7 +41,7 @@ public class ClientTest {
             t.start();
         }
 
-        for (int i=0; i<5; i++) {
+        for (int i=0; i<3; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override

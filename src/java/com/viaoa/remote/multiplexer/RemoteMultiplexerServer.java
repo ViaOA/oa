@@ -41,7 +41,6 @@ import com.viaoa.util.OACompressWrapper;
  * that have it.
  * </ol>
  * 
- * 
  * @author vvia
  */
 public class RemoteMultiplexerServer {
@@ -255,7 +254,6 @@ public class RemoteMultiplexerServer {
             else {
                 ri.exceptionMessage = "object not found"; 
             }
-//qqqqqqqqqqq
             // start sending messaeges to client
             session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
             return true;
@@ -331,14 +329,12 @@ public class RemoteMultiplexerServer {
             }
         }
         
-//qqqqqqqqq
         if (ri.bind.asyncQueueName != null) {
             if (!ri.bind.usesObject()) {
                 // client broadcast message
                 return true;
             }
         }
-        
         
         int x = (ri.args == null) ? 0 : ri.args.length;
         try {
@@ -654,12 +650,11 @@ public class RemoteMultiplexerServer {
         BindInfo bind = new BindInfo(name, obj, interfaceClass, referenceQueue);
         bind.loadMethodInfo();
         hmNameToBind.put(name, bind);
-//qqqqqqqqqqqqqqqqqqqq1        
         if (bind.asyncQueueName != null) {
             OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(bind.asyncQueueName);
             
             if (cq == null) {
-                cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) { //qqqqqqqqqqqqqqq
+                cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
                 };
                 hmAsnycCircularQueue.put(bind.asyncQueueName, cq);             
             }
@@ -728,7 +723,7 @@ public class RemoteMultiplexerServer {
             ri.exception = e;
         }
         ri.nsEnd = System.nanoTime();
-        //qqqq afterInvokeForBroadcast(ri);                
+        // afterInvokeForBroadcast(ri);                
         return ri.response;
     }
     protected void onInvokeForBroadcast(RequestInfo ri) throws Exception {
@@ -973,27 +968,16 @@ public class RemoteMultiplexerServer {
                 if (ris == null) {
                     continue;
                 }
-
-if (connectionId == 1) {
-    System.out.println("qpos"+qpos);
-}
-                
                 qpos += ris.length;
                 for (RequestInfo ri : ris) {
                     if (vsocket.isClosed()) return;
-//qqqqqq
-                    
-if (connectionId == 1) {
-    System.out.println("msgId="+ri.messageId);
-}
-                    
                     if (ri.bind.asyncQueueName != null) {
                         if (!ri.bind.asyncPublic && ri.connectionId != connectionId) {
                             continue;
                         }
                     }
                     
-//qqqqqqqqqqqqq  this is not used for async, need a way for async queue
+                    //qqqqq  this is not used for async, need a way for async queue
                     if (ri.bind.asyncQueueName == null) {
                         if (getBindInfo(bindName) == null) return; // client has removed it
                     }
@@ -1001,10 +985,7 @@ if (connectionId == 1) {
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     oos.writeBoolean(false); // flag to know this is a method call
                     oos.writeBoolean(false); // do not return a response
-                    
-                    
                     oos.writeAsciiString(ri.bindName);
-//qqqqqq
                     if (ri.bind.asyncQueueName != null && !ri.bind.asyncPublic) {
                         oos.writeBoolean(true); // private message for this client only
                         if (ri.bind.usesObject() || (ri.connectionId != connectionId)) {

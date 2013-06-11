@@ -6,7 +6,7 @@ public class RemoteClientThread extends Thread {
     
     public final Object Lock = new Object();
     
-    public RequestInfo ri;
+    public volatile RequestInfo ri;
     
     public void startNextMessage() {
         

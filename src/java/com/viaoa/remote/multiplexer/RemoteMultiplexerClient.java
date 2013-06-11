@@ -225,7 +225,6 @@ public class RemoteMultiplexerClient {
         bind.setObject(proxy, referenceQueue);
         bind.loadMethodInfo();
 
-//qqqqqqqq        
         if (bind.asyncQueueName != null) {
             if (!bFirstStoCsocketCreated) {
                 createSocketForStoC(); // to process message from server to this object
@@ -260,23 +259,14 @@ public class RemoteMultiplexerClient {
                 releaseSocketForCtoS(socket);
                 socket = null;
                 synchronized (ri) {
-System.out.println("waiting for msgId="+ri.messageId);                
-                    
                     if (!ri.responseReturned) {
-                        ri.wait(30000); //qqqqq  
+                        ri.wait(15000); //qqqqq  
                     }
                 }
-                //qqqqqqqq                
                 if (!ri.responseReturned) {
-//qqqqqqq turn this back on                    
-//                    ri.exceptionMessage = "timeout waiting on async response from server";
-System.out.println("Returned for msgId="+ri.messageId+" ***** TIMED OUT");                
-                }
-                else {
-System.out.println("Returned for msgId="+ri.messageId);                
+                    ri.exceptionMessage = "timeout waiting on async response from server";
                 }
             }
-            
         }
         catch (Exception e) {
             ri.exception = e;
@@ -360,7 +350,6 @@ System.out.println("Returned for msgId="+ri.messageId);
             }
         }
 
-//qqqqqqqqqqqq3        
         if (ri.bind.asyncQueueName != null) {
             hmAsyncRequestInfo.put(ri.messageId, ri); // will wait for server to send it back on StoC
             if (!bFirstStoCsocketCreated) {
@@ -376,14 +365,13 @@ System.out.println("Returned for msgId="+ri.messageId);
         oos.writeAsciiString(ri.bind.name);
         oos.writeAsciiString(ri.methodNameSignature);
         oos.writeObject(ri.args);
-//qqqqqqqqqqqq3        
+        
         if (ri.bind.asyncQueueName != null) {
             oos.writeInt(ri.messageId);
         }
         oos.flush();
         ri.nsWrite = System.nanoTime() - ns1;
 
-//qqqqqqqqqqqq3        
         if (ri.bind.asyncQueueName != null) {
         }
         else if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
@@ -483,13 +471,24 @@ System.out.println("Returned for msgId="+ri.messageId);
         // LOG.config("created Server to Client socket and thread, connectionId=" + socket.getConnectionId() + ", vid=" + id);
     }
 
-//qqqqqqqqqqqqq  
-    private final Object LockThread = new Object();
     private AtomicInteger aiClientThreadCount = new AtomicInteger();
-    private RemoteClientThread getRemoteClientThread() {
-qqqqqqqqqq use a thread list, etc        
-        RemoteClientThread t = createRemoteClientThread();
-        return t;
+    private ArrayList<RemoteClientThread> alRemoteClientThread = new ArrayList<RemoteClientThread>();
+    private RemoteClientThread getRemoteClientThread(RequestInfo ri) {
+        synchronized (alRemoteClientThread) {
+            for (RemoteClientThread rct : alRemoteClientThread) {
+                if (rct.ri == null) {
+                    rct.ri = ri;
+                    return rct;
+                }
+            }
+            RemoteClientThread rct = createRemoteClientThread();
+            rct.ri = ri;
+            alRemoteClientThread.add(rct);
+            if (alRemoteClientThread.size() > 20) {
+                LOG.warning("alRemoteClientThread.size() = "+alRemoteClientThread.size());
+            }
+            return rct;
+        }
     }
     private RemoteClientThread createRemoteClientThread() {
         RemoteClientThread t = new RemoteClientThread() {
@@ -503,7 +502,7 @@ qqqqqqqqqq use a thread list, etc
                             }
                             if (ri != null) {
                                 processMessageForStoC2(ri, false);
-                                ri = null;
+                                this.ri = null;
                                 Lock.notify();
                             }
                         }
@@ -547,13 +546,11 @@ qqqqqqqqqq use a thread list, etc
 
         ri.bindName = ois.readAsciiString();
         ri.bind = getBindInfo(ri.bindName);
-//qqq
         if (ri.bind == null) {
             return;  // broadcast message not set up for this client
         }
         
         
-//qqqq        
         boolean b;
         if (ri.bind.asyncQueueName != null) {
             b = ois.readBoolean();
@@ -569,9 +566,7 @@ qqqqqqqqqq use a thread list, etc
             }
             ri.messageId = ois.readInt();
 
-            
             RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
-//qqqqqqqq            
             if (rix == null) {
                 ri.exceptionMessage = "StoC requestInfo not found";  
             }
@@ -588,16 +583,14 @@ qqqqqqqqqq use a thread list, etc
             afterInvokForStoC(ri);
             return;
         }
-        
 
         ri.methodNameSignature = ois.readAsciiString();
         ri.args = (Object[]) ois.readObject();
 
         beforeInvokForStoC(ri);
 
-//qqqqqqqqqvvvvvvvvvvvvvv
         if (ri.bind.asyncQueueName != null) {
-            RemoteClientThread t = getRemoteClientThread();
+            RemoteClientThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
                 t.ri = ri;
                 t.Lock.notify();
