@@ -587,10 +587,10 @@ public class RemoteMultiplexerClient {
 
         beforeInvokForStoC(ri);
 
-        if (ri.bind.asyncQueueName != null) {
+//qqqqqqqqqvvvvvvvvvvv remove "false"       
+        if (false && ri.bind.asyncQueueName != null) {
             RemoteClientThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
-                t.ri = ri;
                 t.Lock.notify();
                 t.Lock.wait(250);
             }
