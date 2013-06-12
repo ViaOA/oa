@@ -12,11 +12,13 @@ public class ServerTest {
         
         RemoteTestImpl remoteTest = new RemoteTestImpl();
         rms.createLookup("test", remoteTest, RemoteTestInterface.class);
-        
+
+/*        
         RemoteTestImpl rti = new RemoteTestImpl();
-        final RemoteTestInterface rtx = (RemoteTestInterface) rms.createClientBroadcast("clientBroadcast", rti, RemoteTestInterface.class);
+        final RemoteTestInterface rtx = (RemoteTestInterface) rms.createBroadcast("clientBroadcast", rti, RemoteTestInterface.class, "test", 2500);
         
-        final BroadcastInterface bc = (BroadcastInterface) rms.createServerBroadcast("broadcast", BroadcastInterface.class);
+        
+        final BroadcastInterface bc = (BroadcastInterface) rms.createBroadcast("broadcast", null, BroadcastInterface.class, "test", 2500);
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -28,7 +30,7 @@ public class ServerTest {
                         bc.memory(usedMemeory);
                         Thread.sleep(1000);
                         if (i % 30 == 0) {
-                            rms.performDGC();
+//                            rms.performDGC();
                         }
                     }
                 }
@@ -36,7 +38,8 @@ public class ServerTest {
                 }
             }
         });
-//qqqq        t.start();
+        t.start();
+*/        
     }
     
     

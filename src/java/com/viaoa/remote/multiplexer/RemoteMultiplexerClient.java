@@ -94,6 +94,8 @@ public class RemoteMultiplexerClient {
      * @see RemoteMultiplexerServer#createClientBroadcast(String, Class)
      */
     public Object createBroadcast(final String lookupName, Object callback) throws Exception {
+        if (lookupName == null) throw new IllegalArgumentException("lookupName cant be null");
+        if (callback == null) throw new IllegalArgumentException("callback cant be null");
         Object proxyInstance = hmLookup.get(lookupName);
         if (proxyInstance != null) return proxyInstance;
         LOG.fine("lookupName=" + lookupName);

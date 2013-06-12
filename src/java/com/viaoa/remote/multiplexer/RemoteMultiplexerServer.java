@@ -697,10 +697,9 @@ public class RemoteMultiplexerServer {
      * @see RemoteMultiplexerClient#createBroadcastProxy(String, Object)
      */
     public Object createBroadcast(final String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
-        if (callback == null) throw new IllegalArgumentException("callback can not be null");
         if (bindName == null) throw new IllegalArgumentException("bindName can not be null");
         if (interfaceClass == null) throw new IllegalArgumentException("interfaceClass can not be null");
-        if (!interfaceClass.isAssignableFrom(callback.getClass())) {
+        if (callback != null && !interfaceClass.isAssignableFrom(callback.getClass())) {
             throw new IllegalArgumentException("callback must be same class as "+interfaceClass);
         }
         if (queueSize < 100) {
@@ -709,18 +708,20 @@ public class RemoteMultiplexerServer {
         
         if (queueName == null) queueName = bindName;
         final BindInfo bind = createBindInfo(bindName, callback, interfaceClass, true, queueName, queueSize);
-        hmBindObject.put(bind, callback); // hold from getting gc'd
+        if (callback != null) hmBindObject.put(bind, callback); // hold from getting gc'd
         
         InvocationHandler handler = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 RequestInfo ri = onInvokeBroadcast(bind, method, args);
-                synchronized (ri) {
-                    for ( ;!ri.processedByServer; ) {
-                        try {
-                            ri.wait();
-                        }
-                        catch (Exception e) {
+                if (ri.object != null) {
+                    synchronized (ri) {
+                        for ( ;!ri.processedByServer; ) {
+                            try {
+                                ri.wait();
+                            }
+                            catch (Exception e) {
+                            }
                         }
                     }
                 }
@@ -730,8 +731,10 @@ public class RemoteMultiplexerServer {
         };
         Object obj = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
         
-        // create thread to get messages from queue
-        setupBroadcastQueueReader(bind.asyncQueueName, bind.name);
+        if (callback != null) {
+            // create thread to get messages from queue
+            setupBroadcastQueueReader(bind.asyncQueueName, bind.name);
+        }
         return obj;
     }
 
@@ -814,8 +817,7 @@ public class RemoteMultiplexerServer {
     
         // set up thread that will get messages from queue and send to client
         final String threadName = "Client.queue."+asyncQueueName;
-        Thread t = new OARemoteThread(new Runnable() {
-//qqqqqqqqqqqqqqqq use a regular thread, that then uses OARemoteThread (like remoteClient does)            
+        Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -834,13 +836,12 @@ public class RemoteMultiplexerServer {
 
     private void processBroadcastMessages(final OACircularQueue<RequestInfo> cque, final String bindName, long qpos) throws Exception {
         for (;;) {
-            RequestInfo[] ris = cque.getMessages(qpos, 50, 1000);
+            RequestInfo[] ris = cque.getMessages(qpos, 50);
             if (ris == null) {
                 continue;
             }
             qpos += ris.length;
             for (RequestInfo ri : ris) {
-                if (ri.bind.usesQueue) continue;
                 if (ri.connectionId == 0) {  // sent from object on this server
                     synchronized (ri) {
                         ri.processedByServer = true;
@@ -855,7 +856,7 @@ public class RemoteMultiplexerServer {
                 // note; since this is a broadcast msg, the return value is not used
                 try {
 //qqqqqqqqqqqqqqqqqqq                    
-//qqqqq needs to use RemoteThread                    
+//qqqqq needs to use OARemoteThread for this, with timeout .... same as client                    
                     ri.response = ri.method.invoke(ri.object, ri.args);
                 }
                 catch (Exception e) {

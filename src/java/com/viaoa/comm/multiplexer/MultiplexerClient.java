@@ -79,11 +79,11 @@ public class MultiplexerClient {
      */
     public void start() throws Exception {
         if (_bCreated) return;
-        _bCreated = true;
         LOG.fine("creating real socket, setting tcpNoDelay=true");
 
         _socket = new Socket(_host, _port);
         _socket.setTcpNoDelay(true);
+        _bCreated = true;
 
         _controlSocket = new MultiplexerSocketController(_socket) {
             protected void onSocketException(Exception e) {

@@ -15,10 +15,13 @@ public class ClientTest {
         ms.start();
         RemoteMultiplexerClient rmc = new RemoteMultiplexerClient(ms);
         
-        broadcast = new BroadcastImpl();
-        rmc.lookupServerBroadcast("broadcast", broadcast);
+//        broadcast = new BroadcastImpl();
+//        rmc.createBroadcast("broadcast", broadcast);
+        
         
         remoteTest = (RemoteTestInterface) rmc.lookup("test");
+        
+/*        
         clientBroadcastCallback = new RemoteTestImpl() {
             int cnt;
             @Override
@@ -28,10 +31,12 @@ public class ClientTest {
                 return "xx";
             }
         };
+*/  
         
-        clientBroadcast = (RemoteTestInterface) rmc.createClientBroadcast("clientBroadcast", clientBroadcastCallback);
-for (int i=0; i<501; i++) clientBroadcast.ping("asdfasdf");        
-if (true || false) return;//qqqqqqqqqqqqqq        
+//        clientBroadcast = (RemoteTestInterface) rmc.createBroadcast("clientBroadcast", clientBroadcastCallback);
+        
+//for (int i=0; i<501; i++) clientBroadcast.ping("asdfasdf");        
+//if (true || false) return;//qqqqqqqqqqqqqq        
 
         for (int i=0; i<1; i++) {
             final int id = i;
@@ -44,7 +49,7 @@ if (true || false) return;//qqqqqqqqqqqqqq
             t.start();
         }
 
-        for (int i=0; i<1; i++) {
+        for (int i=0; i<0; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override
