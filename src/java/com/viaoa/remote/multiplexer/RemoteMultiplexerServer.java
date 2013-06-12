@@ -1,6 +1,5 @@
 package com.viaoa.remote.multiplexer;
 
-
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
@@ -195,7 +194,7 @@ public class RemoteMultiplexerServer {
 
             long t1 = System.nanoTime();                
             // return response
-            if (ri.bind != null && ri.bind.asyncQueueName != null) {
+            if (ri.bind != null && ri.bind.usesQueue) {
                 OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(ri.bind.asyncQueueName);
                 cq.addMessageToQueue(ri);
             }
@@ -252,7 +251,7 @@ public class RemoteMultiplexerServer {
             if (bind != null) {
                 ri.response = bind.interfaceClass;
                 // check to see if it is a broadcast
-                if (bind.asyncQueueName != null) {
+                if (bind.usesQueue) {
                     session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
                 }
             }
@@ -292,7 +291,7 @@ public class RemoteMultiplexerServer {
             return true;
         }
         
-        if (ri.bind.asyncQueueName != null) {
+        if (ri.bind.usesQueue) {
             ri.messageId = ois.readInt();
             session.setupAsyncQueueSender(ri.bind.asyncQueueName, ri.bindName);
         }
@@ -342,7 +341,7 @@ public class RemoteMultiplexerServer {
             }
         }
         
-        if (ri.bind.isBroadcast) {
+        if (ri.bind.usesQueue) {
             return true;
         }
         
@@ -628,7 +627,18 @@ public class RemoteMultiplexerServer {
      * Important: a weakref is used to store the remote object "obj"
      */
     public void createLookup(String name, Object obj, Class interfaceClass) {
-        BindInfo bind = createBindInfo(name, obj, interfaceClass);
+        createLookup(name, obj, interfaceClass, null, -1);
+    }
+    /**
+     * 
+     * @param name
+     * @param obj
+     * @param interfaceClass
+     * @param queueName used to have return value use an async circular queue for responses.
+     * @param queueSize
+     */
+    public void createLookup(String name, Object obj, Class interfaceClass, String queueName, int queueSize) {
+        BindInfo bind = createBindInfo(name, obj, interfaceClass, false, queueName, queueSize);
         hmBindObject.put(bind, obj);
     }
     /**
@@ -651,18 +661,21 @@ public class RemoteMultiplexerServer {
      * Important: a weakref is used to store the remote object "obj"
      */
     protected BindInfo createBindInfo(String name, Object obj, Class interfaceClass) {
+        return createBindInfo(name, obj, interfaceClass, false, null, -1);
+    }
+    protected BindInfo createBindInfo(String name, Object obj, Class interfaceClass, boolean bIsBroadcast, String queueName, int queueSize) {
         if (name == null || interfaceClass == null) {
             throw new IllegalArgumentException("name and interfaceClass can not be null");
         }
         if (!interfaceClass.isInterface()) {
             throw new IllegalArgumentException("interfaceClass must be a Java interface");
         }
-        BindInfo bind = new BindInfo(name, obj, interfaceClass, referenceQueue);
+        BindInfo bind = new BindInfo(name, obj, interfaceClass, referenceQueue, bIsBroadcast, queueName, queueSize);
+        
         bind.loadMethodInfo();
         hmNameToBind.put(name, bind);
-        if (bind.asyncQueueName != null) {
+        if (bind.usesQueue) {
             OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(bind.asyncQueueName);
-            
             if (cq == null) {
                 cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
                 };
@@ -673,29 +686,35 @@ public class RemoteMultiplexerServer {
     }
     
     /**
-     * Used so that clients can send broadcasts to all clients.
-     * @see RemoteMultiplexerClient#createClientBroadcastProxy(String, Object)
+     * Allows sending messages to server and all clients.  
+     * 
+     * @param bindName name for clients to use to lookup the object
+     * @param callback object to use when receiving a broadcast from a client
+     * @param interfaceClass
+     * @param queueName name of circularQueue used to hold messages
+     * @param queueSize size of circularQueue
+     * @return proxy instance where all methods will be sent to and invoked on all clients
+     * @see RemoteMultiplexerClient#createBroadcastProxy(String, Object)
      */
-    public Object createClientBroadcast(final String bindName, Object callback, Class interfaceClass) {
+    public Object createBroadcast(final String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
         if (callback == null) throw new IllegalArgumentException("callback can not be null");
         if (bindName == null) throw new IllegalArgumentException("bindName can not be null");
         if (interfaceClass == null) throw new IllegalArgumentException("interfaceClass can not be null");
         if (!interfaceClass.isAssignableFrom(callback.getClass())) {
             throw new IllegalArgumentException("callback must be same class as "+interfaceClass);
         }
-
-        final BindInfo bind = createBindInfo(bindName, callback, interfaceClass);
-        bind.isBroadcast = true;
-        if (bind.asyncQueueName == null) {
-            throw new RuntimeException("class must have an async queue name assigned, using OARemoteInterface annotation");
+        if (queueSize < 100) {
+            throw new IllegalArgumentException("queueSize must be greater then 100");
         }
-        bind.asyncPublic = true;  // send to all clients
+        
+        if (queueName == null) queueName = bindName;
+        final BindInfo bind = createBindInfo(bindName, callback, interfaceClass, true, queueName, queueSize);
         hmBindObject.put(bind, callback); // hold from getting gc'd
         
         InvocationHandler handler = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                RequestInfo ri = onInvokeClientBroadcast(bind, method, args);
+                RequestInfo ri = onInvokeBroadcast(bind, method, args);
                 synchronized (ri) {
                     for ( ;!ri.processedByServer; ) {
                         try {
@@ -712,11 +731,11 @@ public class RemoteMultiplexerServer {
         Object obj = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
         
         // create thread to get messages from queue
-        setupClientQueueReader(bind.asyncQueueName, bind.name);
+        setupBroadcastQueueReader(bind.asyncQueueName, bind.name);
         return obj;
     }
 
-    protected RequestInfo onInvokeClientBroadcast(BindInfo bind, Method method, Object[] args) {
+    protected RequestInfo onInvokeBroadcast(BindInfo bind, Method method, Object[] args) throws Exception {
         RequestInfo ri = new RequestInfo();
         ri.connectionId = 0;
         ri.msStart = System.currentTimeMillis();
@@ -728,6 +747,21 @@ public class RemoteMultiplexerServer {
 
         ri.methodInfo = ri.bind.getMethodInfo(ri.method);
         ri.object = ri.bind.getObject();
+        
+        if (ri.methodInfo == null) {
+            // check to see if method from Object.class is being invoked
+            if (ri.method.getDeclaringClass().equals(Object.class)) {
+                if ("equals".equals(ri.method.getName())) {
+                    if (ri.args == null || ri.args.length != 1) {
+                        ri.response = false;
+                    }
+                    else ri.response = (ri.args[0] == ri.object);
+                }
+                else ri.response = ri.method.invoke(stuntObject, ri.args);
+            }
+            else ri.exceptionMessage = "Method  not found";
+            return ri;
+        }
         
         // compress flagged arguments
         if (ri.methodInfo.compressedParams != null && ri.args != null) {
@@ -769,7 +803,7 @@ public class RemoteMultiplexerServer {
 
     // queues that this session has a thread created to send to client
     private ConcurrentHashMap<String, String> hmAsyncQueue = new ConcurrentHashMap<String, String>();
-    protected void setupClientQueueReader(final String asyncQueueName, final String bindName) {
+    protected void setupBroadcastQueueReader(final String asyncQueueName, final String bindName) {
         synchronized (hmAsyncQueue) { 
             if (hmAsyncQueue.get(asyncQueueName) != null) return;
             hmAsyncQueue.put(asyncQueueName, "");
@@ -780,11 +814,12 @@ public class RemoteMultiplexerServer {
     
         // set up thread that will get messages from queue and send to client
         final String threadName = "Client.queue."+asyncQueueName;
-        Thread t = new Thread(new Runnable() {
+        Thread t = new OARemoteThread(new Runnable() {
+//qqqqqqqqqqqqqqqq use a regular thread, that then uses OARemoteThread (like remoteClient does)            
             @Override
             public void run() {
                 try {
-                    processClientMessages(cq, bindName, qPos);
+                    processBroadcastMessages(cq, bindName, qPos);
                 }
                 catch (Exception e) {
                     String s = "async queue thread exception, thread="+threadName+", thread is stopping, " +
@@ -797,7 +832,7 @@ public class RemoteMultiplexerServer {
         t.start();
     }
 
-    private void processClientMessages(final OACircularQueue<RequestInfo> cque, final String bindName, long qpos) throws Exception {
+    private void processBroadcastMessages(final OACircularQueue<RequestInfo> cque, final String bindName, long qpos) throws Exception {
         for (;;) {
             RequestInfo[] ris = cque.getMessages(qpos, 50, 1000);
             if (ris == null) {
@@ -805,10 +840,7 @@ public class RemoteMultiplexerServer {
             }
             qpos += ris.length;
             for (RequestInfo ri : ris) {
-                if (ri.bind.asyncQueueName == null) continue;
-                if (!ri.bind.asyncPublic && ri.connectionId != 0) {
-                    continue;
-                }
+                if (ri.bind.usesQueue) continue;
                 if (ri.connectionId == 0) {  // sent from object on this server
                     synchronized (ri) {
                         ri.processedByServer = true;
@@ -822,6 +854,7 @@ public class RemoteMultiplexerServer {
                 if (obj == null) continue;
                 // note; since this is a broadcast msg, the return value is not used
                 try {
+//qqqqqqqqqqqqqqqqqqq                    
 //qqqqq needs to use RemoteThread                    
                     ri.response = ri.method.invoke(ri.object, ri.args);
                 }
@@ -834,116 +867,6 @@ public class RemoteMultiplexerServer {
                 }
             }
         }
-    }
-    
-    
-    /**
-     * This is used for async broadcasts from server to clients.
-     * This allows the server to call methods that can be invoked on any/all clients.
-     * A client will send an implementation of interfaceClass, and the server will
-     * call it's methods when the server proxy method's are invoked.
-     * 
-     * All methods that are invoked are added to a circular queue that can then be 
-     * sent to clients that have sent an implementation to the server as a remote object.
-     */
-    public Object createServerBroadcast(final String bindName, Class interfaceClass) {
-        if (bindName == null || interfaceClass == null) return null;
-        BindInfo bi = getBindInfo(bindName);
-        if (bi != null) {
-            return bi.getObject();
-        }
-        bi.isBroadcast = true;
-        
-        InvocationHandler handler = new InvocationHandler() {
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                Object resp = onInvokeForBroadcast(proxy, bindName, method, args);
-                return resp;
-            }
-        };
-        Object obj = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
-        BindInfo bind = createBindInfo(bindName, obj, interfaceClass);
-        if (bind.asyncQueueName == null) {
-            throw new RuntimeException("class must have an async queue name assigned, using OARemoteInterface annotation");
-        }
-        bind.asyncPublic = true;  // send to all clients
-
-        hmBindObject.put(bind, obj); // hold from getting gc'd
-        return obj;
-    }
-    protected Object onInvokeForBroadcast(Object proxy, String bindName, Method method, Object[] args) {
-        RequestInfo ri = new RequestInfo();
-        try {
-            ri.msStart = System.currentTimeMillis();
-            ri.nsStart = System.nanoTime();
-            ri.object = proxy;
-            ri.bindName = bindName;
-            ri.method = method;
-            ri.args = args;
-            onInvokeForBroadcast(ri);
-        }
-        catch (Exception e) {
-            ri.exception = e;
-        }
-        ri.nsEnd = System.nanoTime();
-        // afterInvokeForBroadcast(ri);                
-        return ri.response;
-    }
-    protected void onInvokeForBroadcast(RequestInfo ri) throws Exception {
-        ri.bind = getBindInfo(ri.bindName);
-        if (ri.bind != null) {
-            ri.methodInfo = ri.bind.getMethodInfo(ri.method);
-        }
-        
-        if (ri.methodInfo == null) {
-            // check to see if method from Object.class is being invoked
-            if (ri.method.getDeclaringClass().equals(Object.class)) {
-                if ("equals".equals(ri.method.getName())) {
-                    if (ri.args == null || ri.args.length != 1) {
-                        ri.response = false;
-                    }
-                    else ri.response = (ri.args[0] == ri.object);
-                }
-                else ri.response = ri.method.invoke(stuntObject, ri.args);
-            }
-            else ri.exceptionMessage = "Method  not found";
-            return;
-        }
-
-        // compress flagged arguments
-        if (ri.methodInfo.compressedParams != null && ri.args != null) {
-            for (int i=0; i<ri.methodInfo.compressedParams.length && i<ri.args.length; i++) {
-                if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
-                if (ri.methodInfo.compressedParams[i]) {
-                    ri.args[i] = new OACompressWrapper(ri.args[i]);
-                }
-            }            
-        }
-        
-        // check to see if any of the args[] are remote objects
-        if (ri.methodInfo.remoteParams != null && ri.args != null) {
-            for (int i=0; i<ri.methodInfo.remoteParams.length && i<ri.args.length; i++) {
-                if (ri.methodInfo.remoteParams[i] == null) continue;
-                if (ri.args[i] == null) continue;
-                 
-                BindInfo bindx = getBindInfo((Object) ri.args[i]);
-                Object objx = bindx != null ? bindx.weakRef.get() : null;
-                if (bindx == null || objx == null) {
-                    if (bindx == null) {
-                        String bindNamex = "server."+aiBindCount.incrementAndGet();
-                        bindx = createBindInfo(bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
-                    }
-                    else {
-                        bindx.setObject(ri.args[i], referenceQueue);
-                    }
-                }
-                ri.args[i] = bindx.name;
-            }
-        }
-
-        // put "ri" in circular queue for clients to pick up.       
-        OACircularQueue<RequestInfo> cque = hmAsnycCircularQueue.get(ri.bind.asyncQueueName);        
-        cque.addMessageToQueue(ri);
     }
     
     
@@ -1074,7 +997,7 @@ public class RemoteMultiplexerServer {
             if (!interfaceClass.isInterface()) {
                 throw new IllegalArgumentException("interfaceClass must be a Java interface");
             }
-            BindInfo bind = new BindInfo(name, obj, interfaceClass, null); // dont need to use referenceQueue
+            BindInfo bind = new BindInfo(name, obj, interfaceClass, null, false, null, -1); // dont need to use referenceQueue
             bind.loadMethodInfo();
             hmNameToBind.put(name, bind);
             return bind;
@@ -1136,22 +1059,22 @@ public class RemoteMultiplexerServer {
                 qpos += ris.length;
                 for (RequestInfo ri : ris) {
                     if (vsocket.isClosed()) return;
-                    if (ri.bind.asyncQueueName != null) {
-                        if (!ri.bind.asyncPublic && ri.connectionId != connectionId) {
+                    if (!ri.bind.isBroadcast) {
+                        if (ri.connectionId != connectionId) {
                             continue;
                         }
                     }
                     
                     //qqqqq  this is not used for async, need a way for async queue
-                    if (ri.bind.asyncQueueName == null) {
-                        if (getBindInfo(bindName) == null) return; // client has removed it
+                    if (ri.bind.isBroadcast) {
+                       // if (getBindInfo(bindName) == null) return; // client has removed it
                     }
                     
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     oos.writeBoolean(false); // flag to know this is a method call
                     oos.writeBoolean(false); // do not return a response
                     oos.writeAsciiString(ri.bindName);
-                    if (ri.bind.asyncQueueName != null && !ri.bind.asyncPublic) {
+                    if (!ri.bind.isBroadcast) {
                         oos.writeBoolean(true); // private message for this client only
                         if (ri.connectionId != connectionId) {
                             if (ri.exception != null) oos.writeByte(0); 
@@ -1165,13 +1088,13 @@ public class RemoteMultiplexerServer {
                         else oos.writeByte(3); 
                         oos.writeInt(ri.messageId);
                     }
-                    else if (ri.bind.asyncQueueName != null && (ri.connectionId == connectionId)) {
-                        oos.writeBoolean(true); // private message for this client only
+                    else if (ri.connectionId == connectionId) {
+                        oos.writeBoolean(true); // notify waiting thread
                         oos.writeByte(3); 
                         oos.writeInt(ri.messageId);
                     }
                     else {
-                        oos.writeBoolean(false); // public for all clients
+                        oos.writeBoolean(false); // broadcast
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
                         oos.writeObject(ri.args);
                     }

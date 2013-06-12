@@ -25,21 +25,26 @@ public class BindInfo {
     // internal name of object, that is past instead of the real object
     public short id;
     public String name;
+    
+    public boolean isBroadcast;
+    public boolean usesQueue;
     public String asyncQueueName;
     public int asyncQueueSize;
-    public boolean asyncPublic;  // if async queue and all Client should be sent messages
-    public boolean isBroadcast;
-    
+
     public WeakReference weakRef;
     public Class interfaceClass; // used to create the proxy
     
     private HashMap<String, MethodInfo> hmNameToMethod;
     private HashMap<Method, MethodInfo> hmMethod;
 
-    public BindInfo(String name, Object obj, Class interfaceClass, ReferenceQueue referenceQueue) {
+    public BindInfo(String name, Object obj, Class interfaceClass, ReferenceQueue referenceQueue, boolean bIsBroadcast, String queueName, int queueSize) {
         this.name = name;
         if (obj != null) setObject(obj, referenceQueue);
-        setInterfaceClass(interfaceClass);
+        this.interfaceClass = interfaceClass;
+        this.isBroadcast = bIsBroadcast;
+        this.asyncQueueName = queueName;
+        this.asyncQueueSize = queueSize;
+        this.usesQueue = (asyncQueueName != null);
     }
     
     
@@ -50,20 +55,6 @@ public class BindInfo {
     public Object getObject() {
         if (weakRef != null) return weakRef.get();
         return null;
-    }
-    public void setInterfaceClass(Class c) {
-        interfaceClass = c;
-        if (c == null) {
-            asyncQueueName = null;
-        }
-        else {
-            OARemoteInterface ri = (OARemoteInterface) interfaceClass.getAnnotation(OARemoteInterface.class);
-            if (ri != null) {
-                asyncQueueName = ri.asyncQueueName();
-                if (asyncQueueName != null && asyncQueueName.length() == 0) asyncQueueName = null;
-                asyncQueueSize = ri.asyncQueueSize();
-            }
-        }
     }
     
     public MethodInfo getMethodInfo(String methodNameSig) {

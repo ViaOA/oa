@@ -15,6 +15,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OARemoteInterface {
-    String asyncQueueName() default "";
-    int asyncQueueSize() default 500;
+//    String asyncQueueName() default "";
+//    int asyncQueueSize() default 500;
 }
