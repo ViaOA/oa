@@ -13,7 +13,8 @@ public class ServerTest {
         RemoteTestImpl remoteTest = new RemoteTestImpl();
         rms.createLookup("test", remoteTest, RemoteTestInterface.class);
         
-        rms.createClientBroadcast("clientBroadcast", RemoteTestInterface.class);
+        RemoteTestImpl rti = new RemoteTestImpl();
+        final RemoteTestInterface rtx = (RemoteTestInterface) rms.createClientBroadcast("clientBroadcast", rti, RemoteTestInterface.class);
         
         final BroadcastInterface bc = (BroadcastInterface) rms.createServerBroadcast("broadcast", BroadcastInterface.class);
         Thread t = new Thread(new Runnable() {
@@ -21,6 +22,7 @@ public class ServerTest {
             public void run() {
                 try {
                     for (int i=0;; i++) {
+                        rtx.ping("called by Server");                        
                         long usedMemeory = Runtime.getRuntime().totalMemory();
                         usedMemeory -= Runtime.getRuntime().freeMemory();
                         bc.memory(usedMemeory);
@@ -34,7 +36,7 @@ public class ServerTest {
                 }
             }
         });
-        t.start();
+//qqqq        t.start();
     }
     
     

@@ -16,7 +16,7 @@ public class ClientTest {
         RemoteMultiplexerClient rmc = new RemoteMultiplexerClient(ms);
         
         broadcast = new BroadcastImpl();
-//        rmc.lookupServerBroadcast("broadcast", broadcast);
+        rmc.lookupServerBroadcast("broadcast", broadcast);
         
         remoteTest = (RemoteTestInterface) rmc.lookup("test");
         clientBroadcastCallback = new RemoteTestImpl() {
@@ -24,6 +24,7 @@ public class ClientTest {
             @Override
             public String ping(String msg) {
                 if (++cnt % 500 == 0) System.out.println(cnt+" ping on Client "+msg);
+                else System.out.println(cnt+" ping on Client "+msg);
                 return "xx";
             }
         };
@@ -32,7 +33,7 @@ public class ClientTest {
 for (int i=0; i<501; i++) clientBroadcast.ping("asdfasdf");        
 if (true || false) return;//qqqqqqqqqqqqqq        
 
-        for (int i=0; i<0; i++) {
+        for (int i=0; i<1; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override

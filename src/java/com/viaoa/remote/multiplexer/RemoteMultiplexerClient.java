@@ -81,18 +81,6 @@ public class RemoteMultiplexerClient {
         return multiplexerClient;
     }
     
-    /**
-     * Get the real socket.
-     */
-    public Socket getSocket() {
-        return multiplexerClient.getSocket();
-    }
-    
-    /** create a name that will be unique on the server. */
-    protected String createBindName(RequestInfo ri) {
-        String bindName = "C." + ri.socket.getConnectionId() + "." + aiBindCount.incrementAndGet();
-        return bindName;
-    }
 
     /**
      * Create a remote object that is sent to all clients.
@@ -205,6 +193,20 @@ public class RemoteMultiplexerClient {
         hmLookup.put(lookupName, impl);
         
         return true;
+    }
+    
+    
+    /**
+     * Get the real socket.
+     */
+    public Socket getSocket() {
+        return multiplexerClient.getSocket();
+    }
+    
+    /** create a name that will be unique on the server. */
+    protected String createBindName(RequestInfo ri) {
+        String bindName = "C." + ri.socket.getConnectionId() + "." + aiBindCount.incrementAndGet();
+        return bindName;
     }
     
     /**

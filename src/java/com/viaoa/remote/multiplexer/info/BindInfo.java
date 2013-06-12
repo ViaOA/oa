@@ -28,6 +28,7 @@ public class BindInfo {
     public String asyncQueueName;
     public int asyncQueueSize;
     public boolean asyncPublic;  // if async queue and all Client should be sent messages
+    public boolean isBroadcast;
     
     public WeakReference weakRef;
     public Class interfaceClass; // used to create the proxy
@@ -49,9 +50,6 @@ public class BindInfo {
     public Object getObject() {
         if (weakRef != null) return weakRef.get();
         return null;
-    }
-    public boolean usesObject() {
-        return (weakRef != null);
     }
     public void setInterfaceClass(Class c) {
         interfaceClass = c;

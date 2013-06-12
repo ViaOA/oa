@@ -42,8 +42,7 @@ public class RequestInfo {
     public Object response;
     public boolean responseReturned;
     
-//qqqqqqqqq    
-    public boolean asyncProcessedByServer; //qqqqqqqqqqqqqq
+    public volatile boolean processedByServer; //qqqqqqqqqqqqqq
 // this is flagged by server side OAClient processing    
     
     public RequestInfo() {
