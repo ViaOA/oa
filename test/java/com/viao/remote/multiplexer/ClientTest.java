@@ -15,31 +15,27 @@ public class ClientTest {
         ms.start();
         RemoteMultiplexerClient rmc = new RemoteMultiplexerClient(ms);
         
-//        broadcast = new BroadcastImpl();
-//        rmc.createBroadcast("broadcast", broadcast);
-        
+        broadcast = new BroadcastImpl();
+        rmc.createBroadcast("broadcast", broadcast);
         
         remoteTest = (RemoteTestInterface) rmc.lookup("test");
         remoteTestQueue = (RemoteTestInterface) rmc.lookup("testQueue");
         
-/*        
         clientBroadcastCallback = new RemoteTestImpl() {
             int cnt;
             @Override
             public String ping(String msg) {
                 if (++cnt % 500 == 0) System.out.println(cnt+" ping on Client "+msg);
-                else System.out.println(cnt+" ping on Client "+msg);
+                // else System.out.println(cnt+" ping on Client "+msg);
                 return "xx";
             }
         };
-*/  
-        
-//        clientBroadcast = (RemoteTestInterface) rmc.createBroadcast("clientBroadcast", clientBroadcastCallback);
+        clientBroadcast = (RemoteTestInterface) rmc.createBroadcast("clientBroadcast", clientBroadcastCallback);
         
 //for (int i=0; i<501; i++) clientBroadcast.ping("asdfasdf");        
 //if (true || false) return;//qqqqqqqqqqqqqq        
 
-        for (int i=0; i<1; i++) {
+        for (int i=0; i<2; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override
@@ -49,7 +45,7 @@ public class ClientTest {
             });
             t.start();
         }
-        for (int i=0; i<1; i++) {
+        for (int i=0; i<2; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override
@@ -60,7 +56,7 @@ public class ClientTest {
             t.start();
         }
 
-        for (int i=0; i<0; i++) {
+        for (int i=0; i<2; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 @Override

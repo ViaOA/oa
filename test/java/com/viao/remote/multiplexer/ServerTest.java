@@ -14,9 +14,8 @@ public class ServerTest {
         rms.createLookup("test", remoteTest, RemoteTestInterface.class);
         
         RemoteTestImpl remoteTestQueue = new RemoteTestImpl();
-        rms.createLookup("testQueue", remoteTestQueue, RemoteTestInterface.class, "xx", 5000);
+        rms.createLookup("testQueue", remoteTestQueue, RemoteTestInterface.class, "test", 5000);
 
-/*        
         RemoteTestImpl rti = new RemoteTestImpl();
         final RemoteTestInterface rtx = (RemoteTestInterface) rms.createBroadcast("clientBroadcast", rti, RemoteTestInterface.class, "test", 2500);
         
@@ -42,7 +41,6 @@ public class ServerTest {
             }
         });
         t.start();
-*/        
     }
     
     
