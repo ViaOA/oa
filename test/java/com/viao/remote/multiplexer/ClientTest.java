@@ -94,7 +94,7 @@ public class ClientTest {
                 msg = remoteTest.ping(s);
                 
                 if (b) System.out.println("ping "+msg+", thread="+id);
-if (i%500 == 0) Thread.sleep(1000);
+if (i%500 == 0) Thread.sleep(2000);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -128,7 +128,7 @@ if (i%500 == 0) Thread.sleep(1000);
                 String msg;
                 msg = remoteTestQueue.ping(s);
                 if (b) System.out.println("ServerRemote+Queue: ping "+msg+", thread="+id);
-                if (i%500 == 0) Thread.sleep(1000);
+                if (i%500 == 0) Thread.sleep(2000);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -151,7 +151,7 @@ if (i%500 == 0) Thread.sleep(1000);
             }
             
             try {
-                if (i%500 == 0) Thread.sleep(1000);
+                if (i%500 == 0) Thread.sleep(2000);
             }
             catch (Exception e) {
             }
