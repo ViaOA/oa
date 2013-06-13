@@ -42,8 +42,7 @@ public class RequestInfo {
     public Object response;
     public boolean responseReturned;
     
-    public volatile boolean processedByServer; //qqqqqqqqqqqqqq
-// this is flagged by server side OAClient processing    
+    public volatile boolean processedByServer; // flag set on server when it has invoked    
     
     public RequestInfo() {
         this.cnt = aiCount.incrementAndGet();

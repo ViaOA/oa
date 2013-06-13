@@ -5,7 +5,7 @@ import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 
 
 public class ClientTest {
-    RemoteTestInterface remoteTest;
+    RemoteTestInterface remoteTest, remoteTestQueue;
     RemoteTestInterface clientBroadcast;
     RemoteTestInterface clientBroadcastCallback;
     BroadcastInterface broadcast;
@@ -20,6 +20,7 @@ public class ClientTest {
         
         
         remoteTest = (RemoteTestInterface) rmc.lookup("test");
+        remoteTestQueue = (RemoteTestInterface) rmc.lookup("testQueue");
         
 /*        
         clientBroadcastCallback = new RemoteTestImpl() {
@@ -48,6 +49,16 @@ public class ClientTest {
             });
             t.start();
         }
+        for (int i=0; i<1; i++) {
+            final int id = i;
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    test1x(id);
+                }
+            });
+            t.start();
+        }
 
         for (int i=0; i<0; i++) {
             final int id = i;
@@ -61,7 +72,6 @@ public class ClientTest {
         }
     }
 
-    
     void test1(int id) {
         long msLast = System.currentTimeMillis();
         long iLast = 0;
@@ -84,7 +94,9 @@ public class ClientTest {
             }
 
             try {
-                String msg = remoteTest.ping(s);
+                String msg;
+                msg = remoteTestQueue.ping(s);
+                
                 if (b) System.out.println("ping "+msg+", thread="+id);
 //                Thread.sleep(250);
             }
@@ -94,6 +106,41 @@ public class ClientTest {
             }
         }
     }
+
+    void test1x(int id) {
+        long msLast = System.currentTimeMillis();
+        long iLast = 0;
+        for (int i=0; ;i++) {
+            long ms = System.currentTimeMillis();
+            String s;
+            boolean b;
+            if (msLast + 1000 < ms) {
+                s = "";
+                // s = (new OADateTime(ms).toString("HHmmss.SSS"));
+                s += ", amt="+(i-iLast);
+                msLast = ms;
+                iLast = i;
+                b = true;
+                // s = "ping."+id+"."+i+" "+s;
+            }
+            else {
+                s = "xx";
+                b = false;
+            }
+
+            try {
+                String msg;
+                msg = remoteTestQueue.ping(s);
+                if (b) System.out.println("ServerRemote+Queue: ping "+msg+", thread="+id);
+//                Thread.sleep(250);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("ClientTest exception: "+e);
+            }
+        }
+    }
+    
 
     void test2(int id) {
         long msLast = System.currentTimeMillis();

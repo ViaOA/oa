@@ -12,6 +12,9 @@ public class ServerTest {
         
         RemoteTestImpl remoteTest = new RemoteTestImpl();
         rms.createLookup("test", remoteTest, RemoteTestInterface.class);
+        
+        RemoteTestImpl remoteTestQueue = new RemoteTestImpl();
+        rms.createLookup("testQueue", remoteTestQueue, RemoteTestInterface.class, "xx", 5000);
 
 /*        
         RemoteTestImpl rti = new RemoteTestImpl();

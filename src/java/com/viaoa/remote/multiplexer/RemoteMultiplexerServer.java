@@ -74,10 +74,9 @@ public class RemoteMultiplexerServer {
 
     // types of commands sent from Client to server
     static final byte CtoS_Command_RunMethod = 0; 
-    static final byte CtoS_Command_GetInterfaceClass = 1; 
+    static final byte CtoS_Command_GetLookupInfo = 1; 
     static final byte CtoS_Command_RemoveSessionBroadcastThread = 2;
-    static final byte CtoS_Command_GetServerBroadcastClass = 3;
-    static final byte CtoS_Command_GetClientBroadcastClass = 4;
+    static final byte CtoS_Command_GetBroadcastClass = 3;
     
     
     /**
@@ -233,24 +232,12 @@ public class RemoteMultiplexerServer {
         ri.msStart = System.currentTimeMillis();
         ri.nsStart = System.nanoTime();
  
-        if (bCommand == CtoS_Command_GetInterfaceClass) {  
+        if (bCommand == CtoS_Command_GetLookupInfo) {  
             // lookup, needs to return Java Interface class.
             ri.bindName = ois.readAsciiString();
             BindInfo bind = getBindInfo(ri.bindName);
             if (bind != null) {
-                ri.response = bind.interfaceClass;
-            }
-            else {
-                ri.exceptionMessage = "object not found"; 
-            }
-            return true;
-        }
-        if (bCommand == CtoS_Command_GetClientBroadcastClass) {  
-            ri.bindName = ois.readAsciiString();
-            BindInfo bind = getBindInfo(ri.bindName);
-            if (bind != null) {
-                ri.response = bind.interfaceClass;
-                // check to see if it is a broadcast
+                ri.response = new Object[] {bind.interfaceClass, bind.usesQueue};
                 if (bind.usesQueue) {
                     session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
                 }
@@ -260,18 +247,21 @@ public class RemoteMultiplexerServer {
             }
             return true;
         }
-        if (bCommand == CtoS_Command_GetServerBroadcastClass) {
-            // lookup, needs to return Java Interface class.
+        if (bCommand == CtoS_Command_GetBroadcastClass) {  
             ri.bindName = ois.readAsciiString();
             BindInfo bind = getBindInfo(ri.bindName);
             if (bind != null) {
-                ri.response = bind.interfaceClass;
+                if (!bind.isBroadcast) {
+                    ri.exceptionMessage = "found, but not a broadcast remote object"; 
+                }
+                else {
+                    ri.response = bind.interfaceClass;
+                    session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
+                }
             }
             else {
                 ri.exceptionMessage = "object not found"; 
             }
-            // start sending messaeges to client
-            session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
             return true;
         }
         if (bCommand == CtoS_Command_RemoveSessionBroadcastThread) {
@@ -341,7 +331,7 @@ public class RemoteMultiplexerServer {
             }
         }
         
-        if (ri.bind.usesQueue) {
+        if (ri.bind.isBroadcast) {
             return true;
         }
         
@@ -845,7 +835,7 @@ public class RemoteMultiplexerServer {
                 if (ri.connectionId == 0) {  // sent from object on this server
                     synchronized (ri) {
                         ri.processedByServer = true;
-                        ri.notify();
+                        ri.notifyAll();
                     }
                     continue;
                 }
@@ -854,13 +844,11 @@ public class RemoteMultiplexerServer {
                 Object obj = ri.bind.getObject();
                 if (obj == null) continue;
                 // note; since this is a broadcast msg, the return value is not used
-                try {
-//qqqqqqqqqqqqqqqqqqq                    
-//qqqqq needs to use OARemoteThread for this, with timeout .... same as client                    
-                    ri.response = ri.method.invoke(ri.object, ri.args);
-                }
-                catch (Exception e) {
-                    ri.exception = e;
+         
+                OARemoteThread t = getRemoteClientThread(ri);
+                synchronized (t.Lock) {
+                    t.Lock.notify();
+                    t.Lock.wait(250);
                 }
                 ri.processedByServer = true;
                 synchronized (ri) {
@@ -869,6 +857,67 @@ public class RemoteMultiplexerServer {
             }
         }
     }
+
+    // use OARemoteThread to process broadcast messages on the server
+    private AtomicInteger aiClientThreadCount = new AtomicInteger();
+    private ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
+    private OARemoteThread getRemoteClientThread(RequestInfo ri) {
+        synchronized (alRemoteClientThread) {
+            for (OARemoteThread rct : alRemoteClientThread) {
+                if (rct.ri == null) {
+                    rct.ri = ri;
+                    return rct;
+                }
+            }
+            OARemoteThread rct = createRemoteClientThread();
+            rct.ri = ri;
+            alRemoteClientThread.add(rct);
+            if (alRemoteClientThread.size() > 20) {
+                LOG.warning("alRemoteClientThread.size() = "+alRemoteClientThread.size());
+            }
+            return rct;
+        }
+    }
+    private OARemoteThread createRemoteClientThread() {
+        OARemoteThread t = new OARemoteThread() {
+            @Override
+            public void run() {
+                for (;;) {
+                    synchronized (Lock) {
+                        try {
+                            if (ri == null) {
+                                Lock.wait();
+                            }
+                            if (ri != null) {
+                                processBroadcast(ri);
+                                this.ri = null;
+                                Lock.notify();
+                            }
+                        }
+                        catch (Exception e) {}
+                    }
+                }
+            }
+            @Override
+            public void startNextMessage() {
+                synchronized (Lock) {
+                    Lock.notify();
+                }
+            }
+        };
+        t.setName("RemoteClientThread."+aiClientThreadCount.getAndIncrement());
+        t.start();
+        return t;
+    }
+    protected void processBroadcast(RequestInfo ri) throws Exception {
+        try {
+            ri.response = ri.method.invoke(ri.object, ri.args);
+        }
+        catch (Exception e) {
+            ri.exception = e;
+        }
+    }
+    
     
     
     /**
@@ -1065,6 +1114,17 @@ public class RemoteMultiplexerServer {
                             continue;
                         }
                     }
+                    else {
+                        synchronized (ri) {
+                            for ( ;!ri.processedByServer; ) {
+                                try {
+                                    ri.wait();
+                                }
+                                catch (Exception e) {
+                                }
+                            }
+                        }
+                    }
                     
                     //qqqqq  this is not used for async, need a way for async queue
                     if (ri.bind.isBroadcast) {
@@ -1077,16 +1137,13 @@ public class RemoteMultiplexerServer {
                     oos.writeAsciiString(ri.bindName);
                     if (!ri.bind.isBroadcast) {
                         oos.writeBoolean(true); // private message for this client only
-                        if (ri.connectionId != connectionId) {
-                            if (ri.exception != null) oos.writeByte(0); 
-                            else if (ri.exceptionMessage != null) oos.writeByte(1); 
-                            else oos.writeByte(2); 
+                        if (ri.exception != null) oos.writeByte(0); 
+                        else if (ri.exceptionMessage != null) oos.writeByte(1); 
+                        else oos.writeByte(2); 
 
-                            if (ri.exception != null) oos.writeObject(ri.exception); 
-                            else if (ri.exceptionMessage != null) oos.writeObject(ri.exceptionMessage); 
-                            else oos.writeObject(ri.response);
-                        }
-                        else oos.writeByte(3); 
+                        if (ri.exception != null) oos.writeObject(ri.exception); 
+                        else if (ri.exceptionMessage != null) oos.writeObject(ri.exceptionMessage); 
+                        else oos.writeObject(ri.response);
                         oos.writeInt(ri.messageId);
                     }
                     else if (ri.connectionId == connectionId) {

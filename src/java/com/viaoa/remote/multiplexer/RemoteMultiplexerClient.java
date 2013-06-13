@@ -103,7 +103,7 @@ public class RemoteMultiplexerClient {
         VirtualSocket socket = getSocketForCtoS();
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
         
-        oos.writeByte(CtoS_Command_GetClientBroadcastClass);
+        oos.writeByte(CtoS_Command_GetBroadcastClass);
         oos.writeAsciiString(lookupName);
         oos.flush();
 
@@ -152,7 +152,7 @@ public class RemoteMultiplexerClient {
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
         
         // 20130601 changed from boolean to byte
-        oos.writeByte(CtoS_Command_GetInterfaceClass); // 0=method, 1=get interface class, 2=remove session bindInfo
+        oos.writeByte(CtoS_Command_GetLookupInfo); // 0=method, 1=get interface class, 2=remove session bindInfo
         oos.writeAsciiString(lookupName);
         oos.flush();
 
@@ -161,12 +161,15 @@ public class RemoteMultiplexerClient {
             Exception ex = (Exception) ois.readObject();
             throw ex;
         }
-        Class c = (Class) ois.readObject();
+        Object[] objs = (Object[]) ois.readObject();
+        Class c = (Class) objs[0];
+        boolean bUsesQueue = (Boolean) objs[1]; 
+        
         releaseSocketForCtoS(socket);
         LOG.fine("lookupName=" + lookupName + ", interface class=" + c);
 
         if (c != null) {
-            proxyInstance = createProxyForCtoS(lookupName, c, true);
+            proxyInstance = createProxyForCtoS(lookupName, c, bUsesQueue);
             hmLookup.put(lookupName, proxyInstance);
         }
         return proxyInstance;
