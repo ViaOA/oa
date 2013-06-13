@@ -39,6 +39,7 @@ public class MultiplexerSocketController implements Serializable {
     static final int CMD_CloseRealSocket = 1; // command to have the real socket closed
     static final int CMD_CreateVSocket = 2; // sent to server from client to create a new MultiplexerSocket (virtual socket)
     static final int CMD_CloseVSocket = 3; // tells server to remove an MultiplexerSocket
+    static final int CMD_Ping = 4;  // send ping, does not return a response 
 
     /**
      * flag to know if this ISC is for a client connection, else it is for a server connection.
@@ -241,7 +242,7 @@ public class MultiplexerSocketController implements Serializable {
         return _outputStreamController;
     }
 
-    protected MultiplexerInputStreamController getInputStreamController() {
+    public MultiplexerInputStreamController getInputStreamController() {
         if (_inputStreamController != null) return _inputStreamController;
 
         synchronized (_LockStreamController) {

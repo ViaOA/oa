@@ -1,5 +1,6 @@
 package com.viaoa.comm.multiplexer.io;
 
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -234,6 +235,10 @@ public class MultiplexerOutputStreamController {
         }
     }
 
+    public void sendPingCommand() throws IOException {
+        sendCommand(MultiplexerSocketController.CMD_Ping, 0, null);
+    }
+    
     /**
      * Send a command to receiver. The command is then read by
      * MultiplexerInputStreamController.readRealSocket() can processed by

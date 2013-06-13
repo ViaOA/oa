@@ -9,7 +9,7 @@ import java.util.logging.Logger;
  * Internally created by MultiplexerSocketController to manage the InputStream for the 
  * "real" socket.
  */
-abstract class MultiplexerInputStreamController {
+public abstract class MultiplexerInputStreamController {
     private static Logger LOG = Logger.getLogger(MultiplexerInputStreamController.class.getName());
 
     private int _connectionId;
@@ -19,16 +19,17 @@ abstract class MultiplexerInputStreamController {
 
     /** flag to know if socket has been closed. */
     private boolean _bIsClosed;
+    
+    /** time of last read */
+    private long msLastRead;
 
     /**
      * Max amount of time that real socket will wait for an vsocket to read real data from real inputstream
      * 
      * one second would be more then enough, since data is "chunked", but the thread could be
-     * "busy" outside of reading teh data.
+     * "busy" outside of reading the data.
      */
- //   private final int _timeoutSeconds = 5;
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-    private final int _timeoutSeconds = 599999; //qqqqqqqqqqqqqqqqqqqqqq
+    private final int _timeoutSeconds = 5;
     
     /** Lock used to manage access to inputstream. */
     private final transient Object READLOCK = new Object();
@@ -67,6 +68,10 @@ abstract class MultiplexerInputStreamController {
         }
     }
 
+    public long getLastReadTime() {
+        return msLastRead;
+    }
+    
     /**
      * Call by MultiplexerSocketController thread that manages the input stream. This will read the
      * header and then allow the correct vsocket to read the data from the real socket. If the header
@@ -75,6 +80,7 @@ abstract class MultiplexerInputStreamController {
     void readRealSocketLoop() throws Exception {
         for (int cntx = 0; !_bIsClosed; cntx++) {
             int readId = _dataInputStream.readInt(); // socket.id or 0 for command
+            msLastRead = System.currentTimeMillis();
             _nextReadLen = _dataInputStream.readInt(); // the length of data for the vsocket to read.
 
             if (readId == MultiplexerSocketController.CMD_Command) {
@@ -255,6 +261,8 @@ abstract class MultiplexerInputStreamController {
             break;
         case MultiplexerSocketController.CMD_CloseRealSocket:
             closeRealSocket();
+            break;
+        case MultiplexerSocketController.CMD_Ping:
             break;
         }
     }

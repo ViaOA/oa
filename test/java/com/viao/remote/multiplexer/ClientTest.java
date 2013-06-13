@@ -12,11 +12,13 @@ public class ClientTest {
     
     public void test() throws Exception {
         MultiplexerClient ms = new MultiplexerClient("localhost", 1099);
+        ms.setKeepAlive(1);
         ms.start();
         RemoteMultiplexerClient rmc = new RemoteMultiplexerClient(ms);
         
+        
         broadcast = new BroadcastImpl();
-        rmc.createBroadcast("broadcast", broadcast);
+        rmc.lookupBroadcast("broadcast", broadcast);
         
         remoteTest = (RemoteTestInterface) rmc.lookup("test");
         remoteTestQueue = (RemoteTestInterface) rmc.lookup("testQueue");
@@ -30,7 +32,8 @@ public class ClientTest {
                 return "xx";
             }
         };
-        clientBroadcast = (RemoteTestInterface) rmc.createBroadcast("clientBroadcast", clientBroadcastCallback);
+        clientBroadcast = (RemoteTestInterface) rmc.lookupBroadcast("clientBroadcast", clientBroadcastCallback);
+        
         
 //for (int i=0; i<501; i++) clientBroadcast.ping("asdfasdf");        
 //if (true || false) return;//qqqqqqqqqqqqqq        
@@ -142,7 +145,7 @@ if (i%500 == 0) Thread.sleep(2000);
         long msLast = System.currentTimeMillis();
         long iLast = 0;
         for (int i=0; ; i++) {
-            clientBroadcast.ping(i+" yoo, id="+id);
+            clientBroadcast.ping(i+" yo, id="+id);
             long ms = System.currentTimeMillis();
             if (msLast + 1000 < ms) {
                 System.out.println(i+" amt/second="+(i-iLast));

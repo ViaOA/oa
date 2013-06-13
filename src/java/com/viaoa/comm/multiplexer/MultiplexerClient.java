@@ -3,6 +3,7 @@ package com.viaoa.comm.multiplexer;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
@@ -48,6 +49,9 @@ public class MultiplexerClient {
     // used by multiplexerOutputStream
     private int mbThrottleLimit;
 
+    private Thread keepAliveThread;
+    private int keepAliveSeconds;
+    
     /**
      * Create a new client.
      * 
@@ -91,13 +95,72 @@ public class MultiplexerClient {
             };
         };
         setThrottleLimit(this.mbThrottleLimit);
+        runKeepAliveThread();        
     }
 
     /**
      * Called when there is a socket exception
      */
     protected void onSocketException(Exception e) {
-    };
+    }
+
+    public void setKeepAlive(int seconds) {
+        this.keepAliveSeconds = seconds;
+        if (seconds < 1) return;
+        if (keepAliveThread == null && _bCreated) {
+            runKeepAliveThread();
+        }
+    }
+    public int getKeepAlive() {
+        return keepAliveSeconds;
+    }
+    
+    public void runKeepAliveThread() {
+        if (keepAliveSeconds < 1 && _bCreated) return;
+        if (keepAliveThread != null) return;
+        keepAliveThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long msLast = 0;
+                Thread threadHold = keepAliveThread;
+                for (;;) {
+                    try {
+                        if (keepAliveSeconds < 1) break;
+                        if (threadHold != keepAliveThread) break;
+
+                        long msNow = System.currentTimeMillis();
+                        if (_controlSocket != null) {
+                            msLast = Math.max(msLast, _controlSocket.getInputStreamController().getLastReadTime());
+                        }
+                        if (msLast < 1) msLast = msNow;
+
+                        long msWait = (keepAliveSeconds * 1000) - (msNow - msLast);
+                        if (msWait > 0) {
+                            Thread.sleep(msWait);
+                        }
+                        else {
+                            pingServer();
+                            msLast = System.currentTimeMillis();
+                        }
+                    }
+                    catch (Exception e) {
+                        if (isConnected()) {
+                            LOG.log(Level.WARNING, "", e);
+                        }
+                        break;
+                    }
+                }
+                MultiplexerClient.this.keepAliveThread = null;
+            }
+        }, "MultiplexerClient.keepalive");
+        keepAliveThread.setDaemon(true);
+        keepAliveThread.start();
+    }
+    public void pingServer() throws Exception {
+        if (_controlSocket != null) {
+            _controlSocket.getOutputStreamController().sendPingCommand();
+        }
+    }
     
     
     /**
