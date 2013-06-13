@@ -386,32 +386,42 @@ public class RemoteMultiplexerClient {
         return true;
     }
 
-    protected VirtualSocket getSocketForCtoS() throws Exception {
-        VirtualSocket socket = null;
-        synchronized (alSocketForCtoS) {
-            if (alSocketForCtoS.size() > 0) {
-                socket = alSocketForCtoS.remove(0);
-            }
-        }
-        if (socket == null) socket = multiplexerClient.createSocket("CtoS");
-        return socket;
-    }
-
-
     public void setMinimumSocketsForCtoS(int x) {
         iMinimumSocketsForCtoS = x;
     }
-
     public int getMinimumSocketsForCtoS() {
         return iMinimumSocketsForCtoS;
     }
 
+//qqqqqqqqqqqvvvvvvvvvvvvv have the minimum size adjustable based on usage
+    private volatile int activeThreadCnt;
+    protected VirtualSocket getSocketForCtoS() throws Exception {
+        VirtualSocket socket = null;
+        synchronized (alSocketForCtoS) {
+            activeThreadCnt++;
+            if (alSocketForCtoS.size() > 0) {
+                socket = alSocketForCtoS.remove(0);
+            }
+        }
+        if (socket == null) {
+            socket = multiplexerClient.createSocket("CtoS");
+System.out.println((++qq)+" CREATING new socket for CtoS");//qqqqqqqqqqqqqq            
+        }
+        return socket;
+    }
+int qq;    
     protected void releaseSocketForCtoS(VirtualSocket socket) throws Exception {
         synchronized (alSocketForCtoS) {
-            if (alSocketForCtoS.size() > iMinimumSocketsForCtoS) {
-                socket.close();
+            activeThreadCnt--;
+            if (activeThreadCnt < 0) {
+                activeThreadCnt = 0;
             }
-            else alSocketForCtoS.add(socket);
+            int x = alSocketForCtoS.size(); 
+            if (x < (activeThreadCnt+iMinimumSocketsForCtoS+5)) {
+                alSocketForCtoS.add(socket);
+                return;
+            }
+            socket.close();
         }
     }
 
