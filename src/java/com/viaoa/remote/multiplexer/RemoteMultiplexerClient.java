@@ -22,6 +22,8 @@ import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.OACompressWrapper;
+import com.viaoa.util.OAPool;
+
 import static com.viaoa.remote.multiplexer.RemoteMultiplexerServer.*;
 
 
@@ -56,9 +58,7 @@ public class RemoteMultiplexerClient {
     private AtomicInteger aiBindCount = new AtomicInteger();
 
     // pool of vsockets 
-    private ArrayList<VirtualSocket> alSocketForCtoS = new ArrayList<VirtualSocket>();
-    // minimum size of vsocket pool
-    private int iMinimumSocketsForCtoS = 3;
+    private OAPool<VirtualSocket> poolVirtualSocketCtoS;
 
     // mapping for Remote objects
     private ConcurrentHashMap<String, BindInfo> hmNameToBind = new ConcurrentHashMap<String, BindInfo>();
@@ -387,42 +387,53 @@ public class RemoteMultiplexerClient {
     }
 
     public void setMinimumSocketsForCtoS(int x) {
-        iMinimumSocketsForCtoS = x;
+        getVirtualSocketCtoSPool().setMinimum(x);
     }
     public int getMinimumSocketsForCtoS() {
-        return iMinimumSocketsForCtoS;
+        if (poolVirtualSocketCtoS == null) return 1;
+        return getVirtualSocketCtoSPool().getMinimum();
+    }
+    public void setMaximumSocketsForCtoS(int x) {
+        getVirtualSocketCtoSPool().setMaximum(x);
+    }
+    public int getMaximumSocketsForCtoS() {
+        if (poolVirtualSocketCtoS == null) return 0;
+        return getVirtualSocketCtoSPool().getMaximum();
     }
 
-//qqqqqqqqqqqvvvvvvvvvvvvv have the minimum size adjustable based on usage
-    private volatile int activeThreadCnt;
-    protected VirtualSocket getSocketForCtoS() throws Exception {
-        VirtualSocket socket = null;
-        synchronized (alSocketForCtoS) {
-            activeThreadCnt++;
-            if (alSocketForCtoS.size() > 0) {
-                socket = alSocketForCtoS.remove(0);
+    protected OAPool<VirtualSocket> getVirtualSocketCtoSPool() {
+        if (poolVirtualSocketCtoS != null) return poolVirtualSocketCtoS;
+        poolVirtualSocketCtoS = new OAPool<VirtualSocket>(getMinimumSocketsForCtoS(), getMaximumSocketsForCtoS()) {
+            @Override
+            protected void removed(VirtualSocket vs) {
+                try {
+                    vs.close();
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("Error while closing vsocket", e);
+                }
             }
-        }
-        if (socket == null) {
-            socket = multiplexerClient.createSocket("CtoS");
-System.out.println((++qq)+" CREATING new socket for CtoS");//qqqqqqqqqqqqqq            
-        }
-        return socket;
+            @Override
+            protected VirtualSocket create() {
+                VirtualSocket vs = null;
+                try {
+                    vs = multiplexerClient.createSocket("CtoS");
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("Error while creating a new vsocket", e);
+                }
+                return vs;
+            }
+        }; 
+        return poolVirtualSocketCtoS;
     }
-int qq;    
-    protected void releaseSocketForCtoS(VirtualSocket socket) throws Exception {
-        synchronized (alSocketForCtoS) {
-            activeThreadCnt--;
-            if (activeThreadCnt < 0) {
-                activeThreadCnt = 0;
-            }
-            int x = alSocketForCtoS.size(); 
-            if (x < (activeThreadCnt+iMinimumSocketsForCtoS+5)) {
-                alSocketForCtoS.add(socket);
-                return;
-            }
-            socket.close();
-        }
+    
+    protected VirtualSocket getSocketForCtoS() throws Exception {
+        VirtualSocket vs = getVirtualSocketCtoSPool().get();
+        return vs;
+    }
+    protected void releaseSocketForCtoS(VirtualSocket vs) throws Exception {
+        getVirtualSocketCtoSPool().release(vs);
     }
 
     // used to assign unique int for each StoC vsocket 
@@ -474,13 +485,13 @@ int qq;
     private OARemoteThread getRemoteClientThread(RequestInfo ri) {
         synchronized (alRemoteClientThread) {
             for (OARemoteThread rct : alRemoteClientThread) {
-                if (rct.ri == null) {
-                    rct.ri = ri;
+                if (rct.requestInfo == null) {
+                    rct.requestInfo = ri;
                     return rct;
                 }
             }
             OARemoteThread rct = createRemoteClientThread();
-            rct.ri = ri;
+            rct.requestInfo = ri;
             alRemoteClientThread.add(rct);
             if (alRemoteClientThread.size() > 20) {
                 LOG.warning("alRemoteClientThread.size() = "+alRemoteClientThread.size());
@@ -495,12 +506,12 @@ int qq;
                 for (;;) {
                     synchronized (Lock) {
                         try {
-                            if (ri == null) {
+                            if (requestInfo == null) {
                                 Lock.wait();
                             }
-                            if (ri != null) {
-                                processMessageForStoC2(ri, false);
-                                this.ri = null;
+                            if (requestInfo != null) {
+                                processMessageForStoC2(requestInfo, false);
+                                this.requestInfo = null;
                                 Lock.notify();
                             }
                         }

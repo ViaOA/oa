@@ -6,7 +6,7 @@ public class OARemoteThread extends Thread {
     
     final Object Lock = new Object();
     
-    volatile RequestInfo ri;
+    volatile RequestInfo requestInfo;
 
     public OARemoteThread(Runnable r) {
         super(r);

@@ -864,13 +864,13 @@ public class RemoteMultiplexerServer {
     private OARemoteThread getRemoteClientThread(RequestInfo ri) {
         synchronized (alRemoteClientThread) {
             for (OARemoteThread rct : alRemoteClientThread) {
-                if (rct.ri == null) {
-                    rct.ri = ri;
+                if (rct.requestInfo == null) {
+                    rct.requestInfo = ri;
                     return rct;
                 }
             }
             OARemoteThread rct = createRemoteClientThread();
-            rct.ri = ri;
+            rct.requestInfo = ri;
             alRemoteClientThread.add(rct);
             if (alRemoteClientThread.size() > 20) {
                 LOG.warning("alRemoteClientThread.size() = "+alRemoteClientThread.size());
@@ -885,12 +885,12 @@ public class RemoteMultiplexerServer {
                 for (;;) {
                     synchronized (Lock) {
                         try {
-                            if (ri == null) {
+                            if (requestInfo == null) {
                                 Lock.wait();
                             }
-                            if (ri != null) {
-                                processBroadcast(ri);
-                                this.ri = null;
+                            if (requestInfo != null) {
+                                processBroadcast(requestInfo);
+                                this.requestInfo = null;
                                 Lock.notify();
                             }
                         }
