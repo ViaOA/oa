@@ -1,4 +1,4 @@
-package com.viao.remote.multiplexer;
+package com.viaoa.remote.multiplexer;
 
 public class BroadcastImpl implements BroadcastInterface {
 

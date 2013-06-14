@@ -1,4 +1,4 @@
-package com.viaoa.sync;
+package com.viaoa.sync.remote;
 
 import java.util.Comparator;
 
@@ -16,13 +16,13 @@ import com.viaoa.object.OAObjectReflectDelegate;
  * Broadcast methods used to keep OAObjets, Hubs in sync with all computers.
  * @author vvia
  */
-public class OASync implements OASyncInterface {
+public class RemoteSyncImpl implements RemoteSyncInterface {
 
     @Override
-    public void propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
+    public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         Object gobj = OAObjectCacheDelegate.get(objectClass, origKey);
         if (gobj == null) {
-            return;  // object not on this system
+            return false;  // object not on this system
         }
         OAObjectReflectDelegate.setProperty((OAObject)gobj, propertyName, newValue, null);
         
@@ -30,6 +30,7 @@ public class OASync implements OASyncInterface {
         if (bIsBlob && newValue == null) {
             ((OAObject)gobj).removeProperty(propertyName);
         }
+        return true;
     }
 
     @Override
@@ -67,7 +68,7 @@ public class OASync implements OASyncInterface {
         
         Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
         if (h == null) {
-            OAObjectPropertyDelegate.removeProperty((OAObject)object, msg.property, false);                
+            OAObjectPropertyDelegate.removeProperty((OAObject)object, hubPropertyName, false);                
             return false;
         }
         
@@ -118,80 +119,4 @@ public class OASync implements OASyncInterface {
         return true;
     }
 
-    
-    
-    
-    
-//qqqqqqqqqqqqqqqqqqq
-
-//qqqqqqq these should only go to server, and needs to be added to internal cache
-//qq put into another object, a remote server class
-// should be in a session object, that is created on the server and sent to client at login/connection time    
-// these wont be performed usng OARemoteThread, since they need to send events 
-    
-    @Override
-    public boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
-        OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (object == null) return false;
-        
-        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
-        if (h == null) return false;
-
-        h.deleteAll();
-        return true;
-    }
-
-    @Override
-    public boolean save(Class objectClass, OAObjectKey objectKey, int iCascadeRule) {
-        OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
-        boolean bResult;
-        if (obj != null) {
-            obj.save(iCascadeRule);
-            bResult = true;
-        }
-        else bResult = false;
-        return bResult;
-    }
-
-    @Override
-    public boolean delete(Class objectClass, OAObjectKey objectKey) {
-        OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
-        boolean bResult;
-        if (obj != null) {
-            obj.delete();
-            bResult = true;
-        }
-        else bResult = false;
-        return bResult;
-    }
-    
-
-    
-    
-  //qqqqqqq these should only go to server, and needs to be added to internal cache
-  //qq put into another object, a remote server class
-  // should be in a session object, that is created on the server and sent to client at login/connection time    
-    
-        @Override
-    public Object createNewObject(Class clazz) {
-//qqqqqqq need to store in client cache on server until client adds it to Hub  
-        return null;
-    }
-
-    @Override
-    public OAObject createCopy(OAObject oaObj, String[] excludeProperties) {
-//qqqqqqq need to store in client cache on server until client adds it to Hub  
-        return null;
-    }
-
-    @Override
-    public Object getDetail(OAObject masterObject, String propertyName) {
-// TODO Auto-generated method stub
-        return null;
-    }
-
-    
-
-    
-    
 }

@@ -1,4 +1,4 @@
-package com.viao.comm.multiplexer;
+package com.viaoa.comm.multiplexer;
 
 import java.net.Socket;
 import java.util.logging.ConsoleHandler;

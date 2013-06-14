@@ -1,4 +1,4 @@
-package com.viao.remote.multiplexer;
+package com.viaoa.remote.multiplexer;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
