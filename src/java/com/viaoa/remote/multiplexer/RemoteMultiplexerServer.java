@@ -1071,9 +1071,11 @@ public class RemoteMultiplexerServer {
                             writeQueueMessages(cq, bindName, qPos);
                         }
                         catch (Exception e) {
-                            String s = "async queue thread exception, thread="+threadName+", thread is stopping, " +
-                            		"which will stop message from being sent to this client, queue="+asyncQueueName;                            
-                            LOG.log(Level.WARNING, s, e);
+                            if (realSocket != null && !realSocket.isClosed()) {
+                                String s = "async queue thread exception, thread="+threadName+", thread is stopping, " +
+                                		"which will stop message from being sent to this client, queue="+asyncQueueName;                            
+                                LOG.log(Level.WARNING, s, e);
+                            }
                         }
                     }
                 });
