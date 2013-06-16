@@ -3,11 +3,12 @@ package com.viaoa.sync.remote;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
+import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.sync.model.ClientInfo;
 
-public class RemoteServerImpl implements RemoteServerInterface {
+public abstract class RemoteServerImpl implements RemoteServerInterface {
 
     @Override
     public String ping(String msg) {
@@ -62,14 +63,18 @@ public class RemoteServerImpl implements RemoteServerInterface {
     }
 
     @Override
-    public RemoteClientInterface getRemoteClientInterface(ClientInfo clientInfo) {
-//qqqqqqqqqqqqqqqqqqqq need to match up with RemoteMultiplexer connections
-        // to be able to handle disconnects
-        
-        return null;
+    public abstract RemoteClientInterface getRemoteClientInterface(ClientInfo clientInfo);
+
+    @Override
+    public int getNextFiftyObjectGuids() {
+        return OAObjectDelegate.getNextFiftyGuids();
     }
-
-
+    
+    @Override
+    public OAObject getObject(Class objectClass, OAObjectKey objectKey) {
+        OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
+        return obj;
+    }
 
     
     

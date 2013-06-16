@@ -8,7 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
 
-import com.viaoa.cs.OAClientThread;
+import com.viaoa.remote.multiplexer.OARemoteThread;
+import com.viaoa.sync.*;
 import com.viaoa.hub.Hub;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAArray;
@@ -543,7 +544,7 @@ public class OAThreadLocalDelegate {
     protected static void lock(OAThreadLocal tiThis, Object thisLockObject, int maxWaitTries) {
         if (thisLockObject == null || tiThis == null) return;
         
-        OAClientThread ct = null;
+        OARemoteThread rt = null;
         
         for (int tries=0; ;tries++) {
     
@@ -575,9 +576,9 @@ public class OAThreadLocalDelegate {
 
                 if (tries == 0) {
                     Thread t = Thread.currentThread();
-                    if (t instanceof OAClientThread) {
-                        ct = (OAClientThread) t;
-                        ct.setWaitingOnLock(true);
+                    if (t instanceof OARemoteThread) {
+                        rt = (OARemoteThread) t;
+                        rt.setWaitingOnLock(true);
                     }
                 }                
 
@@ -595,7 +596,7 @@ public class OAThreadLocalDelegate {
                 }
             }
         }
-        if (ct != null) ct.setWaitingOnLock(false);
+        if (rt != null) rt.setWaitingOnLock(false);
     }
 
     // returns true if it's ok to continue, and not wait on lock to be released

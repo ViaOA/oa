@@ -12,8 +12,12 @@ public interface RemoteSyncInterface {
     boolean removeObject(Class objectClass, OAObjectKey objectKey); // Remove object from each workstation.
 
     // HubCSDelegate
-    boolean addToHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName,  boolean bInsert, int pos);
+    boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj);
+    
+    boolean insertInHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj, int pos);
+    
     boolean removeFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName, Class objectClassX, OAObjectKey objectKeyX);   
+    
     boolean moveObjectInHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName,  int posFrom, int posTo);
     boolean sort(Class objectClass, OAObjectKey objectKey, String hubPropertyName, String propertyPaths, boolean bAscending, Comparator comp);
 }

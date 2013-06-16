@@ -45,11 +45,13 @@ public class OASyncServer {
     
     public OASyncServer(int port) {
         this.port = port;
+        OASyncDelegate.setSyncServer(this);
     }
 
     public RemoteSyncImpl getRemoteSync() {
         if (remoteSync == null) {
             remoteSync = new RemoteSyncImpl();
+            OASyncDelegate.setRemoteSyncInterface(remoteSync);
         }
         return remoteSync;
     }
@@ -62,8 +64,31 @@ public class OASyncServer {
                     return createRemoteClient(clientInfo);
                 }
             };
+            OASyncDelegate.setRemoteServerInterface(remoteServer);
+            OASyncDelegate.setRemoteServerInterface(remoteServer);
+            getRemoteClientForServer();
         }
         return remoteServer;
+    }
+
+    private ClientInfo clientInfo;
+    private RemoteClientInterface remoteClientForServer;
+    
+    
+    protected ClientInfo getClientInfo() {
+        if (clientInfo == null) {
+            clientInfo = new ClientInfo();
+            clientInfo.setConnectionId(0);
+            clientInfo.setCreated(new OADateTime());
+        }
+        return clientInfo;
+    }
+    protected RemoteClientInterface getRemoteClientForServer() {
+        if (remoteClientForServer == null) {
+            remoteClientForServer = createRemoteClient(getClientInfo());
+            OASyncDelegate.setRemoteClientInterface(remoteClientForServer);
+        }
+        return remoteClientForServer;
     }
     
     protected RemoteClientInterface createRemoteClient(ClientInfo clientInfo) {
@@ -89,6 +114,14 @@ public class OASyncServer {
                     clearCache();
                     bClearedCache = true;
                 }
+            }
+            @Override
+            public boolean isLocked(Class objectClass, OAObjectKey objectKey) {
+                boolean b = isLockedByThisClient(objectClass, objectKey);
+                if (!b) {
+                    b = isLockedByAnotherClient(objectClass, objectKey);
+                }
+                return b;
             }
         };
         cx.remote = rc;

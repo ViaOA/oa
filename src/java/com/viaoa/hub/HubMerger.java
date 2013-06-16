@@ -6,7 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import com.viaoa.cs.OAClientDelegate;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.*;
 import com.viaoa.object.*;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAReflect;
@@ -146,7 +147,7 @@ public class HubMerger {
         this.bEnabled = b;
         if (bEnabled) {
             if (bServerSideOnly) { // 20120505
-                OAClientDelegate.serverSideCode();  // so that events will go out, even if OAClientThread
+                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
             }
             if (!bShareEndHub) hubCombined.clear();
             dataRoot.onNewList(null);
@@ -766,7 +767,7 @@ if (true) return;
             //XOG.finer("createChild");
             if (node.child == null) {
                 if (!bShareEndHub && !hubCombined.contains(parent)) {
-                    if (bServerSideOnly) OAClientDelegate.serverSideCode(); 
+                    OARemoteThreadDelegate.sendMessages(); 
                     hubCombined.add(parent);
                 }
             }
@@ -892,7 +893,9 @@ if (true) return;
                             return;  // might have already been removed
                         }
                     }
-                    if (bServerSideOnly) OAClientDelegate.serverSideCode(); 
+                    if (bServerSideOnly) {
+                        OARemoteThreadDelegate.sendMessages(); 
+                    }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
                         // 20120612 dont send event, unless there is a recursive prop, which needs to have recursives nodes updated                        
                         HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);

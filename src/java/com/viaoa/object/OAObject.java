@@ -20,12 +20,11 @@ package com.viaoa.object;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
-import java.lang.reflect.*;
 import java.lang.ref.*;  // java1.2
-import java.math.BigDecimal;
 
-import com.viaoa.cs.OAClientDelegate;
 import com.viaoa.hub.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
 
 
@@ -460,15 +459,7 @@ public class OAObject implements java.io.Serializable, Comparable {
      * @return true if the current thread is from the OAClient.getMessage().
      */
     public boolean isClientThread() {
-        return OAObjectCSDelegate.isClientThread(); 
-    }
-    
-    /**
-     * Used to determine if this JDK is running as an OAServer or OAClient.
-     * @return true if this is not a Client, either the Server or Stand alone
-     */
-    public boolean isServer() {
-        return OAObjectCSDelegate.isServer(); 
+        return OAObjectCSDelegate.isRemoteThread(); 
     }
     
     /**
@@ -674,25 +665,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         @see OALock#lock(Object,Object,Object)
     */
     public void lock() {
-        OAObjectLockDelegate.lock(this,null,null);
-    }
-    /** Creates a lock on this object.
-        @param refObject object used to keep lock alive.  If object is garbage collected, then the lock will
-        be released.
-        @see OALock#lock(Object,Object,Object)
-    */
-    public void lock(Object refObject) {
-    	OAObjectLockDelegate.lock(this,refObject,null);
-    }
-
-    /** Creates a lock on this object.
-        @param refObject object used to keep lock alive.  If object is garbage collected, then the lock will
-        be released.
-        @param miscObject, object that can be added to the lock.
-        @see OALock#lock(Object,Object,Object)
-    */
-    public void lock(Object refObject, Object miscObject) {
-    	OAObjectLockDelegate.lock(this,refObject,miscObject);
+        OAObjectLockDelegate.lock(this);
     }
 
     /** Unlocks this object.
@@ -707,13 +680,6 @@ public class OAObject implements java.io.Serializable, Comparable {
     */
     public boolean isLocked() {
         return OAObjectLockDelegate.isLocked(this);
-    }
-
-    /** Returns OALock object if this object is locked, else null.
-        @see OALock#getLock(Object)
-    */
-    public OALock getLock() {
-        return OAObjectLockDelegate.getLock(this);
     }
 
     /**
@@ -748,32 +714,14 @@ public class OAObject implements java.io.Serializable, Comparable {
      * This is used so that code will only be ran on the server.
      * If the current thread is an OAClientThread, it will still send messages to other clients.
      */
-    public static boolean processIfServer() {
-    	return OAClientDelegate.processIfServer();
+    public static boolean isServer() {
+        return OASyncDelegate.isServer();
     }
-
-    public static boolean processIfNotClientThread() {
-        return OAClientDelegate.processIfNotClientThread();
-    }
-    
-    
-    /**
-     * This is used so that a block of code will only be ran on the server.
-     * If the current thread is an OAClientThread, then it will still send messages to other clients.
-     * @see #endServerOnly()
-     */
-    public static boolean beginServerOnly() {
-    	return OAClientDelegate.beginServerOnly();
-    }
-    /**
-     * This is used so that a block of code will only be ran on the server.
-     * If the current thread is an OAClientThread, then it will still send messages to other clients.
-     * @see #beginServerOnly()
-     */
-    public static void endServerOnly() {
-    	OAClientDelegate.endServerOnly();
+    public static boolean isRemoteThread() {
+        return OARemoteThreadDelegate.isRemoteThread();
     }
     
+   
     /**
      *  Called after an object has been loaded from a datasource.
      */
@@ -781,11 +729,9 @@ public class OAObject implements java.io.Serializable, Comparable {
         OAObjectEmptyHubDelegate.initialize(this);
         OAObjectEventDelegate.fireAfterLoadEvent(this);
     }
+    
+    public OAObjectKey getKey() {
+        return OAObjectKeyDelegate.getKey(this);
+    }
 }
-
-
-
-
-
-
 

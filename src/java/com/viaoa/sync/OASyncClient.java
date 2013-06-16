@@ -35,23 +35,27 @@ public class OASyncClient {
     public OASyncClient(String serverHostName, int serverHostPort) {
         this.serverHostName = serverHostName;
         this.serverHostPort = serverHostPort;
+        OASyncDelegate.setSyncClient(this);
     }
     
     public RemoteServerInterface getRemoteServerInterface() throws Exception {
         if (remoteServerInterface == null) {
             remoteServerInterface = (RemoteServerInterface) getRemoteMultiplexerClient().lookup(ServerLookupName);
+            OASyncDelegate.setRemoteServerInterface(remoteServerInterface);
         }
         return remoteServerInterface;
     }
     public RemoteSyncInterface getRemoteSyncInterface() throws Exception {
         if (remoteSyncInterface == null) {
             remoteSyncInterface = (RemoteSyncInterface) getRemoteMultiplexerClient().lookup(SyncLookupName);
+            OASyncDelegate.setRemoteSyncInterface(remoteSyncInterface);
         }
         return remoteSyncInterface;
     }
     public RemoteClientInterface getRemoteClientInterface() throws Exception {
         if (remoteClientInterface == null) {
             remoteClientInterface = getRemoteServerInterface().getRemoteClientInterface(getClientInfo());
+            OASyncDelegate.setRemoteClientInterface(remoteClientInterface);
         }
         return remoteClientInterface;
     }
@@ -149,4 +153,6 @@ public class OASyncClient {
         }
         return remoteMultiplexerClient;
     }
+
+
 }

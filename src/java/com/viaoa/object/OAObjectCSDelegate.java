@@ -5,7 +5,11 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.*;
 
-import com.viaoa.cs.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.*;
+import com.viaoa.sync.remote.RemoteClientInterface;
+import com.viaoa.sync.remote.RemoteServerInterface;
+import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
@@ -15,9 +19,8 @@ public class OAObjectCSDelegate {
 	/**
      * @return true if the current thread is from the OAClient.getMessage().
      */
-    public static boolean isClientThread() {
-        OAClient client = OAClient.getClient();
-        return (client != null && client.isClientThread());
+    public static boolean isRemoteThread() {
+       return OARemoteThreadDelegate.isRemoteThread(); 
     }
 
     /**
@@ -25,8 +28,7 @@ public class OAObjectCSDelegate {
     * @return true if this is not a Client, either the Server or Stand alone
     */
     public static boolean isServer() {
-		OAClient client = OAClient.getClient();
-		return (client == null || client.isServer());
+		return OASyncDelegate.isServer();
     }
 
     /**
@@ -34,8 +36,7 @@ public class OAObjectCSDelegate {
     * @return true if this is not a Client, either the Server or Stand alone
     */
     public static boolean isWorkstation() {
-		OAClient client = OAClient.getClient();
-		return (client != null && !client.isServer());
+        return !OASyncDelegate.isServer();
     }
 
     /**
@@ -44,19 +45,19 @@ public class OAObjectCSDelegate {
     */
     protected static void initialize(OAObject oaObj) {
 	    if (oaObj == null) return;
-	    OAClient client = OAClient.getClient();
-	    if (client != null && !client.isServer()) {
-	       // LOG.finer("object.class="+oaObj.getClass());
-		   // CACHE_NOTE: need to have object stored on server in a cache, so that it wont be GCd on server.
-	       client.initializeObject(oaObj);
+	    if (OASyncDelegate.isServer()) return;
+	    RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+	    if (ri != null) {
+            ri.setCached(oaObj, true);
  	    }
     }
 
     protected static void finalizeObject(OAObject oaObj) {
         if (oaObj == null) return;
-        OAClient client = OAClient.getClient();
-        if (!client.isServer()) {
-            client.finalizeObject(oaObj);
+        if (OASyncDelegate.isServer()) return;
+        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        if (ri != null) {
+            ri.setCached(oaObj, false);
         }
     }
     
@@ -66,11 +67,10 @@ public class OAObjectCSDelegate {
      */
     public static void addToServerSideCache(OAObject oaObj) {
     	// CACHE_NOTE: this "note" is added to all code that needs to work with the server cache for a client
-  	   	if (oaObj == null) return;
-        OAClient client = OAClient.getClient();
-        if (client != null && !client.isServer()) {
-            // LOG.finer("object="+oaObj);
-            client.addToServerSideCache(oaObj);
+        if (OASyncDelegate.isServer()) return;
+        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        if (ri != null) {
+            ri.setCached(oaObj, true);
         }
     }
 
@@ -80,10 +80,10 @@ public class OAObjectCSDelegate {
      */
     public static void removeFromServerSideCache(OAObject oaObj) {
   	   	if (oaObj == null) return;
-        OAClient client = OAClient.getClient();
-        if (client != null && !client.isServer()) {
-            // LOG.finer("object="+oaObj);
-            client.removeFromServerSideCache(oaObj);
+        if (OASyncDelegate.isServer()) return;
+        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        if (ri != null) {
+            ri.setCached(oaObj, false);
         }
     }
     
@@ -92,11 +92,9 @@ public class OAObjectCSDelegate {
 	   If OAClient.client exists, this will create the object on the server, where the server datasource can initialize object.
 	*/
 	protected static Object createNewObject(Class clazz) {
-        OAClient client = OAClient.getClient();
-        if (client != null && !client.isServer()) {
-            // LOG.finer("class="+clazz);
-            OAObject obj = (OAObject) client.createNewObject(clazz);
-            return obj;
+        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        if (ri != null) {
+            return ri.createNewObject(clazz);
         }
         return null;
 	}
@@ -105,41 +103,27 @@ public class OAObjectCSDelegate {
         If OAClient.client exists, this will create the object on the server.
      */
      protected static OAObject createCopy(OAObject oaObj, String[] excludeProperties) {
-         OAClient client = OAClient.getClient();
-         if (client != null && !client.isServer()) {
-             // LOG.finer("class="+oaObj.getClass());
-             OAObject obj = (OAObject) client.createCopy(oaObj, excludeProperties);
-             return obj;
+         if (oaObj == null) return null;
+         RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+         if (ri != null) {
+             return ri.createCopy(oaObj.getClass(), oaObj.getKey(), excludeProperties);
          }
          return null;
      }
 	
-	
-    protected static int getServerGuid() {
-    	int guid = 0;
-        OAClient client = OAClient.getClient();
-        if (client != null && !client.isServer()) {
-            guid = client.getObjectGuid();
-            // LOG.fine("server guid="+guid);
-        }
+     protected static int getServerGuid() {
+    	int guid = OASyncDelegate.getObjectGuid();
         return guid;
     }
 
     // returns true if this was saved on server
-    protected static void save(OAObject oaObj, int iCascadeRule) {
-    	boolean bResult = false;
-        OAClient client = OAClient.getClient();
-        if (client != null && !client.isServer()) {
-            LOG.fine("object="+oaObj);
-            bResult = true;
-            OAObjectMessage msg = new OAObjectMessage();
-            msg.setType(msg.SAVE);
-            msg.setObjectClass(oaObj.getClass());
-            msg.setObjectKey(OAObjectKeyDelegate.getKey(oaObj));
-//todo: qqqqqqqq need to add Cascade type to msg to then run on server            
-            client.sendMessage(msg);
-            if (msg.getNewValue() != null) throw new RuntimeException(""+msg.getNewValue());
+    protected static boolean save(OAObject oaObj, int iCascadeRule) {
+        if (oaObj == null) return false;
+        RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
+        if (rs != null) {
+            return rs.save(oaObj.getClass(), oaObj.getKey(), iCascadeRule);
         }
+        return false;
     }
 
     /**
@@ -148,91 +132,63 @@ public class OAObjectCSDelegate {
 	    @see #delete()
 	*/
 	protected static boolean delete(OAObject oaObj) {
-        OAClient client = OAClient.getClient();
-	    if (client == null || !OAClientDelegate.shouldSendMessage()) return false;
-        if (OAObjectInfoDelegate.getOAObjectInfo(oaObj).getLocalOnly()) return false; 
-
-        LOG.fine("object="+oaObj);
-        OAObjectMessage msg = new OAObjectMessage();
-        msg.setType(OAObjectMessage.DELETE);
-        msg.setObjectClass(oaObj.getClass());
-        msg.setObjectKey(OAObjectKeyDelegate.getKey(oaObj) );
-        client.sendMessage(msg);
-        if (msg.getNewValue() != null) throw new RuntimeException((String) msg.getNewValue());
-        return true;
+	    if (oaObj == null) return false;
+        RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
+        if (rs != null) {
+            return rs.delete(oaObj.getClass(), oaObj.getKey());
+        }       
+	    return false;
 	}
 
     /**
      * Remove object from each workstation.
      */
-    protected static void removeObject(OAObject oaObj) {
-        OAClient client = OAClient.getClient();
-	    if (client == null || !OAClientDelegate.shouldSendMessage()) return;
-        if (OAObjectInfoDelegate.getOAObjectInfo(oaObj).getLocalOnly()) return; 
-        LOG.fine("object="+oaObj);
-        // this will "tell" the HubController on other clients to remove this object
-        OAObjectMessage msg = new OAObjectMessage();
-        msg.setType(msg.REMOVEOBJECT);
-        msg.setObjectClass(oaObj.getClass());
-        msg.setObjectKey( OAObjectKeyDelegate.getKey(oaObj));
-        OAClient.getClient().sendMessage(msg);
+    protected static boolean removeObject(OAObject oaObj) {
+        if (oaObj == null) return false;
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        boolean result;
+        if (rs != null) {
+            result = rs.removeObject(oaObj.getClass(), oaObj.getKey());
+        }       
+        else result = false;
+        return result;
     }    
     
 
-	protected static Object getServerObject(Class clazz, OAObjectKey key) {
-		Object obj = null;
-        OAClient client = OAClient.getClient();
-        if (client != null && !client.isServer()) {
-            LOG.fine("class="+clazz+", key="+key);
-            obj = client.getServerObject(clazz, key);
-        }
-        return obj;
+	protected static OAObject getServerObject(Class clazz, OAObjectKey key) {
+        RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
+        OAObject result;
+        if (rs != null) {
+            result = rs.getObject(clazz, key);
+        }       
+        else result = null;
+        return result;
 	}    
 	
-	// used by OAObjectReflectDelegate.getReferenceObject()
-//qqqqqqqqqq make this protected	
-	public static Object getServerReferenceObject(OAClient client, OAObject oaObj, String linkPropertyName) {
-        LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
-		Object obj = null;
-        if (client != null && !client.isServer()) {
-            obj = client.getDetailObject(oaObj, linkPropertyName);
-        }
-        else {
-            LOG.warning("This should only be called from workstations, not server. Object="+oaObj+", linkPropertyName="+linkPropertyName);
-        }
-        return obj;
-	}    
-
-    protected static byte[] getServerReferenceBlob(OAClient client, OAObject oaObj, String linkPropertyName) {
+    protected static byte[] getServerReferenceBlob(OAObject oaObj, String linkPropertyName) {
         LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
         Object obj = null;
-        if (client != null && !client.isServer()) {
-            obj = client.getDetailObject(oaObj, linkPropertyName);
-        }
-        else {
-            LOG.warning("This should only be called from workstations, not server. Object="+oaObj+", linkPropertyName="+linkPropertyName);
+        
+        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        if (ri != null) {
+            obj = ri.getDetail(oaObj.getClass(), oaObj.getKey(), linkPropertyName);
         }
         if (obj instanceof byte[]) return (byte[]) obj;
         return null;
     }    
 	
 	
-	
-	
 	// used by OAObjectReflectDelegate.getReferenceHub()
-	protected static Hub getServerReferenceHub(OAClient client, OAObject oaObj, String linkPropertyName) {
+	protected static Hub getServerReferenceHub(OAObject oaObj, String linkPropertyName) {
         LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
     	Hub hub = null;
-        if (client != null && !client.isServer()) {
-            // get hub from server
-            hub = client.getDetailHub(oaObj, linkPropertyName);
-            if (hub == null && client.isConnected()) {
-                // server has to have the object
-                throw new RuntimeException("OAObject.getDetail(\""+linkPropertyName+"\") not found on server for "+oaObj.getClass().getName());
-            }
+        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        if (ri != null) {
+            Object obj = ri.getDetail(oaObj.getClass(), oaObj.getKey(), linkPropertyName);
+            if (obj instanceof Hub) hub = (Hub) obj;
         }
-        else {
-            LOG.warning("This should only be called from workstations, not server. Object="+oaObj+", linkPropertyName="+linkPropertyName);
+        if (hub == null) {
+            LOG.warning("OAObject.getDetail(\""+linkPropertyName+"\") not found on server for "+oaObj.getClass().getName());
         }
 		return hub;
 	}
@@ -240,8 +196,8 @@ public class OAObjectCSDelegate {
 	// used by OAObjectReflectDelegate.getReferenceHub() to have all data loaded on server.
 	protected static boolean loadReferenceHubDataOnServer(Hub hub) {
         boolean bResult;
-		OAClient client = OAClient.getClient();
-        if (client != null && client.isServer()) {
+        
+        if (OASyncDelegate.isServer()) {
             LOG.finest("hub="+hub);
             bResult = true;
             // load all data without sending messages
@@ -257,68 +213,13 @@ public class OAObjectCSDelegate {
         else bResult = false;
         return bResult;
 	}
-
-	protected static void lock(Object object, Object refObject, Object miscObject) {
-        LOG.fine("object="+object);
-	    OAClient client = OAClient.getClient();
-	    if (client != null && !client.isServer()) {
-	        client.lock(object, miscObject);
-	    }		
-	}
 	
-	protected static int getLockWaitCount(Object object) {
-        LOG.fine("object="+object);
-		int bResult = -1;
-	    OAClient client = OAClient.getClient();
-	    if (client != null && !client.isServer()) {
-//qqqqqqqqq TODO: create this on OACLient	    	
-//	       bResult = client.getLockWaitCount(object);
-	    }		
-	    return bResult;
-	}
-
-	protected static void unlock(Object object) {
-        LOG.fine("object="+object);
-	    OAClient client = OAClient.getClient();
-	    if (client != null && !client.isServer()) {
-	        client.unlock(object);
-	    }		
-	}
-
-	protected static boolean isLocked(Object object) {
-		boolean bResult = false;
-	    OAClient client = OAClient.getClient();
-	    if (client != null && !client.isServer()) {
-	        bResult = client.isLocked(object);
-	    }		
-        LOG.fine("object="+object+", result="+bResult);
-	    return bResult;
-	}
-	
-	protected static OALock getLock(Object object) {
-        LOG.fine("object="+object);
-		OALock bResult = null;
-	    OAClient client = OAClient.getClient();
-	    if (client != null && !client.isServer()) {
-	        bResult = client.getLock(object);
-	    }		
-	    return bResult;
-	}
-	
-	protected static Object[] getAllLockedObjects() {
-        LOG.fine("called");
-	    OAClient client = OAClient.getClient();
-	    if (client != null && !client.isServer()) {
-	        return client.getAllLockedObjects();
-	    }		
-	    return null;
-	}
 	
 //qqqqqqqq this needs to be changed to be called beforePropertyChange	
     protected static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue) {
         LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
-        OAClient client = OAClient.getClient();
-	    if (client == null || !OAClientDelegate.shouldSendMessage()) return;
+        
+        if (!OARemoteThreadDelegate.shouldSendMessages()) return;
         
         if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
         if (OAThreadLocalDelegate.isSkipObjectInitialize()) return;
@@ -330,16 +231,8 @@ public class OAObjectCSDelegate {
         // 20130319 dont send out calc prop changes
         OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, propertyName);
         if (li != null && li.bCalculated) return;
-        
-        
         // LOG.finer("object="+obj+", key="+origKey+", prop="+propertyName+", newValue="+newValue+", oldValue="+oldValue);
 
-        OAObjectMessage msg = null;
-        msg = new OAObjectMessage();
-        msg.setType(msg.PROPERTY_CHANGE);
-        msg.setObjectClass(obj.getClass());
-        msg.setObjectKey(origKey);  // value of key before property change was ran (and objectKey was updated)
-        msg.setProperty(propertyName);
         
         // 20130318 if blob, then set a flag so that the server does not broadcast to all clients
         //     the clients (OAClient.procesPropChange) will recv the msg and know how to handle it.
@@ -354,9 +247,9 @@ public class OAObjectCSDelegate {
                 }
             }
         }
-        msg.setPos(bIsBlob ? 77 : 0);
-        msg.setNewValue(newValue);
-        client.sendMessage(msg);
+        
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob);
 	}
 	
 }

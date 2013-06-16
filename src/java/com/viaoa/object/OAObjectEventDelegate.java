@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import com.viaoa.cs.OAClientDelegate;
-import com.viaoa.cs.OAObjectMessage;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
@@ -210,7 +210,7 @@ public class OAObjectEventDelegate {
             if (!bLocalOnly) {
                 // prior to 20100406, this was always calling these methods
                 OAObjectCSDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj);
-                OAClientDelegate.messageProcessed(null);  // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+                OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
             }
         }
 

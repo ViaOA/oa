@@ -505,6 +505,7 @@ public class RemoteMultiplexerClient {
             public void run() {
                 for (;;) {
                     synchronized (Lock) {
+                        reset();
                         try {
                             if (requestInfo == null) {
                                 Lock.wait();
@@ -520,7 +521,8 @@ public class RemoteMultiplexerClient {
                 }
             }
             @Override
-            public void startNextMessage() {
+            public void startNextThread() {
+                super.startNextThread();
                 synchronized (Lock) {
                     Lock.notify();
                 }

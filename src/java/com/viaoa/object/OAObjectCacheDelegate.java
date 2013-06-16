@@ -10,7 +10,6 @@ import java.util.Vector;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
 
-import com.viaoa.cs.OAClientInfo;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
@@ -758,6 +757,7 @@ public class OAObjectCacheDelegate {
         return null;
     }
 
+/*qqqqqqqq    
     public static void updateClientInfo(OAClientInfo ci) {
     	// LOG.fine("called");
         Enumeration enumx = OAObjectHashDelegate.hashCacheClass.keys();
@@ -771,7 +771,7 @@ public class OAObjectCacheDelegate {
         	ci.getCacheHashMap().put(cs[i], tmh.treeMap.size());
         }    
     }
-    
+*/    
 }
 
 /**qqqqqqqqqqqqqqqqqqqqqq	

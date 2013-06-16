@@ -29,7 +29,9 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.viaoa.cs.OAClient;
+import com.viaoa.sync.*;
+import com.viaoa.sync.remote.RemoteClientInterface;
+import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.OASelect;
 import com.viaoa.hub.Hub;
@@ -59,9 +61,9 @@ public class OAObjectReflectDelegate {
 	    Object obj = null;
 	    
 	    if (!oi.getLocalOnly()) {
-	        OAClient client = OAClient.getClient();
-	        if (client != null && !client.isServer()) {
-	        	obj = OAObjectCSDelegate.createNewObject(clazz);
+	        RemoteClientInterface rc = OASyncDelegate.getRemoteClientInterface();
+	        if (rc != null) {
+	        	obj = rc.createNewObject(clazz);
 	        	return obj;
 	        }
 	    }
@@ -506,7 +508,7 @@ public class OAObjectReflectDelegate {
             
             if (!bThisIsServer && !bIsEmpty && !oi.getLocalOnly() && !bIsCalc) {
                 // request from server
-            	hub = OAObjectCSDelegate.getServerReferenceHub(OAClient.getClient(), oaObj, linkPropertyName);  // this will always return a Hub
+            	hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName);  // this will always return a Hub
                 propLock.ref = hub;
             	// 20120926 check to see if empty hub was returned from OAObjectServerImpl.getDetail
             	if (HubDelegate.getMasterObject(hub) == null && hub.getSize() == 0 && hub.getObjectClass() == null) {
@@ -886,9 +888,8 @@ public class OAObjectReflectDelegate {
                 propLock = null;
             }
             else {
-                OAClient client = OAClient.getClient();
-                if (client != null && !client.isServer()) {
-                    bytes = OAObjectCSDelegate.getServerReferenceBlob(client, oaObj, propertyName);
+                if (!OASyncDelegate.isServer()) {
+                    bytes = OAObjectCSDelegate.getServerReferenceBlob(oaObj, propertyName);
                 }
                 else {
                     OADataSource ds = OADataSource.getDataSource(oaObj.getClass());
@@ -951,11 +952,8 @@ public class OAObjectReflectDelegate {
     private static Object _getReferenceObject(OAObject oaObj, String linkPropertyName, OAObjectInfo oi, OALinkInfo li) {
         if (linkPropertyName == null) return null;
 
-        
-        OAClient client = OAClient.getClient();
-        boolean bIsServer = client == null || client.isServer();
+        boolean bIsServer = OASyncDelegate.isServer();
         boolean bIsCalc = li != null && li.bCalculated;
-        
         
         Object ref = null;
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName);         
@@ -978,7 +976,7 @@ public class OAObjectReflectDelegate {
             if (li == null) return null;
             if (OAObjectInfoDelegate.isOne2One(li)) {
                 if (!bIsServer && !bIsCalc) {
-                    ref = OAObjectCSDelegate.getServerReferenceObject(client, oaObj, linkPropertyName);
+                    ref = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName);
                 }
                 else {
                     OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
@@ -1018,7 +1016,7 @@ public class OAObjectReflectDelegate {
                     }
                 }
                 if ( !bIsServer && !bIsCalc) {
-                    ref = OAObjectCSDelegate.getServerReferenceObject(client, oaObj, linkPropertyName);
+                    ref = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName);
                 }
             }
         }
@@ -1031,7 +1029,7 @@ public class OAObjectReflectDelegate {
             
             if (ref == null) {
                 if (!bIsServer && !bIsCalc) {
-                    ref = OAObjectCSDelegate.getServerReferenceObject(client, oaObj, linkPropertyName);
+                    ref = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName);
                 }
                 else {
                     ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey)obj);
@@ -1366,8 +1364,7 @@ public class OAObjectReflectDelegate {
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
         if (!oi.getLocalOnly()) {
-            OAClient client = OAClient.getClient();
-            if (client != null && !client.isServer()) {
+            if (!OASyncDelegate.isServer()) {
                 // 20130505 needs to be put in msg queue
                 OAObject newObject = OAObjectCSDelegate.createCopy(oaObj, excludeProperties);
                 return newObject;

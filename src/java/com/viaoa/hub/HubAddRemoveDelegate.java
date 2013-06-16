@@ -2,7 +2,8 @@ package com.viaoa.hub;
 
 import java.util.logging.Logger;
 
-import com.viaoa.cs.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.*;
 import com.viaoa.object.*;
 
 /**
@@ -56,7 +57,7 @@ public class HubAddRemoveDelegate {
             li = OAObjectInfoDelegate.getReverseLinkInfo(li);
             if (li != null && li.getType() == OALinkInfo.ONE) {
                 if (!OAThreadLocalDelegate.isDeleting(obj)) {
-                    if (!OAClient.isClientThread()) {
+                    if (!OARemoteThreadDelegate.isRemoteThread()) {
                         throw new RuntimeException("Cant remove object from Hub that is based on a LinkInfo.ONE, hub="+thisHub);
                     }
                 }
@@ -71,21 +72,14 @@ public class HubAddRemoveDelegate {
 
         // send message to OAServer
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
-        OAObjectMessage msg = null;
         
-        try {
-            if (thisHub.isOAObject()) {
-                msg = HubCSDelegate.removeFromHub(thisHub, (OAObject) obj, pos);
-            }
-            pos = HubDataDelegate._remove(thisHub, obj, bDeleting);
-            if (pos < 0) {
-                LOG.warning("object not removed, obj="+obj);
-                return;
-            }
+        if (thisHub.isOAObject()) {
+            HubCSDelegate.removeFromHub(thisHub, (OAObject) obj, pos);
         }
-        finally {
-            // this will "tell" OAClientMessageHandler that it is ok to continue
-            HubCSDelegate.messageProcessed(msg); // even if msg is null, since this could be a OAClientThread
+        pos = HubDataDelegate._remove(thisHub, obj, bDeleting);
+        if (pos < 0) {
+            LOG.warning("object not removed, obj="+obj);
+            return;
         }
         
         if (bSetAO) {
@@ -255,21 +249,12 @@ public class HubAddRemoveDelegate {
             HubEventDelegate.fireBeforeAddEvent(thisHub, obj, thisHub.getCurrentSize());
         }
     
-        // send message to OAServer
-        OAObjectMessage msg = null;
-        
-        try {
-            if (thisHub.isOAObject()) {
-                msg = HubCSDelegate.addToHub(thisHub, (OAObject) obj);
-            }
-            if (!internalAdd(thisHub,obj,true)) {
-                //LOG.warning("VVVVVVVVVVVV NOT ADDED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<");//qqqqqqqqqqqqqqqqq
-                return;
-            }
+        if (thisHub.isOAObject()) {
+            HubCSDelegate.addToHub(thisHub, (OAObject) obj);
         }
-        finally {
-            // this will "tell" OAClientMessageHandler that it is ok to continue
-            HubCSDelegate.messageProcessed(msg); // even if msg is null, since this could be a OAClientThread
+        if (!internalAdd(thisHub,obj,true)) {
+            //LOG.warning("VVVVVVVVVVVV NOT ADDED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<");//qqqqqqqqqqqqqqqqq
+            return;
         }
         
         // moved before listeners are notified.  Else listeners could ask for more objects
@@ -380,16 +365,9 @@ public class HubAddRemoveDelegate {
 
         HubEventDelegate.fireBeforeMoveEvent(thisHub, posFrom, posTo);
         
-        OAObjectMessage msg = null;
-        try {
-            //  OAClient must send message to OAServer before continuing
-            msg = HubCSDelegate.moveObjectInHub(thisHub, posFrom, posTo, true);
-            HubDataDelegate._move(thisHub, objFrom, posFrom, posTo);
-        }
-        finally {
-            // this will "tell" OAClientMessageHandler that it is ok to continue
-            HubCSDelegate.messageProcessed(msg); // even if msg is null, since this could be a OAClientThread
-        }   
+        //  OAClient must send message to OAServer before continuing
+        HubCSDelegate.moveObjectInHub(thisHub, posFrom, posTo);
+        HubDataDelegate._move(thisHub, objFrom, posFrom, posTo);
         
         HubEventDelegate.fireAfterMoveEvent(thisHub, posFrom, posTo);
         // dont reset activeObject, it will reset detailHubs
@@ -467,20 +445,12 @@ public class HubAddRemoveDelegate {
         HubEventDelegate.fireBeforeInsertEvent(thisHub, obj, pos);
 
         // send message to OAServer
-        OAObjectMessage msg = null;
-        
-        try {
-            //  OAClient must send message to OAServer before continuing
-            if (thisHub.isOAObject()) {
-                msg = HubCSDelegate.insertInHub(thisHub, (OAObject) obj, pos);
-                if (HubDataDelegate.getObject(thisHub, key) != null) return false;
-            }
-            if (!HubDataDelegate._insert(thisHub, key, obj, pos, false)) return false;  // false=dont lock, since this method is locked
+        //  OAClient must send message to OAServer before continuing
+        if (thisHub.isOAObject()) {
+            HubCSDelegate.insertInHub(thisHub, (OAObject) obj, pos);
+            if (HubDataDelegate.getObject(thisHub, key) != null) return false;
         }
-        finally {
-            // this will "tell" OAClientMessageHandler that it is ok to continue
-            HubCSDelegate.messageProcessed(msg); // even if msg is null, since this could be a OAClientThread
-        }       
+        if (!HubDataDelegate._insert(thisHub, key, obj, pos, false)) return false;  // false=dont lock, since this method is locked
         if (thisHub.isOAObject()) OAObjectHubDelegate.addHub((OAObject)obj,thisHub);
     
         // moved before listeners are notified.  Else listeners could ask for more objects

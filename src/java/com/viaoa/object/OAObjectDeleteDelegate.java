@@ -6,8 +6,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.viaoa.cs.OAClient;
-import com.viaoa.cs.OAClientDelegate;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubAddRemoveDelegate;
@@ -16,6 +14,7 @@ import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubEventDelegate;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAString;
 
@@ -28,7 +27,7 @@ public class OAObjectDeleteDelegate {
 	public static void delete(OAObject oaObj) {
 		if (OAObjectCSDelegate.isWorkstation()) {
 		    if (OAObjectCSDelegate.delete(oaObj)) {
-		        OAClientDelegate.messageProcessed(null);  // will be processed by OAObjectServerimpl (delete will be done on server)
+		        OARemoteThreadDelegate.startNextThread(); // will be processed by OAObjectServerimpl (delete will be done on server)
 		        return;
 		    }
 		    else {
@@ -67,7 +66,7 @@ public class OAObjectDeleteDelegate {
             oaObj.deletedFlag = tf;
             OAObjectEventDelegate.firePropertyChange(oaObj, OAObjectDelegate.WORD_Deleted, bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, oaObj.deletedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
             if (tf) {
-                if (OAClient.isClientThread()) {
+                if (OARemoteThreadDelegate.isRemoteThread()) {
                     // remove from all hubs - in case the object was used in other hubs that were not used on the server where the delete is performed.
                     WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
                     if (refs != null) {

@@ -19,7 +19,8 @@ package com.viaoa.hub;
 
 import java.util.Hashtable;
 
-import com.viaoa.cs.OAClientDelegate;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.*;
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAArray;
@@ -353,7 +354,7 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
         if (bClearing) return;
         try {
             if (bServerSideOnly) { // 20120425
-                OAClientDelegate.serverSideCode();  // so that events will go out, even if OAClientThread
+                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
             }
             bUpdating = true;
             
@@ -482,7 +483,7 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
     public void initialize() {
         if (bClosed) return;
         if (bServerSideOnly) { // 20120425
-            OAClientDelegate.serverSideCode();  // so that events will go out, even if OAClientThread
+            OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
         }
         HubData hd = hub.data;
         try {

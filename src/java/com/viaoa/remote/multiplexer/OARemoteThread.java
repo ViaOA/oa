@@ -7,6 +7,10 @@ public class OARemoteThread extends Thread {
     final Object Lock = new Object();
     
     volatile RequestInfo requestInfo;
+    volatile boolean startedNextThread;
+    volatile boolean watingOnLock;
+    
+    volatile boolean sendMessages;  // if false then events are not sent, sinc this is processing a message
 
     public OARemoteThread(Runnable r) {
         super(r);
@@ -14,6 +18,27 @@ public class OARemoteThread extends Thread {
     public OARemoteThread() {
     }
 
-    public void startNextMessage() {
+    public void startNextThread() {
+        startedNextThread = true;
     }
+    public void setSendMessages(boolean b) {
+        sendMessages = b;
+    }
+    public boolean getSendMessages() {
+        return sendMessages;
+    }
+    public void setWaitingOnLock(boolean b) {
+        watingOnLock = b;
+    }
+    public boolean isWaitingOnLock() {
+        return watingOnLock;
+    }
+    
+    
+    public void reset() {
+        sendMessages = false;
+        startedNextThread = false;
+        watingOnLock = false;
+    }
+    
 }

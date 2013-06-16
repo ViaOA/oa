@@ -4,8 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import com.viaoa.object.*;
-import com.viaoa.cs.OAClient;
-import com.viaoa.cs.OAClientDelegate;
+import com.viaoa.sync.*;
 import com.viaoa.ds.OADataSource;
 
 /**
@@ -22,9 +21,8 @@ public class HubDeleteDelegate {
 */
     // 20120325
     public static void deleteAll(Hub thisHub) {
-        if (OAClient.isWorkstation()) {
+        if (!OASyncDelegate.isServer()) {
             if (HubCSDelegate.deleteAll(thisHub)) {
-                OAClientDelegate.messageProcessed(null); 
                 return;
             }
             else {

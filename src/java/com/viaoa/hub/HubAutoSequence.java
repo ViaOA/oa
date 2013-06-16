@@ -24,7 +24,8 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.lang.reflect.*;
 
-import com.viaoa.cs.OAClient;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
@@ -186,14 +187,18 @@ public class HubAutoSequence extends HubListenerAdapter implements java.io.Seria
         if (obj == null) return;
         try {
             // if this is ClientThread then need to send to other clients
-            if (bServerSideOnly) OAClient.beginServerOnly();
+            if (bServerSideOnly) {
+                OARemoteThreadDelegate.sendMessages(true); 
+            }
             propertySetMethod.invoke(obj, new Object[] { new Integer(pos) });
         }
         catch (Exception e) {
             throw new RuntimeException(e);
         }
         finally {
-            if (bServerSideOnly) OAClient.endServerOnly();
+            if (bServerSideOnly) {
+                OARemoteThreadDelegate.sendMessages(false); 
+            }
         }
     }
 

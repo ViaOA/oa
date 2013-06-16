@@ -48,7 +48,7 @@ public class OAObjectKeyDelegate {
 	
 	    if (bVerify) {
 	        // if change is coming from the server, then it has already been verified
-	        if (OAObjectCSDelegate.isClientThread()) bVerify = false;
+	        if (OAObjectCSDelegate.isRemoteThread()) bVerify = false;
 	    }
 
 	    // 20090906 dont need to verify if database/etc has assigned it

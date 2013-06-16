@@ -23,8 +23,8 @@ import java.util.logging.Logger;
 import javax.swing.undo.*;
 
 import com.viaoa.object.*;
-import com.viaoa.hub.*;
-import com.viaoa.cs.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.*;
 
 
 /** Undo Support for OA.gui components.
@@ -226,8 +226,9 @@ public class OAUndoManager extends UndoManager {
         if (ii != null) i = ii.intValue();
         if (i > 0) return true;
 
-        OAClient client = OAClient.getClient();
-        if (client != null && client.isClientThread()) return true;
+        if (!OASyncDelegate.isSingleUser()) {
+            if (OARemoteThreadDelegate.isRemoteThread()) return true;
+        }
         return false;
     }
 

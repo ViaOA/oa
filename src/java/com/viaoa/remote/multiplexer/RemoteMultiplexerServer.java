@@ -884,6 +884,7 @@ public class RemoteMultiplexerServer {
             public void run() {
                 for (;;) {
                     synchronized (Lock) {
+                        reset();
                         try {
                             if (requestInfo == null) {
                                 Lock.wait();
@@ -899,7 +900,8 @@ public class RemoteMultiplexerServer {
                 }
             }
             @Override
-            public void startNextMessage() {
+            public void startNextThread() {
+                super.startNextThread();
                 synchronized (Lock) {
                     Lock.notify();
                 }

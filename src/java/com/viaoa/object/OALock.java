@@ -17,10 +17,8 @@ All rights reserved.
 */ 
 package com.viaoa.object;
 
-import java.util.*;
 import java.lang.ref.*;  // java1.2
 
-import com.viaoa.cs.*;
 
 /** 
     OALock is used for setting and sharing locks on Objects.  

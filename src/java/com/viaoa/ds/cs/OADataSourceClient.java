@@ -5,7 +5,8 @@ import java.io.*;
 
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
-import com.viaoa.cs.*;
+import com.viaoa.sync.*;
+import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.ds.*;
 
 
@@ -15,7 +16,7 @@ import com.viaoa.ds.*;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 public class OADataSourceClient extends OADataSource {
-    protected OAClient client;
+    protected RemoteClientInterface client;
     private Hashtable hashClass = new Hashtable();
 
     /** internal value to work with OAClient */
@@ -77,7 +78,7 @@ public class OADataSourceClient extends OADataSource {
     /**
         Create new OADataSourceClient that uses OAClient to communicate with OADataSource on OAServer.
     */
-    public OADataSourceClient(OAClient client) {
+    public OADataSourceClient(RemoteClientInterface client) {
         this.client = client;
     }
 
@@ -86,13 +87,13 @@ public class OADataSourceClient extends OADataSource {
         Automatically sets OAClient calling OAClient.getClient()
     */
     public OADataSourceClient() {
-        this(OAClient.getClient());
+        this(OASyncDelegate.getRemoteClientInterface());
     }
 
     /**
         Set OAClient that is used to communicate to OAServer's OADataSource.
     */
-    public void setClient(OAClient client) {
+    public void setClient(RemoteClientInterface client) {
         this.client = client;
     }
 
@@ -313,7 +314,7 @@ public class OADataSourceClient extends OADataSource {
                 obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) {
                     // not on this system, need to get from server
-                    obj = client.getServerObject(clazz, key);
+                    OASyncDelegate.getRemoteServerInterface().getObject(clazz, key);
                 }
                 bKey = false;
                 return obj;
@@ -344,11 +345,5 @@ public class OADataSourceClient extends OADataSource {
         if (objx instanceof byte[]) return (byte[]) objx;
         return null;
     }
-	
 }
-
-
-
-
-
 
