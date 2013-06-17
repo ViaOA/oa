@@ -1,11 +1,11 @@
 package com.viaoa.hub;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.*;
-import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.object.*;
@@ -22,7 +22,6 @@ public class HubCSDelegate {
 	 * Have object removed from same Hub on other workstations.
 	 */
 	public static void removeFromHub(Hub thisHub, OAObject obj, int pos) {
-//qqq todo: send pos??		
         if (OASyncDelegate.isSingleUser()) return;
         if (!(thisHub.datam.masterObject instanceof OAObject)) return;
 
@@ -48,15 +47,6 @@ public class HubCSDelegate {
                 thisHub.datam.masterObject.getKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
                 obj.getClass(), obj.getKey());
-        
-        boolean bAddToClientCache = false;
-        if (obj.getNew()) {
-            if (!OAObjectHubDelegate.isInHub(obj)) bAddToClientCache = true;
-        }
-        if (bAddToClientCache && !OASyncDelegate.isServer()) {
-            RemoteClientInterface rc = OASyncDelegate.getRemoteClientInterface();
-            rc.setCached(obj, true);
-        }
 	}
 
 	/**
@@ -81,26 +71,16 @@ public class HubCSDelegate {
         // must have a master object to be able to know which hub to add object to
         // send ADD message
 
-        // flag to know if object should be removed from client cache on server 
-        boolean bAddToClientCache = false;
-        if (obj.getNew()) {
-            if (OAObjectHubDelegate.isInHub(obj)) bAddToClientCache = true;
-        }
-        
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         rs.addToHub(
                 thisHub.datam.masterObject.getClass(), 
                 thisHub.datam.masterObject.getKey(), 
-                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
-                obj);
-        
-        if (bAddToClientCache && !OASyncDelegate.isServer()) {
-            RemoteClientInterface rc = OASyncDelegate.getRemoteClientInterface();
-            rc.setCached(obj, false);
-        }
+                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), obj);
 	}	
 
+    private static HashSet<Integer> hashServerSideCache = new HashSet<Integer>(379, .75f);
+	
 	/**
 	 * Have object inserted in same Hub on other workstations.
 	 */
@@ -123,12 +103,6 @@ public class HubCSDelegate {
         // must have a master object to be able to know which hub to add object to
         // send ADD message
 
-        // flag to know if object should be removed from client cache on server 
-        boolean bAddToClientCache = false;
-        if (obj.getNew()) {
-            if (OAObjectHubDelegate.isInHub(obj)) bAddToClientCache = true;
-        }
-        
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         rs.insertInHub(
@@ -136,11 +110,6 @@ public class HubCSDelegate {
                 thisHub.datam.masterObject.getKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
                 obj, pos);
-        
-        if (bAddToClientCache && !OASyncDelegate.isServer()) {
-            RemoteClientInterface rc = OASyncDelegate.getRemoteClientInterface();
-            rc.setCached(obj, false);
-        }
 	}	
 	
 	/**

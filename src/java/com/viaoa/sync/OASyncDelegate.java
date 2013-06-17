@@ -11,6 +11,7 @@ public class OASyncDelegate {
     private static RemoteServerInterface remoteServerInterface;
     private static RemoteSyncInterface remoteSyncInterface;
     private static RemoteClientInterface remoteClientInterface;
+    private static RemoteClientSyncInterface remoteClientSyncInterface;
     private static OASyncClient syncClient;
     private static OASyncServer syncServer;
     
@@ -32,6 +33,12 @@ public class OASyncDelegate {
     }
     public static RemoteClientInterface getRemoteClientInterface() {
         return remoteClientInterface;
+    }
+    public static void setRemoteClientSyncInterface(RemoteClientSyncInterface rci) {
+        remoteClientSyncInterface = rci;
+    }
+    public static RemoteClientSyncInterface getRemoteClientSyncInterface() {
+        return remoteClientSyncInterface;
     }
     public static void setRemoteServerInterface(RemoteServerInterface rsi) {
         remoteServerInterface = rsi;

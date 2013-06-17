@@ -8,6 +8,7 @@ import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientInterface;
+import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.OADateTime;
@@ -28,6 +29,7 @@ public class OASyncClient {
 
     private RemoteServerInterface remoteServerInterface;
     private RemoteClientInterface remoteClientInterface;
+    private RemoteClientSyncInterface remoteClientSyncInterface;
     private RemoteSyncInterface remoteSyncInterface;
     private String serverHostName;
     private int serverHostPort;
@@ -58,6 +60,13 @@ public class OASyncClient {
             OASyncDelegate.setRemoteClientInterface(remoteClientInterface);
         }
         return remoteClientInterface;
+    }
+    public RemoteClientSyncInterface getRemoteClientSyncInterface() throws Exception {
+        if (remoteClientSyncInterface == null) {
+            remoteClientSyncInterface = getRemoteServerInterface().getRemoteClientSyncInterface(getClientInfo());
+            OASyncDelegate.setRemoteClientSyncInterface(remoteClientSyncInterface);
+        }
+        return remoteClientSyncInterface;
     }
     
     public ClientInfo getClientInfo() {

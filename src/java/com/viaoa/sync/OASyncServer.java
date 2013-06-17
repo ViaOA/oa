@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.object.OACascade;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerServer;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -63,8 +64,11 @@ public class OASyncServer {
                 public RemoteClientInterface getRemoteClientInterface(ClientInfo clientInfo) {
                     return createRemoteClient(clientInfo);
                 }
+                @Override
+                public RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo clientInfo) {
+                    return createRemoteClientSync(clientInfo);
+                }
             };
-            OASyncDelegate.setRemoteServerInterface(remoteServer);
             OASyncDelegate.setRemoteServerInterface(remoteServer);
             getRemoteClientForServer();
         }
@@ -73,6 +77,7 @@ public class OASyncServer {
 
     private ClientInfo clientInfo;
     private RemoteClientInterface remoteClientForServer;
+    private RemoteClientSyncInterface remoteClientSyncForServer;
     
     
     protected ClientInfo getClientInfo() {
@@ -89,6 +94,13 @@ public class OASyncServer {
             OASyncDelegate.setRemoteClientInterface(remoteClientForServer);
         }
         return remoteClientForServer;
+    }
+    protected RemoteClientSyncInterface getRemoteClientSyncForServer() {
+        if (remoteClientSyncForServer == null) {
+            remoteClientSyncForServer = createRemoteClientSync(getClientInfo());
+            OASyncDelegate.setRemoteClientSyncInterface(remoteClientSyncForServer);
+        }
+        return remoteClientSyncForServer;
     }
     
     protected RemoteClientInterface createRemoteClient(ClientInfo clientInfo) {
@@ -125,6 +137,20 @@ public class OASyncServer {
             }
         };
         cx.remote = rc;
+        return rc;
+    }
+    protected RemoteClientSyncInterface createRemoteClientSync(ClientInfo clientInfo) {
+        if (clientInfo == null) return null;
+        final ClientInfoExt cx = hmClientInfoExt.get(clientInfo.getConnectionId());
+        if (cx == null) return null;
+        
+        RemoteClientSyncImpl rc = new RemoteClientSyncImpl() {
+            @Override
+            public void setCached(OAObject obj, boolean b) {
+                cx.remote.setCached(obj, b);
+            }
+        };
+        cx.remoteSync = rc;
         return rc;
     }
 
@@ -192,6 +218,7 @@ public class OASyncServer {
         ClientInfo ci;
         Socket socket;
         RemoteClientImpl remote;
+        RemoteClientSyncImpl remoteSync;
     }
     
     
@@ -247,7 +274,10 @@ public class OASyncServer {
             
             // register remote objects
             getRemoteMultiplexerServer().createLookup(ServerLookupName, getRemoteServer(), RemoteServerInterface.class); 
-            getRemoteMultiplexerServer().createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize); 
+            getRemoteMultiplexerServer().createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
+            
+            // have RemoteClient objects use sync queue
+            getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientInterface.class, SyncQueueName, QueueSize);            
         }
         return remoteMultiplexerServer;
     }

@@ -8,6 +8,7 @@ import java.util.logging.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientInterface;
+import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.hub.*;
@@ -55,11 +56,15 @@ public class OAObjectCSDelegate {
     protected static void finalizeObject(OAObject oaObj) {
         if (oaObj == null) return;
         if (OASyncDelegate.isServer()) return;
-        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
-        if (ri != null) {
-            ri.setCached(oaObj, false);
+        if (hashServerSideCache.remove(oaObj.getKey().getGuid())) {
+            RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+            if (ri != null) {
+                ri.setCached(oaObj, false);
+            }
         }
     }
+    
+    private static HashSet<Integer> hashServerSideCache = new HashSet<Integer>(379, .75f);
     
     /**
      * If Object is not in a Hub, then it could be gc'd on server, while it still exists on a client(s).
@@ -67,10 +72,14 @@ public class OAObjectCSDelegate {
      */
     public static void addToServerSideCache(OAObject oaObj) {
     	// CACHE_NOTE: this "note" is added to all code that needs to work with the server cache for a client
-        if (OASyncDelegate.isServer()) return;
+        if (oaObj == null) return;
+        if (OASyncDelegate.isSingleUser()) return;
+        int guid = oaObj.getKey().getGuid();
+        if (hashServerSideCache.contains(guid)) return;
         RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
         if (ri != null) {
             ri.setCached(oaObj, true);
+            hashServerSideCache.add(guid);
         }
     }
 
@@ -79,11 +88,13 @@ public class OAObjectCSDelegate {
      * To keep the object from gc on server, each OAObjectServer maintains a cache to keep "unattached" objects from being gc'd.
      */
     public static void removeFromServerSideCache(OAObject oaObj) {
-  	   	if (oaObj == null) return;
-        if (OASyncDelegate.isServer()) return;
-        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
-        if (ri != null) {
-            ri.setCached(oaObj, false);
+        if (oaObj == null) return;
+        if (OASyncDelegate.isSingleUser()) return;
+        if (hashServerSideCache.remove(oaObj.getKey().getGuid())) {
+            RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+            if (ri != null) {
+                ri.setCached(oaObj, false);
+            }
         }
     }
     
@@ -104,7 +115,7 @@ public class OAObjectCSDelegate {
      */
      protected static OAObject createCopy(OAObject oaObj, String[] excludeProperties) {
          if (oaObj == null) return null;
-         RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+         RemoteClientSyncInterface ri = OASyncDelegate.getRemoteClientSyncInterface();
          if (ri != null) {
              return ri.createCopy(oaObj.getClass(), oaObj.getKey(), excludeProperties);
          }
@@ -169,7 +180,7 @@ public class OAObjectCSDelegate {
         LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
         Object obj = null;
         
-        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        RemoteClientSyncInterface ri = OASyncDelegate.getRemoteClientSyncInterface();
         if (ri != null) {
             obj = ri.getDetail(oaObj.getClass(), oaObj.getKey(), linkPropertyName);
         }
@@ -182,7 +193,7 @@ public class OAObjectCSDelegate {
 	protected static Hub getServerReferenceHub(OAObject oaObj, String linkPropertyName) {
         LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
     	Hub hub = null;
-        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        RemoteClientSyncInterface ri = OASyncDelegate.getRemoteClientSyncInterface();
         if (ri != null) {
             Object obj = ri.getDetail(oaObj.getClass(), oaObj.getKey(), linkPropertyName);
             if (obj instanceof Hub) hub = (Hub) obj;

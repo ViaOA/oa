@@ -642,6 +642,28 @@ public class RemoteMultiplexerServer {
         return true;
     }
 
+    /**
+     * Create a queue that will be used by any remote objects for a class.
+     * @param clazz type of remote object created
+     * @param qname name of queue
+     * @param size size of queue
+     */
+    public void registerClassWithQueue(Class clazz, String qname, int size) {
+        ClassQueue cq = new ClassQueue();
+        cq.clazz = clazz;
+        cq.queueName = qname;
+        cq.queueSize = size;
+        hmClassQueue.put(clazz, cq);
+    }
+
+    /** used to map Class to a queue  */
+    private ConcurrentHashMap<Class<?>, ClassQueue> hmClassQueue = new ConcurrentHashMap<Class<?>, RemoteMultiplexerServer.ClassQueue>();
+    class ClassQueue {
+        Class clazz;
+        String queueName;
+        int queueSize;
+    }
+    
     
     /**
      * Create Bind information for a remote object.
@@ -660,6 +682,17 @@ public class RemoteMultiplexerServer {
         if (!interfaceClass.isInterface()) {
             throw new IllegalArgumentException("interfaceClass must be a Java interface");
         }
+
+        if  (queueName == null) {
+            // check to see if the remote class has a queue assigned for it
+            ClassQueue cq = hmClassQueue.get(interfaceClass);
+            if (cq == null) cq = hmClassQueue.get(obj.getClass());
+            if (cq != null) {
+                queueName = cq.queueName;
+                queueSize = cq.queueSize;
+            }
+        }
+        
         BindInfo bind = new BindInfo(name, obj, interfaceClass, referenceQueue, bIsBroadcast, queueName, queueSize);
         
         bind.loadMethodInfo();

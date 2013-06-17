@@ -32,6 +32,8 @@ public class OAObjectHubDelegate {
 
     private static Logger LOG = Logger.getLogger(OAObjectHubDelegate.class.getName());
 
+    
+    
     /*
     // 20120827
     public static int getHubFlags(OAObject oaObj) {
@@ -152,6 +154,19 @@ public class OAObjectHubDelegate {
 		return false;
 	}
 
+    public static boolean isInHubWithMaster(OAObject oaObj) {
+        if (oaObj == null) return false;
+        WeakReference[] refs = oaObj.weakHubs;
+        if (refs == null) return false;
+        for (WeakReference ref : refs) {
+            if (ref != null && ref.get() != null) {
+                Hub h = (Hub) ref.get();
+                if (h != null && h.getMasterObject() != null) return true;
+            }
+        }
+        return false;
+    }
+	
 	// 20120725 memory leak fixed, rewritten to handle weakrefs with nulls correctly, and keep array compress (empty space at the end only)
     /**
 	    Called by Hub when an OAObject is removed from a Hub.
@@ -205,8 +220,10 @@ public class OAObjectHubDelegate {
                 }
             }
                 
-            if (oaObj.weakHubs[0] == null) {
+            if (oaObj.weakHubs[0] == null || !isInHubWithMaster(oaObj)) {
                 oaObj.weakHubs = null;
+            }
+            if (!isInHubWithMaster(oaObj)) {
                 // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added to a hub.  Need to add to cache now that it is no longer in a hub.
                 OAObjectCSDelegate.addToServerSideCache(oaObj);
             }
