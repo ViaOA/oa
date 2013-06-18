@@ -114,8 +114,8 @@ public class OASyncServer {
             public boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey) {
                 for (Map.Entry<Integer, ClientInfoExt> entry : hmClientInfoExt.entrySet()) {
                     ClientInfoExt cx = entry.getValue();
-                    if (cx.remote == this) continue;
-                    if (cx.remote.isLockedByThisClient(objectClass, objectKey)) return true;
+                    if (cx.remoteClient == this) continue;
+                    if (cx.remoteClient.isLockedByThisClient(objectClass, objectKey)) return true;
                 }
                 return false;
             }
@@ -136,7 +136,7 @@ public class OASyncServer {
                 return b;
             }
         };
-        cx.remote = rc;
+        cx.remoteClient = rc;
         return rc;
     }
     protected RemoteClientSyncInterface createRemoteClientSync(ClientInfo clientInfo) {
@@ -147,10 +147,10 @@ public class OASyncServer {
         RemoteClientSyncImpl rc = new RemoteClientSyncImpl() {
             @Override
             public void setCached(OAObject obj, boolean b) {
-                cx.remote.setCached(obj, b);
+                cx.remoteClient.setCached(obj, b);
             }
         };
-        cx.remoteSync = rc;
+        cx.remoteClientSync = rc;
         return rc;
     }
 
@@ -159,7 +159,7 @@ public class OASyncServer {
     public void saveCache(OACascade cascade, int iCascadeRule) {
         for (Map.Entry<Integer, ClientInfoExt> entry : hmClientInfoExt.entrySet()) {
             ClientInfoExt cx = entry.getValue();
-            cx.remote.saveCache(cascade, iCascadeRule);
+            cx.remoteClient.saveCache(cascade, iCascadeRule);
         }
     }
 
@@ -217,8 +217,8 @@ public class OASyncServer {
     class ClientInfoExt {
         ClientInfo ci;
         Socket socket;
-        RemoteClientImpl remote;
-        RemoteClientSyncImpl remoteSync;
+        RemoteClientImpl remoteClient;
+        RemoteClientSyncImpl remoteClientSync;
     }
     
     
@@ -242,8 +242,8 @@ public class OASyncServer {
         ClientInfoExt cx = hmClientInfoExt.get(connectionId);
         if (cx != null) {
             cx.ci.setDisconnected(new OADateTime());
-            cx.remote.clearLocks();
-            cx.remote.clearCache();
+            cx.remoteClient.clearLocks();
+            cx.remoteClient.clearCache();
         }
     }
   
@@ -277,7 +277,7 @@ public class OASyncServer {
             getRemoteMultiplexerServer().createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
             
             // have RemoteClient objects use sync queue
-            getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientInterface.class, SyncQueueName, QueueSize);            
+            getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientSyncInterface.class, SyncQueueName, QueueSize);            
         }
         return remoteMultiplexerServer;
     }

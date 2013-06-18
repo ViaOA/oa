@@ -37,6 +37,7 @@ public class RequestInfo {
     public boolean bSent;  // false if a local call, ex: "hashCode(), toString(), etc"
     
     public String responseBindName;
+    public boolean responseBindUsesQueue;
     public Exception exception;
     public String exceptionMessage;
     public Object response;

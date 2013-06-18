@@ -210,7 +210,9 @@ public class RemoteMultiplexerServer {
                 else if (ri.exceptionMessage != null) {
                     resp = new Exception(ri.exceptionMessage+", info: "+ri.toLogString());
                 }
-                else if (ri.responseBindName != null) resp = ri.responseBindName;
+                else if (ri.responseBindName != null) {
+                    resp = new Object[] {ri.responseBindName, ri.responseBindUsesQueue};
+                }
                 else resp = ri.response;
                 oos.writeObject(resp);
                 oos.flush();
@@ -366,6 +368,7 @@ public class RemoteMultiplexerServer {
                     }
                 }
                 ri.responseBindName = bindx.name; // this will be returned to client
+                ri.responseBindUsesQueue = bindx.usesQueue;
                 session.hmBindObject.put(bindx, ri.response);  // make sure it wont get gc'd
             }
             else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {

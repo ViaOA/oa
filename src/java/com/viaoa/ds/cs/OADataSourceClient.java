@@ -7,6 +7,7 @@ import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientInterface;
+import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.ds.*;
 
 
@@ -16,7 +17,7 @@ import com.viaoa.ds.*;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 public class OADataSourceClient extends OADataSource {
-    protected RemoteClientInterface client;
+    protected RemoteClientSyncInterface client;
     private Hashtable hashClass = new Hashtable();
 
     /** internal value to work with OAClient */
@@ -78,7 +79,7 @@ public class OADataSourceClient extends OADataSource {
     /**
         Create new OADataSourceClient that uses OAClient to communicate with OADataSource on OAServer.
     */
-    public OADataSourceClient(RemoteClientInterface client) {
+    public OADataSourceClient(RemoteClientSyncInterface client) {
         this.client = client;
     }
 
@@ -87,13 +88,13 @@ public class OADataSourceClient extends OADataSource {
         Automatically sets OAClient calling OAClient.getClient()
     */
     public OADataSourceClient() {
-        this(OASyncDelegate.getRemoteClientInterface());
+        this(OASyncDelegate.getRemoteClientSyncInterface());
     }
 
     /**
         Set OAClient that is used to communicate to OAServer's OADataSource.
     */
-    public void setClient(RemoteClientInterface client) {
+    public void setClient(RemoteClientSyncInterface client) {
         this.client = client;
     }
 

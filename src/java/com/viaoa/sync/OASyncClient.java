@@ -102,6 +102,7 @@ public class OASyncClient {
         getRemoteServerInterface();
         getRemoteSyncInterface();
         getRemoteClientInterface();
+        getRemoteClientSyncInterface();
         
         clientInfo.setStarted(true);
         LOG.config("startup completed successful");

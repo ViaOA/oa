@@ -369,13 +369,16 @@ public class RemoteMultiplexerClient {
 
             // check to see if return value is a remote object
             if (ri.response != null && ri.methodInfo.remoteReturn != null) {
-                String bindName = (String) ri.response;
+                Object[] responses = (Object[]) ri.response;
+                
+                String bindName = (String) responses[0];
 
                 BindInfo bindx = getBindInfo(bindName);
                 Object objx = bindx != null ? bindx.weakRef.get() : null;
                 if (bindx == null || objx == null) {
-                    Object obj = createProxyForCtoS(bindName, ri.methodInfo.remoteReturn, false);
-                    bindx = createBindInfo(bindName, obj, ri.methodInfo.remoteReturn, false);
+                    boolean bUsesQueue = (Boolean) responses[1];                    
+                    Object obj = createProxyForCtoS(bindName, ri.methodInfo.remoteReturn, bUsesQueue);
+                    bindx = createBindInfo(bindName, obj, ri.methodInfo.remoteReturn, bUsesQueue);
                 }
                 ri.response = bindx.getObject();
             }

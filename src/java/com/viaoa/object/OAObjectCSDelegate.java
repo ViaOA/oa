@@ -50,6 +50,8 @@ public class OAObjectCSDelegate {
 	    RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
 	    if (ri != null) {
             ri.setCached(oaObj, true);
+            int guid = oaObj.getKey().getGuid();
+            hashServerSideCache.add(guid);
  	    }
     }
 

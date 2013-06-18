@@ -3,6 +3,7 @@ package com.viaoa.sync;
 import java.util.logging.Level;
 
 import com.viaoa.sync.model.ClientInfo;
+import com.viaoa.sync.model.oa.User;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.util.OALogUtil;
@@ -21,6 +22,10 @@ public class OASyncClientTest {
         ClientInfo ci = client.getClientInfo();
         remoteServer = client.getRemoteServerInterface();
         remoteClient = client.getRemoteClientInterface();
+        
+        User user = new User();
+        user.setFirstName("test");
+        
         
         
         long ts1 = System.currentTimeMillis();
