@@ -240,12 +240,12 @@ public class HubAddRemoveDelegate {
 
         if (thisHub.contains(obj)) return;
         
-        String s = canAddMsg(thisHub, obj);
-        if (s != null) {
-            throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
-        }
         
         if (!thisHub.data.bInFetch) {
+            String s = canAddMsg(thisHub, obj);
+            if (s != null) {
+                throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
+            }
             HubEventDelegate.fireBeforeAddEvent(thisHub, obj, thisHub.getCurrentSize());
         }
     
