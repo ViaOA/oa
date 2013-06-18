@@ -20,17 +20,21 @@ public class OAObjectSaveDelegate {
         }
 
         OACascade cascade = new OACascade();
-    	save(oaObj, iCascadeRule, cascade);
+    	save(oaObj, iCascadeRule, cascade, true);
     }
 
-    // also called by HubSaveDelegate
     public static void save(OAObject oaObj, int iCascadeRule, OACascade cascade) {
+        save(oaObj, iCascadeRule, cascade, false);
+    }
+    
+    // also called by HubSaveDelegate
+    public static void save(OAObject oaObj, int iCascadeRule, OACascade cascade, boolean bIsFirst) {
         if (cascade.wasCascaded(oaObj, true)) return;
 
         // cascadeSave() will check hash to see if object has already been checked
         boolean b = (oaObj.newFlag || oaObj.changedFlag);
         OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
-        if (b) {
+        if (b || bIsFirst) {
             OAObjectSaveDelegate.onSave(oaObj); 
 
             WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);

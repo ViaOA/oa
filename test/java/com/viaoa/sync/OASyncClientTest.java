@@ -2,6 +2,7 @@ package com.viaoa.sync;
 
 import java.util.logging.Level;
 
+import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.util.OALogUtil;
@@ -9,24 +10,29 @@ import com.viaoa.util.OALogUtil;
 public class OASyncClientTest {
 
     OASyncClient client;
+    RemoteServerInterface remoteServer;
+    RemoteClientInterface remoteClient;
     
     public void test() throws Exception {
         client = new OASyncClient("localhost", 1099) {
         };
         client.start();
         
-        client.getClientInfo();
-        RemoteServerInterface rs = client.getRemoteServerInterface();
-        RemoteClientInterface rc = client.getRemoteClientInterface();
+        ClientInfo ci = client.getClientInfo();
+        remoteServer = client.getRemoteServerInterface();
+        remoteClient = client.getRemoteClientInterface();
         
-        boolean b = rc.isLockedByAnotherClient(null, null);
-        System.out.println("b="+b);
+        
         long ts1 = System.currentTimeMillis();
         for (int i=0; i<5000 ;i++) {
-            rs.ping("hey");
+            remoteServer.ping("hey");
         }
         long ts2 = System.currentTimeMillis();
         System.out.println("total time is="+ (ts2-ts1) );
+        
+        boolean b = remoteClient.isLockedByAnotherClient(null, null);
+        System.out.println("b="+b);
+        
     }
     
     
