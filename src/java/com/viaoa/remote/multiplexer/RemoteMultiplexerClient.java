@@ -573,12 +573,10 @@ ri.wait(915000);//qqqqqqq
         else b = false;
         if (b) { // private message for this client only
             byte bx = ois.readByte();
-            if (bx != 3) {
-                Object objx = ois.readObject();
-                if (bx == 0) ri.exception = (Exception) objx;
-                else if (bx == 1) ri.exceptionMessage = (String) objx;
-                else ri.response = objx;
-            }
+            Object objx = ois.readObject();
+            if (bx == 0) ri.exception = (Exception) objx;
+            else if (bx == 1) ri.exceptionMessage = (String) objx;
+            else ri.response = objx;
             ri.messageId = ois.readInt();
 
             RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);

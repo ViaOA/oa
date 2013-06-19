@@ -879,15 +879,14 @@ public class RemoteMultiplexerServer {
                 // sent by client, invoke method on object
                 Object obj = ri.bind.getObject();
                 if (obj == null) continue;
-                // note; since this is a broadcast msg, the return value is not used
          
                 OARemoteThread t = getRemoteClientThread(ri);
                 synchronized (t.Lock) {
                     t.Lock.notify();
                     t.Lock.wait(250);
                 }
-                ri.processedByServer = true;
                 synchronized (ri) {
+                    ri.processedByServer = true;
                     ri.notifyAll();  // waiting clients getting messages from queue 
                 }
             }
@@ -1175,8 +1174,8 @@ public class RemoteMultiplexerServer {
                     oos.writeBoolean(false); // flag to know this is a method call
                     oos.writeBoolean(false); // do not return a response
                     oos.writeAsciiString(ri.bindName);
-                    if (!ri.bind.isBroadcast) {
-                        oos.writeBoolean(true); // private message for this client only
+                    if (!ri.bind.isBroadcast || ri.connectionId == connectionId) {
+                        oos.writeBoolean(true); 
                         if (ri.exception != null) oos.writeByte(0); 
                         else if (ri.exceptionMessage != null) oos.writeByte(1); 
                         else oos.writeByte(2); 
@@ -1184,11 +1183,6 @@ public class RemoteMultiplexerServer {
                         if (ri.exception != null) oos.writeObject(ri.exception); 
                         else if (ri.exceptionMessage != null) oos.writeObject(ri.exceptionMessage); 
                         else oos.writeObject(ri.response);
-                        oos.writeInt(ri.messageId);
-                    }
-                    else if (ri.connectionId == connectionId) {
-                        oos.writeBoolean(true); // notify waiting thread
-                        oos.writeByte(3); 
                         oos.writeInt(ri.messageId);
                     }
                     else {
