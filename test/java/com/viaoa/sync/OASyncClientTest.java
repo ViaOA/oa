@@ -36,14 +36,11 @@ public class OASyncClientTest {
             comp = new Company();
             hub.add(comp);
         }
-        for (int i=0; i<250; i++) {
-            Thread.sleep(250);
+        for (int i=0; ; i++) {
+            // Thread.sleep(250);
             comp.setName(""+i);
-System.out.println(""+i);            
+if (i % 500 == 0) System.out.println(""+i);            
         }
-System.out.println("sleeping");            
-        Thread.sleep(10000);
-        System.out.println("===> "+comp.getName());
         
         
 /*        
@@ -65,8 +62,8 @@ System.out.println("sleeping");
     
     
     public static void main(String[] args) throws Exception {
-        // OALogUtil.consoleOnly(Level.FINEST, "com.viaoa");
-        OALogUtil.consoleOnly(Level.FINEST, "com.viaoa");
+        //OALogUtil.consoleOnly(Level.FINEST, "com.viaoa");
+        OALogUtil.disable();
         
         OASyncClientTest test = new OASyncClientTest();
         test.test();
