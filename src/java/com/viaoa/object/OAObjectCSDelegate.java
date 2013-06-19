@@ -262,7 +262,9 @@ public class OAObjectCSDelegate {
         }
         
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
-        rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob);
+        if (rs != null) {
+            rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob);
+        }
 	}
 	
 }

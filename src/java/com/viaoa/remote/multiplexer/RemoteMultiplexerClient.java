@@ -241,7 +241,8 @@ public class RemoteMultiplexerClient {
                 socket = null;
                 synchronized (ri) {
                     if (!ri.responseReturned) {
-                        ri.wait(15000);  // 15 second timeout
+ri.wait(915000);//qqqqqqq
+//                        ri.wait(15000);  // 15 second timeout
                     }
                 }
                 if (!ri.responseReturned) {
