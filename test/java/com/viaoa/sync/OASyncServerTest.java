@@ -2,6 +2,8 @@ package com.viaoa.sync;
 
 import java.util.logging.Level;
 
+import com.viaoa.sync.remote.TestImpl;
+import com.viaoa.sync.remote.TestInterface;
 import com.viaoa.util.OALogUtil;
 
 public class OASyncServerTest {
@@ -12,11 +14,13 @@ public class OASyncServerTest {
         server = new OASyncServer(1099) {
             @Override
             protected String getLogFileName() {
-                // TODO Auto-generated method stub
                 return super.getLogFileName();
             }
         };
         server.start();
+        
+        TestImpl ti = new TestImpl();
+        server.getRemoteMultiplexerServer().createLookup("test", ti, TestInterface.class);
     }
     
     

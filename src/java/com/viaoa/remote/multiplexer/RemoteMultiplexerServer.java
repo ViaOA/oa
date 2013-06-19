@@ -239,7 +239,7 @@ public class RemoteMultiplexerServer {
             ri.bindName = ois.readAsciiString();
             BindInfo bind = getBindInfo(ri.bindName);
             if (bind != null) {
-                ri.response = new Object[] {bind.interfaceClass, bind.usesQueue};
+                ri.response = new Object[] {bind.interfaceClass, bind.usesQueue, bind.isBroadcast};
                 if (bind.usesQueue) {
                     session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
                 }
@@ -842,7 +842,7 @@ public class RemoteMultiplexerServer {
         final long qPos = cq.getHeadPostion();
     
         // set up thread that will get messages from queue and send to client
-        final String threadName = "Client.queue."+asyncQueueName;
+        final String threadName = "Broadcast.queue."+asyncQueueName;
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {

@@ -164,6 +164,10 @@ public class RemoteMultiplexerClient {
         Object[] objs = (Object[]) ois.readObject();
         Class c = (Class) objs[0];
         boolean bUsesQueue = (Boolean) objs[1]; 
+        boolean bIsBroadcast = (Boolean) objs[2];
+        if (bIsBroadcast) {
+            throw new Exception("must use lookupBroadcast() for "+lookupName+", instead of lookup()");
+        }
         
         releaseSocketForCtoS(socket);
         LOG.fine("lookupName=" + lookupName + ", interface class=" + c);
@@ -605,7 +609,7 @@ ri.wait(915000);//qqqqqqq
         if (ri.bind.usesQueue) {
             OARemoteThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
-                t.Lock.notify();
+                t.Lock.notify();  // have RemoteClientThread process the message
                 t.Lock.wait(250);
             }
         }

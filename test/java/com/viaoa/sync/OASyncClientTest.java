@@ -2,10 +2,13 @@ package com.viaoa.sync;
 
 import java.util.logging.Level;
 
+import com.viaoa.hub.Hub;
 import com.viaoa.sync.model.ClientInfo;
+import com.viaoa.sync.model.oa.Company;
 import com.viaoa.sync.model.oa.User;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
+import com.viaoa.sync.remote.TestInterface;
 import com.viaoa.util.OALogUtil;
 
 public class OASyncClientTest {
@@ -18,16 +21,36 @@ public class OASyncClientTest {
         client = new OASyncClient("localhost", 1099) {
         };
         client.start();
-        
+
         ClientInfo ci = client.getClientInfo();
         remoteServer = client.getRemoteServerInterface();
         remoteClient = client.getRemoteClientInterface();
+
         
+        
+        TestInterface ti = (TestInterface) client.getRemoteMultiplexerClient().lookup("test");
+        Hub<Company> hub = ti.getCompanies();
+
+        Company comp = hub.getAt(0);
+        if (comp == null) {
+            comp = new Company();
+            hub.add(comp);
+        }
+        for (int i=0; i<250; i++) {
+            Thread.sleep(250);
+            comp.setName(""+i);
+System.out.println(""+i);            
+        }
+System.out.println("sleeping");            
+        Thread.sleep(10000);
+        System.out.println("===> "+comp.getName());
+        
+        
+/*        
         User user = new User();
         user.setFirstName("test");
-        
-        
-        
+        comp.getUsers().add(user);
+
         long ts1 = System.currentTimeMillis();
         for (int i=0; i<5000 ;i++) {
             remoteServer.ping("hey");
@@ -37,13 +60,13 @@ public class OASyncClientTest {
         
         boolean b = remoteClient.isLockedByAnotherClient(null, null);
         System.out.println("b="+b);
-        
+*/        
     }
     
     
     public static void main(String[] args) throws Exception {
         // OALogUtil.consoleOnly(Level.FINEST, "com.viaoa");
-        OALogUtil.disable();
+        OALogUtil.consoleOnly(Level.FINEST, "com.viaoa");
         
         OASyncClientTest test = new OASyncClientTest();
         test.test();

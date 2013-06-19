@@ -10,6 +10,7 @@ import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
+import com.viaoa.sync.remote.RemoteSyncImpl;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.OADateTime;
 
@@ -49,7 +50,8 @@ public class OASyncClient {
     }
     public RemoteSyncInterface getRemoteSyncInterface() throws Exception {
         if (remoteSyncInterface == null) {
-            remoteSyncInterface = (RemoteSyncInterface) getRemoteMultiplexerClient().lookup(SyncLookupName);
+            RemoteSyncInterface ri = new RemoteSyncImpl();
+            remoteSyncInterface = (RemoteSyncInterface) getRemoteMultiplexerClient().lookupBroadcast(SyncLookupName, ri);
             OASyncDelegate.setRemoteSyncInterface(remoteSyncInterface);
         }
         return remoteSyncInterface;
