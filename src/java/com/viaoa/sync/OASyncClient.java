@@ -32,6 +32,7 @@ public class OASyncClient {
     private RemoteClientInterface remoteClientInterface;
     private RemoteClientSyncInterface remoteClientSyncInterface;
     private RemoteSyncInterface remoteSyncInterface;
+    private RemoteSyncImpl remoteSyncImpl;
     private String serverHostName;
     private int serverHostPort;
 
@@ -48,10 +49,16 @@ public class OASyncClient {
         }
         return remoteServerInterface;
     }
+    // used for oasync callback (messages from other computers)
+    public RemoteSyncImpl getRemoteSyncImpl() throws Exception {
+        if (remoteSyncImpl == null) {
+            remoteSyncImpl = new RemoteSyncImpl();
+        }
+        return remoteSyncImpl;
+    }
     public RemoteSyncInterface getRemoteSyncInterface() throws Exception {
         if (remoteSyncInterface == null) {
-            RemoteSyncInterface ri = new RemoteSyncImpl();
-            remoteSyncInterface = (RemoteSyncInterface) getRemoteMultiplexerClient().lookupBroadcast(SyncLookupName, ri);
+            remoteSyncInterface = (RemoteSyncInterface) getRemoteMultiplexerClient().lookupBroadcast(SyncLookupName, getRemoteSyncImpl());
             OASyncDelegate.setRemoteSyncInterface(remoteSyncInterface);
         }
         return remoteSyncInterface;

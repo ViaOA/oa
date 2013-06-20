@@ -114,7 +114,6 @@ public class RemoteMultiplexerClient {
         }
         Class c = (Class) ois.readObject();
         
-        
         releaseSocketForCtoS(socket);
         LOG.fine("lookupName=" + lookupName + ", interface class=" + c);
 
@@ -122,17 +121,8 @@ public class RemoteMultiplexerClient {
             throw new Exception("callback must be same class as "+c);
         }
 
-        proxyInstance = createProxyForCtoS(lookupName, c, true);
+        proxyInstance = createProxyForCtoS(lookupName, c, true, callback);
         hmLookup.put(lookupName, proxyInstance);
-        
-        BindInfo bindx = getBindInfo(callback);
-        Object objx = bindx != null ? bindx.weakRef.get() : null;
-        if (bindx == null || objx == null) {
-            bindx = createBindInfo(lookupName, callback, c, true);
-            if (!bFirstStoCsocketCreated) {
-                createSocketForStoC(); // to process message from server to this object
-            }
-        }
         return proxyInstance;
     }    
     
@@ -219,6 +209,28 @@ public class RemoteMultiplexerClient {
         LOG.fine("Created proxy instance, class=" + c + ", name=" + name);
         return proxy;
     }
+    
+    protected Object createProxyForCtoS(String name, Class c, boolean bUsesQueue, Object callback) throws Exception {
+        final BindInfo bind = createBindInfo(name, callback, c, bUsesQueue);
+        InvocationHandler handler = new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                Object result = RemoteMultiplexerClient.this.onInvokeForCtoS(bind, proxy, method, args);
+                return result;
+            }
+        };
+        Object proxy = Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, handler);
+        bind.loadMethodInfo();
+
+        if (bind.usesQueue) {
+            if (!bFirstStoCsocketCreated) {
+                createSocketForStoC(); // to process message from server to this object
+            }
+        }
+        
+        LOG.fine("Created proxy instance, class=" + c + ", name=" + name);
+        return proxy;
+    }
 
     protected Object onInvokeForCtoS(BindInfo bind, Object proxy, Method method, Object[] args) throws Throwable {
         RequestInfo ri = new RequestInfo();
@@ -245,8 +257,7 @@ public class RemoteMultiplexerClient {
                 socket = null;
                 synchronized (ri) {
                     if (!ri.responseReturned) {
-ri.wait(915000);//qqqqqqq
-//                        ri.wait(15000);  // 15 second timeout
+                        ri.wait(15000);  // 15 second timeout
                     }
                 }
                 if (!ri.responseReturned) {
@@ -536,7 +547,7 @@ ri.wait(915000);//qqqqqqq
                 }
             }
         };
-        t.setName("RemoteClientThread."+aiClientThreadCount.getAndIncrement());
+        t.setName("OARemoteThread."+aiClientThreadCount.getAndIncrement());
         t.start();
         return t;
     }
@@ -682,15 +693,17 @@ ri.wait(915000);//qqqqqqq
 
         Object remoteObject = ri.bind.getObject();
         if (remoteObject == null) {
-            // 20130601 send message to server to remove client remote object from session
+            ri.exceptionMessage = "remote Object has been garbage collected";
+
+            /*
+            // send message to server to remove client remote object from session
             VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
             RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
             oos.writeByte(CtoS_Command_RemoveSessionBroadcastThread);
             oos.writeAsciiString(ri.bind.name);
             oos.flush();
             releaseSocketForCtoS(socket);
-            
-            ri.exceptionMessage = "remote Object has been garbage collected, message sent to server to stop thread";
+            */
             return;
         }
         

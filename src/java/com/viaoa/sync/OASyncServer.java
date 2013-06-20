@@ -154,7 +154,7 @@ public class OASyncServer {
         return rc;
     }
 
-    // qqqq needs to be called by server   qqqqqqqqq need something similar
+    // qqqq needs to be called by server   qqqqqqqqq need something similar ?? this should already be working
     //   for query objects/hubs, etc 
     public void saveCache(OACascade cascade, int iCascadeRule) {
         for (Map.Entry<Integer, ClientInfoExt> entry : hmClientInfoExt.entrySet()) {
@@ -310,7 +310,6 @@ public class OASyncServer {
      * Thread that will get requests from the queue, and write to request log file.
      */
     void startRequestLoggerThread() throws Exception {
-      //qqqqqqqqqqqqqqqqqqqqqqqq
         if (true || false) return;        
         LOG.fine("starting log thread");
         if (threadStatsLogger != null) return;

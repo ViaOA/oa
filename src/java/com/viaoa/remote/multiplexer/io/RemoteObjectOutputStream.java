@@ -39,13 +39,6 @@ public class RemoteObjectOutputStream extends ObjectOutputStream {
         super(new RemoteBufferedOutputStream(socket.getOutputStream()));
         this.hmClassDesc = hmClassDesc;
         this.aiClassDesc = aiClassDesc;
-
-//qqqqqqqqqqqqqqqqqqq        
-        if (socket.getConnectionId() == 2) {
-            //qqqqqqqqqqqqqqqqqqqqq
-            int xx = 4;
-            xx++;
-        }
     }
     
     @Override

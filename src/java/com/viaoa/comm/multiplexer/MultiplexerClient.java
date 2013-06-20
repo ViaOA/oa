@@ -116,7 +116,7 @@ public class MultiplexerClient {
     }
     
     public void runKeepAliveThread() {
-        if (keepAliveSeconds < 1 && _bCreated) return;
+        if (keepAliveSeconds < 1) return;
         if (keepAliveThread != null) return;
         keepAliveThread = new Thread(new Runnable() {
             @Override
