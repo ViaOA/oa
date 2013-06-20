@@ -1,18 +1,18 @@
 package com.viaoa.sync.remote;
 
-import com.viaoa.hub.Hub;
-import com.viaoa.sync.model.oa.Company;
+import com.viaoa.sync.model.oa.ServerRoot;
+
 
 public class TestImpl implements TestInterface {
+    private ServerRoot serverRoot;
 
-    private Hub<Company> hubCompanies;
-    
     @Override
-    public Hub<Company> getCompanies() {
-        if (hubCompanies == null) {
-            hubCompanies = new Hub<Company>(Company.class);
+    public ServerRoot getServerRoot() {
+        if (serverRoot == null) {
+            serverRoot = new ServerRoot();
         }
-        return hubCompanies;
+        return serverRoot;
     }
+    
 
 }

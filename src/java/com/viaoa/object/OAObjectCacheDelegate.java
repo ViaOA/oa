@@ -1,9 +1,9 @@
 package com.viaoa.object;
 
+
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;

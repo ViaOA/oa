@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import com.viaoa.hub.Hub;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.model.oa.Company;
+import com.viaoa.sync.model.oa.ServerRoot;
 import com.viaoa.sync.model.oa.User;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
@@ -29,15 +30,16 @@ public class OASyncClientTest {
         
         
         TestInterface ti = (TestInterface) client.getRemoteMultiplexerClient().lookup("test");
-        Hub<Company> hub = ti.getCompanies();
+        ServerRoot serverRoot = ti.getServerRoot();
+        Hub<Company> hub = serverRoot.getCompanies();
 
         Company comp = hub.getAt(0);
         if (comp == null) {
             comp = new Company();
             hub.add(comp);
         }
-        for (int i=0; ; i++) {
-            // Thread.sleep(250);
+        for (int i=0; i<5; i++) {
+            Thread.sleep(1250);
             comp.setName(""+i);
 if (i % 500 == 0) System.out.println(""+i);            
         }
