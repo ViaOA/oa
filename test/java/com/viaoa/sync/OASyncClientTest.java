@@ -11,6 +11,7 @@ import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.TestInterface;
 import com.viaoa.util.OALogUtil;
+import com.viaoa.util.OAString;
 
 public class OASyncClientTest {
 
@@ -38,9 +39,10 @@ public class OASyncClientTest {
             comp = new Company();
             hub.add(comp);
         }
-        for (int i=0; i<5; i++) {
-            Thread.sleep(1250);
-            comp.setName(""+i);
+        String prefix = OAString.getRandomString(5, 7);
+        for (int i=0; ; i++) {
+            // Thread.sleep(125);
+            comp.setName(prefix+"."+i);
 if (i % 500 == 0) System.out.println(""+i);            
         }
         
