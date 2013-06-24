@@ -61,8 +61,13 @@ public class OAObjectEventDelegate {
         
         if (oldObj == newObj) return;
         if (oldObj != null && oldObj.equals(newObj)) return;
-	    
-		sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
+
+        sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
+        
+        if (!bLocalOnly) {
+            // prior to 20100406, this was always calling these methods
+            OAObjectCSDelegate.fireBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
+        }
 	}
 	
 

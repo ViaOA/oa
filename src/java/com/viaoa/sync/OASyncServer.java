@@ -282,6 +282,22 @@ public class OASyncServer {
         return remoteMultiplexerServer;
     }
 
+    public void createLookup(String name, Object obj, Class interfaceClass) {
+        getRemoteMultiplexerServer().createLookup(name, obj, interfaceClass, null, -1);
+    }
+    public void createLookup(String name, Object obj, Class interfaceClass, String queueName, int queueSize) {
+        getRemoteMultiplexerServer().createLookup(name, obj, interfaceClass, queueName, queueSize);
+    }
+    public Object createBroadcast(final String bindName, Class interfaceClass, String queueName, int queueSize) {
+        return getRemoteMultiplexerServer().createBroadcast(bindName, interfaceClass, queueName, queueSize);
+    }
+    public Object createBroadcast(final String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
+        return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, queueName, queueSize);
+    }
+
+    
+    
+
     /*
     protected void afterInvokeRemoteMethod(RequestInfo ri) {
         if (ri == null) return;

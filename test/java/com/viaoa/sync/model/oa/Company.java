@@ -14,6 +14,7 @@ public class Company extends OAObject {
         return name;
     }
     public void setName(String newValue) {
+        fireBeforePropertyChange(PROPERTY_Name, this.name, newValue);
         String old = this.name;
         this.name = newValue;
         firePropertyChange(PROPERTY_Name, old, this.name);

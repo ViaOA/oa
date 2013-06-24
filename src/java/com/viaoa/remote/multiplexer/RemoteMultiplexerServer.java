@@ -604,7 +604,7 @@ public class RemoteMultiplexerServer {
     protected BindInfo getBindInfo(Object obj) {
         if (obj == null) return null;
         for (BindInfo bindx : hmNameToBind.values()) {
-            if (bindx.weakRef.get() == obj) {
+            if (bindx.weakRef != null && bindx.weakRef.get() == obj) {
                 return bindx;
             }
         }
@@ -709,6 +709,10 @@ public class RemoteMultiplexerServer {
             }
         }
         return bind;
+    }
+
+    public Object createBroadcast(final String bindName, Class interfaceClass, String queueName, int queueSize) {
+        return createBroadcast(bindName, null, interfaceClass, queueName, queueSize);
     }
     
     /**

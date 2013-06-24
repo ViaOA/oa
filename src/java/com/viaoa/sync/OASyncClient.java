@@ -78,6 +78,15 @@ public class OASyncClient {
         return remoteClientSyncInterface;
     }
     
+
+    public Object lookup(String lookupName) throws Exception {
+        return getRemoteMultiplexerClient().lookup(lookupName);
+    }
+    public Object lookupBroadcast(String lookupName, Object callback) throws Exception {
+        return getRemoteMultiplexerClient().lookupBroadcast(lookupName, callback);
+    }
+    
+    
     public ClientInfo getClientInfo() {
         if (clientInfo == null) {
             clientInfo = new ClientInfo();

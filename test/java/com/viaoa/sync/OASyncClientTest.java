@@ -1,12 +1,10 @@
 package com.viaoa.sync;
 
-import java.util.logging.Level;
-
 import com.viaoa.hub.Hub;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.model.oa.Company;
 import com.viaoa.sync.model.oa.ServerRoot;
-import com.viaoa.sync.model.oa.User;
+import com.viaoa.sync.remote.BroadcastImpl;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.TestInterface;
@@ -18,6 +16,7 @@ public class OASyncClientTest {
     OASyncClient client;
     RemoteServerInterface remoteServer;
     RemoteClientInterface remoteClient;
+    volatile boolean started=true;
     
     public void test() throws Exception {
         client = new OASyncClient("localhost", 1099) {
@@ -27,23 +26,39 @@ public class OASyncClientTest {
         ClientInfo ci = client.getClientInfo();
         remoteServer = client.getRemoteServerInterface();
         remoteClient = client.getRemoteClientInterface();
-
         
-        
-        TestInterface ti = (TestInterface) client.getRemoteMultiplexerClient().lookup("test");
+        TestInterface ti = (TestInterface) client.lookup("test");
         ServerRoot serverRoot = ti.getServerRoot();
         Hub<Company> hub = serverRoot.getCompanies();
 
-        Company comp = hub.getAt(0);
-        if (comp == null) {
-            comp = new Company();
-            hub.add(comp);
+        Company company = hub.getAt(0);
+        if (company == null) {
+            company = new Company();
+            hub.add(company);
         }
+        
+        BroadcastImpl bc = new BroadcastImpl(company) {
+            @Override
+            public void start() {
+                started = true;
+            }
+            @Override
+            public void stop() {
+                started = false;
+            }
+        };
+        client.getRemoteMultiplexerClient().lookupBroadcast("broadcast", bc);
+        
         String prefix = OAString.getRandomString(5, 7);
         for (int i=0; ; i++) {
-            // Thread.sleep(125);
-            comp.setName(prefix+"."+i);
-if (i % 500 == 0) System.out.println(""+i);            
+            if (!started) {
+                System.out.println("Stopped, company.name="+company.getName());
+                Thread.sleep(250);
+            }
+            else {
+                company.setName(prefix+"."+i);
+                if (i % 500 == 0) System.out.println(""+i);
+            }
         }
         
         

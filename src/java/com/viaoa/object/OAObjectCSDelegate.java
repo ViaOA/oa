@@ -229,9 +229,52 @@ public class OAObjectCSDelegate {
 	
 	
 //qqqqqqqq this needs to be changed to be called beforePropertyChange	
+    protected static void fireBeforePropertyChange(OAObject obj, String propertyName, Object oldValue, Object newValue) {
+
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        if (rs == null) return;
+        
+        if (!OARemoteThreadDelegate.shouldSendMessages()) return;
+        
+        if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
+        if (OAThreadLocalDelegate.isSkipObjectInitialize()) return;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
+
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
+        if (oi.getLocalOnly()) return;
+
+        LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
+        
+        // 20130319 dont send out calc prop changes
+        OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, propertyName);
+        if (li != null && li.bCalculated) return;
+        // LOG.finer("object="+obj+", key="+origKey+", prop="+propertyName+", newValue="+newValue+", oldValue="+oldValue);
+
+        
+        // 20130318 if blob, then set a flag so that the server does not broadcast to all clients
+        //     the clients (OAClient.procesPropChange) will recv the msg and know how to handle it.
+        //       so that the next time the prop getXxx is called, it will then get it from the server
+        boolean bIsBlob = false;
+        if (newValue != null && newValue instanceof byte[]) {
+            byte[] bs = (byte[]) newValue;
+            if (bs.length > 400) {
+                OAPropertyInfo pi = OAObjectInfoDelegate.getPropertyInfo(oi, propertyName);
+                if (pi.isBlob()) {
+                    bIsBlob = true;
+                }
+            }
+        }
+        
+        OAObjectKey key = obj.getKey();
+        rs.propertyChange(obj.getClass(), key, propertyName, newValue, bIsBlob);
+	}
+	
     protected static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue) {
         LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
         
+//qqqqqqqqqqqqqqqqqqqqqqq
+if (true || false) return; //qqqqqqqqqqqqqqqqqqqqqq
+
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
         
         if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
@@ -265,8 +308,7 @@ public class OAObjectCSDelegate {
         if (rs != null) {
             rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob);
         }
-	}
-	
+    }
 }
 
 
