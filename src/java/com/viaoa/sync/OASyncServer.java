@@ -103,7 +103,7 @@ public class OASyncServer {
         return remoteClientSyncForServer;
     }
     
-    protected RemoteClientInterface createRemoteClient(ClientInfo clientInfo) {
+    protected RemoteClientInterface createRemoteClient(final ClientInfo clientInfo) {
         if (clientInfo == null) return null;
         final ClientInfoExt cx = hmClientInfoExt.get(clientInfo.getConnectionId());
         if (cx == null) return null;
@@ -134,6 +134,10 @@ public class OASyncServer {
                     b = isLockedByAnotherClient(objectClass, objectKey);
                 }
                 return b;
+            }
+            @Override
+            public void sendException(String msg, Throwable ex) {
+                OASyncServer.this.onClientException(clientInfo, msg, ex);
             }
         };
         cx.remoteClient = rc;
@@ -250,6 +254,15 @@ public class OASyncServer {
         }
     }
   
+    protected void onClientException(ClientInfo clientInfo, String msg, Throwable ex) {
+        if (clientInfo != null) {
+            msg = String.format(
+                "ConnectionId=%d, User=%s, msg=%s", 
+                clientInfo.getConnectionId(), clientInfo.getUserName());
+        }
+        LOG.log(Level.WARNING, msg, ex);
+    }
+    
     public String getDisplayMessage() {
         String msg = String.format("Server started=%s, version=%s, started=%b, host=%s, " +
                 "ipAddress=%s, discovery=%b",
@@ -432,5 +445,7 @@ public class OASyncServer {
             getRemoteMultiplexerServer().performDGC();
         }
     }
+    
+    
 }
 

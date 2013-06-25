@@ -15,4 +15,6 @@ public interface RemoteClientInterface {
     boolean isLocked(Class objectClass, OAObjectKey objectKey);
     boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey);
     boolean isLockedByThisClient(Class objectClass, OAObjectKey objectKey);
+    
+    void sendException(String msg, Throwable ex);
 }

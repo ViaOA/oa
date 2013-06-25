@@ -103,6 +103,9 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
 
     @Override
     public abstract boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey);
+    
+    @Override
+    public abstract void sendException(String msg, Throwable ex);
 }
 
 

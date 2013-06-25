@@ -6,7 +6,7 @@ gss.lt.ll.intcx.net
 
 ll-lt-gsmr-01
 
-
+ord-pr-gsmr-01
 
 
 This is needed for Operator to work:
