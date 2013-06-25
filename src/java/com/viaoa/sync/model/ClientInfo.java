@@ -26,6 +26,14 @@ public class ClientInfo implements Serializable{
     protected volatile int totalRequests;
     protected volatile long totalRequestTime; // nanoseconds
 
+    protected String userId;
+    protected String userName;
+    protected String location;
+    
+    protected long totalMemory;
+    protected long freeMemory;
+    
+    
     public ClientInfo() {
     }
     
@@ -91,7 +99,6 @@ public class ClientInfo implements Serializable{
         this.serverHostName = gsmrServerHostName;
     }
 
-    
     public int getServerHostPort() {
         return serverHostPort;
     }
@@ -103,5 +110,36 @@ public class ClientInfo implements Serializable{
     }
     public void setStarted(boolean started) {
         this.started = started;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+    public void setUserId(String user) {
+        this.userId = user;
+    }
+    public String getUserName() {
+        return userName;
+    }
+    public void setUserName(String user) {
+        this.userName = user;
+    }
+    public String getLocation() {
+        return location;
+    }
+    public void setLocation(String loc) {
+        this.location = loc;
+    }
+    public long getTotalMemory() {
+        return totalMemory;
+    }
+    public void setTotalMemory(long totalMemory) {
+        this.totalMemory = totalMemory;
+    }
+    public long getFreeMemory() {
+        return freeMemory;
+    }
+    public void setFreeMemory(long freeMemory) {
+        this.freeMemory = freeMemory;
     }
 }

@@ -1,16 +1,12 @@
 package com.viaoa.sync.remote;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDataDelegate;
-import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectInfo;
-import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
@@ -67,10 +63,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         if (objx instanceof Hub) return (Hub) objx;
         return null;
     }
-    
-    
-    
-    
+
     @Override
     public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, 
             String hubPropertyName, Object obj) {

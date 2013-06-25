@@ -180,6 +180,9 @@ public class OASyncServer {
         return serverInfo;
     }
     
+    public void setInvalidConnectionMessage(String msg) {
+        getMultiplexerServer().setInvalidConnectionMessage(msg);
+    }
     
     /**
      * Used to manage multiplexed socket connections from client computers.
@@ -423,4 +426,11 @@ public class OASyncServer {
             multiplexerServer.stop();
         }
     }
+    
+    public void performDGC() {
+        if (remoteMultiplexerServer != null) {
+            getRemoteMultiplexerServer().performDGC();
+        }
+    }
 }
+
