@@ -14,7 +14,7 @@ import com.viaoa.util.OAString;
  * The combined Hub (see getCombinedHub) uses OAObject OALeftJoin<A,B>, where A is the 
  * same class as the left Hub and B is the same as the right Hub.
  * 
- * A property path that uses A or B will need to using casting.  
+ * A property path that uses A or B will need to use casting.  
  * Example:  LeftHub=hubDepartments, RightHub=hubEmployees with last name "Jones" 
  *    the combined Hub A=Dept ref, B=Employee ref, can use hubCombined with properties
  *    from A or B, with casting: 
@@ -185,8 +185,4 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
             }
         }
     }
-    
 }
-
-
-

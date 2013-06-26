@@ -3,8 +3,8 @@ package com.viaoa.object;
 import com.viaoa.annotation.OAClass;
 
 /**
- * Utility class, used for an object that creates a reference to two others objects.
- * This is used by HubCombined to combine two hubs, to create a hub of objects similar
+ * Utility class, used by HubLeftJoin, as an object that creates a reference to two others objects.
+ * This is used by HubCombined to combine two hubs, to create a hub of objects - similar
  * to a database "left join"
  * @author vvia
  *
