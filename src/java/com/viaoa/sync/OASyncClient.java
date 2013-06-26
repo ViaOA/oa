@@ -5,6 +5,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
+import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectKey;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientInterface;
@@ -41,6 +43,17 @@ public class OASyncClient {
         this.serverHostPort = serverHostPort;
         OASyncDelegate.setSyncClient(this);
     }
+
+    public Object getDetail(OAObject oaObj, String propertyName) {
+        Object objx = null;
+        try {
+            objx = getRemoteClientSyncInterface().getDetail(oaObj.getClass(), oaObj.getKey(), propertyName);
+        }
+        catch (Exception e) {
+        }
+        return objx;
+    }
+
     
     public RemoteServerInterface getRemoteServerInterface() throws Exception {
         if (remoteServerInterface == null) {

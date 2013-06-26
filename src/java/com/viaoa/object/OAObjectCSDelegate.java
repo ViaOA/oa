@@ -182,9 +182,9 @@ public class OAObjectCSDelegate {
         LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
         Object obj = null;
         
-        RemoteClientSyncInterface ri = OASyncDelegate.getRemoteClientSyncInterface();
-        if (ri != null) {
-            obj = ri.getDetail(oaObj.getClass(), oaObj.getKey(), linkPropertyName);
+        OASyncClient sc = OASyncDelegate.getSyncClient();
+        if (sc != null) {
+            obj = sc.getDetail(oaObj, linkPropertyName);
         }
         if (obj instanceof byte[]) return (byte[]) obj;
         return null;
@@ -195,9 +195,9 @@ public class OAObjectCSDelegate {
 	protected static Hub getServerReferenceHub(OAObject oaObj, String linkPropertyName) {
         LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
     	Hub hub = null;
-        RemoteClientSyncInterface ri = OASyncDelegate.getRemoteClientSyncInterface();
-        if (ri != null) {
-            Object obj = ri.getDetail(oaObj.getClass(), oaObj.getKey(), linkPropertyName);
+        OASyncClient sc = OASyncDelegate.getSyncClient();
+        if (sc != null) {
+            Object obj = sc.getDetail(oaObj, linkPropertyName);
             if (obj instanceof Hub) hub = (Hub) obj;
         }
         if (hub == null) {
