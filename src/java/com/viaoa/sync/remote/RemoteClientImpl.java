@@ -9,6 +9,8 @@ import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSaveDelegate;
+import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
+import com.viaoa.sync.model.ClientInfo;
 
 // see: OAClient
 
@@ -90,7 +92,6 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         return obj;
     }
     
-    
     @Override
     public boolean isLockedByThisClient(Class objectClass, OAObjectKey objectKey) {
         Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
@@ -106,7 +107,8 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     
     @Override
     public abstract void sendException(String msg, Throwable ex);
+    
+    @Override
+    public void update(ClientInfo ci) {
+    }
 }
-
-
-

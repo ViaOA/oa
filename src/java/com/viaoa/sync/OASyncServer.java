@@ -40,6 +40,10 @@ public class OASyncServer {
     private ArrayBlockingQueue<RequestInfo> queRemoteRequestLogging;
 
     private ConcurrentHashMap<Integer, ClientInfoExt> hmClientInfoExt = new ConcurrentHashMap<Integer, OASyncServer.ClientInfoExt>();
+
+    private ClientInfo clientInfo;
+    private RemoteClientInterface remoteClientForServer;
+    private RemoteClientSyncInterface remoteClientSyncForServer;
     
     /** information about this server instance */
     private ServerInfo serverInfo;
@@ -61,12 +65,12 @@ public class OASyncServer {
         if (remoteServer == null) {
             remoteServer = new RemoteServerImpl() {
                 @Override
-                public RemoteClientInterface getRemoteClientInterface(ClientInfo clientInfo) {
-                    return createRemoteClient(clientInfo);
+                public RemoteClientInterface getRemoteClientInterface(ClientInfo ci) {
+                    return createRemoteClient(ci);
                 }
                 @Override
-                public RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo clientInfo) {
-                    return createRemoteClientSync(clientInfo);
+                public RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo ci) {
+                    return createRemoteClientSync(ci);
                 }
             };
             OASyncDelegate.setRemoteServerInterface(remoteServer);
@@ -75,9 +79,6 @@ public class OASyncServer {
         return remoteServer;
     }
 
-    private ClientInfo clientInfo;
-    private RemoteClientInterface remoteClientForServer;
-    private RemoteClientSyncInterface remoteClientSyncForServer;
     
     
     protected ClientInfo getClientInfo() {
@@ -103,9 +104,9 @@ public class OASyncServer {
         return remoteClientSyncForServer;
     }
     
-    protected RemoteClientInterface createRemoteClient(final ClientInfo clientInfo) {
-        if (clientInfo == null) return null;
-        final ClientInfoExt cx = hmClientInfoExt.get(clientInfo.getConnectionId());
+    protected RemoteClientInterface createRemoteClient(final ClientInfo ci) {
+        if (ci == null) return null;
+        final ClientInfoExt cx = hmClientInfoExt.get(ci.getConnectionId());
         if (cx == null) return null;
         
         RemoteClientImpl rc = new RemoteClientImpl() {
@@ -137,15 +138,26 @@ public class OASyncServer {
             }
             @Override
             public void sendException(String msg, Throwable ex) {
-                OASyncServer.this.onClientException(clientInfo, msg, ex);
+                OASyncServer.this.onClientException(ci, msg, ex);
+            }
+            @Override
+            public void update(ClientInfo ci) {
+                OASyncServer.this.onUpdate(ci);
             }
         };
         cx.remoteClient = rc;
         return rc;
     }
-    protected RemoteClientSyncInterface createRemoteClientSync(ClientInfo clientInfo) {
-        if (clientInfo == null) return null;
-        final ClientInfoExt cx = hmClientInfoExt.get(clientInfo.getConnectionId());
+
+    public void onUpdate(ClientInfo ci) {
+        int cid = ci.getConnectionId();
+        ClientInfoExt cx = hmClientInfoExt.get(cid);
+        if (cx != null) cx.ci = ci;
+    }
+    
+    protected RemoteClientSyncInterface createRemoteClientSync(ClientInfo ci) {
+        if (ci == null) return null;
+        final ClientInfoExt cx = hmClientInfoExt.get(ci.getConnectionId());
         if (cx == null) return null;
         
         RemoteClientSyncImpl rc = new RemoteClientSyncImpl() {
@@ -254,11 +266,11 @@ public class OASyncServer {
         }
     }
   
-    protected void onClientException(ClientInfo clientInfo, String msg, Throwable ex) {
-        if (clientInfo != null) {
+    protected void onClientException(ClientInfo ci, String msg, Throwable ex) {
+        if (ci != null) {
             msg = String.format(
                 "ConnectionId=%d, User=%s, msg=%s", 
-                clientInfo.getConnectionId(), clientInfo.getUserName(), msg);
+                ci.getConnectionId(), ci.getUserName(), msg);
         }
         LOG.log(Level.WARNING, msg, ex);
     }
@@ -445,7 +457,5 @@ public class OASyncServer {
             getRemoteMultiplexerServer().performDGC();
         }
     }
-    
-    
 }
 

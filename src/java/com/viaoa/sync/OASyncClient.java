@@ -44,6 +44,27 @@ public class OASyncClient {
         OASyncDelegate.setSyncClient(this);
     }
 
+    public void startClientUpdateThread(final int seconds) {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (;;) {
+                    getClientInfo().setFreeMemory(Runtime.getRuntime().freeMemory());
+                    clientInfo.setTotalMemory(Runtime.getRuntime().totalMemory());
+                    try {
+                        getRemoteClientInterface().update(clientInfo);
+                        Thread.sleep(seconds * 1000);
+                    }
+                    catch (Exception e) {
+                    }
+                }
+            }
+        }, "UpdateClientInfo");
+        t.setDaemon(true);
+        t.start();
+        
+    }
+    
     public Object getDetail(OAObject oaObj, String propertyName) {
         Object objx = null;
         try {
