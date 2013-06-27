@@ -258,7 +258,7 @@ public class OASyncServer {
         if (clientInfo != null) {
             msg = String.format(
                 "ConnectionId=%d, User=%s, msg=%s", 
-                clientInfo.getConnectionId(), clientInfo.getUserName());
+                clientInfo.getConnectionId(), clientInfo.getUserName(), msg);
         }
         LOG.log(Level.WARNING, msg, ex);
     }

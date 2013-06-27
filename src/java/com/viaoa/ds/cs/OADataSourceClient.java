@@ -1,12 +1,9 @@
 package com.viaoa.ds.cs;
 
 import java.util.*;
-import java.io.*;
 
 import com.viaoa.object.*;
-import com.viaoa.hub.*;
 import com.viaoa.sync.*;
-import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.ds.*;
 
@@ -17,8 +14,8 @@ import com.viaoa.ds.*;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 public class OADataSourceClient extends OADataSource {
-    protected RemoteClientSyncInterface client;
     private Hashtable hashClass = new Hashtable();
+    private RemoteClientSyncInterface remoteClientSync;
 
     /** internal value to work with OAClient */
     public static final int IS_AVAILABLE = 0;
@@ -79,41 +76,32 @@ public class OADataSourceClient extends OADataSource {
     /**
         Create new OADataSourceClient that uses OAClient to communicate with OADataSource on OAServer.
     */
-    public OADataSourceClient(RemoteClientSyncInterface client) {
-        this.client = client;
-    }
-
-    /**
-        Create new OADataSourceClient that uses OAClient to communicate with OADataSource on OAServer.
-        Automatically sets OAClient calling OAClient.getClient()
-    */
     public OADataSourceClient() {
-        this(OASyncDelegate.getRemoteClientSyncInterface());
     }
 
-    /**
-        Set OAClient that is used to communicate to OAServer's OADataSource.
-    */
-    public void setClient(RemoteClientSyncInterface client) {
-        this.client = client;
+    public RemoteClientSyncInterface getRemoteClientSync() {
+        if (remoteClientSync == null) {
+            remoteClientSync = OASyncDelegate.getRemoteClientSyncInterface();
+        }
+        return remoteClientSync;
     }
 
     public void setAssignNumberOnCreate(boolean b) {
     }
     public boolean getAssignNumberOnCreate() {
-        Object obj = client.datasource(ASSIGNNUMBERONCREATE, new Object[] {});
+        Object obj = getRemoteClientSync().datasource(ASSIGNNUMBERONCREATE, new Object[] {});
         if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
         return false;
     }
 
     public boolean isAvailable() {
-        Object obj = client.datasource(IS_AVAILABLE, null);
+        Object obj = getRemoteClientSync().datasource(IS_AVAILABLE, null);
         if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
         return false;
     }
 
     public int getMaxLength(Class c, String propertyName) {
-        Object obj = client.datasource(MAX_LENGTH, new Object[] {c, propertyName});
+        Object obj = getRemoteClientSync().datasource(MAX_LENGTH, new Object[] {c, propertyName});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
@@ -126,7 +114,7 @@ public class OADataSourceClient extends OADataSource {
         Boolean B = (Boolean) hashClass.get(clazz);
         if (B != null) return B.booleanValue();
 
-        Object obj = client.datasource(IS_CLASS_SUPPORTED, new Object[] {clazz});
+        Object obj = getRemoteClientSync().datasource(IS_CLASS_SUPPORTED, new Object[] {clazz});
         boolean b = false;
         if (obj instanceof Boolean) b = ((Boolean)obj).booleanValue();
 
@@ -136,32 +124,32 @@ public class OADataSourceClient extends OADataSource {
 
     public void insertWithoutReferences(OAObject obj) {
         if (obj == null) return;
-        client.datasource(INSERT_WO_REFERENCES, new Object[] { obj });
+        getRemoteClientSync().datasource(INSERT_WO_REFERENCES, new Object[] { obj });
     }
     
     
     public void insert(OAObject obj) {
         if (obj == null) return;
-        client.datasource(INSERT, new Object[] { obj });
+        getRemoteClientSync().datasource(INSERT, new Object[] { obj });
     }
 
     public @Override void update(OAObject obj, String[] includeProperties, String[] excludeProperties) {
         if (obj == null) return;
-        client.datasource(UPDATE, new Object[] { obj, includeProperties, excludeProperties});
+        getRemoteClientSync().datasource(UPDATE, new Object[] { obj, includeProperties, excludeProperties});
     }
 
     public @Override void save(OAObject obj) {
         if (obj == null) return;
-        client.datasource(SAVE, new Object[] { obj });
+        getRemoteClientSync().datasource(SAVE, new Object[] { obj });
     }
 
     public @Override void delete(OAObject obj) {
         if (obj == null) return;
-        client.datasource(DELETE, new Object[] { obj });
+        getRemoteClientSync().datasource(DELETE, new Object[] { obj });
     }
 
     public @Override int count(Class clazz, String queryWhere, int max) {
-        Object obj = client.datasource(COUNT, new Object[] {clazz, queryWhere});
+        Object obj = getRemoteClientSync().datasource(COUNT, new Object[] {clazz, queryWhere});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
@@ -175,39 +163,39 @@ public class OADataSourceClient extends OADataSource {
     	objs[0] = clazz;
     	objs[1] = queryWhere;
     	for (int i=0; i<x; i++) objs[2+i] = params[i];
-        Object obj = client.datasource(COUNT, objs);
+        Object obj = getRemoteClientSync().datasource(COUNT, objs);
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
 
     public @Override int countPassthru(String query, int max) {
-        Object obj = client.datasource(COUNTPASSTHRU, new Object[] {query});
+        Object obj = getRemoteClientSync().datasource(COUNTPASSTHRU, new Object[] {query});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
 
     public @Override int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, int max) {
-        Object obj = client.datasource(COUNT2, new Object[] {selectClass, extraWhere, args, whereObject, propertyNameFromMaster});
+        Object obj = getRemoteClientSync().datasource(COUNT2, new Object[] {selectClass, extraWhere, args, whereObject, propertyNameFromMaster});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
 
     public @Override int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster, int max) {
-        Object obj = client.datasource(COUNT2, new Object[] {selectClass, null, whereObject, propertyNameFromMaster});
+        Object obj = getRemoteClientSync().datasource(COUNT2, new Object[] {selectClass, null, whereObject, propertyNameFromMaster});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
 
     /** does this dataSource support selecting/storing/deleting  */
     public @Override boolean supportsStorage() {
-        Object obj = client.datasource(SUPPORTSSTORAGE, null);
+        Object obj = getRemoteClientSync().datasource(SUPPORTSSTORAGE, null);
         if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
         return false;
     }
 
 
     public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max) {
-        Object obj = client.datasource(SELECT, new Object[] {clazz, queryWhere,queryOrder} );
+        Object obj = getRemoteClientSync().datasource(SELECT, new Object[] {clazz, queryWhere,queryOrder} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
     }
@@ -224,26 +212,26 @@ public class OADataSourceClient extends OADataSource {
     	objs[2] = queryOrder;
     	for (int i=0; i<x; i++) objs[3+i] = params[i];
     	
-    	Object obj = client.datasource(SELECT, objs );
+    	Object obj = getRemoteClientSync().datasource(SELECT, objs );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
     }
 
     public @Override Iterator selectPassthru(Class clazz, String query, int max) {
-        Object obj = client.datasource(SELECTPASSTHRU, new Object[] {clazz, query, null} );
+        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, query, null} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
     }
 
 
     public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max) {
-        Object obj = client.datasource(SELECTPASSTHRU, new Object[] {clazz, queryWhere, queryOrder} );
+        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, queryWhere, queryOrder} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
     }
 
     public @Override Object execute(String command) {
-        return client.datasource(EXECUTE, new Object[] {command});
+        return getRemoteClientSync().datasource(EXECUTE, new Object[] {command});
     }
 
     public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max) {
@@ -257,7 +245,7 @@ public class OADataSourceClient extends OADataSource {
 
         Class whereClass = whereObject == null ? null : whereObject.getClass();
         Object key = OAObjectKeyDelegate.getKey(whereObject);;
-        Object obj = client.datasource(SELECTUSINGOBJECT, new Object[] {selectClass, whereClass, key, extraWhere, args, propertyNameFromMaster, queryOrder} );
+        Object obj = getRemoteClientSync().datasource(SELECTUSINGOBJECT, new Object[] {selectClass, whereClass, key, extraWhere, args, propertyNameFromMaster, queryOrder} );
         if (obj == null) return null;
         return new MyIterator(selectClass, obj);
     }
@@ -267,11 +255,11 @@ public class OADataSourceClient extends OADataSource {
     }
 
     public @Override void initializeObject(OAObject obj) {
-        client.datasource(INITIALIZEOBJECT, new Object[] {obj} );  // NOTE WAS: dont use, this calls server.  ObjectId could be changed on server and never be found when returned
+        getRemoteClientSync().datasource(INITIALIZEOBJECT, new Object[] {obj} );  // NOTE WAS: dont use, this calls server.  ObjectId could be changed on server and never be found when returned
     }
 
     public @Override boolean willCreatePropertyValue(OAObject object, String propertyName) {
-        Object obj = client.datasource(WILLCREATEPROPERTYVALUE, new Object[] {object, propertyName} );
+        Object obj = getRemoteClientSync().datasource(WILLCREATEPROPERTYVALUE, new Object[] {object, propertyName} );
         if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
         return false;
     }
@@ -304,7 +292,7 @@ public class OADataSourceClient extends OADataSource {
         }
 
         protected synchronized void next20() {
-            cache = (Object[]) client.datasource(IT_NEXT, new Object[] {id} );
+            cache = (Object[]) getRemoteClientSync().datasource(IT_NEXT, new Object[] {id} );
             cachePos = 0;
         }
 
@@ -332,17 +320,17 @@ public class OADataSourceClient extends OADataSource {
         }
 
         public void remove() {
-            client.datasource(IT_REMOVE, new Object[] {id} );
+            getRemoteClientSync().datasource(IT_REMOVE, new Object[] {id} );
         }
     }
 
 	public @Override void updateMany2ManyLinks(OAObject masterObject, OAObject[] adds, OAObject[] removes, String propertyNameFromMaster) {
-        client.datasource(UPDATE_MANY2MANY_LINKS, new Object[] { masterObject.getClass(), OAObjectKeyDelegate.getKey(masterObject), adds, removes, propertyNameFromMaster });
+        getRemoteClientSync().datasource(UPDATE_MANY2MANY_LINKS, new Object[] { masterObject.getClass(), OAObjectKeyDelegate.getKey(masterObject), adds, removes, propertyNameFromMaster });
 	}
 	
 	@Override
     public byte[] getPropertyBlobValue(OAObject obj, String propertyName) {
-        Object objx = client.datasource(GET_PROPERTY, new Object[] { obj.getClass(), OAObjectKeyDelegate.getKey(obj), propertyName });
+        Object objx = getRemoteClientSync().datasource(GET_PROPERTY, new Object[] { obj.getClass(), OAObjectKeyDelegate.getKey(obj), propertyName });
         if (objx instanceof byte[]) return (byte[]) objx;
         return null;
     }

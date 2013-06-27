@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import com.viaoa.hub.*;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
 
 /**
@@ -155,8 +156,13 @@ public class OAObjectDelegate {
         	obj.guid = --localGuidCounter;
         }
         else {
-        	obj.guid = OAObjectCSDelegate.getServerGuid();
-        	if (obj.guid == 0) obj.guid = getNextGuid();
+            if (!OASyncDelegate.isServer()) {
+                obj.guid = OAObjectCSDelegate.getServerGuid();
+                if (obj.guid == 0) obj.guid = getNextGuid();
+            }
+            else {
+                obj.guid = getNextGuid();
+            }
         }
     }
 
