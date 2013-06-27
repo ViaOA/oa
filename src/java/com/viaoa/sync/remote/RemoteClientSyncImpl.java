@@ -21,13 +21,13 @@ public abstract class RemoteClientSyncImpl implements RemoteClientSyncInterface 
     private ClientGetDetail clientGetDetail = new ClientGetDetail(); 
 
     @Override
-    public Object getDetailX(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
+    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
         Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys);
         return obj;
     }
 
     @Override
-    public Object getDetailX(Class masterClass, OAObjectKey masterObjectKey, String property) {
+    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property) {
         Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, null, null);
         return obj;
     }

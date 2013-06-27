@@ -125,8 +125,8 @@ public class OAObjectCSDelegate {
      }
 	
      protected static int getServerGuid() {
-    	int guid = OASyncDelegate.getObjectGuid();
-        return guid;
+         int guid = OASyncDelegate.getObjectGuid();
+         return guid;
     }
 
     // returns true if this was saved on server
