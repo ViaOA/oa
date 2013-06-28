@@ -68,7 +68,7 @@ public class OASyncClient {
     public Object getDetail(OAObject oaObj, String propertyName) {
         Object objx = null;
         try {
-            objx = getRemoteClientSyncInterface().getDetail(oaObj.getClass(), oaObj.getKey(), propertyName);
+            objx = getRemoteClientSyncInterface().getDetail(oaObj.getClass(), oaObj.getObjectKey(), propertyName);
         }
         catch (Exception e) {
         }
@@ -221,12 +221,14 @@ public class OASyncClient {
     }
     
     /** allows remote method calls to GSMR server. */
-    protected RemoteMultiplexerClient getRemoteMultiplexerClient() {
+    public RemoteMultiplexerClient getRemoteMultiplexerClient() {
         if (remoteMultiplexerClient == null) { 
             remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient());
         }
         return remoteMultiplexerClient;
     }
-
+    public int getConnectionId() {
+        return getMultiplexerClient().getConnectionId();
+    }
 
 }

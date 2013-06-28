@@ -50,7 +50,7 @@ public class OAObjectCSDelegate {
 	    RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
 	    if (ri != null) {
             ri.setCached(oaObj, true);
-            int guid = oaObj.getKey().getGuid();
+            int guid = oaObj.getObjectKey().getGuid();
             hashServerSideCache.add(guid);
  	    }
     }
@@ -58,7 +58,7 @@ public class OAObjectCSDelegate {
     protected static void finalizeObject(OAObject oaObj) {
         if (oaObj == null) return;
         if (OASyncDelegate.isServer()) return;
-        if (hashServerSideCache.remove(oaObj.getKey().getGuid())) {
+        if (hashServerSideCache.remove(oaObj.getObjectKey().getGuid())) {
             RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
             if (ri != null) {
                 ri.setCached(oaObj, false);
@@ -76,7 +76,7 @@ public class OAObjectCSDelegate {
     	// CACHE_NOTE: this "note" is added to all code that needs to work with the server cache for a client
         if (oaObj == null) return;
         if (OASyncDelegate.isSingleUser()) return;
-        int guid = oaObj.getKey().getGuid();
+        int guid = oaObj.getObjectKey().getGuid();
         if (hashServerSideCache.contains(guid)) return;
         RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
         if (ri != null) {
@@ -92,7 +92,7 @@ public class OAObjectCSDelegate {
     public static void removeFromServerSideCache(OAObject oaObj) {
         if (oaObj == null) return;
         if (OASyncDelegate.isSingleUser()) return;
-        if (hashServerSideCache.remove(oaObj.getKey().getGuid())) {
+        if (hashServerSideCache.remove(oaObj.getObjectKey().getGuid())) {
             RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
             if (ri != null) {
                 ri.setCached(oaObj, false);
@@ -119,7 +119,7 @@ public class OAObjectCSDelegate {
          if (oaObj == null) return null;
          RemoteClientSyncInterface ri = OASyncDelegate.getRemoteClientSyncInterface();
          if (ri != null) {
-             return ri.createCopy(oaObj.getClass(), oaObj.getKey(), excludeProperties);
+             return ri.createCopy(oaObj.getClass(), oaObj.getObjectKey(), excludeProperties);
          }
          return null;
      }
@@ -134,7 +134,7 @@ public class OAObjectCSDelegate {
         if (oaObj == null) return false;
         RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
         if (rs != null) {
-            return rs.save(oaObj.getClass(), oaObj.getKey(), iCascadeRule);
+            return rs.save(oaObj.getClass(), oaObj.getObjectKey(), iCascadeRule);
         }
         return false;
     }
@@ -148,7 +148,7 @@ public class OAObjectCSDelegate {
 	    if (oaObj == null) return false;
         RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
         if (rs != null) {
-            return rs.delete(oaObj.getClass(), oaObj.getKey());
+            return rs.delete(oaObj.getClass(), oaObj.getObjectKey());
         }       
 	    return false;
 	}
@@ -161,7 +161,7 @@ public class OAObjectCSDelegate {
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         boolean result;
         if (rs != null) {
-            result = rs.removeObject(oaObj.getClass(), oaObj.getKey());
+            result = rs.removeObject(oaObj.getClass(), oaObj.getObjectKey());
         }       
         else result = false;
         return result;
@@ -265,7 +265,7 @@ public class OAObjectCSDelegate {
             }
         }
         
-        OAObjectKey key = obj.getKey();
+        OAObjectKey key = obj.getObjectKey();
         rs.propertyChange(obj.getClass(), key, propertyName, newValue, bIsBlob);
 	}
 	

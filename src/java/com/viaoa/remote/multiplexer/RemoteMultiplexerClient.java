@@ -257,11 +257,11 @@ public class RemoteMultiplexerClient {
                 socket = null;
                 synchronized (ri) {
                     if (!ri.responseReturned) {
-                        ri.wait(15000);  // 15 second timeout
+                        ri.wait(30000);  // request timeout
                     }
                 }
                 if (!ri.responseReturned) {
-                    ri.exceptionMessage = "timeout waiting on async response from server";
+                    ri.exceptionMessage = "timeout waiting on response from server";
                 }
             }
         }
@@ -483,7 +483,7 @@ public class RemoteMultiplexerClient {
                         if (!socket.isClosed()) {
                             errorCnt++;
                             long ms = System.currentTimeMillis();
-                            if (msLastError == 0 || ms-msLastError > 5000 || errorCnt > 50) {
+                            if (msLastError == 0 || ms-msLastError > 5000 || errorCnt < 5) {
                                 LOG.log(Level.WARNING, "Exception in StoC thread, errorCnt="+errorCnt, e);
                                 if (errorCnt > 50) break;
                                 msLastError = ms;

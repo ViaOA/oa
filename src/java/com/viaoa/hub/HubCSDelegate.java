@@ -44,9 +44,9 @@ public class HubCSDelegate {
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         rs.removeFromHub(
                 thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getKey(), 
+                thisHub.datam.masterObject.getObjectKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
-                obj.getClass(), obj.getKey());
+                obj.getClass(), obj.getObjectKey());
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class HubCSDelegate {
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         rs.addToHub(
                 thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getKey(), 
+                thisHub.datam.masterObject.getObjectKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), obj);
 	}	
 
@@ -107,7 +107,7 @@ public class HubCSDelegate {
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         rs.insertInHub(
                 thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getKey(), 
+                thisHub.datam.masterObject.getObjectKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
                 obj, pos);
 	}	
@@ -139,7 +139,7 @@ public class HubCSDelegate {
 	    
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         rs.moveObjectInHub(thisHub.getObjectClass(), 
-                thisHub.datam.masterObject.getKey(), 
+                thisHub.datam.masterObject.getObjectKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), posFrom, posTo);
 	}
 
@@ -168,9 +168,11 @@ public class HubCSDelegate {
         }
 
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
-        rs.sort(objMaster.getClass(), objMaster.getKey(), 
-                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
-                propertyPaths, bAscending, comp);
+        if (rs != null) {
+            rs.sort(objMaster.getClass(), objMaster.getObjectKey(), 
+                    HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
+                    propertyPaths, bAscending, comp);
+        }
 	}
 	
     /**
@@ -197,7 +199,7 @@ public class HubCSDelegate {
         if (prop == null) return false;
 
         RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
-        rs.deleteAll(master.getClass(), master.getKey(), prop);
+        rs.deleteAll(master.getClass(), master.getObjectKey(), prop);
         return true;
     }
 }

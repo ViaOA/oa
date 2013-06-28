@@ -56,7 +56,6 @@ public class OASyncServer {
     public RemoteSyncImpl getRemoteSync() {
         if (remoteSync == null) {
             remoteSync = new RemoteSyncImpl();
-            OASyncDelegate.setRemoteSyncInterface(remoteSync);
         }
         return remoteSync;
     }
@@ -302,7 +301,9 @@ public class OASyncServer {
             
             // register remote objects
             getRemoteMultiplexerServer().createLookup(ServerLookupName, getRemoteServer(), RemoteServerInterface.class); 
-            getRemoteMultiplexerServer().createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
+
+            RemoteSyncInterface rsi = (RemoteSyncInterface) getRemoteMultiplexerServer().createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
+            OASyncDelegate.setRemoteSyncInterface(rsi);
             
             // have RemoteClient objects use sync queue
             getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientSyncInterface.class, SyncQueueName, QueueSize);            

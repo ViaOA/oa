@@ -25,6 +25,7 @@ import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.OACircularQueue;
 import com.viaoa.util.OACompressWrapper;
+import com.viaoa.util.OAReflect;
 
 /**
  * Server component used to allow remoting method calls with Clients.
@@ -189,6 +190,10 @@ public class RemoteMultiplexerServer {
             catch (Exception e) {
                 bShouldReturnValue = true;
                 ri.exception = e;
+            }
+            catch (Throwable tx) {
+                bShouldReturnValue = true;
+                ri.exception = new Exception(tx.toString(), tx);
             }
 
             long t1 = System.nanoTime();                
@@ -756,7 +761,7 @@ public class RemoteMultiplexerServer {
                     }
                 }
                 ri.nsEnd = System.nanoTime();
-                return null;
+                return ri.response;
             }
         };
         Object obj = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
@@ -827,9 +832,35 @@ public class RemoteMultiplexerServer {
             }
         }
 
+        
+        // check to see if return is a primitive
+        Class c = ri.method.getReturnType();
+        if (c.isPrimitive()) {
+            if (c.equals(boolean.class)) {
+                ri.response = true;
+            }
+            else if (c.equals(int.class)) {
+                ri.response = 0;
+            }
+            else if (c.equals(long.class)) {
+                ri.response = 0L;
+            }
+            else if (c.equals(short.class)) {
+                ri.response = (short) 0;
+            }
+            else if (c.equals(double.class)) {
+                ri.response = 0.0D;
+            }
+            else if (c.equals(float.class)) {
+                ri.response = 0.0F;
+            }
+        }
+
         // put "ri" in circular queue for clients to pick up.       
         OACircularQueue<RequestInfo> cque = hmAsnycCircularQueue.get(ri.bind.asyncQueueName);        
         cque.addMessageToQueue(ri);
+        
+        
         return ri;
     }
     

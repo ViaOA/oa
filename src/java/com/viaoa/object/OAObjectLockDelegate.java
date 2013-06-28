@@ -30,7 +30,7 @@ public class OAObjectLockDelegate {
 	
 	    RemoteClientInterface rc = OASyncDelegate.getRemoteClientInterface();
 	    if (rc != null) {
-	        rc.setLock(object.getClass(), object.getKey(), true);
+	        rc.setLock(object.getClass(), object.getObjectKey(), true);
 	    	return;
 	    }
 	            
@@ -59,7 +59,7 @@ public class OAObjectLockDelegate {
 
         RemoteClientInterface rc = OASyncDelegate.getRemoteClientInterface();
         if (rc != null) {
-            rc.setLock(object.getClass(), object.getKey(), false);
+            rc.setLock(object.getClass(), object.getObjectKey(), false);
             return;
         }
 	    
@@ -77,7 +77,7 @@ public class OAObjectLockDelegate {
 
         RemoteClientInterface rc = OASyncDelegate.getRemoteClientInterface();
         if (rc != null) {
-            return rc.isLocked(object.getClass(), object.getKey());
+            return rc.isLocked(object.getClass(), object.getObjectKey());
         }
         synchronized (OAObjectHashDelegate.hashLock) {
             return (OAObjectHashDelegate.hashLock.get(object) != null);

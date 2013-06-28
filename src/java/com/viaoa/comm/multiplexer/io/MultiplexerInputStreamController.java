@@ -147,10 +147,10 @@ public abstract class MultiplexerInputStreamController {
                                 }
                             }
                             else if (cnt == (_timeoutSeconds * 4)) {
+                                LOG.warning("VSocket id=" + vs._id + ", name=" + vs.getServerSocketName() + ", has been timed out, will disconnect socket and continue");
                                 synchronized (vs._lockObject) {
                                     vs.close(); // this will notify the thread
                                 }
-                                LOG.warning("VSocket id=" + vs._id + ", name=" + vs.getServerSocketName() + ", has been timed out, will disconnect socket and continue");
                             }
                         }
                     }

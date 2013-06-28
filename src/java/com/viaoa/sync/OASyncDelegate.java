@@ -59,7 +59,7 @@ public class OASyncDelegate {
     }
     
     public static boolean isSingleUser() {
-        return syncServer != null && syncClient == null;
+        return syncServer == null && syncClient == null;
     }
     
     public static boolean isConnected() {

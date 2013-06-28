@@ -730,7 +730,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         OAObjectEventDelegate.fireAfterLoadEvent(this);
     }
     
-    public OAObjectKey getKey() {
+    public OAObjectKey getObjectKey() {
         return OAObjectKeyDelegate.getKey(this);
     }
 }

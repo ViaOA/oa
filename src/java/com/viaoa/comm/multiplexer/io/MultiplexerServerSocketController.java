@@ -144,7 +144,7 @@ public class MultiplexerServerSocketController {
                 onAcceptRealClientConnection(socket);
             }
             catch (Exception e) {
-                LOG.log(Level.WARNING, "MultiplexerServerSocketController: exception while accepting new connections", e);
+                LOG.finer("MultiplexerServerSocketController: exception while accepting new connections, ex="+ e);
             }
         }
     }
