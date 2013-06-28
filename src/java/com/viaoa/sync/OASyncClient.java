@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectKey;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientInterface;
@@ -56,6 +55,7 @@ public class OASyncClient {
                         Thread.sleep(seconds * 1000);
                     }
                     catch (Exception e) {
+                        break;
                     }
                 }
             }
@@ -192,6 +192,10 @@ public class OASyncClient {
             protected void onSocketException(Exception e) {
                 OASyncClient.this.onSocketException(e);
             }
+            @Override
+            protected void onClose(boolean bError) {
+                OASyncClient.this.onSocketClose(bError);
+            }
         };
         return multiplexerClient;
     }
@@ -201,6 +205,14 @@ public class OASyncClient {
      */
     protected void onSocketException(Exception e) {
         LOG.log(Level.WARNING, "exception with connection to server", e);
+        try {
+            stop();
+        }
+        catch (Exception ex) {
+        }
+    }
+    protected void onSocketClose(boolean bError) {
+        LOG.fine("closing, isError="+bError);
         try {
             stop();
         }

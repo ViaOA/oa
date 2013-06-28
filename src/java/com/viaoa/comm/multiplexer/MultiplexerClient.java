@@ -93,6 +93,11 @@ public class MultiplexerClient {
             protected void onSocketException(Exception e) {
                 MultiplexerClient.this.onSocketException(e);
             };
+            @Override
+            protected void close(boolean bError) throws IOException {
+                super.close(bError);
+                MultiplexerClient.this.onClose(bError);
+            }
         };
         setThrottleLimit(this.mbThrottleLimit);
         runKeepAliveThread();        
@@ -104,6 +109,9 @@ public class MultiplexerClient {
     protected void onSocketException(Exception e) {
     }
 
+    protected void onClose(boolean bError) {
+    }
+    
     public void setKeepAlive(int seconds) {
         this.keepAliveSeconds = seconds;
         if (seconds < 1) return;
