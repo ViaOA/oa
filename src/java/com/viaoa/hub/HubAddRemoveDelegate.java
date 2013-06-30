@@ -3,7 +3,6 @@ package com.viaoa.hub;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.sync.*;
 import com.viaoa.object.*;
 
 /**
@@ -37,17 +36,6 @@ public class HubAddRemoveDelegate {
             return;
         }
 
-        // 20110104 added locking
-        try {
-            OAThreadLocalDelegate.lock(thisHub);
-            _remove(thisHub, obj, bForce, bSendEvent, bDeleting, bSetAO, bSetPropToMaster);
-        }
-        finally {
-            OAThreadLocalDelegate.unlock(thisHub);
-        }
-    }
-    
-    private static void _remove(Hub thisHub, Object obj, boolean bForce, boolean bSendEvent, boolean bDeleting, boolean bSetAO, boolean bSetPropToMaster) {
         obj = HubDelegate.getRealObject(thisHub, obj);
         if (obj == null) return;
 
@@ -76,11 +64,14 @@ public class HubAddRemoveDelegate {
         if (thisHub.isOAObject()) {
             HubCSDelegate.removeFromHub(thisHub, (OAObject) obj, pos);
         }
+        
+        // this will lock, sync(data), and startNextThread
         pos = HubDataDelegate._remove(thisHub, obj, bDeleting);
         if (pos < 0) {
-            LOG.warning("object not removed, obj="+obj);
+            LOG.fine("object not removed, obj="+obj);
             return;
         }
+        
         
         if (bSetAO) {
             HubShareDelegate.setSharedHubsAfterRemove(thisHub, obj, pos);
@@ -93,7 +84,9 @@ public class HubAddRemoveDelegate {
         /* 20110439 need to do this before sending event, since
             hub.containts(obj) now uses obj.weakHubs to know if an object is in the hub.
         */
-        if (thisHub.isOAObject()) OAObjectHubDelegate.removeHub((OAObject)obj, thisHub);  
+        if (thisHub.isOAObject()) {
+            OAObjectHubDelegate.removeHub((OAObject)obj, thisHub);  
+        }
         
         // this must be after bSetAO, so that the active object is updated. 
         if (bSendEvent) {
@@ -124,27 +117,18 @@ public class HubAddRemoveDelegate {
         int x = HubDataDelegate.getCurrentSize(thisHub);
         if (bSetAOtoNull) thisHub.setActiveObject(null);
 
-        // 20110104 added locking
-        try {
-            OAThreadLocalDelegate.lock(thisHub);
-            
-            // 20120627 need to send event to clients if there is a masterObject
-            boolean bSendEvent = thisHub.getMasterObject() != null;
-            
-            for ( x--; x>=0; x-- ) {
-                Object ho = HubDataDelegate.getObjectAt(thisHub, x);
-                remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull); // dont force, dont send remove events
-                //was: remove(thisHub, ho, false, false, false, bSetAOtoNull, bSetAOtoNull); // dont force, dont send remove events
-            }
-            if (bSendNewList) {
-                HubEventDelegate.fireOnNewListEvent(thisHub, true);
-            }
-            HubEventDelegate.fireAfterRemoveAllEvent(thisHub);
+        // 20120627 need to send event to clients if there is a masterObject
+        boolean bSendEvent = thisHub.getMasterObject() != null;
+        
+        for ( x--; x>=0; x-- ) {
+            Object ho = HubDataDelegate.getObjectAt(thisHub, x);
+            remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull); // dont force, dont send remove events
+            //was: remove(thisHub, ho, false, false, false, bSetAOtoNull, bSetAOtoNull); // dont force, dont send remove events
         }
-        finally {
-            OAThreadLocalDelegate.unlock(thisHub);
+        if (bSendNewList) {
+            HubEventDelegate.fireOnNewListEvent(thisHub, true);
         }
-            
+        HubEventDelegate.fireAfterRemoveAllEvent(thisHub);
     }
     
     /**
@@ -218,20 +202,6 @@ public class HubAddRemoveDelegate {
             insert(thisHub, obj, thisHub.getSize());
             return;
         }
-
-        try {
-            OAThreadLocalDelegate.lock(thisHub);
-            _add(thisHub, obj);
-        }
-        finally {
-            OAThreadLocalDelegate.unlock(thisHub);
-        }
-    }
-    
-    /**
-        Add an Object to end of collection.  All listeners will be notified of add event.
-     */
-    private static void _add(Hub thisHub, Object obj) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
             internalAdd(thisHub, obj, true);
@@ -239,7 +209,6 @@ public class HubAddRemoveDelegate {
         }
 
         if (thisHub.contains(obj)) return;
-        
         
         if (!thisHub.data.bInFetch) {
             String s = canAddMsg(thisHub, obj);
@@ -252,7 +221,7 @@ public class HubAddRemoveDelegate {
         if (thisHub.isOAObject()) {
             HubCSDelegate.addToHub(thisHub, (OAObject) obj);
         }
-        if (!internalAdd(thisHub,obj,true)) {
+        if (!internalAdd(thisHub,obj, true)) { // this will release the lock
             //LOG.warning("VVVVVVVVVVVV NOT ADDED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<");//qqqqqqqqqqqqqqqqq
             return;
         }
@@ -293,8 +262,9 @@ public class HubAddRemoveDelegate {
             }
         }
 
+        // this will lock, sync(data), and startNextThread
         if (!HubDataDelegate._add(thisHub, key, obj, false)) return false;
-       
+        
         if (obj instanceof OAObject) {
             OAObjectHubDelegate.addHub((OAObject)obj, thisHub);
         }
@@ -323,17 +293,6 @@ public class HubAddRemoveDelegate {
             return;
         }
         
-        // 20110104 added locking
-        try {
-            OAThreadLocalDelegate.lock(thisHub);
-            _move(thisHub, posFrom, posTo);
-        }
-        finally {
-            OAThreadLocalDelegate.unlock(thisHub);
-        }
-    }
-    private static void _move(Hub thisHub, int posFrom, int posTo) {
-
         Object objFrom = thisHub.elementAt(posFrom);
         if (objFrom == null) return;
         
@@ -367,10 +326,12 @@ public class HubAddRemoveDelegate {
         
         //  OAClient must send message to OAServer before continuing
         HubCSDelegate.moveObjectInHub(thisHub, posFrom, posTo);
+        
+        // this will lock
         HubDataDelegate._move(thisHub, objFrom, posFrom, posTo);
         
         HubEventDelegate.fireAfterMoveEvent(thisHub, posFrom, posTo);
-        // dont reset activeObject, it will reset detailHubs
+        // dont reset activeObject, since it will reset detailHubs
     }
 
     
@@ -394,25 +355,13 @@ public class HubAddRemoveDelegate {
         if (thisHub.datau.sharedHub != null) {
             return insert(thisHub.datau.sharedHub, obj, pos);
         }
-        // 20110104 added locking
-        try {
-            OAThreadLocalDelegate.lock(thisHub);
-            return _insert(thisHub, obj, pos);
-        }
-        finally {
-            OAThreadLocalDelegate.unlock(thisHub);
-        }
-    }
-    private static boolean _insert(Hub thisHub, Object obj, int pos) {
         
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            internalAdd(thisHub, obj, true);
-            return true;
+            return internalAdd(thisHub, obj, true);
         }
 
         if (thisHub.contains(obj)) return false; 
-        
         
         OAObjectKey key;
         if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
@@ -450,7 +399,11 @@ public class HubAddRemoveDelegate {
             HubCSDelegate.insertInHub(thisHub, (OAObject) obj, pos);
             if (HubDataDelegate.getObject(thisHub, key) != null) return false;
         }
-        if (!HubDataDelegate._insert(thisHub, key, obj, pos, false)) return false;  // false=dont lock, since this method is locked
+        
+        // this will lock, sync(data), and startNextThread
+        boolean b = HubDataDelegate._insert(thisHub, key, obj, pos, false);  // false=dont lock, since this method is locked
+        if (!b) return b;
+        
         if (thisHub.isOAObject()) OAObjectHubDelegate.addHub((OAObject)obj,thisHub);
     
         // moved before listeners are notified.  Else listeners could ask for more objects
@@ -482,16 +435,6 @@ public class HubAddRemoveDelegate {
             swap(thisHub.datau.sharedHub, pos1, pos2);
             return;
         }
-        // 20110104 added locking
-        try {
-            OAThreadLocalDelegate.lock(thisHub);
-            _swap(thisHub, pos1, pos2);
-        }
-        finally {
-            OAThreadLocalDelegate.unlock(thisHub);
-        }
-    }
-    private static void _swap(Hub thisHub, int pos1, int pos2) {
         if (pos1 == pos2) return;
         if (pos1 > pos2) {
             int i = pos2;

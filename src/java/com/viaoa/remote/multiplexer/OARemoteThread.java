@@ -9,17 +9,23 @@ public class OARemoteThread extends Thread {
     volatile RequestInfo requestInfo;
     volatile boolean startedNextThread;
     volatile boolean watingOnLock;
-    
-    volatile boolean sendMessages;  // if false then events are not sent, sinc this is processing a message
+    volatile long msStartNextThread;
+    volatile long msLastUsed;
 
+volatile public boolean bDebug;//qqqqqqqqqqqqqqqq    
+    
+    volatile boolean sendMessages;  // if false then events are not sent, since this is processing a message
+    
     public OARemoteThread(Runnable r) {
         super(r);
     }
     public OARemoteThread() {
     }
 
+    // note: this is overwritten to start a new thread
     public void startNextThread() {
         startedNextThread = true;
+        msStartNextThread = System.currentTimeMillis();
     }
     public void setSendMessages(boolean b) {
         sendMessages = b;
@@ -39,6 +45,7 @@ public class OARemoteThread extends Thread {
         sendMessages = false;
         startedNextThread = false;
         watingOnLock = false;
+        msStartNextThread = 0l;
     }
     
 }

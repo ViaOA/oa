@@ -13,6 +13,15 @@ public class OASyncServerTest {
     OASyncServer server;
     
     public void test() throws Exception {
+        server = new OASyncServer(1099);
+        server.start();
+        
+        TestImpl ti = new TestImpl();
+        server.createLookup("test", ti, TestInterface.class);
+    }
+    
+    
+    public void test1() throws Exception {
         server = new OASyncServer(1099) {
             @Override
             protected String getLogFileName() {
@@ -50,12 +59,12 @@ public class OASyncServerTest {
     
     
     public static void main(String[] args) throws Exception {
-        // OALogUtil.consoleOnly(Level.FINEST, "com.viaoa");
+        OALogUtil.consoleOnly(Level.CONFIG, "com.viaoa");
         OALogUtil.disable();
         
         OASyncServerTest test = new OASyncServerTest();
         test.test();
-        System.out.println("DONE");
+        System.out.println("Started");
         for (;;) Thread.sleep(10000);
     }
 }

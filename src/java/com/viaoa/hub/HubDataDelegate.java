@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OANullObject;
 
 
@@ -75,15 +76,27 @@ public class HubDataDelegate {
     
 	// called by HubAddRemoveDelegate
     protected static int _remove(Hub thisHub, Object obj, boolean bDeleting) {
-	    int pos;
+        int pos = 0;
+        try {
+            OAThreadLocalDelegate.lock(thisHub);
+            pos = _remove2(thisHub, obj, bDeleting);
+        }
+        finally {
+            OAThreadLocalDelegate.unlock(thisHub);
+        }
+        OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+        return pos;
+    }
+    private static int _remove2(Hub thisHub, Object obj, boolean bDeleting) {
+        int pos;
 	    Object key = obj;
 	    if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
 	    synchronized (thisHub.data) {
 	        pos = thisHub.getPos(obj);
 	        if (pos >= 0) thisHub.data.vector.removeElementAt(pos);
-else {
-	System.out.println("HubDataDelegate ****************** REMOVE *********** OBJECT NOT FOUND");	  //qqqqqqqqqqqqqqqqqqqqqqqqqqq      
-}
+            else {
+            	// System.out.println("HubDataDelegate ****************** REMOVE *********** OBJECT NOT FOUND");	  //qqqqqqqqqqqqqqqqqqqqqqqqqqq      
+            }
 	    }
 	    if (pos >= 0) {
 	    	if (thisHub.data.bTrackChanges && (obj instanceof OAObject)) {
@@ -112,6 +125,18 @@ else {
 	    return _add(thisHub, key, obj, true);
 	}
     protected static boolean _add(Hub thisHub, OAObjectKey key, Object obj, boolean bLock) {
+        boolean b = false;
+        try {
+            OAThreadLocalDelegate.lock(thisHub);
+            b = _add2(thisHub, key, obj, bLock);
+        }
+        finally {
+            OAThreadLocalDelegate.unlock(thisHub);
+        }
+        OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+        return b;
+    }
+    private static boolean _add2(Hub thisHub, OAObjectKey key, Object obj, boolean bLock) {
         if (bLock) {
             synchronized (thisHub.data) {
                 if (thisHub.contains(obj)) return false;
@@ -150,7 +175,19 @@ else {
     protected static boolean _insert(Hub thisHub, OAObjectKey key, Object obj, int pos) {
         return _insert(thisHub, key, obj, pos, true);
     }
-	protected static boolean _insert(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
+    protected static boolean _insert(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
+        boolean b = false;
+        try {
+            OAThreadLocalDelegate.lock(thisHub);
+            b = _insert2(thisHub, key, obj, pos, bLock);
+        }
+        finally {
+            OAThreadLocalDelegate.unlock(thisHub);
+        }
+        OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+        return b;
+    }
+	private static boolean _insert2(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
 	    if (bLock) {
             synchronized (thisHub.data) {
                 if (thisHub.contains(obj)) return false;
@@ -179,11 +216,18 @@ else {
 
 	// called by HubAddRemoveDelegate.move
 	protected static void _move(Hub thisHub, Object obj, int posFrom, int posTo) {
-	    thisHub.data.changeCount++;
-    	synchronized (thisHub.data) {
-            thisHub.data.vector.removeElementAt(posFrom);
-		    thisHub.data.vector.insertElementAt(obj, posTo);
-    	}
+        try {
+            OAThreadLocalDelegate.lock(thisHub);
+            thisHub.data.changeCount++;
+            synchronized (thisHub.data) {
+                thisHub.data.vector.removeElementAt(posFrom);
+                thisHub.data.vector.insertElementAt(obj, posTo);
+            }
+        }
+        finally {
+            OAThreadLocalDelegate.unlock(thisHub);
+        }
+        OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
 	}
 	
 	public static void addAllToAddVector(Hub thisHub) {

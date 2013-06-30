@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OANullObject;
 
 /**
@@ -224,8 +225,10 @@ public class OAObjectHubDelegate {
                 oaObj.weakHubs = null;
             }
             if (!isInHubWithMaster(oaObj)) {
-                // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added to a hub.  Need to add to cache now that it is no longer in a hub.
-                OAObjectCSDelegate.addToServerSideCache(oaObj);
+                if (OARemoteThreadDelegate.shouldSendMessages()) {
+                    // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added to a hub.  Need to add to cache now that it is no longer in a hub.
+                    OAObjectCSDelegate.addToServerSideCache(oaObj);
+                }
             }
         }
     }
@@ -328,7 +331,9 @@ public class OAObjectHubDelegate {
 				pos = 0;
         		// CACHE_NOTE: if it was on the Server.cache, it can be removed when it is added to a hub.  Need to add to cache if/when it is no longer in a hub.
 				if (hub.getMasterObject() != null) {
-				    OAObjectCSDelegate.removeFromServerSideCache(oaObj);
+	                if (OARemoteThreadDelegate.shouldSendMessages()) {
+	                    OAObjectCSDelegate.removeFromServerSideCache(oaObj);
+	                }
 				}
 			}
 			else {
@@ -370,7 +375,9 @@ public class OAObjectHubDelegate {
                         }
                     }
                     if (!b && hub.getMasterObject() != null) {
-                        OAObjectCSDelegate.removeFromServerSideCache(oaObj);
+                        if (OARemoteThreadDelegate.shouldSendMessages()) {
+                            OAObjectCSDelegate.removeFromServerSideCache(oaObj);
+                        }
                     }
                 }
 			}

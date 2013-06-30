@@ -214,8 +214,8 @@ public class OAObjectEventDelegate {
             
             if (!bLocalOnly) {
                 // prior to 20100406, this was always calling these methods
-                OAObjectCSDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj);
                 OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+                OAObjectCSDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj);
             }
         }
 

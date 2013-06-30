@@ -1,5 +1,7 @@
 package com.viaoa.sync;
 
+import java.util.logging.Level;
+
 import com.viaoa.hub.Hub;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.model.oa.Company;
@@ -19,6 +21,45 @@ public class OASyncClientTest {
     volatile boolean started=true;
     
     public void test() throws Exception {
+        client = new OASyncClient("localhost", 1099);
+            
+        client.start();
+
+        ClientInfo ci = client.getClientInfo();
+        remoteServer = client.getRemoteServerInterface();
+        remoteClient = client.getRemoteClientInterface();
+        
+        TestInterface ti = (TestInterface) client.lookup("test");
+        ServerRoot serverRoot = ti.getServerRoot();
+        Hub<Company> hub = serverRoot.getCompanies();
+        
+        int cId = client.getConnectionId();
+        
+        for (int i=0; ; i++) {
+            String msg = cId + "." + i + "." + OAString.getRandomString(3, 22);
+            Company company = hub.getAt(0);
+
+if (!true) {
+    Thread.sleep(9250);
+    continue;
+}
+            
+            int x = hub.getSize();
+            if (x < 2 || (x < 30 && Math.random() < .5d)) {
+                company = new Company();
+                hub.add(company);
+            }
+            else {
+                hub.remove(company);
+            }
+            
+            company.setName(msg);
+            if (i % 500 == 0) System.out.println(""+msg);
+            //Thread.sleep(10);
+        }
+    }
+    
+    public void test2() throws Exception {
         client = new OASyncClient("localhost", 1099) {
         };
         client.start();
@@ -81,8 +122,8 @@ public class OASyncClientTest {
     
     
     public static void main(String[] args) throws Exception {
-        //OALogUtil.consoleOnly(Level.FINEST, "com.viaoa");
-        OALogUtil.disable();
+        OALogUtil.consoleOnly(Level.CONFIG, "com.viaoa");
+        //OALogUtil.disable();
         
         OASyncClientTest test = new OASyncClientTest();
         test.test();
