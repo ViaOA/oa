@@ -226,7 +226,7 @@ public class OAObjectDelegate {
             if ((oaObj.changedFlag || oaObj.newFlag) && !OAObjectCSDelegate.isWorkstation()) {
                 OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
                 if (oi != null && oi.getUseDataSource()) {
-                    LOG.warning("object was not saved, object="+oaObj.getClass().getName()+", key="+OAObjectKeyDelegate.getKey(oaObj)+", willSaveNow="+bFinalizeSave);                         
+                    LOG.fine("object was not saved, object="+oaObj.getClass().getName()+", key="+OAObjectKeyDelegate.getKey(oaObj)+", willSaveNow="+bFinalizeSave);                         
             		if (bFinalizeSave) {
                     	try {
                     	    oaObj.save(OAObject.CASCADE_NONE);
