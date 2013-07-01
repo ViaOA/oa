@@ -1,10 +1,8 @@
 package com.viaoa.sync.model;
 
-
 import java.io.Serializable;
 
 import com.viaoa.util.OADateTime;
-
 
 /**
  * Information about a single instance of a Client.
@@ -32,6 +30,7 @@ public class ClientInfo implements Serializable{
     
     protected long totalMemory;
     protected long freeMemory;
+    protected String version;
     
     
     public ClientInfo() {
@@ -141,5 +140,12 @@ public class ClientInfo implements Serializable{
     }
     public void setFreeMemory(long freeMemory) {
         this.freeMemory = freeMemory;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+    public void setVersion(String newValue) {
+        this.version = newValue;
     }
 }

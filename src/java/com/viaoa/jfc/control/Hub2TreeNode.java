@@ -108,9 +108,9 @@ public class Hub2TreeNode extends HubListenerAdapter {
         			((OATreeModel)node.getTree().getModel()).insertNode(parent, pos, e.getObject());        			
         		}
             }
-            catch (Exception ex) {
-                System.out.println("Hub2TreeNode.afterAdd "+ex);
-                ex.printStackTrace();
+            catch (Throwable ex) {
+                //System.out.println("Hub2TreeNode.afterAdd "+ex+", will continue");
+                //ex.printStackTrace();
                 ((OATreeModel)node.getTree().getModel()).fireTreeStructureChanged(parent);
             }
         }

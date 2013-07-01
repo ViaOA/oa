@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.Socket;
@@ -307,7 +308,14 @@ public class RemoteMultiplexerClient {
                     else ri.response = (ri.args[0] == ri.object);
                 }
                 else {
-                    ri.response = ri.method.invoke(stuntObject, ri.args);
+                    try {
+                        ri.response = ri.method.invoke(stuntObject, ri.args);
+                    }
+                    catch (InvocationTargetException e) {
+                        Throwable t = e.getCause();
+                        if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+                        else ri.exception = e;
+                    }
                 }
             }
             else {
@@ -818,7 +826,15 @@ public class RemoteMultiplexerClient {
                 ri.args[i] = bindx.getObject();
             }
         }
-        ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
+
+        try {
+            ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
+        }
+        catch (InvocationTargetException e) {
+            Throwable t = e.getCause();
+            if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+            else ri.exception = e;
+        }
 
         if (ri.response != null && ri.methodInfo.remoteReturn != null) {
             BindInfo bindx = getBindInfo((Object) ri.response);

@@ -25,7 +25,6 @@ import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.OACircularQueue;
 import com.viaoa.util.OACompressWrapper;
-import com.viaoa.util.OAReflect;
 
 /**
  * Server component used to allow remoting method calls with Clients.
@@ -343,11 +342,14 @@ public class RemoteMultiplexerServer {
         }
         
         int x = (ri.args == null) ? 0 : ri.args.length;
+        
         try {
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
         }
-        catch (InvocationTargetException iex) {
-            ri.exception = new Exception(iex.toString(), iex);
+        catch (InvocationTargetException e) {
+            Throwable t = e.getCause();
+            if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+            else ri.exception = e;
         }
         catch (Throwable tx) {
             ri.exception = new Exception(tx.toString(), tx);
@@ -493,7 +495,16 @@ public class RemoteMultiplexerServer {
                     }
                     else ri.response = (ri.args[0] == ri.object);
                 }
-                else ri.response = ri.method.invoke(stuntObject, ri.args);
+                else {
+                    try {
+                        ri.response = ri.method.invoke(stuntObject, ri.args);
+                    }
+                    catch (InvocationTargetException e) {
+                        Throwable t = e.getCause();
+                        if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+                        else ri.exception = e;
+                    }
+                }
             }
             else ri.exceptionMessage = "Method  not found";
             return;
@@ -795,7 +806,16 @@ public class RemoteMultiplexerServer {
                     }
                     else ri.response = (ri.args[0] == ri.object);
                 }
-                else ri.response = ri.method.invoke(stuntObject, ri.args);
+                else {
+                    try {
+                        ri.response = ri.method.invoke(stuntObject, ri.args);
+                    }
+                    catch (InvocationTargetException e) {
+                        Throwable t = e.getCause();
+                        if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+                        else ri.exception = e;
+                    }
+                }
             }
             else ri.exceptionMessage = "Method  not found";
             return ri;
@@ -984,6 +1004,11 @@ public class RemoteMultiplexerServer {
     protected void processBroadcast(RequestInfo ri) throws Exception {
         try {
             ri.response = ri.method.invoke(ri.object, ri.args);
+        }
+        catch (InvocationTargetException e) {
+            Throwable t = e.getCause();
+            if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+            else ri.exception = e;
         }
         catch (Exception e) {
             ri.exception = e;
