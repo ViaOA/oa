@@ -266,7 +266,7 @@ public class OAObjectCSDelegate {
         }
         
         OAObjectKey key = obj.getObjectKey();
-        rs.propertyChange(obj.getClass(), key, propertyName, newValue, bIsBlob);
+        rs.propertyChange(obj.getClass(), key, propertyName, newValue, bIsBlob, obj.getAutoAdd());
 	}
 	
     protected static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue) {
@@ -306,7 +306,7 @@ if (true || false) return; //qqqqqqqqqqqqqqqqqqqqqq
         
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         if (rs != null) {
-            rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob);
+            rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob, obj.getAutoAdd());
         }
     }
 }

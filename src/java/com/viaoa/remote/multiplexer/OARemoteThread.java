@@ -12,8 +12,6 @@ public class OARemoteThread extends Thread {
     volatile long msStartNextThread;
     volatile long msLastUsed;
 
-volatile public boolean bDebug;//qqqqqqqqqqqqqqqq    
-    
     volatile boolean sendMessages;  // if false then events are not sent, since this is processing a message
     
     public OARemoteThread(Runnable r) {

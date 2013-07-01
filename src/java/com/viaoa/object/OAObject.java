@@ -733,5 +733,19 @@ public class OAObject implements java.io.Serializable, Comparable {
     public OAObjectKey getObjectKey() {
         return OAObjectKeyDelegate.getKey(this);
     }
+    
+    // 20130630
+    /**
+     * Used to determine if an object should be added to a reference/master hub when one
+     * of it's OAObject properties is set.  If false, then the object will not be added to
+     * masterHubs until this is called with "true" or when oaObj is saved.
+     * @param bEnabled (default is true)
+     */
+    public void setAutoAdd(boolean b) {
+        OAObjectDelegate.setAutoAdd(this, b);
+    }
+    public boolean getAutoAdd() {
+        return OAObjectDelegate.getAutoAdd(this);
+    }
 }
 

@@ -584,32 +584,25 @@ public class RemoteMultiplexerClient {
 
                         this.msLastUsed = System.currentTimeMillis();                
                         processMessageForStoC2(requestInfo, false);
-
-                        long t2 = System.currentTimeMillis();//qqqqqqqqqqqqqq
+/* test only
+                        long t2 = System.currentTimeMillis();
                         long tx = t2 - this.msLastUsed;
                         long tz = t2 - msStartNextThread;
                         if (msStartNextThread < 1) tz = 0;
-                        
-//System.out.println(this.getName()+" "+ requestInfo.methodNameSignature+ " tot:"+tx+", afterStartedNext="+tz);                        
-                        
+                        // System.out.println(this.getName()+" "+ requestInfo.methodNameSignature+ " tot:"+tx+", afterStartedNext="+tz);                        
                         if (tx > 248) {
                             int xx = 4;
                             xx++;
                         }
-if (!startedNextThread && tx > 100) {//qqqqqqqqqq
-    int xx = 4;
-    xx++;
-    System.out.println("RemoteThread took over 100ms and did not startNextThread --> "+tx);
-}
+                        if (!startedNextThread && tx > 100) {
+                            int xx = 4;
+                            xx++;
+                            System.out.println("RemoteThread took over 100ms and did not startNextThread --> "+tx);
+                        }
+*/
                         synchronized (Lock) {
                             this.requestInfo = null;
                             Lock.notify();
-                            
-                            if (bDebug) {
-                                bDebug = false;
-                                int xx = 4;
-                                xx++;//qqqqqqqq
-                            }
                         }
                         if (shouldClose(this)) break;
                     }
@@ -698,32 +691,26 @@ if (!startedNextThread && tx > 100) {//qqqqqqqqqq
 
         if (ri.bind.usesQueue) {
             OARemoteThread t = getRemoteClientThread(ri);
-long t1 = System.currentTimeMillis();                
+            // test
+            // long t1 = System.currentTimeMillis();                
             synchronized (t.Lock) {
                 t.Lock.notify();  // have RemoteClientThread process the message
                 t.Lock.wait(250);
             }
-
-long t2 = System.currentTimeMillis();//qqqqqqqqqqqqqq
+            /* test
+            long t2 = System.currentTimeMillis();
             long tx = t2 - t1;
-                if (tx > 245) {
-                    t.bDebug = true;
-                    System.out.println("250 timeout waiting on RemoteThread --> "+tx);
-                }
-            int xx = 4;
-            xx++;
+            if (tx > 245) {
+                System.out.println("250 timeout waiting on RemoteThread --> "+tx);
+            }
+            */
         }
         else {
             processMessageForStoC2(ri, bSendResponse);
         }
     }
     
-    AtomicInteger aiCntx = new AtomicInteger();//qqqqqqq
-        
     protected void processMessageForStoC2(RequestInfo ri, boolean bSendResponse) throws Exception {
-        int xx = aiCntx.incrementAndGet();//qqqqqqqq
-        if (xx % 1000 == 0) System.out.println(xx+" processMessages");//qqqqqqqqqqqq
-        
         try {
             processMessageForStoC(ri);
         }

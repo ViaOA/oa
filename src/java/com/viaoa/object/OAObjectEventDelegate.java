@@ -19,13 +19,10 @@ package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Vector;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.sync.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
@@ -367,7 +364,6 @@ public class OAObjectEventDelegate {
 	    // By changing a reference property, the object could be moved to another hub
 	    ArrayList<Hub> alUpdateHub = null;
 	    if (oldObj != null || liRecursive != null) {
-	        
 	        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
 	        if (refs != null) {
     	        for (WeakReference<Hub<?>> ref : refs) {
@@ -535,7 +531,9 @@ public class OAObjectEventDelegate {
 	                            	hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)oldObj, toLinkInfo.getName()); // Catalog.sections (original hub that this objects belonged to)
 	                                bAdd = hub.contains(oaObj);
 	                            }
-	                            if (bAdd && h.getObject(oaObj) == null) h.add(oaObj);
+	                            if (bAdd && h.getObject(oaObj) == null) {
+                                    h.add(oaObj);
+	                            }
 	                        }
 	                    }
 	                }
@@ -558,11 +556,28 @@ public class OAObjectEventDelegate {
 	    if (newObj != null) {
 	        try {
 	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)newObj, toLinkInfo.getName())) { 
-	            	obj = OAObjectReflectDelegate.getProperty((OAObject)newObj, toLinkInfo.getName()); 
-	    	        if (obj instanceof Hub) {
+	            	obj = OAObjectReflectDelegate.getProperty((OAObject)newObj, toLinkInfo.getName());
+	            	
+	            	// 20130630 added autoAttach check
+                    boolean b = OAObjectDelegate.getAutoAdd(oaObj);
+                    boolean bMasterAutoAdd = false;
+                    if (!b) {
+                        hub = (Hub) obj;
+                        OAObject objx = hub.getMasterObject();
+                        if (!OAObjectDelegate.getAutoAdd(objx)) {
+                            bMasterAutoAdd = true;
+                        }
+                    }
+                    
+	            	if (b || bMasterAutoAdd) {
 	    	            hub = (Hub) obj;
-	    	            if (!hub.contains(oaObj)) hub.addElement(oaObj);
-	    	        }
+	    	            hub.add(oaObj);
+	    	            
+	    	            if (bMasterAutoAdd && oaObj.isNew()) {
+    	                    // turn off autoAdd for this object
+    	                    OAObjectDelegate.setAutoAdd(oaObj, false);
+	    	            }
+                    }
 	        	}
 	        }
 	        catch (Exception e) {

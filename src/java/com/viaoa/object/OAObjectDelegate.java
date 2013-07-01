@@ -20,6 +20,7 @@ package com.viaoa.object;
 import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
 
 import com.viaoa.hub.*;
@@ -56,7 +57,10 @@ public class OAObjectDelegate {
 
     /** Flag to know if finalized objects should be automatically saved.  Default is false. */
     protected static boolean bFinalizeSave = false;
-    
+
+    /** tracks which OAObjects should not automatically add themself to a detailHub when an oaObj property is set. */
+    private static final ConcurrentHashMap<Integer, Integer> hmAutoAdd = new ConcurrentHashMap<Integer, Integer>();
+
     
     /**
 	    Called by OAObject constructor to assign guid and initialize new OAObject.
@@ -146,6 +150,7 @@ public class OAObjectDelegate {
 	        catch (Exception e) {
 	            LOG.log(Level.WARNING, "oaObj="+oaObj.getClass()+", key="+OAObjectKeyDelegate.getKey(oaObj), e);
 	        }
+            if (!b) hmAutoAdd.remove(oaObj.guid);
         	OAObjectEventDelegate.firePropertyChange(oaObj, WORD_New, old?TRUE:FALSE, b?TRUE:FALSE, false, false);
 	    }
 	}
@@ -235,6 +240,7 @@ public class OAObjectDelegate {
 		}
         OAObjectCacheDelegate.removeObject(oaObj);
         if (oaObj.guid > 0) OAObjectCSDelegate.finalizeObject(oaObj);
+        hmAutoAdd.remove(oaObj.guid);
         oaObj.weakHubs = null;
 	}
 	
@@ -425,7 +431,43 @@ public class OAObjectDelegate {
 		if (obj == null) return -1;
 		return obj.guid;
 	}
-	
-}
 
+	/**
+	 * Used to determine if an object should be added to a reference/master hub when one
+	 * of it's OAObject properties is set.  If false, then the object will not be added to
+	 * masterHubs until this is called with "true" or when oaObj is saved.
+	 * @param oaObj
+	 * @param bEnabled (default is true)
+	 */
+	public static void setAutoAdd(OAObject oaObj, boolean bEnabled) {
+	    if (oaObj == null) return;
+	    if (!oaObj.isNew()) return;
+	    if (!bEnabled) {
+	        hmAutoAdd.put(oaObj.guid, oaObj.guid);
+	    }
+	    else {
+	        if (hmAutoAdd.remove(oaObj.guid) != null) {
+	            // need to see if object should be put into linkOne/masterObject hub(s)             
+	            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+	            for (OALinkInfo li : oi.getLinkInfos()) {
+	                if (li.getType() != li.ONE) continue;
+	                Object objx = OAObjectReflectDelegate.getRawReference(oaObj, li.getName());
+	                if (!(objx instanceof OAObject)) continue;
+	                OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+	                if (liRev == null) continue;
+                    if (liRev.getType() != li.MANY) continue;
+                    if (liRev.getPrivateMethod()) continue;
+                    Object objz = OAObjectReflectDelegate.getProperty((OAObject) objx, liRev.getName());
+                    if (objz instanceof Hub) {
+                        ((Hub) objz).add(oaObj);
+                    }
+	            }
+	        }
+	    }
+	}
+	public static boolean getAutoAdd(OAObject oaObj) {
+        if (oaObj == null) return false;
+        return hmAutoAdd.get(oaObj.guid) == null;
+	}
+}
 

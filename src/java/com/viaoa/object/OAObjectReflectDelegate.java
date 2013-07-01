@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 
 import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientInterface;
-import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.OASelect;
 import com.viaoa.hub.Hub;

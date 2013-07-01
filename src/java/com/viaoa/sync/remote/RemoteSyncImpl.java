@@ -18,13 +18,14 @@ import com.viaoa.object.OAObjectReflectDelegate;
  */
 public class RemoteSyncImpl implements RemoteSyncInterface {
     private static Logger LOG = Logger.getLogger(RemoteSyncImpl.class.getName());
-    
+
     @Override
-    public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
-        Object gobj = OAObjectCacheDelegate.get(objectClass, origKey);
+    public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob, boolean bAutoAdd) {
+        OAObject gobj = OAObjectCacheDelegate.get(objectClass, origKey);
         if (gobj == null) {
             return false;  // object not on this system
         }
+        gobj.setAutoAdd(bAutoAdd);
         OAObjectReflectDelegate.setProperty((OAObject)gobj, propertyName, newValue, null);
         
         // blob value does not get sent, so clear the property so that a getXxx will retrieve it from server

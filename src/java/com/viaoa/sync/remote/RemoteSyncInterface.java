@@ -8,7 +8,7 @@ import com.viaoa.object.OAObjectKey;
 public interface RemoteSyncInterface {
 
     // OAObjectCSDelegate    
-    boolean propertyChange(Class objectClass, OAObjectKey objectKey, String propertyName, Object newValue, boolean bIsBlob);    
+    boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob, boolean bAutoAdd);    
     boolean removeObject(Class objectClass, OAObjectKey objectKey); // Remove object from each workstation.
 
     // HubCSDelegate
