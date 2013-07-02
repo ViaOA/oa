@@ -1,5 +1,6 @@
 package com.viaoa.jfc.image;
 
+
 // IntHashtable - a Hashtable that uses ints as the keys
 //
 // This is 90% based on JavaSoft's java.util.Hashtable.

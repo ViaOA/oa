@@ -1,15 +1,9 @@
-/* 
-2003/10/14 add method getObject(Class c) to be able to get real object from HubController or OADataSource
-2003/11/10 changed equals().  If any part of id is null and guids >= 0, then guids must match to be equal.  If guid < 0,
-then it is for an objectkey without an object
-2003/12/03 equals() if object class does not have objectId Properties, then they return obj==this
-
-
-This software and documentation is the confidential and proprietary 
-information of ViaOA, Inc. ("Confidential Information").  
-You shall not disclose such Confidential Information and shall use 
-it only in accordance with the terms of the license agreement you 
-entered into with ViaOA, Inc..
+/*
+This software and documentation is the confidential and proprietary
+information of ViaOA, Inc. ("Confidential Information").
+You shall not disclose such Confidential Information and shall use
+it only in accordance with the terms of the license agreement you
+entered into with ViaOA, Inc.
 
 ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
 SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
@@ -17,10 +11,10 @@ IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
 SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
 THIS SOFTWARE OR ITS DERIVATIVES.
- 
-Copyright (c) 2001 ViaOA, Inc.
+
+Copyright (c) 2001-2013 ViaOA, Inc.
 All rights reserved.
-*/ 
+*/
 package com.viaoa.object;
 
 import java.io.*;

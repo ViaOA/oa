@@ -1,3 +1,20 @@
+/*
+This software and documentation is the confidential and proprietary
+information of ViaOA, Inc. ("Confidential Information").
+You shall not disclose such Confidential Information and shall use
+it only in accordance with the terms of the license agreement you
+entered into with ViaOA, Inc.
+
+ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
+SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
+SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
+THIS SOFTWARE OR ITS DERIVATIVES.
+
+Copyright (c) 2001-2013 ViaOA, Inc.
+All rights reserved.
+*/
 package com.viaoa.remote.multiplexer;
 
 import java.io.ObjectStreamClass;
@@ -879,8 +896,6 @@ public class RemoteMultiplexerServer {
         // put "ri" in circular queue for clients to pick up.       
         OACircularQueue<RequestInfo> cque = hmAsnycCircularQueue.get(ri.bind.asyncQueueName);        
         cque.addMessageToQueue(ri);
-        
-        
         return ri;
     }
     
@@ -937,12 +952,14 @@ public class RemoteMultiplexerServer {
          
                 OARemoteThread t = getRemoteClientThread(ri);
                 synchronized (t.Lock) {
-                    t.Lock.notify();
+                    t.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
                     t.Lock.wait(250);
-                }
-                synchronized (ri) {
-                    ri.processedByServer = true;
-                    ri.notifyAll();  // waiting clients getting messages from queue 
+                    if (!ri.processedByServer) {
+                        StackTraceElement[] stes = t.getStackTrace();
+                        Exception ex = new Exception();
+                        ex.setStackTrace(stes);
+                        LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="+ri.toLogString(), ex);
+                    }
                 }
             }
         }
@@ -982,7 +999,7 @@ public class RemoteMultiplexerServer {
                             if (requestInfo != null) {
                                 processBroadcast(requestInfo);
                                 this.requestInfo = null;
-                                Lock.notify();
+                                Lock.notify(); // notify socket reader thread to continue to next message
                             }
                         }
                         catch (Exception e) {}
@@ -1012,6 +1029,10 @@ public class RemoteMultiplexerServer {
         }
         catch (Exception e) {
             ri.exception = e;
+        }
+        synchronized (ri) {
+            ri.processedByServer = true;
+            ri.notifyAll();  // waiting clients getting messages from queue 
         }
     }
     

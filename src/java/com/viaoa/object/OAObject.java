@@ -1,4 +1,4 @@
-/**
+/*
 This software and documentation is the confidential and proprietary
 information of ViaOA, Inc. ("Confidential Information").
 You shall not disclose such Confidential Information and shall use
@@ -12,7 +12,7 @@ PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
 SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
 THIS SOFTWARE OR ITS DERIVATIVES.
 
-Copyright (c) 2001-2007 ViaOA, Inc.
+Copyright (c) 2001-2013 ViaOA, Inc.
 All rights reserved.
 */
 package com.viaoa.object;
@@ -106,11 +106,11 @@ public class OAObject implements java.io.Serializable, Comparable {
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
 
     
-    public static final int version = 1305040; // last: 1204290; 
+    public static final int version = 1307020;  
     static {
         Properties props = System.getProperties();
         
-        System.out.println("OA version 3.4_" + version + " ViaOA, all rights reserved");
+        System.out.println("OA version 3.5_" + version + " ViaOA, all rights reserved");
         System.out.println(String.format("Java version=%s, name=%s", 
                 System.getProperty("java.version"), 
                 System.getProperty("java.vm.name")

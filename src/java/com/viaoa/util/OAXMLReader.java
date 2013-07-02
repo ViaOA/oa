@@ -3,7 +3,7 @@ This software and documentation is the confidential and proprietary
 information of ViaOA, Inc. ("Confidential Information").
 You shall not disclose such Confidential Information and shall use
 it only in accordance with the terms of the license agreement you
-entered into with ViaOA, Inc..
+entered into with ViaOA, Inc.
 
 ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
 SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
@@ -12,25 +12,9 @@ PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
 SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
 THIS SOFTWARE OR ITS DERIVATIVES.
 
-Copyright (c) 2001-2004 ViaOA, Inc.
+Copyright (c) 2001-2013 ViaOA, Inc.
 All rights reserved.
 */
-
-
-/*
-2003/10/14 objects are created after all object data is loaded.
-2003/10/20 call OAObject.setThreadLoading(true) before creating new OAObject
-2003/10/21 changed to load properties stored in object attributes (for previous format)
-2003/10/22 added bHasParent parameter to endObject() to know if object is a child/reference from another object
-2003/10/22 object properties are not loaded until root object is finished
-2003/10/25 put setLoading(false) after all objects are created and populated
-2003/10/26 set up to call OAObject.getRealObject()
-2003/10/30 fixed problem where sub-Hubs not updating stack correctly
-2007/05/24 set up internal getRealObject()
-
-2003/10/22 needs to "hold" top level objects so that they are not finalized.
-*/
-
 package com.viaoa.util;
 
 import java.util.*;

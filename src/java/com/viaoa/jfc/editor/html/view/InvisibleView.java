@@ -1,21 +1,20 @@
 /*
-* SimplyHTML, a word processor based on Java, HTML and CSS
-* Copyright (C) 2002 Ulrich Hilger
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+This software and documentation is the confidential and proprietary
+information of ViaOA, Inc. ("Confidential Information").
+You shall not disclose such Confidential Information and shall use
+it only in accordance with the terms of the license agreement you
+entered into with ViaOA, Inc.
+
+ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
+SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
+SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
+THIS SOFTWARE OR ITS DERIVATIVES.
+
+Copyright (c) 2001-2013 ViaOA, Inc.
+All rights reserved.
+*/
 
 package com.viaoa.jfc.editor.html.view;
 
