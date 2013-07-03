@@ -11,13 +11,44 @@ import com.viaoa.util.OALogUtil;
 
 public class OASyncServerTest {
     OASyncServer server;
+    TestImpl ti;
+    BroadcastInterface bc;
     
     public void test() throws Exception {
         server = new OASyncServer(1099);
         server.start();
         
-        TestImpl ti = new TestImpl();
+        ti = new TestImpl();
         server.createLookup("test", ti, TestInterface.class);
+        
+        bc = (BroadcastInterface) server.createBroadcast("broadcast", BroadcastInterface.class, "oasync", 250);
+        bc.start();
+        
+        boolean bStarted = true;
+        ServerRoot root = ti.getServerRoot();
+
+        Company company = new Company();
+        root.getCompanies().add(company);
+
+        for (int i=0; ;i++) {
+            company = root.getCompanies().getAt(0);
+
+            bc.displayCompanyName(i);
+            if (i % 10 == 0) System.out.println(i+") company.name="+company.getName());
+            if (i % 100 == 0 && i > 0) {
+                if (bStarted) {
+                    bc.stop();
+                    System.out.println("Stopped, company.name="+company.getName());
+                }
+                else {
+                    bc.start();
+                    System.out.println("Started, company.name="+company.getName());
+                }
+                bStarted = !bStarted;
+            }
+            Thread.sleep(100);
+        }
+        
     }
     
     
@@ -40,7 +71,7 @@ public class OASyncServerTest {
         bc.start();
         boolean bStarted = true;
         for (int i=0; ;i++) {
-            bc.sendCompanyName(company.getName());
+            bc.displayCompanyName(i);
             Thread.sleep(100);
             if (i % 10 == 0) System.out.println(i+") company.name="+company.getName());
             if (i % 100 == 0 && i > 0) {

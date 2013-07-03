@@ -248,7 +248,7 @@ public class OAPropertyPathTree extends OATree {
     
     /**
      *  additonal list of ObjectDefs that can be selected (does not allow expanding)
-     * @param hub list of objectDefs to include at the root level.
+     * @param hubCompany list of objectDefs to include at the root level.
      */
     public void setAdditionalObjectDefs(Hub<ObjectDef> hubAdditionalObjectDefs) {
         if (this.hubAdditionalObjectDefs != null) return; //qqq remove/replace not done

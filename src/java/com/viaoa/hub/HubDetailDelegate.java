@@ -418,6 +418,7 @@ public class HubDetailDelegate {
      *  If none is found, they the DataMaster for thisHub is returned.
      * */
     protected static HubDataMaster getDataMaster(final Hub thisHub) {
+        if (thisHub == null) return null;
         if (thisHub.datam.masterHub != null) return thisHub.datam;
         
         // 20120716

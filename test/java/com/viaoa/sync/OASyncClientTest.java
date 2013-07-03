@@ -19,42 +19,72 @@ public class OASyncClientTest {
     RemoteServerInterface remoteServer;
     RemoteClientInterface remoteClient;
     volatile boolean started=true;
-    
-    public void test() throws Exception {
-        client = new OASyncClient("localhost", 1099);
-            
-        client.start();
+    TestInterface testInterface;
+    ClientInfo clientInfo;
+    ServerRoot serverRoot;
+    Hub<Company> hubCompany;
+    int cId;
+    BroadcastImpl bc;
 
-        ClientInfo ci = client.getClientInfo();
+    public void connect() throws Exception {
+        if (client != null) return;
+        client = new OASyncClient("localhost", 1099);
+        client.start();
+        clientInfo = client.getClientInfo();
         remoteServer = client.getRemoteServerInterface();
         remoteClient = client.getRemoteClientInterface();
+        testInterface = (TestInterface) client.lookup("test");
+        serverRoot = testInterface.getServerRoot();
+        hubCompany = serverRoot.getCompanies();
+        cId = client.getConnectionId();
         
-        TestInterface ti = (TestInterface) client.lookup("test");
-        ServerRoot serverRoot = ti.getServerRoot();
-        Hub<Company> hub = serverRoot.getCompanies();
+        bc = new BroadcastImpl(hubCompany) {
+            @Override
+            public void start() {
+                started = true;
+            }
+            @Override
+            public void stop() {
+                started = false;
+            }
+        };
+        client.getRemoteMultiplexerClient().lookupBroadcast("broadcast", bc);
         
-        int cId = client.getConnectionId();
-        
+    }
+    public void test() throws Exception {
+        connect();
+        for (int i=0; i<2; i++) {
+            Thread t = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        test1();
+                    }
+                    catch (Exception e) {
+                        System.err.println("error in test1, ex="+e);
+                        e.printStackTrace();
+                    }
+                }
+            }, "TestThread"+i);
+            t.start();
+        }
+    }
+    
+    public void test1() throws Exception {
         for (int i=0; ; i++) {
             String msg = cId + "." + i + "." + OAString.getRandomString(3, 22);
-            Company company = hub.getAt(0);
-
-if (!true) {
-    Thread.sleep(9250);
-    continue;
-}
+            Company company = hubCompany.getAt(0);
             
-            int x = hub.getSize();
+            int x = hubCompany.getSize();
             if (x < 2 || (x < 30 && Math.random() < .5d)) {
                 company = new Company();
-                hub.add(company);
+                hubCompany.add(company);
             }
             else {
-                hub.remove(company);
+                hubCompany.remove(company);
             }
             
             company.setName(msg);
-            if (i % 500 == 0) System.out.println(""+msg);
+            if (i % 1500 == 0) System.out.println(""+msg);
             //Thread.sleep(10);
         }
     }
@@ -78,7 +108,7 @@ if (!true) {
             hub.add(company);
         }
         
-        BroadcastImpl bc = new BroadcastImpl(company) {
+        BroadcastImpl bc = new BroadcastImpl(hub) {
             @Override
             public void start() {
                 started = true;
@@ -127,7 +157,7 @@ if (!true) {
         
         OASyncClientTest test = new OASyncClientTest();
         test.test();
-        System.out.println("DONE");
+        System.out.println("started");
         for (;;) Thread.sleep(10000);
     }
 }
