@@ -19,6 +19,7 @@ package com.viaoa.jsp;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,10 +58,16 @@ public class OADialog extends OAHtmlElement {
 
     private String submitButtonText;
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp) {
+    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         submitButtonText = null;
         bWasSubmitted = false;
+
         String s = req.getParameter("oacommand");
+        if (s == null && hmNameValue != null) {
+            String[] ss = hmNameValue.get("oacommand");
+            if (ss != null && ss.length > 0) s = ss[0];
+        }
+        
         bWasSubmitted  = (s != null && s.startsWith(id+" "));
         if (bWasSubmitted) {
             submitButtonText = s.substring(id.length()+1);

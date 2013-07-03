@@ -17,7 +17,12 @@ All rights reserved.
 */
 package com.viaoa.jsp;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * Used to upload a file from a browser form, input file element.
@@ -29,15 +34,49 @@ import java.io.OutputStream;
  */
 public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterface {
     private static final long serialVersionUID = 1L;
+    private static Logger LOG = Logger.getLogger(OAFileInput.class.getName());
+    
+    private File file;
+    private String fname;
 
     public OAFileInput(String id) {
         super(id);
     }
 
+    public void setFile(File file) {
+        this.file = file;
+    }
+    public File getFile() {
+        return file;
+    }
+    public void setFileName(String fname) {
+        this.fname = fname;
+    }
+    public String getFileName() {
+        return this.fname;
+    }
     
     @Override
     public OutputStream getOutputStream(int length, String originalFileName) {
-        return null;
+        OutputStream os = null;
+        if (file != null) {
+            try {
+                os = new FileOutputStream(this.file);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error while creating file, file="+file, e);
+            }
+        }
+        if (fname != null) {
+            try {
+                File fx = new File(fname);
+                os = new FileOutputStream(fx);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error while creating file, file="+fname, e);
+            }
+        }
+        return os;
     }
 
     @Override

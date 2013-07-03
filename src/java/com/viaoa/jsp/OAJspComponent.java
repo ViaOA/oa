@@ -17,7 +17,7 @@ All rights reserved.
 */
 package com.viaoa.jsp;
 
-import java.io.OutputStream;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,7 +40,7 @@ public interface OAJspComponent extends java.io.Serializable{
     boolean _beforeSubmit();
     
     /** returns true if this component caused the form submit */
-    boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp);
+    boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hashNameValue);
 
     /** return forward url */
     String _afterSubmit(String forwardUrl);

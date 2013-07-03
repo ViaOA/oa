@@ -118,21 +118,22 @@ public class OAGrid implements OAJspComponent {
     private boolean bWasSubmitted;
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp) {
-        bWasSubmitted = _myOnSubmit(req, resp);
+    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+        bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
         for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
             e.getValue()._beforeSubmit();
         }
         return bWasSubmitted;
     }
     
-    protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp) {
+    protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         Enumeration enumx = req.getParameterNames();
         String name = null;
         OAObject obj = null;
         String value = null;
-        for ( ; enumx.hasMoreElements(); ) {
-            name = (String) enumx.nextElement();
+        
+        for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
+            name = (String) ex.getKey();
             if (!name.equalsIgnoreCase("oahidden"+id)) continue;
             value = req.getParameter(name);
             break;

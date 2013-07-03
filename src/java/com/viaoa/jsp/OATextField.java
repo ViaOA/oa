@@ -19,6 +19,9 @@ package com.viaoa.jsp;
 
 import java.lang.reflect.Method;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -165,20 +168,30 @@ public class OATextField implements OAJspComponent, OATableEditor {
     private boolean bWasSubmitted;
     
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp) {
+    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
 
         String s = req.getParameter("oacommand");
+        if (s == null && hmNameValue != null) {
+            String[] ss = hmNameValue.get("oacommand");
+            if (ss != null && ss.length > 0) s = ss[0];
+        }
         bWasSubmitted  = (id != null && id.equals(s));
         
-        Enumeration enumx = req.getParameterNames();
         String name = null;
         OAObject obj = null;
+        String[] values = null;
         String value = null;
-        for ( ; enumx.hasMoreElements(); ) {
-            name = (String) enumx.nextElement();
+
+        for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
+            name = ex.getKey();
             if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
 
-            value = req.getParameter(name);
+            values = ex.getValue();
+            if (values == null || values.length == 0 || OAString.isEmpty(values[0])) {
+                continue;        
+            }
+            
+            value = values[0];
             
             if (name.equalsIgnoreCase(id)) {
                 if (hub != null) { 

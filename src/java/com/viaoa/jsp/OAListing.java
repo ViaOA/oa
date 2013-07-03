@@ -18,6 +18,9 @@ All rights reserved.
 package com.viaoa.jsp;
 
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -129,26 +132,30 @@ public class OAListing implements OAJspComponent {
     private boolean bWasSubmitted;
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp) {
-        bWasSubmitted = _myOnSubmit(req, resp);
+    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+        bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
         return bWasSubmitted;
     }
     
-    protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp) {
-        Enumeration enumx = req.getParameterNames();
+    protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String,String[]> hmNameValue) {
+        // Enumeration enumx = req.getParameterNames();
+
         String name = null;
         OAObject obj = null;
-        String value = null;
-        for ( ; enumx.hasMoreElements(); ) {
-            name = (String) enumx.nextElement();
+        String[] values = null;
+
+        for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
+            name = (String) ex.getKey();
             if (!name.equalsIgnoreCase("oalisting"+id)) continue;
-            value = req.getParameter(name);
+            values = ex.getValue();
             break;
         }
 
-        if (OAString.isEmpty(value)) return false;        
+        if (values == null || values.length == 0 || OAString.isEmpty(values[0])) {
+            return false;        
+        }
 
-        int row = OAConv.toInt(value);
+        int row = OAConv.toInt(values[0]);
         hub.setPos(row);
         
         submitUpdateScript = "$('#oalisting"+id+"').val('');";

@@ -991,18 +991,21 @@ public class RemoteMultiplexerServer {
             public void run() {
                 for (;;) {
                     synchronized (Lock) {
-                        reset();
                         try {
+                            reset();
                             if (requestInfo == null) {
                                 Lock.wait();
                             }
-                            if (requestInfo != null) {
-                                processBroadcast(requestInfo);
-                                this.requestInfo = null;
-                                Lock.notify(); // notify socket reader thread to continue to next message
-                            }
+                            if (requestInfo == null) continue;
+                            processBroadcast(this.requestInfo);
                         }
-                        catch (Exception e) {}
+                        catch (Exception e) {
+                            LOG.log(Level.WARNING, "error in remoteThread loop, will continue", e);
+                        }
+                        finally {
+                            this.requestInfo = null;
+                            Lock.notify(); // notify socket reader thread to continue to next message
+                        }
                     }
                 }
             }
@@ -1010,7 +1013,7 @@ public class RemoteMultiplexerServer {
             public void startNextThread() {
                 super.startNextThread();
                 synchronized (Lock) {
-                    Lock.notify();
+                    Lock.notify();  // lets the main queue reader thread get the next msg
                 }
             }
         };

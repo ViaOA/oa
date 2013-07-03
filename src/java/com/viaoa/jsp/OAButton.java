@@ -17,13 +17,13 @@ All rights reserved.
 */
 package com.viaoa.jsp;
 
-import java.io.OutputStream;
+
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.hub.Hub;
-import com.viaoa.util.OAString;
 
 
 /**
@@ -113,10 +113,18 @@ public class OAButton implements OAJspComponent {
 
     private boolean bWasSubmitted;
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp) {
+    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         bWasSubmitted = (req.getParameterValues(id) != null);
+        if (!bWasSubmitted && hmNameValue != null) {
+            bWasSubmitted = hmNameValue.get(id) != null;
+        }
+            
         if (!bWasSubmitted) {
             String s = req.getParameter("oacommand");
+            if (s == null && hmNameValue != null) {
+                String[] ss = hmNameValue.get("oacommand");
+                if (ss != null && ss.length > 0) s = ss[0];
+            }
             bWasSubmitted  = (id != null && id.equals(s));
         }
         return bWasSubmitted; // true if this caused the form submit

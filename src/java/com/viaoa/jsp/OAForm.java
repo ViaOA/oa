@@ -207,12 +207,12 @@ public class OAForm extends OABase implements Serializable {
      * @param req
      * @param resp
      */
-    protected OAJspComponent onSubmit(HttpServletRequest req, HttpServletResponse resp) {
+    protected OAJspComponent onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String,String[]> hmNameValue) {
         OAJspComponent compSubmit = null;
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
-            if (comp._onSubmit(req, resp)) compSubmit = comp;
+            if (comp._onSubmit(req, resp, hmNameValue)) compSubmit = comp;
         }
         return compSubmit;
     }
@@ -552,12 +552,12 @@ public class OAForm extends OABase implements Serializable {
         catch (Exception e) {}
 
         
-        Hashtable hashNameValue = new Hashtable();
+        HashMap<String, String[]> hmNameValue = new HashMap<String, String[]>();
         
         String contentType = request.getContentType();
         if ((contentType != null) && (contentType.indexOf("multipart/form-data") >= 0)) {
             try {
-                processMultipart(request, hashNameValue);
+                processMultipart(request, hmNameValue);
             }
             catch (Exception e){
                 this.addError(e.toString());
@@ -568,7 +568,7 @@ public class OAForm extends OABase implements Serializable {
             while ( enumx.hasMoreElements()) {
                 String name = (String) enumx.nextElement();
                 String[] values = request.getParameterValues(name);
-                hashNameValue.put(name,values);
+                hmNameValue.put(name,values);
             }
         }
         
@@ -579,7 +579,7 @@ public class OAForm extends OABase implements Serializable {
         if (bProcess) {
             forward = forwardUrl;
             if (OAString.isEmpty(forward)) forward = this.getUrl();
-            OAJspComponent compSubmit = onSubmit(request, response);
+            OAJspComponent compSubmit = onSubmit(request, response, hmNameValue);
     
             forward = afterSubmit(forward);
             
@@ -590,11 +590,21 @@ public class OAForm extends OABase implements Serializable {
         return forward;
     }
 
+    public String processForward(OASession session, HttpServletRequest request, HttpServletResponse response) {
+        HashMap<String,String[]> hmNameValue = new HashMap<String, String[]>();
+        Enumeration enumx = request.getParameterNames();
+        while ( enumx.hasMoreElements()) {
+            String name = (String) enumx.nextElement();
+            String[] values = request.getParameterValues(name);
+            hmNameValue.put(name,values);
+        }
+        return processForward(session, request, response, null);
+    }
     
     /**
      * Called by oaforward.jsp to be able to have a link call submit method without doing a form submit.
      */
-    public String processForward(OASession session, HttpServletRequest request, HttpServletResponse response) {
+    public String processForward(OASession session, HttpServletRequest request, HttpServletResponse response, HashMap<String,String[]> hmNameValue) {
         if (this.session == null) this.session = session;
         try {
             request.setCharacterEncoding("UTF-8");
@@ -606,7 +616,7 @@ public class OAForm extends OABase implements Serializable {
         OAJspComponent comp = getComponent(s);
         if (comp == null) return forward;
 
-        comp._onSubmit(request, response);
+        comp._onSubmit(request, response, hmNameValue);
         s = comp._afterSubmit(forward);
         if (!OAString.isEmpty(s)) forward = s;
         
@@ -615,7 +625,7 @@ public class OAForm extends OABase implements Serializable {
        
 
     // Parse Multipart posted forms ============================================================
-    protected void processMultipart(ServletRequest request, Hashtable hashNameValue) throws Exception {
+    protected void processMultipart(ServletRequest request, HashMap<String, String[]> hmNameValue) throws Exception {
         int len = request.getContentLength();
         if (len <= 1) return;
         String contentType = request.getContentType();
@@ -641,13 +651,13 @@ public class OAForm extends OABase implements Serializable {
                 
             if (nameValue == null) continue;
             String name = nameValue[0];
-            String[] values = (String[]) hashNameValue.get(name);
-            if (values == null) hashNameValue.put(name, new String[] { nameValue[1] });
+            String[] values = (String[]) hmNameValue.get(name);
+            if (values == null) hmNameValue.put(name, new String[] { nameValue[1] });
             else {
                 String[] newValues = new String[values.length+1];
                 System.arraycopy(values,0,newValues,0,values.length);
                 newValues[values.length] = nameValue[1];
-                hashNameValue.put(name,newValues);
+                hmNameValue.put(name,newValues);
             }
 
             // see if this was an OAFileInput component

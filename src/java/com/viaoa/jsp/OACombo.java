@@ -20,6 +20,9 @@ package com.viaoa.jsp;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -126,20 +129,27 @@ public class OACombo implements OAJspComponent, OATableEditor {
 
     private boolean bWasSubmitted;
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp) {
-        Enumeration enumx = req.getParameterNames();
+    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         String name = null;
         OAObject obj = null;
         String[] values = null;
 
         String s = req.getParameter("oacommand");
-        bWasSubmitted  = (id != null && id.equals(s)); // true if this caused the form submit
-        
+        if (s == null && hmNameValue != null) {
+            String[] ss = hmNameValue.get("oacommand");
+            if (ss != null && ss.length > 0) s = ss[0];
+        }
+        bWasSubmitted  = (id != null && id.equals(s));
+
         OAObject objLinkTo = null;
-        for ( ; enumx.hasMoreElements(); ) {
-            name = (String) enumx.nextElement();
+        for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
+            name = (String) ex.getKey();
             if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
-            values = req.getParameterValues(name);
+        
+            if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
+
+            values = ex.getValue();
+            if (values == null) continue;
             
             if (name.equalsIgnoreCase(id)) {  // no link to hub
                 break;

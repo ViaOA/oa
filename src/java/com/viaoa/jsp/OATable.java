@@ -19,6 +19,8 @@ package com.viaoa.jsp;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -172,26 +174,27 @@ public class OATable implements OAJspComponent {
     private String submitHref;
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp) {
+    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
             if (te instanceof OAJspComponent) {
-                ((OAJspComponent)te)._onSubmit(req, resp);
+                ((OAJspComponent)te)._onSubmit(req, resp, hmNameValue);
             }
         }
-        bWasSubmitted = _myOnSubmit(req, resp);
+        bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
         return bWasSubmitted;
     }
     
-    protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp) {
+    protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         Enumeration enumx = req.getParameterNames();
         String name = null;
         OAObject obj = null;
-        String value = null;
-        for ( ; enumx.hasMoreElements(); ) {
-            name = (String) enumx.nextElement();
+        String[] values = null;
+        
+        for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
+            name = ex.getKey();
             if (!name.equalsIgnoreCase("oahidden"+id)) continue;
-            value = req.getParameter(name);
+            values = ex.getValue();
             break;
         }
 
@@ -205,8 +208,10 @@ public class OATable implements OAJspComponent {
             }
         }
         
-        
-        if (OAString.isEmpty(value)) return false;        
+        if (values == null || values.length == 0 || OAString.isEmpty(values[0])) {
+            return false;        
+        }
+        String value = values[0];
         
         submitHref = req.getParameter("oacommand");
         if (submitHref != null && submitHref.startsWith("href=")) {
