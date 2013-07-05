@@ -38,7 +38,7 @@ import com.viaoa.hub.*;
     ComboBox with drop down table.
 */
 public class OATableComboBox extends OACustomComboBox {
-    protected OATable table;
+    protected OATable comboTable;
     private MyTablePopup myTablePopup;
 
     /**
@@ -55,7 +55,7 @@ public class OATableComboBox extends OACustomComboBox {
     public OATableComboBox(OATable table, Hub hub, String displayProperty) {
         super(hub, displayProperty);
     	control.bDisplayPropertyOnly = true;
-        setTable(table);
+        setComboTable(table);
         table.updateUI();
     }
 
@@ -69,11 +69,11 @@ public class OATableComboBox extends OACustomComboBox {
     }
 
 
-    public OATable getTable() {
-        return table;
+    public OATable getComboTable() {
+        return comboTable;
     }
-    public void setTable(OATable table) {
-        this.table = table;
+    public void setComboTable(OATable table) {
+        this.comboTable = table;
     }
 
     
@@ -109,7 +109,7 @@ public class OATableComboBox extends OACustomComboBox {
         if (myTablePopup != null) {
             myTablePopup.popup.updateUI();
         }
-        if (table != null) table.updateUI();
+        if (comboTable != null) comboTable.updateUI();
     }
 
     /**
@@ -149,11 +149,11 @@ class MyTablePopup implements ComboPopup, MouseMotionListener, MouseListener, Ke
 	// begin ComboPopup method implementations
 	private boolean bInit;
     public void show() {
-        if (cboTable != null && cboTable.table != null) {
+        if (cboTable != null && cboTable.comboTable != null) {
             if (!bInit) {
                 // hack: this cant be created in the constructor
                 bInit = true;
-                popup.add(new JScrollPane(cboTable.table), BorderLayout.CENTER);
+                popup.add(new JScrollPane(cboTable.comboTable), BorderLayout.CENTER);
                 popup.add(getButtonCommands(), BorderLayout.SOUTH);
             }
             cboTable.onShow();

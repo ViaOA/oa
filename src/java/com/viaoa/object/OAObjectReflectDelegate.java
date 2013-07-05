@@ -975,7 +975,7 @@ public class OAObjectReflectDelegate {
             if (li == null) return null;
             if (OAObjectInfoDelegate.isOne2One(li)) {
                 if (!bIsServer && !bIsCalc) {
-                    ref = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName);
+                    ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {
                     OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
@@ -1015,7 +1015,7 @@ public class OAObjectReflectDelegate {
                     }
                 }
                 if ( !bIsServer && !bIsCalc) {
-                    ref = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName);
+                    ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
             }
         }
@@ -1028,7 +1028,7 @@ public class OAObjectReflectDelegate {
             
             if (ref == null) {
                 if (!bIsServer && !bIsCalc) {
-                    ref = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName);
+                    ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {
                     ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey)obj);

@@ -203,11 +203,28 @@ public class OAObjectCSDelegate {
         if (sc != null) {
             obj = sc.getDetail(oaObj, linkPropertyName);
         }
+        else {
+            LOG.warning("This should only be called from workstations, not server. Object="+oaObj+", linkPropertyName="+linkPropertyName);
+        }
         if (obj instanceof byte[]) return (byte[]) obj;
         return null;
     }    
 	
-	
+    // used by OAObjectReflectDelegate.getReferenceHub()
+    protected static Object getServerReference(OAObject oaObj, String linkPropertyName) {
+        LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
+        Object value = null;
+        OASyncClient sc = OASyncDelegate.getSyncClient();
+        if (sc != null) {
+            value = sc.getDetail(oaObj, linkPropertyName);
+        }
+        else {
+            LOG.warning("This should only be called from workstations, not server. Object="+oaObj+", linkPropertyName="+linkPropertyName);
+        }
+        return value;
+    }
+
+    
 	// used by OAObjectReflectDelegate.getReferenceHub()
 	protected static Hub getServerReferenceHub(OAObject oaObj, String linkPropertyName) {
         LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
@@ -216,9 +233,12 @@ public class OAObjectCSDelegate {
         if (sc != null) {
             Object obj = sc.getDetail(oaObj, linkPropertyName);
             if (obj instanceof Hub) hub = (Hub) obj;
+            if (hub == null) {
+                LOG.warning("OAObject.getDetail(\""+linkPropertyName+"\") not found on server for "+oaObj.getClass().getName());
+            }
         }
-        if (hub == null) {
-            LOG.warning("OAObject.getDetail(\""+linkPropertyName+"\") not found on server for "+oaObj.getClass().getName());
+        else {
+            LOG.warning("This should only be called from workstations, not server. Object="+oaObj+", linkPropertyName="+linkPropertyName);
         }
 		return hub;
 	}

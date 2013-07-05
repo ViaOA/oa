@@ -35,6 +35,7 @@ public class OASyncServerTest {
 
             bc.displayCompanyName(i);
             if (i % 10 == 0) System.out.println(i+") company.name="+company.getName());
+            /*
             if (i % 100 == 0 && i > 0) {
                 if (bStarted) {
                     bc.stop();
@@ -46,6 +47,7 @@ public class OASyncServerTest {
                 }
                 bStarted = !bStarted;
             }
+            */
             Thread.sleep(100);
         }
         

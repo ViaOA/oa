@@ -43,10 +43,10 @@ public abstract class MultiplexerInputStreamController {
     /**
      * Max amount of time that real socket will wait for an vsocket to read real data from real inputstream
      * 
-     * one second would be more then enough, since data is "chunked", but the thread could be
+     * five seconds would be more then enough, since data is "chunked", but the thread could be
      * "busy" outside of reading the data.
      */
-    private final int _timeoutSeconds = 5;
+    private final int _timeoutSeconds = 60;
     
     /** Lock used to manage access to inputstream. */
     private final transient Object READLOCK = new Object();

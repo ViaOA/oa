@@ -38,6 +38,10 @@ public class OASyncDelegate {
     public static void setSyncClient(OASyncClient sc) {
         syncClient = sc;
     }
+    public static int getConnectionId() {
+        if (syncClient == null) return 0;
+        return syncClient.getConnectionId();
+    }
     public static OASyncServer getSyncServer() {
         return syncServer;
     }

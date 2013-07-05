@@ -58,11 +58,13 @@ public class HubCSDelegate {
         // must have a master object to be able to know which hub to add object to
         // send REMOVE message
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
-        rs.removeFromHub(
-                thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getObjectKey(), 
-                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
-                obj.getClass(), obj.getObjectKey());
+        if (rs != null) {
+            rs.removeFromHub(
+                    thisHub.datam.masterObject.getClass(), 
+                    thisHub.datam.masterObject.getObjectKey(), 
+                    HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
+                    obj.getClass(), obj.getObjectKey());
+        }
 	}
 
 	/**
@@ -89,10 +91,12 @@ public class HubCSDelegate {
 
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
-        rs.addToHub(
-                thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getObjectKey(), 
-                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), obj);
+        if (rs != null) {
+            rs.addToHub(
+                    thisHub.datam.masterObject.getClass(), 
+                    thisHub.datam.masterObject.getObjectKey(), 
+                    HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), obj);
+        }
 	}	
 
     private static HashSet<Integer> hashServerSideCache = new HashSet<Integer>(379, .75f);
@@ -121,11 +125,13 @@ public class HubCSDelegate {
 
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
-        rs.insertInHub(
-                thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getObjectKey(), 
-                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
-                obj, pos);
+        if (rs != null) {
+            rs.insertInHub(
+                    thisHub.datam.masterObject.getClass(), 
+                    thisHub.datam.masterObject.getObjectKey(), 
+                    HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
+                    obj, pos);
+        }
 	}	
 	
 	/**
@@ -154,9 +160,11 @@ public class HubCSDelegate {
         // send MOVE message
 	    
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
-        rs.moveObjectInHub(thisHub.getObjectClass(), 
-                thisHub.datam.masterObject.getObjectKey(), 
-                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), posFrom, posTo);
+        if (rs != null) {
+            rs.moveObjectInHub(thisHub.getObjectClass(), 
+                    thisHub.datam.masterObject.getObjectKey(), 
+                    HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), posFrom, posTo);
+        }
 	}
 
 	public static boolean isServer() {
