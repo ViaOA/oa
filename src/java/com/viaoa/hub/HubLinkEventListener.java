@@ -27,10 +27,19 @@ import com.viaoa.object.*;
 class HubLinkEventListener extends HubListenerAdapter implements java.io.Serializable {
 	Hub linkToHub;
 	Hub fromHub;
+	boolean bUpdateWeakHub;
 	
 	public HubLinkEventListener(Hub fromHub, Hub linkToHub) {
 	    this.fromHub = fromHub;
 	    this.linkToHub = linkToHub;  // hub that is linked to, that this HubListener is listening to.
+	    
+	    // 20130708
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(linkToHub);
+        if (li != null && li.getPrivateMethod()) {
+            if (OAObjectInfoDelegate.isMany2Many(li)) {
+                bUpdateWeakHub = true;
+            }
+        }
 	}
 	
 	public @Override void afterChangeActiveObject(HubEvent hubEvent) {
@@ -44,6 +53,19 @@ class HubLinkEventListener extends HubListenerAdapter implements java.io.Seriali
             	HubLinkDelegate.updateLinkedToHub(fromHub, linkToHub, hubEvent.getObject(), prop);
             }
 	    }
+	}
+	
+	// 20130708 check if linkToHub is based on a M2M, where the oaObj.weakRefs[] do not have the hub
+	//     if so, then need to add it
+	@Override
+	public void onNewList(HubEvent e) {
+	    if (!bUpdateWeakHub) return;
+	    for (Object objx : linkToHub) {
+	        OAObject oaObj = (OAObject) objx;
+	        if (!OAObjectHubDelegate.addHub(oaObj, linkToHub, true, true)) {
+	            break;
+	        }
+        }
 	}
 }
 

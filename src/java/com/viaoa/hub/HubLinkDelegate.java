@@ -121,6 +121,7 @@ public class HubLinkDelegate {
         thisHub.datau.bAutoCreateAllowDups = bAutoCreate && bAutoCreateAllowDups; // 20110809
 	    
 	    HubEventDelegate.addHubListener(linkToHub, thisHub.datau.hubLinkEventListener);
+	    thisHub.datau.hubLinkEventListener.onNewList(null);
 	    
 	    // 20121028
 	    Object ao = thisHub.datau.linkToHub.getActiveObject();

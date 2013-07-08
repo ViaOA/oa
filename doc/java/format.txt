@@ -36,6 +36,10 @@ String.format
 
         String.format("method=%s, start=%2$tm/%2$td-%2$tH:%2$tM:%2$tS:%2$tL", methodName, new Date(msStart));
 
+        // dt format: 06/07/2013 04:57:14.709
+        String msg = String.format("%1$tm/%1$td/%l$tY %1$tH:%1$tM:%1$tS.%1$tL", new Date(msStart));
+
+
 
 
 String custNo = dlg.getCustomerNumberTextField().getText();

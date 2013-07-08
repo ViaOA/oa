@@ -295,12 +295,15 @@ public class OAObjectHubDelegate {
         return (refs==null?0:refs.length);
     }
 
+    public static boolean addHub(OAObject oaObj, Hub hub) {
+        return addHub(oaObj, hub, true, false);
+    }
+    
 	/**
 	    Called by Hub when an OAObject is added to a Hub.
 	*/
-	public static void addHub(OAObject oaObj, Hub hub) {
-		if (oaObj == null || hub == null) return;
-
+	public static boolean addHub(OAObject oaObj, Hub hub, boolean bAddIfM2M, boolean bCheckExisting) {
+		if (oaObj == null || hub == null) return false;
         hub = hub.getRealHub();
 		
 		/* 20110102 removed, ex: VetPlan Items <-> ItemCategories
@@ -321,10 +324,11 @@ public class OAObjectHubDelegate {
 		*/
 
         // 20120702 dont store hub if M2M and reverse linkInfo does not have a method.
+        //          since this could have a lot of references (ex: VetJobs JobCategory has m2m Jobs)
         OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
-        if (li != null && li.getPrivateMethod()) {
+        if (!bAddIfM2M && li != null && li.getPrivateMethod()) {
             if (OAObjectInfoDelegate.isMany2Many(li)) {
-                return;
+                return false;
             }
         }
         
@@ -342,8 +346,18 @@ public class OAObjectHubDelegate {
 				}
 			}
 			else {
+                int currentSize = oaObj.weakHubs.length;
+
+                if (bCheckExisting) {
+                    for (int i=0; i<currentSize; i++) {
+                        if (oaObj.weakHubs[i] == null) continue;
+                        if (oaObj.weakHubs[i].get() == hub) {
+                            return false;
+                        }
+                    }
+			    }
+			    
 			    // check for empty slot at the end
-	            int currentSize = oaObj.weakHubs.length;
                 for (pos=currentSize-1; pos>=0; pos--) {
 	                if (oaObj.weakHubs[pos] == null) continue;
                     if (oaObj.weakHubs[pos].get() == null) {
@@ -396,6 +410,7 @@ public class OAObjectHubDelegate {
 			}
 			*/
 	    }
+		return true;
 	}
 	
 		
