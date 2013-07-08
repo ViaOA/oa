@@ -36,9 +36,9 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
 
     @Override
-    public boolean setCached(Class objectClass, OAObjectKey objectKey, boolean bAddToCache) {
+    public void setCached(Class objectClass, OAObjectKey objectKey, boolean bAddToCache) {
         Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (obj == null) return false;
+        if (obj == null) return;
 
         if (bAddToCache) {
             hashCache.put(obj, obj);
@@ -46,17 +46,15 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         else {
             hashCache.remove(obj);
         }
-        return true;
     }
     @Override
-    public boolean setCached(OAObject obj, boolean bAddToCache) {
+    public void setCached(OAObject obj, boolean bAddToCache) {
         if (bAddToCache) {
             hashCache.put(obj, obj);
         }
         else {
             hashCache.remove(obj);
         }
-        return true;
     }
 
     // called by server to save any client cached objects

@@ -945,7 +945,14 @@ public class RemoteMultiplexerServer {
                     }
                     continue;
                 }
-
+                if (!ri.bind.isBroadcast) {  // msg is using queue, but is not a broadcast
+                    synchronized (ri) {
+                        ri.processedByServer = true;
+                        ri.notifyAll();
+                    }
+                    continue;
+                }
+                
                 // sent by client, invoke method on object
                 Object obj = ri.bind.getObject();
                 if (obj == null) continue;
@@ -1225,7 +1232,7 @@ public class RemoteMultiplexerServer {
                     return;
                 }
 
-                RequestInfo[] ris = cque.getMessages(qpos, 50, 1000);
+                RequestInfo[] ris = cque.getMessages(qpos, 50);
                 if (ris == null) {
                     continue;
                 }

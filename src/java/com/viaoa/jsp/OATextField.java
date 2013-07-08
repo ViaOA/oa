@@ -188,10 +188,9 @@ public class OATextField implements OAJspComponent, OATableEditor {
 
             values = ex.getValue();
             if (values == null || values.length == 0 || OAString.isEmpty(values[0])) {
-                continue;        
+                value = null;        
             }
-            
-            value = values[0];
+            else value = values[0];
             
             if (name.equalsIgnoreCase(id)) {
                 if (hub != null) { 
@@ -227,7 +226,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
         
         if (hub != null) {
             if (obj != null) {
-                if (value.length() == 0) {
+                if (value != null && value.length() == 0) {
                     value = null;
                 }
                 try {

@@ -40,8 +40,6 @@ public class HubDetailDelegate {
         Used to create Master/Detail relationships.
         Set the controlling/master hub for this hub
         @param path is the property path from masterHub to get to this hub
-        @see #getDetail(String,boolean,String)
-        @see DetailHub
      */
     public static void setMasterHub(Hub thisHub, Hub masterHub, String path, boolean bShared, String selectOrder) {
         if (thisHub.datau.sharedHub != null) {
@@ -773,8 +771,6 @@ public class HubDetailDelegate {
     
     /**
         Used to remove Master/Detail relationships.
-        @see #getDetail(String,boolean,String) Full Description on Master/Detail Hubs
-        @see DetailHub
     */
     public static boolean removeDetailHub(Hub thisHub, Hub hubDetail) {
         // remove HubDetail if it does not have any more listeners or links
@@ -819,7 +815,6 @@ public class HubDetailDelegate {
         <p>
         Example:<br>
         If master is Department and Detail is Employee then "Employees", which is from Department.getEmployees()
-        @see #getDetail(String,boolean,String) Full Description on Master/Detail Hubs
     */
     public static String getPropertyFromMasterToDetail(Hub thisHub) {
         if (thisHub.datam.liDetailToMaster != null) {
@@ -856,7 +851,6 @@ public class HubDetailDelegate {
         <p>
         Example:<br>
         If master is Department and Detail is Employee then "Department", which is from Employee.getDepartment()
-        @see #getDetail(String,boolean,String) Full Description
     */
     public static String getPropertyFromDetailToMaster(Hub thisHub) {
         if (thisHub.datam.liDetailToMaster != null) {

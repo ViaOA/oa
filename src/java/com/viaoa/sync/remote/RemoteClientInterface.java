@@ -27,8 +27,10 @@ import com.viaoa.sync.model.ClientInfo;
 public interface RemoteClientInterface {
     OAObject createNewObject(Class clazz);
 
-    boolean setCached(Class objectClass, OAObjectKey objectKey, boolean bAddToCache);
-    boolean setCached(OAObject obj, boolean bAddToCache);
+    @OARemoteMethod(noReturnValue=true)
+    void setCached(Class objectClass, OAObjectKey objectKey, boolean bAddToCache);
+    @OARemoteMethod(noReturnValue=true)
+    void setCached(OAObject obj, boolean bAddToCache);
     
     boolean setLock(Class objectClass, OAObjectKey objectKey, boolean bLock);
     boolean isLocked(Class objectClass, OAObjectKey objectKey);

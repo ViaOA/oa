@@ -442,6 +442,7 @@ public class OAObjectDelegate {
 	public static void setAutoAdd(OAObject oaObj, boolean bEnabled) {
 	    if (oaObj == null) return;
 	    if (!oaObj.isNew()) return;
+	    
 	    if (!bEnabled) {
 	        hmAutoAdd.put(oaObj.guid, oaObj.guid);
 	    }

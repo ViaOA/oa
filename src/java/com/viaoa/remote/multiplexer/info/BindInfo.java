@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 import com.viaoa.remote.multiplexer.annotation.OARemoteParameter;
-import com.viaoa.util.OACircularQueue;
 
 /**
  * Internal information about a remote Object. 

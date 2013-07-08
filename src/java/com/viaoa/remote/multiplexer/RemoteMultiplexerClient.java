@@ -273,11 +273,11 @@ public class RemoteMultiplexerClient {
                 socket = null;
                 synchronized (ri) {
                     if (!ri.responseReturned) {
-                        ri.wait(30000);  // request timeout
+                        ri.wait(60000);  // request timeout
                     }
                 }
                 if (!ri.responseReturned) {
-                    ri.exceptionMessage = "timeout waiting on response from server";
+                    ri.exceptionMessage = "timeout waiting on response from server queue (see: RemoeteMultiplexerClient)";
                 }
             }
         }
@@ -716,19 +716,19 @@ public class RemoteMultiplexerClient {
 
         if (ri.bind.usesQueue) {
             OARemoteThread t = getRemoteClientThread(ri);
-            // test
-            // long t1 = System.currentTimeMillis();                
+            // test  qqqqqqqqqqqqqqqqqqq
+long t1 = System.currentTimeMillis();                
             synchronized (t.Lock) {
                 t.Lock.notify();  // have RemoteClientThread process the message
                 t.Lock.wait(250);
             }
-            /* test
-            long t2 = System.currentTimeMillis();
-            long tx = t2 - t1;
-            if (tx > 245) {
-                System.out.println("250 timeout waiting on RemoteThread --> "+tx);
-            }
-            */
+
+long t2 = System.currentTimeMillis();
+long tx = t2 - t1;
+if (tx > 245) {
+    System.out.println("250 timeout waiting on RemoteThread --> "+tx);
+}
+
         }
         else {
             processMessageForStoC2(ri, bSendResponse);

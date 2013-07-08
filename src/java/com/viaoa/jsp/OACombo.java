@@ -149,7 +149,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
             if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
 
             values = ex.getValue();
-            if (values == null) continue;
+            if (values == null) values = new String[0];
             
             if (name.equalsIgnoreCase(id)) {  // no link to hub
                 break;

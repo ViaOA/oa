@@ -265,9 +265,7 @@ public class OAObjectCSDelegate {
 	}
 	
 	
-//qqqqqqqq this needs to be changed to be called beforePropertyChange	
     protected static void fireBeforePropertyChange(OAObject obj, String propertyName, Object oldValue, Object newValue) {
-
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         if (rs == null) return;
         

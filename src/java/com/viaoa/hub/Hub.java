@@ -1156,9 +1156,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(String path, boolean bShareActive) {
         return HubDetailDelegate.getDetailHub(this, path, bShareActive);
@@ -1166,9 +1163,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(String path, String selectOrder) {
         return HubDetailDelegate.getDetailHub(this, path, selectOrder);
@@ -1176,9 +1170,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(String path) {
         Hub h = HubDetailDelegate.getDetailHub(this, path);
@@ -1188,9 +1179,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(String path, Class objectClass, boolean bShareActive) {
         return HubDetailDelegate.getDetailHub(this, path, objectClass, bShareActive);
@@ -1198,9 +1186,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(String path, Class objectClass) {
         return HubDetailDelegate.getDetailHub(this, path, objectClass, false);
@@ -1208,9 +1193,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(Class clazz, boolean bShareActive, String selectOrder) {
         return HubDetailDelegate.getDetailHub(this, clazz, bShareActive, selectOrder);
@@ -1218,9 +1200,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(Class clazz, boolean bShareActive) {
         return HubDetailDelegate.getDetailHub(this, clazz, bShareActive, null);
@@ -1228,9 +1207,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(Class clazz, String selectOrder) {
         return HubDetailDelegate.getDetailHub(this, clazz, false, selectOrder);
@@ -1238,9 +1214,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(Class clazz) {
         return HubDetailDelegate.getDetailHub(this, clazz, false, null);
@@ -1248,9 +1221,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to create Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getDetailHub(Class[] classes) {
         return HubDetailDelegate.getDetailHub(this, classes);
@@ -1262,8 +1232,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param path
      *            is the property path from masterHub to get to this hub
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public void setMasterHub(Hub masterHub) {
         HubDetailDelegate.setMasterHub(this, masterHub, null, false, null);
@@ -1275,8 +1243,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param path
      *            is the property path from masterHub to get to this hub
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public void setMasterHub(Hub masterHub, boolean bShared) {
         HubDetailDelegate.setMasterHub(this, masterHub, null, bShared, null);
@@ -1288,8 +1254,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param path
      *            is the property path from masterHub to get to this hub
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public void setMasterHub(Hub masterHub, String path) {
         HubDetailDelegate.setMasterHub(this, masterHub, path, false, null);
@@ -1301,8 +1265,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param path
      *            is the property path from masterHub to get to this hub
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public void setMasterHub(Hub masterHub, String path, boolean bShared) {
         HubDetailDelegate.setMasterHub(this, masterHub, path, false, null);
@@ -1311,9 +1273,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * Used to create Master/Detail relationships. Set the controlling/master
      * hub for this hub
-     * 
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public void setMasterHub(Hub masterHub, Class clazz, String path, boolean bShared, String selectOrder) {
         HubDetailDelegate.setMasterHub(this, masterHub, path, false, selectOrder);
@@ -1325,8 +1284,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param path
      *            is the property path from masterHub to get to this hub
-     * @see #getDetail(String,boolean,String)
-     * @see DetailHub
      */
     public Hub getMasterHub() {
         return HubDetailDelegate.getMasterHub(this);
@@ -1342,9 +1299,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Returns true if this Hub has any detail hubs created.
-     * 
-     * @see #getDetail(String,boolean,String) Full Description on Master/Detail
-     *      Hubs
      */
     public boolean hasDetailHubs() {
         int x = (datau.vecHubDetail == null) ? 0 : datau.vecHubDetail.size();
@@ -1353,10 +1307,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Used to remove Master/Detail relationships.
-     * 
-     * @see #getDetail(String,boolean,String) Full Description on Master/Detail
-     *      Hubs
-     * @see DetailHub
      */
     public boolean removeDetailHub(Hub hub) {
         return HubDetailDelegate.removeDetailHub(this, hub);

@@ -238,7 +238,7 @@ public class HubAddRemoveDelegate {
         if (thisHub.isOAObject()) {
             HubCSDelegate.addToHub(thisHub, (OAObject) obj);
         }
-        if (!internalAdd(thisHub,obj, true)) { // this will release the lock
+        if (!internalAdd(thisHub, obj, true)) {
             //LOG.warning("VVVVVVVVVVVV NOT ADDED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<");//qqqqqqqqqqqqqqqqq
             return;
         }
@@ -280,7 +280,7 @@ public class HubAddRemoveDelegate {
         }
 
         // this will lock, sync(data), and startNextThread
-        if (!HubDataDelegate._add(thisHub, key, obj, false)) return false;
+        if (!HubDataDelegate._add(thisHub, key, obj)) return false;
         
         if (obj instanceof OAObject) {
             OAObjectHubDelegate.addHub((OAObject)obj, thisHub);

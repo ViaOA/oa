@@ -455,7 +455,9 @@ if (true) return;
         boolean bHubListener;
         
         Data(Node node, OAObject parentObject, Hub hub) {
-            if (hub == null) throw new RuntimeException("hub can not be null");
+            if (hub == null) {
+                throw new RuntimeException("hub can not be null");
+            }
             if (!node.clazz.equals(hub.getObjectClass())) {
                 if (!OAObject.class.equals(node.clazz)) { // 20120809 could be using generic type reference (ex: OALeftJoin.A)
                     throw new RuntimeException("Hub class does not equal Node class");

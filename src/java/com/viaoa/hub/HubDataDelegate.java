@@ -139,13 +139,10 @@ public class HubDataDelegate {
 	
 	// called by HubAddRemoveDelegate.internalAdd
 	protected static boolean _add(Hub thisHub, OAObjectKey key, Object obj) {
-	    return _add(thisHub, key, obj, true);
-	}
-    protected static boolean _add(Hub thisHub, OAObjectKey key, Object obj, boolean bLock) {
         boolean b = false;
         try {
             OAThreadLocalDelegate.lock(thisHub);
-            b = _add2(thisHub, key, obj, bLock);
+            b = _add2(thisHub, key, obj);
         }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
@@ -153,15 +150,10 @@ public class HubDataDelegate {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
     }
-    private static boolean _add2(Hub thisHub, OAObjectKey key, Object obj, boolean bLock) {
-        if (bLock) {
-            synchronized (thisHub.data) {
-                if (thisHub.contains(obj)) return false;
-            	thisHub.data.vector.addElement(obj);
-            }
-        }
-        else {
-            thisHub.data.vector.addElement(obj);
+    private static boolean _add2(Hub thisHub, OAObjectKey key, Object obj) {
+        synchronized (thisHub.data) {
+            if (thisHub.contains(obj)) return false;
+        	thisHub.data.vector.addElement(obj);
         }
         
         int xx = thisHub.data.vector.size();

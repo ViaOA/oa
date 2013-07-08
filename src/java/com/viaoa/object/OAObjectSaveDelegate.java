@@ -52,7 +52,7 @@ public class OAObjectSaveDelegate {
         boolean b = (oaObj.newFlag || oaObj.changedFlag);
         OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
         if (b || bIsFirst) {
-            OAObjectDelegate.setAutoAdd(oaObj, true);
+            if (oaObj.newFlag) OAObjectDelegate.setAutoAdd(oaObj, true);
             OAObjectSaveDelegate.onSave(oaObj); 
 
             WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);

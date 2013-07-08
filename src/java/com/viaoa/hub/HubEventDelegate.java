@@ -398,7 +398,6 @@ public class HubEventDelegate {
 	    Called by select() and when a detail Hub's source of data is changed.
 	    @see #updateDetail
 	    @see #select
-	    @see #getDetail(String,boolean,String) Full Description on Master/Detail Hubs
 	 */
 	public static void fireOnNewListEvent(Hub thisHub, boolean bAll) {
 	    HubListener[] hl = getAllListeners(thisHub, (bAll?0:2) );

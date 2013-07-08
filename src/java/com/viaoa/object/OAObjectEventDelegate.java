@@ -556,24 +556,21 @@ public class OAObjectEventDelegate {
 	    if (newObj != null) {
 	        try {
 	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)newObj, toLinkInfo.getName())) { 
-	            	obj = OAObjectReflectDelegate.getProperty((OAObject)newObj, toLinkInfo.getName());
+	        	    hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)newObj, toLinkInfo.getName());
 	            	
 	            	// 20130630 added autoAttach check
                     boolean b = OAObjectDelegate.getAutoAdd(oaObj);
-                    boolean bMasterAutoAdd = false;
-                    if (!b) {
-                        hub = (Hub) obj;
-                        OAObject objx = hub.getMasterObject();
-                        if (!OAObjectDelegate.getAutoAdd(objx)) {
-                            bMasterAutoAdd = true;
-                        }
+
+                    boolean bMasterFlag = false;
+                    OAObject objx = hub.getMasterObject();
+                    if (objx != null && !OAObjectDelegate.getAutoAdd(objx)) {
+                        bMasterFlag = true;
                     }
                     
-	            	if (b || bMasterAutoAdd) {
-	    	            hub = (Hub) obj;
+	            	if (b || bMasterFlag) {
 	    	            hub.add(oaObj);
 	    	            
-	    	            if (bMasterAutoAdd && oaObj.isNew()) {
+	    	            if (bMasterFlag && b && oaObj.isNew()) {
     	                    // turn off autoAdd for this object
     	                    OAObjectDelegate.setAutoAdd(oaObj, false);
 	    	            }

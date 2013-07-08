@@ -447,7 +447,6 @@ public class OAObjectReflectDelegate {
         if (linkInfo == null) return null;
 	
         PropertyLock propLock = null;
-        
 	    try {
 	    	propLock = getPropertyLock(oaObj, linkPropertyName);
             hub = (Hub) propLock.ref;
@@ -882,7 +881,7 @@ public class OAObjectReflectDelegate {
         
         PropertyLock propLock = getPropertyLock(oaObj, propertyName);
         try {
-            if (propLock.bValueHasBeenSet) { // set by another thread, which had it locked
+            if (propLock.wasSet()) { // set by another thread, which had it locked
                 bytes = (byte[]) propLock.ref;
                 propLock = null;
             }
@@ -1075,7 +1074,8 @@ public class OAObjectReflectDelegate {
             }
         }
         synchronized (propLock) {
-            if (propLock.thread != Thread.currentThread()) {
+            for (;;) {
+                if (propLock.wasSet() || propLock.thread == Thread.currentThread()) break;
                 propLock.bWaiting = true;
                 try {
                     propLock.wait();
@@ -1092,6 +1092,7 @@ public class OAObjectReflectDelegate {
         }
         synchronized (propLock) {
             propLock.bValueHasBeenSet = true;
+            propLock.thread = null;
             if (propLock.bWaiting) {
                 propLock.notifyAll();
             }

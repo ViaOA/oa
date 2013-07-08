@@ -224,10 +224,15 @@ public class OAObjectHubDelegate {
             if (oaObj.weakHubs[0] == null || !isInHubWithMaster(oaObj)) {
                 oaObj.weakHubs = null;
             }
-            if (!isInHubWithMaster(oaObj)) {
-                if (OARemoteThreadDelegate.shouldSendMessages()) {
-                    // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added to a hub.  Need to add to cache now that it is no longer in a hub.
-                    OAObjectCSDelegate.addToServerSideCache(oaObj);
+            
+            // 20130707 could be a hub from hubMerger, that populates with One references
+            //   which means that the one reference keeps it from gc
+            if (hub.getMasterObject() != null) { 
+                if (!isInHubWithMaster(oaObj)) {
+                    if (OARemoteThreadDelegate.shouldSendMessages()) {
+                        // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added to a hub.  Need to add to cache now that it is no longer in a hub.
+                        OAObjectCSDelegate.addToServerSideCache(oaObj);
+                    }
                 }
             }
         }

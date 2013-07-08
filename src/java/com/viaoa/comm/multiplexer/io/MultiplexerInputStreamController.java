@@ -46,7 +46,7 @@ public abstract class MultiplexerInputStreamController {
      * five seconds would be more then enough, since data is "chunked", but the thread could be
      * "busy" outside of reading the data.
      */
-    private final int _timeoutSeconds = 60;
+    private final int _timeoutSeconds = 20;
     
     /** Lock used to manage access to inputstream. */
     private final transient Object READLOCK = new Object();

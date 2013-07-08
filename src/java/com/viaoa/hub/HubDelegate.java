@@ -149,7 +149,8 @@ public class HubDelegate {
 	    @see HubDetailDelegate#getDataMaster to get the sharedHub that has a DataMaster
 	*/
 	public static OAObject getMasterObject(Hub hub) {
-		HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
+		if (hub == null) return null;
+	    HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
 	    return dm.masterObject;
 	}
 	

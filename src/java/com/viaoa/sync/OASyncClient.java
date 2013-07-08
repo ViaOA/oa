@@ -17,12 +17,26 @@ All rights reserved.
 */
 package com.viaoa.sync;
 
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
+import com.viaoa.hub.Hub;
+import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectHubDelegate;
+import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAObjectKeyDelegate;
+import com.viaoa.object.OAObjectPropertyDelegate;
+import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.object.OAObjectSerializeDelegate;
+import com.viaoa.object.OAObjectSerializer;
+import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientInterface;
@@ -82,7 +96,7 @@ public class OASyncClient {
         
     }
     
-    public Object getDetail(OAObject oaObj, String propertyName) {
+    public Object getDetail_OLD(OAObject oaObj, String propertyName) {
         Object objx = null;
         try {
             objx = getRemoteClientSyncInterface().getDetail(oaObj.getClass(), oaObj.getObjectKey(), propertyName);
@@ -92,6 +106,159 @@ public class OASyncClient {
         return objx;
     }
 
+    public int cntGetDetail;
+    public Object getDetail(OAObject masterObject, String propertyName) {
+        //qqqqqvvvvv        
+        //System.out.println("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName+", levels="+levels);
+        //LOG.finer("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName);
+        
+        cntGetDetail++;        
+        int xDup = OAObjectSerializeDelegate.cntDup;
+        int xNew = OAObjectSerializeDelegate.cntNew;
+
+        // LOG.fine("masterObject="+masterObject+", propertyName="+propertyName);
+        if (masterObject == null || propertyName == null) return null;
+
+        boolean bGetSibs;
+        Object result = null;
+        if (!OARemoteThreadDelegate.isRemoteThread()) {
+            bGetSibs = true;
+            // send siblings to return back with same prop
+            OAObjectKey[] siblingKeys = null;
+            OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
+            if (li == null || !li.getCalculated()) {
+                siblingKeys = getDetailSiblings(masterObject, propertyName);
+            }
+            
+            String[] props = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
+            try {
+                result = getRemoteClientSyncInterface().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, props, siblingKeys);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "getDetail error", e);
+            }
+            bGetSibs = true;
+        }
+        else {
+            try {
+                result = getRemoteClientSyncInterface().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "getDetail error", e);
+            }
+            bGetSibs = false;
+        }
+        if (result instanceof OAObjectSerializer) result = ((OAObjectSerializer)result).getObject();
+        
+        //qqqqqqq        
+        if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntGetDetail % 100 == 0)        
+        System.out.println(String.format(
+            "%,d) OAClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b, newCnt=%d, dupCnt=%d, totNewCnt=%d, totDupCnt=%d",
+            cntGetDetail, 
+            masterObject, 
+            propertyName, 
+            result==null?"null":result.getClass().getName(),
+            bGetSibs,
+            OAObjectSerializeDelegate.cntNew-xNew, 
+            OAObjectSerializeDelegate.cntDup-xDup,
+            OAObjectSerializeDelegate.cntNew, 
+            OAObjectSerializeDelegate.cntDup
+        ));        
+        
+        return result;
+    }
+
+    private OAObject[] lastMasterObjects = new OAObject[10];
+    private int lastMasterCnter;
+    /**
+     * Find any other siblings to get the same property for.
+     */
+    protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property) {
+        Hub siblingHub = null;
+        
+        Hub hubThreadLocal = OAThreadLocalDelegate.getGetDetailHub();
+        if (hubThreadLocal != null && hubThreadLocal.contains(masterObject)) {
+            siblingHub = hubThreadLocal;
+        }
+        
+        if (siblingHub == null) {
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(masterObject);
+            
+            int hits = 0;
+            for (int i=0; (refs != null && i < refs.length); i++) {
+                WeakReference<Hub<?>> ref = refs[i];
+                if (ref == null) continue;
+                Hub hub = ref.get();
+                if (hub == null) continue;
+                OAObject masterx = hub.getMasterObject();
+                if (masterx != null || hub.getSelect() != null) {
+                    if (siblingHub != null) { // more then one possible hub
+                        // see if one of the previous objects can be found
+                        if (hits == 0) {
+                            hits++;
+                            for (OAObject objz : lastMasterObjects) {
+                                if (objz != null && siblingHub.contains(objz)) {
+                                    hits++;
+                                }
+                            }
+                        }
+                        
+                        int hits2 = 1;
+                        for (OAObject objz : lastMasterObjects) {
+                            if (objz != null && hub.contains(objz)) {
+                                hits2++;
+                                if (hits2 >= hits) {
+                                    break;
+                                }
+                            }
+                        }
+                        if (hits2 >= hits) {
+                            hits = hits2;
+                            siblingHub = hub;
+                        }
+                    }
+                    else {
+                        siblingHub = hub;
+                    }
+                }
+            }
+        }
+        lastMasterObjects[lastMasterCnter++%lastMasterObjects.length] = masterObject;
+        if (siblingHub == null) {
+            return null;
+        }
+        
+        ArrayList<OAObjectKey> al = new ArrayList<OAObjectKey>();
+        // load the same property for siblings
+        int pos = siblingHub.getPos(masterObject)+1;
+        int cnt = 0;
+        for (int i=0; i<250; i++) {
+            Object obj = siblingHub.getAt(i+pos);
+            if (obj == null) break;
+            if (obj == masterObject) continue;
+
+            Object value = OAObjectReflectDelegate.getRawReference((OAObject)obj, property);
+            if (value == null) {
+                if (OAObjectPropertyDelegate.isPropertyLoaded((OAObject)obj, property)) continue;                     
+                OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
+                al.add(key);
+                if (++cnt == 50) break;
+            }
+            else if (value instanceof OAObjectKey) {
+                OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
+                al.add(key);
+                if (++cnt == 155) break;
+            }
+        }
+
+        if (al == null || al.size() == 0) return null;
+        int x = al.size();
+        OAObjectKey[] keys = new OAObjectKey[x];
+        al.toArray(keys);
+        return keys;
+    }
+    
+    
     
     public RemoteServerInterface getRemoteServerInterface() throws Exception {
         if (remoteServerInterface == null) {
