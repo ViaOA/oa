@@ -279,6 +279,11 @@ public class OASyncServer {
             cx.remoteClient.clearCache();
         }
     }
+    public Socket getSocket(int connectionId) {
+        ClientInfoExt cx = hmClientInfoExt.get(connectionId);
+        if (cx != null) return cx.socket;
+        return null;
+    }
   
     protected void onClientException(ClientInfo ci, String msg, Throwable ex) {
         if (ci != null) {
