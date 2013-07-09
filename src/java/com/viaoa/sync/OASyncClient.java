@@ -90,10 +90,9 @@ public class OASyncClient {
                     }
                 }
             }
-        }, "UpdateClientInfo");
+        }, "OASync.updateClientInfo."+seconds);
         t.setDaemon(true);
         t.start();
-        
     }
     
     public Object getDetail_OLD(OAObject oaObj, String propertyName) {
@@ -366,6 +365,16 @@ public class OASyncClient {
         return true;
     }
 
+    public int getPort() {
+        if (!isConnected()) return -1;
+        return getRemoteMultiplexerClient().getMultiplexerClient().getPort();
+    }
+    public String getHost() {
+        if (!isConnected()) return null;
+        return getRemoteMultiplexerClient().getMultiplexerClient().getHost();
+    }
+    
+    
     /** the socket connection to GSMR server. 
      * @see #onSocketException(Exception) for connection errors
      * */

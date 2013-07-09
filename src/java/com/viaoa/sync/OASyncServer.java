@@ -95,9 +95,7 @@ public class OASyncServer {
         return remoteServer;
     }
 
-    
-    
-    protected ClientInfo getClientInfo() {
+    public ClientInfo getClientInfo() {
         if (clientInfo == null) {
             clientInfo = new ClientInfo();
             clientInfo.setConnectionId(0);

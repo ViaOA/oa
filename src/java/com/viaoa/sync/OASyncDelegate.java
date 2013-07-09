@@ -85,7 +85,7 @@ public class OASyncDelegate {
     
     public static boolean isConnected() {
         if (syncClient == null) {
-            return (syncServer == null);
+            return (syncServer != null);
         }
         return syncClient.isConnected();
     }
