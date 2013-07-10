@@ -140,7 +140,9 @@ public class DiscoveryServer {
         byte[] bsSend = getMessage().getBytes();
         DatagramPacket sendPacket = new DatagramPacket(bsSend, bsSend.length, inetAddress, portSend);
         if (sockSend == null) {
-            sockSend = new DatagramSocket(portSend);
+//qqqqqqqqqqqqqq            
+//was            sockSend = new DatagramSocket(portSend);
+            sockSend = new DatagramSocket();
         }
         synchronized (sockSend) {
             sockSend.send(sendPacket);
