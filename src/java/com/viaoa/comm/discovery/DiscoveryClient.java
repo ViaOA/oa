@@ -27,6 +27,9 @@ import java.util.logging.Logger;
 
 import com.viaoa.util.OALogUtil;
 
+// see this for broadcast addresses
+// https://en.wikipedia.org/wiki/IPv4#Addresses_ending_in_0_or_255
+
 /**
  * Used by clients to be able to find all available discoveryServers.
  * 
@@ -38,7 +41,7 @@ public class DiscoveryClient {
     private int portReceive;
     private int portSend;
     private DatagramSocket sockSend, sockReceive;
-    private InetAddress inetAddress;
+    private InetAddress iaBroadcast;
     // list of servers registered (host name)
     private HashSet<String> hmServer = new HashSet<String>();
     private volatile boolean bStarted;
@@ -64,13 +67,28 @@ public class DiscoveryClient {
     public String getMessage() {
         if (msg == null) {
             try {
-                inetAddress = InetAddress.getLocalHost();
-                this.msg = inetAddress.getHostAddress();
+                InetAddress ia = InetAddress.getLocalHost();
+                this.msg = ia.getHostAddress();
             }
             catch (Exception e) {
             }
         }
         return this.msg;
+    }
+
+    protected InetAddress getBroadcastInetAddress() {
+        if (iaBroadcast == null) {
+            try {
+                iaBroadcast = InetAddress.getLocalHost();
+                byte[] bs = iaBroadcast.getAddress();
+                bs[3] = (byte) 255;
+                iaBroadcast = InetAddress.getByAddress(bs);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error getting broadcast InetAddress", e);
+            }
+        }
+        return iaBroadcast;
     }
     
     /**
@@ -81,7 +99,8 @@ public class DiscoveryClient {
         bStarted = true;
         final int iStartStop = aiStartStop.incrementAndGet();
         sockSend = new DatagramSocket();
-        inetAddress = InetAddress.getLocalHost();
+        sockSend.setBroadcast(true);
+        
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -100,7 +119,7 @@ public class DiscoveryClient {
     
     protected void runReceive(int iStartStop) throws Exception {
         byte[] bsSend = getMessage().getBytes();
-        DatagramPacket sendPacket = new DatagramPacket(bsSend, bsSend.length, inetAddress, portSend);
+        DatagramPacket sendPacket = new DatagramPacket(bsSend, bsSend.length, getBroadcastInetAddress(), portSend);
         for (int j = 0; j < 4 && bStarted; j++) {
             sockSend.send(sendPacket);
             Thread.sleep(250);

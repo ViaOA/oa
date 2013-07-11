@@ -39,7 +39,7 @@ public class DiscoveryServer {
     private int portReceive;
     private int portSend;
     private DatagramSocket sockSend, sockReceive;
-    private InetAddress inetAddress;
+    private InetAddress iaBroadcast;
     private String msg;
     private volatile boolean bStarted;
     private AtomicInteger aiStartStop = new AtomicInteger();
@@ -53,19 +53,35 @@ public class DiscoveryServer {
         LOG.config(String.format("serverPort=%d, clientPort=%d", serverPort, clientPort));
         this.portSend = serverPort;
         this.portReceive = clientPort;
-        try {
-            inetAddress = InetAddress.getLocalHost();
-        }
-        catch (Exception e) {
-        }
     }
 
+    protected InetAddress getBroadcastInetAddress() {
+        if (iaBroadcast == null) {
+            try {
+                iaBroadcast = InetAddress.getLocalHost();
+                byte[] bs = iaBroadcast.getAddress();
+                bs[3] = (byte) 255;
+                iaBroadcast = InetAddress.getByAddress(bs);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error getting broadcast InetAddress", e);
+            }
+        }
+        return iaBroadcast;
+    }
+    
+    
     public void setMessage(String msg) {
         this.msg = msg;
     }
     public String getMessage() {
         if (msg == null) {
-            this.msg = inetAddress.getHostAddress();
+            try {
+                InetAddress ia = InetAddress.getLocalHost();
+                this.msg = ia.getHostAddress();
+            }
+            catch (Exception e) {
+            }
         }
         return this.msg;
     }
@@ -138,11 +154,10 @@ public class DiscoveryServer {
     public void send() throws Exception {
         LOG.finer("Sending: " + getMessage());
         byte[] bsSend = getMessage().getBytes();
-        DatagramPacket sendPacket = new DatagramPacket(bsSend, bsSend.length, inetAddress, portSend);
+        DatagramPacket sendPacket = new DatagramPacket(bsSend, bsSend.length, getBroadcastInetAddress(), portSend);
         if (sockSend == null) {
-//qqqqqqqqqqqqqq            
-//was            sockSend = new DatagramSocket(portSend);
             sockSend = new DatagramSocket();
+            sockSend.setBroadcast(true);
         }
         synchronized (sockSend) {
             sockSend.send(sendPacket);
