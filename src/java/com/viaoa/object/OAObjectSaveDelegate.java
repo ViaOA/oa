@@ -19,6 +19,8 @@ package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.viaoa.util.*;
 import com.viaoa.hub.*;
@@ -27,7 +29,8 @@ import com.viaoa.hub.*;
 // 2007/10/31 qqqqqqqqqq NOTE: Have DataSource use  OAObjectReflectDelegate.getRawReference(oaObj, prop) to get reference properties ..............
 
 public class OAObjectSaveDelegate {
-
+    private static Logger LOG = Logger.getLogger(OAObjectSaveDelegate.class.getName());
+    
     protected static void save(OAObject oaObj, int iCascadeRule) {
     	if (oaObj == null) return;
 
@@ -50,11 +53,25 @@ public class OAObjectSaveDelegate {
         
         // cascadeSave() will check hash to see if object has already been checked
         boolean b = (oaObj.newFlag || oaObj.changedFlag);
+        
         OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
         if (b || bIsFirst) {
-            if (oaObj.newFlag) OAObjectDelegate.setAutoAdd(oaObj, true);
-            OAObjectSaveDelegate.onSave(oaObj); 
+            b = oaObj.newFlag;
+            if (b) OAObjectDelegate.setAutoAdd(oaObj, true);
 
+            for (int i=0; i<2; i++) {
+                if (OAObjectSaveDelegate.onSave(oaObj)) break;
+                if (!b) break; // dont retry unless it was an insert
+                
+                oaObj.newFlag = true;
+                // try again, object might have been changed in the process
+                String msg = "error saving, class="+oaObj.getClass().getName()+", key="+oaObj.getObjectKey();
+                if (i == 0) msg += ", will try again now";
+                else msg += ", will try again, the next time save is called";
+                LOG.warning(msg);
+                
+                OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
+            }
             WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
             if (refs != null) {
                 for (WeakReference<Hub<?>> ref : refs) {
@@ -65,6 +82,8 @@ public class OAObjectSaveDelegate {
                 }
             }
         }
+        
+        
         OAObjectSaveDelegate._save(oaObj, false, iCascadeRule, cascade); // "MANY" relationships
     }
 
@@ -159,7 +178,7 @@ public class OAObjectSaveDelegate {
     /** @param bFullSave false=dont flag as unchanged, used when object needs to be saved twice. First to create
 	    object in datasource so that reference objects can refer to it
 	*/
-	protected static void onSave(OAObject oaObj) {
+	protected static boolean onSave(OAObject oaObj) {
 	    // if new, then need to hold a lock
 	    boolean bNew = oaObj.isNew();
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
@@ -194,7 +213,15 @@ public class OAObjectSaveDelegate {
             oaObj.setChanged(false);
 	        
             if (oi.getUseDataSource()) {
-                OAObjectDSDelegate.save(oaObj);
+                try {
+                    OAObjectDSDelegate.save(oaObj);
+                }
+                catch (Exception e) {
+                    String msg = "error saving, class="+oaObj.getClass().getName()+", key="+oaObj.getObjectKey();
+                    LOG.log(Level.WARNING, msg, e);
+                    oaObj.setChanged(true);
+                    return false;
+                }
             }
             OAObjectLogDelegate.logToXmlFile(oaObj, true);
             if (bNew) {
@@ -214,6 +241,7 @@ public class OAObjectSaveDelegate {
 	        //oaObj.setChanged(false);
 	    }
         oaObj.saved();
+        return true;
 	}
 	
 }

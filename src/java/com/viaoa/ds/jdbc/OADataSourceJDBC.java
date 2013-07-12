@@ -150,18 +150,7 @@ public class OADataSourceJDBC extends OADataSource {
     public @Override void insert(OAObject object) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(object);
         LOG.fine("object="+object.getClass()+", key="+key);
-        //for (int i=0; i<2; i++) {
-            try {
-                InsertDelegate.insert(this, object);
-                //break;
-            }
-            catch (Exception e) {
-                LOG.log(Level.WARNING, "Insert exception, object="+object.getClass()+", key="+key+", program will continue", e);
-                // LOG.log(Level.WARNING, "Insert exception, object="+object.getClass()+", key="+key+", try #="+i, e);
-            }
-            // try with new Id
-            //_initializeObject(object);  // reassign Id
-        //}
+        InsertDelegate.insert(this, object);
     }
 
     public @Override void insertWithoutReferences(OAObject obj) {
