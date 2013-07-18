@@ -799,7 +799,13 @@ public class OATextController {
         getPopupCopyMenuItem().setEnabled(b);
 
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        Object objx = cb.getContents(null);
+        Object objx = null;
+        try {
+            objx = cb.getContents(null);
+        }
+        catch (Exception ex) {
+            System.out.println("OATextController.onRightMouse clipboard.getContents exception, ex="+ex);
+        }
         
         getPopupPasteMenuItem().setEnabled(objx != null && editor.isEnabled());
 
