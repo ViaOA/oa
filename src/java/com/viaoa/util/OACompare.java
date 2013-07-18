@@ -17,9 +17,10 @@ All rights reserved.
 */
 package com.viaoa.util;
 
-
 import java.lang.reflect.*;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * Compare two objects, finding which fields do not match.
@@ -63,32 +64,49 @@ public class OACompare {
         
         if (objLeft.getClass().isArray()) {
             int x = Array.getLength(objLeft);
+            boolean bMatch = true;
             if (Array.getLength(objRight) != x) {
-                if (bReportNotEquals) foundOne(propertyPath, "objLeft.length="+Array.getLength(objLeft), "objRight.length="+Array.getLength(objRight));
-                return false;
+                bMatch = false;
+                if (bReportNotEquals) {
+                    foundOne(propertyPath, "length="+Array.getLength(objLeft), "length="+Array.getLength(objRight));
+                }
             }
 
-            boolean bMatch = true;
+            HashMap<Object, Object> hm = new HashMap<Object, Object>((int)(x * 1.5), .85f);
             for (int i=0; i<x; i++) {
-                Object o1 = Array.get(objLeft, i);
-                boolean bFound = false;
-                for (int j=-1; j<x; j++) { // start at -1, to try same pos as "i" first
-                    Object o2 = Array.get(objRight, (j<0?i:j) );
-                    Object k1 = getKey(o1);
-                    Object k2 = getKey(o2);
-                    if (_compare(null, k1, k2, false)) {
-                        boolean b = _compare(propertyPath+"["+i+","+(j<0?i:j)+"]", o1, o2, bReportNotEquals);
-                        if (!b) bMatch = false;
-                        bFound = true;
-                        break;
-                    }
+                Object obj = Array.get(objLeft, i);
+                Object key = getKey(obj);
+                Object objx = hm.put(key, obj);
+                if (objx != null) {
+                    foundOne(propertyPath, "duplicate key in collection", key);
                 }
-                if (!bFound) {
+            }
+            if (hm.size() != x) {
+                foundOne(propertyPath, "duplicate keys in collection", "");
+            }
+            x = Array.getLength(objRight);
+            for (int i=0; i<x; i++) {
+                Object objR = Array.get(objRight, i);
+                Object key = getKey(objR);
+                
+                Object objL = hm.remove(key);
+                if (objL == null) {
                     bMatch = false;
                     if (bReportNotEquals) {
-                        foundOne(propertyPath+"["+i+"] not found", objLeft, objRight);
+                        foundOne(propertyPath+"["+i+"]", "not found", key);
                     }
-                    break;
+                }
+                else {
+                    boolean b = _compare(propertyPath+"["+i+"]", objL, objR, bReportNotEquals);
+                    if (!b) bMatch = false;
+                }
+            }
+            for (Map.Entry<Object, Object> ex : hm.entrySet()) {
+                Object key = ex.getKey();
+                bMatch = false;
+                if (bReportNotEquals) {
+                    int pos = OAArray.indexOf((Object[]) objLeft, ex.getValue());
+                    foundOne(propertyPath+"["+pos+"]", key, "not found");
                 }
             }
             return bMatch;
@@ -127,10 +145,10 @@ public class OACompare {
             if (Modifier.isStatic(field.getModifiers())) continue;
             if (Modifier.isTransient(field.getModifiers())) continue;
 
-            Object o1 = field.get(objLeft);
-            Object o2 = field.get(objRight);
+            Object oL = field.get(objLeft);
+            Object oR = field.get(objRight);
             
-            if (!_compare(propertyPath+"."+field.getName(), o1, o2, bReportNotEquals) ) {
+            if (!_compare(propertyPath+"."+field.getName(), oL, oR, bReportNotEquals) ) {
                 bResult = false;
             }
         }
