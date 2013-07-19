@@ -28,7 +28,12 @@ import java.util.Map;
 public class OACompare {
     // hashmap used to add a Visitor pattern
     IdentityHashMap<Object, Object> hmVisitor = new IdentityHashMap<Object, Object>();
+    private String leftName;
+    private String rightName;
     
+    public OACompare() {
+        setObjectNames(null, null);
+    }
     public boolean compare(Object objLeft, Object objRight) throws IllegalAccessException {
         String s = objLeft == null ? "" : objLeft.getClass().getName();
         int x = s.lastIndexOf('.');
@@ -41,7 +46,27 @@ public class OACompare {
         return bResult;
     }
 
-    private boolean _compare(String propertyPath, Object objLeft, Object objRight, boolean bReportNotEquals) throws IllegalAccessException {
+    public void setObjectNames(String leftName, String rightName) {
+        setLeftObjectName(leftName);
+        setRightObjectName(leftName);
+    }
+    public String getLeftObjectName() {
+        return leftName;
+    }
+    public void setLeftObjectName(String name) {
+        if (name == null) name = "leftObj";
+        leftName = name;
+    }
+    public String getRightObjectName() {
+        return rightName;
+    }
+    public void setRightObjectName(String name) {
+        if (name == null) name = "rightObj";
+        rightName = name;
+    }
+    
+    
+    protected boolean _compare(String propertyPath, Object objLeft, Object objRight, boolean bReportNotEquals) throws IllegalAccessException {
         if (objLeft == objRight) return true;
         if (objLeft == null || objRight == null) {
             if (bReportNotEquals) foundOne(propertyPath, objLeft, objRight);
@@ -160,7 +185,7 @@ public class OACompare {
         if (s1.length() > 40) s1 = s1.substring(0,40)+"...";
         String s2 = objRight+"";
         if (s2.length() > 40) s2 = s2.substring(0,40)+"...";
-        System.out.println(propertyPath+": objLeft="+s1+", objRight="+s2);
+        System.out.println(propertyPath+": "+leftName+"="+s1+", "+rightName+"="+s2);
     }
     
     public static void main(String[] args) throws Exception {

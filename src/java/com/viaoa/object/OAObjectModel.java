@@ -56,8 +56,7 @@ public class OAObjectModel extends OAObject {
         setAllowCopy(true);
         setAllowPaste(true);
     }
-    
-    
+
     public String getDisplayName() {
         return displayName;
     }
