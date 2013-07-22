@@ -115,6 +115,7 @@ public class OAHTMLConverter {
     }
     
     protected TreeNode createTree(String doc) {
+        if (doc == null) doc = "";
         TreeNode root = new TreeNode();
         String html = preprocess(doc);
         if (html.indexOf("&lt;%=") >= 0) {
@@ -403,9 +404,6 @@ public class OAHTMLConverter {
                 tok.tagType = TagType.IfNot;
             }
             else if (tag.startsWith("if ")) {
-                tok.tagType = TagType.If;
-            }
-            else if (tag.startsWith("if")) {
                 tok.tagType = TagType.If;
             }
             else if (tag.startsWith("ifequals ")) {

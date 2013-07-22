@@ -193,7 +193,8 @@ public abstract class PrintPreviewController {
 
 			        if (printable instanceof OAPrintable) {
 			            OAPrintable p = (OAPrintable) printable;
-	                    if (p.preview(g, pageFormat, pageIndex) != Printable.PAGE_EXISTS) break;
+			            int x = p.preview(g, pageFormat, pageIndex);
+	                    if (x != Printable.PAGE_EXISTS) break;
 			        }
 			        else {
 			            if (printable != null) {

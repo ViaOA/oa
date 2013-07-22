@@ -73,13 +73,14 @@ public class HtmlDebug {
         
         pan.add(new JScrollPane(tree));
         
-        JButton cmd = new JButton("OK");
+        JButton cmd = new JButton("Refresh");
         cmd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 update();
             }
         });
+        OACommand.setup(cmd);
         
         JPanel panCmd = new JPanel(new FlowLayout());
         panCmd.add(cmd);

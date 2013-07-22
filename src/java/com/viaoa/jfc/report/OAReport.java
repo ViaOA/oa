@@ -19,6 +19,9 @@ package com.viaoa.jfc.report;
 
 import java.awt.*;
 import java.awt.print.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.viaoa.jfc.print.*;
 
 /**
@@ -28,7 +31,7 @@ import com.viaoa.jfc.print.*;
  */
 public class OAReport implements OAPrintable {
     // IMPORTANT: need to convert from point to pixel whenever using PageFormat or Paper.  For printing, graphics.scale(x,x) is set to make it wysiwyg
-
+    private static Logger LOG = Logger.getLogger(OAReport.class.getName());
     private String title;
     private OAPrintable prtTitleHead, prtHead, prtDetail, prtFoot;
 
@@ -251,7 +254,7 @@ g.fillRect(xx, yy, ww, hh);
             return x;
         }
         catch (Exception e) {
-            
+            LOG.log(Level.WARNING, "getting getting page", e);
         }
         return Printable.NO_SUCH_PAGE;
     }    

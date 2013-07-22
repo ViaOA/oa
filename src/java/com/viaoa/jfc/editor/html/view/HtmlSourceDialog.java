@@ -86,8 +86,11 @@ public class HtmlSourceDialog extends JDialog {
 	
     public void setVisible(boolean b) {
         if (b) m_succeeded = false;
+        if (b) {
+            m_sourceTxt.requestFocus();
+            m_sourceTxt.setCaretPosition(0);
+        }
         super.setVisible(b);
-        if (b) m_sourceTxt.requestFocus();
     }
 
 
