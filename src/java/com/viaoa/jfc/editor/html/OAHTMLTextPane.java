@@ -160,11 +160,10 @@ import com.viaoa.util.OAString;
  * noted, so that p { margin-top: 10% } will be treated as if no margin-top was
  * specified.
  * 
- * ------------------------------ Tags/Attributes added by OA <div
- * pagebreak='no'> division block used where page breaks should not occur <div
- * pagebreak='yes'> used to force a page break before
- * <tr header>
- * table row that should be repeated if table is multiple pages
+ * ******* Tags/Attributes added by OA ******* 
+ * <div pagebreak='no'> division block used where page breaks should not occur 
+ * <div pagebreak='yes'> used to force a page break before 
+ * <tr header> table row that should be repeated if table is multiple pages
  * 
  * 
  * Example: OAHTMLTextPane txt = tabExamVisit.getNoteHTMLTextPane();
