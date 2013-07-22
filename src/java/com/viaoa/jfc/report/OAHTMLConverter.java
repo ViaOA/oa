@@ -40,7 +40,7 @@ import com.viaoa.util.*;
  *  <li><%=end%>
  *  <li><%=ifequals prop "value to match"%>
  *  <li><%=end%>
- *  <li><%=format[X],'12 L'%>  where X can be used as a unique identifier, so that there can be multiple embeded formats.
+ *  <li><%=format[X],'12 L'%>  where X can be used as a unique identifier, so that there can be multiple embedded formats.
  *  <li><%=end%>
  *  <li><%=include name%> include another file in the same directory   ex: <%=include include%>
  *  </ul>
@@ -209,11 +209,19 @@ public class OAHTMLConverter {
         }
         if (tok.tagType != TagType.Command) return;
 
-        String s = OAString.field(tok.data, ",", 1).trim();
-        if (s.equalsIgnoreCase("counter")) node.tagType = TagType.Counter;
-        else if (s.equalsIgnoreCase("count")) node.tagType = TagType.Count;
-        else if (s.equalsIgnoreCase("sum")) node.tagType = TagType.Sum;
-        node.arg1 = OAString.field(tok.data, ",", 2);
+        String s = OAString.field(tok.data, " ", 1).trim();
+        if (s.equalsIgnoreCase("#counter")) {
+            node.tagType = TagType.Counter;
+        }
+        else if (s.equalsIgnoreCase("#count")) node.tagType = TagType.Count;
+        else if (s.equalsIgnoreCase("#sum")) node.tagType = TagType.Sum;
+        s = OAString.field(tok.data, ",", 1);
+        node.arg1 = OAString.field(s, " ", 2);  // name
+        String fmt = OAString.field(tok.data, ",", 2, 99);  // fmt
+        fmt = fmt.trim();
+        fmt = OAString.convert(fmt, '\'', "");
+        fmt = OAString.convert(fmt, '\"', "");
+        node.arg2 = fmt;
     }
 
     // if token has an end token
@@ -424,7 +432,9 @@ public class OAHTMLConverter {
         }
         if (rootNode.tagType == null) {
             String s = rootNode.arg1;
-            if (!OAString.isEmpty(rootNode.arg2)) s = OAString.format(s, rootNode.arg2);
+            if (!OAString.isEmpty(rootNode.arg2)) {
+                s = OAString.format(s, rootNode.arg2);
+            }
             if (s != null) sb.append(s);
         }
         else {
@@ -544,7 +554,9 @@ public class OAHTMLConverter {
                 if (ix == null) sb.append("Error: "+prop+".counter not valid");
                 else {
                     s = ix.toString();
-                    if (!OAString.isEmpty(fmt)) s = OAString.format(s, fmt);
+                    if (!OAString.isEmpty(fmt)) {
+                        s = OAString.format(s, fmt);
+                    }
                     sb.append(s);
                 }
                 break;

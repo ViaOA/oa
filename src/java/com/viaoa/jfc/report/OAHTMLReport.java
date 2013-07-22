@@ -209,7 +209,9 @@ public class OAHTMLReport extends OAReport {
      * Updates the Detail component.  Must be manually called
      */
     public void refreshDetail() {
-        
+        if (getDetailTextPane() == null) {
+            return;
+        }
         getDetailTextPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
