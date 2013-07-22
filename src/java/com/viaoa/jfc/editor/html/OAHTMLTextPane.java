@@ -92,11 +92,13 @@ import com.viaoa.util.OAString;
  * The following describes the CSS properties that are supported by the
  * rendering engine: see: javax.swing.text.html.CSS.java
  * 
+ * for sizes, values default to "px"
+ * 
  * <ul>
  * <li>font-family
  * <li>font-style
- * <li>font-size (supports relative units)
- * <li>font-weight
+ * <li>font-size (supports relative units) 
+ * <li>font-weight  (450, normal, bold, etc)
  * <li>font
  * <li>color
  * <li>background-color (with the exception of transparent)
@@ -111,23 +113,29 @@ import com.viaoa.util.OAString;
  * <li>vertical-align (only sup and super)
  * <li>text-align left, center, right, justify=center
  * 
+ * <li>margin
  * <li>margin-top
  * <li>margin-right
  * <li>margin-bottom
  * <li>margin-left
- * <li>margin
  * 
+ * <li>padding
  * <li>padding-top
  * <li>padding-right
  * <li>padding-bottom
  * <li>padding-left
  * 
- * <li>border-style (only supports inset, outset and none, solid) border-width:
- *   border-top-width: 1; border-style: solid; border-color: silver;
+ * <li>border-style (only supports inset, outset and none, solid) 
+ * <li>border-width  (only supports one size for all sides)
+ * <li>border-top-width,  left, right, bottom  (only supports top) 
+ * <li>border-color
  * 
  * <li>list-style-type
  * <li>list-style-position
  * </ul>
+ * 
+ * 
+ * 
  * The following are modeled, but currently not rendered.
  * <ul>
  * <li>font-variant
