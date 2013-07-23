@@ -125,10 +125,13 @@ import com.viaoa.util.OAString;
  * <li>padding-bottom
  * <li>padding-left
  * 
- * <li>border-style (only supports inset, outset and none, solid) 
+ * <li>border-style  (supports inset, outset, none, solid) 
  * <li>border-width  (only supports one size for all sides)
- * <li>border-top-width,  left, right, bottom  (only supports top) 
  * <li>border-color
+ * ** NOTE **
+ *  for <Table>, if the Border attr is used, then it's value will be used for all TD border-width,
+ *      for any TD inside of it (even inner tables)
+ * 
  * 
  * <li>list-style-type
  * <li>list-style-position

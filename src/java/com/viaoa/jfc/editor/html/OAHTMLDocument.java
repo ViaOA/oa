@@ -280,11 +280,23 @@ public class OAHTMLDocument extends HTMLDocument {
     }
 
     private void convertHTMLtoCSS(Element parent, Element child) {
-        MutableAttributeSet childAttribSet = (MutableAttributeSet) child.getAttributes();
 
+        MutableAttributeSet childAttribSet = (MutableAttributeSet) child.getAttributes();
+        
+        Object nameAttrib = childAttribSet.getAttribute(StyleConstants.NameAttribute);
+        boolean bRemovedHack = false;
+        if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TD) || nameAttrib.equals(HTML.Tag.TH)) ) {
+            // the translateHTMLToCSS method will add styles (not needed) to TD,TH from Table values
+            //   if the TD/TH does not have a CSS/Style defined for the border, then it will use the table value
+            childAttribSet.removeAttribute(StyleConstants.NameAttribute);
+            bRemovedHack = true;
+        }
+        
         BlockElement blockElement = new BlockElement(parent, childAttribSet);
         MutableAttributeSet newAttribSet = (MutableAttributeSet) getStyleSheet().translateHTMLToCSS(blockElement);
 
+        if (bRemovedHack) childAttribSet.addAttribute(StyleConstants.NameAttribute, nameAttrib);
+        
         if (newAttribSet.getAttributeCount() > 0) {
             childAttribSet.addAttributes(newAttribSet);
             removeUnneededHTMLAttributes(parent, childAttribSet);
