@@ -32,7 +32,7 @@ import com.viaoa.util.*;
   
  *  <ul>Tags that are supported:  
  *  <li><%=prop[,width||fmt]%>  to use value from OAProperties, or one of the values from setProperty()
- *  <li><%=foreach prop%>  to loop through a list of values (hub elements)
+ *  <li><%=foreach [prop]%>  to loop through a list of values (hub elements)
  *  <li><%=end%>
  *  <li><%=if prop%>  true if value is not null and length > 0, is 0 or false
  *  <li><%=end%>
@@ -45,10 +45,10 @@ import com.viaoa.util.*;
  *  <li><%=include name%> include another file in the same directory   ex: <%=include include%>
  *  </ul>
  *  
- *  <ul>Aggregate commands, words with current/most recent "foreach"
- *  <li><%=#counter propName fmt%> current counter  
- *  <li><%=#sum propName propName fmt%> sum of listed properties  
- *  <li><%=#count propName fmt%> sum of listed properties  
+ *  <ul>Aggregate commands, works with current/most recent "foreach"
+ *  <li><%=#counter [propName], fmt%> current counter  
+ *  <li><%=#sum [propName], propName fmt%> sum of listed properties  
+ *  <li><%=#count [propName], fmt%> sum of listed properties  
  *  </ul>
  *  
  *  
