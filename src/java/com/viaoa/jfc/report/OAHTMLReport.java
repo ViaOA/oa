@@ -25,6 +25,7 @@ import java.awt.print.PrinterException;
 import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.text.html.HTMLDocument;
 
 import com.viaoa.jfc.editor.html.OAHTMLTextPane;
@@ -225,21 +226,44 @@ public class OAHTMLReport extends OAReport {
         if (getDetailTextPane() == null) {
             return;
         }
+        
+        
+        if (txtDetail == null || htmlDetail == null) {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        getDetailTextPane().setText(refreshMessage);
+                    }
+                });
+            }
+            else {
+                getDetailTextPane().setText(refreshMessage);
+            }
+            return;
+        }
+        
+        
+//qqqqqqqqqqqq        
         getDetailTextPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    getDetailTextPane().setText(refreshMessage);
-                }
-            });
-        }
-        else {
-            getDetailTextPane().setText(refreshMessage);
-        }
+        SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+            String txt;
+            @Override
+            protected Void doInBackground() throws Exception {
+                txt = htmlConverterDetail.getHtml(obj, hub, properties);
+                return null;
+            }
+            @Override
+            protected void done() {
+                getDetailTextPane().setText(txt);
+                getDetailTextPane().getCaret().setDot(0);
+                getDetailTextPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        };
+        sw.execute();
         
         
-        if (txtDetail == null || htmlDetail == null) return;
+/*was:        
         
         final String txt = htmlConverterDetail.getHtml(obj, hub, properties);
         
@@ -257,6 +281,7 @@ public class OAHTMLReport extends OAReport {
             getDetailTextPane().getCaret().setDot(0);
         }
         getDetailTextPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+*/        
     }
     
     public void setProperties(OAProperties prop) {
