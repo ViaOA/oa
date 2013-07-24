@@ -129,18 +129,31 @@ public class OAHTMLReport extends OAReport {
         this.htmlTitleHeader = htmlTitleHeader;
         htmlConverterTitleHeader.setHtmlTemplate(htmlTitleHeader);
     }
+    public String getTitleHeaderHTML() {
+        return htmlConverterTitleHeader.getHtmlTemplate();
+    }
     public void setHeaderHTML(String htmlHeader) {
         this.htmlHeader = htmlHeader;
         htmlConverterHeader.setHtmlTemplate(htmlHeader);
+    }
+    public String getHeaderHTML() {
+        return htmlConverterHeader.getHtmlTemplate();
     }
     public void setFooterHTML(String htmlFooter) {
         this.htmlFooter = htmlFooter;
         htmlConverterFooter.setHtmlTemplate(htmlFooter);
     }
+    public String getFooterHTML() {
+        return htmlConverterFooter.getHtmlTemplate();
+    }
     public void setDetailHTML(String html) {
         this.htmlDetail = html;
         htmlConverterDetail.setHtmlTemplate(htmlDetail);
     }
+    public String getDetailHTML() {
+        return htmlConverterDetail.getHtmlTemplate();
+    }
+    
     
     protected OAHTMLConverter createHTMLConverter() {
         OAHTMLConverter htmlConverter = new OAHTMLConverter() {
@@ -305,18 +318,21 @@ public class OAHTMLReport extends OAReport {
     }
 
     /**
-     * This is used to get each value for the OAHTMLConverter.getValue
-     */
-    protected String getValue(String defaultValue, OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
-        return defaultValue;
-    }    
-    
-    /**
-     * This is used to get each value for the OAHTMLConverter.getProperty
+     * This is used to get each property for the OAHTMLConverter.getProperty
+     * @see OAHTMLConverter#getProperty(OAObject, String)
      */
     protected Object getProperty(Object defaultValue, OAObject oaObj, String propertyName) {
         return defaultValue;
     }
+
+    /**
+     * This is used to get each value for the OAHTMLConverter.getValue
+     * @see OAHTMLConverter#getValue(OAObject, String, int, String, OAProperties)
+     */
+    protected String getValue(String defaultValue, OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
+        return defaultValue;
+    }    
+
 }
 
 

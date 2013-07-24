@@ -74,12 +74,15 @@ public class OAHTMLConverter {
     public OAHTMLConverter() {
     }
     public OAHTMLConverter(String htmlTemplate) {
-        this.htmlTemplate = htmlTemplate;
+        setHtmlTemplate(htmlTemplate);
     }
 
     public void setHtmlTemplate(String htmlTemplate) {
         this.htmlTemplate = htmlTemplate;
         this.rootTreeNode = null;
+    }
+    public String getHtmlTemplate() {
+        return this.htmlTemplate;
     }
     
     public String getHtml(OAObject objRoot, OAProperties props) {
@@ -210,18 +213,30 @@ public class OAHTMLConverter {
         }
         if (tok.tagType != TagType.Command) return;
 
-        String s = OAString.field(tok.data, " ", 1).trim();
+        String s = OAString.field(tok.data, ",", 1).trim();
+        if (s == null) {
+            s = tok.data;
+            if (s == null) s = "";
+        }
+        String s1 = OAString.field(s, " ", 2);
+        if (s1 == null) s1 = "";
+        s = OAString.field(s, " ", 1);
+        
+        String fmt = OAString.field(tok.data, ",", 2, 99); // fmt
+        if (fmt == null) fmt = "";
+        else {
+            fmt = fmt.trim();
+            fmt = OAString.convert(fmt, '\'', "");
+            fmt = OAString.convert(fmt, '\"', "");
+        }
+      
         if (s.equalsIgnoreCase("#counter")) {
             node.tagType = TagType.Counter;
         }
         else if (s.equalsIgnoreCase("#count")) node.tagType = TagType.Count;
         else if (s.equalsIgnoreCase("#sum")) node.tagType = TagType.Sum;
-        s = OAString.field(tok.data, ",", 1);
-        node.arg1 = OAString.field(s, " ", 2);  // name
-        String fmt = OAString.field(tok.data, ",", 2, 99);  // fmt
-        fmt = fmt.trim();
-        fmt = OAString.convert(fmt, '\'', "");
-        fmt = OAString.convert(fmt, '\"', "");
+
+        node.arg1 = s1;  // name
         node.arg2 = fmt;
     }
 
@@ -239,6 +254,7 @@ public class OAHTMLConverter {
         else if (tok.tagType == TagType.ForEach) {
             node.tagType = TagType.ForEach;
             node.arg1 = OAString.field(tok.data, " ", 2);
+            if (node.arg1 == null) node.arg1  = "";
         }
         else if (tok.tagType == TagType.IfNot) {
             node.tagType = TagType.IfNot;
@@ -397,7 +413,7 @@ public class OAHTMLConverter {
             else if (tag.startsWith("format ")) {
                 tok.tagType = TagType.Format;
             }
-            else if (tag.startsWith("foreach ")) {
+            else if (tag.startsWith("foreach")) {
                 tok.tagType = TagType.ForEach;
             }
             else if (tag.startsWith("ifnot ")) {
