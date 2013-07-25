@@ -456,7 +456,7 @@ public class OAHTMLConverter {
             case ForEach:
                 bProcessChildren = false;
                 Object objValue;
-                if (obj != null) objValue = this.getProperty(obj, rootNode.arg1);
+                if (obj != null && !OAString.isEmpty(rootNode.arg1)) objValue = this.getProperty(obj, rootNode.arg1);
                 else objValue = hub;
 
                 if (objValue instanceof Hub) {
