@@ -1840,7 +1840,7 @@ public class OAString {
      * @return If null, then returns true; if String and length is 0, returns true; if array and length == 0, returns true.
      */
     public static boolean isEmpty(Object obj) {
-        return isEmpty(obj, true);
+        return isEmpty(obj, false);
     }
     public static boolean isEmpty(Object obj, boolean bTrim) {
         if (obj == null) return true;
