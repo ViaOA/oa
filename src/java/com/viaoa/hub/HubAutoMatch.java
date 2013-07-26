@@ -149,21 +149,28 @@ public class HubAutoMatch extends HubListenerAdapter implements java.io.Serializ
             Object obj = hubx.elementAt(i);
             if (obj == null) break;
 
+            Object value;
             try {
-                if (getMethod != null) obj = getMethod.invoke(obj, new Object[] {  });
+                if (getMethod != null) value = getMethod.invoke(obj, new Object[] {  });
+                else value = obj;
             }
             catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            
-            if (hubMasterx.getObject(obj) == null) {
-                obj = hubx.elementAt(i);
-                if (obj instanceof OAObject) ((OAObject)obj).delete();
-                else hubx.remove(i);
-                i--;
+            if (hubMasterx.getObject(value) == null) {
+                if (okToRemove(obj, value)) {
+                    if (obj instanceof OAObject) ((OAObject)obj).delete();
+                    else hubx.remove(i);
+                    i--;
+                }
             }
         }
-    
+    }
+    /**
+     * Called before removing an object that does not have a matching value.
+     */
+    public boolean okToRemove(Object obj, Object propertyValue) {
+        return true;
     }
     
     protected void createNewObject(Object obj) {

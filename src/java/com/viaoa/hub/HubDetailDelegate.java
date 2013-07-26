@@ -304,14 +304,15 @@ public class HubDetailDelegate {
             }
         }
         else if (detail.type == HubDetail.OAOBJECT || detail.type == HubDetail.OBJECT) {
-            HubAddRemoveDelegate.internalAdd(dHub, (OAObject) obj, false);
+            HubAddRemoveDelegate.internalAdd(dHub, (OAObject) obj, true);
             dHub.datau.dupAllowAddRemove = false;
         }
         else {
             // HubDetail.OBJECTARRAY || HubDetail.OAOBJECTARRAY
             int j = Array.getLength(obj);
             for (int k=0; k<j; k++) {
-                HubAddRemoveDelegate.internalAdd(dHub, Array.get(obj,k), false);
+                Object objx = Array.get(obj,k);
+                HubAddRemoveDelegate.internalAdd(dHub, objx, true);
             }
             dHub.datau.dupAllowAddRemove = false;
         }

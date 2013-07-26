@@ -17,6 +17,9 @@ All rights reserved.
 */
 package com.viaoa.hub;
 
+
+import java.util.logging.Logger;
+
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 
@@ -27,6 +30,7 @@ import com.viaoa.util.OAFilter;
  *
  */
 public class HubRootDelegate {
+    private static Logger LOG = Logger.getLogger(HubRootDelegate.class.getName());
 
     /**
 	    If this is a recursive hub with an owner, then the root hub will be returned, else null.
@@ -106,7 +110,12 @@ public class HubRootDelegate {
 	    // 5: if parent is not recursive - if the LinkInfos are different
 	    if ( dm.liDetailToMaster != OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.objectInfo, OALinkInfo.ONE) ) {
 	        // if dm.masterObject is owner, then it is owner
-	        if (OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster).getOwner()) {
+	        OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster);
+	        if (rli == null) {
+	            LOG.warning("cant find reverse linkInfo, hub="+thisHub);
+	        }
+	        
+	        if (rli != null && rli.getOwner()) {
 	            // found the root hub and owner
 	            // cant use the masterHub, need to get the "real" detail hub of master object
 	            //   For recursive hubs that are linked, the master (owner) might not be using the root hub.
