@@ -33,8 +33,9 @@ public class OAObjectPropertyDelegate {
     /** 
      * returns OANullObject.instance if the prop is found and the value is null
      * returns null if there is no property with name
+     * @param bIfNullReturnOANullObject, if true and the property is found with value=null, then OANullObject is returned
      */
-    public static Object getProperty(OAObject oaObj, String name) {
+    public static Object getProperty(OAObject oaObj, String name, boolean bIfNullReturnOANullObject) {
         if (oaObj == null || name == null) return null;
         synchronized (oaObj) {
             if (oaObj.properties == null) return null;
@@ -42,7 +43,7 @@ public class OAObjectPropertyDelegate {
                 if (oaObj.properties[i] != null && name.equalsIgnoreCase((String)oaObj.properties[i])) {
                     Object objx = oaObj.properties[i+1];
                     if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
-                    else if (objx == null) objx = OANullObject.instance; // added: 20110314
+                    else if (objx == null && bIfNullReturnOANullObject) objx = OANullObject.instance; 
                     return objx;
                 }
             }

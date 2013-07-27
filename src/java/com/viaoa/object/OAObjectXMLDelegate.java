@@ -151,8 +151,8 @@ public class OAObjectXMLDelegate {
 	        for (int i=0; propNames != null && i<propNames.length; i++) {
 	            String key = propNames[i];
 	            if (OAObjectInfoDelegate.getLinkInfo(oi, key) != null) continue; 
-	            Object value = OAObjectPropertyDelegate.getProperty(oaObj, key);
-	            if (value == null) continue;
+	            Object value = OAObjectPropertyDelegate.getProperty(oaObj, key, true);
+	            if (value == null || value instanceof OANullObject) continue;
 
 	            if (ow.writeProperty(oaObj, key, value) != ow.WRITE_YES) continue;
 	

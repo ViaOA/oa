@@ -131,7 +131,7 @@ public class UpdateDelegate {
                 OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
                 OAPropertyInfo pi = oi.getPropertyInfo(column.propertyName);
                 if (pi != null && pi.isBlob()) {
-                    Object obj = OAObjectPropertyDelegate.getProperty(oaObj, column.propertyName);
+                    Object obj = OAObjectPropertyDelegate.getProperty(oaObj, column.propertyName, true);
                     if (obj == null) continue; // not loaded, no change to it
                 }
             }

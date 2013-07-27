@@ -115,7 +115,7 @@ public class OAObjectSerializeDelegate {
             
             if (bDup) {  // check to see if reference is needed or not
                 // 20130207
-                if (OAObjectPropertyDelegate.getProperty(oaObjNew, key) != null) {
+                if (OAObjectPropertyDelegate.getProperty(oaObjNew, key, true) != null) {
                     continue;
                 }
                 
@@ -125,7 +125,7 @@ public class OAObjectSerializeDelegate {
                 // need to replace any references to oaObjOrig with oaObjNew
     			boolean b = replaceReferences(oaObjOrig, oaObjNew, linkInfo, value);
     			if (b) {
-    			    Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key);
+    			    Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false);
 	            	if (objx == null) {
 	            	    if (!(value instanceof OAObject) && !(value instanceof OAObjectKey)) {
 	            	        b = true;
@@ -200,8 +200,9 @@ public static int cntSkip;
 			for (int i=0; revName!=null; i++) { 
             	OAObject objx = (OAObject) hub.getAt(i);
             	if (objx == null) break;
-            	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName);
+            	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, true);
             	if (ref == null) continue;
+            	if (ref instanceof OANullObject) ref = null;
             	if (ref == oaObjOrig || ref instanceof OAObjectKey) {
             	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew);
             	}
@@ -217,7 +218,7 @@ public static int cntSkip;
         	// handles 1-1, 1-Many
         	OAObject objx = (OAObject) value;
 
-        	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName);
+        	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, true);
         	if (ref == null) return true;
         	if (ref == oaObjOrig || ref.equals(oaObjOrig.objectKey)) {
         	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew);
