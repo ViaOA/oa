@@ -551,6 +551,17 @@ public class OAObject implements java.io.Serializable, Comparable {
     	return OAObjectReflectDelegate.getReferenceHub(this, linkPropertyName, null, false, null);
     }
 
+    // 20130728
+    public void setHub(String linkPropertyName, Hub hub) {
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(this);
+        OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
+        OALinkInfo liReverse;
+        if (linkInfo != null) liReverse = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
+        else liReverse = null;
+        HubDetailDelegate.setMasterObject(hub, this, liReverse);
+        OAObjectPropertyDelegate.setProperty(this, linkPropertyName, new WeakReference(hub));         
+    }
+
 
     /**
         DataSource independent method to retrieve a reference property that is a Hub Collection.
@@ -746,6 +757,10 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
     public boolean getAutoAdd() {
         return OAObjectDelegate.getAutoAdd(this);
+    }
+    
+    public boolean isEmpty(Object obj) {
+        return OAString.isEmpty(obj);
     }
 }
 

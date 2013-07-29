@@ -89,5 +89,12 @@
         return cbo;
     }
 
+>> select enum-like property 
+    Hub h = UIProperty.hubGroupType.createSharedHub();
+    h.setLinkHubOnPos(hub, UIProperty.PROPERTY_GroupType);
+    OAComboBox cbo = new OAComboBox(h, "", 15);
+    cbo.setPopupColumns(21);
+    table.addColumn("Group Type", 12, cbo);
+
 
     

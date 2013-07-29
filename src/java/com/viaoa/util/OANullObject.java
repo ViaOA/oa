@@ -33,6 +33,6 @@ public class OANullObject implements java.io.Serializable {
     
     @Override
     public boolean equals(Object obj) {
-        return (obj == null || obj instanceof OANullObject);
+        return (obj == null || obj == OANullObject.instance || obj instanceof OANullObject);
     }
 }

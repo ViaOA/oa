@@ -786,12 +786,18 @@ public class OATreeNode implements Cloneable {
         _add(node, null);
     }
     
-    private void _add(OATreeNode node, String propertyPath) {
+    private void _add(final OATreeNode originalNode, String propertyPath) {
         
+        OATreeNode node = originalNode;
         if (node == this) {
             if (this.hub != null || !OAString.isEmpty(propertyPath)) {
                 // need to create another node, that uses the link property to find hub
-                node = new OATreeNode();
+                node = new OATreeNode() {
+                    @Override
+                    public Icon getIcon(Object obj) {
+                        return originalNode.getIcon(obj);
+                    }
+                };
                 node.def = this.def;
                 node.bRecursive = true;
                 if (!OAString.isEmpty(propertyPath)) node.fullPath = propertyPath;
@@ -799,7 +805,12 @@ public class OATreeNode implements Cloneable {
         }
         else if (!OAString.isEmpty(propertyPath)) {
             OATreeNode origNode = node;
-            node = new OATreeNode();
+            node = new OATreeNode() {
+                @Override
+                public Icon getIcon(Object obj) {
+                    return originalNode.getIcon(obj);
+                }
+            };
             node.def = origNode.def;
             node.bRecursive = true;
             node.fullPath = propertyPath;
@@ -1067,7 +1078,10 @@ public class OATreeNode implements Cloneable {
     public void beforeObjectSelected(Object obj) {
     }
 
-    
+    // 20130728 can be overwritten per object
+    protected Icon getIcon(Object obj) {
+        return this.def.icon;
+    }
     
     
     private ColoredLineUnderIcon myColorIcon;
@@ -1076,10 +1090,10 @@ public class OATreeNode implements Cloneable {
     public Component getTreeCellRendererComponent(Component comp, JTree tree,Object value,boolean selected,boolean expanded,boolean leaf,int row,boolean hasFocus) {
         if (!def.bUseIcon) ((JLabel)comp).setIcon(null);
 
-        Icon icon = this.def.icon;
         String imageName = null;
         OATreeNodeData tnd = (OATreeNodeData) value;
         Object obj = tnd.getObject();
+        Icon icon = getIcon(obj);
 
         String text = ((JLabel)comp).getText();
         text = getText(obj, text);

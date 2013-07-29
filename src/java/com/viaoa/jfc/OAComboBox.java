@@ -426,8 +426,8 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
         columns = x;
     	String str = null;
     	for (int i=0; i<x; i++) {
-    		if (str == null) str = "X";
-    		else str += "X"; 
+    		if (str == null) str = "0";
+    		else str += "0"; 
     	}
         if (table != null) { 
             int w = OATable.getCharWidth(this,getFont(),x);

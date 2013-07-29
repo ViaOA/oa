@@ -493,11 +493,6 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
     	Point pt = e.getLocation();
         int row = getRowForLocation(pt.x, pt.y);
 
-if (row > 0) {
-    int x = 44;
-    x ++;
-    //qqqqqqqqqqqqqq
-}
         Hub dragHub = null;
         Object dragObject = null;
         DropTargetDropEvent temp = null;

@@ -53,6 +53,10 @@ public class HubAddRemoveDelegate {
             return;
         }
 
+        if (!thisHub.getEnabled()) {
+            return;
+        }
+        
         obj = HubDelegate.getRealObject(thisHub, obj);
         if (obj == null) return;
 
@@ -162,6 +166,12 @@ public class HubAddRemoveDelegate {
     public static String canAddMsg(Hub thisHub, Object obj) {
         if (obj == null) return "obj is null";
         if (thisHub == null) return "hub is null";
+        
+        // 20130728
+        if (!thisHub.getEnabled()) {
+            return "add is disabled";
+        }
+        
         if (thisHub.datau.sharedHub != null) {
             return canAddMsg(thisHub.datau.sharedHub, obj);
         }
@@ -218,7 +228,7 @@ public class HubAddRemoveDelegate {
         }
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            internalAdd(thisHub, obj, true);
+            internalAdd(thisHub, obj);
             return;
         }
 
@@ -235,21 +245,13 @@ public class HubAddRemoveDelegate {
         if (thisHub.isOAObject()) {
             HubCSDelegate.addToHub(thisHub, (OAObject) obj);
         }
-        if (!internalAdd(thisHub, obj, false)) {
+        if (!internalAdd(thisHub, obj)) {
             //LOG.warning("VVVVVVVVVVVV NOT ADDED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<");//qqqqqqqqqqqqqqqqq
             return;
         }
         
         // moved before listeners are notified.  Else listeners could ask for more objects
         HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
-        
-        // 20130726
-        // this needs to be done after setPropertyToMasterHub: if the old value is null,
-        //   then it could use the oaObj.weakHub to find out the current value
-        if (obj instanceof OAObject) {
-            OAObjectHubDelegate.addHub((OAObject)obj, thisHub);
-        }
-        
         
         // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
         Hub rootHub = thisHub.getRootHub();
@@ -272,7 +274,7 @@ public class HubAddRemoveDelegate {
 
     /** internal method to add to vector and hashtable
      */
-    protected static boolean internalAdd(Hub thisHub, Object obj, boolean bAddToWeakHubs) {
+    protected static boolean internalAdd(Hub thisHub, Object obj) {
         if (obj == null) return false;
 
         OAObjectKey key;
@@ -287,11 +289,8 @@ public class HubAddRemoveDelegate {
         // this will lock, sync(data), and startNextThread
         if (!HubDataDelegate._add(thisHub, key, obj)) return false;
         
-        if (bAddToWeakHubs) {
-            // this should not be done yet, if a masterProperty must be updated after the add
-            if (obj instanceof OAObject) {
-                OAObjectHubDelegate.addHub((OAObject)obj, thisHub);
-            }
+        if (obj instanceof OAObject) {
+            OAObjectHubDelegate.addHub((OAObject)obj, thisHub);
         }
         
         return true;
@@ -384,7 +383,7 @@ public class HubAddRemoveDelegate {
         
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            return internalAdd(thisHub, obj, true);
+            return internalAdd(thisHub, obj);
         }
 
         if (thisHub.contains(obj)) return false; 

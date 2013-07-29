@@ -999,7 +999,13 @@ public class OAObjectReflectDelegate {
                     // first check if it is already available, using weakHub & masterObject
                     Hub hubx = OAObjectHubDelegate.getWeakRefHub(oaObj, li);
                     if (hubx != null) {
-                        ref = HubDelegate.getMasterObject(hubx);
+                        
+                        // 20130729 need to check to that this is not after a hub.add/setMasterProperty
+                        //   where the hub has been added to weakHub, but oaObj.properties does is not set
+                        if (!isReferenceObjectNullOrEmpty(oaObj, linkPropertyName)) {
+                            ref = HubDelegate.getMasterObject(hubx);
+                        }
+                        // was: ref = HubDelegate.getMasterObject(hubx);
                     }
 
                     if (ref == null) {
@@ -1132,8 +1138,8 @@ public class OAObjectReflectDelegate {
 	    if (propertyName == null) return false;
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true);
         if (obj == null) return false; 
-        if (obj instanceof OAObject) return true;
         if (obj == OANullObject.instance) return true; 
+        if (obj instanceof OAObject) return true;
         if (obj instanceof WeakReference) {
             obj = ((WeakReference) obj).get();
         }
@@ -1141,6 +1147,7 @@ public class OAObjectReflectDelegate {
             Hub h = (Hub) obj;
             Class c = h.getObjectClass();
             if (c.equals(OAObjectKey.class)) return false;
+            return true;
         }
 	    if (obj instanceof OAObjectKey) {
 	        // use Key to see if object is in memory
@@ -1155,6 +1162,15 @@ public class OAObjectReflectDelegate {
 	    }
 	    return false;
 	}
+
+    public static boolean isReferenceObjectNullOrEmpty(OAObject oaObj, String propertyName) {
+        if (oaObj == null || propertyName == null) return false;
+        Object obj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true);
+        if (obj == null) return true; // the ref is null, dont need to load it
+        if (obj == OANullObject.instance) return true; 
+        return false;
+    }
+    
     public static boolean isReferenceObjectLoadedAndNotEmpty(OAObject oaObj, String propertyName) {
         if (propertyName == null) return false;
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true);
@@ -1179,13 +1195,12 @@ public class OAObjectReflectDelegate {
     public static boolean isReferenceNullOrNotLoaded(OAObject oaObj, String propertyName) {
         if (propertyName == null) return false;
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true);
-        if (obj == null) return true;
+        if (obj == null) return true; // not loaded
+        if (obj == OANullObject.instance) return true;  // null
         
         if (obj instanceof WeakReference) obj = ((WeakReference) obj).get();
         if (obj instanceof OAObject) return false;
 
-        if (obj == OANullObject.instance) return true; 
-    
         if (obj instanceof Hub) {
             return false;
         }
@@ -1199,15 +1214,15 @@ public class OAObjectReflectDelegate {
     public static boolean isReferenceNullOrNotLoadedOrEmptyHub(OAObject oaObj, String propertyName) {
         if (propertyName == null) return false;
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true);
-        if (obj == null) return true;
+        if (obj == null) return true; // not loaded
+        if (obj == OANullObject.instance) return true;  // ref is null 
         
         if (obj instanceof WeakReference) obj = ((WeakReference) obj).get();
         if (obj instanceof OAObject) return false;
 
-        if (obj == OANullObject.instance) return true; 
     
         if (obj instanceof Hub) {
-            return ((Hub)obj).getSize() == 0;
+            return ((Hub)obj).getSize() == 0;  // emptyHub
         }
         
         if (obj instanceof OAObjectKey) {

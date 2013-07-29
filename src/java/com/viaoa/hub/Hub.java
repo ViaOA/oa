@@ -885,6 +885,17 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
 
     /**
+     * Flag to know if add/remove are enabled
+     */
+    public boolean getEnabled() {
+        return data.enabled;
+    }
+    public void setEnabled(boolean b) {
+        this.data.enabled = b;
+    }
+    
+    
+    /**
      * Helper method that mimics Vector.addElement(), it calls Hub.add(obj,
      * false)
      * 

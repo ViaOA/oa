@@ -255,9 +255,9 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     	Width of ComboBox, based on average width of the font's character.
 	*/
 	public void setColumns(int x) {
-		String str = "X";
+		String str = "0";
 		for (int i=0; i<x; i++) {
-			str += "X"; 
+			str += "0"; 
 		}
 	    columns = x;
 	    if (table != null) { 

@@ -40,3 +40,42 @@
         txtLastName.setEnabled(getUserAccessHub(), UserAccess.PROPERTY_IsAdmin);
         return txtLastName;
     }
+
+
+>> Custom renderer for table
+
+    OATextField txt = new OATextField(hub, UIProperty.PROPERTY_GroupName, 14) {
+        Font font1, font2;
+        Color color1;
+
+        @Override
+        public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (lbl == null) return;
+            if (font1 == null) {
+                font1 = lbl.getFont();
+                font2 = font1.deriveFont(Font.ITALIC);
+                font2 = font2.deriveFont(font2.getSize()-1.0f);
+                color1 = lbl.getForeground();
+            }
+            UIProperty uip = hub.getAt(row);
+            if (uip != null) {
+                boolean bMakeItalic = false;
+                if (OAString.isEmpty(uip.getGroupName())) {
+                    for (int i=row-1; i >= 0; i--) {
+                        UIProperty uipx = hub.getAt(i);
+                        if (!OAString.isEmpty(uipx.getGroupName())) {
+                            bMakeItalic = true;
+                            lbl.setText(uipx.getGroupName());
+                            break;
+                        }
+                    }
+                }
+                lbl.setFont(bMakeItalic?font2:font1);
+                lbl.setForeground(bMakeItalic?Color.gray:color1);
+            }
+        }
+    };
+    table.addColumn("Group Name", 15, txt);
+    
+    
+    
