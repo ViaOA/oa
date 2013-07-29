@@ -125,7 +125,7 @@ public class OAObjectSerializeDelegate {
                 // need to replace any references to oaObjOrig with oaObjNew
     			boolean b = replaceReferences(oaObjOrig, oaObjNew, linkInfo, value);
     			if (b) {
-    			    Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false);
+    			    Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, true);
 	            	if (objx == null) {
 	            	    if (!(value instanceof OAObject) && !(value instanceof OAObjectKey)) {
 	            	        b = true;
@@ -200,9 +200,8 @@ public static int cntSkip;
 			for (int i=0; revName!=null; i++) { 
             	OAObject objx = (OAObject) hub.getAt(i);
             	if (objx == null) break;
-            	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, true);
+            	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false);
             	if (ref == null) continue;
-            	if (ref instanceof OANullObject) ref = null;
             	if (ref == oaObjOrig || ref instanceof OAObjectKey) {
             	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew);
             	}
@@ -218,7 +217,7 @@ public static int cntSkip;
         	// handles 1-1, 1-Many
         	OAObject objx = (OAObject) value;
 
-        	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, true);
+        	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false);
         	if (ref == null) return true;
         	if (ref == oaObjOrig || ref.equals(oaObjOrig.objectKey)) {
         	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew);
@@ -268,16 +267,15 @@ public static int cntSkip;
             Object obj = objs[i+1];
 
             boolean bWeakRef = (obj instanceof WeakReference);
+            if (bWeakRef) {
+                obj = ((WeakReference) obj).get();
+                if (obj == null) continue;
+            }
+
             if (obj != null && !(obj instanceof OAObject) && !(obj instanceof OAObjectKey) && !(obj instanceof Hub) && !bWeakRef && !(obj instanceof byte[])) {
                 stream.writeObject(key);
                 stream.writeObject(obj);
                 continue;
-            }
-            
-            if (bWeakRef) {
-                obj = ((WeakReference) obj).get();
-                if (obj == null) continue;
-                bWeakRef = false;
             }
 
             boolean b = false;

@@ -96,7 +96,7 @@ public class HubData implements java.io.Serializable {
 	protected String uniqueProperty;
 	protected transient Method uniquePropertyGetMethod;
 	
-	protected transient boolean enabled = true;
+	protected transient boolean disabled;
 	
 	/**
 	    Constructor that supplies params for sizing Vector.

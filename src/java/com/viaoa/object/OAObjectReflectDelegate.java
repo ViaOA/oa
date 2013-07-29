@@ -123,8 +123,7 @@ public class OAObjectReflectDelegate {
 	        return null;
 	    }
 	    // check to see if it is in the oaObj.properties
-	    Object objx = OAObjectPropertyDelegate.getProperty(oaObj, propName, true);
-        if (objx instanceof OANullObject) objx = null;
+	    Object objx = OAObjectPropertyDelegate.getProperty(oaObj, propName, false);
 	    return objx;
 	}
 	
@@ -201,8 +200,7 @@ public class OAObjectReflectDelegate {
                 }
         		return;
     		}
-            previousValue = OAObjectPropertyDelegate.getProperty(oaObj, propName, true);  // get previous value
-            if (previousValue instanceof OANullObject) previousValue = null;
+            previousValue = OAObjectPropertyDelegate.getProperty(oaObj, propName, false);  // get previous value
     	}
     	
     	boolean bPrimitiveNull = false;  // a primitive type that needs to be set to null value
@@ -459,8 +457,8 @@ public class OAObjectReflectDelegate {
 	    	}
 	    	if (obj instanceof OANullObject) obj = null;
 	    	if (obj == null) { // try again, now that it is locked, in case it was retrieved by another thread while unlocked
-	            obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false);         
-		        if (obj != null) {
+	            obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true);         
+                if (obj != null && !(obj instanceof OANullObject)) {
 	                if (obj instanceof WeakReference) {
 	                    obj = ((WeakReference) obj).get();  // could have been loaded, and then gc'd
 	                }
@@ -872,9 +870,9 @@ public class OAObjectReflectDelegate {
 
         byte[] bytes = null;
         
-        Object val = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, false);
+        Object val = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true);
         if (val instanceof byte[]) return (byte[]) val;
-        
+        if (val == OANullObject.instance) return null;
         /* 20130505 the new object could be a copy, which is made on the server and the reference props need to come from server
         if (oaObj.isNew()) {
             if (val == null) return null;
@@ -917,7 +915,7 @@ public class OAObjectReflectDelegate {
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true);         
 
         if ((obj != null) && !(obj instanceof OAObjectKey)) {
-            if (obj instanceof OANullObject) return null;
+            if (obj == OANullObject.instance) return null;
             return obj;  // found it
         }
         
@@ -997,15 +995,14 @@ public class OAObjectReflectDelegate {
                     if (method == null || ((method.getModifiers() & Modifier.PRIVATE) != 0) ) return null;
 
                     // first check if it is already available, using weakHub & masterObject
-                    Hub hubx = OAObjectHubDelegate.getWeakRefHub(oaObj, li);
-                    if (hubx != null) {
-                        
-                        // 20130729 need to check to that this is not after a hub.add/setMasterProperty
-                        //   where the hub has been added to weakHub, but oaObj.properties does is not set
-                        if (!isReferenceObjectNullOrEmpty(oaObj, linkPropertyName)) {
+                    // 20130729 need to check that this is not after a hub.add/setMasterProperty
+                    //   where the hub has been added to weakHub, but oaObj.properties is not set
+                    if (!isReferenceObjectNullOrEmpty(oaObj, linkPropertyName)) {
+                        // only try this if there is a objKey in props
+                        Hub hubx = OAObjectHubDelegate.getWeakRefHub(oaObj, li);
+                        if (hubx != null) {
                             ref = HubDelegate.getMasterObject(hubx);
                         }
-                        // was: ref = HubDelegate.getMasterObject(hubx);
                     }
 
                     if (ref == null) {

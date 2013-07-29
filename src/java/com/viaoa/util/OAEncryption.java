@@ -23,9 +23,7 @@ import java.security.*;
 import javax.crypto.*;
 import javax.crypto.spec.DESKeySpec;
 
-
 /*
-
     Sun:
     http://java.sun.com/javase/6/docs/technotes/guides/security/crypto/CryptoSpec.html    
 

@@ -19,6 +19,7 @@ package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.util.OANullObject;
@@ -29,7 +30,7 @@ import com.viaoa.util.OANullObject;
  * This uses a flat array to make it as efficient as possible for the oaObject with as little overhead as possible. 
  */
 public class OAObjectPropertyDelegate {
-
+    private static Logger LOG = Logger.getLogger(OAObjectPropertyDelegate.class.getName());
     /** 
      * returns OANullObject.instance if the prop is found and the value is null
      * returns null if there is no property with name
@@ -43,7 +44,7 @@ public class OAObjectPropertyDelegate {
                 if (oaObj.properties[i] != null && name.equalsIgnoreCase((String)oaObj.properties[i])) {
                     Object objx = oaObj.properties[i+1];
                     if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
-                    else if (objx == null && bIfNullReturnOANullObject) objx = OANullObject.instance; 
+                    if (objx == null && bIfNullReturnOANullObject) objx = OANullObject.instance; 
                     return objx;
                 }
             }
@@ -84,8 +85,16 @@ public class OAObjectPropertyDelegate {
         }
         return ss;
     }
-    
+
+static int errorCnt;     
     public static void setProperty(OAObject oaObj, String name, Object value) {
+
+        
+//qqqqqqqqqqqqqqqqqqqqqqq
+if (value instanceof OANullObject) {
+    if (errorCnt++ < 50) LOG.warning("OAObjectPropertyDelegate.setProperty value=OANullObject, oaObj="+oaObj+", name="+name);
+}
+        
         if (oaObj == null || name == null) return;
         synchronized (oaObj) {
             if (oaObj.properties == null) {

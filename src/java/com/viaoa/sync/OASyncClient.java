@@ -152,7 +152,7 @@ public class OASyncClient {
         //qqqqqqq        
         if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntGetDetail % 100 == 0)        
         System.out.println(String.format(
-            "%,d) OAClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b, newCnt=%d, dupCnt=%d, totNewCnt=%d, totDupCnt=%d",
+            "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b, newCnt=%d, dupCnt=%d, totNewCnt=%d, totDupCnt=%d",
             cntGetDetail, 
             masterObject, 
             propertyName, 

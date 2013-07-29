@@ -888,10 +888,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Flag to know if add/remove are enabled
      */
     public boolean getEnabled() {
-        return data.enabled;
+        return !data.disabled;
     }
     public void setEnabled(boolean b) {
-        this.data.enabled = b;
+        this.data.disabled = !b;
     }
     
     
