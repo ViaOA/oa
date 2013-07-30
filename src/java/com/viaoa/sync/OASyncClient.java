@@ -136,7 +136,6 @@ public class OASyncClient {
             catch (Exception e) {
                 LOG.log(Level.WARNING, "getDetail error", e);
             }
-            bGetSibs = true;
         }
         else {
             try {
@@ -190,35 +189,34 @@ public class OASyncClient {
                 Hub hub = ref.get();
                 if (hub == null) continue;
                 OAObject masterx = hub.getMasterObject();
-                if (masterx != null || hub.getSelect() != null) {
-                    if (siblingHub != null) { // more then one possible hub
-                        // see if one of the previous objects can be found
-                        if (hits == 0) {
+                if (masterx == null && hub.getSelect() == null) continue;
+                
+                if (siblingHub == null) { 
+                    siblingHub = hub;
+                    continue;
+                }
+                // see if one of the previous objects can be found
+                if (hits == 0) {
+                    hits++;
+                    for (OAObject objz : lastMasterObjects) {
+                        if (objz != null && siblingHub.contains(objz)) {
                             hits++;
-                            for (OAObject objz : lastMasterObjects) {
-                                if (objz != null && siblingHub.contains(objz)) {
-                                    hits++;
-                                }
-                            }
                         }
-                        
-                        int hits2 = 1;
-                        for (OAObject objz : lastMasterObjects) {
-                            if (objz != null && hub.contains(objz)) {
-                                hits2++;
-                                if (hits2 >= hits) {
-                                    break;
-                                }
-                            }
-                        }
+                    }
+                }
+                
+                int hits2 = 1;
+                for (OAObject objz : lastMasterObjects) {
+                    if (objz != null && hub.contains(objz)) {
+                        hits2++;
                         if (hits2 >= hits) {
-                            hits = hits2;
-                            siblingHub = hub;
+                            break;
                         }
                     }
-                    else {
-                        siblingHub = hub;
-                    }
+                }
+                if (hits2 >= hits) {
+                    hits = hits2;
+                    siblingHub = hub;
                 }
             }
         }
@@ -238,10 +236,11 @@ public class OASyncClient {
 
             Object value = OAObjectReflectDelegate.getRawReference((OAObject)obj, property);
             if (value == null) {
-                if (OAObjectPropertyDelegate.isPropertyLoaded((OAObject)obj, property)) continue;                     
-                OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
-                al.add(key);
-                if (++cnt == 50) break;
+                if (!OAObjectPropertyDelegate.isPropertyLoaded((OAObject)obj, property)) {                     
+                    OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
+                    al.add(key);
+                    if (++cnt == 50) break;
+                }
             }
             else if (value instanceof OAObjectKey) {
                 OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);

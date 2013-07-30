@@ -36,11 +36,11 @@ import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 public class ClientGetDetail {
     private static Logger LOG = Logger.getLogger(ClientGetDetail.class.getName());
 
-    // tracks guid for all oaObjects serialized, the Boolean: true=all references have been sent, false=object has been sent (mihgt not have all references)
+    // tracks guid for all oaObjects serialized, the Boolean: true=all references have been sent, false=object has been sent (might not have all references)
     private TreeMap<Integer, Boolean> treeSerialized = new TreeMap<Integer, Boolean>();
     private ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
 
-    
+    private int errorCnt;
     public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, 
             String property, String[] masterProps, OAObjectKey[] siblingKeys) {
 
@@ -50,7 +50,7 @@ public class ClientGetDetail {
         if (masterObject == null) {
             //qqqqqqqqqqqq vavavvvvvvvvvv DEBUG         
             //masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
-            LOG.warning("cant find masterObject in cache or DS.  masterClass=" + masterClass + ", key=" + masterObjectKey + ", property=" + property + ", OS.id=");
+            if (errorCnt++ < 100) LOG.warning("cant find masterObject in cache or DS.  masterClass=" + masterClass + ", key=" + masterObjectKey + ", property=" + property + ", OS.id=");
             return null;
         }
 
