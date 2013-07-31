@@ -144,6 +144,11 @@ public class HubDataDelegate {
             OAThreadLocalDelegate.lock(thisHub);
             b = _add2(thisHub, key, obj);
         }
+        catch (Exception e) {
+            //qqqqqqqqqqqqqqqqqqqqqqqqq TEST ONLY qqqqqqqqqqqqqqq
+            int x = 4;
+            x++;
+        }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
         }

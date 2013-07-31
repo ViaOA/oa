@@ -603,28 +603,13 @@ public class RemoteMultiplexerClient {
                             reset();
                             if (requestInfo == null) {
                                 Lock.wait();
-                                continue;
                             }
+                            if (requestInfo == null) continue;
                         }
 
                         this.msLastUsed = System.currentTimeMillis();                
                         processMessageForStoC2(requestInfo, false);
-/* test only
-                        long t2 = System.currentTimeMillis();
-                        long tx = t2 - this.msLastUsed;
-                        long tz = t2 - msStartNextThread;
-                        if (msStartNextThread < 1) tz = 0;
-                        // System.out.println(this.getName()+" "+ requestInfo.methodNameSignature+ " tot:"+tx+", afterStartedNext="+tz);                        
-                        if (tx > 248) {
-                            int xx = 4;
-                            xx++;
-                        }
-                        if (!startedNextThread && tx > 100) {
-                            int xx = 4;
-                            xx++;
-                            System.out.println("RemoteThread took over 100ms and did not startNextThread --> "+tx);
-                        }
-*/
+
                         synchronized (Lock) {
                             this.requestInfo = null;
                             Lock.notify();
