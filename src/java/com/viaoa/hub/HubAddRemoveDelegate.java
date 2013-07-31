@@ -218,8 +218,10 @@ public class HubAddRemoveDelegate {
     public static void add(Hub thisHub, Object obj) {
         if (obj == null) return;
         if (thisHub.datau.sharedHub != null) {
-            add(thisHub.datau.sharedHub, obj);
-            return;
+            if (thisHub.getEnabled()) {
+                add(thisHub.datau.sharedHub, obj);
+                return;
+            }
         }
 
         if (!thisHub.data.bInFetch && thisHub.data.sortListener != null) {
