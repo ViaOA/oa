@@ -1,4 +1,8 @@
 
+
+Calendar cal = Calendar.getInstance();
+
+
 See: format.txt
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HHmmss");
