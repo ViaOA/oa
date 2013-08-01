@@ -127,6 +127,9 @@ public class OASyncClient {
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
             if (li == null || !li.getCalculated()) {
                 siblingKeys = getDetailSiblings(masterObject, propertyName);
+                if (siblingKeys == null) {
+siblingKeys = getDetailSiblings(masterObject, propertyName);
+                }
             }
             
             String[] props = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
@@ -209,14 +212,14 @@ public class OASyncClient {
                 for (OAObject objz : lastMasterObjects) {
                     if (objz != null && hub.contains(objz)) {
                         hits2++;
-                        if (hits2 >= hits) {
-                            break;
-                        }
                     }
                 }
-                if (hits2 >= hits) {
+                if (hits2 > hits) {
                     hits = hits2;
                     siblingHub = hub;
+                }
+                else if (hits2 == hits) {
+                    if (hub.getSize() > siblingHub.getSize())  siblingHub = hub;
                 }
             }
         }

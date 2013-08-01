@@ -54,7 +54,7 @@ public class ClientGetDetail {
             return null;
         }
 
-        Object detailValue = _getDetail(masterClass, masterObjectKey, property);
+        Object detailValue = _getDetail(masterObject, property);
         
         if (masterProps == null) return detailValue;
         
@@ -62,16 +62,7 @@ public class ClientGetDetail {
         return os;
     }
     
-    private Object _getDetail(Class masterClass, OAObjectKey masterObjectKey, String propertyName) {
-        if (masterObjectKey == null || propertyName == null) return null;
-
-        Object masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
-        if (masterObject == null) {
-            //qqqqqqqqqqqq vavavvvvvvvvvv DEBUG         
-            //masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
-            LOG.warning("cant find masterObject in cache or DS.  masterClass=" + masterClass + ", key=" + masterObjectKey + ", property=" + propertyName + ", OS.id=" );
-            return null;
-        }
+    private Object _getDetail(Object masterObject, String propertyName) {
         Object objx = OAObjectReflectDelegate.getProperty((OAObject) masterObject, propertyName);
 
         // 20120926 dont send a reference Hub that is shared, since it is a calc Hub and can
