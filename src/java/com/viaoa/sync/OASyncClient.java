@@ -127,9 +127,6 @@ public class OASyncClient {
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
             if (li == null || !li.getCalculated()) {
                 siblingKeys = getDetailSiblings(masterObject, propertyName);
-                if (siblingKeys == null) {
-siblingKeys = getDetailSiblings(masterObject, propertyName);
-                }
             }
             
             String[] props = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
