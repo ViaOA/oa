@@ -394,7 +394,9 @@ if (thisHub == null || thisHub.data == null || thisHub.data.vector == null) {
                     Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, liRecursive.getName());
                     if (parent == null) {  // must be in root hub
                         Hub h = thisHub.getRootHub();
-                        if (h != null && h != thisHub) {
+                        // 20130801
+                        // was: if (h != null && h != thisHub) {
+                        if (h != null && h != thisHub && thisHub.datau.sharedHub != h) {
                         	HubShareDelegate.setSharedHub(thisHub, h, false);
                             pos = getPos(h, object, adjustMaster, bUpdateLink);
                         }

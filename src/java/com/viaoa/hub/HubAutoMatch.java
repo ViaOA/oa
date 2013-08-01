@@ -117,7 +117,7 @@ public class HubAutoMatch extends HubListenerAdapter implements java.io.Serializ
         //         (in case AO of master hub has been changed, and one of these hubs has not yet been adjusted).
         Hub hubMasterx = HubDetailDelegate.getRealHub(hubMaster);
         Hub hubx = HubDetailDelegate.getRealHub(hub); // in case it is a detailHub and has not been updated yet
-        
+        if (hubx == null) return;
         // Step 2: see if every object in hubMasterx exists in hubx
         for (int i=0; ;i++) {
             Object obj = hubMasterx.elementAt(i);
