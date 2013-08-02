@@ -410,6 +410,49 @@ public class OAString {
         return getDisplayName(value);
     }
 
+
+    private final static String validToHungarianSep = " _,.:|\t-";
+    /** 
+        Example: "Your Name Test" converts to "YourNameTest"   
+        Example: "your name test" converts to "yourNameTest"   
+        Example: "Your_name_test" converts to "YourNameTest"
+        Example: "your.name.test" converts to "yourNameTest"   
+        
+        first char upper/lower-case is not changed.
+    */
+    public static String convertToHungarian(String value) {
+        return convertToHungarian(value, null);
+    }
+    public static String convertToHungarian(String value, String sepChars) {
+        if (value == null) return null;
+        if (sepChars == null) sepChars = validToHungarianSep;
+        int x = value.length();
+        StringBuilder sb = new StringBuilder(x);
+
+        char chSep = 0; 
+        char chLast = 0;
+        for (int i=0; i<x; i++) {
+            char ch = value.charAt(i);
+            if (sepChars.indexOf(ch) >= 0) {
+                chSep = ch;
+                continue;
+            }
+            if (chSep > 0) {
+                if (Character.isDigit(ch)) {
+                    if (chLast > 0 && Character.isDigit(chLast)) {
+                        if (chSep == ' ') chSep = '_';
+                        sb.append(chSep);
+                    }
+                }
+                else ch = Character.toUpperCase(ch);
+                chSep = 0;
+            }
+            sb.append(ch);
+            chLast = ch;
+        }
+        return sb.toString();
+    }
+    
     /**
         Used to convert a String that uses Hungarian notation to a titled, space separated String.
         The first char and all letter chars following non-letter characters will be converted to

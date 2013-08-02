@@ -191,6 +191,16 @@ qqqqqq
     }
    
    
+qqqqqqqqqqqqqqqqqqqqqqq Java formatters *****************
+
+        fmtDec = NumberFormat.getNumberInstance();
+        fmtDec.setMinimumFractionDigits(0);
+        fmtDec.setMaximumFractionDigits(2);
+        
+        fmtInt = NumberFormat.getIntegerInstance();
+        fmtInt.setGroupingUsed(true);
+
+        fmtDate = new SimpleDateFormat("HH:mm:ss:SSS");
    
    
    
