@@ -35,7 +35,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     private OATable table;
     private String heading = "";
 
-
     /**
         Create an unbound label.
     */
@@ -82,6 +81,13 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
 
     public OALabelController getController() {
     	return control;
+    }
+
+    public void setPassword(boolean b) {
+        getController().setPassword(b);
+    }
+    public boolean isPassword() {
+        return getController().isPassword();
     }
     
     /** 

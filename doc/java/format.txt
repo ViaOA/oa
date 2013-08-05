@@ -202,6 +202,13 @@ qqqqqqqqqqqqqqqqqqqqqqq Java formatters *****************
 
         fmtDate = new SimpleDateFormat("HH:mm:ss:SSS");
    
+qqqqqqqqqq Hex
+    short s0 = bin.readShort();
+    short s1 = bin.readShort();
+    String.format("invalid stream header: %04X%04X", s0, s1));   
    
-   
+
+
+
+
    

@@ -36,7 +36,7 @@ import com.viaoa.jfc.*;
  */
 public class LabelController extends JFCController {
     private JLabel label;
-    
+    private boolean bIsPassword;
     /**
         Create an unbound label.
     */
@@ -71,6 +71,15 @@ public class LabelController extends JFCController {
         init(lab);
     }
 
+    public void setPassword(boolean b) {
+        this.bIsPassword = b;
+        update();
+    }
+    public boolean isPassword() {
+        return bIsPassword;
+    }
+    
+    
     /**
         Bind a label.
     */
@@ -154,6 +163,8 @@ public class LabelController extends JFCController {
                 if (text == null) text = " ";
             }
             if (text.length() == 0) text = " "; // so that default size is not 0,0
+            
+            if (bIsPassword) text = "*****";
             label.setText(text);
         }   
         
