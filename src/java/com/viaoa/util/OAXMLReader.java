@@ -420,6 +420,7 @@ public class OAXMLReader extends DefaultHandler {
 
                 if (object == null) {
                     try {
+                        OAThreadLocalDelegate.setLoadingObject(true);
                     	object = createNewObject(c);
                         // set property ids
                         for (int i=0; ids != null && i<ids.length; i++) {
@@ -429,6 +430,9 @@ public class OAXMLReader extends DefaultHandler {
                     }
                     catch (Exception e) {
                         throw new SAXException("cant create object for class "+c.getName()+" Error:"+e, e);
+                    }
+                    finally {
+                        OAThreadLocalDelegate.setLoadingObject(false);
                     }
                 }
                 else {
