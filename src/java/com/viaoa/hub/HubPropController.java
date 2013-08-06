@@ -15,6 +15,7 @@ public abstract class HubPropController {
     protected boolean bDirectlySet;  // used to override the isValid with another value
     protected boolean bDirectlySetValue;
     protected boolean bIsCallingUpdate;  // used when updating value, so that direct setting valid can be ignored
+    public boolean debug;
     
     public static class HubProp {
         public Hub<?> hub;
@@ -79,6 +80,7 @@ public abstract class HubPropController {
         if (propertyPath == null) add(hub);
         else add(hub, propertyPath, Boolean.TRUE);
     }
+    
     
     /**
      * Add an addition hub/property to base the check on.
