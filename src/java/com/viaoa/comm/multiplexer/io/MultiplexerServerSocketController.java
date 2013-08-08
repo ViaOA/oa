@@ -261,25 +261,7 @@ public class MultiplexerServerSocketController {
      */
     protected void timeoutConnections() {
         for (; !_bClosed;) {
-            MultiplexerSocketController[] scs = getSocketControllers();
-            long msNow = System.currentTimeMillis();
-            boolean bFound = false;
-            for (MultiplexerSocketController sc : scs) {
-                try {
-                    if (!sc.isValid()) {
-                        long ms = sc.getStartTimeMS();
-                        if (msNow - ms > 5000) {
-                            // Log.error("MultiplexerServerSocketController: connection timeout, closing now, vsc.Id="+sc.getId());
-                            sc.close(true);
-                        }
-                        else {
-                            bFound = true;
-                        }
-                    }
-                }
-                catch (Exception e) {
-                }
-            }
+            boolean bFound = _timeoutConnections();
             try {
                 if (!bFound) {
                     synchronized (TIMEOUTLOCK) {
@@ -289,11 +271,32 @@ public class MultiplexerServerSocketController {
                 if (!_bClosed) {
                     Thread.sleep(5000);
                 }
-
             }
             catch (Exception e) {
             }
         }
+    }
+    private boolean _timeoutConnections() {
+        MultiplexerSocketController[] scs = getSocketControllers();
+        long msNow = System.currentTimeMillis();
+        boolean bFound = false;
+        for (MultiplexerSocketController sc : scs) {
+            try {
+                if (!sc.isValid()) {
+                    long ms = sc.getStartTimeMS();
+                    if (msNow - ms > 5000) {
+                        // Log.error("MultiplexerServerSocketController: connection timeout, closing now, vsc.Id="+sc.getId());
+                        sc.close(true);
+                    }
+                    else {
+                        bFound = true;
+                    }
+                }
+            }
+            catch (Exception e) {
+            }
+        }
+        return bFound;
     }
 
     /**

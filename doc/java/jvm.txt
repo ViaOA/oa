@@ -1,10 +1,34 @@
 
 
 
+1 - histogram 
+${JAVA_HOME}/bin/jmap -histo:live -d64 <pid>
+
+2 - heapdump **********
+${JAVA_HOME}/bin/jmap -dump:live,file=${JVM_LOGS_DIR}/heapdump-${HOSTNAME}-${DATE}.jvm.log -d64 <pid>
+
+3- permstat
+{JAVA_HOME}/bin/jmap -permstat -d64 <pid>
+
+
+
 from Chase ===================
--Dprogram.name=run.sh -server -DMonitoringID=eConfirmJBoss -d64 -XX:NewSize=1536m -XX:MaxNewSize=1536m -Xms6144m -Xmx6144m -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:/var/opt/jboss-eap-4.3/server/econfirm.theice.com/log/2013-03-20-0812-p dk-dm-ecas-01_gc-output.log -Dc
-om.theice.econfirm.jmxagent.hostname=pdk-dm-ecas-01 -Djava.rmi.server.hostname=pdk-dm-ecas-01 -javaagent:/var/opt/jboss-eap-4.3/server/econfirm.theice.com/conf/econfirm-jmxa gent.jar -Dcom.theice.econfirm.jmxagent.port=33980 -Djavax.net.ssl.keyStore=/var/opt/jboss-eap-4.3/server/econfirm.theice.com/conf /keystore.pkcs12 -Djavax.net.ssl.trustStore=/var/opt/jboss-ea
-p-4.3/server/econfirm.theice.com/conf/truststore.jks -Djavax.net.ssl.keyStoreType=PKCS12 -Djavax.net.ssl.trustStoreType=JKS
+-Dprogram.name=run.sh -server 
+-DMonitoringID=eConfirmJBoss 
+-d64 
+-XX:NewSize=1536m -XX:MaxNewSize=1536m 
+-Xms6144m -Xmx6144m -XX:PermSize=256m 
+-XX:MaxPermSize=256m 
+-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps 
+-Xloggc:/var/opt/jboss-eap-4.3/server/econfirm.theice.com/log/2013-03-20-0812-p dk-dm-ecas-01_gc-output.log 
+-Dcom.theice.econfirm.jmxagent.hostname=pdk-dm-ecas-01 
+-Djava.rmi.server.hostname=pdk-dm-ecas-01 
+-javaagent:/var/opt/jboss-eap-4.3/server/econfirm.theice.com/conf/econfirm-jmxa gent.jar 
+-Dcom.theice.econfirm.jmxagent.port=33980 
+-Djavax.net.ssl.keyStore=/var/opt/jboss-eap-4.3/server/econfirm.theice.com/conf /keystore.pkcs12 
+-Djavax.net.ssl.trustStore=/var/opt/jboss-eap-4.3/server/econfirm.theice.com/conf/truststore.jks 
+-Djavax.net.ssl.keyStoreType=PKCS12 
+-Djavax.net.ssl.trustStoreType=JKS
 
 
 
