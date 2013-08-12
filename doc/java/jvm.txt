@@ -5,10 +5,16 @@
 ${JAVA_HOME}/bin/jmap -histo:live -d64 <pid>
 
 2 - heapdump **********
-${JAVA_HOME}/bin/jmap -dump:live,file=${JVM_LOGS_DIR}/heapdump-${HOSTNAME}-${DATE}.jvm.log -d64 <pid>
+${JAVA_HOME}/bin/jmap -dump:live,file=${JVM_LOGS_DIR}/heapdump-${HOSTNAME}-${DATE}.hprof -d64 <pid>
 
 3- permstat
 {JAVA_HOME}/bin/jmap -permstat -d64 <pid>
+
+
+Thead dump
+kill -3 <java_pid>
+
+jstack -l JAVA_PID > jstack.out
 
 
 
