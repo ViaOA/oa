@@ -24,6 +24,14 @@ public class OARemoteThreadDelegate {
         return (t instanceof OARemoteThread);
     }
 
+    public static boolean isSafeToCallRemoteMethod() {
+        Thread t = Thread.currentThread();
+        if (!(t instanceof OARemoteThread)) return true;
+        OARemoteThread rt = (OARemoteThread) t;
+        if (rt.startedNextThread) return true;
+        return false;
+    }
+    
     public static boolean shouldSendMessages() {
         Thread t = Thread.currentThread();
         if (!(t instanceof OARemoteThread)) return true;

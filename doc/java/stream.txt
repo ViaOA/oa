@@ -1,0 +1,10 @@
+
+
+
+// convert a String with NL to a buffered stream
+    BufferedReader br = new BufferedReader(new StringReader(s2));
+    for ( ;; ) {
+        String sx = br.readLine();
+        if (sx == null) break;
+        s += OAString.NL + getCommentString() + sx; 
+    }

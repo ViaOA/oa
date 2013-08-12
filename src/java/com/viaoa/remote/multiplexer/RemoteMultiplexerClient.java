@@ -309,6 +309,7 @@ public class RemoteMultiplexerClient {
     // "dummy" object, that is used when methods are not supported in proxy interface, but are in Object
     // class
     private final Object stuntObject = new Object();
+    private int errorCnt;
 
     /**
      * Called when a remote/proxy object method is invoked. The method info will be sent to the server,
@@ -341,6 +342,15 @@ public class RemoteMultiplexerClient {
             return false;
         }
         
+        // check if remoteThread, and if it has already processed it's msg before calling remote method
+        if (!OARemoteThreadDelegate.isSafeToCallRemoteMethod()) {
+            if (errorCnt++ < 25) {
+                Exception e = new Exception("isSafeToCallRemoteMethod is false");
+                LOG.log(Level.WARNING, "isSafeToCallRemoteMethod is false, starting another OARemoteThread", e);
+            }
+            OARemoteThreadDelegate.startNextThread();
+        }
+
         // compress flagged arguments
         if (ri.methodInfo.compressedParams != null && ri.args != null) {
             for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {

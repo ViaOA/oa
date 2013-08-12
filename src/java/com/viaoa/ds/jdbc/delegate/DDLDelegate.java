@@ -153,12 +153,13 @@ public class DDLDelegate {
             	sql += dbmd.leftBracket+toTableName+dbmd.rightBracket+"."+toColumnNames[i] + " = ";
 	            sql += dbmd.leftBracket+fromTableName+dbmd.rightBracket+"."+fromColumnNames[i];
             }
-            sql += " FROM " + dbmd.leftBracket+fromTableName+dbmd.rightBracket;
+            // sql += " FROM " + dbmd.leftBracket+fromTableName+dbmd.rightBracket;
             
             if (whereClause != null && whereClause.length() > 0) {
-                sql += ", " + dbmd.leftBracket+toTableName+dbmd.rightBracket;                
+                // sql += ", " + dbmd.leftBracket+toTableName+dbmd.rightBracket;                
                 sql += " WHERE " + whereClause;
             }
+            sql += ";";
         	break;
     	}
 
