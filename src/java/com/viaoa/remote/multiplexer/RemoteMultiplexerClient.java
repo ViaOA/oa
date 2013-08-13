@@ -331,7 +331,7 @@ public class RemoteMultiplexerClient {
                     }
                     catch (InvocationTargetException e) {
                         Throwable t = e.getCause();
-                        if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+                        if (t instanceof Exception) ri.exception = (Exception) t;
                         else ri.exception = e;
                     }
                 }
@@ -844,7 +844,7 @@ if (tx > 245) {
         }
         catch (InvocationTargetException e) {
             Throwable t = e.getCause();
-            if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+            if (t instanceof Exception) ri.exception = (Exception) t;
             else ri.exception = e;
         }
 
