@@ -723,14 +723,18 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return l;
     }
 
-
+    
+    public boolean debug;
     /**
         Determine preferred size based on number of preferred number of columns and rows.
     */
     protected void calcPreferredSize() {
+        if (debug) {
+            int xx = 0;
+            xx++;
+        }
         int w = 0;
         int cols = prefCols;
-        
         
         int totalColumns = columns.size();
 
@@ -764,7 +768,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (includeScrollBar) w += 18; // scrollbar
 
         setPreferredScrollableViewportSize(new Dimension(w, h));
-        //setPreferredSize(new Dimension(w, h));
 
         // have table resized in layoutManager
         this.invalidate();
