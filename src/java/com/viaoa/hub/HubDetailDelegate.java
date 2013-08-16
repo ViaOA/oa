@@ -97,7 +97,8 @@ public class HubDetailDelegate {
     */
     protected static void setPropertyToMasterHub(Hub thisHub, Object detailObject, Object objMaster) {
         if (detailObject == null) return;
-        HubDataMaster dm = getDataMaster(thisHub);
+        if (objMaster == null) return;
+        HubDataMaster dm = getDataMaster(thisHub, objMaster.getClass());
         if (dm.liDetailToMaster == null) return;
 
         // 20090705
@@ -414,9 +415,12 @@ public class HubDetailDelegate {
 
     
     /** returns DataMaster from any shared hub that has a MasterHub set. 
-     *  If none is found, they the DataMaster for thisHub is returned.
+     *  If none is found, then the DataMaster for thisHub is returned.
      * */
     protected static HubDataMaster getDataMaster(final Hub thisHub) {
+        return getDataMaster(thisHub, null);
+    }
+    protected static HubDataMaster getDataMaster(final Hub thisHub, final Class masterClass) {
         if (thisHub == null) return null;
         if (thisHub.datam.masterHub != null) return thisHub.datam;
         
@@ -424,7 +428,12 @@ public class HubDetailDelegate {
         OAFilter<Hub> filter = new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub h) {
-                return (h.datam.masterHub != null);
+                if (h.datam.masterHub != null) {
+                    if (masterClass == null || masterClass.equals(h.datam.masterHub.getObjectClass())) {
+                        return true;
+                    }
+                }
+                return false;
             }
         };
         Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub, filter);
