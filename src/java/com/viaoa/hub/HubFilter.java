@@ -20,7 +20,6 @@ package com.viaoa.hub;
 import java.util.Hashtable;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.sync.*;
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAArray;
@@ -101,10 +100,9 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
     }
 
     /**
-     * This needs to be set to true if it is only create on the server, but
+     * This needs to be set to true if it is only created on the server, but
      * client applications will be using the same Hub that is filtered.
-     * This is so that changes on the hub will be published to the clients, even if initiated on OAClientTread. 
-     * @param b
+     * This is so that changes on the hub will be published to the clients, even if initiated on OAClientThread. 
      */
     public void setServerSideOnly(boolean b) {
         bServerSideOnly = b;
@@ -354,7 +352,7 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
         if (bClearing) return;
         try {
             if (bServerSideOnly) { // 20120425
-                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+                OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
             }
             bUpdating = true;
             
@@ -395,6 +393,9 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
         }
         finally {
             bUpdating = false;
+            if (bServerSideOnly) {
+                OARemoteThreadDelegate.sendMessages(false);
+            }
         }
     }
     
@@ -430,7 +431,17 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
     /** HubListener interface method, used to update filter. */
     public @Override void afterRemove(HubEvent e) {
         if (bClosed) return;
-    	removeObject(getObject(e.getObject()));
+        try {
+            if (bServerSideOnly) { 
+                OARemoteThreadDelegate.sendMessages(true);
+            }
+            removeObject(getObject(e.getObject()));
+        }
+        finally {
+            if (bServerSideOnly) {
+                OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
     }
 
     /** HubListener interface method, used to update filter. */
@@ -482,8 +493,8 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
     /** HubListener interface method, used to update filter. */
     public void initialize() {
         if (bClosed) return;
-        if (bServerSideOnly) { // 20120425
-            OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+        if (bServerSideOnly) { 
+            OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
         }
         HubData hd = hub.data;
         try {
@@ -498,6 +509,9 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
     	}
     	finally {
     		hd.bInFetch = false;
+            if (bServerSideOnly) {
+                OARemoteThreadDelegate.sendMessages(false);
+            }
     	}
     }    
     

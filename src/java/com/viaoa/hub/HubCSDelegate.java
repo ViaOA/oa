@@ -42,7 +42,9 @@ public class HubCSDelegate {
         if (OASyncDelegate.isSingleUser()) return;
         if (!(thisHub.datam.masterObject instanceof OAObject)) return;
 
-        if (!OARemoteThreadDelegate.shouldSendMessages()) return;
+        if (!OARemoteThreadDelegate.shouldSendMessages()) {
+            return;
+        }
 	    
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
 	    if (oi.getLocalOnly()) return;

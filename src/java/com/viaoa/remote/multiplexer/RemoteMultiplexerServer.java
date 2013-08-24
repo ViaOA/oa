@@ -961,8 +961,8 @@ public class RemoteMultiplexerServer {
             qpos += ris.length;
             for (RequestInfo ri : ris) {
                 if (ri.connectionId == 0) { // sent from object on this server
+                    ri.processedByServer = true;
                     synchronized (ri) {
-                        ri.processedByServer = true;
                         ri.notifyAll();
                     }
                     continue;
@@ -980,16 +980,21 @@ public class RemoteMultiplexerServer {
                 if (obj == null) continue;
 
                 OARemoteThread t = getRemoteClientThread(ri);
+                
+                long ms1 = System.currentTimeMillis();                    
                 synchronized (t.Lock) {
                     t.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
                     t.Lock.wait(250);
-                    if (!ri.processedByServer) {
-                        StackTraceElement[] stes = t.getStackTrace();
-                        Exception ex = new Exception();
-                        ex.setStackTrace(stes);
-                        LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
-                                + ri.toLogString(), ex);
-                    }
+                }
+                long ms2 = System.currentTimeMillis();
+
+                // qqqqqq this can be removed, sanity check only
+                if (!ri.processedByServer && (ms2-ms1) > 200) {
+                    StackTraceElement[] stes = t.getStackTrace();
+                    Exception ex = new Exception();
+                    ex.setStackTrace(stes);
+                    LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
+                            + ri.toLogString(), ex);
                 }
             }
         }
@@ -1070,8 +1075,8 @@ public class RemoteMultiplexerServer {
         catch (Exception e) {
             ri.exception = e;
         }
+        ri.processedByServer = true;
         synchronized (ri) {
-            ri.processedByServer = true;
             ri.notifyAll(); // waiting clients getting messages from queue 
         }
     }

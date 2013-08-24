@@ -45,12 +45,14 @@ public class OARemoteThreadDelegate {
         }
     }
     
-    public static void sendMessages() {
-        sendMessages(true);
+    public static boolean sendMessages() {
+        return sendMessages(true);
     }
-    public static void sendMessages(boolean b) {
+    public static boolean sendMessages(boolean b) {
         Thread t = Thread.currentThread();
-        if (!(t instanceof OARemoteThread)) return;
+        if (!(t instanceof OARemoteThread)) return true;
+        boolean bx = ((OARemoteThread) t).getSendMessages();
         ((OARemoteThread) t).setSendMessages(b);
+        return bx;
     }
 }
