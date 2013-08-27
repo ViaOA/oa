@@ -35,6 +35,7 @@ public class DBMetaDataDelegate {
 	    Set the type of Database SQLSERVER, ACCESS, DERBY, ORACLE, MYSQL  default: SQLSERVER
 	*/
 	public static void updateAfterTypeChange(DBMetaData dbmd) {
+	    if (dbmd == null) return;
 		dbmd.setDistinctKeyword("DISTINCT");
 	
 		dbmd.setUseBracket(true);
