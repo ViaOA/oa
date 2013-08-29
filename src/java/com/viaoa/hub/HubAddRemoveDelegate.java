@@ -179,7 +179,8 @@ public class HubAddRemoveDelegate {
         HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
         if (dm.masterHub != null) {
             // if there is a masterHub, then make sure that this Hub is active/valid
-            if (thisHub.datam.masterObject == null) {
+            if (dm.masterObject == null) { // 20130829
+            //was: if (thisHub.datam.masterObject == null) {
                 return "has masterHub, but masterObject is null";
             }
         }
