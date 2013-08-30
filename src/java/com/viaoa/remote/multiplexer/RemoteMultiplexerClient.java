@@ -721,7 +721,7 @@ long t1 = System.currentTimeMillis();
 long t2 = System.currentTimeMillis();
 long tx = t2 - t1;
 if (tx > 245) {
-    System.out.println("250 timeout waiting on RemoteThread --> "+tx);
+    System.out.println("250 timeout waiting on RemoteThread, waited for "+tx + "ms");
 }
 
         }
