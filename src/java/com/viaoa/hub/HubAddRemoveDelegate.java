@@ -192,6 +192,8 @@ public class HubAddRemoveDelegate {
         if (thisHub.isLoading()) return null;
         if (thisHub.data.uniqueProperty != null) {
             if (!HubDelegate.verifyUniqueProperty(thisHub, obj)) {
+//qqqqqqqqqqqqqqvvvvvvvvvvvvvqqqqqqqqq                
+HubDelegate.verifyUniqueProperty(thisHub, obj);                
                 return "verifyUniqueProperty returned false";
             }
         }

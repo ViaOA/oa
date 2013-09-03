@@ -1369,21 +1369,21 @@ public class OAObjectReflectDelegate {
     public static OAObject createCopy(OAObject oaObj, String[] excludeProperties) {
         return createCopy(oaObj, excludeProperties, null);
     }
+
     public static OAObject createCopy(OAObject oaObj, String[] excludeProperties, OACopyCallback copyCallback) {
         if (oaObj == null) return null;
+        OAObject newObject;
 
         // run on server only - otherwise objects can not be updated, since setLoadingObject is true
-        
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
         if (!oi.getLocalOnly()) {
             if (!OASyncDelegate.isServer()) {
                 // 20130505 needs to be put in msg queue
-                OAObject newObject = OAObjectCSDelegate.createCopy(oaObj, excludeProperties);
+                newObject = OAObjectCSDelegate.createCopy(oaObj, excludeProperties);
                 return newObject;
             }
         }
         
-        OAObject newObject = null;
         try {
             OAThreadLocalDelegate.setLoadingObject(true);
             OAThreadLocalDelegate.setSuppressCSMessages(true);

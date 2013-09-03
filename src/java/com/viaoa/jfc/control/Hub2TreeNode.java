@@ -176,7 +176,9 @@ public class Hub2TreeNode extends HubListenerAdapter {
         OATreeNodeData tnd = parent;
 
         for (x=0 ;tnd != null; x++ ) tnd = tnd.parent;
+        
         if (amt < 0 || amt > x) amt = x;
+        //else if (object != null) amt++; // 20130831
 
         if (object != null) amt++;
         
@@ -281,8 +283,8 @@ public class Hub2TreeNode extends HubListenerAdapter {
             
             objs = getObjectPath(-1, objx);
             
-            tp = new TreePath(objs);
             try {
+                tp = new TreePath(objs);
                 pos = node.getTree().getRowForPath(tp);
             }
             catch (Exception exc) {
