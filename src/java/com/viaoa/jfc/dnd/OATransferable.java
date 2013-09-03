@@ -38,7 +38,6 @@ public class OATransferable implements Transferable {
     protected Hub hub;
     protected Object object;
     protected Class clazz;
-    protected boolean bIsCut; // else it's a "copy"
 
 
     /** 
@@ -68,15 +67,6 @@ public class OATransferable implements Transferable {
     public OATransferable(Hub hub, Object obj) {
         this.hub = hub;
         this.object = obj;
-    }
-    public OATransferable(Hub hub, Object obj, boolean bIsCut) {
-        this.hub = hub;
-        this.object = obj;
-        this.bIsCut = bIsCut;
-    }
-    
-    public boolean isCut() {
-        return bIsCut;
     }
     
     /**
