@@ -31,3 +31,20 @@ SNMP using log4j
     <layout class="org.apache.log4j.SimpleLayout"/>
 </appender>
         
+        
+Tickets for Prod
+    Footprints: https://footprints.cpex.com/
+    
+example:
+    Ticket 58186
+        deploy 1275.01 GSMR to prod
+        Usually we set 6:30 for ORD changes and 2pm Friday for AT changes
+    
+MarketServer logs        
+    ord-mg-ixrp-01 
+    /var/opt/logsrepo/logs/prod/MarketServer
+
+
+
+
+        
