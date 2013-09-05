@@ -130,7 +130,12 @@ public class OATreeModel implements TreeModel {
         }
 
         if (SwingUtilities.isEventDispatchThread()) {
-            doInvoke();
+            try {
+                doInvoke();
+            }
+            catch (Throwable e) {
+                fireTreeStructureChanged();
+            }
         }
         else {
             // 20101008 was:
@@ -138,7 +143,12 @@ public class OATreeModel implements TreeModel {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        doInvoke();
+                        try {
+                            doInvoke();
+                        }
+                        catch (Throwable e) {
+                            fireTreeStructureChanged();
+                        }
                     }
                 });
             } 
