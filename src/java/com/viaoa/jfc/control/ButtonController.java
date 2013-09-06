@@ -443,7 +443,6 @@ public class ButtonController extends JFCController implements ActionListener {
         Hub hub = getActualHub();
         if (hub == null) return;
         if (hub != null) ho = hub.getActiveObject();
-        ;
 
         /*was:
         if (confirmMessage != null) {

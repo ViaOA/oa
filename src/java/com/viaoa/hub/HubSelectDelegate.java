@@ -148,8 +148,8 @@ public class HubSelectDelegate {
                     synchronized (thisHub.data) {
                         thisHub.data.loadingAllData = false;
                     }
-                    break;
                 }
+                break;
             }
             // else wait and try again
             try {

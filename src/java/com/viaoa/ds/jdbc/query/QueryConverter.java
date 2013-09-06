@@ -298,7 +298,7 @@ public class QueryConverter {
                 s = getWhere(links, fromTable, toTable, whereObject, propertyFromMaster, vecParam);
             }
         }
-        
+         
         // could not find it in direct links, now check any Link tables
         whereClass = whereObject.getClass();
         for (; s == null && whereClass!=null && !(whereClass.equals(OAObject.class)); whereClass = whereClass.getSuperclass()) {

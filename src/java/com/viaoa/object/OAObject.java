@@ -645,6 +645,12 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectSaveDelegate.save(this, iCascadeRule);  // this will save on server if using OAClient
     }
     /**
+     * Cascade save all links.
+     */
+    public void saveAll() {
+        OAObjectSaveDelegate.save(this, OAObject.CASCADE_ALL_LINKS); 
+    }
+    /**
      * Method that can be overwritten to "know" when it is saved.
      * Note: overwritting the save() method will not always work,
      * since the object could be saved during a cascade save that
