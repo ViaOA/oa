@@ -134,7 +134,7 @@ public class HubAutoMatch extends HubListenerAdapter implements java.io.Serializ
                         break;
                     }
                     try {
-                        if (getMethod != null) o = getMethod.invoke(o, new Object[] {  });
+                        o = getMethod.invoke(o, new Object[] {  });
                     }
                     catch(Exception e) {
                         throw new RuntimeException(e);

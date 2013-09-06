@@ -104,7 +104,7 @@ public class DeleteDelegate {
             DBLogDelegate.logDelete(str);
             statement = ds.getStatement(str);
             int x = statement.executeUpdate(str);
-            if (x != 1) LOG.warning("row was not DELETEDed, no exception thrown");
+            if (x != 1) LOG.warning("row was not DELETEd, no exception thrown");
         }
         finally {
             if (statement != null) ds.releaseStatement(statement);

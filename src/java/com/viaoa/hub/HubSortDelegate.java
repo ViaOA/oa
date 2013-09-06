@@ -20,6 +20,7 @@ package com.viaoa.hub;
 import java.util.*;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OAString;
 
 /**
@@ -52,7 +53,7 @@ public class HubSortDelegate {
     }
     
     private static void _sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
-        
+        OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         boolean bSame = false;
         if (propertyPaths == thisHub.data.sortProperty || (propertyPaths != null && propertyPaths.equalsIgnoreCase(thisHub.data.sortProperty))) {
             if (bAscending == thisHub.data.sortAsc) {
@@ -89,7 +90,6 @@ public class HubSortDelegate {
                 HubCSDelegate.sort(thisHub, propertyPaths, bAscending, comp);
             }
         }
-            
     }
     
     
