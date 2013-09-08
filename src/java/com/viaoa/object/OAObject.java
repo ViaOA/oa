@@ -1,4 +1,5 @@
 /*
+
 This software and documentation is the confidential and proprietary
 information of ViaOA, Inc. ("Confidential Information").
 You shall not disclose such Confidential Information and shall use
@@ -106,7 +107,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
 
     
-    public static final int version = 1308290;  
+    public static final int version = 1309070;  
     static {
         Properties props = System.getProperties();
         
