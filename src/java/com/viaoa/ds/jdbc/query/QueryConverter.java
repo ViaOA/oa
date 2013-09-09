@@ -341,7 +341,8 @@ public class QueryConverter {
                 
                 // check link table links
                 Link[] linx = link.toTable.getLinks();  // will have 2 links
-
+                if (linx == null || linx.length != 2) continue;
+                
                 newFromTable = link.toTable; // will need to be changed if it is using link table
                 if (linx[0].toTable == toTable && propertyFromMaster.equalsIgnoreCase(linx[0].reversePropertyName)) {
                     link = linx[0];
