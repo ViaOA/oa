@@ -194,6 +194,7 @@ var {font-weight: bold;
 table {
 	border-color: Gray;
 	border-style: outset
+    /* border-style: none */
 }
 
 tr {
@@ -202,8 +203,12 @@ tr {
 
 td {
 	border-color: Gray;
-	border-style: inset;
-	padding-left: 3;
+
+    border-style: inset;
+
+    /* border-style: none */
+
+    padding-left: 3;
 	padding-right: 3;
 	padding-top: 3;
 	padding-bottom: 3

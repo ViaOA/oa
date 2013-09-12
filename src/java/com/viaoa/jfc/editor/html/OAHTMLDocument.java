@@ -62,16 +62,19 @@ All rights reserved.
         
         border
         border-style (only supports inset, outset and none)
+        border-left-style
+        
+        border-top
         border-top-width
         border-right-width
         border-bottom-width
         border-left-width
         border-width
-        border-top
         border-right
         border-bottom
         border-left
-
+        border-color
+        border-left-color
 
  */
 package com.viaoa.jfc.editor.html;
@@ -273,6 +276,7 @@ public class OAHTMLDocument extends HTMLDocument {
             for (Element ele : roots) {
                 convertHTMLtoCSS(null, ele);
             }
+            
         }
         finally {
             writeUnlock();
@@ -280,18 +284,67 @@ public class OAHTMLDocument extends HTMLDocument {
     }
 
     private void convertHTMLtoCSS(Element parent, Element child) {
-
         MutableAttributeSet childAttribSet = (MutableAttributeSet) child.getAttributes();
         
         Object nameAttrib = childAttribSet.getAttribute(StyleConstants.NameAttribute);
+        if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TABLE))) {
+            // translate border width into the cells, if it has non-zero value.
+            String pad = (String) childAttribSet.getAttribute(HTML.Attribute.BORDER);
+            if ("0".equals(pad) || pad == null) {
+                if (childAttribSet.getAttribute(CSS.Attribute.BORDER_STYLE) == null) {
+                    childAttribSet.addAttribute(CSS.Attribute.BORDER_STYLE, "none");
+                }
+                else {
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_TOP_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_TOP_STYLE, "none");
+                    }
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_LEFT_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_LEFT_STYLE, "none");
+                    }
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE, "none");
+                    }
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_RIGHT_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_RIGHT_STYLE, "none");
+                    }
+                }
+            }
+        }
+        else if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TD) || nameAttrib.equals(HTML.Tag.TH)) ) {
+            AttributeSet tableAttr = child.getParentElement().getParentElement().getAttributes();
+            if (tableAttr != null) {
+                String pad = (String) childAttribSet.getAttribute(HTML.Attribute.BORDER);
+                if ("0".equals(pad) || pad == null) {
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_STYLE, "none");
+                    }
+                    else {
+                        if (childAttribSet.getAttribute(CSS.Attribute.BORDER_TOP_STYLE) == null) {
+                            childAttribSet.addAttribute(CSS.Attribute.BORDER_TOP_STYLE, "none");
+                        }
+                        if (childAttribSet.getAttribute(CSS.Attribute.BORDER_LEFT_STYLE) == null) {
+                            childAttribSet.addAttribute(CSS.Attribute.BORDER_LEFT_STYLE, "none");
+                        }
+                        if (childAttribSet.getAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE) == null) {
+                            childAttribSet.addAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE, "none");
+                        }
+                        if (childAttribSet.getAttribute(CSS.Attribute.BORDER_RIGHT_STYLE) == null) {
+                            childAttribSet.addAttribute(CSS.Attribute.BORDER_RIGHT_STYLE, "none");
+                        }
+                    }
+                }
+            }
+        }
+        
         boolean bRemovedHack = false;
+/*        
         if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TD) || nameAttrib.equals(HTML.Tag.TH)) ) {
             // the translateHTMLToCSS method will add styles (not needed) to TD,TH from Table values
             //   if the TD/TH does not have a CSS/Style defined for the border, then it will use the table value
             childAttribSet.removeAttribute(StyleConstants.NameAttribute);
             bRemovedHack = true;
         }
-        
+*/        
         BlockElement blockElement = new BlockElement(parent, childAttribSet);
         MutableAttributeSet newAttribSet = (MutableAttributeSet) getStyleSheet().translateHTMLToCSS(blockElement);
 
