@@ -283,13 +283,28 @@ public class Block extends OAObject {
             style += "background-color: rgb("+ backgroundColor.getRed()+", " + backgroundColor.getGreen() + ", "+backgroundColor.getBlue()+");"; 
         }
         if (borderColor != null) {
-            style += "border-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
+            // style += "border-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
+            style += "border-top-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
+            style += "border-left-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
+            style += "border-bottom-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
+            style += "border-right-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
         }
-        if (borderTopWidth > 0) style += "border-top-width:"+borderTopWidth+";";
-        if (borderLeftWidth > 0) style += "border-left-width:"+borderLeftWidth+";";
-        if (borderBottomWidth > 0) style += "border-bottom-width:"+borderBottomWidth+";";
-        if (borderRightWidth > 0) style += "border-right-width:"+borderRightWidth+";";
-        style += "border-style:solid;";
+        if (borderTopWidth > 0) {
+            style += "border-top-width:"+borderTopWidth+";";
+            style += "border-top-style:solid;";
+        }
+        if (borderLeftWidth > 0) {
+            style += "border-left-width:"+borderLeftWidth+";";
+            style += "border-left-style:solid;";
+        }
+        if (borderBottomWidth > 0) {
+            style += "border-bottom-width:"+borderBottomWidth+";";
+            style += "border-bottom-style:solid;";
+        }
+        if (borderRightWidth > 0) {
+            style += "border-right-width:"+borderRightWidth+";";
+            style += "border-right-style:solid;";
+        }
         
         return style;
     }
