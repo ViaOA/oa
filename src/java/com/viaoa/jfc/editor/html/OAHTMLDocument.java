@@ -265,6 +265,20 @@ public class OAHTMLDocument extends HTMLDocument {
         return reader;
     }
 
+//qqqqqqqqqqqqqqqqqqqqqqq    
+    @Override
+    protected void create(ElementSpec[] data) {
+        // TODO Auto-generated method stub
+
+        for (ElementSpec es : data) {
+            convertHTMLtoCSS(null, (MutableAttributeSet) es.getAttributes());
+            int xx = 4;
+            xx++;
+        }
+        
+        super.create(data);
+    }
+    
     /**
      * Called once reading is complete, to convert any HTML.Attributes to
      * CSS.Attributes
@@ -283,6 +297,35 @@ public class OAHTMLDocument extends HTMLDocument {
         }
     }
 
+//qqqqqqqqqqqqqqqqqqq    
+    private void convertHTMLtoCSS(Element parent, MutableAttributeSet childAttribSet) {
+        if (childAttribSet == null) return;
+        Object nameAttrib = childAttribSet.getAttribute(StyleConstants.NameAttribute);
+        if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TABLE))) {
+            // translate border width into the cells, if it has non-zero value.
+            String pad = (String) childAttribSet.getAttribute(HTML.Attribute.BORDER);
+            if ("0".equals(pad) || pad == null) {
+//qqqqqqqqqq remove "false && "                
+                if (false && childAttribSet.getAttribute(CSS.Attribute.BORDER_STYLE) == null) {
+                    childAttribSet.addAttribute(CSS.Attribute.BORDER_STYLE, "none");
+                }
+                else {
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_TOP_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_TOP_STYLE, "none");
+                    }
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_LEFT_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_LEFT_STYLE, "none");
+                    }
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE, "none");
+                    }
+                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_RIGHT_STYLE) == null) {
+                        childAttribSet.addAttribute(CSS.Attribute.BORDER_RIGHT_STYLE, "none");
+                    }
+                }
+            }
+        }
+    }
     private void convertHTMLtoCSS(Element parent, Element child) {
         MutableAttributeSet childAttribSet = (MutableAttributeSet) child.getAttributes();
         
