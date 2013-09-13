@@ -18,6 +18,8 @@ All rights reserved.
 package com.viaoa.jfc.editor.html.control;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.util.*;
 
 import javax.swing.SwingUtilities;
@@ -252,8 +254,23 @@ public class BlockController {
         block.setBorderLeftWidth(obj == null ? 0 : OAConv.toInt(obj.toString()));
 
         obj = sas.getAttribute(CSS.Attribute.BORDER_COLOR);
-        block.setBorderColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
+        block.setBorderColor(null);
 
+        obj = sas.getAttribute(CSS.Attribute.BORDER_TOP_COLOR);
+        block.setBorderTopColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
+        
+        obj = sas.getAttribute(CSS.Attribute.BORDER_RIGHT_COLOR);
+        block.setBorderRightColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
+        
+        obj = sas.getAttribute(CSS.Attribute.BORDER_BOTTOM_COLOR);
+        block.setBorderBottomColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
+
+        obj = sas.getAttribute(CSS.Attribute.BORDER_LEFT_COLOR);
+        block.setBorderLeftColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
+        
+//qqqqqqqqqqqqqqq add TRBL values for Border Color
+        
+        
         obj = sas.getAttribute(CSS.Attribute.BACKGROUND_COLOR);
         block.setBackgroundColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
     }
@@ -295,7 +312,12 @@ public class BlockController {
         sas.removeAttribute(CSS.Attribute.BORDER_RIGHT_WIDTH);
         sas.removeAttribute(CSS.Attribute.BORDER_BOTTOM_WIDTH);
         sas.removeAttribute(CSS.Attribute.BORDER_LEFT_WIDTH);
-        sas.removeAttribute(CSS.Attribute.BORDER_COLOR);
+
+        sas.removeAttribute(CSS.Attribute.BORDER_TOP_COLOR);
+        sas.removeAttribute(CSS.Attribute.BORDER_RIGHT_COLOR);
+        sas.removeAttribute(CSS.Attribute.BORDER_BOTTOM_COLOR);
+        sas.removeAttribute(CSS.Attribute.BORDER_LEFT_COLOR);
+        
         sas.removeAttribute(CSS.Attribute.BORDER_STYLE);
 
         sas.removeAttribute(CSS.Attribute.BACKGROUND_COLOR);

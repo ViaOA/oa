@@ -90,6 +90,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.text.*;
 import javax.swing.text.html.*;
+import javax.swing.text.html.HTML.Tag;
 
 /**
  * Document class used for OAHTMLTextPane. This should not be created directly,
@@ -155,6 +156,7 @@ public class OAHTMLDocument extends HTMLDocument {
             // From StyleSheet, font pt sizes for the 1-7 <font size=x>
             // conversion
             final int sizeMapDefault[] = { 8, 10, 12, 14, 18, 24, 36 };
+            Stack<Boolean> stackNoBorder = new Stack<Boolean>();
 
             /**
              * This will clean up the attributeset to fix the following
@@ -175,7 +177,34 @@ public class OAHTMLDocument extends HTMLDocument {
              * name:value, or as a style.
              */
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
-
+                boolean b = false;
+                if (t == HTML.Tag.TABLE) {
+                    Object obj = a.getAttribute(HTML.Attribute.BORDER);
+                    if ("0".equals(obj)) {
+                        b = true;
+                        stackNoBorder.push(true);
+                    }
+                    else {
+                        stackNoBorder.push(false);
+                    }
+                }
+                else if (t == HTML.Tag.TD && stackNoBorder.peek()) {
+                    b = true;
+                }
+                if (b) {
+                    Object obj = a.getAttribute(HTML.Attribute.STYLE);
+                    String style = "";
+                    if (obj instanceof String) {
+                        style = ((String) obj).trim();
+                        style += " ";
+                    }
+                    if (style.indexOf("-style:") < 0 && style.indexOf("border-") < 0) {
+                        style += "border-style: none";
+                        a.addAttribute(HTML.Attribute.STYLE, style);
+                    }
+                }
+                
+                
                 if (t == HTML.Tag.FONT) {
                     // vv hack: change font "size=x", which is from 1-7, to the
                     // actual point font size to use. Otherwise it is converted
@@ -221,7 +250,7 @@ public class OAHTMLDocument extends HTMLDocument {
                             mas.removeAttribute(obj);
                         }
                     }
-                    boolean b = (t == HTML.Tag.FONT || t == HTML.Tag.U || t == HTML.Tag.B || t == HTML.Tag.I || t == HTML.Tag.STRIKE || t == HTML.Tag.SUP || t == HTML.Tag.SUB);
+                    b = (t == HTML.Tag.FONT || t == HTML.Tag.U || t == HTML.Tag.B || t == HTML.Tag.I || t == HTML.Tag.STRIKE || t == HTML.Tag.SUP || t == HTML.Tag.SUB);
 
                     if (b) {
                         // HTMDocument.HTML.Reader.CharacterAction will convert
@@ -249,6 +278,13 @@ public class OAHTMLDocument extends HTMLDocument {
                                                                // CSS.Attributes
                 }
             }
+            @Override
+            public void handleEndTag(Tag t, int pos) {
+                if (t == HTML.Tag.TABLE) {
+                    stackNoBorder.pop();
+                }
+                super.handleEndTag(t, pos);
+            }
 
             /**
              * This is called when reading is done and will call
@@ -265,20 +301,6 @@ public class OAHTMLDocument extends HTMLDocument {
         return reader;
     }
 
-//qqqqqqqqqqqqqqqqqqqqqqq    
-    @Override
-    protected void create(ElementSpec[] data) {
-        // TODO Auto-generated method stub
-
-        for (ElementSpec es : data) {
-            convertHTMLtoCSS(null, (MutableAttributeSet) es.getAttributes());
-            int xx = 4;
-            xx++;
-        }
-        
-        super.create(data);
-    }
-    
     /**
      * Called once reading is complete, to convert any HTML.Attributes to
      * CSS.Attributes
@@ -297,97 +319,19 @@ public class OAHTMLDocument extends HTMLDocument {
         }
     }
 
-//qqqqqqqqqqqqqqqqqqq    
-    private void convertHTMLtoCSS(Element parent, MutableAttributeSet childAttribSet) {
-        if (childAttribSet == null) return;
-        Object nameAttrib = childAttribSet.getAttribute(StyleConstants.NameAttribute);
-        if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TABLE))) {
-            // translate border width into the cells, if it has non-zero value.
-            String pad = (String) childAttribSet.getAttribute(HTML.Attribute.BORDER);
-            if ("0".equals(pad) || pad == null) {
-//qqqqqqqqqq remove "false && "                
-                if (false && childAttribSet.getAttribute(CSS.Attribute.BORDER_STYLE) == null) {
-                    childAttribSet.addAttribute(CSS.Attribute.BORDER_STYLE, "none");
-                }
-                else {
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_TOP_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_TOP_STYLE, "none");
-                    }
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_LEFT_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_LEFT_STYLE, "none");
-                    }
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE, "none");
-                    }
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_RIGHT_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_RIGHT_STYLE, "none");
-                    }
-                }
-            }
-        }
-    }
     private void convertHTMLtoCSS(Element parent, Element child) {
         MutableAttributeSet childAttribSet = (MutableAttributeSet) child.getAttributes();
         
         Object nameAttrib = childAttribSet.getAttribute(StyleConstants.NameAttribute);
-        if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TABLE))) {
-            // translate border width into the cells, if it has non-zero value.
-            String pad = (String) childAttribSet.getAttribute(HTML.Attribute.BORDER);
-            if ("0".equals(pad) || pad == null) {
-                if (childAttribSet.getAttribute(CSS.Attribute.BORDER_STYLE) == null) {
-                    childAttribSet.addAttribute(CSS.Attribute.BORDER_STYLE, "none");
-                }
-                else {
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_TOP_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_TOP_STYLE, "none");
-                    }
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_LEFT_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_LEFT_STYLE, "none");
-                    }
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE, "none");
-                    }
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_RIGHT_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_RIGHT_STYLE, "none");
-                    }
-                }
-            }
-        }
-        else if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TD) || nameAttrib.equals(HTML.Tag.TH)) ) {
-            AttributeSet tableAttr = child.getParentElement().getParentElement().getAttributes();
-            if (tableAttr != null) {
-                String pad = (String) childAttribSet.getAttribute(HTML.Attribute.BORDER);
-                if ("0".equals(pad) || pad == null) {
-                    if (childAttribSet.getAttribute(CSS.Attribute.BORDER_STYLE) == null) {
-                        childAttribSet.addAttribute(CSS.Attribute.BORDER_STYLE, "none");
-                    }
-                    else {
-                        if (childAttribSet.getAttribute(CSS.Attribute.BORDER_TOP_STYLE) == null) {
-                            childAttribSet.addAttribute(CSS.Attribute.BORDER_TOP_STYLE, "none");
-                        }
-                        if (childAttribSet.getAttribute(CSS.Attribute.BORDER_LEFT_STYLE) == null) {
-                            childAttribSet.addAttribute(CSS.Attribute.BORDER_LEFT_STYLE, "none");
-                        }
-                        if (childAttribSet.getAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE) == null) {
-                            childAttribSet.addAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE, "none");
-                        }
-                        if (childAttribSet.getAttribute(CSS.Attribute.BORDER_RIGHT_STYLE) == null) {
-                            childAttribSet.addAttribute(CSS.Attribute.BORDER_RIGHT_STYLE, "none");
-                        }
-                    }
-                }
-            }
-        }
-        
         boolean bRemovedHack = false;
-/*        
+        
         if (nameAttrib != null && (nameAttrib.equals(HTML.Tag.TD) || nameAttrib.equals(HTML.Tag.TH)) ) {
             // the translateHTMLToCSS method will add styles (not needed) to TD,TH from Table values
             //   if the TD/TH does not have a CSS/Style defined for the border, then it will use the table value
             childAttribSet.removeAttribute(StyleConstants.NameAttribute);
             bRemovedHack = true;
         }
-*/        
+        
         BlockElement blockElement = new BlockElement(parent, childAttribSet);
         MutableAttributeSet newAttribSet = (MutableAttributeSet) getStyleSheet().translateHTMLToCSS(blockElement);
 

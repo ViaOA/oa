@@ -143,16 +143,16 @@ public class BlockDialog extends JDialog {
         txt = new OATextField(hubBlock, Block.PROPERTY_MarginTop, 3);
         pan.add(txt, gc);
 
-        pan.add(new JLabel("Left"), gc);
-        txt = new OATextField(hubBlock, Block.PROPERTY_MarginLeft, 3);
+        pan.add(new JLabel("Right"), gc);
+        txt = new OATextField(hubBlock, Block.PROPERTY_MarginRight, 3);
         pan.add(txt, gc);
         
         pan.add(new JLabel("Bottom"), gc);
         txt = new OATextField(hubBlock, Block.PROPERTY_MarginBottom, 3);
         pan.add(txt, gc);
         
-        pan.add(new JLabel("Right"), gc);
-        txt = new OATextField(hubBlock, Block.PROPERTY_MarginRight, 3);
+        pan.add(new JLabel("Left"), gc);
+        txt = new OATextField(hubBlock, Block.PROPERTY_MarginLeft, 3);
         gc.gridwidth = gc.REMAINDER;
         pan.add(txt, gc);
         gc.gridwidth = 1;
@@ -166,16 +166,16 @@ public class BlockDialog extends JDialog {
         txt = new OATextField(hubBlock, Block.PROPERTY_PaddingTop, 3);
         pan.add(txt, gc);
 
-        pan.add(new JLabel("Left"), gc);
-        txt = new OATextField(hubBlock, Block.PROPERTY_PaddingLeft, 3);
+        pan.add(new JLabel("Right"), gc);
+        txt = new OATextField(hubBlock, Block.PROPERTY_PaddingRight, 3);
         pan.add(txt, gc);
         
         pan.add(new JLabel("Bottom"), gc);
         txt = new OATextField(hubBlock, Block.PROPERTY_PaddingBottom, 3);
         pan.add(txt, gc);
-        
-        pan.add(new JLabel("Right"), gc);
-        txt = new OATextField(hubBlock, Block.PROPERTY_PaddingRight, 3);
+
+        pan.add(new JLabel("Left"), gc);
+        txt = new OATextField(hubBlock, Block.PROPERTY_PaddingLeft, 3);
         gc.gridwidth = gc.REMAINDER;
         pan.add(txt, gc);
         gc.gridwidth = 1;
@@ -187,31 +187,47 @@ public class BlockDialog extends JDialog {
         pan.add(txt, gc);
         gc.gridwidth = 1;
 
-        /*
         pan.add(new JLabel("Top"), gc);
         txt = new OATextField(hubBlock, Block.PROPERTY_BorderTopWidth, 3);
         pan.add(txt, gc);
 
-        pan.add(new JLabel("Left"), gc);
-        txt = new OATextField(hubBlock, Block.PROPERTY_BorderLeftWidth, 3);
+        pan.add(new JLabel("Right"), gc);
+        txt = new OATextField(hubBlock, Block.PROPERTY_BorderRightWidth, 3);
         pan.add(txt, gc);
         
         pan.add(new JLabel("Bottom"), gc);
         txt = new OATextField(hubBlock, Block.PROPERTY_BorderBottomWidth, 3);
         pan.add(txt, gc);
         
-        pan.add(new JLabel("Right"), gc);
-        txt = new OATextField(hubBlock, Block.PROPERTY_BorderRightWidth, 3);
+        pan.add(new JLabel("Left"), gc);
+        txt = new OATextField(hubBlock, Block.PROPERTY_BorderLeftWidth, 3);
         gc.gridwidth = gc.REMAINDER;
         pan.add(txt, gc);
         gc.gridwidth = 1;
-        */
+
         pan.add(new JLabel("Border Color"), gc);
         ccbo = new OAColorComboBox(hubBlock, Block.PROPERTY_BorderColor, 4);
         gc.gridwidth = gc.REMAINDER;
         pan.add(ccbo, gc);
         gc.gridwidth = 1;
         
+        pan.add(new JLabel("Top"), gc);
+        ccbo = new OAColorComboBox(hubBlock, Block.PROPERTY_BorderTopColor, 4);
+        pan.add(ccbo, gc);
+
+        pan.add(new JLabel("Right"), gc);
+        ccbo = new OAColorComboBox(hubBlock, Block.PROPERTY_BorderRightColor, 4);
+        pan.add(ccbo, gc);
+        
+        pan.add(new JLabel("Bottom"), gc);
+        ccbo = new OAColorComboBox(hubBlock, Block.PROPERTY_BorderBottomColor, 4);
+        pan.add(ccbo, gc);
+        
+        pan.add(new JLabel("Left"), gc);
+        ccbo = new OAColorComboBox(hubBlock, Block.PROPERTY_BorderLeftColor, 4);
+        gc.gridwidth = gc.REMAINDER;
+        pan.add(ccbo, gc);
+        gc.gridwidth = 1;
         
         
         // bottom

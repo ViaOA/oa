@@ -20,6 +20,7 @@ package com.viaoa.jfc.editor.html.oa;
 import java.awt.Color;
 
 import com.viaoa.annotation.OAClass;
+import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 
 /**
@@ -47,13 +48,25 @@ public class Block extends OAObject {
 
     public static final String PROPERTY_BackgroundColor = "BackgroundColor";
 
-    public static final String PROPERTY_BorderColor = "BorderColor";
+
     public static final String PROPERTY_BorderWidth = "BorderWidth";
     public static final String PROPERTY_BorderTopWidth = "BorderTopWidth";
     public static final String PROPERTY_BorderRightWidth = "BorderRightWidth";
     public static final String PROPERTY_BorderBottomWidth = "BorderBottomWidth";
     public static final String PROPERTY_BorderLeftWidth = "BorderLeftWidth";
 
+    public static final String PROPERTY_BorderColor = "BorderColor";
+    public static final String PROPERTY_BorderTopColor = "BorderTopColor";
+    public static final String PROPERTY_BorderRightColor = "BorderRightColor";
+    public static final String PROPERTY_BorderBottomColor = "BorderBottomColor";
+    public static final String PROPERTY_BorderLeftColor = "BorderLeftColor";
+    
+    public static final String PROPERTY_BorderStyle = "BorderStyle";
+    public static final String PROPERTY_BorderTopStyle = "BorderTopStyle";
+    public static final String PROPERTY_BorderRightStyle = "BorderRightStyle";
+    public static final String PROPERTY_BorderBottomStyle = "BorderBottomStyle";
+    public static final String PROPERTY_BorderLeftStyle = "BorderLeftStyle";
+    
     protected int width;
     protected int height;
     protected int margin;
@@ -67,13 +80,41 @@ public class Block extends OAObject {
     protected int paddingLeft;
     protected int paddingRight;
     protected Color backgroundColor;
-    protected Color borderColor;
     protected int borderWidth;
     protected int borderTopWidth;
     protected int borderRightWidth;
     protected int borderBottomWidth;
     protected int borderLeftWidth;
+    protected Color borderColor;
+    protected Color borderTopColor;
+    protected Color borderRightColor;
+    protected Color borderBottomColor;
+    protected Color borderLeftColor;
 
+//qqqqqqqqqq Hub of values .qqqqqqqqqq    
+    protected String borderStyle;
+    protected String borderTopStyle;
+    protected String borderRightStyle;
+    protected String borderBottomStyle;
+    protected String borderLeftStyle;
+    
+    private static Hub<String> hubBorderStyles = new Hub<String>(String.class);
+    static {
+        hubBorderStyles.add("none");
+        hubBorderStyles.add("solid");
+        hubBorderStyles.add("dashed");
+    }
+    public static Hub<String> getBorderStyles() {
+        if (hubBorderStyles == null) {
+            hubBorderStyles = new Hub<String>(String.class);
+            hubBorderStyles.add("none");
+            hubBorderStyles.add("solid");
+            hubBorderStyles.add("dashed");
+        }
+        return hubBorderStyles.createSharedHub();
+    }
+    
+    
     public int getBorderLeftWidth() {
         return borderLeftWidth;
     }
@@ -82,7 +123,6 @@ public class Block extends OAObject {
         this.borderLeftWidth = newValue;
         firePropertyChange(PROPERTY_BorderLeftWidth, old, this.borderLeftWidth);
     }
-    
     public int getBorderBottomWidth() {
         return borderBottomWidth;
     }
@@ -91,7 +131,6 @@ public class Block extends OAObject {
         this.borderBottomWidth = newValue;
         firePropertyChange(PROPERTY_BorderBottomWidth, old, this.borderBottomWidth);
     }
-    
     public int getBorderRightWidth() {
         return borderRightWidth;
     }
@@ -100,7 +139,6 @@ public class Block extends OAObject {
         this.borderRightWidth = newValue;
         firePropertyChange(PROPERTY_BorderRightWidth, old, this.borderRightWidth);
     }
-    
     public int getBorderTopWidth() {
         return borderTopWidth;
     }
@@ -124,6 +162,85 @@ public class Block extends OAObject {
         }
     }
     
+    public String getBorderLeftStyle() {
+        return borderLeftStyle;
+    }
+    public void setBorderLeftStyle(String newValue) {
+        String old = this.borderLeftStyle;
+        this.borderLeftStyle = newValue;
+        firePropertyChange(PROPERTY_BorderLeftStyle, old, this.borderLeftStyle);
+    }
+    public String getBorderBottomStyle() {
+        return borderBottomStyle;
+    }
+    public void setBorderBottomStyle(String newValue) {
+        String old = this.borderBottomStyle;
+        this.borderBottomStyle = newValue;
+        firePropertyChange(PROPERTY_BorderBottomStyle, old, this.borderBottomStyle);
+    }
+    public String getBorderRightStyle() {
+        return borderRightStyle;
+    }
+    public void setBorderRightStyle(String newValue) {
+        String old = this.borderRightStyle;
+        this.borderRightStyle = newValue;
+        firePropertyChange(PROPERTY_BorderRightStyle, old, this.borderRightStyle);
+    }
+    public String getBorderTopStyle() {
+        return borderTopStyle;
+    }
+    public void setBorderTopStyle(String newValue) {
+        String old = this.borderTopStyle;
+        this.borderTopStyle = newValue;
+        firePropertyChange(PROPERTY_BorderTopStyle, old, this.borderTopStyle);
+    }
+    public String getBorderStyle() {
+        return borderStyle;
+    }
+    public void setBorderStyle(String newValue) {
+        String old = this.borderStyle;
+        this.borderStyle = newValue;
+        firePropertyChange(PROPERTY_BorderStyle, old, this.borderStyle);
+        if (old != newValue) {
+            setBorderTopStyle(newValue);
+            setBorderLeftStyle(newValue);
+            setBorderBottomStyle(newValue);
+            setBorderRightStyle(newValue);
+        }
+    }
+
+    public Color getBorderLeftColor() {
+        return borderLeftColor;
+    }
+    public void setBorderLeftColor(Color newValue) {
+        Color old = this.borderLeftColor;
+        this.borderLeftColor = newValue;
+        firePropertyChange(PROPERTY_BorderLeftColor, old, this.borderLeftColor);
+    }
+    public Color getBorderBottomColor() {
+        return borderBottomColor;
+    }
+    public void setBorderBottomColor(Color newValue) {
+        Color old = this.borderBottomColor;
+        this.borderBottomColor = newValue;
+        firePropertyChange(PROPERTY_BorderBottomColor, old, this.borderBottomColor);
+    }
+    public Color getBorderRightColor() {
+        return borderRightColor;
+    }
+    public void setBorderRightColor(Color newValue) {
+        Color old = this.borderRightColor;
+        this.borderRightColor = newValue;
+        firePropertyChange(PROPERTY_BorderRightColor, old, this.borderRightColor);
+    }
+    public Color getBorderTopColor() {
+        return borderTopColor;
+    }
+    public void setBorderTopColor(Color newValue) {
+        Color old = this.borderTopColor;
+        this.borderTopColor = newValue;
+        firePropertyChange(PROPERTY_BorderTopColor, old, this.borderTopColor);
+    }
     public Color getBorderColor() {
         return borderColor;
     }
@@ -131,7 +248,14 @@ public class Block extends OAObject {
         Color old = this.borderColor;
         this.borderColor = newValue;
         firePropertyChange(PROPERTY_BorderColor, old, this.borderColor);
+        if (old != newValue) {
+            setBorderTopColor(newValue);
+            setBorderLeftColor(newValue);
+            setBorderBottomColor(newValue);
+            setBorderRightColor(newValue);
+        }
     }
+    
     
     public Color getBackgroundColor() {
         return backgroundColor;
@@ -225,7 +349,6 @@ public class Block extends OAObject {
         this.marginLeft = newValue;
         firePropertyChange(PROPERTY_MarginLeft, old, this.marginLeft);
     }
-    
     public int getMarginBottom() {
         return marginBottom;
     }
@@ -234,7 +357,6 @@ public class Block extends OAObject {
         this.marginBottom = newValue;
         firePropertyChange(PROPERTY_MarginBottom, old, this.marginBottom);
     }
-    
     public int getMarginTop() {
         return marginTop;
     }
@@ -244,6 +366,9 @@ public class Block extends OAObject {
         firePropertyChange(PROPERTY_MarginTop, old, this.marginTop);
     }
     
+    
+    
+    
     public int getHeight() {
         return height;
     }
@@ -252,7 +377,6 @@ public class Block extends OAObject {
         this.height = newValue;
         firePropertyChange(PROPERTY_Height, old, this.height);
     }
-    
     public int getWidth() {
         return width;
     }
@@ -262,13 +386,22 @@ public class Block extends OAObject {
         firePropertyChange(PROPERTY_Width, old, this.width);
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public String getStyle() {
         // "border-style:solid; border-top-width:2;border-color:green;width:120px;");
         
         String style = "";
         if (width > 0) style += "width:"+width+";";
         if (height > 0) style += "height:"+height+";";
-
+//qqqqqqqqqqqqqqqqqqq use new props
         if (marginTop > 0) style += "margin-top:"+marginTop+";";
         if (marginLeft > 0) style += "margin-left:"+marginLeft+";";
         if (marginBottom > 0) style += "margin-bottom:"+marginBottom+";";
@@ -276,18 +409,27 @@ public class Block extends OAObject {
         
 
         if (paddingTop > 0) style += "padding-top:"+paddingTop+";";
-        if (paddingLeft > 0) style += "padding-left:"+paddingLeft+";";
-        if (paddingBottom > 0) style += "padding-bottom:"+paddingBottom+";";
         if (paddingRight > 0) style += "padding-right:"+paddingRight+";";
+        if (paddingBottom > 0) style += "padding-bottom:"+paddingBottom+";";
+        if (paddingLeft > 0) style += "padding-left:"+paddingLeft+";";
         if (backgroundColor != null) {
             style += "background-color: rgb("+ backgroundColor.getRed()+", " + backgroundColor.getGreen() + ", "+backgroundColor.getBlue()+");"; 
         }
-        if (borderColor != null) {
-            // style += "border-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
-            style += "border-top-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
-            style += "border-left-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
-            style += "border-bottom-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
-            style += "border-right-color: rgb("+ borderColor.getRed()+", " + borderColor.getGreen() + ", "+borderColor.getBlue()+");"; 
+        Color c = borderTopColor;
+        if (c != null) {
+            style += "border-top-color: rgb("+ c.getRed()+", " + c.getGreen() + ", "+c.getBlue()+");"; 
+        }
+        c = borderRightColor;
+        if (c != null) {
+            style += "border-right-color: rgb("+ c.getRed()+", " + c.getGreen() + ", "+c.getBlue()+");"; 
+        }
+        c = borderBottomColor;
+        if (c != null) {
+            style += "border-bottom-color: rgb("+ c.getRed()+", " + c.getGreen() + ", "+c.getBlue()+");"; 
+        }
+        c = borderLeftColor;
+        if (c != null) {
+            style += "border-left-color: rgb("+ c.getRed()+", " + c.getGreen() + ", "+c.getBlue()+");"; 
         }
         if (borderTopWidth > 0) {
             style += "border-top-width:"+borderTopWidth+";";
