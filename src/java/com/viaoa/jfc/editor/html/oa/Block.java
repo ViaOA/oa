@@ -22,6 +22,7 @@ import java.awt.Color;
 import com.viaoa.annotation.OAClass;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
+import com.viaoa.util.OAString;
 
 /**
  * OAObject used for BlockDialog.
@@ -91,25 +92,19 @@ public class Block extends OAObject {
     protected Color borderBottomColor;
     protected Color borderLeftColor;
 
-//qqqqqqqqqq Hub of values .qqqqqqqqqq    
     protected String borderStyle;
     protected String borderTopStyle;
     protected String borderRightStyle;
     protected String borderBottomStyle;
     protected String borderLeftStyle;
     
-    private static Hub<String> hubBorderStyles = new Hub<String>(String.class);
-    static {
-        hubBorderStyles.add("none");
-        hubBorderStyles.add("solid");
-        hubBorderStyles.add("dashed");
-    }
+    private static Hub<String> hubBorderStyles;
     public static Hub<String> getBorderStyles() {
         if (hubBorderStyles == null) {
             hubBorderStyles = new Hub<String>(String.class);
-            hubBorderStyles.add("none");
             hubBorderStyles.add("solid");
             hubBorderStyles.add("dashed");
+            hubBorderStyles.add("none");
         }
         return hubBorderStyles.createSharedHub();
     }
@@ -401,20 +396,21 @@ public class Block extends OAObject {
         String style = "";
         if (width > 0) style += "width:"+width+";";
         if (height > 0) style += "height:"+height+";";
-//qqqqqqqqqqqqqqqqqqq use new props
-        if (marginTop > 0) style += "margin-top:"+marginTop+";";
-        if (marginLeft > 0) style += "margin-left:"+marginLeft+";";
-        if (marginBottom > 0) style += "margin-bottom:"+marginBottom+";";
-        if (marginRight > 0) style += "margin-right:"+marginRight+";";
-        
 
+        if (marginTop > 0) style += "margin-top:"+marginTop+";";
+        if (marginRight > 0) style += "margin-right:"+marginRight+";";
+        if (marginBottom > 0) style += "margin-bottom:"+marginBottom+";";
+        if (marginLeft > 0) style += "margin-left:"+marginLeft+";";
+        
         if (paddingTop > 0) style += "padding-top:"+paddingTop+";";
         if (paddingRight > 0) style += "padding-right:"+paddingRight+";";
         if (paddingBottom > 0) style += "padding-bottom:"+paddingBottom+";";
         if (paddingLeft > 0) style += "padding-left:"+paddingLeft+";";
+        
         if (backgroundColor != null) {
             style += "background-color: rgb("+ backgroundColor.getRed()+", " + backgroundColor.getGreen() + ", "+backgroundColor.getBlue()+");"; 
         }
+
         Color c = borderTopColor;
         if (c != null) {
             style += "border-top-color: rgb("+ c.getRed()+", " + c.getGreen() + ", "+c.getBlue()+");"; 
@@ -431,21 +427,31 @@ public class Block extends OAObject {
         if (c != null) {
             style += "border-left-color: rgb("+ c.getRed()+", " + c.getGreen() + ", "+c.getBlue()+");"; 
         }
+
         if (borderTopWidth > 0) {
             style += "border-top-width:"+borderTopWidth+";";
-            style += "border-top-style:solid;";
-        }
-        if (borderLeftWidth > 0) {
-            style += "border-left-width:"+borderLeftWidth+";";
-            style += "border-left-style:solid;";
-        }
-        if (borderBottomWidth > 0) {
-            style += "border-bottom-width:"+borderBottomWidth+";";
-            style += "border-bottom-style:solid;";
         }
         if (borderRightWidth > 0) {
             style += "border-right-width:"+borderRightWidth+";";
-            style += "border-right-style:solid;";
+        }
+        if (borderBottomWidth > 0) {
+            style += "border-bottom-width:"+borderBottomWidth+";";
+        }
+        if (borderLeftWidth > 0) {
+            style += "border-left-width:"+borderLeftWidth+";";
+        }
+
+        if (!OAString.isEmpty(borderTopStyle)) {
+            style += "border-top-style:"+borderTopStyle+";";
+        }
+        if (!OAString.isEmpty(borderRightStyle)) {
+            style += "border-right-style:"+borderRightStyle+";";
+        }
+        if (!OAString.isEmpty(borderBottomStyle)) {
+            style += "border-bottom-style:"+borderBottomStyle+";";
+        }
+        if (!OAString.isEmpty(borderLeftStyle)) {
+            style += "border-left-style:"+borderLeftStyle+";";
         }
         
         return style;

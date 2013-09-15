@@ -28,6 +28,7 @@ import javax.swing.border.TitledBorder;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.jfc.OAColorComboBox;
+import com.viaoa.jfc.OAComboBox;
 import com.viaoa.jfc.OATextField;
 import com.viaoa.jfc.OATree;
 import com.viaoa.jfc.OATreeComboBox;
@@ -183,9 +184,7 @@ public class BlockDialog extends JDialog {
         
         pan.add(new JLabel("Border Width:"), gc);
         txt = new OATextField(hubBlock, Block.PROPERTY_BorderWidth, 3);
-        gc.gridwidth = gc.REMAINDER;
         pan.add(txt, gc);
-        gc.gridwidth = 1;
 
         pan.add(new JLabel("Top"), gc);
         txt = new OATextField(hubBlock, Block.PROPERTY_BorderTopWidth, 3);
@@ -207,9 +206,7 @@ public class BlockDialog extends JDialog {
 
         pan.add(new JLabel("Border Color"), gc);
         ccbo = new OAColorComboBox(hubBlock, Block.PROPERTY_BorderColor, 4);
-        gc.gridwidth = gc.REMAINDER;
         pan.add(ccbo, gc);
-        gc.gridwidth = 1;
         
         pan.add(new JLabel("Top"), gc);
         ccbo = new OAColorComboBox(hubBlock, Block.PROPERTY_BorderTopColor, 4);
@@ -227,6 +224,40 @@ public class BlockDialog extends JDialog {
         ccbo = new OAColorComboBox(hubBlock, Block.PROPERTY_BorderLeftColor, 4);
         gc.gridwidth = gc.REMAINDER;
         pan.add(ccbo, gc);
+        gc.gridwidth = 1;
+        
+        
+        
+        pan.add(new JLabel("Border Style"), gc);
+        Hub<String> h = Block.getBorderStyles();
+        h.setLinkHub(hubBlock, Block.PROPERTY_BorderStyle);
+        OAComboBox cbo = new OAComboBox(h, "", 6);
+        pan.add(cbo, gc);
+        
+        pan.add(new JLabel("Top"), gc);
+        h = Block.getBorderStyles();
+        h.setLinkHub(hubBlock, Block.PROPERTY_BorderTopStyle);
+        cbo = new OAComboBox(h, "", 6);
+        pan.add(cbo, gc);
+
+        pan.add(new JLabel("Right"), gc);
+        h = Block.getBorderStyles();
+        h.setLinkHub(hubBlock, Block.PROPERTY_BorderRightStyle);
+        cbo = new OAComboBox(h, "", 6);
+        pan.add(cbo, gc);
+        
+        pan.add(new JLabel("Bottom"), gc);
+        h = Block.getBorderStyles();
+        h.setLinkHub(hubBlock, Block.PROPERTY_BorderBottomStyle);
+        cbo = new OAComboBox(h, "", 6);
+        pan.add(cbo, gc);
+        
+        pan.add(new JLabel("Left"), gc);
+        h = Block.getBorderStyles();
+        h.setLinkHub(hubBlock, Block.PROPERTY_BorderLeftStyle);
+        cbo = new OAComboBox(h, "", 6);
+        gc.gridwidth = gc.REMAINDER;
+        pan.add(cbo, gc);
         gc.gridwidth = 1;
         
         

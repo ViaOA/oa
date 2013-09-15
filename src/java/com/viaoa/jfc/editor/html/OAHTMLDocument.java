@@ -188,8 +188,8 @@ public class OAHTMLDocument extends HTMLDocument {
                         stackNoBorder.push(false);
                     }
                 }
-                else if (t == HTML.Tag.TD && stackNoBorder.peek()) {
-                    b = true;
+                else if (t == HTML.Tag.TD) {
+                    b = stackNoBorder.peek();
                 }
                 if (b) {
                     Object obj = a.getAttribute(HTML.Attribute.STYLE);
@@ -390,7 +390,6 @@ public class OAHTMLDocument extends HTMLDocument {
                 }
             }
         }
-
     }
 
     /**

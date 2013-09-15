@@ -1018,7 +1018,7 @@ public class OAObjectReflectDelegate {
                         }
                     }
                 }
-                if ( !bIsServer && !bIsCalc) {
+                if ( !bIsServer && !bIsCalc && !oi.getLocalOnly()) {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
             }
@@ -1031,7 +1031,7 @@ public class OAObjectReflectDelegate {
             ref = OAObjectCacheDelegate.get(li.toClass, key);
             
             if (ref == null) {
-                if (!bIsServer && !bIsCalc) {
+                if (!bIsServer && !bIsCalc && !oi.getLocalOnly()) {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {

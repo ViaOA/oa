@@ -268,7 +268,22 @@ public class BlockController {
         obj = sas.getAttribute(CSS.Attribute.BORDER_LEFT_COLOR);
         block.setBorderLeftColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
         
-//qqqqqqqqqqqqqqq add TRBL values for Border Color
+
+        obj = sas.getAttribute(CSS.Attribute.BORDER_STYLE);
+        block.setBorderStyle(null);
+
+        obj = sas.getAttribute(CSS.Attribute.BORDER_TOP_STYLE);
+        block.setBorderTopStyle(obj == null ? null : obj.toString());
+        
+        obj = sas.getAttribute(CSS.Attribute.BORDER_RIGHT_STYLE);
+        block.setBorderRightStyle(obj == null ? null : obj.toString());
+
+        obj = sas.getAttribute(CSS.Attribute.BORDER_BOTTOM_STYLE);
+        block.setBorderBottomStyle(obj == null ? null : obj.toString());
+        
+        obj = sas.getAttribute(CSS.Attribute.BORDER_LEFT_STYLE);
+        block.setBorderLeftStyle(obj == null ? null : obj.toString());
+
         
         
         obj = sas.getAttribute(CSS.Attribute.BACKGROUND_COLOR);
@@ -347,9 +362,9 @@ public class BlockController {
         AttributeSet asx = doc.getStyleSheet().getDeclaration(style);
         sas.addAttributes(asx);
         
-        
-
         ((OAHTMLDocument) textPane.getDocument()).setAttributes(element, sas);
+        
+        
         /*was
         if (attributeSet.getAttribute(StyleConstants.NameAttribute) == HTML.Tag.DIV) {
             ((OAHTMLDocument) textPane.getDocument()).setAttributes(element, sas);

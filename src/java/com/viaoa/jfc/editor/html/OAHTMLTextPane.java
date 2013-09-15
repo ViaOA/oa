@@ -46,6 +46,12 @@ import com.viaoa.jfc.text.spellcheck.SpellChecker;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAString;
 
+/*
+    see changes for converting/reading HTML
+     OAHTMLDocuemtn.getReader().handleStartTag
+
+*/
+
 /**
  * Text pane used for html styled editor.
  * 
@@ -128,10 +134,13 @@ import com.viaoa.util.OAString;
  * <li>border-style  (supports inset, outset, none, solid) 
  * <li>border-width  (only supports one size for all sides)
  * <li>border-color
+ *           -top, -right, -bottom, -left 
+ * 
+ * 
  * ** NOTE **
  *  for <Table>, if the Border attr is used, then it's value will be used for all TD border-width,
  *      for any TD inside of it (even inner tables)
- * 
+ *  set Table attribute "BORDER=0" to remove lines 
  * 
  * <li>list-style-type
  * <li>list-style-position
