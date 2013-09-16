@@ -899,6 +899,9 @@ public class HubDetailDelegate {
         if (o != null && o != hubMaster.getAO()) {
             h = (Hub) OAObjectReflectDelegate.getProperty(o, getPropertyFromMasterToDetail(hubMaster));
         }
+        if (h == null) {
+            h = thisHub;
+        }
         return h;
     }
 
