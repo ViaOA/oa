@@ -455,7 +455,13 @@ public class HubDetailDelegate {
         OAFilter<Hub> filter = new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub h) {
-                return (h.datam.masterHub != null);
+                if (h.datam.masterHub != null) {
+                    // 20130916 make sure it has the same masterObject
+                    //    since it could be a recursive hub, that points
+                    //    to the root hub, and not just it's parent
+                    if (thisHub.datam.masterObject == h.datam.masterObject) return true;
+                }
+                return false;
             }
         };
         Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub, filter);
@@ -898,9 +904,9 @@ public class HubDetailDelegate {
         OAObject o = HubDetailDelegate.getMasterObject(thisHub);
         if (o != null && o != hubMaster.getAO()) {
             h = (Hub) OAObjectReflectDelegate.getProperty(o, getPropertyFromMasterToDetail(hubMaster));
-        }
-        if (h == null) {
-            h = thisHub;
+            if (h == null) {
+                h = thisHub; // should not happen
+            }
         }
         return h;
     }
