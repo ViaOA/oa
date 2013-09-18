@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
+import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
@@ -337,6 +338,10 @@ public class OASyncClient {
         getRemoteSyncInterface();
         getRemoteClientInterface();
         getRemoteClientSyncInterface();
+
+        LOG.fine("creating OADataSourceClient for remote database access");
+        new OADataSourceClient();
+        
         
         clientInfo.setStarted(true);
         LOG.config("startup completed successful");
