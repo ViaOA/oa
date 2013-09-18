@@ -342,7 +342,6 @@ public class OASyncClient {
         LOG.fine("creating OADataSourceClient for remote database access");
         new OADataSourceClient();
         
-        
         clientInfo.setStarted(true);
         LOG.config("startup completed successful");
     }
