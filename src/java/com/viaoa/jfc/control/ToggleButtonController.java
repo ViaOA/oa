@@ -367,7 +367,10 @@ public class ToggleButtonController extends JFCController implements ItemListene
                             OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, getPropertyPathFromActualHub(), prev, getPropertyPathValue(obj)) );
                             
                             bFlag = false;
-                            afterChangeActiveObject(null);  // check to make sure value "took"
+                            Object objx = getActualHub().getActiveObject();
+                            if (obj == objx) { // 20130919, object could have been removed
+                                afterChangeActiveObject(null);  // check to make sure value "took"
+                            }
                             // 09/03/2000 was:
                             // if (method != null && (method.getParameterTypes())[0].equals(boolean.class)) method.invoke(obj, new Object[] { new Boolean(value) } );
                         }
