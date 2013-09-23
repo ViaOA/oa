@@ -2410,7 +2410,29 @@ public class OAString {
         x++;
     }
     
-    
+    /**
+     * Converts any non-Java indentifier characters to a '_'
+     */
+    public static String makeJavaIndentifier(String txt) {
+        if (txt == null) return null;
+        int x = txt.length();
+        StringBuilder sb = null;
+        for (int i=0; i<x; i++) {
+            char ch = txt.charAt(i);
+            if (Character.getType(ch) != Character.LETTER_NUMBER) {
+                if (sb == null) {
+                    sb = new StringBuilder(x);
+                    if (i > 0) sb.append(txt.substring(0, i));
+                }
+                ch = '_';
+            }
+            if (sb != null) {
+                sb.append(ch);
+            }
+        }
+        if (sb == null) return txt;
+        return new String(sb);
+    }
     
 }
 
