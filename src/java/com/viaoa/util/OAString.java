@@ -2349,7 +2349,7 @@ public class OAString {
         return s.substring(pos1, pos2);
     }
     
-    public static void main(String[] args) {
+    public static void main99(String[] args) {
         String s = "123.456";
         s = format(s, "#,##0.00"); 
         
@@ -2419,7 +2419,7 @@ public class OAString {
         StringBuilder sb = null;
         for (int i=0; i<x; i++) {
             char ch = txt.charAt(i);
-            if (Character.getType(ch) != Character.LETTER_NUMBER) {
+            if (!Character.isJavaIdentifierPart(ch)) {
                 if (sb == null) {
                     sb = new StringBuilder(x);
                     if (i > 0) sb.append(txt.substring(0, i));
@@ -2434,6 +2434,11 @@ public class OAString {
         return new String(sb);
     }
     
+    public static void main(String[] args) {
+        String s = "abCDe_ 1.2-34.59:5";
+        String s2 = OAString.makeJavaIndentifier(s);
+        System.out.println(s+" ==> "+s2);
+    }
 }
 
 
