@@ -184,6 +184,9 @@ public class DDLDelegate {
         if (dbmd.databaseType == DBMetaData.SQLSERVER) {
             s = "DROP INDEX "+dbmd.leftBracket+tableName+dbmd.rightBracket+"."+indexName+";";
         }
+        else if (dbmd.databaseType == DBMetaData.DERBY) {
+            s = "DROP INDEX "+ indexName+";";
+        }
         else {
             s = "DROP INDEX "+indexName+" ON "+dbmd.leftBracket+tableName+dbmd.rightBracket+";";
         }

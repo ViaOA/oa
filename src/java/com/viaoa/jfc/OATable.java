@@ -1213,7 +1213,7 @@ e.printStackTrace();
             return b;
         }
         public void setValueAt(Object obj, int row, int col) {
-            //no!   if (hub.getActiveObject() != hub.elementAt(row)) hub.setActiveObject(row);
+            //dont do this:   if (hub.getActiveObject() != hub.elementAt(row)) hub.setActiveObject(row);
             // do nothing, the editor component is object aware
         }
 
