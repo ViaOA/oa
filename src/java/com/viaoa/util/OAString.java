@@ -645,6 +645,35 @@ public class OAString {
         }
         return s;
     }
+
+    public static String mfucl(String s) {
+        return makeFirstUpperCharsLower(s);
+    }
+    /**
+     * Example:  GSMRServer -> gsmrServer
+     */
+    public static String makeFirstUpperCharsLower(String s) {
+        if (s == null) return null; 
+        int x = s.length();
+        StringBuilder sb = null;
+        for (int i=0; i<x; i++) {
+            char ch = s.charAt(i);
+            char ch2 = (i+1==x ? 0 : s.charAt(i+1));
+            
+            if (Character.isUpperCase(ch) && (i == 0 || Character.isUpperCase(ch2))) {
+                if (sb == null) sb = new StringBuilder(x);
+                sb.append(Character.toLowerCase(ch));
+            }
+            else {
+                if (sb != null) {
+                    sb.append(s.substring(i));
+                }
+                break;
+            }
+        }
+        if (sb != null) return new String(sb);
+        return s;
+    }
     
     public static String mfcu(String s) {
         return makeFirstCharUpper(s);
