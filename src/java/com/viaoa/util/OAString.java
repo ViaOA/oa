@@ -467,27 +467,30 @@ public class OAString {
     */
     public static String getDisplayName(String value) {
         if (value == null) return "";
-        String s = "";
         int x = value.length();
-        char last;
-        char c = '\0';
-        char c2;
+
+        StringBuilder sb = new StringBuilder(x+3);
+        
+        char c;
+        char cLast = 0;
         
         for (int i=0; i<x; i++) {
-            last = c;
-            c = c2 = value.charAt(i);
-
+            c = value.charAt(i);
+            
             if (i == 0) {
-                c2 = Character.toUpperCase(c);
+                if (Character.isLowerCase(c)) c = Character.toUpperCase(c);
+            }
+            else if (c == '_') c = ' ';
+            else if (cLast == '_') {
+                if (Character.isLowerCase(c)) c = Character.toUpperCase(c);
             }
             else {
-                if (c == '_') c2 = ' ';
-                else if (last == '_') c2 = Character.toUpperCase(c);
-                else if (Character.isUpperCase(c) && !Character.isUpperCase(last)) s += " ";
+                if (Character.isUpperCase(c) && !Character.isUpperCase(cLast)) sb.append(" ");
             }
-            s += c2;
+            sb.append(c);
+            cLast = c;
         }
-        return s;
+        return new String(sb);
     }
 
     /**

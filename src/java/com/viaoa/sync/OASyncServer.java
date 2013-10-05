@@ -189,7 +189,9 @@ public class OASyncServer {
     public void saveCache(OACascade cascade, int iCascadeRule) {
         for (Map.Entry<Integer, ClientInfoExt> entry : hmClientInfoExt.entrySet()) {
             ClientInfoExt cx = entry.getValue();
-            cx.remoteClient.saveCache(cascade, iCascadeRule);
+            if (cx.remoteClient != null) {
+                cx.remoteClient.saveCache(cascade, iCascadeRule);
+            }
         }
     }
 
