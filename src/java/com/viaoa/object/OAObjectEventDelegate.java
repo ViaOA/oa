@@ -356,7 +356,14 @@ public class OAObjectEventDelegate {
 	
 	    Hub hub;
 	    boolean bUpdateHub = false;
-	    OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
+
+	    // 20131009 each link now has it own recursive flag
+	    OALinkInfo liRecursive;
+	    if (toLinkInfo.bRecursive) {
+	        liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
+	    }
+	    else liRecursive = null;
+	    //was: OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
 	
 	    boolean bOldIsKeyOnly = (oldObj instanceof OAObjectKey);
 	    

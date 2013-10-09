@@ -389,7 +389,19 @@ if (thisHub == null || thisHub.data == null || thisHub.data.vector == null) {
         if (pos < 0) {
             // 2008/04/19 was: if (thisHub.datau.sharedHub != null) {   // this created a problem when using contains(...), that only wants to know if the current hub has an object - not to "adjust it"
             if (thisHub.datau.sharedHub != null && adjustMaster) {
+                
                 OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.objectInfo, OALinkInfo.ONE);
+
+                // 20131009 need to verify that this hub is recursive with masterObject
+                if (liRecursive != null) {  
+                    OALinkInfo li = thisHub.datam.liDetailToMaster;
+                    if (li != null) {
+                        li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                        if (!li.getRecursive()) liRecursive = null;
+                    }
+                }
+                
+                
                 if (liRecursive != null) {  // if recursive
                     Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, liRecursive.getName());
                     if (parent == null) {  // must be in root hub

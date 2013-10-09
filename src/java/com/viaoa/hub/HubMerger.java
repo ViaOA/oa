@@ -349,12 +349,16 @@ if (true) return;
         nodeRoot.clazz = clazz;
         Node node = nodeRoot;
         boolean bLastWasMany = false;
-
+        OALinkInfo lastLinkInfo = null; // 20131009
+        
         for (int i=0 ; ; i++) {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
             OALinkInfo recursiveLinkInfo = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.MANY);
             Node recursiveNode = null;
-            if (bLastWasMany && recursiveLinkInfo != null) {
+            
+            // 20131009 check to see if link uses recursive
+            if (bLastWasMany && recursiveLinkInfo != null && lastLinkInfo != null && lastLinkInfo.getRecursive()) {
+            //was: if (bLastWasMany && recursiveLinkInfo != null) {
                 bIsRecusive = true;
                 recursiveNode = new Node();
                 recursiveNode.property = recursiveLinkInfo.getName();
@@ -375,6 +379,7 @@ if (true) return;
                 throw new IllegalArgumentException("Cant find "+prop+" for PropertyPath \""+path+"\" starting with Class "+hubRoot.getObjectClass().getName());
             }
             bLastWasMany = linkInfo.getType() == linkInfo.MANY;
+            lastLinkInfo = linkInfo;
             
             if (bShareEndHub) {
                 if (linkInfo.getType() == OALinkInfo.MANY) {

@@ -530,6 +530,16 @@ public class OAObjectReflectDelegate {
                     /*
                      * 20130919 recurse does not have to be owner */
                     //was: if (!OAObjectInfoDelegate.isMany2Many(linkInfo) && (bThisIsServer || bIsCalc) && linkInfo.isOwner()) {
+
+                    // 20131009 new LinkProperty recursive flag
+                    if (bThisIsServer) {
+                        if (linkInfo.getRecursive()) {
+                            OAObjectInfo oi2 = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.getToClass());
+                            OALinkInfo li2 = OAObjectInfoDelegate.getRecursiveLinkInfo(oi2, OALinkInfo.ONE);
+                            hub.setSelectWhere(li2.getName() + " == null");
+                        }
+                    }
+                    /*was
                     if (!OAObjectInfoDelegate.isMany2Many(linkInfo) && (bThisIsServer || bIsCalc)) {
                         OAObjectInfo oi2 = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.getToClass());
                         OALinkInfo li2 = OAObjectInfoDelegate.getRecursiveLinkInfo(oi2, OALinkInfo.ONE);
@@ -538,6 +548,8 @@ public class OAObjectReflectDelegate {
                             // was: hub.setSelectRequiredWhere(li2.getName() + " == null");
                         }
                     }
+                    */
+                
                 }
                 else {
                     hub = new Hub(linkClass);

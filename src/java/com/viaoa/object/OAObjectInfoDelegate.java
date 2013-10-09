@@ -390,6 +390,7 @@ public class OAObjectInfoDelegate {
         for (int i=0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.bCalculated) continue;
+            if (!li.bRecursive) continue; // 20131009
             if (li.toClass != null && li.toClass.equals(thisOI.thisClass)) {
             	if (li.getType() == OALinkInfo.MANY) liMany = li;
             	else liOne = li;
