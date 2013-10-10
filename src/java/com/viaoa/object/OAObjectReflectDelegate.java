@@ -536,7 +536,7 @@ public class OAObjectReflectDelegate {
                         if (linkInfo.getRecursive()) {
                             OAObjectInfo oi2 = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.getToClass());
                             OALinkInfo li2 = OAObjectInfoDelegate.getRecursiveLinkInfo(oi2, OALinkInfo.ONE);
-                            hub.setSelectWhere(li2.getName() + " == null");
+                            if (li2 != null) hub.setSelectWhere(li2.getName() + " == null");
                         }
                     }
                     /*was

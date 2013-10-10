@@ -357,7 +357,7 @@ public class OAObjectEventDelegate {
 	    Hub hub;
 	    boolean bUpdateHub = false;
 
-	    // 20131009 each link now has it own recursive flag
+	    // 20131009 each link now has its own recursive flag
 	    OALinkInfo liRecursive;
 	    if (toLinkInfo.bRecursive) {
 	        liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
@@ -415,7 +415,10 @@ public class OAObjectEventDelegate {
 	            To find all root (top level) sections for a catalog, select sections without a parentSection assigned
 	    */
 	    if (liRecursive != null) {  // if recursive
-	        if (toLinkInfo.getOwner() && linkInfo != liRecursive) {
+	        
+	        // 20131009 use link.recursive flag
+            if (linkInfo != liRecursive) {
+	        //was: if (toLinkInfo.getOwner() && linkInfo != liRecursive) {
 	
 	            // owner property changed.  ex: "Catalog"
 	            // need to update all recursive objects under this one.  ex: "hubSections.section.catalog = catalog"

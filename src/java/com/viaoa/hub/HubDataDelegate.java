@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.util.OANullObject;
 
 
 /**
@@ -397,11 +396,12 @@ if (thisHub == null || thisHub.data == null || thisHub.data.vector == null) {
                     OALinkInfo li = thisHub.datam.liDetailToMaster;
                     if (li != null) {
                         li = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                        if (!li.getRecursive()) liRecursive = null;
+                        if (li == null || !li.getRecursive()) {
+                            liRecursive = null;
+                        }
                     }
                 }
-                
-                
+
                 if (liRecursive != null) {  // if recursive
                     Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, liRecursive.getName());
                     if (parent == null) {  // must be in root hub
