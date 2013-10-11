@@ -415,11 +415,8 @@ public class OAObjectEventDelegate {
 	            To find all root (top level) sections for a catalog, select sections without a parentSection assigned
 	    */
 	    if (liRecursive != null) {  // if recursive
-	        
-	        // 20131009 use link.recursive flag
-            if (linkInfo != liRecursive) {
-	        //was: if (toLinkInfo.getOwner() && linkInfo != liRecursive) {
-	
+
+	        if (toLinkInfo.getOwner() && linkInfo != liRecursive) {
 	            // owner property changed.  ex: "Catalog"
 	            // need to update all recursive objects under this one.  ex: "hubSections.section.catalog = catalog"
 	        	
