@@ -387,17 +387,26 @@ public class OAObjectInfoDelegate {
         ArrayList al = thisOI.getLinkInfos();
         OALinkInfo liOne = null;
         OALinkInfo liMany = null;
+
         for (int i=0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.bCalculated) continue;
             if (!li.bRecursive) continue; // 20131009
             if (li.toClass != null && li.toClass.equals(thisOI.thisClass)) {
-            	if (li.getType() == OALinkInfo.MANY) liMany = li;
+            	if (li.getType() == OALinkInfo.MANY) {
+            	    liMany = li;
+            	    break;
+            	}
             	else liOne = li;
             }
         }
-        if (liOne != null && liMany != null) {
-        	if (type == OALinkInfo.ONE) return liOne;
+        if (liMany != null) {
+        	if (type == OALinkInfo.ONE) {
+        	    if (liOne == null && liMany != null) {
+        	        liOne = getReverseLinkInfo(liMany);  // 20131010 type=One are not annotated as recursive
+        	    }
+        	    return liOne;
+        	}
         	return liMany;
         }
 	    return null;
