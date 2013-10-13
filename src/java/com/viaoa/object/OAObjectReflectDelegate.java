@@ -531,9 +531,9 @@ public class OAObjectReflectDelegate {
                      * 20130919 recurse does not have to be owner */
                     //was: if (!OAObjectInfoDelegate.isMany2Many(linkInfo) && (bThisIsServer || bIsCalc) && linkInfo.isOwner()) {
 
-                    // 20131009 new LinkProperty recursive flag
+                    // 20131009 new LinkProperty recursive flag.  If owned+recursive, then select root
                     if (bThisIsServer) {
-                        if (linkInfo.getRecursive()) {
+                        if (linkInfo.getOwner() && linkInfo.getRecursive()) {
                             OAObjectInfo oi2 = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.getToClass());
                             OALinkInfo li2 = OAObjectInfoDelegate.getRecursiveLinkInfo(oi2, OALinkInfo.ONE);
                             if (li2 != null) hub.setSelectWhere(li2.getName() + " == null");
