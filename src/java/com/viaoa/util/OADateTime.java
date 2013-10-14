@@ -28,7 +28,7 @@ import java.sql.Time;
 
 	'Hms', 'Mdy'
 
-    yyyyMMdd_HHmmss.SS
+    yyyyMMdd_HHmmss.SSS
 
     <p>
     Formatting Symbols used for output display.

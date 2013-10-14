@@ -94,14 +94,21 @@ public class HubSortDelegate {
     
     
 	public static void resort(Hub thisHub) {
-		performSort(thisHub);
+		sort(thisHub);
 	}
 	
 	/**
 	    Re-sort using parameters from last sort or select.
 	*/
 	public static void sort(Hub thisHub) {
-		performSort(thisHub);
+        // 20131014 added locking
+        try {
+            OAThreadLocalDelegate.lock(thisHub);
+            performSort(thisHub);
+        }
+        finally {
+            OAThreadLocalDelegate.unlock(thisHub);
+        }
 	}
 
 	private static void performSort(Hub thisHub) {

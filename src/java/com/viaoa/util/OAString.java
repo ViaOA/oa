@@ -722,6 +722,46 @@ public class OAString {
         }
         return newValue;
     }
+    /**
+     * @param basedOn is another name that this one should use to figure out which letters to capitalize.
+     * ex: gsmrServer, GSMRServer   => GSMRServer
+     */
+    public static String getTitle(String s, String basedOn) {
+        if (s == null) return "";
+
+        String s2 = s.toUpperCase();
+        boolean bAllUpper = s2.equals(s);
+
+        int x = s.length();
+        if (x == 0) return s;
+        boolean bConvert = true;
+        String newValue = "";
+        int cnt = 0;
+        for (int i=0; i<x; i++) {
+            char ch = s.charAt(i);
+            if (Character.isLetter(ch)) {
+                if (bConvert) {
+                    char chHold = ch;
+                    ch = Character.toUpperCase(ch);
+                    cnt++;
+                    if (basedOn != null && i < basedOn.length()) {
+                        char ch2 = basedOn.charAt(i);
+                        if (ch != ch2) {
+                            bConvert = false;
+                            if (cnt > 1) ch = chHold;
+                        }
+                    }
+                    else bConvert = false;
+                }
+                else {
+                    if (bAllUpper) ch = Character.toLowerCase(ch);
+                }
+            }
+            else bConvert = true;
+            newValue += ch;
+        }
+        return newValue;
+    }
 
     /** 
         Used to retrieve a portion of a String based on a separator value.
