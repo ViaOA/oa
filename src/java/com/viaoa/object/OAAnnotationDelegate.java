@@ -157,7 +157,7 @@ public class OAAnnotationDelegate {
             li.setAutoCreateNew(annotation.autoCreateNew());
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());
-            li.setRecursive(annotation.recursive());
+            //li.setRecursive(annotation.recursive());
         }
         // Manys
         for (Method m : methods) {

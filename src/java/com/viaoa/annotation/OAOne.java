@@ -38,7 +38,8 @@ public @interface OAOne {
     boolean owner() default false;
 
     /** true if this is a recursive relationship. */
-    boolean recursive() default false;
+    // 20131013 removed, since Manys are marked as recursive
+    // boolean recursive() default false;
     
     /** name used in the toClass that refers to this class. */
     String reverseName() default "";
