@@ -218,30 +218,30 @@ public class Table {
         all columns that are needed as fkeys to other objects
     */
     public Column[] getSelectColumns() {
-        Vector vec = new Vector(10,10);
+        ArrayList<Column> al = new ArrayList<Column>(15);
         for (int i=0; columns != null && i < columns.length; i++) {
             Column column = columns[i];
             if (column.propertyName == null || column.propertyName.length() == 0) {
                 // get all columns that are foreign keys or primary keys
                 if (!column.primaryKey && !column.foreignKey) continue;
             }        
-            vec.addElement(column);
+            al.add(column);
         }
-        Column[] cols = new Column[vec.size()];
-        vec.copyInto(cols);
+        Column[] cols = new Column[al.size()];
+        al.toArray(cols);
         return cols;
     }
 
     /** columns that are needed to retrieve primary key.
     */
     public Column[] getPrimaryKeyColumns() {
-        Vector vec = new Vector(3,3);
+        ArrayList<Column> al = new ArrayList<Column>(3);
         for (int i=0; columns != null && i < columns.length; i++) {
             Column column = columns[i];
-            if (column.primaryKey) vec.addElement(column);
+            if (column.primaryKey) al.add(column);
         }
-        Column[] cols = new Column[vec.size()];
-        vec.copyInto(cols);
+        Column[] cols = new Column[al.size()];
+        al.toArray(cols);
         return cols;
     }
 
