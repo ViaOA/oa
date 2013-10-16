@@ -722,6 +722,12 @@ public class OAString {
         }
         return newValue;
     }
+    
+    
+    public static String mfcu(String s, String basedOn) {
+        return getTitle(s, basedOn);
+    }
+    
     /**
      * @param basedOn is another name that this one should use to figure out which letters to capitalize.
      * ex: gsmrServer, GSMRServer   => GSMRServer
