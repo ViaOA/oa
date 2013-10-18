@@ -51,6 +51,7 @@ public class ButtonController extends JFCController implements ActionListener {
     private boolean bMasterControl = true;
     private boolean bAnyTime, bManual;
     private String confirmMessage;
+    private String completedMessage;
     private JComponent focusComponent; // comp to get focus after click
     private String methodName;
     private Object updateObject, updateValue;
@@ -179,7 +180,6 @@ public class ButtonController extends JFCController implements ActionListener {
     public void setConfirmMessage(String msg) {
         confirmMessage = msg;
     }
-
     /**
         Popup message used to confirm button click before running code.
     */
@@ -187,6 +187,14 @@ public class ButtonController extends JFCController implements ActionListener {
         return confirmMessage;
     }
 
+    public void setCompletedMessage(String msg) {
+        completedMessage = msg;
+    }
+    public String getCompletedMessage() {
+        return completedMessage;
+    }
+    
+    
     private void create(AbstractButton but, int command) {
         this.button = but;
         button.addActionListener(this);
@@ -322,6 +330,9 @@ public class ButtonController extends JFCController implements ActionListener {
             if (!confirm(confirmMessage)) return;
         }
         onActionPerformed();
+        if (completedMessage != null) {
+            if (!confirm(completedMessage)) return;
+        }
     }
 
     private String getUndoText(String cmd) {
@@ -843,6 +854,12 @@ public class ButtonController extends JFCController implements ActionListener {
         else return true;
     }
 
+    public void completed(String completedMessage) {
+        if (!OAString.isEmpty(completedMessage)) {
+            JOptionPane.showConfirmDialog(OAJFCUtil.getWindow(button), completedMessage);
+        }
+    }
+    
     /**
         Returns the component that will receive focus when this button is clicked.
     */

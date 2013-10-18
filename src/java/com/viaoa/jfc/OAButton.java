@@ -692,6 +692,19 @@ public boolean XXX;
     }
 
     /**
+        Popup message when command is completed
+    */
+    public void setCompletedMessage(String msg) {
+        control.setCompletedMessage(msg);
+    }
+    /**
+        Popup message used to confirm button click before running code.
+    */
+    public String getCompletedMessage() {
+        return control.getCompletedMessage();
+    }
+    
+    /**
        Object to update whenever button is clicked.
     */
     public void setUpdateObject(Object object, String property, Object newValue) {
