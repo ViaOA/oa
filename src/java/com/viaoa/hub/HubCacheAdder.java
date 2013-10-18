@@ -25,7 +25,7 @@ import com.viaoa.util.*;
 import com.viaoa.object.*;
 
 /** 
-    Filter that is used to listene to all objects added to OAObjectCacheDelegate and then add to a specific Hub.
+    Filter that is used to listen to all objects added to OAObjectCacheDelegate and then add to a specific Hub.
 */
 public class HubCacheAdder extends HubListenerAdapter implements java.io.Serializable {
     static final long serialVersionUID = 1L;
