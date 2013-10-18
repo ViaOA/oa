@@ -331,7 +331,7 @@ public class ButtonController extends JFCController implements ActionListener {
         }
         onActionPerformed();
         if (completedMessage != null) {
-            if (!confirm(completedMessage)) return;
+            afterCompleted(completedMessage);
         }
     }
 
@@ -854,7 +854,7 @@ public class ButtonController extends JFCController implements ActionListener {
         else return true;
     }
 
-    public void completed(String completedMessage) {
+    public void afterCompleted(String completedMessage) {
         if (!OAString.isEmpty(completedMessage)) {
             JOptionPane.showConfirmDialog(OAJFCUtil.getWindow(button), completedMessage);
         }
