@@ -50,7 +50,7 @@ public class OAAnnotationDelegate {
         String s;
         
         s = "OAClass";
-        if (hs.contains(s)) {
+        if (!hs.contains(s)) {
             OAClass oaclass = (OAClass) clazz.getAnnotation(OAClass.class);
             if (oaclass != null) {
                 hs.add(s);

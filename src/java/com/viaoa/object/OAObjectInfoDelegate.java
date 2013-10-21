@@ -76,11 +76,7 @@ public class OAObjectInfoDelegate {
 		        if (oi == null) {
                     oi = new OAObjectInfo();
 		        }
-		        
                 initialize(oi, clazz);  // this will load all props/links/primitives
-
-                // 20100310             
-                OAAnnotationDelegate.update(oi, clazz);
                 
                 Class superClass = clazz.getSuperclass();  // if there is a superclass, then combine with oaobjectinfo
                 if (superClass != null && !superClass.equals(OAObject.class)) {
@@ -89,6 +85,7 @@ public class OAObjectInfoDelegate {
                     oi.thisClass = clazz;
                 }
 		        
+                OAAnnotationDelegate.update(oi, clazz);
                 
                 // 20120702
                 for (OALinkInfo li : oi.getLinkInfos()) {
