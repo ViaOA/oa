@@ -58,6 +58,19 @@ public class HubDetailDelegate {
         }
     }
     
+    /**
+     * Is this a master/detail, and does is the detail "hub" recursive.
+     */
+    public static boolean isRecursiveMasterDetail(Hub thisHub) {
+        if (thisHub == null) return false;
+
+        OALinkInfo li = thisHub.datam.liDetailToMaster;
+        if (li == null) return false;
+        
+        li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+        if (li == null) return false;
+        return li.getRecursive();
+    }
     
     // if getPos(object) is not found and a masterHub exists, then the
     // masterHub needs to be searched and then this Hub will be able to find the object
