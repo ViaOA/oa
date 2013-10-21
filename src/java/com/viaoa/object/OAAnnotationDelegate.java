@@ -38,16 +38,28 @@ public class OAAnnotationDelegate {
      * Load/update ObjectInfo using annotations
      */
     public static void update(OAObjectInfo oi, Class clazz) {
+        HashSet<String> hs = new HashSet<String>();
+        for ( ; clazz != null; ) {
+            if (OAObject.class.equals(clazz)) break;
+            _update(oi, clazz, hs);
+            clazz = clazz.getSuperclass();
+        }
+    }    
+    
+    private static void _update(OAObjectInfo oi, Class clazz, HashSet<String> hs) {
         String s;
         
-        OAClass oaclass = (OAClass) clazz.getAnnotation(OAClass.class);
-        
-        if (oaclass != null) {
-            oi.setUseDataSource(oaclass.useDataSource());
-            oi.setLocalOnly(oaclass.localOnly());
-            oi.setAddToCache(oaclass.addToCache());
-            oi.setInitializeNewObjects(oaclass.initialize());
-            oi.setDisplayName(oaclass.displayName());
+        s = "OAClass";
+        if (hs.contains(s)) {
+            OAClass oaclass = (OAClass) clazz.getAnnotation(OAClass.class);
+            if (oaclass != null) {
+                hs.add(s);
+                oi.setUseDataSource(oaclass.useDataSource());
+                oi.setLocalOnly(oaclass.localOnly());
+                oi.setAddToCache(oaclass.addToCache());
+                oi.setInitializeNewObjects(oaclass.initialize());
+                oi.setDisplayName(oaclass.displayName());
+            }
         }
         // prop ids
         Method[] methods = clazz.getDeclaredMethods();
@@ -56,6 +68,9 @@ public class OAAnnotationDelegate {
             OAId oaid = m.getAnnotation(OAId.class);
             if (oaid == null) continue;
             s = getPropertyName(m.getName());
+            if (hs.contains("OAId." + s)) continue;
+            hs.add("OAId."+s);
+            
             int pos = oaid.pos();
 
             if (ss == null) {
@@ -89,6 +104,8 @@ public class OAAnnotationDelegate {
             OAProperty oaprop = (OAProperty) m.getAnnotation(OAProperty.class);
             if (oaprop == null) continue;
             String name = getPropertyName(m.getName());
+            if (hs.contains("prop." + name)) continue;
+            hs.add("prop."+name);
             
             OAPropertyInfo pi = oi.getPropertyInfo(name);            
             if (pi == null) {
@@ -123,6 +140,8 @@ public class OAAnnotationDelegate {
             if (annotation == null) continue;
 
             String name = getPropertyName(m.getName(), false);
+            if (hs.contains("calc." + name)) continue;
+            hs.add("calc."+name);
             
             OACalcInfo ci = OAObjectInfoDelegate.getOACalcInfo(oi, name);
             if (ci == null) {
@@ -143,6 +162,8 @@ public class OAAnnotationDelegate {
             Class c = m.getReturnType();
                         
             String name = getPropertyName(m.getName(), false);
+            if (hs.contains("link." + name)) continue;
+            hs.add("link."+name);
             
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, name);
             if (li == null) {
@@ -166,6 +187,7 @@ public class OAAnnotationDelegate {
             if ((m.getModifiers() & Modifier.STATIC) > 0) continue;
                         
             String name = getPropertyName(m.getName(), false);
+            
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, name);
             OAMany annotation = (OAMany) m.getAnnotation(OAMany.class);
             Class cx = OAAnnotationDelegate.getHubObjectClass(annotation, m);
@@ -177,6 +199,9 @@ public class OAAnnotationDelegate {
             
             if (cx != null) li.setToClass(cx);
             if (annotation == null) continue;
+
+            if (hs.contains("link." + name)) continue;
+            hs.add("link."+name);
             
             li.setCascadeSave(annotation.cascadeSave());
             li.setCascadeDelete(annotation.cascadeDelete());
