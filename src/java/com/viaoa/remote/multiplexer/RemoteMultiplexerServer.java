@@ -521,7 +521,7 @@ public class RemoteMultiplexerServer {
                     }
                     catch (InvocationTargetException e) {
                         Throwable t = e.getCause();
-                        if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+                        if (t instanceof Exception) ri.exception = (Exception) t;
                         else ri.exception = e;
                     }
                 }
@@ -852,7 +852,7 @@ public class RemoteMultiplexerServer {
                     }
                     catch (InvocationTargetException e) {
                         Throwable t = e.getCause();
-                        if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+                        if (t instanceof Exception) ri.exception = (Exception) t;
                         else ri.exception = e;
                     }
                 }
@@ -1069,7 +1069,7 @@ public class RemoteMultiplexerServer {
         }
         catch (InvocationTargetException e) {
             Throwable t = e.getCause();
-            if (t instanceof Exception) ri.exception = (Exception) t.getCause();
+            if (t instanceof Exception) ri.exception = (Exception) t;
             else ri.exception = e;
         }
         catch (Exception e) {
