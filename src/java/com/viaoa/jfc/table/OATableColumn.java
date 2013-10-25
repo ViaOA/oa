@@ -34,7 +34,7 @@ public class OATableColumn {
     private OATableComponent oaComp;
     public String origPath;
     public String path;
-    String pathIntValue; // if using a LinkHub that is linked on hub position
+    public String pathIntValue; // if using a LinkHub that is linked on hub position
                          // and need to get integer to use
     Method[] methods, methodsIntValue;
     private TableCellEditor comp;

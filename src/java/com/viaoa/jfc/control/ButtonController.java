@@ -427,11 +427,11 @@ public class ButtonController extends JFCController implements ActionListener {
         }
         dlg.setStatus(s);
 
-        SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+        SwingWorker<Boolean, Void> sw = new SwingWorker<Boolean, Void>() {
             @Override
-            protected Void doInBackground() throws Exception {
+            protected Boolean doInBackground() throws Exception {
                 _onActionPerformed();
-                return null;
+                return true;
             }
 
             @Override
@@ -870,7 +870,10 @@ public class ButtonController extends JFCController implements ActionListener {
 
     public void afterCompleted(String completedMessage) {
         if (!OAString.isEmpty(completedMessage)) {
-            JOptionPane.showConfirmDialog(OAJFCUtil.getWindow(button), completedMessage);
+            JOptionPane.showMessageDialog(
+                OAJFCUtil.getWindow(button), 
+                completedMessage, "Command completed", 
+                JOptionPane.INFORMATION_MESSAGE);
         }
     }
     

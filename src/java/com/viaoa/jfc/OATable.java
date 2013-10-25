@@ -294,8 +294,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 OATableColumn col = allColumns[j];
                 col.getMethods(this.hub);  // make sure that path has been set up correctly, to match to table.hub
                 if (col.sortOrder == i) {
-                    if (s == null) s = col.path;
-                    else s += ", " + col.path;
+                    if (OAString.isEmpty(col.path)) {
+                        if (s == null) s = col.pathIntValue;
+                        else s += ", " + col.pathIntValue;
+                    }
+                    else {
+                        if (s == null) s = col.path;
+                        else s += ", " + col.path;
+                    }
                     if (col.sortDesc) s += " DESC";
                     b = true;
                 }

@@ -921,6 +921,7 @@ public boolean XXX;
             if (!OAButton.this.isEnabled()) return;
             if (!OAButton.this.onConfirm(getConfirmMessage())) return;
             OAButton.this.onActionPerformed();  // default will then call this.onActionPerformed()
+            afterCompleted(getCompletedMessage());
         }
         @Override
         protected void onActionPerformed() {

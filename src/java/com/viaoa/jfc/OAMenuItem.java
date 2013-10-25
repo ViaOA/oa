@@ -749,11 +749,13 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent{
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (!OAMenuItem.this.isEnabled()) return;
+            if (!OAMenuItem.this.onConfirm(getConfirmMessage())) return;
             OAMenuItem.this.onActionPerformed();  // default will then call this.onActionPerformed()
+            afterCompleted(getCompletedMessage());
         }
         @Override
         protected void onActionPerformed() {
-            if (!OAMenuItem.this.onConfirm(getConfirmMessage())) return;
             super.onActionPerformed();
         }
 
