@@ -30,6 +30,9 @@ import javax.swing.*;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.*;
 import java.lang.reflect.*;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
@@ -45,6 +48,7 @@ import com.viaoa.jfc.table.*;
  * @author vvia
  */
 public class ButtonController extends JFCController implements ActionListener {
+    private static Logger LOG = Logger.getLogger(ButtonController.class.getName());
     private AbstractButton button;
     private int command = -1;
 
@@ -444,6 +448,16 @@ public class ButtonController extends JFCController implements ActionListener {
             if (sw.getState() != StateValue.DONE) {
                 dlg.setVisible(true);
             }
+        }
+        try {
+            sw.get();
+        }
+        catch (Exception ex) {
+            LOG.log(Level.WARNING, "error while performing command action", ex);
+            Throwable t =  ex.getCause();
+            if (t instanceof Exception) ex = (Exception) t;
+            JOptionPane.showConfirmDialog(OAJFCUtil.getWindow(button), 
+                    "Error: "+OAString.fmt(ex.getMessage(), "40L"), "Command Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
