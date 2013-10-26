@@ -139,7 +139,12 @@ public class OATableColumn {
                 }
                 if (h != hub) {
                     // 20110515 see if this is a master/detail relationship
-                    if (h.getMasterHub() == hub) {
+                    Hub mh = h.getMasterHub();
+                    if (mh == hub) {
+                        path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
+                    }
+                    else if (mh != null && mh.getObjectClass().equals(hub.getObjectClass()) && hub.getMasterHub() == null) {
+                        // 20131026 this is when a hubCopy is used
                         path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
                     }
                     else {

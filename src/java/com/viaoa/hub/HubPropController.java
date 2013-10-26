@@ -88,7 +88,7 @@ public abstract class HubPropController {
      *      or any other value.  
      *      Note: OAAnyValueObject is used so that hub.isValid is the only check that is needed.
      */
-    public void add(Hub hub, String propertyPath, Object compareValue) {
+    public void add(Hub hub, final String propertyPath, Object compareValue) {
         if (hub == null) return;
 
         String newPropertyPath;
@@ -127,6 +127,14 @@ public abstract class HubPropController {
                 if (newHubProp.listenToPropertyName == null) {
                     update();
                 }
+            }
+            @Override
+            public void afterAdd(HubEvent e) {
+                if (propertyPath == null) update();
+            }
+            @Override
+            public void afterRemove(HubEvent e) {
+                if (propertyPath == null) update();
             }
         };
         newHubProp.hubListener = hl;
