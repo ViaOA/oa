@@ -846,6 +846,7 @@ public class OAThreadLocalDelegate {
     public static void setSendingEvent(boolean b) {
         setSendingEvent(OAThreadLocalDelegate.getThreadLocal(b), b);
     }
+    private static boolean bSendingEventReset = false;
     protected static void setSendingEvent(OAThreadLocal ti, boolean b) {
         if (ti == null) return;
         int x;
@@ -860,7 +861,11 @@ public class OAThreadLocalDelegate {
             }
             x = OAThreadLocalDelegate.TotalIsSendingEvent.decrementAndGet();
         }
-        if (x > 35 || x < 0) LOG.warning("TotalIsSendingEvent="+x);
+        if (x > 35 || x < 0 || bSendingEventReset) {
+            LOG.warning("TotalIsSendingEvent="+x);
+            if (x == 0) bSendingEventReset = false;
+            else bSendingEventReset = true;
+        }
     }
 
     public static boolean hasSentCalcPropertyChange(Object object, String propertyName) {

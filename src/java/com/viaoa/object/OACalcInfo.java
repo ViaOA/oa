@@ -53,14 +53,18 @@ import java.util.logging.Logger;
     @see OAObject#getOAObjectInfo
     @see OAObjectInfo    
     @author Vince Via
-    @version 1.0 12/01/98
  */
 public class OACalcInfo implements java.io.Serializable {
     static final long serialVersionUID = 1L;
     private static Logger LOG = Logger.getLogger(OACalcInfo.class.getName());
     
     String name;
-    String[] properties;
+    String[] properties;  // dependent properties
+
+    /** 20131027
+     *  true if this calcProp is for the whole Hub, and the method has a static method with a Hub param
+     */
+    boolean bIsForHub;  
 
     /** 
      Create new Calculated Property.  

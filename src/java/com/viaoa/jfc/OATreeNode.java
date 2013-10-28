@@ -376,9 +376,9 @@ public class OATreeNode implements Cloneable {
      * ex:
       
             @Override
-            public HubFilter getHubFilter(Hub hubMaster) {
+            public HubFilter getHubFilter(OATreeNode tn) {
                 Hub h = new Hub(Pet.class);
-                HubFilter hf = new HubFilter(hubMaster, h) {
+                HubFilter hf = new HubFilter(tn.getHub(), h) {
                     @Override
                     public boolean isUsed(Object object) {
                         Pet p = (Pet) object;
@@ -393,6 +393,9 @@ public class OATreeNode implements Cloneable {
      * @param hubData the Hub that is used for the node.
      * @return HubFilter 
      */
+    public HubFilter getHubFilter(OATreeNodeData parentTnd, Hub hub) {
+        return getHubFilter(hub);
+    }
     public HubFilter getHubFilter(Hub hubMaster) {
         return null;
     }
@@ -847,6 +850,7 @@ public class OATreeNode implements Cloneable {
         if (titleFlag) return null;
         if (hub != null) return hub;
         // 20101208
+        if (tnd.parent == null) return null;
         OATreeNode node = tnd.parent.node; 
         //was:  OATreeNode node = treeNodeParent;
         if (node == null) return null;

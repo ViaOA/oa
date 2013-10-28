@@ -161,7 +161,7 @@ public class OATreeNodeData {
             if (tn.getMethodsToHub() != null) {
                 Hub h = getHubToChild(tn);
                 
-                HubFilter hf = tn.getHubFilter(h);
+                HubFilter hf = tn.getHubFilter(this, h);
                 if (hf != null) h = hf.getHub();
                 if (h == null) {
                     continue;
