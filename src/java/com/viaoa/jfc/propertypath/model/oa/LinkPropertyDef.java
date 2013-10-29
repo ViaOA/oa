@@ -21,10 +21,8 @@ public class LinkPropertyDef extends OAObject {
     public static final String PROPERTY_Type = "Type";
      
      
-    public static final String PROPERTY_ObjectDef = "ObjectDef";
+    public static final String PROPERTY_ObjectDef = "ObjectDef";  // from objectDef
     public static final String PROPERTY_ToObjectDef = "ToObjectDef";
-    public static final String PROPERTY_CalcObjectDef1 = "CalcObjectDef1";
-    public static final String PROPERTY_CalcObjectDef2 = "CalcObjectDef2";
      
     protected String name;
     protected String displayName;
