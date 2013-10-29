@@ -38,6 +38,7 @@ public class OAObjectInfo implements java.io.Serializable {
     
     protected ArrayList<OALinkInfo> alLinkInfo;
     protected ArrayList<OACalcInfo> alCalcInfo;
+    protected HashSet<String> hsHubCalcInfoName = new HashSet<String>();
     protected String[] idProperties;
     protected ArrayList<OAPropertyInfo> alPropertyInfo;
     
@@ -137,10 +138,20 @@ public class OAObjectInfo implements java.io.Serializable {
     	return alCalcInfo;
     }
     public void addCalc(OACalcInfo ci) {
-    	getCalcInfos().add(ci);
+        addCalcInfo(ci);
     }
     public void addCalcInfo(OACalcInfo ci) {
     	getCalcInfos().add(ci);
+    	if (ci.bIsForHub) {
+        	String s = ci.getName();
+        	if (s != null) {
+        	    hsHubCalcInfoName.add(s.toUpperCase());
+        	}
+    	}
+    }
+    public boolean isHubCalcInfo(String name) {
+        if (name == null) return false;
+        return hsHubCalcInfoName.contains(name.toUpperCase());
     }
     
     /**

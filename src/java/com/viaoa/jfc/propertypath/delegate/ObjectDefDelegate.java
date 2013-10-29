@@ -67,6 +67,7 @@ public class ObjectDefDelegate {
             CalcPropertyDef cd = new CalcPropertyDef();
             cd.setName(ci.getName());
             cd.setDisplayName(ci.getName());
+            cd.setIsForHub(ci.getIsForHub());
             od.getCalcPropertyDefs().add(cd);
         }
         for (OALinkInfo li : oi.getLinkInfos()) {

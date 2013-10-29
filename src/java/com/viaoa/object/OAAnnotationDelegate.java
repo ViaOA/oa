@@ -139,13 +139,19 @@ public class OAAnnotationDelegate {
             OACalculatedProperty annotation = (OACalculatedProperty) m.getAnnotation(OACalculatedProperty.class);
             if (annotation == null) continue;
 
+            boolean bHub = false;
+            Class[] cs = m.getParameterTypes();
+            if (cs != null && cs.length == 1 && Hub.class.equals(cs[0])) {
+                if (Modifier.isStatic(m.getModifiers())) bHub = true;
+            }
+            
             String name = getPropertyName(m.getName(), false);
             if (hs.contains("calc." + name)) continue;
             hs.add("calc."+name);
             
             OACalcInfo ci = OAObjectInfoDelegate.getOACalcInfo(oi, name);
             if (ci == null) {
-                ci = new OACalcInfo(name, annotation.properties());
+                ci = new OACalcInfo(name, annotation.properties(), bHub);
                 oi.addCalcInfo(ci);
             }
             else {

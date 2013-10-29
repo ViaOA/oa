@@ -18,12 +18,17 @@ public class CalcPropertyDef extends OAObject {
     private static final long serialVersionUID = 1L;
     public static final String PROPERTY_Name = "Name";
     public static final String PROPERTY_DisplayName = "DisplayName";
+    public static final String PROPERTY_IsForHub = "IsForHub";
      
      
     public static final String PROPERTY_ObjectDef = "ObjectDef";
      
     protected String name;
     protected String displayName;
+    /** 20131027
+     *  true if this calcProp is for the whole Hub, and the method has a static method with a Hub param
+     */
+    protected boolean bIsForHub;
      
     // Links to other objects.
     protected transient ObjectDef objectDef;
@@ -70,6 +75,16 @@ public class CalcPropertyDef extends OAObject {
         ObjectDef old = this.objectDef;
         this.objectDef = newValue;
         firePropertyChange(PROPERTY_ObjectDef, old, this.objectDef);
+    }
+
+    @OAProperty(displayName = "Is for Hub", displayLength = 10)
+    public boolean getIsForHub() {
+        return bIsForHub;
+    }
+    public void setIsForHub(boolean newValue) {
+        boolean old = this.bIsForHub;
+        this.bIsForHub = newValue;
+        firePropertyChange(PROPERTY_IsForHub, old, this.bIsForHub);
     }
     
      

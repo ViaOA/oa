@@ -79,6 +79,11 @@ public class OACalcInfo implements java.io.Serializable {
         this.name = name;
         properties = props;
     }
+    public OACalcInfo(String name, String[] props, boolean bIsForHub) {
+        this.name = name;
+        properties = props;
+        this.bIsForHub = bIsForHub;
+    }
 
     /** get Calculated Property name */
     public String getName() {
@@ -92,7 +97,10 @@ public class OACalcInfo implements java.io.Serializable {
         properties = props;
     }
 
-    
+    public boolean getIsForHub() {
+        return bIsForHub;
+    }
+
 /* 20101218 replaced by HubListenerTree
     
     // set by HubEventDelegate.addHubListener(..., property) when a calc property is being used and prop changes need to be checked (here).    
