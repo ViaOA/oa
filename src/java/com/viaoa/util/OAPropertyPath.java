@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.util;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import com.viaoa.annotation.OACalculatedProperty;
 import com.viaoa.annotation.OAProperty;
@@ -42,6 +43,8 @@ public class OAPropertyPath<T> {
     private Class<T> fromClass;
     private String propertyPath;
     private Method[] methods;
+    private boolean bLastMethodHasHubParam; // true if method requires a Hub param
+    
     /**
      *  property class.  
      *  if casting is used, then this will have the casted class. 
@@ -76,7 +79,7 @@ public class OAPropertyPath<T> {
         }
         catch (Exception e) {
             try {
-setup(fromClass);
+//setup(fromClass);  // for debugging
             }
             catch (Exception e2) {
                 // TODO: handle exception
@@ -124,7 +127,7 @@ setup(fromClass);
      * Notes: if any of the property's is null, then null is returned.
      * If any of the non-last properties is a Hub, then the AO will be used.
      */
-    public Object getValue(T fromObject) throws Exception {
+    public Object getValue(Hub<T> hub, T fromObject) throws Exception {
         if (fromObject == null) return null;
         if (this.fromClass == null) {
             setup( (Class<T>)fromObject.getClass());
@@ -133,7 +136,14 @@ setup(fromClass);
         
         Object result = fromObject;
         for (int i=0; i < methods.length; i++) {
-            result = methods[i].invoke(result);
+            
+            if (bLastMethodHasHubParam && i+1 == methods.length) {
+                result = methods[i].invoke(result, hub);
+            }
+            else {
+                result = methods[i].invoke(result);
+            }
+            
             if (result == null) break;
             if (i+1 < methods.length && result instanceof Hub) {
                 result = ((Hub) result).getAO();
@@ -145,13 +155,13 @@ setup(fromClass);
     /**
      * This will call getValue, and then call OAConv.toString using getFormat. 
      */
-    public String getValueAsString(T fromObject) throws Exception {
-        Object obj = getValue(fromObject);
+    public String getValueAsString(Hub<T> hub, T fromObject) throws Exception {
+        Object obj = getValue(hub, fromObject);
         String s = OAConv.toString(obj, getFormat());
         return s;
     }
-    public String getValueAsString(T fromObject, String format) throws Exception {
-        Object obj = getValue(fromObject);
+    public String getValueAsString(Hub<T> hub, T fromObject, String format) throws Exception {
+        Object obj = getValue(hub, fromObject);
         String s = OAConv.toString(obj, format);
         return s;
     }
@@ -172,7 +182,6 @@ setup(fromClass);
         
         Class classLast = clazz;
         for (pos=prev=0; pos >= 0; prev=pos+1) {
-
             // check for casting
             int posx = propertyPath.indexOf('(', prev);
             pos = propertyPath.indexOf('.', prev);
@@ -218,11 +227,27 @@ setup(fromClass);
             this.properties = (String[]) OAArray.add(String.class, this.properties, name);
 
             Method method = OAReflect.getMethod(clazz, mname, 0);
+            bLastMethodHasHubParam = false;
             if (method == null) {
-                mname = "is"+name;
-                method = OAReflect.getMethod(clazz, mname, 0);
+                if (pos < 0) {
+                    // 20131029 see if it is for hubCalc, which is a static method that has a Hub param
+                    //    must be the last property
+                    method = OAReflect.getMethod(clazz, mname, 1);
+                    if (method != null && Modifier.isStatic(method.getModifiers())) {
+                        if (Hub.class.equals(method.getParameterTypes()[0])) {
+                            bLastMethodHasHubParam = true;
+                        }
+                        else method = null;
+                    }
+                    else method = null;
+                }
+                
                 if (method == null) {
-                    throw new Exception("OAReflect.setup() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+name+" path="+propertyPath);
+                    mname = "is"+name;
+                    method = OAReflect.getMethod(clazz, mname, 0);
+                    if (method == null) {
+                        throw new Exception("OAReflect.setup() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+name+" path="+propertyPath);
+                    }
                 }
             }
             this.methods = (Method[]) OAArray.add(Method.class, this.methods, method);
