@@ -1069,6 +1069,7 @@ public class OAObjectReflectDelegate {
 
                     if (ref == null) {
                         if (bIsServer || bIsCalc) {
+                            if (oaObj.isNew()) return null; // 20121031 wont find it in DS if it's not been saved
                             OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
                             if (liReverse == null) return null;
                             OASelect sel = new OASelect(li.getToClass());
