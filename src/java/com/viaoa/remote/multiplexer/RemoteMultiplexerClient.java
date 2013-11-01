@@ -574,10 +574,14 @@ public class RemoteMultiplexerClient {
             remoteThread.requestInfo = ri;
             alRemoteClientThread.add(remoteThread);
         }
-        if (alRemoteClientThread.size() > 20) {
-            LOG.warning("alRemoteClientThread.size() = "+alRemoteClientThread.size());
-        }
+        onRemoteThreadCreated(alRemoteClientThread.size());
         return remoteThread;
+    }
+    
+    protected void onRemoteThreadCreated(int threadCount) {
+        if (threadCount > 25) {
+            LOG.warning("alRemoteClientThread.size() = "+threadCount);
+        }
     }
     
     private boolean shouldClose(OARemoteThread remoteThread) {
@@ -717,13 +721,11 @@ long t1 = System.currentTimeMillis();
                 t.Lock.notify();  // have RemoteClientThread process the message
                 t.Lock.wait(250);
             }
-
 long t2 = System.currentTimeMillis();
 long tx = t2 - t1;
 if (tx > 245) {
     System.out.println("250 timeout waiting on RemoteThread, waited for "+tx + "ms");
 }
-
         }
         else {
             processMessageForStoC2(ri, bSendResponse);

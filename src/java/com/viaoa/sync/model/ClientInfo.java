@@ -31,7 +31,7 @@ public class ClientInfo implements Serializable{
     protected long totalMemory;
     protected long freeMemory;
     protected String version;
-    
+    protected int remoteThreadCount;
     
     public ClientInfo() {
     }
@@ -104,6 +104,15 @@ public class ClientInfo implements Serializable{
     public void setServerHostPort(int gsmrServerHostPort) {
         this.serverHostPort = gsmrServerHostPort;
     }
+
+        
+    public int getRemoteThreadCount() {
+        return remoteThreadCount;
+    }
+    public void setRemoteThreadCount(int remoteThreadCount) {
+        this.remoteThreadCount = remoteThreadCount;
+    }
+    
     public boolean isStarted() {
         return started;
     }

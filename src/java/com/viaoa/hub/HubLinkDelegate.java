@@ -211,6 +211,9 @@ public class HubLinkDelegate {
                     int x = ((Number)obj).intValue();
                     if (x != pos) {
                         thisHub.datau.linkToSetMethod.invoke(linkToObject, new Object[] { new Integer(pos) } );
+                        if (pos == -1 && linkToObject instanceof OAObject) { // 20131101 setting to null
+                            ((OAObject)linkToObject).setNull(thisHub.datau.linkToPropertyName);
+                        }
                     }
                 }
             }

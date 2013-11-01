@@ -300,7 +300,8 @@ public class OAObjectReflectDelegate {
         }
         finally {
             if (bPrimitiveNull) {
-                setPrimitiveNull(oaObj, propNameU);
+                // 20131101 calling firePropetyChange will call setPrimitiveNull
+                // setPrimitiveNull(oaObj, propNameU);
                 OAObjectEventDelegate.firePropertyChange(oaObj, propName, previousValue, null, oi.getLocalOnly(), true); // setting to null
             }
         }
@@ -1539,15 +1540,19 @@ public class OAObjectReflectDelegate {
             }
         }
 
-        // set One links, if it is not an owner
+        // set One links, if it is not an owner, or if it is autocreated
         al = oi.getLinkInfos();
         for (int i = 0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getType() == li.MANY) continue;
             if (li.getCalculated()) continue;
-
+            
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (liRev != null && liRev.isOwner()) continue;
+            if (liRev != null && liRev.isOwner()) {
+                if (!li.getAutoCreateNew()) {
+                    continue;
+                }
+            }
 
             boolean bCopy = true;
             if (excludeProperties != null) {
@@ -1557,9 +1562,16 @@ public class OAObjectReflectDelegate {
                 }
                 if (!bCopy) continue;
             }
+            
             Object obj = OAObjectReflectDelegate.getProperty(oaObj, li.getName());
-
-            if (copyCallback != null) {
+            if (li.getAutoCreateNew() && obj instanceof OAObject) {
+                Object objx = newObject.getProperty(li.getName());
+                if (objx instanceof OAObject) {
+                    ((OAObject) obj).copyInto((OAObject) objx);
+                    obj = objx;
+                }
+            }
+            else if (copyCallback != null) {
                 obj = copyCallback.getPropertyValue(oaObj, li.getName(), obj);
             }
 

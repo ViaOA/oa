@@ -46,6 +46,7 @@ import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncImpl;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.OADateTime;
+import com.viaoa.util.OALogUtil;
 
 import static com.viaoa.sync.OASyncServer.*;
 
@@ -416,15 +417,40 @@ public class OASyncClient {
         }
     }
     
+    private boolean bThreadCountWarning;
     /** allows remote method calls to GSMR server. */
     public RemoteMultiplexerClient getRemoteMultiplexerClient() {
         if (remoteMultiplexerClient == null) { 
-            remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient());
+            remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient()) {
+                @Override
+                protected void onRemoteThreadCreated(int threadCount) {
+                    clientInfo.setRemoteThreadCount(threadCount);
+                    super.onRemoteThreadCreated(threadCount);
+                    if (threadCount == 60 && !bThreadCountWarning) {
+                        String s = OALogUtil.getThreadDump();
+                        LOG.warning("RemoteThread count == 60\n"+s);
+                        bThreadCountWarning = true;
+                    }
+                    if (threadCount >= 70) {
+                        onRemoteThreadCountExceeded();
+                    }
+                }                
+            };
         }
         return remoteMultiplexerClient;
     }
     public int getConnectionId() {
         return getMultiplexerClient().getConnectionId();
     }
+    
+    protected void onRemoteThreadCountExceeded() {
+        LOG.log(Level.WARNING, "max RemoteThread count of 70 exceeded, calling stop");
+        try {
+            stop();
+        }
+        catch (Exception ex) {
+        }
+    }
+    
 
 }
