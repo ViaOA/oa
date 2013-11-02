@@ -55,9 +55,15 @@ public class OAConverterBoolean implements OAConverterInterface {
         return null;
     }        
 
-    
+    private static final Boolean bFalse = new Boolean(false);
     protected Boolean convertToBoolean(Object value, String fmt) {
-        if (value instanceof Boolean) return (Boolean) value;
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        if (value == null) {
+            return bFalse;
+        }
+        
         boolean b = false;
         if (value instanceof String) {
             String str = (String)value;
