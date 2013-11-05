@@ -256,9 +256,11 @@ public class OAPropertyPathTree extends OATree {
                                     if (lp.getType() == lp.TYPE_Many) return true;
                                 }
                                 if (bAllowOne) {
-                                    LinkPropertyDef lpx = (LinkPropertyDef) parentTnd.getObject();
-                                    if (lpx.getType() == lpx.TYPE_Many) {
-                                        return false;
+                                    if (!bAllowMany) { // only show calcs
+                                        LinkPropertyDef lpx = (LinkPropertyDef) parentTnd.getObject();
+                                        if (lpx.getType() == lpx.TYPE_Many) {
+                                            return false;
+                                        }
                                     }
                                     if (lp.getType() == lp.TYPE_One) return true;
                                 }
