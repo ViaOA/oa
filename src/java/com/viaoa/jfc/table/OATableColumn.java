@@ -71,6 +71,12 @@ public class OATableColumn {
         this.renderer = rend;
         this.oaComp = oaComp;
         this.fmt = fmt;
+
+///qqqqq 20131109 testing, so that it will verify that methods can be found when column is created.
+        Method[] ms = getMethods(table.getHub());
+        int xx = 4;
+        xx++;
+        
     }
 
     public OATableComponent getOATableComponent() {
@@ -122,6 +128,7 @@ public class OATableColumn {
                 path = HubLinkDelegate.getLinkToProperty(h);
             }
             else {
+                // see if this is linked to table hub, and expand the path 
                 for (; h != hub;) {
                     Hub lh = h.getLinkHub();
                     if (lh == null) break;
@@ -136,8 +143,13 @@ public class OATableColumn {
                         else path = HubLinkDelegate.getLinkHubPath(h) + "." + path;
                     }
                     h = lh;
+                    if (h == hub) break; // 20131109
+                    if (hub.getMasterHub() == null) { // 20131109 could be a hub copy
+                        if (h.getObjectClass().equals(hub.getObjectClass())) break;
+                    }
                 }
-                if (h != hub) {
+                if (h != hub && !bLinkOnPos) {  // 20131109 
+                    // was: if (h != hub && !bLinkOnPos) {
                     // 20110515 see if this is a master/detail relationship
                     Hub mh = h.getMasterHub();
                     if (mh == hub) {
@@ -146,6 +158,9 @@ public class OATableColumn {
                     else if (mh != null && mh.getObjectClass().equals(hub.getObjectClass()) && hub.getMasterHub() == null) {
                         // 20131026 this is when a hubCopy is used
                         path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
+                    }
+                    else if (hub.getMasterHub() == null) {
+                        // 20131109  table hub could be a copy hub. 
                     }
                     else {
                         path = holdPath; 

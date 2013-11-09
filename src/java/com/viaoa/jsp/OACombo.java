@@ -365,6 +365,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
             options += "<option value='oanull' "+sel+">"+value+"</option>";
         }        
         sb.append("$('#"+id+"').empty();\n");
+        options = convertOption(options);
         sb.append("$('#"+id+"').append(\"" + options + "\");\n");
         
         if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
@@ -385,6 +386,13 @@ public class OACombo implements OAJspComponent, OATableEditor {
         return js;
     }
 
+    protected String convertOption(String value) {
+        value = Util.convert(value, "\r\n", " ");
+        value = Util.convert(value, "\n", " ");
+        value = Util.convert(value, "\r", " ");
+        value = Util.convert(value, "\"", "\\\"");  // needs to be double quotes, since that it is how it is formatted.
+        return value;
+    }
     
     /** 
      * this is called to render each option.
