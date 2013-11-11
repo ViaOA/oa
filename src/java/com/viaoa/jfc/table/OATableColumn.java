@@ -76,7 +76,6 @@ public class OATableColumn {
         Method[] ms = getMethods(table.getHub());
         int xx = 4;
         xx++;
-        
     }
 
     public OATableComponent getOATableComponent() {
