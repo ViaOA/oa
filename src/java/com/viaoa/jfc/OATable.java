@@ -1464,7 +1464,9 @@ obj = tc.getValue(hub, obj);
                 //    will have e.getValueIsAdjusting() = true
                 // was: setRowSelectionInterval(row,row); // this will not call setActiveObject(), since e.getValueIsAdjusting() will be true
             }
-            catch (RuntimeException ex) {}
+            catch (RuntimeException ex) {
+            }
+            
             if (hub.getPos() != row) {
                 return false;  // cant change activeObject
             }
@@ -2113,12 +2115,14 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
     
     protected void setSelectHub(Hub hubSelect) {
+        if (this.hubSelect == hubSelect) return;
         if (this.hubSelect != null && hlSelect != null) {
             this.hubSelect.removeHubListener(hlSelect);
             hlSelect = null;
         }
         this.hubSelect = hubSelect;
         if (hubSelect == null) return;
+        
         hlSelect = new HubListenerAdapter() {
             public @Override void afterAdd(HubEvent e) {
                 Object obj = e.getObject();
@@ -2182,14 +2186,18 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
 
     public synchronized void valueChanged(ListSelectionEvent e)  {
-        if (e.getValueIsAdjusting()) return;
+        if (e.getValueIsAdjusting()){
+            return;
+        }
 
         if (getIgnoreValueChanged()) {
             return;
         }
         
         int row = table.getSelectedRow();
-        if (row < 0 || !table.getSelectionModel().isSelectedIndex(row)) return;
+        if (row < 0 || !table.getSelectionModel().isSelectedIndex(row)) {
+            return;
+        }
 
         _bRunningValueChanged = true;
         getHub().setActiveObject(row);
@@ -2296,7 +2304,13 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     //was: public @Override synchronized void afterChangeActiveObject(HubEvent e) {
         int row = getHub().getPos();
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
+
         
+        // 20131111
+        setSelectedRow(row);
+        rebuildListSelectionModel();
+        
+        /* was
         if (table.hubSelect == null) {
             if (table.joinedTable == null || table.joinedTable.hubSelect == null) {
                 // 20110616
@@ -2304,11 +2318,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 rebuildListSelectionModel();
             }
         }
-        else {  // 20131111
-//qqqqqqqqqqqqqqq            
-            setSelectedRow(row);
-            rebuildListSelectionModel();
-        }
+        */
     }
 
     protected void setSelectedRow(final int row) {
@@ -2413,9 +2423,14 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         rebuildListSelectionModel();
         // 20101229 need to reset the activeRow
         int row = getHub().getPos();
+        // 20131111
+        setSelectedRow(row);
+
+        /*was
         if (table.hubSelect == null) {
             setSelectedRow(row);
         }
+        */
     }
 
     protected void insertInvoker(final int pos) {

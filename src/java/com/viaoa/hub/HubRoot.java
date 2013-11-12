@@ -61,9 +61,15 @@ public class HubRoot {
 
         hubMaster = hub.getMasterHub();  // master hub of root hub - this is the 'source' to listen to.
         if (hubMaster == null) {
-            // 20121107 
-            hubCopy = new HubCopy(hubRoot, hub, true);
-            // was: hubRoot.setSharedHub(hub, true);
+            // 20131112
+            //was: hubCopy = new HubCopy(hubRoot, hub, true); // bug, hubs are reversed
+            Hub h = hub;
+            for (;;) {
+                Hub hx = hub.getSharedHub();
+                if (hx == null) break;
+                h = hx;
+            }
+            hubCopy = new HubCopy(h, hubRoot, true);
             return;
         }
         
