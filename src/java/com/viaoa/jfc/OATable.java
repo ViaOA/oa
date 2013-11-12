@@ -2296,12 +2296,18 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     //was: public @Override synchronized void afterChangeActiveObject(HubEvent e) {
         int row = getHub().getPos();
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
+        
         if (table.hubSelect == null) {
             if (table.joinedTable == null || table.joinedTable.hubSelect == null) {
                 // 20110616
                 setSelectedRow(row);
                 rebuildListSelectionModel();
             }
+        }
+        else {  // 20131111
+//qqqqqqqqqqqqqqq            
+            setSelectedRow(row);
+            rebuildListSelectionModel();
         }
     }
 
