@@ -21,12 +21,12 @@ package com.viaoa.hub;
  * Used to have two hubs use the same objects, but in different order.
  */
 public class HubCopy {
-
 	private Hub hubMaster;
 	private Hub hubCopy;
 	private HubFilter hf;
 	private boolean bShareAO;
-	private HubListener hlMaster, hlCopy;
+	//private HubListener hlMaster;
+    private HubListener hlCopy;
 	private boolean bClosed;	
 	
 	public HubCopy(Hub hubMaster, Hub hubCopy, boolean bShareAO) {
@@ -38,13 +38,14 @@ public class HubCopy {
 		    throw new RuntimeException("both hubs are the same");
 		}
 		
-		hf = new HubFilter(hubMaster, hubCopy, true) {
-			@Override
+		hf = new HubFilter(hubMaster, hubCopy, bShareAO) {
+            @Override
 			public boolean isUsed(Object object) {
 				return true;
 			}
 		};
-		
+	
+        /* hubFilter does this now
 		hlMaster = new HubListenerAdapter() {
 			@Override
 			public void afterChangeActiveObject(HubEvent evt) {
@@ -61,8 +62,10 @@ public class HubCopy {
 			}
 		};
 		hubMaster.addHubListener(hlMaster);
+        */
 		
 		hlCopy = new HubListenerAdapter() {
+            /* hubFilter does this now
 			@Override
 			public void afterChangeActiveObject(HubEvent evt) {
                 if (HubCopy.this.bClosed) return;
@@ -70,6 +73,7 @@ public class HubCopy {
                     HubCopy.this.hubMaster.setAO(HubCopy.this.hubCopy.getAO());
                 }
 			}
+			*/
 			@Override
 			public void afterAdd(HubEvent e) {
                 if (HubCopy.this.bClosed) return;
@@ -91,10 +95,12 @@ public class HubCopy {
 	public void close() {
  	    // need to make sure that no more events get processed
 	    bClosed = true;
+	    /*
 	    if (hlMaster != null && hubMaster != null) {
 	        hubMaster.removeHubListener(hlMaster);
 	        hlMaster = null;
 	    }
+	    */
         if (hlCopy != null && hubCopy != null) {
             hubCopy.removeHubListener(hlCopy);
             hlCopy = null;
@@ -104,5 +110,4 @@ public class HubCopy {
             hf = null;
         }
 	}
-	
 }

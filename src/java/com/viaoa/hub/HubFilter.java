@@ -43,6 +43,8 @@ import com.viaoa.util.OAArray;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 public abstract class HubFilter extends HubListenerAdapter implements java.io.Serializable, HubFilterInterface {
+    private static final long serialVersionUID = 1L;
+
     protected Hub hubMaster, hub;
     private Hashtable hashProp;
     private boolean bShareAO;
@@ -76,6 +78,7 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
     }
     
     public HubFilter(boolean bObjectCache, Hub hubMaster, Hub hub, boolean bShareAO, boolean bRefreshOnLinkChange, String... dependentPropertyPaths) {
+        // note: bObjectCache will allow hubMaster to be null, which will then use the oaObjectCache
         if ((!bObjectCache && hubMaster == null) || hub == null) {
             throw new IllegalArgumentException("hubMaster and hub can not be null");
         }
@@ -121,6 +124,10 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
         if (hub != null && haHub != null) {
             hub.removeHubListener(haHub);
             haHub = null;
+        }
+        if (hubMaster != null && haHubMaster != null) {
+            hubMaster.removeHubListener(haHubMaster);
+            haHubMaster = null;
         }
         if (hubLink != null && linkHubListener != null) {
             hubLink.removeHubListener(linkHubListener);
@@ -249,7 +256,7 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
     
     
     private boolean bOAObjectCacheDelegateListener;
-    private HubListenerAdapter haHub;
+    private HubListenerAdapter haHub, haHubMaster;
     protected void setup() {
         if (bClosed) return;
         if (hubMaster == null) {
@@ -284,8 +291,39 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
                 public void afterInsert(HubEvent e) {
                     afterAdd(e);
                 }
+                @Override
+                public void afterChangeActiveObject(HubEvent e) {
+                    if (bShareAO && hubMaster != null) {
+                        Object obj = HubFilter.this.hub.getAO();
+                        if (obj == null || HubFilter.this.hubMaster.contains(obj)) {
+                            HubFilter.this.hubMaster.setAO(obj);
+                        }
+                        
+                    }
+                }
             };
             hub.addHubListener(haHub);
+        }
+        if (hubMaster != null) {
+            haHubMaster = new HubListenerAdapter() {
+                @Override
+                public void afterChangeActiveObject(HubEvent e) {
+                    if (bShareAO) {
+                        Object obj = HubFilter.this.hubMaster.getAO();
+                        if (obj == null || HubFilter.this.hub.contains(obj)) {
+                            HubFilter.this.hub.setAO(obj);
+                        }
+                        
+                    }
+                }
+                @Override
+                public void onNewList(HubEvent e) {
+                    if (bShareAO) {
+                        afterChangeActiveObject(e);
+                    }
+                }
+            };
+            hubMaster.addHubListener(haHubMaster);
         }
         setupLinkHubListener();
     }
