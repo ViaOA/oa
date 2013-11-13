@@ -126,6 +126,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     protected static Icon[] iconDesc;
     protected static Icon[] iconAsc;
     private boolean bEnableEditors=true;
+    public boolean bDEBUG;
     
     static {
         iconAsc = new Icon[4];
@@ -2160,10 +2161,10 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         ListSelectionModel lsm = table.getSelectionModel();
         _bIgnoreValueChanged = true;
         lsm.clearSelection();
+        
         if (hubSelect == null) {
             int x = hub.getPos();
             if (x >= 0) lsm.addSelectionInterval(x, x);
-
             _bIgnoreValueChanged = false;
             return;
         }
@@ -2171,7 +2172,14 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         // update hubSelect, to see if objects are in table.hub
         for (int i=0;  ;i++) {
             Object obj = hubSelect.getAt(i);
-            if (obj == null) break;
+            if (obj == null) {
+                // 20131113 
+                if (i == 0) {
+                    int x = hub.getPos();
+                    if (x >= 0) lsm.addSelectionInterval(x, x);
+                }
+                break;
+            }
             int pos = hub.indexOf(obj);  // dont use hub.getPos(), since it will adjust "linkage"
             if (pos < 0) {
                 hubSelect.removeAt(i);
@@ -2181,6 +2189,10 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 lsm.addSelectionInterval(i, i);
             }
         }
+        
+        
+        
+        
         _bIgnoreValueChanged = false;
     }
 
@@ -2298,27 +2310,26 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
         
     }
-
+    
+  
     // 20120304
     public @Override void afterChangeActiveObject(HubEvent e) {
     //was: public @Override synchronized void afterChangeActiveObject(HubEvent e) {
+if (table.bDEBUG) {
+    int xx = 4;
+    xx++; //qqqqqqqqqqqqqqq
+}
         int row = getHub().getPos();
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
 
-        
-        // 20131111
-        setSelectedRow(row);
-        rebuildListSelectionModel();
-        
-        /* was
-        if (table.hubSelect == null) {
+        // 20131113 removed to allow to be insync with Hub
+        //if (table.hubSelect == null) {
             if (table.joinedTable == null || table.joinedTable.hubSelect == null) {
                 // 20110616
                 setSelectedRow(row);
                 rebuildListSelectionModel();
             }
-        }
-        */
+        //}
     }
 
     protected void setSelectedRow(final int row) {
@@ -2423,14 +2434,10 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         rebuildListSelectionModel();
         // 20101229 need to reset the activeRow
         int row = getHub().getPos();
-        // 20131111
-        setSelectedRow(row);
 
-        /*was
         if (table.hubSelect == null) {
             setSelectedRow(row);
         }
-        */
     }
 
     protected void insertInvoker(final int pos) {

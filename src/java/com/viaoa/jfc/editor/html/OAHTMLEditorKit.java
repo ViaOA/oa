@@ -72,7 +72,14 @@ public abstract class OAHTMLEditorKit extends HTMLEditorKit {
         // add a CSS rule to force body tags to use the default label font
         // instead of the value in javax.swing.text.html.default.csss
         Font font = UIManager.getFont("Label.font");
-        String defaultFont = "body { font-family: " + font.getFamily() + "; " +"font-size: 12pt; }";
+        String fontFamilyName = "Arial";
+        if (font == null) {
+            String[] s = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+            if (s != null && s.length > 0) fontFamilyName = s[0];
+        }
+        else fontFamilyName = font.getFamily();
+        
+        String defaultFont = "body { font-family: " + fontFamilyName + "; " +"font-size: 12pt; }";
         ss.addRule(defaultFont);
         return ss;
     }

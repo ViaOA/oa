@@ -65,11 +65,11 @@ public class HubRoot {
             //was: hubCopy = new HubCopy(hubRoot, hub, true); // bug, hubs are reversed
             Hub h = hub;
             for (;;) {
-                Hub hx = hub.getSharedHub();
+                Hub hx = h.getSharedHub();
                 if (hx == null) break;
                 h = hx;
             }
-            hubCopy = new HubCopy(h, hubRoot, true);
+            hubCopy = new HubCopy(h, hubRoot, false);
             return;
         }
         

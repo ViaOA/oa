@@ -311,9 +311,12 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
                     if (bShareAO) {
                         Object obj = HubFilter.this.hubMaster.getAO();
                         if (obj == null || HubFilter.this.hub.contains(obj)) {
+if (obj != null) {//qqqqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
                             HubFilter.this.hub.setAO(obj);
                         }
-                        
                     }
                 }
                 @Override
