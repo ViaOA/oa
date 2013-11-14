@@ -1460,6 +1460,12 @@ obj = tc.getValue(hub, obj);
 //System.out.printf("OATable.editCellAt row="+row+",  --> %.2f\n", d);        
         
         if (hubSelect != null) {
+            // 20131113
+            int x = hubSelect.getSize();
+            if (x > 0) {
+                if (x > 1) return false;
+                if (hubSelect.getAt(0) != hub.getAO()) return false; 
+            }
         }
         else {
             try {
