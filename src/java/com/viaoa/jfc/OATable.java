@@ -1451,7 +1451,9 @@ obj = tc.getValue(hub, obj);
 //qqqqqqqqqqqqqqqqqqqqq
 //long lx = System.currentTimeMillis();        
         if (hub.getPos() != row) {
+            hubAdapter._bRunningValueChanged = true;  // 20131113
             hub.setPos(row);
+            hubAdapter._bRunningValueChanged = false;
         }
 //lx = System.currentTimeMillis() - lx;
 //double d = (lx/1000.0d);
@@ -2173,11 +2175,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         for (int i=0;  ;i++) {
             Object obj = hubSelect.getAt(i);
             if (obj == null) {
-                // 20131113 
-                if (i == 0) {
-                    int x = hub.getPos();
-                    if (x >= 0) lsm.addSelectionInterval(x, x);
-                }
                 break;
             }
             int pos = hub.indexOf(obj);  // dont use hub.getPos(), since it will adjust "linkage"
@@ -2189,10 +2186,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 lsm.addSelectionInterval(i, i);
             }
         }
-        
-        
-        
-        
         _bIgnoreValueChanged = false;
     }
 
@@ -2202,6 +2195,12 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             return;
         }
 
+if (table.bDEBUG) {
+    int xx = 4;
+    xx++; //qqqqqqqqqqqqqqq
+}
+        
+        
         if (getIgnoreValueChanged()) {
             return;
         }
@@ -2315,6 +2314,8 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     // 20120304
     public @Override void afterChangeActiveObject(HubEvent e) {
     //was: public @Override synchronized void afterChangeActiveObject(HubEvent e) {
+        if (getRunningValueChanged()) return;  // 20131113
+
 if (table.bDEBUG) {
     int xx = 4;
     xx++; //qqqqqqqqqqqqqqq
@@ -2322,14 +2323,20 @@ if (table.bDEBUG) {
         int row = getHub().getPos();
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
 
-        // 20131113 removed to allow to be insync with Hub
-        //if (table.hubSelect == null) {
+        // 20131113 
+        if (table.hubSelect == null) {
             if (table.joinedTable == null || table.joinedTable.hubSelect == null) {
                 // 20110616
                 setSelectedRow(row);
                 rebuildListSelectionModel();
             }
-        //}
+        }
+        else {
+            table.hubSelect.clear();
+            setSelectedRow(row);
+            if (row >= 0) table.hubSelect.add(e.getObject());
+//            rebuildListSelectionModel();
+        }
     }
 
     protected void setSelectedRow(final int row) {
@@ -2366,9 +2373,7 @@ if (table.bDEBUG) {
                 return;
             }
 
-
             // 20101029 this would scroll to leftmost AO
-            
             Rectangle cellRect;
             if (row < 0) cellRect = new Rectangle(0,0,10,10);
             else {
