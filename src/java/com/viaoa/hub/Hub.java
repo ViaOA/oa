@@ -462,7 +462,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         for (int i = 0;; i++) {
             Object obj = this.elementAt(i);
             if (obj == null) break;
-            if (h.getObject(obj) == null) h.add(obj);
+            if (!h.contains(obj)) h.add(obj);
         }
     }
 
