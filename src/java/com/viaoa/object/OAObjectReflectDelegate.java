@@ -89,7 +89,6 @@ public class OAObjectReflectDelegate {
         return getProperty(null, oaObj, propName);
     }
     public static Object getProperty(Hub hubLast, OAObject oaObj, String propName) {
-    
         if (propName == null || propName.trim().length() == 0) return null;
         if (hubLast == null && oaObj == null) return null;
 
@@ -107,7 +106,9 @@ public class OAObjectReflectDelegate {
                 hubLast = (Hub) value;
                 value = hubLast.getAO();
             }
-            else hubLast = null;
+            else {
+                hubLast = null;
+            }
             oaObj = (OAObject) value;
         }
         return null;
@@ -122,23 +123,24 @@ public class OAObjectReflectDelegate {
 
         Method m;
         
-        if (hubLast != null && oi.isHubCalcInfo(propName)) {
+        if (oi.isHubCalcInfo(propName)) {
+            if (hubLast == null) return null;
             m = OAObjectInfoDelegate.getMethod(oi, "get" + propName, 1);
-            if (m != null) {
-                try {
-                    return m.invoke(oaObj, hubLast);
-                }
-                catch (InvocationTargetException e) {
-                    LOG.log(Level.WARNING, "error calling " + oaObj.getClass().getName() + ".getProperty(\"" + propName + "\")",
-                            e.getTargetException());
-                }
-                catch (Exception e) {
-                    LOG.log(Level.WARNING, "error calling " + oaObj.getClass().getName() + ".getProperty(\"" + propName + "\")", e);
-                }
-                return null;
+            if (m == null) return null;
+            try {
+                return m.invoke(oaObj, hubLast);
             }
+            catch (InvocationTargetException e) {
+                LOG.log(Level.WARNING, "error calling " + oaObj.getClass().getName() + ".getProperty(\"" + propName + "\")",
+                        e.getTargetException());
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error calling " + oaObj.getClass().getName() + ".getProperty(\"" + propName + "\")", e);
+            }
+            return null;
         }
         else {
+            if (oaObj == null) return null;
             m = OAObjectInfoDelegate.getMethod(oi, "get" + propName, 0);
             if (m != null) {
                 if (getPrimitiveNull(oaObj, propName)) return null;
@@ -146,11 +148,17 @@ public class OAObjectReflectDelegate {
                     return m.invoke(oaObj, null);
                 }
                 catch (InvocationTargetException e) {
-                    LOG.log(Level.WARNING, "error calling " + oaObj.getClass().getName() + ".getProperty(\"" + propName + "\")",
+                    String s;
+                    if (oaObj != null) s = oaObj.getClass().getName();
+                    else s = "object is null, ?";
+                    LOG.log(Level.WARNING, "error calling " + s + ".getProperty(\"" + propName + "\")",
                             e.getTargetException());
                 }
                 catch (Exception e) {
-                    LOG.log(Level.WARNING, "error calling " + oaObj.getClass().getName() + ".getProperty(\"" + propName + "\")", e);
+                    String s;
+                    if (oaObj != null) s = oaObj.getClass().getName();
+                    else s = "object is null, ?";
+                    LOG.log(Level.WARNING, "error calling " + s + ".getProperty(\"" + propName + "\")", e);
                 }
                 return null;
             }
