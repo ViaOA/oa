@@ -81,6 +81,24 @@ public class HubShareDelegate {
         */
     }
 
+    // 20131116
+    public static Hub getFirstSharedHub(Hub hub, OAFilter<Hub> filter) {
+        if (filter == null || filter.isUsed(hub)) {
+            return hub;
+        }
+        
+        WeakReference<Hub>[] refs = HubShareDelegate.getSharedWeakHubs(hub);
+        for (int i=0; refs != null && i<refs.length; i++) {
+            WeakReference<Hub> ref = refs[i];
+            if (ref == null) continue;
+            Hub h2 = ref.get();
+            if (h2 == null)  continue;
+            Hub hx = getFirstSharedHub(h2, filter);
+            if (hx != null) return hx;
+        }
+        return null;
+    }
+    
     public static Hub getMainSharedHub(Hub hub) {
     	Hub h = hub;
     	for (;;) {

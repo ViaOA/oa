@@ -120,26 +120,27 @@ public class OATableColumn {
             String holdPath = path;
             // get path from any link Hub
             Hub h = oaComp.getHub();
-            bLinkOnPos = HubLinkDelegate.getLinkedOnPos(h);
+
+            bLinkOnPos = HubLinkDelegate.getLinkedOnPos(h, true);
             // 20110116
-            String fromProp = HubLinkDelegate.getLinkFromProperty(h);
+            String fromProp = HubLinkDelegate.getLinkFromProperty(h, true);
             if (fromProp != null) {
-                path = HubLinkDelegate.getLinkToProperty(h);
+                path = fromProp;
             }
             else {
                 // see if this is linked to table hub, and expand the path 
                 for (; h != hub;) {
-                    Hub lh = h.getLinkHub();
+                    Hub lh = HubLinkDelegate.getLinkHub(h, true);
                     if (lh == null) break;
                     if (path == null) path = "";
                     if (bLinkOnPos) {
                         if (pathIntValue != null) pathIntValue = "." + pathIntValue;
                         else pathIntValue = "";
-                        pathIntValue = HubLinkDelegate.getLinkHubPath(h) + pathIntValue;
+                        pathIntValue = HubLinkDelegate.getLinkHubPath(h, true) + pathIntValue;
                     }
                     else {
-                        if (path.length() == 0) path = HubLinkDelegate.getLinkHubPath(h);
-                        else path = HubLinkDelegate.getLinkHubPath(h) + "." + path;
+                        if (path.length() == 0) path = HubLinkDelegate.getLinkHubPath(h, true);
+                        else path = HubLinkDelegate.getLinkHubPath(h, true) + "." + path;
                     }
                     h = lh;
                     if (h == hub) break; // 20131109
@@ -159,7 +160,15 @@ public class OATableColumn {
                         path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
                     }
                     else if (hub.getMasterHub() == null) {
-                        // 20131109  table hub could be a copy hub. 
+                        // 20131109  check to see if it is from a HubCopy
+//qqqqqqqqqqqq might not be needed if getLink... methods find the correct hub, etc                        
+                        HubCopy hc = HubCopyDelegate.findHubCopy(h);
+                        if (hc != null) {
+                            Hub hx = hc.getMasterHub();
+                            if (HubShareDelegate.isUsingSameSharedAO(hx, h)) {
+                                path = HubDetailDelegate.getPropertyFromMasterToDetail(hx) + "." + path;
+                            }
+                        }
                     }
                     else {
                         path = holdPath; 
