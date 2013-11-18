@@ -182,7 +182,7 @@ public class HubDelegate {
 	        if (dm.masterHub != null || thisHub.datam.masterObject != null) {
 	            throw new RuntimeException("cant change object class if masterObject exists");
 	        }
-	        if (thisHub.datau.sharedHub != null || HubShareDelegate.getSharedHubs(thisHub).length > 0) {
+	        if (thisHub.datau.sharedHub != null || HubShareDelegate.getSharedWeakHubSize(thisHub) > 0) {
 	            throw new RuntimeException("cant change object class since this is a shared hub.");
 	        }
 	    }

@@ -481,10 +481,21 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
         }
     }
 
+    private boolean bNewListFlag;
+    
+    
     /** HubListener interface method, used to update filter. */
     public @Override void onNewList(HubEvent e) {
-        if (bClosed) return;
-        if (hubMaster != null) initialize();
+        if (bClosed || bNewListFlag) return;
+        if (hubMaster != null) {
+            try {
+                bNewListFlag = true;
+                initialize();
+            }
+            finally {
+                bNewListFlag = false;
+            }
+        }
     }
 
     /** HubListener interface method, used to update filter. */
@@ -541,7 +552,15 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
 	    	HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
 	        bClearing = false;
 	    	_initialize();
-	    	HubEventDelegate.fireOnNewListEvent(hub, true);
+	    	if (!bNewListFlag) {
+	    	    try {
+	    	        bNewListFlag = true;                   
+	    	        HubEventDelegate.fireOnNewListEvent(hub, true);
+	    	    }
+	    	    finally {
+	    	        bNewListFlag = false;	    	        
+	    	    }
+	    	}
 	    	afterInitialize();
     	}
     	finally {

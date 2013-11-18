@@ -67,13 +67,13 @@ public class HubShareDelegate {
             h = getMainSharedHub(h);
         }            
         ArrayList<Hub> alHub = new ArrayList<Hub>(10);
-        _getAllSharedHubs(h, alHub, filter, 0, bIncludeCopiedHubs, bOnlyIfSharedAO);
+        _getAllSharedHubs(h, thisHub, alHub, filter, 0, bIncludeCopiedHubs, bOnlyIfSharedAO);
         Hub[] hubs = new Hub[alHub.size()];
         alHub.toArray(hubs);
         return hubs;
     }
     
-    private static void _getAllSharedHubs(final Hub hub, final ArrayList<Hub> alHub, final OAFilter<Hub> filter, final int cnter, final boolean bIncludeCopiedHubs, boolean bOnlyIfSharedAO) {
+    private static void _getAllSharedHubs(final Hub hub, final Hub findHub, final ArrayList<Hub> alHub, final OAFilter<Hub> filter, final int cnter, final boolean bIncludeCopiedHubs, boolean bOnlyIfSharedAO) {
         if (filter == null || filter.isUsed(hub)) {
             alHub.add(hub);
         }
@@ -84,8 +84,8 @@ public class HubShareDelegate {
             if (ref == null) continue;
             Hub h2 = ref.get();
             if (h2 == null)  continue;
-            if (bOnlyIfSharedAO && !HubShareDelegate.isUsingSameSharedAO(hub, h2)) continue;
-            _getAllSharedHubs(h2, alHub, filter, cnter+1, bIncludeCopiedHubs, bOnlyIfSharedAO);
+            if (bOnlyIfSharedAO && !HubShareDelegate.isUsingSameSharedAO(findHub, h2)) continue;
+            _getAllSharedHubs(h2, findHub, alHub, filter, cnter+1, bIncludeCopiedHubs, bOnlyIfSharedAO);
         }        
         
         if (!bIncludeCopiedHubs || cnter > 0) return;
@@ -93,9 +93,10 @@ public class HubShareDelegate {
         HubCopy hc = HubCopyDelegate.getHubCopy(hub);
         if (hc != null) {
             if (!bOnlyIfSharedAO || hc.getSharingAO()) {
-                Hub h = hc.getMasterHub();
-                h = getMainSharedHub(h);
-                _getAllSharedHubs(h, alHub, filter, 0, bIncludeCopiedHubs, bOnlyIfSharedAO);
+                Hub mh = hc.getMasterHub();
+                Hub h = getMainSharedHub(mh);
+                // note: use "mh" instead of findHub, since it is going thru a hubCopy
+                _getAllSharedHubs(h, mh, alHub, filter, 0, bIncludeCopiedHubs, bOnlyIfSharedAO);
             }
         }
     }
@@ -149,10 +150,11 @@ public class HubShareDelegate {
         // not found, check to see if there is a copyHub that is shared
         HubCopy hc = HubCopyDelegate.getHubCopy(thisHub);
         if (hc != null) {
-            Hub h = hc.getMasterHub();
             if (!bOnlyIfSharedAO || hc.getSharingAO()) {
-                Hub hx = getMainSharedHub(h);
-                hx = _getFirstSharedHub(hx, findHub, filter, bIncludeCopiedHubs, 0, bOnlyIfSharedAO);
+                Hub mh = hc.getMasterHub();
+                Hub h = getMainSharedHub(mh);
+                // note: use "mh" instead of findHub, since this is going thru a hubCopy
+                Hub hx = _getFirstSharedHub(h, mh, filter, bIncludeCopiedHubs, 0, bOnlyIfSharedAO);
                 if (hx != null) return hx;
             }
         }
@@ -176,9 +178,24 @@ public class HubShareDelegate {
     }
 
     public static boolean isUsingSameSharedAO(Hub hub1, Hub hub2) {
-    	if (hub1 == null || hub2 == null) return false;
-    	return hub1.dataa == hub2.dataa;
+        return isUsingSameSharedAO(hub1, hub2, false);
     }
+    public static boolean isUsingSameSharedAO(Hub hub1, Hub hub2, boolean bIncludeCopiedHubs) {
+    	if (hub1 == null || hub2 == null) return false;
+    	if (hub1.dataa == hub2.dataa) return true;
+    	if (!bIncludeCopiedHubs) return false;
+    	
+    	Hub[] hs1 = getAllSharedHubs(hub1, false, null, true, true);
+        Hub[] hs2 = getAllSharedHubs(hub2, false, null, true, true);
+        
+        for (Hub h1 : hs1) {
+            for (Hub h2 : hs2) {
+                if (h1 == h2) return true;
+            }
+        }
+    	return false;
+    }
+
     
 	protected static void syncSharedHubs(Hub thisHub, boolean bShareActiveObject, HubDataActive daOld, HubDataActive daNew, boolean bUpdateLink) {
 	    // all shared hubs need to use same data
@@ -634,8 +651,8 @@ public class HubShareDelegate {
 	
 	private final static Hub[] EmptyHubs = new Hub[0];
     /**
-        Returns an array of all of the Hubs that are shared with this Hub.
-        @deprecated use getAllSharedHubs
+        Returns an array of all of the Hubs that are shared with this Hub only.
+        @deprecated use getAllSharedHubs, or one of the other methods
     */
     protected static Hub[] getSharedHubs(Hub thisHub) {
         if (thisHub.datau.weakSharedHubs == null) return EmptyHubs;
@@ -667,7 +684,11 @@ public class HubShareDelegate {
         if (thisHub == null) return 0;
         WeakReference<Hub>[] refs = thisHub.datau.weakSharedHubs;
         if (refs == null) return 0;
-        return refs.length;
+        int cnt = 0;
+        for (WeakReference<Hub> ref : refs) {
+            if (ref != null && ref.get() != null) cnt++;
+        }
+        return cnt;
     }
 
     public static void main(String[] args) {
@@ -683,8 +704,3 @@ public class HubShareDelegate {
         System.out.println("Done");
     }
 }
-
-
-
-
-

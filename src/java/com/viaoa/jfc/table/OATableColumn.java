@@ -130,7 +130,7 @@ public class OATableColumn {
             else {
                 // see if this is linked to table hub, and expand the path 
                 for (; h != hub;) {
-                    Hub lh = HubLinkDelegate.getLinkHub(h, true);
+                    Hub lh = HubLinkDelegate.getLinkToHub(h, true);
                     if (lh == null) break;
                     if (path == null) path = "";
                     if (bLinkOnPos) {
@@ -148,8 +148,17 @@ public class OATableColumn {
                         if (h.getObjectClass().equals(hub.getObjectClass())) break;
                     }
                 }
+                
+                if (h != hub && !bLinkOnPos) {
+                    if (HubShareDelegate.isUsingSameSharedAO(hub, h, true)) h = hub;
+                }
+                
                 if (h != hub && !bLinkOnPos) {  // 20131109 
                     Hub mh = HubDetailDelegate.getMasterHub(h);
+                    if (mh != null) {
+                        if (HubShareDelegate.isUsingSameSharedAO(mh, hub, true)) mh = hub;
+                    }
+                    
                     if (mh == hub) {
                         path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
                     }
