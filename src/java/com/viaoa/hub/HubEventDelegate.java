@@ -18,12 +18,9 @@ All rights reserved.
 package com.viaoa.hub;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import com.viaoa.object.*;
-import com.viaoa.util.OAReflect;
 
 /**
  * Delegate used to register Hub listeners, get Listeners and to send Events to Hub listeners. 
@@ -324,16 +321,9 @@ public class HubEventDelegate {
 		//            could need to change a detail hub(s), before a HubLinkEventListener is called, which
 		//            could have needed the detail hubs to be changed.
 	    
-	    // 20100406
 	    if (linkInfo != null) {
             propertyChangeUpdateDetailHubs(thisHub, oaObj, propertyName);
 	    }
-	    /* was:
-		OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
-	    if (OAObjectInfoDelegate.getLinkInfo(oi, propertyName) != null) {
-	    	propertyChangeUpdateDetailHubs(thisHub, oaObj,propertyName);
-	    }
-	    */
 
 	    if (thisHub.data.uniqueProperty != null && newValue != null && thisHub.data.uniqueProperty.equalsIgnoreCase(propertyName)) {
 	        if (!HubDelegate.verifyUniqueProperty(thisHub, oaObj)) {
@@ -376,7 +366,6 @@ public class HubEventDelegate {
 	        }
 	    }
 
-        // 20120715 
         WeakReference<Hub>[] refs = HubShareDelegate.getSharedWeakHubs(thisHub);
         for (i=0; refs != null && i<refs.length; i++) {
             WeakReference<Hub> ref = refs[i];
@@ -385,12 +374,6 @@ public class HubEventDelegate {
             if (h2 == null)  continue;
             propertyChangeUpdateDetailHubs(h2, object,propertyName);
         }
-        /* was
-	    Hub[] hubs = HubShareDelegate.getSharedHubs(thisHub);
-	    for (i=0; i<hubs.length; i++) {
-	    	propertyChangeUpdateDetailHubs(hubs[i], object,propertyName);
-	    }
-	    */
 	}
 	
 	/**
@@ -446,164 +429,7 @@ public class HubEventDelegate {
     }
     public static void addHubListener(Hub thisHub, HubListener hl, String property) {
         getHubListenerTree(thisHub).addListener(hl, property);
-
-/** 20101218 removed, replaced by HubListenerTree	    
-        if (property == null || !thisHub.isOAObject() ) {
-            return;
-        }
-	    // check to see if there are dependent properties (if this is defined as an OACalcProperty)
-	    OAObjectInfo oi = thisHub.datau.objectInfo;
-	    for (OACalcInfo ci : oi.getCalcInfos()) {
-	        if (!ci.getName().equalsIgnoreCase(property)) continue;
-	        
-            ArrayList<Hub> al = null;  // keep track of hubs used for this calc prop
-            // add listeners to linked properties
-            String[] props = ci.getProperties();
-            boolean bAddedToCount = false;
-            for (int j=0; props != null && j < props.length; j++) {
-                int pos = props[j].lastIndexOf('.');
-                if (pos < 0) {
-                    if (!bAddedToCount) {
-                        ci.addToListenerCount();  // so that OAObjectEventDelegate will know that calcProperty needs to be checked when a prop is changed
-                        bAddedToCount = true;
-                    }
-                    continue;
-                }
-                
-                if (al == null) al = new ArrayList<Hub>(3);
-
-                // check to see if there are any hubs used in the propertyPath. If not, then the calcEventListener can ignore hub Events
-                Method[] methods = OAReflect.getMethods(thisHub.getObjectClass(), props[j], false);
-                boolean bHasHub = false;
-                for (int k=0; !bHasHub && methods != null && k<methods.length; k++) {
-                    bHasHub = methods[k].getReturnType().equals(Hub.class);
-                }
-                
-                Hub hubDetail = HubDetailDelegate.getDetailHub(thisHub, props[j].substring(0, pos));
-                String propDetail = props[j].substring(pos+1);
-                
-                if (thisHub.datau.calcEventListeners != null) {
-                    boolean b = false;
-                    for (HubCalcEventListener hcel : thisHub.datau.calcEventListeners) {
-                        if (hcel.detail == hubDetail && hcel.property.equalsIgnoreCase(property)) {
-                            if (hcel.detailProperty.equalsIgnoreCase(propDetail)) {
-                                hcel.addListener(hl);  // add this hubListener to the list that is using the HubCalcEventListener
-                                b = true;  // found
-                                break;
-                            }
-                        }
-                    }
-                    if (b) continue;  // already set up
-                }
-                
-                HubCalcEventListener cel = new HubCalcEventListener(thisHub, hubDetail, property, propDetail);
-                cel.addListener(hl);
-                if (al.contains(hubDetail)) {
-                    cel.setIgnoreDupEvents(true); // so that extra events wont be sent out for remove,add,newList,etc 
-                }
-                else al.add(hubDetail);
-                if (!bHasHub) {
-                    cel.setIgnoreHubEvents(true);
-                }
-                addHubListener(hubDetail, cel);
-                
-                if (thisHub.datau.calcEventListeners == null) thisHub.datau.calcEventListeners = new Vector<HubCalcEventListener>(3,3);
-                thisHub.datau.calcEventListeners.addElement(cel);
-            }
-            break;
-	    }
-*/	    
 	}
-	
-	
-    /**
-	    Remove a Listener to this Hub.
-	    @param listener HubListener object
-	    @see #addHubListener
-	*/
-/*qqqqq 20101218 replaced by HubListenerTree    
-	public static void removeHubListener(Hub thisHub, HubListener hl, String property) {
-	    removeHubListener(thisHub,hl);
-
-        OAObjectInfo oi = thisHub.datau.objectInfo;
-        for (OACalcInfo ci : oi.getCalcInfos()) {
-            if (!ci.getName().equalsIgnoreCase(property)) continue;
-            String[] props = ci.getProperties();
-            for (int j=0; props != null && j < props.length; j++) {
-                int pos = props[j].lastIndexOf('.');
-                if (pos < 0) {
-                    ci.removeFromListenerCount();  // so that OAObjectEventDelegate will know if calcProperty needs to be checked
-                    break;
-                }
-            }
-        }
-	    
-        if (thisHub.datau.calcEventListeners != null) {
-            for (int i=0; i<thisHub.datau.calcEventListeners.size(); i++) {
-                HubCalcEventListener hcel = (HubCalcEventListener) thisHub.datau.calcEventListeners.elementAt(i);
-                if (!hcel.removeListener(hl)) continue;
-                HubDetailDelegate.removeDetailHub(thisHub, hcel.detail);
-                if (hcel.getLisenterCount() == 0) {
-                    hcel.detail.removeHubListener(hcel);
-                    thisHub.datau.calcEventListeners.remove(hcel);
-                    i--;
-                }
-            }
-        }
-	}
-*/	
-
-	
-    /**
-        Add a Listener to this hub specifying a specific property name, and a list of "dependent" properties.
-        The Hub will automatically
-        set up internal listeners to know when the any of the properties change.
-    qqqqqq Is this being used ?  if so, needs to be cleaned up qqqqqqqqqqqqqqq      
-        @param listener HubListener object
-        @param property name to listen for
-        @see HubEvent
-qqqqqq        
-!!! needs to create listener for single props and property paths        
-    */
-/*	
-    public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] properties) {
-        // ex:  (l,"lastName")
-        if (property != null && property.indexOf('.') >= 0) {
-            throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[]) instead");
-        }
-        addHubListener(thisHub, hl);
-        if (property == null || !thisHub.isOAObject() ) {
-            return;
-        }
-    
-        // add listeners to linked properties
-        ArrayList al = new ArrayList(3);
-        for (int j=0; properties != null && j < properties.length; j++) {
-            if (properties[j] == null) continue;
-            int pos = properties[j].lastIndexOf('.');
-            if (pos >= 0) {
-    //qqqq this needs to be list the above method ?  qqqqqqq                
-                String s = properties[j].substring(0, pos);
-                Hub h = HubDetailDelegate.getDetailHub(thisHub, s);
-                s = properties[j].substring(pos+1);
-                HubCalcEventListener cel = new HubCalcEventListener(thisHub,h,property,s);
-                cel.addListener(hl);
-                if (al.contains(h)) {
-                    cel.setIgnoreDupEvents(true);
-                }
-                else al.add(h);
-    
-                addHubListener(h, cel, s);
-                if (thisHub.datau.calcEventListeners == null) thisHub.datau.calcEventListeners = new Vector<HubCalcEventListener>(3,3);
-                thisHub.datau.calcEventListeners.addElement(cel);
-            }
-        }
-    }
-*/	
-	
-	
-	
-	
 	
 	// this is taken from HubDataUnique
 	/**
@@ -618,7 +444,6 @@ qqqqqq
 	public static void addHubListener(Hub thisHub, HubListener hl) {
         getHubListenerTree(thisHub).addListener(hl);
     }
-	
 	
 	public static int TotalHubListeners; 	
 	/**
@@ -639,8 +464,6 @@ qqqqqq
 	    HubListener[] hl = thisHub.datau.listenerTree.getHubListeners();
 	    return hl;
 	}
-
-
 
     /**
 	    Returns a count of all of the listeners for this Hub and all of Hubs that are shared with it.
@@ -699,7 +522,6 @@ qqqqqq
 	        }
 	    }
 	    
-        // 20120715 
         WeakReference<Hub>[] refs = HubShareDelegate.getSharedWeakHubs(thisHub);
         for (int i=0; refs != null && i<refs.length; i++) {
             WeakReference<Hub> ref = refs[i];
@@ -708,17 +530,8 @@ qqqqqq
             if (h2 == null)  continue;
             getAllListenersRecursive(h2, al, hub, type);
         }
-        
-        /* was
-	    Hub[] hubs = HubShareDelegate.getSharedHubs(thisHub);
-	    for (int i=0; i<hubs.length; i++) {
-	        getAllListenersRecursive(hubs[i], al, hub, type);
-	    }
-	    */
 	}
 
-    /**
-    */
     public static void fireAfterLoadEvent(Hub thisHub, OAObject oaObj) {
         HubListener[] hl = getAllListeners(thisHub);
         int x = hl.length;
@@ -730,5 +543,4 @@ qqqqqq
             }
         }
     }
-
 }

@@ -21,6 +21,7 @@ package com.viaoa.hub;
  * Used to have two hubs use the same objects, but in different order.
  */
 public class HubCopy extends HubListenerAdapter {
+    // Note: this needs to extend HubListenerAdapter, so that HuCopyDelegate can find a Hub's HubCopy.
 	private Hub hubMaster;
 	private Hub hubCopy;
 	private HubFilter hf;
@@ -69,7 +70,9 @@ public class HubCopy extends HubListenerAdapter {
     public Hub getMasterHub() {
         return hubMaster;
     }
-	
+	public boolean getSharingAO() {
+	    return bShareAO;
+	}
     @Override
     public void afterAdd(HubEvent e) {
         if (HubCopy.this.bClosed) return;

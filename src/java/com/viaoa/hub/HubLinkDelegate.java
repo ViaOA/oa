@@ -137,20 +137,20 @@ public class HubLinkDelegate {
 	    return isLinkAutoCreated(thisHub, false);
 	}
 	// 20131116	
-    public static boolean isLinkAutoCreated(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static boolean isLinkAutoCreated(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.bAutoCreate) return true;
-        if (!bCheckSharedHubs) return false;
+        if (!bIncludeCopiedHubs) return false;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.bAutoCreate && thisHub.dataa == h.dataa) {
+                if (h.datau.bAutoCreate) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         return (hubx != null);
     }
 	
@@ -158,35 +158,32 @@ public class HubLinkDelegate {
 	    return getLinkedOnPos(thisHub, false);
 	}
     // 20131116 
-    public static boolean getLinkedOnPos(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static boolean getLinkedOnPos(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.linkPos) return true;
-        if (!bCheckSharedHubs) return false;
+        if (!bIncludeCopiedHubs) return false;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkPos && thisHub.dataa == h.dataa) {
+                if (h.datau.linkPos) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         return (hubx != null);
     }
 	
-
     public static void updateLinkProperty(Hub thisHub, Object fromObject, int pos) {
         if (thisHub.datau.linkToHub == null || thisHub.datau.linkToHub.datau.bUpdatingActiveObject) return;
         try {
         	_updateLinkProperty(thisHub, fromObject, pos);
-        	
         }
         catch (Exception e) {
         	throw new RuntimeException(e);
         }
     }	
-
     
 	/** Called by HubAODelegate when ActiveObject is changed in Link From Hub.
         @param linkObj object to update
@@ -273,7 +270,11 @@ public class HubLinkDelegate {
 	    any Employee object, this will return the value of employee.getDepartment().
 	    @see Hub#setLinkHub(Hub,String) Full Description of Linking Hubs
 	*/
-	public static Object getPropertyValueInLinkedToHub(Hub thisHub, Object linkObject) {
+    public static Object getPropertyValueInLinkedToHub(Hub thisHub, Object linkObject) {
+        Hub h = getLinkHub(thisHub, true);
+        return _getPropertyValueInLinkedToHub(h, linkObject);
+    }
+	private static Object _getPropertyValueInLinkedToHub(Hub thisHub, Object linkObject) {
 	    if (thisHub.datau.linkToGetMethod == null) return linkObject;
 	    try {
 	        if (linkObject != null) {
@@ -327,20 +328,20 @@ public class HubLinkDelegate {
 	    return getLinkToProperty(thisHub, false);
 	}
     // 20131116 
-    public static String getLinkToProperty(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static String getLinkToProperty(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.linkToPropertyName != null) return thisHub.datau.linkToPropertyName;
-        if (!bCheckSharedHubs) return null;
+        if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToPropertyName != null && thisHub.dataa == h.dataa) {
+                if (h.datau.linkToPropertyName != null) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
         return hubx.datau.linkToPropertyName;
     }
@@ -349,38 +350,38 @@ public class HubLinkDelegate {
         return getLinkFromProperty(thisHub, false);
 	}
     // 20131116 
-    public static String getLinkFromProperty(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static String getLinkFromProperty(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.linkFromPropertyName != null) return thisHub.datau.linkFromPropertyName;
-        if (!bCheckSharedHubs) return null;
+        if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkFromPropertyName != null && thisHub.dataa == h.dataa) {
+                if (h.datau.linkFromPropertyName != null) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
         return hubx.datau.linkFromPropertyName;
     }
 	
-    public static Hub getLinkHub(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static Hub getLinkHub(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.linkToHub != null) return thisHub.datau.linkToHub;
-        if (!bCheckSharedHubs) return null;
+        if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToHub != null && thisHub.dataa == h.dataa) {
+                if (h.datau.linkToHub != null) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
         return hubx.datau.linkToHub;
     }
@@ -395,21 +396,21 @@ public class HubLinkDelegate {
 	    return getLinkHubOnPos(thisHub, false);
 	}
     // 20131116 
-    public static boolean getLinkHubOnPos(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static boolean getLinkHubOnPos(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.linkPos) return true;
-        if (!bCheckSharedHubs) return false;
+        if (!bIncludeCopiedHubs) return false;
         
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkPos && thisHub.dataa == h.dataa) {
+                if (h.datau.linkPos) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         return (hubx != null);
     }
 
@@ -425,23 +426,23 @@ public class HubLinkDelegate {
 	    return getLinkSetMethod(thisHub, false);
 	}
     // 20131116 
-    public static Method getLinkSetMethod(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static Method getLinkSetMethod(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.linkToSetMethod != null) {
             return thisHub.datau.linkToSetMethod;
         }
-        if (!bCheckSharedHubs) return null;
+        if (!bIncludeCopiedHubs) return null;
         
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToSetMethod != null && thisHub.dataa == h.dataa) {
+                if (h.datau.linkToSetMethod != null) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
         return hubx.datau.linkToSetMethod;
     }
@@ -455,23 +456,23 @@ public class HubLinkDelegate {
 	    return getLinkGetMethod(thisHub, false);
 	}
     // 20131116 
-    public static Method getLinkGetMethod(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static Method getLinkGetMethod(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.linkToGetMethod != null) {
             return thisHub.datau.linkToGetMethod;
         }
-        if (!bCheckSharedHubs) return null;
+        if (!bIncludeCopiedHubs) return null;
         
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToGetMethod != null && thisHub.dataa == h.dataa) {
+                if (h.datau.linkToGetMethod != null) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
         return hubx.datau.linkToGetMethod;
     }
@@ -486,23 +487,23 @@ public class HubLinkDelegate {
 	    return getLinkHubPath(thisHub, false);
 	}
     // 20131116 
-    public static String getLinkHubPath(final Hub thisHub, boolean bCheckSharedHubs) {
+    public static String getLinkHubPath(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.linkToPropertyName != null) {
             return thisHub.datau.linkToPropertyName;
         }
-        if (!bCheckSharedHubs) return null;
+        if (!bIncludeCopiedHubs) return null;
         
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToPropertyName != null && thisHub.dataa == h.dataa) {
+                if (h.datau.linkToPropertyName != null) {
                     return true;
                 }
                 return false;
             }
-        });
+        }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
         return hubx.datau.linkToPropertyName;
     }

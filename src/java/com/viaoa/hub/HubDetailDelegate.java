@@ -437,7 +437,6 @@ public class HubDetailDelegate {
         if (thisHub == null) return null;
         if (thisHub.datam.masterHub != null) return thisHub.datam;
         
-        // 20120716
         OAFilter<Hub> filter = new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub h) {
@@ -449,14 +448,8 @@ public class HubDetailDelegate {
                 return false;
             }
         };
-        Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub, filter);
-        
-        //was: Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub);
-        for (int i=0; hubs != null && i < hubs.length; i++) {
-            if (hubs[i].datam.masterHub != null) {
-                return hubs[i].datam;
-            }
-        }
+        Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, filter, true, false);
+        if (hubx != null) return hubx.datam;
         return thisHub.datam;
     }
 
@@ -464,7 +457,6 @@ public class HubDetailDelegate {
     public static Hub getHubWithMasterHub(final Hub thisHub) {
         if (thisHub.datam.masterHub != null) return thisHub;
 
-        // 20120716
         OAFilter<Hub> filter = new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub h) {
@@ -472,21 +464,31 @@ public class HubDetailDelegate {
                     // 20130916 make sure it has the same masterObject
                     //    since it could be a recursive hub, that points
                     //    to the root hub, and not just it's parent
-                    if (thisHub.datam.masterObject == h.datam.masterObject) return true;
+                    if (h.datam.masterHub != null) return true;
                 }
                 return false;
             }
         };
-        Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub, filter);
-        
-        
-        //was: Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub);
-        for (int i=0; i < hubs.length; i++) {
-            if (hubs[i].datam.masterHub != null) {
-                return hubs[i];
+        Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, filter, true, false);
+        return hubx;
+    }
+    public static Hub getHubWithMasterObject(final Hub thisHub) {
+        if (thisHub.datam.masterObject != null) return thisHub;
+
+        OAFilter<Hub> filter = new OAFilter<Hub>() {
+            @Override
+            public boolean isUsed(Hub h) {
+                if (h.datam.masterHub != null) {
+                    // 20130916 make sure it has the same masterObject
+                    //    since it could be a recursive hub, that points
+                    //    to the root hub, and not just it's parent
+                    if (h.datam.masterObject != null) return true;
+                }
+                return false;
             }
-        }
-        return null;
+        };
+        Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, filter, true, false);
+        return hubx;
     }
 
     /** returns the MasterHuib of any shared hub. */
@@ -496,11 +498,12 @@ public class HubDetailDelegate {
         return h;
     }
     
-    
     /**
         Returns the OAObject that owns this Hub
     */
     public static OAObject getMasterObject(Hub thisHub) {
+        thisHub = getHubWithMasterObject(thisHub);
+        if (thisHub == null) return null;
         return thisHub.datam.masterObject;
     }
 
@@ -508,7 +511,13 @@ public class HubDetailDelegate {
         if (thisHub.datam.masterObject != null) {
             return thisHub.datam.masterObject.getClass();
         }
-        Hub h = getHubWithMasterHub(thisHub);
+        if (thisHub.datam.masterHub != null) {
+            return thisHub.datam.masterHub.getObjectClass();
+        }
+        Hub h = getHubWithMasterObject(thisHub);
+        if (h != null) return h.getObjectClass();
+
+        h = getHubWithMasterHub(thisHub);
         if (h != null) return h.getObjectClass();
         return null;
     }
@@ -767,8 +776,13 @@ public class HubDetailDelegate {
     /**
         Returns the OALinkInfo from detail (MANY) to master (ONE).
     */
-    public static OALinkInfo getLinkInfoFromDetailToMaster(Hub thisHub) {
-        return thisHub.datam.liDetailToMaster;
+    public static OALinkInfo getLinkInfoFromDetailToMaster(Hub hub) {
+        Hub h = getHubWithMasterHub(hub);
+        if (h == null) {
+            h = getHubWithMasterObject(hub);
+            if (h == null) return null;
+        }
+        return h.datam.liDetailToMaster;
     }
     
 
@@ -776,6 +790,9 @@ public class HubDetailDelegate {
         Returns true if any of the master hubs above this hub have an active object that is new.
     */
     public static boolean isMasterNew(Hub thisHub) {
+        thisHub = getHubWithMasterObject(thisHub);
+        if (thisHub == null) return false;
+        
         Hub h = thisHub;
         for (; h!=null ;) {
             HubDataMaster dm = HubDetailDelegate.getDataMaster(h);
@@ -846,6 +863,12 @@ public class HubDetailDelegate {
         If master is Department and Detail is Employee then "Employees", which is from Department.getEmployees()
     */
     public static String getPropertyFromMasterToDetail(Hub thisHub) {
+        Hub h = getHubWithMasterHub(thisHub);
+        if (h == null) {
+            h = getHubWithMasterObject(thisHub);
+            if (h == null) return null;
+        }
+        thisHub = h;
         if (thisHub.datam.liDetailToMaster != null) {
             String name = thisHub.datam.liDetailToMaster.getReverseName();
             if (name != null) return name;
@@ -882,6 +905,12 @@ public class HubDetailDelegate {
         If master is Department and Detail is Employee then "Department", which is from Employee.getDepartment()
     */
     public static String getPropertyFromDetailToMaster(Hub thisHub) {
+        Hub h = getHubWithMasterHub(thisHub);
+        if (h == null) {
+            h = getHubWithMasterObject(thisHub);
+            if (h == null) return null;
+        }
+        thisHub = h;
         if (thisHub.datam.liDetailToMaster != null) {
             return thisHub.datam.liDetailToMaster.getName();
         }
@@ -893,7 +922,13 @@ public class HubDetailDelegate {
         Returns true if this hub of objects is owned by a master object.
     */
     public static boolean isOwned(Hub thisHub) {
-        HubDataMaster dm = getDataMaster(thisHub);
+        Hub h = getHubWithMasterHub(thisHub);
+        if (h == null) {
+            h = getHubWithMasterObject(thisHub);
+            if (h == null) return false;
+        }
+        thisHub = h;
+        HubDataMaster dm = thisHub.datam;
         if (dm.masterObject != null && dm.liDetailToMaster != null) {
             OALinkInfo li = OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster);
             if (li != null) return li.getOwner();
@@ -904,7 +939,8 @@ public class HubDetailDelegate {
     
     /** 
      * Get the real hub that this hub should be using.
-     * This could be based on the fact that this hub has not yet been updated after a masterHub.AO has been changed.
+     * This could be based on the fact that this hub has not yet been updated after a masterHub.AO 
+     * has been changed.
      * @param thisHub
      * @return
      */

@@ -149,9 +149,7 @@ public class OATableColumn {
                     }
                 }
                 if (h != hub && !bLinkOnPos) {  // 20131109 
-                    // was: if (h != hub && !bLinkOnPos) {
-                    // 20110515 see if this is a master/detail relationship
-                    Hub mh = h.getMasterHub();
+                    Hub mh = HubDetailDelegate.getMasterHub(h);
                     if (mh == hub) {
                         path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
                     }
@@ -161,14 +159,6 @@ public class OATableColumn {
                     }
                     else if (hub.getMasterHub() == null) {
                         // 20131109  check to see if it is from a HubCopy
-//qqqqqqqqqqqq might not be needed if getLink... methods find the correct hub, etc                        
-                        HubCopy hc = HubCopyDelegate.findHubCopy(h);
-                        if (hc != null) {
-                            Hub hx = hc.getMasterHub();
-                            if (HubShareDelegate.isUsingSameSharedAO(hx, h)) {
-                                path = HubDetailDelegate.getPropertyFromMasterToDetail(hx) + "." + path;
-                            }
-                        }
                     }
                     else {
                         path = holdPath; 
