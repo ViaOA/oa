@@ -2316,16 +2316,9 @@ if (table.bDEBUG) {
         
     }
     
-  
-    // 20120304
     public @Override void afterChangeActiveObject(HubEvent e) {
-    //was: public @Override synchronized void afterChangeActiveObject(HubEvent e) {
         if (getRunningValueChanged()) return;  // 20131113
 
-if (table.bDEBUG) {
-    int xx = 4;
-    xx++; //qqqqqqqqqqqqqqq
-}
         int row = getHub().getPos();
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
 
@@ -2338,10 +2331,19 @@ if (table.bDEBUG) {
             }
         }
         else {
-            table.hubSelect.clear();
-            setSelectedRow(row);
+            if (table.hubSelect.getSize() == 1) {
+                int x = hub.getPos(table.hubSelect.getAt(0));
+                if (x != row) {
+                    table.hubSelect.clear();
+                    setSelectedRow(row);
+                }
+            }
+            else {
+                table.hubSelect.clear();
+                setSelectedRow(row);
+            }
             if (row >= 0) table.hubSelect.add(e.getObject());
-//            rebuildListSelectionModel();
+            // rebuildListSelectionModel();
         }
     }
 

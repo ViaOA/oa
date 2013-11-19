@@ -20,42 +20,34 @@ package com.viaoa.hub;
 /**
  * Used to have two hubs share the same AO.
  */
-public class HubShareAO {
+public class HubShareAO extends HubListenerAdapter {
 	private Hub hub1;
 	private Hub hub2;
-	private HubListener hl1, hl2;
 	
 	public HubShareAO(Hub hub1, Hub hub2) {
 		this.hub1 = hub1;
         this.hub2 = hub2;
-	
-        hl1 = new HubListenerAdapter() {
-			@Override
-			public void afterChangeActiveObject(HubEvent evt) {
-			    Object obj = HubShareAO.this.hub1.getAO();
-			    HubShareAO.this.hub2.setAO(obj);
-			}
-		};
-		hub1.addHubListener(hl1);
-
-		hl2 = new HubListenerAdapter() {
-            @Override
-            public void afterChangeActiveObject(HubEvent evt) {
-                Object obj = HubShareAO.this.hub2.getAO();
-                HubShareAO.this.hub1.setAO(obj);
-            }
-        };
-        hub2.addHubListener(hl1);
+		hub1.addHubListener(this);
+        hub2.addHubListener(this);
 	}
+
+    @Override
+    public void afterChangeActiveObject(HubEvent evt) {
+        Hub h = evt.getHub();
+        Object obj = h.getAO();
+        if (h == hub1) hub2.setAO(obj);
+        else hub1.setAO(obj);
+    }
 	
 	public void close() {
-        if (hl1 != null) {
-            hub1.removeHubListener(hl1);
-            hl1 = null;
-        }
-        if (hl2 != null) {
-            hub2.removeHubListener(hl2);
-            hl2 = null;
-        }
+        hub1.removeHubListener(this);
+        hub2.removeHubListener(this);
 	}
+	
+	public Hub getHub1() {
+	    return hub1;
+	}
+    public Hub getHub2() {
+        return hub2;
+    }
 }

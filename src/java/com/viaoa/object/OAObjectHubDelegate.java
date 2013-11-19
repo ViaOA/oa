@@ -221,7 +221,9 @@ public class OAObjectHubDelegate {
                 }
             }
                 
-            if (oaObj.weakHubs[0] == null || !isInHubWithMaster(oaObj)) {
+            // 20131119 hub could have listeners
+            if (oaObj.weakHubs[0] == null) {
+            //was: if (oaObj.weakHubs[0] == null || !isInHubWithMaster(oaObj)) {
                 oaObj.weakHubs = null;
             }
             

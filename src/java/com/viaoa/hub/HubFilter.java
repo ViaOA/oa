@@ -317,6 +317,7 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
                 }
                 @Override
                 public void onNewList(HubEvent e) {
+                    initialize(); // 20131119 added this
                     if (bShareAO) {
                         afterChangeActiveObject(e);
                     }
