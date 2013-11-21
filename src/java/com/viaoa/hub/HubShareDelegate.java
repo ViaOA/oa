@@ -213,7 +213,8 @@ public class HubShareDelegate {
             if (mh == thisHub) mh = hs.getHub1();
             Hub h = getMainSharedHub(mh);
             // note: use "mh" instead of findHub, since this is going thru a hubCopy
-            Hub hx = _getFirstSharedHub(h, mh, filter, bIncludeCopiedHubs, 0, bOnlyIfSharedAO, (mh != h));
+            boolean b = ((mh != h) && (mh.dataa != h.dataa));
+            Hub hx = _getFirstSharedHub(h, mh, filter, bIncludeCopiedHubs, 0, bOnlyIfSharedAO, b);
             if (hx != null) return hx;
         }
         return null;

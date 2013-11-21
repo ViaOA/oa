@@ -27,6 +27,13 @@ public class HubShareAO extends HubListenerAdapter {
 	public HubShareAO(Hub hub1, Hub hub2) {
 		this.hub1 = hub1;
         this.hub2 = hub2;
+
+//qqqqqqqqqqqqq        
+if (HubShareDelegate.isUsingSameSharedAO(hub1, hub2)) {
+    int xx = 4;
+    xx++;
+}
+        
 		hub1.addHubListener(this);
         hub2.addHubListener(this);
 	}
