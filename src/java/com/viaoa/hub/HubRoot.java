@@ -59,6 +59,14 @@ public class HubRoot {
             return;
         }
 
+        li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
+        if (li != null) li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+        if (li == null || !li.getRecursive()) {
+            hubRoot.setSharedHub(hub, true);
+            return;
+        }
+        
+        
         hubMaster = hub.getMasterHub();  // master hub of root hub - this is the 'source' to listen to.
         if (hubMaster == null) {
             // 20131112

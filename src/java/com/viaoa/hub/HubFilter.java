@@ -254,7 +254,7 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
     }
     
     
-    
+    public boolean DEBUG;
     private boolean bOAObjectCacheDelegateListener;
     private HubListenerAdapter haHub, haHubMaster;
     protected void setup() {
@@ -317,6 +317,10 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
                 }
                 @Override
                 public void onNewList(HubEvent e) {
+if (DEBUG) {//qqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
                     initialize(); // 20131119 added this
                     if (bShareAO) {
                         afterChangeActiveObject(e);
@@ -550,7 +554,12 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
 	        hd.bInFetch = true;
 	        bClearing = true;
 	        // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
-	    	HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
+	        
+if (DEBUG) {//qqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+            onClear();
 	        bClearing = false;
 	    	_initialize();
 	    	if (!bNewListFlag) {
@@ -571,6 +580,10 @@ public abstract class HubFilter extends HubListenerAdapter implements java.io.Se
             }
     	}
     }    
+    
+    protected void onClear() {
+        HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
+    }
     
     private void _initialize() {
         if (bClosed) return;

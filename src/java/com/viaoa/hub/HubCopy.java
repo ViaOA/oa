@@ -27,7 +27,8 @@ public class HubCopy extends HubListenerAdapter {
 	private HubFilter hf;
 	private boolean bShareAO;
 	//private HubListener hlMaster;
-	private boolean bClosed;	
+	private boolean bClosed;
+	private boolean bOnClearedCalled;
 
 	public HubCopy(Hub hubMaster, Hub hubCopy, boolean bShareAO) {
 		this.hubMaster = hubMaster;
@@ -43,27 +44,18 @@ public class HubCopy extends HubListenerAdapter {
 			public boolean isUsed(Object object) {
 				return true;
 			}
+            @Override
+            public void onClear() {
+                // need to keep clearing Hub from removing from hubMaster
+                try {
+                    bOnClearedCalled = true;
+                    super.onClear();
+                }
+                finally {
+                    bOnClearedCalled = false;                    
+                }
+            }
 		};
-	
-        /* hubFilter does this now
-		hlMaster = new HubListenerAdapter() {
-			@Override
-			public void afterChangeActiveObject(HubEvent evt) {
-			    if (HubCopy.this.bClosed) return;
-				if (HubCopy.this.bShareAO) {
-				    Object obj = HubCopy.this.hubMaster.getAO();
-				    if (obj == null || HubCopy.this.hubCopy.contains(obj)) HubCopy.this.hubCopy.setAO(obj);
-				}
-			}
-			@Override
-			public void onNewList(HubEvent e) {
-                if (HubCopy.this.bClosed) return;
-			    afterChangeActiveObject(e);
-			}
-		};
-		hubMaster.addHubListener(hlMaster);
-        */
-		
 		hubCopy.addHubListener(this);
 	}
 
@@ -83,20 +75,16 @@ public class HubCopy extends HubListenerAdapter {
     }
     @Override
     public void afterRemove(HubEvent e) {
-        if (HubCopy.this.bClosed) return;
+        if (bOnClearedCalled || HubCopy.this.bClosed) return;
         Object obj = e.getObject();
-        if (HubCopy.this.hubMaster.contains(obj)) HubCopy.this.hubMaster.remove(obj);
+        if (HubCopy.this.hubMaster.contains(obj)) {
+            HubCopy.this.hubMaster.remove(obj);
+        }
     }
 	
 	public void close() {
  	    // need to make sure that no more events get processed
 	    bClosed = true;
-	    /*
-	    if (hlMaster != null && hubMaster != null) {
-	        hubMaster.removeHubListener(hlMaster);
-	        hlMaster = null;
-	    }
-	    */
         if (hubCopy != null) {
             hubCopy.removeHubListener(this);
         }
