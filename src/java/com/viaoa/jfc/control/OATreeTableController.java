@@ -41,7 +41,7 @@ import com.viaoa.hub.*;
  * Creates a Tree to use as a column in a Table.
  * It also populates a Hub with all of the visible tree nodes.
  * 
- * Note: this should only use use a recursive treeNode
+ * Note: this should only be used for a recursive treeNode
  *
  * See the paint method to see how it is used to render a single column cell.
  *

@@ -493,13 +493,7 @@ if (DEBUG) {//qqqqqqqqqqqqqq
     public @Override void onNewList(HubEvent e) {
         if (bClosed || bNewListFlag) return;
         if (hubMaster != null) {
-            try {
-                bNewListFlag = true;
-                initialize();
-            }
-            finally {
-                bNewListFlag = false;
-            }
+            initialize();
         }
     }
 
@@ -555,22 +549,18 @@ if (DEBUG) {//qqqqqqqqqqqqqq
 	        bClearing = true;
 	        // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
 	        
-if (DEBUG) {//qqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
             onClear();
 	        bClearing = false;
-	    	_initialize();
-	    	if (!bNewListFlag) {
-	    	    try {
-	    	        bNewListFlag = true;                   
-	    	        HubEventDelegate.fireOnNewListEvent(hub, true);
-	    	    }
-	    	    finally {
-	    	        bNewListFlag = false;	    	        
-	    	    }
-	    	}
+    	    try {
+                OAThreadLocalDelegate.setLoadingObject(true);
+                _initialize();
+    	        bNewListFlag = true;                   
+    	        HubEventDelegate.fireOnNewListEvent(hub, true);
+    	    }
+    	    finally {
+    	        bNewListFlag = false;	    	        
+                OAThreadLocalDelegate.setLoadingObject(false);
+    	    }
 	    	afterInitialize();
     	}
     	finally {
