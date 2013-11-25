@@ -18,79 +18,22 @@ All rights reserved.
 package com.viaoa.hub;
 
 /**
- * Used to have two hubs use the same objects, but in different order.
+ * Used to have two hubs use the same objects, so that the ordering can be different.
  */
-public class HubCopy extends HubListenerAdapter {
-    // Note: this needs to extend HubListenerAdapter, so that HuCopyDelegate can find a Hub's HubCopy.
-	private Hub hubMaster;
-	private Hub hubCopy;
-	private HubFilter hf;
-	private boolean bShareAO;
-	//private HubListener hlMaster;
-	private boolean bClosed;
-	private boolean bOnClearedCalled;
+public class HubCopy<TYPE> extends HubFilter {
 
-	public HubCopy(Hub hubMaster, Hub hubCopy, boolean bShareAO) {
-		this.hubMaster = hubMaster;
-		this.hubCopy = hubCopy;
-		this.bShareAO = bShareAO;
-		
-		if (hubMaster == hubCopy) {
-		    throw new RuntimeException("both hubs are the same");
-		}
-		
-		hf = new HubFilter(hubMaster, hubCopy, bShareAO) {
-            @Override
-			public boolean isUsed(Object object) {
-				return true;
-			}
-            @Override
-            public void onClear() {
-                // need to keep clearing Hub from removing from hubMaster
-                try {
-                    bOnClearedCalled = true;
-                    super.onClear();
-                }
-                finally {
-                    bOnClearedCalled = false;                    
-                }
-            }
-		};
-		hubCopy.addHubListener(this);
+	public HubCopy(Hub<TYPE> hubMaster, Hub<TYPE> hubCopy, boolean bShareAO) {
+	    super(hubMaster, hubCopy, bShareAO);
 	}
 
-    public Hub getMasterHub() {
-        return hubMaster;
-    }
-	public boolean getSharingAO() {
-	    return bShareAO;
+	// if object is directly removed from filtered hub, then remove from hubMaster
+	@Override
+	protected void afterRemoveFromFilteredHub(Object obj) {
+	    hubMaster.remove(obj);
 	}
-    @Override
-    public void afterAdd(HubEvent e) {
-        if (HubCopy.this.bClosed) return;
-        Object obj = e.getObject();
-        if (obj != null && !HubCopy.this.hubMaster.contains(obj)) {
-            HubCopy.this.hubMaster.add(obj);
-        }
-    }
-    @Override
-    public void afterRemove(HubEvent e) {
-        if (bOnClearedCalled || HubCopy.this.bClosed) return;
-        Object obj = e.getObject();
-        if (HubCopy.this.hubMaster.contains(obj)) {
-            HubCopy.this.hubMaster.remove(obj);
-        }
-    }
 	
-	public void close() {
- 	    // need to make sure that no more events get processed
-	    bClosed = true;
-        if (hubCopy != null) {
-            hubCopy.removeHubListener(this);
-        }
-        if (hf != null) {
-            hf.close();
-            hf = null;
-        }
+	@Override
+	public boolean isUsed(Object object) {
+	    return true;
 	}
 }

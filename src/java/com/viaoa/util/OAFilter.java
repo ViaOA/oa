@@ -17,6 +17,11 @@ All rights reserved.
 */
 package com.viaoa.util;
 
+
+/**
+ * Used to filter a collection of TYPE objects. 
+ * @author vvia
+ */
 public interface OAFilter<TYPE> {
 
     boolean isUsed(TYPE obj);

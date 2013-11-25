@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import java.io.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OAFilter;
 import com.viaoa.hub.*;
 
 /**
@@ -89,7 +90,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     protected boolean bCancelled;
     protected boolean bHasBeenStarted;
     protected long lastReadTime; // used with timeout
-    protected HubFilterInterface hubFilterInterface;
+    protected OAFilter<TYPE> oaFilter;
     
     /** Create a new OASelect that is not initialzed. */
     public OASelect() {
@@ -246,13 +247,18 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
 
 
     // 20120617
-    public void setHubFilter(HubFilterInterface hfi) {
-        this.hubFilterInterface = hfi;
+    public void setHubFilter(OAFilter<TYPE> hfi) {
+        this.oaFilter = hfi;
     }
-    public HubFilterInterface getHubFilter() {
-        return this.hubFilterInterface ;
+    public OAFilter<TYPE> getHubFilter() {
+        return this.oaFilter ;
     }
-    
+    public void setFilter(OAFilter<TYPE> hfi) {
+        this.oaFilter = hfi;
+    }
+    public OAFilter<TYPE> getFilter() {
+        return this.oaFilter ;
+    }
     
     /**
         Sort order clause to use for query.  See notes at beginning of class.
@@ -501,8 +507,8 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
         for (;;) {
             obj = _next();
             if (obj == null) break;
-            if (hubFilterInterface == null) break;
-            if (hubFilterInterface.isUsed(obj)) break;
+            if (oaFilter == null) break;
+            if (oaFilter.isUsed(obj)) break;
         }
         return obj;
     }
