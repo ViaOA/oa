@@ -462,7 +462,7 @@ public class OAObjectHubDelegate {
         if (li.getPrivateMethod()) { // if hub method is off
             return hubFind.contains(oaObj);
         }
-        if (OAObjectInfoDelegate.isMany2Many(li)) {  // m2m objets do not have Hub in weakRef[] 
+        if (OAObjectInfoDelegate.isMany2Many(li)) {  // m2m objects do not have Hub in weakRef[] 
             return hubFind.contains(oaObj);
         }
         return false;

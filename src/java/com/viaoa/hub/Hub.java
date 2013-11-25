@@ -640,14 +640,27 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Returns true if object exists in Hub.
      */
     public boolean contains(Object obj) {
-        if (datam.masterObject != null && datam.liDetailToMaster != null) {
-            if (datam.liDetailToMaster.getPrivateMethod()) { // if hub method is off
+        // 20131124
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(this);
+        if (li != null) {
+            if (li.getPrivateMethod()) { // if hub method is off
                 return data.vector.contains(obj);
             }
-            if (OAObjectInfoDelegate.isMany2Many(datam.liDetailToMaster)) {  // m2m objets do not have Hub in weakRef[] 
+            if (OAObjectInfoDelegate.isMany2Many(datam.liDetailToMaster)) {  // m2m objects do not have Hub in weakRef[] 
                 return data.vector.contains(obj);
             }
         }
+        
+        /*was
+        if (datam.liDetailToMaster != null) {
+            if (datam.liDetailToMaster.getPrivateMethod()) { // if hub method is off
+                return data.vector.contains(obj);
+            }
+            if (OAObjectInfoDelegate.isMany2Many(datam.liDetailToMaster)) {  // m2m objects do not have Hub in weakRef[] 
+                return data.vector.contains(obj);
+            }
+        }
+        */
         if (data.vector.size() > 25 && obj instanceof OAObject) {
             return OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, this);
         }
