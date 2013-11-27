@@ -519,6 +519,12 @@ public class OAXMLReader extends DefaultHandler {
 
     protected void processProperty(String eName, String value, Class conversionClass, Hashtable hash) {
         Object objValue = value;
+        
+if ("vvvvv".equals(value)) {
+    int xx = 4;
+    xx++;
+}
+        
         if (bUseRef) {
             bUseRef = false;
             objValue = refValue;
