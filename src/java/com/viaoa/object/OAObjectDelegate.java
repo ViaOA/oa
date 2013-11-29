@@ -224,16 +224,20 @@ public class OAObjectDelegate {
 		if (oaObj.guid == 0) return; // set to 0 by readResolve or ObjectCacheDelegate.add() to ignore finalization
 	    if (oaObj.guid > 0 && !oaObj.deletedFlag) {  // set to 0 by readResolve or ObjectCacheDelegate.add() to ignore finalization
             if ((oaObj.changedFlag || oaObj.newFlag) && !OAObjectCSDelegate.isWorkstation()) {
-                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
-                if (oi != null && oi.getUseDataSource()) {
-                    LOG.fine("object was not saved, object="+oaObj.getClass().getName()+", key="+OAObjectKeyDelegate.getKey(oaObj)+", willSaveNow="+bFinalizeSave);                         
-            		if (bFinalizeSave) {
-                    	try {
-                    	    oaObj.save(OAObject.CASCADE_NONE);
-                    	}
-                    	catch (Exception e) {
-                            LOG.log(Level.WARNING, "object had error while saving, object="+oaObj.getClass().getName()+", key="+OAObjectKeyDelegate.getKey(oaObj), e);                         
-                    	}
+
+                // 20131128 added autoAttach check
+                if (!OAObjectDelegate.getAutoAdd(oaObj)) {
+                    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
+                    if (oi != null && oi.getUseDataSource()) {
+                        LOG.fine("object was not saved, object="+oaObj.getClass().getName()+", key="+OAObjectKeyDelegate.getKey(oaObj)+", willSaveNow="+bFinalizeSave);                         
+                		if (bFinalizeSave) {
+                        	try {
+                        	    oaObj.save(OAObject.CASCADE_NONE);
+                        	}
+                        	catch (Exception e) {
+                                LOG.log(Level.WARNING, "object had error while saving, object="+oaObj.getClass().getName()+", key="+OAObjectKeyDelegate.getKey(oaObj), e);                         
+                        	}
+                        }
                     }
                 }
             }
