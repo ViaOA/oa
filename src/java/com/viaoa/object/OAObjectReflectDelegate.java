@@ -654,6 +654,18 @@ public class OAObjectReflectDelegate {
                             hub.setAutoMatch(matchProperty, hubMatch);
                         }
                     }
+                    
+                    // 20131129 trigger
+                    Class c = linkInfo.getTriggerClass();
+                    if (c != null) {
+                        try {
+                            Constructor con = c.getConstructor(Hub.class);
+                            con.newInstance(hub);
+                        }
+                        catch (Exception e) {
+                            LOG.log(Level.WARNING, "error while creating trigger", e);
+                        }
+                    }
                 }
                 else {
                     // 20110214

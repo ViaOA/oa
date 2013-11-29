@@ -20,6 +20,7 @@ package com.viaoa.object;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.logging.Logger;
 
 import com.viaoa.annotation.*;
 import com.viaoa.ds.jdbc.db.*;
@@ -33,7 +34,7 @@ import com.viaoa.util.*;
  *
  */
 public class OAAnnotationDelegate {
-
+    private static Logger LOG = Logger.getLogger(OAAnnotationDelegate.class.getName());
     /**
      * Load/update ObjectInfo using annotations
      */
@@ -225,6 +226,17 @@ public class OAAnnotationDelegate {
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());
             li.setPrivateMethod(!annotation.createMethod());
+            
+            c = annotation.triggerClass();
+            if (c != null && c.equals(OAMany.DEFAULT.class)) c = null;
+            if (c != null) {
+                if (OATrigger.class.isAssignableFrom(c)) {
+                    li.setTriggerClass(c);
+                }
+                else {
+                    LOG.warning("OAMany.trigger does not support interface OATrigger, class="+clazz+", method="+m);
+                }
+            }
         }
     }
 

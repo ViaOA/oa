@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 
 import com.viaoa.object.OAAnnotationDelegate;
 import com.viaoa.object.OALinkInfo;
+import com.viaoa.object.OATrigger;
 
 /*
  * Defines an OAObject relationship that is of type "Many"
@@ -34,7 +35,10 @@ import com.viaoa.object.OALinkInfo;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME) 
 public @interface OAMany {
-    static final class DEFAULT {}; // hack
+    
+    public static final class DEFAULT { // hack for fake class
+    }; 
+
     Class toClass() default DEFAULT.class;  // see: OAAnnotationDelegate.getHubObjectClass(..), OAObjectReflectDelegate.getHubObjectClass(..)
     String displayName() default "";
     String description() default "";
@@ -75,6 +79,8 @@ public @interface OAMany {
     
     /** true if this is a calculated Hub. */
     boolean isCalculated() default false;
+    
+    Class triggerClass() default DEFAULT.class;
 }
 
 /*  OALinkInfo

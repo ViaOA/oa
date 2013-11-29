@@ -32,6 +32,7 @@ public class OALinkInfo implements java.io.Serializable {
 
     String name;
     Class toClass;
+    Class triggerClass;
     int type;
     boolean cascadeSave;  // save, delete of this object will do same with link hub
     boolean cascadeDelete;  // save, delete of this object will do same with link hub
@@ -207,6 +208,12 @@ public class OALinkInfo implements java.io.Serializable {
     public String getMatchHub() {
         return this.matchHub;
     }
-	
+
+    public void setTriggerClass(Class c) {
+        this.triggerClass = c;
+    }
+    public Class getTriggerClass() {
+        return this.triggerClass;
+    }
 }
 

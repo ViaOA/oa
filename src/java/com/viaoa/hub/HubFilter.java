@@ -42,6 +42,7 @@ import com.viaoa.util.OAArray;
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
+
 public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java.io.Serializable, OAFilter<TYPE> {
     private static final long serialVersionUID = 1L;
 
@@ -92,8 +93,8 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         if (!bObjectCache && hubMaster == null) {
             throw new IllegalArgumentException("hubMaster can not be null if bObjectCache=false");
         }
-        if (hub == null) {
-            throw new IllegalArgumentException("hub can not be null");
+        if (hub == null) {  // 20131129 hub can now be null, used by Triggers
+            // throw new IllegalArgumentException("hub can not be null");
         }
         this.hubMaster = hubMaster;
         this.hub = hub;
@@ -128,7 +129,8 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         // need to make sure that no more events get processed
         this.bClosed = true;
 		if (bOAObjectCacheDelegateListener) {
-		    OAObjectCacheDelegate.removeListener(hub.getObjectClass(), getMasterHubListener());
+		    Class c = (hub != null) ? hub.getObjectClass() : hubMaster.getObjectClass();
+		    OAObjectCacheDelegate.removeListener(c, getMasterHubListener());
 		    bOAObjectCacheDelegateListener = false;
 		}
         if (hub != null) {
@@ -283,7 +285,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
                 if (!hubMaster.isLoading()) {
                     // 20091020 object could have been added to hub, need to leave in
                     // was: update(e.getObject());
-                    if (!hub.contains(e.getObject())) {
+                    if (hub == null || !hub.contains(e.getObject())) {
                         update(e.getObject());
                     }
                 }
@@ -321,7 +323,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
             }
             
             public void afterChangeActiveObject(HubEvent e) {
-                if (bShareAO) {
+                if (bShareAO && hub != null) {
                     Object obj = HubFilter.this.hubMaster.getAO();
                     if (obj == null || HubFilter.this.hub.contains(obj)) {
                         HubFilter.this.hub.setAO(obj);
@@ -336,9 +338,10 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
     protected void setup() {
         if (bClosed) return;
         if (hubMaster == null) {
-            hub.loadAllData(); // required.  Otherwise HubController would be calling this.add as it was loading the objects
+            if (hub != null) hub.loadAllData(); // required.  Otherwise HubController would be calling this.add as it was loading the objects
             bOAObjectCacheDelegateListener = true;
-            OAObjectCacheDelegate.addListener(hub.getObjectClass(), getMasterHubListener());
+            Class c = (hub != null) ? hub.getObjectClass() : hubMaster.getObjectClass();
+            OAObjectCacheDelegate.addListener(c, getMasterHubListener());
         }
         else {
             hubMaster.addHubListener(getMasterHubListener());
@@ -347,28 +350,6 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
 
         if (hub != null) {
             hub.addHubListener(this);
-        }
-//qqqqqqqqqqqq why a second listener?        
-        if (hubMaster != null) {
-            hlHubMaster = new HubListenerAdapter() {
-                @Override
-                public void afterChangeActiveObject(HubEvent e) {
-                    if (bShareAO) {
-                        Object obj = HubFilter.this.hubMaster.getAO();
-                        if (obj == null || HubFilter.this.hub.contains(obj)) {
-                            HubFilter.this.hub.setAO(obj);
-                        }
-                    }
-                }
-                @Override
-                public void onNewList(HubEvent e) {
-                    initialize(); // 20131119 added this
-                    if (bShareAO) {
-                        afterChangeActiveObject(e);
-                    }
-                }
-            };
-            hubMaster.addHubListener(hlHubMaster);
         }
         setupLinkHubListener();
     }
@@ -383,7 +364,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
 
     protected void setupLinkHubListener() {
         if (hubLink != null) hubLink.removeHubListener(linkHubListener);
-
+        if (hub == null) return;
         hubLink = hub.getLinkHub();
         if (hubLink == null) return;
         
@@ -495,6 +476,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
 
     public void refresh(Object obj) {
         boolean b = isUsed((TYPE)obj);
+        if (hub == null) return;
         if (b) {
             obj = getObject(obj);
             if (obj != null && !hub.contains(obj)) {
@@ -521,20 +503,23 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         if (bServerSideOnly) { 
             OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
         }
-        HubData hd = hub.data;
+        
+        HubData hd = null;
         try {
-	        hd.bInFetch = true;
-
-	        bClearing = true;
-	        // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
-	        HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
-	        bClearing = false;
+            if (hub != null) {
+                hd = hub.data;
+                hd.bInFetch = true;
+                bClearing = true;
+                // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
+                HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
+                bClearing = false;
+            }
 	        
     	    try {
                 OAThreadLocalDelegate.setLoadingObject(true);
                 _initialize();
     	        bNewListFlag = true;                   
-    	        HubEventDelegate.fireOnNewListEvent(hub, true);
+    	        if (hub != null) HubEventDelegate.fireOnNewListEvent(hub, true);
     	    }
     	    finally {
     	        bNewListFlag = false;	    	        
@@ -543,7 +528,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
 	    	afterInitialize();
     	}
     	finally {
-    		hd.bInFetch = false;
+    		if (hd != null) hd.bInFetch = false;
             if (bServerSideOnly) {
                 OARemoteThreadDelegate.sendMessages(false);
             }
@@ -557,18 +542,19 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
             if (obj == null) break;
             update(obj);
         }
+        if (hub == null) return;
+
         Object obj = hub.getAO();
         if (bShareAO) {
             obj = hubMaster.getAO();
         }
-        
         if (obj != null && !hub.contains(obj)) {
-        	if (hub.getLinkHub() != null && HubDelegate.isValid(hub)) {
-        		hub.add(obj);
-        	}
-        	else {
-        	    hub.setAO(null);
-        	}
+            if (hub.getLinkHub() != null && HubDelegate.isValid(hub)) {
+                hub.add(obj);
+            }
+            else {
+                hub.setAO(null);
+            }
         }
         
         // 20120716
@@ -608,7 +594,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
     protected void addObject(Object obj) {
         if (bClosed) return;
         try {
-        	hub.add(obj);
+        	if (hub != null) hub.add(obj);
         }
         catch (Exception e) {
         }
@@ -620,7 +606,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
     protected void removeObject(Object obj) {
         if (bClosed) return;
         try {
-            hub.remove(obj);
+            if (hub != null) hub.remove(obj);
         }
         catch (Exception e) {
         }
@@ -661,7 +647,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
     }
     @Override
     public void afterChangeActiveObject(HubEvent e) {
-        if (bShareAO && hubMaster != null) {
+        if (bShareAO && hub != null && hubMaster != null) {
             Object obj = HubFilter.this.hub.getAO();
             if (obj == null || HubFilter.this.hubMaster.contains(obj)) {
                 HubFilter.this.hubMaster.setAO(obj);
