@@ -132,8 +132,11 @@ public class HubDelegate {
             		if (li.getToClass() == null) {
             			if (liFound != null) continue;
             		}
+            		if (liFound != null) {
+            		    throw new RuntimeException("more then one link for hubClass="+c+", find linkClass="+classes[i]);
+            		}
         			liFound = li;
-                	if (li.getType() == li.ONE) break;  // try to find ONE type, but will settle on MANY
+                	// if (li.getType() == li.ONE) break;  // try to find ONE type, but will settle on MANY
             	}
             }
             if (liFound == null) return null;

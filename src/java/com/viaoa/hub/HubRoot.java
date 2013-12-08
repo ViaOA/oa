@@ -62,7 +62,7 @@ public class HubRoot {
         li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
         if (li != null) li = OAObjectInfoDelegate.getReverseLinkInfo(li);
         if (li == null || !li.getRecursive()) {
-            hubRoot.setSharedHub(hub, true);
+            hubRoot.setSharedHub(hubMaster, false);
             return;
         }
         
