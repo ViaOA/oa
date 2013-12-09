@@ -132,6 +132,7 @@ public class HubShareDelegate {
         
         // find a HubShareAO in the listener list
         HubListener[] hls = HubEventDelegate.getHubListeners(h);
+        if (hls == null) return null;
         for (HubListener hl : hls) {
             if (hl instanceof HubShareAO) {
                 return (HubShareAO) hl;

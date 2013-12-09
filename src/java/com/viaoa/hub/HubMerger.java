@@ -70,13 +70,13 @@ public class HubMerger {
     boolean bIgnoreIsUsedFlag; // flag to have isUsed() return false;
     private boolean bEnabled = true;
     private boolean bIsRecusive;
+    private boolean bIncludeRootHub;
     
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     
     public int TotalHubListeners; // for testing only   
 
     public static int HubListenerCount;  // number of HubListeners used by all HubMerger
-
 
     private boolean bServerSideOnly;
     
@@ -91,25 +91,34 @@ public class HubMerger {
         @param bUseAll if true, then each object in hubRoot will be used.  If false, then only the Active Object is used.
     */
     public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll) {
-        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll);
+        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, 
+                null, bUseAll, false);
     }
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder, boolean bUseAll) {
+    
+    // main
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, 
+            String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
         if (hubRoot == null) {
             throw new IllegalArgumentException("Root hub can not be null");
         }
         if (hubCombinedObjects == null) {
             throw new IllegalArgumentException("Combined hub can not be null");
         }
-        init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll);
+        init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
     }
     public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bUseAll) {
-        this(hubRoot, hubCombinedObjects, propertyPath, false, bUseAll);
+        this(hubRoot, hubCombinedObjects, propertyPath, false, null, bUseAll, false);
+    }
+
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll, boolean bIncludeRootHub) {
+        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, bIncludeRootHub);
     }
 
     public HubMerger(OAObject obj, Hub hubCombinedObjects, String propertyPath) {
         Hub h = new Hub(obj.getClass());
         h.add(obj);
-        init(h, hubCombinedObjects, propertyPath, bUseAll, propertyPath, true);
+        h.setPos(0);
+        init(h, hubCombinedObjects, propertyPath, false, null, true, false);
     }
     
     /**
@@ -122,7 +131,8 @@ public class HubMerger {
         bServerSideOnly = b;
     }
 
-    private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder, boolean bUseAll) {
+    private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
+            boolean bShareActiveObject, String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
         HubData hd = null;
         try {
             // 20120624 hubCombined could  be a detail hub.
@@ -131,7 +141,7 @@ public class HubMerger {
                 hd = hubCombinedObjects.data;
                 hd.bInFetch = true;
             }
-            _init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll);
+            _init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
         }
         finally {
             if (hd != null) hd.bInFetch = false;
@@ -139,12 +149,14 @@ public class HubMerger {
         }
     }
     
-    private void _init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder, boolean bUseAll) {
+    private void _init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, 
+            String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
         this.hubRoot = hubRoot;
         this.hubCombined = hubCombinedObjects;
         this.path = propertyPath;
         this.bShareActiveObject = bShareActiveObject;
         this.bUseAll = bUseAll;
+        this.bIncludeRootHub = bIncludeRootHub;
         createNodes();  // this will create nodeRoot
         
         this.dataRoot = new Data(nodeRoot, null, hubRoot);
@@ -411,6 +423,9 @@ if (true) return;
 //            if (!OAObject.class.equals(clazz)) { // 20120809 could be using generic type reference (ex: OALeftJoin.A)
                 throw new IllegalArgumentException("Classes do not match.  Property path \""+path+"\" is for objects of Class "+clazz.getName() + " and hubCombined is for objects of Class "+hubCombined.getObjectClass());
 //            }
+        }
+        if (bShareActiveObject) {
+//qqqqqqqqqqq need to check root matches rootHub.objectClass            
         }
     }
 
