@@ -14,7 +14,7 @@ THIS SOFTWARE OR ITS DERIVATIVES.
 
 Copyright (c) 2001-2013 ViaOA, Inc.
 All rights reserved.
-*/
+ */
 package com.viaoa.hub;
 
 import java.lang.reflect.Method;
@@ -30,74 +30,100 @@ import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAReflect;
 
 /**
-    Used to combine objects from a property path of a root Hub into a single Hub.  
-    As any changes are made to any objects included in the property path, the Hub 
-    will automatically be updated.  Property path can include either type of 
-    reference: One or Many.  
-    <p>
-    Examples:
-    <pre>
-    new HubMerger(hubSalesmen, hubOrders, "customers.orders");
-
-    new HubMerger(hubItem, hubForm, "formItem.formSection.formRow.form");
-    
-    new HubMerger(hubForm, hubItem, "formRows.formSections.formItems.item");
-    </pre>
-    
-    @created 2004/08/20, rewritten 20080804, added recursive links 20120527
-*/
+ * Used to combine objects from a property path of a root Hub into a single Hub. As any changes are made
+ * to any objects included in the property path, the Hub will automatically be updated. Property path
+ * can include either type of reference: One or Many.
+ * <p>
+ * Examples:
+ * 
+ * <pre>
+ * new HubMerger(hubSalesmen, hubOrders, &quot;customers.orders&quot;);
+ * 
+ * new HubMerger(hubItem, hubForm, &quot;formItem.formSection.formRow.form&quot;);
+ * 
+ * new HubMerger(hubForm, hubItem, &quot;formRows.formSections.formItems.item&quot;);
+ * </pre>
+ * 
+ * @created 2004/08/20, rewritten 20080804, added recursive links 20120527
+ */
 public class HubMerger {
     private static Logger LOG = Logger.getLogger(HubMerger.class.getName());
 
-    /* Programming notes:
-       Node: defines the straight path of nodes.  Each node has a child node.
-       Data: used to create a tree of nodes for objects in the hubs.  If the property is a type=One
-       then the actual Node will have a temp Hub that is used to store the unique values.
-       Each data has an array of children Data.  A new Data is created for each object
-       in the parent Data, until the child.node is null.
-       20120522 add support for recursive objects in the path
-    */
-    
-    private Node nodeRoot;  // first node from propertyPath
-    private Data dataRoot;  // node used for the root Hub
-    
-    String path;      // property path 
-    Hub hubCombined;  // Hub that stores the results 
-    Hub hubRoot;      // main hub used as the first hub.
-    boolean bShareEndHub;     // if true, then hubCombined can be shared with the currently found "single" Hub
-    boolean bShareActiveObject;  // if bShareEndHub, then this will set the sharedHub as sharing the AO
-    boolean bUseAll;   // if false, then only use AO in the rootHub, otherwise all objects will be used. 
+    /*
+     * Programming notes: Node: defines the straight path of nodes. Each node has a child node. Data:
+     * used to create a tree of nodes for objects in the hubs. If the property is a type=One then the
+     * actual Node will have a temp Hub that is used to store the unique values. Each data has an array
+     * of children Data. A new Data is created for each object in the parent Data, until the child.node
+     * is null. 20120522 add support for recursive objects in the path
+     */
+
+    private Node nodeRoot; // first node from propertyPath
+    private Data dataRoot; // node used for the root Hub
+
+    String path; // property path
+    Hub hubCombined; // Hub that stores the results
+    Hub hubRoot; // main hub used as the first hub.
+    boolean bShareEndHub; // if true, then hubCombined can be shared with the currently found "single"
+                          // Hub
+    boolean bShareActiveObject; // if bShareEndHub, then this will set the sharedHub as sharing the AO
+    boolean bUseAll; // if false, then only use AO in the rootHub, otherwise all objects will be used.
     boolean bIgnoreIsUsedFlag; // flag to have isUsed() return false;
     private boolean bEnabled = true;
     private boolean bIsRecusive;
     private boolean bIncludeRootHub;
-    
-    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    
-    public int TotalHubListeners; // for testing only   
 
-    public static int HubListenerCount;  // number of HubListeners used by all HubMerger
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+    public int TotalHubListeners; // for testing only
+
+    public static int HubListenerCount; // number of HubListeners used by all HubMerger
 
     private boolean bServerSideOnly;
-    
-    /**
-        Used to create an object that will automatically update a Hub with all of the objects from a
-        property path of a Hub.
-        @param hubRoot root Hub.  The active object of this Hub will be used to get all objects in the propertyPath.
-        @param hubCombinedObjects will have all of the objects from the active object of the hubRoot, using propertyPath.
-        If hubCombinedObjects.getObjectClass() is null, then it will be assigned the correct class.
-        @param propertyPath dot seperated property path from the class of rootHub to the class of combinedHub.
-        @param bShareActiveObject if true then the Active Object from found hub will be shared.
-        @param bUseAll if true, then each object in hubRoot will be used.  If false, then only the Active Object is used.
-    */
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll) {
-        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, 
-                null, bUseAll, false);
+
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
+            boolean bUseAll) {
+        this(hubRoot, hubCombinedObjects, propertyPath, false, null, bUseAll, false);
+    }
+
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
+            boolean bShareActiveObject, boolean bUseAll) {
+        this(hubRoot, hubCombinedObjects, propertyPath, 
+                bShareActiveObject, null, bUseAll, false);
+    }
+
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
+            boolean bShareActiveObject, String selectOrder, 
+            boolean bUseAll)  
+    {
+        this(hubRoot, hubCombinedObjects, propertyPath, 
+                bShareActiveObject, selectOrder, bUseAll, false);
     }
     
-    // main
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, 
-            String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
+    /**
+     * Main constructor that includes all of the config params Used to create an object that will
+     * automatically update a Hub with all of the objects from a property path of a Hub.
+     * 
+     * @param hubRoot
+     *            root Hub. The active object of this Hub will be used to get all objects in the
+     *            propertyPath.
+     * @param hubCombinedObjects
+     *            will have all of the objects from the active object of the hubRoot, using
+     *            propertyPath. If hubCombinedObjects.getObjectClass() is null, then it will be assigned
+     *            the correct class.
+     * @param propertyPath
+     *            dot seperated property path from the class of rootHub to the class of combinedHub.
+     * @param bShareActiveObject
+     *            if true then the Active Object from found hub will be shared.
+     * @param bUseAll
+     *            if true, then each object in hubRoot will be used. If false, then only the Active
+     *            Object is used.
+     * @param bIncludeRootHub
+     *            if the objects in the rootHub should also be included.
+     */
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
+            boolean bShareActiveObject, String selectOrder, 
+            boolean bUseAll, boolean bIncludeRootHub) 
+    {
         if (hubRoot == null) {
             throw new IllegalArgumentException("Root hub can not be null");
         }
@@ -106,11 +132,9 @@ public class HubMerger {
         }
         init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
     }
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bUseAll) {
-        this(hubRoot, hubCombinedObjects, propertyPath, false, null, bUseAll, false);
-    }
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll, boolean bIncludeRootHub) {
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
+            boolean bShareActiveObject, boolean bUseAll, boolean bIncludeRootHub) {
         this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, bIncludeRootHub);
     }
 
@@ -120,22 +144,21 @@ public class HubMerger {
         h.setPos(0);
         init(h, hubCombinedObjects, propertyPath, false, null, true, false);
     }
-    
+
     /**
-     * This needs to be set to true if it is only created on the server, but
-     * client applications will be using the same Hub that is filtered.
-     * This is so that changes on the hub will be published to the clients, even if 
-     * initiated on an OAClientThread. 
+     * This needs to be set to true if it is only created on the server, 
+     * but client applications will be using the same Hub that is filtered. 
+     * This is so that changes on the hub will be published to the
+     * clients, even if initiated on an OAClientThread.
      */
     public void setServerSideOnly(boolean b) {
         bServerSideOnly = b;
     }
 
-    private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
-            boolean bShareActiveObject, String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
+    private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
         HubData hd = null;
         try {
-            // 20120624 hubCombined could  be a detail hub.
+            // 20120624 hubCombined could be a detail hub.
             OAThreadLocalDelegate.setSuppressCSMessages(true);
             if (hubCombinedObjects != null && !hubCombinedObjects.data.bInFetch) {
                 hd = hubCombinedObjects.data;
@@ -148,41 +171,42 @@ public class HubMerger {
             OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
     }
-    
-    private void _init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, 
-            String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
+
+    private void _init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
         this.hubRoot = hubRoot;
         this.hubCombined = hubCombinedObjects;
         this.path = propertyPath;
         this.bShareActiveObject = bShareActiveObject;
         this.bUseAll = bUseAll;
         this.bIncludeRootHub = bIncludeRootHub;
-        createNodes();  // this will create nodeRoot
-        
+        createNodes(); // this will create nodeRoot
+
         this.dataRoot = new Data(nodeRoot, null, hubRoot);
         nodeRoot.data = dataRoot;
     }
-    
 
     public Hub getRootHub() {
         return this.hubRoot;
     }
+
     public Hub getCombinedHub() {
         return this.hubCombined;
     }
-    
+
     public void setEnabled(boolean b) {
         if (this.bEnabled == b) return;
         this.bEnabled = b;
         if (bEnabled) {
             if (bServerSideOnly) { // 20120505
-                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if
+                                                       // OAClientThread
             }
             if (!bShareEndHub) hubCombined.clear();
             dataRoot.onNewList(null);
             dataRoot.afterChangeActiveObject(null);
         }
     }
+
     public boolean getEnabled() {
         return this.bEnabled;
     }
@@ -190,29 +214,31 @@ public class HubMerger {
     public String getPath() {
         return this.path;
     }
-    
+
     private String description;
+
     public void setDescription(String desc) {
         description = desc;
     }
+
     public String getDescription() {
         return description;
     }
-    
+
     /**
-        Note: if multiple threads are making changes that affect the node data, then 
-        errors could show up.
+     * Note: if multiple threads are making changes that affect the node data, then errors could show
+     * up.
      */
     public void verify() {
         // qqqqq todo: needs to verify recursive data
-if (true) return;       
+        if (true) return;
         if (!bEnabled) return;
-        //XOG.finest("verifing nodes");
+        // XOG.finest("verifing nodes");
         // Nodes
-        for (Node node = nodeRoot ; node != null; node = node.child) {
+        for (Node node = nodeRoot; node != null; node = node.child) {
             if (node.clazz == null) LOG.warning("node.clazz == null");
             if (node.liFromParentToChild == null) {
-                if (node != nodeRoot) LOG.warning("liFromParentToChild == null for Node:"+node.property);
+                if (node != nodeRoot) LOG.warning("liFromParentToChild == null for Node:" + node.property);
             }
             else if (node.liFromParentToChild.getType() == OALinkInfo.ONE) {
                 if (node.data == null) {
@@ -222,19 +248,19 @@ if (true) return;
                     }
                 }
                 else if (node.data.parentObject != null) {
-                    LOG.warning("Node: "+node.property+" is used for type=One and parentObject != null");
+                    LOG.warning("Node: " + node.property + " is used for type=One and parentObject != null");
                 }
             }
             else { // Many
                 if (node.data != null) {
-                    LOG.warning("Node: "+node.property+" is type=Many data != null");
+                    LOG.warning("Node: " + node.property + " is type=Many data != null");
                 }
             }
         }
 
         // verify hubCombinued objects are used
         if (!bShareEndHub) {
-            for (int i=0; ; i++) {
+            for (int i = 0;; i++) {
                 Object obj = hubCombined.getAt(i);
                 if (obj == null) break;
                 if (!isUsed(obj)) {
@@ -242,15 +268,15 @@ if (true) return;
                 }
             }
         }
-        
-        //XOG.finest("verifying data");
+
+        // XOG.finest("verifying data");
         dataRoot.verify();
         for (Node node = nodeRoot; node != null; node = node.child) {
             if (node.data != null) node.data.verify();
         }
-        //XOG.finest("verify complete");
+        // XOG.finest("verify complete");
     }
-    
+
     private boolean isUsed(Object objFind) {
         if (bIgnoreIsUsedFlag) return false;
         if (!bEnabled) {
@@ -259,6 +285,7 @@ if (true) return;
         boolean b = isUsed(objFind, null);
         return b;
     }
+
     private boolean isUsed(Object objFind, Node nodeFind) {
         if (bIgnoreIsUsedFlag) return false;
         if (!bEnabled) return false;
@@ -273,75 +300,71 @@ if (true) return;
         boolean b = dataFnd._isUsed(objFind, nodeFind);
         return b;
     }
-    
-    
-    // These are all called when the event happens on the "real" Hub that the combinedHub is "fed" from.      
-    
+
+    // These are all called when the event happens on the "real" Hub that the combinedHub is "fed" from.
 
     /**
-     * This can be overwritten to get the remove event from the parent,
-     * instead of getting the remove event from the combinedHub.<br>
-     * Since remove will also set the masterObject property to null,
-     * this can be used before it is set to null.
+     * This can be overwritten to get the remove event from the parent, instead of getting the remove
+     * event from the combinedHub.<br>
+     * Since remove will also set the masterObject property to null, this can be used before it is set
+     * to null.
+     * 
      * @param e
      */
     protected void beforeRemoveRealHub(HubEvent e) {
     }
+
     protected void afterRemoveRealHub(HubEvent e) {
     }
+
     protected void beforeRemoveAllRealHub(HubEvent e) {
     }
-    
-    
+
     /**
-     * This can be overwritten to get the move event from the parent,
-     * instead of getting the move event from the combinedHub.
+     * This can be overwritten to get the move event from the parent, instead of getting the move event
+     * from the combinedHub.
      */
     protected void afterMoveRealHub(HubEvent e) {
     }
+
     /**
-     * This can be overwritten to get the insert event from the parent,
-     * instead of getting the insert event from the combinedHub.
+     * This can be overwritten to get the insert event from the parent, instead of getting the insert
+     * event from the combinedHub.
      */
     protected void beforeInsertRealHub(HubEvent e) {
     }
+
     /**
-     * This can be overwritten to get the insert event from the parent,
-     * instead of getting the insert event from the combinedHub.
+     * This can be overwritten to get the insert event from the parent, instead of getting the insert
+     * event from the combinedHub.
      */
     protected void afterInsertRealHub(HubEvent e) {
     }
+
     /**
-     * This can be overwritten to get the add event from the parent,
-     * instead of getting the add event from the combinedHub.
+     * This can be overwritten to get the add event from the parent, instead of getting the add event
+     * from the combinedHub.
      */
     protected void beforeAddRealHub(HubEvent e) {
     }
+
     /**
-     * This can be overwritten to get the add event from the parent,
-     * instead of getting the add event from the combinedHub.
+     * This can be overwritten to get the add event from the parent, instead of getting the add event
+     * from the combinedHub.
      */
     protected void afterAddRealHub(HubEvent e) {
     }
-    
-/*    
-//qqqqqq not sure if this is used    
-//  check to see if this, and Data.getChildrenCount() can be removed    
-    public int getChildrenCount() {
-        if (!bEnabled) return 0;
-        int cnt = 0;
 
-        Node node = nodeRoot;
-        for ( ; node != null; node = node.child) {
-            if (node.data != null) cnt += node.data.getChildrenCount();
-        }
-// this needs to consider what to do if recursive is included       
-        cnt += dataRoot.getChildrenCount();
-        return cnt;
-    }
-*/    
+    /*
+     * //qqqqqq not sure if this is used // check to see if this, and Data.getChildrenCount() can be
+     * removed public int getChildrenCount() { if (!bEnabled) return 0; int cnt = 0;
+     * 
+     * Node node = nodeRoot; for ( ; node != null; node = node.child) { if (node.data != null) cnt +=
+     * node.data.getChildrenCount(); } // this needs to consider what to do if recursive is included cnt
+     * += dataRoot.getChildrenCount(); return cnt; }
+     */
     protected void createNodes() {
-        bShareEndHub = !bUseAll;  
+        bShareEndHub = !bUseAll;
         Class clazz = hubRoot.getObjectClass();
 
         // 20120809 using new OAPropertyPath
@@ -350,27 +373,26 @@ if (true) return;
             oaPropPath.setup(clazz);
         }
         catch (Exception e) {
-            throw new IllegalArgumentException("Cant find property for PropertyPath=\""+path+"\" starting with Class "+hubRoot.getObjectClass().getName(), e);
+            throw new IllegalArgumentException("Cant find property for PropertyPath=\"" + path + "\" starting with Class " + hubRoot.getObjectClass().getName(), e);
         }
         String[] pps = oaPropPath.getProperties();
         Method[] methods = oaPropPath.getMethods();
         Class[] classes = oaPropPath.getClasses();
-        
-        
+
         nodeRoot = new Node();
         nodeRoot.clazz = clazz;
         Node node = nodeRoot;
         boolean bLastWasMany = false;
         OALinkInfo lastLinkInfo = null; // 20131009
-        
-        for (int i=0 ; ; i++) {
+
+        for (int i = 0;; i++) {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
             OALinkInfo recursiveLinkInfo = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.MANY);
             Node recursiveNode = null;
-            
+
             // 20131009 check to see if link uses recursive
             if (bLastWasMany && recursiveLinkInfo != null && lastLinkInfo != null && lastLinkInfo.getRecursive()) {
-            //was: if (bLastWasMany && recursiveLinkInfo != null) {
+                // was: if (bLastWasMany && recursiveLinkInfo != null) {
                 bIsRecusive = true;
                 recursiveNode = new Node();
                 recursiveNode.property = recursiveLinkInfo.getName();
@@ -380,7 +402,7 @@ if (true) return;
                 node.recursiveChild = recursiveNode;
                 bShareEndHub = false;
             }
-            
+
             if (i == pps.length) {
                 break;
             }
@@ -388,17 +410,18 @@ if (true) return;
 
             OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, prop);
             if (linkInfo == null) {
-                throw new IllegalArgumentException("Cant find "+prop+" for PropertyPath \""+path+"\" starting with Class "+hubRoot.getObjectClass().getName());
+                throw new IllegalArgumentException("Cant find " + prop + " for PropertyPath \"" + path + "\" starting with Class " + hubRoot.getObjectClass().getName());
             }
             bLastWasMany = linkInfo.getType() == linkInfo.MANY;
             lastLinkInfo = linkInfo;
-            
+
             if (bShareEndHub) {
                 if (linkInfo.getType() == OALinkInfo.MANY) {
-                    if (i+1 <= pps.length) bShareEndHub = false;  // only the last one can be many
+                    if (i + 1 <= pps.length) bShareEndHub = false; // only the last one can be many
                 }
                 else {
-                    if (i+1 == pps.length) bShareEndHub = false;  // only the last one can be many, but not one
+                    if (i + 1 == pps.length) bShareEndHub = false; // only the last one can be many, but
+                                                                   // not one
                 }
             }
 
@@ -407,9 +430,9 @@ if (true) return;
             node2.liFromParentToChild = linkInfo;
 
             clazz = classes[i];
-            
+
             node2.clazz = clazz;
-            
+
             node.child = node2;
             node = node2;
 
@@ -420,17 +443,20 @@ if (true) return;
         // verify that last property is same class as hubCombined
         if (hubCombined.getObjectClass() == null) HubDelegate.setObjectClass(hubCombined, clazz);
         if (!hubCombined.getObjectClass().equals(clazz)) {
-//            if (!OAObject.class.equals(clazz)) { // 20120809 could be using generic type reference (ex: OALeftJoin.A)
-                throw new IllegalArgumentException("Classes do not match.  Property path \""+path+"\" is for objects of Class "+clazz.getName() + " and hubCombined is for objects of Class "+hubCombined.getObjectClass());
-//            }
+            // if (!OAObject.class.equals(clazz)) { // 20120809 could be using generic type reference
+            // (ex: OALeftJoin.A)
+            throw new IllegalArgumentException("Classes do not match.  Property path \"" + path + "\" is for objects of Class " + clazz.getName() + " and hubCombined is for objects of Class " + hubCombined.getObjectClass());
+            // }
         }
-        if (bShareActiveObject) {
-//qqqqqqqqqqq need to check root matches rootHub.objectClass            
+        if (bIncludeRootHub) {
+            if (!hubRoot.getObjectClass().equals(clazz)) {
+                throw new IllegalArgumentException("IncludeRootHub=true, and HubRoot class does not match.  Property path \"" + path + "\" is for objects of Class " + clazz.getName() + " and hubCombined is for objects of Class " + hubCombined.getObjectClass());
+            }
         }
     }
 
     public void close() {
-        //LOG.finer("closing");
+        // LOG.finer("closing");
         if (nodeRoot == null) return;
         bIgnoreIsUsedFlag = true;
         dataRoot.close();
@@ -455,48 +481,51 @@ if (true) return;
         OALinkInfo liFromParentToChild;
         Node child;
         Node recursiveChild;
-        Data data;  // first node for root and used for Hub for link.type = One
+        Data data; // first node for root and used for Hub for link.type = One
+
         void close() {
             if (data != null) data.close();
             data = null;
         }
-        public @Override String toString() {
-            String s = liFromParentToChild == null ? "root" : liFromParentToChild.getType()==OALinkInfo.MANY?"Many":"One"; 
-            s = "class: "+clazz+", property: "+property+", type:"+s;
+
+        public @Override
+        String toString() {
+            String s = liFromParentToChild == null ? "root" : liFromParentToChild.getType() == OALinkInfo.MANY ? "Many" : "One";
+            s = "class: " + clazz + ", property: " + property + ", type:" + s;
             return s;
         }
     }
 
     class Data extends HubListenerAdapter {
         Node node;
-        OAObject parentObject;  // parent object of hub
+        OAObject parentObject; // parent object of hub
         Hub hub;
         volatile ArrayList<Data> alChildren;
         boolean bHubListener;
-        
+
         Data(Node node, OAObject parentObject, Hub hub) {
             if (hub == null) {
                 throw new RuntimeException("hub can not be null");
             }
             if (!node.clazz.equals(hub.getObjectClass())) {
                 // 20130709
-                if (!OAObject.class.isAssignableFrom(node.clazz)) { 
+                if (!OAObject.class.isAssignableFrom(node.clazz)) {
                     throw new RuntimeException("Hub class does not equal Node class");
                 }
-                /*was
-                if (!OAObject.class.equals(node.clazz)) { // 20120809 could be using generic type reference (ex: OALeftJoin.A)
-                    throw new RuntimeException("Hub class does not equal Node class");
-                }
-                */
+                /*
+                 * was if (!OAObject.class.equals(node.clazz)) { // 20120809 could be using generic type
+                 * reference (ex: OALeftJoin.A) throw new
+                 * RuntimeException("Hub class does not equal Node class"); }
+                 */
             }
             this.node = node;
             this.parentObject = parentObject;
             this.hub = hub;
-            
+
             hub.addHubListener(this);
-            bHubListener = true;            
-            HubListenerCount++;         
-            TotalHubListeners++;            
+            bHubListener = true;
+            HubListenerCount++;
+            TotalHubListeners++;
             createChildren();
         }
 
@@ -518,11 +547,10 @@ if (true) return;
             }
             return cnt;
         }
-        
-        
+
         void verify() {
             // todo: test when data is recursive
-if (true) return;            
+            if (true) return;
             if (!bEnabled) return;
             // All
             if (hub == null) {
@@ -537,11 +565,10 @@ if (true) return;
                     LOG.warning("node.data != null for type!=one");
                 }
             }
-            
+
             // node.clazz
             if (hub != null && !node.clazz.equals(hub.getObjectClass())) LOG.warning("node.clazz != hub.objectClass");
-            
-            
+
             // first node
             if (node == nodeRoot) {
                 if (parentObject != null) LOG.warning("should not have parentObject for nodeRoot");
@@ -556,14 +583,14 @@ if (true) return;
                         int x1 = alChildren.size();
                         int x2 = hub.getSize();
                         if (x1 != x2) {
-                            if (Math.abs(x1-x2) > 1) LOG.warning("alChildren.size="+x1+" != hub.getSize="+x2);
+                            if (Math.abs(x1 - x2) > 1) LOG.warning("alChildren.size=" + x1 + " != hub.getSize=" + x2);
                         }
                     }
                     else {
                         int x = (hubRoot.getAO() == null) ? 0 : 1;
-                        if (node.recursiveChild != null) x *= 2; 
+                        if (node.recursiveChild != null) x *= 2;
                         if (alChildren.size() != x) {
-                            LOG.warning("bUseAll=false, alChildren.size != "+x);
+                            LOG.warning("bUseAll=false, alChildren.size != " + x);
                         }
                     }
                 }
@@ -587,22 +614,20 @@ if (true) return;
             if (node.data == this) {
                 if (parentObject != null) LOG.warning("parentObject != null");
             }
-            
-            
+
             // ONE
             if (node.liFromParentToChild != null && node.liFromParentToChild.getType() == OALinkInfo.ONE) {
                 if (parentObject != null) LOG.warning("parentObject != null");
                 if (node.data != this) LOG.warning("node.data != this");
-                for (int i=0; hub!=null; i++) {
+                for (int i = 0; hub != null; i++) {
                     Object obj = hub.getAt(i);
                     if (obj == null) break;
                     if (!isUsed(obj, node)) {
                         LOG.warning("Object in type.One is not used");
                     }
-                }                       
+                }
             }
-            
-            
+
             // MANY
             if (node.liFromParentToChild == null || node.liFromParentToChild.getType() == OALinkInfo.MANY) {
                 if (node.liFromParentToChild == null) {
@@ -629,11 +654,11 @@ if (true) return;
                             else {
                                 int x1 = alChildren.size();
                                 int x2 = hub.getSize();
-                                if (node.recursiveChild != null) x2 *= 2; 
+                                if (node.recursiveChild != null) x2 *= 2;
                                 if (x1 != x2) {
-                                    if (Math.abs(x1-x2) > 1) LOG.warning("alChildren.size="+x1+" != hub.getSize="+x2);
+                                    if (Math.abs(x1 - x2) > 1) LOG.warning("alChildren.size=" + x1 + " != hub.getSize=" + x2);
                                 }
-                            }                       
+                            }
                         }
                         else {
                             for (Data child : alChildren) {
@@ -646,16 +671,14 @@ if (true) return;
                     finally {
                         lock.readLock().unlock();
                     }
-                    
-                    
-                    
-                    for (int i=0; hub!=null; i++) {
+
+                    for (int i = 0; hub != null; i++) {
                         Object obj = hub.getAt(i);
                         if (obj == null) break;
                         if (node.child == null && !hubCombined.contains(obj)) {
                             LOG.warning("object not in hubCombined");
                         }
-                    }                       
+                    }
                 }
                 else {
                     if (node.recursiveChild != null) {
@@ -665,20 +688,20 @@ if (true) return;
                             int x1 = alChildren.size();
                             int x2 = hub.getSize();
                             if (x1 != x2) {
-                                if (Math.abs(x1-x2) > 1) LOG.warning("recursive alChildren.size="+x1+" != hub.getSize="+x2);
+                                if (Math.abs(x1 - x2) > 1) LOG.warning("recursive alChildren.size=" + x1 + " != hub.getSize=" + x2);
                             }
-                        }                       
+                        }
                     }
-                    
+
                     if (!bShareEndHub) {
-                        for (int i=0; hub!=null; i++) {
+                        for (int i = 0; hub != null; i++) {
                             Object obj = hub.getAt(i);
                             if (obj == null) break;
                             if (!hubCombined.contains(obj)) LOG.warning("object not in hubCombined");
                         }
                     }
                 }
-            }           
+            }
 
             try {
                 lock.readLock().lock();
@@ -692,10 +715,11 @@ if (true) return;
                 lock.readLock().unlock();
             }
         }
+
         void createChildren() {
             if (!bEnabled) return;
-            //XOG.finer("createChildren");
-            
+            // XOG.finer("createChildren");
+
             if (node.child != null || node.recursiveChild != null) {
                 try {
                     int x = Math.max(hub.getSize(), 3);
@@ -706,14 +730,14 @@ if (true) return;
                 finally {
                     lock.writeLock().unlock();
                 }
-            }           
-            
+            }
+
             if (node.child == null) {
                 if (bShareEndHub) {
                     hubCombined.setSharedHub(hub, bShareActiveObject);
                 }
                 else {
-                    for (int i=0; ;i++) {
+                    for (int i = 0;; i++) {
                         OAObject obj = (OAObject) hub.elementAt(i);
                         if (obj == null) break;
                         createChild(obj);
@@ -725,7 +749,7 @@ if (true) return;
                     OAThreadLocal tl;
                     Hub hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
                     try {
-                        for (int i=0; ;i++) {
+                        for (int i = 0;; i++) {
                             OAObject obj = (OAObject) hub.elementAt(i);
                             if (obj == null) break;
                             createChild(obj);
@@ -738,27 +762,28 @@ if (true) return;
                 else {
                     OAObject obj = (OAObject) hub.getAO();
                     if (obj != null) createChild(obj);
-                    else {  
+                    else {
                         createChildUsingMaster();
                     }
                 }
             }
         }
 
-        // 20110809 see if the the masterHub/Object can be used.  This is for cases where hub.size=0, but you want 
-        //    to have the merger get objects based on master.  ex: OrderContacts propPath "order.customer.contacts" for a 
-        //      hub to link and autocreate the orderContact objects
+        // 20110809 see if the the masterHub/Object can be used. This is for cases where hub.size=0, but
+        // you want
+        // to have the merger get objects based on master. ex: OrderContacts propPath
+        // "order.customer.contacts" for a
+        // hub to link and autocreate the orderContact objects
         void createChildUsingMaster() {
             if (!bEnabled) return;
-            //XOG.finer("createChild");
+            // XOG.finer("createChild");
             if (node.child == null) {
                 return;
             }
 
             String s = HubDetailDelegate.getPropertyFromDetailToMaster(hub);
             if (s == null || !s.equalsIgnoreCase(node.child.property)) return;
-            
-            
+
             if (node.child.liFromParentToChild.getType() == OALinkInfo.ONE) { // store in Node.data.hub
                 if (node.child.data == null) {
                     Hub h;
@@ -774,12 +799,13 @@ if (true) return;
                 if (ref == null) return;
 
                 if (!node.child.data.hub.contains(ref)) {
-                    node.child.data.hub.add(ref);  // this will send afterAdd(), which will create children
+                    node.child.data.hub.add(ref); // this will send afterAdd(), which will create
+                                                  // children
                 }
-                
+
                 try {
                     lock.writeLock().lock();
-                    if (alChildren != null) {  // could have been closed in another thread
+                    if (alChildren != null) { // could have been closed in another thread
                         this.alChildren.add(node.child.data);
                     }
                 }
@@ -793,7 +819,7 @@ if (true) return;
                 Data d = new Data(node.child, null, h);
                 try {
                     lock.writeLock().lock();
-                    if (alChildren != null) {  // could have been closed in another thread
+                    if (alChildren != null) { // could have been closed in another thread
                         alChildren.add(d);
                     }
                 }
@@ -802,21 +828,36 @@ if (true) return;
                 }
             }
         }
-        
+
         void createChild(OAObject parent) {
             _createChild(parent);
             _createRecursiveChild(parent);
         }
+
         void _createChild(OAObject parent) {
             if (!bEnabled) return;
-            //XOG.finer("createChild");
-            if (node.child == null) {
-                if (!bShareEndHub && !hubCombined.contains(parent)) {
-                    OARemoteThreadDelegate.sendMessages(); 
+            // XOG.finer("createChild");
+
+            // 20131209
+            if (node == nodeRoot && bIncludeRootHub) {
+                if (!hubCombined.contains(parent)) {
+                    if (bServerSideOnly) {
+                        OARemoteThreadDelegate.sendMessages();
+                    }
                     hubCombined.add(parent);
                 }
             }
-            else if (node.child.liFromParentToChild.getType() == OALinkInfo.ONE) { // store in Node.data.hub
+
+            if (node.child == null) {
+                if (!bShareEndHub && !hubCombined.contains(parent)) {
+                    if (bServerSideOnly) {
+                        OARemoteThreadDelegate.sendMessages();
+                    }
+                    hubCombined.add(parent);
+                }
+            }
+            else if (node.child.liFromParentToChild.getType() == OALinkInfo.ONE) { // store in
+                                                                                   // Node.data.hub
                 if (node.child.data == null) {
                     Hub h;
                     if (node.child.child == null) h = hubCombined;
@@ -830,13 +871,15 @@ if (true) return;
 
                 if (ref != null) {
                     if (!node.child.data.hub.contains(ref)) {
-                        node.child.data.hub.add(ref);  // this will send afterAdd(), which will create children
+                        node.child.data.hub.add(ref); // this will send afterAdd(), which will create
+                                                      // children
                     }
                 }
                 try {
                     lock.writeLock().lock();
-                    if (alChildren != null) {  // could have been closed in another thread
-                        this.alChildren.add(node.child.data); // even if obj==null, so that verify will work - it looks for alChildren.size=1
+                    if (alChildren != null) { // could have been closed in another thread
+                        this.alChildren.add(node.child.data); // even if obj==null, so that verify will
+                                                              // work - it looks for alChildren.size=1
                     }
                 }
                 finally {
@@ -848,7 +891,7 @@ if (true) return;
                 Data d = new Data(node.child, parent, h);
                 try {
                     lock.writeLock().lock();
-                    if (alChildren != null) {  // could have been closed in another thread
+                    if (alChildren != null) { // could have been closed in another thread
                         alChildren.add(d);
                     }
                 }
@@ -857,6 +900,7 @@ if (true) return;
                 }
             }
         }
+
         void _createRecursiveChild(OAObject parent) {
             if (!bEnabled) return;
             if (node.recursiveChild == null) return;
@@ -865,7 +909,7 @@ if (true) return;
             Data d = new Data(node.recursiveChild, parent, h);
             try {
                 lock.writeLock().lock();
-                if (alChildren != null) {  // could have been closed in another thread
+                if (alChildren != null) { // could have been closed in another thread
                     alChildren.add(d);
                 }
             }
@@ -891,7 +935,7 @@ if (true) return;
                     }
                 }
                 else {
-                    for (int i=0; ; i++) {
+                    for (int i = 0;; i++) {
                         OAObject obj = (OAObject) this.hub.elementAt(i);
                         if (obj == null) break;
                         OAObject ref = (OAObject) node.child.liFromParentToChild.getValue(obj);
@@ -914,37 +958,37 @@ if (true) return;
             }
             return false;
         }
-        
-        
-        
 
-        public @Override String toString() {
+        public @Override
+        String toString() {
             String s = "";
-            if (hub != null) s = ", hub:"+hub.getObjectClass().getName()+", cnt:"+hub.getSize();
-            return node.property + ", parent:"+parentObject+s;
+            if (hub != null) s = ", hub:" + hub.getObjectClass().getName() + ", cnt:" + hub.getSize();
+            return node.property + ", parent:" + parentObject + s;
         }
-        
+
         void remove(Object obj) {
             if (!bEnabled) return;
-            
+
             if (alChildren == null || node.child == null) {
                 if (isUsed(obj)) {
                     // needs to remove from alChildren, ex: when using recursive properties
-                    // was: return; 
+                    // was: return;
                 }
                 else if (!bShareEndHub) {
                     if (this.hub == hubCombined) {
                         if (!hubCombined.contains(obj)) {
-                            return;  // might have already been removed
+                            return; // might have already been removed
                         }
                     }
                     if (bServerSideOnly) {
-                        OARemoteThreadDelegate.sendMessages(); 
+                        OARemoteThreadDelegate.sendMessages();
                     }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
-                        // 20120612 dont send event, unless there is a recursive prop, which needs to have recursives nodes updated                        
+                        // 20120612 dont send event, unless there is a recursive prop, which needs to
+                        // have recursives nodes updated
                         HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);
-                        // was: HubAddRemoveDelegate.remove(hubCombined, obj, false, false, false, false, false);
+                        // was: HubAddRemoveDelegate.remove(hubCombined, obj, false, false, false,
+                        // false, false);
                     }
                     else {
                         hubCombined.remove(obj);
@@ -954,9 +998,23 @@ if (true) return;
                     return;
                 }
             }
-            
 
-            for (int alPos=0; ; alPos++) {
+            // 20131209
+            if (node == nodeRoot && bIncludeRootHub) {
+                if (!isUsed(obj)) {
+                    if (bServerSideOnly) {
+                        OARemoteThreadDelegate.sendMessages();
+                    }
+                    if (OAThreadLocalDelegate.isHubMergerChanging()) {
+                        HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);
+                    }
+                    else {
+                        hubCombined.remove(obj);
+                    }
+                }
+            }
+
+            for (int alPos = 0;; alPos++) {
                 Data child;
                 try {
                     lock.readLock().lock();
@@ -966,7 +1024,7 @@ if (true) return;
                 finally {
                     lock.readLock().unlock();
                 }
-                if (obj == child.parentObject) {  // will always be a type=Many
+                if (obj == child.parentObject) { // will always be a type=Many
                     try {
                         lock.writeLock().lock();
                         if (alChildren == null || alPos >= alChildren.size()) break;
@@ -977,7 +1035,7 @@ if (true) return;
                         lock.writeLock().unlock();
                     }
                     child.close();
-                    if (this.node.recursiveChild == null) break; 
+                    if (this.node.recursiveChild == null) break;
                 }
                 if (child.parentObject == null) { // will always be a type=One
                     Object ref = node.child.liFromParentToChild.getValue(obj);
@@ -1000,18 +1058,18 @@ if (true) return;
                             }
                         }
                     }
-                    if (this.node.recursiveChild == null) break; 
+                    if (this.node.recursiveChild == null) break;
                 }
             }
         }
-        
+
         void close() {
-            //XOG.finer("close");
+            // XOG.finer("close");
             if (hub != null) {
                 hub.removeHubListener(this);
                 if (bHubListener) HubListenerCount--;
-                bHubListener=false;
-                TotalHubListeners--;            
+                bHubListener = false;
+                TotalHubListeners--;
             }
 
             boolean bLockSet = true;
@@ -1027,7 +1085,7 @@ if (true) return;
                         Object[] objs = hub.toArray();
                         lock.readLock().unlock();
                         bLockSet = false;
-                        for (int i=0; i<objs.length; i++) {
+                        for (int i = 0; i < objs.length; i++) {
                             remove(objs[i]);
                         }
                     }
@@ -1039,17 +1097,16 @@ if (true) return;
             finally {
                 if (bLockSet) lock.readLock().unlock();
             }
-            
 
             if (node.child != null && node.child.liFromParentToChild.getType() == OALinkInfo.ONE) {
-                // dont call close on Node.data.  This will instead use remove()
+                // dont call close on Node.data. This will instead use remove()
                 Object[] objs = hub.toArray();
-                for (int i=0; i<objs.length; i++) {
+                for (int i = 0; i < objs.length; i++) {
                     remove(objs[i]);
                 }
             }
             else {
-                for (; ; ) {
+                for (;;) {
                     Data child;
                     try {
                         lock.writeLock().lock();
@@ -1072,9 +1129,9 @@ if (true) return;
             }
         }
 
-        
         // ============ HubListener for Hub used for child
-        public @Override void beforeRemoveAll(HubEvent e) {
+        public @Override
+        void beforeRemoveAll(HubEvent e) {
             try {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 _beforeRemoveAll(e);
@@ -1082,21 +1139,22 @@ if (true) return;
             finally {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
-        }        
+        }
+
         private void _beforeRemoveAll(HubEvent e) {
             Hub h = e.getHub();
             if (h.getObjectClass().equals(hubCombined.getObjectClass())) {
                 HubMerger.this.beforeRemoveAllRealHub(e);
             }
-            
+
             if (!bEnabled) return;
-            if (this != dataRoot) return;  
+            if (this != dataRoot) return;
             if (!bUseAll) return;
             if (hub.isLoading()) return;
-            
+
             boolean hold = bIgnoreIsUsedFlag;
             bIgnoreIsUsedFlag = true;
-            for (int i=0; ;i++) {
+            for (int i = 0;; i++) {
                 Object obj = hub.getAt(i);
                 if (obj == null) break;
                 remove(obj);
@@ -1104,15 +1162,17 @@ if (true) return;
             if (!hold) bIgnoreIsUsedFlag = false;
         }
 
-        public @Override void onNewList(HubEvent e) {
+        public @Override
+        void onNewList(HubEvent e) {
             try {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
-               _onNewList(e);
+                _onNewList(e);
             }
             finally {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
-        }        
+        }
+
         public void _onNewList(HubEvent e) {
             HubData hd = null;
             try {
@@ -1134,14 +1194,14 @@ if (true) return;
                     }
                 }
             }
-        }        
-        
+        }
+
         private void _onNewList() {
             if (!bEnabled) return;
             if (this != dataRoot) return;
             if (!bUseAll) {
                 // 20110809 need to continue if there is a masterObject/Hub and AO=null
-                //     in case masterObject was previously null (making hub invalid)
+                // in case masterObject was previously null (making hub invalid)
                 if (this.hub.getMasterHub() == null) {
                     return;
                 }
@@ -1150,8 +1210,8 @@ if (true) return;
 
             bIgnoreIsUsedFlag = true;
             if (node.child != null && node.child.liFromParentToChild.getType() == OALinkInfo.ONE) {
-                // dont call close on Node.data.  This will instead call remove()
-                for (;node.child.data!=null && node.child.data.hub!=null;) {
+                // dont call close on Node.data. This will instead call remove()
+                for (; node.child.data != null && node.child.data.hub != null;) {
                     Object obj = node.child.data.hub.getAt(0);
                     if (obj == null) break;
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
@@ -1172,7 +1232,7 @@ if (true) return;
                 }
             }
             else {
-                for (; ; ) {
+                for (;;) {
                     Data child;
                     try {
                         lock.writeLock().lock();
@@ -1189,8 +1249,7 @@ if (true) return;
             bIgnoreIsUsedFlag = false;
             createChildren();
         }
-        
-        
+
         @Override
         public void beforeRemove(HubEvent e) {
             Object obj = e.getObject();
@@ -1206,7 +1265,9 @@ if (true) return;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
         }
-        public @Override void afterRemove(HubEvent e) {
+
+        public @Override
+        void afterRemove(HubEvent e) {
             Object obj = e.getObject();
             if (obj != null) {
                 if (obj.getClass().equals(hubCombined.getObjectClass())) {
@@ -1214,19 +1275,24 @@ if (true) return;
                 }
             }
             if (!bEnabled) return;
-            if (this == dataRoot && !bUseAll) return;
+            if (this == dataRoot && !bUseAll) {
+                if (!bIncludeRootHub) { // 20131209
+                    return;
+                }
+            }
             if (hub.isLoading()) {
                 return;
             }
             try {
                 // 20120903 removed/commented this, and need to have hub event sent out for remove
-                //if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
+                // if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 remove(obj);
             }
             finally {
-                //if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
+                // if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
         }
+
         @Override
         public void beforeAdd(HubEvent e) {
             try {
@@ -1242,7 +1308,9 @@ if (true) return;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
         }
-        public @Override void afterAdd(HubEvent e) {
+
+        public @Override
+        void afterAdd(HubEvent e) {
             try {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 Object obj = e.getObject();
@@ -1257,13 +1325,14 @@ if (true) return;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
         }
+
         private void afterAdd2(HubEvent e) {
             if (!bEnabled) return;
             if (this == dataRoot && !bUseAll) return;
             if (hub.isLoading()) return;
             createChild((OAObject) e.getObject());
         }
-        
+
         @Override
         public void beforeInsert(HubEvent e) {
             try {
@@ -1279,7 +1348,9 @@ if (true) return;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
         }
-        public @Override void afterInsert(HubEvent e) {
+
+        public @Override
+        void afterInsert(HubEvent e) {
             try {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 Object obj = e.getObject();
@@ -1294,7 +1365,7 @@ if (true) return;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
         }
-        
+
         @Override
         public void afterMove(HubEvent e) {
             Hub h = e.getHub();
@@ -1302,46 +1373,49 @@ if (true) return;
                 HubMerger.this.afterMoveRealHub(e);
             }
         }
-    
-        public @Override void afterPropertyChange(HubEvent e) {
+
+        public @Override
+        void afterPropertyChange(HubEvent e) {
             if (!bEnabled) return;
-            if (node.child == null) return;  // last nodes
+            if (node.child == null) return; // last nodes
             String prop = e.getPropertyName();
             if (prop == null) return;
 
             if (!node.child.liFromParentToChild.getName().equalsIgnoreCase(prop)) return;
 
             if (node.child.liFromParentToChild.getType() != OALinkInfo.ONE) return;
-            
+
             // 20110324 data might not have been created,
             if (node.child.data == null) return;
 
             if (this == dataRoot && !bUseAll) {
                 if (e.getObject() != hubRoot.getAO()) return;
             }
-            
+
             Object ref = e.getOldValue();
             if (ref != null) {
                 if (!isUsed(ref, node.child)) {
                     node.child.data.hub.remove(ref);
                 }
             }
-            
+
             ref = e.getNewValue();
             if (ref != null) {
                 if (!node.child.data.hub.contains(ref)) node.child.data.hub.add(ref);
             }
         }
-        public @Override void afterChangeActiveObject(HubEvent evt) {
+
+        public @Override
+        void afterChangeActiveObject(HubEvent evt) {
             if (!bEnabled) return;
             if (this.node != nodeRoot || bUseAll) return;
-            
+
             // 20110809 if the AO is the same, then this can be skipped
-            if (evt != null && alChildren != null && alChildren.size() > 0) { 
+            if (evt != null && alChildren != null && alChildren.size() > 0) {
                 Data d = alChildren.get(0);
                 if (d.parentObject == evt.getObject()) return;
             }
-            
+
             if (!bShareEndHub) hubCombined.clear();
             HubData hd = hubCombined.data;
             boolean b = hd.bInFetch;
@@ -1353,8 +1427,9 @@ if (true) return;
                 hd.bInFetch = b;
             }
             // 20110419 param was true, but this should only send to other hubs that share this one
-            HubEventDelegate.fireOnNewListEvent(hubCombined, false);  
+            HubEventDelegate.fireOnNewListEvent(hubCombined, false);
         }
+
         private void _afterChangeActiveObject() {
             try {
                 lock.writeLock().lock();
@@ -1367,16 +1442,14 @@ if (true) return;
                     else {
                         // 20120523 added loop
                         for (Data child : alChildren) {
-                           child.close();
+                            child.close();
                         }
                         alChildren.clear();
-                        
-                        /*qqqqqqq was:
-                        Data child;
-                        child = alChildren.get(0);
-                        alChildren.remove(0);
-                        child.close();
-                        */
+
+                        /*
+                         * qqqqqqq was: Data child; child = alChildren.get(0); alChildren.remove(0);
+                         * child.close();
+                         */
                     }
                 }
             }
@@ -1386,8 +1459,7 @@ if (true) return;
             Object obj = hub.getAO();
             if (obj != null) createChild((OAObject) obj);
         }
-        
-        
+
         @Override
         public void afterLoad(HubEvent e) {
             if (!bEnabled) return;
@@ -1397,7 +1469,7 @@ if (true) return;
             }
             try {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
-                OAObject obj = (OAObject) e.getObject(); 
+                OAObject obj = (OAObject) e.getObject();
                 remove(obj);
                 createChild(obj);
             }
@@ -1408,5 +1480,3 @@ if (true) return;
     }
 
 }
-
-

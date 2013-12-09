@@ -613,7 +613,8 @@ public class HubDetailDelegate {
             // 20101220 added clazz param
             if (detailHub == null) detailHub = new Hub(clazz);
             //was: if (detailHub == null) detailHub = new Hub(clazz);
-            HubMerger hm = new HubMerger(thisHub, detailHub, path, bShareActive, selectOrder, false);
+            HubMerger hm = new HubMerger(thisHub, detailHub, path, 
+                    bShareActive, selectOrder, false);
     
             // 2005/02/23 create HubDetail
             HubDetail hd = new HubDetail(path, detailHub);
