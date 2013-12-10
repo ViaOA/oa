@@ -29,7 +29,7 @@ import com.viaoa.util.*;
     a reference to it in a second hub.
     @see Hub#setAutoMatch
 */
-public class HubAutoMatch extends HubListenerAdapter implements java.io.Serializable {
+public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements java.io.Serializable {
     static final long serialVersionUID = 1L;
 
     protected Hub hub, hubMaster;
@@ -49,7 +49,7 @@ public class HubAutoMatch extends HubListenerAdapter implements java.io.Serializ
        could be generating events that should not affect the matching.  For example, if the hubMaster is controlled by a HubMerger and
        objects are added/removed.  
     */
-    public HubAutoMatch(Hub hub, String property, Hub hubMaster, boolean bManuallyCalled) {
+    public HubAutoMatch(Hub<TYPE> hub, String property, Hub<PROPTYPE> hubMaster, boolean bManuallyCalled) {
         if (hub == null) throw new IllegalArgumentException("hub can not be null");
         if (hubMaster == null) throw new IllegalArgumentException("hubMaster can not be null");
 
@@ -131,7 +131,7 @@ public class HubAutoMatch extends HubListenerAdapter implements java.io.Serializ
                 for (int j=0; ;j++) {
                     Object o = hubx.elementAt(j);
                     if (o == null) {
-                        createNewObject(obj);
+                        createNewObject((PROPTYPE)obj);
                         break;
                     }
                     try {
@@ -174,15 +174,17 @@ public class HubAutoMatch extends HubListenerAdapter implements java.io.Serializ
         return true;
     }
     
-    protected void createNewObject(Object obj) {
+    protected TYPE createNewObject(PROPTYPE obj) {
+        TYPE object;
         try {
-            Object object = hub.getObjectClass().newInstance();
+            object = (TYPE) hub.getObjectClass().newInstance();
             if (setMethod != null) setMethod.invoke(object, new Object[] { obj } );
             hub.add(object);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return (TYPE) object;
     }
 
     /** HubListener interface method, used to listen to changes to master Hub. */

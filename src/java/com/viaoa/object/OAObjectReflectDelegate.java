@@ -464,6 +464,7 @@ public class OAObjectReflectDelegate {
 
         // 20130319 dont get calcs from server
         boolean bIsCalc = (linkInfo != null && linkInfo.bCalculated);
+        // 20131210 NOTE: calcs are maintained locally, events are not even sent
 
         // first try to get Hub without locking
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false);
@@ -611,7 +612,7 @@ public class OAObjectReflectDelegate {
                         hub.setSelectOrder(sortOrder);
                     }
                 }
-                if (linkInfo.getCalculated() || bIsEmpty) {
+                if (bIsCalc || bIsEmpty) {
                     hub.cancelSelect();
                 }
 
