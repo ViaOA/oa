@@ -29,6 +29,7 @@ import com.viaoa.util.OAPropertyPath;
  *    getGroupByHub: hub of Departments
  *    getDetailHub: hub of Orders for the groupByHub.AO 
  *  
+ * Similar to a database "group by".
  * @param <A> type of objects for the seed Hub that supplies the objects that need to be grouped.
  * @param <B> type of objects that will be in the group by Hub.
  */
@@ -68,7 +69,7 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
         
         Class[] cs = pp.getClasses();
         if (cs == null || cs.length == 0) {
-            throw new RuntimeException("propertyPath is invalid");
+            throw new RuntimeException("propertyPath is invalid, "+propertyPath);
         }
         
         hubB = new Hub(cs[cs.length-1]);
