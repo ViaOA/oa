@@ -132,6 +132,17 @@ public class MultiplexerServer {
     public void stop() throws Exception {
         getServerSocketController().close();
     }
+    /**
+     * Stop the serverSocket from accepting new connections.
+     * Dont accept new client connections, but keep current client sockets connected
+     */
+    public void stopServerSocket() throws Exception {
+        if (!_bAllowConnections || _serverSocket == null) return;
+        LOG.fine("stopping");
+        _bAllowConnections = false;
+        _serverSocket.close();
+    }
+
     
     /**
      * @return true if serverSocket is accepting new connnections.
