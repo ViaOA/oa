@@ -97,6 +97,21 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
                 hubFilter.refresh();
             }
         });
+
+        hubFiltered.addHubListener(new HubListenerAdapter() {
+            @Override
+            public void afterInsert(HubEvent e) {
+                hubA.add((A) e.getObject());
+            }
+            @Override
+            public void afterAdd(HubEvent e) {
+                hubA.add((A) e.getObject());
+            }
+            @Override
+            public void afterRemove(HubEvent e) {
+                hubA.remove((A) e.getObject());
+            }
+        });
     }
     
 }
