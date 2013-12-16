@@ -59,6 +59,16 @@ public class OAObjectSaveDelegate {
             b = oaObj.newFlag;
             if (b) OAObjectDelegate.setAutoAdd(oaObj, true);
 
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
+            if (refs != null) {
+                for (WeakReference<Hub<?>> ref : refs) {
+                    if (ref == null) continue;
+                    Hub h = ref.get();
+                    if (h == null) continue;
+                    HubEventDelegate.fireBeforeSaveEvent(h, oaObj);
+                }
+            }
+            
             for (int i=0; i<2; i++) {
                 if (OAObjectSaveDelegate.onSave(oaObj)) break;
                 if (!b) break; // dont retry unless it was an insert
@@ -72,7 +82,7 @@ public class OAObjectSaveDelegate {
                 
                 OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
             }
-            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
+            
             if (refs != null) {
                 for (WeakReference<Hub<?>> ref : refs) {
                     if (ref == null) continue;

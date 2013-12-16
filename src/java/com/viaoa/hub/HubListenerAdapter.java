@@ -22,28 +22,29 @@ package com.viaoa.hub;
     <p>
     @See HubListener
 */
-public class HubListenerAdapter implements HubListener {
+public class HubListenerAdapter<T> implements HubListener<T> {
     
-    public void afterChangeActiveObject(HubEvent e) { }
-    public void beforePropertyChange(HubEvent e) { }
-    public void afterPropertyChange(HubEvent e) { }
-    public void beforeInsert(HubEvent e) { }
-    public void afterInsert(HubEvent e) { }
-    public void beforeMove(HubEvent e) { }
-    public void afterMove(HubEvent e) { }
-    public void beforeAdd(HubEvent e) { }
-    public void afterAdd(HubEvent e) { }
-    public void beforeRemove(HubEvent e) { }
-    public void afterRemove(HubEvent e) { }
-    public void beforeRemoveAll(HubEvent e) { }
-    public void afterRemoveAll(HubEvent e) { }
-    public void afterSave(HubEvent e) { }
-    public void beforeDelete(HubEvent e) { }
-    public void afterDelete(HubEvent e) { }
-    public void beforeSelect(HubEvent e) { }
-    public void afterSort(HubEvent e) { }
-    public void onNewList(HubEvent e) { }
-    public void afterFetchMore(HubEvent e) { }
+    public void afterChangeActiveObject(HubEvent<T> e) { }
+    public void beforePropertyChange(HubEvent<T> e) { }
+    public void afterPropertyChange(HubEvent<T> e) { }
+    public void beforeInsert(HubEvent<T> e) { }
+    public void afterInsert(HubEvent<T> e) { }
+    public void beforeMove(HubEvent<T> e) { }
+    public void afterMove(HubEvent<T> e) { }
+    public void beforeAdd(HubEvent<T> e) { }
+    public void afterAdd(HubEvent<T> e) { }
+    public void beforeRemove(HubEvent<T> e) { }
+    public void afterRemove(HubEvent<T> e) { }
+    public void beforeRemoveAll(HubEvent<T> e) { }
+    public void afterRemoveAll(HubEvent<T> e) { }
+    public void beforeSave(HubEvent<T> e) { }
+    public void afterSave(HubEvent<T> e) { }
+    public void beforeDelete(HubEvent<T> e) { }
+    public void afterDelete(HubEvent<T> e) { }
+    public void beforeSelect(HubEvent<T> e) { }
+    public void afterSort(HubEvent<T> e) { }
+    public void onNewList(HubEvent<T> e) { }
+    public void afterFetchMore(HubEvent<T> e) { }
     
     private InsertLocation insertWhere;
     public void setLocation(InsertLocation pos) {
@@ -54,6 +55,6 @@ public class HubListenerAdapter implements HubListener {
     }
 
     @Override
-    public void afterLoad(HubEvent e) {}
+    public void afterLoad(HubEvent<T> e) {}
 }
 

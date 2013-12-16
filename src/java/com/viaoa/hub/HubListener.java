@@ -30,7 +30,7 @@ import java.util.*;
     @see Hub#addListener Hub.addListener
     @see OAObjectCacheController#addListener 
 */
-public interface HubListener extends EventListener {
+public interface HubListener<T> extends EventListener {
 
     /** 
         Event sent whenever a property is changed.  This includes OAObject or Hub properties.<br>
@@ -41,17 +41,17 @@ public interface HubListener extends EventListener {
         @see OAObject#fireBeforePropertyChange(String,Object,Object) OAObject.fireBeforePropertyChange
         @see Hub#firePropertyChange(OAObject,String,Object,Object) Hub.firePropertyChange
     */
-    public void beforePropertyChange(HubEvent e);
-    public void afterPropertyChange(HubEvent e);
+    public void beforePropertyChange(HubEvent<T> e);
+    public void afterPropertyChange(HubEvent<T> e);
 
-    public void beforeInsert(HubEvent e);
-    public void afterInsert(HubEvent e);
+    public void beforeInsert(HubEvent<T> e);
+    public void afterInsert(HubEvent<T> e);
 
     /** 
 	    Event sent before object is added to Hub,
 	    @see Hub#add Hub.add
 	*/
-	public void beforeAdd(HubEvent e);
+	public void beforeAdd(HubEvent<T> e);
     
     /** 
         Event sent after object is added to Hub,
@@ -59,84 +59,91 @@ public interface HubListener extends EventListener {
         before property to master is set.
         @see Hub#add Hub.add
     */
-    public void afterAdd(HubEvent e);
+    public void afterAdd(HubEvent<T> e);
     
     /** 
 	    Event sent before an object is removed from a Hub.
 	    This is needed for cases where the remove will be doing other work.  For example: to create an Undo. 
 	*/
-    public void beforeRemove(HubEvent e);
+    public void beforeRemove(HubEvent<T> e);
     /** 
 	    Event sent after an object is removed from a Hub. 
 	*/
-	public void afterRemove(HubEvent e);
+	public void afterRemove(HubEvent<T> e);
 
     /**
      * Sent before all objects are removed/cleared from the Hub.
      */
-    public void beforeRemoveAll(HubEvent e);
+    public void beforeRemoveAll(HubEvent<T> e);
     /**
      * Sent after all objects are removed/cleared from the Hub.
      */
-    public void afterRemoveAll(HubEvent e);
+    public void afterRemoveAll(HubEvent<T> e);
 
     
     /** 
 	    Event sent before a Hub move(). 
 	    @see Hub#move Hub.move
 	*/
-	public void beforeMove(HubEvent e);
+	public void beforeMove(HubEvent<T> e);
     /** 
         Event sent at the end of a Hub move(). 
         @see Hub#move Hub.move
     */
-    public void afterMove(HubEvent e);
+    public void afterMove(HubEvent<T> e);
 
 
     /** 
         Event sent after ActiveObject has been set.
         @see Hub#setActiveObject(Object,int,boolean,boolean,boolean,boolean) Hub.setActiveObject
     */
-    public void afterChangeActiveObject(HubEvent e);
+    public void afterChangeActiveObject(HubEvent<T> e);
 
     /** 
         Event sent when a new list of objects is available for a Hub.
     */
-    public void onNewList(HubEvent e);
+    public void onNewList(HubEvent<T> e);
+    
+
+    /**
+        Event sent from OAObject when save() is being performed.
+        @see OAObject#save OAObject.save
+    */
+    public void beforeSave(HubEvent<T> e);
     
     /**
         Event sent from OAObject when save() is being performed.
         @see OAObject#save OAObject.save
     */
-    public void afterSave(HubEvent e);
+    public void afterSave(HubEvent<T> e);
 
 
     /**
         Event sent from OAObject during delete().
         @see OAObject#delete OAObject.delete
     */
-    public void beforeDelete(HubEvent e);
-    public void afterDelete(HubEvent e);
+    public void beforeDelete(HubEvent<T> e);
+    public void afterDelete(HubEvent<T> e);
     
     /**
         Event sent from Hub when a select is performed.
         @see Hub#select Hub.select
     */
-    public void beforeSelect(HubEvent e);
+    public void beforeSelect(HubEvent<T> e);
     /**
         Event sent from Hub after select is performed.
         @see Hub#select Hub.select
     */
 
     
-    public void afterFetchMore(HubEvent e);
+    public void afterFetchMore(HubEvent<T> e);
     
     
     /**
         Event sent from Hub when sort is performed.
         @see Hub#sort Hub.sort
     */
-    public void afterSort(HubEvent e);
+    public void afterSort(HubEvent<T> e);
 
 
     /**
@@ -150,7 +157,7 @@ public interface HubListener extends EventListener {
     public void setLocation(InsertLocation pos);
     public InsertLocation getLocation();
     
-    public void afterLoad(HubEvent e);
+    public void afterLoad(HubEvent<T> e);
 }
 
 

@@ -209,6 +209,16 @@ public class HubEventDelegate {
 	    }
         //fireMasterObjectChangeEvent(thisHub, false);
 	}
+    public static void fireBeforeSaveEvent(Hub thisHub, OAObject obj) {
+        HubListener[] hl = getAllListeners(thisHub);
+        int x = hl.length;
+        if (x > 0) {
+            HubEvent hubEvent = new HubEvent(thisHub, obj);
+            for (int i=0; i<x; i++) { 
+                hl[i].beforeSave(hubEvent);
+            }
+        }
+    }
 	public static void fireAfterSaveEvent(Hub thisHub, OAObject obj) {
 	    HubListener[] hl = getAllListeners(thisHub);
 	    int x = hl.length;

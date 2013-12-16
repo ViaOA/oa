@@ -23,10 +23,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.viaoa.object.OAAnnotationDelegate;
-import com.viaoa.object.OALinkInfo;
-import com.viaoa.object.OATrigger;
-
 /*
  * Defines an OAObject relationship that is of type "Many"
  * example: @OAMany (clazz=Emp.class, owner=false, reverse=Emp.PROPERTY_Dept, cascadeSave=false, cascadeDelete=false)

@@ -522,13 +522,30 @@ public class ButtonController extends JFCController implements ActionListener {
                             ((OAObject)ho).save();
                         }
                         */
-                        ((OAObject) ho).save();
+                        String msg = null;
+                        try {
+                            ((OAObject) ho).save();
+                        }
+                        catch (Exception e) {
+                            msg = "Error while saving\n" + e;
+                        }
+                        if (msg != null) {
+                            JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.ERROR_MESSAGE,null);
+                            break;
+                        }
+                        
                     }
                     if (mhub != null) {
                         Object[] objs = mhub.toArray();
                         for (Object obj : objs) {
                             if (obj instanceof OAObject) {
-                                ((OAObject) obj).save();
+                                String msg = null;
+                                try {
+                                    ((OAObject) obj).save();
+                                }
+                                catch (Exception e) {
+                                    msg = "Error while saving\n" + e;
+                                }
                             }
                         }
                     }
@@ -553,7 +570,13 @@ public class ButtonController extends JFCController implements ActionListener {
                                         int posx = hub.getPos(obj);
                                         OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, posx));
                                     }
-                                    ((OAObject) obj).delete();
+                                    String msg = null;
+                                    try {
+                                        ((OAObject) obj).delete();
+                                    }
+                                    catch (Exception e) {
+                                        msg = "Error while deleting\n" + e;
+                                    }
                                 }
                             }
                             ho = null;
@@ -580,7 +603,13 @@ public class ButtonController extends JFCController implements ActionListener {
                                     getHub().remove(ho); // 20110215 remove first, so that cascading deletes are not so "noisy"
                                 }
                                 // else it can only be removed when delete is called (ex: a detail hub that is from a linkOne)
-                                ((OAObject) ho).delete();
+                                String msg = null;
+                                try {
+                                    ((OAObject) ho).delete();
+                                }
+                                catch (Exception e) {
+                                    msg = "Error while deleting\n" + e;
+                                }
                             }
                             else {
                                 if (hub != null) {
@@ -1108,5 +1137,4 @@ public class ButtonController extends JFCController implements ActionListener {
 
         super.update(button, obj);
     }
-
 }

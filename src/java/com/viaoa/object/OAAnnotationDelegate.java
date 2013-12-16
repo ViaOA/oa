@@ -230,12 +230,7 @@ public class OAAnnotationDelegate {
             c = annotation.triggerClass();
             if (c != null && c.equals(OAMany.DEFAULT.class)) c = null;
             if (c != null) {
-                if (OATrigger.class.isAssignableFrom(c)) {
-                    li.setTriggerClass(c);
-                }
-                else {
-                    LOG.warning("OAMany.trigger does not support interface OATrigger, class="+clazz+", method="+m);
-                }
+                li.setTriggerClass(c);
             }
         }
     }
