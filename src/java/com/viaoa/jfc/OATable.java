@@ -2150,7 +2150,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
             public @Override void afterRemove(HubEvent e) {
                 if (getRunningValueChanged()) return;
-                int pos = e.getPos();
+                int pos = hub.getPos(e.getObject());
                 if (pos >= 0) {
                     _bIgnoreValueChanged = true;
                     ListSelectionModel lsm = table.getSelectionModel();

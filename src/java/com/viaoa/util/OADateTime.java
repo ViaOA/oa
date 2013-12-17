@@ -884,7 +884,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     }
 
     /**
-        Returns the number of days betweeen this OADateTime and obj.
+        Returns the number of days between this OADateTime and obj.
         @param obj Date, OADateTime, Calendar, etc that can be converted to an OADateTime.
     */
     public int betweenDays(Object obj) {
