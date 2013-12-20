@@ -1,0 +1,29 @@
+
+Rectanble bounds = ... previous window location
+
+        int maxW = 0;
+        int maxH = 0;
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();        
+        for (GraphicsDevice gd : ge.getScreenDevices()) {
+            for (GraphicsConfiguration gc : gd.getConfigurations()) {
+                Rectangle rec = gc.getBounds();
+                maxW += rec.width;
+                maxH = Math.max(rec.height, maxH);
+            }
+        }
+        if (bounds == null || (bounds.x + bounds.width > maxW || bounds.y + bounds.height > maxH)) {
+            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+            bounds = new Rectangle(25,25, dim.width-50,(dim.height-50));
+            extendedState = JFrame.NORMAL;
+        }
+
+        getFrame().setBounds(bounds);
+        frm.setExtendedState(extendedState);
+
+
+qqqq
+        // frm.setBounds(x, y, w, h);
+        if (JfcDelegate.getMainWindow() != null) {
+            dlgWizard.setLocationRelativeTo(JfcDelegate.getMainWindow());
+        }
+        
