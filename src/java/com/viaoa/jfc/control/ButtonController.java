@@ -587,19 +587,13 @@ public class ButtonController extends JFCController implements ActionListener {
                             }
                             else oaObj = null;
 
-                            if (oaObj != null && (hub == null || (!hub.isOwned() || OAObjectHubDelegate.getHubReferenceCount(oaObj) > 1))) {
-                                /*was
-                                String msg = ((OAObject)ho).getCantDeleteMessage();
-                                if (msg != null) {
-                                    JOptionPane.showMessageDialog(null, msg, "", JOptionPane.ERROR_MESSAGE,null);
-                                    break;
-                                }
-                                ((OAObject)ho).delete();
-                                */
+                            // 20131220
+                            if (oaObj != null) {
+                            //was: if (oaObj != null && (hub == null || (!hub.isOwned() || OAObjectHubDelegate.getHubReferenceCount(oaObj) > 1))) {
                                 if (bEnableUndo) {
                                     OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, hub.getPos()));
                                 }
-                                if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) { // add this if 20120720
+                                if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) { // 20120720
                                     getHub().remove(ho); // 20110215 remove first, so that cascading deletes are not so "noisy"
                                 }
                                 // else it can only be removed when delete is called (ex: a detail hub that is from a linkOne)
