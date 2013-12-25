@@ -657,14 +657,16 @@ public class OAObjectReflectDelegate {
                     }
                     
                     // 20131129 trigger
-                    Class c = linkInfo.getTriggerClass();
-                    if (c != null) {
-                        try {
-                            Constructor con = c.getConstructor(Hub.class);
-                            con.newInstance(hub);
-                        }
-                        catch (Exception e) {
-                            LOG.log(Level.WARNING, "error while creating trigger", e);
+                    Class[] cs = linkInfo.getTriggerClasses();
+                    if (cs != null) {
+                        for (Class c : cs) {
+                            try {
+                                Constructor con = c.getConstructor(Hub.class);
+                                con.newInstance(hub);
+                            }
+                            catch (Exception e) {
+                                LOG.log(Level.WARNING, "error while creating trigger", e);
+                            }
                         }
                     }
                 }

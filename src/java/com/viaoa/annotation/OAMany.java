@@ -34,7 +34,7 @@ public @interface OAMany {
     
     public static final class DEFAULT { // hack for fake class
     }; 
-
+    
     Class toClass() default DEFAULT.class;  // see: OAAnnotationDelegate.getHubObjectClass(..), OAObjectReflectDelegate.getHubObjectClass(..)
     String displayName() default "";
     String description() default "";
@@ -76,7 +76,7 @@ public @interface OAMany {
     /** true if this is a calculated Hub. */
     boolean isCalculated() default false;
     
-    Class triggerClass() default DEFAULT.class;
+    Class[] triggerClasses() default {};
 }
 
 /*  OALinkInfo

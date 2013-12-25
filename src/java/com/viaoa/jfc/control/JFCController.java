@@ -34,6 +34,7 @@ import com.viaoa.util.*;
 import com.viaoa.jfc.image.*;
 import com.viaoa.jfc.*;
 import com.viaoa.jfc.table.*;
+import com.viaoa.object.OAEditMessage;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectReflectDelegate;
 
@@ -73,12 +74,13 @@ public class JFCController extends HubListenerAdapter {
     private Method[] methodsToActualHub;
     private Method[] methodsFromActualHub;
     private Method setMethod;
+    private Method isValidMethod;   // in OAObject isValidXxx(newValue)
     
     protected EnabledController controlEnabled;
     protected VisibleController controlVisible;
     
     
-    protected Method methodValidate;
+    protected Method methodValidate;  // static method (usually in delegate object), used to validate changes
     
     protected String format;
     protected boolean bEnableUndo=true;
@@ -560,6 +562,9 @@ public class JFCController extends HubListenerAdapter {
             String methodName = "set" + ss[ss.length-1];
             setMethod = OAReflect.getMethod(c, methodName, 1);
             setMethodClass = cs[cs.length-1];
+            
+            methodName = "isValid" + ss[ss.length-1];
+            isValidMethod = OAReflect.getMethod(c, methodName, 2);
         }
     }
     public String getPropertyPathToActualHub() {
@@ -646,6 +651,42 @@ public class JFCController extends HubListenerAdapter {
     }
     */
     
+    /**
+     * This will valid using isValid(..) callback, isValidXxx property method, and then
+     * methodValidate (static delegate method)
+     * @param em used to capture invalid message and exception.
+     * @param obj object to set
+     * @param value new value to validate.
+     * @return true if valid, else false
+     */
+    public boolean isValid(OAEditMessage em, Object obj, Object value) {
+        boolean b = true;
+        String s = isValid(obj, value);
+        if (s != null) {
+            if (em != null) em.setMessage(s);
+            b = false;
+        }
+        
+        if (b && isValidMethod != null) {
+            try {
+                b = (boolean) isValidMethod.invoke(obj, em, value);
+            }
+            catch (Exception e) {
+                if (em != null) em.setThrowable(e);
+                b = false;
+            }
+        }
+        if (b && methodValidate != null) {
+            try {
+                b = (boolean) methodValidate.invoke(null, obj, value);
+            }
+            catch (Exception e) {
+                b = false;
+            }
+        }
+        return b;
+    }
+    
     // 20120822
     public void setPropertyPathValue(Object obj, Object value) {
         setPropertyPathValue(obj, value, null);
@@ -704,6 +745,9 @@ public class JFCController extends HubListenerAdapter {
                  newValue = OAConv.convert(getMethod.getReturnType(), newValue);
             }
             */
+            OAEditMessage em = new OAEditMessage();
+            isValid(em, obj, newValue);
+            
             result = methodValidate.invoke(null, obj, newValue);
         }
         catch (Exception e) {

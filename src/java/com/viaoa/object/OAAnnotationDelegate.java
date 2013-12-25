@@ -114,7 +114,11 @@ public class OAAnnotationDelegate {
                 pi.setName(name);
                 oi.addPropertyInfo(pi);
             }
+            pi.setDisplayName(pi.getDisplayName());
+            pi.setColumnName(pi.getColumnName());
             pi.setMaxLength(oaprop.maxLength());
+            pi.setDisplayLength(oaprop.displayLength());
+            pi.setColumnLength(oaprop.columnLength());
             pi.setRequired(oaprop.required());
             pi.setDecimalPlaces(oaprop.decimalPlaces());
             pi.setId(m.getAnnotation(OAId.class) != null);
@@ -227,10 +231,9 @@ public class OAAnnotationDelegate {
             li.setCalculated(annotation.isCalculated());
             li.setPrivateMethod(!annotation.createMethod());
             
-            c = annotation.triggerClass();
-            if (c != null && c.equals(OAMany.DEFAULT.class)) c = null;
-            if (c != null) {
-                li.setTriggerClass(c);
+            Class[] cs = annotation.triggerClasses();
+            if (cs != null) {
+                li.setTriggerClasses(cs);
             }
         }
     }

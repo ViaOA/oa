@@ -20,7 +20,8 @@ package com.viaoa.object;
 
 public class OAEditMessage {
     static final long serialVersionUID = 1L;
-    private String msg;   
+    private String msg;
+    private Throwable throwable;
     
     public OAEditMessage() {
     }
@@ -33,4 +34,11 @@ public class OAEditMessage {
     public String getMessage() {
         return this.msg;
     }
-}	
+    public Throwable getThrowable() {
+        return throwable;
+    }
+    public void setThrowable(Throwable t) {
+        this.throwable = t;
+    }
+}    
+	

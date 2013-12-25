@@ -84,6 +84,10 @@ public class ListController extends JFCController implements ListSelectionListen
         setSelectionHub(hub);
     }
 
+    public Hub getSelectHub() {
+        return hubSelect;
+    }
+    
     /** 
         Used for selecting more then one value from JList.  The selectHub will contain all of 
         the objects that have been selected.
@@ -151,8 +155,10 @@ public class ListController extends JFCController implements ListSelectionListen
                 int pos = getHub().getPos(obj);
                 if (pos >= 0) model.addSelectionInterval(pos, pos);
                 else {
+                    /* 20131224 dont remove, other hubs might not be updated yet
                     hubSelect.remove(i);
                     i--;
+                    */
                 }
             }
             changeFlag = false;

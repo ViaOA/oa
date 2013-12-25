@@ -370,7 +370,16 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         This will allow for a multiselect list.
     */
     public void setSelectionHub(Hub hub) {
-        control.setSelectionHub(hub);
+        control.setSelectHub(hub);
+    }
+    public Hub getSelectionHub() {
+        return control.getSelectHub();
+    }
+    public void setSelectHub(Hub hub) {
+        control.setSelectHub(hub);
+    }
+    public Hub getSelectHub() {
+        return control.getSelectHub();
     }
 
     /** 
@@ -830,7 +839,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
             renderer = super.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
             String tt = getToolTipText(value);
             tt = OAList.this.getToolTipText(value, tt);
-            ((JComponent)renderer).setToolTipText(tt);
+            if (tt != null) ((JComponent)renderer).setToolTipText(tt);
             return OAList.this.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
         }
     

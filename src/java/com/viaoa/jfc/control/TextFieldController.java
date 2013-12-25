@@ -427,9 +427,16 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
                 return;
             }
             
-            String msg = validateNewValue(activeObject, convertedValue);
-            if (msg == null) {
-                msg = isValid(activeObject, convertedValue);
+            String msg = null;
+            OAEditMessage em = new OAEditMessage();
+            boolean b = isValid(em, activeObject, convertedValue);
+            if (!b) {
+                msg = em.getMessage();
+                if (msg == null) msg = "";
+                if (em.getThrowable() != null) {
+                    if (msg.length() > 0) msg += "\nError: ";
+                    msg += em.getThrowable().toString();
+                }
             }
             
             if (msg != null) {

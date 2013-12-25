@@ -17,24 +17,26 @@ All rights reserved.
 */
 package com.viaoa.object;
 
-import java.lang.reflect.Method;
-
 public class OAPropertyInfo implements java.io.Serializable {
     static final long serialVersionUID = 1L;    
 
 	private String name;
 	 
 	private int maxLength;
+    private int displayLength;
+    private int columnLength;
+    
 	private boolean required;
 	private boolean id;
 	private Class classType;
 	private int decimalPlaces = -1;
 	private boolean isBlob;
 	private boolean isNameValue;
+	private String displayName;
+	private String columnName;
 	
 	public OAPropertyInfo() {
 	}
-	
 
 	public Class getClassType() {
 		return classType;
@@ -54,12 +56,38 @@ public class OAPropertyInfo implements java.io.Serializable {
 	public void setMaxLength(int maxLength) {
 		this.maxLength = maxLength;
 	}
-	public String getName() {
+    public int getDisplayLength() {
+        return displayLength;
+    }
+    public void setDisplayLength(int length) {
+        this.displayLength = length;
+    }
+    public int getColumnLength() {
+        return columnLength;
+    }
+    public void setColumnLength(int length) {
+        this.columnLength = length;
+    }
+
+    public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
+    public String getDisplayName() {
+        return displayName;
+    }
+    public void setDisplayName(String name) {
+        this.displayName = name;
+    }
+    public String getColumnName() {
+        return columnName;
+    }
+    public void setColumnName(String name) {
+        this.columnName = name;
+    }
+
 	public boolean getRequired() {
 		return required;
 	}
