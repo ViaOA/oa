@@ -43,10 +43,10 @@ import com.viaoa.util.OAArray;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 
-public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java.io.Serializable, OAFilter<TYPE> {
+public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implements java.io.Serializable, OAFilter<TYPE> {
     private static final long serialVersionUID = 1L;
 
-    protected Hub hubMaster, hub;
+    protected Hub<TYPE> hubMaster, hub;
     private Hashtable hashProp;
     private boolean bShareAO;
     private boolean bClosed;
@@ -60,7 +60,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
     
     public boolean DEBUG;
     private boolean bOAObjectCacheDelegateListener;
-    private HubListenerAdapter hlHubMaster;
+    private HubListenerAdapter<TYPE> hlHubMaster;
     private boolean bNewListFlag;
     private boolean bClearing;
     private boolean bUpdating;
@@ -254,17 +254,17 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         This can be overwritten to replace the object with another object.
         @returns object to insert into hub.  Default is to use object.
     */
-    public Object getObject(Object object) {
+    public TYPE getObject(TYPE object) {
         return object;
     }
     
     
-    protected HubListenerAdapter getMasterHubListener() {
+    protected HubListenerAdapter<TYPE> getMasterHubListener() {
         if (hlHubMaster != null) return hlHubMaster;
         
-        hlHubMaster = new HubListenerAdapter() {
+        hlHubMaster = new HubListenerAdapter<TYPE>() {
             /** HubListener interface method, used to update filter. */
-            public @Override void afterPropertyChange(HubEvent e) {
+            public @Override void afterPropertyChange(HubEvent<TYPE> e) {
                 if (bClosed) return;
                 if (hashProp != null) {
                     String s = e.getPropertyName();
@@ -274,13 +274,13 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
             }
 
             /** HubListener interface method, used to update filter. */
-            public @Override void afterInsert(HubEvent e) {
+            public @Override void afterInsert(HubEvent<TYPE> e) {
                 if (bClosed) return;
                 afterAdd(e);
             }
 
             /** HubListener interface method, used to update filter. */
-            public @Override void afterAdd(HubEvent e) {
+            public @Override void afterAdd(HubEvent<TYPE> e) {
                 if (bClosed) return;
                 if (!hubMaster.isLoading()) {
                     // 20091020 object could have been added to hub, need to leave in
@@ -292,7 +292,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
             }
 
             /** HubListener interface method, used to update filter. */
-            public @Override void afterRemove(HubEvent e) {
+            public @Override void afterRemove(HubEvent<TYPE> e) {
                 if (bClosed) return;
                 try {
                     if (bServerSideOnly) { 
@@ -308,7 +308,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
             }
             
             /** HubListener interface method, used to update filter. */
-            public @Override void onNewList(HubEvent e) {
+            public @Override void onNewList(HubEvent<TYPE> e) {
                 if (bClosed || bNewListFlag) return;
                 initialize();
                 if (bShareAO) {
@@ -317,12 +317,12 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
             }
 
             /** HubListener interface method, used to update filter. */
-            public @Override void afterSort(HubEvent e) {
+            public @Override void afterSort(HubEvent<TYPE> e) {
                 if (bClosed) return;
                 if (hubMaster != null) onNewList(e);
             }
             
-            public void afterChangeActiveObject(HubEvent e) {
+            public void afterChangeActiveObject(HubEvent<TYPE> e) {
                 if (bShareAO && hub != null) {
                     Object obj = HubFilter.this.hubMaster.getAO();
                     if (obj == null || HubFilter.this.hub.contains(obj)) {
@@ -373,9 +373,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
                 if (bClosed) return;
                 if (objTemp != null) {
                     if (!isUsed((TYPE) objTemp)) {
-                        objTemp = getObject(objTemp);
+                        objTemp = getObject((TYPE)objTemp);
                         bUpdating = true;
-                        if (objTemp != null) removeObject(objTemp);
+                        if (objTemp != null) removeObject((TYPE)objTemp);
                         bUpdating = false;
                     }
                     objTemp = null;
@@ -390,7 +390,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
                         if (!hub.contains(obj)) {
                             bUpdating = true;
                             objTemp = obj;
-                            addObject(obj);
+                            addObject((TYPE)obj);
                             bUpdating = false;
                         }
                     }
@@ -410,7 +410,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         bRefreshOnLinkChange = b;
     }
     
-    public void update(Object obj) {
+    public void update(TYPE obj) {
         if (bClosed) return;
         if (bClearing) return;
         try {
@@ -421,14 +421,14 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
             
             if (obj != null) {
                 if ( hubMaster.getObjectClass().isAssignableFrom(obj.getClass()) ) {
-                    if (isUsed((TYPE)obj)) {
+                    if (isUsed(obj)) {
                         obj = getObject(obj);
                         if (obj != null && !hub.contains(obj)) {
                             addObject(obj);
                         }
                     }
                     else {
-                        obj = getObject(obj);
+                        obj = getObject((TYPE)obj);
                         // 2004/08/07 see if object is used by AO in HubLink
                         if (hubLink != null) {
                             Object objx = hubLink.getAO();
@@ -437,8 +437,8 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
                                 if (objx == obj) {
                                     if (objTemp != null) {
                                         if (!isUsed((TYPE)objTemp)) {
-                                            objTemp = getObject(objTemp);
-                                            if (objTemp != null) removeObject(objTemp);
+                                            objTemp = getObject((TYPE)objTemp);
+                                            if (objTemp != null) removeObject((TYPE)objTemp);
                                         }
                                         objTemp = null;
                                     }
@@ -474,8 +474,8 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         initialize();
     }
 
-    public void refresh(Object obj) {
-        boolean b = isUsed((TYPE)obj);
+    public void refresh(TYPE obj) {
+        boolean b = isUsed(obj);
         if (hub == null) return;
         if (b) {
             obj = getObject(obj);
@@ -492,7 +492,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
     }
 
     /**
-     * Called when initialize if done.
+     * Called when initialize is done.
      */
     public void afterInitialize() {
     }
@@ -538,13 +538,13 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
     private void _initialize() {
         if (bClosed) return;
         for (int i=0; hubMaster!=null;i++) {
-            Object obj = hubMaster.elementAt(i);
+            TYPE obj = hubMaster.elementAt(i);
             if (obj == null) break;
             update(obj);
         }
         if (hub == null) return;
 
-        Object obj = hub.getAO();
+        TYPE obj = hub.getAO();
         if (bShareAO) {
             obj = hubMaster.getAO();
         }
@@ -572,7 +572,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         //was: Hub[] hubs = HubShareDelegate.getAllSharedHubs(hub);
         for (int i=0; i<hubs.length; i++) {
         	if (hubs[i] != this.hub && hubs[i].dataa != hub.dataa) {
-                obj = hubs[i].getAO();
+                obj = (TYPE)hubs[i].getAO();
         		if (hubs[i].getLinkHub() != null && HubDelegate.isValid(hub)) hub.add(obj);
             	else hubs[i].setAO(null);
         	}
@@ -591,7 +591,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         Called to add an object to the Hub.  This can be overwritten
         to handle a different way (ex: different thread) to handle adding to the hub.
     */
-    protected void addObject(Object obj) {
+    protected void addObject(TYPE obj) {
         if (bClosed) return;
         try {
         	if (hub != null) hub.add(obj);
@@ -603,7 +603,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
         Called to remove an object from the Hub.  This can be overwritten
         to handle a different way (ex: different thread) to handle removing from the hub.
     */
-    protected void removeObject(Object obj) {
+    protected void removeObject(TYPE obj) {
         if (bClosed) return;
         try {
             if (hub != null) hub.remove(obj);
@@ -619,34 +619,37 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
     // Hub Listener code for filtered Hub
     //    note: this needs to be here so that HubShareDelegate can find HubFilter for a hub
     
-    public @Override void afterAdd(HubEvent e) {
-        if (hubMaster != null && !bUpdating) {
-            if (!hubMaster.contains(e.getObject())) hubMaster.add(e.getObject());
-            // 20091020 removed, since an object can be added to the filtered Hub
-            //   otherwise, this add could then call remove for the same object
-            //     causing problems with other hubs that are wired with this one.
-            // A change to any of the filter properties will then update and possibly remove the object
-            //   
-            // else update(e.getObject());
+    public @Override void afterAdd(HubEvent<TYPE> e) {
+        if (!bUpdating) {
+            afterAdd(e.getObject());
         }
     }
-    public @Override void afterPropertyChange(HubEvent e) {
+    public void afterAdd(TYPE obj) {
+        if (hubMaster != null && !hubMaster.contains(obj)) hubMaster.add(obj);
+    }
+    
+    public @Override void afterPropertyChange(HubEvent<TYPE> e) {
         if (e.getPropertyName().equalsIgnoreCase("Link")) {
             setupLinkHubListener();
         }
     }
     @Override
-    public void afterInsert(HubEvent e) {
+    public void afterInsert(HubEvent<TYPE> e) {
         afterAdd(e);
     }
+    
     @Override
-    public void afterRemove(HubEvent e) {
-        if (hubMaster != null && !bUpdating && !bClearing) {
-            HubFilter.this.afterRemoveFromFilteredHub(e.getObject());
+    public void afterRemove(HubEvent<TYPE> e) {
+        if (!bUpdating && !bClearing) {
+            afterRemove(e.getObject());
         }
     }
+    public void afterRemove(TYPE obj) {
+        if (hubMaster != null) HubFilter.this.afterRemoveFromFilteredHub(obj);
+    }
+    
     @Override
-    public void afterChangeActiveObject(HubEvent e) {
+    public void afterChangeActiveObject(HubEvent<TYPE> e) {
         if (bShareAO && hub != null && hubMaster != null) {
             Object obj = HubFilter.this.hub.getAO();
             if (obj == null || HubFilter.this.hubMaster.contains(obj)) {
@@ -661,7 +664,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter implements java
      * This is used by HubCopy to then remove the object from the Master Hub.
      * @param obj
      */
-    protected void afterRemoveFromFilteredHub(Object obj) {
+    protected void afterRemoveFromFilteredHub(TYPE obj) {
     }
     
 }

@@ -40,7 +40,9 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
     private Hub<A> hubDetail; // detail hub from hubB, using reverse propertyPath
     private Hub<A> hubFiltered;  // filtered using hubDetail as root, and filtering only objects that exist in hubA
     private String propertyPath;
-    private HubFilter hubFilter;
+    private HubFilter<A> hubFilter;
+    
+    private boolean bInitializedCalled;
     
     /**
      * @param hubA hub of objects that are to be grouped.
@@ -67,26 +69,37 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
     void setup() throws RuntimeException {
         OAPropertyPath pp = new OAPropertyPath(hubA.getObjectClass(), propertyPath);
         
-        Class[] cs = pp.getClasses();
+        Class<?>[] cs = pp.getClasses();
         if (cs == null || cs.length == 0) {
             throw new RuntimeException("propertyPath is invalid, "+propertyPath);
         }
         
-        hubB = new Hub(cs[cs.length-1]);
+        hubB = new Hub<B>((Class<B>) cs[cs.length-1]);
         HubMerger hm = new HubMerger(hubA, hubB, propertyPath, false, true);
         hubDetail = hubB.getDetailHub(pp.getReversePropertyPath().getPropertyPath());
         hubFiltered = new Hub(hubA.getObjectClass());
-        hubFilter = new HubFilter(hubDetail, hubFiltered) {
+        hubFilter = new HubFilter<A>(hubDetail, hubFiltered) {
             @Override
-            public boolean isUsed(Object object) {
+            public boolean isUsed(A object) {
                 return hubA.contains(object);
+            }
+            
+            // custom: if the filtered groupBy hub has an add/remove, then add/remove from the HubA
+            
+            @Override
+            public void afterAdd(A obj) {
+                hubA.add(obj);
+            }
+            @Override
+            public void afterRemove(A obj) {
+                hubA.remove(obj);
             }
         };
         
         hubA.addHubListener(new HubListenerAdapter() {
             @Override
             public void afterInsert(HubEvent e) {
-                afterAdd(e);
+                hubFilter.refresh();
             }
             @Override
             public void afterAdd(HubEvent e) {
@@ -98,20 +111,6 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             }
         });
 
-        hubFiltered.addHubListener(new HubListenerAdapter() {
-            @Override
-            public void afterInsert(HubEvent e) {
-                hubA.add((A) e.getObject());
-            }
-            @Override
-            public void afterAdd(HubEvent e) {
-                hubA.add((A) e.getObject());
-            }
-            @Override
-            public void afterRemove(HubEvent e) {
-                hubA.remove((A) e.getObject());
-            }
-        });
     }
     
 }

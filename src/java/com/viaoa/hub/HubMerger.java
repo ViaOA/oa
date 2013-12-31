@@ -17,10 +17,12 @@ All rights reserved.
  */
 package com.viaoa.hub;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -378,6 +380,27 @@ public class HubMerger {
         String[] pps = oaPropPath.getProperties();
         Method[] methods = oaPropPath.getMethods();
         Class[] classes = oaPropPath.getClasses();
+        Constructor[] filterConstructors = oaPropPath.getFilterConstructors();
+        
+                       
+        Object[][] filterParamValues = oaPropPath.getFilterParamValues();
+        int pos = 0;
+        if (filterParamValues != null) {
+            for (Object[] objs : filterParamValues) {
+                if (objs != null) {
+                    int i = 0;
+                    for (Object obj : objs) {
+                        if ("?".equals(obj)) {
+                            //qqqqq if any param is "?" then need to have as HubMerger input value(s)
+                            // if (filterInputValues == null || pos > filterInputValues.length - 1) throw new RuntimeExcepiton(...
+                            // objs[i] = filterInputValues[pos++]; // this will need to be replacement value
+                            
+                            throw new RuntimeException("propertyPath has filter with input param '?', which is not yet supported");
+                        }
+                    }
+                }
+            }
+        }
 
         nodeRoot = new Node();
         nodeRoot.clazz = clazz;
@@ -432,7 +455,10 @@ public class HubMerger {
             clazz = classes[i];
 
             node2.clazz = clazz;
-
+            node2.filterConstructor = filterConstructors[i];
+            if (filterParamValues != null) {
+                node2.filterParams = filterParamValues[i];
+            }
             node.child = node2;
             node = node2;
 
@@ -475,10 +501,14 @@ public class HubMerger {
         close();
     }
 
+    
+    
     class Node {
         Class clazz;
         String property;
         OALinkInfo liFromParentToChild;
+        Constructor filterConstructor;
+        Object[] filterParams;
         Node child;
         Node recursiveChild;
         Data data; // first node for root and used for Hub for link.type = One
@@ -500,14 +530,16 @@ public class HubMerger {
         Node node;
         OAObject parentObject; // parent object of hub
         Hub hub;
+        Hub hubFilterMaster;  // if using filter, then this is the master/orig that is then filtered into "hub"
+        HubFilter hubFilter;
         volatile ArrayList<Data> alChildren;
         boolean bHubListener;
 
-        Data(Node node, OAObject parentObject, Hub hub) {
-            if (hub == null) {
+        Data(Node node, OAObject parentObject, Hub hubNew) {
+            if (hubNew == null) {
                 throw new RuntimeException("hub can not be null");
             }
-            if (!node.clazz.equals(hub.getObjectClass())) {
+            if (!node.clazz.equals(hubNew.getObjectClass())) {
                 // 20130709
                 if (!OAObject.class.isAssignableFrom(node.clazz)) {
                     throw new RuntimeException("Hub class does not equal Node class");
@@ -520,9 +552,27 @@ public class HubMerger {
             }
             this.node = node;
             this.parentObject = parentObject;
-            this.hub = hub;
+            this.hub = hubNew;
+            
+            if (node.filterConstructor != null) {
+                this.hubFilterMaster = hubNew;
+                this.hub = new Hub(hubNew.getObjectClass());
+                try {
+                    int x = this.node.filterParams==null?0:this.node.filterParams.length;
+                    Object[] objs = new Object[2+x];
+                    objs[0] = this.hubFilterMaster;
+                    objs[1] = this.hub;
+                    if (x > 0) {
+                        System.arraycopy(this.node.filterParams, 0, objs, 2, x);
+                    }
+                    hubFilter = ((CustomHubFilter) node.filterConstructor.newInstance(objs)).getHubFilter();
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("exception while creating Filter", e);
+                }
+            }
 
-            hub.addHubListener(this);
+            this.hub.addHubListener(this);
             bHubListener = true;
             HubListenerCount++;
             TotalHubListeners++;
@@ -1071,7 +1121,10 @@ public class HubMerger {
                 bHubListener = false;
                 TotalHubListeners--;
             }
-
+            if (hubFilter != null) {
+                hubFilter.close();
+                hubFilter = null;
+            }
             boolean bLockSet = true;
             try {
                 lock.readLock().lock();

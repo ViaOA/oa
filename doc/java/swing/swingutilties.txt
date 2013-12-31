@@ -1,6 +1,8 @@
 >> SwingUtilities.getRoot(editor)
 
 
+SwingUtilities.getWindowAncestor(CalcPropertyPanel.this)
+
 >>OAJFCUtil>>
 
     OAJFCUtil.getWindow(getEditPanel())

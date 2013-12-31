@@ -56,6 +56,8 @@ public @interface OAClass {
     //String[] searchProperties() default "";
     String[] viewProperties() default "";
     long estimatedTotal() default 0;
+    
+    Class[] filterClasses() default {};
 }
 
 

@@ -92,6 +92,10 @@
         panel = pan;
         
         JTabbedPane tab = getTabbedPane();
+        tab.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        //tab.setTabPlacement(JTabbedPane.LEFT);
+        tab.setFocusable(true);
+        
         
         tab.addTab("Description", null, new JScrollPane(createDescriptionTextArea()), null);
         

@@ -1802,7 +1802,10 @@ public class OAString {
         for (String s : args) {
             if (s == null) continue;
             if (result == null) result = s;
-            else result += "." + s;
+            else {
+                if (s.indexOf(':') == 0) result += s; // filter
+                else result += "." + s;
+            }
         }
         return result;
     }
@@ -1822,7 +1825,10 @@ public class OAString {
                 }
                 else result = s;
             }
-            else result += "." + s;
+            else {
+                if (s.indexOf(':') == 0) result += s;  // filter
+                else result += "." + s;
+            }
         }
         return result;
     }

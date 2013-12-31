@@ -17,12 +17,17 @@ All rights reserved.
 */
 package com.viaoa.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 
 import com.viaoa.annotation.OACalculatedProperty;
+import com.viaoa.annotation.OAClass;
+import com.viaoa.annotation.OAClassFilter;
 import com.viaoa.annotation.OAProperty;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.CustomHubFilter;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
@@ -31,9 +36,15 @@ import com.viaoa.object.OAObjectInfoDelegate;
  * Utility used to parse a propertyPath, get methods, class information, and to be able to get 
  * the value by invoking on an object.
  * 
+ * A PropertyPath String is separated by "." for each linkPropery, and each linkProperty
+ * can have a filter in the format ":fileName(a,b,n)" 
+
  * Supports casting in property path, 
  *   ex: from Emp, "dept.(manger)employee.name"
  *   ex: from OALeftJoin "(Location)A.name"
+ *
+ * Supports filters:
+ * ex:  "dept.employees:newHires(7).orders.orderItems:overDue(30)"
  * 
  * created 20120809
  * @param <T> type of object that the property path is based on.
@@ -54,6 +65,12 @@ public class OAPropertyPath<T> {
     
     private String[] properties; // convert properties, without casting
     private String[] castNames;
+    private String[] filterNames;
+    private String[] filterParams;
+    private Object[][] filterParamValues;
+
+    private Class[] filterClasses; 
+    private Constructor[] filterConstructors; 
 
     private OALinkInfo[] linkInfos;
     private boolean bLastProperyLinkInfo;
@@ -116,11 +133,25 @@ public class OAPropertyPath<T> {
     public String[] getCastNames() {
         return castNames;
     }
+    // ex: Employees:recentBirthday()  => "recentBirthday()" 
+    public String[] getFilterNames() {
+        return filterNames;
+    }
+    // params used for filter, ex: "(a,b)", "()"
+    public String[] getFilterParams() {
+        return filterParams;
+    }
+    public Object[][] getFilterParamValues() {
+        return filterParamValues;
+    }
     public Method[] getMethods() {
         return methods;
     }
     public Class[] getClasses() {
         return classes;
+    }
+    public Constructor[] getFilterConstructors() {
+        return filterConstructors;
     }
     /**
      * Returns the value of the propertyPath from a base object.
@@ -176,42 +207,111 @@ public class OAPropertyPath<T> {
         Class clazz = this.fromClass;
         String propertyPath = this.propertyPath;
         
-        int pos,prev;
         if (propertyPath == null) propertyPath = "";
     
+        String propertyPathClean = propertyPath;
+        // a String that uses quotes "" could have special chars ',:()' inside of "" it  
+        //qqq todo:  this wont protect against \" - need to create a tokenizer     
+        for (int i=0; ;i++) {
+            int p = propertyPathClean.indexOf('\"');
+            if (p < 0) break;
+            int p2 = propertyPathClean.indexOf('\"', p+1);
+            if (p2 < 0) break;
+            int x = (p2 - p) - 1;
+            String s = OAString.getRandomString(x, x, false, true, false);
+            propertyPathClean = propertyPath.substring(0, p) + "\"" + s + "\"" + propertyPath.substring(p2+1);
+        }
         
         Class classLast = clazz;
-        for (pos=prev=0; pos >= 0; prev=pos+1) {
-            // check for casting
-            int posx = propertyPath.indexOf('(', prev);
-            pos = propertyPath.indexOf('.', prev);
+        int posDot, prevPosDot;
+        posDot = prevPosDot = 0;
+        for ( ; posDot >= 0; prevPosDot=posDot+1) {
+            posDot = propertyPathClean.indexOf('.', prevPosDot);
+            int posCast = propertyPathClean.indexOf('(', prevPosDot);
+            int posFilter = propertyPathClean.indexOf(':', prevPosDot);
 
-            if (posx >= 0 && posx < pos) {
-                pos = propertyPath.indexOf(')', posx);
-                pos = propertyPath.indexOf('.', pos);
+            if (posCast >= 0) {
+                if (posFilter > 0 && posCast > posFilter) posCast = -1;
+                else if (posDot >= 0) {  
+                    if (posCast > posDot) posCast = -1;
+                    else {
+                        // cast could have package name, with '.' in it
+                        posDot = propertyPathClean.indexOf(')', posCast+1);
+                        posDot = propertyPathClean.indexOf('.', posDot);
+                    }
+                }
+            }
+            
+            if (posDot >= 0 && posFilter > posDot) posFilter = -1;
+
+    
+            String propertyName;
+            String propertyNameClean;
+            
+            if (posDot >= 0) {
+                propertyName = propertyPath.substring(prevPosDot, posDot);
+                propertyNameClean = propertyPathClean.substring(prevPosDot, posDot);
             }
             else {
-                pos = propertyPath.indexOf('.', prev);
+                propertyName = propertyPath.substring(prevPosDot);
+                propertyNameClean = propertyPathClean.substring(prevPosDot);
             }
-    
-            String name;
-            if (pos >= 0) name = propertyPath.substring(prev,pos);
-            else name = propertyPath.substring(prev);
-    
+
             String castName = null;
-            int p = name.indexOf('(');
-            if (p >= 0) {
-                int p2 = name.indexOf(')', p);
-                if (p2 > 0) {
-                    castName = name.substring(p+1, p2).trim();
-                    if (p2+1 == name.length()) name = "";
-                    else name = name.substring(p2+1).trim();
+            if (posCast >= 0) {
+                int p = propertyNameClean.indexOf('(');
+                if (p >= 0) {
+                    int p2 = propertyNameClean.indexOf(')', p);
+                    if (p2 > 0) {
+                        castName = propertyName.substring(p+1, p2).trim();
+                        propertyName = propertyName.substring(p2+1).trim();
+                        propertyNameClean = propertyNameClean.substring(p2+1).trim();
+                    }
                 }
             }
             this.castNames = (String[]) OAArray.add(String.class, this.castNames, castName);
 
+             
+            String filterName = null;
+            String filterNameClean = null;
+            String filterParam = null;
+            String filterParamClean = null;
+            Constructor filterConstructor = null;
+            if (posFilter >= 0) {
+                posFilter = propertyNameClean.indexOf(':');
+                filterName = propertyName.substring(posFilter+1).trim();
+                filterNameClean = propertyNameClean.substring(posFilter+1).trim();
+                
+                propertyName = propertyNameClean = propertyName.substring(0, posFilter).trim();
+                int p = filterNameClean.indexOf('(');
+                
+                if (p >= 0) {
+                    filterParam = filterName.substring(p).trim();
+                    filterParamClean = filterNameClean.substring(p).trim();
+                    filterName = filterNameClean = filterName.substring(0, p).trim();
+                }
+            }
+            this.filterNames = (String[]) OAArray.add(String.class, this.filterNames, filterName);
+            this.filterParams = (String[]) OAArray.add(String.class, this.filterParams, filterParam); // ex: "(a,b)", "()"
+
+
+            // figure out params
+            int paramCount = 0;
+            if (filterParam != null) {
+                if (filterParam.charAt(0) == '(') {
+                    filterParam = filterParam.substring(1);
+                    filterParamClean = filterParamClean.substring(1);
+                    if (filterParam.charAt(filterParam.length()-1) == ')') {
+                        filterParam = filterParam.substring(0, filterParam.length()-1);
+                        filterParamClean = filterParamClean.substring(0, filterParamClean.length()-1);
+                    }
+                }
+                paramCount = OAString.dcount(filterParamClean, ",");
+            }
+
+            
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
-            OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, name);
+            OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, propertyName);
             if (li != null) {
                 linkInfos = (OALinkInfo[]) OAArray.add(OALinkInfo.class, linkInfos, li);
             }
@@ -220,16 +320,16 @@ public class OAPropertyPath<T> {
             }
     
             String mname;
-            if (name.length() == 0) name = mname = "toString";
+            if (propertyName.length() == 0) propertyName = mname = "toString";
             else {
-                mname = "get"+name;
+                mname = "get"+propertyName;
             }
-            this.properties = (String[]) OAArray.add(String.class, this.properties, name);
+            this.properties = (String[]) OAArray.add(String.class, this.properties, propertyName);
 
             Method method = OAReflect.getMethod(clazz, mname, 0);
             bLastMethodHasHubParam = false;
             if (method == null) {
-                if (pos < 0) {
+                if (posDot < 0) {
                     // 20131029 see if it is for hubCalc, which is a static method that has a Hub param
                     //    must be the last property
                     method = OAReflect.getMethod(clazz, mname, 1);
@@ -243,20 +343,19 @@ public class OAPropertyPath<T> {
                 }
                 
                 if (method == null) {
-                    mname = "is"+name;
+                    mname = "is"+propertyName;
                     method = OAReflect.getMethod(clazz, mname, 0);
                     if (method == null) {
-                        throw new Exception("OAReflect.setup() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+name+" path="+propertyPath);
+                        throw new Exception("OAReflect.setup() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+propertyName+" path="+propertyPath);
                     }
                 }
             }
             this.methods = (Method[]) OAArray.add(Method.class, this.methods, method);
     
             clazz = method.getReturnType();
-
             if (clazz.equals(Hub.class)) {
                 // try to find the ObjectClass for Hub
-                Class c = OAObjectInfoDelegate.getHubPropertyClass(classLast, name);
+                Class c = OAObjectInfoDelegate.getHubPropertyClass(classLast, propertyName);
                 if (c != null) {
                     clazz = c;
                 }
@@ -270,7 +369,7 @@ public class OAPropertyPath<T> {
                     else {
                         if (clazz != null) {
                             String s = clazz.getName();
-                            p = s.lastIndexOf('.');
+                            int p = s.lastIndexOf('.');
                             if (p >= 0) s = s.substring(0, p+1);
                             else s = "";
                             cn = s + castName;
@@ -282,6 +381,102 @@ public class OAPropertyPath<T> {
             }
             this.classes = (Class[]) OAArray.add(Class.class, this.classes, clazz);
             classLast = clazz;
+            
+            // finish with Filter info
+            Class filterClass = null;
+            if (filterName != null) {
+                String filterClassName;
+                if (filterName.indexOf('.') >= 0) {
+                    filterClassName = filterName;
+                }
+                else {
+                    String s = clazz.getName();
+                    int p = s.lastIndexOf('.');
+                    filterClassName = s.substring(p+1) + filterName + "Filter";
+                    
+                    // check annotations for correct upper/lower case
+                    OAClass oac = (OAClass) clazz.getAnnotation(OAClass.class);
+                    if (oac != null) {
+                        Class[] cs = oac.filterClasses();
+                        for (Class c : cs) {
+                            if (!CustomHubFilter.class.isAssignableFrom(c)) continue;
+                            int px = c.getName().toUpperCase().indexOf("."+filterClassName.toUpperCase());
+                            if (px >= 0) {
+                                if ( (px + filterClassName.length() + 1) == c.getName().length()) {
+                                    filterClass = c;
+                                    filterClassName = c.getName();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (filterClass == null) {
+                        if (p >= 0) {
+                            s = s.substring(0, p+1) + "filter.";
+                        }
+                        else s = "";
+                        filterClassName = s + filterName;
+                    }
+                }
+                if (filterClass == null) {
+                    filterClass = Class.forName(filterClassName);
+                }
+                if (!CustomHubFilter.class.isAssignableFrom(filterClass)) {
+                    throw new RuntimeException("Filter must implement interface CustomHubFilter");
+                }
+            }
+            this.filterClasses = (Class[]) OAArray.add(Class.class, this.filterClasses, filterClass);
+            
+            Object[] filterParamValue = null;
+            if (paramCount > 0) {
+                for (Constructor con : filterClass.getConstructors()) {
+                    Class[] cs = con.getParameterTypes();
+                    if (cs.length != paramCount + 2) continue;
+                    if (!cs[0].equals(Hub.class)) continue;
+                    filterConstructor = con;
+
+                    filterParamValue = new Object[paramCount];
+                    int p = 0;
+                    int prev = 0;
+                    for (int i=0 ; p>=0; i++,prev=p+1) {
+                        p = filterParamClean.indexOf(',', prev);
+                        String s;
+                        if (p < 0) s =  filterParam.substring(prev).trim();
+                        else s = filterParam.substring(prev, p).trim();
+
+                        // remove double quotes
+                        int x = s.length();
+                        if (x > 0 && s.charAt(0) == '\"' && s.charAt(x-1) == '\"') {
+                            if (x < 3) s = "";
+                            else s = s.substring(1, x-2);
+                        }
+                        if (s.equals("?")) {
+                            // needs to be an inputValue
+                            filterParamValue[i] = "?";
+                        }
+                        else filterParamValue[i] = OAConv.convert(cs[i+2], s);
+                    }
+                    break;
+                }
+            }
+            else {
+                if (filterClass != null) {
+                    filterConstructor = filterClass.getConstructor(new Class[] {Hub.class, Hub.class});
+                }
+            }
+            if (filterClass != null && filterConstructor == null) {
+                throw new RuntimeException("Could not find constructor for Filter, name="+filterName);
+            }
+            this.filterConstructors = (Constructor[]) OAArray.add(Constructor.class, this.filterConstructors, filterConstructor);
+            
+            if (this.filterParamValues == null) this.filterParamValues = new Object[1][];
+            else {
+                Object[][] objs = new Object[filterParamValues.length+1][];
+                System.arraycopy(filterParamValues, 0, objs, 0, filterParamValues.length);
+                filterParamValues = objs;
+            }
+            filterParamValues[filterParamValues.length-1] = filterParamValue;
         }
     }
  
@@ -390,7 +585,6 @@ public class OAPropertyPath<T> {
             }
         }
         return format;
-        
     }
     
 }
