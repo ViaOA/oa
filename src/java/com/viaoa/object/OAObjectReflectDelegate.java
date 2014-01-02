@@ -175,6 +175,7 @@ public class OAObjectReflectDelegate {
      *      OAObject subclasses.
      */
     public static void setProperty(OAObject oaObj, String propName, Object value, String fmt) {
+        
         if (oaObj == null || propName == null || propName.length() == 0) {
             LOG.log(Level.WARNING, "property is invalid, =" + propName, new Exception());
             return;

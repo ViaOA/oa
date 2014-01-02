@@ -170,7 +170,7 @@ public class OAObjectXMLDelegate {
 	            }
 	
 	            ow.indent();
-	            if (cval.equals(String.class)) ow.println("<"+key+">");
+	            if (cval.equals(String.class)) ow.print("<"+key+">");
 	            else ow.print("<"+key+" class=\""+cval.getName()+"\">");
 	            if (OAString.isLegalXML((String)value)) ow.printXML((String)value);
 	            else ow.printCDATA((String)value);

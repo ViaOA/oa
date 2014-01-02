@@ -629,6 +629,24 @@ else {
                         v = convertToObject((String)k, (String) v, cx);
                     }
                 }
+/*qqqqqqqqqqqqqq this fixes a problem where properties that were written had an extra \n prefixed on every write                
+if (v instanceof String) {
+    String sx = (String) v;
+    int xx = sx.length();
+    int i=0;
+    for ( ; i<xx; i++) {
+        char ch = sx.charAt(i);
+        if (ch == 10 || ch == 13) {
+            
+        }
+        else break;
+    }
+    if (i > 20) {
+        xxx+=i;
+        v = sx.substring(i);
+    }
+}
+*/                
                 v = getValue(object, (String)k, v);  // hook method for subclass
                 object.setProperty((String)k, v);
             }
@@ -639,7 +657,7 @@ else {
         	if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
     }
-
+static int xxx;//qqqqqqqq
     /**
         SAXParser callback method.
     */
