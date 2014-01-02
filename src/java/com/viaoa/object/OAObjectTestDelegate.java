@@ -512,7 +512,7 @@ obj.objectKey.exactEquals(data.objectKey);
 
 	
 	public static int getGuid() {
-		return OAObjectDelegate.guidCounter;
+		return OAObjectDelegate.guidCounter.get();
 	}
 	
 	

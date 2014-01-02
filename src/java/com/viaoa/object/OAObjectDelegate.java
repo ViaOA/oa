@@ -21,6 +21,7 @@ import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.*;
 
 import com.viaoa.hub.*;
@@ -47,13 +48,14 @@ public class OAObjectDelegate {
 	public static final Boolean FALSE = new Boolean(false);
 	
     /** Static global lock used when setting global properties (ex: guidCounter) */
-    static protected final Object GUIDLOCK = new Object();
+//qqqqqqq not needed	
+//    static protected final Object GUIDLOCK = new Object();
 
     /** global counter used for local objects.  Value is positive */
-    static protected int guidCounter; // unique identifier needed for objects past from client/server
+    static protected AtomicInteger guidCounter = new AtomicInteger(); // unique identifier needed for objects past from client/server
 
     /** global counter used for local objects.  Value is negative */
-    static protected int localGuidCounter;
+    static protected AtomicInteger localGuidCounter = new AtomicInteger();
 
     /** Flag to know if finalized objects should be automatically saved.  Default is false. */
     protected static boolean bFinalizeSave = false;
@@ -158,7 +160,7 @@ public class OAObjectDelegate {
     protected static void assignGuid(OAObject obj) {
         if (obj.guid != 0) return;
         if (OAObjectInfoDelegate.getOAObjectInfo(obj).getLocalOnly()) { 
-        	obj.guid = --localGuidCounter;
+        	obj.guid = localGuidCounter.decrementAndGet();
         }
         else {
             if (!OASyncDelegate.isServer()) {
@@ -176,16 +178,10 @@ public class OAObjectDelegate {
      * also called by OAObjectServerImpl.java
      */
     public static int getNextGuid() { 
-        synchronized (GUIDLOCK) {
-            return ++guidCounter;  // cant be 0
-        }
+        return guidCounter.incrementAndGet();  // cant be 0
     }
     public static int getNextFiftyGuids() { 
-        synchronized (GUIDLOCK) {
-            int x = ++guidCounter;  // cant be 0
-            guidCounter += 49;
-            return x;
-        }
+        return guidCounter.getAndAdd(50) + 1; 
     }
     
     /**
@@ -201,21 +197,10 @@ public class OAObjectDelegate {
 	 * qqqqq bug, reading a serialized/xml object could have a duplicate guid qqqqq
 	 */
     protected static void updateGuid(int guid) {
-        if (guid > guidCounter) {
-            synchronized (GUIDLOCK) {
-                if (guid > guidCounter) {
-                    guidCounter = guid;
-                }
-            }
+        if (guidCounter.get() < guid) {
+            guidCounter.set(guid);
         }
-/*qqqqqq this cant be checked here, needs to be checked when a Serializer or XMLReader starts, to 
-          make sure that none of the object guids are < the current guidCounter 
-         
-        else {
-            // LOG.warning("Duplicate guid error, object that was read is using a guid < the current guid.  guidCounter="+guidCounter+", object.readObject() guid="+guid);
-        }
-*/        
-	}
+    }
 	
 	/**
 	    Removes object from HubController and calls super.finalize().

@@ -42,8 +42,17 @@ public class OAObjectXMLDelegate {
 	    if (oaObj == null || ow == null) return;
 	    Class c = oaObj.getClass();
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-	
-	    if (cascade.wasCascaded(oaObj, true)) bKeyOnly = true;
+
+        if (cascade.wasCascaded(oaObj, true)) bKeyOnly = true;
+	    
+//qqqqqqqqqqqq	    
+	    if (c.getName().toLowerCase().indexOf(".model.model") >= 0) {
+	        if (!bKeyOnly) {
+    	        int xx = 4;
+    	        xx++;
+	        }
+	    }
+	    
 	
 	    String[] ids = oi.idProperties;
 	    ow.indent();

@@ -669,7 +669,7 @@ public class JFCController extends HubListenerAdapter {
         
         if (b && isValidMethod != null) {
             try {
-                b = (boolean) isValidMethod.invoke(obj, em, value);
+                b = (Boolean) isValidMethod.invoke(obj, em, value);
             }
             catch (Exception e) {
                 if (em != null) em.setThrowable(e);
@@ -678,7 +678,7 @@ public class JFCController extends HubListenerAdapter {
         }
         if (b && methodValidate != null) {
             try {
-                b = (boolean) methodValidate.invoke(null, obj, value);
+                b = (Boolean) methodValidate.invoke(null, obj, value);
             }
             catch (Exception e) {
                 b = false;

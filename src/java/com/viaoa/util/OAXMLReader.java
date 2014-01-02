@@ -58,7 +58,7 @@ public class OAXMLReader extends DefaultHandler {
     private static final String XML_GUID = "XML_GUID";
     protected Class conversionClass;  // type of class that value needs to be converted to
     protected Vector vecIncomplete, vecRoot;
-    protected Hashtable hashGuid;
+    protected HashMap hashGuid;
 
     // objects that have been removed from a Hub and might not have been saved
     //   these objects will then be checked and saved at the end of the import
@@ -122,7 +122,7 @@ public class OAXMLReader extends DefaultHandler {
         vecRoot = new Vector();
         vecIncomplete = new Vector();
         firstObject = null;
-        hashGuid = new Hashtable();
+        hashGuid = new HashMap();
     }
 
     /**
@@ -629,6 +629,7 @@ else {
                         v = convertToObject((String)k, (String) v, cx);
                     }
                 }
+                
 /*qqqqqqqqqqqqqq this fixes a problem where properties that were written had an extra \n prefixed on every write                
 if (v instanceof String) {
     String sx = (String) v;
