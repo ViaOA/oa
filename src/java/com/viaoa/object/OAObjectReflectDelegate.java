@@ -1549,7 +1549,7 @@ public class OAObjectReflectDelegate {
                 OAObject obj = (OAObject) hub.elementAt(j);
                 if (obj == null) break;
 
-                String[] ss = new String[] { li.getReverseName() };
+                //String[] ss = new String[] { li.getReverseName() };
 
                 if (copyCallback != null) {
                     obj = copyCallback.createCopy(oaObj, li.getName(), hub, obj);

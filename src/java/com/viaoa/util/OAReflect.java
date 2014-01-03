@@ -546,7 +546,7 @@ public class OAReflect {
 	}
 	
 	
-	/**  Determines if a class is a Float. */
+	/**  */
 	static public Class getClassWrapper(Class clazz) {
 	    Class c = (Class) tblPrimitives.get(clazz);
 	    if (c != null) {
@@ -569,6 +569,20 @@ public class OAReflect {
 	    return classPrimitive;
 	}
 	
+    static public boolean isPrimitiveClassWrapper(Class clazz) {
+        if (clazz == null) {
+            return false;
+        }
+        if (clazz.equals(Boolean.class)) return true;
+        if (clazz.equals(Byte.class)) return true;
+        if (clazz.equals(Character.class)) return true;
+        if (clazz.equals(Short.class)) return true;
+        if (clazz.equals(Integer.class)) return true;
+        if (clazz.equals(Long.class)) return true;
+        if (clazz.equals(Float.class)) return true;
+        if (clazz.equals(Double.class)) return true;
+        return false;
+    }
 
 
     /**
