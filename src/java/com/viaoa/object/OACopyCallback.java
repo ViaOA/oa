@@ -35,12 +35,12 @@ public class OACopyCallback {
     
     /**
      * Called when adding owned objects to new hub.
-     * default is to create a copy of the object;
+     * default is to return currentValue, which will then create a new copy of it.
      */
     protected OAObject createCopy(OAObject oaObj, String path, Hub hub, OAObject currentValue) {
-        return OAObjectReflectDelegate.createCopy((OAObject)currentValue, null, this);
-        // or: return currentValue.createCopy();
+        return currentValue;
     }
+
 
     /**
      * Called when copying a property or LinkType=One

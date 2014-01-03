@@ -19,6 +19,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1466,6 +1467,12 @@ public class OAObjectReflectDelegate {
     }
 
     public static OAObject createCopy(OAObject oaObj, String[] excludeProperties, OACopyCallback copyCallback) {
+        HashMap<Integer, Object> hmNew = new HashMap<Integer, Object>();
+        OAObject obj = _createCopy(oaObj, excludeProperties, copyCallback, hmNew);
+        return obj;
+    }
+    
+    public static OAObject _createCopy(OAObject oaObj, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew) {
         if (oaObj == null) return null;
         OAObject newObject;
 
@@ -1483,7 +1490,7 @@ public class OAObjectReflectDelegate {
             OAThreadLocalDelegate.setLoadingObject(true);
             OAThreadLocalDelegate.setSuppressCSMessages(true);
             newObject = (OAObject) createNewObject(oaObj.getClass());
-            copyInto(oaObj, newObject, excludeProperties, copyCallback);
+            _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
         }
         finally {
             OAThreadLocalDelegate.setLoadingObject(false);
@@ -1499,6 +1506,12 @@ public class OAObjectReflectDelegate {
      * the Hub of the new object. OACopyCallback can be used to control what is copied.
      */
     public static void copyInto(OAObject oaObj, OAObject newObject, String[] excludeProperties, OACopyCallback copyCallback) {
+        HashMap<Integer, Object> hmNew = new HashMap<Integer, Object>();
+        hmNew.put(OAObjectDelegate.getGuid(oaObj), newObject);
+        _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
+    }    
+
+    public static void _copyInto(OAObject oaObj, OAObject newObject, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew) {
         if (oaObj == null || newObject == null) return;
         if (!(oaObj.getClass().isInstance(newObject))) {
             throw new IllegalArgumentException("OAObject.copyInto() object is not same class");
@@ -1544,22 +1557,27 @@ public class OAObjectReflectDelegate {
             if (!bCopy) continue;
 
             Hub hub = (Hub) OAObjectReflectDelegate.getProperty(oaObj, li.getName());
-            Hub hub2 = (Hub) OAObjectReflectDelegate.getProperty(newObject, li.getName());
+            Hub hubNew = (Hub) OAObjectReflectDelegate.getProperty(newObject, li.getName());
             for (int j = 0;; j++) {
                 OAObject obj = (OAObject) hub.elementAt(j);
                 if (obj == null) break;
 
-                //String[] ss = new String[] { li.getReverseName() };
-
+                OAObject objx;
                 if (copyCallback != null) {
-                    obj = copyCallback.createCopy(oaObj, li.getName(), hub, obj);
+                    objx = copyCallback.createCopy(oaObj, li.getName(), hub, obj);
+                    if (obj == objx) {
+                        objx = _createCopy((OAObject) obj, (String[])null, copyCallback, hmNew);
+                    }
                 }
                 else {
-                    obj = obj.createCopy();
+                    objx = obj.createCopy();
                 }
 
-                if (obj != null) {
-                    hub2.add(obj);
+                if (objx != null) {
+                    if (obj != objx) {
+                        hmNew.put(OAObjectDelegate.getGuid(obj), objx);
+                    }
+                    hubNew.add(obj);
                 }
             }
         }
@@ -1568,7 +1586,7 @@ public class OAObjectReflectDelegate {
         al = oi.getLinkInfos();
         for (int i = 0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
-            if (li.getType() == li.MANY) continue;
+            if (li.getType() != li.ONE) continue;
             if (li.getCalculated()) continue;
             
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
@@ -1578,31 +1596,102 @@ public class OAObjectReflectDelegate {
                 }
             }
 
-            boolean bCopy = true;
             if (excludeProperties != null) {
-                for (int j = 0; bCopy && j < excludeProperties.length; j++) {
+                boolean b = true;
+                for (int j = 0; j < excludeProperties.length; j++) {
                     if (excludeProperties[j] == null) continue;
-                    if (excludeProperties[j].equalsIgnoreCase(li.getName())) bCopy = false;
+                    if (excludeProperties[j].equalsIgnoreCase(li.getName())) {
+                        b = false;
+                        break;
+                    }
                 }
-                if (!bCopy) continue;
+                if (!b) continue;
             }
             
             Object obj = OAObjectReflectDelegate.getProperty(oaObj, li.getName());
             if (li.getAutoCreateNew() && obj instanceof OAObject) {
                 Object objx = newObject.getProperty(li.getName());
                 if (objx instanceof OAObject) {
-                    ((OAObject) obj).copyInto((OAObject) objx);
-                    obj = objx;
+                    _copyInto((OAObject) obj, (OAObject) objx, (String[])null, copyCallback, hmNew);
                 }
             }
-            else if (copyCallback != null) {
-                obj = copyCallback.getPropertyValue(oaObj, li.getName(), obj);
+            else {
+                if (obj != null) {
+                    Object objx = hmNew.get(OAObjectDelegate.getGuid((OAObject)obj));
+                    if (objx != null) obj = objx;
+                }            
+                if (copyCallback != null) {
+                    obj = copyCallback.getPropertyValue(oaObj, li.getName(), obj);
+                    if (obj instanceof OAObject ) {
+                        if (shouldMakeACopy((OAObject)obj, excludeProperties, copyCallback, hmNew, 0)) {                        
+                            obj = _createCopy((OAObject)obj, excludeProperties, copyCallback, hmNew);        
+                        }
+                    }
+                }
+                newObject.setProperty(li.getName(), obj);
             }
-
-            newObject.setProperty(li.getName(), obj);
         }
     }
-
+    private static boolean shouldMakeACopy(OAObject oaObj, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew, int cnt) {
+        if (oaObj == null) return false;
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
+        ArrayList<OALinkInfo> alLinkInfo = oi.getLinkInfos();
+        for (OALinkInfo li : alLinkInfo) {
+            if (li.getCalculated()) continue;
+            
+            if (li.getType() == li.ONE) {
+                OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                if (liRev != null && liRev.isOwner()) {
+                    if (!li.getAutoCreateNew()) {
+                        continue;
+                    }
+                }
+            }
+            if (excludeProperties != null) {
+                boolean b = true;
+                for (int j = 0; j < excludeProperties.length; j++) {
+                    if (excludeProperties[j] == null) continue;
+                    if (excludeProperties[j].equalsIgnoreCase(li.getName())) {
+                        b = false;
+                        break;
+                    }
+                }
+                if (!b) continue;
+            }
+            
+            if (li.getType() == li.MANY) {
+                Hub hub = (Hub) OAObjectReflectDelegate.getProperty(oaObj, li.getName());
+                for (int j = 0; hub!=null; j++) {
+                    OAObject obj = (OAObject) hub.elementAt(j);
+                    if (obj == null) break;
+                    Object objx = hmNew.get(OAObjectDelegate.getGuid((OAObject)obj));
+                    if (objx != null) return true;
+                    
+                    if (cnt < 3 && obj instanceof OAObject ) {
+                        if (shouldMakeACopy((OAObject)obj, excludeProperties, copyCallback, hmNew, cnt+1)) {
+                            return true;
+                        }                    
+                    }
+                }
+            }
+            else {
+                Object obj = OAObjectReflectDelegate.getProperty(oaObj, li.getName());
+                if (obj != null) {
+                    Object objx = hmNew.get(OAObjectDelegate.getGuid((OAObject)obj));
+                    if (objx != null) return true;
+                    
+                    if (cnt < 3 && obj instanceof OAObject ) {
+                        if (shouldMakeACopy((OAObject)obj, excludeProperties, copyCallback, hmNew, cnt+1)) {
+                            return true;
+                        }                    
+                    }
+                }
+            }
+        }        
+        return false;
+    }
+    
+    
     public static Class getHubObjectClass(Method method) {
         Class cx = null;
         Type rt = method.getGenericReturnType();

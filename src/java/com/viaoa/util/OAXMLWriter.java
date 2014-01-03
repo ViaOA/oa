@@ -114,7 +114,7 @@ public class OAXMLWriter {
     }
 
     public void setIndentAmount(int x) {
-        this.indentAmount = 0;
+        this.indentAmount = x;
     }
     
     public void flush() {
