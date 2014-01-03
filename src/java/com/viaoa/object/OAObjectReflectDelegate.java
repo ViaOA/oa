@@ -1632,6 +1632,8 @@ public class OAObjectReflectDelegate {
             }
         }
     }
+    
+    // recursively checks 3 levels for replaced objects
     private static boolean shouldMakeACopy(OAObject oaObj, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew, int cnt) {
         if (oaObj == null) return false;
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
