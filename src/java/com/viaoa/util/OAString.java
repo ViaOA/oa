@@ -492,6 +492,12 @@ public class OAString {
         }
         return new String(sb);
     }
+    public static String createDisplayName(String value) {
+        return getDisplayName(value);
+    }
+    public static String convertToDisplayName(String value) {
+        return getDisplayName(value);
+    }
 
     /**
         Converts a String that is plural to singular.<br>
@@ -2516,6 +2522,12 @@ public class OAString {
         }
         if (sb == null) return txt;
         return new String(sb);
+    }
+    public static String convertToJavaIndentifier(String txt) {
+        return makeJavaIndentifier(txt);
+    }
+    public static String getJavaIndentifier(String txt) {
+        return makeJavaIndentifier(txt);
     }
     
     public static void main(String[] args) {
