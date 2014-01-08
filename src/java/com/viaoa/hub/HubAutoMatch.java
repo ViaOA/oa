@@ -19,6 +19,7 @@ package com.viaoa.hub;
 
 import com.viaoa.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.lang.reflect.*;
 
 import com.viaoa.object.*;
@@ -62,7 +63,7 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
         setProperty(property);
     }
 
-    public HubAutoMatch(Hub hub, String property, Hub hubMaster) {
+    public HubAutoMatch(Hub<TYPE> hub, String property, Hub<PROPTYPE> hubMaster) {
         this(hub, property, hubMaster, false);
     }
     
@@ -110,9 +111,18 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
         }
         update();
     }
-    
 
-    public synchronized void update() {
+    private AtomicBoolean abUpdating = new AtomicBoolean(false);
+    public void update() {
+        if (!abUpdating.compareAndSet(false, true)) return; // already updating
+        try {
+            _update();
+        }
+        finally {
+            abUpdating.set(false);
+        }
+    }
+    private void _update() {
         // Step 1: verify that both hubs are using the correct hub 
         //         (in case AO of master hub has been changed, and one of these hubs has not yet been adjusted).
         Hub hubMasterx = HubDetailDelegate.getRealHub(hubMaster);
@@ -160,7 +170,9 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
             }
             if (hubMasterx.getObject(value) == null) {
                 if (okToRemove(obj, value)) {
-                    if (obj instanceof OAObject) ((OAObject)obj).delete();
+                    if (obj instanceof OAObject) {
+                        ((OAObject)obj).delete();
+                    }
                     else hubx.remove(i);
                     i--;
                 }
@@ -207,7 +219,9 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
     }
     /** HubListener interface method, used to listen to changes to master Hub. */
     public @Override void onNewList(HubEvent e) {
-        update();
+        if (!hubMaster.isLoading()) {
+            update();
+        }
     }
 }
 

@@ -1,5 +1,23 @@
 
 
+
+
+
+>> simple flag
+    private AtomicBoolean abUpdating = new AtomicBoolean(false);
+    public void update() {
+        if (!abUpdating.compareAndSet(false, true)) return; // already updating
+        try {
+            _update();
+        }
+        finally {
+            abUpdating.set(false);
+        }
+    }
+
+
+
+
 >> ReentrantReadWriteLock
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();

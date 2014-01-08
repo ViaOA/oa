@@ -1468,12 +1468,12 @@ public class HubMerger {
                 Data d = alChildren.get(0);
                 if (d.parentObject == evt.getObject()) return;
             }
-
-            if (!bShareEndHub) hubCombined.clear();
+            
             HubData hd = hubCombined.data;
             boolean b = hd.bInFetch;
             try {
                 hd.bInFetch = true;
+                if (!bShareEndHub) hubCombined.clear();
                 _afterChangeActiveObject();
             }
             finally {
