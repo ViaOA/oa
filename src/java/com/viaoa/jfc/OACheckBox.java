@@ -424,6 +424,9 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     public void setVisible(Hub hub, String prop) {
         control.getVisibleController().add(hub, prop);
     }    
+    public void setVisible(Hub hub, String prop, Object trueValue) {
+        control.getVisibleController().add(hub, prop, trueValue);
+    }    
 
     /**
      * This is a callback method that can be overwritten to determine if the component should be visible or not.

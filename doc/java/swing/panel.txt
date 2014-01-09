@@ -1,6 +1,10 @@
 
 
 
+see layout.txt
+
+
+
     // Edit Panel      
     public JPanel getEditPanel() {
         if (panel != null) return panel;

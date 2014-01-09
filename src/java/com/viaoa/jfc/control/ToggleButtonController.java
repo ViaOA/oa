@@ -58,7 +58,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
 
 
     /**
-        Bind a button to have it add/remove objects a Hub.  
+        Bind a button to have it add/remove objects from a Hub.  
         @param hub that has active object that is added/removed from hubSelect
         @param hubSelect the active object from hub will be added/removed from this Hub.
     */
