@@ -4,6 +4,8 @@
         tb.setFloatable(false);
         tb.setRollover(true);
 
+        toolBar.add(Box.createHorizontalStrut(7));
+
 
 >> User
         JToolBar toolBar = new JToolBar();
