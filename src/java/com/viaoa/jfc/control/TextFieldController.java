@@ -429,7 +429,7 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
             
             String msg = null;
             OAEditMessage em = new OAEditMessage();
-            boolean b = isValid(em, activeObject, convertedValue);
+            boolean b = isValid(activeObject, convertedValue, em);
             if (!b) {
                 msg = em.getMessage();
                 if (msg == null) msg = "";

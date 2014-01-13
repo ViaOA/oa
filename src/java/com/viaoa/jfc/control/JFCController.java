@@ -659,7 +659,7 @@ public class JFCController extends HubListenerAdapter {
      * @param value new value to validate.
      * @return true if valid, else false
      */
-    public boolean isValid(OAEditMessage em, Object obj, Object value) {
+    public boolean isValid(Object obj, Object value, OAEditMessage em) {
         boolean b = true;
         String s = isValid(obj, value);
         if (s != null) {
@@ -669,7 +669,26 @@ public class JFCController extends HubListenerAdapter {
         
         if (b && isValidMethod != null) {
             try {
-                b = (Boolean) isValidMethod.invoke(obj, em, value);
+                Class[] cs = isValidMethod.getParameterTypes();
+                Object result;
+                
+                if (cs.length == 2) {
+                    if (OAEditMessage.class.equals(cs[1])) {
+                        result = methodValidate.invoke(obj, value, em);
+                    }
+                    else {
+                        result = methodValidate.invoke(obj, em, value);
+                    }
+                }
+                else {
+                    result = methodValidate.invoke(obj, value);
+                }
+
+                if (result instanceof Boolean) b = ((Boolean) obj).booleanValue();
+                else if (result instanceof String) {
+                    if (em != null) em.setMessage((String) result);
+                    b = false;
+                }
             }
             catch (Exception e) {
                 if (em != null) em.setThrowable(e);
@@ -678,9 +697,31 @@ public class JFCController extends HubListenerAdapter {
         }
         if (b && methodValidate != null) {
             try {
-                b = (Boolean) methodValidate.invoke(null, obj, value);
+                Class[] cs = methodValidate.getParameterTypes();
+                Object result = null;
+                
+                if (cs.length == 3) {
+                    if (OAEditMessage.class.equals(cs[2])) {
+                        result = methodValidate.invoke(null, obj, value, em);
+                    }
+                    else if (OAEditMessage.class.equals(cs[1])) {
+                        result = methodValidate.invoke(null, obj, em, value);
+                    }
+                }
+                else if (cs.length == 2) {
+                    result = methodValidate.invoke(null, obj, value);
+                }
+                
+                if (result instanceof Boolean) b = ((Boolean) obj).booleanValue();
+                else if (result instanceof String) {
+                    if (em != null) em.setMessage((String) result);
+                    b = false;
+                }
             }
             catch (Exception e) {
+                if (em != null) {
+                    em.setThrowable(e);
+                }
                 b = false;
             }
         }
@@ -721,8 +762,9 @@ public class JFCController extends HubListenerAdapter {
      * Sets up the validation delegate class to use for validating changes.
      * 
      * @param delegteClass
-     * @param propertyName must be for a method that access object and new value, and returns null, boolean.  If it
-     * returns a String, then it will be used as the error message text.
+     * @param propertyName must be for a method that params for: 
+     * object, new value, and OAEditMessage, that returns null or boolean.  
+     * If it returns a String, then it will be used as the error message text.
      * @return true if method was found, else false.
      */
     public boolean setValidationMethod(Class delegteClass, String methodName) {
@@ -746,7 +788,7 @@ public class JFCController extends HubListenerAdapter {
             }
             */
             OAEditMessage em = new OAEditMessage();
-            isValid(em, obj, newValue);
+            isValid(obj, newValue, em);
             
             result = methodValidate.invoke(null, obj, newValue);
         }
