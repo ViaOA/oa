@@ -27,8 +27,6 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 
-import com.viaoa.annotation.OACalculatedProperty;
-import com.viaoa.annotation.OAProperty;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.jfc.image.*;
@@ -73,14 +71,14 @@ public class JFCController extends HubListenerAdapter {
     private String propertyPathFromActualHub;
     private Method[] methodsToActualHub;
     private Method[] methodsFromActualHub;
-    private Method setMethod;
-    private Method isValidMethod;   // in OAObject isValidXxx(newValue)
+    private Method methodSet;
+    private Method methodValidate;   // in OAObject isValidXxx(newValue)
     
     protected EnabledController controlEnabled;
     protected VisibleController controlVisible;
     
     
-    protected Method methodValidate;  // static method (usually in delegate object), used to validate changes
+    protected Method methodDelegateValidate;  // static method (usually in delegate object), used to validate changes
     
     protected String format;
     protected boolean bEnableUndo=true;
@@ -518,7 +516,7 @@ public class JFCController extends HubListenerAdapter {
         propertyPathFromActualHub = propertyPath;
         methodsToActualHub = null;
         methodsFromActualHub = null;
-        setMethod = null;
+        methodSet = null;
         
         if (propertyPath == null || hub == null) return;
 
@@ -560,11 +558,11 @@ public class JFCController extends HubListenerAdapter {
                 c = cs[cs.length-2];
             }
             String methodName = "set" + ss[ss.length-1];
-            setMethod = OAReflect.getMethod(c, methodName, 1);
+            methodSet = OAReflect.getMethod(c, methodName, 1);
             setMethodClass = cs[cs.length-1];
             
             methodName = "isValid" + ss[ss.length-1];
-            isValidMethod = OAReflect.getMethod(c, methodName, 2);
+            methodValidate = OAReflect.getMethod(c, methodName, 2);
         }
     }
     public String getPropertyPathToActualHub() {
@@ -667,16 +665,18 @@ public class JFCController extends HubListenerAdapter {
             b = false;
         }
         
-        if (b && isValidMethod != null) {
+        if (b && methodValidate != null) {
             try {
-                Class[] cs = isValidMethod.getParameterTypes();
+                Class[] cs = methodValidate.getParameterTypes();
                 Object result;
-                
+                boolean bSentEm = false;
                 if (cs.length == 2) {
                     if (OAEditMessage.class.equals(cs[1])) {
+                        bSentEm = true;
                         result = methodValidate.invoke(obj, value, em);
                     }
                     else {
+                        bSentEm = true;
                         result = methodValidate.invoke(obj, em, value);
                     }
                 }
@@ -684,9 +684,15 @@ public class JFCController extends HubListenerAdapter {
                     result = methodValidate.invoke(obj, value);
                 }
 
-                if (result instanceof Boolean) b = ((Boolean) obj).booleanValue();
+                if (result instanceof Boolean) {
+                    b = ((Boolean) result).booleanValue();
+                }
                 else if (result instanceof String) {
-                    if (em != null) em.setMessage((String) result);
+                    if (em != null && !bSentEm) em.setMessage((String) result);
+                    b = false;
+                }
+                else if (result != null) {
+                    if (em != null && !bSentEm) em.setMessage( result.toString());
                     b = false;
                 }
             }
@@ -695,26 +701,33 @@ public class JFCController extends HubListenerAdapter {
                 b = false;
             }
         }
-        if (b && methodValidate != null) {
+        if (b && methodDelegateValidate != null) {
             try {
-                Class[] cs = methodValidate.getParameterTypes();
+                Class[] cs = methodDelegateValidate.getParameterTypes();
                 Object result = null;
                 
+                boolean bSentEm = false;
                 if (cs.length == 3) {
                     if (OAEditMessage.class.equals(cs[2])) {
-                        result = methodValidate.invoke(null, obj, value, em);
+                        bSentEm = true;
+                        result = methodDelegateValidate.invoke(null, obj, value, em);
                     }
                     else if (OAEditMessage.class.equals(cs[1])) {
-                        result = methodValidate.invoke(null, obj, em, value);
+                        bSentEm = true;
+                        result = methodDelegateValidate.invoke(null, obj, em, value);
                     }
                 }
                 else if (cs.length == 2) {
-                    result = methodValidate.invoke(null, obj, value);
+                    result = methodDelegateValidate.invoke(null, obj, value);
                 }
                 
-                if (result instanceof Boolean) b = ((Boolean) obj).booleanValue();
+                if (result instanceof Boolean) b = ((Boolean) result).booleanValue();
                 else if (result instanceof String) {
-                    if (em != null) em.setMessage((String) result);
+                    if (!bSentEm && em != null) em.setMessage((String) result);
+                    b = false;
+                }
+                else if (result != null) {
+                    if (!bSentEm && em != null) em.setMessage( result.toString());
                     b = false;
                 }
             }
@@ -740,7 +753,7 @@ public class JFCController extends HubListenerAdapter {
             if (obj == null) return;
         }
         value = OAConv.convert(setMethodClass, value, fmt);
-        OAReflect.setPropertyValue(obj, setMethod, value);
+        OAReflect.setPropertyValue(obj, methodSet, value);
         
         if (value == null) {
             Class c = OAReflect.getClass(getLastMethod());
@@ -769,15 +782,15 @@ public class JFCController extends HubListenerAdapter {
      */
     public boolean setValidationMethod(Class delegteClass, String methodName) {
         if (methodName == null || methodName.length() == 0) {
-            methodValidate = null;
+            methodDelegateValidate = null;
             return true;
         }
-        methodValidate = OAReflect.getMethod(delegteClass, methodName, 2);
-        return (methodValidate != null);
+        methodDelegateValidate = OAReflect.getMethod(delegteClass, methodName, 2);
+        return (methodDelegateValidate != null);
     }
 
     public String validateNewValue(Object obj, Object newValue) {
-        if (methodValidate == null) return null;
+        if (methodDelegateValidate == null) return null;
         
         Object result;
         try {
@@ -790,7 +803,7 @@ public class JFCController extends HubListenerAdapter {
             OAEditMessage em = new OAEditMessage();
             isValid(obj, newValue, em);
             
-            result = methodValidate.invoke(null, obj, newValue);
+            result = methodDelegateValidate.invoke(null, obj, newValue);
         }
         catch (Exception e) {
             result = e.getMessage();
