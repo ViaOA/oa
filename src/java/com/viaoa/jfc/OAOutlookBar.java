@@ -103,6 +103,10 @@ public class OAOutlookBar extends JPanel implements ActionListener
     public void addBar( String name, Icon icon, JComponent component, int pos) {
         addBar(name, name, icon, component, -1);
     }
+    public void addBar( String name, String title, Icon icon, JComponent component) {
+        addBar(name, title, icon, component, -1);
+    }
+    
     /**
      * Adds the specified component to the JOutlookBar and sets the bar's name
      * 

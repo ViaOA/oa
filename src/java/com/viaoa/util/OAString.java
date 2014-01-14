@@ -411,7 +411,7 @@ public class OAString {
     }
 
 
-    private final static String validToHungarianSep = " _,.:|\t-";
+    private final static String validToHungarianSep = " _,.:|\t-/";
     /** 
         Example: "Your Name Test" converts to "YourNameTest"   
         Example: "your name test" converts to "yourNameTest"   
