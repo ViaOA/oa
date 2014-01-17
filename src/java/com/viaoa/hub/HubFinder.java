@@ -54,7 +54,7 @@ public class HubFinder {
         return findObject;
     }
 
-
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
     /**
 	    Used to compare objects with find value.
 	    If values are Strings, then a case-insensitive compare is used.

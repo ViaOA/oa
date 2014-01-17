@@ -200,8 +200,7 @@ public class HubMerger {
         this.bEnabled = b;
         if (bEnabled) {
             if (bServerSideOnly) { // 20120505
-                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if
-                                                       // OAClientThread
+                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
             }
             if (!bShareEndHub) hubCombined.clear();
             dataRoot.onNewList(null);
@@ -849,8 +848,13 @@ public class HubMerger {
                 if (ref == null) return;
 
                 if (!node.child.data.hub.contains(ref)) {
-                    node.child.data.hub.add(ref); // this will send afterAdd(), which will create
-                                                  // children
+                    // 20140107
+                    if (node.child.data.hub == hubCombined) {
+                        if (bServerSideOnly) { 
+                            OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+                        }
+                    }
+                    node.child.data.hub.add(ref); // this will send afterAdd(), which will create children
                 }
 
                 try {
@@ -906,8 +910,7 @@ public class HubMerger {
                     hubCombined.add(parent);
                 }
             }
-            else if (node.child.liFromParentToChild.getType() == OALinkInfo.ONE) { // store in
-                                                                                   // Node.data.hub
+            else if (node.child.liFromParentToChild.getType() == OALinkInfo.ONE) { // store in Node.data.hub
                 if (node.child.data == null) {
                     Hub h;
                     if (node.child.child == null) h = hubCombined;
@@ -921,8 +924,13 @@ public class HubMerger {
 
                 if (ref != null) {
                     if (!node.child.data.hub.contains(ref)) {
-                        node.child.data.hub.add(ref); // this will send afterAdd(), which will create
-                                                      // children
+                        // 20140107
+                        if (node.child.data.hub == hubCombined) {
+                            if (bServerSideOnly) { 
+                                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+                            }
+                        }
+                        node.child.data.hub.add(ref); // this will send afterAdd(), which will create children
                     }
                 }
                 try {
@@ -1267,6 +1275,14 @@ public class HubMerger {
                 for (; node.child.data != null && node.child.data.hub != null;) {
                     Object obj = node.child.data.hub.getAt(0);
                     if (obj == null) break;
+                    
+                    // 20140107
+                    if (node.child.data.hub == hubCombined) {
+                        if (bServerSideOnly) { 
+                            OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+                        }
+                    }
+                    
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
                         HubAddRemoveDelegate.remove(node.child.data.hub, obj, false, false, false, false, false);
                     }
@@ -1448,6 +1464,12 @@ public class HubMerger {
             Object ref = e.getOldValue();
             if (ref != null) {
                 if (!isUsed(ref, node.child)) {
+                    // 20140107
+                    if (node.child.data.hub == hubCombined) {
+                        if (bServerSideOnly) { 
+                            OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+                        }
+                    }
                     node.child.data.hub.remove(ref);
                 }
             }
@@ -1490,7 +1512,15 @@ public class HubMerger {
                     if (node.child.liFromParentToChild.getType() == OALinkInfo.ONE) {
                         alChildren.remove(0);
                         Object obj = node.child.data.hub.getAt(0);
-                        if (obj != null) node.child.data.hub.remove(obj);
+                        if (obj != null) {
+                            // 20140107
+                            if (node.child.data.hub == hubCombined) {
+                                if (bServerSideOnly) { 
+                                    OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+                                }
+                            }
+                            node.child.data.hub.remove(obj);
+                        }
                     }
                     else {
                         // 20120523 added loop
