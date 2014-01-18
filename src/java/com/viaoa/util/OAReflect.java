@@ -120,7 +120,7 @@ public class OAReflect {
 	    Example: getMethods(Order.class, "employee.department.region.name") will retrieve the following
 	    methods: Order.getEmployee(), Employee.getDepartment(), Department.getRegion(), Region.getName()
 	    <p>
-	    Note: if any of the propertyNames is a Hub, then it will use the Hub's activeObject when retreiving the property.
+	    Note: if any of the propertyNames is a Hub, then it will use the Hub's activeObject when retrieving the property.
 	    @return array of "get' methods that can be used to retrieve a value from an object of type clazz.
 	    @see #getPropertyValue(Object,Method)
 	    @see #getMethods(Class,String,boolean)
@@ -142,7 +142,7 @@ public class OAReflect {
 	    Example: getMethods(Order.class, "employee.department.region.name") will retrieve the following
 	    methods: Order.getEmployee(), Employee.getDepartment(), Department.getRegion(), Region.getName()
 	    <p>
-	    Note: if any of the propertyNames is a Hub, then it will use the Hub's activeObject when retreiving the property.
+	    Note: if any of the propertyNames is a Hub, then it will use the Hub's activeObject when retrieving the property.
 	    @param bThrowException flag to know if an exception should be thrown if methods are not found.
 	    @return array of "get' methods that can be used to retrieve a value from an object of type clazz.
 	    If the a method can not be found then null is returned.

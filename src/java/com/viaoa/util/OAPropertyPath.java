@@ -20,14 +20,13 @@ package com.viaoa.util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
 
 import com.viaoa.annotation.OACalculatedProperty;
 import com.viaoa.annotation.OAClass;
-import com.viaoa.annotation.OAClassFilter;
 import com.viaoa.annotation.OAProperty;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.CustomHubFilter;
+import com.viaoa.hub.HubMerger;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
@@ -37,7 +36,7 @@ import com.viaoa.object.OAObjectInfoDelegate;
  * the value by invoking on an object.
  * 
  * A PropertyPath String is separated by "." for each linkPropery, and each linkProperty
- * can have a filter in the format ":fileName(a,b,n)" 
+ * can have a filter in the format ":filterName(a,b,n)" 
 
  * Supports casting in property path, 
  *   ex: from Emp, "dept.(manger)employee.name"
@@ -48,6 +47,7 @@ import com.viaoa.object.OAObjectInfoDelegate;
  * 
  * created 20120809
  * @param <T> type of object that the property path is based on.
+ * @see HubMerger which uses propertyPaths to create a Hub of all lastNode objects, and keeps it updated.
  */
 public class OAPropertyPath<T> {
 
@@ -153,6 +153,10 @@ public class OAPropertyPath<T> {
     public Constructor[] getFilterConstructors() {
         return filterConstructors;
     }
+    public OALinkInfo[] getLinkInfos() {
+        return linkInfos;
+    }
+    
     /**
      * Returns the value of the propertyPath from a base object.
      * Notes: if any of the property's is null, then null is returned.

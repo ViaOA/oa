@@ -124,7 +124,6 @@ public class OAObjectReflectDelegate {
         else oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 
         Method m;
-        
         if (oi.isHubCalcInfo(propName)) {
             if (hubLast == null) return null;
             m = OAObjectInfoDelegate.getMethod(oi, "get" + propName, 1);
