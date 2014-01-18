@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.annotation;
 
 import java.lang.annotation.RetentionPolicy;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -58,6 +59,9 @@ public @interface OAClass {
     long estimatedTotal() default 0;
     
     Class[] filterClasses() default {};
+
+    // property path from a root class to this class.
+    String[] rootTreePropertyPaths() default {};
 }
 
 

@@ -73,6 +73,7 @@ public class OAPropertyPath<T> {
     private Constructor[] filterConstructors; 
 
     private OALinkInfo[] linkInfos;
+    private OALinkInfo[] recursiveLinkInfos;  // for each linkInfos[]
     private boolean bLastProperyLinkInfo;
     private OAPropertyPath revPropertyPath; 
 
@@ -105,6 +106,9 @@ public class OAPropertyPath<T> {
         }
     }
  
+    
+    
+    
     public String getPropertyPath() {
         return this.propertyPath;
     }
@@ -155,6 +159,9 @@ public class OAPropertyPath<T> {
     }
     public OALinkInfo[] getLinkInfos() {
         return linkInfos;
+    }
+    public OALinkInfo[] getRecursiveLinkInfos() {
+        return recursiveLinkInfos;
     }
     
     /**
@@ -210,8 +217,31 @@ public class OAPropertyPath<T> {
         this.fromClass = fromClass;
         Class clazz = this.fromClass;
         String propertyPath = this.propertyPath;
-        
         if (propertyPath == null) propertyPath = "";
+        else propertyPath = propertyPath.trim();
+
+        
+        // 20140118 if leading with "[ClassName].", then it is the fromClass
+        int pos = propertyPath.indexOf("[");
+        if (pos >= 0) {
+            int pos2 = propertyPath.indexOf("].");
+            if (pos2 > 0) {
+                String fromClassName = propertyPath.substring(pos+1, pos2); 
+                propertyPath = propertyPath.substring(pos2+2);
+                
+                String packageName = fromClass.getName();
+                pos = packageName.lastIndexOf('.');
+                if (pos > 0) {
+                    packageName = packageName.substring(0, pos+1);
+                }
+                else packageName = "";
+                
+                Class c = Class.forName(packageName + fromClassName);
+                fromClass = c;
+            }
+        }
+        
+        
     
         String propertyPathClean = propertyPath;
         // a String that uses quotes "" could have special chars ',:()' inside of "" it  
@@ -318,6 +348,7 @@ public class OAPropertyPath<T> {
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, propertyName);
             if (li != null) {
                 linkInfos = (OALinkInfo[]) OAArray.add(OALinkInfo.class, linkInfos, li);
+                bLastProperyLinkInfo = true;
             }
             else {
                 bLastProperyLinkInfo = false;
@@ -482,6 +513,19 @@ public class OAPropertyPath<T> {
             }
             filterParamValues[filterParamValues.length-1] = filterParamValue;
         }
+        
+        // 20140118 update recursiveMethods
+        if (linkInfos != null) {
+            recursiveLinkInfos = new OALinkInfo[linkInfos.length];
+            int j = 0;
+            for (OALinkInfo li : linkInfos) {
+                j++;
+                if (li == null || !li.getRecursive()) continue;
+                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
+                OALinkInfo lix = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.MANY);
+                recursiveLinkInfos[j-1] = lix;
+            }
+        }        
     }
  
     private boolean bFormat;
@@ -590,5 +634,4 @@ public class OAPropertyPath<T> {
         }
         return format;
     }
-    
 }

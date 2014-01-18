@@ -260,6 +260,7 @@ public class OAObjectInfoDelegate {
             thisOI.setInitializeNewObjects(oaclass.initialize());
             thisOI.setDisplayName(oaclass.displayName());
         }
+        
     	
     	
     	// combine PropertyInfos

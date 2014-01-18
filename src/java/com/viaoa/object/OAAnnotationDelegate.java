@@ -20,6 +20,7 @@ package com.viaoa.object;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.annotation.*;
@@ -50,16 +51,19 @@ public class OAAnnotationDelegate {
     private static void _update(OAObjectInfo oi, Class clazz, HashSet<String> hs) {
         String s;
         
-        s = "OAClass";
-        if (!hs.contains(s)) {
+        if (!hs.contains("OAClass")) {
             OAClass oaclass = (OAClass) clazz.getAnnotation(OAClass.class);
             if (oaclass != null) {
-                hs.add(s);
+                hs.add("OAClass");
                 oi.setUseDataSource(oaclass.useDataSource());
                 oi.setLocalOnly(oaclass.localOnly());
                 oi.setAddToCache(oaclass.addToCache());
                 oi.setInitializeNewObjects(oaclass.initialize());
                 oi.setDisplayName(oaclass.displayName());
+
+                // 20140118 rootTreePropertyPaths
+                String[] pps = oaclass.rootTreePropertyPaths();
+                oi.setRootTreePropertyPaths(pps);
             }
         }
         // prop ids

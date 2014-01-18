@@ -21,6 +21,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import com.viaoa.hub.*;
+import com.viaoa.util.OAPropertyPath;
 
 /** 
     OAObjectInfo contains information about an OAObject.
@@ -47,6 +48,7 @@ public class OAObjectInfo implements java.io.Serializable {
     protected boolean bAddToCache = true;  // add object to Cache
     protected boolean bInitializeNewObjects = true;  // initialize object properties (used by OAObject)
     protected String displayName;
+    protected String[] rootTreePropertyPaths;
 
     // this is set by OAObjectInfoDelegate.initialize()
     // All primitive properties, in uppercase and sorted.
@@ -234,6 +236,13 @@ public class OAObjectInfo implements java.io.Serializable {
     }
     public void setDisplayName(String s) {
         this.displayName = s;
+    }
+
+    public String[] getRootTreePropertyPaths() {
+        return rootTreePropertyPaths;
+    }
+    public void setRootTreePropertyPaths(String[] paths) {
+        this.rootTreePropertyPaths = paths;
     }
     
     public void addRequired(String prop) {

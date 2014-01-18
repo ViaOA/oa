@@ -409,7 +409,7 @@ public class HubMerger {
             OALinkInfo recursiveLinkInfo = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.MANY);
             Node recursiveNode = null;
 
-            // 20131009 check to see if link uses recursive
+            // 20131009 check to see if link is recursive
             if (bLastWasMany && recursiveLinkInfo != null && lastLinkInfo != null && lastLinkInfo.getRecursive()) {
                 // was: if (bLastWasMany && recursiveLinkInfo != null) {
                 bIsRecusive = true;
@@ -1569,5 +1569,4 @@ public class HubMerger {
             }
         }
     }
-
 }
