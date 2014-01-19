@@ -17,6 +17,8 @@ All rights reserved.
  */
 package com.viaoa.hub;
 
+import java.util.HashSet;
+
 import com.viaoa.object.OACascade;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
@@ -34,8 +36,10 @@ public class OAFinder<F,T> {
     private OALinkInfo[] liMatch;
     private OALinkInfo[] liMatchRecursive;
     private OALinkInfo liRecursiveRoot;
-    private OACascade cascade;
-    
+    private OACascade navCascade;
+    private boolean bNavRequiresCasade;
+    private boolean bMatchRequiresCasade;
+
     /**
      * 
      * @param hubRoot hub to begin searching from
@@ -67,59 +71,83 @@ public class OAFinder<F,T> {
         
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hubFrom.getObjectClass());
         liRecursiveRoot = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
+        
+        if (liNavTo != null) {
+            HashSet<Class> hs = new HashSet<Class>();
+            for (OALinkInfo li : liNavTo) {
+                if (hs.contains(li.getToClass())) {
+                    bNavRequiresCasade = true;
+                    break;
+                }
+                hs.add(li.getToClass());
+            }
+        }
+        if (liMatch != null) {
+            HashSet<Class> hs = new HashSet<Class>();
+            for (OALinkInfo li : liMatch) {
+                if (hs.contains(li.getToClass())) {
+                    bMatchRequiresCasade = true;
+                    break;
+                }
+                hs.add(li.getToClass());
+            }
+        }
     }
 
     public void find(Object findObj) {
-        cascade = new OACascade();
+        if (bNavRequiresCasade) navCascade = new OACascade();
         try {
-            this.find(hubFrom, findObj);
+            this._find(hubFrom, findObj);
         }
         finally {
-            cascade = null;
+            navCascade = null;
         }
     }
 
-    protected void find(Hub<F> hub, Object findObj) {
+    private void _find(Hub<F> hub, Object findObj) {
         for (Object obj : hub) {
-            nav(obj, 0);
+            _find(obj, findObj, 0);
             if (liRecursiveRoot != null) {
                 Hub h = (Hub) liRecursiveRoot.getValue(obj);
-                find(h, findObj);
+                _find(h, findObj);
             }
         }
     }
     
-    protected void nav(Object obj, int pos) {
+    private void _find(Object obj, Object findObj, int pos) {
         if (obj == null) return;
-System.out.println(pos+") "+obj);        
         if (obj instanceof Hub) {
             for (Object objx : (Hub) obj) {
-                nav(objx, pos+1);
+                _find(objx, findObj, pos);
             }
             return;
         }
         if (!(obj instanceof OAObject)) return;
-        if (cascade.wasCascaded((OAObject)obj, true)) return;
+        if (navCascade != null && navCascade.wasCascaded((OAObject)obj, true)) return;
         
         if (liNavTo == null || pos >= liNavTo.length) {
-            touch(obj);
+            onFindValue( (T) obj, findObj);
         }
         
         // check if recursive
         if (pos > 0 && liNavToRecursive != null && pos <= liNavToRecursive.length) {
             if (liNavToRecursive[pos-1] != null) {
                 Object objx = liNavToRecursive[pos-1].getValue(obj);
-                nav(objx, pos-1); // go up a level to then go through hub
+                _find(objx, findObj, pos-1); // go up a level to then go through hub
             }
         }
 
         if (liNavTo != null && pos < liNavTo.length) {
             Object objx = liNavTo[pos].getValue(obj);
-            nav(objx, pos+1);
+            _find(objx, findObj, pos+1);
         }
     }
 
-    public void touch(Object obj) {
+    /**
+     * This is called when an object is found using the propPathNavTo.  
+     * @param obj object object found in propPathNavTo
+     */
+    protected void onFindValue(T obj, Object findObj) {
         System.out.println("=======> "+obj);
     }
     
