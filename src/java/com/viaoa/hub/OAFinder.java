@@ -24,9 +24,10 @@ import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
 
-public class OAFinder<F,T> {
+public class OAFinder<F,T> implements OAFilter<T>{
     private Hub<F> hubFrom;
     private Hub<T> hubTo;
     private OAPropertyPath<?> propertyPathNavTo, propertyPathMatch;
@@ -114,6 +115,11 @@ public class OAFinder<F,T> {
         }
     }
     
+//qqqqqqqq option to supply filters
+    // OAFilter getFilter(String name)
+    //   get/set FilterPackageName
+    // 
+    
     private void _find(Object obj, Object findObj, int pos) {
         if (obj == null) return;
         if (obj instanceof Hub) {
@@ -143,13 +149,23 @@ public class OAFinder<F,T> {
         }
     }
 
+    
     /**
      * This is called when an object is found using the propPathNavTo.  
      * @param obj object object found in propPathNavTo
      */
     protected void onFindValue(T obj, Object findObj) {
-        System.out.println("=======> "+obj);
+        System.out.println("=======> "+obj+", isUsed-"+isUsed(obj));
+        
     }
+    
+
+    @Override
+    public boolean isUsed(T obj) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+    
     
 }
 
