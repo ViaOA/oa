@@ -455,16 +455,21 @@ public class OAPropertyPath<T> {
                     }
                 }
                 if (filterClass == null) {
-                    filterClass = Class.forName(filterClassName);
+                    try {
+                        filterClass = Class.forName(filterClassName);
+                        // note: filterClass does not have to exist, as some tools will allow
+                        //    creating custom ones.  ex: OAFinder has a method that is called to create the filter
+                    }
+                    catch (Exception e) {}
                 }
-                if (!CustomHubFilter.class.isAssignableFrom(filterClass)) {
+                if (filterClass != null && !CustomHubFilter.class.isAssignableFrom(filterClass)) {
                     throw new RuntimeException("Filter must implement interface CustomHubFilter");
                 }
             }
             this.filterClasses = (Class[]) OAArray.add(Class.class, this.filterClasses, filterClass);
             
             Object[] filterParamValue = null;
-            if (paramCount > 0) {
+            if (filterClass != null && paramCount > 0) {
                 for (Constructor con : filterClass.getConstructors()) {
                     Class[] cs = con.getParameterTypes();
                     if (cs.length != paramCount + 2) continue;
@@ -501,7 +506,7 @@ public class OAPropertyPath<T> {
                 }
             }
             if (filterClass != null && filterConstructor == null) {
-                throw new RuntimeException("Could not find constructor for Filter, name="+filterName);
+                //throw new RuntimeException("Could not find constructor for Filter, name="+filterName);
             }
             this.filterConstructors = (Constructor[]) OAArray.add(Constructor.class, this.filterConstructors, filterConstructor);
             
