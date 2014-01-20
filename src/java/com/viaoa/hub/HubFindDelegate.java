@@ -25,7 +25,7 @@ package com.viaoa.hub;
  *
  */
 public class HubFindDelegate {
-
+// 20140120 changed from HubFinder to OAFinder
     
 	/**
 	    Returns first object in Hub that matches HubFinder object settings.
@@ -33,25 +33,21 @@ public class HubFindDelegate {
 	    @param bSetAO if true then the active object is set to found object.
 	    @see HubFinder
 	*/
-	public static Object findFirst(Hub thisHub, HubFinder hubFinder, boolean bSetAO) {
-	    thisHub.datau.hubFinder = hubFinder;
-	    if (hubFinder == null) return null;
-	    int pos = 0;
-	    for ( ; ;pos++) {
-	        Object object = thisHub.elementAt(pos);
-	        if (object == null) break;
-	        if (hubFinder.isEqual(object)) {
-	            if (bSetAO) thisHub.setPos(pos);
-	            return object;
-	        }
-	    }
-	    if (bSetAO) thisHub.setPos(-1);
-	    return null;
+    
+	public static Object findFirst(Hub thisHub, OAFinder finder, Object findObject, boolean bSetAO) {
+	    thisHub.datau.finder = finder;
+	    if (finder == null) return null;
+        Object obj = finder.findFirst(findObject);
+        if (bSetAO) thisHub.setAO(obj);
+        return obj;
 	}
 	
-	public static Object findFirst(Hub thisHub, String propertyPath, Object findObject, boolean bSetAO) {
-	    HubFinder hf = new HubFinder(thisHub.getObjectClass(), propertyPath, findObject);
-	    return findFirst(thisHub, hf, bSetAO);
+    
+    public static Object findFirst(Hub thisHub, String propertyPath, Object findObject, boolean bSetAO) {
+	    OAFinder hf = new OAFinder(thisHub, null, propertyPath);
+	    Object obj = hf.findFirst(findObject);
+	    if (bSetAO) thisHub.setAO(obj);
+	    return obj;
 	}
 	
     /**
@@ -59,17 +55,11 @@ public class HubFindDelegate {
 	    Starts with the next object after AO.
 	*/
 	public static Object findNext(Hub thisHub, boolean bSetAO) {
-		HubFinder hf = thisHub.datau.hubFinder;
+		OAFinder hf = thisHub.datau.finder;
 		if (hf != null) {
-		    int pos = thisHub.getPos()+1;
-		    for ( ; ;pos++) {
-		        Object object = thisHub.elementAt(pos);
-		        if (object == null) break;
-		        if (hf.isEqual(object)) {
-		        	if (bSetAO) thisHub.setPos(pos);
-		            return object;
-		        }
-		    }
+		    Object objx = hf.findNext();
+        	if (bSetAO) thisHub.setAO(objx);
+            return objx;
 		}
 	    if (bSetAO) thisHub.setPos(-1);
 	    return null;

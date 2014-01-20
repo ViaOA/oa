@@ -1593,16 +1593,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findObject, false);
     }
 
-    /**
-     * Sets active object to first object in Hub that matches HubFinder object
-     * settings. Set to null if not found.
-     * 
-     * @see Hub#findFirst(HubFinder,boolean)
-     * @see HubFinder
-     */
-    public TYPE findFirst(HubFinder hubFinder, boolean bSetAO) {
-        return (TYPE) HubFindDelegate.findFirst(this, hubFinder, bSetAO);
-    }
 
     /**
      * Sets ActiveObject to next object in Hub that has property equal to
