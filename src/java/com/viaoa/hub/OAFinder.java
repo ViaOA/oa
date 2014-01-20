@@ -29,10 +29,13 @@ import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.util.OAConverter;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.OAString;
 
 public class OAFinder<F,T> implements OAFilter<T>{
     private Hub<F> hubFrom;
     private Hub<T> hubTo;
+    private Class classTo;
+    private String propPathNavTo, propPathMatch;
     private OAPropertyPath<?> propertyPathNavTo, propertyPathMatch;
     
     private OALinkInfo liRecursiveRoot;
@@ -51,32 +54,40 @@ public class OAFinder<F,T> implements OAFilter<T>{
     private OAFilter[] matchFilters;
     
 
+    public OAFinder(Hub<F> hubFrom, String propPathNavTo, String propPathMatch) {
+        this(hubFrom, propPathNavTo, propPathMatch, null);
+    }    
+    public OAFinder(Hub<F> hubFrom, String propPathNavTo) {
+        this(hubFrom, propPathNavTo, null, null);
+    }
+    
     /**
      * 
      * @param hubRoot hub to begin searching from
      * @param propertyPathNav path to find objects to then match
      * @param propertyPathMatch path of value to match
      */
-    public OAFinder(Hub<F> hubFrom, String propPathNavTo, Hub<T> hubTo, String propPathMatch) {
+    public OAFinder(Hub<F> hubFrom, String propPathNavTo, String propPathMatch, Hub<T> hubTo) {
         if (hubFrom == null) {
             throw new IllegalArgumentException("Root hub can not be null");
         }
         this.hubFrom = hubFrom;
         this.hubTo = hubTo;
-
+        this.propPathMatch = propPathMatch;
+        this.propPathNavTo = propPathNavTo;
+        
         propertyPathNavTo = new OAPropertyPath(hubFrom.getObjectClass(), propPathNavTo);
         
         liNavTo = propertyPathNavTo.getLinkInfos();
         liNavToRecursive = propertyPathNavTo.getRecursiveLinkInfos();
 
-        Class c;
         Class[] cs = propertyPathNavTo.getClasses();
-        if (cs == null || cs.length == 0) c = hubFrom.getObjectClass();
-        else c = cs[cs.length-1];
-        if (!c.equals(hubTo.getObjectClass())) {
-            throw new RuntimeException("hubTo is expected to be for class="+hubTo.getObjectClass()+", but class="+c);
+        if (cs == null || cs.length == 0) classTo = hubFrom.getObjectClass();
+        else classTo = cs[cs.length-1];
+        if (hubTo != null&& !classTo.equals(hubTo.getObjectClass())) {
+            throw new RuntimeException("hubTo is expected to be for class="+hubTo.getObjectClass()+", but class="+classTo);
         }
-        propertyPathMatch = new OAPropertyPath(hubTo.getObjectClass(), propPathMatch);
+        propertyPathMatch = new OAPropertyPath(classTo, propPathMatch);
         liMatch = propertyPathMatch.getLinkInfos();
         liMatchRecursive = propertyPathMatch.getRecursiveLinkInfos();
         liMatchMethods =  propertyPathMatch.getMethods();
@@ -147,7 +158,12 @@ public class OAFinder<F,T> implements OAFilter<T>{
         }
     }
 
+    /**
+     * This will clear the hubTo, and then populated it with objects that are found.
+     * @param matchValue value to match with propPathMatch value.
+     */
     public void find(Object matchValue) {
+        if (hubTo != null) hubTo.clear();
         if (bNavRequiresCasade) navCascade = new OACascade();
         try {
             this._find(hubFrom, matchValue);
@@ -217,8 +233,10 @@ public class OAFinder<F,T> implements OAFilter<T>{
      */
     protected void onMatchValue(T obj, Object matchObj) {
         if (!isUsed(obj)) return;
-        
-        if (bMatchRequiresCasade) matchCascade = new OACascade();
+       
+        if (!OAString.isEmpty(propPathMatch)) {
+            if (bMatchRequiresCasade) matchCascade = new OACascade();
+        }
         try {
             _match(obj, obj, matchObj, 0);
         }
@@ -227,6 +245,11 @@ public class OAFinder<F,T> implements OAFilter<T>{
         }
         
     }
+    
+    /**
+     * This is called to determie if a found object should be used.
+     * If true and there is a propPathMatch, then it will then compare those values.
+     */
     @Override
     public boolean isUsed(T obj) {
         return true;
@@ -246,21 +269,20 @@ public class OAFinder<F,T> implements OAFilter<T>{
         }
 
         if (liMatch == null || pos >= liMatch.length) {
-            if (pos > 0) {
-                // see if last property in propertyPath is not link
-                if (liMatchMethods.length > liMatch.length) {
-                    try {
-                        Object objx =  liMatchMethods[liMatchMethods.length-1].invoke(obj);
-                        obj = objx;
-                    }
-                    catch (Exception e) {
-                        // TODO: handle exception
-                    }
+            // see if last property in propertyPath is not link
+            if (liMatchMethods.length > (liMatch==null?0:liMatch.length)) {
+                try {
+                    Object objx =  liMatchMethods[liMatchMethods.length-1].invoke(obj);
+                    obj = objx;
                 }
-                
-                // compare value
-                if (!isEqual(obj, matchObj)) return;
+                catch (Exception e) {
+                    // TODO: handle exception
+                }
             }
+            
+            // compare value
+            if (!isEqual(obj, matchObj)) return;
+
             onMatchFound(thisObj);
         }
 
