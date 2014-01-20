@@ -82,7 +82,7 @@ public class OAFinder<F,T> implements OAFilter<T>{
         liNavToRecursive = propertyPathNavTo.getRecursiveLinkInfos();
 
         Class[] cs = propertyPathNavTo.getClasses();
-        if (cs == null || cs.length == 0) classTo = hubFrom.getObjectClass();
+        if (OAString.isEmpty(propPathNavTo) || cs == null || cs.length == 0) classTo = hubFrom.getObjectClass();
         else classTo = cs[cs.length-1];
         if (hubTo != null&& !classTo.equals(hubTo.getObjectClass())) {
             throw new RuntimeException("hubTo is expected to be for class="+hubTo.getObjectClass()+", but class="+classTo);
@@ -158,48 +158,51 @@ public class OAFinder<F,T> implements OAFilter<T>{
         }
     }
 
-    private boolean bFindOne; 
+    private boolean bFindFirst; 
     private boolean bReturnNow;  // this will be set when it should no longer keep searching for more matches
-    private T objectFound;
-    private Object nextMatchValue;
+    private Object lastMatchValue;
+    private int lastFoundPos;
     
-    public T findFirst(Object matchValue) {
-        T objx;
-        bFindOne = true;
-        objectFound = null;
-        nextMatchValue = null;
+    /**
+     * Find the first object in hubFrom that matches.
+     */
+    public F findFirst(Object matchValue) {
+        bFindFirst = true;
+        F objectFound = null;
+        lastMatchValue = matchValue;
+        lastFoundPos = -1;
         if (hubTo != null) hubTo.clear();
         if (bNavRequiresCasade) navCascade = new OACascade();
         try {
-            _findTop(hubFrom, matchValue, 0);
-            if (objectFound != null) nextMatchValue = matchValue;
+            objectFound = _findTop(hubFrom, matchValue, 0);
         }
         finally {
             navCascade = null;
-            bFindOne = false;
+            bFindFirst = false;
             bReturnNow = false;
+            if (objectFound == null) lastMatchValue = matchValue;
         }
         return objectFound;
     }    
-    public T findNext() {
-        if (objectFound == null) return null;
+    /**
+     * Find the next object in hubFrom that matches.
+     * Note: this will only work using the hubFrom.
+     */
+    public F findNext() {
+        F objectFound = null;
         if (hubTo != null) hubTo.clear();
         try {
-            int pos = hubFrom.getPos(objectFound);
-            if (pos < 0) {
-                nextMatchValue = null;
-            }
-            else {
+            if (lastFoundPos >= 0) {
                 if (bNavRequiresCasade) navCascade = new OACascade();
-                bFindOne = true;
+                bFindFirst = true;
                 objectFound = null;
-                _findTop(hubFrom, nextMatchValue, pos+1);
-                if (objectFound == null) nextMatchValue = null;
+                objectFound = _findTop(hubFrom, lastMatchValue, lastFoundPos+1);
+                if (objectFound == null) lastMatchValue = null;
             }
         }
         finally {
             navCascade = null;
-            bFindOne = false;
+            bFindFirst = false;
             bReturnNow = false;
         }
         return objectFound;
@@ -211,6 +214,8 @@ public class OAFinder<F,T> implements OAFilter<T>{
      * @param matchValue value to match with propPathMatch value.
      */
     public void find(Object matchValue) {
+        lastMatchValue = null;
+        lastFoundPos = -1;
         if (hubTo != null) hubTo.clear();
         if (bNavRequiresCasade) navCascade = new OACascade();
         try {
@@ -221,17 +226,25 @@ public class OAFinder<F,T> implements OAFilter<T>{
         }
     }
 
-    private void _findTop(Hub<F> hub, Object matchValue, int startPos) {
+    private F _findTop(Hub<F> hub, Object matchValue, int startPos) {
         for (int i=startPos; ;i++) {
-            Object obj = hub.getAt(i);
+            F obj = hub.getAt(i);
             if (obj == null) break;
             _find(obj, matchValue, 0);
-            if (bReturnNow) return;
+            if (bReturnNow) {
+                lastFoundPos = i;
+                return obj;
+            }
             if (liRecursiveRoot != null) {
                 Hub h = (Hub) liRecursiveRoot.getValue(obj);
                 _findTop(h, matchValue, 0);
+                if (bReturnNow) {
+                    lastFoundPos = i;
+                    return obj;
+                }
             }
         }
+        return null;
     }
     
     private void _find(Object obj, Object matchValue, int pos) {
@@ -298,7 +311,7 @@ public class OAFinder<F,T> implements OAFilter<T>{
     }
     
     /**
-     * This is called to determie if a found object should be used.
+     * This is called to determine if a found object should be used.
      * If true and there is a propPathMatch, then it will then compare those values.
      */
     @Override
@@ -377,9 +390,8 @@ public class OAFinder<F,T> implements OAFilter<T>{
     int cnter;    
     protected void onMatchFound(T obj) {
         System.out.println((++cnter)+") "+obj);
-        if (bFindOne) {
+        if (bFindFirst) {
             bReturnNow = true;
-            objectFound = obj;
         }
         if (hubTo != null) hubTo.add(obj);
     }
@@ -390,6 +402,5 @@ public class OAFinder<F,T> implements OAFilter<T>{
     public void setToHub(Hub<T> hub) {
         this.hubTo = hub;
     }
-    
 }
 
