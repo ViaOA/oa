@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
 
 import com.viaoa.remote.multiplexer.OARemoteThread;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.*;
 import com.viaoa.hub.Hub;
 import com.viaoa.transaction.OATransaction;
@@ -999,5 +1000,14 @@ public class OAThreadLocalDelegate {
     public static void setStatus(String msg) {
         getOAThreadLocal().status = msg;
     }
+
+    // 20140121
+    public static void setRemoteRequestInfo(RequestInfo ri) {
+        getOAThreadLocal().requestInfo = ri;
+    }
+    public static RequestInfo getRemoteRequestInfo() {
+        return getOAThreadLocal().requestInfo;
+    }
+
 }
 

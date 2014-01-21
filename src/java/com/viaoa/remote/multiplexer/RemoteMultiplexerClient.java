@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.info.BindInfo;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
@@ -327,6 +328,7 @@ public class RemoteMultiplexerClient {
                 }
                 else {
                     try {
+                        OAThreadLocalDelegate.setRemoteRequestInfo(ri);
                         ri.response = ri.method.invoke(stuntObject, ri.args);
                     }
                     catch (InvocationTargetException e) {
@@ -334,6 +336,7 @@ public class RemoteMultiplexerClient {
                         if (t instanceof Exception) ri.exception = (Exception) t;
                         else ri.exception = e;
                     }
+                    OAThreadLocalDelegate.setRemoteRequestInfo(null);
                 }
             }
             else {
@@ -842,6 +845,7 @@ if (tx > 245) {
         }
 
         try {
+            OAThreadLocalDelegate.setRemoteRequestInfo(ri);
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
         }
         catch (InvocationTargetException e) {
@@ -849,6 +853,7 @@ if (tx > 245) {
             if (t instanceof Exception) ri.exception = (Exception) t;
             else ri.exception = e;
         }
+        OAThreadLocalDelegate.setRemoteRequestInfo(null);
 
         if (ri.response != null && ri.methodInfo.remoteReturn != null) {
             BindInfo bindx = getBindInfo((Object) ri.response);

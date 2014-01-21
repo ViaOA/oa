@@ -169,6 +169,7 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
                 throw new RuntimeException(e);
             }
             if (hubMasterx.getObject(value) == null) {
+hubMasterx.getObject(value);//qqqqqqqqqqqqqqqqq
                 if (okToRemove(obj, value)) {
                     if (obj instanceof OAObject) {
                         ((OAObject)obj).delete();

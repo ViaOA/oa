@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.comm.multiplexer.io.VirtualServerSocket;
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.info.BindInfo;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
@@ -360,6 +361,7 @@ public class RemoteMultiplexerServer {
         int x = (ri.args == null) ? 0 : ri.args.length;
 
         try {
+            OAThreadLocalDelegate.setRemoteRequestInfo(ri);
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
         }
         catch (InvocationTargetException e) {
@@ -370,6 +372,8 @@ public class RemoteMultiplexerServer {
         catch (Throwable tx) {
             ri.exception = new Exception(tx.toString(), tx);
         }
+        OAThreadLocalDelegate.setRemoteRequestInfo(null);
+
 
         if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
             if (ri.response != null && ri.methodInfo.remoteReturn != null) {
@@ -848,6 +852,7 @@ public class RemoteMultiplexerServer {
                 }
                 else {
                     try {
+                        OAThreadLocalDelegate.setRemoteRequestInfo(ri);
                         ri.response = ri.method.invoke(stuntObject, ri.args);
                     }
                     catch (InvocationTargetException e) {
@@ -855,6 +860,7 @@ public class RemoteMultiplexerServer {
                         if (t instanceof Exception) ri.exception = (Exception) t;
                         else ri.exception = e;
                     }
+                    OAThreadLocalDelegate.setRemoteRequestInfo(null);
                 }
             }
             else ri.exceptionMessage = "Method  not found";
@@ -1065,6 +1071,7 @@ public class RemoteMultiplexerServer {
 
     protected void processBroadcast(RequestInfo ri) throws Exception {
         try {
+            OAThreadLocalDelegate.setRemoteRequestInfo(ri);
             ri.response = ri.method.invoke(ri.object, ri.args);
         }
         catch (InvocationTargetException e) {
@@ -1076,6 +1083,7 @@ public class RemoteMultiplexerServer {
             ri.exception = e;
         }
         ri.processedByServer = true;
+        OAThreadLocalDelegate.setRemoteRequestInfo(null);
         synchronized (ri) {
             ri.notifyAll(); // waiting clients getting messages from queue 
         }

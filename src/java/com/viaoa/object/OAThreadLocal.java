@@ -19,6 +19,7 @@ package com.viaoa.object;
 
 
 import com.viaoa.hub.Hub;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.Tuple;
 
@@ -107,7 +108,10 @@ public class OAThreadLocal {
     public OAThreadLocal() {
         this.threadName = Thread.currentThread().getName();
     }
-    
+
+    // 20140121
+    // current remote request that is being invoked
+    protected RequestInfo requestInfo;
 }
 
 

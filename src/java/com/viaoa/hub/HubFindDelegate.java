@@ -17,6 +17,8 @@ All rights reserved.
 */
 package com.viaoa.hub;
 
+import com.viaoa.object.OAFinder;
+
 
 
 /**
@@ -37,7 +39,7 @@ public class HubFindDelegate {
 	public static Object findFirst(Hub thisHub, OAFinder finder, Object findObject, boolean bSetAO) {
 	    thisHub.datau.finder = finder;
 	    if (finder == null) return null;
-        Object obj = finder.findFirst(findObject);
+        Object obj = finder.findFirstRoot(findObject);
         if (bSetAO) thisHub.setAO(obj);
         return obj;
 	}
@@ -45,7 +47,7 @@ public class HubFindDelegate {
     
     public static Object findFirst(Hub thisHub, String propertyPath, Object findObject, boolean bSetAO) {
 	    OAFinder hf = new OAFinder(thisHub, null, propertyPath);
-	    Object obj = hf.findFirst(findObject);
+	    Object obj = hf.findFirstRoot(findObject);
 	    if (bSetAO) thisHub.setAO(obj);
 	    return obj;
 	}
@@ -57,7 +59,7 @@ public class HubFindDelegate {
 	public static Object findNext(Hub thisHub, boolean bSetAO) {
 		OAFinder hf = thisHub.datau.finder;
 		if (hf != null) {
-		    Object objx = hf.findNext();
+		    Object objx = hf.findNextRoot();
         	if (bSetAO) thisHub.setAO(objx);
             return objx;
 		}

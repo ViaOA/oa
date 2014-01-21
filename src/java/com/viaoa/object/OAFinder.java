@@ -15,12 +15,14 @@ THIS SOFTWARE OR ITS DERIVATIVES.
 Copyright (c) 2001-2013 ViaOA, Inc.
 All rights reserved.
  */
-package com.viaoa.hub;
+package com.viaoa.object;
+
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 
+import com.viaoa.hub.*;
 import com.viaoa.object.OACascade;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
@@ -33,7 +35,7 @@ import com.viaoa.util.OAString;
 
 public class OAFinder<F,T> implements OAFilter<T>{
     
-    private Hub<F> hubFrom;
+    private Hub<F> hubRoot;
     private Hub<T> hubTo;
     private Class classTo;
     private String propPathNavTo, propPathMatch;
@@ -54,9 +56,14 @@ public class OAFinder<F,T> implements OAFilter<T>{
     private OACascade matchCascade;
     private OAFilter<T>[] matchFilters;
     
+    private boolean bFindFirst; 
+    private boolean bReturnNow;  // this will be set when it should no longer keep searching for more matches
+    private Object lastMatchValue;
+    private int lastFoundPos; // in root hub
+    private T lastFoundMatch;
 
-    public OAFinder(Hub<F> hubFrom, String propPathNavTo, String propPathMatch) {
-        this(hubFrom, propPathNavTo, propPathMatch, null);
+    public OAFinder(Hub<F> hubRoot, String propPathNavTo, String propPathMatch) {
+        this(hubRoot, propPathNavTo, propPathMatch, null);
     }    
     
     /**
@@ -67,22 +74,22 @@ public class OAFinder<F,T> implements OAFilter<T>{
      * @param propertyPathNav path to find objects to then match
      * @param propertyPathMatch property path of value to match
      */
-    public OAFinder(Hub<F> hubFrom, String propPathNavTo, String propPathMatch, Hub<T> hubTo) {
-        if (hubFrom == null) {
+    public OAFinder(Hub<F> hubRoot, String propPathNavTo, String propPathMatch, Hub<T> hubTo) {
+        if (hubRoot == null) {
             throw new IllegalArgumentException("Root hub can not be null");
         }
-        this.hubFrom = hubFrom;
+        this.hubRoot = hubRoot;
         this.hubTo = hubTo;
         this.propPathNavTo = propPathNavTo;
         this.propPathMatch = propPathMatch;
         
-        propertyPathNavTo = new OAPropertyPath(hubFrom.getObjectClass(), propPathNavTo);
+        propertyPathNavTo = new OAPropertyPath(hubRoot.getObjectClass(), propPathNavTo);
         
         liNavTo = propertyPathNavTo.getLinkInfos();
         liNavToRecursive = propertyPathNavTo.getRecursiveLinkInfos();
 
         Class[] cs = propertyPathNavTo.getClasses();
-        if (OAString.isEmpty(propPathNavTo) || cs == null || cs.length == 0) classTo = hubFrom.getObjectClass();
+        if (OAString.isEmpty(propPathNavTo) || cs == null || cs.length == 0) classTo = hubRoot.getObjectClass();
         else classTo = cs[cs.length-1];
         if (hubTo != null&& !classTo.equals(hubTo.getObjectClass())) {
             throw new RuntimeException("hubTo is expected to be for class="+hubTo.getObjectClass()+", but class="+classTo);
@@ -92,7 +99,7 @@ public class OAFinder<F,T> implements OAFilter<T>{
         liMatchRecursive = propertyPathMatch.getRecursiveLinkInfos();
         liMatchMethods =  propertyPathMatch.getMethods();
         
-        OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hubFrom.getObjectClass());
+        OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hubRoot.getObjectClass());
         liRecursiveRoot = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
         
         bNavRequiresCasade = true;
@@ -158,15 +165,33 @@ public class OAFinder<F,T> implements OAFilter<T>{
         }
     }
 
-    private boolean bFindFirst; 
-    private boolean bReturnNow;  // this will be set when it should no longer keep searching for more matches
-    private Object lastMatchValue;
-    private int lastFoundPos;
     
     /**
-     * Find the first object in hubFrom that matches.
+     * find first object in toHub that matches.
      */
-    public F findFirst(Object matchValue) {
+    public T findFirst(Object matchValue) {
+        bFindFirst = true;
+        F objectFound = null;
+        if (hubTo != null) hubTo.clear();
+        if (bNavRequiresCasade) navCascade = new OACascade();
+        try {
+            _findTop(hubRoot, matchValue, 0);
+        }
+        finally {
+            navCascade = null;
+            bFindFirst = false;
+            bReturnNow = false;
+            if (objectFound == null) lastMatchValue = matchValue;
+        }
+        T objx = lastFoundMatch;
+        lastFoundMatch = null;
+        return objx;
+    }
+    
+    /**
+     * Find the first object in hubRoot that matches.
+     */
+    public F findFirstRoot(Object matchValue) {
         bFindFirst = true;
         F objectFound = null;
         lastMatchValue = matchValue;
@@ -174,7 +199,7 @@ public class OAFinder<F,T> implements OAFilter<T>{
         if (hubTo != null) hubTo.clear();
         if (bNavRequiresCasade) navCascade = new OACascade();
         try {
-            objectFound = _findTop(hubFrom, matchValue, 0);
+            objectFound = _findTop(hubRoot, matchValue, 0);
         }
         finally {
             navCascade = null;
@@ -185,10 +210,10 @@ public class OAFinder<F,T> implements OAFilter<T>{
         return objectFound;
     }    
     /**
-     * Find the next object in hubFrom that matches.
-     * Note: this will only work using the hubFrom.
+     * Find the next object in hubRoot that matches.
+     * Note: this will only work using the hubRoot.
      */
-    public F findNext() {
+    public F findNextRoot() {
         F objectFound = null;
         if (hubTo != null) hubTo.clear();
         try {
@@ -196,7 +221,7 @@ public class OAFinder<F,T> implements OAFilter<T>{
                 if (bNavRequiresCasade) navCascade = new OACascade();
                 bFindFirst = true;
                 objectFound = null;
-                objectFound = _findTop(hubFrom, lastMatchValue, lastFoundPos+1);
+                objectFound = _findTop(hubRoot, lastMatchValue, lastFoundPos+1);
                 if (objectFound == null) lastMatchValue = null;
             }
         }
@@ -219,7 +244,7 @@ public class OAFinder<F,T> implements OAFilter<T>{
         if (hubTo != null) hubTo.clear();
         if (bNavRequiresCasade) navCascade = new OACascade();
         try {
-            _findTop(hubFrom, matchValue, 0);
+            _findTop(hubRoot, matchValue, 0);
         }
         finally {
             navCascade = null;
@@ -389,9 +414,10 @@ public class OAFinder<F,T> implements OAFilter<T>{
     
     int cnter;    
     protected void onMatchFound(T obj) {
-        System.out.println((++cnter)+") "+obj);
+        // System.out.println((++cnter)+") "+obj);
         if (bFindFirst) {
             bReturnNow = true;
+            lastFoundMatch = obj;
         }
         if (hubTo != null) hubTo.add(obj);
     }

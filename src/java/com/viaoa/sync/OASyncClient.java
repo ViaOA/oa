@@ -401,7 +401,11 @@ public class OASyncClient {
      * Called when there is an exception with the real socket.
      */
     protected void onSocketException(Exception e) {
-        LOG.log(Level.WARNING, "exception with connection to server", e);
+        try {
+            LOG.log(Level.WARNING, "exception with connection to server", e);
+        }
+        catch (Exception ex) {
+        }
         try {
             stop();
         }
@@ -409,7 +413,11 @@ public class OASyncClient {
         }
     }
     protected void onSocketClose(boolean bError) {
-        LOG.fine("closing, isError="+bError);
+        try {
+            LOG.fine("closing, isError="+bError);
+        }
+        catch (Exception ex) {
+        }
         try {
             stop();
         }
