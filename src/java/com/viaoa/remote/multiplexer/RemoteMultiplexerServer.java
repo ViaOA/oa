@@ -650,7 +650,7 @@ public class RemoteMultiplexerServer {
     }
 
     /**
-     * Register/Bind an Object so that it can used by clients
+     * Register/Bind an Object so that it can be used by clients
      * 
      * @param name
      * @param obj
