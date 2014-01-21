@@ -365,9 +365,16 @@ public class RemoteMultiplexerServer {
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
         }
         catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            if (t instanceof Exception) ri.exception = (Exception) t;
-            else ri.exception = e;
+            Exception ex = e;
+            for (int i=0 ; i<10; i++) {
+                Throwable t = ex.getCause();
+                if (t == null || t == ex || !(t instanceof Exception)) { 
+                    ri.exception = ex;
+                    break;
+                }
+                ex = (Exception) t;
+                ri.exception = ex;
+            }
         }
         catch (Throwable tx) {
             ri.exception = new Exception(tx.toString(), tx);
@@ -524,9 +531,16 @@ public class RemoteMultiplexerServer {
                         ri.response = ri.method.invoke(stuntObject, ri.args);
                     }
                     catch (InvocationTargetException e) {
-                        Throwable t = e.getCause();
-                        if (t instanceof Exception) ri.exception = (Exception) t;
-                        else ri.exception = e;
+                        Exception ex = e;
+                        for (int i=0 ; i<10; i++) {
+                            Throwable t = ex.getCause();
+                            if (t == null || t == ex || !(t instanceof Exception)) { 
+                                ri.exception = ex;
+                                break;
+                            }
+                            ex = (Exception) t;
+                            ri.exception = ex;
+                        }
                     }
                 }
             }
@@ -856,9 +870,16 @@ public class RemoteMultiplexerServer {
                         ri.response = ri.method.invoke(stuntObject, ri.args);
                     }
                     catch (InvocationTargetException e) {
-                        Throwable t = e.getCause();
-                        if (t instanceof Exception) ri.exception = (Exception) t;
-                        else ri.exception = e;
+                        Exception ex = e;
+                        for (int i=0 ; i<10; i++) {
+                            Throwable t = ex.getCause();
+                            if (t == null || t == ex || !(t instanceof Exception)) { 
+                                ri.exception = ex;
+                                break;
+                            }
+                            ex = (Exception) t;
+                            ri.exception = ex;
+                        }
                     }
                     OAThreadLocalDelegate.setRemoteRequestInfo(null);
                 }
@@ -1075,9 +1096,16 @@ public class RemoteMultiplexerServer {
             ri.response = ri.method.invoke(ri.object, ri.args);
         }
         catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            if (t instanceof Exception) ri.exception = (Exception) t;
-            else ri.exception = e;
+            Exception ex = e;
+            for (int i=0 ; i<10; i++) {
+                Throwable t = ex.getCause();
+                if (t == null || t == ex || !(t instanceof Exception)) { 
+                    ri.exception = ex;
+                    break;
+                }
+                ex = (Exception) t;
+                ri.exception = ex;
+            }
         }
         catch (Exception e) {
             ri.exception = e;

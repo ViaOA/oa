@@ -332,9 +332,16 @@ public class RemoteMultiplexerClient {
                         ri.response = ri.method.invoke(stuntObject, ri.args);
                     }
                     catch (InvocationTargetException e) {
-                        Throwable t = e.getCause();
-                        if (t instanceof Exception) ri.exception = (Exception) t;
-                        else ri.exception = e;
+                        Exception ex = e;
+                        for (int i=0 ; i<10; i++) {
+                            Throwable t = ex.getCause();
+                            if (t == null || t == ex || !(t instanceof Exception)) { 
+                                ri.exception = ex;
+                                break;
+                            }
+                            ex = (Exception) t;
+                            ri.exception = ex;
+                        }
                     }
                     OAThreadLocalDelegate.setRemoteRequestInfo(null);
                 }
@@ -798,7 +805,7 @@ if (tx > 245) {
 
         Object remoteObject = ri.bind.getObject();
         if (remoteObject == null) {
-            ri.exceptionMessage = "remote Object has been garbage collected";
+            ri.exceptionMessage = "remote Object has been garbage collected, class="+ri.bind.interfaceClass;
 
             /*
             // send message to server to remove client remote object from session
@@ -849,9 +856,16 @@ if (tx > 245) {
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
         }
         catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            if (t instanceof Exception) ri.exception = (Exception) t;
-            else ri.exception = e;
+            Exception ex = e;
+            for (int i=0 ; i<10; i++) {
+                Throwable t = ex.getCause();
+                if (t == null || t == ex || !(t instanceof Exception)) { 
+                    ri.exception = ex;
+                    break;
+                }
+                ex = (Exception) t;
+                ri.exception = ex;
+            }
         }
         OAThreadLocalDelegate.setRemoteRequestInfo(null);
 
