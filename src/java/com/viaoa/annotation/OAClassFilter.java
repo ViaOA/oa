@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /*
- * Defines an class used for HubFilter'ing.
+ * Defines a class used for HubFilter'ing.
  */
 @Documented
 @Target(ElementType.TYPE)

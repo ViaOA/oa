@@ -33,7 +33,17 @@ import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
-public class OAFinder<F,T> implements OAFilter<T>{
+/**
+ * Used to find objects using a root Hub and property paths.
+ * The first property path is to navigate to another class, and then
+ * the second property path is used to then find a matching value.
+ * 
+ * 
+ * @author vvia
+ *
+ * @param <F> type of hub to use as the root (from)
+ * @param <T> type of hub for the to class.
+ */public class OAFinder<F,T> implements OAFilter<T>{
     
     private Hub<F> hubRoot;
     private Hub<T> hubTo;
