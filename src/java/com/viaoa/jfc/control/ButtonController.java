@@ -454,8 +454,14 @@ public class ButtonController extends JFCController implements ActionListener {
         }
         catch (Exception ex) {
             LOG.log(Level.WARNING, "error while performing command action", ex);
-            Throwable t =  ex.getCause();
-            if (t instanceof Exception) ex = (Exception) t;
+            for (int i=0 ; i<10; i++) {
+                Throwable t = ex.getCause();
+                if (t == null || t == ex || !(t instanceof Exception)) { 
+                    break;
+                }
+                ex = (Exception) t;
+            }
+            
             JOptionPane.showMessageDialog(OAJFCUtil.getWindow(button), 
                     "Error: "+OAString.fmt(ex.getMessage(), "40L."), 
                     "Command Error", JOptionPane.ERROR_MESSAGE);
