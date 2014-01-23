@@ -71,9 +71,16 @@ import com.viaoa.util.OAString;
     private Object lastMatchValue;
     private int lastFoundPos; // in root hub
     private T lastFoundMatch;
+    private boolean bHasMatchValue;
 
     public OAFinder(Hub<F> hubRoot, String propPathNavTo, String propPathMatch) {
-        this(hubRoot, propPathNavTo, propPathMatch, null);
+        this(hubRoot, propPathNavTo, propPathMatch, null, true);
+    }    
+    public OAFinder(Hub<F> hubRoot, String propPathNavTo) {
+        this(hubRoot, propPathNavTo, null,  null, false);
+    }    
+    public OAFinder(Hub<F> hubRoot, String propPathNavTo, Hub<T> hubTo) {
+        this(hubRoot, propPathNavTo, null,  hubTo, false);
     }    
     
     /**
@@ -85,6 +92,10 @@ import com.viaoa.util.OAString;
      * @param propertyPathMatch property path of value to match
      */
     public OAFinder(Hub<F> hubRoot, String propPathNavTo, String propPathMatch, Hub<T> hubTo) {
+        this(hubRoot, propPathNavTo, propPathMatch, hubTo, true);
+    }
+
+    private OAFinder(Hub<F> hubRoot, String propPathNavTo, String propPathMatch, Hub<T> hubTo, boolean bHasMatchValue) {
         if (hubRoot == null) {
             throw new IllegalArgumentException("Root hub can not be null");
         }
@@ -92,6 +103,7 @@ import com.viaoa.util.OAString;
         this.hubTo = hubTo;
         this.propPathNavTo = propPathNavTo;
         this.propPathMatch = propPathMatch;
+        this.bHasMatchValue = bHasMatchValue;
         
         propertyPathNavTo = new OAPropertyPath(hubRoot.getObjectClass(), propPathNavTo);
         
@@ -282,7 +294,77 @@ import com.viaoa.util.OAString;
         return null;
     }
     
+    static class StackValue {
+        Object obj;
+        int pos;
+        boolean bUsingToPropPath;
+        StackValue(Object obj, int pos, boolean bUsingToPropPath)  {
+            this.obj = obj;
+            this.pos = pos;
+            this.bUsingToPropPath = bUsingToPropPath;
+        }
+    }
+    
+    // keep stack from navigation
+    private int stackPos;
+    private StackValue[] stack = new StackValue[20];
+    private void push(Object obj, int pos, boolean bUsingToPropPath) {
+        StackValue sv = new StackValue(obj, pos, bUsingToPropPath);
+        push(sv);
+    }
+    private void push(StackValue sv) {
+        if (sv == null) return;
+        int x = stack.length;
+        if (stackPos == x) {
+            StackValue[] temp = new StackValue[x + 20];
+            System.arraycopy(stack, 0, temp, 0, x);
+            stack = temp;
+        }
+        stack[stackPos++] = sv;
+    }
+    private StackValue pop() {
+        if (stackPos == 0) return null;
+        StackValue sv = stack[--stackPos]; 
+        stack[stackPos] = null;
+        return sv;
+    }
+
+    public Object[] getStackObjects() {
+        Object[] objs = new Object[stackPos];
+        for (int i=0; i<stackPos; i++) {
+            objs[i] = stack[i].obj;
+        }
+        return objs;
+    }
+    public String[] getStackPropertyNames() {
+        String[] ss = new String[stackPos];
+        for (int i=0; i<stackPos; i++) {
+            String methodName;
+            if (!stack[i].bUsingToPropPath) {
+                if (stack[i].pos == 0) methodName = "[root]";
+                else methodName = liNavTo[stack[i].pos-1].getName();
+            }
+            else {
+                if (stack[i].pos == 0) methodName = "[toObject]";
+                else if (stack[i].pos <= liMatch.length) methodName = liMatch[stack[i].pos-1].getName();
+                else methodName = liMatchMethods[stack[i-1].pos].getName();
+            }
+            ss[i] = methodName;
+        }
+        return ss;
+    }
+    
+    
     private void _find(Object obj, Object matchValue, int pos) {
+        try {
+            push(obj, pos, false);
+            _findx(obj, matchValue, pos);
+        }
+        finally {
+            pop();
+        }
+    }    
+    private void _findx(Object obj, Object matchValue, int pos) {
         if (obj == null) return;
         if (obj instanceof Hub) {
             for (Object objx : (Hub) obj) {
@@ -297,7 +379,7 @@ import com.viaoa.util.OAString;
         if (!(obj instanceof OAObject)) return;
         if (navCascade != null && navCascade.wasCascaded((OAObject)obj, true)) return;
         
-        if (liNavTo == null || pos >= liNavTo.length) {
+        if (liNavTo == null || pos >= liNavTo.length) {  // navTo object
             onMatchValue( (T) obj, matchValue);
             if (bReturnNow) return;
         }
@@ -331,8 +413,9 @@ import com.viaoa.util.OAString;
      * @param obj object object found in propPathNavTo
      */
     protected void onMatchValue(T obj, Object matchObj) {
+        if (obj == null) return;
         if (!isUsed(obj)) return;
-       
+        
         if (!OAString.isEmpty(propPathMatch)) {
             if (bMatchRequiresCasade) matchCascade = new OACascade();
         }
@@ -342,7 +425,6 @@ import com.viaoa.util.OAString;
         finally {
             matchCascade = null;
         }
-        
     }
     
     /**
@@ -355,6 +437,17 @@ import com.viaoa.util.OAString;
     }
 
     private void _match(T thisObj, Object obj, Object matchObj, int pos) {
+        boolean b = (pos != 0 || !(obj instanceof Hub));
+        try {
+            if (b) push(obj, pos, true);
+            _matchx(thisObj, obj, matchObj, pos);
+        }
+        finally {
+            if (b) pop();
+        }
+    }    
+    
+    private void _matchx(T thisObj, Object obj, Object matchObj, int pos) {
         if (obj == null) return;
         if (obj instanceof Hub) {
             for (Object objx : (Hub) obj) {
@@ -380,7 +473,7 @@ import com.viaoa.util.OAString;
             }
             
             // compare value
-            if (!isEqual(obj, matchObj)) return;
+            if (bHasMatchValue && !isEqual(obj, matchObj)) return;
 
             onMatchFound(thisObj);
             if (bReturnNow) return;
