@@ -1574,8 +1574,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
 
     /**
-     * Finds first object that has a property that matches a value. If value is
-     * a String, then a case-insensitive compare is done.
+     * Finds first object that has a property that matches a value. 
+     * The comparison is done using OACompare.like(..)
      * 
      * @param propertyPath
      *            property to use to find value
@@ -1588,10 +1588,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public TYPE findFirst(String propertyPath, Object findObject, boolean bSetAO) {
         return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findObject, bSetAO);
     }
-    public TYPE findFirst(OAFinder finder, Object findObject, boolean bSetAO) {
-        return (TYPE) HubFindDelegate.findFirst(this, finder, findObject, bSetAO);
-    }
-
     public TYPE find(String propertyPath, Object findObject) {
         return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findObject, false);
     }

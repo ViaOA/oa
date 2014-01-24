@@ -18,30 +18,29 @@ All rights reserved.
 package com.viaoa.ds.finder;
 
 import java.util.*;
+
 import com.viaoa.object.*;
+import com.viaoa.util.OAPropertyPath;
 import com.viaoa.ds.*;
 import com.viaoa.hub.Hub;
 
+// 20140124 
 /**
     Uses OAFinder to find objects.
+    This will use OAObjectCache.selectAllHubs along with any
+    OAObject.OAClass.rootTreePropertyPaths   ex: "[Router]."+Router.PROPERTY_UserLogins+"."+UserLogin.PROPERTY_User
+    to find all of the objects available.
+    
+    This will return all of the objects, and does not use the query.  For now, it's
+    expected that this will be called using an OASelect that has a Filter set.
 */
 public class OAFinderDataSource extends OADataSource {
+    private HashSet<Class> hashClasses = new HashSet<Class>();
 
 //qqqqqqq use nextNubmer to assign IDs    
     
     public OAFinderDataSource() {
     }
-
-    // add root level hubs
-    public void addRoot(OAObject obj) {
-//qqqqqqq create map of all hub names to support finding hub to go with tree map 
-/*
- *     rootTreePropertyPaths = {
-        "[Router]."+Router.PROPERTY_UserLogins+"."+UserLogin.PROPERTY_User
- */
-    }
-
-    private HashMap<Class, Hub> hashClass;
     
     public void setAssignNumberOnCreate(boolean b) {
     }
@@ -57,12 +56,33 @@ public class OAFinderDataSource extends OADataSource {
         return -1;
     }
 
+    
     //NOTE: this needs to see if any of "clazz" superclasses are supported
     public boolean isClassSupported(Class clazz) {
         if (clazz == null) return false;
-        return (hashClass.get(clazz) != null);
+        if (hashClasses.contains(clazz)) return true;
+        
+        Hub h = OAObjectCacheDelegate.getSelectAllHub(clazz);
+        if (h != null) {
+            hashClasses.add(clazz);
+            return true;
+        }
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
+        String[] ss = oi.getRootTreePropertyPaths();
+        if (ss != null) {
+            for (String s : ss) {
+                OAPropertyPath pp = new OAPropertyPath(clazz, s);
+                h = OAObjectCacheDelegate.getSelectAllHub(pp.getFromClass());
+                if (h != null) {
+                    hashClasses.add(clazz);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
-
+    
     public void insertWithoutReferences(OAObject obj) {
     }
     
@@ -107,8 +127,7 @@ public class OAFinderDataSource extends OADataSource {
     }
 
     public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max) {
-        Object obj = null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz);
     }
 
     public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max) {
@@ -116,19 +135,16 @@ public class OAFinderDataSource extends OADataSource {
     }
 
     public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max) {
-        Object obj = null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz);
     }
 
     public @Override Iterator selectPassthru(Class clazz, String query, int max) {
-        Object obj = null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz);
     }
 
 
     public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max) {
-        Object obj = null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz);
     }
 
     public @Override Object execute(String command) {
@@ -136,8 +152,7 @@ public class OAFinderDataSource extends OADataSource {
     }
 
     public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max) {
-        Object obj = null;
-        return new MyIterator(selectClass, obj);
+        return new MyIterator(selectClass);
     }
 
     public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max) {
@@ -155,24 +170,92 @@ public class OAFinderDataSource extends OADataSource {
         Iterator Class that is used by select methods, works directly with OADataSource on OAServer.
     */
     class MyIterator implements Iterator {
-        Object id;
         Class clazz;
+        Hub hubSelectAll;
+        int posSelectAll;
+        
+        OAFind[] finds;
+        Hub[] findHubs;
+        int posFinds;
+        int posCurrentFindHubs;
+        ArrayList<Object> alFindObjects;
+        int posFindObjects;
+        Object nextObject;
 
-        public MyIterator(Class c, Object id) {
-            this.clazz = c;
-            this.id = id;
+        
+        public synchronized Object next() {
+            Object obj = null;
+            
+            // 0: see if hasNext has preloaded an obj
+            if (nextObject != null) {
+                obj = nextObject;
+                nextObject = null;
+                return obj;
+            }
+            
+            // 1: check in selectAll hub
+            if (hubSelectAll != null) {
+                obj = hubSelectAll.getAt(posSelectAll++);
+                return obj;
+            }
+
+            // 2: check to see if there are valid oaObject.rootTreePropertyPaths
+            if (finds == null) return null;
+            
+            // 3: get from last find list results
+            if (alFindObjects != null && posFindObjects < alFindObjects.size()) {
+                obj = alFindObjects.get(posFindObjects++);
+                return obj;
+            }
+
+            // 4: 
+            if (posFinds >= finds.length) return null;
+            
+            // 5: go to next rootHub object, and run another Find
+            OAFind find = finds[posFinds];
+            Hub h = findHubs[posFinds];
+            obj = h.getAt(posCurrentFindHubs++);
+            if (obj == null) {
+                posCurrentFindHubs = 0;
+                posFinds++;
+                obj = next();
+            }
+            
+            alFindObjects = find.find((OAObject) obj);
+            posFindObjects = 0;
+            return next();
         }
-        public MyIterator(OAObjectKey key) {
+        
+        
+        public MyIterator(Class c) {
+            this.clazz = c;
+            if (clazz == null) return;
+            hubSelectAll = OAObjectCacheDelegate.getSelectAllHub(clazz);
+            if (hubSelectAll != null) return;
+
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
+            String[] ss = oi.getRootTreePropertyPaths();
+            
+            if (ss == null) return;
+                
+            finds = new OAFind[ss.length];
+            findHubs = new Hub[ss.length];
+                
+            for (int i=0; ;i++) {
+                String s = ss[i];
+                OAPropertyPath pp = new OAPropertyPath(clazz, s);
+                findHubs[i] = OAObjectCacheDelegate.getSelectAllHub(pp.getFromClass());
+                finds[i] = new OAFind(pp.getPropertyPath());
+            }
         }
 
         public synchronized boolean hasNext() {
-            return false;
+            if (nextObject == null) {
+                nextObject = next();
+            }
+            return (nextObject != null);
         }
-
-        public synchronized Object next() {
-            return null;
-        }
-
+        
         public void remove() {
         }
     }

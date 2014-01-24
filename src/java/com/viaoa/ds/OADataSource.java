@@ -20,6 +20,7 @@ package com.viaoa.ds;
 import java.util.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OAFilter;
 
 /**
     Abstract class used for defining sources for Object storage.  <br>
@@ -613,6 +614,7 @@ public abstract class OADataSource {
      * Select BLOB (large byte[]) property 
      */
     public abstract byte[] getPropertyBlobValue(OAObject obj, String propertyName);
+    
 }
 
 

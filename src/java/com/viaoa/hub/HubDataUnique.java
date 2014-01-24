@@ -51,7 +51,8 @@ class HubDataUnique implements java.io.Serializable {
 	    Note: not using a HubFinder with the Hub.findX methods is not thread safe, since there is only one
 	    hubFinder stored with a Hub.
 	*/
-	transient OAFinder finder;
+	transient OAFind finder;
+	transient int finderPos;
 	
 	/** OAObjectInfo for the Class of objects in this Hub. */
 	transient OAObjectInfo objectInfo;  //

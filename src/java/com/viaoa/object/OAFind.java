@@ -47,7 +47,9 @@ public class OAFind<F extends OAObject, T> {
 
     private boolean bStop;
     private ArrayList<T> list;
-    
+
+    // stack
+    private boolean bEnableStack;
     private int stackPos;
     private StackValue[] stack;
 
@@ -76,7 +78,7 @@ public class OAFind<F extends OAObject, T> {
      */
     public ArrayList<T> find(F objectRoot) {
         list = new ArrayList<T>();
-        stack = new StackValue[5];
+        if (bEnableStack) stack = new StackValue[5];
         stackPos = 0;
 
         if (objectRoot == null) return list;
@@ -149,11 +151,11 @@ public class OAFind<F extends OAObject, T> {
     private void find(Object obj, int pos) {
         if (bStop) return;
         try {
-            push(obj, pos);
+            if (bEnableStack) push(obj, pos);
             _find(obj, pos);
         }
         finally {
-            pop();
+            if (bEnableStack) pop();
         }
     }
 
@@ -215,6 +217,14 @@ public class OAFind<F extends OAObject, T> {
     }
     
 
+    /**
+     * This will have the internal stack updated when a find is being performed.
+     * @param b, default is false
+     */
+    public void setEnabledStack(boolean b) {
+        bEnableStack = b;
+    }
+    
     // used to keep track of the objects in the stack
     static class StackValue {
         Object obj;
@@ -248,6 +258,11 @@ public class OAFind<F extends OAObject, T> {
         return sv;
     }
 
+    /**
+     * The objects that are in the current stack.  This can be used 
+     * when overwriting the onFound(..) to know the object path.
+     * @see #setEnabledStack(boolean) to enable this information.
+     */
     public Object[] getStackObjects() {
         Object[] objs = new Object[stackPos];
         for (int i = 0; i < stackPos; i++) {
@@ -256,6 +271,10 @@ public class OAFind<F extends OAObject, T> {
         return objs;
     }
 
+    /**
+     * The property name of the objects that are in the current stack.
+     * @see #setEnabledStack(boolean) to enable this information.
+     */
     public String[] getStackPropertyNames() {
         String[] ss = new String[stackPos];
         for (int i = 0; i < stackPos; i++) {

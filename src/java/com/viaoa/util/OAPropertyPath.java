@@ -106,9 +106,6 @@ public class OAPropertyPath<T> {
         }
     }
  
-    
-    
-    
     public String getPropertyPath() {
         return this.propertyPath;
     }
@@ -240,8 +237,6 @@ public class OAPropertyPath<T> {
                 fromClass = c;
             }
         }
-        
-        
     
         String propertyPathClean = propertyPath;
         // a String that uses quotes "" could have special chars ',:()' inside of "" it  

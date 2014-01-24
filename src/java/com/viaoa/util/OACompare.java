@@ -8,13 +8,17 @@ package com.viaoa.util;
 public class OACompare {
     
     /**
-     * @param matchValue if a String, then it can begin or end with '*'|'%' as a wildcard. 
+     * @param matchValue if a String, then it can begin or end with '*'|'%' as a wildcard.
      */
-    protected static boolean isLike(Object value, Object matchValue) {
+    public static boolean isLike(Object value, Object matchValue) {
         if (value == matchValue) return true;
         if (value == null || matchValue == null) return false;
         if (value.equals(matchValue)) return true;
 
+        if (!(matchValue instanceof String)) {
+            return isEqual(value, matchValue);
+        }
+        
         // convert to strings
         String sValue;
         if (!(value instanceof String)) {
@@ -22,14 +26,9 @@ public class OACompare {
             if (sValue == null) return false;
         }
         else sValue = (String) value;
+        sValue = sValue.toLowerCase();
         
-        String sMatchValue;
-        if (!(matchValue instanceof String)) {
-            sMatchValue = OAConverter.toString(matchValue);
-            if (sMatchValue == null) return false;
-        }
-        else sMatchValue = (String) matchValue;
-        
+        String sMatchValue = (String) matchValue;
         sMatchValue = sMatchValue.toLowerCase();
         boolean b1 = false;
         boolean b2 = false;
@@ -51,27 +50,27 @@ public class OACompare {
             }
         }
         if (!b1 && !b2) {
-            return (sValue).equalsIgnoreCase(sMatchValue);
+            return sValue.equals(sMatchValue);
         }
         else if (b1 && b2) {
-            return (sValue.toLowerCase().indexOf(sMatchValue) >= 0);
+            return (sValue.indexOf(sMatchValue) >= 0);
         }
         else if (b1) {
-            return (sValue.toLowerCase().startsWith(sMatchValue));
+            return sValue.startsWith(sMatchValue);
         }
         //else if (b2) {
-        return (sValue.toLowerCase().endsWith(sMatchValue));
+        return sValue.endsWith(sMatchValue);
     }    
 
     
-    protected static boolean isEqualIgnoreCase(Object value, Object matchValue) {
+    public static boolean isEqualIgnoreCase(Object value, Object matchValue) {
         return isEqual(value, matchValue, true);
     }
-    protected static boolean isEqual(Object value, Object matchValue) {
+    public static boolean isEqual(Object value, Object matchValue) {
         return isEqual(value, matchValue, false);
     }    
     
-    protected static boolean isEqual(Object value, Object matchValue, boolean bIgnoreCase) {
+    public static boolean isEqual(Object value, Object matchValue, boolean bIgnoreCase) {
         if (value == matchValue) return true;
         if (value == null || matchValue == null) return false;
         if (value.equals(matchValue)) return true;
@@ -103,7 +102,7 @@ public class OACompare {
         return value.equals(matchValue); 
     }
 
-    protected static boolean isBetween(Object value, Object fromValue, Object toValue) {
+    public static boolean isBetween(Object value, Object fromValue, Object toValue) {
         if (value == null) return false;
         if (toValue == null) return false;
         int x = compare(value, fromValue);
@@ -113,7 +112,7 @@ public class OACompare {
         if (x >= 0) return false;
         return true;
     }    
-    protected static boolean isBetweenOrEqual(Object value, Object fromValue, Object toValue) {
+    public static boolean isBetweenOrEqual(Object value, Object fromValue, Object toValue) {
         if (value == null) return (fromValue == null);
         if (toValue == null) return false;
         int x = compare(value, fromValue);
@@ -124,25 +123,25 @@ public class OACompare {
         return true;
     }    
 
-    protected static boolean isGreater(Object value, Object fromValue) {
+    public static boolean isGreater(Object value, Object fromValue) {
         int x = compare(value, fromValue);
         return x > 0;
     }
-    protected static boolean isGreaterOrEqual(Object value, Object fromValue) {
+    public static boolean isGreaterOrEqual(Object value, Object fromValue) {
         int x = compare(value, fromValue);
         return x >= 0;
     }
 
-    protected static boolean isLess(Object value, Object fromValue) {
+    public static boolean isLess(Object value, Object fromValue) {
         int x = compare(value, fromValue);
         return x < 0;
     }
-    protected static boolean isLessOrEqual(Object value, Object fromValue) {
+    public static boolean isLessOrEqual(Object value, Object fromValue) {
         int x = compare(value, fromValue);
         return x <= 0;
     }
     
-    protected static int compare(Object value, Object fromValue) {
+    public static int compare(Object value, Object fromValue) {
         if (value == null) {
             if (fromValue == null) return 0;
             return -1;

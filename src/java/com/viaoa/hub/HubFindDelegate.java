@@ -17,9 +17,11 @@ All rights reserved.
 */
 package com.viaoa.hub;
 
-import com.viaoa.object.OAFinder;
+import java.util.ArrayList;
 
-
+import com.viaoa.object.OAFind;
+import com.viaoa.object.OAObject;
+import com.viaoa.util.OACompare;
 
 /**
  * Delegate used for the Find methods in Hub.
@@ -30,53 +32,69 @@ public class HubFindDelegate {
 // 20140120 changed from HubFinder to OAFinder
     
 	/**
-	    Returns first object in Hub that matches HubFinder object settings.
+	    Returns first object in Hub that matches propertyPath findObj.
 	    Returns null if not found.
 	    @param bSetAO if true then the active object is set to found object.
-	    @see HubFinder
+	    @see HubFind
 	*/
-    
-	public static Object findFirst(Hub thisHub, OAFinder finder, Object findObject, boolean bSetAO) {
-	    thisHub.datau.finder = finder;
-	    if (finder == null) return null;
-        Object obj = finder.findFirstRoot(findObject);
-        if (bSetAO) thisHub.setAO(obj);
-        return obj;
-	}
-	
-    
-    public static Object findFirst(Hub thisHub, String propertyPath, Object findObject, boolean bSetAO) {
-	    OAFinder hf = new OAFinder(thisHub, null, propertyPath);
-	    Object obj = hf.findFirstRoot(findObject);
-	    if (bSetAO) thisHub.setAO(obj);
-	    return obj;
+    public static Object findFirst(Hub thisHub, String propertyPath, final Object findObject, final boolean bSetAO) {
+        if (thisHub == null) return null;
+        
+        OAFind find = new OAFind(propertyPath) {
+            @Override
+            protected void onFound(Object obj) {
+                if (OACompare.isLike(obj, findObject) ) {
+                    super.onFound(obj);
+                    stop();
+                }
+            }
+        };
+        Object foundObj = null;
+        for (int i=0; ;i++) {
+            Object obj = thisHub.getAt(i);
+            if (obj == null) break;
+            ArrayList al = find.find((OAObject) obj);
+            if (al.size() > 0) {
+                thisHub.datau.finderPos = i;
+                foundObj = obj;
+                break;
+            }
+        }
+        if (foundObj != null) thisHub.datau.finder = find;
+        else thisHub.datau.finderPos = -1;
+        
+        if (bSetAO) thisHub.setPos(thisHub.datau.finderPos);
+        return foundObj;
 	}
 	
     /**
 	    Find the next object in Hub that has property equal to findObject.
-	    Starts with the next object after AO.
+	    Starts with the next object after last find from findFirst or findNext.
 	*/
 	public static Object findNext(Hub thisHub, boolean bSetAO) {
-		OAFinder hf = thisHub.datau.finder;
-		if (hf != null) {
-		    Object objx = hf.findNextRoot();
-        	if (bSetAO) thisHub.setAO(objx);
-            return objx;
+		OAFind find = thisHub.datau.finder;
+		if (find == null) {
+	        if (bSetAO) thisHub.setPos(-1);
+	        return null;
 		}
-	    if (bSetAO) thisHub.setPos(-1);
-	    return null;
+
+        Object foundObj = null;
+        for (int i=thisHub.datau.finderPos+1; ;i++) {
+            Object obj = thisHub.getAt(i);
+            if (obj == null) break;
+            ArrayList al = find.find((OAObject) obj);
+            if (al.size() > 0) {
+                thisHub.datau.finderPos = i;
+                foundObj = obj;
+                break;
+            }
+        }
+        if (foundObj == null) {
+            thisHub.datau.finderPos = -1;
+            thisHub.datau.finder = null;
+        }
+        if (bSetAO) thisHub.setPos(thisHub.datau.finderPos);
+	    return foundObj;
 	}
-    
-
-	
 }
-
-
-
-
-
-
-
-
-
 
