@@ -1,203 +1,183 @@
-/*
-This software and documentation is the confidential and proprietary
-information of ViaOA, Inc. ("Confidential Information").
-You shall not disclose such Confidential Information and shall use
-it only in accordance with the terms of the license agreement you
-entered into with ViaOA, Inc.
-
-ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
-SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
-SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
-THIS SOFTWARE OR ITS DERIVATIVES.
-
-Copyright (c) 2001-2013 ViaOA, Inc.
-All rights reserved.
-*/
 package com.viaoa.util;
 
-import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-
+// 20140124
 /**
- * Compare two objects, finding which fields do not match.
+ * Used to compare objects.
+ * @author vvia
  */
 public class OACompare {
-    // hashmap used to add a Visitor pattern
-    IdentityHashMap<Object, Object> hmVisitor = new IdentityHashMap<Object, Object>();
-    private String leftName;
-    private String rightName;
     
-    public OACompare() {
-        setObjectNames(null, null);
-    }
-    public boolean compare(Object objLeft, Object objRight) throws IllegalAccessException {
-        String s = objLeft == null ? "" : objLeft.getClass().getName();
-        int x = s.lastIndexOf('.');
-        if (x > 0) s = s.substring(x+1);
-        return _compare(s, objLeft, objRight);
+    /**
+     * @param matchValue if a String, then it can begin or end with '*'|'%' as a wildcard. 
+     */
+    protected static boolean isLike(Object value, Object matchValue) {
+        if (value == matchValue) return true;
+        if (value == null || matchValue == null) return false;
+        if (value.equals(matchValue)) return true;
+
+        // convert to strings
+        String sValue;
+        if (!(value instanceof String)) {
+            sValue = OAConverter.toString(value);
+            if (sValue == null) return false;
+        }
+        else sValue = (String) value;
+        
+        String sMatchValue;
+        if (!(matchValue instanceof String)) {
+            sMatchValue = OAConverter.toString(matchValue);
+            if (sMatchValue == null) return false;
+        }
+        else sMatchValue = (String) matchValue;
+        
+        sMatchValue = sMatchValue.toLowerCase();
+        boolean b1 = false;
+        boolean b2 = false;
+        
+        int x = sMatchValue.length();
+        if (x > 0) {
+            char ch = sMatchValue.charAt(0);
+            if (ch == '*' || ch == '%') {
+                b1 = true;
+                sMatchValue = sMatchValue.substring(1);
+                x--;
+            }
+        }
+        if (x > 0) {
+            char ch = sMatchValue.charAt(x-1);
+            if (ch == '*' || ch == '%') {
+                b2 = true;
+                sMatchValue = sMatchValue.substring(0, x-1);
+            }
+        }
+        if (!b1 && !b2) {
+            return (sValue).equalsIgnoreCase(sMatchValue);
+        }
+        else if (b1 && b2) {
+            return (sValue.toLowerCase().indexOf(sMatchValue) >= 0);
+        }
+        else if (b1) {
+            return (sValue.toLowerCase().startsWith(sMatchValue));
+        }
+        //else if (b2) {
+        return (sValue.toLowerCase().endsWith(sMatchValue));
     }    
-    private boolean _compare(String propertyPath, Object objLeft, Object objRight) throws IllegalAccessException {
-        boolean bResult = true;
-        bResult = _compare(propertyPath, objLeft, objRight, true);
-        return bResult;
-    }
 
-    public void setObjectNames(String leftName, String rightName) {
-        setLeftObjectName(leftName);
-        setRightObjectName(leftName);
-    }
-    public String getLeftObjectName() {
-        return leftName;
-    }
-    public void setLeftObjectName(String name) {
-        if (name == null) name = "leftObj";
-        leftName = name;
-    }
-    public String getRightObjectName() {
-        return rightName;
-    }
-    public void setRightObjectName(String name) {
-        if (name == null) name = "rightObj";
-        rightName = name;
-    }
     
+    protected static boolean isEqualIgnoreCase(Object value, Object matchValue) {
+        return isEqual(value, matchValue, true);
+    }
+    protected static boolean isEqual(Object value, Object matchValue) {
+        return isEqual(value, matchValue, false);
+    }    
     
-    protected boolean _compare(String propertyPath, Object objLeft, Object objRight, boolean bReportNotEquals) throws IllegalAccessException {
-        if (objLeft == objRight) return true;
-        if (objLeft == null || objRight == null) {
-            if (bReportNotEquals) foundOne(propertyPath, objLeft, objRight);
-            return false;
+    protected static boolean isEqual(Object value, Object matchValue, boolean bIgnoreCase) {
+        if (value == matchValue) return true;
+        if (value == null || matchValue == null) return false;
+        if (value.equals(matchValue)) return true;
+
+        if (bIgnoreCase) {
+            if (!(value instanceof String)) {
+                value = OAConverter.toString(value);
+                if (value == null) return false;
+            }
+            if (!(matchValue instanceof String)) {
+                matchValue = OAConverter.toString(matchValue);
+                if (matchValue == null) return false;
+            }
         }
-
-        if (!objLeft.getClass().equals(objRight.getClass())) {
-            if (bReportNotEquals) foundOne(propertyPath, objLeft, objRight);
-            return false;
+        else {
+            Class c = value.getClass();
+            if (!c.equals(matchValue.getClass())) {
+                matchValue = OAConverter.convert(c, matchValue);
+                if (matchValue == null) return false;
+            }
         }
         
-        String s = objLeft.getClass().getName();
-        if (s.indexOf("java.") == 0) {
-            boolean b = objLeft.equals(objRight);
-            if (!b && bReportNotEquals) {
-                foundOne(propertyPath, objLeft, objRight);
+        if (value instanceof String) {
+            if (bIgnoreCase) {
+                return ((String) value).equalsIgnoreCase((String) matchValue);
             }
-            return b;
+            return ((String) value).equals((String) matchValue);
         }
-        
-        if (objLeft.getClass().isArray()) {
-            int x = Array.getLength(objLeft);
-            boolean bMatch = true;
-            if (Array.getLength(objRight) != x) {
-                bMatch = false;
-                if (bReportNotEquals) {
-                    foundOne(propertyPath, "length="+Array.getLength(objLeft), "length="+Array.getLength(objRight));
-                }
-            }
-
-            HashMap<Object, Object> hm = new HashMap<Object, Object>((int)(x * 1.5), .85f);
-            for (int i=0; i<x; i++) {
-                Object obj = Array.get(objLeft, i);
-                Object key = getKey(obj);
-                Object objx = hm.put(key, obj);
-                if (objx != null) {
-                    foundOne(propertyPath, "duplicate key in collection", key);
-                }
-            }
-            if (hm.size() != x) {
-                foundOne(propertyPath, "duplicate keys in collection", "");
-            }
-            x = Array.getLength(objRight);
-            for (int i=0; i<x; i++) {
-                Object objR = Array.get(objRight, i);
-                Object key = getKey(objR);
-                
-                Object objL = hm.remove(key);
-                if (objL == null) {
-                    bMatch = false;
-                    if (bReportNotEquals) {
-                        foundOne(propertyPath+"["+i+"]", "not found", key);
-                    }
-                }
-                else {
-                    boolean b = _compare(propertyPath+"["+i+"]", objL, objR, bReportNotEquals);
-                    if (!b) bMatch = false;
-                }
-            }
-            for (Map.Entry<Object, Object> ex : hm.entrySet()) {
-                Object key = ex.getKey();
-                bMatch = false;
-                if (bReportNotEquals) {
-                    int pos = OAArray.indexOf((Object[]) objLeft, ex.getValue());
-                    foundOne(propertyPath+"["+pos+"]", key, "not found");
-                }
-            }
-            return bMatch;
-        }
-
-        boolean b = false;
-        if (!bReportNotEquals) b = objLeft.equals(objRight);
-        
-        if (!b && bReportNotEquals) {
-            b = _compareFields(propertyPath, objLeft, objRight, bReportNotEquals);
-        }
-        return b;
+        return value.equals(matchValue); 
     }
 
-    protected Object getKey(Object obj) {
-        return obj;
+    protected static boolean isBetween(Object value, Object fromValue, Object toValue) {
+        if (value == null) return false;
+        if (toValue == null) return false;
+        int x = compare(value, fromValue);
+        if (x <= 0) return false;
+
+        x = compare(value, toValue);
+        if (x >= 0) return false;
+        return true;
+    }    
+    protected static boolean isBetweenOrEqual(Object value, Object fromValue, Object toValue) {
+        if (value == null) return (fromValue == null);
+        if (toValue == null) return false;
+        int x = compare(value, fromValue);
+        if (x < 0) return false;
+
+        x = compare(value, toValue);
+        if (x > 0) return false;
+        return true;
+    }    
+
+    protected static boolean isGreater(Object value, Object fromValue) {
+        int x = compare(value, fromValue);
+        return x > 0;
+    }
+    protected static boolean isGreaterOrEqual(Object value, Object fromValue) {
+        int x = compare(value, fromValue);
+        return x >= 0;
+    }
+
+    protected static boolean isLess(Object value, Object fromValue) {
+        int x = compare(value, fromValue);
+        return x < 0;
+    }
+    protected static boolean isLessOrEqual(Object value, Object fromValue) {
+        int x = compare(value, fromValue);
+        return x <= 0;
     }
     
-    private boolean _compareFields(String propertyPath, Object objLeft, Object objRight, boolean bReportNotEquals) throws IllegalAccessException {
-        // check to see if these objects have already been compared
-        Object objx = hmVisitor.get(objLeft);
-        if (objx == objRight) {
-            objx = hmVisitor.get(objRight);
-            if (objx == objLeft) {
-                return true; // already compared
-            }
+    protected static int compare(Object value, Object fromValue) {
+        if (value == null) {
+            if (fromValue == null) return 0;
+            return -1;
         }
-        hmVisitor.put(objLeft, objRight);
-        hmVisitor.put(objRight, objLeft);
+        if (fromValue == null) return 1;
+        Class c = value.getClass();
 
-        Field[] objFields = objLeft.getClass().getDeclaredFields();
-        AccessibleObject.setAccessible(objFields, true);
-        boolean bResult = true;
-        for (Field field : objFields) {
-            if (field.getName().indexOf('$') >= 0) continue;
-            if (Modifier.isStatic(field.getModifiers())) continue;
-            if (Modifier.isTransient(field.getModifiers())) continue;
-
-            Object oL = field.get(objLeft);
-            Object oR = field.get(objRight);
-            
-            if (!_compare(propertyPath+"."+field.getName(), oL, oR, bReportNotEquals) ) {
-                bResult = false;
-            }
+        if (!c.equals(fromValue.getClass())) {
+            fromValue = OAConverter.convert(c, fromValue);
+            if (fromValue == null) return 1;
         }
-        return bResult;
+        if (!(fromValue instanceof Comparable)) {
+            if (value.equals(fromValue)) return 0;
+            return -1;
+        }
+        int x = ((Comparable)value).compareTo(fromValue);
+        return x;
     }
     
-    public void foundOne(String propertyPath, Object objLeft, Object objRight) {
-        String s1 = objLeft+"";
-        if (s1.length() > 40) s1 = s1.substring(0,40)+"...";
-        String s2 = objRight+"";
-        if (s2.length() > 40) s2 = s2.substring(0,40)+"...";
-        System.out.println(propertyPath+": "+leftName+"="+s1+", "+rightName+"="+s2);
-    }
     
-    public static void main(String[] args) throws Exception {
-        Object obj1 = "test";
-        Object obj2 = null;
+    public static void main(String[] args) {
+        Object val1 = 222;
+        Object val2 = "2*";
         
-        OACompare oc = new OACompare() {
-            @Override
-            public void foundOne(String propertyPath, Object objLeft, Object objRight) {
-                super.foundOne(propertyPath, objLeft, objRight);
-            }
-        };
-        oc.compare(obj1, obj2);
+        boolean b = isLess(val1, val2);
+        b = isLike(val1, val2);
+        b = isLess(val1, val2);
+        b = isLessOrEqual(val1, val2);
+        b = isGreater(val1, val2);
+        b = isGreaterOrEqual(val1, val2);
+        
+        b = isEqualIgnoreCase(val1, val2);
+        b = isEqual(val1, val2);
+        
+        int xx = 4;
+        xx++;
     }
 }
