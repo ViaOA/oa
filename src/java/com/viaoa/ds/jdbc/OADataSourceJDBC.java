@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import java.sql.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OAFilter;
 import com.viaoa.ds.*;
 import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.ds.jdbc.delegate.*;
@@ -194,22 +195,22 @@ public class OADataSourceJDBC extends OADataSource {
         return false;
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max) {
-    	return select(clazz, queryWhere, (Object[]) null, queryOrder, max);
+    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
+    	return select(clazz, queryWhere, (Object[]) null, queryOrder, max, filter);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max) {
+    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter) {
     	return SelectDelegate.select(this, clazz, queryWhere, param, queryOrder, max);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max) {
+    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter) {
         return SelectDelegate.select(this, clazz, queryWhere, params, queryOrder, max);
     }
 
-    public @Override Iterator select(Class clazz, OAObject whereObject, String propertyFromMaster, String queryOrder, int max) {
+    public @Override Iterator select(Class clazz, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
         return select(clazz, whereObject, null, null, propertyFromMaster, queryOrder, max);
     }
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max) {
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
         return SelectDelegate.select(this, selectClass, whereObject, extraWhere, args,propertyFromMaster, queryOrder, max);
     }
 
@@ -217,13 +218,12 @@ public class OADataSourceJDBC extends OADataSource {
     	return SelectDelegate.execute(this,command);
     }
 
-    public @Override Iterator selectPassthru(Class clazz, String query, int max) {
+    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
     	return SelectDelegate.selectPassthru(this, clazz, query, max);
     }
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max) {
+    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
     	return SelectDelegate.selectPassthru(this, clazz, queryWhere, queryOrder, max);
     }
-
     
     public @Override int count(Class selectClass, OAObject whereObject, String propertyFromMaster, int max) {
         return count(selectClass, whereObject, null, null, propertyFromMaster, max);
@@ -245,8 +245,6 @@ public class OADataSourceJDBC extends OADataSource {
     }
 
 
-    
-    
     
     /**
         Returns a JDBC Statement from connection pool.

@@ -477,16 +477,16 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
             if (bCountFirst && amountCount < 0) {
             	amountCount = ds.count(clazz, whereObject, where, params, propertyFromWhereObject, max);
             }
-            query = ds.select(clazz, whereObject, where, params, propertyFromWhereObject, order, max);
+            query = ds.select(clazz, whereObject, where, params, propertyFromWhereObject, order, max, getFilter());
         }
         else {
             if (bPassthru) {
                 if (bCountFirst && amountCount < 0) amountCount = ds.countPassthru(where, max);
-                query = ds.selectPassthru(clazz, where, order, max);
+                query = ds.selectPassthru(clazz, where, order, max, getFilter());
             }
             else {
                 if (bCountFirst && amountCount < 0) amountCount = ds.count(clazz, where, params, max);
-                query = ds.select(clazz, where, params, order, max);
+                query = ds.select(clazz, where, params, order, max, getFilter());
             }
         }
         // 20110407

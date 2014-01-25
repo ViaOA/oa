@@ -15,31 +15,31 @@ THIS SOFTWARE OR ITS DERIVATIVES.
 Copyright (c) 2001-2013 ViaOA, Inc.
 All rights reserved.
 */
-package com.viaoa.ds.finder;
+package com.viaoa.ds.objectcache;
 
 import java.util.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
-import com.viaoa.ds.*;
+import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 
+
+// ***** not used ........ replaced with ObjectCacheDataSource *********************
 // 20140124 
 /**
     Uses OAFinder to find objects.
     This will use OAObjectCache.selectAllHubs along with any
     OAObject.OAClass.rootTreePropertyPaths   ex: "[Router]."+Router.PROPERTY_UserLogins+"."+UserLogin.PROPERTY_User
     to find all of the objects available.
+
     
-    This will return all of the objects, and does not use the query.  For now, it's
-    expected that this will be called using an OASelect that has a Filter set.
 */
-public class OAFinderDataSource extends OADataSource {
+public class FinderDataSource extends OADataSourceAuto {
     private HashSet<Class> hashClasses = new HashSet<Class>();
 
-//qqqqqqq use nextNubmer to assign IDs    
-    
-    public OAFinderDataSource() {
+    public FinderDataSource() {
     }
     
     public void setAssignNumberOnCreate(boolean b) {
@@ -126,40 +126,46 @@ public class OAFinderDataSource extends OADataSource {
         return false;
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max) {
-        return new MyIterator(clazz);
+    @Override
+    public Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter) {
+        return new MyIterator(clazz, filter);
+    }
+    
+    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
+        return new MyIterator(clazz, filter);
     }
 
     public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max) {
     	return this.select(clazz, queryWhere, new Object[] {param}, queryOrder);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max) {
-        return new MyIterator(clazz);
+    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter) {
+        return new MyIterator(clazz, filter);
     }
 
-    public @Override Iterator selectPassthru(Class clazz, String query, int max) {
-        return new MyIterator(clazz);
+    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
+        return new MyIterator(clazz, filter);
     }
 
 
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max) {
-        return new MyIterator(clazz);
+    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max, OAFilter filter) {
+        return new MyIterator(clazz, filter);
     }
 
     public @Override Object execute(String command) {
         return null;
     }
 
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max) {
-        return new MyIterator(selectClass);
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
+        return new MyIterator(selectClass, filter);
     }
 
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max) {
-        return select(selectClass, whereObject, null, null, propertyNameFromMaster, queryOrder);
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
+        return select(selectClass, whereObject, null, null, propertyNameFromMaster, queryOrder, max, filter);
     }
 
     public @Override void initializeObject(OAObject obj) {
+        super.initializeObject(obj);  // have autonumber handle this
     }
 
     public @Override boolean willCreatePropertyValue(OAObject object, String propertyName) {
@@ -182,9 +188,12 @@ public class OAFinderDataSource extends OADataSource {
         ArrayList<Object> alFindObjects;
         int posFindObjects;
         Object nextObject;
+        HashSet<Integer> hsSent;
+        OAFilter filter;
 
-        public MyIterator(Class c) {
+        public MyIterator(Class c, OAFilter filter) {
             this.clazz = c;
+            this.filter = filter;
             if (clazz == null) return;
             hubSelectAll = OAObjectCacheDelegate.getSelectAllHub(clazz);
             if (hubSelectAll != null) return;
@@ -205,8 +214,26 @@ public class OAFinderDataSource extends OADataSource {
                 finds[i] = new OAFind(pp.getPropertyPath());
             }
         }
-
         public synchronized Object next() {
+            OAObject obj;
+            for (;;) {
+                obj = (OAObject) _next();
+                if (obj == null) break; 
+                int g = OAObjectDelegate.getGuid(obj);
+                if (hsSent == null) hsSent = new HashSet<Integer>();
+                if (!hsSent.contains(g)) {
+                    if (filter != null) {
+                        if (!filter.isUsed(obj)) continue;
+                    }
+                    hsSent.add(g);
+                    break;
+                }
+            }
+            if  (obj == null) hsSent = null;
+            return obj;
+        }
+
+        public Object _next() {
             Object obj = null;
             
             // 0: see if hasNext has preloaded an obj
@@ -273,5 +300,6 @@ public class OAFinderDataSource extends OADataSource {
     public byte[] getPropertyBlobValue(OAObject obj, String propertyName) {
         return null;
     }
+	
 }
 

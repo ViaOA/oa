@@ -18,9 +18,6 @@ All rights reserved.
 package com.viaoa.ds.autonumber;
 
 import java.util.*;
-import java.sql.*;
-import java.lang.reflect.*;
-
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
@@ -42,15 +39,15 @@ public class OADataSourceAuto extends OADataSource {
         this(new Hub(NextNumber.class));
     }
 
-    /** Hub hubNextNumber must include a seperate NextNumber2 object for each class
+    /** Hub hubNextNumber must include a separate NextNumber2 object for each class
         that needs to have a seqId assigned to its objectId property. The objects in
         hubNextNumber also need to be saved (OAObject.save() or hubNextNumber.saveAll()).
         The objectId property will be set when the object is created (OAObject constructor)
     */
     public OADataSourceAuto(Hub hubNextNumber) {
-        bLast = true;
+        super.bLast = true;
         setHub(hubNextNumber);
-        setName("OADataSourceNextNumber DataSource");
+        setName("OADataSourceAuto DataSource");
     }
 
 
@@ -164,33 +161,33 @@ public class OADataSourceAuto extends OADataSource {
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator selectPassthru(Class clazz, String query, int max) {
+    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
         return null;
     }
 
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max) {
+    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
         return null;
     }
 
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator select(Class clazz, String queryWhere,  String queryOrder, int max) {
+    public @Override Iterator select(Class clazz, String queryWhere,  String queryOrder, int max, OAFilter filter) {
         return null;
     }
     /**
      	Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
 	*/
-	public @Override Iterator select(Class clazz, String queryWhere,  Object[] params, String queryOrder, int max) {
+	public @Override Iterator select(Class clazz, String queryWhere,  Object[] params, String queryOrder, int max, OAFilter filter) {
 	    return null;
 	}
     /**
  		Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
 	*/
-	public @Override Iterator select(Class clazz, String queryWhere,  Object param, String queryOrder, int max) {
+	public @Override Iterator select(Class clazz, String queryWhere,  Object param, String queryOrder, int max, OAFilter filter) {
 	    return null;
 	}
 
@@ -278,14 +275,14 @@ public class OADataSourceAuto extends OADataSource {
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyFromMaster, String queryOrder, int max) {
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
         return null;
     }
 
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max) {
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
         return null;
     }
 
@@ -302,7 +299,5 @@ public class OADataSourceAuto extends OADataSource {
         if (objx instanceof byte[]) return (byte[]) objx;
         return null;
     }
-
 }
-
 

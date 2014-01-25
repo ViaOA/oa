@@ -22,6 +22,7 @@ import java.util.*;
 import com.viaoa.object.*;
 import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientSyncInterface;
+import com.viaoa.util.OAFilter;
 import com.viaoa.ds.*;
 
 
@@ -211,22 +212,24 @@ public class OADataSourceClient extends OADataSource {
     }
 
 
-    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max) {
-        Object obj = getRemoteClientSync().datasource(SELECT, new Object[] {clazz, queryWhere,queryOrder} );
+    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
+        Object obj = getRemoteClientSync().datasource(SELECT, new Object[] {clazz, queryWhere, queryOrder, filter} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max) {
-    	return this.select(clazz, queryWhere, new Object[] {param}, queryOrder);
+    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter) {
+    	return this.select(clazz, queryWhere, new Object[] {param}, queryOrder, 0, filter);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max) {
+    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter) {
     	int x = params == null ? 0 : params.length;
-    	Object[] objs = new Object[3+x];
+    	Object[] objs = new Object[4+x];
     	objs[0] = clazz;
     	objs[1] = queryWhere;
     	objs[2] = queryOrder;
+        objs[3] = filter;
+    	
     	for (int i=0; i<x; i++) objs[3+i] = params[i];
     	
     	Object obj = getRemoteClientSync().datasource(SELECT, objs );
@@ -234,15 +237,15 @@ public class OADataSourceClient extends OADataSource {
         return new MyIterator(clazz, obj);
     }
 
-    public @Override Iterator selectPassthru(Class clazz, String query, int max) {
-        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, query, null} );
+    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
+        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, query, null, filter} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
     }
 
 
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max) {
-        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, queryWhere, queryOrder} );
+    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max, OAFilter filter) {
+        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, queryWhere, queryOrder, filter} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
     }
@@ -251,7 +254,7 @@ public class OADataSourceClient extends OADataSource {
         return getRemoteClientSync().datasource(EXECUTE, new Object[] {command});
     }
 
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max) {
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
         // See if OAObjectKey exists in Object to do a lookup
         if (whereObject instanceof OAObject) {
             Object obj = ((OAObject)whereObject).getProperty("OA_"+propertyNameFromMaster.toUpperCase());
@@ -267,8 +270,8 @@ public class OADataSourceClient extends OADataSource {
         return new MyIterator(selectClass, obj);
     }
 
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max) {
-        return select(selectClass, whereObject, null, null, propertyNameFromMaster, queryOrder);
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
+        return select(selectClass, whereObject, null, null, propertyNameFromMaster, queryOrder, 0, filter);
     }
 
     public @Override void initializeObject(OAObject obj) {

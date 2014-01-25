@@ -20,6 +20,7 @@ package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -729,8 +730,16 @@ public class OAObjectCacheDelegate {
     public static Object find(Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
     	return _find(null, clazz, propertyPath, findObject, bSkipNew, bThrowException);
     }    
+
+    // 20140125 get objects from cache
+    public static Object fetch(Class clazz, Object fromObject, int fetchAmount, ArrayList<Object> alResults) {
+        return _find(fromObject, clazz, null, null, false, false, fetchAmount, alResults);
+    }
     
     protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
+        return _find(fromObject, clazz, propertyPath, findObject, bSkipNew, bThrowException, 1, null);
+    }
+    protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException, int fetchAmount, ArrayList<Object> alResults) {
         if (bDisableCache) return null;
     	// LOG.fine("class="+clazz+", propertyPath="+propertyPath+" findObject="+findObject+", bSkipNew="+bSkipNew);
         if (propertyPath == null || propertyPath.length() == 0) {
@@ -770,11 +779,21 @@ public class OAObjectCacheDelegate {
                 Object object = ref.get();
                 if (object != null && object != fromObject) {
                     if (!bSkipNew || !b || !((OAObject)object).getNew()) {
-                        if (methods == null) return object;
-                        Object value = OAReflect.getPropertyValue(object, methods);
-                        if (value == null && findObject == null) return object;
-                        if (value != null && findObject != null) {
-                            if (value == findObject || value.equals(findObject)) return object;
+                        if (methods == null) {
+                            if (alResults == null) return object;
+                            alResults.add(object);
+                            if (alResults.size() >= fetchAmount) return object;
+                        }
+                        else {
+                            Object value = OAReflect.getPropertyValue(object, methods);
+                            if (value == null && findObject == null) return object;
+                            if (value != null && findObject != null) {
+                                if (value == findObject || value.equals(findObject)) {
+                                    if (alResults == null) return object;
+                                    alResults.add(object);
+                                    if (alResults.size() >= fetchAmount) return object;
+                                }
+                            }
                         }
                     }
                 }            
@@ -784,7 +803,6 @@ public class OAObjectCacheDelegate {
         finally {
             tmh.rwl.readLock().unlock();
         }
-        
         return null;
     }
 

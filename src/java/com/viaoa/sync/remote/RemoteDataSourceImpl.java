@@ -13,6 +13,7 @@ import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.util.OAFilter;
 
 @OARemoteInterface
 public abstract class RemoteDataSourceImpl implements RemoteDataSourceInterface {
@@ -199,12 +200,12 @@ public abstract class RemoteDataSourceImpl implements RemoteDataSourceInterface 
             clazz = (Class) objects[0];
             ds = getDataSource(clazz);
             if (ds != null) {
-                int z = objects.length - 3;
+                int z = objects.length - 4;
                 Object[] params = new Object[z];
                 for (int y = 0; y < z; y++)
                     params[y] = objects[3 + y];
 
-                iterator = ds.select(clazz, (String) objects[1], params, (String) objects[2]); // where, order
+                iterator = ds.select(clazz, (String) objects[1], params, (String) objects[2], 0, (OAFilter) objects[3]); // where, order
                 obj = "client" + (selectCount++);
                 if (iterator != null) hashIterator.put((String) obj, iterator);
             }
@@ -213,7 +214,7 @@ public abstract class RemoteDataSourceImpl implements RemoteDataSourceInterface 
             clazz = (Class) objects[0];
             ds = getDataSource(clazz);
             if (ds != null) {
-                iterator = ds.select(clazz, (String) objects[1], (String) objects[2]); // where, order
+                iterator = ds.select(clazz, (String) objects[1], (String) objects[2], 0, (OAFilter) objects[3]); // where, order
                 obj = "client" + (selectCount++);
                 hashIterator.put((String) obj, iterator);
             }
