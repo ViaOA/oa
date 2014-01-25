@@ -46,7 +46,7 @@ public class OAFind<F extends OAObject, T> {
     private OAFilter[] filters;
 
     private boolean bStop;
-    private ArrayList<T> list;
+    private ArrayList<T> alFound;
 
     // stack
     private boolean bEnableStack;
@@ -62,7 +62,7 @@ public class OAFind<F extends OAObject, T> {
      * @see stop to be able to have the find stop searching.
      */
     protected void onFound(T obj) {
-        list.add(obj);
+        alFound.add(obj);
     }
     /**
      * This is used to stop the current find that is in process.
@@ -77,18 +77,18 @@ public class OAFind<F extends OAObject, T> {
      * @param objectRoot starting object to begin navigating through the propertyPath.
      */
     public ArrayList<T> find(F objectRoot) {
-        list = new ArrayList<T>();
+        alFound = new ArrayList<T>();
         if (bEnableStack) stack = new StackValue[5];
         stackPos = 0;
 
-        if (objectRoot == null) return list;
-        if (strPropertyPath == null) return list;
+        if (objectRoot == null) return alFound;
+        if (strPropertyPath == null) return alFound;
 
         bStop = false;
         setup(objectRoot.getClass());
         performFind(objectRoot);
-        ArrayList<T> al = list;
-        this.list = null;
+        ArrayList<T> al = alFound;
+        this.alFound = null;
         this.stack = null;
         this.stackPos = 0;
         return al;        

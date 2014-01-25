@@ -209,10 +209,9 @@ public class OAPropertyPath<T> {
         return fromClass;
     }
     
-    public void setup(Class<T> fromClass) throws Exception {
-        if (fromClass == null) return;
-        this.fromClass = fromClass;
-        Class clazz = this.fromClass;
+    public void setup(Class clazz) throws Exception {
+        if (clazz == null) return;
+        this.fromClass = clazz;
         String propertyPath = this.propertyPath;
         if (propertyPath == null) propertyPath = "";
         else propertyPath = propertyPath.trim();
@@ -234,9 +233,10 @@ public class OAPropertyPath<T> {
                 else packageName = "";
                 
                 Class c = Class.forName(packageName + fromClassName);
-                fromClass = c;
+                this.fromClass = c;
             }
         }
+        clazz = this.fromClass;
     
         String propertyPathClean = propertyPath;
         // a String that uses quotes "" could have special chars ',:()' inside of "" it  

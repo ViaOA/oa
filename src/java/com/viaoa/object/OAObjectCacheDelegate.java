@@ -704,6 +704,10 @@ public class OAObjectCacheDelegate {
         return get(obj.getClass(), OAObjectKeyDelegate.getKey((OAObject) obj));
     }    
 
+    public static Object findNext(Object fromObject) {
+        if (fromObject == null) return null;
+        return _find(fromObject, fromObject.getClass(), null, null, false, true);
+    }
     public static Object findNext(Object fromObject, String propertyPath, Object findObject) {
     	if (fromObject == null) return null;
         return _find(fromObject, fromObject.getClass(), propertyPath, findObject, false, true);
@@ -716,6 +720,9 @@ public class OAObjectCacheDelegate {
     /** 
         Searches all objects in Class clazz for an object with property equalTo findObject.
     */
+    public static Object find(Class clazz) {
+        return _find(null, clazz, null, null, false, true);
+    }
     public static Object find(Class clazz, String propertyPath, Object findObject) {
         return _find(null, clazz, propertyPath, findObject, false, true);
     }
@@ -726,11 +733,17 @@ public class OAObjectCacheDelegate {
     protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
         if (bDisableCache) return null;
     	// LOG.fine("class="+clazz+", propertyPath="+propertyPath+" findObject="+findObject+", bSkipNew="+bSkipNew);
-        if (propertyPath == null || propertyPath.length() == 0) throw new IllegalArgumentException("HubController.find() property cant be null");
+        if (propertyPath == null || propertyPath.length() == 0) {
+            propertyPath = null;
+            // throw new IllegalArgumentException("HubController.find() property cant be null");
+        }
         if (clazz == null) throw new IllegalArgumentException("HubController.find() class cant be null");
 
-        Method[] methods = OAReflect.getMethods(clazz, propertyPath, bThrowException);
-        if (methods == null || methods.length == 0) return null;
+        Method[] methods = null;
+        if (propertyPath != null) {
+            methods = OAReflect.getMethods(clazz, propertyPath, bThrowException);
+            if (methods == null || methods.length == 0) return null;
+        }
 
         TreeMapHolder tmh = getTreeMapHolder(clazz, false);
         if (tmh == null) return null;
@@ -757,6 +770,7 @@ public class OAObjectCacheDelegate {
                 Object object = ref.get();
                 if (object != null && object != fromObject) {
                     if (!bSkipNew || !b || !((OAObject)object).getNew()) {
+                        if (methods == null) return object;
                         Object value = OAReflect.getPropertyValue(object, methods);
                         if (value == null && findObject == null) return object;
                         if (value != null && findObject != null) {

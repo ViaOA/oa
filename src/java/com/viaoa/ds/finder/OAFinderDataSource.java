@@ -174,6 +174,7 @@ public class OAFinderDataSource extends OADataSource {
         Hub hubSelectAll;
         int posSelectAll;
         
+        // this is to track all OAClass.rootTreePropertyPaths
         OAFind[] finds;
         Hub[] findHubs;
         int posFinds;
@@ -182,7 +183,29 @@ public class OAFinderDataSource extends OADataSource {
         int posFindObjects;
         Object nextObject;
 
-        
+        public MyIterator(Class c) {
+            this.clazz = c;
+            if (clazz == null) return;
+            hubSelectAll = OAObjectCacheDelegate.getSelectAllHub(clazz);
+            if (hubSelectAll != null) return;
+
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
+            String[] ss = oi.getRootTreePropertyPaths();
+            
+            if (ss == null) return;
+                
+            int x = ss.length;
+            finds = new OAFind[x];
+            findHubs = new Hub[x];
+                
+            for (int i=0; i<x ;i++) {
+                String s = ss[i];
+                OAPropertyPath pp = new OAPropertyPath(clazz, s);
+                findHubs[i] = OAObjectCacheDelegate.getSelectAllHub(pp.getFromClass());
+                finds[i] = new OAFind(pp.getPropertyPath());
+            }
+        }
+
         public synchronized Object next() {
             Object obj = null;
             
@@ -207,6 +230,7 @@ public class OAFinderDataSource extends OADataSource {
                 obj = alFindObjects.get(posFindObjects++);
                 return obj;
             }
+            alFindObjects = null;
 
             // 4: 
             if (posFinds >= finds.length) return null;
@@ -214,11 +238,16 @@ public class OAFinderDataSource extends OADataSource {
             // 5: go to next rootHub object, and run another Find
             OAFind find = finds[posFinds];
             Hub h = findHubs[posFinds];
+            if (find == null || h == null) {
+                posCurrentFindHubs = 0;
+                posFinds++;
+                return next();
+            }
             obj = h.getAt(posCurrentFindHubs++);
             if (obj == null) {
                 posCurrentFindHubs = 0;
                 posFinds++;
-                obj = next();
+                return next();
             }
             
             alFindObjects = find.find((OAObject) obj);
@@ -226,29 +255,6 @@ public class OAFinderDataSource extends OADataSource {
             return next();
         }
         
-        
-        public MyIterator(Class c) {
-            this.clazz = c;
-            if (clazz == null) return;
-            hubSelectAll = OAObjectCacheDelegate.getSelectAllHub(clazz);
-            if (hubSelectAll != null) return;
-
-            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
-            String[] ss = oi.getRootTreePropertyPaths();
-            
-            if (ss == null) return;
-                
-            finds = new OAFind[ss.length];
-            findHubs = new Hub[ss.length];
-                
-            for (int i=0; ;i++) {
-                String s = ss[i];
-                OAPropertyPath pp = new OAPropertyPath(clazz, s);
-                findHubs[i] = OAObjectCacheDelegate.getSelectAllHub(pp.getFromClass());
-                finds[i] = new OAFind(pp.getPropertyPath());
-            }
-        }
-
         public synchronized boolean hasNext() {
             if (nextObject == null) {
                 nextObject = next();
