@@ -112,7 +112,7 @@ public class OACompare {
         if (x >= 0) return false;
         return true;
     }    
-    public static boolean isBetweenOrEqual(Object value, Object fromValue, Object toValue) {
+    public static boolean isEqualOrBetween(Object value, Object fromValue, Object toValue) {
         if (value == null) return (fromValue == null);
         if (toValue == null) return false;
         int x = compare(value, fromValue);
@@ -127,7 +127,7 @@ public class OACompare {
         int x = compare(value, fromValue);
         return x > 0;
     }
-    public static boolean isGreaterOrEqual(Object value, Object fromValue) {
+    public static boolean isEqualOrGreater(Object value, Object fromValue) {
         int x = compare(value, fromValue);
         return x >= 0;
     }
@@ -136,7 +136,7 @@ public class OACompare {
         int x = compare(value, fromValue);
         return x < 0;
     }
-    public static boolean isLessOrEqual(Object value, Object fromValue) {
+    public static boolean isEqualOrLess(Object value, Object fromValue) {
         int x = compare(value, fromValue);
         return x <= 0;
     }
@@ -169,9 +169,9 @@ public class OACompare {
         boolean b = isLess(val1, val2);
         b = isLike(val1, val2);
         b = isLess(val1, val2);
-        b = isLessOrEqual(val1, val2);
+        b = isEqualOrLess(val1, val2);
         b = isGreater(val1, val2);
-        b = isGreaterOrEqual(val1, val2);
+        b = isEqualOrGreater(val1, val2);
         
         b = isEqualIgnoreCase(val1, val2);
         b = isEqual(val1, val2);

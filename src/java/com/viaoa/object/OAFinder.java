@@ -65,8 +65,10 @@ public class OAFinder<F extends OAObject, T> {
     // if true, then values will need to be not null to have onFound(..) called 
     private boolean bEqualNotNull;
     // if set, then values need to be equal for onFound(..) called
-    private Object equalValue;
+    private T equalValue;
     
+    private T betweenFromVal, betweenToVal;
+    private T equalBetweenFromVal, equalBetweenToVal;
     
     public OAFinder(String propPath) {
         this.strPropertyPath = propPath;
@@ -104,12 +106,6 @@ public class OAFinder<F extends OAObject, T> {
      */
     public void setFinder(OAFinder finder) {
         if (finder == this) throw new IllegalArgumentException("finder can not be itself");
-        if (finder != null) {
-            OAFinder f = finder.getFinder();
-            for ( ;f!=null; f=f.getFinder()) {
-                
-            }
-        }
         this.finder = finder;
     }
     public OAFinder getFinder() {
@@ -150,10 +146,10 @@ public class OAFinder<F extends OAObject, T> {
 
     
     
-    public void setEqualValue(Object val) {
+    public void setEqualValue(T val) {
         this.equalValue = val;
     }
-    public Object getEqualValue() {
+    public T getEqualValue() {
         return equalValue;
     }
     public void setEqualNull(boolean b) {
@@ -170,7 +166,26 @@ public class OAFinder<F extends OAObject, T> {
     public boolean getEqualNotNull() {
         return this.bEqualNotNull;
     }
+    public void setBetweenValues(T val1, T val2) {
+        this.betweenFromVal = val1;
+        this.betweenToVal = val2;
+    }
+    public void setEqualOrBetweenValues(T val1, T val2) {
+        this.equalBetweenFromVal = val1;
+        this.equalBetweenToVal = val2;
+    }
     
+    
+    public T findFirst(F objectRoot) {
+        int holdMax = getMaxFound();
+        setMaxFound(1);
+        ArrayList<T> al = find(objectRoot);
+        T obj;
+        if (al.size() > 0) obj = al.get(0);
+        else obj = null;
+        if (getMaxFound() == 1) setMaxFound(holdMax);
+        return obj;
+    }
     
     /**
      * Given the propertyPath, find all of the objects from a root object.
@@ -302,6 +317,10 @@ public class OAFinder<F extends OAObject, T> {
                 b = (b && (!bEqualNull || obj == null));
                 b = (b && (!bEqualNotNull || obj != null));
                 b = (b && (equalValue == null || OACompare.isEqual(equalValue, obj)));
+                
+                b = (b && ((betweenFromVal == null && betweenToVal == null) || OACompare.isBetween(obj, betweenFromVal, betweenToVal)));
+                b = (b && ((equalBetweenFromVal == null && equalBetweenToVal == null) || OACompare.isEqualOrBetween(obj, equalBetweenFromVal, equalBetweenToVal)));
+                
                 if (b) {
                     onFound((T) obj);
                 }
