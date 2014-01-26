@@ -28,11 +28,11 @@ import com.viaoa.util.*;
 // 20140124
 /**
  * This is used to find all values of a propertyPath. 
- * 
+ *
  * @param <F> type of hub or OAObject to use as the root (from)
  * @param <T> type of hub for the to class.
  */
-public class OAFind<F extends OAObject, T> {
+public class OAFinder<F extends OAObject, T> {
     private String strPropertyPath;
     private OAPropertyPath<T> propertyPath;
 
@@ -48,12 +48,27 @@ public class OAFind<F extends OAObject, T> {
     private boolean bStop;
     private ArrayList<T> alFound;
 
+    // optional filter that can be used on objects <T> that are found.
+    private OAFilter<T> filter;
+    // optional finder that can be used on objects <T> that are found.
+    private OAFinder finder;    
+    
     // stack
     private boolean bEnableStack;
     private int stackPos;
     private StackValue[] stack;
 
-    public OAFind(String propPath) {
+    private int maxFound;
+
+    // if true, then values will need to be null to have onFound(..) called
+    private boolean bEqualNull;  
+    // if true, then values will need to be not null to have onFound(..) called 
+    private boolean bEqualNotNull;
+    // if set, then values need to be equal for onFound(..) called
+    private Object equalValue;
+    
+    
+    public OAFinder(String propPath) {
         this.strPropertyPath = propPath;
     }
     /**
@@ -63,6 +78,7 @@ public class OAFind<F extends OAObject, T> {
      */
     protected void onFound(T obj) {
         alFound.add(obj);
+        if (maxFound > 0 && alFound.size() >= maxFound) stop();
     }
     /**
      * This is used to stop the current find that is in process.
@@ -73,7 +89,91 @@ public class OAFind<F extends OAObject, T> {
     }
 
     /**
-     * Give the propertyPath, find all of the objects from a root object.
+     * Used for all objects that are found, to determine if the onFound(..) should be called.
+     */
+    public void setFilter(OAFilter<T> filter) {
+        this.filter = filter;
+    }
+    public OAFilter<T> getFilter() {
+        return this.filter;
+    }
+    
+    /**
+     * Used for all objects that are found, to perform another find to see if
+     * that onFound(..) should be called for the object.
+     */
+    public void setFinder(OAFinder finder) {
+        if (finder == this) throw new IllegalArgumentException("finder can not be itself");
+        if (finder != null) {
+            OAFinder f = finder.getFinder();
+            for ( ;f!=null; f=f.getFinder()) {
+                
+            }
+        }
+        this.finder = finder;
+    }
+    public OAFinder getFinder() {
+        return this.finder;
+    }
+    
+    public void setMaxFound(int x) {
+        this.maxFound = x;
+    }
+    public int getMaxFound() {
+        return this.maxFound;
+    }
+    
+    /**
+     * Given the propertyPath, find all of the objects from a Hub.
+     */
+    public ArrayList<T> find(Hub<F> hubRoot) {
+        alFound = new ArrayList<T>();
+        if (bEnableStack) stack = new StackValue[5];
+
+        if (hubRoot == null) return alFound;
+        if (strPropertyPath == null) return alFound;
+
+        bStop = false;
+        setup(hubRoot.getObjectClass());
+        
+        for (F objectRoot : hubRoot) {
+            stackPos = 0;
+            performFind(objectRoot);
+            if (bStop) break;
+        }
+        ArrayList<T> al = alFound;
+        this.alFound = null;
+        this.stack = null;
+        this.stackPos = 0;
+        return al;        
+    }
+
+    
+    
+    public void setEqualValue(Object val) {
+        this.equalValue = val;
+    }
+    public Object getEqualValue() {
+        return equalValue;
+    }
+    public void setEqualNull(boolean b) {
+        this.bEqualNull = b;
+        if (b) bEqualNotNull = false;
+    }
+    public boolean getEqualNull() {
+        return this.bEqualNull;
+    }
+    public void setEqualNotNull(boolean b) {
+        this.bEqualNotNull = b;
+        if (b) bEqualNull = false;
+    }
+    public boolean getEqualNotNull() {
+        return this.bEqualNotNull;
+    }
+    
+    
+    /**
+     * Given the propertyPath, find all of the objects from a root object.
      * @param objectRoot starting object to begin navigating through the propertyPath.
      */
     public ArrayList<T> find(F objectRoot) {
@@ -184,8 +284,28 @@ public class OAFind<F extends OAObject, T> {
                     // TODO: handle exception
                 }
             }
-
-            onFound((T) obj);
+            OAFilter<T> fltr = getFilter();
+            if (fltr == null || fltr.isUsed((T) obj)) {
+                OAFinder finder = getFinder();
+                ArrayList al = null;
+                boolean b = true;
+                if (finder != null) {
+                    if (obj instanceof OAObject) {
+                        al = finder.find((OAObject) obj);
+                        b = (al != null && al.size() > 0);
+                    }
+                    else if (obj instanceof Hub) {
+                        al = finder.find((Hub) obj);
+                        b = (al != null && al.size() > 0);
+                    }
+                }
+                b = (b && (!bEqualNull || obj == null));
+                b = (b && (!bEqualNotNull || obj != null));
+                b = (b && (equalValue == null || OACompare.isEqual(equalValue, obj)));
+                if (b) {
+                    onFound((T) obj);
+                }
+            }
             if (bStop) return;
         }
 

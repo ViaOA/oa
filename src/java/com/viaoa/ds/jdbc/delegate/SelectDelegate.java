@@ -31,6 +31,7 @@ import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.ds.jdbc.query.*;
 import com.viaoa.object.*;
 import com.viaoa.transaction.OATransaction;
+import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
 
 /**
@@ -41,17 +42,17 @@ import com.viaoa.util.OAString;
 public class SelectDelegate {
     private static Logger LOG = Logger.getLogger(SelectDelegate.class.getName());
     
-    public static Iterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, String queryOrder, int max) {
-    	return select(ds, clazz, queryWhere, (Object[]) null, queryOrder, max);
+    public static Iterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
+    	return select(ds, clazz, queryWhere, (Object[]) null, queryOrder, max, filter);
     }
 
-    public static Iterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, Object param, String queryOrder, int max) {
+    public static Iterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter) {
     	Object[] params = null;
     	if (param != null) params = new Object[] {param};
-    	return select(ds, clazz, queryWhere, params, queryOrder, max);
+    	return select(ds, clazz, queryWhere, params, queryOrder, max, filter);
     }
 
-    public static Iterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, Object[] params, String queryOrder, int max) {
+    public static Iterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter) {
         if (ds == null) return null;
         if (clazz == null) return null;
         Table table = ds.getDatabase().getTable(clazz);
@@ -76,6 +77,7 @@ public class SelectDelegate {
                 rsi = new ResultSetIterator(ds, clazz, columns, queries[0], max);
             }
         }
+        if (rsi != null) rsi.setFilter(filter);
         return rsi;
     }
 

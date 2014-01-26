@@ -19,7 +19,7 @@ package com.viaoa.hub;
 
 import java.util.ArrayList;
 
-import com.viaoa.object.OAFind;
+import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OACompare;
 
@@ -40,7 +40,7 @@ public class HubFindDelegate {
     public static Object findFirst(Hub thisHub, String propertyPath, final Object findObject, final boolean bSetAO) {
         if (thisHub == null) return null;
         
-        OAFind find = new OAFind(propertyPath) {
+        OAFinder find = new OAFinder(propertyPath) {
             @Override
             protected void onFound(Object obj) {
                 if (OACompare.isLike(obj, findObject) ) {
@@ -72,7 +72,7 @@ public class HubFindDelegate {
 	    Starts with the next object after last find from findFirst or findNext.
 	*/
 	public static Object findNext(Hub thisHub, boolean bSetAO) {
-		OAFind find = thisHub.datau.finder;
+		OAFinder find = thisHub.datau.finder;
 		if (find == null) {
 	        if (bSetAO) thisHub.setPos(-1);
 	        return null;

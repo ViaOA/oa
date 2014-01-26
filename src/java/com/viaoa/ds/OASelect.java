@@ -503,13 +503,15 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     */
     public synchronized TYPE next()  {
         // 20120617 added hubFilter
-        TYPE obj;
+        TYPE obj = _next();;
+        /* 20140125 moved filter use to the datasource
         for (;;) {
             obj = _next();
             if (obj == null) break;
             if (oaFilter == null) break;
             if (oaFilter.isUsed(obj)) break;
         }
+        */
         return obj;
     }
     public TYPE _next()  {

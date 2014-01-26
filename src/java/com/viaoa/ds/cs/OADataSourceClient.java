@@ -24,6 +24,7 @@ import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.util.OAFilter;
 import com.viaoa.ds.*;
+import com.viaoa.ds.objectcache.ObjectCacheIterator;
 
 
 /**
@@ -107,23 +108,31 @@ public class OADataSourceClient extends OADataSource {
     public void setAssignNumberOnCreate(boolean b) {
     }
     public boolean getAssignNumberOnCreate() {
+        verifyConnection();
         Object obj = getRemoteClientSync().datasource(ASSIGNNUMBERONCREATE, new Object[] {});
         if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
         return false;
     }
 
     public boolean isAvailable() {
+        verifyConnection();
         Object obj = getRemoteClientSync().datasource(IS_AVAILABLE, null);
         if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
         return false;
     }
 
     public int getMaxLength(Class c, String propertyName) {
+        verifyConnection();
         Object obj = getRemoteClientSync().datasource(MAX_LENGTH, new Object[] {c, propertyName});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
 
+    protected void verifyConnection() {
+        if (getRemoteClientSync() == null) {
+            throw new RuntimeException("connection remote client datasoruce is not set");
+        }
+    }
 
     //NOTE: this needs to see if any of "clazz" superclasses are supported
     public boolean isClassSupported(Class clazz) {
@@ -132,6 +141,7 @@ public class OADataSourceClient extends OADataSource {
         Boolean B = (Boolean) hashClass.get(clazz);
         if (B != null) return B.booleanValue();
 
+        verifyConnection();
         Object obj = getRemoteClientSync().datasource(IS_CLASS_SUPPORTED, new Object[] {clazz});
         boolean b = false;
         if (obj instanceof Boolean) b = ((Boolean)obj).booleanValue();
@@ -213,6 +223,13 @@ public class OADataSourceClient extends OADataSource {
 
 
     public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
+        // 20140125
+        if (filter != null) {
+            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
+                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                return it;
+            }
+        }
         Object obj = getRemoteClientSync().datasource(SELECT, new Object[] {clazz, queryWhere, queryOrder, filter} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
@@ -223,6 +240,13 @@ public class OADataSourceClient extends OADataSource {
     }
 
     public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter) {
+        // 20140125
+        if (filter != null) {
+            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
+                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                return it;
+            }
+        }
     	int x = params == null ? 0 : params.length;
     	Object[] objs = new Object[4+x];
     	objs[0] = clazz;
@@ -238,6 +262,13 @@ public class OADataSourceClient extends OADataSource {
     }
 
     public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
+        // 20140125
+        if (filter != null) {
+            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
+                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                return it;
+            }
+        }
         Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, query, null, filter} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
@@ -245,6 +276,13 @@ public class OADataSourceClient extends OADataSource {
 
 
     public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max, OAFilter filter) {
+        // 20140125
+        if (filter != null) {
+            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
+                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                return it;
+            }
+        }
         Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, queryWhere, queryOrder, filter} );
         if (obj == null) return null;
         return new MyIterator(clazz, obj);
@@ -254,7 +292,7 @@ public class OADataSourceClient extends OADataSource {
         return getRemoteClientSync().datasource(EXECUTE, new Object[] {command});
     }
 
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
+    public @Override Iterator select(Class clazz, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
         // See if OAObjectKey exists in Object to do a lookup
         if (whereObject instanceof OAObject) {
             Object obj = ((OAObject)whereObject).getProperty("OA_"+propertyNameFromMaster.toUpperCase());
@@ -262,12 +300,19 @@ public class OADataSourceClient extends OADataSource {
                 return new MyIterator((OAObjectKey)obj);
             }
         }
+        // 20140125
+        if (filter != null) {
+            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
+                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                return it;
+            }
+        }
 
         Class whereClass = whereObject == null ? null : whereObject.getClass();
         Object key = OAObjectKeyDelegate.getKey(whereObject);;
-        Object obj = getRemoteClientSync().datasource(SELECTUSINGOBJECT, new Object[] {selectClass, whereClass, key, extraWhere, args, propertyNameFromMaster, queryOrder} );
+        Object obj = getRemoteClientSync().datasource(SELECTUSINGOBJECT, new Object[] {clazz, whereClass, key, extraWhere, args, propertyNameFromMaster, queryOrder} );
         if (obj == null) return null;
-        return new MyIterator(selectClass, obj);
+        return new MyIterator(clazz, obj);
     }
 
     public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
@@ -275,6 +320,7 @@ public class OADataSourceClient extends OADataSource {
     }
 
     public @Override void initializeObject(OAObject obj) {
+        verifyConnection();
         getRemoteClientSync().datasource(INITIALIZEOBJECT, new Object[] {obj} );  // NOTE WAS: dont use, this calls server.  ObjectId could be changed on server and never be found when returned
     }
 

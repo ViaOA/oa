@@ -200,15 +200,15 @@ public class OADataSourceJDBC extends OADataSource {
     }
 
     public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter) {
-    	return SelectDelegate.select(this, clazz, queryWhere, param, queryOrder, max);
+    	return SelectDelegate.select(this, clazz, queryWhere, param, queryOrder, max, filter);
     }
 
     public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter) {
-        return SelectDelegate.select(this, clazz, queryWhere, params, queryOrder, max);
+        return SelectDelegate.select(this, clazz, queryWhere, params, queryOrder, max, filter);
     }
 
     public @Override Iterator select(Class clazz, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
-        return select(clazz, whereObject, null, null, propertyFromMaster, queryOrder, max);
+        return select(clazz, whereObject, null, null, propertyFromMaster, queryOrder, max, filter);
     }
     public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
         return SelectDelegate.select(this, selectClass, whereObject, extraWhere, args,propertyFromMaster, queryOrder, max);

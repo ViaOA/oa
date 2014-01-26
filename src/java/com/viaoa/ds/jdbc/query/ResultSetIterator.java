@@ -31,6 +31,7 @@ import com.viaoa.util.ClassModifier;
 import com.viaoa.util.OAConverter;
 import com.viaoa.util.OADate;
 import com.viaoa.util.OADateTime;
+import com.viaoa.util.OAFilter;
 import com.viaoa.util.OATime;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.jdbc.*;
@@ -70,11 +71,13 @@ public class ResultSetIterator implements Iterator {
     DataAccessObject.ResultSetInfo resultSetInfo = new DataAccessObject.ResultSetInfo();
     Object[] arguments; // when using preparedStatement
     boolean bUsePreparedStatement;
+    OAFilter filter;
 
     class ColumnInfo {
         Column column;
         int pkeyPos=-1;
     }
+    
     
     public ResultSetIterator(OADataSourceJDBC ds, Class clazz, DataAccessObject dataAccessObject, String query, String query2, int max) {
         this(ds, clazz, null, query, query2, max, dataAccessObject);
@@ -118,12 +121,15 @@ static PrintWriter printWriter;
         this.max = max;
         this.dataAccessObject = dataAccessObject;
     }
+
+    public void setFilter(OAFilter f) {
+        this.filter = f;
+    }
     
     public static int DisplayMod = 5000;    
     protected synchronized void init() {
         if (bInit) return;
         bInit = true;
-
 
         if ( ((++qqq)%DisplayMod==0)) {
             String s = query;
@@ -212,11 +218,29 @@ static PrintWriter printWriter;
     }
     
     public boolean hasNext() {
-        if (!bInit) init();
-        return (bMore);
+        if (nextObject == null) {
+            nextObject = next();
+        }
+        return (nextObject != null);
+        //if (!bInit) init();
+        //return (bMore);
     }
 
+    private Object nextObject;
     public synchronized Object next() {
+        Object obj;
+        if (nextObject != null) {
+            obj = nextObject;
+            nextObject = null;
+            return obj;
+        }
+        for (;;) {
+            obj = _next();
+            if (obj == null || filter == null || filter.isUsed(obj)) break;
+        }
+        return obj;
+    }    
+    private Object _next() {
         if (!bInit) init();
         if (rs == null) return null;
         if (max > 0 && cnter > max) { 

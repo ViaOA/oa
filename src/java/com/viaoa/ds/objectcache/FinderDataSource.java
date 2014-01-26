@@ -25,7 +25,6 @@ import com.viaoa.util.OAPropertyPath;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 
-
 // ***** not used ........ replaced with ObjectCacheDataSource *********************
 // 20140124 
 /**
@@ -33,8 +32,6 @@ import com.viaoa.hub.Hub;
     This will use OAObjectCache.selectAllHubs along with any
     OAObject.OAClass.rootTreePropertyPaths   ex: "[Router]."+Router.PROPERTY_UserLogins+"."+UserLogin.PROPERTY_User
     to find all of the objects available.
-
-    
 */
 public class FinderDataSource extends OADataSourceAuto {
     private HashSet<Class> hashClasses = new HashSet<Class>();
@@ -181,7 +178,7 @@ public class FinderDataSource extends OADataSourceAuto {
         int posSelectAll;
         
         // this is to track all OAClass.rootTreePropertyPaths
-        OAFind[] finds;
+        OAFinder[] finds;
         Hub[] findHubs;
         int posFinds;
         int posCurrentFindHubs;
@@ -204,14 +201,14 @@ public class FinderDataSource extends OADataSourceAuto {
             if (ss == null) return;
                 
             int x = ss.length;
-            finds = new OAFind[x];
+            finds = new OAFinder[x];
             findHubs = new Hub[x];
                 
             for (int i=0; i<x ;i++) {
                 String s = ss[i];
                 OAPropertyPath pp = new OAPropertyPath(clazz, s);
                 findHubs[i] = OAObjectCacheDelegate.getSelectAllHub(pp.getFromClass());
-                finds[i] = new OAFind(pp.getPropertyPath());
+                finds[i] = new OAFinder(pp.getPropertyPath());
             }
         }
         public synchronized Object next() {
@@ -263,7 +260,7 @@ public class FinderDataSource extends OADataSourceAuto {
             if (posFinds >= finds.length) return null;
             
             // 5: go to next rootHub object, and run another Find
-            OAFind find = finds[posFinds];
+            OAFinder find = finds[posFinds];
             Hub h = findHubs[posFinds];
             if (find == null || h == null) {
                 posCurrentFindHubs = 0;
@@ -300,6 +297,5 @@ public class FinderDataSource extends OADataSourceAuto {
     public byte[] getPropertyBlobValue(OAObject obj, String propertyName) {
         return null;
     }
-	
 }
 
