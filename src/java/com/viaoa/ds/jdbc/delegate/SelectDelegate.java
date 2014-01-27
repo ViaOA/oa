@@ -77,7 +77,7 @@ public class SelectDelegate {
                 rsi = new ResultSetIterator(ds, clazz, columns, queries[0], max);
             }
         }
-        if (rsi != null) rsi.setFilter(filter);
+        // if (rsi != null) rsi.setFilter(filter);
         return rsi;
     }
 

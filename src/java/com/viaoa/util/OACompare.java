@@ -1,5 +1,7 @@
 package com.viaoa.util;
 
+import java.lang.reflect.Array;
+
 // 20140124
 /**
  * Used to compare objects.
@@ -161,6 +163,24 @@ public class OACompare {
         return x;
     }
     
+    public static boolean isEmpty(Object obj) {
+        return isEmpty(obj, false);
+    }
+    public static boolean isEmpty(Object obj, boolean bTrim) {
+        if (obj == null) return true;
+        if (obj instanceof String) {
+            if (bTrim) {
+                if (((String)obj).trim().length() == 0) return true;
+            }
+            else {
+                if (((String)obj).length() == 0) return true;
+            }
+        }
+        else if (obj.getClass().isArray()) {
+            if (Array.getLength(obj) == 0) return true;
+        }
+        return false;
+    }
     
     public static void main(String[] args) {
         Object val1 = 222;

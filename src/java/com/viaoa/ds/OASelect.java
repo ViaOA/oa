@@ -90,7 +90,8 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     protected boolean bCancelled;
     protected boolean bHasBeenStarted;
     protected long lastReadTime; // used with timeout
-    protected OAFilter<TYPE> oaFilter;
+    protected OAFilter<TYPE> oaFilter;  // this will be used by OASelect to filter iterator returned values
+    protected OAFilter<TYPE> dsFilter;  // this will be sent to DataSource, which should only use it if it does not support queries
     
     /** Create a new OASelect that is not initialzed. */
     public OASelect() {
@@ -258,6 +259,13 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     }
     public OAFilter<TYPE> getFilter() {
         return this.oaFilter ;
+    }
+
+    public void setDataSourceFilter(OAFilter<TYPE> hfi) {
+        this.dsFilter = hfi;
+    }
+    public OAFilter<TYPE> getDataSourceFilter() {
+        return this.dsFilter ;
     }
     
     /**
@@ -477,16 +485,16 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
             if (bCountFirst && amountCount < 0) {
             	amountCount = ds.count(clazz, whereObject, where, params, propertyFromWhereObject, max);
             }
-            query = ds.select(clazz, whereObject, where, params, propertyFromWhereObject, order, max, getFilter());
+            query = ds.select(clazz, whereObject, where, params, propertyFromWhereObject, order, max, getDataSourceFilter());
         }
         else {
             if (bPassthru) {
                 if (bCountFirst && amountCount < 0) amountCount = ds.countPassthru(where, max);
-                query = ds.selectPassthru(clazz, where, order, max, getFilter());
+                query = ds.selectPassthru(clazz, where, order, max, getDataSourceFilter());
             }
             else {
                 if (bCountFirst && amountCount < 0) amountCount = ds.count(clazz, where, params, max);
-                query = ds.select(clazz, where, params, order, max, getFilter());
+                query = ds.select(clazz, where, params, order, max, getDataSourceFilter());
             }
         }
         // 20110407
@@ -503,15 +511,13 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     */
     public synchronized TYPE next()  {
         // 20120617 added hubFilter
-        TYPE obj = _next();;
-        /* 20140125 moved filter use to the datasource
+        TYPE obj;
         for (;;) {
             obj = _next();
             if (obj == null) break;
             if (oaFilter == null) break;
             if (oaFilter.isUsed(obj)) break;
         }
-        */
         return obj;
     }
     public TYPE _next()  {
