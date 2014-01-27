@@ -23,6 +23,5 @@ package com.viaoa.util;
  * @author vvia
  */
 public interface OAFilter<TYPE> {
-
     boolean isUsed(TYPE obj);
 }

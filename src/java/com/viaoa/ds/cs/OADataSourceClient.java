@@ -226,7 +226,7 @@ public class OADataSourceClient extends OADataSource {
         // 20140125
         if (filter != null) {
             if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
                 return it;
             }
         }
@@ -243,7 +243,7 @@ public class OADataSourceClient extends OADataSource {
         // 20140125
         if (filter != null) {
             if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
                 return it;
             }
         }
@@ -265,7 +265,7 @@ public class OADataSourceClient extends OADataSource {
         // 20140125
         if (filter != null) {
             if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
                 return it;
             }
         }
@@ -279,7 +279,7 @@ public class OADataSourceClient extends OADataSource {
         // 20140125
         if (filter != null) {
             if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
                 return it;
             }
         }
@@ -303,7 +303,7 @@ public class OADataSourceClient extends OADataSource {
         // 20140125
         if (filter != null) {
             if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator<>(clazz, filter);
+                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
                 return it;
             }
         }

@@ -69,6 +69,7 @@ public class OAFinder<F extends OAObject, T> {
     
     private T betweenFromVal, betweenToVal;
     private T equalBetweenFromVal, equalBetweenToVal;
+    private String likeValue;
     
     public OAFinder(String propPath) {
         this.strPropertyPath = propPath;
@@ -145,7 +146,12 @@ public class OAFinder<F extends OAObject, T> {
     }
 
     
-    
+    public void setLikeValue(String val) {
+        this.likeValue = val;
+    }
+    public String getLikeValue() {
+        return likeValue;
+    }
     public void setEqualValue(T val) {
         this.equalValue = val;
     }
@@ -180,6 +186,16 @@ public class OAFinder<F extends OAObject, T> {
         int holdMax = getMaxFound();
         setMaxFound(1);
         ArrayList<T> al = find(objectRoot);
+        T obj;
+        if (al.size() > 0) obj = al.get(0);
+        else obj = null;
+        if (getMaxFound() == 1) setMaxFound(holdMax);
+        return obj;
+    }
+    public T findFirst(Hub<F> hub) {
+        int holdMax = getMaxFound();
+        setMaxFound(1);
+        ArrayList<T> al = find(hub);
         T obj;
         if (al.size() > 0) obj = al.get(0);
         else obj = null;
@@ -314,13 +330,22 @@ public class OAFinder<F extends OAObject, T> {
                         b = (al != null && al.size() > 0);
                     }
                 }
-                b = (b && (!bEqualNull || obj == null));
-                b = (b && (!bEqualNotNull || obj != null));
-                b = (b && (equalValue == null || OACompare.isEqual(equalValue, obj)));
                 
-                b = (b && ((betweenFromVal == null && betweenToVal == null) || OACompare.isBetween(obj, betweenFromVal, betweenToVal)));
-                b = (b && ((equalBetweenFromVal == null && equalBetweenToVal == null) || OACompare.isEqualOrBetween(obj, equalBetweenFromVal, equalBetweenToVal)));
-                
+                if (obj instanceof Hub) {
+                    Hub h = (Hub) obj;
+                    b = (b && (!bEqualNull || h == null || h.getSize() == 0));
+                    b = (b && (!bEqualNotNull || (h != null && h.getSize() > 0)));
+                    b = (b && (equalValue == null || OACompare.isIn(equalValue, h)));
+                }
+                else {
+                    b = (b && (!bEqualNull || obj == null));
+                    b = (b && (!bEqualNotNull || obj != null));
+                    b = (b && (equalValue == null || OACompare.isEqual(equalValue, obj)));
+                    
+                    b = (b && ((betweenFromVal == null && betweenToVal == null) || OACompare.isBetween(obj, betweenFromVal, betweenToVal)));
+                    b = (b && ((equalBetweenFromVal == null && equalBetweenToVal == null) || OACompare.isEqualOrBetween(obj, equalBetweenFromVal, equalBetweenToVal)));
+                    b = (b && (likeValue == null || OACompare.isLike(equalValue, obj)));
+                }
                 if (b) {
                     onFound((T) obj);
                 }

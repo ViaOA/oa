@@ -1,6 +1,9 @@
 package com.viaoa.util;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
+
+import com.viaoa.hub.Hub;
 
 // 20140124
 /**
@@ -8,6 +11,25 @@ import java.lang.reflect.Array;
  * @author vvia
  */
 public class OACompare {
+
+    public static boolean isEqualOrIn(Object obj, Object matchValue) {
+        return isIn(obj, matchValue);
+    }
+    
+    public static boolean isIn(Object obj, Object matchValue) {
+        if (obj == null|| matchValue == null) return false;
+        if (matchValue instanceof Hub) {
+            return ((Hub) matchValue).contains(obj);
+        }
+        if (matchValue.getClass().isArray()) {
+            int x = Array.getLength(matchValue);
+            for (int i=0; i<x; i++) {
+                Object objx = Array.get(matchValue, i);
+                if (isEqual(obj, objx)) return true;
+            }
+        }
+        return isEqual(obj, matchValue);
+    }
     
     /**
      * @param matchValue if a String, then it can begin or end with '*'|'%' as a wildcard.
@@ -77,6 +99,17 @@ public class OACompare {
         if (value == null || matchValue == null) return false;
         if (value.equals(matchValue)) return true;
 
+        if (matchValue instanceof Hub) {
+            Hub h = (Hub) matchValue;
+            return (h.getSize() == 1 && h.getAt(0) == matchValue);
+        }
+        if (matchValue.getClass().isArray()) {
+            int x = Array.getLength(matchValue);
+            if (x != 1) return false;
+            Object objx = Array.get(matchValue, 0);
+            return (isEqual(value, objx));
+        }
+        
         if (bIgnoreCase) {
             if (!(value instanceof String)) {
                 value = OAConverter.toString(value);
@@ -168,6 +201,17 @@ public class OACompare {
     }
     public static boolean isEmpty(Object obj, boolean bTrim) {
         if (obj == null) return true;
+        
+        if (obj instanceof Hub) {
+            return ((Hub) obj).getSize() == 0;
+        }
+        if (obj instanceof Collection) {
+            return ((Collection) obj).isEmpty();
+        }
+        if (obj.getClass().isArray()) {
+            return (Array.getLength(obj) == 0);
+        }
+        
         if (obj instanceof String) {
             if (bTrim) {
                 if (((String)obj).trim().length() == 0) return true;
@@ -175,9 +219,6 @@ public class OACompare {
             else {
                 if (((String)obj).length() == 0) return true;
             }
-        }
-        else if (obj.getClass().isArray()) {
-            if (Array.getLength(obj) == 0) return true;
         }
         return false;
     }
