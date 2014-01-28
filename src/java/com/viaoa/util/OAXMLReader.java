@@ -740,7 +740,7 @@ static int xxx;//qqqqqqqq
     /** By default, this will check to see if object already exists 
         in OAObjectCache and return that object.  Otherwise this object is returned.
 	*/
-	protected Object getRealObject(OAObject object) {
+    protected Object getRealObject(OAObject object) {
 		Object obj = OAObjectCacheDelegate.getObject(object.getClass(), OAObjectKeyDelegate.getKey(object));
 	    if (obj != null) return obj;
 	    return object;

@@ -357,7 +357,13 @@ public class OAObject implements java.io.Serializable, Comparable {
         return OAObjectKeyDelegate.getKey(this).equals(obj);
     }
 
-	public int compareTo(Object obj) {
+    //20140128 add hashCode
+    @Override
+    public int hashCode() {
+        return OAObjectKeyDelegate.getKey(this).hashCode();
+    }
+
+    public int compareTo(Object obj) {
         if (obj == null) return 1;
         if (obj == this) return 0;
         if (!obj.getClass().equals(this.getClass())) return -1;
