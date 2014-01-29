@@ -173,7 +173,7 @@ public class OAObjectHashDelegate {
      * @param keyNew
      */
     public static void rehash(OAObject oaObj, OAObjectKey keyOld) {
-    	OAObjectKey keyNew = OAObjectKeyDelegate.getKey(oaObj);
+    	//OAObjectKey keyNew = OAObjectKeyDelegate.getKey(oaObj);
 		for (int i=0; i<lstRehash.size(); i++) {
 			Map hash = (Map) lstRehash.get(i);
     		Object value = hash.remove(keyOld);
