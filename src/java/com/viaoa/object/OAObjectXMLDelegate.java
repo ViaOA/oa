@@ -45,15 +45,6 @@ public class OAObjectXMLDelegate {
 
         if (cascade.wasCascaded(oaObj, true)) bKeyOnly = true;
 	    
-//qqqqqqqqqqqq	    
-	    if (c.getName().toLowerCase().indexOf(".model.model") >= 0) {
-	        if (!bKeyOnly) {
-    	        int xx = 4;
-    	        xx++;
-	        }
-	    }
-	    
-	
 	    String[] ids = oi.idProperties;
 	    ow.indent();
 	    String s = "";
@@ -62,7 +53,7 @@ public class OAObjectXMLDelegate {
 	        if (bKeyOnly) s += "/";
 	    }
 	
-	    ow.println("<"+c.getName()+ (bKeyOnly?" keyonly=\"true\"":"") + s + ">");
+        ow.println("<"+ow.getClassName(c)+ (bKeyOnly?" keyonly=\"true\"":"") + s + ">");
 	    ow.writing(oaObj);  // hook to let oaxmlwriter subclass know when objects are being written
 	    if (bKeyOnly && (ids == null || ids.length == 0)) return;
 	
@@ -92,7 +83,7 @@ public class OAObjectXMLDelegate {
 	            value = ow.convertToString(propName, value);
 	            if (value == null) continue;
 	            ow.indent();
-	            ow.print("<" + propName + " class=\""+cval.getName()+"\">");
+	            ow.print("<" + propName + " class=\""+ow.getClassName(cval)+"\">");
 	        }
 	        else {
 	            ow.indent();
@@ -120,16 +111,17 @@ public class OAObjectXMLDelegate {
 	        OALinkInfo li = (OALinkInfo) alLink.get(i);
 	        if (li.getTransient()) continue;
 	        if (li.getCalculated()) continue;
+	        if (li.getPrivateMethod()) continue;
 	
 	        // Method m = oi.getPropertyMethod(c, "get"+li.getProperty());
 	        // if (m == null) continue;
 	        Object obj = OAObjectReflectDelegate.getProperty(oaObj, li.getName());
 	        // Object obj = ClassModifier.getPropertyValue(this, m);
-	        if (obj == null) continue;
+	        if (obj == null && !ow.getIncludeNullProperties()) continue;
 	
 	        if (bKeyOnly && !isObjectKey(li.getName(), ids)) continue;
 	
-	        int x = ow.writeProperty(oaObj, li.getName(), obj);
+	        int x = ow.shouldWriteProperty(oaObj, li.getName(), obj);
 	        if (x != ow.WRITE_NO) {
 	            if (obj instanceof OAObject) {
 	                ow.indent();
@@ -142,7 +134,7 @@ public class OAObjectXMLDelegate {
 	            }
 	            else if (obj instanceof Hub) {
 	                Hub h = (Hub) obj;
-	                // if (h.getCount() > 0) {
+	                if (h.getSize() > 0 || ow.getIncludeEmptyHubs()) {
 	                    ow.indent();
 	                    ow.println("<"+li.getName()+">");
 	                    ow.indent++;
@@ -151,7 +143,7 @@ public class OAObjectXMLDelegate {
 	                    ow.indent--;
 	                    ow.indent();
 	                    ow.println("</"+li.getName()+">");
-	                // }
+	                }
 	            }
 	        }
 	    }
@@ -180,7 +172,7 @@ public class OAObjectXMLDelegate {
 	
 	            ow.indent();
 	            if (cval.equals(String.class)) ow.print("<"+key+">");
-	            else ow.print("<"+key+" class=\""+cval.getName()+"\">");
+	            else ow.print("<"+key+" class=\""+ow.getClassName(cval)+"\">");
 	            if (OAString.isLegalXML((String)value)) ow.printXML((String)value);
 	            else ow.printCDATA((String)value);
 	            ow.println("</"+key+">");
@@ -190,7 +182,7 @@ public class OAObjectXMLDelegate {
 	    //if (!bKeyOnly) {
 	        ow.indent--;
 	        ow.indent();
-	        ow.println("</"+c.getName()+">");
+	        ow.println("</"+ow.getClassName(c)+">");
 	    //}
 	}
 	

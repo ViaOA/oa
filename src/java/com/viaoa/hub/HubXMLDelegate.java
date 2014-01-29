@@ -38,7 +38,7 @@ public class HubXMLDelegate {
 	public static void write(Hub thisHub, OAXMLWriter ow, int writeType, OACascade cascade) {
 		boolean bKeyOnly = (writeType == OAXMLWriter.WRITE_KEYONLY || writeType == OAXMLWriter.WRITE_NONEW_KEYONLY);
 	    ow.indent();
-	    ow.println("<"+Hub.class.getName()+" ObjectClass=\""+thisHub.getObjectClass().getName()+"\" total=\""+thisHub.getSize()+"\">");
+	    ow.println("<"+ow.getClassName(Hub.class)+" ObjectClass=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
 	    ow.indent++;
 	    for (int i=0; ;i++) {
 	        Object obj = thisHub.elementAt(i);
@@ -50,7 +50,7 @@ public class HubXMLDelegate {
 	    }
 	    ow.indent--;
 	    ow.indent();
-        ow.println("</"+Hub.class.getName()+">");
+        ow.println("</"+ow.getClassName(Hub.class)+">");
     }
 	
 	

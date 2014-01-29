@@ -51,6 +51,8 @@ public class OAXMLWriter {
     public static final int WRITE_NONEW_KEYONLY = 3;
     protected Hashtable hash; // used for storing objects without an Object Key - updated by OAObject
 
+    private boolean bIncludeEmptyHubs;
+    private boolean bIncludeNullProperties;
     
     public OAXMLWriter(String fname) {
         setFileName(fname);
@@ -213,5 +215,22 @@ public class OAXMLWriter {
     */
     public String convertToString(String property, Object value) {
         return null;
+    }
+    
+    public String getClassName(Class c) {
+        return c.getName();
+    }
+    
+    public void setIncludeEmptyHubs(boolean b) {
+        bIncludeEmptyHubs = b;
+    }
+    public boolean getIncludeEmptyHubs() {
+        return bIncludeEmptyHubs;
+    }
+    public void setIncludeNullProperties(boolean b) {
+        bIncludeNullProperties = b;
+    }
+    public boolean getIncludeNullProperties() {
+        return bIncludeNullProperties;
     }
 }
