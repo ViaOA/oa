@@ -70,8 +70,19 @@ public class OAFinder<F extends OAObject, T> {
     private T betweenFromVal, betweenToVal;
     private T equalBetweenFromVal, equalBetweenToVal;
     private String likeValue;
+
+    private F fromObject;
+    private Hub<F> fromHub;
     
     public OAFinder(String propPath) {
+        this.strPropertyPath = propPath;
+    }
+    public OAFinder(F fromObject, String propPath) {
+        this.fromObject = fromObject;
+        this.strPropertyPath = propPath;
+    }
+    public OAFinder(Hub<F> fromHub, String propPath) {
+        this.fromHub = fromHub;
         this.strPropertyPath = propPath;
     }
     /**
@@ -118,6 +129,18 @@ public class OAFinder<F extends OAObject, T> {
     }
     public int getMaxFound() {
         return this.maxFound;
+    }
+
+    public ArrayList<T> find() {
+        if (fromObject != null) return find(fromObject);
+        if (fromHub != null) return find(fromHub);
+        return null;
+    }
+    public void setRoot(F obj) {
+        this.fromObject = obj;
+    }
+    public void setRoot(Hub<F> hub) {
+        this.fromHub = hub;
     }
     
     /**
@@ -316,7 +339,7 @@ public class OAFinder<F extends OAObject, T> {
                 }
             }
             OAFilter<T> fltr = getFilter();
-            if (fltr == null || fltr.isUsed((T) obj)) {
+            if (fltr == null || fltr.isUsed((T) obj) && isUsed((T) obj)) {
                 OAFinder finder = getFinder();
                 ArrayList al = null;
                 boolean b = true;
@@ -380,6 +403,13 @@ public class OAFinder<F extends OAObject, T> {
         return null;
     }
     
+    /**
+     * Called for all objects that are found, and pass the filter.
+     * @return true (default) to include in arrayList results, false to skip.
+     */
+    protected boolean isUsed(T obj) {
+        return true;
+    }
 
     /**
      * This will have the internal stack updated when a find is being performed.

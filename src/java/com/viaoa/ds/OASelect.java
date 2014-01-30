@@ -92,6 +92,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     protected long lastReadTime; // used with timeout
     protected OAFilter<TYPE> oaFilter;  // this will be used by OASelect to filter iterator returned values
     protected OAFilter<TYPE> dsFilter;  // this will be sent to DataSource, which should only use it if it does not support queries
+    protected OAFinder<?, TYPE> finder; // will be used instead of calling datasource
     
     /** Create a new OASelect that is not initialzed. */
     public OASelect() {
@@ -265,7 +266,14 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
         this.dsFilter = hfi;
     }
     public OAFilter<TYPE> getDataSourceFilter() {
-        return this.dsFilter ;
+        return this.dsFilter;
+    }
+
+    public void setFinder(OAFinder<?, TYPE> finder) {
+        this.finder = finder;
+    }
+    public OAFinder<?, TYPE> getFinder() {
+        return this.finder;
     }
     
     /**
@@ -461,6 +469,9 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
 	}
     
     
+	private ArrayList<TYPE> alFinderResults;
+	private int posFinderResults;
+	
     /**
         Used to perform select.
     */
@@ -470,6 +481,28 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
         }
         bHasBeenStarted = true;
         bCancelled = false;
+        alFinderResults = null;
+        posFinderResults = 0;
+        amountRead = 0;
+        amountCount = -1;
+
+        // 20140129
+        if (finder != null) {
+            final OAFilter origFilter = finder.getFilter();
+            OAFilter filter = new OAFilter<TYPE>() {
+                @Override
+                public boolean isUsed(TYPE obj) {
+                    if (origFilter != null && !origFilter.isUsed(obj)) return false;
+                    if (dsFilter != null && !dsFilter.isUsed(obj)) return false;
+                    if (oaFilter != null && !oaFilter.isUsed(obj)) return false;
+                    return true;
+                }
+            };
+            alFinderResults = finder.find();
+            finder.setFilter(origFilter);
+            return;
+        }
+        
     	if (clazz == null) throw new RuntimeException("OASelect.select() needs selectClass set");
         OADataSource ds = getDataSource();
         if (ds == null) {
@@ -478,8 +511,6 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
             return;
         }
 
-        amountRead = 0;
-        amountCount = -1;
 
         if (whereObject != null) {
             if (bCountFirst && amountCount < 0) {
@@ -524,6 +555,18 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
         if (!bHasBeenStarted) {
             select();
         }
+        
+        if (finder != null) {
+            if (alFinderResults == null) return null;
+            int x = alFinderResults.size();
+            if (posFinderResults >= x) {
+                alFinderResults = null;
+                return null;
+            }
+            TYPE obj = alFinderResults.get(posFinderResults++);
+            return obj;
+        }
+        
         if (query == null) return null;
         TYPE obj = null;
         try {
@@ -568,6 +611,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
             query = null;
         }
         OASelectManager.remove(this);
+        alFinderResults = null;     
     }
     
     
@@ -578,6 +622,13 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
         if (!bHasBeenStarted) {
             select();
         }
+        
+        if (finder != null) {
+            if (alFinderResults == null) return false;
+            int x = alFinderResults.size();
+            return (posFinderResults < x);
+        }
+        
         boolean b = query != null && query.hasNext();
         if (!b) {
             closeQuery();

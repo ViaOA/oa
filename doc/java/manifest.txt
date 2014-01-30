@@ -1,0 +1,9 @@
+
+
+NOTE: **** manifest lines can do not trim off spaces
+
+
+Manifest-Version: 1.0
+Permissions: all-permissions   <<<<<< any spaces after ending letter "s" would cause this to not work!
+Codebase: *
+Application-Name: OABuilder

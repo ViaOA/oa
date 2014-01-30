@@ -133,7 +133,17 @@ public class MultiplexerSocketController implements Serializable {
         this._socket = socket;
 
         // perform handshake/verification in this thread.
-        performHandshake();
+        try {
+            performHandshake();
+        }
+        catch (SocketException e) {
+            onSocketException(e);
+            return;
+        }
+        catch (IOException e) {
+            onSocketException(e);
+            return;
+        }
 
         // start the real socket reader thread.
         startSocketReaderThread(false);
