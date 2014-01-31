@@ -1,4 +1,43 @@
 
+ICE Git ========================
+
+Have project space created, then create repo
+ex:  https://gitorious.intcx.net/mradmin/llclient
+
+Eclipse:
+file/import/git ... follow wizard
+
+update file ".gitignore"
+    target
+    .classpath
+    .project
+    .settings
+    /logs
+    /runtime
+
+update file ".git/config"
+[core]
+    repositoryformatversion = 0
+    filemode = false
+    logallrefupdates = true
+    ignorecase = true
+    hideDotFiles = dotGitOnly
+[remote "origin"]
+    url = git@gitorious.intcx.net:gsmr/server.git
+    fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+    remote = origin
+    merge = refs/heads/master
+    
+>>> add this for branches        
+[branch "12.725"]
+    remote = origin
+    merge = refs/heads/12.725
+
+
+
+
+=========================
 
 https://github.com/
 
