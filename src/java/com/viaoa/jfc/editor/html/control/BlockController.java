@@ -29,6 +29,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.html.CSS;
 import javax.swing.text.html.HTML;
+import javax.swing.text.html.CSS.Attribute;
 
 import com.viaoa.hub.*;
 import com.viaoa.util.*;

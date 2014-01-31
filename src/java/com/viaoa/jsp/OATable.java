@@ -580,7 +580,7 @@ public class OATable implements OAJspComponent {
             StringBuilder sbx = new StringBuilder(x+20);
             int amt = 80;
             for (int i=0; i<x; i+=amt) {
-                if (i + amt > x) {
+                if (i + amt >= x) {
                     amt = x - i;
                     sbx.append(strTable.substring(i, i+amt));
                     break;
@@ -768,19 +768,19 @@ public class OATable implements OAJspComponent {
     
     public static void main(String[] args) {
         // if txt is long, then split into multiple lines
-        String strTable = "this is \"a test\" \'";
+        String strTable = "this is \"\"\"\"\"\"\"a test\" \'\"a";
         strTable = Util.convert(strTable, "'", "\\'");
         
         int x = strTable.length();
         StringBuilder sbx = new StringBuilder(x+20);
-        int amt = 8;
+        int amt = 4;
         for (int i=0; i<x; i+=amt) {
-            if (i + amt > x) {
+            if (i + amt >= x) {
                 amt = x - i;
                 sbx.append(strTable.substring(i, i+amt));
                 break;
             }
-            if (strTable.charAt(i+amt-1) == '\\') amt++;
+            if (strTable.charAt(i+amt-1) == '\\') amt--;
             sbx.append(strTable.substring(i, i+amt) + "\'+\n\'");
         }
         strTable = sbx.toString();
