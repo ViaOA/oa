@@ -80,10 +80,10 @@ public class OACompare {
             return (sValue.indexOf(sMatchValue) >= 0);
         }
         else if (b1) {
-            return sValue.startsWith(sMatchValue);
+            return sValue.endsWith(sMatchValue);
         }
         //else if (b2) {
-        return sValue.endsWith(sMatchValue);
+        return sValue.startsWith(sMatchValue);
     }    
 
     

@@ -10,6 +10,7 @@ com.viaoa.ds.jdbc.connection
 com.viaoa.ds.jdbc.db
 com.viaoa.ds.jdbc.delegate
 com.viaoa.ds.jdbc.query
+com.viaoa.ds.objectcache
 com.viaoa.ds.query
 com.viaoa.ds.remote
 com.viaoa.hub

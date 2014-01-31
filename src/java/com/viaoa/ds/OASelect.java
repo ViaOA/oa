@@ -498,6 +498,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
                     return true;
                 }
             };
+            finder.setFilter(filter);
             alFinderResults = finder.find();
             finder.setFilter(origFilter);
             return;
