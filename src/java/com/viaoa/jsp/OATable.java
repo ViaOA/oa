@@ -566,13 +566,30 @@ public class OATable implements OAJspComponent {
         
         String strTable = sb.toString();
         strTable = Util.convert(strTable, "\\", "\\\\");
-        /*
+//20140130 this was commented out        
         strTable = Util.convert(strTable, "\r\n", "<br>");
         strTable = Util.convert(strTable, "\n", "<br>");
         strTable = Util.convert(strTable, "\r", "<br>");
-        */
+//end        
         strTable = Util.convert(strTable, "'", "\\'");
         
+//qqqq 20140130        
+        // if txt is long, then split into multiple lines
+        x = strTable.length();
+        if (x > 100) {
+            StringBuilder sbx = new StringBuilder(x+20);
+            int amt = 80;
+            for (int i=0; i<x; i+=amt) {
+                if (i + amt > x) {
+                    amt = x - i;
+                    sbx.append(strTable.substring(i, i+amt));
+                    break;
+                }
+                if (strTable.charAt(i+amt-1) == '\\') amt--;
+                sbx.append(strTable.substring(i, i+amt) + "\'+\n\'");
+            }
+            strTable = sbx.toString();
+        }        
         
         sb = new StringBuilder(strTable.length() + 2048);
         sb.append("$('#"+id+"').html('"+strTable+"');\n");
@@ -747,5 +764,28 @@ public class OATable implements OAJspComponent {
     }
     public int getScrollLeft() {
         return scrollLeft;
+    }
+    
+    public static void main(String[] args) {
+        // if txt is long, then split into multiple lines
+        String strTable = "this is \"a test\" \'";
+        strTable = Util.convert(strTable, "'", "\\'");
+        
+        int x = strTable.length();
+        StringBuilder sbx = new StringBuilder(x+20);
+        int amt = 8;
+        for (int i=0; i<x; i+=amt) {
+            if (i + amt > x) {
+                amt = x - i;
+                sbx.append(strTable.substring(i, i+amt));
+                break;
+            }
+            if (strTable.charAt(i+amt-1) == '\\') amt++;
+            sbx.append(strTable.substring(i, i+amt) + "\'+\n\'");
+        }
+        strTable = sbx.toString();
+        
+        String s = ("$('#id').html('"+strTable+"');");
+        System.out.println("==>"+s);
     }
 }

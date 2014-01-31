@@ -546,7 +546,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
         for (;;) {
             obj = _next();
             if (obj == null) break;
-            if (oaFilter == null) break;
+            if (oaFilter == null || finder != null) break;
             if (oaFilter.isUsed(obj)) break;
         }
         return obj;

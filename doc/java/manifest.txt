@@ -2,6 +2,10 @@
 
 NOTE: **** manifest lines can do not trim off spaces
 
+Warning: The text file must end with a new line or carriage return. The last line will not be parsed properly if it does not end with a new line or carriage return.
+
+security:
+    http://docs.oracle.com/javase/tutorial/deployment/jar/secman.html
 
 Manifest-Version: 1.0
 Permissions: all-permissions   <<<<<< any spaces after ending letter "s" would cause this to not work!
