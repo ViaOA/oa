@@ -17,11 +17,13 @@ All rights reserved.
 */
 package com.viaoa.util;
 
+import java.io.Serializable;
+
 
 /**
  * Used to filter a collection of TYPE objects. 
  * @author vvia
  */
-public interface OAFilter<TYPE> {
+public interface OAFilter<TYPE> extends Serializable {
     boolean isUsed(TYPE obj);
 }

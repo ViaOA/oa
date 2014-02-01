@@ -5,7 +5,9 @@ import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.util.OAFilter;
 
 /**
- * Used to find and filter objects in OAObjectCache
+ * Used to find and filter objects in OAObjectCache.
+ * Note, all queries require that a non-null Filter be used.  If filter is null, then
+ * no results will be returned.
  * @author vvia
  */
 public class ObjectCacheIterator<T> implements Iterator {
@@ -39,6 +41,7 @@ public class ObjectCacheIterator<T> implements Iterator {
     }
 
     public T _next() {
+        if (filter == null) return null;
         if (posFetchObjects >= alFetchObjects.size()) {
             posFetchObjects = 0;
             alFetchObjects.clear();

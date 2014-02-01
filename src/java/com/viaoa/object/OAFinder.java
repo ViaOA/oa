@@ -73,6 +73,8 @@ public class OAFinder<F extends OAObject, T> {
 
     private F fromObject;
     private Hub<F> fromHub;
+
+    private ArrayList<OAFilter> alFilters;
     
     public OAFinder(String propPath) {
         this.strPropertyPath = propPath;
@@ -181,6 +183,7 @@ public class OAFinder<F extends OAObject, T> {
     public T getEqualValue() {
         return equalValue;
     }
+
     public void setEqualNull(boolean b) {
         this.bEqualNull = b;
         if (b) bEqualNotNull = false;
@@ -202,6 +205,74 @@ public class OAFinder<F extends OAObject, T> {
     public void setEqualOrBetweenValues(T val1, T val2) {
         this.equalBetweenFromVal = val1;
         this.equalBetweenToVal = val2;
+    }
+    
+    public void clearFilters() {
+        alFilters = null;
+    }
+
+    /**
+     * Create a filter that is used on every object for this finder.
+     * @param propPath property path from this Finder from object to the object that will be compared.
+     * @param value value to compare with using OACompare.isEqual(..)
+     */
+    public void addEqualFilter(final String propPath, final Object value) {
+        OAFilter<T> f;
+        if (OAString.isEmpty(propPath)) {
+            f = new OAFilter<T>() {
+                @Override
+                public boolean isUsed(T obj) {
+                    return OACompare.isEqual(obj, value);
+                }
+            };
+        }
+        else {
+            f = new OAFilter<T>() {
+                OAFinder finder;
+                public boolean isUsed(T obj) {
+                    if (finder == null && obj instanceof OAObject) {
+                        finder = new OAFinder(propPath);
+                        finder.setEqualValue(value);
+                    }
+                    Object objx = finder.findFirst((OAObject)obj);
+                    return objx != null;
+                }
+            };
+        }
+        if (alFilters == null) alFilters = new ArrayList<OAFilter>();
+        alFilters.add(f);
+    }
+    /**
+     * Create a filter that is used on every object for this finder.
+     * @param propPath property path from this Finder from object to the object that will be compared.
+     * @param value value to compare with using OACompare.isLike(..).
+     */
+    public void addLikeFilter(final String propPath, final Object value) {
+        OAFilter<T> f;
+        if (OAString.isEmpty(propPath)) {
+            f = new OAFilter<T>() {
+                @Override
+                public boolean isUsed(T obj) {
+                    return OACompare.isLike(obj, value);
+                }
+            };
+        }
+        else {
+            f = new OAFilter<T>() {
+                OAFinder finder;
+                public boolean isUsed(T obj) {
+                    if (finder == null && obj instanceof OAObject) {
+                        finder = new OAFinder(propPath);
+                        String s = OAConv.toString(value);
+                        finder.setLikeValue(s);
+                    }
+                    Object objx = finder.findFirst((OAObject)obj);
+                    return objx != null;
+                }
+            };
+        }
+        if (alFilters == null) alFilters = new ArrayList<OAFilter>();
+        alFilters.add(f);
     }
     
     
@@ -338,38 +409,45 @@ public class OAFinder<F extends OAObject, T> {
                     // TODO: handle exception
                 }
             }
+            
+            boolean bIsUsed = isUsed((T) obj);
             OAFilter<T> fltr = getFilter();
-            if (fltr == null || fltr.isUsed((T) obj) && isUsed((T) obj)) {
+            bIsUsed = bIsUsed && (fltr == null || fltr.isUsed((T) obj));
+            if (bIsUsed && alFilters != null) {
+                for (OAFilter f : alFilters) {
+                    bIsUsed = f.isUsed((T) obj);
+                    if (!bIsUsed) break;
+                }
+            }
+            if (bIsUsed) {
                 OAFinder finder = getFinder();
                 ArrayList al = null;
-                boolean b = true;
+
                 if (finder != null) {
                     if (obj instanceof OAObject) {
-                        al = finder.find((OAObject) obj);
-                        b = (al != null && al.size() > 0);
+                        bIsUsed = (finder.findFirst((OAObject) obj) != null);
                     }
                     else if (obj instanceof Hub) {
-                        al = finder.find((Hub) obj);
-                        b = (al != null && al.size() > 0);
+                        bIsUsed = (finder.findFirst((Hub) obj) != null);
                     }
                 }
                 
                 if (obj instanceof Hub) {
                     Hub h = (Hub) obj;
-                    b = (b && (!bEqualNull || h == null || h.getSize() == 0));
-                    b = (b && (!bEqualNotNull || (h != null && h.getSize() > 0)));
-                    b = (b && (equalValue == null || OACompare.isIn(equalValue, h)));
+                    bIsUsed = (bIsUsed && (!bEqualNull || h == null || h.getSize() == 0));
+                    bIsUsed = (bIsUsed && (!bEqualNotNull || (h != null && h.getSize() > 0)));
+                    bIsUsed = (bIsUsed && (equalValue == null || OACompare.isIn(equalValue, h)));
                 }
                 else {
-                    b = (b && (!bEqualNull || obj == null));
-                    b = (b && (!bEqualNotNull || obj != null));
-                    b = (b && (equalValue == null || OACompare.isEqual(equalValue, obj)));
+                    bIsUsed = (bIsUsed && (!bEqualNull || obj == null));
+                    bIsUsed = (bIsUsed && (!bEqualNotNull || obj != null));
+                    bIsUsed = (bIsUsed && (equalValue == null || OACompare.isEqual(equalValue, obj)));
                     
-                    b = (b && ((betweenFromVal == null && betweenToVal == null) || OACompare.isBetween(obj, betweenFromVal, betweenToVal)));
-                    b = (b && ((equalBetweenFromVal == null && equalBetweenToVal == null) || OACompare.isEqualOrBetween(obj, equalBetweenFromVal, equalBetweenToVal)));
-                    b = (b && (likeValue == null || OACompare.isLike(equalValue, obj)));
+                    bIsUsed = (bIsUsed && ((betweenFromVal == null && betweenToVal == null) || OACompare.isBetween(obj, betweenFromVal, betweenToVal)));
+                    bIsUsed = (bIsUsed && ((equalBetweenFromVal == null && equalBetweenToVal == null) || OACompare.isEqualOrBetween(obj, equalBetweenFromVal, equalBetweenToVal)));
+                    bIsUsed = (bIsUsed && (likeValue == null || OACompare.isLike(equalValue, obj)));
                 }
-                if (b) {
+                if (bIsUsed) {
                     onFound((T) obj);
                 }
             }

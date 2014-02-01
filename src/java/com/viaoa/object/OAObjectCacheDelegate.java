@@ -732,6 +732,14 @@ public class OAObjectCacheDelegate {
     }    
 
     // 20140125 get objects from cache
+    /**
+     * Returns objects from the objectCache.
+     * @param clazz type of objects
+     * @param fromObject null to start from the beginning, else use the last object previously returned.
+     * @param fetchAmount max number to add to the alResults
+     * @param alResults list of objects, after the fromObject
+     * @return last object in alResults, that can be used as the fromObject on the next call to fetch
+     */
     public static Object fetch(Class clazz, Object fromObject, int fetchAmount, ArrayList<Object> alResults) {
         return _find(fromObject, clazz, null, null, false, false, fetchAmount, alResults);
     }

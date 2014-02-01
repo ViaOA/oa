@@ -257,6 +257,7 @@ public class BlockController {
         obj = sas.getAttribute(CSS.Attribute.BORDER_COLOR);
         block.setBorderColor(null);
 
+/*qqqqqqqqqq 20140131 add this back in ... only available in Java 1.7, no 1.6        
         obj = sas.getAttribute(CSS.Attribute.BORDER_TOP_COLOR);
         block.setBorderTopColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
         
@@ -268,11 +269,12 @@ public class BlockController {
 
         obj = sas.getAttribute(CSS.Attribute.BORDER_LEFT_COLOR);
         block.setBorderLeftColor(obj == null ? null : (Color) OAConv.convert(Color.class, obj.toString()));
-        
+*/        
 
         obj = sas.getAttribute(CSS.Attribute.BORDER_STYLE);
         block.setBorderStyle(null);
 
+/*qqqqqqqqqq 20140131 add this back in ... only available in Java 1.7, no 1.6        
         obj = sas.getAttribute(CSS.Attribute.BORDER_TOP_STYLE);
         block.setBorderTopStyle(obj == null ? null : obj.toString());
         
@@ -284,7 +286,7 @@ public class BlockController {
         
         obj = sas.getAttribute(CSS.Attribute.BORDER_LEFT_STYLE);
         block.setBorderLeftStyle(obj == null ? null : obj.toString());
-
+*/
         
         
         obj = sas.getAttribute(CSS.Attribute.BACKGROUND_COLOR);
@@ -329,11 +331,12 @@ public class BlockController {
         sas.removeAttribute(CSS.Attribute.BORDER_BOTTOM_WIDTH);
         sas.removeAttribute(CSS.Attribute.BORDER_LEFT_WIDTH);
 
+/*qqqqqqqqqq 20140131 add this back in ... only available in Java 1.7, no 1.6        
         sas.removeAttribute(CSS.Attribute.BORDER_TOP_COLOR);
         sas.removeAttribute(CSS.Attribute.BORDER_RIGHT_COLOR);
         sas.removeAttribute(CSS.Attribute.BORDER_BOTTOM_COLOR);
         sas.removeAttribute(CSS.Attribute.BORDER_LEFT_COLOR);
-        
+*/        
         sas.removeAttribute(CSS.Attribute.BORDER_STYLE);
 
         sas.removeAttribute(CSS.Attribute.BACKGROUND_COLOR);

@@ -254,7 +254,7 @@ public class OADataSourceClient extends OADataSource {
     	objs[2] = queryOrder;
         objs[3] = filter;
     	
-    	for (int i=0; i<x; i++) objs[3+i] = params[i];
+    	for (int i=0; i<x; i++) objs[4+i] = params[i];
     	
     	Object obj = getRemoteClientSync().datasource(SELECT, objs );
         if (obj == null) return null;
