@@ -53,7 +53,7 @@ public class OAPropertyPath<T> {
 
     private Class<T> fromClass;
     private String propertyPath;
-    private Method[] methods;
+    private Method[] methods = new Method[0];
     private boolean bLastMethodHasHubParam; // true if method requires a Hub param
     
     /**
@@ -61,19 +61,19 @@ public class OAPropertyPath<T> {
      *  if casting is used, then this will have the casted class. 
      *  note: if the method returns a Hub, then this will be the hub.objectClass
      */
-    private Class[] classes; 
+    private Class[] classes = new Class[0]; 
     
-    private String[] properties; // convert properties, without casting
-    private String[] castNames;
-    private String[] filterNames;
-    private String[] filterParams;
-    private Object[][] filterParamValues;
+    private String[] properties = new String[0]; // convert properties, without casting
+    private String[] castNames = new String[0];
+    private String[] filterNames = new String[0];
+    private String[] filterParams = new String[0];
+    private Object[][] filterParamValues = new Object[0][];
 
-    private Class[] filterClasses; 
-    private Constructor[] filterConstructors; 
+    private Class[] filterClasses = new Class[0]; 
+    private Constructor[] filterConstructors = new Constructor[0]; 
 
-    private OALinkInfo[] linkInfos;
-    private OALinkInfo[] recursiveLinkInfos;  // for each linkInfos[]
+    private OALinkInfo[] linkInfos = new OALinkInfo[0];
+    private OALinkInfo[] recursiveLinkInfos = new OALinkInfo[0];  // for each linkInfos[]
     private boolean bLastProperyLinkInfo;
     private OAPropertyPath revPropertyPath; 
 
@@ -215,7 +215,6 @@ public class OAPropertyPath<T> {
         String propertyPath = this.propertyPath;
         if (propertyPath == null) propertyPath = "";
         else propertyPath = propertyPath.trim();
-
         
         // 20140118 if leading with "[ClassName].", then it is the fromClass
         int pos = propertyPath.indexOf("[");
@@ -254,6 +253,7 @@ public class OAPropertyPath<T> {
         Class classLast = clazz;
         int posDot, prevPosDot;
         posDot = prevPosDot = 0;
+        if (OAString.isEmpty(propertyPathClean)) posDot = -1;
         for ( ; posDot >= 0; prevPosDot=posDot+1) {
             posDot = propertyPathClean.indexOf('.', prevPosDot);
             int posCast = propertyPathClean.indexOf('(', prevPosDot);
@@ -350,7 +350,9 @@ public class OAPropertyPath<T> {
             }
     
             String mname;
-            if (propertyName.length() == 0) propertyName = mname = "toString";
+            if (propertyName.length() == 0) {
+                propertyName = mname = "toString";
+            }
             else {
                 mname = "get"+propertyName;
             }

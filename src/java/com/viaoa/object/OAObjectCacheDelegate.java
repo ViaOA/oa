@@ -747,7 +747,7 @@ public class OAObjectCacheDelegate {
     protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
         return _find(fromObject, clazz, propertyPath, findObject, bSkipNew, bThrowException, 1, null);
     }
-    protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException, int fetchAmount, ArrayList<Object> alResults) {
+    protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findValue, boolean bSkipNew, boolean bThrowException, int fetchAmount, ArrayList<Object> alResults) {
         if (bDisableCache) return null;
     	// LOG.fine("class="+clazz+", propertyPath="+propertyPath+" findObject="+findObject+", bSkipNew="+bSkipNew);
         if (propertyPath == null || propertyPath.length() == 0) {
@@ -756,10 +756,15 @@ public class OAObjectCacheDelegate {
         }
         if (clazz == null) throw new IllegalArgumentException("HubController.find() class cant be null");
 
+        // 20140201 replace methods with finder
+        OAFinder finder = null;
         Method[] methods = null;
-        if (propertyPath != null) {
-            methods = OAReflect.getMethods(clazz, propertyPath, bThrowException);
-            if (methods == null || methods.length == 0) return null;
+        if (!OAString.isEmpty(propertyPath)) {
+            finder = new OAFinder();
+            finder.addEqualFilter(propertyPath, findValue);
+            
+            //methods = OAReflect.getMethods(clazz, propertyPath, bThrowException);
+            //if (methods == null || methods.length == 0) return null;
         }
 
         TreeMapHolder tmh = getTreeMapHolder(clazz, false);
@@ -787,16 +792,23 @@ public class OAObjectCacheDelegate {
                 Object object = ref.get();
                 if (object != null && object != fromObject) {
                     if (!bSkipNew || !b || !((OAObject)object).getNew()) {
-                        if (methods == null) {
+                        if (finder != null) {
+                            if (finder.findFirst((OAObject) object) != null) {
+                                if (alResults == null) return object;
+                                alResults.add(object);
+                                if (alResults.size() >= fetchAmount) return object;
+                            }
+                        }
+                        else if (methods == null) {
                             if (alResults == null) return object;
                             alResults.add(object);
                             if (alResults.size() >= fetchAmount) return object;
                         }
                         else {
                             Object value = OAReflect.getPropertyValue(object, methods);
-                            if (value == null && findObject == null) return object;
-                            if (value != null && findObject != null) {
-                                if (value == findObject || value.equals(findObject)) {
+                            if (value == null && findValue == null) return object;
+                            if (value != null && findValue != null) {
+                                if (value == findValue || value.equals(findValue)) {
                                     if (alResults == null) return object;
                                     alResults.add(object);
                                     if (alResults.size() >= fetchAmount) return object;

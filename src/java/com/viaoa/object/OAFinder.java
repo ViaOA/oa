@@ -76,6 +76,8 @@ public class OAFinder<F extends OAObject, T> {
 
     private ArrayList<OAFilter> alFilters;
     
+    public OAFinder() {
+    }
     public OAFinder(String propPath) {
         this.strPropertyPath = propPath;
     }
@@ -153,7 +155,6 @@ public class OAFinder<F extends OAObject, T> {
         if (bEnableStack) stack = new StackValue[5];
 
         if (hubRoot == null) return alFound;
-        if (strPropertyPath == null) return alFound;
 
         bStop = false;
         setup(hubRoot.getObjectClass());
@@ -234,8 +235,7 @@ public class OAFinder<F extends OAObject, T> {
                         finder = new OAFinder(propPath);
                         finder.setEqualValue(value);
                     }
-                    Object objx = finder.findFirst((OAObject)obj);
-                    return objx != null;
+                    return finder.canFindFirst((OAObject)obj);
                 }
             };
         }
@@ -266,16 +266,29 @@ public class OAFinder<F extends OAObject, T> {
                         String s = OAConv.toString(value);
                         finder.setLikeValue(s);
                     }
-                    Object objx = finder.findFirst((OAObject)obj);
-                    return objx != null;
+                    return finder.canFindFirst((OAObject)obj);
                 }
             };
         }
         if (alFilters == null) alFilters = new ArrayList<OAFilter>();
         alFilters.add(f);
     }
-    
-    
+
+    /**
+     * Returns true if a matching value is found.
+     */
+    public boolean canFindFirst(F objectRoot) {
+        int holdMax = getMaxFound();
+        setMaxFound(1);
+        ArrayList<T> al = find(objectRoot);
+        if (getMaxFound() == 1) setMaxFound(holdMax);
+        return (al.size() > 0);
+    }
+
+    /**
+     *  Finds the first matching value.  If searching for a null, then this would return a null, so
+     *  use the canFindFirst method instead.
+     */
     public T findFirst(F objectRoot) {
         int holdMax = getMaxFound();
         setMaxFound(1);
@@ -302,12 +315,12 @@ public class OAFinder<F extends OAObject, T> {
      * @param objectRoot starting object to begin navigating through the propertyPath.
      */
     public ArrayList<T> find(F objectRoot) {
+        if (objectRoot == null) return null;
         alFound = new ArrayList<T>();
         if (bEnableStack) stack = new StackValue[5];
         stackPos = 0;
 
         if (objectRoot == null) return alFound;
-        if (strPropertyPath == null) return alFound;
 
         bStop = false;
         setup(objectRoot.getClass());
@@ -318,7 +331,11 @@ public class OAFinder<F extends OAObject, T> {
         this.stackPos = 0;
         return al;        
     }
+    
+    private boolean bSetup;
     protected void setup(Class c) {
+        if (bSetup) return;
+        bSetup = true;
         if (propertyPath != null || c == null) return;
         propertyPath = new OAPropertyPath(c, strPropertyPath);
         
@@ -330,7 +347,7 @@ public class OAFinder<F extends OAObject, T> {
         liRecursiveRoot = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
 
         bRequiresCasade = true;
-        if (linkInfos != null) {
+        if (linkInfos != null && linkInfos.length > 0) {
             HashSet<Class> hs = new HashSet<Class>();
             for (OALinkInfo li : linkInfos) {
                 if (hs.contains(li.getToClass())) {
@@ -394,13 +411,13 @@ public class OAFinder<F extends OAObject, T> {
             return;
         }
 
-        if (pos > 0 && filters[pos - 1] != null) {
+        if (pos > 0 && filters != null && filters[pos - 1] != null) {
             if (!filters[pos - 1].isUsed(obj)) return;
         }
 
         if (linkInfos == null || pos >= linkInfos.length) {
             // see if last property in propertyPath is not link
-            if (methods.length > (linkInfos == null ? 0 : linkInfos.length)) {
+            if (methods != null && (methods.length > (linkInfos == null ? 0 : linkInfos.length))) {
                 try {
                     Object objx = methods[methods.length - 1].invoke(obj);
                     obj = objx;
