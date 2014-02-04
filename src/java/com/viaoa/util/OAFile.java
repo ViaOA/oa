@@ -328,6 +328,7 @@ public class OAFile extends java.io.File {
         if (fname == null) return null;
         fname = OAString.convertFileName(fname);
         BufferedReader reader = new BufferedReader(new FileReader(fname));
+        if (estimatedSize < 100) estimatedSize = 1024 * 4;
         StringBuffer sb = new StringBuffer(estimatedSize);
         for (;;) {
             String line = reader.readLine();
