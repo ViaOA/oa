@@ -26,7 +26,7 @@
 	</target>
 
     <target name="Sign">
-        <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="keystore/icestore.jks" storepass="password" />
+        <signjar jar="dist/${FileName}.jar" alias="icecert" keystore="keystore/icestore.jks" storepass="password" />
     </target>
 	
 	<!-- 20130317 removed depends rmic -->
@@ -111,7 +111,7 @@
         <jar basedir="/temp/javahelp" manifest="manifest.mf" destfile="dist/jh.jar" casesensitive="true" update="false"  />
     </target>
     <target name="SignHelp" depends="JarHelp">
-        <signjar jar="dist/jh.jar" alias="viaoa" keystore="keystore/icestore.jks" storepass="password" />
+        <signjar jar="dist/jh.jar" alias="icecert" keystore="keystore/icestore.jks" storepass="password" />
     </target>
 
     
@@ -125,11 +125,11 @@
     </target>
     
     <target name="SignItext" depends="">
-        <signjar jar="dist/itext.jar" alias="viaoa" keystore="keystore/icestore.jks" storepass="password" />
+        <signjar jar="dist/itext.jar" alias="icecert" keystore="keystore/icestore.jks" storepass="password" />
     </target>
 	
     <target name="SignSizeOf" depends="">
-        <signjar jar="dist/sizeof.jar" alias="viaoa" keystore="keystore/icestore.jks" storepass="password" />
+        <signjar jar="dist/sizeof.jar" alias="icecert" keystore="keystore/icestore.jks" storepass="password" />
     </target>
 	
 	
