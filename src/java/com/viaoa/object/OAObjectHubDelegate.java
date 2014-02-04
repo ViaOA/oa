@@ -289,8 +289,16 @@ public class OAObjectHubDelegate {
 	*/
 	public static WeakReference<Hub<?>>[] getHubReferences(OAObject oaObj) {  // Note: this needs to be public
         if (oaObj == null) return null;
-        return oaObj.weakHubs;
+        WeakReference<Hub<?>>[] wh = oaObj.weakHubs;
+        if (wh == null) return null;
+        WeakReference[] wh2 = new WeakReference[wh.length];
+        System.arraycopy(wh, 0, wh2, 0, wh.length);
+        return wh2;
 	}
+    public static WeakReference<Hub<?>>[] getHubReferencesNoCopy(OAObject oaObj) {  // Note: this needs to be public
+        if (oaObj == null) return null;
+        return oaObj.weakHubs;
+    }
     public static int getHubReferenceCount(OAObject oaObj) {
         if (oaObj == null) return 0;
         WeakReference<Hub<?>>[] refs = oaObj.weakHubs; 

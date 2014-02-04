@@ -108,7 +108,7 @@
     -->
     
     <target name="JarHelp" depends="" description="Jar javahelp files">
-        <jar basedir="/temp/javahelp" manifest="manifest.mf" destfile="dist/jh.jar" casesensitive="true" update="false"  />
+        <jar basedir="/temp/javahelp" destfile="dist/jh.jar" manifest="manifest.mf" casesensitive="true" update="false"  />
     </target>
     <target name="SignHelp" depends="JarHelp">
         <signjar jar="dist/jh.jar" alias="icecert" keystore="keystore/icestore.jks" storepass="password" />
@@ -124,7 +124,7 @@
         <jar basedir="/temp/itext" destfile="dist/itext.jar" manifest="manifest.mf" casesensitive="true" update="false"  />
     </target>
     
-    <target name="SignItext" depends="">
+    <target name="SignItext" depends="JarIText">
         <signjar jar="dist/itext.jar" alias="icecert" keystore="keystore/icestore.jks" storepass="password" />
     </target>
 	

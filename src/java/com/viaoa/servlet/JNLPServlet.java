@@ -73,6 +73,12 @@ public class JNLPServlet extends HttpServlet
                 }
             }
             
+            // <argument>JWSCLIENT</argument>            
+            pos = txt.indexOf("JWSCLIENT");
+            if (pos >= 0) {
+                s = "ServerName="+req.getServerName()+"</argument><argument>";
+                txt = txt.substring(0, pos) + s + txt.substring(pos);
+            }            
             resp.setContentType("application/x-java-jnlp-file");
         }
         catch (Exception e) {

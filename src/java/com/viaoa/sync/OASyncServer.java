@@ -237,10 +237,14 @@ public class OASyncServer {
                 public String getInvalidConnectionMessage() {
                     long msNow = System.currentTimeMillis();
                     if (lastMsg == null || msLastMsg+1000 < msNow) {
-                        lastMsg = OASyncServer.this.getDisplayMessage();
+                        lastMsg = super.getInvalidConnectionMessage();
+                        if (OAString.isEmpty(lastMsg)) {
+                            lastMsg = OASyncServer.this.getDisplayMessage();
+                        }
                         msLastMsg = msNow;
                     }
-                    return lastMsg;
+                    String s = lastMsg + ", connections=" + hmClientInfoExt.size();
+                    return s;
                 }
 
             };
@@ -465,6 +469,7 @@ public class OASyncServer {
     
     public void start() throws Exception {
         // startRequestLoggerThread();
+        getServerInfo();
         getMultiplexerServer().start();
         getRemoteMultiplexerServer().start();
     }
