@@ -4,6 +4,7 @@ import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import com.viaoa.util.OAFile;
+import com.viaoa.util.OAString;
 
 /**
  * servlet used to serve up JNLP files, and dynamically set the codebase data.
@@ -13,6 +14,10 @@ import com.viaoa.util.OAFile;
 public class JNLPServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
+    private String appTitle;
+    public JNLPServlet(String appTitle) {
+        this.appTitle = appTitle;
+    }
     public JNLPServlet() {
     }
     
@@ -78,7 +83,19 @@ public class JNLPServlet extends HttpServlet
             if (pos >= 0) {
                 s = "ServerName="+req.getServerName()+"</argument><argument>";
                 txt = txt.substring(0, pos) + s + txt.substring(pos);
-            }            
+            }      
+            
+            // <title>OABuilder</title>
+            if (!OAString.isEmpty(appTitle)) {
+                pos = txt.indexOf("<title>");
+                if (pos >= 0) {
+                    int epos = txt.indexOf("</title>", pos+1);;
+                    if (epos >= 0 ) {
+                        txt = txt.substring(0, pos) + "<title>"+ appTitle + txt.substring(epos);
+                    }
+                }
+            }
+            
             resp.setContentType("application/x-java-jnlp-file");
         }
         catch (Exception e) {
