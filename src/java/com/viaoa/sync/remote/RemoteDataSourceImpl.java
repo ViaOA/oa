@@ -203,7 +203,7 @@ public abstract class RemoteDataSourceImpl implements RemoteDataSourceInterface 
                 int z = objects.length - 4;
                 Object[] params = new Object[z];
                 for (int y = 0; y < z; y++)
-                    params[y] = objects[3 + y];
+                    params[y] = objects[4 + y];
 
                 iterator = ds.select(clazz, (String) objects[1], params, (String) objects[2], 0, (OAFilter) objects[3]); // where, order
                 obj = "client" + (selectCount++);
