@@ -562,7 +562,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
 
     /**
-        Seperate Hub that can contain selected objects.
+        Separate Hub that can contain selected objects.
         This will allow for a multi-select table.
     */
     public void setSelectHub(Hub hub) {
