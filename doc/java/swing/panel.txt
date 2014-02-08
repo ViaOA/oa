@@ -1,6 +1,8 @@
 
 
 
+JfcUtil.createFilledPanel(txt, 20); // fill 20%
+
 see layout.txt
 
 
