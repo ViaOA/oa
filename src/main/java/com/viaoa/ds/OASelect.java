@@ -393,7 +393,11 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
                 return amountRead;
             }
             else {
-                if (bPassthru) {
+                if (!ds.getSupportsPreCount()) {
+                    // load all
+                    return amountRead+1; /// only know that there is one more
+                }
+                else if (bPassthru) {
                     amountCount = ds.countPassthru(where, max);
                 }
                 else {

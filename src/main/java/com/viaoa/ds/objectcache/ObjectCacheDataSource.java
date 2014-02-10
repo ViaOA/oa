@@ -74,5 +74,9 @@ public class ObjectCacheDataSource extends OADataSourceAuto {
     public @Override void initializeObject(OAObject obj) {
         super.initializeObject(obj);  // have autonumber handle this
     }
+    
+    public boolean getSupportsPreCount() {
+        return false;
+    }
 }
 

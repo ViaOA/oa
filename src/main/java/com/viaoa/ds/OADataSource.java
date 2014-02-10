@@ -635,6 +635,12 @@ public abstract class OADataSource {
      */
     public abstract byte[] getPropertyBlobValue(OAObject obj, String propertyName);
 
+    /**
+     * Can this datasource get a count of the objects that will be selected.
+     */
+    public boolean getSupportsPreCount() {
+        return true;
+    }
 }
 
 

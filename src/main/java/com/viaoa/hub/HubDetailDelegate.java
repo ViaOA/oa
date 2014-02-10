@@ -65,7 +65,9 @@ public class HubDetailDelegate {
         if (thisHub == null) return false;
 
         OALinkInfo li = thisHub.datam.liDetailToMaster;
-        if (li == null) return false;
+        if (li == null) {
+            return false;
+        }
         
         li = OAObjectInfoDelegate.getReverseLinkInfo(li);
         if (li == null) return false;
