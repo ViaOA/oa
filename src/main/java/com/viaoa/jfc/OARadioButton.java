@@ -151,7 +151,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     }
     public void setTable(OATable table) {
         this.table = table;
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),getPropertyPath());
+        if (table != null) table.resetColumn(this);
     }
     public OATable getTable() {
         return table;
@@ -170,7 +170,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     }
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),path);
+        if (table != null) table.resetColumn(this);
     }
     public String getPropertyPath() {
         return control.getPropertyPath();

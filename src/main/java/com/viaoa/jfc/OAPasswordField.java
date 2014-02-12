@@ -80,7 +80,7 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     // ----- OATableComponent Interface methods -----------------------
     public void setHub(Hub hub) {
         control.setHub(hub);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),getPropertyPath());
+        if (table != null) table.resetColumn(this);
     }
     public Hub getHub() {
         return control.getHub();
@@ -100,7 +100,7 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     }
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),path);
+        if (table != null) table.resetColumn(this);
     }
     public String getTableHeading() { 
         return heading;   

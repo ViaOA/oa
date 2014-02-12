@@ -830,13 +830,23 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public void setColumnPropertyPath(int col, String propertyPath) {
         if (col < columns.size() && col >= 0) {
             OATableColumn tc = (OATableColumn) columns.elementAt(col);
-            tc.setMethods(null);
             tc.path = propertyPath;
-            tc.bIgnoreLink = true;
+            tc.bIsAlreadyExpanded = true;
+            tc.setMethods(null);
             if (oaTableModel != null) oaTableModel.fireTableStructureChanged();
         }
     }
 
+    public void resetColumn(OATableComponent comp) {
+        int col = getColumnIndex(comp);
+        if (col < columns.size() && col >= 0) {
+            OATableColumn tc = (OATableColumn) columns.elementAt(col);
+            tc.path = comp.getPropertyPath();
+            tc.setMethods(null);
+            if (oaTableModel != null) oaTableModel.fireTableStructureChanged();
+        }
+    }
+    
     /**
         Create a new column using an OATableComponent.
     */
@@ -887,7 +897,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public OATableColumn addColumn(String heading, int width, String path, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, -1, null);
-        tc.bIgnoreLink = true;
         return tc;
     }
 
@@ -901,7 +910,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public OATableColumn add(String heading, int width, String path, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, -1, null);
-        tc.bIgnoreLink = true;
         return tc;
     }
 
@@ -916,7 +924,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public OATableColumn addColumn(String heading, int width, String path, OATableComponent comp, int index) {
         TableCellEditor c = comp.getTableCellEditor();
         OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, index, comp.getFormat());
-        tc.bIgnoreLink = true;
         return tc;
     }
 
@@ -2021,8 +2028,6 @@ obj = tc.getValue(hub, obj);
 
 //  END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
 //  END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
-//  END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
-//  END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
 
     
     // 20101031 improve the look when table does not take up all of viewport
@@ -2547,11 +2552,4 @@ class ButtonHeaderRenderer extends JButton implements TableCellRenderer {
         setIcon(icon);
         return this;
     }
-
 }
-
-
-
-
-
-

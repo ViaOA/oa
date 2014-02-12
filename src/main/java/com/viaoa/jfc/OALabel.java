@@ -211,7 +211,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     */
     public void setTable(OATable table) {
         this.table = table;
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),getPropertyPath());
+        if (table != null) table.resetColumn(this);
     }
 
 
@@ -269,7 +269,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),path);
+        if (table != null) table.resetColumn(this);
     }
     /**
         Property path used to retrieve/set value for this component.

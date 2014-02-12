@@ -393,7 +393,9 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
     */
     public void setHub(Hub hub) {
         control.setHub(hub);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),getPropertyPath());
+        if (table != null) {
+            if (table != null) table.resetColumn(this);
+        }
     }
     /**
         Set by OATable when this component is used as a column.  
@@ -455,7 +457,7 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),path);
+        if (table != null) table.resetColumn(this);
     }
 
     /**

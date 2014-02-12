@@ -199,7 +199,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     */
     public void setHub(Hub hub) {
         control.setHub(hub);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),getPropertyPath());
+        if (table != null) table.resetColumn(this);
     }
 
     /**
@@ -290,7 +290,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),path);
+        if (table != null) table.resetColumn(this);
     }
 
     /**

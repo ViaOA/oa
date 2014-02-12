@@ -183,13 +183,13 @@ public abstract class OATextFieldAutoCompleteList extends JTextField implements 
     }
     public void setPropertyPath(String path) {
         this.displayPropertyPath = path;
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),path);
+        if (table != null) table.resetColumn(this);
     }
     
-    public String getTableHeading() { //zzzzz
+    public String getTableHeading() {
         return heading;
     }
-    public void setTableHeading(String heading) { //zzzzz
+    public void setTableHeading(String heading) {
         this.heading = heading;
         if (table != null) table.setColumnHeading(table.getColumnIndex(this),heading);
     }

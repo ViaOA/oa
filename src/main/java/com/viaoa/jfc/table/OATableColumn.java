@@ -52,8 +52,12 @@ public class OATableColumn {
     public boolean bDefault = true; // 2006/12/28
     public int defaultWidth; // 2006/12/28
     public int currentWidth; // 2006/12/28
-    public boolean bIgnoreLink; // use property path only, dont try to resolve
-                                // the hub link
+    
+    
+    // flag to know if the propertyPath needs to be expanded to include any
+    //    additional path from the component's Hub to the Table's hub.
+    public boolean bIsAlreadyExpanded; 
+                                
     public HubListener hubListener; // 20101219 for columns that use a
                                     // propertyPath
 
@@ -108,14 +112,14 @@ public class OATableColumn {
     private Hub hubMethodHub; // 2006/12/11
 
     // methods gets set to null whenever Hub or PropertyPath get changed
-    public Method[] getMethods(Hub hub) {
+    public Method[] getMethods_OLD(Hub hub) {
         if (methods != null && hub == hubMethodHub) return methods;
 
         hubMethodHub = hub;
         pathIntValue = null;
         // changed so that it will only change the path when the component hub
         // is linked back to the table.hub
-        if (oaComp != null && oaComp.getHub() != null && !bIgnoreLink) {
+        if (oaComp != null && oaComp.getHub() != null && !bIsAlreadyExpanded) {
             path = origPath;
             String holdPath = path;
             // get path from any link Hub
@@ -271,6 +275,162 @@ public class OATableColumn {
             obj = OAReflect.getPropertyValue(obj, ms);
         }
         return obj;
+    }
+
+    
+    
+    /** 20140211
+     * This is used to expand a propertyPath from the Table hub, to the OAComp hub 
+     * for a column, so that the value of the rows can be found.
+     */
+    public String expandPropertyPath(Hub hubTable, Hub hubComp, String path) {
+        if (hubTable == null) return path;
+        if (hubComp == null) return path;
+
+        if (HubLinkDelegate.getLinkedOnPos(hubComp, true)) {
+            return path;
+        }
+        
+        // check if there is a link "from" property used
+        String fromProp = HubLinkDelegate.getLinkFromProperty(hubComp, true);
+        if (fromProp != null) {
+            return fromProp;
+        }
+
+        // see if there is a link path
+        String hold = path;
+        Hub h = hubComp;
+        
+        for ( ;; ) {
+            Hub hx = HubLinkDelegate.getLinkToHub(h, true);
+            if (hx == null) {
+                path = hold;
+                break;
+            }
+
+            if (path.length() == 0) path = HubLinkDelegate.getLinkHubPath(h, true);
+            else path = HubLinkDelegate.getLinkHubPath(h, true) + "." + path;
+            
+            // found the links back to table hub
+            if (hx == hubTable) {
+                return path;
+            }
+            if (HubShareDelegate.isUsingSameSharedAO(hubTable, hx, true)) {
+                return path;
+            }
+            if (hubTable.getMasterHub() == null) { // 20131109 could be a hub copy
+                if (hx.getObjectClass().equals(hubTable.getObjectClass())) {
+                    return path;
+                }
+            }
+            h = hx;
+        }
+
+        // see if if there is a detail path using masterHub
+        h = oaComp.getHub();
+        for ( ;; ) {
+            Hub hx = h.getMasterHub();
+            if (hx == null) {
+                path = hold;
+                return path;
+            }
+            if (path.length() == 0) path = HubDetailDelegate.getPropertyFromMasterToDetail(h);
+            else path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
+            if (hx == hubTable) {
+                return path;
+            }
+            if (HubShareDelegate.isUsingSameSharedAO(hubTable, hx, true)) {
+                return path;
+            }
+            if (hubTable.getMasterHub() == null) { // 20131109 could be a hub copy
+                if (hx.getObjectClass().equals(hubTable.getObjectClass())) {
+                    return path;
+                }
+            }
+            h = hx;
+        }
+    }
+
+    // 20140211
+    public Method[] getMethods(Hub hubTable) {
+        try {
+            return _getMethods(hubTable);
+        }
+        catch (Exception e) {
+//qqqqqqqqqqqq testing, to catch exceptions     
+            e.printStackTrace();
+            System.out.println("error: "+e);
+        }
+        return _getMethods(hubTable);
+    }    
+    public Method[] _getMethods(Hub hubTable) {
+        if (methods != null && hubTable == hubMethodHub) return methods;
+        hubMethodHub = hubTable;
+        pathIntValue = null;
+
+        bLinkOnPos = false;
+
+        // changed so that it will only change the path when the component hub
+        // is linked back to the table.hub
+        if (oaComp != null && oaComp.getHub() != null && !bIsAlreadyExpanded) {
+            bLinkOnPos = HubLinkDelegate.getLinkedOnPos(oaComp.getHub(), true);
+            path = origPath;
+            if (!bIsAlreadyExpanded) {
+                path = expandPropertyPath(hubTable, oaComp.getHub(), path);
+            }
+        }
+
+        // if path == null then getMethods() will use "toString"
+        if (bLinkOnPos) {
+            pathIntValue = path;
+            OAPropertyPath opp = new OAPropertyPath(pathIntValue);
+            try { // 20120809
+                opp.setup(hubTable.getObjectClass());
+            }
+            catch (Exception e) {
+                throw new RuntimeException("could not parse propertyPath", e);
+            }
+            methodsIntValue = opp.getMethods();
+            
+            path = origPath;
+            opp = new OAPropertyPath(path);
+            try { 
+                opp.setup(oaComp.getHub().getObjectClass());
+            }
+            catch (Exception e) {
+                throw new RuntimeException(String.format("could not parse propertyPath=%s, hub=%s",path,hubTable), e);
+            }
+            methods = opp.getMethods();
+        }
+        else {
+            OAPropertyPath opp = new OAPropertyPath(path);
+            try { 
+                opp.setup(hubTable.getObjectClass());
+            }
+            catch (Exception e) {
+                throw new RuntimeException(String.format("could not parse propertyPath=%s, hub=%s",path,hubTable), e);
+            }
+            methods = OAReflect.getMethods(hubTable.getObjectClass(), path);
+        }
+
+        // this will setup a Hub listener to listen for changes to columns that use propertyPaths
+        // ?? might want this to be a setting
+        if (methods != null && methods.length > 1 && path != null && path.indexOf('.') >= 0 && path.indexOf('.') != path.length() - 1) {
+            // 20101219 create a "dummy" prop, with path as a dependent propPath
+            final String propx = "TableColumn_" + path.replace('.', '_');
+            hubListener = new HubListenerAdapter() {
+                public @Override
+                void afterPropertyChange(HubEvent e) {
+                    String s = e.getPropertyName();
+                    if (s != null && s.equalsIgnoreCase(propx)) {
+                        table.repaint();
+                    }
+                }
+            };
+            table.getHub().addHubListener(hubListener, propx, new String[] { path });
+        }
+
+        return methods;
     }
 
 }

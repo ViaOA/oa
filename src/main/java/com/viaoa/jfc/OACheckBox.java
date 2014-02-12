@@ -164,7 +164,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     }
     public void setTable(OATable table) {
         this.table = table;
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),getPropertyPath());
+        if (table != null) table.resetColumn(this);
     }
     public OATable getTable() {
         return table;
@@ -211,7 +211,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
-        if (table != null) table.setColumnPropertyPath(table.getColumnIndex(this),path);
+        if (table != null) table.resetColumn(this);
     }
     /**
         Property path used to retrieve/set value for this component.
