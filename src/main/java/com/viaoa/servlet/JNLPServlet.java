@@ -24,7 +24,6 @@ public class JNLPServlet extends HttpServlet
     
     public JNLPServlet(String appTitle, String libraryDirectory) {
         this.appTitle = appTitle;
-libraryDirectory="c:\\projects\\java\\hifive\\lib";//qqqqqqqqqqqqqqqqqqqq        
         this.libraryDirectory = libraryDirectory;
     }
     public JNLPServlet() {
