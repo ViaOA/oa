@@ -138,7 +138,7 @@ public class JNLPServlet extends HttpServlet
             int x = fname.length();
             for (int i=0; i<x; i++) {
                 char ch = fname.charAt(i);
-                if (!Character.isAlphabetic(ch)) {
+                if (!Character.isLetter(ch) && !Character.isDigit(ch)) {
                     text = OAString.convert(text, fname.substring(0, i)+".jar", fname);
                     break;
                 }
