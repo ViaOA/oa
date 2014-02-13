@@ -22,6 +22,7 @@ public class JNLPServlet extends HttpServlet
     private ConcurrentHashMap<String, String> hmJnlp = new ConcurrentHashMap<String, String>();
     private String libraryDirectory;
     
+    
     public JNLPServlet(String appTitle, String libraryDirectory) {
         this.appTitle = appTitle;
         this.libraryDirectory = libraryDirectory;
