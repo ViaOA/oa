@@ -27,6 +27,7 @@ public class JNLPServlet extends HttpServlet
         this.libraryDirectory = libraryDirectory;
     }
     public JNLPServlet() {
+        this("", "lib");
     }
 
     
