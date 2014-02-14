@@ -34,7 +34,7 @@ import com.viaoa.object.*;
  */
 @OAClass(
    useDataSource = false,
-   localOnly = true
+   localOnly = false
 )
 public class DBMetaData extends OAObject {
     static final long serialVersionUID = 1L;
