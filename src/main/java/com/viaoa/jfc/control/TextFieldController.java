@@ -474,6 +474,8 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
             OAUndoManager.add(ue);
         }
         catch (Throwable t) {
+            System.out.println("Error in TextFieldController, "+t);
+            t.printStackTrace();
             String msg = t.getMessage();
             for (;;) {
                 t = t.getCause();

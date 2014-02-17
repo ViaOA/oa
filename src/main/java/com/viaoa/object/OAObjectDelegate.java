@@ -445,28 +445,30 @@ public class OAObjectDelegate {
 	    }
         OAObjectEventDelegate.firePropertyChange(oaObj, WORD_AutoAdd, bOld?TRUE:FALSE, bEnabled?TRUE:FALSE, false, false);
 
-        if (bEnabled && !oaObj.deletedFlag && OAObjectCSDelegate.isServer()) {
-            boolean bWasSend = OARemoteThreadDelegate.sendMessages(true);               
-            try {
-                // need to see if object should be put into linkOne/masterObject hub(s)             
-                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-                for (OALinkInfo li : oi.getLinkInfos()) {
-                    if (li.getType() != li.ONE) continue;
-                    Object objx = OAObjectReflectDelegate.getRawReference(oaObj, li.getName());
-                    if (!(objx instanceof OAObject)) continue;
-                    OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                    if (liRev == null) continue;
-                    if (liRev.getType() != li.MANY) continue;
-                    if (liRev.getPrivateMethod()) continue;
-                    Object objz = OAObjectReflectDelegate.getProperty((OAObject) objx, liRev.getName());
-                    if (objz instanceof Hub) {
-                        ((Hub) objz).add(oaObj);
-                    }
+        if (!bEnabled || oaObj.deletedFlag) return;
+        
+        try {
+            OAThreadLocalDelegate.setSuppressCSMessages(true);               
+            // need to see if object should be put into linkOne/masterObject hub(s)             
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+            for (OALinkInfo li : oi.getLinkInfos()) {
+                if (li.getType() != li.ONE) continue;
+                Object objx = OAObjectReflectDelegate.getRawReference(oaObj, li.getName());
+                if (!(objx instanceof OAObject)) continue;
+                
+                OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                if (liRev == null) continue;
+                if (liRev.getType() != li.MANY) continue;
+                if (liRev.getPrivateMethod()) continue;
+                
+                Object objz = OAObjectReflectDelegate.getProperty((OAObject) objx, liRev.getName());
+                if (objz instanceof Hub) {
+                    ((Hub) objz).add(oaObj);
                 }
             }
-            finally {
-                OARemoteThreadDelegate.sendMessages(bWasSend);              
-            }
+        }
+        finally {
+            OAThreadLocalDelegate.setSuppressCSMessages(false);               
         }
 	}
 	public static boolean getAutoAdd(OAObject oaObj) {

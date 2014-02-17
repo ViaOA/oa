@@ -288,7 +288,8 @@ public class OATableColumn {
         if (hubComp == null) return path;
 
         if (HubLinkDelegate.getLinkedOnPos(hubComp, true)) {
-            return path;
+            String s = HubLinkDelegate.getLinkToProperty(hubComp, true);
+            return s;
         }
         
         // check if there is a link "from" property used
@@ -377,15 +378,17 @@ public class OATableColumn {
             path = origPath;
             if (!bIsAlreadyExpanded) {
                 path = expandPropertyPath(hubTable, oaComp.getHub(), path);
+                if (bLinkOnPos) {
+                    pathIntValue = path;
+                    path = origPath;
+                }
             }
         }
 
         // if path == null then getMethods() will use "toString"
         if (bLinkOnPos) {
-//vvvvvvvvvvvvvvvvvvvvvvvvvqqqqqqqqqqq pathIntoValue needs to use linkhub, etc        
-            pathIntValue = path;
             OAPropertyPath opp = new OAPropertyPath(pathIntValue);
-            try { // 20120809
+            try {
                 opp.setup(hubTable.getObjectClass());
             }
             catch (Exception e) {
@@ -393,7 +396,6 @@ public class OATableColumn {
             }
             methodsIntValue = opp.getMethods();
             
-            path = origPath;
             opp = new OAPropertyPath(path);
             try { 
                 opp.setup(oaComp.getHub().getObjectClass());

@@ -17,30 +17,23 @@ All rights reserved.
 */
 package com.viaoa.jfc;
 
+
 import java.util.Vector;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.awt.event.*;
 import java.awt.*;
-
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 
 import com.viaoa.hub.*;
 import com.viaoa.jfc.image.*;
 import com.viaoa.object.OALinkInfo;
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
-import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.*;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.tree.*;
 import com.viaoa.jfc.table.*;
 
@@ -127,6 +120,7 @@ public class OATreeNode implements Cloneable {
     }
     
     Def def = new Def();
+    
     
     private OATreeNode() {
         // used internally by add(..) when adding itself (recursive)

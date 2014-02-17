@@ -77,7 +77,7 @@ public class JfcUtil {
         gcx.fill = gcx.NONE;
         gcx.weightx = gcx.weighty = 0;
         gcx.insets = new Insets(0,10,0,0);
-        pan.add(comp2, gcx);
+        if (comp2 != null) pan.add(comp2, gcx);
         
         gcx.gridwidth = GridBagConstraints.REMAINDER;
         gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;

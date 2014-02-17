@@ -120,8 +120,13 @@ public class OAConverterBoolean implements OAConverterInterface {
                 if ( bValue.booleanValue() ) return OAString.field(fmt,";",1);
                 return OAString.field(fmt,";",2);
             }
-            if (bValue == null) bValue = new Boolean(false);
+            if (bValue == null) return "";
             return bValue.toString();
+        }
+        if (toClass.equals(Integer.class)) {
+            if (bValue == null) return new Integer(0);;
+            if ( bValue.booleanValue() ) return new Integer(1);
+            return new Integer(0);
         }
         return null;
     }
