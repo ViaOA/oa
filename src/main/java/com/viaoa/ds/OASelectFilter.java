@@ -15,7 +15,7 @@ import com.viaoa.util.OAPropertyPath;
  * This currently only handles a query with a "propertypath = ?" format
  * 
  * Todo: expand it to build a AND/OR tree.
- *    handle (), AND, OR || &&, etc...
+ *    handle (), AND, OR || &&, !=, LIKE, <, <=, >, >=, etc...
  * 
  * created 20140127 
  * @author vvia
@@ -32,21 +32,20 @@ public class OASelectFilter<T> implements OAFilter {
         this.clazz = clazz;
         this.query = query;
         this.args = args;
+        setup();
     }
 
-    private void test() {
+    private void setup() {
         OAQueryTokenizer qa = new OAQueryTokenizer();
         Vector vecToken = qa.convertToTokens(query);
-        
+
+//qqqqqqqqqq this only handles format "propertyPath = ?"        
         int paramPos = 0;
         int x = vecToken.size();
-        
-        
         for (int i=0; i<x; i++) {
             OAQueryToken token = (OAQueryToken) vecToken.elementAt(i);
             String s = null;
         
-            
             if (token.type == OAQueryTokenType.VARIABLE) {
                 propertyPath = new OAPropertyPath(clazz, token.value);
             }
@@ -55,7 +54,6 @@ public class OASelectFilter<T> implements OAFilter {
                 if (token.type == OAQueryTokenType.EQUAL) {
                     
                 }
-
             }
             else if (token.type == OAQueryTokenType.QUESTION) {
                 // arg

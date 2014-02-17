@@ -9,8 +9,8 @@ import com.viaoa.util.OAFile;
 import com.viaoa.util.OAString;
 
 /**
- * servlet used to serve up JNLP files, and dynamically set the codebase data.
- * This works with JettyController and assumes that all jnlp files are in the "[webroot]/jnlp" directory.
+ * servlet used to serve up JNLP files, and dynamically set the codebase data, and other
+ * information within the jnlp text file.
  * This will also rename any references to jar files to match the "versioned" name that is stored in
  * a jar/lib directory.
  * @author vvia
@@ -27,6 +27,9 @@ public class JNLPServlet extends HttpServlet
         this.appTitle = appTitle;
         this.libraryDirectory = libraryDirectory;
     }
+    public JNLPServlet(String appTitle) {
+        this(appTitle, "lib");
+    }
     public JNLPServlet() {
         this("", "lib");
     }
@@ -39,7 +42,6 @@ public class JNLPServlet extends HttpServlet
         String s;
 
         // ex:   "http://localhost:8082/jnlp/template.jnlp"
-
         /*
         s = req.getQueryString(); // null,  would be anything past "?"
         s = req.getServletPath(); // "/jnlp/template.jnlp
@@ -62,10 +64,12 @@ public class JNLPServlet extends HttpServlet
         String path = getServletContext().getContextPath(); // ""
         path = getServletContext().getRealPath(path);  // C:\Projects\java\Hifive\webcontent
         
-        String serverPort = req.getServerName();  // "localhost"
+        String hostNameAndPort = req.getServerName();  // "localhost"
         int x = req.getLocalPort();  // 8082
-        if (x > 0) serverPort += ":" + x;
+        if (x > 0) hostNameAndPort += ":" + x;
         
+        String scheme = req.getScheme();
+                
         String sURI = req.getRequestURI(); // "/jnlp/template.jnlp"
         String fname = (path + sURI);
 
@@ -86,7 +90,7 @@ public class JNLPServlet extends HttpServlet
                     if (pos >= 0) {
                         int epos = txt.indexOf("\"", pos+1);;
                         if (epos >= 0 ) {
-                            txt = txt.substring(0, pos+1) + "http://" + (serverPort + jnlpDir) + txt.substring(epos);
+                            txt = txt.substring(0, pos+1) + scheme + "://" + (hostNameAndPort + jnlpDir) + txt.substring(epos);
                         }
                     }
                 }

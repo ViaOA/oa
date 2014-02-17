@@ -48,7 +48,7 @@ import com.viaoa.util.*;
  *  <ul>Aggregate commands, works with current/most recent "foreach"
  *  <li><%=#counter [propName], fmt%> current counter  
  *  <li><%=#sum [propName], propName fmt%> sum of listed properties  
- *  <li><%=#count [propName], fmt%> sum of listed properties  
+ *  <li><%=#count [propName], fmt%> count of listed properties  
  *  </ul>
  *  
  *  
