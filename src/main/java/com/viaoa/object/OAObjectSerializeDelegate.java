@@ -53,7 +53,7 @@ public class OAObjectSerializeDelegate {
         }
 
 		OAObjectInfo oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObjOrig);
-		if (oi.bAddToCache) {
+		if (oi.bAddToCache && !oi.bLocalOnly) {
 			oaObjNew = OAObjectCacheDelegate.add(oaObjOrig, false, false);
 			bDup = (oaObjOrig != oaObjNew);
 			if (bDup) {

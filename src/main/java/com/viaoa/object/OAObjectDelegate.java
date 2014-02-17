@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.*;
 
 import com.viaoa.hub.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
 
@@ -43,6 +44,7 @@ public class OAObjectDelegate {
 	public static final String WORD_New      = "NEW";
 	public static final String WORD_Changed  = "CHANGED";
     public static final String WORD_Deleted  = "DELETED";
+    public static final String WORD_AutoAdd  = "AutoAdd";
 	
 	public static final Boolean TRUE  = new Boolean(true);
 	public static final Boolean FALSE = new Boolean(false);
@@ -142,19 +144,18 @@ public class OAObjectDelegate {
     /**
 	    Flag to know if object is new and has not been saved.
 	*/
-	public static void setNew(OAObject oaObj, boolean b) {
-	    if (b != oaObj.newFlag) {
-	        boolean old = oaObj.newFlag;
-	        oaObj.newFlag = b;
-	        try {
-	        	OAObjectKeyDelegate.updateKey(oaObj, false);
-	        }
-	        catch (Exception e) {
-	            LOG.log(Level.WARNING, "oaObj="+oaObj.getClass()+", key="+OAObjectKeyDelegate.getKey(oaObj), e);
-	        }
-            if (!b) hmAutoAdd.remove(oaObj.guid);
-        	OAObjectEventDelegate.firePropertyChange(oaObj, WORD_New, old?TRUE:FALSE, b?TRUE:FALSE, false, false);
-	    }
+	public static void setNew(final OAObject oaObj, final boolean b) {
+	    if (b == oaObj.newFlag) return;
+        boolean old = oaObj.newFlag;
+        oaObj.newFlag = b;
+        try {
+        	OAObjectKeyDelegate.updateKey(oaObj, false);
+        }
+        catch (Exception e) {
+            LOG.log(Level.WARNING, "oaObj="+oaObj.getClass()+", key="+OAObjectKeyDelegate.getKey(oaObj), e);
+        }
+    	OAObjectEventDelegate.firePropertyChange(oaObj, WORD_New, old?TRUE:FALSE, b?TRUE:FALSE, false, false);
+        if (!b) setAutoAdd(oaObj, true);
 	}
 	
     protected static void assignGuid(OAObject obj) {
@@ -211,7 +212,7 @@ public class OAObjectDelegate {
             if ((oaObj.changedFlag || oaObj.newFlag) && !OAObjectCSDelegate.isWorkstation()) {
 
                 // 20131128 added autoAttach check
-                if (!OAObjectDelegate.getAutoAdd(oaObj)) {
+                if (OAObjectDelegate.getAutoAdd(oaObj)) {
                     OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
                     if (oi != null && oi.getUseDataSource()) {
                         LOG.fine("object was not saved, object="+oaObj.getClass().getName()+", key="+OAObjectKeyDelegate.getKey(oaObj)+", willSaveNow="+bFinalizeSave);                         
@@ -430,30 +431,43 @@ public class OAObjectDelegate {
 	 */
 	public static void setAutoAdd(OAObject oaObj, boolean bEnabled) {
 	    if (oaObj == null) return;
-	    if (!oaObj.isNew()) return;
+	    if (!bEnabled && !oaObj.isNew()) return;
+	    
+	    boolean bOld = !hmAutoAdd.contains(oaObj.guid);
+	    if (bOld == bEnabled) return;
+
 	    
 	    if (!bEnabled) {
 	        hmAutoAdd.put(oaObj.guid, oaObj.guid);
 	    }
 	    else {
-	        if (hmAutoAdd.remove(oaObj.guid) != null) {
-	            // need to see if object should be put into linkOne/masterObject hub(s)             
-	            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-	            for (OALinkInfo li : oi.getLinkInfos()) {
-	                if (li.getType() != li.ONE) continue;
-	                Object objx = OAObjectReflectDelegate.getRawReference(oaObj, li.getName());
-	                if (!(objx instanceof OAObject)) continue;
-	                OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-	                if (liRev == null) continue;
+            hmAutoAdd.remove(oaObj.guid);
+	    }
+        OAObjectEventDelegate.firePropertyChange(oaObj, WORD_AutoAdd, bOld?TRUE:FALSE, bEnabled?TRUE:FALSE, false, false);
+
+        if (bEnabled && !oaObj.deletedFlag && OAObjectCSDelegate.isServer()) {
+            boolean bWasSend = OARemoteThreadDelegate.sendMessages(true);               
+            try {
+                // need to see if object should be put into linkOne/masterObject hub(s)             
+                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+                for (OALinkInfo li : oi.getLinkInfos()) {
+                    if (li.getType() != li.ONE) continue;
+                    Object objx = OAObjectReflectDelegate.getRawReference(oaObj, li.getName());
+                    if (!(objx instanceof OAObject)) continue;
+                    OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                    if (liRev == null) continue;
                     if (liRev.getType() != li.MANY) continue;
                     if (liRev.getPrivateMethod()) continue;
                     Object objz = OAObjectReflectDelegate.getProperty((OAObject) objx, liRev.getName());
                     if (objz instanceof Hub) {
                         ((Hub) objz).add(oaObj);
                     }
-	            }
-	        }
-	    }
+                }
+            }
+            finally {
+                OARemoteThreadDelegate.sendMessages(bWasSend);              
+            }
+        }
 	}
 	public static boolean getAutoAdd(OAObject oaObj) {
         if (oaObj == null) return false;

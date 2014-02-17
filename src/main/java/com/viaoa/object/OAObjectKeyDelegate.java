@@ -132,9 +132,9 @@ public class OAObjectKeyDelegate {
 	        }
 	    }
 	
-	    // START Rehashing Key ================================================================
+	    // START Rehashing Key ========================
 	    OAObjectDelegate.rehash(oaObj, oldKey);
-	    // END Rehashing Key ====================================================================
+	    // END Rehashing Key ==========================
 	    
 	    // need to recalc keys for all children that have this object as part of their object key
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);

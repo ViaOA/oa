@@ -382,6 +382,7 @@ public class OATableColumn {
 
         // if path == null then getMethods() will use "toString"
         if (bLinkOnPos) {
+//vvvvvvvvvvvvvvvvvvvvvvvvvqqqqqqqqqqq pathIntoValue needs to use linkhub, etc        
             pathIntValue = path;
             OAPropertyPath opp = new OAPropertyPath(pathIntValue);
             try { // 20120809

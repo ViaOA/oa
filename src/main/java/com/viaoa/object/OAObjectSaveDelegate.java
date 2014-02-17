@@ -35,7 +35,7 @@ public class OAObjectSaveDelegate {
     	if (oaObj == null) return;
 
         if (OAObjectCSDelegate.isWorkstation()) {
-        	OAObjectCSDelegate.save(oaObj, iCascadeRule);
+            OAObjectCSDelegate.save(oaObj, iCascadeRule);
         	return;
         }
 
@@ -57,7 +57,6 @@ public class OAObjectSaveDelegate {
         OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
         if (b || bIsFirst) {
             b = oaObj.newFlag;
-            if (b) OAObjectDelegate.setAutoAdd(oaObj, true);
 
             WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
             if (refs != null) {
@@ -92,8 +91,6 @@ public class OAObjectSaveDelegate {
                 }
             }
         }
-        
-        
         OAObjectSaveDelegate._save(oaObj, false, iCascadeRule, cascade); // "MANY" relationships
     }
 
@@ -216,7 +213,6 @@ public class OAObjectSaveDelegate {
             OAObject.OALOG.fine(s);
         }
 	    
-	    
 	    try {
             // 20130504 moved before actually save, in case another thread makes a change
             oaObj.setDeleted(false);  // in case it was deleted, and then re-saved
@@ -234,9 +230,6 @@ public class OAObjectSaveDelegate {
                 }
             }
             OAObjectLogDelegate.logToXmlFile(oaObj, true);
-            if (bNew) {
-                OAObjectDelegate.setNew(oaObj, false);
-            }
 	    }
 	    finally {
 	        if (bNew) {
@@ -250,6 +243,9 @@ public class OAObjectSaveDelegate {
 	        //oaObj.setDeleted(false);  // in case it was deleted, and then re-saved
 	        //oaObj.setChanged(false);
 	    }
+        if (bNew) {
+            OAObjectDelegate.setNew(oaObj, false);
+        }
         oaObj.saved();
         return true;
 	}

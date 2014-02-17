@@ -301,15 +301,14 @@ public class OAObjectCSDelegate {
         }
         
         OAObjectKey key = obj.getObjectKey();
-        rs.propertyChange(obj.getClass(), key, propertyName, newValue, bIsBlob, obj.getAutoAdd());
+        rs.propertyChange(obj.getClass(), key, propertyName, newValue, bIsBlob);
 	}
 	
     protected static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue) {
-        LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
-        
-//qqqqqqqqqqqqqqqqqqqqqqq dont send, it is now using beforePropertyChange
-if (true || false) return; //qqqqqqqqqqqqqqqqqqqqqq
+      //qqqqqqqqqqqqqqqqqqqqqqq dont send, it is now using beforePropertyChange
+        if (true || false) return; //qqqqqqqqqqqqqqqqqqqqqq
 
+        LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
         
         if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
@@ -341,7 +340,7 @@ if (true || false) return; //qqqqqqqqqqqqqqqqqqqqqq
         
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         if (rs != null) {
-            rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob, obj.getAutoAdd());
+            rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob);
         }
     }
 }
