@@ -48,8 +48,9 @@ public class OATextArea extends OATextField {
         super(id, null, null, 0, 0);
     }
     
-    protected String getTextJavaScript() {
-        String js = super.getTextJavaScript();
+    @Override
+    public String getScript() {
+        String js = super.getScript();
 
         if (width > 0) js += ("$('#"+id+"').attr('cols', '"+width+"');\n");
         if (getRows() > 0) js += ("$('#"+id+"').attr('rows', '"+getRows()+"');\n");
