@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.viaoa</groupId>
     <artifactId>oa</artifactId>
-    <version>3.5.03-SNAPSHOT</version>
+    <version>3.5.04-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>OA</name>
