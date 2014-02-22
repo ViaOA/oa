@@ -133,10 +133,16 @@
                     </execution>
                 </executions>
                 <configuration>
+<!--                 
                     <keystore>keystore/icestore.jks</keystore>
                     <alias>icecert</alias>
                     <storepass>password</storepass>
                     <keypass>password</keypass>
+ -->                    
+                    <keystore>keystore/viaoa.jks</keystore>
+                    <alias>viaoa</alias>
+                    <storepass>vince1</storepass>
+                    <keypass>vince1</keypass>
                 </configuration>
             </plugin>
         </plugins>

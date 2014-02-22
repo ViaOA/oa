@@ -135,7 +135,7 @@
 	
 	
 	<!-- KeyStore used for Jar file signing -->
-    <target name="KeyStore">
+    <target name="KeyStore_CAREFUL">
         <delete file="keystore/viaoa.jks" />
         <genkey alias="viaoa" storepass="vince1" keyalg="RSA" keysize="2048" keystore="keystore/viaoa.jks" validity="720" verbose="true">
             <dname>
