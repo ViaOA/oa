@@ -25,23 +25,24 @@ public class OAPropertyLockDelegate {
 
     private static Logger LOG = Logger.getLogger(OAPropertyLockDelegate.class.getName());
 
-    public static class PropertyLock {
+    static class PropertyLock {
         OAObject object;
         String propertyName;
         String key;
         Thread thread; // that has lock
         boolean bWaiting; // if other threads are waiting
-
+        boolean bUpdateProperty=true;  // flag to know if setProperty should be called
         volatile boolean bValueHasBeenSet; // flag to know that the ref has been set
         volatile Object value; // actual property value (could be null)
     }
 
     /** used to set a lock to synchronize getting reference property */
     protected static PropertyLock getPropertyLock(OAObject oaObj, String linkPropertyName) {
-        return getPropertyLock(oaObj, linkPropertyName, true);
+        return getPropertyLock(oaObj, linkPropertyName, true, true);
     }
 
-    protected static PropertyLock getPropertyLock(OAObject oaObj, String linkPropertyName, boolean bWait) {
+    protected static PropertyLock getPropertyLock(OAObject oaObj, 
+            String linkPropertyName, boolean bWait, boolean bUpdateProperty) {
         PropertyLock propLock;
         synchronized (OAObjectHashDelegate.hashPropertyLock) {
             String upper = linkPropertyName.toUpperCase();
@@ -54,11 +55,15 @@ public class OAPropertyLockDelegate {
                 propLock.key = key;
                 propLock.propertyName = upper; 
                 OAObjectHashDelegate.hashPropertyLock.put(key, propLock);
+                propLock.bUpdateProperty = false;
             }
         }
-        if (!bWait) return propLock;
         synchronized (propLock) {
-            for (;;) {
+            if (!bUpdateProperty && propLock.bUpdateProperty) {
+                propLock.bUpdateProperty = false;                    
+            }
+            
+            for (;bWait;) {
                 if (propLock.bValueHasBeenSet || propLock.thread == Thread.currentThread()) break;
                 propLock.bWaiting = true;
                 try {
@@ -71,25 +76,21 @@ public class OAPropertyLockDelegate {
         return propLock;
     }
 
-    protected static void setValue(PropertyLock propLock, Object newValue) {
+    protected static void setValue(PropertyLock propLock, Object newValue, boolean bUpdateProperty) {
         synchronized (propLock) {
-            propLock.bValueHasBeenSet = true;
             propLock.value = newValue;
+            propLock.bValueHasBeenSet = true;
+            if (propLock.bUpdateProperty) propLock.bUpdateProperty = bUpdateProperty;
         }        
     }
 
-    protected static void releasePropertyLock(PropertyLock propLock) {
-        releasePropertyLock(propLock, false, null);
-    }
-    protected static void releasePropertyLock(PropertyLock propLock, boolean bStoreProp, Object newValue) {
+    protected static void releasePropertyLock(PropertyLock propLock, Object newValue, boolean bUpdateProperties) {
         synchronized (propLock) {
-            if (propLock.bValueHasBeenSet) bStoreProp = false;
-            else {
-                propLock.bValueHasBeenSet = true;
-                propLock.value = newValue;
-            }
-            if (bStoreProp) {
-                OAObjectPropertyDelegate.setProperty(propLock.object, propLock.propertyName, propLock.value, propLock);
+            propLock.value = newValue;
+            propLock.bValueHasBeenSet = true;
+
+            if (bUpdateProperties && propLock.bUpdateProperty) {
+                OAObjectPropertyDelegate.setProperty(propLock.object, propLock.propertyName, propLock);
             }
             if (propLock.bWaiting) {
                 propLock.notifyAll();
@@ -100,7 +101,4 @@ public class OAPropertyLockDelegate {
         }
     }
 }
-
-
-
 

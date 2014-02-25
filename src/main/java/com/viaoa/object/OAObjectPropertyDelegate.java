@@ -26,7 +26,8 @@ import com.viaoa.object.OAPropertyLockDelegate.PropertyLock;
 import com.viaoa.util.OANullObject;
 
 /**
- * Manages OAObject.properties, which are used to store references (OAObjects, Hubs, OAObjectKey) and misc values.
+ * Manages OAObject.properties, which are used to store references 
+ * (OAObjects, Hubs, OAObjectKey) and misc values.
  * Stores as name/value in a flat object array, where even positions are property names and odd positions are the value, which can be null. 
  * This uses a flat array to make it as efficient as possible for the oaObject with as little overhead as possible. 
  */
@@ -87,7 +88,7 @@ public class OAObjectPropertyDelegate {
         return ss;
     }
     public static void setProperty(OAObject oaObj, String name, Object value) {
-        setProperty(oaObj, name, value);
+        setProperty(oaObj, name, value, null);
     }
 
     public static void setProperty(OAObject oaObj, String name, Object value, PropertyLock propLock) {
@@ -95,11 +96,11 @@ public class OAObjectPropertyDelegate {
 
         boolean bCreateLock = (propLock == null);
         if (bCreateLock) {
-            propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, name, false);
+            propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, name, false, false);
         }
         
         synchronized (oaObj) {
-            OAPropertyLockDelegate.setValue(propLock, value);
+            OAPropertyLockDelegate.setValue(propLock, value, false);
             if (oaObj.properties == null) {
                 oaObj.properties = new Object[2];
             }                
@@ -121,7 +122,7 @@ public class OAObjectPropertyDelegate {
             }
         }        
         if (bCreateLock) {
-            OAPropertyLockDelegate.releasePropertyLock(propLock);
+            OAPropertyLockDelegate.releasePropertyLock(propLock, value, false);
         }
     }
     

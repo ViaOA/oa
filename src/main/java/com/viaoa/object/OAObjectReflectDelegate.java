@@ -701,9 +701,7 @@ public class OAObjectReflectDelegate {
         }
         finally {
             if (propLock != null) {
-                propLock.value = hub;
-                propLock.bValueHasBeenSet = true;
-                OAPropertyLockDelegate.releasePropertyLock(propLock);
+                OAPropertyLockDelegate.releasePropertyLock(propLock, hub, false);
             }
         }
         return hub;
@@ -997,7 +995,7 @@ public class OAObjectReflectDelegate {
         }
         finally {
             if (propLock != null) {
-                OAPropertyLockDelegate.releasePropertyLock(propLock, true, bytes);
+                OAPropertyLockDelegate.releasePropertyLock(propLock, bytes, true);
                 bytes = (byte[]) propLock.value;
             }
         }
@@ -1035,7 +1033,7 @@ public class OAObjectReflectDelegate {
         }
         finally {
             if (propLock != null) {
-                OAPropertyLockDelegate.releasePropertyLock(propLock, true, result);
+                OAPropertyLockDelegate.releasePropertyLock(propLock, result, true);
                 result = propLock.value;
             }
         }
