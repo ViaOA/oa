@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OAPropertyLockDelegate.PropertyLock;
 import com.viaoa.util.OANullObject;
 
 /**
@@ -85,18 +86,20 @@ public class OAObjectPropertyDelegate {
         }
         return ss;
     }
-
-static int errorCnt;     
     public static void setProperty(OAObject oaObj, String name, Object value) {
+        setProperty(oaObj, name, value);
+    }
 
-        
-//qqqqqqqqqqqqqqqqqqqqqqq
-if (value instanceof OANullObject) {
-    if (errorCnt++ < 50) LOG.warning("OAObjectPropertyDelegate.setProperty value=OANullObject, oaObj="+oaObj+", name="+name);
-}
-        
+    public static void setProperty(OAObject oaObj, String name, Object value, PropertyLock propLock) {
         if (oaObj == null || name == null) return;
+
+        boolean bCreateLock = (propLock == null);
+        if (bCreateLock) {
+            propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, name, false);
+        }
+        
         synchronized (oaObj) {
+            OAPropertyLockDelegate.setValue(propLock, value);
             if (oaObj.properties == null) {
                 oaObj.properties = new Object[2];
             }                
@@ -117,6 +120,9 @@ if (value instanceof OANullObject) {
                 oaObj.properties[pos+1] = value;
             }
         }        
+        if (bCreateLock) {
+            OAPropertyLockDelegate.releasePropertyLock(propLock);
+        }
     }
     
     public static void removeProperty(OAObject oaObj, String name, boolean bFirePropertyChange) {

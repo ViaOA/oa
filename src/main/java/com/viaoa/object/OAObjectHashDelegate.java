@@ -85,7 +85,7 @@ public class OAObjectHashDelegate {
      * Key   = OAObject GUID+"."+propertyName
      * Value = lock info 
      */
-    static protected HashMap<String, OAObjectReflectDelegate.PropertyLock> hashPropertyLock = new HashMap<String, OAObjectReflectDelegate.PropertyLock>(57, .75f);
+    static protected HashMap<String, OAPropertyLockDelegate.PropertyLock> hashPropertyLock = new HashMap<String, OAPropertyLockDelegate.PropertyLock>(57, .75f);
     
     
     /** 

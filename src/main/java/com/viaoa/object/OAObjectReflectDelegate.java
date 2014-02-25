@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.object.OAPropertyLockDelegate.PropertyLock;
 import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.ds.OADataSource;
@@ -500,8 +501,8 @@ public class OAObjectReflectDelegate {
 
         PropertyLock propLock = null;
         try {
-            propLock = getPropertyLock(oaObj, linkPropertyName);
-            hub = (Hub) propLock.ref;
+            propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, linkPropertyName);
+            hub = (Hub) propLock.value;
             if (hub != null) { // set by another thread, which had it locked
                 propLock = null;
                 return hub;
@@ -524,7 +525,7 @@ public class OAObjectReflectDelegate {
                 Hub h = (Hub) obj;
                 // Hub with OAObjectKeys exists, need to convert to "real" objects
                 hub = new Hub(linkClass);
-                propLock.ref = hub;
+                propLock.value = hub;
 
                 HubDetailDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
                 try {
@@ -561,7 +562,7 @@ public class OAObjectReflectDelegate {
                 if (hub == null) {
                     throw new RuntimeException("getHub from Server failed, this.oaObj="+oaObj+", linkPropertyName="+linkPropertyName);
                 }
-                propLock.ref = hub;
+                propLock.value = hub;
                 // 20120926 check to see if empty hub was returned from OAObjectServerImpl.getDetail
                 if (HubDelegate.getMasterObject(hub) == null && hub.getSize() == 0 && hub.getObjectClass() == null) {
                     hub = new Hub(linkClass);
@@ -573,7 +574,7 @@ public class OAObjectReflectDelegate {
                 OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
                 if (liReverse != null) {
                     hub = new Hub(linkClass, oaObj, liReverse); // liReverse = liDetailToMaster
-                    propLock.ref = hub;
+                    propLock.value = hub;
                     /* 2013/01/08 recursive if this object is the owner (or ONE to Many) and the select
                      * hub is recursive of a different class - need to only select root objects. All
                      * children (recursive) hubs will automatically be assigned the same owner as the
@@ -604,7 +605,7 @@ public class OAObjectReflectDelegate {
                 }
                 else {
                     hub = new Hub(linkClass);
-                    propLock.ref = hub;
+                    propLock.value = hub;
                     HubDetailDelegate.setMasterObject(hub, oaObj, null);
                 }
 
@@ -695,13 +696,14 @@ public class OAObjectReflectDelegate {
             // OAObjectHubDelegate.updateMasterObjectEmptyHubFlag(hub, linkPropertyName, oaObj, false);
 
             // 20120622 moved to end, to be thread safe.  Other threads can get property before it had allDataLoaded
-            OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+            OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub), propLock);
             OAObjectInfoDelegate.cacheHub(linkInfo, hub);
         }
         finally {
             if (propLock != null) {
-                propLock.ref = hub;
-                releasePropertyLock(propLock);
+                propLock.value = hub;
+                propLock.bValueHasBeenSet = true;
+                OAPropertyLockDelegate.releasePropertyLock(propLock);
             }
         }
         return hub;
@@ -977,10 +979,10 @@ public class OAObjectReflectDelegate {
         /* 20130505 the new object could be a copy, which is made on the server and the reference props
          * need to come from server if (oaObj.isNew()) { if (val == null) return null; } */
 
-        PropertyLock propLock = getPropertyLock(oaObj, propertyName);
+        PropertyLock propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, propertyName);
         try {
-            if (propLock.wasSet()) { // set by another thread, which had it locked
-                bytes = (byte[]) propLock.ref;
+            if (propLock.bValueHasBeenSet) { // set by another thread, which had it locked
+                bytes = (byte[]) propLock.value;
                 propLock = null;
             }
             else {
@@ -995,11 +997,10 @@ public class OAObjectReflectDelegate {
         }
         finally {
             if (propLock != null) {
-                propLock.ref = bytes;
-                releasePropertyLock(propLock);
+                OAPropertyLockDelegate.releasePropertyLock(propLock, true, bytes);
+                bytes = (byte[]) propLock.value;
             }
         }
-        OAObjectPropertyDelegate.setProperty(oaObj, propertyName, bytes);
         return bytes;
     }
 
@@ -1024,19 +1025,18 @@ public class OAObjectReflectDelegate {
          * return null; } */
 
         Object result = null;
-        PropertyLock propLock = getPropertyLock(oaObj, linkPropertyName);
+        PropertyLock propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, linkPropertyName);
         if (propLock.bValueHasBeenSet) { // set by another thread
-            Object objx = propLock.ref;
-            propLock = null;
+            Object objx = propLock.value;
             return objx;
         }
         try {
             result = _getReferenceObject(oaObj, linkPropertyName, oi, li);
-            propLock.ref = result;
         }
         finally {
             if (propLock != null) {
-                releasePropertyLock(propLock);
+                OAPropertyLockDelegate.releasePropertyLock(propLock, true, result);
+                result = propLock.value;
             }
         }
         return result;
@@ -1143,62 +1143,6 @@ public class OAObjectReflectDelegate {
         return ref;
     }
 
-    // used to track a getReference, using a lock
-    public static class PropertyLock {
-        String key;
-        Thread thread; // that has lock
-        boolean bWaiting; // if other threads are waiting
-
-        PropertyLock(String key) {
-            this.key = key;
-        }
-
-        private boolean bValueHasBeenSet; // flag to know that the ref has been set
-        private Object ref; // actual property value (could be null)
-
-        public boolean wasSet() {
-            return bValueHasBeenSet;
-        }
-    }
-
-    /** used to set a lock to synchronize getting reference property */
-    protected static PropertyLock getPropertyLock(OAObject oaObj, String linkPropertyName) {
-        String key = oaObj.guid + "." + linkPropertyName.toUpperCase();
-        PropertyLock propLock;
-        synchronized (OAObjectHashDelegate.hashPropertyLock) {
-            propLock = OAObjectHashDelegate.hashPropertyLock.get(key);
-            if (propLock == null) {
-                propLock = new PropertyLock(key);
-                propLock.thread = Thread.currentThread();
-                OAObjectHashDelegate.hashPropertyLock.put(key, propLock);
-            }
-        }
-        synchronized (propLock) {
-            for (;;) {
-                if (propLock.wasSet() || propLock.thread == Thread.currentThread()) break;
-                propLock.bWaiting = true;
-                try {
-                    propLock.wait();
-                }
-                catch (Exception e) {
-                }
-            }
-        }
-        return propLock;
-    }
-
-    protected static void releasePropertyLock(PropertyLock propLock) {
-        synchronized (OAObjectHashDelegate.hashPropertyLock) {
-            OAObjectHashDelegate.hashPropertyLock.remove(propLock.key);
-        }
-        synchronized (propLock) {
-            propLock.bValueHasBeenSet = true;
-            propLock.thread = null;
-            if (propLock.bWaiting) {
-                propLock.notifyAll();
-            }
-        }
-    }
 
     /**
      * Used to retrieve a reference key without actually loading the object. Datasourcs stores the key
