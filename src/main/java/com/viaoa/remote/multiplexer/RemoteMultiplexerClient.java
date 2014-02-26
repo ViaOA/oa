@@ -274,7 +274,7 @@ public class RemoteMultiplexerClient {
                 socket = null;
                 synchronized (ri) {
                     if (!ri.responseReturned) {
-                        ri.wait(60000);  // request timeout
+                        ri.wait(60000 * 3);  // request timeout
                     }
                 }
                 if (!ri. responseReturned) {

@@ -1047,6 +1047,9 @@ public class OAObjectReflectDelegate {
         finally {
             OAPropertyLockDelegate.releasePropertyLock(propLock, result, true);
             result = propLock.value;
+            if (result instanceof OAObjectKey) {
+                result = getReferenceObject(oaObj, linkPropertyName);
+            }
         }
         return result;
     }

@@ -785,7 +785,7 @@ public class OAThreadLocalDelegate {
             ti.hubHubMergerIsChanging--;
             x = OAThreadLocalDelegate.TotalHubMergerChanging.decrementAndGet();
         }
-        if (x > 20 || x < 0) {
+        if (x > 200 || x < 0) {
             LOG.warning("TotalHubMergerChanging="+x);
         }
     }
@@ -862,7 +862,7 @@ public class OAThreadLocalDelegate {
             }
             x = OAThreadLocalDelegate.TotalIsSendingEvent.decrementAndGet();
         }
-        if (x > 35 || x < 0 || bSendingEventReset) {
+        if (x > 100 || x < 0 || bSendingEventReset) {
             LOG.warning("TotalIsSendingEvent="+x);
             if (x == 0) bSendingEventReset = false;
             else bSendingEventReset = true;
