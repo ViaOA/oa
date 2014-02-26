@@ -44,6 +44,7 @@ public class OAPropertyLockDelegate {
     protected static PropertyLock getPropertyLock(OAObject oaObj, 
             String linkPropertyName, boolean bWait, boolean bUpdateProperty) {
         PropertyLock propLock;
+        boolean bNew = false;
         synchronized (OAObjectHashDelegate.hashPropertyLock) {
             String upper = linkPropertyName.toUpperCase();
             String key = oaObj.guid + "." + upper;
@@ -55,6 +56,7 @@ public class OAPropertyLockDelegate {
                 propLock.key = key;
                 propLock.propertyName = upper; 
                 OAObjectHashDelegate.hashPropertyLock.put(key, propLock);
+                bNew = true;
             }
         }
         synchronized (propLock) {
@@ -62,13 +64,17 @@ public class OAPropertyLockDelegate {
                 propLock.bUpdateProperty = false;                    
             }
             
-            for (;bWait;) {
-                if (propLock.bValueHasBeenSet || propLock.thread == Thread.currentThread()) break;
-                propLock.bWaiting = true;
-                try {
-                    propLock.wait();
-                }
-                catch (Exception e) {
+            if (bWait && propLock.thread != Thread.currentThread()) {
+                for ( ;; ) {
+                    if (propLock.bValueHasBeenSet) {
+                        break;
+                    }
+                    propLock.bWaiting = true;
+                    try {
+                        propLock.wait();
+                    }
+                    catch (Exception e) {
+                    }
                 }
             }
         }

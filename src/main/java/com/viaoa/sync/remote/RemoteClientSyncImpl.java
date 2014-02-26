@@ -17,16 +17,10 @@ All rights reserved.
 */
 package com.viaoa.sync.remote;
 
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
-
 import com.viaoa.ds.OADataSource;
-import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectDelegate;
-import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
 

@@ -53,6 +53,8 @@ import static com.viaoa.sync.OASyncServer.*;
 public class OASyncClient {
     protected static Logger LOG = Logger.getLogger(OASyncClient.class.getName());
 
+    static final int MAX_ThreadCount = 160;
+    
     /** this is used to create a connection (socket) to GSMR server. */
     private MultiplexerClient multiplexerClient;
 
@@ -122,13 +124,14 @@ public class OASyncClient {
 
         boolean bGetSibs;
         Object result = null;
-        if (!OARemoteThreadDelegate.isRemoteThread()) {
+        boolean bRemoteThread = OARemoteThreadDelegate.isRemoteThread();
+        if (!bRemoteThread) {
             bGetSibs = true;
             // send siblings to return back with same prop
             OAObjectKey[] siblingKeys = null;
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
             if (li == null || !li.getCalculated()) {
-                siblingKeys = getDetailSiblings(masterObject, propertyName);
+                siblingKeys = getDetailSiblings(masterObject, propertyName, bRemoteThread);
             }
             
             String[] props = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
@@ -173,7 +176,7 @@ public class OASyncClient {
     /**
      * Find any other siblings to get the same property for.
      */
-    protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property) {
+    protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property, boolean bRemoteThread) {
         Hub siblingHub = null;
         
         Hub hubThreadLocal = OAThreadLocalDelegate.getGetDetailHub();
@@ -434,12 +437,12 @@ public class OASyncClient {
                 protected void onRemoteThreadCreated(int threadCount) {
                     clientInfo.setRemoteThreadCount(threadCount);
                     super.onRemoteThreadCreated(threadCount);
-                    if (threadCount == 60 && !bThreadCountWarning) {
+                    if (threadCount == MAX_ThreadCount && !bThreadCountWarning) {
                         String s = OALogUtil.getThreadDump();
                         LOG.warning("RemoteThread count == 60\n"+s);
                         bThreadCountWarning = true;
                     }
-                    if (threadCount >= 70) {
+                    if (threadCount >= MAX_ThreadCount) {
                         onRemoteThreadCountExceeded();
                     }
                 }                
@@ -452,13 +455,11 @@ public class OASyncClient {
     }
     
     protected void onRemoteThreadCountExceeded() {
-        LOG.log(Level.WARNING, "max RemoteThread count of 70 exceeded, calling stop");
+        LOG.log(Level.WARNING, "max RemoteThread count of "+MAX_ThreadCount+" exceeded, calling OASyncClient.stop");
         try {
             stop();
         }
         catch (Exception ex) {
         }
     }
-    
-
 }

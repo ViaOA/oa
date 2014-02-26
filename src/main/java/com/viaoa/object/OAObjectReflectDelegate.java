@@ -1037,10 +1037,12 @@ public class OAObjectReflectDelegate {
         PropertyLock propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, linkPropertyName);
         if (propLock.bValueHasBeenSet) { // set by another thread
             Object objx = propLock.value;
-            return objx;
+            if (!(objx instanceof OAObjectKey)) {
+                return objx;
+            }
         }
         try {
-            result = _getReferenceObject(oaObj, linkPropertyName, oi, li);
+            result = _getReferenceObject(propLock, oaObj, linkPropertyName, oi, li);
         }
         finally {
             OAPropertyLockDelegate.releasePropertyLock(propLock, result, true);
@@ -1050,14 +1052,17 @@ public class OAObjectReflectDelegate {
     }
 
     // note: this acquired a lock before calling
-    private static Object _getReferenceObject(OAObject oaObj, String linkPropertyName, OAObjectInfo oi, OALinkInfo li) {
+    private static Object _getReferenceObject(PropertyLock propLock, OAObject oaObj, String linkPropertyName, OAObjectInfo oi, OALinkInfo li) {
         if (linkPropertyName == null) return null;
 
         boolean bIsServer = OASyncDelegate.isServer();
         boolean bIsCalc = li != null && li.bCalculated;
 
         Object ref = null;
-        Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true);
+        Object obj;
+        if (propLock.bValueHasBeenSet) obj = propLock.value;
+        else obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true);
+        
         if (!(obj instanceof OAObjectKey)) {
             if (obj != null) {
                 if (obj == OANullObject.instance) return null;

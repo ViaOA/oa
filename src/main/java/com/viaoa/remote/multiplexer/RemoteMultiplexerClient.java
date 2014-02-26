@@ -277,7 +277,7 @@ public class RemoteMultiplexerClient {
                         ri.wait(60000);  // request timeout
                     }
                 }
-                if (!ri.responseReturned) {
+                if (!ri. responseReturned) {
                     ri.exceptionMessage = "timeout waiting on response from server queue (see: RemoeteMultiplexerClient)";
                 }
             }
