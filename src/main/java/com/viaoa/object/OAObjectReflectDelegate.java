@@ -707,8 +707,12 @@ public class OAObjectReflectDelegate {
             // OAObjectHubDelegate.updateMasterObjectEmptyHubFlag(hub, linkPropertyName, oaObj, false);
 
             // 20120622 moved to end, to be thread safe.  Other threads can get property before it had allDataLoaded
-            OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub), propLock);
-            OAObjectInfoDelegate.cacheHub(linkInfo, hub);
+            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub), propLock);
+            }
+            else {
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub, propLock);
+            }
         }
         finally {
             if (propLock != null) {

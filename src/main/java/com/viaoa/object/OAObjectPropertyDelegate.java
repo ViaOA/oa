@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAPropertyLockDelegate.PropertyLock;
+import com.viaoa.util.OACompare;
 import com.viaoa.util.OANullObject;
 
 // 20140225
@@ -88,23 +89,18 @@ public class OAObjectPropertyDelegate {
         return ss;
     }
     public static void setProperty(OAObject oaObj, String name, Object value) {
-        setProperty(oaObj, name, value, null);
+        setProperty(oaObj, name, value, null, false, null);
     }
 
-    public static void setProperty(OAObject oaObj, String name, Object value, PropertyLock propLock) {
-        if (oaObj == null || name == null) return;
-
-        boolean bCreateLock = (propLock == null);
-        if (bCreateLock) {
-            propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, name, false, false);
+    static void unsafeSetProperty(OAObject oaObj, String name, Object value) {
+        int pos;
+        if (oaObj.properties == null) {
+            oaObj.properties = new Object[2];
+            oaObj.properties[0] = name;
+            pos = 0;
         }
-        
-        synchronized (oaObj) {
-            OAPropertyLockDelegate.setValue(propLock, value, false);
-            if (oaObj.properties == null) {
-                oaObj.properties = new Object[2];
-            }                
-            int pos = -1;
+        else {
+            pos = -1;
             for (int i=0; i<oaObj.properties.length; i+=2) {
                 if (pos == -1 && oaObj.properties[i] == null) pos = i; 
                 else if (name.equalsIgnoreCase((String)oaObj.properties[i])) {
@@ -115,10 +111,51 @@ public class OAObjectPropertyDelegate {
             if (pos < 0) {
                 pos = oaObj.properties.length;
                 oaObj.properties = Arrays.copyOf(oaObj.properties, pos+2);
+                oaObj.properties[pos] = name;
             }
-            oaObj.properties[pos] = name;
+        }
+        oaObj.properties[pos+1] = value;
+    }
+    
+    public static void setProperty(OAObject oaObj, String name, Object value, PropertyLock propLock) {
+        setProperty(oaObj, name, value, propLock, false, null);
+    }
+    
+    public static void setProperty(OAObject oaObj, String name, Object value, PropertyLock propLock, boolean bMustMatchValue, Object mustMatchValue) {
+        if (oaObj == null || name == null) return;
+
+        boolean bCreateLock = (propLock == null);
+        if (bCreateLock) {
+            propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, name, false, false);
+        }
+        
+        synchronized (oaObj) {
+            int pos;
+            if (oaObj.properties == null) {
+                oaObj.properties = new Object[2];
+                oaObj.properties[0] = name;
+                pos = 0;
+            }           
+            else {
+                pos = -1;
+                for (int i=0; i<oaObj.properties.length; i+=2) {
+                    if (pos == -1 && oaObj.properties[i] == null) pos = i; 
+                    else if (name.equalsIgnoreCase((String)oaObj.properties[i])) {
+                        pos = i;
+                        break;
+                    }
+                }
+                if (pos < 0) {
+                    pos = oaObj.properties.length;
+                    oaObj.properties = Arrays.copyOf(oaObj.properties, pos+2);
+                    oaObj.properties[pos] = name;
+                }
+            }
             if (value != null || !(oaObj.properties[pos+1] instanceof Hub)) {  // 20120827 dont set an existing Hub to null (sent that way if size is 0)
-                oaObj.properties[pos+1] = value;
+                if (!bMustMatchValue || (oaObj.properties[pos+1] == mustMatchValue) || (mustMatchValue != null && mustMatchValue.equals(oaObj.properties[pos+1]))) {
+                    oaObj.properties[pos+1] = value;
+                    OAPropertyLockDelegate.setValue(propLock, value, false);
+                }
             }
         }        
         if (bCreateLock) {

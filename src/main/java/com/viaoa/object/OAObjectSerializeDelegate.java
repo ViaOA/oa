@@ -27,18 +27,35 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubSerializeDelegate;
 import com.viaoa.util.OANullObject;
 
+//20140226 reworked to use PropertyLock
+
+
 public class OAObjectSerializeDelegate {
 
 	private static Logger LOG = Logger.getLogger(OAObjectSerializeDelegate.class.getName());
     
 	protected static void _readObject(OAObject oaObj, java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
+        OAObjectInfo oi =  null;
         for ( ; ; ) {
             Object obj = in.readObject();
             if (!(obj instanceof String)) break; // flag to end
+
+            String key = (String)obj;
             Object value = in.readObject();
+            
             if (value instanceof OANullObject) value = null;
-            OAObjectPropertyDelegate.setProperty(oaObj, (String) obj, value);
+            else if (value instanceof HashLinkWrap) {
+                value = ((HashLinkWrap) value).obj;
+                if (oi == null) oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+                OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
+                if (linkInfo != null) {
+                    if (OAObjectInfoDelegate.cacheHub(linkInfo, (Hub) value)) {
+                        value = new WeakReference(value);
+                    }
+                }
+            }
+            OAObjectPropertyDelegate.unsafeSetProperty(oaObj, key, value);
         }
         OAObjectDelegate.updateGuid(oaObj.guid);
     }
@@ -73,79 +90,29 @@ public class OAObjectSerializeDelegate {
             Object value = objs[i+1];
 		
             OALinkInfo linkInfo = null;
-            if (value instanceof HashLinkWrap) { // reference needs to be stored in a weakreference
-                value = ((HashLinkWrap) value).obj;
-                if (linkInfo == null) linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
-    	        if (linkInfo != null) {
-    	        	if (OAObjectInfoDelegate.cacheHub(linkInfo, (Hub) value)) {
-                        OAObjectPropertyDelegate.setProperty(oaObjOrig, key, new WeakReference(value));
-    	        	}
-    	        	else {
-                        OAObjectPropertyDelegate.setProperty(oaObjOrig, key, value);
-    	        	}
-    	        }
-    	        else {
-                    OAObjectPropertyDelegate.setProperty(oaObjOrig, key, value);
-    	        }
-            }
-            
-//qqqqqqqqqqqqqqqqq Dont send shared hubs qqqqqqqqqqqqqq            
-//qqqqqqqqqqqq            
-            // 20120926 add support for calc hubs, that could be shared, see: _writeProperties
-/** not needed, changed it so that calc Hubs that are shared will not be serialized            
-            if (value instanceof Hub) {
-                Hub h = (Hub) value;
-                OAObject objMaster = HubDelegate.getMasterObject(h);
-                if (objMaster != oaObjNew && objMaster != null) {
-                    // shared hub
-                    OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(h);
-                    OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                    Object objx = OAObjectReflectDelegate.getRawReference(objMaster, liRev.getName());
-                    if (objx instanceof WeakReference) objx = ((WeakReference) objx).get(); 
-                    if (objx instanceof Hub) {
-                        h.setSharedHub((Hub) objx);
-                    }
-                    else {
-                        // set to null
-                        h.setSharedHub(null);
-                    }
-                }
-            }
-*/
             
             if (bDup) {  // check to see if reference is needed or not
-                // 20130207
-                if (OAObjectPropertyDelegate.getProperty(oaObjNew, key, true) != null) {
+                Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, true);
+                if (objx != null) {
+                    if (objx instanceof OAObjectKey && (value instanceof OAObject)) {
+                        OAObjectKey k1 = (OAObjectKey) objx;
+                        OAObjectKey k2 = OAObjectKeyDelegate.getKey( (OAObject) value);
+                        if (k1.equals(k2)) {
+                            OAObjectPropertyDelegate.setProperty(oaObjNew, key, value, null, true, objx);
+                        }
+                    }
                     continue;
                 }
-                
-                
+
                 if (linkInfo == null) linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
                 
                 // need to replace any references to oaObjOrig with oaObjNew
     			boolean b = replaceReferences(oaObjOrig, oaObjNew, linkInfo, value);
     			if (b) {
-    			    Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, true);
-	            	if (objx == null) {
-	            	    if (!(value instanceof OAObject) && !(value instanceof OAObjectKey)) {
-	            	        b = true;
-	            	    }
-	            	    else {
-	            	        // otherwise, the new value is from a property change that will be sent from the server
-	            	        b = false;
-	            	    }
-	            	}
-	            	else {
-                        if (objx instanceof OAObjectKey && (value instanceof OAObject)) {
-                            OAObjectKey k1 = (OAObjectKey) objx;
-                            OAObjectKey k2 = OAObjectKeyDelegate.getKey( (OAObject) value);
-                            b = (k1.equals(k2));
-                        }
-                        else b = false;
-	            	}
-                    if (b) {
-                        OAObjectPropertyDelegate.setProperty(oaObjNew, key, value);
-                    }
+            	    if (!(value instanceof OAObject) && !(value instanceof OAObjectKey)) {
+                        OAObjectPropertyDelegate.setProperty(oaObjNew, key, value, null, true, null);
+            	    }
+        	        // otherwise, the new value is from a property change that will be sent from the server
     			}
         	}
         }
@@ -177,7 +144,7 @@ public static int cntSkip;
 
         // 20130215
         if (value == null) {
-            OAObjectPropertyDelegate.setProperty(oaObjNew, linkInfo.name, null);
+            OAObjectPropertyDelegate.setProperty(oaObjNew, linkInfo.name, null, null, true, null);
             return true;
         }
 	    
@@ -203,7 +170,7 @@ public static int cntSkip;
             	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false);
             	if (ref == null) continue;
             	if (ref == oaObjOrig || ref instanceof OAObjectKey) {
-            	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew);
+            	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew, null, true, oaObjOrig);
             	}
             	else {
             		if (ref instanceof WeakReference) ref = ((WeakReference) ref).get();
@@ -220,7 +187,7 @@ public static int cntSkip;
         	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false);
         	if (ref == null) return true;
         	if (ref == oaObjOrig || ref.equals(oaObjOrig.objectKey)) {
-        	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew);
+        	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew, null, true, oaObjOrig);
         	}
         	else {
         		if (ref instanceof WeakReference) ref = ((WeakReference) ref).get();
