@@ -147,7 +147,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     */
     
     /** managed by OAObjectPropertyDelegate.java */
-    protected transient Object[] properties;  // stores references (oaobj, hub, oaobjkey), or misc property for object.  ex: [0]="Employee" [1]=Emp [2]="Order" [3]=oakey
+    protected volatile transient Object[] properties;  // stores references (oaobj, hub, oaobjkey), or misc property for object.  ex: [0]="Employee" [1]=Emp [2]="Order" [3]=oakey
     
     /** Cascade rule where no reference objects will be included. */
     public static final int CASCADE_NONE = 0;
@@ -565,7 +565,13 @@ public class OAObject implements java.io.Serializable, Comparable {
         if (linkInfo != null) liReverse = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
         else liReverse = null;
         HubDetailDelegate.setMasterObject(hub, this, liReverse);
-        OAObjectPropertyDelegate.setProperty(this, linkPropertyName, new WeakReference(hub));         
+        
+        if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+            OAObjectPropertyDelegate.setProperty(this, linkPropertyName, new WeakReference(hub));
+        }
+        else {
+            OAObjectPropertyDelegate.setProperty(this, linkPropertyName, hub);
+        }
     }
 
 
@@ -610,7 +616,8 @@ public class OAObject implements java.io.Serializable, Comparable {
         If reference object is not already loaded, then OADataSource will be used to retreive object.
     */
     protected Object getObject(String linkPropertyName) {
-    	return OAObjectReflectDelegate.getReferenceObject(this, linkPropertyName);
+    	Object obj = OAObjectReflectDelegate.getReferenceObject(this, linkPropertyName);
+    	return obj;
     }
 
     /**

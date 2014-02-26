@@ -33,7 +33,8 @@ import com.viaoa.util.OANullObject;
 
 
 /**
- * Used to initialize any empty hubs to be empty.
+ * This is used to store a reference to all empty hubs, so that a restart can 
+ * create as an empty Hub, and not go to DS.
  * 
  * see: OAObjectReflectDelegate.getReferenceHub(), which will create an empty hub without
  * accessing the db.

@@ -55,7 +55,6 @@ public class OAPropertyLockDelegate {
                 propLock.key = key;
                 propLock.propertyName = upper; 
                 OAObjectHashDelegate.hashPropertyLock.put(key, propLock);
-                propLock.bUpdateProperty = false;
             }
         }
         synchronized (propLock) {
@@ -86,12 +85,24 @@ public class OAPropertyLockDelegate {
 
     protected static void releasePropertyLock(PropertyLock propLock, Object newValue, boolean bUpdateProperties) {
         synchronized (propLock) {
-            propLock.value = newValue;
-            propLock.bValueHasBeenSet = true;
+            boolean bHold = propLock.bUpdateProperty;
+            if (!propLock.bValueHasBeenSet) {
+                propLock.value = newValue;
+                propLock.bValueHasBeenSet = true;
+            }
+            else if (propLock.value instanceof OAObjectKey) {
+                if (newValue instanceof OAObject) {
+                    if (((OAObject)newValue).getObjectKey().equals(propLock.value)) {
+                        propLock.value = newValue;
+                        if (bUpdateProperties) propLock.bUpdateProperty = true;
+                    }
+                }
+            }
 
             if (bUpdateProperties && propLock.bUpdateProperty) {
-                OAObjectPropertyDelegate.setProperty(propLock.object, propLock.propertyName, propLock);
+                OAObjectPropertyDelegate.setProperty(propLock.object, propLock.propertyName, propLock.value, propLock);
             }
+            propLock.bUpdateProperty = bHold;
             if (propLock.bWaiting) {
                 propLock.notifyAll();
             }

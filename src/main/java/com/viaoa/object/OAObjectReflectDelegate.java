@@ -471,7 +471,9 @@ public class OAObjectReflectDelegate {
 
         // first try to get Hub without locking
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false);
-        if (obj instanceof WeakReference) obj = ((WeakReference) obj).get();
+        if (obj instanceof WeakReference) {
+            obj = ((WeakReference) obj).get();
+        }
 
         if (obj instanceof Hub) {
             Hub h = (Hub) obj;
@@ -502,10 +504,15 @@ public class OAObjectReflectDelegate {
         PropertyLock propLock = null;
         try {
             propLock = OAPropertyLockDelegate.getPropertyLock(oaObj, linkPropertyName);
-            hub = (Hub) propLock.value;
-            if (hub != null) { // set by another thread, which had it locked
-                propLock = null;
-                return hub;
+            if (propLock.value != null) {
+                if (propLock.value instanceof WeakReference) {
+                    propLock.value = ((WeakReference) propLock.value).get(); 
+                }
+                hub = (Hub) propLock.value;
+                if (hub != null) { // set by another thread, which had it locked
+                    propLock = null;
+                    return hub;
+                }
             }
             if (obj instanceof OANullObject) obj = null;
             if (obj == null) { // try again, now that it is locked, in case it was retrieved by another thread while unlocked
@@ -541,9 +548,13 @@ public class OAObjectReflectDelegate {
                 finally {
                     OAThreadLocalDelegate.setSuppressCSMessages(false);
                 }
-                // use WeakReferences for Hubs
-                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
-                OAObjectInfoDelegate.cacheHub(linkInfo, hub);
+
+                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+                }
+                else {
+                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
+                }
                 return hub;
             }
 
@@ -1032,15 +1043,13 @@ public class OAObjectReflectDelegate {
             result = _getReferenceObject(oaObj, linkPropertyName, oi, li);
         }
         finally {
-            if (propLock != null) {
-                OAPropertyLockDelegate.releasePropertyLock(propLock, result, true);
-                result = propLock.value;
-            }
+            OAPropertyLockDelegate.releasePropertyLock(propLock, result, true);
+            result = propLock.value;
         }
         return result;
     }
 
-    // note: this acquires a lock before calling
+    // note: this acquired a lock before calling
     private static Object _getReferenceObject(OAObject oaObj, String linkPropertyName, OAObjectInfo oi, OALinkInfo li) {
         if (linkPropertyName == null) return null;
 
@@ -1093,7 +1102,7 @@ public class OAObjectReflectDelegate {
                             ref = HubDelegate.getMasterObject(hubx);
                         }
                     }
-
+/*qqqqqqq   not needed since obj is null
                     if (ref == null) {
                         if (bIsServer || bIsCalc) {
                             if (oaObj.isNew()) return null; // 20121031 wont find it in DS if it's not been saved
@@ -1107,10 +1116,13 @@ public class OAObjectReflectDelegate {
                             sel.close();
                         }
                     }
+*/                    
                 }
+/* 20140225 not needed if it's null
                 if (!bIsServer && !bIsCalc && !oi.getLocalOnly()) {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
+*/                
             }
         }
         else {
@@ -1136,7 +1148,8 @@ public class OAObjectReflectDelegate {
         }
 
         // 20110314 also store if null
-        OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, ref);
+        //20140225 removed, since the calling method does this 
+        //OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, ref);
 
         return ref;
     }

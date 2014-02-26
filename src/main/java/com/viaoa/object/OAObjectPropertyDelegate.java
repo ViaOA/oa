@@ -25,6 +25,8 @@ import com.viaoa.hub.Hub;
 import com.viaoa.object.OAPropertyLockDelegate.PropertyLock;
 import com.viaoa.util.OANullObject;
 
+// 20140225
+
 /**
  * Manages OAObject.properties, which are used to store references 
  * (OAObjects, Hubs, OAObjectKey) and misc values.
@@ -40,15 +42,14 @@ public class OAObjectPropertyDelegate {
      */
     public static Object getProperty(OAObject oaObj, String name, boolean bIfNullReturnOANullObject) {
         if (oaObj == null || name == null) return null;
-        synchronized (oaObj) {
-            if (oaObj.properties == null) return null;
-            for (int i=0; i<oaObj.properties.length; i+=2) {
-                if (oaObj.properties[i] != null && name.equalsIgnoreCase((String)oaObj.properties[i])) {
-                    Object objx = oaObj.properties[i+1];
-                    if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
-                    if (objx == null && bIfNullReturnOANullObject) objx = OANullObject.instance; 
-                    return objx;
-                }
+        Object[] objs = oaObj.properties;
+        if (objs == null) return null;
+        for (int i=0; i<objs.length; i+=2) {
+            if (objs[i] != null && name.equalsIgnoreCase((String)objs[i])) {
+                Object objx = objs[i+1];
+                if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
+                if (objx == null && bIfNullReturnOANullObject) objx = OANullObject.instance; 
+                return objx;
             }
         }
         return null;
@@ -58,12 +59,12 @@ public class OAObjectPropertyDelegate {
      */
     public static boolean isPropertyLoaded(OAObject oaObj, String name) {
         if (oaObj == null || name == null) return false;
-        synchronized (oaObj) {
-            if (oaObj.properties == null) return false;
-            for (int i=0; i<oaObj.properties.length; i+=2) {
-                if ( oaObj.properties[i] == null || !name.equalsIgnoreCase((String)oaObj.properties[i]) ) continue;
-                return true; // any value wlll return true
-            }
+        Object[] objs = oaObj.properties;
+        if (objs == null) return false;
+
+        for (int i=0; i<objs.length; i+=2) {
+            if ( oaObj.properties[i] == null || !name.equalsIgnoreCase((String)oaObj.properties[i]) ) continue;
+            return true; // any value wlll return true
         }
         return false;
     }
@@ -72,17 +73,16 @@ public class OAObjectPropertyDelegate {
         Object[] objs = oaObj.properties;
         if (objs == null) return null;
         String[] ss;
-        synchronized (oaObj) {
-            int cnt = 0;
-            for (int i=0; i<objs.length; i+=2) {
-                if (objs[i] != null) cnt++; 
-            }
-            ss = new String[cnt];
-            int j = 0;
-            for (int i=0; i<objs.length; i+=2) {
-                if (objs[i] != null) {
-                    ss[j++] = (String) objs[i];
-                }
+
+        int cnt = 0;
+        for (int i=0; i<objs.length; i+=2) {
+            if (objs[i] != null) cnt++; 
+        }
+        ss = new String[cnt];
+        int j = 0;
+        for (int i=0; i<objs.length; i+=2) {
+            if (objs[i] != null) {
+                ss[j++] = (String) objs[i];
             }
         }
         return ss;
