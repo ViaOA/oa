@@ -96,7 +96,6 @@ public class OAObjectPropertyDelegate {
         int pos;
         if (oaObj.properties == null) {
             oaObj.properties = new Object[2];
-            oaObj.properties[0] = name;
             pos = 0;
         }
         else {
@@ -111,9 +110,9 @@ public class OAObjectPropertyDelegate {
             if (pos < 0) {
                 pos = oaObj.properties.length;
                 oaObj.properties = Arrays.copyOf(oaObj.properties, pos+2);
-                oaObj.properties[pos] = name;
             }
         }
+        oaObj.properties[pos] = name;
         oaObj.properties[pos+1] = value;
     }
     
@@ -133,7 +132,6 @@ public class OAObjectPropertyDelegate {
             int pos;
             if (oaObj.properties == null) {
                 oaObj.properties = new Object[2];
-                oaObj.properties[0] = name;
                 pos = 0;
             }           
             else {
@@ -148,9 +146,10 @@ public class OAObjectPropertyDelegate {
                 if (pos < 0) {
                     pos = oaObj.properties.length;
                     oaObj.properties = Arrays.copyOf(oaObj.properties, pos+2);
-                    oaObj.properties[pos] = name;
                 }
             }
+            oaObj.properties[pos] = name;
+
             if (value != null || !(oaObj.properties[pos+1] instanceof Hub)) {  // 20120827 dont set an existing Hub to null (sent that way if size is 0)
                 if (!bMustMatchValue || (oaObj.properties[pos+1] == mustMatchValue) || (mustMatchValue != null && mustMatchValue.equals(oaObj.properties[pos+1]))) {
                     oaObj.properties[pos+1] = value;

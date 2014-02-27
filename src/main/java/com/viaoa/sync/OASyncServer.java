@@ -44,7 +44,7 @@ public class OASyncServer {
     public static final String ServerLookupName = "syncserver";
     public static final String SyncLookupName = "oasync";
     public static final String SyncQueueName = "oasync";
-    public static final int QueueSize = 20000;
+    public static final int QueueSize = 25000;
     
     private int port;
     private MultiplexerServer multiplexerServer;
@@ -274,6 +274,8 @@ public class OASyncServer {
         cx.ci = ci;
         cx.socket = socket;
         
+        // this allows remoting to know if connection was removed
+        getRemoteMultiplexerServer().createSession(socket, connectionId);
         hmClientInfoExt.put(connectionId, cx);
     }
     protected void onClientDisconnect(int connectionId) {

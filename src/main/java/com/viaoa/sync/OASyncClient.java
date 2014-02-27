@@ -439,7 +439,7 @@ public class OASyncClient {
                     super.onRemoteThreadCreated(threadCount);
                     if (threadCount == MAX_ThreadCount && !bThreadCountWarning) {
                         String s = OALogUtil.getThreadDump();
-                        LOG.warning("RemoteThread count == 60\n"+s);
+                        LOG.warning("RemoteThread count == "+MAX_ThreadCount+"\n"+s);
                         bThreadCountWarning = true;
                     }
                     if (threadCount >= MAX_ThreadCount) {

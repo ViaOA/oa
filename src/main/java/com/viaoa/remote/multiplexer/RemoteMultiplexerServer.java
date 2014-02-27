@@ -1011,12 +1011,12 @@ public class RemoteMultiplexerServer {
                 long ms1 = System.currentTimeMillis();                    
                 synchronized (t.Lock) {
                     t.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
-                    t.Lock.wait(250);
+                    t.Lock.wait(1250);
                 }
                 long ms2 = System.currentTimeMillis();
 
                 // qqqqqq this can be removed, sanity check only
-                if (!ri.processedByServer && (ms2-ms1) > 200) {
+                if (!ri.processedByServer && (ms2-ms1) > 1200) {
                     StackTraceElement[] stes = t.getStackTrace();
                     Exception ex = new Exception();
                     ex.setStackTrace(stes);
@@ -1128,6 +1128,10 @@ public class RemoteMultiplexerServer {
         public Socket realSocket;
         private boolean bDisconnected;
 
+        public Session() {
+            
+        }
+        
         // performance enhancement for ObjectSteams
         ConcurrentHashMap<String, Integer> hmClassDescOutput = new ConcurrentHashMap<String, Integer>();
         AtomicInteger aiClassDescOutput = new AtomicInteger();
@@ -1268,6 +1272,8 @@ public class RemoteMultiplexerServer {
                     public void run() {
                         try {
                             writeQueueMessages(cq, bindName, qPos);
+//qqqqqqqqqq need to send client overflow error
+//qqqqq so that it can show error and disconnect                           
                         }
                         catch (Exception e) {
                             if (realSocket != null && !realSocket.isClosed()) {
@@ -1305,7 +1311,14 @@ public class RemoteMultiplexerServer {
                     return;
                 }
 
-                RequestInfo[] ris = cque.getMessages(qpos, 50);
+                RequestInfo[] ris = null;
+                try {
+                    ris = cque.getMessages(qpos, 100);
+                }
+                catch (Exception e) {
+                    LOG.log(Level.WARNING, "Error getting messages from circularQueue", e);
+                    throw e;
+                }
                 if (ris == null) {
                     continue;
                 }
