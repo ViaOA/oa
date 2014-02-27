@@ -80,12 +80,6 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
     }
 
     @Override
-    public abstract RemoteClientInterface getRemoteClientInterface(ClientInfo clientInfo);
-
-    @Override
-    public abstract RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo clientInfo);
-    
-    @Override
     public int getNextFiftyObjectGuids() {
         return OAObjectDelegate.getNextFiftyGuids();
     }
@@ -96,6 +90,10 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
         return obj;
     }
 
+    @Override
+    public abstract RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo clientInfo);    
     
+    @Override
+    public abstract RemoteClientInterface getRemoteClientInterface(ClientInfo clientInfo, RemoteClientCallbackInterface callback);
     
 }

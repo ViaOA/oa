@@ -17,22 +17,11 @@ All rights reserved.
 */
 package com.viaoa.sync.remote;
 
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectKey;
-import com.viaoa.sync.model.ClientInfo;
+import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
-public interface RemoteServerInterface {
-
-    boolean save(Class objectClass, OAObjectKey objectKey, int iCascadeRule);
-    boolean delete(Class objectClass, OAObjectKey objectKey);
-    boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName);
-    OAObject getObject(Class objectClass, OAObjectKey objectKey);
-
-    RemoteClientInterface getRemoteClientInterface(ClientInfo clientInfo, RemoteClientCallbackInterface callback);
-    RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo clientInfo);
+@OARemoteInterface()
+public interface RemoteClientCallbackInterface {
     
-    String ping(String msg);
-    String getDisplayMessage();
+    void stop(String title, String msg);
     
-    int getNextFiftyObjectGuids();
 }

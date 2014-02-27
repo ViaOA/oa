@@ -40,6 +40,7 @@ import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.sync.model.ClientInfo;
+import com.viaoa.sync.remote.RemoteClientCallbackInterface;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
@@ -286,10 +287,25 @@ public class OASyncClient {
     }
     public RemoteClientInterface getRemoteClientInterface() throws Exception {
         if (remoteClientInterface == null) {
-            remoteClientInterface = getRemoteServerInterface().getRemoteClientInterface(getClientInfo());
+
+            
+            remoteClientInterface = getRemoteServerInterface().getRemoteClientInterface(getClientInfo(), getRemoteClientCallbackInterface());
             OASyncDelegate.setRemoteClientInterface(remoteClientInterface);
         }
         return remoteClientInterface;
+    }
+    private RemoteClientCallbackInterface remoteCallback;
+    
+    public RemoteClientCallbackInterface getRemoteClientCallbackInterface() {
+        if (remoteCallback == null) {
+            remoteCallback = new RemoteClientCallbackInterface() {
+                @Override
+                public void stop(String title, String msg) {
+                    OASyncClient.this.onStopCalled(title, msg);
+                }
+            };
+        }
+        return remoteCallback;
     }
     public RemoteClientSyncInterface getRemoteClientSyncInterface() throws Exception {
         if (remoteClientSyncInterface == null) {
@@ -352,7 +368,7 @@ public class OASyncClient {
     public boolean isStarted() {
         return clientInfo.isStarted();
     }
-    /** Sets the stop flag, which will stop Gemstone methods from being sent to GSMRServer */
+    /** Sets the stop flag */
     public void stop() throws Exception {
         LOG.fine("Client stop");
         clientInfo.setStarted(false);
@@ -363,6 +379,17 @@ public class OASyncClient {
         remoteMultiplexerClient = null;
     }
 
+    public void onStopCalled(String title, String msg) {
+        LOG.warning("stopped called by server, title="+title+", msg="+msg);
+        try {
+            getRemoteClientInterface().sendException(title+", "+msg, new Exception("onStopCalled on client"));
+            stop();
+        }
+        catch (Exception e) {
+        }
+    }
+    
+    
     /**
      * checks to see if this client has been connected to the GSMR server.
      */
@@ -462,4 +489,6 @@ public class OASyncClient {
         catch (Exception ex) {
         }
     }
+
+
 }

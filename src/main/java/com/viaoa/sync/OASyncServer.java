@@ -81,8 +81,8 @@ public class OASyncServer {
         if (remoteServer == null) {
             remoteServer = new RemoteServerImpl() {
                 @Override
-                public RemoteClientInterface getRemoteClientInterface(ClientInfo ci) {
-                    return createRemoteClient(ci);
+                public RemoteClientInterface getRemoteClientInterface(ClientInfo ci, RemoteClientCallbackInterface callback) {
+                    return createRemoteClient(ci, callback);
                 }
                 @Override
                 public RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo ci) {
@@ -105,7 +105,7 @@ public class OASyncServer {
     }
     protected RemoteClientInterface getRemoteClientForServer() {
         if (remoteClientForServer == null) {
-            remoteClientForServer = createRemoteClient(getClientInfo());
+            remoteClientForServer = createRemoteClient(getClientInfo(), null);
             OASyncDelegate.setRemoteClientInterface(remoteClientForServer);
         }
         return remoteClientForServer;
@@ -118,10 +118,11 @@ public class OASyncServer {
         return remoteClientSyncForServer;
     }
     
-    protected RemoteClientInterface createRemoteClient(final ClientInfo ci) {
+    protected RemoteClientInterface createRemoteClient(final ClientInfo ci, RemoteClientCallbackInterface callback) {
         if (ci == null) return null;
         final ClientInfoExt cx = hmClientInfoExt.get(ci.getConnectionId());
         if (cx == null) return null;
+        cx.callback = callback;
         
         RemoteClientImpl rc = new RemoteClientImpl() {
             boolean bClearedCache;
@@ -258,6 +259,7 @@ public class OASyncServer {
         Socket socket;
         RemoteClientImpl remoteClient;
         RemoteClientSyncImpl remoteClientSync;
+        RemoteClientCallbackInterface callback;
     }
     
     
@@ -325,6 +327,14 @@ public class OASyncServer {
                 protected void afterInvokeForStoC(RequestInfo ri) {
                     // no-op
                 }
+                
+                @Override
+                protected void onException(int connectionId, String title, String msg, Exception e, boolean bWillDisconnect) {
+                    ClientInfoExt cx = hmClientInfoExt.get(connectionId);
+                    if (cx != null && cx.callback != null) {
+                        cx.callback.stop(title, msg);
+                    }
+                }            
             };
             
             // register remote objects

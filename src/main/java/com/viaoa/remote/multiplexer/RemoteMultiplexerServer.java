@@ -1117,6 +1117,9 @@ public class RemoteMultiplexerServer {
         }
     }
 
+    protected void onException(int connectionId, String title, String msg, Exception e, boolean bWillDisconnect) {
+    }
+    
     /**
      * Tracks each client connection.
      * 
@@ -1317,6 +1320,7 @@ public class RemoteMultiplexerServer {
                 }
                 catch (Exception e) {
                     LOG.log(Level.WARNING, "Error getting messages from circularQueue", e);
+                    onException(connectionId, "Message queue overrun", "Message queue overrun", e, true);
                     throw e;
                 }
                 if (ris == null) {
