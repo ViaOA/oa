@@ -28,6 +28,7 @@ import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
 import com.viaoa.util.OAString;
 
@@ -103,11 +104,17 @@ public class OAObjectEventDelegate {
 
         
     	OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, propertyU);
+    	boolean bWasEmpty = false;
 		if (linkInfo != null && oldObj == null) {
 		    // oldObj might never have been loaded before setMethod was called, which will have the oldValue=null -
 		    //   need to check in oaObj.properties to see what orig value was.
-	        oldObj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName);
+		    oldObj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true);
+		    if (oldObj == OANotExist.instance) {
+		        bWasEmpty = true;
+		        oldObj = null;
+		    }
 	    }
+		
         if (oldObj instanceof OAObjectKey) {
             boolean b = false;
             if (newObj instanceof OAObject) {
@@ -122,7 +129,7 @@ public class OAObjectEventDelegate {
             }
         }
 	
-        if (oldObj == newObj) return;
+        if (oldObj == newObj && !bWasEmpty) return;
         if (oldObj != null && oldObj.equals(newObj)) return;
 
 	    OAPropertyInfo propInfo = null;
@@ -145,19 +152,12 @@ public class OAObjectEventDelegate {
     	if (linkInfo != null){
     		// must update ref properties before sending events
             // 20110314: need to store nulls, so that it wont go back to server everytime
-            /* was:
-    	    if (newObj == null) {
-                // was: OAObjectPropertyDelegate.removeProperty(oaObj, propertyName, false);         
-            }
-            else {
-            */
-                OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, oldObj);         
-            //}
+            OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, oldObj, bWasEmpty, false);         
         }
     	else {
     	    // 20130318
     	    if (propInfo != null && propInfo.isBlob()) {
-                OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, oldObj);         
+                OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, oldObj, bWasEmpty, false);         
     	    }
     	}
 

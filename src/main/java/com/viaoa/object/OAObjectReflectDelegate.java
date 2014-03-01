@@ -499,7 +499,7 @@ public class OAObjectReflectDelegate {
         }
         Hub hub = null;
         if (linkInfo == null) return null;
-        boolean bIsNullHub = false;
+        boolean bCancelSelect = true;
         try {
             OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
             Class linkClass = linkInfo.toClass;
@@ -509,7 +509,6 @@ public class OAObjectReflectDelegate {
                 obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true);
 
                 if (obj == null) { 
-                    bIsNullHub = true;
                     // since it is in props with a null, then it was placed that way to mean it has 0 objects
                     //   by OAObjectSerializeDelegate._writeObject
                     hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
@@ -522,11 +521,8 @@ public class OAObjectReflectDelegate {
                     return hub;
                 }
                 if (obj == OANotExist.instance) obj = null;
-                
-                if (obj != null) {
-                    if (obj instanceof WeakReference) {
-                        obj = ((WeakReference) obj).get(); // could have been loaded, and then gc'd
-                    }
+                else if (obj instanceof WeakReference) {
+                    obj = ((WeakReference) obj).get(); // could have been loaded, and then gc'd
                     if (obj != null) {
                         return getReferenceHub(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch);
                     }
@@ -536,9 +532,7 @@ public class OAObjectReflectDelegate {
             if (obj instanceof Hub) { // must have ObjectClass=OAObjectKey
                 Hub h = (Hub) obj;
                 // Hub with OAObjectKeys exists, need to convert to "real" objects
-                hub = new Hub(linkClass);
-
-                HubDetailDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
+                hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
                 try {
                     OAThreadLocalDelegate.setSuppressCSMessages(true);
                     for (int i = 0;; i++) {
@@ -562,7 +556,7 @@ public class OAObjectReflectDelegate {
                 return hub;
             }
 
-            if (!bThisIsServer && !bIsNullHub && !oi.getLocalOnly() && !bIsCalc) {
+            if (!bThisIsServer && !oi.getLocalOnly() && !bIsCalc) {
                 // request from server
                 hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); // this will always return a Hub
                 if (hub == null) {
@@ -570,9 +564,8 @@ public class OAObjectReflectDelegate {
                 }
                 // 20120926 check to see if empty hub was returned from OAObjectServerImpl.getDetail
                 if (HubDelegate.getMasterObject(hub) == null && hub.getSize() == 0 && hub.getObjectClass() == null) {
-                    hub = new Hub(linkClass);
-                    HubDetailDelegate.setMasterObject(hub, oaObj, null);
-                    bIsNullHub = true;
+                    hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
+                    bCancelSelect = false;
                 }
             }
             else if (hub == null) {
@@ -608,10 +601,8 @@ public class OAObjectReflectDelegate {
                 
                 }
                 else {
-                    hub = new Hub(linkClass);
-                    HubDetailDelegate.setMasterObject(hub, oaObj, null);
+                    hub = new Hub(linkClass, oaObj, null);
                 }
-
             }
             if (hub != null) {
                 // use WeakReferences for Hubs
@@ -621,7 +612,7 @@ public class OAObjectReflectDelegate {
                         hub.setSelectOrder(sortOrder);
                     }
                 }
-                if (bIsCalc || bIsNullHub) {
+                if (bIsCalc || bCancelSelect) {
                     hub.cancelSelect();
                 }
 
