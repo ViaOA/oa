@@ -106,7 +106,7 @@ public class OAObjectEventDelegate {
 		if (linkInfo != null && oldObj == null) {
 		    // oldObj might never have been loaded before setMethod was called, which will have the oldValue=null -
 		    //   need to check in oaObj.properties to see what orig value was.
-	        oldObj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, false);
+	        oldObj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName);
 	    }
         if (oldObj instanceof OAObjectKey) {
             boolean b = false;
@@ -151,13 +151,13 @@ public class OAObjectEventDelegate {
             }
             else {
             */
-                OAObjectPropertyDelegate.setProperty(oaObj, propertyName, newObj);         
+                OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, oldObj);         
             //}
         }
     	else {
     	    // 20130318
     	    if (propInfo != null && propInfo.isBlob()) {
-                OAObjectPropertyDelegate.setProperty(oaObj, propertyName, newObj);         
+                OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, oldObj);         
     	    }
     	}
 

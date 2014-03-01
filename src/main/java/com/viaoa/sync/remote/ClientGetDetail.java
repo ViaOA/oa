@@ -48,7 +48,7 @@ public class ClientGetDetail {
 
         Object masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         if (masterObject == null) {
-            //qqqqqqqqqqqq vavavvvvvvvvvv DEBUG         
+            //qqqqqqqqqqqq for DEBUG         
             //masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
             if (errorCnt++ < 100) LOG.warning("cant find masterObject in cache or DS.  masterClass=" + masterClass + ", key=" + masterObjectKey + ", property=" + property + ", OS.id=");
             return null;
@@ -84,7 +84,7 @@ public class ClientGetDetail {
      * load referencs for master object and detail object/hub, and one level of ownedReferences
      * serialize all first level references for master, and detail 
      * send existing references for 1 more level from master, and 2 levels from detail
-     * dont send amy references that equal master or have master in the hub
+     * dont send any references that equal master or have master in the hub
      * dont send any references that have detail/hub in it
      * dont send detail if it has already been sent with all references
      * dont send a reference if it has already been sent to client, and has been added to tree
@@ -94,7 +94,9 @@ public class ClientGetDetail {
         // at this point, we know that the client does not have all of the master's references,
         // and we know that value != null, since getDetail would not have been called.
         // include the references "around" this object and master object, along with any siblings
+      
         
+        long t1 = System.currentTimeMillis();
         if (masterObject instanceof OAObject) {
             OAObjectReflectDelegate.loadAllReferences((OAObject) masterObject, false);
         }
@@ -130,9 +132,10 @@ public class ClientGetDetail {
                     b = objx != null && ((Boolean) objx).booleanValue();
                     if (b) continue;
                     
+                    if (System.currentTimeMillis() - t1 > 100) break;
                     b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
                     if (!b) {
-                        if (++cnt < 25) {
+                        if (++cnt < 20) {
                             OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 1, false);
                         }
                         else {
@@ -148,8 +151,9 @@ public class ClientGetDetail {
         ArrayList<OAObject> al = null;
         if (siblingKeys != null) {
             al = new ArrayList<OAObject>(siblingKeys.length+1);
+            Class c = masterObject.getClass();
             for (OAObjectKey key : siblingKeys) {
-                Class c = masterObject.getClass();
+                if (System.currentTimeMillis() - t1 > 120) break;
                 OAObject obj = OAObjectCacheDelegate.get(c, key);
                 if (obj != null) {
                     al.add(obj);

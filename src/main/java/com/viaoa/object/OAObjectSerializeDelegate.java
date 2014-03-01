@@ -92,13 +92,13 @@ public class OAObjectSerializeDelegate {
             OALinkInfo linkInfo = null;
             
             if (bDup) {  // check to see if reference is needed or not
-                Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, true);
+                Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false);
                 if (objx != null) {
                     if (objx instanceof OAObjectKey && (value instanceof OAObject)) {
                         OAObjectKey k1 = (OAObjectKey) objx;
                         OAObjectKey k2 = OAObjectKeyDelegate.getKey( (OAObject) value);
                         if (k1.equals(k2)) {
-                            OAObjectPropertyDelegate.setProperty(oaObjNew, key, value, null, true, objx);
+                            OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, objx);
                         }
                     }
                     continue;
@@ -110,7 +110,7 @@ public class OAObjectSerializeDelegate {
     			boolean b = replaceReferences(oaObjOrig, oaObjNew, linkInfo, value);
     			if (b) {
             	    if (!(value instanceof OAObject) && !(value instanceof OAObjectKey)) {
-                        OAObjectPropertyDelegate.setProperty(oaObjNew, key, value, null, true, null);
+                        OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, objx);
             	    }
         	        // otherwise, the new value is from a property change that will be sent from the server
     			}
@@ -133,9 +133,9 @@ if ( ((cntDup+cntNew) % 5000) == 0) {
         return oaObjNew;
     }
 
-public static int cntDup; 
-public static int cntNew; 
-public static int cntSkip;
+public static volatile int cntDup; 
+public static volatile int cntNew; 
+public static volatile int cntSkip;
 
 	private static boolean replaceReferences(OAObject oaObjOrig, OAObject oaObjNew, OALinkInfo linkInfo, Object value) {
         // 20130215 value can be null
@@ -144,7 +144,7 @@ public static int cntSkip;
 
         // 20130215
         if (value == null) {
-            OAObjectPropertyDelegate.setProperty(oaObjNew, linkInfo.name, null, null, true, null);
+            OAObjectPropertyDelegate.setProperty(oaObjNew, linkInfo.name, null);
             return true;
         }
 	    
@@ -167,10 +167,10 @@ public static int cntSkip;
 			for (int i=0; revName!=null; i++) { 
             	OAObject objx = (OAObject) hub.getAt(i);
             	if (objx == null) break;
-            	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false);
+            	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName);
             	if (ref == null) continue;
             	if (ref == oaObjOrig || ref instanceof OAObjectKey) {
-            	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew, null, true, oaObjOrig);
+            	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjNew, oaObjOrig);
             	}
             	else {
             		if (ref instanceof WeakReference) ref = ((WeakReference) ref).get();
@@ -184,10 +184,10 @@ public static int cntSkip;
         	// handles 1-1, 1-Many
         	OAObject objx = (OAObject) value;
 
-        	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false);
+        	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName);
         	if (ref == null) return true;
         	if (ref == oaObjOrig || ref.equals(oaObjOrig.objectKey)) {
-        	    OAObjectPropertyDelegate.setProperty(objx, revName, oaObjNew, null, true, oaObjOrig);
+        	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjNew, oaObjOrig);
         	}
         	else {
         		if (ref instanceof WeakReference) ref = ((WeakReference) ref).get();

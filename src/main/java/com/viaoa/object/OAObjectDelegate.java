@@ -195,7 +195,6 @@ public class OAObjectDelegate {
         
 	/**
 	 * Used when "reading" serialized objects.
-	 * qqqqq bug, reading a serialized/xml object could have a duplicate guid qqqqq
 	 */
     protected static void updateGuid(int guid) {
         if (guidCounter.get() < guid) {

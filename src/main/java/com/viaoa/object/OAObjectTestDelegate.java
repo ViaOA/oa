@@ -322,10 +322,12 @@ obj.objectKey.exactEquals(data.objectKey);
 		x = hash == null ? 0 : hash.size();
 		data.iHashLock = x;
 
+		/*
 		hash = OAObjectHashDelegate.hashPropertyLock;
 		x = hash == null ? 0 : hash.size();
 		data.iHashLinkLock = x;
-
+        */
+		
 		hash = OAObjectHashDelegate.hashCacheClass;
 		x = hash == null ? 0 : hash.size();
 		data.iHashCacheClass = x;
@@ -450,12 +452,14 @@ obj.objectKey.exactEquals(data.objectKey);
 			LOG.warning(msg + " hashLock");
 		}
 
+		/*
 		hash = OAObjectHashDelegate.hashPropertyLock;
 		x = hash == null ? 0 : hash.size();
 		if (x != data.iHashLinkLock) {
 			bResult = false;
 			LOG.warning(msg + " hashLinkLock");
 		}
+		*/
 
 		hash = OAObjectHashDelegate.hashCacheClass;
 		x = hash == null ? 0 : hash.size();
@@ -650,13 +654,14 @@ obj.objectKey.exactEquals(data.objectKey);
 		}
 				*/
 		// hashLinkLock		
+		/*
 		hash = OAObjectHashDelegate.hashPropertyLock;
 		x1 = hash == null ? 0 : hash.size();
 		if (x1 != data.hashLinkLockCnt) {
 			bResult = false;
 			LOG.warning(msg + " hashLinkLock");
 		}
-		
+		*/
 		
 		
 		

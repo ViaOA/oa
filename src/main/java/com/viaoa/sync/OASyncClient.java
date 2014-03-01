@@ -28,6 +28,7 @@ import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
@@ -48,6 +49,7 @@ import com.viaoa.sync.remote.RemoteSyncImpl;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.OALogUtil;
+import com.viaoa.util.OANotExist;
 
 import static com.viaoa.sync.OASyncServer.*;
 
@@ -132,7 +134,7 @@ public class OASyncClient {
             OAObjectKey[] siblingKeys = null;
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
             if (li == null || !li.getCalculated()) {
-                siblingKeys = getDetailSiblings(masterObject, propertyName, bRemoteThread);
+                siblingKeys = getDetailSiblings(masterObject, propertyName, bRemoteThread, li);
             }
             
             String[] props = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
@@ -155,20 +157,25 @@ public class OASyncClient {
         if (result instanceof OAObjectSerializer) result = ((OAObjectSerializer)result).getObject();
         
         //qqqqqqq        
-        if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntGetDetail % 100 == 0)        
-        System.out.println(String.format(
-            "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b, newCnt=%d, dupCnt=%d, totNewCnt=%d, totDupCnt=%d",
-            cntGetDetail, 
-            masterObject, 
-            propertyName, 
-            result==null?"null":result.getClass().getName(),
-            bGetSibs,
-            OAObjectSerializeDelegate.cntNew-xNew, 
-            OAObjectSerializeDelegate.cntDup-xDup,
-            OAObjectSerializeDelegate.cntNew, 
-            OAObjectSerializeDelegate.cntDup
-        ));        
-        
+
+        if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntGetDetail % 100 == 0) {
+            int iNew = OAObjectSerializeDelegate.cntNew; 
+            int iDup = OAObjectSerializeDelegate.cntDup;
+            
+            System.out.println(String.format(
+                "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b, " +
+                "newCnt=%d, dupCnt=%d, totNewCnt=%d, totDupCnt=%d",
+                cntGetDetail, 
+                masterObject, 
+                propertyName, 
+                result==null?"null":result.getClass().getName(),
+                bGetSibs,
+                iNew-xNew, 
+                iDup-xDup,
+                iNew, 
+                iDup
+            ));        
+        }
         return result;
     }
 
@@ -177,8 +184,14 @@ public class OASyncClient {
     /**
      * Find any other siblings to get the same property for.
      */
-    protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property, boolean bRemoteThread) {
+    protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property, boolean bRemoteThread, OALinkInfo linkInfo) {
         Hub siblingHub = null;
+
+        Class valueClass = linkInfo.getToClass();
+        
+        boolean bIsOne2One = OAObjectInfoDelegate.isOne2One(linkInfo);
+        boolean bIsMany = linkInfo.getType() == linkInfo.MANY;
+        
         
         Hub hubThreadLocal = OAThreadLocalDelegate.getGetDetailHub();
         if (hubThreadLocal != null && hubThreadLocal.contains(masterObject)) {
@@ -240,18 +253,21 @@ public class OASyncClient {
             if (obj == null) break;
             if (obj == masterObject) continue;
 
-            Object value = OAObjectReflectDelegate.getRawReference((OAObject)obj, property);
-            if (value == null) {
-                if (!OAObjectPropertyDelegate.isPropertyLoaded((OAObject)obj, property)) {                     
+            Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, property, true);
+            if (value instanceof OANotExist) {
+                if (bIsMany || bIsOne2One) {                
                     OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
                     al.add(key);
                     if (++cnt == 50) break;
-                }
+                } 
+                // otherwise, it must be null
             }
             else if (value instanceof OAObjectKey) {
-                OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
-                al.add(key);
-                if (++cnt == 155) break;
+                if (OAObjectCacheDelegate.get(valueClass, value) == null) {
+                    OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
+                    al.add(key);
+                    if (++cnt == 75) break;
+                }
             }
         }
 

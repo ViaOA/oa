@@ -78,16 +78,6 @@ public class OAObjectHashDelegate {
      */
     protected static Hashtable hashLock = new Hashtable(11, 0.75F);
     
-    
-    /** 
-     * Used by OAObjectHubDelegate getObject() and getHub() when retrieving a value, to set a lock
-     *   it is used in a thread safe manner.  
-     * Key   = OAObject GUID+"."+propertyName
-     * Value = lock info 
-     */
-    static protected HashMap<String, OAPropertyLockDelegate.PropertyLock> hashPropertyLock = new HashMap<String, OAPropertyLockDelegate.PropertyLock>(57, .75f);
-    
-    
     /** 
      * Used by Cache to store all OAObjects.  
      * Key   = Class
@@ -163,7 +153,6 @@ public class OAObjectHashDelegate {
     protected static ArrayList lstRehash = new ArrayList(7);
     static {
     	lstRehash.add(hashLock);
-    	lstRehash.add(hashPropertyLock);
     }
     
     /**

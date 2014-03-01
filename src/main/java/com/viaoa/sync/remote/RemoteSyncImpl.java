@@ -28,7 +28,6 @@ import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 
-
 /**
  * Broadcast methods used to keep OAObjets, Hubs in sync with all computers.
  * @author vvia
@@ -75,7 +74,9 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     }
     
     protected Hub getHub(OAObject obj, String hubPropertyName, boolean bAutoLoad) {
-        if (!bAutoLoad && !OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName)) return null;
+        if (!bAutoLoad) {
+            if (!OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName)) return null;
+        }
         Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);
         if (objx instanceof Hub) return (Hub) objx;
         return null;
@@ -87,9 +88,9 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         OAObject object = OAObjectCacheDelegate.get(masterObjectClass, masterObjectKey);
         if (object == null) return false;
         
-        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
+        Hub h = getHub(object, hubPropertyName, false);
         if (h == null) {
-            OAObjectPropertyDelegate.removeProperty((OAObject)object, hubPropertyName, false);                
+            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)object, hubPropertyName, false);                
             return false;
         }
         
@@ -137,7 +138,6 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         return true;
     }
 
-
     @Override
     public boolean insertInHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj, int pos) {
         OAObject object = OAObjectCacheDelegate.get(masterObjectClass, masterObjectKey);
@@ -145,7 +145,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         
         Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
         if (h == null) {
-            OAObjectPropertyDelegate.removeProperty((OAObject)object, hubPropertyName, false);                
+            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)object, hubPropertyName, false);                
             return false;
         }
         
@@ -154,5 +154,4 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         }
         return true;
     }
-
 }

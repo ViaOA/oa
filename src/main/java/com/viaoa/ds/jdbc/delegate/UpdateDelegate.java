@@ -25,6 +25,7 @@ import java.sql.*;
 import com.viaoa.ds.jdbc.*;
 import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.object.*;
+import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
 import com.viaoa.util.OAString;
 
@@ -132,7 +133,7 @@ public class UpdateDelegate {
                 OAPropertyInfo pi = oi.getPropertyInfo(column.propertyName);
                 if (pi != null && pi.isBlob()) {
                     Object obj = OAObjectPropertyDelegate.getProperty(oaObj, column.propertyName, true);
-                    if (obj == null) continue; // not loaded, no change to it
+                    if (obj == OANotExist.instance) continue; // not loaded, no change to it
                 }
             }
 
