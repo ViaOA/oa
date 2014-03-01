@@ -499,6 +499,7 @@ public class OAObjectReflectDelegate {
         }
         Hub hub = null;
         if (linkInfo == null) return null;
+        boolean bIsNullHub = false;
         try {
             OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
             Class linkClass = linkInfo.toClass;
@@ -508,6 +509,7 @@ public class OAObjectReflectDelegate {
                 obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true);
 
                 if (obj == null) { 
+                    bIsNullHub = true;
                     // since it is in props with a null, then it was placed that way to mean it has 0 objects
                     //   by OAObjectSerializeDelegate._writeObject
                     hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
@@ -560,16 +562,7 @@ public class OAObjectReflectDelegate {
                 return hub;
             }
 
-            // 20120827 see if there are any objects to be selected, could be 0
-            // boolean bIsEmpty = OAObjectHubDelegate.getEmptyHubFlag(oaObj, linkPropertyName);
-            boolean bIsEmpty;
-            if (obj instanceof OANullObject) {
-                obj = null;
-                bIsEmpty = true;
-            }
-            else bIsEmpty = false;
-
-            if (!bThisIsServer && !bIsEmpty && !oi.getLocalOnly() && !bIsCalc) {
+            if (!bThisIsServer && !bIsNullHub && !oi.getLocalOnly() && !bIsCalc) {
                 // request from server
                 hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); // this will always return a Hub
                 if (hub == null) {
@@ -579,7 +572,7 @@ public class OAObjectReflectDelegate {
                 if (HubDelegate.getMasterObject(hub) == null && hub.getSize() == 0 && hub.getObjectClass() == null) {
                     hub = new Hub(linkClass);
                     HubDetailDelegate.setMasterObject(hub, oaObj, null);
-                    bIsEmpty = true;
+                    bIsNullHub = true;
                 }
             }
             else if (hub == null) {
@@ -628,7 +621,7 @@ public class OAObjectReflectDelegate {
                         hub.setSelectOrder(sortOrder);
                     }
                 }
-                if (bIsCalc || bIsEmpty) {
+                if (bIsCalc || bIsNullHub) {
                     hub.cancelSelect();
                 }
 
