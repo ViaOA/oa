@@ -640,19 +640,25 @@ public class RemoteMultiplexerClient {
                         this.msLastUsed = System.currentTimeMillis();                
                         processMessageForStoC2(requestInfo, false);
 
+//qqqqqqqqqqqqqqqqqqqqqqq                        
+                        // 20140303 get events that need to be processed
+                        final ArrayList<Runnable> al = OAThreadLocalDelegate.getRunnables(true);
+                        if (al != null) {
+                            Runnable rr = new Runnable() {
+                                @Override
+                                public void run() {
+                                    // set thread to match???
+                                    for (Runnable r : al) {
+                                        r.run();
+                                    } 
+                                }
+                            };
+                            getExecutorService().submit(rr);
+                        }
+                        
                         synchronized (Lock) {
                             this.requestInfo = null;
                             Lock.notify();
-                        }
-                        
-//qqqqqqqqqqqqqqqqqqqqqqq                        
-                        // 20140303 get events that need to be processed
-                        ArrayList<Runnable> al = OAThreadLocalDelegate.getRunnables(true);
-                        if (al != null) {
-                            for (Runnable r : al) {
-                                getExecutorService().submit(r);
-System.out.println("========== getExecutorService.submit() que="+queExecutorService.size());
-                            } 
                         }
                         if (shouldClose(this)) break;
                     }
@@ -978,8 +984,8 @@ if (tx > 200) {
             AtomicInteger ai = new AtomicInteger();
             @Override
             public Thread newThread(Runnable r) {
-                OARemoteThread t = new OARemoteThread(r); // needs to be this type of thread
-                t.setName("RemoteMultiplexer.thread"+ai.getAndIncrement());
+                OARemoteThread t = new OARemoteThread(r, false); // needs to be this type of thread
+                t.setName("Multiplexer.executorService."+ai.getAndIncrement());
                 t.setDaemon(true);
                 t.setPriority(Thread.NORM_PRIORITY);
                 return t;

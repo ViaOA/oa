@@ -24,6 +24,13 @@ public class OARemoteThreadDelegate {
         return (t instanceof OARemoteThread);
     }
 
+    public static boolean shouldMessageBeQueued() {
+        Thread t = Thread.currentThread();
+        if (!(t instanceof OARemoteThread)) return false;
+        OARemoteThread rt = (OARemoteThread) t;
+        return rt.getShouldQueueEvents();
+    }
+    
     public static boolean isSafeToCallRemoteMethod() {
         Thread t = Thread.currentThread();
         if (!(t instanceof OARemoteThread)) return true;

@@ -127,14 +127,14 @@ public class OASyncClient {
 
         boolean bGetSibs;
         Object result = null;
-        boolean bRemoteThread = OARemoteThreadDelegate.isRemoteThread();
-        if (!bRemoteThread) {
+        boolean b = OARemoteThreadDelegate.shouldMessageBeQueued();
+        if (!b) {
             bGetSibs = true;
             // send siblings to return back with same prop
             OAObjectKey[] siblingKeys = null;
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
             if (li == null || !li.getCalculated()) {
-                siblingKeys = getDetailSiblings(masterObject, propertyName, bRemoteThread, li);
+                siblingKeys = getDetailSiblings(masterObject, propertyName, li);
             }
             
             String[] props = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
@@ -184,7 +184,7 @@ public class OASyncClient {
     /**
      * Find any other siblings to get the same property for.
      */
-    protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property, boolean bRemoteThread, OALinkInfo linkInfo) {
+    protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property, OALinkInfo linkInfo) {
         Hub siblingHub = null;
 
         Class valueClass = linkInfo.getToClass();

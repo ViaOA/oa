@@ -266,7 +266,7 @@ public class OAObjectCacheDelegate {
             if (hl != null && hl.length > 0) {
                 final HubEvent e = new HubEvent(obj,propertyName,oldValue,newValue);
                 
-                if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+                if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                     Runnable r = new Runnable() {
                         @Override
                         public void run() {
@@ -294,7 +294,7 @@ public class OAObjectCacheDelegate {
 	    final int x = hl.length;
 	    if (x > 0) {
             final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
@@ -323,7 +323,7 @@ public class OAObjectCacheDelegate {
 	    if (x > 0) {
             // LOG.finest("Hub="+thisHub+", object="+obj);
 	        final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
@@ -351,7 +351,7 @@ public class OAObjectCacheDelegate {
 	    if (x > 0) {
             // LOG.finest("Hub="+thisHub+", object="+obj);
 	        final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {

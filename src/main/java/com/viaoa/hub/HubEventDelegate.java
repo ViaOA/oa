@@ -55,7 +55,7 @@ public class HubEventDelegate {
 	    final int x = hl.length;
 	    if (x > 0) {
 	        final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
@@ -103,7 +103,7 @@ public class HubEventDelegate {
 	    final int x = hl.length;
 	    if (x > 0) {
             final HubEvent hubEvent = new HubEvent(thisHub);
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
@@ -143,7 +143,7 @@ public class HubEventDelegate {
 	    final int x = hl.length;
 	    if (x > 0) {
             final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
@@ -196,7 +196,7 @@ public class HubEventDelegate {
 	    final int x = hl.length;
 	    if (x > 0) {
             final HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
@@ -275,7 +275,7 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        final HubEvent hubEvent = new HubEvent(thisHub, obj);
 	        
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
@@ -430,7 +430,7 @@ public class HubEventDelegate {
 	    final int x = hl.length;
 	    if (x > 0) {
 	        final HubEvent hubEvent = new HubEvent(thisHub,oaObj,propertyName,oldValue,newValue);
-            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+            if (OARemoteThreadDelegate.shouldMessageBeQueued() && !OAObjectCSDelegate.isServer()) {
 	            Runnable r = new Runnable() {
                     @Override
                     public void run() {

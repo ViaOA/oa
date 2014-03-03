@@ -28,17 +28,27 @@ public class OARemoteThread extends Thread {
     volatile boolean watingOnLock;
     volatile long msStartNextThread;
     volatile long msLastUsed;
+    // if true, then some events will be queued to be processed by a Executer in RemoteMultiplerClient
+    private boolean bQueueEvents;
 
     // volatile boolean sendMessages;  // if false then events are not sent, since this is processing a message
     
     private volatile int sendMessageCount;
     
     public OARemoteThread(Runnable r) {
+        this(r, true);
+    }
+    public OARemoteThread(Runnable r, boolean bQueueEvents) {
         super(r);
+        this.bQueueEvents = bQueueEvents;
     }
     public OARemoteThread() {
     }
 
+    public boolean getShouldQueueEvents() {
+        return bQueueEvents;
+    }
+    
     // note: this is overwritten to start a new thread
     public void startNextThread() {
         startedNextThread = true;
