@@ -115,6 +115,7 @@ public class OAObjectEventDelegate {
 		    }
 	    }
 		
+		Object origOldObj = oldObj;
         if (oldObj instanceof OAObjectKey) {
             boolean b = false;
             if (newObj instanceof OAObject) {
@@ -152,12 +153,12 @@ public class OAObjectEventDelegate {
     	if (linkInfo != null){
     		// must update ref properties before sending events
             // 20110314: need to store nulls, so that it wont go back to server everytime
-            OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, oldObj, bWasEmpty, false);         
+            OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, origOldObj, bWasEmpty, false);         
         }
     	else {
     	    // 20130318
     	    if (propInfo != null && propInfo.isBlob()) {
-                OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, oldObj, bWasEmpty, false);         
+                OAObjectPropertyDelegate.setPropertyCAS(oaObj, propertyName, newObj, origOldObj, bWasEmpty, false);         
     	    }
     	}
 
@@ -212,6 +213,7 @@ public class OAObjectEventDelegate {
             if (!bLocalOnly) {
                 // prior to 20100406, this was always calling these methods
                 OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+                //note: this next method will just return, since fireBeforePropChange doing this
                 OAObjectCSDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj);
             }
         }
@@ -228,6 +230,7 @@ public class OAObjectEventDelegate {
         
     	// Note: this needs to be ran even if isSuppressingEvents(), it wont send messages but it might need to update detail hubs
     	if (!bIsLoading || OAObjectHubDelegate.isInHub(oaObj)) {  // 20110719 needs to send if obj is in a Hub - in case other clients need the change
+//qqqqvvvvvvvvvvv if OARemoteThread, then put in another thread?    	    
     	    sendHubPropertyChange(oaObj, propertyName, oldObj, newObj, linkInfo);
     	    OAObjectCacheDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj, bLocalOnly, true);
     	}
@@ -262,10 +265,9 @@ public class OAObjectEventDelegate {
         }
 	}	
 
-	public static void sendHubPropertyChange(OAObject oaObj, String propertyName, Object oldObj, Object newObj, OALinkInfo linkInfo) {
+	public static void sendHubPropertyChange(final OAObject oaObj, final String propertyName, final Object oldObj, final Object newObj, final OALinkInfo linkInfo) {
     	// Note: don't add this, HubEventDelegate will do it after it updates detail hubs:
 		//        if (OAObjectFlagDelegate.isSuppressingPropertyChangeEvents()) return;
-
 		// Note: oldObj could be OAObjectKey
 		
         WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);

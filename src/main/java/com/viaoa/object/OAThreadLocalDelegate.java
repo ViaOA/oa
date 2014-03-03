@@ -17,17 +17,12 @@ All rights reserved.
 */
 package com.viaoa.object;
 
-import java.io.File;
-import java.io.PrintWriter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
-
 import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
-import com.viaoa.sync.*;
 import com.viaoa.hub.Hub;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAArray;
@@ -63,6 +58,7 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalIsSendingEvent = new AtomicInteger(); // used to manage calcPropertyChanges while another event(s) is being processed
     private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
     private static AtomicInteger TotalGetDetailHub = new AtomicInteger();
+    private static AtomicInteger TotalRunnable = new AtomicInteger();
 
     public static final HashMap<Object, OAThreadLocal[]> hmLock = new HashMap<Object, OAThreadLocal[]>(53, .75f);
     
@@ -1009,5 +1005,46 @@ public class OAThreadLocalDelegate {
         return getOAThreadLocal().requestInfo;
     }
 
+//qqqqqqqqqqqqqqqqqqqqqqq    
+
+    // Runnable ---------------
+    /**
+       These are the events from a OARemoteThread, that will be put in a queue
+       to be processed by an ExecutionerService
+    */
+    public static ArrayList<Runnable> getRunnables(boolean bClear) {
+        if (OAThreadLocalDelegate.TotalRunnable.get() == 0) {
+            return null;
+        }
+        ArrayList<Runnable> al = getRunnables(OAThreadLocalDelegate.getThreadLocal(false), bClear);
+        return al;
+    }
+    protected static ArrayList<Runnable> getRunnables(OAThreadLocal ti, boolean bClear) {
+        if (ti == null) return null;
+        ArrayList<Runnable> al = ti.alRunnable;
+        if (bClear) {
+            ti.alRunnable = null;
+            OAThreadLocalDelegate.TotalRunnable.decrementAndGet();
+        }
+        return al;
+    }
+    public static void addRunnable(Runnable run) {
+        addRunnable(OAThreadLocalDelegate.getThreadLocal(true), run);
+    }
+    protected static void addRunnable(OAThreadLocal ti, Runnable run) {
+        if (ti == null) return;
+        if (ti.alRunnable == null) {
+            ti.alRunnable = new ArrayList<Runnable>();
+            OAThreadLocalDelegate.TotalRunnable.incrementAndGet();
+        }
+        ti.alRunnable.add(run);
+    }
+    public static void clearRunnables() {
+        clearRunnables(OAThreadLocalDelegate.getThreadLocal(true));
+    }
+    protected static void clearRunnables(OAThreadLocal ti) {
+        if (ti == null) return;
+        ti.alRunnable = null;
+    }
 }
 

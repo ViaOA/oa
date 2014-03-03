@@ -444,7 +444,7 @@ public class OAObjectInfoDelegate {
 	    a weakreference only.  
 	*/
 	public static boolean cacheHub(OALinkInfo li, Hub hub) {
-	    if (li.cacheSize < 1) return false;
+	    if (li == null || hub == null || li.cacheSize < 1) return false;
 	    
 	    Vector vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
 	    if (vecCache == null) {

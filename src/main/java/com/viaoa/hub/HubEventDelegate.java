@@ -21,6 +21,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 
 /**
  * Delegate used to register Hub listeners, get Listeners and to send Events to Hub listeners. 
@@ -50,19 +51,38 @@ public class HubEventDelegate {
 	}
 	
 	public static void fireAfterRemoveEvent(Hub thisHub, Object obj, int pos) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    final HubListener[] hl = getAllListeners(thisHub);
+	    final int x = hl.length;
 	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-	        try {
-    	        OAThreadLocalDelegate.setSendingEvent(true);
-    	        for (int i=0; i<x; i++) { 
-    	        	hl[i].afterRemove(hubEvent);
+	        final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            OAThreadLocalDelegate.setSendingEvent(true);
+                            for (int i=0; i<x; i++) { 
+                                hl[i].afterRemove(hubEvent);
+                            }
+                        }
+                        finally {
+                            OAThreadLocalDelegate.setSendingEvent(false);
+                        }
+                    }
+                };
+                OAThreadLocalDelegate.addRunnable(r);
+            }
+            else {
+    	        try {
+        	        OAThreadLocalDelegate.setSendingEvent(true);
+        	        for (int i=0; i<x; i++) { 
+        	        	hl[i].afterRemove(hubEvent);
+        	        }
     	        }
-	        }
-	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
-	        }
+    	        finally {
+    	            OAThreadLocalDelegate.setSendingEvent(false);
+    	        }
+            }
 	    }
 	    OAObjectCacheDelegate.fireAfterRemoveEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
@@ -79,13 +99,26 @@ public class HubEventDelegate {
 	    }
 	}
 	public static void fireAfterRemoveAllEvent(Hub thisHub) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    final HubListener[] hl = getAllListeners(thisHub);
+	    final int x = hl.length;
 	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].afterRemoveAll(hubEvent);
-	        }
+            final HubEvent hubEvent = new HubEvent(thisHub);
+            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i=0; i<x; i++) { 
+                            hl[i].afterRemoveAll(hubEvent);
+                        }
+                    }
+                };
+                OAThreadLocalDelegate.addRunnable(r);
+            }
+            else {
+    	        for (int i=0; i<x; i++) { 
+    	        	hl[i].afterRemoveAll(hubEvent);
+    	        }
+            }
 	    }
         //fireMasterObjectChangeEvent(thisHub, true);
 	}
@@ -106,19 +139,38 @@ public class HubEventDelegate {
 	    }
 	}
 	public static void fireAfterAddEvent(Hub thisHub, Object obj, int pos) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    final HubListener[] hl = getAllListeners(thisHub);
+	    final int x = hl.length;
 	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-	        try {
-    	        OAThreadLocalDelegate.setSendingEvent(true);
-    	        for (int i=0; i<x; i++) { 
-    	        	hl[i].afterAdd(hubEvent);
+            final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            OAThreadLocalDelegate.setSendingEvent(true);
+                            for (int i=0; i<x; i++) { 
+                                hl[i].afterAdd(hubEvent);
+                            }
+                        }
+                        finally {
+                            OAThreadLocalDelegate.setSendingEvent(false);
+                        }
+                    }
+                };
+                OAThreadLocalDelegate.addRunnable(r);
+            }
+            else {
+    	        try {
+        	        OAThreadLocalDelegate.setSendingEvent(true);
+        	        for (int i=0; i<x; i++) { 
+        	        	hl[i].afterAdd(hubEvent);
+        	        }
     	        }
-	        }
-	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
-	        }
+    	        finally {
+    	            OAThreadLocalDelegate.setSendingEvent(false);
+    	        }
+            }
 	    }
 	    OAObjectCacheDelegate.fireAfterAddEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
@@ -140,19 +192,38 @@ public class HubEventDelegate {
 	    }
 	}
 	public static void fireAfterInsertEvent(Hub thisHub, Object obj, int pos) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    final HubListener[] hl = getAllListeners(thisHub);
+	    final int x = hl.length;
 	    if (x > 0) {
-	        try {
-	            OAThreadLocalDelegate.setSendingEvent(true);
-    	        HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
-    	        for (int i=0; i<x; i++) { 
-    	        	hl[i].afterInsert(hubEvent);
-    	        }
-	        }
-	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
-	        }
+            final HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
+            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            OAThreadLocalDelegate.setSendingEvent(true);
+                            for (int i=0; i<x; i++) { 
+                                hl[i].afterInsert(hubEvent);
+                            }
+                        }
+                        finally {
+                            OAThreadLocalDelegate.setSendingEvent(false);
+                        }
+                    }
+                };
+                OAThreadLocalDelegate.addRunnable(r);
+            }
+            else {
+                try {
+                    OAThreadLocalDelegate.setSendingEvent(true);
+                    for (int i=0; i<x; i++) { 
+                        hl[i].afterInsert(hubEvent);
+                    }
+                }
+                finally {
+                    OAThreadLocalDelegate.setSendingEvent(false);
+                }
+            }
 	    }
 	    OAObjectCacheDelegate.fireAfterInsertEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
@@ -199,13 +270,27 @@ public class HubEventDelegate {
 	    }
 	}
 	public static void fireAfterDeleteEvent(Hub thisHub, Object obj) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    final HubListener[] hl = getAllListeners(thisHub);
+	    final int x = hl.length;
 	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub, obj);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].afterDelete(hubEvent);
-	        }
+	        final HubEvent hubEvent = new HubEvent(thisHub, obj);
+	        
+            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i=0; i<x; i++) { 
+                            hl[i].afterDelete(hubEvent);
+                        }
+                    }
+                };
+                OAThreadLocalDelegate.addRunnable(r);
+            }
+            else {
+    	        for (int i=0; i<x; i++) { 
+    	        	hl[i].afterDelete(hubEvent);
+    	        }
+            }
 	    }
         //fireMasterObjectChangeEvent(thisHub, false);
 	}
@@ -341,19 +426,37 @@ public class HubEventDelegate {
 	        }
 	    }
 	
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
-	    int i;
+	    final HubListener[] hl = getAllListeners(thisHub);
+	    final int x = hl.length;
 	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub,oaObj,propertyName,oldValue,newValue);
-	        try {
-	            OAThreadLocalDelegate.setSendingEvent(true);
-    	        for (i=0; i<x; i++) {
-    	            hl[i].afterPropertyChange(hubEvent);
-    	        }
+	        final HubEvent hubEvent = new HubEvent(thisHub,oaObj,propertyName,oldValue,newValue);
+            if (OARemoteThreadDelegate.isRemoteThread() && !OAObjectCSDelegate.isServer()) {
+	            Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            OAThreadLocalDelegate.setSendingEvent(true);
+                            for (int i=0; i<x; i++) {
+                                hl[i].afterPropertyChange(hubEvent);
+                            }
+                        }
+                        finally {
+                            OAThreadLocalDelegate.setSendingEvent(false);
+                        }
+                    }
+                };
+                OAThreadLocalDelegate.addRunnable(r);
 	        }
-	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
+	        else {
+    	        try {
+    	            OAThreadLocalDelegate.setSendingEvent(true);
+        	        for (int i=0; i<x; i++) {
+        	            hl[i].afterPropertyChange(hubEvent);
+        	        }
+    	        }
+    	        finally {
+    	            OAThreadLocalDelegate.setSendingEvent(false);
+    	        }
 	        }
 	    }
 	}

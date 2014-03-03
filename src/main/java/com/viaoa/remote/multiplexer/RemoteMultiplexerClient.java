@@ -29,6 +29,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -548,14 +554,14 @@ public class RemoteMultiplexerClient {
     private ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
     private OARemoteThread getRemoteClientThread(RequestInfo ri) {
         OARemoteThread rt;
-        boolean b = alRemoteClientThread.size() < 15;
+        boolean b = alRemoteClientThread.size() < 10;
         rt = _getRemoteClientThread(ri, b);
         if (rt == null) {
             for (int i=0; i<3; i++) {
                 rt = _getRemoteClientThread(ri, false);
                 if (rt != null) break;
                 try {
-                    Thread.sleep(1);
+                    Thread.sleep(3);
                 }
                 catch (Exception e) {
                 }
@@ -637,6 +643,16 @@ public class RemoteMultiplexerClient {
                         synchronized (Lock) {
                             this.requestInfo = null;
                             Lock.notify();
+                        }
+                        
+//qqqqqqqqqqqqqqqqqqqqqqq                        
+                        // 20140303 get events that need to be processed
+                        ArrayList<Runnable> al = OAThreadLocalDelegate.getRunnables(true);
+                        if (al != null) {
+                            for (Runnable r : al) {
+                                getExecutorService().submit(r);
+System.out.println("========== getExecutorService.submit() que="+queExecutorService.size());
+                            } 
                         }
                         if (shouldClose(this)) break;
                     }
@@ -950,4 +966,40 @@ if (tx > 200) {
         hmNameToBind.put(name, bind);
         return bind;
     }
+
+
+    // thread pool
+    private ThreadPoolExecutor executorService;
+    private LinkedBlockingQueue<Runnable> queExecutorService;
+    protected ExecutorService getExecutorService() {
+        if (executorService != null) return executorService;
+
+        ThreadFactory tf = new ThreadFactory() {
+            AtomicInteger ai = new AtomicInteger();
+            @Override
+            public Thread newThread(Runnable r) {
+                OARemoteThread t = new OARemoteThread(r); // needs to be this type of thread
+                t.setName("RemoteMultiplexer.thread"+ai.getAndIncrement());
+                t.setDaemon(true);
+                t.setPriority(Thread.NORM_PRIORITY);
+                return t;
+            }
+        };
+        
+        queExecutorService = new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE);
+        // min/max must be equal, since new threads are only created when queue is full
+        executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, 
+                queExecutorService, tf) 
+        {
+            @Override
+            public Future<?> submit(Runnable task) {
+                LOG.fine("running task in thread="+Thread.currentThread().getName());
+                return super.submit(task);
+            }
+        };
+        executorService.allowCoreThreadTimeOut(true);
+        
+        return executorService;
+    }
+
 }

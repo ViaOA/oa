@@ -218,7 +218,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @param linkInfo
      *            from hub class to master object
      */
-    public Hub(Class clazz, OAObject masterObject, OALinkInfo linkInfo) {
+    public Hub(Class clazz, OAObject masterObject, OALinkInfo linkInfo, boolean bCreateSelect) {
         this(clazz, 5);
         if (linkInfo == null) {
             HubDetailDelegate.setMasterObject(this, masterObject);
@@ -226,17 +226,19 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         else {
             HubDetailDelegate.setMasterObject(this, masterObject, linkInfo);
 
-            // create select, but dont call select.select(), since it could be
-            // coming from server. See: OAObjectReflectDelegate.getReferenceHub(..)
-            OASelect sel = HubSelectDelegate.createNewSelect(this);
-            if (masterObject != null) {
-                sel.setWhereObject(masterObject);
-                sel.setPropertyFromWhereObject(linkInfo.getReverseName());
+            if (bCreateSelect) {
+                // create select, but dont call select.select(), since it could be
+                // coming from server. See: OAObjectReflectDelegate.getReferenceHub(..)
+                OASelect sel = HubSelectDelegate.createNewSelect(this);
+                if (masterObject != null) {
+                    sel.setWhereObject(masterObject);
+                    sel.setPropertyFromWhereObject(linkInfo.getReverseName());
+                }
             }
         }
     }
     public Hub(Class clazz, OAObject masterObject) {
-        this(clazz, masterObject, null);
+        this(clazz, masterObject, null, true);
     }
     /**
      * This will set the new capacity for the Hub.
