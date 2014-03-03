@@ -35,14 +35,17 @@ public class OARemoteThread extends Thread {
     
     private volatile int sendMessageCount;
     
+    public OARemoteThread() {
+    }
+    public OARemoteThread(boolean bQueueEvents) {
+        this.bQueueEvents = bQueueEvents;
+    }
     public OARemoteThread(Runnable r) {
-        this(r, true);
+        super(r);
     }
     public OARemoteThread(Runnable r, boolean bQueueEvents) {
         super(r);
         this.bQueueEvents = bQueueEvents;
-    }
-    public OARemoteThread() {
     }
 
     public boolean getShouldQueueEvents() {

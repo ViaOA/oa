@@ -56,7 +56,7 @@ import static com.viaoa.sync.OASyncServer.*;
 public class OASyncClient {
     protected static Logger LOG = Logger.getLogger(OASyncClient.class.getName());
 
-    static final int MAX_ThreadCount = 160;
+    static final int MAX_ThreadCount = 100;
     
     /** this is used to create a connection (socket) to GSMR server. */
     private MultiplexerClient multiplexerClient;

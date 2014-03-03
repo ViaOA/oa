@@ -106,6 +106,10 @@ public abstract class OACircularQueue<TYPE> {
     public void addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
             int posHead = (int) (queueHeadPosition++ % queueSize);
+//qqqqqqqqqqqqqqqqqqqqqq            
+if (queueHeadPosition % 1000 == 0) {
+    System.out.println("OACircularQueue size="+queueHeadPosition);
+}
             if (queueHeadPosition < 0) {
                 queueHeadPosition = posHead + 1;
             }

@@ -280,7 +280,7 @@ public class RemoteMultiplexerClient {
                 socket = null;
                 synchronized (ri) {
                     if (!ri.responseReturned) {
-                        ri.wait(60000 * 3);  // request timeout
+                        ri.wait(60000);  // request timeout
                     }
                 }
                 if (!ri. responseReturned) {
@@ -310,6 +310,12 @@ public class RemoteMultiplexerClient {
      */
     protected void afterInvokForCtoS(RequestInfo ri) {
         if (ri == null || !ri.bSent) return;
+//qqqqqqqqqqqqqqqqqqqqqq        
+if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
+    //qqqqqqqqqqqqqq
+    
+}
+        
         LOG.fine(ri.toLogString());
     }
 
@@ -624,7 +630,7 @@ public class RemoteMultiplexerClient {
         return false;
     }
     private OARemoteThread createRemoteClientThread() {
-        OARemoteThread t = new OARemoteThread() {
+        OARemoteThread t = new OARemoteThread(true) {
             @Override
             public void run() {
                 for (;;) {
@@ -641,7 +647,7 @@ public class RemoteMultiplexerClient {
                         processMessageForStoC2(requestInfo, false);
 
 //qqqqqqqqqqqqqqqqqqqqqqq                        
-                        // 20140303 get events that need to be processed
+                        // 20140303 get events that need to be processed in another thread
                         final ArrayList<Runnable> al = OAThreadLocalDelegate.getRunnables(true);
                         if (al != null) {
                             Runnable rr = new Runnable() {
@@ -984,7 +990,7 @@ if (tx > 200) {
             AtomicInteger ai = new AtomicInteger();
             @Override
             public Thread newThread(Runnable r) {
-                OARemoteThread t = new OARemoteThread(r, false); // needs to be this type of thread
+                OARemoteThread t = new OARemoteThread(r); // needs to be this type of thread
                 t.setName("Multiplexer.executorService."+ai.getAndIncrement());
                 t.setDaemon(true);
                 t.setPriority(Thread.NORM_PRIORITY);

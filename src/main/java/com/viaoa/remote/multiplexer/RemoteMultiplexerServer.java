@@ -807,7 +807,8 @@ public class RemoteMultiplexerServer {
             throw new IllegalArgumentException("callback must be same class as " + interfaceClass);
         }
         if (queueSize < 100) {
-            throw new IllegalArgumentException("queueSize must be greater then 100");
+            queueSize = 100;
+            // throw new IllegalArgumentException("queueSize must be greater then 100");
         }
 
         if (queueName == null) queueName = bindName;
@@ -1319,7 +1320,7 @@ public class RemoteMultiplexerServer {
                     ris = cque.getMessages(qpos, 100);
                 }
                 catch (Exception e) {
-                    LOG.log(Level.WARNING, "Error getting messages from circularQueue", e);
+                    LOG.log(Level.WARNING, "Message queue overrun with msg CircularQueue", e);
                     onException(connectionId, "Message queue overrun", "Message queue overrun", e, true);
                     throw e;
                 }
