@@ -81,7 +81,6 @@ public class HubAddRemoveDelegate {
 
         // send message to OAServer
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
-        
         if (thisHub.isOAObject()) {
             HubCSDelegate.removeFromHub(thisHub, (OAObject) obj, pos);
         }

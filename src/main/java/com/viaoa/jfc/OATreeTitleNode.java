@@ -70,7 +70,8 @@ public class OATreeTitleNode extends OATreeNode {
                     refresh();
                 }
                 void refresh() {
-                    getTree().repaint();
+                    OATree t = getTree();
+                    if (t != null) t.repaint();
                 }
             };
             this.hubCount.addHubListener(hlCount);

@@ -58,7 +58,9 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
             OAObjectCacheDelegate.removeObject((OAObject) obj);
             bResult = true;
         }
-        else bResult = false;
+        else {
+            bResult = false;
+        }
         return bResult;
     }
 
@@ -128,10 +130,14 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     @Override
     public boolean removeFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName, Class objectClassX, OAObjectKey objectKeyX) {
         OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (object == null) return false;
+        if (object == null) {
+            return false;
+        }
         
         Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
-        if (h == null) return false;
+        if (h == null) {
+            return false;
+        }
 
         OAObject objectx = OAObjectCacheDelegate.get(objectClassX, objectKeyX);
         h.remove(objectx);

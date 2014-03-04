@@ -284,7 +284,7 @@ public class RemoteMultiplexerClient {
                     }
                 }
                 if (!ri. responseReturned) {
-                    ri.exceptionMessage = "timeout waiting on response from server queue (see: RemoeteMultiplexerClient)";
+                    ri.exceptionMessage = "timeout waiting on response from server";
                 }
             }
         }
@@ -607,7 +607,7 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
     }
     
     private boolean shouldClose(OARemoteThread remoteThread) {
-        if (alRemoteClientThread.size() < 3) return false;
+        if (alRemoteClientThread.size() < 4) return false;
         long msNow = System.currentTimeMillis();
         if (msNow - msLastCreatedRemoteThread < 1000) return false;;
         int cnt = 0;
@@ -646,7 +646,6 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                         this.msLastUsed = System.currentTimeMillis();                
                         processMessageForStoC2(requestInfo, false);
 
-//qqqqqqqqqqqqqqqqqqqqqqq                        
                         // 20140303 get events that need to be processed in another thread
                         final ArrayList<Runnable> al = OAThreadLocalDelegate.getRunnables(true);
                         if (al != null) {

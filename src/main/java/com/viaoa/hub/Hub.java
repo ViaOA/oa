@@ -416,7 +416,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Flag to know if hub has been changed. This only affects changes that
-     * occured by adds/inserts/removes/replaces and not changes to the Objects
+     * occurred by adds/inserts/removes/replaces and not changes to the Objects
      */
     public void setChanged(boolean b) {
         HubDataDelegate.setChanged(this, b);

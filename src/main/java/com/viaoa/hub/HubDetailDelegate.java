@@ -111,9 +111,18 @@ public class HubDetailDelegate {
         Called by add(), insert(), remove to update an object's reference property to that of the master object.
     */
     protected static void setPropertyToMasterHub(Hub thisHub, Object detailObject, Object objMaster) {
-        if (detailObject == null) return;
-        if (objMaster == null) return;
-        HubDataMaster dm = getDataMaster(thisHub, objMaster.getClass());
+        if (thisHub == null || detailObject == null) return;
+
+        HubDataMaster dm;
+        if (objMaster != null) {
+            dm = getDataMaster(thisHub, objMaster.getClass());
+        }
+        else {
+            dm = thisHub.datam;
+            if (dm == null) {
+                return; 
+            }
+        }
         if (dm.liDetailToMaster == null) return;
 
         // 20090705
