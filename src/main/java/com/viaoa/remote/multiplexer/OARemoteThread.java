@@ -71,7 +71,6 @@ public class OARemoteThread extends Thread {
         return watingOnLock;
     }
     
-    
     public void reset() {
         // sendMessages = false;
         sendMessageCount = 0;
@@ -79,5 +78,4 @@ public class OARemoteThread extends Thread {
         watingOnLock = false;
         msStartNextThread = 0l;
     }
-    
 }

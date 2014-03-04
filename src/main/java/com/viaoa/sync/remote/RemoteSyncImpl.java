@@ -39,6 +39,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         OAObject gobj = OAObjectCacheDelegate.get(objectClass, origKey);
         if (gobj == null) {
+//System.out.println("propertyChange - object not found");//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq            
             return false;  // object not on this system
         }
         OAObjectReflectDelegate.setProperty((OAObject)gobj, propertyName, newValue, null);
@@ -53,6 +54,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     @Override
     public boolean removeObject(Class objectClass, OAObjectKey objectKey) {
         Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
+//if (obj == null) System.out.println("removeObject not found");//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq            
         boolean bResult;
         if (obj != null) {
             OAObjectCacheDelegate.removeObject((OAObject) obj);

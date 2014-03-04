@@ -158,7 +158,7 @@ public class OASyncClient {
         
         //qqqqqqq        
 
-        if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntGetDetail % 100 == 0) {
+        if (OAObjectSerializeDelegate.cntNew-xNew > 25 || cntGetDetail % 100 == 0) {
             int iNew = OAObjectSerializeDelegate.cntNew; 
             int iDup = OAObjectSerializeDelegate.cntDup;
             
