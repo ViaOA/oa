@@ -310,12 +310,12 @@ public class RemoteMultiplexerClient {
      */
     protected void afterInvokForCtoS(RequestInfo ri) {
         if (ri == null || !ri.bSent) return;
-//qqqqqqqqqqqqqqqqqqqqqq        
+/*qqqqqqqqqqqqqqqqqqqqqq        
 if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
-    //qqqqqqqqqqqqqq
-    
+    int xx = 0;
+    xx++;
 }
-        
+*/
         LOG.fine(ri.toLogString());
     }
 
@@ -660,6 +660,8 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                                 }
                             };
                             getExecutorService().submit(rr);
+int x = queExecutorService.size();
+if (x > 10) System.out.println("remoteMultiplerClient.queueSize="+x+" XXXXXXXXXXXXXXXXXXXXXXXXXXX");//qqqqqqqqqqqqqqqqqqqqq
                         }
                         
                         synchronized (Lock) {
@@ -990,7 +992,7 @@ if (tx > 200) {
             AtomicInteger ai = new AtomicInteger();
             @Override
             public Thread newThread(Runnable r) {
-                OARemoteThread t = new OARemoteThread(r); // needs to be this type of thread
+                OARemoteThread t = new OARemoteThread(r, false); // needs to be this type of thread
                 t.setName("Multiplexer.executorService."+ai.getAndIncrement());
                 t.setDaemon(true);
                 t.setPriority(Thread.NORM_PRIORITY);
