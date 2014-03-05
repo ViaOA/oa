@@ -25,6 +25,7 @@ import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAObjectKeyDelegate;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 
@@ -90,16 +91,29 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, 
             String hubPropertyName, Object obj) {
         OAObject object = OAObjectCacheDelegate.get(masterObjectClass, masterObjectKey);
-        if (object == null) return false;
+        
+System.out.println((xxx++)+") addToHub masterClass="+masterObjectClass+", key=" + masterObjectKey+", propname="+hubPropertyName+", obj="+obj);        
+        if (object == null) {
+System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1 "+obj);
+            return false;
+        }
+
+Object objx = OAObjectPropertyDelegate.getProperty(object, hubPropertyName, true);
         
         Hub h = getHub(object, hubPropertyName, false);
         if (h == null) {
+System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 2 "+obj);
+h = getHub(object, hubPropertyName, false);
             OAObjectPropertyDelegate.removePropertyIfNull((OAObject)object, hubPropertyName, false);                
             return false;
         }
         
         if (HubDataDelegate.getPos(h, object, false, false) < 0 ) {
             h.addElement(obj);
+System.out.println("   done");        
+        }
+        else {
+System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 3 "+obj);
         }
         return true;
     }
@@ -128,21 +142,30 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         return true;
     }
 
-
+int xxx = 0;
     @Override
     public boolean removeFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName, Class objectClassX, OAObjectKey objectKeyX) {
+
+System.out.println((xxx++)+") removeFromHub masterClass="+objectClass+", key="+objectKey+", propname="+hubPropertyName+", objClass="+objectClassX+", key="+objectKeyX);        
+        
         OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
         if (object == null) {
+//qqqqqqqqqqqqqqqqqqqqqq            
+System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 1");
+object = OAObjectCacheDelegate.get(objectClass, objectKey);
             return false;
         }
         
         Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
         if (h == null) {
+System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 2");
             return false;
         }
 
         OAObject objectx = OAObjectCacheDelegate.get(objectClassX, objectKeyX);
         h.remove(objectx);
+System.out.println("   done");        
+        
         return true;
     }
 

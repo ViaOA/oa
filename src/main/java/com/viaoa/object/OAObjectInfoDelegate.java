@@ -43,12 +43,48 @@ public class OAObjectInfoDelegate {
         return getOAObjectInfo(obj);
     }
 
+    // 20140305 needs to be able to make sure that reverse link is created
+    public static OAObjectInfo getOAObjectInfo(Class clazz) {
+        OAObjectInfo oi = OAObjectHashDelegate.hashObjectInfo.get(clazz);
+        if (oi != null) return oi;
+        oi = getOAObjectInfo(clazz, new HashMap<Class, OAObjectInfo>());
+        return oi;
+    }
+    private static OAObjectInfo getOAObjectInfo(Class clazz, HashMap<Class, OAObjectInfo> hash) {
+        OAObjectInfo oi = hash.get(clazz);
+        if (oi != null) return oi;
+         
+        oi = _getOAObjectInfo(clazz);
+        hash.put(clazz, oi);
+        
+        // make sure that reverse linkInfos are created.
+        //   ex: ServerRoot.users, the User.class needs to have LinkInfo to serveRoot
+        for (OALinkInfo li : oi.getLinkInfos()) {
+            if (li.type != li.MANY) continue;
+            OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+            if (liRev != null) continue;
+            Class c = li.getToClass();
+            if (c == null) continue;
+            OAObjectInfo oiRev = getOAObjectInfo(c, hash);
+            
+            String revName = li.reverseName;
+            if (OAString.isEmpty(revName)) {
+                li.reverseName = revName = "Reverse"+li.name;
+            }
+
+            liRev = new OALinkInfo(revName, clazz, OALinkInfo.ONE, false, false, li.name);
+            liRev.bPrivateMethod = true;
+            oiRev.getLinkInfos().add(liRev);
+        }
+        return oi;
+    }    
+    
 	
 	/**
 	    Used to cache OAObjectInfo based on Class.
 	    This will always return a valid OAObjectInfo object.
 	*/
-	public static OAObjectInfo getOAObjectInfo(Class clazz) {
+	private static OAObjectInfo _getOAObjectInfo(Class clazz) {
 		boolean bSkip = false;
         if (clazz == null || !OAObject.class.isAssignableFrom(clazz) || OAObject.class.equals(clazz)) {
         	bSkip = true;

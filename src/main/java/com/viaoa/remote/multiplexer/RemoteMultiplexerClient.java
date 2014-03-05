@@ -279,8 +279,11 @@ public class RemoteMultiplexerClient {
                 releaseSocketForCtoS(socket);
                 socket = null;
                 synchronized (ri) {
-                    if (!ri.responseReturned) {
-                        ri.wait(60000);  // request timeout
+                    for (;;) {
+                        if (ri.responseReturned) break;
+//                        ri.wait(60000);  // request timeout
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq                        
+ri.wait(60000 * 180);  // request timeout
                     }
                 }
                 if (!ri. responseReturned) {
@@ -567,7 +570,7 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                 rt = _getRemoteClientThread(ri, false);
                 if (rt != null) break;
                 try {
-                    Thread.sleep(3);
+                    Thread.sleep(i+1);
                 }
                 catch (Exception e) {
                 }
@@ -758,12 +761,14 @@ if (x > 10) System.out.println("remoteMultiplerClient.queueSize="+x+" XXXXXXXXXX
 long t1 = System.currentTimeMillis();                
             synchronized (t.Lock) {
                 t.Lock.notify();  // have RemoteClientThread process the message
-                t.Lock.wait(250);
+//qqqqqqqqqqq turned off for debugging qqqqqqqqqqqqqqqqqq                
+t.Lock.wait();
+//                t.Lock.wait(250);
             }
 long t2 = System.currentTimeMillis();
 long tx = t2 - t1;
 if (tx > 200) {
-    System.out.println("RemoteMultiplexerClient timeout waiting on RemoteThread, waited for "+tx + "ms");
+ //   System.out.println("RemoteMultiplexerClient timeout waiting on RemoteThread, waited for "+tx + "ms");
 }
         }
         else {
