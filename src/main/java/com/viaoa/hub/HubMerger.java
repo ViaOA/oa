@@ -1,20 +1,14 @@
-/*
-This software and documentation is the confidential and proprietary
-information of ViaOA, Inc. ("Confidential Information").
-You shall not disclose such Confidential Information and shall use
-it only in accordance with the terms of the license agreement you
-entered into with ViaOA, Inc.
-
-ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
-SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
-SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
-THIS SOFTWARE OR ITS DERIVATIVES.
-
-Copyright (c) 2001-2013 ViaOA, Inc.
-All rights reserved.
- */
+/*This software and documentation is the confidential and proprietary information of ViaOA, Inc.
+ * ("Confidential Information"). You shall not disclose such Confidential Information and shall use it
+ * only in accordance with the terms of the license agreement you entered into with ViaOA, Inc.
+ * 
+ * ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE SOFTWARE, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
+ * SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
+ * DERIVATIVES.
+ * 
+ * Copyright (c) 2001-2013 ViaOA, Inc. All rights reserved. */
 package com.viaoa.hub;
 
 import java.lang.reflect.Constructor;
@@ -47,14 +41,13 @@ import com.viaoa.util.OAPropertyPath;
  */
 public class HubMerger {
     private static Logger LOG = Logger.getLogger(HubMerger.class.getName());
+    public boolean DEBUG;
 
-    /*
-     * Programming notes: Node: defines the straight path of nodes. Each node has a child node. Data:
+    /* Programming notes: Node: defines the straight path of nodes. Each node has a child node. Data:
      * used to create a tree of nodes for objects in the hubs. If the property is a type=One then the
      * actual Node will have a temp Hub that is used to store the unique values. Each data has an array
      * of children Data. A new Data is created for each object in the parent Data, until the child.node
-     * is null. 20120522 add support for recursive objects in the path
-     */
+     * is null. 20120522 add support for recursive objects in the path */
 
     private Node nodeRoot; // first node from propertyPath
     private Data dataRoot; // node used for the root Hub
@@ -79,25 +72,19 @@ public class HubMerger {
 
     private boolean bServerSideOnly;
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
-            boolean bUseAll) {
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bUseAll) {
         this(hubRoot, hubCombinedObjects, propertyPath, false, null, bUseAll, false);
     }
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
-            boolean bShareActiveObject, boolean bUseAll) {
-        this(hubRoot, hubCombinedObjects, propertyPath, 
-                bShareActiveObject, null, bUseAll, false);
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll) {
+        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, false);
     }
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
-            boolean bShareActiveObject, String selectOrder, 
-            boolean bUseAll)  
-    {
-        this(hubRoot, hubCombinedObjects, propertyPath, 
-                bShareActiveObject, selectOrder, bUseAll, false);
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
+            boolean bUseAll) {
+        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, false);
     }
-    
+
     /**
      * Main constructor that includes all of the config params Used to create an object that will
      * automatically update a Hub with all of the objects from a property path of a Hub.
@@ -119,10 +106,8 @@ public class HubMerger {
      * @param bIncludeRootHub
      *            if the objects in the rootHub should also be included.
      */
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
-            boolean bShareActiveObject, String selectOrder, 
-            boolean bUseAll, boolean bIncludeRootHub) 
-    {
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
+            boolean bUseAll, boolean bIncludeRootHub) {
         if (hubRoot == null) {
             throw new IllegalArgumentException("Root hub can not be null");
         }
@@ -132,8 +117,8 @@ public class HubMerger {
         init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
     }
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, 
-            boolean bShareActiveObject, boolean bUseAll, boolean bIncludeRootHub) {
+    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll,
+            boolean bIncludeRootHub) {
         this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, bIncludeRootHub);
     }
 
@@ -145,16 +130,16 @@ public class HubMerger {
     }
 
     /**
-     * This needs to be set to true if it is only created on the server, 
-     * but client applications will be using the same Hub that is filtered. 
-     * This is so that changes on the hub will be published to the
+     * This needs to be set to true if it is only created on the server, but client applications will be
+     * using the same Hub that is filtered. This is so that changes on the hub will be published to the
      * clients, even if initiated on an OAClientThread.
      */
     public void setServerSideOnly(boolean b) {
         bServerSideOnly = b;
     }
 
-    private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
+    private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
+            boolean bUseAll, boolean bIncludeRootHub) {
         HubData hd = null;
         try {
             // 20120624 hubCombined could be a detail hub.
@@ -171,7 +156,8 @@ public class HubMerger {
         }
     }
 
-    private void _init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder, boolean bUseAll, boolean bIncludeRootHub) {
+    private void _init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
+            boolean bUseAll, boolean bIncludeRootHub) {
         this.hubRoot = hubRoot;
         this.hubCombined = hubCombinedObjects;
         this.path = propertyPath;
@@ -353,14 +339,12 @@ public class HubMerger {
     protected void afterAddRealHub(HubEvent e) {
     }
 
-    /*
-     * //qqqqqq not sure if this is used // check to see if this, and Data.getChildrenCount() can be
+    /* //qqqqqq not sure if this is used // check to see if this, and Data.getChildrenCount() can be
      * removed public int getChildrenCount() { if (!bEnabled) return 0; int cnt = 0;
      * 
      * Node node = nodeRoot; for ( ; node != null; node = node.child) { if (node.data != null) cnt +=
      * node.data.getChildrenCount(); } // this needs to consider what to do if recursive is included cnt
-     * += dataRoot.getChildrenCount(); return cnt; }
-     */
+     * += dataRoot.getChildrenCount(); return cnt; } */
     protected void createNodes() {
         bShareEndHub = !bUseAll;
         Class clazz = hubRoot.getObjectClass();
@@ -371,14 +355,14 @@ public class HubMerger {
             oaPropPath.setup(clazz);
         }
         catch (Exception e) {
-            throw new IllegalArgumentException("Cant find property for PropertyPath=\"" + path + "\" starting with Class " + hubRoot.getObjectClass().getName(), e);
+            throw new IllegalArgumentException("Cant find property for PropertyPath=\"" + path + "\" starting with Class "
+                    + hubRoot.getObjectClass().getName(), e);
         }
         String[] pps = oaPropPath.getProperties();
         Method[] methods = oaPropPath.getMethods();
         Class[] classes = oaPropPath.getClasses();
         Constructor[] filterConstructors = oaPropPath.getFilterConstructors();
-        
-                       
+
         Object[][] filterParamValues = oaPropPath.getFilterParamValues();
         int pos = 0;
         if (filterParamValues != null) {
@@ -390,7 +374,7 @@ public class HubMerger {
                             //qqqqq if any param is "?" then need to have as HubMerger input value(s)
                             // if (filterInputValues == null || pos > filterInputValues.length - 1) throw new RuntimeExcepiton(...
                             // objs[i] = filterInputValues[pos++]; // this will need to be replacement value
-                            
+
                             throw new RuntimeException("propertyPath has filter with input param '?', which is not yet supported");
                         }
                     }
@@ -429,7 +413,8 @@ public class HubMerger {
 
             OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, prop);
             if (linkInfo == null) {
-                throw new IllegalArgumentException("Cant find " + prop + " for PropertyPath \"" + path + "\" starting with Class " + hubRoot.getObjectClass().getName());
+                throw new IllegalArgumentException("Cant find " + prop + " for PropertyPath \"" + path + "\" starting with Class "
+                        + hubRoot.getObjectClass().getName());
             }
             bLastWasMany = linkInfo.getType() == linkInfo.MANY;
             lastLinkInfo = linkInfo;
@@ -467,12 +452,15 @@ public class HubMerger {
         if (!hubCombined.getObjectClass().equals(clazz)) {
             // if (!OAObject.class.equals(clazz)) { // 20120809 could be using generic type reference
             // (ex: OALeftJoin.A)
-            throw new IllegalArgumentException("Classes do not match.  Property path \"" + path + "\" is for objects of Class " + clazz.getName() + " and hubCombined is for objects of Class " + hubCombined.getObjectClass());
+            throw new IllegalArgumentException("Classes do not match.  Property path \"" + path + "\" is for objects of Class "
+                    + clazz.getName() + " and hubCombined is for objects of Class " + hubCombined.getObjectClass());
             // }
         }
         if (bIncludeRootHub) {
             if (!hubRoot.getObjectClass().equals(clazz)) {
-                throw new IllegalArgumentException("IncludeRootHub=true, and HubRoot class does not match.  Property path \"" + path + "\" is for objects of Class " + clazz.getName() + " and hubCombined is for objects of Class " + hubCombined.getObjectClass());
+                throw new IllegalArgumentException("IncludeRootHub=true, and HubRoot class does not match.  Property path \"" + path
+                        + "\" is for objects of Class " + clazz.getName() + " and hubCombined is for objects of Class "
+                        + hubCombined.getObjectClass());
             }
         }
     }
@@ -497,8 +485,6 @@ public class HubMerger {
         close();
     }
 
-    
-    
     class Node {
         Class clazz;
         String property;
@@ -526,7 +512,7 @@ public class HubMerger {
         Node node;
         OAObject parentObject; // parent object of hub
         Hub hub;
-        Hub hubFilterMaster;  // if using filter, then this is the master/orig that is then filtered into "hub"
+        Hub hubFilterMaster; // if using filter, then this is the master/orig that is then filtered into "hub"
         HubFilter hubFilter;
         volatile ArrayList<Data> alChildren;
         boolean bHubListener;
@@ -540,22 +526,20 @@ public class HubMerger {
                 if (!OAObject.class.isAssignableFrom(node.clazz)) {
                     throw new RuntimeException("Hub class does not equal Node class");
                 }
-                /*
-                 * was if (!OAObject.class.equals(node.clazz)) { // 20120809 could be using generic type
+                /* was if (!OAObject.class.equals(node.clazz)) { // 20120809 could be using generic type
                  * reference (ex: OALeftJoin.A) throw new
-                 * RuntimeException("Hub class does not equal Node class"); }
-                 */
+                 * RuntimeException("Hub class does not equal Node class"); } */
             }
             this.node = node;
             this.parentObject = parentObject;
             this.hub = hubNew;
-            
+
             if (node.filterConstructor != null) {
                 this.hubFilterMaster = hubNew;
                 this.hub = new Hub(hubNew.getObjectClass());
                 try {
-                    int x = this.node.filterParams==null?0:this.node.filterParams.length;
-                    Object[] objs = new Object[2+x];
+                    int x = this.node.filterParams == null ? 0 : this.node.filterParams.length;
+                    Object[] objs = new Object[2 + x];
                     objs[0] = this.hubFilterMaster;
                     objs[1] = this.hub;
                     if (x > 0) {
@@ -847,7 +831,7 @@ public class HubMerger {
                 if (!node.child.data.hub.contains(ref)) {
                     // 20140117
                     if (node.child.data.hub == hubCombined) {
-                        if (bServerSideOnly) { 
+                        if (bServerSideOnly) {
                             OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
                         }
                     }
@@ -923,7 +907,7 @@ public class HubMerger {
                     if (!node.child.data.hub.contains(ref)) {
                         // 20140117
                         if (node.child.data.hub == hubCombined) {
-                            if (bServerSideOnly) { 
+                            if (bServerSideOnly) {
                                 OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
                             }
                         }
@@ -1041,11 +1025,16 @@ public class HubMerger {
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
                         // 20120612 dont send event, unless there is a recursive prop, which needs to
                         // have recursives nodes updated
+System.out.println("Removing 1 >> "+obj);//qqqqqqqqqqqqqqqqqqqqqqqqq                        
                         HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);
                         // was: HubAddRemoveDelegate.remove(hubCombined, obj, false, false, false,
                         // false, false);
                     }
                     else {
+
+if (DEBUG) {
+    System.out.println((++qqqq)+"Removing 2 >> path="+path+", obj="+obj+", hubRoot="+hubRoot);//qqqqqqqqqqqqqqqqqqqqqqqqq                        
+}
                         hubCombined.remove(obj);
                     }
                 }
@@ -1061,9 +1050,11 @@ public class HubMerger {
                         OARemoteThreadDelegate.sendMessages();
                     }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) {
+System.out.println("Removing 3 >> "+obj);//qqqqqqqqqqqqqqqqqqqqqqqqq                        
                         HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);
                     }
                     else {
+System.out.println("Removing 4 >> "+obj);//qqqqqqqqqqqqqqqqqqqqqqqqq                        
                         hubCombined.remove(obj);
                     }
                 }
@@ -1273,16 +1264,16 @@ public class HubMerger {
                 for (; node.child.data != null && node.child.data.hub != null;) {
                     Object obj = node.child.data.hub.getAt(0);
                     if (obj == null) break;
-                    
+
                     // 20140117
                     if (b) {
                         b = false;
                         if (node.child.data.hub == hubCombined) {
-                            if (bServerSideOnly) { 
+                            if (bServerSideOnly) {
                                 OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
                             }
                         }
-                    }                    
+                    }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
                         HubAddRemoveDelegate.remove(node.child.data.hub, obj, false, false, false, false, false);
                     }
@@ -1453,7 +1444,6 @@ public class HubMerger {
             if (node.child.liFromParentToChild.getType() != OALinkInfo.ONE) return;
             if (!node.child.liFromParentToChild.getName().equalsIgnoreCase(prop)) return;
 
-
             // 20110324 data might not have been created,
             if (node.child.data == null) return;
 
@@ -1466,7 +1456,7 @@ public class HubMerger {
                 if (!isUsed(ref, node.child)) {
                     // 20140117
                     if (node.child.data.hub == hubCombined) {
-                        if (bServerSideOnly) { 
+                        if (bServerSideOnly) {
                             OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
                         }
                     }
@@ -1479,7 +1469,7 @@ public class HubMerger {
                 if (!node.child.data.hub.contains(ref)) {
                     // 20140117
                     if (node.child.data.hub == hubCombined) {
-                        if (bServerSideOnly) { 
+                        if (bServerSideOnly) {
                             OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
                         }
                     }
@@ -1498,7 +1488,7 @@ public class HubMerger {
                 Data d = alChildren.get(0);
                 if (d.parentObject == evt.getObject()) return;
             }
-            
+
             HubData hd = hubCombined.data;
             boolean b = hd.bInFetch;
             try {
@@ -1523,7 +1513,7 @@ public class HubMerger {
                         if (obj != null) {
                             // 20140117
                             if (node.child.data.hub == hubCombined) {
-                                if (bServerSideOnly) { 
+                                if (bServerSideOnly) {
                                     OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
                                 }
                             }
@@ -1537,10 +1527,8 @@ public class HubMerger {
                         }
                         alChildren.clear();
 
-                        /*
-                         * qqqqqqq was: Data child; child = alChildren.get(0); alChildren.remove(0);
-                         * child.close();
-                         */
+                        /* qqqqqqq was: Data child; child = alChildren.get(0); alChildren.remove(0);
+                         * child.close(); */
                     }
                 }
             }
@@ -1569,4 +1557,5 @@ public class HubMerger {
             }
         }
     }
+static int qqqq;    
 }
