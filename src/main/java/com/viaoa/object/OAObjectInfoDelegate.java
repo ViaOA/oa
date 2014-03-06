@@ -59,7 +59,9 @@ public class OAObjectInfoDelegate {
         
         // make sure that reverse linkInfos are created.
         //   ex: ServerRoot.users, the User.class needs to have LinkInfo to serveRoot
-        for (OALinkInfo li : oi.getLinkInfos()) {
+        int x = oi.getLinkInfos().size();
+        for (int i=0; i<x; i++) {
+            OALinkInfo li = oi.getLinkInfos().get(i);
             if (li.type != li.MANY) continue;
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
             if (liRev != null) continue;

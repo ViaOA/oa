@@ -1,4 +1,4 @@
-package com.theice.mrad.control;
+package com.theice.mrad.control.server;
 
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,6 +11,7 @@ import com.theice.mrad.control.client.RemoteClientController;
 import com.theice.mrad.delegate.ModelDelegate;
 import com.theice.mrad.delegate.RemoteDelegate;
 import com.theice.mrad.model.oa.ClientAppType;
+import com.theice.mrad.model.oa.Company;
 import com.theice.mrad.model.oa.LoginType;
 import com.theice.mrad.model.oa.Router;
 import com.theice.mrad.model.oa.User;
@@ -20,6 +21,8 @@ import com.theice.mrad.model.oa.cs.ServerRoot;
 import com.theice.mrad.remote.RemoteLLOperatorInterface;
 import com.theice.mrad.resource.Resource;
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OAFinder;
+import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
@@ -38,8 +41,22 @@ public class LLADClientControllerTest {
     public LLADClientControllerTest() {
     }
     
+Hub<UserLogin> hubUserLogins;    
     public void test() throws Exception {
-        System.out.println("starting test");
+        hubUserLogins = ModelDelegate.getAllUserLogins();
+        /*
+        for (int i = ModelDelegate.getRouters().getSize(); i < 500; i++) {
+            Router r = new Router();
+            r.setName("Router." + i);
+            ModelDelegate.getRouters().add(r);
+        }
+        for ( ; ; ) {
+            Router r = ModelDelegate.getRouters().getAt(0);
+            if (r == null) break;
+            ModelDelegate.getRouters().remove(r);
+        }
+        */
+        
         for (int i = ModelDelegate.getRouters().getSize(); i < 10; i++) {
             Router r = new Router();
             r.setName("Router." + i);
@@ -57,7 +74,7 @@ public class LLADClientControllerTest {
         }
 
 //qqqqqqqqqqqqq set back to 10        
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 public void run() { //
@@ -129,21 +146,32 @@ public class LLADClientControllerTest {
             Hub<Router> h = ModelDelegate.getRouters();
             
             int x = (int) (Math.random() * h.getSize());
+x = 0;
+if (x > 200) break;
             Router r = h.getAt(x);
             
             Hub<UserLogin> hUserLogin = r.getUserLogins();
             x = hUserLogin.getSize();
-
-            if ((x > 10) || (x > 0 && Math.random() < .2)) {
+if (i == 100) Thread.sleep(2500);
+            if (x == 0 && i > 0) break;
+            if (i >= 100) {
+            // if (x > 0 && Math.random() < .5) {
                 x = (int) (Math.random()*x);
+UserLogin ul = hUserLogin.getAt(x);
+String s = ul.toString();
                 hUserLogin.removeAt(x);
                 continue;
             }
             
             UserLogin ul;
-            if (x == 0 || (x < 5 && Math.random() < .2)) {
+            if (i < 100) {
+            // if (x == 0 || (x < 20 && Math.random() < .2)) {
                 ul = createUserLogin();
                 hUserLogin.add(ul);
+                User user = ul.getUser();
+                user.setFirstName("fname."+i);
+                user.setLastName("fname."+i);
+                continue;
             }
             else {
                 x = (int) (Math.random() * x);
@@ -174,9 +202,9 @@ public class LLADClientControllerTest {
             if ( ((int)(Math.random()*10)) > 7) {
                 Thread.sleep(100);
             }
-Thread.sleep(1);//qqqqqqqq
+Thread.sleep(100);//qqqqqqqq
         }
-        // System.out.println("Thread #"+id+" is done");
+        System.out.println("Thread #"+id+" is done");
     }
 
 
@@ -199,7 +227,7 @@ Thread.sleep(1);//qqqqqqqq
         String host = Resource.getValue(Resource.INI_ServerName);
 host = "127.0.0.1";        
         int port = Resource.getInt(Resource.APP_RemotePort);
-port = 9000;        
+port = 1099;        
         LOG.config(String.format("MRAD server=%s, port=%d", host, port));
         remoteClient.start(host, port);
         
@@ -209,7 +237,6 @@ port = 9000;
         OAObjectReflectDelegate.loadAllReferences(rootServer, 1, 1, false);
         ModelDelegate.initialize(rootServer, rootClient);
         LOG.config("connected to MRAD server was successful");
-        Thread.sleep(2500);
     }
 
 

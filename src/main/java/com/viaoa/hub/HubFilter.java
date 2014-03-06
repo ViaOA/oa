@@ -62,8 +62,8 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     private boolean bOAObjectCacheDelegateListener;
     private HubListenerAdapter<TYPE> hlHubMaster;
     private boolean bNewListFlag;
-    private boolean bClearing;
-    private boolean bUpdating;
+    private volatile boolean bClearing;
+    private volatile boolean bUpdating;
     
     /** 
         Create a new HubFilter using two supplied Hubs.
@@ -606,9 +606,13 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     protected void removeObject(TYPE obj) {
         if (bClosed) return;
         try {
-            if (hub != null) hub.remove(obj);
+            if (hub != null) {
+                hub.remove(obj);
+            }
         }
         catch (Exception e) {
+            System.out.println("HubFilter exception="+e);
+            e.printStackTrace();
         }
     }
     
@@ -623,9 +627,15 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         if (!bUpdating) {
             afterAdd(e.getObject());
         }
+//qqqqqqqqqqqqqqqqqqq        
+else {
+    System.out.println("HubFilter afteAdd bUpdating=true ****************");        
+}
     }
     public void afterAdd(TYPE obj) {
-        if (hubMaster != null && !hubMaster.contains(obj)) hubMaster.add(obj);
+        if (hubMaster != null && !hubMaster.contains(obj)) {
+            hubMaster.add(obj);
+        }
     }
     
     public @Override void afterPropertyChange(HubEvent<TYPE> e) {
@@ -643,6 +653,10 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         if (!bUpdating && !bClearing) {
             afterRemove(e.getObject());
         }
+//qqqqqqqqqqqqqqqqqqq        
+else {
+    System.out.println("HubFilter afteRemove bUpdating=true ************************");        
+}
     }
     public void afterRemove(TYPE obj) {
         if (hubMaster != null) HubFilter.this.afterRemoveFromFilteredHub(obj);

@@ -35,6 +35,7 @@ public class OARemoteThreadDelegate {
         Thread t = Thread.currentThread();
         if (!(t instanceof OARemoteThread)) return true;
         OARemoteThread rt = (OARemoteThread) t;
+        if (!rt.getShouldQueueEvents()) return true;
         if (rt.startedNextThread) return true;
         return false;
     }
@@ -48,7 +49,10 @@ public class OARemoteThreadDelegate {
     public static void startNextThread() {
         Thread t = Thread.currentThread();
         if (t instanceof OARemoteThread) {
-            ((OARemoteThread) t).startNextThread();
+            OARemoteThread rt = (OARemoteThread) t;
+            if (rt.getShouldQueueEvents()) {
+                ((OARemoteThread) t).startNextThread();
+            }
         }
     }
     

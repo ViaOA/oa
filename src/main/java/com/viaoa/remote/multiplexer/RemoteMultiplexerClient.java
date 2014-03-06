@@ -633,6 +633,9 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
         return false;
     }
     private OARemoteThread createRemoteClientThread() {
+        
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqq needs to be set back to "true"    
+//        OARemoteThread t = new OARemoteThread(true) {
         OARemoteThread t = new OARemoteThread(true) {
             @Override
             public void run() {
@@ -1006,7 +1009,8 @@ if (tx > 200) {
         
         queExecutorService = new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE);
         // min/max must be equal, since new threads are only created when queue is full
-        executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, 
+//qqqqqqqqqqqqqqqq set back to 10 qqqqqqqqqqq
+        executorService = new ThreadPoolExecutor(1, 1, 60L, TimeUnit.SECONDS, 
                 queExecutorService, tf) 
         {
             @Override
