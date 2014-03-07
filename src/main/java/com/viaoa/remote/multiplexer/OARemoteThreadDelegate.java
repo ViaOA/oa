@@ -17,6 +17,8 @@ All rights reserved.
 */
 package com.viaoa.remote.multiplexer;
 
+import com.viaoa.sync.OASyncDelegate;
+
 public class OARemoteThreadDelegate {
 
     public static boolean isRemoteThread() {
@@ -50,7 +52,7 @@ public class OARemoteThreadDelegate {
         Thread t = Thread.currentThread();
         if (t instanceof OARemoteThread) {
             OARemoteThread rt = (OARemoteThread) t;
-            if (rt.getShouldQueueEvents()) {
+            if (rt.getShouldQueueEvents() || OASyncDelegate.isServer()) {
                 ((OARemoteThread) t).startNextThread();
             }
         }

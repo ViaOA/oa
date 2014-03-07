@@ -11,6 +11,7 @@
  * Copyright (c) 2001-2013 ViaOA, Inc. All rights reserved. */
 package com.viaoa.remote.multiplexer;
 
+
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
@@ -981,11 +982,25 @@ public class RemoteMultiplexerServer {
     }
 
     private void processBroadcastMessages(final OACircularQueue<RequestInfo> cque, final String bindName, long qpos) throws Exception {
+        int cntMsg = 0;
         for (;;) {
-            RequestInfo[] ris = cque.getMessages(qpos, 50);
-            if (ris == null) {
+            RequestInfo[] ris;
+            ris = cque.getMessages(qpos, 50, 2000);
+            
+            if (ris == null) {  // remove any unneeded threads
+                if (alRemoteClientThread.size() > 3) {
+                    for (OARemoteThread rct : alRemoteClientThread) {
+                        alRemoteClientThread.remove(rct);
+                        synchronized (rct.Lock) {
+                            rct.stopCalled = true;
+                            rct.Lock.notify();
+                        }
+                        break;
+                    }
+                }
                 continue;
             }
+            
             qpos += ris.length;
             for (RequestInfo ri : ris) {
                 if (ri.connectionId == 0) { // sent from object on this server
@@ -1007,18 +1022,34 @@ public class RemoteMultiplexerServer {
                 Object obj = ri.bind.getObject();
                 if (obj == null) continue;
 
-                OARemoteThread t = getRemoteClientThread(ri);
+                OARemoteThread remoteThread = null;
+                int x = alRemoteClientThread.size();
+                for (int i=0; i<x; i++) {
+                    OARemoteThread rct = alRemoteClientThread.get(cntMsg++ % x);
+                    if (rct.requestInfo == null) {
+                        remoteThread = rct;
+                        break;
+                    }
+                }
+                if (remoteThread == null) {
+                    remoteThread = createRemoteClientThread();
+                    alRemoteClientThread.add(remoteThread);
+                    if (alRemoteClientThread.size() > 20) {
+                        LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
+                    }
+                }
                 
                 long ms1 = System.currentTimeMillis();                    
-                synchronized (t.Lock) {
-                    t.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
-                    t.Lock.wait(1250);
+                synchronized (remoteThread.Lock) {
+                    remoteThread.requestInfo = ri;
+                    remoteThread.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
+                    remoteThread.Lock.wait(1250);
                 }
                 long ms2 = System.currentTimeMillis();
 
                 // qqqqqq this can be removed, sanity check only
                 if (!ri.processedByServer && (ms2-ms1) > 1200) {
-                    StackTraceElement[] stes = t.getStackTrace();
+                    StackTraceElement[] stes = remoteThread.getStackTrace();
                     Exception ex = new Exception();
                     ex.setStackTrace(stes);
                     LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
@@ -1032,40 +1063,22 @@ public class RemoteMultiplexerServer {
     private AtomicInteger aiClientThreadCount = new AtomicInteger();
     private ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
 
-    private OARemoteThread getRemoteClientThread(RequestInfo ri) {
-        synchronized (alRemoteClientThread) {
-            for (OARemoteThread rct : alRemoteClientThread) {
-                if (rct.requestInfo == null) {
-                    rct.requestInfo = ri;
-                    return rct;
-                }
-            }
-            OARemoteThread rct = createRemoteClientThread();
-            rct.requestInfo = ri;
-            alRemoteClientThread.add(rct);
-            if (alRemoteClientThread.size() > 20) {
-                LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
-            }
-            return rct;
-        }
-    }
-
     private OARemoteThread createRemoteClientThread() {
         OARemoteThread t = new OARemoteThread() {
             @Override
             public void run() {
-                for (;;) {
+                for ( ;!stopCalled; ) {
                     try {
                         synchronized (Lock) {
                             reset();
                             if (requestInfo == null) {
                                 Lock.wait();
+                                if (requestInfo == null) continue;
                             }
-                            if (requestInfo == null) continue;
                         }
 
-                        this.msLastUsed = System.currentTimeMillis();                
                         processBroadcast(this.requestInfo);
+                        this.msLastUsed = System.currentTimeMillis();                
 
                         synchronized (Lock) {
                             this.requestInfo = null;
@@ -1086,7 +1099,7 @@ public class RemoteMultiplexerServer {
                 }
             }
         };
-        t.setName("RemoteClientThread." + aiClientThreadCount.getAndIncrement());
+        t.setName("OARemoteThread." + aiClientThreadCount.getAndIncrement());
         t.start();
         return t;
     }

@@ -23,6 +23,7 @@ public class OARemoteThread extends Thread {
     
     final Object Lock = new Object();
     
+    volatile boolean stopCalled;
     volatile RequestInfo requestInfo;
     volatile boolean startedNextThread;
     volatile boolean watingOnLock;

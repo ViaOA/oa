@@ -1022,7 +1022,7 @@ public class OAThreadLocalDelegate {
     protected static ArrayList<Runnable> getRunnables(OAThreadLocal ti, boolean bClear) {
         if (ti == null) return null;
         ArrayList<Runnable> al = ti.alRunnable;
-        if (bClear) {
+        if (bClear && ti.alRunnable != null) {
             ti.alRunnable = null;
             OAThreadLocalDelegate.TotalRunnable.decrementAndGet();
         }

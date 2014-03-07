@@ -983,16 +983,19 @@ public class HubMerger {
                 }
             }
             else {
-                try {
-                    lock.readLock().lock();
-                    if (alChildren != null) {
-                        for (Data data : alChildren) {
-                            if (data._isUsed(objFind, nodeFind)) return true;
+                if (alChildren != null) {
+                    for (int i=0; ;i++) {
+                        Data data;
+                        try {
+                            lock.readLock().lock();
+                            if (i >= alChildren.size()) break;
+                            data = alChildren.get(i);
                         }
+                        finally {
+                            lock.readLock().unlock();
+                        }
+                        if (data._isUsed(objFind, nodeFind)) return true;
                     }
-                }
-                finally {
-                    lock.readLock().unlock();
                 }
             }
             return false;

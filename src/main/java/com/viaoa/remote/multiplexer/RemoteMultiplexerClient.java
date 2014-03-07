@@ -561,28 +561,8 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
 
     private AtomicInteger aiClientThreadCount = new AtomicInteger();
     private ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
-    private OARemoteThread getRemoteClientThread(RequestInfo ri) {
-        OARemoteThread rt;
-        boolean b = alRemoteClientThread.size() < 10;
-        rt = _getRemoteClientThread(ri, b);
-        if (rt == null) {
-            for (int i=0; i<3; i++) {
-                rt = _getRemoteClientThread(ri, false);
-                if (rt != null) break;
-                try {
-                    Thread.sleep(i+1);
-                }
-                catch (Exception e) {
-                }
-            }
-            if (rt == null) {
-                rt = _getRemoteClientThread(ri, true);
-            }
-        }
-        return rt;
-    }
     private long msLastCreatedRemoteThread;
-    private OARemoteThread _getRemoteClientThread(RequestInfo ri, boolean bCreateNew) {
+    private OARemoteThread getRemoteClientThread(RequestInfo ri) {
         OARemoteThread remoteThread;
         synchronized (alRemoteClientThread) {
             for (OARemoteThread rt : alRemoteClientThread) {
@@ -593,7 +573,6 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                     }
                 }
             }
-            if (!bCreateNew) return null;
             msLastCreatedRemoteThread = System.currentTimeMillis();
             remoteThread = createRemoteClientThread();
             remoteThread.requestInfo = ri;
@@ -602,51 +581,18 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
         onRemoteThreadCreated(alRemoteClientThread.size());
         return remoteThread;
     }
-    
-    protected void onRemoteThreadCreated(int threadCount) {
-        if (threadCount > 25) {
-            LOG.warning("alRemoteClientThread.size() = "+threadCount);
-        }
-    }
-    
-    private boolean shouldClose(OARemoteThread remoteThread) {
-        if (alRemoteClientThread.size() < 4) return false;
-        long msNow = System.currentTimeMillis();
-        if (msNow - msLastCreatedRemoteThread < 1000) return false;;
-        int cnt = 0;
-        int minFree = 2;
-        if (alRemoteClientThread.size() > 10) minFree = 4;
-        synchronized (alRemoteClientThread) {
-            for (OARemoteThread rt : alRemoteClientThread) {
-                if (rt.msLastUsed+1000 > msNow) continue;
-                synchronized (rt.Lock) {
-                    if (rt.requestInfo == null) {
-                        cnt++;
-                        if (cnt > minFree) {
-                            alRemoteClientThread.remove(remoteThread);
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
     private OARemoteThread createRemoteClientThread() {
-        
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqq needs to be set back to "true"    
-//        OARemoteThread t = new OARemoteThread(true) {
         OARemoteThread t = new OARemoteThread(true) {
             @Override
             public void run() {
-                for (;;) {
+                for (; !stopCalled; ) {
                     try {
                         synchronized (Lock) {
                             reset();
                             if (requestInfo == null) {
                                 Lock.wait();
+                                if (requestInfo == null) continue;
                             }
-                            if (requestInfo == null) continue;
                         }
 
                         this.msLastUsed = System.currentTimeMillis();                
@@ -691,6 +637,35 @@ if (x > 10) System.out.println("remoteMultiplerClient.queueSize="+x+" XXXXXXXXXX
         t.setName("OARemoteThread."+aiClientThreadCount.getAndIncrement());
         t.start();
         return t;
+    }
+    protected void onRemoteThreadCreated(int threadCount) {
+        if (threadCount > 25) {
+            LOG.warning("alRemoteClientThread.size() = "+threadCount);
+        }
+    }
+    private boolean shouldClose(OARemoteThread remoteThread) {
+        if (alRemoteClientThread.size() < 4) return false;
+        long msNow = System.currentTimeMillis();
+        if (msNow - msLastCreatedRemoteThread < 1000) return false;;
+        int cnt = 0;
+        int minFree = 2;
+        if (alRemoteClientThread.size() > 10) minFree = 4;
+        synchronized (alRemoteClientThread) {
+            for (OARemoteThread rt : alRemoteClientThread) {
+                if (rt.msLastUsed+1000 > msNow) continue;
+                synchronized (rt.Lock) {
+                    if (rt.requestInfo == null) {
+                        cnt++;
+                        if (cnt > minFree) {
+                            alRemoteClientThread.remove(remoteThread);
+                            remoteThread.stopCalled = true;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     protected void processMessageForStoC(final VirtualSocket socket, int threadId) throws Exception {
@@ -763,10 +738,10 @@ if (x > 10) System.out.println("remoteMultiplerClient.queueSize="+x+" XXXXXXXXXX
             // test  qqqqqqqqqqqqqqqqqqq
 long t1 = System.currentTimeMillis();                
             synchronized (t.Lock) {
-                t.Lock.notify();  // have RemoteClientThread process the message
-//qqqqqqqqqqq turned off for debugging qqqqqqqqqqqqqqqqqq                
-t.Lock.wait();
-//                t.Lock.wait(250);
+                if (t.requestInfo != null) {
+                    t.Lock.notify();  // have RemoteClientThread process the message
+                    t.Lock.wait(250);
+                }
             }
 long t2 = System.currentTimeMillis();
 long tx = t2 - t1;
@@ -1010,7 +985,7 @@ if (tx > 200) {
         queExecutorService = new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE);
         // min/max must be equal, since new threads are only created when queue is full
 //qqqqqqqqqqqqqqqq set back to 10 qqqqqqqqqqq
-        executorService = new ThreadPoolExecutor(1, 1, 60L, TimeUnit.SECONDS, 
+        executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, 
                 queExecutorService, tf) 
         {
             @Override

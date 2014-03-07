@@ -62,6 +62,7 @@ Hub<UserLogin> hubUserLogins;
             r.setName("Router." + i);
             ModelDelegate.getRouters().add(r);
         }
+        
         for (int i = ModelDelegate.getLoginTypes().getSize(); i < 5; i++) {
             LoginType lt = new LoginType();
             lt.setName("loginType." + i);
@@ -74,7 +75,7 @@ Hub<UserLogin> hubUserLogins;
         }
 
 //qqqqqqqqqqqqq set back to 10        
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 2; i++) {
             final int id = i;
             Thread t = new Thread(new Runnable() {
                 public void run() { //
@@ -141,31 +142,46 @@ Hub<UserLogin> hubUserLogins;
             Thread.sleep(1000);
         }
         
+        System.out.println("Starting");
+        
         for (int i=0; ;i++) {
             if (i % 100 == 0) System.out.println("Thread #"+id+" "+i);        
             Hub<Router> h = ModelDelegate.getRouters();
             
             int x = (int) (Math.random() * h.getSize());
-x = 0;
-if (x > 200) break;
+//x = 0;
+//if (x > 200) break;
             Router r = h.getAt(x);
             
             Hub<UserLogin> hUserLogin = r.getUserLogins();
             x = hUserLogin.getSize();
-if (i == 100) Thread.sleep(2500);
-            if (x == 0 && i > 0) break;
-            if (i >= 100) {
-            // if (x > 0 && Math.random() < .5) {
+if (i == 100) {
+//    Thread.sleep(500);
+}
+//            if (i >= 100) {
+            double d;
+            if (x < 5) d = .18;
+            else if (x < 10) d = .35;
+            else d = .8;
+
+            UserLogin ul;
+            
+            if (x > 0 && Math.random() < d) {
                 x = (int) (Math.random()*x);
-UserLogin ul = hUserLogin.getAt(x);
+                ul = hUserLogin.getAt(x);
+                if (ul == null) continue;
+                User user = ul.getUser();
+                ul.setGateway("*** Removed ***");
 String s = ul.toString();
                 hUserLogin.removeAt(x);
                 continue;
             }
             
-            UserLogin ul;
-            if (i < 100) {
-            // if (x == 0 || (x < 20 && Math.random() < .2)) {
+            if (x < 5) d = .8;
+            else if (x < 10) d = .4;
+            else d = .12;
+
+            if (x == 0 || (x < 20 && Math.random() < .2)) {
                 ul = createUserLogin();
                 hUserLogin.add(ul);
                 User user = ul.getUser();
@@ -197,14 +213,14 @@ String s = ul.toString();
             ul.setLoginType(ModelDelegate.getLoginTypes().getAt(i % 5));
 
             if ( ((int)(Math.random()*10)) > 5) {
-                Thread.sleep(10);
+//                Thread.sleep(10);
             }
             if ( ((int)(Math.random()*10)) > 7) {
-                Thread.sleep(100);
+//                Thread.sleep(100);
             }
-Thread.sleep(100);//qqqqqqqq
+//Thread.sleep(20);//qqqqqqqq
         }
-        System.out.println("Thread #"+id+" is done");
+//        System.out.println("Thread #"+id+" is done");
     }
 
 
@@ -227,7 +243,7 @@ Thread.sleep(100);//qqqqqqqq
         String host = Resource.getValue(Resource.INI_ServerName);
 host = "127.0.0.1";        
         int port = Resource.getInt(Resource.APP_RemotePort);
-port = 1099;        
+port = 9000;        
         LOG.config(String.format("MRAD server=%s, port=%d", host, port));
         remoteClient.start(host, port);
         

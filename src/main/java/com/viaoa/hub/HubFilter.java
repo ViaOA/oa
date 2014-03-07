@@ -573,7 +573,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         for (int i=0; i<hubs.length; i++) {
         	if (hubs[i] != this.hub && hubs[i].dataa != hub.dataa) {
                 obj = (TYPE)hubs[i].getAO();
-        		if (hubs[i].getLinkHub() != null && HubDelegate.isValid(hub)) hub.add(obj);
+        		if (hubs[i].getLinkHub() != null && HubDelegate.isValid(hub)) {
+        		    hub.add(obj);
+        		}
             	else hubs[i].setAO(null);
         	}
         }
@@ -592,18 +594,25 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         to handle a different way (ex: different thread) to handle adding to the hub.
     */
     protected void addObject(TYPE obj) {
+//qqqqqqqqqqqqqq        
+//System.out.println((xxx++)+") HubFilter addObject, obj="+obj);        
         if (bClosed) return;
         try {
-        	if (hub != null) hub.add(obj);
+        	if (hub != null) {
+        	    hub.add(obj);
+        	}
         }
         catch (Exception e) {
         }
     }
+int xxx;    
     /**
         Called to remove an object from the Hub.  This can be overwritten
         to handle a different way (ex: different thread) to handle removing from the hub.
     */
     protected void removeObject(TYPE obj) {
+//qqqqqqqqqqqqqq        
+//        System.out.println((xxx++)+") HubFilter removeObject, obj="+obj);        
         if (bClosed) return;
         try {
             if (hub != null) {
@@ -629,7 +638,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         }
 //qqqqqqqqqqqqqqqqqqq        
 else {
-    System.out.println("HubFilter afteAdd bUpdating=true ****************");        
+//    System.out.println("HubFilter afteAdd bUpdating=true ****************");        
 }
     }
     public void afterAdd(TYPE obj) {
@@ -655,7 +664,7 @@ else {
         }
 //qqqqqqqqqqqqqqqqqqq        
 else {
-    System.out.println("HubFilter afteRemove bUpdating=true ************************");        
+//    System.out.println("HubFilter afteRemove bUpdating=true ************************");        
 }
     }
     public void afterRemove(TYPE obj) {

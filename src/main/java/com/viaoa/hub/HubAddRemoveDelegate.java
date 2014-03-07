@@ -58,7 +58,9 @@ public class HubAddRemoveDelegate {
         }
         
         obj = HubDelegate.getRealObject(thisHub, obj);
-        if (obj == null) return;
+        if (obj == null) {
+            return;
+        }
 
         // check to see if this hub is a detail with LinkInfo.Type.ONE
         OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);

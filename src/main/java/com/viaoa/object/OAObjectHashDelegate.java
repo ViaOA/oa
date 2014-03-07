@@ -83,7 +83,7 @@ public class OAObjectHashDelegate {
      * Key   = Class
      * Value = TreeMap with all of the OAObjects in it.
      */
-	protected static ConcurrentHashMap<Class, Object> hashCacheClass = new ConcurrentHashMap<Class, Object>(147, 0.75f);
+	protected static final ConcurrentHashMap<Class, Object> hashCacheClass = new ConcurrentHashMap<Class, Object>(147, 0.75f);
 	
 	
 	/** 

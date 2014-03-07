@@ -109,8 +109,19 @@ public class HubDataDelegate {
 	    if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
 	    synchronized (thisHub.data) {
 	        pos = thisHub.getPos(obj);
-	        if (pos >= 0) thisHub.data.vector.removeElementAt(pos);
+
+	        if (pos >= 0) {
+Object objx = thisHub.data.vector.get(pos);
+if (obj != objx) {
+    //qqqqqqqqqqqqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+	            thisHub.data.vector.removeElementAt(pos);
+	        }
             else {
+                int xx = 4;
+                xx++;
             	// System.out.println("HubDataDelegate ****************** REMOVE *********** OBJECT NOT FOUND");	  //qqqqqqqqqqqqqqqqqqqqqqqqqqq      
             }
 	    }
