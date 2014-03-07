@@ -20,9 +20,7 @@ package com.viaoa.ds.jdbc.query;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.File;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
 import java.sql.*;
 
 import com.viaoa.object.*;
@@ -32,7 +30,6 @@ import com.viaoa.util.OAConverter;
 import com.viaoa.util.OADate;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.OATime;
-import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.jdbc.*;
 import com.viaoa.ds.jdbc.db.*;
 

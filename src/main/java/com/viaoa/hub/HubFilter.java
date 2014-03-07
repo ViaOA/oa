@@ -594,8 +594,6 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         to handle a different way (ex: different thread) to handle adding to the hub.
     */
     protected void addObject(TYPE obj) {
-//qqqqqqqqqqqqqq        
-//System.out.println((xxx++)+") HubFilter addObject, obj="+obj);        
         if (bClosed) return;
         try {
         	if (hub != null) {
@@ -605,14 +603,12 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         catch (Exception e) {
         }
     }
-int xxx;    
+    
     /**
         Called to remove an object from the Hub.  This can be overwritten
         to handle a different way (ex: different thread) to handle removing from the hub.
     */
     protected void removeObject(TYPE obj) {
-//qqqqqqqqqqqqqq        
-//        System.out.println((xxx++)+") HubFilter removeObject, obj="+obj);        
         if (bClosed) return;
         try {
             if (hub != null) {
@@ -636,10 +632,6 @@ int xxx;
         if (!bUpdating) {
             afterAdd(e.getObject());
         }
-//qqqqqqqqqqqqqqqqqqq        
-else {
-//    System.out.println("HubFilter afteAdd bUpdating=true ****************");        
-}
     }
     public void afterAdd(TYPE obj) {
         if (hubMaster != null && !hubMaster.contains(obj)) {
@@ -662,10 +654,6 @@ else {
         if (!bUpdating && !bClearing) {
             afterRemove(e.getObject());
         }
-//qqqqqqqqqqqqqqqqqqq        
-else {
-//    System.out.println("HubFilter afteRemove bUpdating=true ************************");        
-}
     }
     public void afterRemove(TYPE obj) {
         if (hubMaster != null) HubFilter.this.afterRemoveFromFilteredHub(obj);

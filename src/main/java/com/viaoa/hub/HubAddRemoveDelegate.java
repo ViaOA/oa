@@ -250,7 +250,7 @@ public class HubAddRemoveDelegate {
             HubCSDelegate.addToHub(thisHub, (OAObject) obj);
         }
         if (!internalAdd(thisHub, obj)) {
-            //LOG.warning("VVVVVVVVVVVV NOT ADDED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<");//qqqqqqqqqqqqqqqqq
+            //LOG.warning(" NOT ADDED <<<<<");
             return;
         }
         

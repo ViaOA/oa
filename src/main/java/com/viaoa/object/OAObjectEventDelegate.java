@@ -230,7 +230,6 @@ public class OAObjectEventDelegate {
         
     	// Note: this needs to be ran even if isSuppressingEvents(), it wont send messages but it might need to update detail hubs
     	if (!bIsLoading || OAObjectHubDelegate.isInHub(oaObj)) {  // 20110719 needs to send if obj is in a Hub - in case other clients need the change
-//qqqqvvvvvvvvvvv if OARemoteThread, then put in another thread?    	    
     	    sendHubPropertyChange(oaObj, propertyName, oldObj, newObj, linkInfo);
     	    OAObjectCacheDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj, bLocalOnly, true);
     	}

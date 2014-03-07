@@ -60,7 +60,7 @@ public class OAObjectSerializeDelegate {
         OAObjectDelegate.updateGuid(oaObj.guid);
     }
 	
-	protected static Object _readResolve(OAObject oaObjOrig) throws ObjectStreamException {
+	protected static Object _readResolve(final OAObject oaObjOrig) throws ObjectStreamException {
 		OAObject oaObjNew;
 		boolean bDup;
         if (oaObjOrig.guid == 0) {
@@ -73,10 +73,6 @@ public class OAObjectSerializeDelegate {
 		if (oi.bAddToCache && !oi.bLocalOnly) {
 			oaObjNew = OAObjectCacheDelegate.add(oaObjOrig, false, false);
 			bDup = (oaObjOrig != oaObjNew);
-			if (bDup) {
-			    int xx = 4;
-			    xx++;
-			}
 		}
 		else {
 			oaObjNew = oaObjOrig;
@@ -89,8 +85,6 @@ public class OAObjectSerializeDelegate {
             if (key == null) continue;
             Object value = objs[i+1];
 		
-            OALinkInfo linkInfo = null;
-            
             if (bDup) {  // check to see if reference is needed or not
                 Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false);
                 if (objx != null) {
@@ -103,8 +97,7 @@ public class OAObjectSerializeDelegate {
                     }
                     continue;
                 }
-
-                if (linkInfo == null) linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
+                OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
                 
                 // need to replace any references to oaObjOrig with oaObjNew
     			boolean b = replaceReferences(oaObjOrig, oaObjNew, linkInfo, value);

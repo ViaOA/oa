@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
 
@@ -525,9 +526,11 @@ public class OAObjectCacheDelegate {
     public static OAObject add(OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
         if (bDisableCache) return obj;
         OAObject objx = _add(obj, bErrorIfExists, bAddToSelectAll);
+        /* removed, since serializer does this
         if (objx != obj) {
             OAObjectDelegate.dontFinalize(obj);
         }
+        */ 
         return objx;
     }
     
@@ -540,6 +543,7 @@ public class OAObjectCacheDelegate {
         bDisableRemove = b;
     }
     
+
     private static OAObject _add(OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
         if (bDisableCache) return obj;
         // LOG.finer("obj="+obj);
@@ -564,17 +568,6 @@ public class OAObjectCacheDelegate {
 
         WeakReference ref = (WeakReference) tm.get(ok);
 
-        // 20140306 
-        if (ref == null && obj.newFlag) {
-            OAObjectKey okx = new OAObjectKey(null, ok.guid, true);
-            ref = (WeakReference) tm.get(okx);
-if (ref != null) {
-    //qqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
-        }
-        
         if (ref != null) {
         	result = (OAObject) ref.get();
         	if (result == obj) {
@@ -585,7 +578,8 @@ if (ref != null) {
         int mode = OAThreadLocalDelegate.getObjectCacheAddMode();
         if (result == null) {
             if (mode != IGNORE_ALL) {
-            	tm.put(ok, new WeakReference(obj));
+                ref = new WeakReference(obj);
+            	tm.put(ok, ref);
             }
             result = obj;
         }
@@ -594,11 +588,11 @@ if (ref != null) {
             	if (bErrorIfExists) {
             	    throw new RuntimeException("OAObjectCacheDelegate.add() object already exists "+obj);
             	}
-            	obj.guid = 0; // so that finalize will not try to save the object
             	bAddToSelectAll = false;
             }
             else if (mode == OVERWRITE_DUPS) {
-            	tm.put(ok,new WeakReference(obj));
+                ref = new WeakReference(obj);
+            	tm.put(ok, ref);
             	removeObj = result;
             	result = obj;
                 // LOG.fine("overwrite object="+obj);
@@ -633,11 +627,13 @@ if (ref != null) {
         if (bDisableCache) return;
     	LOG.fine("obj="+obj);
     	TreeMapHolder tmh = getTreeMapHolder(obj.getClass(), true);
-    	
+
         OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
         try {
             tmh.rwl.writeLock().lock();
-            if (oldKey != null) tmh.treeMap.remove(oldKey);
+            if (oldKey != null) {
+                WeakReference refx = tmh.treeMap.remove(oldKey);
+            }
             tmh.treeMap.put(ok, new WeakReference(obj));
         }
         finally {
@@ -659,7 +655,15 @@ if (ref != null) {
             OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
             try {
                 tmh.rwl.writeLock().lock();
-                Object objx = tmh.treeMap.remove(key);
+                WeakReference ref = tmh.treeMap.remove(key);
+                // 20140307 make sure that the obj in tree is the one being removed
+                //   since an obj that is finalized could be reloaded. 
+                if (ref != null) {
+                    Object objx = ref.get();
+                    if (objx != null && objx != obj) {
+                        tmh.treeMap.put(key, ref); // put it back
+                    }
+                }
             }
             finally {
                 tmh.rwl.writeLock().unlock();

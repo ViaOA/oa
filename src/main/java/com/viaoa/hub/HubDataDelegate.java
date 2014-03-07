@@ -109,21 +109,9 @@ public class HubDataDelegate {
 	    if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
 	    synchronized (thisHub.data) {
 	        pos = thisHub.getPos(obj);
-
 	        if (pos >= 0) {
-Object objx = thisHub.data.vector.get(pos);
-if (obj != objx) {
-    //qqqqqqqqqqqqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
 	            thisHub.data.vector.removeElementAt(pos);
 	        }
-            else {
-                int xx = 4;
-                xx++;
-            	// System.out.println("HubDataDelegate ****************** REMOVE *********** OBJECT NOT FOUND");	  //qqqqqqqqqqqqqqqqqqqqqqqqqqq      
-            }
 	    }
 	    if (pos >= 0) {
 	    	if (thisHub.data.bTrackChanges && (obj instanceof OAObject)) {
@@ -155,9 +143,6 @@ if (obj != objx) {
             b = _add2(thisHub, key, obj);
         }
         catch (Exception e) {
-            //qqqqqqqqqqqqqqqqqqqqqqqqq TEST ONLY qqqqqqqqqqqqqqq
-            int x = 4;
-            x++;
         }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
@@ -329,12 +314,6 @@ if (obj != objx) {
 	protected static Object getObjectAt(Hub thisHub, int pos) {
 	    Object ho;
 	    if (pos < 0) return null;
-	    
-if (thisHub == null || thisHub.data == null || thisHub.data.vector == null) {
-    int xx = 4;
-    xx++;
-    return null;//qqqqqqqqqqqqqqqqqqqqqqqq this is a bug with hub readResolve   20120927 that I'm working on
-}
 	    
 	    int size = thisHub.data.vector.size();
 	    if (pos < size) {

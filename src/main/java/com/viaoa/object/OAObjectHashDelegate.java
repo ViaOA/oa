@@ -38,8 +38,8 @@ public class OAObjectHashDelegate {
      * Key   = Class
      * Value = Hashtable of name/methods.  Ex: GETLASTNAME, getLastName() method
      */
-    static private ConcurrentHashMap<Class, Map<String, Method>> hashClassMethod = new ConcurrentHashMap<Class, Map<String, Method>>(151, 0.75F);
-    static private ConcurrentHashMap<Class, Set<String>> hashClassMethodNotFound = new ConcurrentHashMap<Class, Set<String>>(151, 0.75F);
+    static private final ConcurrentHashMap<Class, Map<String, Method>> hashClassMethod = new ConcurrentHashMap<Class, Map<String, Method>>(151, 0.75F);
+    static private final ConcurrentHashMap<Class, Set<String>> hashClassMethodNotFound = new ConcurrentHashMap<Class, Set<String>>(151, 0.75F);
 	
 	
     /** 
@@ -47,7 +47,7 @@ public class OAObjectHashDelegate {
      * Key   = OALinkInfo
      * Value = Vector of Hubs.  The number of hubs is determined by OALinkInfo.setCacheSize(x) method.
      */
-	protected static Hashtable hashLinkInfoCache = new Hashtable(47,0.75f);
+	protected static final Hashtable hashLinkInfoCache = new Hashtable(47,0.75f);
 
 	
 	/** 
@@ -55,7 +55,7 @@ public class OAObjectHashDelegate {
      * 	Key   = Class
      * 	Value = Hub (that is the 'top' (root) Hub of a recursive hub) 
 	 */
-	protected static Hashtable<OAObjectInfo, Hub> hashRootHub = new Hashtable<OAObjectInfo, Hub>(13, .75f);
+	protected static final Hashtable<OAObjectInfo, Hub> hashRootHub = new Hashtable<OAObjectInfo, Hub>(13, .75f);
 	
 
     
@@ -64,7 +64,7 @@ public class OAObjectHashDelegate {
      * Key   = Class
      * Value = OAObjectINfo 
      */
-    static protected ConcurrentHashMap<Class, OAObjectInfo> hashObjectInfo = new ConcurrentHashMap<Class, OAObjectInfo>(147, 0.75F);
+    static protected final ConcurrentHashMap<Class, OAObjectInfo> hashObjectInfo = new ConcurrentHashMap<Class, OAObjectInfo>(147, 0.75F);
     public static Map<Class, OAObjectInfo> getObjectInfoHash() {
     	return hashObjectInfo;
     }
@@ -76,7 +76,7 @@ public class OAObjectHashDelegate {
      * Key   = OAObject
      * Value = OALock
      */
-    protected static Hashtable hashLock = new Hashtable(11, 0.75F);
+    protected static final Hashtable hashLock = new Hashtable(11, 0.75F);
     
     /** 
      * Used by Cache to store all OAObjects.  
@@ -91,7 +91,7 @@ public class OAObjectHashDelegate {
      * Key   = Class
      * Value = Vector of listeners 
      */
-	protected static Hashtable hashCacheListener = new Hashtable(51, .75F); // stores vector per class
+	protected static final Hashtable hashCacheListener = new Hashtable(51, .75F); // stores vector per class
     
 	
     /** 
@@ -99,7 +99,7 @@ public class OAObjectHashDelegate {
      * Key   =  Class
      * Value = WeakRef of Hubs
      */
-    protected static Hashtable hashCacheSelectAllHub = new Hashtable(37,.75F); // clazz, Hub
+    protected static final Hashtable hashCacheSelectAllHub = new Hashtable(37,.75F); // clazz, Hub
     
     
     /** 
@@ -107,7 +107,7 @@ public class OAObjectHashDelegate {
      * Key   = upperCase(Name)
      * Value = Hub
      */
-    protected static Hashtable hashCacheNamedHub = new Hashtable(29,.75F); // clazz, Hub
+    protected static final Hashtable hashCacheNamedHub = new Hashtable(29,.75F); // clazz, Hub
     
     
 	// ============ Get Hashtable Methods =================

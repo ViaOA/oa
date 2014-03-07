@@ -1028,16 +1028,11 @@ public class HubMerger {
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
                         // 20120612 dont send event, unless there is a recursive prop, which needs to
                         // have recursives nodes updated
-System.out.println("Removing 1 >> "+obj);//qqqqqqqqqqqqqqqqqqqqqqqqq                        
                         HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);
                         // was: HubAddRemoveDelegate.remove(hubCombined, obj, false, false, false,
                         // false, false);
                     }
                     else {
-
-if (DEBUG) {
-    System.out.println((++qqqq)+"Removing 2 >> path="+path+", obj="+obj+", hubRoot="+hubRoot);//qqqqqqqqqqqqqqqqqqqqqqqqq                        
-}
                         hubCombined.remove(obj);
                     }
                 }
@@ -1053,11 +1048,9 @@ if (DEBUG) {
                         OARemoteThreadDelegate.sendMessages();
                     }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) {
-System.out.println("Removing 3 >> "+obj);//qqqqqqqqqqqqqqqqqqqqqqqqq                        
                         HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);
                     }
                     else {
-System.out.println("Removing 4 >> "+obj);//qqqqqqqqqqqqqqqqqqqqqqqqq                        
                         hubCombined.remove(obj);
                     }
                 }
@@ -1560,5 +1553,4 @@ System.out.println("Removing 4 >> "+obj);//qqqqqqqqqqqqqqqqqqqqqqqqq
             }
         }
     }
-static int qqqq;    
 }

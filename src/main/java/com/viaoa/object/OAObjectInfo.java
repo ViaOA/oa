@@ -79,6 +79,12 @@ public class OAObjectInfo implements java.io.Serializable {
     	if (this.idProperties == null) this.idProperties = new String[0];
     	return this.idProperties;
     }
+
+    // 20140307
+    public OALinkInfo[] getLinkInfosNew() {
+        OALinkInfo[] lis = getLinkInfos().toArray(new OALinkInfo[0]);
+        return lis;
+    }   
     
     public ArrayList<OALinkInfo> getLinkInfos() {
     	if (alLinkInfo == null) alLinkInfo = new ArrayList<OALinkInfo>(5) {

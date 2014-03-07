@@ -110,6 +110,13 @@ public class OAObjectDelegate {
                 }
             }
             
+            // 20140307
+            for (OALinkInfo li : oi.getLinkInfosNew()) {
+                if (li.getCalculated()) continue;
+                if (li.getPrivateMethod()) continue;
+                OAObjectPropertyDelegate.unsafeSetProperty(oaObj, li.getName(), null);
+            }
+            
 	        if (bAddToCache) {  // needs to run before any property could be set, so that OACS changes will find this new object.
 	        	OAObjectCacheDelegate.add(oaObj, false, false);  // 20090525, was true,true:  dont add to selectAllHub until after loadingObject is false
 	        }

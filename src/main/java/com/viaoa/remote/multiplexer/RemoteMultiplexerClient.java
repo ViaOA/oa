@@ -281,9 +281,7 @@ public class RemoteMultiplexerClient {
                 synchronized (ri) {
                     for (;;) {
                         if (ri.responseReturned) break;
-//                        ri.wait(60000);  // request timeout
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq                        
-ri.wait(60000 * 180);  // request timeout
+                        ri.wait(60000);  // request timeout
                     }
                 }
                 if (!ri. responseReturned) {
@@ -313,12 +311,6 @@ ri.wait(60000 * 180);  // request timeout
      */
     protected void afterInvokForCtoS(RequestInfo ri) {
         if (ri == null || !ri.bSent) return;
-/*qqqqqqqqqqqqqqqqqqqqqq        
-if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
-    int xx = 0;
-    xx++;
-}
-*/
         LOG.fine(ri.toLogString());
     }
 
@@ -611,8 +603,10 @@ if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                                 }
                             };
                             getExecutorService().submit(rr);
-int x = queExecutorService.size();
-if (x > 10) System.out.println("remoteMultiplerClient.queueSize="+x+" XXXXXXXXXXXXXXXXXXXXXXXXXXX");//qqqqqqqqqqqqqqqqqqqqq
+                            int x = queExecutorService.size();
+                            if (x > 19 && x % 10 == 0) {
+                                LOG.fine("queueSize="+x);
+                            }
                         }
                         
                         synchronized (Lock) {
@@ -735,7 +729,7 @@ if (x > 10) System.out.println("remoteMultiplerClient.queueSize="+x+" XXXXXXXXXX
 
         if (ri.bind.usesQueue) {
             OARemoteThread t = getRemoteClientThread(ri);
-            // test  qqqqqqqqqqqqqqqqqqq
+// test  qqqqqqqqqqqqqqqqqqq
 long t1 = System.currentTimeMillis();                
             synchronized (t.Lock) {
                 if (t.requestInfo != null) {
@@ -746,7 +740,7 @@ long t1 = System.currentTimeMillis();
 long t2 = System.currentTimeMillis();
 long tx = t2 - t1;
 if (tx > 200) {
- //   System.out.println("RemoteMultiplexerClient timeout waiting on RemoteThread, waited for "+tx + "ms");
+    System.out.println("RemoteMultiplexerClient timeout waiting on RemoteThread, waited for "+tx + "ms");
 }
         }
         else {
@@ -984,7 +978,6 @@ if (tx > 200) {
         
         queExecutorService = new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE);
         // min/max must be equal, since new threads are only created when queue is full
-//qqqqqqqqqqqqqqqq set back to 10 qqqqqqqqqqq
         executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, 
                 queExecutorService, tf) 
         {
