@@ -563,6 +563,18 @@ public class OAObjectCacheDelegate {
         OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
 
         WeakReference ref = (WeakReference) tm.get(ok);
+
+        // 20140306 
+        if (ref == null && obj.newFlag) {
+            OAObjectKey okx = new OAObjectKey(null, ok.guid, true);
+            ref = (WeakReference) tm.get(okx);
+if (ref != null) {
+    //qqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+        }
+        
         if (ref != null) {
         	result = (OAObject) ref.get();
         	if (result == obj) {
@@ -622,10 +634,10 @@ public class OAObjectCacheDelegate {
     	LOG.fine("obj="+obj);
     	TreeMapHolder tmh = getTreeMapHolder(obj.getClass(), true);
     	
+        OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
         try {
             tmh.rwl.writeLock().lock();
             if (oldKey != null) tmh.treeMap.remove(oldKey);
-            OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
             tmh.treeMap.put(ok, new WeakReference(obj));
         }
         finally {
