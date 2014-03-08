@@ -32,6 +32,14 @@ public abstract class RemoteClientSyncImpl implements RemoteClientSyncInterface 
     private ClientGetDetail clientGetDetail = new ClientGetDetail(); 
     private RemoteDataSourceImpl remoteDataSource;
 
+    /**
+     * Called by OASyncServer.removeObject, to have a object guid removed
+     * from clients cache.
+     */
+    public void removeGuid(int guid) {
+        clientGetDetail.removeGuid(guid);
+    }
+    
     @Override
     public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
         Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys);

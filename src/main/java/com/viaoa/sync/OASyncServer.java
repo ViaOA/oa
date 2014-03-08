@@ -22,9 +22,11 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,7 +46,7 @@ public class OASyncServer {
     public static final String ServerLookupName = "syncserver";
     public static final String SyncLookupName = "oasync";
     public static final String SyncQueueName = "oasync";
-    public static final int QueueSize = 12500;
+    public static final int QueueSize = 15000;
     
     private int port;
     private MultiplexerServer multiplexerServer;
@@ -184,7 +186,57 @@ public class OASyncServer {
         cx.remoteClientSync = rc;
         return rc;
     }
-
+    
+    private LinkedBlockingQueue<Integer> queRemoveGuid;
+    private Thread threadRemoveGuid;
+    private void startQueueGuidThread() {
+        if (queRemoveGuid != null) return;
+        queRemoveGuid = new LinkedBlockingQueue<Integer>();
+        threadRemoveGuid = new Thread(new Runnable() {
+            long msLastError;
+            int cntError;
+            @Override
+            public void run() {
+                for (;;) {
+                    try {
+                        int guid = queRemoveGuid.take(); 
+                        for (Map.Entry<Integer, ClientInfoExt> entry : OASyncServer.this.hmClientInfoExt.entrySet()) {
+                            ClientInfoExt ciex = entry.getValue();
+                            ciex.remoteClientSync.removeGuid(guid);
+                        }
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "Error in removeGuid thread", e);
+                        long ms = System.currentTimeMillis();
+                        if (++cntError > 5) {
+                            if (ms - 2000 < msLastError) {
+                                LOG.warning("too many errors, will stop this GuidRemove thread (not critical)");
+                                break;
+                            }
+                            else {
+                                cntError = 0;
+                            }
+                        }
+                        msLastError = ms;
+                    }
+                }
+            }
+        }, "OASyncServer.RemoveGuid");
+        threadRemoveGuid.setPriority(Thread.MIN_PRIORITY);
+        threadRemoveGuid.setDaemon(true);
+        threadRemoveGuid.start();
+    }
+    
+    public void removeObject(int guid) {
+        if (queRemoveGuid != null) {
+            try {
+                queRemoveGuid.add(guid);
+            }
+            catch (Exception e) {
+            }
+        }
+    }
+    
     // qqqq needs to be called by server   qqqqqqqqq need something similar ?? this should already be working
     //   for query objects/hubs, etc 
     public void saveCache(OACascade cascade, int iCascadeRule) {
@@ -484,6 +536,7 @@ public class OASyncServer {
         getServerInfo();
         getMultiplexerServer().start();
         getRemoteMultiplexerServer().start();
+        startQueueGuidThread();
     }
     
     public void stop() throws Exception {

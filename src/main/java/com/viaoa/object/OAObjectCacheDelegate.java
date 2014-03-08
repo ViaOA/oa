@@ -650,7 +650,8 @@ public class OAObjectCacheDelegate {
     	//LOG.finer("obj="+obj);
         if (obj == null) return;
 
-        TreeMapHolder tmh = getTreeMapHolder(obj.getClass(), false);
+        Class clazz = obj.getClass();
+        TreeMapHolder tmh = getTreeMapHolder(clazz, false);
         if (tmh != null) {
             OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
             try {
@@ -658,11 +659,17 @@ public class OAObjectCacheDelegate {
                 WeakReference ref = tmh.treeMap.remove(key);
                 // 20140307 make sure that the obj in tree is the one being removed
                 //   since an obj that is finalized could be reloaded. 
+                boolean b = true;
                 if (ref != null) {
                     Object objx = ref.get();
                     if (objx != null && objx != obj) {
                         tmh.treeMap.put(key, ref); // put it back
+                        b = false;
                     }
+                }
+                if (b) {
+                    // allow object to be removed from CS
+                    OAObjectCSDelegate.objectRemovedFromCache(clazz, key);
                 }
             }
             finally {

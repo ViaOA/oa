@@ -173,15 +173,19 @@ public class OAObjectCSDelegate {
     /**
      * Remove object from each workstation.
      */
-    protected static boolean removeObject(OAObject oaObj) {
-        if (oaObj == null) return false;
+    protected static void objectRemovedFromCache(Class clazz, OAObjectKey key) {
+        if (key == null) return;
+        /* dont need to call clients, there GC will take care of it
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
-        boolean result;
         if (rs != null) {
-            result = rs.removeObject(oaObj.getClass(), oaObj.getObjectKey());
-        }       
-        else result = false;
-        return result;
+            result = rs.removeObject(clazz, key);
+        }
+        */
+        // 20140308 call server side cache
+        OASyncServer ss = OASyncDelegate.getSyncServer();
+        if (ss != null) {
+            ss.removeObject(key.getGuid());
+        }
     }    
     
 

@@ -32,7 +32,12 @@ import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAObjectSerializerCallback;
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
-@OARemoteInterface
+/**
+ * This is used for each clientSession, that creates a RemoteClientSyncImpl for
+ * getDetail remote requests.  This class will return the object/s for the
+ * request, and "knows" what extra info to include.
+ * @author vvia
+ */
 public class ClientGetDetail {
     private static Logger LOG = Logger.getLogger(ClientGetDetail.class.getName());
 
@@ -40,6 +45,12 @@ public class ClientGetDetail {
     private TreeMap<Integer, Boolean> treeSerialized = new TreeMap<Integer, Boolean>();
     private ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
 
+    public void removeGuid(int guid) {
+        rwLockTreeSerialized.writeLock().lock();
+        treeSerialized.remove(guid);
+        rwLockTreeSerialized.writeLock().unlock();
+    }
+    
     private int errorCnt;
     public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, 
             String property, String[] masterProps, OAObjectKey[] siblingKeys) {
@@ -71,7 +82,7 @@ public class ClientGetDetail {
         if (objx instanceof Hub) {
             Hub h = (Hub) objx;
             if (h.getSharedHub() != null) {
-                h = new Hub();
+                h = new Hub(h.getObjectClass());
                 objx = h;
             }
         }
@@ -96,7 +107,7 @@ public class ClientGetDetail {
         // include the references "around" this object and master object, along with any siblings
       
         
-        long t1 = System.currentTimeMillis();
+        final long t1 = System.currentTimeMillis();
         if (masterObject instanceof OAObject) {
             OAObjectReflectDelegate.loadAllReferences((OAObject) masterObject, false);
         }
