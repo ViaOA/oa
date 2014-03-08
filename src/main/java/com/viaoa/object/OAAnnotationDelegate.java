@@ -169,7 +169,7 @@ public class OAAnnotationDelegate {
         }
 
         // linkInfos
-        ArrayList<OALinkInfo> alLinkInfo = oi.getLinkInfos();
+        List<OALinkInfo> alLinkInfo = oi.getLinkInfos();
         // Ones
         for (Method m : methods) {
             OAOne annotation = (OAOne) m.getAnnotation(OAOne.class);

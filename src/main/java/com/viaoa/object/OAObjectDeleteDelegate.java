@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
@@ -175,7 +176,7 @@ public class OAObjectDeleteDelegate {
 	 */
     public static boolean canDelete(OAObject oaObj) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-        ArrayList al = oi.getLinkInfos();
+        List al = oi.getLinkInfos();
         for (int i=0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (!li.getMustBeEmptyForDelete()) continue;
@@ -197,7 +198,7 @@ public class OAObjectDeleteDelegate {
     }
     public static OALinkInfo[] getMustBeEmptyBeforeDelete(OAObject oaObj) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-        ArrayList al = oi.getLinkInfos();
+        List al = oi.getLinkInfos();
         OALinkInfo[] lis = null;
         for (int i=0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
@@ -238,7 +239,7 @@ public class OAObjectDeleteDelegate {
 	*/
 	private static void deleteChildren(OAObject oaObj, OACascade cascade) {
 		OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-	    ArrayList al = oi.getLinkInfos();
+	    List al = oi.getLinkInfos();
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getCalculated()) continue;

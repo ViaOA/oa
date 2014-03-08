@@ -86,7 +86,7 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
             if ( !hubMaster.getObjectClass().equals(c) ) {
                 // find property to use
                 OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
-                ArrayList al = oi.getLinkInfos();
+                List al = oi.getLinkInfos();
                 for (int i=0; i<al.size(); i++) {
                 	OALinkInfo li = (OALinkInfo) al.get(i);
                 	if (li.getType() == li.ONE && hubMaster.getObjectClass().equals(li.getToClass())) {

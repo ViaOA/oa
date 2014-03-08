@@ -80,7 +80,7 @@ public class HubSerializeDelegate {
 	        // need to reasign  linkInfo, to eliminate linkinfo dups
 	    	boolean bFound = false;	    	
 	        if (thisHub.datau.objectInfo != null) {  // will only happen if objClass is null
-	        	ArrayList al = thisHub.datau.objectInfo.getLinkInfos();
+	        	List al = thisHub.datau.objectInfo.getLinkInfos();
 	        	OALinkInfo liOld = thisHub.datam.liDetailToMaster;
 	        	for (int i=0; i < al.size(); i++) {
 	            	OALinkInfo li = (OALinkInfo) al.get(i);

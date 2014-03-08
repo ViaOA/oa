@@ -17,14 +17,9 @@ All rights reserved.
 */
 package com.viaoa.object;
 
-
 import java.lang.reflect.*;
 import java.util.*;
-
 import com.viaoa.annotation.OAClass;
-import com.viaoa.annotation.OAMany;
-import com.viaoa.annotation.OAOne;
-import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
@@ -220,7 +215,7 @@ public class OAObjectInfoDelegate {
     
     
     private static void createLink(OAObjectInfo thisOI, String name, Class clazz, int type) {
-    	ArrayList al = thisOI.getLinkInfos();
+    	List al = thisOI.getLinkInfos();
     	for (int i=0; i<al.size(); i++) {
     		OALinkInfo li = (OALinkInfo) al.get(i);
     		if (name.equalsIgnoreCase(li.getName())) {
@@ -302,7 +297,7 @@ public class OAObjectInfoDelegate {
     	
     	
     	// combine PropertyInfos
-		ArrayList alThis = thisOI.getPropertyInfos();
+		List alThis = thisOI.getPropertyInfos();
 		for (int x=0; x<2; x++) {
 			ArrayList al;
 			if (x == 0) al = child.getPropertyInfos();
@@ -338,7 +333,7 @@ public class OAObjectInfoDelegate {
     	// combine LinkInfos
 		alThis = thisOI.getLinkInfos();
 		for (int x=0; x<2; x++) {
-			ArrayList al;
+			List al;
 			if (x == 0) al = child.getLinkInfos();
 			else al = parent.getLinkInfos();
 
@@ -391,7 +386,7 @@ public class OAObjectInfoDelegate {
     	
         String name = li.getName();
     	if (name != null && name.length() > 0) {  // see if it was already created
-	    	ArrayList al = thisOI.getLinkInfos();
+	    	List al = thisOI.getLinkInfos();
 	    	for (int i=0; i<al.size(); i++) {
 	    		OALinkInfo lix = (OALinkInfo) al.get(i);
 	    		if (name.equalsIgnoreCase(lix.getName())) {
@@ -420,7 +415,7 @@ public class OAObjectInfoDelegate {
 	*/
 	public static OALinkInfo getRecursiveLinkInfo(OAObjectInfo thisOI, int type) {
 		if (thisOI.thisClass == null) return null;
-        ArrayList al = thisOI.getLinkInfos();
+        List al = thisOI.getLinkInfos();
         OALinkInfo liOne = null;
         OALinkInfo liMany = null;
 
@@ -449,7 +444,7 @@ public class OAObjectInfoDelegate {
 	}
     
     public static OALinkInfo getLinkToOwner(OAObjectInfo thisOI) {
-        ArrayList al = thisOI.getLinkInfos();
+        List al = thisOI.getLinkInfos();
         for (int i=0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
             OALinkInfo liRev = getReverseLinkInfo(li);
@@ -509,7 +504,7 @@ public class OAObjectInfoDelegate {
     public static OALinkInfo getReverseLinkInfo(OALinkInfo thisLi) {
     	if (thisLi == null) return null;
     	if (thisLi.revLinkInfo != null) return thisLi.revLinkInfo;
-        ArrayList al = OAObjectInfoDelegate.getOAObjectInfo(thisLi.toClass).getLinkInfos(); 
+        List al = OAObjectInfoDelegate.getOAObjectInfo(thisLi.toClass).getLinkInfos(); 
     	String findName = thisLi.reverseName;
     	if (findName == null) return null;
         for (int i=0; i < al.size(); i++) {
@@ -643,7 +638,7 @@ public class OAObjectInfoDelegate {
      * @return
      */
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, OAObject fromObject, Hub hub) {
-        ArrayList al = oi.getLinkInfos();
+        List al = oi.getLinkInfos();
         for (int i=0; i<al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
             String s = li.getName();
@@ -659,7 +654,7 @@ public class OAObjectInfoDelegate {
         return getLinkInfo(oi, toClass);
     }
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, Class toClass) {
-        ArrayList al = oi.getLinkInfos();
+        List al = oi.getLinkInfos();
         for (int i=0; i<al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getToClass().equals(toClass)) return li;
@@ -812,10 +807,5 @@ public class OAObjectInfoDelegate {
         
         return revPropertyPath;
     }
-
-
 }
-
-
-
 

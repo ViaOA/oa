@@ -23,6 +23,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.viaoa.annotation.*;
@@ -205,7 +206,7 @@ public class OAAnnotationVerifier {
 
         
         // Verify links
-        ArrayList<OALinkInfo> alLinkInfo = oi.getLinkInfos();
+        List<OALinkInfo> alLinkInfo = oi.getLinkInfos();
         bs = new boolean[alLinkInfo.size()];
         // Ones
         for (Method m : methods) {
@@ -814,8 +815,8 @@ if (true) return true;
             }
         }
 
-        ArrayList<OALinkInfo> al = oi1.getLinkInfos();
-        ArrayList<OALinkInfo> al2 = oi2.getLinkInfos();
+        List<OALinkInfo> al = oi1.getLinkInfos();
+        List<OALinkInfo> al2 = oi2.getLinkInfos();
         if (al != al2 && al == null || al.size() != al2.size()) {
             p("LinkInfos mismatch");
             return false;

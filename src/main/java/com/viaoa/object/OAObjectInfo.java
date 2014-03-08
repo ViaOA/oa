@@ -19,6 +19,7 @@ package com.viaoa.object;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.viaoa.hub.*;
 import com.viaoa.util.OAPropertyPath;
@@ -37,7 +38,7 @@ public class OAObjectInfo implements java.io.Serializable {
 
     protected Class thisClass; // the Class for this ObjectInfo.  Set when calling OAObjectDelegete.getOAObjectInfo
     
-    protected ArrayList<OALinkInfo> alLinkInfo;
+    protected List<OALinkInfo> alLinkInfo;
     protected ArrayList<OACalcInfo> alCalcInfo;
     protected HashSet<String> hsHubCalcInfoName = new HashSet<String>();
     protected String[] idProperties;
@@ -80,14 +81,8 @@ public class OAObjectInfo implements java.io.Serializable {
     	return this.idProperties;
     }
 
-    // 20140307
-    public OALinkInfo[] getLinkInfosNew() {
-        OALinkInfo[] lis = getLinkInfos().toArray(new OALinkInfo[0]);
-        return lis;
-    }   
-    
-    public ArrayList<OALinkInfo> getLinkInfos() {
-    	if (alLinkInfo == null) alLinkInfo = new ArrayList<OALinkInfo>(5) {
+    public List<OALinkInfo> getLinkInfos() {
+    	if (alLinkInfo == null) alLinkInfo = new CopyOnWriteArrayList<OALinkInfo>() {
     	    @Override
     	    public boolean add(OALinkInfo e) {
     	        hmLinkInfo = null;

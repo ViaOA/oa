@@ -138,7 +138,7 @@ public class OAObjectKeyDelegate {
 	    
 	    // need to recalc keys for all children that have this object as part of their object key
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-	    ArrayList al = oi.getLinkInfos();
+	    List al = oi.getLinkInfos();
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i); 
 	        if (!OAObjectReflectDelegate.isReferenceObjectLoadedAndNotEmpty(oaObj, li.name)) continue;

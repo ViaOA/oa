@@ -19,6 +19,7 @@ package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,7 +118,7 @@ public class OAObjectSaveDelegate {
 	*/
 	private static void _save(OAObject oaObj, boolean bOne, int iCascadeRule, OACascade cascade) {
 		OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-		ArrayList al = oi.getLinkInfos();
+		List al = oi.getLinkInfos();
 		for (int i=0;  i < al.size(); i++) {
 			OALinkInfo li = (OALinkInfo) al.get(i);
 			
