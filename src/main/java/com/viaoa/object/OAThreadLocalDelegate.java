@@ -300,7 +300,9 @@ public class OAThreadLocalDelegate {
 			x = --ti.suppressCSMessages;
 			x2 = OAThreadLocalDelegate.TotalSuppressCSMessages.decrementAndGet();
 		}
-        if (x > 30 || x < 0 || x2 > 50 || x2 < 0) LOG.warning("TotalSuppressCSMessages ="+x2+", ti="+x);
+        if (x > 30 || x < 0 || x2 > 50 || x2 < 0) {
+            LOG.warning("TotalSuppressCSMessages ="+x2+", ti="+x);
+        }
 	}
 	
 	// SuppressFirePropertyChange -----------------------

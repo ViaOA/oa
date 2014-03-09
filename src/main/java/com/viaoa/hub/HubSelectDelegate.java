@@ -211,7 +211,7 @@ public class HubSelectDelegate {
 	    }
 	
 	    if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
-	        if (select != thisHub.data.select) {
+	        if (select != thisHub.data.select && thisHub.data.select != null) {
 	            throw new RuntimeException("select cant be changed for detail hub");
 	        }
 	        if (thisHub.datam.masterObject != select.getWhereObject() || select.getWhere() != null) {
@@ -220,7 +220,8 @@ public class HubSelectDelegate {
 	            }
 	            else {
 	                // cant call select on a hub that is a detail hub
-	                throw new RuntimeException("cant call select on a detail hub");
+	                // 20140308 removed, ex:  ServerRoot.getOrders() has a select
+	                // throw new RuntimeException("cant call select on a detail hub");
 	            }
 	        }
 	    }

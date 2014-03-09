@@ -40,6 +40,9 @@ public class OAObjectInfoDelegate {
 
     // 20140305 needs to be able to make sure that reverse link is created
     public static OAObjectInfo getOAObjectInfo(Class clazz) {
+        if (clazz == null) {
+            return null;
+        }
         OAObjectInfo oi = OAObjectHashDelegate.hashObjectInfo.get(clazz);
         if (oi != null) return oi;
         oi = getOAObjectInfo(clazz, new HashMap<Class, OAObjectInfo>());
@@ -620,7 +623,13 @@ public class OAObjectInfoDelegate {
     	return getLinkInfo(oi, propertyName);
     }
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, String propertyName) {
-        return oi.getLinkInfo(propertyName);
+        if (oi == null) {
+int xx = 4;
+xx++;//qqqqqqqqqqqq
+        }
+        OALinkInfo li = oi.getLinkInfo(propertyName);
+        
+        return li;
     }
     public static OALinkInfo[] getOwndedLinkInfos(OAObjectInfo oi) {
         return oi.getOwnedLinkInfos();
