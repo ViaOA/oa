@@ -111,7 +111,7 @@ public class OAObjectDelegate {
             }
             
             // 20140307
-            for (OALinkInfo li : oi.getLinkInfosNew()) {
+            for (OALinkInfo li : oi.getLinkInfos()) {
                 if (li.getCalculated()) continue;
                 if (li.getPrivateMethod()) continue;
                 OAObjectPropertyDelegate.unsafeSetProperty(oaObj, li.getName(), null);
@@ -264,7 +264,7 @@ public class OAObjectDelegate {
 	
 	    // check link cascade objects
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-	    ArrayList al = oi.getLinkInfos();
+	    List al = oi.getLinkInfos();
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i); 
 	        String prop = li.getName();
@@ -316,7 +316,7 @@ public class OAObjectDelegate {
 	    if (callback != null) callback.updateObject(oaObj);
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 	    
-	    ArrayList al = oi.getLinkInfos();
+	    List al = oi.getLinkInfos();
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i); 
             if (li.getCalculated()) continue;

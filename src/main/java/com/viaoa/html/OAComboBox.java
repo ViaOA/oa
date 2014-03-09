@@ -20,6 +20,7 @@ package com.viaoa.html;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
@@ -112,7 +113,7 @@ public class OAComboBox extends OAHtmlComponent {
             
             // find recursive method
             OAObjectInfo oi = Hub.getOAObjectInfo(hub.getObjectClass());
-            ArrayList al = oi.getLinkInfos();
+            List al = oi.getLinkInfos();
             for (int i=0; al != null && i < al.size(); i++) {
                 OALinkInfo li = (OALinkInfo) al.get(i); 
                 if ( hub.getObjectClass().equals(li.getToClass())) {

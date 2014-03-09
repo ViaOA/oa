@@ -124,7 +124,7 @@ public class HubDelegate {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);  // this never returns null
 
             // find property to use
-            ArrayList al = oi.getLinkInfos();
+            List al = oi.getLinkInfos();
             OALinkInfo liFound = null;
             for (int ii=0; ii<al.size(); ii++) {
             	OALinkInfo li = (OALinkInfo) al.get(ii);

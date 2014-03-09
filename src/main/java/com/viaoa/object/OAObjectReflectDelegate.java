@@ -21,6 +21,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -697,7 +698,7 @@ public class OAObjectReflectDelegate {
     public static boolean hasReference(OAObject oaObj) {
         if (oaObj == null) return false;
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(oaObj.getClass());
-        ArrayList<OALinkInfo> al = io.getLinkInfos();
+        List<OALinkInfo> al = io.getLinkInfos();
         for (OALinkInfo li : al) {
             String name = li.getName();
             Object obj = getRawReference(oaObj, name);
@@ -721,7 +722,7 @@ public class OAObjectReflectDelegate {
         if (obj == null) return null;
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
         ArrayList<String> al = null;
-        ArrayList<OALinkInfo> alLinkInfo = io.getLinkInfos();
+        List<OALinkInfo> alLinkInfo = io.getLinkInfos();
         for (OALinkInfo li : alLinkInfo) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
@@ -770,7 +771,7 @@ public class OAObjectReflectDelegate {
 
     public static void loadAllReferences(OAObject obj, boolean bIncludeCalc) {
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
-        ArrayList<OALinkInfo> al = io.getLinkInfos();
+        List<OALinkInfo> al = io.getLinkInfos();
         for (OALinkInfo li : al) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
@@ -782,7 +783,7 @@ public class OAObjectReflectDelegate {
     public static boolean areAllReferencesLoaded(OAObject obj, boolean bIncludeCalc) {
         if (obj == null) return false;
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
-        ArrayList<OALinkInfo> al = io.getLinkInfos();
+        List<OALinkInfo> al = io.getLinkInfos();
         for (OALinkInfo li : al) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
@@ -796,7 +797,7 @@ public class OAObjectReflectDelegate {
 
     public static void loadAllReferences(OAObject obj, boolean bOne, boolean bMany, boolean bIncludeCalc) {
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
-        ArrayList<OALinkInfo> al = io.getLinkInfos();
+        List<OALinkInfo> al = io.getLinkInfos();
         for (OALinkInfo li : al) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
@@ -1405,7 +1406,7 @@ public class OAObjectReflectDelegate {
             throw new IllegalArgumentException("OAObject.copyInto() object is not same class");
         }
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
-        ArrayList al = oi.getPropertyInfos();
+        List al = oi.getPropertyInfos();
         for (int i = 0; i < al.size(); i++) {
             OAPropertyInfo pi = (OAPropertyInfo) al.get(i);
             if (excludeProperties != null) {
@@ -1538,7 +1539,7 @@ public class OAObjectReflectDelegate {
         hmVisitor.add(OAObjectDelegate.getGuid(oaObj));
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
-        ArrayList<OALinkInfo> alLinkInfo = oi.getLinkInfos();
+        List<OALinkInfo> alLinkInfo = oi.getLinkInfos();
         for (OALinkInfo li : alLinkInfo) {
             if (li.getCalculated()) continue;
             

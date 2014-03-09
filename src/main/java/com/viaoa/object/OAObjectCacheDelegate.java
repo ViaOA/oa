@@ -550,7 +550,6 @@ public class OAObjectCacheDelegate {
         if (obj == null) return null;
         
         TreeMapHolder tmh = getTreeMapHolder(obj.getClass(), true);
-
         try {
             tmh.rwl.writeLock().lock();
             OAObject objx = _add(tmh.treeMap, obj, bErrorIfExists, bAddToSelectAll);
@@ -561,6 +560,7 @@ public class OAObjectCacheDelegate {
         }
     }        
 
+    // thread safe
     private static OAObject _add(TreeMap tm, OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
         OAObject result = null;
         Object removeObj = null;
@@ -577,6 +577,7 @@ public class OAObjectCacheDelegate {
         
         int mode = OAThreadLocalDelegate.getObjectCacheAddMode();
         if (result == null) {
+            if (ref != null) tm.remove(ok);  // previous value was gc'd
             if (mode != IGNORE_ALL) {
                 ref = new WeakReference(obj);
             	tm.put(ok, ref);

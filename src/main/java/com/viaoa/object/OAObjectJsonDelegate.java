@@ -118,7 +118,7 @@ public class OAObjectJsonDelegate {
 	    if (bKeyOnly) return;
 	    
 	    // Save link properties
-	    ArrayList alLink = oi.getLinkInfos();
+	    List alLink = oi.getLinkInfos();
 	    for (int i=0; i<alLink.size(); i++) {
 	        OALinkInfo li = (OALinkInfo) alLink.get(i);
 	        if (li.getTransient()) continue;

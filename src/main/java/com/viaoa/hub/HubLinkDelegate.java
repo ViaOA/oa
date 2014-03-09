@@ -20,6 +20,7 @@ package com.viaoa.hub;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.viaoa.object.*;
 import com.viaoa.util.*;
@@ -56,7 +57,7 @@ public class HubLinkDelegate {
 	        Class c = linkToHub.getObjectClass();
 	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);  // this never returns null
     
-		    ArrayList al = oi.getLinkInfos();
+		    List al = oi.getLinkInfos();
 		    for (int i=0; i<al.size(); i++) {
 		    	OALinkInfo li = (OALinkInfo) al.get(i);
 		    	if (li.getType() != li.ONE) continue;
