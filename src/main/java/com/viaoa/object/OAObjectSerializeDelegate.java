@@ -79,6 +79,13 @@ public class OAObjectSerializeDelegate {
 			bDup = false;
 		}
 
+if (bDup) {  //qqqqqqqqqqqqq
+System.out.println(cntDup+") Dup: "+oaObjOrig);    
+    int xx = 4;
+    xx++;
+}
+		
+		
         Object[] objs = oaObjOrig.properties;
         for (int i=0; objs != null && i < objs.length; i+=2) {
             String key = (String) objs[i];

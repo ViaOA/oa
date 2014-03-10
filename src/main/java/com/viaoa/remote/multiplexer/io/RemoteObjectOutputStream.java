@@ -78,7 +78,7 @@ public class RemoteObjectOutputStream extends ObjectOutputStream {
     @Override
     protected void writeClassDescriptor(ObjectStreamClass desc) throws IOException {
         String s = desc.getName();
- 
+
         Object objx; 
         if (hmClassDesc != null) {
             objx = hmClassDesc.get(s);

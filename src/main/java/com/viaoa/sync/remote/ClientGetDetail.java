@@ -30,7 +30,6 @@ import com.viaoa.object.OAObjectKeyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAObjectSerializerCallback;
-import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
 /**
  * This is used for each clientSession, that creates a RemoteClientSyncImpl for
@@ -90,6 +89,29 @@ public class ClientGetDetail {
         return objx;
     }
 
+    public boolean isOnClient(Object obj) {
+        if (!(obj instanceof OAObject)) return false;
+        rwLockTreeSerialized.readLock().lock();
+        Object objx = treeSerialized.get( ((OAObject)obj).getObjectKey().getGuid());
+        rwLockTreeSerialized.readLock().unlock();
+        return objx != null;
+    }
+    
+    
+    
+    
+    protected boolean wasFullySentToClient(Object obj) {
+        if (!(obj instanceof OAObject)) return false;
+        rwLockTreeSerialized.readLock().lock();
+        Object objx = treeSerialized.get( ((OAObject)obj).getObjectKey().getGuid());
+        rwLockTreeSerialized.readLock().unlock();
+        if (objx instanceof Boolean) {
+            return ((Boolean) objx).booleanValue();
+        }
+        return false;
+    }
+    
+    
     /** 20130213
      *  getDetail() requirements
      * load referencs for master object and detail object/hub, and one level of ownedReferences
@@ -189,7 +211,6 @@ public class ClientGetDetail {
             boolean bMasterSent;
             @Override
             protected void setup(OAObject obj) {
-
                 // parent object - will send all references
                 if (obj == masterObject) {
                     if (bMasterSent) {
@@ -331,8 +352,8 @@ public class ClientGetDetail {
                 if (!bDefault) return false;
                 if (obj == null) return false;
                 
-                if (oaObj == masterObject) return true;
-                if (oaObj == detailObject) return true;
+                if (oaObj == masterObject) return !wasFullySentToClient(obj);
+                if (oaObj == detailObject) return !wasFullySentToClient(obj);
                 if (alExtraData != null && alExtraData.contains(oaObj)) {
                     // sibling object only "ask" for propertyName
                     return true; // propFromMaster.equals(propertyName);
@@ -419,4 +440,5 @@ public class ClientGetDetail {
         os.setCallback(callback);
         return os;
     }
+
 }
