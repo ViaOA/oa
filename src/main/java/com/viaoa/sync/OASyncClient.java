@@ -186,13 +186,8 @@ public class OASyncClient {
      */
     protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property, OALinkInfo linkInfo) {
         Hub siblingHub = null;
+        // note: could be for a blob property
 
-        Class valueClass = linkInfo.getToClass();
-        
-        boolean bIsOne2One = OAObjectInfoDelegate.isOne2One(linkInfo);
-        boolean bIsMany = linkInfo.getType() == linkInfo.MANY;
-        
-        
         Hub hubThreadLocal = OAThreadLocalDelegate.getGetDetailHub();
         if (hubThreadLocal != null && hubThreadLocal.contains(masterObject)) {
             siblingHub = hubThreadLocal;
@@ -248,6 +243,17 @@ public class OASyncClient {
         // load the same property for siblings
         int pos = siblingHub.getPos(masterObject)+1;
         int cnt = 0;
+
+        Class valueClass = null;
+        boolean bIsOne2One = false;
+        boolean bIsMany = false;
+
+        if (linkInfo != null) {
+            valueClass = linkInfo.getToClass();
+            bIsOne2One = OAObjectInfoDelegate.isOne2One(linkInfo);
+            bIsMany = linkInfo.getType() == linkInfo.MANY;
+        }
+        
         for (int i=0; i<250; i++) {
             Object obj = siblingHub.getAt(i+pos);
             if (obj == null) break;
@@ -255,7 +261,12 @@ public class OASyncClient {
 
             Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, property, true);
             if (value instanceof OANotExist) {
-                if (bIsMany || bIsOne2One) {                
+                if (linkInfo == null) {  // must be blob
+                    OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
+                    al.add(key);
+                    if (++cnt == 20) break;
+                }
+                else if (bIsMany || bIsOne2One) {                
                     OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
                     al.add(key);
                     if (++cnt == 50) break;

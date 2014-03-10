@@ -91,6 +91,10 @@ public class HubCSDelegate {
         // must have a master object to be able to know which hub to add object to
         // send ADD message
 
+	    if (thisHub.isFetching()) {
+	        return; // 20140309
+	    }
+	    
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         if (rs != null) {

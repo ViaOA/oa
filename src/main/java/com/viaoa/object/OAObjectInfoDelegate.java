@@ -40,16 +40,21 @@ public class OAObjectInfoDelegate {
 
     // 20140305 needs to be able to make sure that reverse link is created
     public static OAObjectInfo getOAObjectInfo(Class clazz) {
-        if (clazz == null) {
-            return null;
+        OAObjectInfo oi;
+        if (clazz == null || !OAObject.class.isAssignableFrom(clazz) || OAObject.class.equals(clazz)) {
+            oi = OAObjectHashDelegate.hashObjectInfo.get(String.class); // fake out so that null is never returned
         }
-        OAObjectInfo oi = OAObjectHashDelegate.hashObjectInfo.get(clazz);
+        else oi = OAObjectHashDelegate.hashObjectInfo.get(clazz);
         if (oi != null) return oi;
         oi = getOAObjectInfo(clazz, new HashMap<Class, OAObjectInfo>());
         return oi;
     }
     private static OAObjectInfo getOAObjectInfo(Class clazz, HashMap<Class, OAObjectInfo> hash) {
-        OAObjectInfo oi = hash.get(clazz);
+        OAObjectInfo oi;
+        if (clazz == null || !OAObject.class.isAssignableFrom(clazz) || OAObject.class.equals(clazz)) {
+            oi = hash.get(String.class); // fake out so that null is never returned
+        }
+        else oi = hash.get(clazz);        
         if (oi != null) return oi;
          
         oi = _getOAObjectInfo(clazz);
@@ -623,12 +628,7 @@ public class OAObjectInfoDelegate {
     	return getLinkInfo(oi, propertyName);
     }
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, String propertyName) {
-        if (oi == null) {
-int xx = 4;
-xx++;//qqqqqqqqqqqq
-        }
         OALinkInfo li = oi.getLinkInfo(propertyName);
-        
         return li;
     }
     public static OALinkInfo[] getOwndedLinkInfos(OAObjectInfo oi) {

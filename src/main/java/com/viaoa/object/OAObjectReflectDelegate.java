@@ -463,6 +463,12 @@ public class OAObjectReflectDelegate {
          unlock obj.props[]
         */
         if (linkPropertyName == null) return null;
+
+        Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName);
+        if (obj instanceof Hub) {
+            return (Hub) obj;
+        }
+    
         Hub hub = null;
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
@@ -470,16 +476,28 @@ public class OAObjectReflectDelegate {
         
         try {
             OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
-            hub = _getReferenceHub(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch, oi, linkInfo);
 
-            if (hub != null) {
-                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
-                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
-                }
-                else {
-                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
-                }
+            obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName);
+            if (obj instanceof Hub) {
+                return (Hub) obj;
             }
+            
+            hub = _getReferenceHub(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch, oi, linkInfo);
+            // 20131129 triggers
+            if (hub != null && OAObjectCSDelegate.isServer()) {
+                Class[] cs = linkInfo.getTriggerClasses();
+                if (cs != null) {
+                    for (Class c : cs) {
+                        try {
+                            Constructor con = c.getConstructor(Hub.class);
+                            con.newInstance(hub);
+                        }
+                        catch (Exception e) {
+                            LOG.log(Level.WARNING, "error while creating trigger", e);
+                        }
+                    }
+                }
+            }            
         }
         finally {
             OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
@@ -500,18 +518,24 @@ public class OAObjectReflectDelegate {
             // since it is in props with a null, then it was placed that way to mean it has 0 objects
             //   by OAObjectSerializeDelegate._writeObject
             if (linkInfo == null) {
-                return new Hub();
+                hub = new Hub();
+                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+                }
+                else {
+                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
+                }
+                return hub;
             }
             hub = new Hub(linkInfo.toClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo), false);
-            return hub;
         }
-        
-        if (obj instanceof WeakReference) {
+        else if (obj instanceof WeakReference) {
             obj = ((WeakReference) obj).get();
         }
-        else if (obj == OANotExist.instance) obj = null;
+        else if (obj == OANotExist.instance) {
+            obj = null;
+        }
 
-        
         if (obj instanceof Hub) {
             hub = (Hub) obj;
             Class c = hub.getObjectClass();
@@ -529,6 +553,12 @@ public class OAObjectReflectDelegate {
                         HubSortDelegate.sort(hub, s, bAsc, null, true);// dont sort, or send out sort msg
                         hub.resort(); // this will not send out event
                     }
+                }
+                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+                }
+                else {
+                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
                 }
                 return hub;
             }
@@ -552,10 +582,18 @@ public class OAObjectReflectDelegate {
             finally {
                 OAThreadLocalDelegate.setSuppressCSMessages(false);
             }
+            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+            }
+            else {
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
+            }
             return hub;
         }
 
-        if (!bThisIsServer && !oi.getLocalOnly() && !bIsCalc) {
+        if (hub != null) {
+        }
+        else if (!bThisIsServer && !oi.getLocalOnly() && !bIsCalc) {
             // request from server
             hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); // this will always return a Hub
             if (hub == null) {
@@ -607,6 +645,14 @@ public class OAObjectReflectDelegate {
             }
         }
 
+        // set property
+        if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+            OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+        }
+        else {
+            OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
+        }
+        
         if ((bThisIsServer || bIsCalc) && sortOrder != null && sortOrder.length() > 0) {
             if (hub.getSelect() != null) {
                 hub.setSelectOrder(sortOrder);
@@ -647,20 +693,6 @@ public class OAObjectReflectDelegate {
                 }
                 if (hubMatch != null) {
                     hub.setAutoMatch(matchProperty, hubMatch);
-                }
-            }
-            
-            // 20131129 triggers
-            Class[] cs = linkInfo.getTriggerClasses();
-            if (cs != null) {
-                for (Class c : cs) {
-                    try {
-                        Constructor con = c.getConstructor(Hub.class);
-                        con.newInstance(hub);
-                    }
-                    catch (Exception e) {
-                        LOG.log(Level.WARNING, "error while creating trigger", e);
-                    }
                 }
             }
         }
