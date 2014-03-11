@@ -103,6 +103,7 @@ public class HubDataDelegate {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return pos;
     }
+static int qqq;//qqqqqqqqqq    
     private static int _remove2(Hub thisHub, Object obj, boolean bDeleting) {
         int pos;
 	    Object key = obj;
@@ -110,6 +111,9 @@ public class HubDataDelegate {
 	    synchronized (thisHub.data) {
 	        pos = thisHub.getPos(obj);
 	        if (pos >= 0) {
+//qqqqqqq	            
+//System.out.println((++qqq)+"_remove2 *******, pos="+pos+", thread="+Thread.currentThread().getName()+", obj="+obj);
+
 	            thisHub.data.vector.removeElementAt(pos);
 	        }
 	    }

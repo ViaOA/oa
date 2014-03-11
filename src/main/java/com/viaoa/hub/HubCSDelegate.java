@@ -52,7 +52,9 @@ public class HubCSDelegate {
         OALinkInfo li = thisHub.datam.liDetailToMaster;
         if (li != null) {
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (liRev != null && liRev.getCalculated()) return;
+            if (liRev != null && liRev.getCalculated()) {
+                return;
+            }
         }
     	
         if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.masterObject).getLocalOnly()) return;

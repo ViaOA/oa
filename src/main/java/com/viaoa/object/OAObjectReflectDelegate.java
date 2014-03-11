@@ -597,7 +597,11 @@ public class OAObjectReflectDelegate {
             // request from server
             hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); // this will always return a Hub
             if (hub == null) {
-                throw new RuntimeException("getHub from Server failed, this.oaObj="+oaObj+", linkPropertyName="+linkPropertyName);
+                // 20140311 master not on the Server, might have been GCd, create empty Hub 
+                if (linkInfo == null) return null;
+                Class linkClass = linkInfo.toClass;
+                hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo), false);
+                // throw new RuntimeException("getHub from Server failed, this.oaObj="+oaObj+", linkPropertyName="+linkPropertyName);
             }
             // 20120926 check to see if empty hub was returned from OAObjectServerImpl.getDetail
             if (HubDelegate.getMasterObject(hub) == null && hub.getSize() == 0 && hub.getObjectClass() == null) {

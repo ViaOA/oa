@@ -58,9 +58,9 @@ public class ClientGetDetail {
 
         Object masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         if (masterObject == null) {
-            //qqqqqqqqqqqq for DEBUG         
-            //masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
-            if (errorCnt++ < 100) LOG.warning("cant find masterObject in cache or DS.  masterClass=" + masterClass + ", key=" + masterObjectKey + ", property=" + property + ", OS.id=");
+//qqqqqqqqqqqq for DEBUG         
+masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
+            if (errorCnt++ < 100) LOG.warning("cant find masterObject in cache or DS.  masterClass=" + masterClass + ", key=" + masterObjectKey + ", property=" + property);
             return null;
         }
 
