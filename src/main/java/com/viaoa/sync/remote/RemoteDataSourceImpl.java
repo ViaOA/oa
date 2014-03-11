@@ -10,9 +10,13 @@ import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAObjectEventDelegate;
 import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAFilter;
 
 @OARemoteInterface
@@ -219,10 +223,18 @@ public abstract class RemoteDataSourceImpl implements RemoteDataSourceInterface 
                 hashIterator.put((String) obj, iterator);
             }
             break;
+        case OADataSourceClient.SUPPORTSINITIALIZEOBJECT: 
+            clazz = (Class) objects[0];
+            ds = getDataSource(clazz);
+            b = ds.supportsInitializeObject();
+            obj = new Boolean(b);
+            break;
         case OADataSourceClient.INITIALIZEOBJECT:
             clazz = (Class) objects[0].getClass();
             ds = getDataSource(clazz);
+            OARemoteThreadDelegate.sendMessages(true);
             ds.initializeObject((OAObject) objects[0]);
+            OARemoteThreadDelegate.sendMessages(false);
             break;
         case OADataSourceClient.SELECTUSINGOBJECT:
             clazz = (Class) objects[0]; // class to select

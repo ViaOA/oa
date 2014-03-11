@@ -142,6 +142,15 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         }
 
         OAObject objectx = OAObjectCacheDelegate.get(objectClassX, objectKeyX);
+        if (objectx == null) {
+            return false;
+        }
+if (!h.contains(objectx)) {
+    //qqqqqqqqqqqqqq
+    //return false;
+int xx = 44;
+xx++;
+}
         h.remove(objectx);
         return true;
     }

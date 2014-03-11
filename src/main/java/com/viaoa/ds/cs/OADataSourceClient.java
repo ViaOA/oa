@@ -89,8 +89,10 @@ public class OADataSourceClient extends OADataSource {
     public static final int SELECTUSINGOBJECT = 23;
     /** internal value to work with OAClient */
     public static final int INITIALIZEOBJECT = 24; 
+    /** internal value to work with OAClient */
+    public static final int SUPPORTSINITIALIZEOBJECT = 25; 
 
-    public static final int GET_PROPERTY = 25;
+    public static final int GET_PROPERTY = 26;
     
     /**
         Create new OADataSourceClient that uses OAClient to communicate with OADataSource on OAServer.
@@ -137,7 +139,7 @@ public class OADataSourceClient extends OADataSource {
     //NOTE: this needs to see if any of "clazz" superclasses are supported
     public boolean isClassSupported(Class clazz) {
         if (clazz == null) return false;
-
+        
         Boolean B = (Boolean) hashClass.get(clazz);
         if (B != null) return B.booleanValue();
 
@@ -320,7 +322,12 @@ public class OADataSourceClient extends OADataSource {
     }
 
     public @Override void initializeObject(OAObject obj) {
+        if (bSupportsInitFlag && !bSupportsInit) return;
         verifyConnection();
+        if (!bSupportsInitFlag) { 
+            initSupportsInitializeObject(obj.getClass());
+            if (bSupportsInitFlag && !bSupportsInit) return;
+        }
         getRemoteClientSync().datasource(INITIALIZEOBJECT, new Object[] {obj} );  // NOTE WAS: dont use, this calls server.  ObjectId could be changed on server and never be found when returned
     }
 
@@ -399,6 +406,21 @@ public class OADataSourceClient extends OADataSource {
         Object objx = getRemoteClientSync().datasource(GET_PROPERTY, new Object[] { obj.getClass(), OAObjectKeyDelegate.getKey(obj), propertyName });
         if (objx instanceof byte[]) return (byte[]) objx;
         return null;
+    }
+	
+	private boolean bSupportsInit;
+    private boolean bSupportsInitFlag;
+	
+	@Override
+	public boolean supportsInitializeObject() {
+        return bSupportsInit;
+	}
+    protected void initSupportsInitializeObject(Class clazz) {
+        if (bSupportsInitFlag) return;
+        bSupportsInitFlag = true;
+        bSupportsInit = true;
+        Object objx = getRemoteClientSync().datasource(SUPPORTSINITIALIZEOBJECT, new Object[] { clazz });
+        if (objx instanceof Boolean) bSupportsInit = ((Boolean) objx).booleanValue();
     }
 }
 

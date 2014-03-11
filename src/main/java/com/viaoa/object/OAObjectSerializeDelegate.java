@@ -25,6 +25,9 @@ import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubSerializeDelegate;
+import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
+import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANullObject;
 
 //20140226 reworked to use PropertyLock
@@ -35,7 +38,20 @@ public class OAObjectSerializeDelegate {
 	private static Logger LOG = Logger.getLogger(OAObjectSerializeDelegate.class.getName());
     
 	protected static void _readObject(OAObject oaObj, java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
+        
+	    // 20140310
+	    if (in instanceof RemoteObjectInputStream) {
+            byte bx = in.readByte();
+            if (bx == 1) {
+                OAObjectKey ok = (OAObjectKey) in.readObject();
+                OAObjectKeyDelegate.setKey(oaObj, ok);
+                oaObj.guid = ok.guid;
+                cntDup--;
+                return;
+            }
+        }
+	    
+	    in.defaultReadObject();
         OAObjectInfo oi =  null;
         for ( ; ; ) {
             Object obj = in.readObject();
@@ -80,7 +96,7 @@ public class OAObjectSerializeDelegate {
 		}
 
 if (bDup) {  //qqqqqqqqqqqqq
-System.out.println(cntDup+") Dup: "+oaObjOrig);    
+//System.out.println(cntDup+") Dup: "+oaObjOrig+", guid="+oaObjOrig.guid);    
     int xx = 4;
     xx++;
 }
@@ -204,7 +220,20 @@ public static volatile int cntSkip;
         if (serializer != null) {
             serializer.beforeSerialize(oaObj);
         }
-
+        
+        // 20140310
+        if (stream instanceof RemoteObjectOutputStream) {
+            if (!OASyncDelegate.isServer() && !oaObj.newFlag) {
+               stream.writeByte((byte) 1); 
+               stream.writeObject(OAObjectKeyDelegate.getKey(oaObj));
+               if (serializer != null) {
+                   serializer.afterSerialize();
+               }
+               return;
+            }
+            stream.write(0);
+        }
+      
         stream.defaultWriteObject();  // does not write references (transient)
         
         _writeProperties(oaObj, stream, serializer); // this will write transient properties
@@ -212,7 +241,6 @@ public static volatile int cntSkip;
         if (serializer != null) {
             serializer.afterSerialize();
         }
-
   		stream.writeObject(OAObjectDelegate.FALSE);  // end of property list
 	}
 	

@@ -615,6 +615,13 @@ public abstract class OADataSource {
     public abstract void initializeObject(OAObject obj);
 
     /**
+        Called by OAObject to initialize a new Object.
+    */
+    public boolean supportsInitializeObject() {
+        return true;
+    }
+    
+    /**
         Returns true if the dataSource will set the property value before saving.
     */
     public boolean willCreatePropertyValue(OAObject object, String propertyName) {

@@ -43,6 +43,9 @@ public class OAObjectKeyDelegate {
 	    }
 	    return oaObj.objectKey;
 	}
+    protected static void setKey(OAObject oaObj, OAObjectKey key) {
+        oaObj.objectKey = key;
+    }
 	
     /**
 	    Used to update Hubs and HubController when an objects unique values (property Id) are changed.<br>
