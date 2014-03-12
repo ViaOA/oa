@@ -31,8 +31,6 @@ import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANullObject;
 
 //20140226 reworked to use PropertyLock
-
-
 public class OAObjectSerializeDelegate {
 
 	private static Logger LOG = Logger.getLogger(OAObjectSerializeDelegate.class.getName());
@@ -95,13 +93,6 @@ public class OAObjectSerializeDelegate {
 			bDup = false;
 		}
 
-if (bDup) {  //qqqqqqqqqqqqq
-//System.out.println(cntDup+") Dup: "+oaObjOrig+", guid="+oaObjOrig.guid);    
-    int xx = 4;
-    xx++;
-}
-		
-		
         Object[] objs = oaObjOrig.properties;
         for (int i=0; objs != null && i < objs.length; i+=2) {
             String key = (String) objs[i];

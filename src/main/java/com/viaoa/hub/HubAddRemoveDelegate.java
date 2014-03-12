@@ -77,8 +77,8 @@ public class HubAddRemoveDelegate {
         
         int pos = HubDataDelegate.getPos(thisHub, obj, false, false); // dont adjust master or update link when finding the postion of the object.
         if (pos < 0) {
-//qqqqqqqqqqqq            
-//            return;
+            //20140312 Hub might be changing, wait until _remove is called
+            // return;
         }
         if (bSendEvent) {
             HubEventDelegate.fireBeforeRemoveEvent(thisHub, obj, pos);

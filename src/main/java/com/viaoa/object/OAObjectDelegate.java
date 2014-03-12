@@ -46,8 +46,6 @@ public class OAObjectDelegate {
 	public static final Boolean FALSE = new Boolean(false);
 	
     /** Static global lock used when setting global properties (ex: guidCounter) */
-//qqqqqqq not needed	
-//    static protected final Object GUIDLOCK = new Object();
 
     /** global counter used for local objects.  Value is positive */
     static protected AtomicInteger guidCounter = new AtomicInteger(); // unique identifier needed for objects past from client/server

@@ -1386,7 +1386,11 @@ public class HubMerger {
             if (!bEnabled) return;
             if (this == dataRoot && !bUseAll) return;
             if (hub.isLoading()) return;
-            createChild((OAObject) e.getObject());
+            
+            // 20140312 verify that object is still in Hub
+            if (e.getHub().contains(e.getObject())) {
+                createChild((OAObject) e.getObject());
+            }
         }
 
         @Override

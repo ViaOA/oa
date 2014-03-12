@@ -17,8 +17,8 @@ All rights reserved.
 */
 package com.viaoa.hub;
 
-import java.util.Hashtable;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -49,7 +49,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     private static final long serialVersionUID = 1L;
 
     protected Hub<TYPE> hubMaster, hub;
-    private Hashtable hashProp;
+    private HashSet<String> hashProp;
     private boolean bShareAO;
     private boolean bClosed;
     private boolean bServerSideOnly;
@@ -240,8 +240,8 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         hubMaster.addHubListener(hlDependentProperties, uniqueName, dependentProperties);
 
         // hashProp has list of property names that this.hubListener is listening to
-        if (hashProp == null) hashProp = new Hashtable(7, .75f);
-        hashProp.put(uniqueName.toUpperCase(), "");
+        if (hashProp == null) hashProp = new HashSet(5, .75f);
+        hashProp.add(uniqueName.toUpperCase());
         refresh();
     }
 
@@ -271,7 +271,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                 if (bClosed) return;
                 if (hashProp != null) {
                     String s = e.getPropertyName();
-                    if (hashProp.get(s.toUpperCase()) == null) return;
+                    if (!hashProp.contains(s.toUpperCase())) return;
                 }
                 update(e.getObject());
             }
@@ -700,6 +700,5 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
      */
     protected void afterRemoveFromFilteredHub(TYPE obj) {
     }
-    
 }
 

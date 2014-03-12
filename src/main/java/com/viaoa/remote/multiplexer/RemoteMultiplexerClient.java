@@ -233,19 +233,11 @@ public class RemoteMultiplexerClient {
         return proxy;
     }
     
-//int qqq=0;//qqqqqqqqqq    
     protected Object createProxyForCtoS(String name, Class c, boolean bUsesQueue, Object callback) throws Exception {
         final BindInfo bind = createBindInfo(name, callback, c, bUsesQueue);
         InvocationHandler handler = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-/*qqqqqqqqqqqqqqqqqqq         
-String s = "";
-for (Object o : args) {
-    s += ", " + o;
-}
-System.out.println((qqq++)+") invoke, method="+method.getName()+s);
-*/                
                 Object result = RemoteMultiplexerClient.this.onInvokeForCtoS(bind, proxy, method, args);
                 return result;
             }
@@ -865,14 +857,6 @@ if (tx > 200) {
             }
         }
 
-/*qqqqqqqqqqqqqqqqqqq         
-        String s = "";
-        for (Object o : ri.args) {
-            s += ", " + o;
-        }
-        System.out.println((qqq++)+") broadcast, method="+ri.method.getName()+s);
-*/        
-        
         try {
             OAThreadLocalDelegate.setRemoteRequestInfo(ri);
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
