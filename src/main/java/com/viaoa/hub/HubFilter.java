@@ -18,6 +18,8 @@ All rights reserved.
 package com.viaoa.hub;
 
 import java.util.Hashtable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.object.*;
@@ -62,8 +64,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     private boolean bOAObjectCacheDelegateListener;
     private HubListenerAdapter<TYPE> hlHubMaster;
     private boolean bNewListFlag;
-    private volatile boolean bClearing;
-    private volatile boolean bUpdating;
+    
+    private final AtomicInteger aiClearing = new AtomicInteger();
+    private final AtomicInteger aiUpdating = new AtomicInteger();
     
     /** 
         Create a new HubFilter using two supplied Hubs.
@@ -283,10 +286,16 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             public @Override void afterAdd(HubEvent<TYPE> e) {
                 if (bClosed) return;
                 if (!hubMaster.isLoading()) {
-                    // 20091020 object could have been added to hub, need to leave in
-                    // was: update(e.getObject());
                     if (hub == null || !hub.contains(e.getObject())) {
-                        update(e.getObject());
+                        if (hubMaster.contains(e.getObject())) {
+                            try {
+                                aiUpdating.incrementAndGet();
+                                update(e.getObject());
+                            }
+                            finally {
+                                aiUpdating.decrementAndGet();
+                            }
+                        }
                     }
                 }
             }
@@ -298,7 +307,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                     if (bServerSideOnly) { 
                         OARemoteThreadDelegate.sendMessages(true);
                     }
-                    removeObject(getObject(e.getObject()));
+                    if (!hubMaster.contains(e.getObject())) {
+                        removeObject(getObject(e.getObject()));
+                    }
                 }
                 finally {
                     if (bServerSideOnly) {
@@ -374,9 +385,13 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                 if (objTemp != null) {
                     if (!isUsed((TYPE) objTemp)) {
                         objTemp = getObject((TYPE)objTemp);
-                        bUpdating = true;
-                        if (objTemp != null) removeObject((TYPE)objTemp);
-                        bUpdating = false;
+                        try {
+                            aiUpdating.incrementAndGet();
+                            if (objTemp != null) removeObject((TYPE)objTemp);
+                        }
+                        finally {
+                            aiUpdating.decrementAndGet();
+                        }
                     }
                     objTemp = null;
                 }
@@ -388,10 +403,14 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                     obj = HubLinkDelegate.getPropertyValueInLinkedToHub(hub, obj);
                     if (obj != null) {
                         if (!hub.contains(obj)) {
-                            bUpdating = true;
-                            objTemp = obj;
-                            addObject((TYPE)obj);
-                            bUpdating = false;
+                            try {
+                                aiUpdating.incrementAndGet();
+                                objTemp = obj;
+                                addObject((TYPE)obj);
+                            }
+                            finally {
+                                aiUpdating.decrementAndGet();
+                            }
                         }
                     }
                 }
@@ -412,19 +431,20 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     
     public void update(TYPE obj) {
         if (bClosed) return;
-        if (bClearing) return;
+        if (aiClearing.get() != 0) return;
         try {
             if (bServerSideOnly) { // 20120425
                 OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
             }
-            bUpdating = true;
-            
+            aiUpdating.incrementAndGet();
             if (obj != null) {
                 if ( hubMaster.getObjectClass().isAssignableFrom(obj.getClass()) ) {
                     if (isUsed(obj)) {
                         obj = getObject(obj);
                         if (obj != null && !hub.contains(obj)) {
-                            addObject(obj);
+                            if (hubMaster.contains(obj)) {
+                                addObject(obj);
+                            }
                         }
                     }
                     else {
@@ -455,14 +475,12 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             }
         }
         finally {
-            bUpdating = false;
+            aiUpdating.decrementAndGet();
             if (bServerSideOnly) {
                 OARemoteThreadDelegate.sendMessages(false);
             }
         }
     }
-    
-
 
 
     
@@ -509,10 +527,14 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             if (hub != null) {
                 hd = hub.data;
                 hd.bInFetch = true;
-                bClearing = true;
-                // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
-                HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
-                bClearing = false;
+                try {
+                    aiClearing.incrementAndGet();
+                    // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
+                    HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
+                }
+                finally {
+                    aiClearing.decrementAndGet();
+                }
             }
 	        
     	    try {
@@ -629,14 +651,14 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     //    note: this needs to be here so that HubShareDelegate can find HubFilter for a hub
     
     public @Override void afterAdd(HubEvent<TYPE> e) {
-        if (!bUpdating) {
-            afterAdd(e.getObject());
-        }
+        afterAdd(e.getObject());
     }
     public void afterAdd(TYPE obj) {
-        if (hubMaster != null && !hubMaster.contains(obj)) {
-            hubMaster.add(obj);
-        }
+        if (aiUpdating.get() == 0) {
+            if (hubMaster != null && !hubMaster.contains(obj)) {
+                hubMaster.add(obj);
+            }
+        }        
     }
     
     public @Override void afterPropertyChange(HubEvent<TYPE> e) {
@@ -651,7 +673,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     
     @Override
     public void afterRemove(HubEvent<TYPE> e) {
-        if (!bUpdating && !bClearing) {
+        if (aiUpdating.get() == 0 && aiClearing.get() == 0) {
             afterRemove(e.getObject());
         }
     }
@@ -673,6 +695,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     /**
      * Called when an object is removed from the filtered Hub directly.
      * This is used by HubCopy to then remove the object from the Master Hub.
+     * By default, this does nothing (it does not remove from hubMaster)
      * @param obj
      */
     protected void afterRemoveFromFilteredHub(TYPE obj) {
