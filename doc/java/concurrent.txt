@@ -2,7 +2,6 @@
 
 
 
-
 >> simple flag
     private AtomicBoolean abUpdating = new AtomicBoolean(false);
     public void update() {

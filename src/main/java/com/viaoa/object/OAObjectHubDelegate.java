@@ -306,13 +306,14 @@ public class OAObjectHubDelegate {
     }
 
     public static boolean addHub(OAObject oaObj, Hub hub) {
-        return addHub(oaObj, hub, true, false);
+        // 20140313 was: addHub(oaObj, hub, true, false);
+        return addHub(oaObj, hub, false, false);
     }
     
 	/**
 	    Called by Hub when an OAObject is added to a Hub.
 	*/
-	public static boolean addHub(OAObject oaObj, Hub hub, boolean bAddIfM2M, boolean bCheckExisting) {
+	public static boolean addHub(OAObject oaObj, Hub hub, boolean bAlwaysAddIfM2M, boolean bCheckExisting) {
 		if (oaObj == null || hub == null) return false;
         hub = hub.getRealHub();
 		
@@ -333,16 +334,16 @@ public class OAObjectHubDelegate {
         }
 		*/
 
-        // 20120702 dont store hub if M2M and reverse linkInfo does not have a method.
+        // 20120702 dont store hub if M2M&Private: reverse linkInfo does not have a method.
         //          since this could have a lot of references (ex: VetJobs JobCategory has m2m Jobs)
         OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
-        if (!bAddIfM2M && li != null && li.getPrivateMethod()) {
+        if (!bAlwaysAddIfM2M && li != null && li.getPrivateMethod()) {
             if (OAObjectInfoDelegate.isMany2Many(li)) {
                 return false;
             }
         }
         
-
+        boolean bRemoveFromServerCache = false;
 		synchronized (oaObj) {
 			int pos;
 			if (oaObj.weakHubs == null) {
@@ -350,9 +351,7 @@ public class OAObjectHubDelegate {
 				pos = 0;
         		// CACHE_NOTE: if it was on the Server.cache, it can be removed when it is added to a hub.  Need to add to cache if/when it is no longer in a hub.
 				if (hub.getMasterObject() != null) {
-	                if (OARemoteThreadDelegate.shouldSendMessages()) {
-	                    OAObjectCSDelegate.removeFromServerSideCache(oaObj);
-	                }
+                    bRemoveFromServerCache = true;
 				}
 			}
 			else {
@@ -404,9 +403,7 @@ public class OAObjectHubDelegate {
                         }
                     }
                     if (!b && hub.getMasterObject() != null) {
-                        if (OARemoteThreadDelegate.shouldSendMessages()) {
-                            OAObjectCSDelegate.removeFromServerSideCache(oaObj);
-                        }
+                        bRemoveFromServerCache = true;
                     }
                 }
 			}
@@ -420,6 +417,9 @@ public class OAObjectHubDelegate {
 			}
 			*/
 	    }
+        if (bRemoveFromServerCache && OARemoteThreadDelegate.shouldSendMessages()) {
+            OAObjectCSDelegate.removeFromServerSideCache(oaObj);
+        }
 		return true;
 	}
 	
@@ -462,16 +462,18 @@ public class OAObjectHubDelegate {
         boolean b = _isAlreadyInHub(oaObj, hubFind);
         if (b) return true;
 
-        // could be in the hub, but not in weakHubs, if private, or M2M
         Object master = hubFind.getMasterObject();
         if (master == null) return false;
+        
+        // could be in the hub, but not in weakHubs, if M2M and private
+        //   ex: VJ  jobCategories M2M Jobs, where jobCategory objects dont have weakhub for 
+        //           all of the Job.jobCategories Hubs that exist
         OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hubFind);
         if (li == null) return false;
         if (li.getPrivateMethod()) { // if hub method is off
-            return hubFind.contains(oaObj);
-        }
-        if (OAObjectInfoDelegate.isMany2Many(li)) {  // m2m objects do not have Hub in weakRef[] 
-            return hubFind.contains(oaObj);
+            if (OAObjectInfoDelegate.isMany2Many(li)) {  // m2m objects do not have Hub in weakRef[] 
+                return hubFind.contains(oaObj);
+            }
         }
         return false;
     }

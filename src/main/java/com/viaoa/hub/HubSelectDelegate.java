@@ -107,6 +107,16 @@ public class HubSelectDelegate {
     public static boolean isFetching(Hub thisHub) {
         return thisHub.data.bInFetch;
     }
+    public static void setFetching(Hub thisHub, boolean bIsFetching) {
+        thisHub.data.bInFetch = bIsFetching;
+    }
+
+    public static boolean isLoading(Hub thisHub) {
+        return thisHub.data.bInFetch;
+    }
+    public static void setLoading(Hub thisHub, boolean bIsLoading) {
+        thisHub.data.bInFetch = bIsLoading;
+    }
 	
 	/**
 	    Find out if more objects are available from last select from OADataSource.

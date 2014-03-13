@@ -1,6 +1,8 @@
 package com.viaoa.servlet;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.*;
@@ -18,22 +20,17 @@ import com.viaoa.util.OAString;
 public class JNLPServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
-    private String appTitle;
+    private String webcontentDirectory;
+    /** name/values to send to client app */
+    private HashMap<String, String> hmNameValue = new HashMap<String, String>();
     private ConcurrentHashMap<String, String> hmJnlp = new ConcurrentHashMap<String, String>();
-    private String libraryDirectory;
-    
-    
-    public JNLPServlet(String appTitle, String libraryDirectory) {
-        this.appTitle = appTitle;
-        this.libraryDirectory = libraryDirectory;
-    }
-    public JNLPServlet(String appTitle) {
-        this(appTitle, "lib");
-    }
+
     public JNLPServlet() {
-        this("", "lib");
     }
 
+    public void addNameValue(String name, String value) {
+        hmNameValue.put(name, value);
+    }
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -63,6 +60,10 @@ public class JNLPServlet extends HttpServlet
 
         String path = getServletContext().getContextPath(); // ""
         path = getServletContext().getRealPath(path);  // C:\Projects\java\Hifive\webcontent
+
+        if (webcontentDirectory == null) {
+            webcontentDirectory = path;
+        }
         
         String hostNameAndPort = req.getServerName();  // "localhost"
         int x = req.getLocalPort();  // 8082
@@ -95,10 +96,18 @@ public class JNLPServlet extends HttpServlet
                     }
                 }
                 
-                // <argument>JWSCLIENT</argument>            
+                // set client arguments[]
+                //   find:  <argument>JWSCLIENT</argument>            
                 pos = txt.indexOf("JWSCLIENT");
+                String appTitle = null;
                 if (pos >= 0) {
-                    s = "ServerName="+req.getServerName()+"</argument><argument>";
+                    s = "";
+                    for (Entry<String, String> entry : hmNameValue.entrySet()) {
+                        if ("jnlp.title".equalsIgnoreCase(entry.getKey())) {
+                            appTitle = entry.getValue();
+                        }
+                        s += entry.getKey()+"="+entry.getValue()+"</argument><argument>";
+                    }
                     txt = txt.substring(0, pos) + s + txt.substring(pos);
                 }      
                 
@@ -112,7 +121,6 @@ public class JNLPServlet extends HttpServlet
                         }
                     }
                 }
-                
                 // convert the jar files names to the name with version.
                 txt = updateJarFileNames(txt);
                 hmJnlp.put(fname, txt);
@@ -128,6 +136,9 @@ public class JNLPServlet extends HttpServlet
     }
 
     protected String updateJarFileNames(String text) {
+        String libraryDirectory = webcontentDirectory + "/../lib";
+        libraryDirectory = OAFile.convertFileName(libraryDirectory);
+        
         File dir = new File(libraryDirectory);
         File[] files = dir.listFiles(new FileFilter() {
             @Override

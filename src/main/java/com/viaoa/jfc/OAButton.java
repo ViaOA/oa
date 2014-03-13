@@ -723,8 +723,9 @@ public boolean XXX;
      * By default, this will call the button controller, which will also call performAction().
      * @see #performAction to create a custom action.
      */
-    public void onActionPerformed() {
-        if (control != null) control.onActionPerformed();
+    public boolean onActionPerformed() {
+        if (control != null) return control.onActionPerformed();
+        return false;
     }
 
     /**
@@ -918,14 +919,25 @@ public boolean XXX;
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (!OAButton.this.isEnabled()) return;
-            if (!OAButton.this.onConfirm(getConfirmMessage())) return;
-            OAButton.this.onActionPerformed();  // default will then call this.onActionPerformed()
-            afterCompleted(getCompletedMessage());
+            if (!OAButton.this.isEnabled()) {
+                return;
+            }
+            if (!OAButton.this.onConfirm(getConfirmMessage())) {
+                return;
+            }
+            if (OAButton.this.onActionPerformed()) {  // default will then call this.onActionPerformed()
+                afterCompleted(getCompletedMessage());
+            }
+            else {
+                String s = getCompletedMessage();
+                if (!OAString.isEmpty(s)) {
+                     afterFailure("Command was not completed");
+                }
+            }
         }
         @Override
-        protected void onActionPerformed() {
-            super.onActionPerformed();
+        protected boolean onActionPerformed() {
+            return super.onActionPerformed();
         }
         @Override
         protected OAObject createCopy(OAObject obj) {

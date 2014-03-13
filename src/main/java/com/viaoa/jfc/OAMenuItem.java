@@ -755,8 +755,8 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent{
             afterCompleted(getCompletedMessage());
         }
         @Override
-        protected void onActionPerformed() {
-            super.onActionPerformed();
+        protected boolean onActionPerformed() {
+            return super.onActionPerformed();
         }
 
         @Override

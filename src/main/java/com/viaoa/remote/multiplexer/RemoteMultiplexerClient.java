@@ -987,7 +987,7 @@ if (tx > 200) {
                 return super.submit(task);
             }
         };
-        executorService.allowCoreThreadTimeOut(true);
+        executorService.allowCoreThreadTimeOut(true);  // must have this
         
         return executorService;
     }

@@ -55,7 +55,7 @@ class HubLinkEventListener extends HubListenerAdapter implements java.io.Seriali
 	    }
 	}
 	
-	// 20130708 check if linkToHub is based on a M2M, where the oaObj.weakRefs[] do not have the hub
+	// 20130708 check if linkToHub is based on a M2M&private, where the oaObj.weakRefs[] do not have the hub
 	//     if so, then need to add it
 	@Override
 	public void onNewList(HubEvent e) {

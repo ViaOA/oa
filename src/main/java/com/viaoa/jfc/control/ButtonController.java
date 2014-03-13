@@ -361,22 +361,24 @@ public class ButtonController extends JFCController implements ActionListener {
         processingMessage = msg;
     }
 
-    protected void onActionPerformed() {
+    protected boolean onActionPerformed() {
         Window window = OAJFCUtil.getWindow(button);
+        boolean b = false;
         try {
             if (window != null) {
                 window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             }
-            onActionPerformed2();
+            b = onActionPerformed2();
         }
         finally {
             if (window != null) {
                 window.setCursor(Cursor.getDefaultCursor());
             }
         }
+        return b;
     }
     
-    protected void onActionPerformed2() {
+    protected boolean onActionPerformed2() {
         Hub mhub = getMultiSelectHub();
         if (command == OACommand.DELETE) {
             OAObject currentAO = (OAObject) hub.getAO();
@@ -401,14 +403,14 @@ public class ButtonController extends JFCController implements ActionListener {
                     }
                     msg = "Can not delete while the following are not empty\n" + msg;
                     JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(component), msg, "Can not delete", JOptionPane.WARNING_MESSAGE);
-                    return;
+                    return false;
                 }
             }
         }
 
+        boolean bResult = false;
         if (!bUseSwingWorker) {
-            _onActionPerformed();
-            return;
+            bResult = _onActionPerformed();
         }
 
         final Window window = OAJFCUtil.getWindow(button);
@@ -451,6 +453,7 @@ public class ButtonController extends JFCController implements ActionListener {
         }
         try {
             sw.get();
+            bResult = true;
         }
         catch (Exception ex) {
             LOG.log(Level.WARNING, "error while performing command action", ex);
@@ -466,14 +469,15 @@ public class ButtonController extends JFCController implements ActionListener {
                     "Error: "+OAString.fmt(ex.getMessage(), "40L."), 
                     "Command Error", JOptionPane.ERROR_MESSAGE);
         }
+        return bResult;
     }
 
     private final Object Lock = new Object();
 
-    protected void _onActionPerformed() {
+    protected boolean _onActionPerformed() {
         Object ho = null;
         Hub hub = getActualHub();
-        if (hub == null) return;
+        if (hub == null) return false;
         if (hub != null) ho = hub.getActiveObject();
 
         /*was:
@@ -861,6 +865,7 @@ public class ButtonController extends JFCController implements ActionListener {
         else if (button instanceof OAMenuItem) {
             ((OAMenuItem) button).performAction();
         }
+        return true;
     }
 
     protected void createNew(boolean insertFlag) {
@@ -904,6 +909,14 @@ public class ButtonController extends JFCController implements ActionListener {
                 OAJFCUtil.getWindow(button), 
                 completedMessage, "Command completed", 
                 JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    public void afterFailure(String msg) {
+        if (!OAString.isEmpty(msg)) {
+            JOptionPane.showMessageDialog(
+                OAJFCUtil.getWindow(button), 
+                msg, "Command failed", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     

@@ -165,7 +165,7 @@ public class HubDataDelegate {
         
         
 	    thisHub.data.changeCount++;
-	    if (!HubSelectDelegate.isFetching(thisHub)) {
+	    if (!thisHub.isLoading()) {
 	        if (thisHub.data.bTrackChanges && (obj instanceof OAObject)) {
 	            synchronized (thisHub.data) {
 	                if (thisHub.data.vecRemove != null && thisHub.data.vecRemove.contains(obj)) {
