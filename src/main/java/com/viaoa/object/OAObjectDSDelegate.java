@@ -34,8 +34,16 @@ public class OAObjectDSDelegate {
     	// OADataSource is set up to check isLoading() so that it does not initialize the objects that it is creating    	
         OADataSource ds = getDataSource(oaObj);
         if (ds != null) {
-        	ds.initializeObject(oaObj);  // datasource might need to set Id property
+            ds.initializeObject(oaObj);  // datasource might need to set Id property
         }
+    }
+
+    public static boolean supportsInitializeObject(OAObject oaObj) {
+        if (oaObj == null) return false;
+        // OADataSource is set up to check isLoading() so that it does not initialize the objects that it is creating       
+        OADataSource ds = getDataSource(oaObj);
+        if (ds == null) return false;
+        return ds.supportsInitializeObject();
     }
     
 	/**

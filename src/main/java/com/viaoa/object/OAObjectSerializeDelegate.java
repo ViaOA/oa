@@ -205,16 +205,23 @@ public static volatile int cntSkip;
         }
 		return true;
 	}	
+static int xxx;//qqqqqqqqqq
 
 	protected static void _writeObject(OAObject oaObj, java.io.ObjectOutputStream stream) throws IOException {
-        OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();
+
+++xxx;//qqqqqqqqqqqqqqq
+if (xxx % 1000 == 0)
+System.out.println((xxx)+") writeObject "+oaObj);
+        
+	    OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();
         if (serializer != null) {
             serializer.beforeSerialize(oaObj);
         }
         
-        // 20140310
+        boolean bClientSideCache = OAObjectCSDelegate.isInClientSideCache(oaObj);
+        
         if (stream instanceof RemoteObjectOutputStream) {
-            if (!OASyncDelegate.isServer() && !oaObj.newFlag) {
+            if (!bClientSideCache && !OASyncDelegate.isServer()) {
                stream.writeByte((byte) 1); 
                stream.writeObject(OAObjectKeyDelegate.getKey(oaObj));
                if (serializer != null) {
@@ -224,18 +231,23 @@ public static volatile int cntSkip;
             }
             stream.write(0);
         }
-      
+        
         stream.defaultWriteObject();  // does not write references (transient)
         
-        _writeProperties(oaObj, stream, serializer); // this will write transient properties
+        _writeProperties(oaObj, stream, serializer, bClientSideCache); // this will write transient properties
         
         if (serializer != null) {
             serializer.afterSerialize();
         }
   		stream.writeObject(OAObjectDelegate.FALSE);  // end of property list
+
+  		// 20140314
+        if (bClientSideCache) {
+            OAObjectCSDelegate.removeFromClientSideCache(oaObj);
+        }
 	}
 	
-    protected static void _writeProperties(OAObject oaObj, java.io.ObjectOutputStream stream, OAObjectSerializer serializer) throws IOException {
+    protected static void _writeProperties(OAObject oaObj, java.io.ObjectOutputStream stream, OAObjectSerializer serializer, boolean bClientSideCache) throws IOException {
         // this method can not support synchronized blocks, since multiple threads could be calling it and then cause deadlock
         // default way for OAServer to send objects.  Clients always send objectKeys.
         //   this way, only the object properties are sent, no reference objects or Hubs
@@ -275,22 +287,29 @@ public static volatile int cntSkip;
             // always send OAObjectKey to reference objects
             if (!b) {
                 if (obj instanceof OAObject) {
-                    obj = OAObjectKeyDelegate.getKey((OAObject)obj);
+                    if (!OAObjectCSDelegate.isInClientSideCache((OAObject)obj)) {
+                        obj = OAObjectKeyDelegate.getKey((OAObject)obj); // only need to send key
+                    }
                     b = true;
                 }
                 else if (obj == null || obj instanceof OAObjectKey) { // 20120827 changed to include nulls
                     b = true;
                 }
                 else if (obj instanceof Hub) {
-                    // 20120926 dont send calc hubs if they are shared, they can be created empty and then
-                    //         have the calc method code set it up.
-                    //     If it is sent here then the above code (see: 20120926 commented out code) will
-                    //        need to set up the shared hub correctly
-                    Hub hx = (Hub) obj;
-                    if (hx.getSharedHub() != null || ((Hub)obj).getSize() == 0) {
-                        // send something to know that there are 0 in hub 
-                        obj = null;
+                    if (bClientSideCache) {
                         b = true;
+                    }
+                    else {
+                        // 20120926 dont send calc hubs if they are shared, they can be created empty and then
+                        //         have the calc method code set it up.
+                        //     If it is sent here then the above code (see: 20120926 commented out code) will
+                        //        need to set up the shared hub correctly
+                        Hub hx = (Hub) obj;
+                        if (hx.getSharedHub() != null || ((Hub)obj).getSize() == 0) {
+                            // send something to know that there are 0 in hub 
+                            obj = null;
+                            b = true;
+                        }
                     }
                 }
             }

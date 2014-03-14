@@ -20,6 +20,7 @@ package com.viaoa.object;
 import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -34,7 +35,10 @@ import com.viaoa.util.*;
 public class OAObjectCSDelegate {
 	private static Logger LOG = Logger.getLogger(OAObjectCSDelegate.class.getName());
 
-	/**
+    private static final ConcurrentHashMap<Integer, Integer> hashServerSideCache = new ConcurrentHashMap<Integer, Integer>(31, .75f);
+    private static final ConcurrentHashMap<Integer, Integer> hashClientSideCache = new ConcurrentHashMap<Integer, Integer>(31, .75f);
+    
+    /**
      * @return true if the current thread is from the OAClient.getMessage().
      */
     public static boolean isRemoteThread() {
@@ -63,19 +67,29 @@ public class OAObjectCSDelegate {
     */
     protected static void initialize(OAObject oaObj) {
 	    if (oaObj == null) return;
-	    if (OASyncDelegate.isServer()) return;
+	    if (!OASyncDelegate.isServer()) {
+	        addToClientSideCache(oaObj);
+	    }
+	    /* 20140314 was:
 	    RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
 	    if (ri != null) {
             ri.setCached(oaObj, true);
             int guid = oaObj.getObjectKey().getGuid();
             hashServerSideCache.add(guid);
  	    }
+ 	    */
     }
 
+    public static boolean isInServerSideCache(OAObject oaObj) {
+        if (oaObj == null) return false;
+        int guid = oaObj.getObjectKey().getGuid();
+        return hashServerSideCache.contains(guid);
+    }
+    
     protected static void finalizeObject(OAObject oaObj) {
         if (oaObj == null) return;
         if (OASyncDelegate.isServer()) return;
-        if (hashServerSideCache.remove(oaObj.getObjectKey().getGuid())) {
+        if (hashServerSideCache.remove(oaObj.getObjectKey().getGuid()) != null) {
             RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
             if (ri != null) {
                 ri.setCached(oaObj, false);
@@ -83,7 +97,6 @@ public class OAObjectCSDelegate {
         }
     }
     
-    private static HashSet<Integer> hashServerSideCache = new HashSet<Integer>(379, .75f);
     
     /**
      * If Object is not in a Hub, then it could be gc'd on server, while it still exists on a client(s).
@@ -98,7 +111,7 @@ public class OAObjectCSDelegate {
         RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
         if (ri != null) {
             ri.setCached(oaObj, true);
-            hashServerSideCache.add(guid);
+            hashServerSideCache.put(guid, guid);
         }
     }
 
@@ -109,7 +122,8 @@ public class OAObjectCSDelegate {
     public static void removeFromServerSideCache(OAObject oaObj) {
         if (oaObj == null) return;
         if (OASyncDelegate.isSingleUser()) return;
-        if (hashServerSideCache.remove(oaObj.getObjectKey().getGuid())) {
+        int guid = oaObj.getObjectKey().getGuid();
+        if (hashServerSideCache.remove(guid) != null) {
             RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
             if (ri != null) {
                 ri.setCached(oaObj, false);
@@ -129,6 +143,26 @@ public class OAObjectCSDelegate {
         return null;
 	}
 
+    /** 20140314
+     * Objects that are only on the client, and have not been sent to server
+     */
+    public static void addToClientSideCache(OAObject oaObj) {
+        if (oaObj == null) return;
+        int guid = oaObj.getObjectKey().getGuid();
+        hashClientSideCache.put(guid, guid);
+    }
+    public static boolean removeFromClientSideCache(OAObject oaObj) {
+        if (oaObj == null) return false;
+        int guid = oaObj.getObjectKey().getGuid();
+        return (hashClientSideCache.remove(guid) != null);
+    }
+    public static boolean isInClientSideCache(OAObject oaObj) {
+        if (oaObj == null) return false;
+        int guid = oaObj.getObjectKey().getGuid();
+        return hashClientSideCache.contains(guid);
+    }
+	
+	
     /** Create a new copy of an object.
         If OAClient.client exists, this will create the object on the server.
      */

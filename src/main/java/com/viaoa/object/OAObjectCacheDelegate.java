@@ -742,7 +742,7 @@ public class OAObjectCacheDelegate {
         // LOG.finer("class="+clazz+", key="+key);
 
 		if (!OAObject.class.isAssignableFrom(clazz)) {
-			LOG.warning("invalid class="+clazz);
+			//LOG.warning("invalid class="+clazz);
 			return null;
 		}
         

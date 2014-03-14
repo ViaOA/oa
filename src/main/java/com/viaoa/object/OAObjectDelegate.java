@@ -114,6 +114,7 @@ public class OAObjectDelegate {
 	        if (bAddToCache) {  // needs to run before any property could be set, so that OACS changes will find this new object.
 	        	OAObjectCacheDelegate.add(oaObj, false, false);  // 20090525, was true,true:  dont add to selectAllHub until after loadingObject is false
 	        }
+	        
 	        if (bInitializeWithCS) {
 	        	OAObjectCSDelegate.initialize(oaObj);
 	        }

@@ -154,7 +154,7 @@ public class OAObjectHubDelegate {
 		}
 		return false;
 	}
-
+	
     public static boolean isInHubWithMaster(OAObject oaObj) {
         if (oaObj == null) return false;
         WeakReference[] refs = oaObj.weakHubs;

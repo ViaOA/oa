@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
@@ -38,6 +39,15 @@ public class OAObjectEventDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectEventDelegate.class.getName());
 
     private static final String WORD_CHANGED = "CHANGED";
+    
+    // 20140314
+    protected static boolean shouldSendPropertyChangeToServer(OAObject oaObj) {
+        if (oaObj == null) return false;
+        if (OASyncDelegate.isServer()) return false;
+        if (OAObjectCSDelegate.isInClientSideCache(oaObj)) return false;
+        return true;
+    }
+    
     
     /**
 	    Used to manage property changes.
@@ -63,8 +73,10 @@ public class OAObjectEventDelegate {
         sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
         
         if (!bLocalOnly) {
-            // prior to 20100406, this was always calling these methods
-            OAObjectCSDelegate.fireBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
+            // 20140314 add shouldSend check
+            if (shouldSendPropertyChangeToServer(oaObj)) {
+                OAObjectCSDelegate.fireBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
+            }
         }
 	}
 	

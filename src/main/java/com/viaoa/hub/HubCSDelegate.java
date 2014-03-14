@@ -97,6 +97,12 @@ public class HubCSDelegate {
 	        return; // 20140309
 	    }
 	    
+	    // 20140314 dont need to send if only on client
+        boolean bClientSideCache = OAObjectCSDelegate.isInClientSideCache(thisHub.datam.masterObject);
+	    if (bClientSideCache) {
+	        return;
+	    }
+        
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         if (rs != null) {
