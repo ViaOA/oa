@@ -411,6 +411,7 @@ public class ButtonController extends JFCController implements ActionListener {
         boolean bResult = false;
         if (!bUseSwingWorker) {
             bResult = _onActionPerformed();
+            return bResult;
         }
 
         final Window window = OAJFCUtil.getWindow(button);
