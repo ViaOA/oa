@@ -467,11 +467,18 @@ public class HubDataDelegate {
 	    return thisHub.data.newListCount;
 	}
 
+    public static boolean contains(Hub hub, Object obj) {
+        if (!(obj instanceof OAObject)) {
+            obj = OAObjectCacheDelegate.get(hub.getObjectClass(), obj);
+            if (obj == null) return false;
+        }        
+        
+        if (hub.data.vector.size() < 20) {
+            return hub.data.vector.contains(obj);
+        }
+        return OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, hub);
+    }
+    public static boolean containsDirect(Hub hub, Object obj) {
+        return hub.data.vector.contains(obj);
+    }
 }
-
-
-
-
-
-
-

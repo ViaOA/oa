@@ -642,16 +642,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Returns true if object exists in Hub.
      */
     public boolean contains(Object obj) {
-        // 20140313 reworked
-        if (!(obj instanceof OAObject)) {
-            obj = OAObjectCacheDelegate.get(getObjectClass(), obj);
-            if (obj == null) return false;
-        }        
-        
-        if (data.vector.size() < 20) {
-            return data.vector.contains(obj);
-        }
-        return OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, this);
+        return HubDataDelegate.contains(this, obj);
     }
 
     /**

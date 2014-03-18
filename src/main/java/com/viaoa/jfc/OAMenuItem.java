@@ -604,8 +604,9 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent{
      * By default, this will call teh button controller, which will also call performAction().
      * @see #performAction to create a custom action.
      */
-    public void onActionPerformed() {
-        if (control != null) control.onActionPerformed();
+    public boolean onActionPerformed() {
+        if (control != null) return control.onActionPerformed();
+        return true;
     }
 
     /**
