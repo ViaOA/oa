@@ -40,15 +40,6 @@ public class OAObjectEventDelegate {
 
     private static final String WORD_CHANGED = "CHANGED";
     
-    // 20140314
-    protected static boolean shouldSendPropertyChangeToServer(OAObject oaObj) {
-        if (oaObj == null) return false;
-        if (OASyncDelegate.isServer()) return false;
-        if (OAObjectCSDelegate.isInClientSideCache(oaObj)) return false;
-        return true;
-    }
-    
-    
     /**
 	    Used to manage property changes.
 	    Sends a "hubPropertyChange()" to all listeners of the Hubs that this object is a member of.  <br>
@@ -73,8 +64,8 @@ public class OAObjectEventDelegate {
         sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
         
         if (!bLocalOnly) {
-            // 20140314 add shouldSend check
-            if (shouldSendPropertyChangeToServer(oaObj)) {
+            // 20140314 if it is in clientSideCache (this client only), then dont send prop changes
+            if (!OAObjectCSDelegate.isInClientSideCache(oaObj)) {
                 OAObjectCSDelegate.fireBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
             }
         }

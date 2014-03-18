@@ -210,8 +210,7 @@ static int xxx;//qqqqqqqqqq
 	protected static void _writeObject(OAObject oaObj, java.io.ObjectOutputStream stream) throws IOException {
 
 ++xxx;//qqqqqqqqqqqqqqq
-if (xxx % 1000 == 0)
-System.out.println((xxx)+") writeObject "+oaObj);
+//if (xxx % 1000 == 0) System.out.println((xxx)+") writeObject "+oaObj);
         
 	    OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();
         if (serializer != null) {

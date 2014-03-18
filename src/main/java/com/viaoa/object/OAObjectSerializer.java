@@ -347,7 +347,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
 
         wcnter++;
         LOG.finer(wcnter+") "+msg);      
-        if (totalObjectsWritten > 25 || (wcnter%50 == 0)) {            
+        if (totalObjectsWritten > 250 || (wcnter%250 == 0)) {            
             System.out.println(wcnter+") OAObjectSerializer "+msg);
         }
         

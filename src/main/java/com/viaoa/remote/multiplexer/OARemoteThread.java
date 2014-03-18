@@ -19,6 +19,12 @@ package com.viaoa.remote.multiplexer;
 
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 
+/**
+ * Threads that process remote broadcast messages from queue.
+ * Since they are broadcast and all other clients will get the same
+ * message, then by default any changes will not send out events.
+ * @author vvia
+ */
 public class OARemoteThread extends Thread {
     
     final Object Lock = new Object();

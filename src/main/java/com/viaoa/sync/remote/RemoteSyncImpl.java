@@ -88,7 +88,6 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, 
             String hubPropertyName, Object obj) {
         OAObject object = OAObjectCacheDelegate.get(masterObjectClass, masterObjectKey);
-        
         if (object == null) {
             return false;
         }

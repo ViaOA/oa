@@ -232,9 +232,9 @@ public abstract class RemoteDataSourceImpl implements RemoteDataSourceInterface 
         case OADataSourceClient.INITIALIZEOBJECT:
             clazz = (Class) objects[0].getClass();
             ds = getDataSource(clazz);
-            OARemoteThreadDelegate.sendMessages(true);
+            b = OARemoteThreadDelegate.sendMessages(true);
             ds.initializeObject((OAObject) objects[0]);
-            OARemoteThreadDelegate.sendMessages(false);
+            OARemoteThreadDelegate.sendMessages(b);
             break;
         case OADataSourceClient.SELECTUSINGOBJECT:
             clazz = (Class) objects[0]; // class to select
