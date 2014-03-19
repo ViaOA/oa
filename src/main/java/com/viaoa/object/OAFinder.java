@@ -21,7 +21,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
-
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
@@ -30,7 +29,16 @@ import com.viaoa.util.*;
  * This is used to find all values of a propertyPath. 
  *
  * @param <F> type of hub or OAObject to use as the root (from)
- * @param <T> type of hub for the to class.
+ * @param <T> type of hub for the to class (to).
+ * 
+ * example:
+    // UserLogin
+    OAFinder<Router, UserLogin> f = new OAFinder<Router, UserLogin>(Router.PROPERTY_UserLogins);
+    String cpp = OAString.cpp(UserLogin.PROPERTY_User, User.PROPERTY_UserId);
+    f.addLikeFilter(cpp, userId);
+    cpp = OAString.cpp(UserLogin.PROPERTY_ClientAppType);
+    UserLogin userLogin = f.findFirst(router);
+ * 
  */
 public class OAFinder<F extends OAObject, T> {
     private String strPropertyPath;
