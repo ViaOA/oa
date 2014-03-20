@@ -678,7 +678,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         }
     }
     public void afterRemove(TYPE obj) {
-        if (hubMaster != null) HubFilter.this.afterRemoveFromFilteredHub(obj);
+        if (hubMaster != null) {
+            HubFilter.this.afterRemoveFromFilteredHub(obj);
+        }
     }
     
     @Override
