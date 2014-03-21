@@ -25,11 +25,12 @@ public class HubCopy<TYPE> extends HubFilter {
 	public HubCopy(Hub<TYPE> hubMaster, Hub<TYPE> hubCopy, boolean bShareAO) {
 	    super(hubMaster, hubCopy, bShareAO);
 	}
-
 	// if object is directly removed from filtered hub, then remove from hubMaster
 	@Override
 	protected void afterRemoveFromFilteredHub(Object obj) {
-	    hubMaster.remove(obj);
+	    if (hubMaster != null && hubMaster.contains(obj)) {
+	        hubMaster.remove(obj);
+	    }
 	}
 	
 	@Override

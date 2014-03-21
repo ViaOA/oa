@@ -86,11 +86,15 @@ public class HubDetailDelegate {
         boolean result = false;
         if (dm.masterHub != null && dm.liDetailToMaster != null) {
 
-            if (dm.liDetailToMaster.getType() == OALinkInfo.MANY) { // Many2Many link
-                Hub h = (Hub) OAObjectReflectDelegate.getProperty((OAObject)detailObject, dm.liDetailToMaster.getName());
-                dm.masterHub.setSharedHub(h, false);
-                HubAODelegate.setActiveObject(dm.masterHub, 0, false, false,false); // pick any one, so that detailObject will be in it.
-                return true;
+            if (dm.liDetailToMaster.getType() == OALinkInfo.MANY) { 
+                OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster);
+                if (liRev != null && liRev.getType() == OALinkInfo.MANY) {
+                    // Many2Many link
+                    Hub h = (Hub) OAObjectReflectDelegate.getProperty((OAObject)detailObject, dm.liDetailToMaster.getName());
+                    dm.masterHub.setSharedHub(h, false);
+                    HubAODelegate.setActiveObject(dm.masterHub, 0, false, false,false); // pick any one, so that detailObject will be in it.
+                    return true;
+                }
             }
             Object obj = OAObjectReflectDelegate.getProperty((OAObject)detailObject, dm.liDetailToMaster.getName());
             // 20121010 if obj==null then dont adjust:  ex: hi5  employeeAward.awardType that was from program.awardTypes, and now the list is in location.awardTpes

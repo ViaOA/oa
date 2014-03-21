@@ -590,7 +590,7 @@ public class HubEventDelegate {
 	    Returns an array of HubListeners for all of the listeners for this Hub and all of Hubs that are shared with it.
 	    @see #addListener
 	*/
-	protected static HubListener[] getAllListeners(Hub thisHub) {
+	public static HubListener[] getAllListeners(Hub thisHub) {
 	    return getAllListeners(thisHub,0);
 	}
 	protected static HubListener[] getAllListeners(Hub thisHub, int type) {
