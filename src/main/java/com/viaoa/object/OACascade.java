@@ -39,7 +39,7 @@ public class OACascade {
     private ReentrantReadWriteLock rwLockHub;
     
     public OACascade() {
-        LOG.finer("new OACascade");
+        // LOG.finer("new OACascade");
     }
     /**
      * 
