@@ -626,7 +626,7 @@ public class OAObjectCacheDelegate {
     /** Used by OAObjectKeyDelegate.updateKey when object Id property is changed. */
     protected static void rehash(OAObject obj, OAObjectKey oldKey) {
         if (bDisableCache) return;
-    	LOG.fine("obj="+obj);
+    	//LOG.fine("obj="+obj);
     	TreeMapHolder tmh = getTreeMapHolder(obj.getClass(), true);
 
         OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);

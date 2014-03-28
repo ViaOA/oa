@@ -305,7 +305,7 @@ public class OAObjectDelegate {
 	}
 	
 	/** @see #recurse(OACallback) */
-	protected static void recurse(OAObject oaObj, OACallback callback, OACascade cascade) {
+	public static void recurse(OAObject oaObj, OACallback callback, OACascade cascade) {
 	    if (cascade.wasCascaded(oaObj, true)) return;
 	
 	    if (callback != null) callback.updateObject(oaObj);

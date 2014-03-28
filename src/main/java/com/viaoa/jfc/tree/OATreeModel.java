@@ -26,6 +26,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 
 import com.viaoa.jfc.*;
+import com.viaoa.object.OAThreadLocalDelegate;
 
 
 public class OATreeModel implements TreeModel {
@@ -138,21 +139,25 @@ public class OATreeModel implements TreeModel {
             }
         }
         else {
-            // 20101008 was:
-           // SwingUtilities.invokeLater(new Runnable() {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        try {
-                            doInvoke();
-                        }
-                        catch (Throwable e) {
-                            fireTreeStructureChanged();
-                        }
+            Runnable r = new Runnable() {
+                public void run() {
+                    try {
+                        doInvoke();
                     }
-                });
-            } 
-            catch (Exception e) {}
+                    catch (Throwable e) {
+                        fireTreeStructureChanged();
+                    }
+                }
+            };
+            if (OAThreadLocalDelegate.isLoadingObject()) {
+                 SwingUtilities.invokeLater(r);
+            }
+            else {
+                try {
+                    SwingUtilities.invokeAndWait(r);
+                } 
+                catch (Exception e) {}
+            }
         }
     }
 

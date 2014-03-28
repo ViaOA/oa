@@ -282,17 +282,22 @@ public class OAObjectCSDelegate {
 	}
 	
 	// used by OAObjectReflectDelegate.getReferenceHub() to have all data loaded on server.
-	protected static boolean loadReferenceHubDataOnServer(Hub hub) {
+	protected static boolean loadReferenceHubDataOnServer(Hub thisHub) {
         boolean bResult;
         
         if (OASyncDelegate.isServer()) {
-            LOG.finest("hub="+hub);
+            //LOG.finest("hub="+hub);
+
+            // 20140328 performance improvement 
+            if (thisHub.getSelect() == null) return true;
+            
+            
             bResult = true;
             // load all data without sending messages
             // even though Hub.writeObject does this, this data could be used on server application
         	try {
         		OAThreadLocalDelegate.setSuppressCSMessages(true);
-	            hub.loadAllData();
+	            thisHub.loadAllData();
         	}
         	finally {
         		OAThreadLocalDelegate.setSuppressCSMessages(false);        	
