@@ -397,6 +397,7 @@ public class OASyncClient {
     }
     /** Sets the stop flag */
     public void stop() throws Exception {
+        if (!isStarted()) return;
         LOG.fine("Client stop");
         clientInfo.setStarted(false);
         if (isConnected()) {
