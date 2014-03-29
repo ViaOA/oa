@@ -1381,17 +1381,10 @@ public class RemoteMultiplexerServer {
                         oos.writeInt(ri.messageId);
                     }
                     else {
+//qqqqqqq create hook to see if the client will need this                        
                         oos.writeBoolean(false); // broadcast
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
-try {
-    
                         oos.writeObject(ri.args);
-}
-catch (Exception e) {
-    int xx = 4;
-    xx++;
-    throw e;
-}                        
                     }
                     oos.flush();
                 }

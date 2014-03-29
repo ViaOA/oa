@@ -17,6 +17,7 @@ All rights reserved.
 */
 package com.viaoa.remote.multiplexer.info;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,7 +29,6 @@ import com.viaoa.comm.multiplexer.io.VirtualSocket;
  * @author vvia
  */
 public class RequestInfo {
-
     private final static AtomicInteger aiCount = new AtomicInteger();
 
     final public int cnt;
