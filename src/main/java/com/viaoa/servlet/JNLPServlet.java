@@ -14,7 +14,7 @@ import com.viaoa.util.OAString;
  * servlet used to serve up JNLP files, and dynamically set the codebase data, and other
  * information within the jnlp text file.
  * This will also rename any references to jar files to match the "versioned" name that is stored in
- * a jar/lib directory.
+ * a jar directory.
  * @author vvia
  */
 public class JNLPServlet extends HttpServlet
@@ -136,10 +136,17 @@ public class JNLPServlet extends HttpServlet
     }
 
     protected String updateJarFileNames(String text) {
-        String libraryDirectory = webcontentDirectory + "/../lib";
-        libraryDirectory = OAFile.convertFileName(libraryDirectory);
+        String jarDirName = "jar";
+        String jarDirectory = webcontentDirectory + "/../jar";
+        jarDirectory = OAFile.convertFileName(jarDirectory);
+        File dir = new File(jarDirectory);
+
+        if (!dir.exists()) {
+            jarDirectory = webcontentDirectory + "/../lib";
+            jarDirName = "lib";
+            jarDirectory = OAFile.convertFileName(jarDirectory);
+        }
         
-        File dir = new File(libraryDirectory);
         File[] files = dir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
@@ -156,7 +163,8 @@ public class JNLPServlet extends HttpServlet
             for (int i=0; i<x; i++) {
                 char ch = fname.charAt(i);
                 if (!Character.isLetter(ch) && !Character.isDigit(ch)) {
-                    text = OAString.convert(text, fname.substring(0, i)+".jar", fname);
+                    text = OAString.convert(text, "/lib/"+fname.substring(0, i)+".jar", "/"+jarDirName+"/"+fname);
+                    text = OAString.convert(text, "/jar/"+fname.substring(0, i)+".jar", "/"+jarDirName+"/"+fname);
                     break;
                 }
             }
