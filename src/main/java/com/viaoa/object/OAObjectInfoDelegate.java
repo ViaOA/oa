@@ -25,15 +25,15 @@ import com.viaoa.util.*;
 
 public class OAObjectInfoDelegate {
 
-	private static final Object Lock = new Object();
-	
+    private static final Object Lock = new Object();
+    
     /**
-	    Return the OAObjectInfo for this object Class.
-	*/
-	public static OAObjectInfo getOAObjectInfo(OAObject obj) {
-	    OAObjectInfo oi = getOAObjectInfo(obj == null ? null : obj.getClass());
-	    return oi;
-	}
+        Return the OAObjectInfo for this object Class.
+    */
+    public static OAObjectInfo getOAObjectInfo(OAObject obj) {
+        OAObjectInfo oi = getOAObjectInfo(obj == null ? null : obj.getClass());
+        return oi;
+    }
     public static OAObjectInfo getObjectInfo(OAObject obj) {
         return getOAObjectInfo(obj);
     }
@@ -84,16 +84,16 @@ public class OAObjectInfoDelegate {
         return oi;
     }    
     
-	
-	/**
-	    Used to cache OAObjectInfo based on Class.
-	    This will always return a valid OAObjectInfo object.
-	*/
-	private static OAObjectInfo _getOAObjectInfo(Class clazz) {
-		boolean bSkip = false;
+    
+    /**
+        Used to cache OAObjectInfo based on Class.
+        This will always return a valid OAObjectInfo object.
+    */
+    private static OAObjectInfo _getOAObjectInfo(Class clazz) {
+        boolean bSkip = false;
         if (clazz == null || !OAObject.class.isAssignableFrom(clazz) || OAObject.class.equals(clazz)) {
-        	bSkip = true;
-        	clazz = String.class; // fake out so that null is never returned
+            bSkip = true;
+            clazz = String.class; // fake out so that null is never returned
         }
         
         OAObjectInfo oi = OAObjectHashDelegate.hashObjectInfo.get(clazz);
@@ -103,20 +103,20 @@ public class OAObjectInfoDelegate {
             oi = (OAObjectInfo) OAObjectHashDelegate.hashObjectInfo.get(clazz);
             if (oi != null) return oi;
 
-	    	if (!bSkip) {
-	    	    Method m = null;	    	    
-			    try {
-		            m = clazz.getMethod("getOAObjectInfo", new Class[] { } );
-		            if (m != null) oi = (OAObjectInfo) m.invoke(null, null);
-			    }
-			    catch (Exception e) {
-			    	//System.out.println("OAObjectInfoDelegate.getOAObjectInfo "+e);
-			    	//e.printStackTrace();
-			        oi = null;
-			    }
-		        if (oi == null) {
+            if (!bSkip) {
+                Method m = null;                
+                try {
+                    m = clazz.getMethod("getOAObjectInfo", new Class[] { } );
+                    if (m != null) oi = (OAObjectInfo) m.invoke(null, null);
+                }
+                catch (Exception e) {
+                    //System.out.println("OAObjectInfoDelegate.getOAObjectInfo "+e);
+                    //e.printStackTrace();
+                    oi = null;
+                }
+                if (oi == null) {
                     oi = new OAObjectInfo();
-		        }
+                }
                 initialize(oi, clazz);  // this will load all props/links/primitives
                 
                 Class superClass = clazz.getSuperclass();  // if there is a superclass, then combine with oaobjectinfo
@@ -125,7 +125,7 @@ public class OAObjectInfoDelegate {
                     oi = createCombinedObjectInfo(oi, oi2);
                     oi.thisClass = clazz;
                 }
-		        
+                
                 OAAnnotationDelegate.update(oi, clazz);
                 
                 // 20120702
@@ -137,158 +137,159 @@ public class OAObjectInfoDelegate {
                     }
                 }
                 
-		        OAObjectHashDelegate.hashObjectInfo.put(clazz, oi);
-	    	}	
+                OAObjectHashDelegate.hashObjectInfo.put(clazz, oi);
+            }   
 
-		    if (oi == null) {
-		    	oi = new OAObjectInfo();
-		        initialize(oi, clazz);
-		        OAObjectHashDelegate.hashObjectInfo.put(clazz, oi);
-		    }
+            if (oi == null) {
+                oi = new OAObjectInfo();
+                initialize(oi, clazz);
+                OAObjectHashDelegate.hashObjectInfo.put(clazz, oi);
+            }
         }
-	    return oi;
-	}
+        return oi;
+    }
     public static OAObjectInfo getObjectInfo(Class clazz) {
         return getOAObjectInfo(clazz);
     }
 
     
-	// only "grabs" info from this clazz. If there is a superclass, then it will be combined by getOAObjectInfo (above)
+    // only "grabs" info from this clazz. If there is a superclass, then it will be combined by getOAObjectInfo (above)
     public static void initialize(OAObjectInfo thisOI, Class clazz) {
-    	if (thisOI.thisClass != null) return;
-    	thisOI.thisClass = clazz;
+        if (thisOI.thisClass != null) return;
+        thisOI.thisClass = clazz;
 
         ArrayList<String> alPrimitive = new ArrayList<String>();
         ArrayList<String> alHub = new ArrayList<String>();
-    	
-		String[] props = getPropertyNames(clazz);
-		for (int i=0; props != null && i < props.length; i++) {
-			String name = props[i];
-			if (name == null) continue;
-			Method m = getMethod(thisOI, "get"+name, 0);
-			
-			if (m == null) {
-				m = getMethod(thisOI, "is"+name);
-				if (m == null) {
-				    continue;
-				}
-			}
-			
-			if (m.getReturnType().equals(Hub.class)) {
-	            if ((m.getModifiers() & Modifier.STATIC) > 0) continue;
-	            alHub.add(name.toUpperCase());
-				createLink(thisOI, name, null, OALinkInfo.MANY);
-				continue;
-			}
-			
-			if (OAObject.class.isAssignableFrom(m.getReturnType())) {
-	            if ((m.getModifiers() & Modifier.STATIC) > 0) continue;
-				createLink(thisOI, name, m.getReturnType(), OALinkInfo.ONE);
-				continue;
-			}
-			
-			OAPropertyInfo pi = new OAPropertyInfo();
-			pi.setName(name);
-			pi.setClassType(m.getReturnType());
-			
-			for (int j=0; thisOI.idProperties != null && j < thisOI.idProperties.length; j++) {
-				if (name.equalsIgnoreCase(thisOI.idProperties[j])) {
-	    			pi.setId(true);
-					break;
-				}
-			}
-			
+        
+        // 20140331 only get props for this class, then combine with superClass(es)        
+        String[] props = getPropertyNames(clazz, false);
+        for (int i=0; props != null && i < props.length; i++) {
+            String name = props[i];
+            if (name == null) continue;
+            Method m = getMethod(thisOI, "get"+name, 0);
+            
+            if (m == null) {
+                m = getMethod(thisOI, "is"+name);
+                if (m == null) {
+                    continue;
+                }
+            }
+            
+            if (m.getReturnType().equals(Hub.class)) {
+                if ((m.getModifiers() & Modifier.STATIC) > 0) continue;
+                alHub.add(name.toUpperCase());
+                createLink(thisOI, name, null, OALinkInfo.MANY);
+                continue;
+            }
+            
+            if (OAObject.class.isAssignableFrom(m.getReturnType())) {
+                if ((m.getModifiers() & Modifier.STATIC) > 0) continue;
+                createLink(thisOI, name, m.getReturnType(), OALinkInfo.ONE);
+                continue;
+            }
+            
+            OAPropertyInfo pi = new OAPropertyInfo();
+            pi.setName(name);
+            pi.setClassType(m.getReturnType());
+            
+            for (int j=0; thisOI.idProperties != null && j < thisOI.idProperties.length; j++) {
+                if (name.equalsIgnoreCase(thisOI.idProperties[j])) {
+                    pi.setId(true);
+                    break;
+                }
+            }
+            
             if (pi.getClassType() != null && pi.getClassType().isPrimitive()) {
                 alPrimitive.add(pi.getName().toUpperCase());
             }
             else if (pi.getClassType().isArray() && pi.getClassType().getComponentType().equals(byte.class)) { // 20121001
                 alPrimitive.add(pi.getName().toUpperCase());
             }
-			thisOI.getPropertyInfos().add(pi);
-		}
+            thisOI.getPropertyInfos().add(pi);
+        }
         
-		// this must be sorted, so that they will be in the same order used by OAObjet.nulls, and created the same on all other computers
-		Collections.sort(alPrimitive);
+        // this must be sorted, so that they will be in the same order used by OAObject.nulls, and created the same on all other computers
+        Collections.sort(alPrimitive);
         thisOI.primitiveProps = new String[alPrimitive.size()];
         alPrimitive.toArray(thisOI.primitiveProps);
         
         // 20120827 track empty hubs
-        // this must be sorted, so that they will be in the same order used by OAObjet.nulls, and created the same on all other computers
+        // this must be sorted, so that they will be in the same order used by OAObject.nulls, and created the same on all other computers
         Collections.sort(alHub);
         thisOI.hubProps = new String[alHub.size()];
         alHub.toArray(thisOI.hubProps);
     }
 
     
-    
-    
     private static void createLink(OAObjectInfo thisOI, String name, Class clazz, int type) {
-    	List al = thisOI.getLinkInfos();
-    	for (int i=0; i<al.size(); i++) {
-    		OALinkInfo li = (OALinkInfo) al.get(i);
-    		if (name.equalsIgnoreCase(li.getName())) {
-    			return;  // already exists
-    		}
-    	}
-    	OALinkInfo li = new OALinkInfo(name, clazz, type, false, "");
-    	thisOI.getLinkInfos().add(li);
+        List al = thisOI.getLinkInfos();
+        for (int i=0; i<al.size(); i++) {
+            OALinkInfo li = (OALinkInfo) al.get(i);
+            if (name.equalsIgnoreCase(li.getName())) {
+                return;  // already exists
+            }
+        }
+        OALinkInfo li = new OALinkInfo(name, clazz, type, false, "");
+        thisOI.getLinkInfos().add(li);
     }
     
-    // Used by initialize to get all possible properties. 
-    public static String[] getPropertyNames(Class clazzOrig) {
+    // Used by initialize to properties. 
+    public static String[] getPropertyNames(Class clazzOrig, boolean bIncludeSuperClasses) {
         Vector vecFound = new Vector(20,10);
         Vector vecFoundUpper = new Vector(20,10);
         Vector vecUpper = new Vector(20,10);
-    	for (Class c=clazzOrig; c != null && !c.equals(OAObject.class); c=c.getSuperclass()) {
-	        Method[] methods = c.getDeclaredMethods();
-	        vecUpper.clear();
-	        for (int i=0; i<methods.length; i++) {
-	        	if ((methods[i].getModifiers() & Modifier.PUBLIC) == 0) {
+        int cnt = 0;
+        for (Class c=clazzOrig; c != null && !c.equals(OAObject.class); c=c.getSuperclass()) {
+            if (cnt++ > 0 && !bIncludeSuperClasses) break;
+            Method[] methods = c.getDeclaredMethods();
+            vecUpper.clear();
+            for (int i=0; i<methods.length; i++) {
+                if ((methods[i].getModifiers() & Modifier.PUBLIC) == 0) {
                     continue;
-	        	}
-	
-	            String s = methods[i].getName();
-	            if (s.length() < 3) continue;
-	            String s2 = s.substring(0,3);
-	
-	            if (s2.equals("get") || s2.startsWith("is")) {
-	                Class[] cs = methods[i].getParameterTypes();
-	                if (cs.length > 0) continue;
+                }
+    
+                String s = methods[i].getName();
+                if (s.length() < 3) continue;
+                String s2 = s.substring(0,3);
+    
+                if (s2.equals("get") || s2.startsWith("is")) {
+                    Class[] cs = methods[i].getParameterTypes();
+                    if (cs.length > 0) continue;
                     storeMethod(clazzOrig, methods[i]);
-		            if (s2.equals("get")) s = s.substring(3);
-		            else s = s.substring(2);
-	            }
-	            else if (s2.equals("set")) {
-	                Class[] cs = methods[i].getParameterTypes();
-	                if (cs.length != 1) continue;
+                    if (s2.equals("get")) s = s.substring(3);
+                    else s = s.substring(2);
+                }
+                else if (s2.equals("set")) {
+                    Class[] cs = methods[i].getParameterTypes();
+                    if (cs.length != 1) continue;
                     storeMethod(clazzOrig, methods[i]);
-		            s = s.substring(3);
-	            }
-	            else continue;
-	
-	            String su = s.toUpperCase();
-	
-	            if (vecUpper.contains(su) || methods[i].getReturnType().equals(Hub.class)) {
-	            	if (!vecFoundUpper.contains(su)) {
-	            		vecFound.addElement(s);
-		            	vecFoundUpper.add(su);
-	            	}
-	            }
-	            else {
-	            	vecUpper.addElement(su);
-	            }
-	        }
-    	}
+                    s = s.substring(3);
+                }
+                else continue;
+    
+                String su = s.toUpperCase();
+    
+                if (vecUpper.contains(su) || methods[i].getReturnType().equals(Hub.class)) {
+                    if (!vecFoundUpper.contains(su)) {
+                        vecFound.addElement(s);
+                        vecFoundUpper.add(su);
+                    }
+                }
+                else {
+                    vecUpper.addElement(su);
+                }
+            }
+        }
         String[] ss = new String[vecFound.size()];
         vecFound.copyInto(ss);
         return ss;
     }
-	
+    
     
     // used by getOAObjectInfo to combine 2 OAObjectInfo's into one. 
     private static OAObjectInfo createCombinedObjectInfo(OAObjectInfo child, OAObjectInfo parent) {
-    	OAObjectInfo thisOI = new OAObjectInfo();
-    	
+        OAObjectInfo thisOI = new OAObjectInfo();
+        
         OAClass oaclass = (OAClass) child.getForClass().getAnnotation(OAClass.class);
         if (oaclass == null) {
             oaclass = (OAClass) parent.getForClass().getAnnotation(OAClass.class);
@@ -302,112 +303,112 @@ public class OAObjectInfoDelegate {
             thisOI.setDisplayName(oaclass.displayName());
         }
         
-    	
-    	
-    	// combine PropertyInfos
-		List alThis = thisOI.getPropertyInfos();
-		for (int x=0; x<2; x++) {
-			ArrayList al;
-			if (x == 0) al = child.getPropertyInfos();
-			else al = parent.getPropertyInfos();
+        
+        
+        // combine PropertyInfos
+        List alThis = thisOI.getPropertyInfos();
+        for (int x=0; x<2; x++) {
+            ArrayList al;
+            if (x == 0) al = child.getPropertyInfos();
+            else al = parent.getPropertyInfos();
 
-	    	for (int i=0; i<al.size(); i++)  {
-	    		OAPropertyInfo pi = (OAPropertyInfo) al.get(i);
-	    		
-	    		for (int ii=0; ; ii++)  {
-	    			if (ii == alThis.size()) {
-	    				alThis.add(pi);
-	    				break;
-	    			}
-	        		OAPropertyInfo piThis = (OAPropertyInfo) alThis.get(ii);
-	        		if (pi.getName().equalsIgnoreCase(piThis.getName())) break;
-	    		}
-	    	}
-		}
-		
-		// combined primitive properties
+            for (int i=0; i<al.size(); i++)  {
+                OAPropertyInfo pi = (OAPropertyInfo) al.get(i);
+                
+                for (int ii=0; ; ii++)  {
+                    if (ii == alThis.size()) {
+                        alThis.add(pi);
+                        break;
+                    }
+                    OAPropertyInfo piThis = (OAPropertyInfo) alThis.get(ii);
+                    if (pi.getName().equalsIgnoreCase(piThis.getName())) break;
+                }
+            }
+        }
+        
+        // combined primitive properties
         ArrayList<String> alPrimitive = new ArrayList<String>();
-		for (String s : parent.getPrimitiveProperties()) {
-		    alPrimitive.add(s);
-		}
+        for (String s : parent.getPrimitiveProperties()) {
+            alPrimitive.add(s);
+        }
         for (String s : child.getPrimitiveProperties()) {
             alPrimitive.add(s);
         }
-		Collections.sort(alPrimitive);
+        Collections.sort(alPrimitive);
         thisOI.primitiveProps = new String[alPrimitive.size()];
         alPrimitive.toArray(thisOI.primitiveProps);
-		
-		
-    	// combine LinkInfos
-		alThis = thisOI.getLinkInfos();
-		for (int x=0; x<2; x++) {
-			List al;
-			if (x == 0) al = child.getLinkInfos();
-			else al = parent.getLinkInfos();
+        
+        
+        // combine LinkInfos
+        alThis = thisOI.getLinkInfos();
+        for (int x=0; x<2; x++) {
+            List al;
+            if (x == 0) al = child.getLinkInfos();
+            else al = parent.getLinkInfos();
 
-	    	for (int i=0; i<al.size(); i++)  {
-	    		OALinkInfo li = (OALinkInfo) al.get(i);
-	    		for (int ii=0; ; ii++)  {
-	    			if (ii == alThis.size()) {
-	    				alThis.add(li);
-	    				break;
-	    			}
-	        		OALinkInfo liThis = (OALinkInfo) alThis.get(ii);
-	        		if (li.getName().equalsIgnoreCase(liThis.getName())) break;
-	    		}
-	    	}
-		}
-		
-    	// combine CalcInfos
-		alThis = thisOI.getCalcInfos();
-		for (int x=0; x<2; x++) {
-			ArrayList al;
-			if (x == 0) al = child.getCalcInfos();
-			else al = parent.getCalcInfos();
+            for (int i=0; i<al.size(); i++)  {
+                OALinkInfo li = (OALinkInfo) al.get(i);
+                for (int ii=0; ; ii++)  {
+                    if (ii == alThis.size()) {
+                        alThis.add(li);
+                        break;
+                    }
+                    OALinkInfo liThis = (OALinkInfo) alThis.get(ii);
+                    if (li.getName().equalsIgnoreCase(liThis.getName())) break;
+                }
+            }
+        }
+        
+        // combine CalcInfos
+        alThis = thisOI.getCalcInfos();
+        for (int x=0; x<2; x++) {
+            ArrayList al;
+            if (x == 0) al = child.getCalcInfos();
+            else al = parent.getCalcInfos();
 
-	    	for (int i=0; i<al.size(); i++)  {
-	    		OACalcInfo ci = (OACalcInfo) al.get(i);
-	    		for (int ii=0; ; ii++)  {
-	    			if (ii == alThis.size()) {
-	    				alThis.add(ci);
-	    				break;
-	    			}
-	        		OACalcInfo ciThis = (OACalcInfo) alThis.get(ii);
-	        		if (ci.getName().equalsIgnoreCase(ciThis.getName())) break;
-	    		}
-	    	}
-		}
+            for (int i=0; i<al.size(); i++)  {
+                OACalcInfo ci = (OACalcInfo) al.get(i);
+                for (int ii=0; ; ii++)  {
+                    if (ii == alThis.size()) {
+                        alThis.add(ci);
+                        break;
+                    }
+                    OACalcInfo ciThis = (OACalcInfo) alThis.get(ii);
+                    if (ci.getName().equalsIgnoreCase(ciThis.getName())) break;
+                }
+            }
+        }
 
-		// 20120827
-		String[] s1 = child.hubProps;
+        // 20120827
+        String[] s1 = child.hubProps;
         String[] s2 = parent.hubProps;
-		thisOI.hubProps = new String[s1.length + s2.length];
-		System.arraycopy(s1, 0, thisOI.hubProps, 0, s1.length);
+        thisOI.hubProps = new String[s1.length + s2.length];
+        System.arraycopy(s1, 0, thisOI.hubProps, 0, s1.length);
         System.arraycopy(s2, 0, thisOI.hubProps, s1.length, s2.length);
-		
+        
         return thisOI;
     }
-	
-	
+    
+    
     public static void addLinkInfo(OAObjectInfo thisOI, OALinkInfo li) {
-    	if (li == null) return;
-    	
+        if (li == null) return;
+        
         String name = li.getName();
-    	if (name != null && name.length() > 0) {  // see if it was already created
-	    	List al = thisOI.getLinkInfos();
-	    	for (int i=0; i<al.size(); i++) {
-	    		OALinkInfo lix = (OALinkInfo) al.get(i);
-	    		if (name.equalsIgnoreCase(lix.getName())) {
-	    			al.remove(i);
-	    			break;
-	    		}
-	    	}
-    	}    	
+        if (name != null && name.length() > 0) {  // see if it was already created
+            List al = thisOI.getLinkInfos();
+            for (int i=0; i<al.size(); i++) {
+                OALinkInfo lix = (OALinkInfo) al.get(i);
+                if (name.equalsIgnoreCase(lix.getName())) {
+                    al.remove(i);
+                    break;
+                }
+            }
+        }       
         thisOI.addLinkInfo(li);
     }
 
     protected static void addCalcInfo(OAObjectInfo thisOI, OACalcInfo ci) {
-    	if (ci != null) thisOI.getCalcInfos().add(ci);
+        if (ci != null) thisOI.getCalcInfos().add(ci);
     }
 
     public static OACalcInfo getOACalcInfo(OAObjectInfo thisOI, String name) {
@@ -419,10 +420,10 @@ public class OAObjectInfoDelegate {
     }
     
     /** 
-	    @return OALinkInfo for recursive link for this class, or null if not recursive
-	*/
-	public static OALinkInfo getRecursiveLinkInfo(OAObjectInfo thisOI, int type) {
-		if (thisOI.thisClass == null) return null;
+        @return OALinkInfo for recursive link for this class, or null if not recursive
+    */
+    public static OALinkInfo getRecursiveLinkInfo(OAObjectInfo thisOI, int type) {
+        if (thisOI.thisClass == null) return null;
         List al = thisOI.getLinkInfos();
         OALinkInfo liOne = null;
         OALinkInfo liMany = null;
@@ -432,24 +433,24 @@ public class OAObjectInfoDelegate {
             if (li.bCalculated) continue;
             if (!li.bRecursive) continue; // 20131009
             if (li.toClass != null && li.toClass.equals(thisOI.thisClass)) {
-            	if (li.getType() == OALinkInfo.MANY) {
-            	    liMany = li;
-            	    break;
-            	}
-            	else liOne = li;
+                if (li.getType() == OALinkInfo.MANY) {
+                    liMany = li;
+                    break;
+                }
+                else liOne = li;
             }
         }
         if (liMany != null) {
-        	if (type == OALinkInfo.ONE) {
-        	    if (liOne == null && liMany != null) {
-        	        liOne = getReverseLinkInfo(liMany);  // 20131010 type=One are not annotated as recursive
-        	    }
-        	    return liOne;
-        	}
-        	return liMany;
+            if (type == OALinkInfo.ONE) {
+                if (liOne == null && liMany != null) {
+                    liOne = getReverseLinkInfo(liMany);  // 20131010 type=One are not annotated as recursive
+                }
+                return liOne;
+            }
+            return liMany;
         }
-	    return null;
-	}
+        return null;
+    }
     
     public static OALinkInfo getLinkToOwner(OAObjectInfo thisOI) {
         List al = thisOI.getLinkInfos();
@@ -457,88 +458,88 @@ public class OAObjectInfoDelegate {
             OALinkInfo li = (OALinkInfo) al.get(i);
             OALinkInfo liRev = getReverseLinkInfo(li);
             if (liRev != null && liRev.getOwner() && liRev.getType() == OALinkInfo.MANY) {
-            	if (!li.toClass.equals(thisOI.thisClass)) {  // make sure that it is not also a recursive link.
-            		return li;
-            	}
+                if (!li.toClass.equals(thisOI.thisClass)) {  // make sure that it is not also a recursive link.
+                    return li;
+                }
             }
         }
         return null;
     }
     
     /**
-	    if this is a recursive object that does not have an owner, then the root hub can be set for all
-	    hubs of this class.  Throws and exception if this class has an owner.
-	*/
-	public static void setRootHub(OAObjectInfo thisOI, Hub h) {
-		if(thisOI == null) return;
-		if (h == null) OAObjectHashDelegate.hashRootHub.remove(thisOI);
-		else OAObjectHashDelegate.hashRootHub.put(thisOI, h);
-	}
-	public static Hub getRootHub(OAObjectInfo thisOI) {
-		if(thisOI == null) return null;
-		return (Hub) OAObjectHashDelegate.hashRootHub.get(thisOI);
-	}
+        if this is a recursive object that does not have an owner, then the root hub can be set for all
+        hubs of this class.  Throws and exception if this class has an owner.
+    */
+    public static void setRootHub(OAObjectInfo thisOI, Hub h) {
+        if(thisOI == null) return;
+        if (h == null) OAObjectHashDelegate.hashRootHub.remove(thisOI);
+        else OAObjectHashDelegate.hashRootHub.put(thisOI, h);
+    }
+    public static Hub getRootHub(OAObjectInfo thisOI) {
+        if(thisOI == null) return null;
+        return (Hub) OAObjectHashDelegate.hashRootHub.get(thisOI);
+    }
 
 
-	/** 
-	    Used by OAObject.getHub() to cache hubs for links that have
-	    a weakreference only.  
-	*/
-	public static boolean cacheHub(OALinkInfo li, Hub hub) {
-	    if (li == null || hub == null || li.cacheSize < 1) return false;
-	    
-	    Vector vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
-	    if (vecCache == null) {
-	        synchronized(OAObjectHashDelegate.hashLinkInfoCache) {
-	    	    vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
-	    	    if (vecCache == null) {
-	    	    	vecCache = new Vector(li.cacheSize+5);
-	    	    	OAObjectHashDelegate.hashLinkInfoCache.put(li, vecCache);
-	    	    }
-	        }
-	    }
-	    vecCache.removeElement(hub);
-	    vecCache.addElement(hub);
-	    if (OAObjectCSDelegate.isWorkstation() && vecCache.size() > li.cacheSize) vecCache.removeElementAt(0);
-	    return true;
-	}
-	// for testing
-	public static boolean isCached(OALinkInfo li, Hub hub) {
-	    Vector vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
-	    return vecCache != null && vecCache.contains(hub);
-	}
-	
-	
+    /** 
+        Used by OAObject.getHub() to cache hubs for links that have
+        a weakreference only.  
+    */
+    public static boolean cacheHub(OALinkInfo li, Hub hub) {
+        if (li == null || hub == null || li.cacheSize < 1) return false;
+        
+        Vector vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
+        if (vecCache == null) {
+            synchronized(OAObjectHashDelegate.hashLinkInfoCache) {
+                vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
+                if (vecCache == null) {
+                    vecCache = new Vector(li.cacheSize+5);
+                    OAObjectHashDelegate.hashLinkInfoCache.put(li, vecCache);
+                }
+            }
+        }
+        vecCache.removeElement(hub);
+        vecCache.addElement(hub);
+        if (OAObjectCSDelegate.isWorkstation() && vecCache.size() > li.cacheSize) vecCache.removeElementAt(0);
+        return true;
+    }
+    // for testing
+    public static boolean isCached(OALinkInfo li, Hub hub) {
+        Vector vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
+        return vecCache != null && vecCache.contains(hub);
+    }
+    
+    
     public static OALinkInfo getReverseLinkInfo(OALinkInfo thisLi) {
-    	if (thisLi == null) return null;
-    	if (thisLi.revLinkInfo != null) return thisLi.revLinkInfo;
+        if (thisLi == null) return null;
+        if (thisLi.revLinkInfo != null) return thisLi.revLinkInfo;
         List al = OAObjectInfoDelegate.getOAObjectInfo(thisLi.toClass).getLinkInfos(); 
-    	String findName = thisLi.reverseName;
-    	if (findName == null) return null;
+        String findName = thisLi.reverseName;
+        if (findName == null) return null;
         for (int i=0; i < al.size(); i++) {
-        	OALinkInfo lix = (OALinkInfo) al.get(i);
-        	String name = lix.name;
-    		if (name != null && findName.equalsIgnoreCase(name)) {
-    			thisLi.revLinkInfo = lix;
-    			return lix;
-    		}
+            OALinkInfo lix = (OALinkInfo) al.get(i);
+            String name = lix.name;
+            if (name != null && findName.equalsIgnoreCase(name)) {
+                thisLi.revLinkInfo = lix;
+                return lix;
+            }
         }
         return null;
     }
 
     public static boolean isMany2Many(OALinkInfo thisLi) {
-    	OALinkInfo rli = getReverseLinkInfo(thisLi);
+        OALinkInfo rli = getReverseLinkInfo(thisLi);
         return (rli != null && thisLi.type == OALinkInfo.MANY && rli.type == OALinkInfo.MANY);
     }
 
     public static boolean isOne2One(OALinkInfo thisLi) {
-    	OALinkInfo rli = getReverseLinkInfo(thisLi);
+        OALinkInfo rli = getReverseLinkInfo(thisLi);
         return (rli != null && thisLi.type == OALinkInfo.ONE && rli.type == OALinkInfo.ONE);
     }
 
     public static Method getMethod(Class clazz, String methodName) {
-    	OAObjectInfo oi = getOAObjectInfo(clazz);  // this will load up the methods
-    	return getMethod(oi, methodName);
+        OAObjectInfo oi = getOAObjectInfo(clazz);  // this will load up the methods
+        return getMethod(oi, methodName);
     }
     public static Method getMethod(OALinkInfo li) {
         if (li == null) return null;
@@ -552,18 +553,18 @@ public class OAObjectInfoDelegate {
         return getMethod(oi, methodName, -1);
     }
     public static Method getMethod(OAObjectInfo oi, String methodName, int argumentCount) {
-    	if (methodName == null || oi == null) return null;
-    	methodName = methodName.toUpperCase();
-    	Class clazz = oi.thisClass;
-    	Map<String, Method> map = OAObjectHashDelegate.getHashClassMethod(clazz);
-    	Method method = map.get(methodName);
+        if (methodName == null || oi == null) return null;
+        methodName = methodName.toUpperCase();
+        Class clazz = oi.thisClass;
+        Map<String, Method> map = OAObjectHashDelegate.getHashClassMethod(clazz);
+        Method method = map.get(methodName);
         if (method != null && argumentCount < 0) {
             return method;
         }
         Set<String> set = OAObjectHashDelegate.getHashClassMethodNotFound(clazz);
         if (set.contains(methodName)) return null;
-    	
-    	boolean bRecalc = false;
+        
+        boolean bRecalc = false;
         if (method != null && argumentCount >= 0) {
             Class[] cs = method.getParameterTypes();
             if (cs.length != argumentCount) {
@@ -571,61 +572,61 @@ public class OAObjectInfoDelegate {
                 method = null;
             }
         }
-    	if (method == null) {
-    		method = OAReflect.getMethod(clazz, methodName, argumentCount);
-    		if (method == null) {
-    			if (!bRecalc) {
-    			    set.add(methodName);
-    			}
-    		    return null;
-    		}
-    		method.setAccessible(true); // 20130131
-			map.put(methodName, method);
-    	}
-    	return method;
+        if (method == null) {
+            method = OAReflect.getMethod(clazz, methodName, argumentCount);
+            if (method == null) {
+                if (!bRecalc) {
+                    set.add(methodName);
+                }
+                return null;
+            }
+            method.setAccessible(true); // 20130131
+            map.put(methodName, method);
+        }
+        return method;
     }
     
     protected static void storeMethod(Class clazz, Method method) {
-    	Map<String, Method> map = OAObjectHashDelegate.getHashClassMethod(clazz);
+        Map<String, Method> map = OAObjectHashDelegate.getHashClassMethod(clazz);
         method.setAccessible(true); // 20130131
-    	map.put(method.getName().toUpperCase(), method);
+        map.put(method.getName().toUpperCase(), method);
     }
     // testing
     public static Method[] getAllMethods(OAObjectInfo oi) {
-    	Class clazz = oi.thisClass;
-    	Map<String, Method> map = OAObjectHashDelegate.getHashClassMethod(clazz);
-    	Method[] ms = new Method[map.size()];  // qqqq, not threadsafe, method could be null
-    	int i = 0;
-    	for (String s : map.keySet()) {
+        Class clazz = oi.thisClass;
+        Map<String, Method> map = OAObjectHashDelegate.getHashClassMethod(clazz);
+        Method[] ms = new Method[map.size()];  // qqqq, not threadsafe, method could be null
+        int i = 0;
+        for (String s : map.keySet()) {
             ms[i] = (Method) map.get(s);
-    	}
-    	return ms;
+        }
+        return ms;
     }
     
 
     public static Class getPropertyClass(OAObjectInfo oi, String propertyName) {
-    	Method m = getMethod(oi, "get"+propertyName, 0);
-    	if (m == null) return null;
-    	return m.getReturnType();
+        Method m = getMethod(oi, "get"+propertyName, 0);
+        if (m == null) return null;
+        return m.getReturnType();
     }
     
     public static Class getPropertyClass(Class clazz, String propertyName) {
-    	Method m = getMethod(clazz, "get"+propertyName);
-    	if (m == null) return null;
-    	return m.getReturnType();
+        Method m = getMethod(clazz, "get"+propertyName);
+        if (m == null) return null;
+        return m.getReturnType();
     }
     
     
     public static Class getHubPropertyClass(Class clazz, String propertyName) {
-    	OALinkInfo li = getLinkInfo(clazz, propertyName);
-    	if (li != null) return li.toClass;
-    	return null;
+        OALinkInfo li = getLinkInfo(clazz, propertyName);
+        if (li != null) return li.toClass;
+        return null;
     }
     
     
     public static OALinkInfo getLinkInfo(Class clazz, String propertyName) {
-    	OAObjectInfo oi = getOAObjectInfo(clazz);
-    	return getLinkInfo(oi, propertyName);
+        OAObjectInfo oi = getOAObjectInfo(clazz);
+        return getLinkInfo(oi, propertyName);
     }
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, String propertyName) {
         OALinkInfo li = oi.getLinkInfo(propertyName);
@@ -674,45 +675,45 @@ public class OAObjectInfoDelegate {
     
     public static OAPropertyInfo getPropertyInfo(OAObjectInfo oi, String propertyName) {
         OAPropertyInfo pi = oi.getPropertyInfo(propertyName);
-    	return pi;
+        return pi;
     }
     
     
     public static boolean isIdProperty(OAObjectInfo oi, String propertyName) {
-    	for (int i=0; oi.idProperties != null && i<oi.idProperties.length; i++) {
-    		if (oi.idProperties[i] != null && oi.idProperties[i].equalsIgnoreCase(propertyName)) return true;
-    	}
-    	return false;
+        for (int i=0; oi.idProperties != null && i<oi.idProperties.length; i++) {
+            if (oi.idProperties[i] != null && oi.idProperties[i].equalsIgnoreCase(propertyName)) return true;
+        }
+        return false;
     }
     
     public static boolean isPrimitive(OAPropertyInfo pi) {
-    	return (pi != null && pi.getClassType() != null && pi.getClassType().isPrimitive());
+        return (pi != null && pi.getClassType() != null && pi.getClassType().isPrimitive());
     }
     public static boolean isPrimitiveProperty(OAObjectInfo oi, String propertyName) {
         OAPropertyInfo pi = oi.getPropertyInfo(propertyName);
         if (pi != null) {
-    		Class c = pi.getClassType();
-    		return (c != null && c.isPrimitive());
-    	}
-    	return false;
+            Class c = pi.getClassType();
+            return (c != null && c.isPrimitive());
+        }
+        return false;
     }
 
     public static boolean isHubProperty(OAObjectInfo oi, String propertyName) {
-    	Method m = getMethod(oi.thisClass, "get" + propertyName);
-    	return (m != null && m.getReturnType().equals(Hub.class));
+        Method m = getMethod(oi.thisClass, "get" + propertyName);
+        return (m != null && m.getReturnType().equals(Hub.class));
     }
 
     
     public static Object[] getPropertyIdValues(OAObject oaObj) {
-    	if (oaObj == null) return null;
-    	OAObjectInfo oi = getOAObjectInfo(oaObj.getClass());
-    	String[] ids = oi.idProperties;
-    	Object[] objs = new Object[ids.length];
-    	for (int i=0; i<ids.length; i++) {
-    		objs[i] = OAObjectReflectDelegate.getProperty(oaObj, ids[i]);
-    	}
-    	return objs;
-    }	
+        if (oaObj == null) return null;
+        OAObjectInfo oi = getOAObjectInfo(oaObj.getClass());
+        String[] ids = oi.idProperties;
+        Object[] objs = new Object[ids.length];
+        for (int i=0; i<ids.length; i++) {
+            objs[i] = OAObjectReflectDelegate.getProperty(oaObj, ids[i]);
+        }
+        return objs;
+    }   
 
     public static boolean isPrimitiveNull(OAObject oaObj, String propertyName) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());

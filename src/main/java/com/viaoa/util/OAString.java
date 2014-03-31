@@ -2064,6 +2064,22 @@ public class OAString {
         return newText;
     }
 
+    /**
+     * Remove ending whitspace from a string.
+     */
+    public static String trimEndingWhitespace(String text) {
+        if (text == null) return null;
+        int x = text.length();
+        for (int i=0; i<x; i++) {
+            char c = text.charAt(x-i-1);
+            if (!Character.isWhitespace(c)) {
+               if (i == 0) return text;
+               return text.substring(0, x-i);
+            }
+        }
+        return "";
+    }
+    
     
     public static String[] parseLine(String line, char sep, boolean bCouldHaveQuotes) {
         return parseLine(line, sep, bCouldHaveQuotes, 25);

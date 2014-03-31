@@ -190,12 +190,15 @@ public class OAObjectEventDelegate {
                 oldx = "byte[" + ((byte[])objOld).length +"]";
             }
             else oldx = objOld;
+            
+            /*
             Object newx;
             if (objNew instanceof byte[]) {
                 newx = "byte[" + ((byte[])objNew).length +"]";
             }
             else newx = objNew;
             
+
             String s = String.format("Change, class=%s, id=%s, property=%s, oldValue=%s, newVaue=%s",
                     OAString.getClassName(oaObj.getClass()),
                     key.toString(),
@@ -211,7 +214,7 @@ public class OAObjectEventDelegate {
                 }
             }
             LOG.fine(s);
-            
+            */
             
             if (!bLocalOnly) {
                 // prior to 20100406, this was always calling these methods

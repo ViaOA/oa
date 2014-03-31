@@ -321,7 +321,7 @@ public class OAObjectCSDelegate {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
         if (oi.getLocalOnly()) return;
 
-        LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
+        // LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
         
         // 20130319 dont send out calc prop changes
         OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, propertyName);
