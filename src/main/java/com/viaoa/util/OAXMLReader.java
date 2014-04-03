@@ -355,7 +355,7 @@ public class OAXMLReader extends DefaultHandler {
         bWithinTag = false;
         String eName = sName; // element name
         if ("".equals(eName)) eName = qName; // not namespaceAware
-
+        
         Object stackobj = stack[indent];
         if (stackobj instanceof Hashtable) {
             // ending an object

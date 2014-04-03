@@ -278,7 +278,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     
     
     /**
-     * 'U'pper, 'L'ower, 'T'itle
+     * 'U'pper, 'L'ower, 'T'itle, 'P'assword/encrypt
      */
     public void setConversion(char conv) {
         getController().setConversion(conv);
