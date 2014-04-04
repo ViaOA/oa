@@ -49,7 +49,7 @@ public class HubLinkDelegate {
 	        thisHub.datau.bAutoCreateAllowDups = false;
 	    }
 	    if (linkToHub == null) {
-	        //qqqqqqqqq figure out what to do with this: firePropertyChange("link",false, false);
+	        HubEventDelegate.fireAfterPropertyChange(thisHub, null, "Link", null, null, null);
 	        return;
 	    }
 	
