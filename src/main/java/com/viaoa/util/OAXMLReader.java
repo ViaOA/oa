@@ -144,6 +144,9 @@ public class OAXMLReader extends DefaultHandler {
         // saxParser.parse( new File(OAString.convertFileName(fileName)), this );
         saxParser.parse( uri.toString(), this );
         if (firstObject == nullObject) firstObject = null;
+        if (firstObject == null && vecRoot != null && vecRoot.size() == 1) {
+            firstObject = vecRoot.elementAt(0);
+        }
         hashGuid = null;
         return firstObject;
     }
@@ -161,6 +164,9 @@ public class OAXMLReader extends DefaultHandler {
 
         saxParser.parse(new StringBufferInputStream(xmlData), this);
         if (firstObject == nullObject) firstObject = null;
+        if (firstObject == null && vecRoot != null && vecRoot.size() == 1) {
+            firstObject = vecRoot.elementAt(0);
+        }
         hashGuid = null;
         return firstObject;
     }

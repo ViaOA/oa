@@ -279,10 +279,11 @@ public class OATableColumn {
 
     
     
+    // 20140404 moved this to OAObjectReflectDelegate
     /** 20140211
      * This is used to expand a propertyPath from the Table hub, to the OAComp hub 
      * for a column, so that the value of the rows can be found.
-     */
+     *
     public String expandPropertyPath(Hub hubTable, Hub hubComp, String path) {
         if (hubTable == null) return path;
         if (hubComp == null) return path;
@@ -351,7 +352,8 @@ public class OATableColumn {
             h = hx;
         }
     }
-
+    */
+    
     // 20140211
     public Method[] getMethods(Hub hubTable) {
         try {
@@ -372,18 +374,24 @@ public class OATableColumn {
         bLinkOnPos = false;
 
         // changed so that it will only change the path when the component hub
-        // is linked back to the table.hub
+        //    is linked back to the table.hub
         if (oaComp != null && oaComp.getHub() != null && !bIsAlreadyExpanded) {
             bLinkOnPos = HubLinkDelegate.getLinkedOnPos(oaComp.getHub(), true);
             path = origPath;
             if (!bIsAlreadyExpanded) {
-                path = expandPropertyPath(hubTable, oaComp.getHub(), path);
+                String s = OAObjectReflectDelegate.getPropertyPathFromMaster(hubTable, oaComp.getHub());
+                if (s != null) { 
+                    path = s + "." + path;
+                }
                 if (bLinkOnPos) {
                     pathIntValue = path;
                     path = origPath;
                 }
             }
         }
+
+//qqqqqqqqq 20140404 see if this can be replaced with
+OAObjectReflectDelegate.getObjectToDisplay
 
         // if path == null then getMethods() will use "toString"
         if (bLinkOnPos) {
@@ -432,7 +440,6 @@ public class OATableColumn {
             };
             table.getHub().addHubListener(hubListener, propx, new String[] { path });
         }
-
         return methods;
     }
 

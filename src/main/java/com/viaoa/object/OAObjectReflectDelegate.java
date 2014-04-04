@@ -33,9 +33,12 @@ import com.viaoa.ds.OASelect;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubDetailDelegate;
+import com.viaoa.hub.HubLinkDelegate;
 import com.viaoa.hub.HubMerger;
+import com.viaoa.hub.HubShareDelegate;
 import com.viaoa.hub.HubSortDelegate;
 import com.viaoa.util.OAArray;
+import com.viaoa.util.OAConv;
 import com.viaoa.util.OAConverter;
 import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
@@ -1694,6 +1697,201 @@ public class OAObjectReflectDelegate {
         return -1;
     }
 
+    /** 20140211
+     * Expand a propertyPath to include the path to a parent Hub. 
+     * @param hubParent  parent hub that needs to have the path expanded from.
+     * @param hubChild child Hub that has a path
+     * @param pathFromChild propertyPath from the hubChild
+     * @return
+     */
+    public static String getPropertyPathFromMaster(final Hub hubParent, final Hub hubChild) {
+        if (hubParent == null) return null;
+        if (hubChild == null) return null;
+        String pathFromParent = null;
+
+        boolean b = false;
+        if (HubLinkDelegate.getLinkedOnPos(hubChild, true)) {
+            //String s = HubLinkDelegate.getLinkToProperty(hubChild, true);
+            b = true;
+        }
+        String fromProp = HubLinkDelegate.getLinkFromProperty(hubChild, true);
+        if (fromProp != null) {
+            b = true;
+            //return fromProp;
+        }
+
+        
+        // see if there is a link path
+        pathFromParent = null;
+        Hub h = hubChild;
+        for ( ; !b; ) {
+            Hub hx = HubLinkDelegate.getLinkToHub(h, true);
+            if (hx == null) {
+                pathFromParent = null ;
+                break;
+            }
+
+            if (pathFromParent == null) pathFromParent = HubLinkDelegate.getLinkHubPath(h, true);
+            else pathFromParent = HubLinkDelegate.getLinkHubPath(h, true) + "." + pathFromParent;
+            
+            if (hx == hubParent) {
+                return pathFromParent;
+            }
+            if (HubShareDelegate.isUsingSameSharedAO(hubParent, hx, true)) {
+                return pathFromParent;
+            }
+            if (hubParent.getMasterHub() == null) { // 20131109 could be a hub copy
+                if (hx.getObjectClass().equals(hubParent.getObjectClass())) {
+                    return pathFromParent;
+                }
+            }
+            h = hx;
+        }
+
+        // see if if there is a detail path using masterHub
+        h = hubChild;
+        for ( ;; ) {
+            Hub hx = h.getMasterHub();
+            if (hx == null) {
+                return null;
+            }
+            if (pathFromParent == null) pathFromParent = HubDetailDelegate.getPropertyFromMasterToDetail(h);
+            else pathFromParent = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + pathFromParent;
+
+            if (hx == hubParent) {
+                return pathFromParent;
+            }
+            if (HubShareDelegate.isUsingSameSharedAO(hubParent, hx, true)) {
+                return pathFromParent;
+            }
+            if (hubParent.getMasterHub() == null) { // 20131109 could be a hub copy
+                if (hx.getObjectClass().equals(hubParent.getObjectClass())) {
+                    return pathFromParent;
+                }
+            }
+            h = hx;
+        }
+    }
+    public static String getPropertyPathFromMaster(final Object objParent, final Hub hubChild) {
+        if (objParent == null) return null;
+        if (hubChild == null) return null;
+        String pathFromParent = null;
+        final Class parentClass = objParent.getClass();
+
+        boolean b = false;
+        if (HubLinkDelegate.getLinkedOnPos(hubChild, true)) {
+            //String s = HubLinkDelegate.getLinkToProperty(hubChild, true);
+            b = true;
+        }
+        String fromProp = HubLinkDelegate.getLinkFromProperty(hubChild, true);
+        if (fromProp != null) {
+            b = true;
+            //return fromProp;
+        }
+        
+        
+        // see if there is a link path
+        pathFromParent = null;
+        Hub h = hubChild;
+        for ( ;!b; ) {
+            Hub hx = HubLinkDelegate.getLinkToHub(h, true);
+            if (hx == null) {
+                pathFromParent = null ;
+                break;
+            }
+
+            if (pathFromParent == null) pathFromParent = HubLinkDelegate.getLinkHubPath(h, true);
+            else pathFromParent = HubLinkDelegate.getLinkHubPath(h, true) + "." + pathFromParent;
+            
+            if (parentClass.equals(hx.getObjectClass())) {
+                return pathFromParent;
+            }
+            h = hx;
+        }
+
+        // see if if there is a detail path using masterHub
+        h = hubChild;
+        for ( ;; ) {
+            Hub hx = h.getMasterHub();
+            if (hx == null) {
+                return null;
+            }
+            if (pathFromParent == null) pathFromParent = HubDetailDelegate.getPropertyFromMasterToDetail(h);
+            else pathFromParent = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + pathFromParent;
+            if (parentClass.equals(hx.getObjectClass())) {
+                return pathFromParent;
+            }
+            h = hx;
+        }
+    }
+    
+qqqqqqqqqqqqqq test this    
+//qqqqqqqq    
+    // 20140404
+    /**
+     * get the "real" object that needs to be displayed, based on a parent/from Hub,
+     *    and a from object (ex: row in table), and the hub that it originates from. 
+     * @param hubFrom     ex: hubDept
+     * @param fromObject  ex: dept
+     * @param hubChild    ex: hubEmplyeeType, (enum of strings) and is linked to hubEmp
+     * @return  hubEmployeeType.getAt(pos), where pos is dept.manager.employeeType
+     */
+    public static Object getObjectToDisplay(final Hub hubFrom, Object fromObject, final Hub hubChild) {
+        if (hubFrom == null) return null;
+        if (hubChild == null) return null;
+        if (fromObject == null) return null;
+
+        if (!HubLinkDelegate.getLinkedOnPos(hubChild, true)) return fromObject;
+
+        
+        Hub hubPosValue = HubLinkDelegate.getLinkToHub(hubChild, false);
+        if (hubPosValue == null) return fromObject;
+        
+        // see if there is a link path
+        String pathFromParent = null;
+        Hub h = hubPosValue;
+        for ( ; ; ) {
+            Hub hx = HubLinkDelegate.getLinkToHub(h, true);
+            if (hx == null) {
+                pathFromParent = null;
+                break;
+            }
+
+            if (pathFromParent == null) pathFromParent = HubLinkDelegate.getLinkHubPath(h, true);
+            else pathFromParent = HubLinkDelegate.getLinkHubPath(h, true) + "." + pathFromParent;
+            
+            if (hx == hubFrom) {
+                break;
+            }
+            if (HubShareDelegate.isUsingSameSharedAO(hubFrom, hx, true)) {
+                break;
+            }
+            if (hubFrom.getMasterHub() == null) { // 20131109 could be a hub copy
+                if (hx.getObjectClass().equals(hubFrom.getObjectClass())) {
+                    break;
+                }
+            }
+            h = hx;
+        }
+        
+        if (pathFromParent != null && fromObject instanceof OAObject) {
+            Object objx = getProperty((OAObject)fromObject, pathFromParent);
+            if (objx == null) return fromObject;
+            fromObject = objx;
+        }
+        if (!(fromObject instanceof OAObject)) {
+            return fromObject;
+        }
+        
+        String fromProp = HubLinkDelegate.getLinkToProperty(hubChild);
+        if (fromProp == null) return fromObject;
+        
+        
+        Object objx = getProperty((OAObject) fromObject, fromProp);
+        int x = OAConv.toInt(objx);
+        return hubChild.getAt(x);
+    }
+    
 }
 
 class LoadPropertyNode {

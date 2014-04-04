@@ -440,15 +440,38 @@ public class JFCController extends HubListenerAdapter {
         }
         return icon;
     }    
+
+    // 20140404      
+    private Class fromParentClass;
+    private String fromParentPropertyPath;
+    /**
+     * This will find the real object to use, in cases where a comp is added to
+     * a table, and the table.hub is different then the comp.hub, which could be
+     * a detail or link type relationship to the table.hub
+     */
+    protected Object getRealObject(Object object) {
+        if (object == null || hub == null) return object;
+        Class c = hub.getObjectClass();
+        if (c == null || c.isAssignableFrom(object.getClass())) return object;
+        
+        if (!(object instanceof OAObject)) return null;
+        if (fromParentClass == null || !fromParentClass.equals(object.getClass())) {
+            fromParentPropertyPath = OAObjectReflectDelegate.getPropertyPathFromMaster(object, getHub());
+            if (fromParentPropertyPath == null) fromParentPropertyPath = propertyPath;
+            else fromParentPropertyPath += "." + propertyPath;
+            fromParentClass = object.getClass();
+        }
+        return OAObjectReflectDelegate.getProperty((OAObject)object, fromParentPropertyPath);
+    }
     
     /**
         Returns the icon to use for current object.
     */
     private Icon _getIcon(Object obj) {
+        obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return null;
         if (hub == null) return null;
-        Class c = hub.getObjectClass();
-        if (c == null || !c.isAssignableFrom(obj.getClass())) return null;
+        
         Icon icon = null;
         if (iconColorProperty != null) {
             Color color = getIconColor(obj);
@@ -951,10 +974,9 @@ public class JFCController extends HubListenerAdapter {
         return methodsToFont;
     }
     public Font getFont(Object obj) {
+        obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return this.font;
         if (hub == null) return this.font;
-        Class c = hub.getObjectClass();
-        if (c == null || !c.isAssignableFrom(obj.getClass())) return this.font;
         Font font = null;
         if (fontProperty != null && obj != null && getMethodsToFont() != null) {
             font = (Font) com.viaoa.util.OAConv.convert(Font.class, OAReflect.getPropertyValue(obj, methodsToFont));
@@ -1009,10 +1031,9 @@ public class JFCController extends HubListenerAdapter {
         return methodsToForegroundColor;
     }
     public Color getForegroundColor(Object obj) {
+        obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return this.colorForeground;
         if (hub == null) return this.colorForeground;
-        Class c = hub.getObjectClass();
-        if (c == null || !c.isAssignableFrom(obj.getClass())) return this.colorForeground;
         Color color = null;
         if (foregroundColorProperty != null && obj != null && getMethodsToForegroundColor() != null) {
             color = (Color) com.viaoa.util.OAConv.convert(Color.class, OAReflect.getPropertyValue(obj, methodsToForegroundColor));
@@ -1030,10 +1051,9 @@ public class JFCController extends HubListenerAdapter {
         return methodsToBackgroundColor;
     }
     public Color getBackgroundColor(Object obj) {
+        obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return this.colorBackground;
         if (hub == null) return this.colorBackground;
-        Class c = hub.getObjectClass();
-        if (c == null || !c.isAssignableFrom(obj.getClass())) return this.colorBackground;
         Color color = null;
         if (backgroundColorProperty != null && obj != null && getMethodsToBackgroundColor() != null) {
             color = (Color) com.viaoa.util.OAConv.convert(Color.class, OAReflect.getPropertyValue(obj, methodsToBackgroundColor));
@@ -1061,10 +1081,9 @@ public class JFCController extends HubListenerAdapter {
         return methodsToIconColor;
     }
     public Color getIconColor(Object obj) {
+        obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return null;
         if (hub == null) return null;
-        Class c = hub.getObjectClass();
-        if (c == null || !c.isAssignableFrom(obj.getClass())) return null;
         Color color = null;
         if (iconColorProperty != null && obj != null && getMethodsToIconColor() != null) {
             color = (Color) com.viaoa.util.OAConv.convert(Color.class, OAReflect.getPropertyValue(obj, methodsToIconColor));
@@ -1090,10 +1109,9 @@ public class JFCController extends HubListenerAdapter {
         return methodsToToolTipText;
     }
     public String getToolTipText(Object obj) {
+        obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return null;
         if (hub == null) return null;
-        Class c = hub.getObjectClass();
-        if (c == null || !c.isAssignableFrom(obj.getClass())) return null;
         String tt = null;
         if (toolTipTextProperty != null && obj != null && getMethodsToToolTipText() != null) {
             tt = OAReflect.getPropertyValueAsString(obj, methodsToToolTipText);
