@@ -322,9 +322,6 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             public @Override void onNewList(HubEvent<TYPE> e) {
                 if (bClosed || bNewListFlag) return;
                 initialize();
-                if (bShareAO) {
-                    afterChangeActiveObject(e);
-                }
             }
 
             /** HubListener interface method, used to update filter. */
@@ -336,15 +333,13 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             public void afterChangeActiveObject(HubEvent<TYPE> e) {
                 if (bShareAO && hub != null) {
                     Object obj = HubFilter.this.hubMaster.getAO();
-                    if (obj == null || HubFilter.this.hub.contains(obj)) {
-                        HubFilter.this.hub.setAO(obj);
-                    }
+                    if (obj != null && !HubFilter.this.hub.contains(obj)) obj = null;
+                    HubFilter.this.hub.setAO(obj);
                 }
             }
         };
         return hlHubMaster;
     }
-    
 
     protected void setup() {
         if (bClosed) return;
@@ -437,32 +432,36 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                 OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
             }
             aiUpdating.incrementAndGet();
+            obj = getObject(obj);
             if (obj != null) {
                 if ( hubMaster.getObjectClass().isAssignableFrom(obj.getClass()) ) {
                     if (isUsed(obj)) {
-                        obj = getObject(obj);
-                        if (obj != null && !hub.contains(obj)) {
+                        if (!hub.contains(obj)) {
+                            if (obj == objTemp) objTemp = null;
                             if (hubMaster.contains(obj)) {
                                 addObject(obj);
                             }
                         }
                     }
                     else {
-                        obj = getObject((TYPE)obj);
                         // 2004/08/07 see if object is used by AO in HubLink
                         if (hubLink != null) {
                             Object objx = hubLink.getAO();
                             if (objx != null) {
                                 objx = HubLinkDelegate.getPropertyValueInLinkedToHub(hub, objx);
-                                if (objx == obj) {
-                                    if (objTemp != null) {
-                                        if (!isUsed((TYPE)objTemp)) {
-                                            objTemp = getObject((TYPE)objTemp);
-                                            if (objTemp != null) removeObject((TYPE)objTemp);
+                                objx = getObject((TYPE)objx);
+                                if (obj == objx) {
+                                    if (obj != objTemp) {
+                                        if (objTemp != null) {
+                                            if (!isUsed((TYPE)objTemp)) {
+                                                removeObject((TYPE)objTemp);
+                                            }
                                         }
-                                        objTemp = null;
+                                        objTemp = obj;
+                                        if (hubMaster.contains(obj)) {
+                                            addObject(obj);
+                                        }
                                     }
-                                    objTemp = objx;
                                     obj = null;
                                 }
                             }
@@ -531,6 +530,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                     aiClearing.incrementAndGet();
                     // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
                     HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
+                    objTemp = null;
                 }
                 finally {
                     aiClearing.decrementAndGet();
@@ -565,41 +565,31 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             update(obj);
         }
         if (hub == null) return;
-
-        TYPE obj = hub.getAO();
-        if (bShareAO) {
-            obj = hubMaster.getAO();
-        }
-        if (obj != null && !hub.contains(obj)) {
-            if (hub.getLinkHub() != null && HubDelegate.isValid(hub)) {
-                hub.add(obj);
-            }
-            else {
-                hub.setAO(null);
-            }
-        }
         
-        // 20120716
-        OAFilter<Hub> filter = new OAFilter<Hub>() {
-            @Override
-            public boolean isUsed(Hub h) {
-                if (h != HubFilter.this.hub && h.dataa != HubFilter.this.hub.dataa) {
-                    return true;
+        // get linkToHub.prop value
+        if (hubLink != null) {
+            Object objx = hubLink.getAO();
+            if (objx != null) {
+                objx = HubLinkDelegate.getPropertyValueInLinkedToHub(hub, objx);
+                if (objx != null) {
+                    objx = getObject((TYPE)objx);
+                    if (objx != null && !hub.contains(objx)) {
+                        addObject((TYPE)objx);
+                    }
                 }
-                return false;
             }
-        };
-        Hub[] hubs = HubShareDelegate.getAllSharedHubs(this.hub, filter);
+            hub.setAO(objx);
+            if (bShareAO) {
+                if (hubMaster.getLinkHub() == null) hubMaster.setAO(objx);
+            }
+        }
         
-        //was: Hub[] hubs = HubShareDelegate.getAllSharedHubs(hub);
-        for (int i=0; i<hubs.length; i++) {
-        	if (hubs[i] != this.hub && hubs[i].dataa != hub.dataa) {
-                obj = (TYPE)hubs[i].getAO();
-        		if (hubs[i].getLinkHub() != null && HubDelegate.isValid(hub)) {
-        		    hub.add(obj);
-        		}
-            	else hubs[i].setAO(null);
-        	}
+        if (bShareAO && hubLink == null) {
+            TYPE obj = hubMaster.getAO();
+            if (obj != null && !hub.contains(obj)) {
+                obj = null;
+            }
+            hub.setAO(obj);
         }
     }
 
@@ -687,10 +677,8 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     public void afterChangeActiveObject(HubEvent<TYPE> e) {
         if (bShareAO && hub != null && hubMaster != null) {
             Object obj = HubFilter.this.hub.getAO();
-            if (obj == null || HubFilter.this.hubMaster.contains(obj)) {
-                HubFilter.this.hubMaster.setAO(obj);
-            }
-            
+            if (obj != null && !HubFilter.this.hubMaster.contains(obj)) obj = null;
+            HubFilter.this.hubMaster.setAO(obj);
         }
     }
     

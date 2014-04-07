@@ -390,9 +390,6 @@ public class OATableColumn {
             }
         }
 
-//qqqqqqqqq 20140404 see if this can be replaced with
-OAObjectReflectDelegate.getObjectToDisplay
-
         // if path == null then getMethods() will use "toString"
         if (bLinkOnPos) {
             OAPropertyPath opp = new OAPropertyPath(pathIntValue);

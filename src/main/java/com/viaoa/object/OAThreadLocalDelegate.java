@@ -131,7 +131,7 @@ public class OAThreadLocalDelegate {
     		x = --ti.loadingObject;
     		x2 = OAThreadLocalDelegate.TotalIsLoadingObject.decrementAndGet();
 		}
-        if (x > 10 || x < 0 || x2 > 20 || x2 < 0) {
+        if (x > 20 || x < 0 || x2 > 20 || x2 < 0) {
             LOG.warning("TotalIsLoadingObject="+x2+", ti="+x);
         }
 	}
