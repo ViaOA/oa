@@ -34,6 +34,12 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     OATable table;
     String heading;
 
+    static {
+        Color c = UIManager.getColor("RadioButton.foreground");
+        if (c == null) c = Color.black;
+        UIManager.put("RadioButton.disabledText", c);
+    }
+    
     /**
         Create an OARadioButton that is not bound to a Hub.
     */  

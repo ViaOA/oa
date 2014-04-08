@@ -43,6 +43,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     private OATable table;
     private String heading = "";
     public int iDebug;  // used to help with debugging a specific ComboBox
+
     /**
         Create an unbound ComboBox.
     */
@@ -70,6 +71,9 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     */
     public OAComboBox(Hub hub, String propertyPath) {
         control = new OAComboBoxController(hub, propertyPath);
+        Color c = UIManager.getColor("ComboBox.foreground");
+        if (c == null) c = Color.black;
+        UIManager.put("ComboBox.disabledForeground", c);
     }
 
     

@@ -19,6 +19,7 @@ package com.viaoa.jfc.text.autocomplete;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -179,11 +180,15 @@ public abstract class AutoCompleteBase {
     private void showPopup() {
         showPopup(textComp.getCaretPosition());
     }
+
+    
     
     protected void showPopup(int offset) {
         if (popup.isVisible()) popup.setVisible(false); 
         if (!textComp.isEnabled()) return;
 
+        searchAndDisplay(textComp.getText(), offset);
+        /**qqqqqqqq was
         Dimension d = updateSelectionList(textComp.getText(), offset);
         if (d == null) return; // dont show
         d.width += 7;  // include popup borders
@@ -198,7 +203,8 @@ public abstract class AutoCompleteBase {
         catch (Exception e) {
             
         }
-        textComp.requestFocusInWindow(); 
+        textComp.requestFocusInWindow();
+        */         
     } 
  
  
@@ -356,6 +362,43 @@ public abstract class AutoCompleteBase {
      * The popup component needs to replace the textField text with the selected value from the popup component.
      */
     protected abstract void onSelection();
+
+
+    // 20140408 use swingworker for search and display
+    private AtomicInteger aiCnt = new AtomicInteger();
+    protected void searchAndDisplay(final String search, final int offset) {
+        final int cnt = aiCnt.incrementAndGet();
+        SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+            Dimension dim;
+            @Override
+            protected Void doInBackground() throws Exception {
+                dim = updateSelectionList(textComp.getText(), offset);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                if (cnt != aiCnt.get()) return;
+
+                if (dim == null) return; // dont show
+                dim.width += 7;  // include popup borders
+                dim.width = Math.max(textComp.getSize().width-6, dim.width);
+                
+                dim.height += 7; // include popup borders
+                popup.setPopupSize(dim);
+                
+                try {
+                    popup.show(textComp, 3, textComp.getHeight());
+                }
+                catch (Exception e) {
+                }
+                textComp.requestFocusInWindow(); 
+            }
+        };
+        sw.execute();
+
+    }
+
 }
 
 
