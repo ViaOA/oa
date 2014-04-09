@@ -372,7 +372,17 @@ public abstract class AutoCompleteBase {
             Dimension dim;
             @Override
             protected Void doInBackground() throws Exception {
-                dim = updateSelectionList(textComp.getText(), offset);
+                for (int i=0; i<80; i++) {
+                    if (cnt != aiCnt.get()) return null;
+                    try {
+                        Thread.sleep(1);
+                    }
+                    catch (Exception e) {
+                    }
+                }
+                if (cnt == aiCnt.get()) {
+                    dim = updateSelectionList(textComp.getText(), offset);
+                }
                 return null;
             }
 
@@ -381,6 +391,16 @@ public abstract class AutoCompleteBase {
                 if (cnt != aiCnt.get()) return;
 
                 if (dim == null) return; // dont show
+                
+                for (int i=0; i<100; i++) {
+                    if (cnt != aiCnt.get()) return;
+                    try {
+                        Thread.sleep(1);
+                    }
+                    catch (Exception e) {
+                    }
+                }
+                
                 dim.width += 7;  // include popup borders
                 dim.width = Math.max(textComp.getSize().width-6, dim.width);
                 

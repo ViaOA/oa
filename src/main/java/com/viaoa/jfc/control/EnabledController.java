@@ -94,6 +94,8 @@ public class EnabledController extends HubPropController {
         }        
         if (comp instanceof JTabbedPane) {
         }
+        else if (comp instanceof JLabel) {
+        }
         else if (comp.isEnabled() != bEnabled) {
             comp.setEnabled(bEnabled);
         }

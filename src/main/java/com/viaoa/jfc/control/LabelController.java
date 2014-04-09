@@ -144,7 +144,7 @@ public class LabelController extends JFCController {
         if (getActualHub() != null) {
             Object obj = getActualHub().getActiveObject();
             String text = null;
-            if (obj != null) {
+            if (obj != null || bIsHubCalc) {
                 if (getPropertyPath() != null) {
                     Object value = getPropertyPathValue(obj);
                     if (value == null || value instanceof OANullObject) text = null;

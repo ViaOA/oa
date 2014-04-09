@@ -74,6 +74,8 @@ public class JFCController extends HubListenerAdapter {
     private Method methodSet;
     private Method methodValidate;   // in OAObject isValidXxx(newValue)
     
+    protected boolean bIsHubCalc;
+    
     protected EnabledController controlEnabled;
     protected VisibleController controlVisible;
     
@@ -227,6 +229,19 @@ public class JFCController extends HubListenerAdapter {
                 break;
             }
         }
+    }
+
+    @Override
+    public void afterAdd(HubEvent e) {
+        if (bIsHubCalc) update();
+    }
+    @Override
+    public void afterRemove(HubEvent e) {
+        if (bIsHubCalc) update();
+    }
+    @Override
+    public void afterInsert(HubEvent e) {
+        if (bIsHubCalc) update();
     }
     
     public @Override void afterChangeActiveObject(HubEvent e) {
@@ -540,6 +555,7 @@ public class JFCController extends HubListenerAdapter {
         methodsToActualHub = null;
         methodsFromActualHub = null;
         methodSet = null;
+
         
         if (propertyPath == null || hub == null) return;
 
@@ -549,6 +565,13 @@ public class JFCController extends HubListenerAdapter {
         String[] ss = oaPropertyPath.getProperties();
         
         String ppDetail = null;
+
+        // 20140409
+        bIsHubCalc = false;
+        if (ms != null && ms.length > 0) {
+            Class[] cs = ms[ms.length-1].getParameterTypes();
+            bIsHubCalc = cs.length > 0;
+        }
         
         for (int i=0; ms != null && i<ms.length; i++) {
             if (ms[i] == null) continue;
@@ -630,16 +653,30 @@ public class JFCController extends HubListenerAdapter {
      * @param obj object from actual hub
      */
     public Object getPropertyPathValue(Object obj) {
-        if (obj == null) return null;
-        if (methodsFromActualHub == null || methodsFromActualHub.length == 0) return obj;
         
-        obj = OAReflect.getPropertyValue(obj, methodsFromActualHub);  // also checks OAObject.isNull
+        // 20140409
+        if (bIsHubCalc) {
+            obj = OAObjectReflectDelegate.getProperty(getHub(), propertyPath);
+        }
+        else {
+            if (obj == null) return null;
+            if (methodsFromActualHub == null || methodsFromActualHub.length == 0) return obj;
+            obj = OAReflect.getPropertyValue(obj, methodsFromActualHub);  // also checks OAObject.isNull
+        }
         return obj;
     }
     public String getPropertyPathValueAsString(Object obj, String fmt) {
         if (obj == null) return null;
         if (methodsFromActualHub == null || methodsFromActualHub.length == 0) return obj.toString();
-        String s = OAReflect.getPropertyValueAsString(obj, methodsFromActualHub, fmt);
+        String s;
+        // 20140409
+        if (bIsHubCalc) {
+            Object objx = OAObjectReflectDelegate.getProperty(getHub(), propertyPath);
+            s = OAConverter.toString(objx, fmt);
+        }
+        else {
+            s = OAReflect.getPropertyValueAsString(obj, methodsFromActualHub, fmt);
+        }
         return s;
     }
     public boolean isPropertyPathValueNull(Object obj) {
