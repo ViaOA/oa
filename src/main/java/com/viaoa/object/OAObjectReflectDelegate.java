@@ -1013,6 +1013,7 @@ public class OAObjectReflectDelegate {
     public static Object getReferenceObject(OAObject oaObj, String linkPropertyName) {
         Object objOriginal = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true);
         if (objOriginal == null) return null;
+
         boolean bDidNotExist = (objOriginal == OANotExist.instance);
         if (bDidNotExist) {
             objOriginal = null;
@@ -1048,7 +1049,7 @@ public class OAObjectReflectDelegate {
 
         Object ref = null;
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true);
-        
+
         if (!(obj instanceof OAObjectKey)) {
             if (obj != OANotExist.instance) {
                 return obj; // found it

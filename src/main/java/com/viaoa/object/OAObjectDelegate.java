@@ -108,7 +108,11 @@ public class OAObjectDelegate {
             for (OALinkInfo li : oi.getLinkInfos()) {
                 if (li.getCalculated()) continue;
                 if (li.getPrivateMethod()) continue;
-                OAObjectPropertyDelegate.unsafeSetProperty(oaObj, li.getName(), null);
+                // 20140409 added check for 1to1, in which case one side will not have an
+                //    fkey, since it uses it's own pkey as the fkey
+                if (!OAObjectInfoDelegate.isOne2One(li)) {
+                    OAObjectPropertyDelegate.unsafeSetProperty(oaObj, li.getName(), null);
+                }
             }
             
 	        if (bAddToCache) {  // needs to run before any property could be set, so that OACS changes will find this new object.
