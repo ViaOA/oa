@@ -37,7 +37,7 @@ import com.viaoa.hub.*;
 public class AutonumberDelegate {
     private static Logger LOG = Logger.getLogger(AutonumberDelegate.class.getName());
 
-    private static Hashtable hashNext = new Hashtable(29, .75f);  // Class, Integer
+    private static HashMap<Table, Integer> hashNext = new HashMap<Table, Integer>(29, .75f);  // Table, Integer
     private static Object LOCK = new Object();
 	
     /**
@@ -72,7 +72,7 @@ public class AutonumberDelegate {
 
         if (id >= idx) {
             Object obj = hashNext.get(table);
-            synchronized (obj) {
+            synchronized (table) {
                 idx = ((Integer) hashNext.get(table)).intValue();
                 if (id > idx) hashNext.put(table, id+1);
             }
@@ -117,18 +117,18 @@ public class AutonumberDelegate {
                     }
                     // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", got max="+max);
                     obj = new Integer(max);
-                	hashNext.put(table, obj);
+                	hashNext.put(table, (Integer) obj);
                 }
             }
         }
-        synchronized (obj) {
+        synchronized (table) {
         	max = ((Integer) hashNext.get(table)).intValue();
         	if (bAutoIncrement) {
         	    hashNext.put(table, max+1);
         	}
             // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", bAutoIncrement="+bAutoIncrement+", returning "+max);
-            return max;
         }
+        return max;
     }
     
 
