@@ -137,6 +137,9 @@ public class OAHTMLTextPaneController extends OATextController {
     }
     
     public HTMLTextPaneController bind(Hub hub, String property) {
+        if (hub2HtmlText != null) {
+            hub2HtmlText.close();
+        }
         hub2HtmlText = new HTMLTextPaneController(hub, (OAHTMLTextPane) editor, property) {
             @Override
             public void afterChangeActiveObject(HubEvent e) {
