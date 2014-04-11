@@ -271,7 +271,10 @@ public class OAObjectPropertyDelegate {
     public static Object getProperty(OAObject oaObj, String name, boolean bReturnNotExist) {
         if (oaObj == null || name == null) return null;
         Object[] objs = oaObj.properties;
-        if (objs == null) return null;
+        if (objs == null) {
+            if (bReturnNotExist) return OANotExist.instance; 
+            return null;
+        }
         for (int i=0; i<objs.length; i+=2) {
             if (objs[i] != null && name.equalsIgnoreCase((String)objs[i])) {
                 Object objx = objs[i+1];
