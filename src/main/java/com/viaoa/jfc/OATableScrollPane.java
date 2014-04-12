@@ -26,6 +26,8 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import com.viaoa.hub.HubEvent;
+import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.jfc.border.CustomLineBorder;
 import com.viaoa.jfc.table.OATableColumn;
 import com.viaoa.jfc.OATable;
@@ -118,11 +120,23 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
 
         fixedTable.setBorder(b);        
         fixedTable.setPreferredScrollableViewportSize(fixedTable.getPreferredSize());
+
         fixedTable.getTableHeader().setBorder(b);
         this.setRowHeaderView(fixedTable);
         
         this.setCorner(JScrollPane.UPPER_LEFT_CORNER, fixedTable.getTableHeader());
 
+        // 20140412
+        fixedTable.getHub().addHubListener(new HubListenerAdapter() {
+            @Override
+            public void afterAdd(HubEvent e) {
+                OATableScrollPane.this.fixedTable.invalidate();
+            }
+            public void afterInsert(HubEvent e) {
+                OATableScrollPane.this.fixedTable.invalidate();
+            }
+        });
+        
         JLabel lbl = new JLabel("");
         lbl.setBorder(b);
         this.setCorner(JScrollPane.LOWER_LEFT_CORNER, lbl);
