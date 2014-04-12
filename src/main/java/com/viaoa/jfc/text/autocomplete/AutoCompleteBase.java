@@ -380,19 +380,15 @@ public abstract class AutoCompleteBase {
                     catch (Exception e) {
                     }
                 }
-                if (cnt == aiCnt.get()) {
-                    dim = updateSelectionList(textComp.getText(), offset);
-                }
+                dim = updateSelectionList(textComp.getText(), offset);
                 return null;
             }
 
             @Override
             protected void done() {
-                if (cnt != aiCnt.get()) return;
-
                 if (dim == null) return; // dont show
                 
-                for (int i=0; i<100; i++) {
+                for (int i=0; i<55; i++) {
                     if (cnt != aiCnt.get()) return;
                     try {
                         Thread.sleep(1);
