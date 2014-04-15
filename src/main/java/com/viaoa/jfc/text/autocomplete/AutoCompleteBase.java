@@ -43,6 +43,7 @@ public abstract class AutoCompleteBase {
     protected boolean bExactMatchOnly;
     protected JScrollPane scroll;
     protected boolean bShowOne;  // show popup, even if only 1 value to display
+    protected boolean bIgnorePopup;
     
     
     /**
@@ -97,8 +98,10 @@ public abstract class AutoCompleteBase {
                         break;
                     case KeyEvent.VK_ENTER:
                         if (popup.isVisible()) {
+                            bIgnorePopup = true;
                             onSelection();
                             popup.setVisible(false); 
+                            bIgnorePopup = false;
                         }
                         break;
                     case KeyEvent.VK_SPACE:
@@ -116,13 +119,19 @@ public abstract class AutoCompleteBase {
         textComp.getDocument().addDocumentListener(
             new DocumentListener() {
                 public void insertUpdate(DocumentEvent e){
-                    if (textComp.hasFocus()) showPopup(e.getOffset()+e.getLength()); 
+                    if (!bIgnorePopup && textComp.hasFocus()) {
+                        showPopup(e.getOffset()+e.getLength()); 
+                    }
                 } 
                 public void removeUpdate(DocumentEvent e){
-                    if (textComp.hasFocus()) showPopup(e.getOffset()); 
+                    if (!bIgnorePopup && textComp.hasFocus()) {
+                        showPopup(e.getOffset());
+                    }
                 } 
                 public void changedUpdate(DocumentEvent e) {
-                    if (textComp.hasFocus()) showPopup(e.getOffset()); 
+                    if (!bIgnorePopup && textComp.hasFocus()) {
+                        showPopup(e.getOffset());
+                    }
                 } 
         }); 
                     
@@ -184,6 +193,7 @@ public abstract class AutoCompleteBase {
     
     
     protected void showPopup(int offset) {
+        if (bIgnorePopup) return;
         if (popup.isVisible()) popup.setVisible(false); 
         if (!textComp.isEnabled()) return;
 

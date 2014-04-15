@@ -202,7 +202,9 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                bIgnorePopup = true;
                 textComp.setText(value);
+                bIgnorePopup = false;
             }
         });
     }
