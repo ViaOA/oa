@@ -47,6 +47,7 @@ public class DeleteDelegate {
         try {
 	        sql = getDeleteSQL(ds, oaObj, clazz);
 
+	        /*
             OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
             String s = String.format("Update, class=%s, id=%s, sql=%s",
                     OAString.getClassName(oaObj.getClass()),
@@ -57,8 +58,8 @@ public class DeleteDelegate {
             if (oi.getUseDataSource()) {
                 OAObject.OALOG.fine(s);
             }
-	        
 	        LOG.fine(s);
+	        */
             performDelete(ds, sql);
         }
         catch (Exception e) {

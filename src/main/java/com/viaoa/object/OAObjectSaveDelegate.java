@@ -206,12 +206,14 @@ public class OAObjectSaveDelegate {
 	    }
 	    
         if (oi.getUseDataSource()) {
+            /*
             OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
             String s = String.format("Save, class=%s, id=%s",
                     OAString.getClassName(oaObj.getClass()),
                     key.toString()
             );
             OAObject.OALOG.fine(s);
+            */
         }
 	    
 	    try {

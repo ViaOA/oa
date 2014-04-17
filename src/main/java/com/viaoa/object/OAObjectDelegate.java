@@ -128,7 +128,7 @@ public class OAObjectDelegate {
 	    	if (bSetChangedToFalse) {
 	    		oaObj.setChanged(false);
 	    	}
-	    	
+	    	/*
             OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
             String s = String.format("New, class=%s, id=%s",
                     OAString.getClassName(oaObj.getClass()),
@@ -137,6 +137,7 @@ public class OAObjectDelegate {
             if (oi.bUseDataSource) {
                 OAObject.OALOG.fine(s);
             }
+            */
     	}
 	    finally {
 	    	OAThreadLocalDelegate.setLoadingObject(false);

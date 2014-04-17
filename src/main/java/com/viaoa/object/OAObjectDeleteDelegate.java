@@ -56,6 +56,7 @@ public class OAObjectDeleteDelegate {
 		    }
 		}
 
+		/*
         OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
         String s = String.format("Delete, class=%s, id=%s",
                 OAString.getClassName(oaObj.getClass()),
@@ -65,6 +66,7 @@ public class OAObjectDeleteDelegate {
         if (oi.bUseDataSource) {
             OAObject.OALOG.fine(s);
         }
+        */
 		
 		OACascade cascade = new OACascade();
         delete(oaObj, cascade);

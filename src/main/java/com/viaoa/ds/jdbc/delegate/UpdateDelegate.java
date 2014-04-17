@@ -70,6 +70,7 @@ public class UpdateDelegate {
                 }
             }
 
+            /*
             OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
             String s = String.format("Update, class=%s, id=%s, sql=%s",
                     OAString.getClassName(oaObj.getClass()),
@@ -80,8 +81,8 @@ public class UpdateDelegate {
             if (oi.getUseDataSource()) {
                 OAObject.OALOG.fine(s);
             }
-            
-            LOG.fine(s);            
+            LOG.fine(s);
+            */            
             performUpdate(ds, (String) objs[0], params);
         }
         catch (Exception e) {

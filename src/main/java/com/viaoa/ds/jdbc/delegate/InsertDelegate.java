@@ -205,6 +205,7 @@ public class InsertDelegate {
 
     private static void performInsert(OADataSourceJDBC ds, OAObject oaObj, String sqlInsert, Object[] params, Column columnAutoGen) throws Exception {
 
+        /*
         OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
         String s = String.format("Insert, class=%s, id=%s, sql=%s",
                 OAString.getClassName(oaObj.getClass()),
@@ -216,9 +217,10 @@ public class InsertDelegate {
             OAObject.OALOG.fine(s);
         }
         
-        LOG.fine(s);            
+        LOG.fine(s);
+                   
         DBLogDelegate.logInsert(sqlInsert, params);
-
+        */
         Statement statement = null;
         PreparedStatement preparedStatement = null;
         try {
