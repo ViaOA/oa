@@ -108,6 +108,7 @@ public class OAObjectDelegate {
             for (OALinkInfo li : oi.getLinkInfos()) {
                 if (li.getCalculated()) continue;
                 if (li.getPrivateMethod()) continue;
+                if (li.getMatchProperty() != null) continue;
                 // 20140409 added check for 1to1, in which case one side will not have an
                 //    fkey, since it uses it's own pkey as the fkey
                 if (!OAObjectInfoDelegate.isOne2One(li)) {
