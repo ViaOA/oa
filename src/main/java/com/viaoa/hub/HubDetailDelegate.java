@@ -98,7 +98,7 @@ public class HubDetailDelegate {
             }
             Object obj = OAObjectReflectDelegate.getProperty((OAObject)detailObject, dm.liDetailToMaster.getName());
             // 20121010 if obj==null then dont adjust:  ex: hi5  employeeAward.awardType that was from program.awardTypes, and now the list is in location.awardTpes
-            if (obj != null && dm.masterHub.getActiveObject() != obj ) { 
+            if (obj != null && dm.masterHub.getActiveObject() != obj && !(obj instanceof Hub)) { 
             //was: if (dm.masterHub.getActiveObject() != obj) {
                 if (dm.masterHub.datau.bUpdatingActiveObject) return false;
                 // see if masterHub (or a share of it) has a link
@@ -356,8 +356,10 @@ public class HubDetailDelegate {
         }
         */
         HubDataDelegate.incChangeCount(dHub);
-        HubDetailDelegate.updateDetailActiveObject(dHub, dHub, bUpdateLink, detail.bShareActiveObject);
+        //was: HubDetailDelegate.updateDetailActiveObject(dHub, dHub, bUpdateLink, detail.bShareActiveObject);
         HubEventDelegate.fireOnNewListEvent(dHub, false);  // notifies all of this hub's shared hubs
+        // 20140421 moved to after newList
+        HubDetailDelegate.updateDetailActiveObject(dHub, dHub, bUpdateLink, detail.bShareActiveObject);
     
         if (detail.type == HubDetail.OAOBJECT || detail.type == HubDetail.OBJECT) {
             dHub.setPos(0);

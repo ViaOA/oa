@@ -36,7 +36,7 @@ public class HubAODelegate {
 
     /**
 	    Navigational method that will set the position of the active object.
-	    GUI components use this to recongnize which object that they are working with.
+	    GUI components use this to recognize which object that they are working with.
 	    @param pos position to set.  If > size() or < 0 then it will be set to null, and getPos() will return -1
 	    @see Hub#getActiveObject
 	 */
@@ -83,6 +83,24 @@ public class HubAODelegate {
 	}
 	
 	public static void setActiveObject(Hub thisHub, Object object, boolean adjustMaster, boolean bUpdateLink, boolean bForce) {
+
+	    // 20140421 for detailHub where link.type=ONE
+	    OALinkInfo li = thisHub.datam.liDetailToMaster;
+	    if (li != null) {
+	        OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+	        if (liRev != null && liRev.getType() == li.ONE) {
+                Object objMaster = HubDetailDelegate.getMasterObject(thisHub);
+                if (objMaster != null) {
+                    Object value = OAObjectReflectDelegate.getProperty((OAObject)objMaster, liRev.getName());
+                    if (value != object) {
+                        if (objMaster != null) {
+                            OAObjectReflectDelegate.setProperty((OAObject)objMaster, liRev.getName(), object, null);
+                        }
+                    }
+                }
+	        }
+	    }
+	    
 	    int pos = HubDataDelegate.getPos(thisHub, object, adjustMaster, bUpdateLink);
 	    setActiveObject(thisHub, (pos<0?null:object), pos, bUpdateLink, bForce, false);
 	}

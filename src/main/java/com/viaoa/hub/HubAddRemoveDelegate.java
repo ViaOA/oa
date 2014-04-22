@@ -64,7 +64,7 @@ public class HubAddRemoveDelegate {
 
         // check to see if this hub is a detail with LinkInfo.Type.ONE
         OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
-        if (li != null && (li.getType() == OALinkInfo.MANY)) {
+        if (thisHub.datam.liDetailToMaster != null && li != null) {
             li = OAObjectInfoDelegate.getReverseLinkInfo(li);
             if (li != null && li.getType() == OALinkInfo.ONE) {
                 if (!OAThreadLocalDelegate.isDeleting(obj)) {
