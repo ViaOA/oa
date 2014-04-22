@@ -1657,10 +1657,24 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 if (hubNode != null) {
                     if (tndUse.node.def.updateHub != hubNode && tndUse.node.def.updateHub.getSharedHub() != hubNode) {
                         if (hubNode.getSharedHub() != tndUse.node.def.updateHub) {
-                            tndUse.node.def.updateHub.setSharedHub(hubNode, false);
+                            // 20140421 dont change if hub is from a type=ONE
+                            boolean b = true;
+                            OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(tndUse.node.def.updateHub);
+                            if (li != null) {
+                                OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                                if (liRev != null && liRev.getType() == li.ONE) {
+                                    b = false;
+                                }
+                            }
+                            if (b) {
+                                tndUse.node.def.updateHub.setSharedHub(hubNode, false);
+                            }
+                            // was:
+                            //tndUse.node.def.updateHub.setSharedHub(hubNode, false);
                         }
                     }
                 }
+                
                 if (bLastNode || tndUse.node.def.updateHub.getActiveObject() != tndUse.object) {
                     // 20120228 if selected treeNodeTitle, then tnd.object will be null - set AO=null
                     if (bLastNode) {
