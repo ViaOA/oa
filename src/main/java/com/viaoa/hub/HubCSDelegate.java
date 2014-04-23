@@ -35,13 +35,36 @@ import com.viaoa.object.*;
  */
 public class HubCSDelegate {
     private static Logger LOG = Logger.getLogger(HubCSDelegate.class.getName());
-	/**
+
+    /**
+     * 20140422
+     * @param thisHub
+     */
+    public static void removeAllFromHub(Hub thisHub) {
+        if (OASyncDelegate.isSingleUser()) return;
+        if (!(thisHub.datam.masterObject instanceof OAObject)) return;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
+        if (!OARemoteThreadDelegate.shouldSendMessages()) {
+            return;
+        }
+
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        if (rs != null) {
+            rs.removeAllFromHub(
+                thisHub.datam.masterObject.getClass(), 
+                thisHub.datam.masterObject.getObjectKey(), 
+                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub) 
+            );
+        }
+    }
+    
+    /**
 	 * Have object removed from same Hub on other workstations.
 	 */
 	public static void removeFromHub(Hub thisHub, OAObject obj, int pos) {
         if (OASyncDelegate.isSingleUser()) return;
         if (!(thisHub.datam.masterObject instanceof OAObject)) return;
-
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
         if (!OARemoteThreadDelegate.shouldSendMessages()) {
             return;
         }
@@ -77,6 +100,7 @@ public class HubCSDelegate {
 	public static void addToHub(Hub thisHub, OAObject obj) {
         if (OASyncDelegate.isSingleUser()) return;
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
         
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
 	    if (oi.getLocalOnly()) return;
@@ -121,6 +145,7 @@ public class HubCSDelegate {
 	public static void insertInHub(Hub thisHub, OAObject obj, int pos) {
         if (OASyncDelegate.isSingleUser()) return;
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
         if (oi.getLocalOnly()) return;
@@ -154,6 +179,7 @@ public class HubCSDelegate {
 	public static void moveObjectInHub(Hub thisHub, int posFrom, int posTo) {
         if (OASyncDelegate.isSingleUser()) return;
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
         
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
 	    if (oi.getLocalOnly()) return; 
@@ -194,6 +220,7 @@ public class HubCSDelegate {
 	public static void sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp) {
         if (OASyncDelegate.isSingleUser()) return;
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
 
         OAObject objMaster = thisHub.datam.masterObject;
         if (objMaster == null) return;
@@ -220,6 +247,7 @@ public class HubCSDelegate {
         LOG.fine("hub="+thisHub);
         if (OASyncDelegate.isSingleUser()) return false;
         if (!OARemoteThreadDelegate.shouldSendMessages()) return false;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return false;
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
         if (oi.getLocalOnly()) return false; 

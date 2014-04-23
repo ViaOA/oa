@@ -1043,12 +1043,12 @@ public class RemoteMultiplexerServer {
                 synchronized (remoteThread.Lock) {
                     remoteThread.requestInfo = ri;
                     remoteThread.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
-                    remoteThread.Lock.wait(1250);
+                    remoteThread.Lock.wait(12500);
                 }
                 long ms2 = System.currentTimeMillis();
 
                 // qqqqqq this can be removed, sanity check only
-                if (!ri.processedByServer && (ms2-ms1) > 1200) {
+                if (!ri.processedByServer && (ms2-ms1) > 12000) {
                     StackTraceElement[] stes = remoteThread.getStackTrace();
                     Exception ex = new Exception();
                     ex.setStackTrace(stes);

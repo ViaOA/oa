@@ -150,6 +150,22 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     }
 
     @Override
+    public boolean removeAllFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
+        OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
+        if (object == null) {
+            return false;
+        }
+        
+        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
+        if (h == null) {
+            return false;
+        }
+        h.removeAll();
+        return true;
+    }
+    
+    
+    @Override
     public boolean insertInHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj, int pos) {
         OAObject object = OAObjectCacheDelegate.get(masterObjectClass, masterObjectKey);
         if (object == null) return false;
@@ -165,4 +181,5 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         }
         return true;
     }
+
 }

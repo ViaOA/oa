@@ -91,34 +91,42 @@ public class HubDataDelegate {
     }
     
 	// called by HubAddRemoveDelegate
-    protected static int _remove(Hub thisHub, Object obj, boolean bDeleting) {
+    protected static int _remove(Hub thisHub, Object obj, boolean bDeleting, boolean bIsRemovingAll) {
         int pos = 0;
         try {
             OAThreadLocalDelegate.lock(thisHub);
-            pos = _remove2(thisHub, obj, bDeleting);
+            pos = _remove2(thisHub, obj, bDeleting, bIsRemovingAll);
         }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
         }
-        OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+        if (!bIsRemovingAll) {
+            OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+        }
         return pos;
     }
     
-    private static int _remove2(Hub thisHub, Object obj, boolean bDeleting) {
+    private static int _remove2(Hub thisHub, Object obj, boolean bDeleting, boolean bIsRemovingAll) {
         int pos;
-	    Object key = obj;
-	    if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
+	    //Object key = obj;
+	    //if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
 	    synchronized (thisHub.data) {
-	        pos = thisHub.getPos(obj);
-	        if (pos >= 0) {
-	            thisHub.data.vector.removeElementAt(pos);
+	        if (bIsRemovingAll) {
+                if (thisHub.data.vector.remove(obj)) pos = 0;
+                else pos = -1;
+	        }
+	        else {
+    	        pos = thisHub.getPos(obj);
+    	        if (pos >= 0) {
+    	            thisHub.data.vector.removeElementAt(pos);
+    	        }
 	        }
 	    }
 	    if (pos >= 0) {
 	    	if (thisHub.data.bTrackChanges && (obj instanceof OAObject)) {
 		        synchronized (thisHub.data) {
-		            if (thisHub.data.vecAdd != null && thisHub.data.vecAdd.contains(obj)) {
-	            		thisHub.data.vecAdd.removeElement(obj);
+		            if (thisHub.data.vecAdd != null && thisHub.data.vecAdd.removeElement(obj)) {
+		                // no-op
 		            }
 		            else {
 		                if (!bDeleting) {

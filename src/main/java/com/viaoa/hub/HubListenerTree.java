@@ -267,6 +267,7 @@ public class HubListenerTree {
                 // System.out.println(">>>> "+property);
                 calcProps = ci.getProperties();
                 property = ci.getName();
+                break;
             }
         }       
         addListenerMain(hl, property, calcProps, bActiveObjectOnly);
@@ -512,7 +513,6 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                             @Override
                             public void afterPropertyChange(HubEvent e) {
                                 nodeThis.lastRemoveObject = null; // in case it was not cleared
-                                super.afterPropertyChange(e);
                             }
                             @Override
                             public void afterInsert(HubEvent e) {
@@ -529,10 +529,14 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                                     nodeThis.lastRemoveObject = e.getObject();
                                     nodeThis.lastRemoveMasterObject = objx;
                                 }
-//qqqqqqqqqqqqvvvvvvvvvvv ignore if masterHub is adding, removing (newList, clear)                                
+                                // ignore if masterHub is adding, removing (newList, clear)                                
                                 if (!OAThreadLocalDelegate.isHubMergerChanging()) {
                                     onEvent(nodeThis.getRootValues(e.getObject()));
                                 }
+                            }
+                            @Override // 20140423
+                            public void afterRemoveAll(HubEvent e) {
+                                HubEventDelegate.fireCalcPropertyChange(root.hub, null, origPropertyName);
                             }
                             private void onEvent(Object[] rootObjects) {
                                 if (rootObjects == null) return;

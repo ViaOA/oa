@@ -258,7 +258,6 @@ public class RemoteMultiplexerClient {
     protected Object onInvokeForCtoS(BindInfo bind, Object proxy, Method method, Object[] args) throws Throwable {
         RequestInfo ri = new RequestInfo();
         VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
-        boolean bSent = false;
         try {
             ri.msStart = System.currentTimeMillis();
             ri.nsStart = System.nanoTime();

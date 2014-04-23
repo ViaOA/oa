@@ -524,7 +524,7 @@ public class OAObjectEventDelegate {
 	                                    throw new RuntimeException("OAObject.updateLink() method for recursive link owner not returning a Hub.");
 	                                }
 	                                hub = (Hub) obj; // catalog.catalogSections
-	                	            HubAddRemoveDelegate.remove(hub, oaObj, false, true, false, true, false);
+	                	            HubAddRemoveDelegate.remove(hub, oaObj, false, true, false, true, false, false);
 	                            }
 	                        }
 	                    }

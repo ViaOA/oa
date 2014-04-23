@@ -94,7 +94,7 @@ public class OAObjectDeleteDelegate {
                             if (ref == null) continue;
                             Hub h = ref.get();
                             if (h == null) continue;
-                            HubAddRemoveDelegate.remove(h, oaObj, true, true, true, true, true);  // force, send, deleting, setAO
+                            HubAddRemoveDelegate.remove(h, oaObj, true, true, true, true, true, false);  // force, send, deleting, setAO
                         }
                     }
                 }
@@ -130,7 +130,7 @@ public class OAObjectDeleteDelegate {
                     if (ref == null) continue;
                     Hub h = ref.get();
                     if (h == null) continue;
-    	            HubAddRemoveDelegate.remove(h, oaObj, true, true, true, true, true);  // force, send, deleting, setAO
+    	            HubAddRemoveDelegate.remove(h, oaObj, true, true, true, true, true, false);  // force, send, deleting, setAO
     	        }
             }
             

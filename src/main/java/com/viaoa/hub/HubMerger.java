@@ -1028,7 +1028,7 @@ public class HubMerger {
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
                         // 20120612 dont send event, unless there is a recursive prop, which needs to
                         // have recursives nodes updated
-                        HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);
+                        HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false, false);
                         // was: HubAddRemoveDelegate.remove(hubCombined, obj, false, false, false,
                         // false, false);
                     }
@@ -1048,7 +1048,7 @@ public class HubMerger {
                         OARemoteThreadDelegate.sendMessages();
                     }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) {
-                        HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false);
+                        HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false, false);
                     }
                     else {
                         hubCombined.remove(obj);
@@ -1093,7 +1093,7 @@ public class HubMerger {
                     if (ref != null) {
                         if (!isUsed(ref, child.node)) {
                             if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
-                                HubAddRemoveDelegate.remove(child.hub, ref, false, false, false, false, false);
+                                HubAddRemoveDelegate.remove(child.hub, ref, false, false, false, false, false, false);
                             }
                             else {
                                 child.hub.remove(ref);
@@ -1271,7 +1271,7 @@ public class HubMerger {
                         }
                     }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
-                        HubAddRemoveDelegate.remove(node.child.data.hub, obj, false, false, false, false, false);
+                        HubAddRemoveDelegate.remove(node.child.data.hub, obj, false, false, false, false, false, false);
                     }
                     else {
                         node.child.data.hub.remove(obj);

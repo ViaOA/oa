@@ -239,6 +239,9 @@ public class JFCController extends HubListenerAdapter {
     public void afterRemove(HubEvent e) {
         if (bIsHubCalc) update();
     }
+    public void afterRemoveAll(HubEvent e) {
+        if (bIsHubCalc) update();
+    }
     @Override
     public void afterInsert(HubEvent e) {
         if (bIsHubCalc) update();

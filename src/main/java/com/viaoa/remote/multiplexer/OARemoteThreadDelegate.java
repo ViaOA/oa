@@ -17,6 +17,7 @@ All rights reserved.
 */
 package com.viaoa.remote.multiplexer;
 
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.sync.OASyncDelegate;
 
 public class OARemoteThreadDelegate {

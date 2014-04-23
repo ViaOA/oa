@@ -19,7 +19,9 @@ package com.viaoa.hub;
 
 import java.util.logging.Logger;
 
+import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.object.*;
 
 /**
@@ -32,7 +34,7 @@ public class HubAddRemoveDelegate {
     private static Logger LOG = Logger.getLogger(HubAddRemoveDelegate.class.getName());
     
     public static void remove(Hub thisHub, Object obj) {
-        remove(thisHub, obj, false, true, false, true, true);
+        remove(thisHub, obj, false, true, false, true, true, false);
     }
 
     public static void remove(Hub thisHub, int pos) {
@@ -41,15 +43,18 @@ public class HubAddRemoveDelegate {
     
     protected static void remove(Hub thisHub, int pos, boolean bForce) {
         Object obj = HubDataDelegate.getObjectAt(thisHub, pos);
-        remove(thisHub, obj, bForce, true, false, true, true);
+        remove(thisHub, obj, bForce, true, false, true, true, false);
     }
 
     
-    public static void remove(Hub thisHub, Object obj, boolean bForce, boolean bSendEvent, boolean bDeleting, boolean bSetAO, boolean bSetPropToMaster) {
+    public static void remove(Hub thisHub, Object obj, boolean bForce, 
+            boolean bSendEvent, boolean bDeleting, boolean bSetAO, 
+            boolean bSetPropToMaster, boolean bIsRemovingAll) 
+    {
         if (obj == null) return;
         
         if (thisHub.datau.sharedHub != null) {
-            remove(thisHub.datau.sharedHub, obj, bForce, bSendEvent, bDeleting, bSetAO, true);
+            remove(thisHub.datau.sharedHub, obj, bForce, bSendEvent, bDeleting, bSetAO, true, bIsRemovingAll);
             return;
         }
 
@@ -57,46 +62,48 @@ public class HubAddRemoveDelegate {
             return;
         }
         
-        obj = HubDelegate.getRealObject(thisHub, obj);
-        if (obj == null) {
-            return;
-        }
-
-        // check to see if this hub is a detail with LinkInfo.Type.ONE
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
-        if (thisHub.datam.liDetailToMaster != null && li != null) {
-            li = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (li != null && li.getType() == OALinkInfo.ONE) {
-                if (!OAThreadLocalDelegate.isDeleting(obj)) {
-                    if (!OARemoteThreadDelegate.isRemoteThread()) {
-                        throw new RuntimeException("Cant remove object from Hub that is based on a LinkInfo.ONE, hub="+thisHub);
+        if (!bIsRemovingAll) {
+            obj = HubDelegate.getRealObject(thisHub, obj);
+            if (obj == null) return;
+        
+            // check to see if this hub is a detail with LinkInfo.Type.ONE
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
+            if (thisHub.datam.liDetailToMaster != null && li != null) {
+                li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                if (li != null && li.getType() == OALinkInfo.ONE) {
+                    if (!OAThreadLocalDelegate.isDeleting(obj)) {
+                        if (!OARemoteThreadDelegate.isRemoteThread()) {
+                            throw new RuntimeException("Cant remove object from Hub that is based on a LinkInfo.ONE, hub="+thisHub);
+                        }
                     }
                 }
             }
         }
         
-        int pos = HubDataDelegate.getPos(thisHub, obj, false, false); // dont adjust master or update link when finding the postion of the object.
-        if (pos < 0) {
-            //20140312 Hub might be changing, wait until _remove is called
-            // return;
+        int pos = 0;
+        
+        if (!bIsRemovingAll || bSendEvent) {
+            pos = HubDataDelegate.getPos(thisHub, obj, false, false); // dont adjust master or update link when finding the postion of the object.
+            if (pos < 0) {
+                //20140312 Hub might be changing, wait until _remove is called
+                // return;
+            }
+            if (bSendEvent) {
+                HubEventDelegate.fireBeforeRemoveEvent(thisHub, obj, pos);
+            }
         }
-        if (bSendEvent) {
-            HubEventDelegate.fireBeforeRemoveEvent(thisHub, obj, pos);
-        }
-
         // send message to OAServer
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
-        if (thisHub.isOAObject()) {
+        // OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
+        if (bSendEvent && !bIsRemovingAll && thisHub.isOAObject()) {
             HubCSDelegate.removeFromHub(thisHub, (OAObject) obj, pos);
         }
         
         // this will lock, sync(data), and startNextThread
-        pos = HubDataDelegate._remove(thisHub, obj, bDeleting);
+        pos = HubDataDelegate._remove(thisHub, obj, bDeleting, bIsRemovingAll);
         if (pos < 0) {
             LOG.fine("object not removed, obj="+obj);
             return;
         }
-        
         
         if (bSetAO) {
             HubShareDelegate.setSharedHubsAfterRemove(thisHub, obj, pos);
@@ -142,11 +149,28 @@ public class HubAddRemoveDelegate {
         // 20120627 need to send event to clients if there is a masterObject
         boolean bSendEvent = thisHub.getMasterObject() != null;
         
+        if (thisHub.isOAObject() && bSendEvent) {
+            HubCSDelegate.removeAllFromHub(thisHub);
+        }
+        
         for ( x--; x>=0; x-- ) {
             Object ho = HubDataDelegate.getObjectAt(thisHub, x);
-            remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull); // dont force, dont send remove events
-            //was: remove(thisHub, ho, false, false, false, bSetAOtoNull, bSetAOtoNull); // dont force, dont send remove events
+
+            // 20140422 set to false, since clients will now have clear msg         
+            remove(thisHub, ho, false, false, 
+                    false, false, true, true); // dont force, dont send remove events
+
+            //was: remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull, true); // dont force, dont send remove events
         }
+
+        Thread t = Thread.currentThread();
+        if (t instanceof OARemoteThread) {
+            OARemoteThread rt = (OARemoteThread) t;
+            if (rt.getShouldQueueEvents() || OASyncDelegate.isServer()) {
+                ((OARemoteThread) t).startNextThread();
+            }
+        }
+        
         if (bSendNewList) {
             HubEventDelegate.fireOnNewListEvent(thisHub, true);
         }
