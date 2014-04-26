@@ -828,7 +828,7 @@ public class OAForm extends OABase implements Serializable {
     }
     public OACombo getCombo(String id) {
         OAJspComponent comp = getComponent(id);
-        if (comp instanceof OATextArea) return (OACombo) comp;
+        if (comp instanceof OACombo) return (OACombo) comp;
         return null;
     }
     public OATable getTable(String id) {
