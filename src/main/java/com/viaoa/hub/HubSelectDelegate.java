@@ -195,7 +195,7 @@ public class HubSelectDelegate {
 	
 	/**
 	    Used to populate Hub with objects returned from a OADataSource select.
-	    By defalut, all objects will first be removed from the Hub, OASelect.select() will
+	    By default, all objects will first be removed from the Hub, OASelect.select() will
 	    be called, and the first 45 objects will be added to Hub and active object will be
 	    set to null.  As the Hub is accessed for more objects, more will be returned until
 	    the query is exhausted of objects.
@@ -224,14 +224,21 @@ public class HubSelectDelegate {
 	        if (select != thisHub.data.select && thisHub.data.select != null) {
 	            throw new RuntimeException("select cant be changed for detail hub");
 	        }
-	        if (thisHub.datam.masterObject != select.getWhereObject() || select.getWhere() != null) {
-	            if (select.getWhereObject() == null && (select.getWhere() == null || select.getWhere().length() == 0)) {
-	                select.setWhereObject(thisHub.datam.masterObject);
-	            }
-	            else {
-	                // cant call select on a hub that is a detail hub
-	                // 20140308 removed, ex:  ServerRoot.getOrders() has a select
-	                // throw new RuntimeException("cant call select on a detail hub");
+	        
+	        
+	        if (thisHub.datam.masterObject != null) {
+	            if (thisHub.datam.masterObject != select.getWhereObject()) {
+    	            if (select.getWhere() == null || select.getWhere().length() == 0) {
+    	                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.datam.masterObject.getClass());
+    	                if (oi.getUseDataSource()) {
+    	                    select.setWhereObject(thisHub.datam.masterObject);
+    	                }
+    	            }
+    	            else {
+    	                // cant call select on a hub that is a detail hub
+    	                // 20140308 removed, ex:  ServerRoot.getOrders() has a select
+    	                // throw new RuntimeException("cant call select on a detail hub");
+    	            }
 	            }
 	        }
 	    }

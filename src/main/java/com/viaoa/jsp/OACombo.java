@@ -127,7 +127,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
         return true;
     }
 
-    private boolean bWasSubmitted;
+    private boolean bSubmittedComponent;  // did this component cause the form submit
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         String name = null;
@@ -139,15 +139,15 @@ public class OACombo implements OAJspComponent, OATableEditor {
             String[] ss = hmNameValue.get("oacommand");
             if (ss != null && ss.length > 0) s = ss[0];
         }
-        bWasSubmitted  = (id != null && id.equals(s));
+        bSubmittedComponent  = (id != null && id.equals(s));
+        boolean bWasSubmitted = false;  // was the combo submited with the form
 
         OAObject objLinkTo = null;
         for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
             name = (String) ex.getKey();
             if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
-        
-            if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
 
+            bWasSubmitted = true;
             values = ex.getValue();
             if (values == null) values = new String[0];
             
@@ -220,17 +220,17 @@ public class OACombo implements OAJspComponent, OATableEditor {
                 }
             }
         }
-        else {
-            if (hub != null && (bWasSubmitted || lastActiveObject != objSelected)) {
+        else if (bWasSubmitted) {
+            if (hub != null && (bSubmittedComponent || lastActiveObject != objSelected)) {
                 hub.setAO(objSelected);
             }
         }
-        return bWasSubmitted; // true if this caused the form submit
+        return bSubmittedComponent; // true if this caused the form submit
     }
 
     @Override
     public String _afterSubmit(String forwardUrl) {
-        if (bWasSubmitted) {
+        if (bSubmittedComponent) {
             String furl = getForwardUrl();
             if (furl != null) forwardUrl = furl;
             return onSubmit(forwardUrl); 

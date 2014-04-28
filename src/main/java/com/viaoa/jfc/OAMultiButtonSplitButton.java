@@ -140,7 +140,10 @@ public class OAMultiButtonSplitButton extends OASplitButton {
 
     public void setSelected(JButton cmd) {
         cmdSelected = cmd;
-        if (bShowTextInSelectedButton) mainButton.setText(cmdSelected.getText());
+        if (bShowTextInSelectedButton) {
+            mainButton.setText(cmdSelected.getText());
+            mainButton.setFont(cmdSelected.getFont());
+        }
         mainButton.setIcon(cmdSelected.getIcon());
         mainButton.setToolTipText(cmdSelected.getToolTipText());
         mainButton.setEnabled(cmdSelected.isEnabled());

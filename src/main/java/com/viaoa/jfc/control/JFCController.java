@@ -713,7 +713,7 @@ public class JFCController extends HubListenerAdapter {
     */
     
     /**
-     * This will valid using isValid(..) callback, isValidXxx property method, and then
+     * This will validate using isValid(..) callback, isValidXxx property method, and then
      * methodValidate (static delegate method)
      * @param em used to capture invalid message and exception.
      * @param obj object to set
