@@ -777,21 +777,21 @@ public class OAString {
 
     /** 
         Used to retrieve a portion of a String based on a separator value.
-        @see #fld(String,String,int,int) fld
+        @see #field(String,String,int,int)
     */
     public static String field(String str, char sep, int beg) {
         return field(str,sep+"",beg,1);
     }
     /** 
         Used to retrieve a portion of a String based on a separator value.
-        @see #fld(String,String,int,int) fld
+        @see #field(String,String,int,int)
     */
     public static String field(String str, char sep, int beg, int amt) {
         return field(str,sep+"",beg,amt);
     }
     /** 
         Used to retrieve a portion of a String based on a separator value.
-        @see #fld(String,String,int,int) fld
+        @see #field(String,String,int,int)
     */
     public static String field(String str, String sep, int beg) {
         return field(str,sep,beg,1);
