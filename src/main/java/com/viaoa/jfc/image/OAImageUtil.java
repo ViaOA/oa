@@ -1086,7 +1086,19 @@ public class OAImageUtil {
         System.out.println("" + pngparams);
     }
 
+    
     public static void main(String[] args) throws Exception {
+        BufferedImage bi = loadImage("C:\\projects\\java\\OABuilder_git\\src\\com\\viaoa\\builder\\view\\image\\MoveMode.gif");
+        
+        if (bi != null) {
+            System.out.println("converting");
+            setTransparentColor(bi, Color.green);
+            saveAsGif(bi, new File("c:\\temp\\test.gif"));
+        }
+        System.out.println("Done");
+    }
+    
+    public static void mainZ(String[] args) throws Exception {
 
         // BufferedImage bi = loadImageUsingURL("http://vjw2.vetjobs.com/image/vetBanner.gif");
         
