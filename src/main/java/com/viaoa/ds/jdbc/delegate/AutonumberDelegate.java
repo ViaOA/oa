@@ -19,14 +19,11 @@ package com.viaoa.ds.jdbc.delegate;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-
-import com.viaoa.ds.*;
 import com.viaoa.ds.jdbc.*;
 import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.object.*;
-import com.viaoa.hub.*;
-
 
 /**
  * Used to get seq numbers to assign for new object ids.
@@ -37,7 +34,7 @@ import com.viaoa.hub.*;
 public class AutonumberDelegate {
     private static Logger LOG = Logger.getLogger(AutonumberDelegate.class.getName());
 
-    private static HashMap<Table, Integer> hashNext = new HashMap<Table, Integer>(29, .75f);  // Table, Integer
+    private static HashMap<Table, AtomicInteger> hashNext = new HashMap<Table, AtomicInteger>(29, .75f);  // Table, Integer
     private static Object LOCK = new Object();
 	
     /**
@@ -66,34 +63,38 @@ public class AutonumberDelegate {
 	/**
 	 * This is used to determine if an assigned ID needs to change the autoNextNumber ID
 	 */
-	public static void verifyNumberUsed(OADataSourceJDBC ds, OAObject object, Table table, Column column, int id) {
+	public static void verifyNumberUsed(OADataSourceJDBC ds, OAObject object, Table table, Column column, final int id) {
         // LOG.finer("table="+table.name+", column="+column.columnName+", verifyId="+id);
-        int idx = getNextNumber(ds, table, column, false);
-
-        if (id >= idx) {
-            Object obj = hashNext.get(table);
-            synchronized (table) {
-                idx = ((Integer) hashNext.get(table)).intValue();
-                if (id > idx) hashNext.put(table, id+1);
-            }
+        for (;;) {
+            int idNext = getNextNumber(ds, table, column, false);
+            if (id < idNext) break;
+            AtomicInteger ai = hashNext.get(table);
+            if (ai.compareAndSet(idNext, id+1)) break; // else need to try again
         }
 	}
 
 	public static void setNextNumber(OADataSourceJDBC ds, Table table, int nextNumberToUse) {
         // LOG.finer("table="+table.name+", nextNumberToUse="+nextNumberToUse);
-	    if (table != null) hashNext.put(table, nextNumberToUse);
+        Column[] columns = table.getColumns();
+        for (int i=0; columns != null && i < columns.length; i++) {
+            Column column = columns[i];
+            if (column.primaryKey) {
+                verifyNumberUsed(ds, null, table, column, nextNumberToUse);
+                break;
+            }
+        }
 	}
 	
     //========================= Utilities ===========================
     protected static int getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
         // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", bAutoIncrement="+bAutoIncrement);
-        Object obj = hashNext.get(table);
     	int max = 0;
-        if (obj == null) {
+        AtomicInteger ai = hashNext.get(table);
+        if (ai == null) {
     	    DBMetaData dbmd = ds.getDBMetaData();
             synchronized(LOCK) {
-                obj = hashNext.get(table);
-                if (obj == null) {
+                ai = hashNext.get(table);
+                if (ai == null) {
                     String query = "";
                     if (dbmd.guid != null && dbmd.guid.length() > 0) {
                     	query = getMaxGuidQuery(dbmd, table, pkColumn);
@@ -116,17 +117,17 @@ public class AutonumberDelegate {
                         if (statement != null) ds.releaseStatement(statement);
                     }
                     // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", got max="+max);
-                    obj = new Integer(max);
-                	hashNext.put(table, (Integer) obj);
+                    ai = new AtomicInteger(max);
+                	hashNext.put(table, ai);
                 }
             }
         }
-        synchronized (table) {
-        	max = ((Integer) hashNext.get(table)).intValue();
-        	if (bAutoIncrement) {
-        	    hashNext.put(table, max+1);
-        	}
-            // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", bAutoIncrement="+bAutoIncrement+", returning "+max);
+        
+        if (bAutoIncrement) {
+            max = ai.getAndIncrement();
+        }
+        else {
+            max = ai.get();
         }
         return max;
     }
@@ -182,11 +183,4 @@ public class AutonumberDelegate {
         LOG.fine("table="+table.name+", column="+dbcolumn.columnName+", query="+s);
         return s;
 	}
-    
 }
-
-
-
-
-
-
