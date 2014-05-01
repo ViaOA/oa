@@ -144,7 +144,6 @@ public class HubAddRemoveDelegate {
         HubEventDelegate.fireBeforeRemoveAllEvent(thisHub);
         
         int x = HubDataDelegate.getCurrentSize(thisHub);
-        if (bSetAOtoNull) thisHub.setActiveObject(null);
 
         // 20120627 need to send event to clients if there is a masterObject
         boolean bSendEvent = thisHub.getMasterObject() != null;
@@ -169,6 +168,11 @@ public class HubAddRemoveDelegate {
             if (rt.getShouldQueueEvents() || OASyncDelegate.isServer()) {
                 ((OARemoteThread) t).startNextThread();
             }
+        }
+
+        // 20140501
+        if (bSetAOtoNull) {
+            HubShareDelegate.setSharedHubsAfterRemoveAll(thisHub);
         }
         
         if (bSendNewList) {

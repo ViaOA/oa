@@ -281,7 +281,22 @@ public class HubShareDelegate {
 	        }
 	    }
 	}
-    
+
+	// 20140501 similiar to setSharedHubAfterRemove(..)
+    protected static void setSharedHubsAfterRemoveAll(Hub thisHub) {
+        thisHub.dataa.activeObject = null;
+        HubAODelegate.setActiveObject(thisHub, -1, false, true, false); // bUpdateLink, bForce, bCalledByShareHub
+
+        WeakReference<Hub>[] refs = HubShareDelegate.getSharedWeakHubs(thisHub);
+        for (int i=0; refs != null && i<refs.length; i++) {
+            WeakReference<Hub> ref = refs[i];
+            if (ref == null) continue;
+            Hub h2 = ref.get();
+            if (h2 == null)  continue;
+            setSharedHubsAfterRemoveAll(h2);
+        }        
+    }
+	
 
     /**
 	    Used to set the active object in all shared Hubs after an object is removed.
