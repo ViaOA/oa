@@ -157,6 +157,13 @@ public class OAOutlookBar extends JPanel implements ActionListener
             barInfo.button.setEnabled(bEnabled);
         }
     }
+    public void setVisible(String barName, boolean bVisible) {
+        BarInfo barInfo = (BarInfo) hashBars.get(barName);
+        if (barInfo != null) {
+            barInfo.button.setVisible(bVisible);
+            render();
+        }
+    }
     
     /**
      * Removes the specified bar from the JOutlookBar
@@ -236,24 +243,55 @@ public class OAOutlookBar extends JPanel implements ActionListener
         // cause it to re-layout its components
         this.topPanel.removeAll();
         GridLayout topLayout = ( GridLayout )this.topPanel.getLayout();
-        topLayout.setRows( visibleBar+1 );
+
+        // make sure that the visibleBar is still valid
         BarInfo barInfo = null;
+        int newVisibleBar = -1;
+        for (int i=0; ;i++) {
+            String barName = arrayList.get(i);
+            barInfo = (BarInfo) hashBars.get(barName);
+            if (barInfo.getButton().isVisible() && barInfo.getButton().isEnabled()) {
+                if (i == visibleBar) {
+                    newVisibleBar = i;
+                    break;
+                }
+                if (i > visibleBar) {
+                    if (newVisibleBar >= 0) break;
+                }
+                newVisibleBar = i;
+            }
+        }
+        visibleBar = newVisibleBar;
+        
+        
+        int cnt = 0;
+        for( int i=0; i<=visibleBar; i++ ) {
+            String barName = arrayList.get(i);
+            barInfo = (BarInfo) hashBars.get(barName);
+            if (barInfo.getButton().isVisible()) cnt++;
+        }
+        topLayout.setRows(cnt);
+        //was: topLayout.setRows( visibleBar+1 );
+        
+        barInfo = null;
         int barPos = 0;
-        for( int i=0; i<=visibleBar; i++ )
-        {
+        for(int i=0; i<=visibleBar; i++) {
             String barName = arrayList.get(barPos++);
             barInfo = ( BarInfo )this.hashBars.get( barName );
-            this.topPanel.add( barInfo.getButton() );
+            if (barInfo.getButton().isVisible()) {
+                this.topPanel.add(barInfo.getButton());
+            }
         }
         this.topPanel.validate();
 
 
         // Render the center component: remove the current component (if there
         // is one) and then put the visible component in the center of this panel
-        if( this.visibleComponent != null )
-        {
-            this.remove( this.visibleComponent );
+        if( this.visibleComponent != null ) {
+            this.remove(this.visibleComponent);
         }
+        
+        
         this.visibleComponent = barInfo==null ? null : barInfo.getComponent();
         if (barInfo != null) cardLayout.show(cardPanel, barInfo.name);
 
@@ -261,17 +299,27 @@ public class OAOutlookBar extends JPanel implements ActionListener
         // hold to correct number of bars, add the bars, and "validate" it to
         // cause it to re-layout its components
         this.bottomPanel.removeAll();
-        GridLayout bottomLayout = ( GridLayout )this.bottomPanel.getLayout();
+        GridLayout bottomLayout = (GridLayout) this.bottomPanel.getLayout();
+        
+        cnt = 0;
+        for (int i=visibleBar+1; i<arrayList.size(); i++) {
+            String barName = arrayList.get(i);
+            barInfo = (BarInfo) hashBars.get(barName);
+            if (barInfo.getButton().isVisible()) cnt++;
+        }
+        bottomLayout.setRows(cnt);
+        
         int x = (arrayList.size() - visibleBar) - 1;
-        bottomLayout.setRows(x);
-        for( int i=0; i < x; i++ )
-        {
+        // bottomLayout.setRows(x);
+        
+        for (int i=0; i<x; i++) {
             String barName = arrayList.get(barPos++);
-            barInfo = ( BarInfo )this.hashBars.get( barName );
-            this.bottomPanel.add( barInfo.getButton() );
+            barInfo = (BarInfo) this.hashBars.get(barName);
+            if (barInfo.getButton().isVisible()) {
+                this.bottomPanel.add(barInfo.getButton());
+            }
         }
         this.bottomPanel.validate();
-
 
         // Validate all of our components: cause this container to re-layout its subcomponents
         this.validate();

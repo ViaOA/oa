@@ -384,12 +384,12 @@ public class ListController extends JFCController implements ListSelectionListen
                 }
             }
             else {
-                if (getHub().getLinkHub() != null) { // 20140501 dont need undoable if not linked
-                    int row = list.getSelectionModel().getMinSelectionIndex(); // dont use e.first or e.last
-                    if (row != -1) {
+                int row = list.getSelectionModel().getMinSelectionIndex(); // dont use e.first or e.last
+                if (row != -1) {
+                    if (getHub().getLinkHub() != null) { // 20140501 dont need undoable if not linked
                         OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(undoDescription, getHub(), getHub().getAO(), getHub().elementAt(row)));
-                        getHub().setActiveObject(row);
                     }
+                    getHub().setActiveObject(row);
                 }
             }            
         }
