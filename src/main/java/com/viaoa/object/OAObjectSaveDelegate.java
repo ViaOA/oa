@@ -52,13 +52,11 @@ public class OAObjectSaveDelegate {
     public static void save(OAObject oaObj, int iCascadeRule, OACascade cascade, boolean bIsFirst) {
         if (cascade.wasCascaded(oaObj, true)) return;
         
-        // cascadeSave() will check hash to see if object has already been checked
-        boolean b = (oaObj.newFlag || oaObj.changedFlag);
         
         OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
-        if (b || bIsFirst) {
-            b = oaObj.newFlag;
 
+        // cascadeSave() will check hash to see if object has already been checked
+        if (oaObj.newFlag || oaObj.changedFlag || bIsFirst) {
             WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
             if (refs != null) {
                 for (WeakReference<Hub<?>> ref : refs) {
@@ -71,13 +69,11 @@ public class OAObjectSaveDelegate {
             
             for (int i=0; i<2; i++) {
                 if (OAObjectSaveDelegate.onSave(oaObj)) break;
-                if (!b) break; // dont retry unless it was an insert
                 
-                oaObj.newFlag = true;
                 // try again, object might have been changed in the process
                 String msg = "error saving, class="+oaObj.getClass().getName()+", key="+oaObj.getObjectKey();
                 if (i == 0) msg += ", will try again now";
-                else msg += ", will try again, the next time save is called";
+                else msg += ", will try again the next time save is called";
                 LOG.warning(msg);
                 
                 OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
@@ -187,14 +183,15 @@ public class OAObjectSaveDelegate {
 	    object in datasource so that reference objects can refer to it
 	*/
 	protected static boolean onSave(OAObject oaObj) {
-	    // if new, then need to hold a lock
-	    boolean bNew = oaObj.isNew();
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
-	    if (bNew) {
+
+        // if new, then need to hold a lock
+	    boolean bIsNew = oaObj.isNew();
+	    if (bIsNew) {
 	        synchronized (alSaveNewLock) {
 	            for (;;) {
 	                if (!alSaveNewLock.contains(oaObj.guid)) {
-	                    alSaveNewLock.add(new Integer(oaObj.guid));
+	                    alSaveNewLock.add(oaObj.guid);
 	                    break;
 	                }
 	                try {
@@ -205,16 +202,16 @@ public class OAObjectSaveDelegate {
 	        }
 	    }
 	    
+        /*
         if (oi.getUseDataSource()) {
-            /*
             OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
             String s = String.format("Save, class=%s, id=%s",
                     OAString.getClassName(oaObj.getClass()),
                     key.toString()
             );
             OAObject.OALOG.fine(s);
-            */
         }
+        */
 	    
 	    try {
             // 20130504 moved before actually save, in case another thread makes a change
@@ -235,9 +232,9 @@ public class OAObjectSaveDelegate {
             OAObjectLogDelegate.logToXmlFile(oaObj, true);
 	    }
 	    finally {
-	        if (bNew) {
+	        if (bIsNew) {
 	            synchronized (alSaveNewLock) {
-                    alSaveNewLock.remove(new Integer(oaObj.guid));
+                    alSaveNewLock.remove(oaObj.guid);
                     alSaveNewLock.notifyAll();           
 	            }
 	        }
@@ -246,7 +243,7 @@ public class OAObjectSaveDelegate {
 	        //oaObj.setDeleted(false);  // in case it was deleted, and then re-saved
 	        //oaObj.setChanged(false);
 	    }
-        if (bNew) {
+        if (bIsNew) {
             OAObjectDelegate.setNew(oaObj, false);
         }
         oaObj.saved();

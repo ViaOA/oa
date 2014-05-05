@@ -126,7 +126,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     protected int         guid;          // global identifier for this object
     protected OAObjectKey objectKey;     // Object identifier, used by Hub/HubController for hashing, etc.
     protected boolean 	  changedFlag;   // flag to know if this object has been changed
-    protected boolean     newFlag=true;  // flag to know if this object is new (not yet saved).  The object key properties can be changed as long as isNew is true.
+    protected volatile boolean newFlag=true;  // flag to know if this object is new (not yet saved).  The object key properties can be changed as long as isNew is true.
     protected byte[]      nulls;         // keeps track of which primitive type properties that are NULL. Uses bit position, based on OAObjectInfo getPrimitiveProperties() position
     protected boolean     deletedFlag; 
     protected transient WeakReference<Hub<?>>[] weakHubs;       // list of Hub Collections that this object is a member of.  OAObject uses these Hubs for sending events.  See: OAObjectHubDelegate
