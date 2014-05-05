@@ -143,7 +143,7 @@ public class HubAddRemoveDelegate {
 
         HubEventDelegate.fireBeforeRemoveAllEvent(thisHub);
         
-        int x = HubDataDelegate.getCurrentSize(thisHub);
+        //int x = HubDataDelegate.getCurrentSize(thisHub);
 
         // 20120627 need to send event to clients if there is a masterObject
         boolean bSendEvent = thisHub.getMasterObject() != null;
@@ -152,8 +152,10 @@ public class HubAddRemoveDelegate {
             HubCSDelegate.removeAllFromHub(thisHub);
         }
         
-        for ( x--; x>=0; x-- ) {
-            Object ho = HubDataDelegate.getObjectAt(thisHub, x);
+        // 20140505
+        for ( ; thisHub.data.vector.size() > 0; ) {
+        //was: for ( x--; x>=0; x-- ) {
+            Object ho = HubDataDelegate.getObjectAt(thisHub, 0);
 
             // 20140422 set to false, since clients will now have clear msg         
             remove(thisHub, ho, false, false, 
