@@ -188,6 +188,8 @@ public class OAObjectSaveDelegate {
         // if new, then need to hold a lock
 	    boolean bIsNew = oaObj.isNew();
 	    if (bIsNew) {
+//qqqqqqqqqqqqqqqqqqqqqq	        
+LOG.warning("SAVING NEW vvvvvv: obj="+oaObj+", id="+oaObj.getProperty("id"));	        
 	        synchronized (alSaveNewLock) {
 	            boolean b = false;
 	            for ( ; ; ) {

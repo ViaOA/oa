@@ -34,7 +34,7 @@ import com.viaoa.object.*;
 public class AutonumberDelegate {
     private static Logger LOG = Logger.getLogger(AutonumberDelegate.class.getName());
 
-    private static HashMap<Table, AtomicInteger> hashNext = new HashMap<Table, AtomicInteger>(29, .75f);  // Table, Integer
+    private static HashMap<String, AtomicInteger> hashNext = new HashMap<String, AtomicInteger>(39, .75f);  // Table, Integer
     private static Object LOCK = new Object();
 	
     /**
@@ -68,7 +68,7 @@ public class AutonumberDelegate {
         for (;;) {
             int idNext = getNextNumber(ds, table, column, false);
             if (id < idNext) break;
-            AtomicInteger ai = hashNext.get(table);
+            AtomicInteger ai = hashNext.get(table.name);
             if (ai.compareAndSet(idNext, id+1)) break; // else need to try again
         }
 	}
@@ -84,16 +84,23 @@ public class AutonumberDelegate {
             }
         }
 	}
-	
-    //========================= Utilities ===========================
+
     protected static int getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
+ //qqqqqqqqqqqqqqq
+        int x = _getNextNumber(ds, table, pkColumn, bAutoIncrement);
+        LOG.warning("table="+table+", name="+table.name+", bAutoIncrement="+bAutoIncrement+", returning="+x);
+        return x;
+    }	
+    //========================= Utilities ===========================
+    protected static int _getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
         // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", bAutoIncrement="+bAutoIncrement);
-    	int max = 0;
-        AtomicInteger ai = hashNext.get(table);
+        
+        int max = 0;
+        AtomicInteger ai = hashNext.get(table.name);
         if (ai == null) {
     	    DBMetaData dbmd = ds.getDBMetaData();
             synchronized(LOCK) {
-                ai = hashNext.get(table);
+                ai = hashNext.get(table.name);
                 if (ai == null) {
                     String query = "";
                     if (dbmd.guid != null && dbmd.guid.length() > 0) {
@@ -118,7 +125,7 @@ public class AutonumberDelegate {
                     }
                     // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", got max="+max);
                     ai = new AtomicInteger(max);
-                	hashNext.put(table, ai);
+                	hashNext.put(table.name, ai);
                 }
             }
         }
