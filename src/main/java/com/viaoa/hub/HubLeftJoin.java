@@ -79,8 +79,14 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
             public void afterChangeActiveObject(HubEvent e) {
                 // set the active object in hub A&B when hubCombine.AO is changed
                 OALeftJoin obj = (OALeftJoin) e.getObject();
-                hubA.setAO( obj.getA() );
-                hubB.setAO( obj.getB() );
+                if (obj == null) {
+                    hubA.setAO(null);
+                    hubB.setAO(null);
+                }
+                else {
+                    hubA.setAO( obj.getA() );
+                    hubB.setAO( obj.getB() );
+                }
             }
         });
         

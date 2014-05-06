@@ -189,16 +189,19 @@ public class OAObjectSaveDelegate {
 	    boolean bIsNew = oaObj.isNew();
 	    if (bIsNew) {
 	        synchronized (alSaveNewLock) {
-	            for (;;) {
+	            boolean b = false;
+	            for ( ; ; ) {
 	                if (!alSaveNewLock.contains(oaObj.guid)) {
+	                    if (b) return true; // already saved
 	                    alSaveNewLock.add(oaObj.guid);
 	                    break;
 	                }
+	                b = true;
 	                try {
-	                    alSaveNewLock.wait();           
+	                    alSaveNewLock.wait();
 	                }
 	                catch (Exception e) {}
-	            }           
+	            }    
 	        }
 	    }
 	    
@@ -230,6 +233,9 @@ public class OAObjectSaveDelegate {
                 }
             }
             OAObjectLogDelegate.logToXmlFile(oaObj, true);
+            if (bIsNew) {
+                OAObjectDelegate.setNew(oaObj, false);
+            }
 	    }
 	    finally {
 	        if (bIsNew) {
@@ -243,9 +249,6 @@ public class OAObjectSaveDelegate {
 	        //oaObj.setDeleted(false);  // in case it was deleted, and then re-saved
 	        //oaObj.setChanged(false);
 	    }
-        if (bIsNew) {
-            OAObjectDelegate.setNew(oaObj, false);
-        }
         oaObj.saved();
         return true;
 	}

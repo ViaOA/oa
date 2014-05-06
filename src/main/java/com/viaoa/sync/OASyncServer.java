@@ -202,7 +202,10 @@ public class OASyncServer {
                         int guid = queRemoveGuid.take(); 
                         for (Map.Entry<Integer, ClientInfoExt> entry : OASyncServer.this.hmClientInfoExt.entrySet()) {
                             ClientInfoExt ciex = entry.getValue();
-                            ciex.remoteClientSync.removeGuid(guid);
+                            RemoteClientSyncImpl rcs = ciex.remoteClientSync; 
+                            if (rcs != null) {
+                                rcs.removeGuid(guid);
+                            }
                         }
                     }
                     catch (Exception e) {
