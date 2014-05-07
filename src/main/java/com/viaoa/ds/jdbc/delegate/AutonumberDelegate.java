@@ -88,7 +88,7 @@ public class AutonumberDelegate {
     protected static int getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
  //qqqqqqqqqqqqqqq
         int x = _getNextNumber(ds, table, pkColumn, bAutoIncrement);
-        LOG.warning("table="+table+", name="+table.name+", bAutoIncrement="+bAutoIncrement+", returning="+x);
+//        LOG.warning("table="+table+", name="+table.name+", bAutoIncrement="+bAutoIncrement+", returning="+x);
         return x;
     }	
     //========================= Utilities ===========================
