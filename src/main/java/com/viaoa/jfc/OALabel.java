@@ -368,6 +368,12 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     }
 
-    
+    public void setEnabled(Hub hub) {
+        control.getEnabledController().add(hub);
+    }
+    public void setEnabled(Hub hub, String prop) {
+    }
+    public void setEnabled(Hub hub, String prop, Object compareValue) {
+    }
 }
 
