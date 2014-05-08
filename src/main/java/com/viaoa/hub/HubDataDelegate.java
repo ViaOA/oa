@@ -477,6 +477,9 @@ public class HubDataDelegate {
 
     public static boolean contains(Hub hub, Object obj) {
         if (!(obj instanceof OAObject)) {
+            if (!hub.datau.oaObjectFlag) {
+                return hub.data.vector.contains(obj);
+            }
             obj = OAObjectCacheDelegate.get(hub.getObjectClass(), obj);
             if (obj == null) return false;
         }        

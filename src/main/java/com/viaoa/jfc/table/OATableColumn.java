@@ -384,7 +384,7 @@ public class OATableColumn {
                     path = s + "." + path;
                 }
                 if (bLinkOnPos) {
-                    pathIntValue = path;
+                    pathIntValue = HubLinkDelegate.getLinkToProperty(oaComp.getHub());;
                     path = origPath;
                 }
             }

@@ -1439,7 +1439,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            hubMaster
      */
     public void setAutoMatch(String property, Hub hubMaster) {
-        HubDelegate.setAutoMatch(this, property, hubMaster);
+        HubDelegate.setAutoMatch(this, property, hubMaster, false);
+    }
+    public void setAutoMatch(String property, Hub hubMaster, boolean bServerSideOnly) {
+        HubDelegate.setAutoMatch(this, property, hubMaster, bServerSideOnly);
     }
 
     /**
@@ -1450,7 +1453,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            hub with list of object
      */
     public void setAutoMatch(Hub hubMaster) {
-        HubDelegate.setAutoMatch(this, null, hubMaster);
+        HubDelegate.setAutoMatch(this, null, hubMaster, false);
+    }
+    public void setAutoMatch(Hub hubMaster, boolean bServerSideonly) {
+        HubDelegate.setAutoMatch(this, null, hubMaster, bServerSideonly);
     }
 
     /**

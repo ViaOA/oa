@@ -429,9 +429,12 @@ public class HubDelegate {
 	    @param hubMaster hub with list of object
 	    @param property Property in this hubs objects that match object type in hubMaster
 	*/
-	public static void setAutoMatch(Hub thisHub, String property, Hub hubMaster) {
+	public static void setAutoMatch(Hub thisHub, String property, Hub hubMaster, boolean bServerSideOnly) {
 	    if (thisHub.datau.autoMatch != null) thisHub.datau.autoMatch.close();
-	    if (hubMaster != null) thisHub.datau.autoMatch = new HubAutoMatch(thisHub, property, hubMaster);
+	    if (hubMaster != null) {
+	        thisHub.datau.autoMatch = new HubAutoMatch(thisHub, property, hubMaster);
+	        thisHub.datau.autoMatch.setServerSideOnly(bServerSideOnly);
+	    }
 	}
 
 	

@@ -700,11 +700,10 @@ public class OAObjectReflectDelegate {
                             HubMerger hm = new HubMerger(oaObj, hubMatch, matchHubProperty);
                             hm.setServerSideOnly(true);
                         }
-                        //qqqqqq else log some messages
                     }
                 }
                 if (hubMatch != null) {
-                    hub.setAutoMatch(matchProperty, hubMatch);
+                    hub.setAutoMatch(matchProperty, hubMatch, true);
                 }
             }
         }

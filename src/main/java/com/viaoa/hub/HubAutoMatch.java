@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.lang.reflect.*;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.*;
 
 /** 
@@ -36,6 +37,7 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
     protected Hub hub, hubMaster;
     protected String property;
     protected boolean bManuallyCalled;
+    private boolean bServerSideOnly;
 
     protected transient Method getMethod, setMethod;
 
@@ -67,6 +69,14 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
         this(hub, property, hubMaster, false);
     }
     
+    /**
+     * This needs to be set to true if it is only created on the server, but client applications will be
+     * using the same Hub that is filtered. This is so that changes on the hub will be published to the
+     * clients, even if initiated on an OAClientThread.
+     */
+    public void setServerSideOnly(boolean b) {
+        bServerSideOnly = b;
+    }
     
     /**
         Closes HubAutoMatch.
@@ -116,6 +126,9 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
     public void update() {
         if (!abUpdating.compareAndSet(false, true)) return; // already updating
         try {
+            if (bServerSideOnly) { // 20140508
+                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+            }
             _update();
         }
         finally {
@@ -169,7 +182,7 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
                 throw new RuntimeException(e);
             }
             if (hubMasterx.getObject(value) == null) {
-hubMasterx.getObject(value);//qqqqqqqqqqqqqqqqq
+//hubMasterx.getObject(value);//qqqqqqqqqqqqqqqqq
                 if (okToRemove(obj, value)) {
                     if (obj instanceof OAObject) {
                         ((OAObject)obj).delete();
