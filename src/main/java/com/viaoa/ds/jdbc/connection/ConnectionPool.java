@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.ds.jdbc.connection;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.sql.*;
 
@@ -117,6 +118,7 @@ public class ConnectionPool implements Runnable {
             releaseStatement(st);
         }
         catch (Exception e) {
+            LOG.log(Level.WARNING, "error checking database", e);
             return false;
         }
         return true;
