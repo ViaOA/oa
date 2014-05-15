@@ -502,4 +502,7 @@ public class OAOutlookBar extends JPanel implements ActionListener {
             return this.component;
         }
     }
+    public JComponent getVisibleComponent() {
+        return visibleComponent;
+    }
 }
