@@ -249,6 +249,7 @@ public class OAOutlookBar extends JPanel implements ActionListener {
         for (int i = 0; i < arrayList.size(); i++) {
             String barName = arrayList.get(i);
             barInfo = (BarInfo) hashBars.get(barName);
+
             if (barInfo.getButton().isVisible() && barInfo.getButton().isEnabled()) {
                 if (i == visibleBar) {
                     newVisibleBar = i;
@@ -269,7 +270,6 @@ public class OAOutlookBar extends JPanel implements ActionListener {
             if (barInfo.getButton().isVisible()) cnt++;
         }
         topLayout.setRows(cnt);
-        // was: topLayout.setRows( visibleBar+1 );
 
         barInfo = null;
         int barPos = 0;
@@ -277,6 +277,7 @@ public class OAOutlookBar extends JPanel implements ActionListener {
             String barName = arrayList.get(barPos++);
             barInfo = (BarInfo) this.hashBars.get(barName);
             if (barInfo.getButton().isVisible()) {
+                barInfo.button.setContentAreaFilled(i == visibleBar);
                 this.topPanel.add(barInfo.getButton());
             }
         }
@@ -288,8 +289,9 @@ public class OAOutlookBar extends JPanel implements ActionListener {
             this.remove(this.visibleComponent);
         }
 
-        this.visibleComponent = barInfo == null ? null : barInfo.getComponent();
+        this.visibleComponent = (barInfo == null) ? null : barInfo.getComponent();
         if (barInfo != null) cardLayout.show(cardPanel, barInfo.name);
+
 
         // Render the bottom bars: remove all components, reset the GridLayout to
         // hold to correct number of bars, add the bars, and "validate" it to
@@ -301,6 +303,7 @@ public class OAOutlookBar extends JPanel implements ActionListener {
         for (int i = visibleBar + 1; i < arrayList.size(); i++) {
             String barName = arrayList.get(i);
             barInfo = (BarInfo) hashBars.get(barName);
+            barInfo.button.setContentAreaFilled(false);
             if (barInfo.getButton().isVisible()) cnt++;
         }
         bottomLayout.setRows(cnt);
@@ -421,12 +424,13 @@ public class OAOutlookBar extends JPanel implements ActionListener {
             setupButton(button);
         }
 
-        public void setupButton(AbstractButton cmd) {
+        public void setupButton(final AbstractButton cmd) {
             cmd.setFocusPainted(false);
             cmd.setBorderPainted(true);
             cmd.setFocusable(false);
             cmd.setContentAreaFilled(false);
-            cmd.setMargin(new Insets(0, 0, 0, 0));
+            cmd.setMargin(new Insets(0, 8, 0, 0));
+            cmd.setHorizontalAlignment(SwingConstants.LEFT);
 
             Font font = cmd.getFont();
             font = font.deriveFont((float) (font.getSize() - 1));
@@ -443,7 +447,9 @@ public class OAOutlookBar extends JPanel implements ActionListener {
 
                 public void mouseExited(MouseEvent e) {
                     AbstractButton but = (AbstractButton) e.getComponent();
-                    but.setContentAreaFilled(false);
+                    String s = arrayList.get(visibleBar);
+                    BarInfo barInfo = hashBars.get(s);
+                    but.setContentAreaFilled( barInfo != null && barInfo.button == cmd);
                 }
             });
         }
