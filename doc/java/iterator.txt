@@ -15,6 +15,17 @@
         }
 
 
+* list
+
+        for (Iterator<Tuple<Server, ServerStatus>> iter = al.iterator(); iter.hasNext();) {
+            Tuple<Server, ServerStatus> t = iter.next();                        
+            if (t.a.getServerStatus() != t.b) {
+                iter.remove();  // dont use al.remove(t);
+                continue;
+            }
+         }
+
+
 * see concurrent.txt
         for (Map.Entry<Hub, OADateTime> entry : this.hmHub.entrySet()) { 
             OADateTime dt = entry.getValue();
