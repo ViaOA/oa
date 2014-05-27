@@ -362,7 +362,7 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
            
             
             for (int j=0; j<pps.length; j++) {
-                String property = pps[j];
+                final String property = pps[j];
                 
                 Class c = hub.getObjectClass();
                 Method m = methods[j];
@@ -454,6 +454,16 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                             };
                         }
                         else {
+                            // 20140527 need to listen to property
+                            if (OAObject.class.isAssignableFrom(returnClass)) {
+                                hub.addHubListener(new HubListenerAdapter() {
+                                    @Override
+                                    public void afterPropertyChange(HubEvent e) {
+                                        if (!property.equalsIgnoreCase(e.getPropertyName())) return;
+                                        HubEventDelegate.fireCalcPropertyChange(root.hub, e.getObject(), origPropertyName);
+                                    }
+                                });
+                            }
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {
                                 @Override
                                 protected void beforeRemoveRealHub(HubEvent e) {
