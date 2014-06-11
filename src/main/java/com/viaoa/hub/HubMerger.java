@@ -1175,8 +1175,7 @@ public class HubMerger {
         }
 
         // ============ HubListener for Hub used for child
-        public @Override
-        void beforeRemoveAll(HubEvent e) {
+        public @Override void beforeRemoveAll(HubEvent e) {
             try {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 _beforeRemoveAll(e);
@@ -1193,9 +1192,13 @@ public class HubMerger {
             }
 
             if (!bEnabled) return;
+            
+            // 20140611 hub.clear/removeAll no longer removes each obj
+            /*
             if (this != dataRoot) return;
             if (!bUseAll) return;
             if (hub.isLoading()) return;
+            */
 
             boolean hold = bIgnoreIsUsedFlag;
             bIgnoreIsUsedFlag = true;
@@ -1207,8 +1210,8 @@ public class HubMerger {
             if (!hold) bIgnoreIsUsedFlag = false;
         }
 
-        public @Override
-        void onNewList(HubEvent e) {
+        @Override
+        public void onNewList(HubEvent e) {
             try {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 _onNewList(e);
@@ -1243,7 +1246,9 @@ public class HubMerger {
 
         private void _onNewList() {
             if (!bEnabled) return;
+            
             if (this != dataRoot) return;
+            
             if (!bUseAll) {
                 // 20110809 need to continue if there is a masterObject/Hub and AO=null
                 // in case masterObject was previously null (making hub invalid)
@@ -1322,8 +1327,8 @@ public class HubMerger {
             }
         }
 
-        public @Override
-        void afterRemove(HubEvent e) {
+        @Override
+        public void afterRemove(HubEvent e) {
             Object obj = e.getObject();
             if (obj != null) {
                 if (obj.getClass().equals(hubCombined.getObjectClass())) {

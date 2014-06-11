@@ -84,6 +84,7 @@ public class OADataSourceJDBC extends OADataSource {
     		return connectionPool.isDatabaseAvailable();
     	}
     	catch (Exception e) {
+    	    System.out.println("OADataSourceJDBC.isAvailable error: "+e);
     		return false;
     	}
     }
