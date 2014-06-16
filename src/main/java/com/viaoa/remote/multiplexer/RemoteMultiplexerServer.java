@@ -1043,7 +1043,7 @@ public class RemoteMultiplexerServer {
                 synchronized (remoteThread.Lock) {
                     remoteThread.requestInfo = ri;
                     remoteThread.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
-                    remoteThread.Lock.wait(12500);
+                    remoteThread.Lock.wait(25000);
                 }
                 long ms2 = System.currentTimeMillis();
 

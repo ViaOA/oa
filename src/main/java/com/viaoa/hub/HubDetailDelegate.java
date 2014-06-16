@@ -26,6 +26,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import com.viaoa.object.*;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAFilter;
 
 /**
@@ -159,6 +160,14 @@ public class HubDetailDelegate {
         if (Hub.class.isAssignableFrom(method.getReturnType())) {
             if (detailObject instanceof OAObjectKey) return;
             if (thisHub.data.bInFetch) return;  // otherwise, a recursive loop could happen
+            
+            // 20140616 if hub is not loaded and isClient, then dont need to load
+            if (!OASyncDelegate.isServer()) {
+               if (!OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)detailObject, dm.liDetailToMaster.getName())) {
+                   return;
+               }
+            }
+            
             Object obj = OAObjectReflectDelegate.getProperty((OAObject)detailObject, dm.liDetailToMaster.getName());
             if (objMaster == null) {  // remove
                 if (thisHub.datam.masterObject != null) objMaster = thisHub.datam.masterObject;

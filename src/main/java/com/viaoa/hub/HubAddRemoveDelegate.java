@@ -141,6 +141,11 @@ public class HubAddRemoveDelegate {
     
         HubSelectDelegate.cancelSelect(thisHub, false);
 
+        // 20140616 moved this here since other objects (ex: HubMerger) uses the
+        //   to fire new events, etc.
+        // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+        OARemoteThreadDelegate.startNextThread(); 
+        
         HubEventDelegate.fireBeforeRemoveAllEvent(thisHub);
         
         //int x = HubDataDelegate.getCurrentSize(thisHub);
@@ -162,14 +167,6 @@ public class HubAddRemoveDelegate {
                     false, false, true, true); // dont force, dont send remove events
 
             //was: remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull, true); // dont force, dont send remove events
-        }
-
-        Thread t = Thread.currentThread();
-        if (t instanceof OARemoteThread) {
-            OARemoteThread rt = (OARemoteThread) t;
-            if (rt.getShouldQueueEvents() || OASyncDelegate.isServer()) {
-                ((OARemoteThread) t).startNextThread();
-            }
         }
 
         // 20140501
