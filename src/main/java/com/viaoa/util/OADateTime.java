@@ -494,6 +494,12 @@ public class OADateTime implements java.io.Serializable, Comparable {
         cal.set(Calendar.DATE, d);
     }
 
+    public void setTimeZone(TimeZone tz) {
+        cal.setTimeZone(tz);
+    }
+    public TimeZone getTimeZone() {
+        return cal.getTimeZone();
+    }
     
     
     /**
@@ -1230,6 +1236,8 @@ public class OADateTime implements java.io.Serializable, Comparable {
         System.out.println("=>"+dt.toString("MMddyyy HH:mm:ss a"));
         System.out.println("=>"+x);
     }
+    
+    
 }
 
 
