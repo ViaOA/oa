@@ -41,6 +41,10 @@ public class OATime extends OADateTime {
     protected static Vector vecTimeFormat = new Vector(10,10);
 
     static {
+        vecTimeFormat.addElement("hh:mm:ss.S a");
+        vecTimeFormat.addElement("hh:mm:ss a");
+        vecTimeFormat.addElement("hh:mm a");
+
         vecTimeFormat.addElement("hh:mm:ss.Sa");
         vecTimeFormat.addElement("hh:mm:ssa");
         vecTimeFormat.addElement("hh:mma");

@@ -101,7 +101,7 @@ public class HubAddRemoveDelegate {
         // this will lock, sync(data), and startNextThread
         pos = HubDataDelegate._remove(thisHub, obj, bDeleting, bIsRemovingAll);
         if (pos < 0) {
-            LOG.fine("object not removed, obj="+obj);
+            LOG.finer("object not removed, obj="+obj);
             return;
         }
         

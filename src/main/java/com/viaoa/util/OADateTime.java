@@ -165,7 +165,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
             vecParseFormat.addElement("dd/MM/yyyy HH:mm:ss");
             vecParseFormat.addElement("dd/MM/yyyy HH:mm");
         }
-        // SQL date formates
+        // SQL date formats
         vecParseFormat.addElement("yyyy-MM-dd HH:mm:ss");
         vecParseFormat.addElement("yyyy-MM-dd");
         
