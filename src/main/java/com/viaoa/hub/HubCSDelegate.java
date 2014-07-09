@@ -48,6 +48,14 @@ public class HubCSDelegate {
             return;
         }
 
+        // 20140708 
+        OALinkInfo li = thisHub.datam.liDetailToMaster;
+        if (li != null) {
+            OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+            if (liRev != null && liRev.getCalculated()) return;
+        }
+        
+
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
         if (rs != null) {
             rs.removeAllFromHub(

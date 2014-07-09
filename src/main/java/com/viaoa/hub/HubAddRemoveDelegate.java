@@ -153,17 +153,6 @@ public class HubAddRemoveDelegate {
         // 20120627 need to send event to clients if there is a masterObject
         boolean bSendEvent = thisHub.getMasterObject() != null;
 
-        // 20140708 dont send to CS if calc hub
-        if (bSendEvent) {
-            OALinkInfo li = thisHub.datam.liDetailToMaster;
-            if (li != null) {
-                OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                if (liRev != null && liRev.getCalculated()) {
-                    bSendEvent = false;
-                }
-            }
-        }
-        
         if (thisHub.isOAObject() && bSendEvent) {
             HubCSDelegate.removeAllFromHub(thisHub);
         }
