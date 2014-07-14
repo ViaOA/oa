@@ -81,7 +81,10 @@ public class HubAddRemoveDelegate {
         }
         
         int pos = 0;
-        
+
+
+qqqqqqqqqqqqqqqqqqqqqqqq        
+
         if (!bIsRemovingAll || bSendEvent) {
             pos = HubDataDelegate.getPos(thisHub, obj, false, false); // dont adjust master or update link when finding the postion of the object.
             if (pos < 0) {
@@ -110,7 +113,7 @@ public class HubAddRemoveDelegate {
         }
 
         /* 20110439 need to do this before sending event, since
-            hub.containts(obj) now uses obj.weakHubs to know if an object is in the hub.
+            hub.containds(obj) now uses obj.weakHubs to know if an object is in the hub.
             20130726 moved before setPropertyToMaster
         */
         if (thisHub.isOAObject()) {
