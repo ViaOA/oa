@@ -81,10 +81,6 @@ public class HubAddRemoveDelegate {
         }
         
         int pos = 0;
-
-
-qqqqqqqqqqqqqqqqqqqqqqqq        
-
         if (!bIsRemovingAll || bSendEvent) {
             pos = HubDataDelegate.getPos(thisHub, obj, false, false); // dont adjust master or update link when finding the postion of the object.
             if (pos < 0) {
