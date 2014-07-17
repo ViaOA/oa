@@ -23,6 +23,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
@@ -37,7 +39,7 @@ import com.viaoa.util.OAArray;
 import com.viaoa.util.OAString;
 
 public class OAObjectDeleteDelegate {
-
+    private static Logger LOG = Logger.getLogger(OAObjectDeleteDelegate.class.getName());
     /**
 	    Same as delete, without first calling canDelete.
 	    @see #delete()
@@ -119,7 +121,13 @@ public class OAObjectDeleteDelegate {
 	
 	        OAObjectDeleteDelegate.deleteChildren(oaObj, cascade); // delete children first
 	        if (!oaObj.getNew()) {
-	        	OAObjectDeleteDelegate.onDelete(oaObj);  // this will delete from OADataSource
+	            try {
+	                OAObjectDeleteDelegate.onDelete(oaObj);  // this will delete from OADataSource
+	            }
+	            catch (Exception e) {
+                    String msg = "error calling delete, class="+oaObj.getClass().getName()+", key="+oaObj.getObjectKey();
+                    LOG.log(Level.WARNING, msg, e);
+	            }
 	        }
 
             oaObj.setDeleted(true);
