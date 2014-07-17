@@ -192,18 +192,17 @@ public abstract class PrintPreviewController {
 	            image = new BufferedImage(wPage,hPage, BufferedImage.TYPE_INT_RGB);
 			    for (int pageIndex = 0; ;pageIndex++) {
 				    final Graphics g = image.getGraphics();
+                    final int pageIndexx = pageIndex;
 			        if (printable instanceof OAPrintable) {
 			            final OAPrintable p = (OAPrintable) printable;
 
 			            // 20140717 moved to invokeAndWait
-                        final int pageIndexx = pageIndex;
                         try {
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
                                 public void run() {
                                     int x = p.preview(g, pageFormat, pageIndexx);
                                     bDone =  (x != Printable.PAGE_EXISTS);
-                                    
                                 }
                             });
                         }
@@ -213,13 +212,31 @@ public abstract class PrintPreviewController {
                         // was:
 			            // int x = p.preview(g, pageFormat, pageIndex);
 	                    // if (x != Printable.PAGE_EXISTS) break;
-                        if (bDone) break;
 			        }
 			        else {
 			            if (printable != null) {
-			                if (printable.print(g, pageFormat, pageIndex) != Printable.PAGE_EXISTS) break;
+
+	                        // 20140717 moved to invokeAndWait
+	                        try {
+	                            SwingUtilities.invokeAndWait(new Runnable() {
+	                                @Override
+	                                public void run() {
+	                                    try {
+	                                        int x = printable.print(g, pageFormat, pageIndexx);
+	                                        bDone =  (x != Printable.PAGE_EXISTS);
+                                        }
+                                        catch (Exception e) {
+                                            bDone = true;
+                                        }
+	                                }
+	                            });
+	                        }
+	                        catch (Exception e) {
+	                        }
+			                // was: if (printable.print(g, pageFormat, pageIndex) != Printable.PAGE_EXISTS) break;
 			            }
 			        }
+                    if (bDone) break;
 				    
 				    PagePanel pp = new PagePanel(pageIndex) {
 				       @Override

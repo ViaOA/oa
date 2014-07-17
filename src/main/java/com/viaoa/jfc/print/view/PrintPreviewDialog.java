@@ -62,7 +62,7 @@ public abstract class PrintPreviewDialog extends JDialog implements ActionListen
 		toolbar.setBorderPainted(true);
         toolbar.setFloatable(false);
 
-		JButton cmd = new JButton(" Print ");
+		JButton cmd = new JButton(" Print ... ");
 		OAButton.setup(cmd);
         URL url = PrintController.class.getResource("view/image/print.gif");
         ImageIcon icon = new ImageIcon(url);
@@ -76,6 +76,9 @@ public abstract class PrintPreviewDialog extends JDialog implements ActionListen
 
 		cmd = new JButton(" Page Setup ... ");
 		OAButton.setup(cmd);
+        url = PrintController.class.getResource("view/image/pageSetup.gif");
+        icon = new ImageIcon(url);
+        cmd.setIcon(icon);
 		cmd.setToolTipText("Change/View Page Settings");
 		cmd.setMnemonic('S');
 		cmd.setActionCommand(CMD_PrintSetup);
