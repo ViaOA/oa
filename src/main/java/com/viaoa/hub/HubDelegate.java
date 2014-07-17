@@ -192,12 +192,14 @@ public class HubDelegate {
 	    HubSelectDelegate.cancelSelect(thisHub, true);
 	    thisHub.datau.objClass = objClass;
 	
-	    thisHub.datau.objectInfo = null;
-	    thisHub.datau.oaObjectFlag = false;
 	    if (objClass != null) {
 	        // find out if class is OAObject
 	    	thisHub.datau.oaObjectFlag = OAObject.class.isAssignableFrom(objClass);
 	    	thisHub.datau.objectInfo = OAObjectInfoDelegate.getOAObjectInfo(objClass);
+	    }
+	    else {
+	        thisHub.datau.objectInfo = null;
+	        thisHub.datau.oaObjectFlag = false;
 	    }
 	}
 	

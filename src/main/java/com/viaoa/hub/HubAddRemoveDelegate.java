@@ -164,7 +164,6 @@ public class HubAddRemoveDelegate {
             // 20140422 set to false, since clients will now have clear msg         
             remove(thisHub, ho, false, false, 
                     false, false, true, true); // dont force, dont send remove events
-
             //was: remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull, true); // dont force, dont send remove events
         }
 
@@ -265,6 +264,11 @@ public class HubAddRemoveDelegate {
             return;
         }
 
+        if (thisHub.datau.objClass == null) {
+            Class c = obj.getClass();
+            HubDelegate.setObjectClass(thisHub, c);
+        }
+        
         if (thisHub.contains(obj)) return;
         
         if (!thisHub.data.bInFetch) {
@@ -417,6 +421,10 @@ public class HubAddRemoveDelegate {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
             return internalAdd(thisHub, obj);
+        }
+        if (thisHub.datau.objClass == null) {
+            Class c = obj.getClass();
+            HubDelegate.setObjectClass(thisHub, c);
         }
 
         if (thisHub.contains(obj)) return false; 
