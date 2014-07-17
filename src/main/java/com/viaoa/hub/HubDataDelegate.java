@@ -484,7 +484,7 @@ public class HubDataDelegate {
             if (obj == null) return false;
         }        
         
-        if (hub.data.vector.size() < 20) {
+        if (hub.data.vector.size() < 20 || !hub.datau.oaObjectFlag) {
             return hub.data.vector.contains(obj);
         }
         return OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, hub);
