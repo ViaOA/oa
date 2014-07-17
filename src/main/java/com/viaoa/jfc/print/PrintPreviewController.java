@@ -162,9 +162,11 @@ public abstract class PrintPreviewController {
                 doRefresh(bRebuild);
                 getPrintPreviewDialog().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
-        }).start();
+        }, "PrintPreview").start();
     }
 
+    private volatile boolean bDone;
+    
     protected void doRefresh(boolean bRebuild) {
         if (dlgPrintPreview == null || pageFormat == null) return;
 
@@ -189,12 +191,29 @@ public abstract class PrintPreviewController {
 		    try {
 	            image = new BufferedImage(wPage,hPage, BufferedImage.TYPE_INT_RGB);
 			    for (int pageIndex = 0; ;pageIndex++) {
-				    Graphics g = image.getGraphics();
-
+				    final Graphics g = image.getGraphics();
 			        if (printable instanceof OAPrintable) {
-			            OAPrintable p = (OAPrintable) printable;
-			            int x = p.preview(g, pageFormat, pageIndex);
-	                    if (x != Printable.PAGE_EXISTS) break;
+			            final OAPrintable p = (OAPrintable) printable;
+
+			            // 20140717 moved to invokeAndWait
+                        final int pageIndexx = pageIndex;
+                        try {
+                            SwingUtilities.invokeAndWait(new Runnable() {
+                                @Override
+                                public void run() {
+                                    int x = p.preview(g, pageFormat, pageIndexx);
+                                    bDone =  (x != Printable.PAGE_EXISTS);
+                                    
+                                }
+                            });
+                        }
+                        catch (Exception e) {
+                        }
+
+                        // was:
+			            // int x = p.preview(g, pageFormat, pageIndex);
+	                    // if (x != Printable.PAGE_EXISTS) break;
+                        if (bDone) break;
 			        }
 			        else {
 			            if (printable != null) {
