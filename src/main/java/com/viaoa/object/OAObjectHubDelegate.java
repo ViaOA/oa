@@ -168,23 +168,13 @@ public class OAObjectHubDelegate {
         return false;
     }
 	
-	// 20120725 memory leak fixed, rewritten to handle weakrefs with nulls correctly, and keep array compress (empty space at the end only)
     /**
 	    Called by Hub when an OAObject is removed from a Hub.
 	*/
     public static void removeHub(OAObject oaObj, Hub hub) {
         if (oaObj == null || oaObj.weakHubs == null) return;
         hub = hub.getRealHub();
-        
-        // 20120702 dont store hub if M2M and reverse linkInfo does not have a method.
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
-        if (li != null && li.getPrivateMethod()) {
-            if (OAObjectInfoDelegate.isMany2Many(li)) {
-//qqqqqqqqqqqqq 20140723 qqqqqqqqqq this caused a bug in Hi5                
-//                return;
-            }
-        }
-        
+
         boolean bFound = false;
         synchronized (oaObj) {
             if (oaObj.weakHubs == null) return;
@@ -241,49 +231,6 @@ public class OAObjectHubDelegate {
         }
     }
 	
-    // before 20120725 - did not compress, or clean out ref=null
-    /*
-	public static void removeHub_ORIG(OAObject oaObj, Hub hub) {
-		if (oaObj == null || oaObj.weakHubs == null) return;
-        hub = hub.getRealHub();
-        
-        // 20120702 dont store hub if M2M and reverse linkInfo does not have a method.
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
-        if (li != null && li.getNullHub()) {
-            return;
-        }
-        
-		synchronized (oaObj) {
-			if (oaObj.weakHubs == null) return;
-			int x = oaObj.weakHubs.length;
-            for (int i=0; i<x; i++) {
-                if (oaObj.weakHubs[i] == null) continue;
-                if (oaObj.weakHubs[i].get() != hub) continue;
-                oaObj.weakHubs[i] = null;
-                
-                // compress:  get last one, move it back to this slot
-                for (int j=x-1; j>i; j--) {
-                    if (oaObj.weakHubs[j] == null) continue;
-                    if (oaObj.weakHubs[j].get() == null) {
-                        oaObj.weakHubs[j] = null;
-                        continue;
-                    }
-                    oaObj.weakHubs[i] = oaObj.weakHubs[j];
-                    oaObj.weakHubs[j] = null;
-                    break;
-                }
-
-                
-                if (oaObj.weakHubs[0] == null) {
-                    oaObj.weakHubs = null;
-                    // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added to a hub.  Need to add to cache now that it is no longer in a hub.
-                    OAObjectCSDelegate.addToServerSideCache(oaObj);
-                }
-                break;
-            }
-		}
-	}
-    */
 	
     /**
 	    Return all Hubs that this object is a member of.
@@ -318,32 +265,16 @@ public class OAObjectHubDelegate {
 		if (oaObj == null || hub == null) return false;
         hub = hub.getRealHub();
 		
-		/* 20110102 removed, ex: VetPlan Items <-> ItemCategories
-		 *  The vetjobs examples should not have a  Categories.getVetUsers method
-		 *
-		
-		// 20090906 see if this should be added to the hub
-		//    if M2M and the other hub does not have a reference/method to this hub, then dont store in hubs.  ex: VetUser <-> Categories,
-		//         the Category objects can exist in lots of VetUser.hubCategories, creating a huge array that is not really needed.
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
-        if (li != null) {
-            if (OAObjectInfoDelegate.isMany2Many(li)) {
-                if (OAObjectInfoDelegate.getMethod(li) == null) {
-                    return;
+        // 20120702 dont store hub if M2M&Private: reverse linkInfo does not have a method.
+        //          since this could have a lot of references (ex: VetJobs JobCategory has m2m Jobs)
+        if (!bAlwaysAddIfM2M) {
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
+            if (li != null && li.getPrivateMethod()) {
+                if (OAObjectInfoDelegate.isMany2Many(li)) {
+                    return false;
                 }
             }
         }
-		*/
-
-        // 20120702 dont store hub if M2M&Private: reverse linkInfo does not have a method.
-        //          since this could have a lot of references (ex: VetJobs JobCategory has m2m Jobs)
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
-        if (!bAlwaysAddIfM2M && li != null && li.getPrivateMethod()) {
-            if (OAObjectInfoDelegate.isMany2Many(li)) {
-                return false;
-            }
-        }
-        
         boolean bRemoveFromServerCache = false;
 		synchronized (oaObj) {
 			int pos;
