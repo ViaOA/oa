@@ -115,10 +115,6 @@ public class HubAddRemoveDelegate {
         if (thisHub.isOAObject()) {
             OAObjectHubDelegate.removeHub((OAObject)obj, thisHub);  
         }
-        else {
-            int qqtest = 4;
-            qqtest++;
-        }
         
         if (bSetPropToMaster) {
             // set the reference in detailObject to null.  Ex: if this is DeptHub, and Obj is Emp then call emp.setDept(null)
