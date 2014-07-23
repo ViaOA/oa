@@ -180,7 +180,8 @@ public class OAObjectHubDelegate {
         OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
         if (li != null && li.getPrivateMethod()) {
             if (OAObjectInfoDelegate.isMany2Many(li)) {
-                return;
+//qqqqqqqqqqqqq 20140723 qqqqqqqqqq this caused a bug in Hi5                
+//                return;
             }
         }
         
