@@ -39,6 +39,7 @@ public class OAObjectModel extends OAObject {
     protected boolean bAllowCut;
     protected boolean bAllowCopy;
     protected boolean bAllowPaste;
+    protected boolean bViewOnly;
     
     protected String displayName;
     protected String displayNamePlural;
@@ -149,7 +150,10 @@ public class OAObjectModel extends OAObject {
         bAllowPaste = b;
     }
     
-    
-    
-    
+    public boolean getViewOnly() {
+        return bViewOnly;
+    }
+    public void setViewOnly(boolean b) {
+        bViewOnly = b;
+    }
 }
