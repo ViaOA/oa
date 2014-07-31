@@ -228,14 +228,23 @@ public class HubAddRemoveDelegate {
                 return "verifyUniqueProperty returned false";
             }
         }
-
-        if (obj.getClass().equals(c)) {
+        
+        // 20140731 recursive hub check
+        if (obj.getClass().equals(c) && HubDetailDelegate.isRecursiveMasterDetail(thisHub)) {
+            //was: if (obj.getClass().equals(c)) {
             // cant add a recursive object to its children Hub
             // cant make a recursive object have one of its children as the parent
 
-            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
-            OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
-            if (li != null) { 
+            // OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
+            
+            // 20140731
+            OALinkInfo li = thisHub.datam.liDetailToMaster;
+            if (li != null) {
+                li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+            }
+            // was: OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
+        
+            if (li != null) {
                 Object master = HubDetailDelegate.getMasterObject(thisHub); 
                 if (master != null) {
                     for (; master != null;) {
