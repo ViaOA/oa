@@ -76,7 +76,15 @@ public class HubDataDelegate {
 	    thisHub.getSize(); // all before sync, in case it needs to load
 	    synchronized (thisHub.data) {
 	        Object[] objs = new Object[thisHub.getSize()];
-	        thisHub.data.vector.copyInto(objs);
+	        for (;;) {
+	            try {
+	                thisHub.data.vector.copyInto(objs);
+	                break;
+                }
+                catch (Exception e) {
+                    // if exception, then try again
+                }
+	        }
 		    return objs;
 	    }
 	}
