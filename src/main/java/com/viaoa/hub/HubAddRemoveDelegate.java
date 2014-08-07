@@ -243,7 +243,7 @@ public class HubAddRemoveDelegate {
                 Object master = HubDetailDelegate.getMasterObject(thisHub); 
                 if (master != null && master.getClass().equals(c)) {
                     for (; master != null;) {
-                        if (master == obj) return "recursive hub, cant add child as parent";
+                        if (  master == obj) return "recursive hub, cant add child as parent";
                         master = li.getValue(master); 
                     }
                 }
