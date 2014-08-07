@@ -196,7 +196,7 @@ public class HubAddRemoveDelegate {
         return s == null;
     }
     // returns null if obj can be added; otherwise an error msg is returned.
-    public static String canAddMsg(Hub thisHub, Object obj) {
+    public static String canAddMsg(final Hub thisHub, final Object obj) {
         if (obj == null) return "obj is null";
         if (thisHub == null) return "hub is null";
         
@@ -218,7 +218,7 @@ public class HubAddRemoveDelegate {
             }
         }
         
-        Class c = obj.getClass();
+        final Class c = obj.getClass();
         if (thisHub.datau.objClass == null) HubDelegate.setObjectClass(thisHub, c);
         if (!thisHub.datau.objClass.isAssignableFrom(c) ) return "class not assignable, class="+c;
 
@@ -230,23 +230,18 @@ public class HubAddRemoveDelegate {
         }
         
         // 20140731 recursive hub check
-        if (obj.getClass().equals(c) && HubDetailDelegate.isRecursiveMasterDetail(thisHub)) {
-            //was: if (obj.getClass().equals(c)) {
+        if (HubDetailDelegate.isRecursiveMasterDetail(thisHub)) {
             // cant add a recursive object to its children Hub
             // cant make a recursive object have one of its children as the parent
 
+            // was:
             // OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
+            // OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
             
-            // 20140731
             OALinkInfo li = thisHub.datam.liDetailToMaster;
             if (li != null) {
-                li = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            }
-            // was: OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
-        
-            if (li != null) {
                 Object master = HubDetailDelegate.getMasterObject(thisHub); 
-                if (master != null) {
+                if (master != null && master.getClass().equals(c)) {
                     for (; master != null;) {
                         if (master == obj) return "recursive hub, cant add child as parent";
                         master = li.getValue(master); 

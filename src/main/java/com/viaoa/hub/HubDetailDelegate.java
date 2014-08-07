@@ -60,7 +60,7 @@ public class HubDetailDelegate {
     }
     
     /**
-     * Is this a master/detail, and does is the detail "hub" recursive.
+     * Is this a master/detail, and is the detail "hub" recursive.
      */
     public static boolean isRecursiveMasterDetail(Hub thisHub) {
         if (thisHub == null) return false;
