@@ -93,6 +93,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     protected OAFilter<TYPE> oaFilter;  // this will be used by OASelect to filter iterator returned values
     protected OAFilter<TYPE> dsFilter;  // this will be sent to DataSource, which should only use it if it does not support queries
     protected OAFinder<?, TYPE> finder; // will be used instead of calling datasource
+    protected Hub<TYPE> hubSearch;      // hub used to search from, instead of using DataSource
     
     /** Create a new OASelect that is not initialzed. */
     public OASelect() {
@@ -152,6 +153,13 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     	return this.params;
     }
     
+
+    public void setSearchHub(Hub<TYPE> hub) {
+        this.hubSearch = hub;
+    }
+    public Hub<TYPE> getSearchHub() {
+        return this.hubSearch;
+    }
     
     /** 
         Calls cancel() and clears out previous where,order, count,amountRead.
@@ -490,6 +498,11 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
         amountRead = 0;
         amountCount = -1;
 
+        // 20140808
+        if (hubSearch != null && finder == null) {
+            finder = new OAFinder(hubSearch, null);
+        }
+        
         // 20140129
         if (finder != null) {
             final OAFilter origFilter = finder.getFilter();
@@ -499,6 +512,9 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
                     if (origFilter != null && !origFilter.isUsed(obj)) return false;
                     if (dsFilter != null && !dsFilter.isUsed(obj)) return false;
                     if (oaFilter != null && !oaFilter.isUsed(obj)) return false;
+                    if (hubSearch != null) {
+                        if (!hubSearch.contains(obj)) return false;
+                    }
                     return true;
                 }
             };
@@ -507,7 +523,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
             finder.setFilter(origFilter);
             return;
         }
-        
+
     	if (clazz == null) throw new RuntimeException("OASelect.select() needs selectClass set");
         OADataSource ds = getDataSource();
         if (ds == null) {
