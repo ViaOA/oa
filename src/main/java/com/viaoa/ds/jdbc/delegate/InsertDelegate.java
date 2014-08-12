@@ -136,7 +136,7 @@ public class InsertDelegate {
                 boolean bOver512 = (obj instanceof String && ((String)obj).length() > 512);
                 
                 // this will convert to SQL string
-                value = ConverterDelegate.convertToString(dbmd, obj, !bOver512, Delegate.getMaxLength(column), column.decimalPlaces);
+                value = ConverterDelegate.convertToString(dbmd, obj, !bOver512, Delegate.getMaxLength(column), column.decimalPlaces, column);
                 
                 String origValue = value;
                 if (value != null && bOver512) {

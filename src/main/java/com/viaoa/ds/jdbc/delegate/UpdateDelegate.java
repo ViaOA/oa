@@ -155,7 +155,7 @@ public class UpdateDelegate {
                 value = "?";
             }
             else {
-                value = ConverterDelegate.convertToString(dbmd, obj, !bOver512, Delegate.getMaxLength(column), column.decimalPlaces);
+                value = ConverterDelegate.convertToString(dbmd, obj, !bOver512, Delegate.getMaxLength(column), column.decimalPlaces, column);
                 String origValue = value;
                 
                 if (value != null && bOver512) {

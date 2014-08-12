@@ -139,6 +139,7 @@ public class OAAnnotationDelegate {
             }
             pi.setBlob(b);
             pi.setNameValue(oaprop.isNameValue());
+            pi.setUnicode(oaprop.isUnicode());
         }
         
       
@@ -307,6 +308,7 @@ public class OAAnnotationDelegate {
                 column.assignNextNumber = oaid.autoAssign();
                 // c.assignedByDatabase = qqq
             }
+            if (oaprop != null) column.unicode = oaprop.isUnicode();
             table.addColumn(column);
         }
     }

@@ -179,7 +179,7 @@ public class OAObjectPropertyDelegate {
     }
     
     /**
-     * Update a property, if the current value matches. 
+     * Compare and swap a property. 
      * @param name property name, not case sensitive
      * @param newValue new value to set, if matchValue matches current setting
      * @param matchValue value that it must currently be set to

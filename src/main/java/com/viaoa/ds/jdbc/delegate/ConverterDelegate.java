@@ -92,7 +92,7 @@ public class ConverterDelegate {
 		    value = OAConverter.convert(clazz, value);
 		}
 		
-		return convertToString(dbmd, value, true, column.maxLength, column.decimalPlaces);
+		return convertToString(dbmd, value, true, column.maxLength, column.decimalPlaces, column);
 	}
 	
 	public static boolean areSingleQuotesNeeded(Column column) {
@@ -105,7 +105,7 @@ public class ConverterDelegate {
         return false;
 	}
 	
-    protected static String convertToString(DBMetaData dbmd, Object obj, boolean bConvertSingleQuotes, int maxLength, int decimalPlaces) {
+    protected static String convertToString(DBMetaData dbmd, Object obj, boolean bConvertSingleQuotes, int maxLength, int decimalPlaces, Column column) {
         if (obj == null) return "NULL";
         Class c = obj.getClass();
 
@@ -164,6 +164,7 @@ public class ConverterDelegate {
         if (bConvertSingleQuotes) {
         	s = convertSingleQuotes(dbmd, s);
             s =  "'" + s + "'";
+            if (column != null && column.unicode) s = "N"+s;
         }
         return s;
     }

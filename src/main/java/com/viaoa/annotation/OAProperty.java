@@ -85,6 +85,8 @@ public @interface OAProperty {
 
     boolean isBlob() default false;
     boolean isNameValue() default false;
+    
+    boolean isUnicode() default false;
 }
 
 

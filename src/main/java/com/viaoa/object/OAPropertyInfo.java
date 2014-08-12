@@ -34,6 +34,7 @@ public class OAPropertyInfo implements java.io.Serializable {
 	private boolean isNameValue;
 	private String displayName;
 	private String columnName;
+    private boolean isUnicode;
 	
 	public OAPropertyInfo() {
 	}
@@ -114,6 +115,13 @@ public class OAPropertyInfo implements java.io.Serializable {
     }
     public void setNameValue(boolean b) {
         this.isNameValue = b;
+    }
+
+    public boolean isUnicode() {
+        return isUnicode;
+    }
+    public void setUnicode(boolean b) {
+        this.isUnicode = b;
     }
 }
 

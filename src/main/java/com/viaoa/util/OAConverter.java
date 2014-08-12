@@ -1087,7 +1087,9 @@ public class OAConverter {
         // -4.1 => -5.0
         double d = -4.5;
 
-        
+d = OAConv.divide(1.0, 3.0, 4);
+
+
         System.out.println("Math.round "+d+" == "+Math.round(d));
 
         double d2 = round(d, 0, 0, BigDecimal.ROUND_HALF_UP);

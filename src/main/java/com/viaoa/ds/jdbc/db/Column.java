@@ -57,7 +57,7 @@ public class Column {  // need to select all with properyName!=null
     /** flag to know if column is a global unique identifier. */
     public boolean guid;
     
-    
+    public boolean unicode;
     
     public Link fkeyLink; // 20090301 set by Table.setColumns() & Table.setLinks() if this column is a fkey in a link
     public int fkeyLinkPos; // 20090301 set by Table.setColumns() & Table.setLinks() if this column is a fkey in a link
