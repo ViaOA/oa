@@ -300,6 +300,77 @@ public class DDLDelegate {
         }
         return sqlType;
     }
+
+    
+    public static String getUnicodeType(DBMetaData dbmd, int maxLen) {
+        String sqlType = "VARCHAR("+maxLen+")";
+        switch (dbmd.databaseType) {
+        case DBMetaData.ACCESS:
+            // todo: need to get correct unicode type for this DB    
+            break;
+        case DBMetaData.MYSQL:
+            // todo: need to get correct unicode type for this DB    
+            break;
+        case DBMetaData.ORACLE:
+            // todo: need to get correct unicode type for this DB    
+            break;
+        case DBMetaData.SQLSERVER:
+            sqlType = "NVARCHAR("+maxLen+")";
+            break;
+        case DBMetaData.DERBY:
+            // todo: need to get correct unicode type for this DB    
+            break;
+        }
+        return sqlType;
+    }
+
+    public static String getUnicodeCharType(DBMetaData dbmd, int maxLen) {
+        String sqlType = "char("+maxLen+")";
+        switch (dbmd.databaseType) {
+        case DBMetaData.ACCESS:
+            // todo: need to get correct unicode type for this DB    
+            break;
+        case DBMetaData.MYSQL:
+            // todo: need to get correct unicode type for this DB    
+            break;
+        case DBMetaData.ORACLE:
+            // todo: need to get correct unicode type for this DB    
+            break;
+        case DBMetaData.SQLSERVER:
+            sqlType = "NCHAR("+maxLen+")";
+            break;
+        case DBMetaData.DERBY:
+            // todo: need to get correct unicode type for this DB    
+            break;
+        }
+        return sqlType;
+    }
+    
+    public static String getLongUnicodeType(DBMetaData dbmd, int maxLen) {
+        String sqlType = "";
+        switch (dbmd.databaseType) {
+        case DBMetaData.ACCESS:
+            // todo: need to get correct unicode type for this DB    
+            sqlType = "memo";
+            break;
+        case DBMetaData.MYSQL:
+            // todo: need to get correct unicode type for this DB    
+            sqlType = "LONGTEXT";
+            break;
+        case DBMetaData.ORACLE:
+            // todo: need to get correct unicode type for this DB    
+            sqlType = "long";
+            break;
+        case DBMetaData.SQLSERVER:
+            sqlType = "NVARCHAR(MAX)";
+            break;
+        case DBMetaData.DERBY:
+            // todo: need to get correct unicode type for this DB    
+            sqlType = "CLOB"; // "CLOB("+maxLen+")";
+            break;
+        }
+        return sqlType;
+    }
     
     
     public static String getStringType(DBMetaData dbmd, int maxLen) {
