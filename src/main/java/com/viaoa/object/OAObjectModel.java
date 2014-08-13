@@ -28,7 +28,7 @@ public class OAObjectModel extends OAObject {
     protected boolean bAllowGotoList;
     protected boolean bAllowGotoEdit;
     protected boolean bAllowSearch;
-    protected boolean bAllowInnerSearch;
+    protected boolean bAllowHubSearch;
     
     protected boolean bAllowAdd;
     protected boolean bAllowNew;
@@ -50,7 +50,7 @@ public class OAObjectModel extends OAObject {
         setAllowGotoList(true);
         setAllowGotoEdit(true);
         setAllowSearch(true);
-        setAllowInnerSearch(true);
+        setAllowHubSearch(false);
         setAllowAdd(true);
         setAllowNew(true);
         setAllowRemove(true);
@@ -100,11 +100,11 @@ public class OAObjectModel extends OAObject {
     public void setAllowSearch(boolean b) {
         bAllowSearch = b;
     }
-    public boolean getAllowInnerSearch() {
-        return bAllowInnerSearch;
+    public boolean getAllowHubSearch() {
+        return bAllowHubSearch;
     }
-    public void setAllowInnerSearch(boolean b) {
-        bAllowInnerSearch = b;
+    public void setAllowHubSearch(boolean b) {
+        bAllowHubSearch = b;
     }
     public boolean getAllowAdd() {
         return bAllowAdd;
