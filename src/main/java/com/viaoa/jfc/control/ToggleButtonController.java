@@ -313,7 +313,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
     public boolean isChanging() {
         return bFlag;
     }
-    private boolean bFlag;
+    private volatile boolean bFlag;
     public void itemStateChanged(ItemEvent evt) {
         if (bFlag) return;
         bFlag = true;

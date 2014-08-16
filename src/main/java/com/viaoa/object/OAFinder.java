@@ -26,7 +26,7 @@ import com.viaoa.util.*;
 
 // 20140124
 /**
- * This is used to find all values of a propertyPath. 
+ * This is used to find all values in a propertyPath. 
  *
  * @param <F> type of hub or OAObject to use as the root (from)
  * @param <T> type of hub for the to class (to).
@@ -36,7 +36,6 @@ import com.viaoa.util.*;
     OAFinder<Router, UserLogin> f = new OAFinder<Router, UserLogin>(Router.PROPERTY_UserLogins);
     String cpp = OAString.cpp(UserLogin.PROPERTY_User, User.PROPERTY_UserId);
     f.addLikeFilter(cpp, userId);
-    cpp = OAString.cpp(UserLogin.PROPERTY_ClientAppType);
     UserLogin userLogin = f.findFirst(router);
  * 
  */
@@ -81,6 +80,7 @@ public class OAFinder<F extends OAObject, T> {
 
     private F fromObject;
     private Hub<F> fromHub;
+    private boolean bUseAll;
 
     private ArrayList<OAFilter> alFilters;
     
@@ -94,8 +94,12 @@ public class OAFinder<F extends OAObject, T> {
         this.strPropertyPath = propPath;
     }
     public OAFinder(Hub<F> fromHub, String propPath) {
+        this(fromHub, propPath, true);
+    }
+    public OAFinder(Hub<F> fromHub, String propPath, boolean bUseAll) {
         this.fromHub = fromHub;
         this.strPropertyPath = propPath;
+        this.bUseAll = bUseAll;
     }
     /**
      * Add the found object to the list that is returned by find.
@@ -145,7 +149,11 @@ public class OAFinder<F extends OAObject, T> {
 
     public ArrayList<T> find() {
         if (fromObject != null) return find(fromObject);
-        if (fromHub != null) return find(fromHub);
+        if (fromHub != null) {
+            if (bUseAll) return find(fromHub);
+            F obj = fromHub.getAO();
+            if (obj != null) return find(obj);
+        }
         return null;
     }
     public void setRoot(F obj) {

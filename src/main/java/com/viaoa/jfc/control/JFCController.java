@@ -815,10 +815,14 @@ public class JFCController extends HubListenerAdapter {
             obj = OAReflect.getPropertyValue(obj, methodsFromActualHub, x-1);
             if (obj == null) return;
         }
+        boolean bWasNull = value == null && (fmt == null || fmt.length() == 0);
+        
         value = OAConv.convert(setMethodClass, value, fmt);
         OAReflect.setPropertyValue(obj, methodSet, value);
         
-        if (value == null) {
+        // 20140815
+        if ((value == null) || bWasNull) {
+        // was: if (value == null) {
             Class c = OAReflect.getClass(getLastMethod());
             if (c.isPrimitive() && obj instanceof OAObject) {
                 ((OAObject) obj).setNull(hubListenerPropertyName);
