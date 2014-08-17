@@ -395,15 +395,18 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     public synchronized int getCount() {
         if (amountCount < 0) {
             OADataSource ds = getDataSource();
-            if (ds == null) return 0;
 
             if (!hasMore() && amountRead >= 0) {
                 return amountRead;
             }
             else {
-                if (!ds.getSupportsPreCount()) {
+                if (alFinderResults != null) {
+                    return alFinderResults.size();
+                }
+                
+                if (ds == null || !ds.getSupportsPreCount()) {
                     // load all
-                    return amountRead+1; /// only know that there is one more
+                    return amountRead+1; /// only know that there is at least one more
                 }
                 else if (bPassthru) {
                     amountCount = ds.countPassthru(where, max);
@@ -577,6 +580,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
             select();
         }
         
+        TYPE obj = null;
         if (finder != null) {
             if (alFinderResults == null) return null;
             int x = alFinderResults.size();
@@ -584,27 +588,26 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
                 alFinderResults = null;
                 return null;
             }
-            TYPE obj = alFinderResults.get(posFinderResults++);
-            return obj;
+            obj = alFinderResults.get(posFinderResults++);
         }
-        
-        if (query == null) return null;
-        TYPE obj = null;
-        try {
-            obj = (TYPE) query.next();
-        }
-        catch (Exception e) {
-            obj = null;
-            if (query != null) {
-                LOG.log(Level.WARNING, "", e);
+        else {
+            if (query == null) return null;
+            try {
+                obj = (TYPE) query.next();
+            }
+            catch (Exception e) {
+                obj = null;
+                if (query != null) {
+                    LOG.log(Level.WARNING, "", e);
+                }
             }
         }
-        if (obj != null) {
+        if (obj == null) closeQuery();
+        else {
             amountRead++;
             if (max > 0 && amountRead >= max) closeQuery();
             lastReadTime = System.currentTimeMillis();
         }
-        else closeQuery();
 
         return obj;
     }
@@ -619,6 +622,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     public synchronized void cancel() {
     	if (!bHasBeenStarted) bCancelled = true;
     	else bCancelled = hasMore();
+        alFinderResults = null;
     	closeQuery();
     }
     public synchronized void close() {
