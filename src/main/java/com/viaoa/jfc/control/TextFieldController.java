@@ -148,8 +148,6 @@ public class TextFieldController extends JFCController implements FocusListener,
         document.setMaxLength(getMax());
         textField.setDocument(document);
         
-        
-        
         c = OAReflect.getClass(getLastMethod());
         if (OAReflect.isNumber(c)) {
             

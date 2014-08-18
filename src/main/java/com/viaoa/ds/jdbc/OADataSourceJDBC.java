@@ -370,6 +370,11 @@ public class OADataSourceJDBC extends OADataSource {
         return obj;
     }
 
+    @Override
+    public int getMaxLength(Class c, String propertyName) {
+        int x = Delegate.getPropertyMaxLength(this, c, propertyName);
+        return x;
+    }
 }
 
 

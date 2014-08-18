@@ -51,6 +51,18 @@ public class Delegate {
 	    }
 	    return -1;
 	}
+
+    public static int getPropertyMaxLength(Database database, Class c, String propertyName) {
+        for (Table table : database.getTables()) {
+            Column[] columns = table.getSelectColumns();
+            for (int ii=0; columns != null && ii < columns.length; ii++) {
+                if (propertyName.equalsIgnoreCase(columns[ii].propertyName)) {
+                    return getMaxLength(columns[ii]);
+                }
+            }
+        }
+        return -1;
+    }
 	
 	public static int getMaxLength(Column c) {
 		if (c == null) return -1;

@@ -75,6 +75,8 @@ public class OASyncClient {
     private String serverHostName;
     private int serverHostPort;
 
+    private OADataSourceClient dataSourceClient;
+    
     public OASyncClient(String serverHostName, int serverHostPort) {
         this.serverHostName = serverHostName;
         this.serverHostPort = serverHostPort;
@@ -387,11 +389,19 @@ public class OASyncClient {
         getRemoteClientSyncInterface();
 
         LOG.fine("creating OADataSourceClient for remote database access");
-        new OADataSourceClient();
+        getOADataSourceClient();
         
         clientInfo.setStarted(true);
         LOG.config("startup completed successful");
     }
+    
+    public OADataSourceClient getOADataSourceClient() {
+        if (dataSourceClient == null) {
+            dataSourceClient = new OADataSourceClient();
+        }
+        return dataSourceClient;
+    }
+    
     public boolean isStarted() {
         return clientInfo.isStarted();
     }

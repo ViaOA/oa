@@ -24,6 +24,8 @@ import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.util.OAFilter;
 import com.viaoa.ds.*;
+import com.viaoa.ds.jdbc.db.Database;
+import com.viaoa.ds.jdbc.delegate.Delegate;
 import com.viaoa.ds.objectcache.ObjectCacheIterator;
 
 
@@ -123,11 +125,22 @@ public class OADataSourceClient extends OADataSource {
         return false;
     }
 
+    
+    private HashMap<String, Integer> hmMax = new HashMap<String, Integer>();
     public int getMaxLength(Class c, String propertyName) {
+        String key = (c.getName() + "-" + propertyName).toUpperCase();
+        Object objx = hmMax.get(key);
+        if (objx != null) {
+            return ((Integer) objx).intValue();
+        }
+        
+        int iResult;
         verifyConnection();
         Object obj = getRemoteClientSync().datasource(MAX_LENGTH, new Object[] {c, propertyName});
-        if (obj instanceof Integer) return ((Integer)obj).intValue();
-        return -1;
+        if (obj instanceof Integer) iResult  = ((Integer)obj).intValue();
+        else iResult = -1;
+        hmMax.put(key, iResult);
+        return iResult;
     }
 
     protected void verifyConnection() {
