@@ -547,7 +547,6 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     	        bNewListFlag = false;	    	        
                 OAThreadLocalDelegate.setLoadingObject(false);
     	    }
-	    	afterInitialize();
     	}
     	finally {
     		if (hd != null) hd.bInFetch = false;
@@ -555,6 +554,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                 OARemoteThreadDelegate.sendMessages(false);
             }
     	}
+        afterInitialize();
     }    
     
     private void _initialize() {

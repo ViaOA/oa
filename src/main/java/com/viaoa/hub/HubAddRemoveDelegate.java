@@ -262,7 +262,7 @@ public class HubAddRemoveDelegate {
             }
         }
 
-        if (!thisHub.data.bInFetch && thisHub.data.sortListener != null) {
+        if (thisHub.data.sortListener != null) {
             insert(thisHub, obj, thisHub.getSize());
             return;
         }
@@ -444,7 +444,15 @@ public class HubAddRemoveDelegate {
         if (HubDataDelegate.getObject(thisHub, key) != null) return false;
 
         if (thisHub.data.sortListener != null) {
-            for (int i=0; ; i++) {
+            for (int j=-1; ; j++) {  // 201440820 first try expected location
+                int i = j;
+                if (j == -1) {
+                    i = pos-1;
+                    if (i < 0) {
+                        i = 0;
+                        j = 0;
+                    }
+                }
                 Object cobj = thisHub.elementAt(i);
                 if (cobj == null) {
                     pos = i;
