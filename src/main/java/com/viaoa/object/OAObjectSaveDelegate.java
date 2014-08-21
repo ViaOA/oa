@@ -242,7 +242,7 @@ public class OAObjectSaveDelegate {
 	    finally {
 	        if (bIsNew) {
 	            synchronized (alSaveNewLock) {
-                    alSaveNewLock.remove(new Integer(oaObj.guid)); // needs to use Object instead of primitive
+                    alSaveNewLock.remove((Object) (new Integer(oaObj.guid)) ); // needs to use Object instead of primitive
                     alSaveNewLock.notifyAll();           
 	            }
 	        }

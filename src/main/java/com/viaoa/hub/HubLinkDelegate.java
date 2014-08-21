@@ -180,7 +180,7 @@ public class HubLinkDelegate {
         	_updateLinkProperty(thisHub, fromObject, pos);
         }
         catch (Exception e) {
-        	throw new RuntimeException(e);
+        	throw new RuntimeException("updateLinkProperty, hub="+thisHub+", fromObject="+fromObject, e);
         }
     }	
     
