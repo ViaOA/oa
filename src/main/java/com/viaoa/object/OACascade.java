@@ -39,19 +39,17 @@ public class OACascade {
     private TreeSet<Hub> mapCascadeHub;
     private ReentrantReadWriteLock rwLock;
     private ReentrantReadWriteLock rwLockHub;
-    
+  
+//qqqqqqqqqqqqqqqqqqqqqqq 20140821 todo: allow for max depth, restrart
+    /*
     private int depth;
     private Stack<Object> stack;
-    
-    
     public void depthAdd() {
         depth++;
     }
     public void depthSubtract() {
         depth--;
     }
-    
-    
     public Object pop() {
         if (stack == null) return null;
         return stack.pop();
@@ -60,7 +58,7 @@ public class OACascade {
         if (stack == null) stack = new Stack<Object>();
         stack.add(obj);
     }
-    
+*/    
     public OACascade() {
         // LOG.finer("new OACascade");
     }
