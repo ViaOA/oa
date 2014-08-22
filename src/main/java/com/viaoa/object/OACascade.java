@@ -17,8 +17,10 @@ All rights reserved.
 */
 package com.viaoa.object;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Stack;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
@@ -37,6 +39,27 @@ public class OACascade {
     private TreeSet<Hub> mapCascadeHub;
     private ReentrantReadWriteLock rwLock;
     private ReentrantReadWriteLock rwLockHub;
+    
+    private int depth;
+    private Stack<Object> stack;
+    
+    
+    public void depthAdd() {
+        depth++;
+    }
+    public void depthSubtract() {
+        depth--;
+    }
+    
+    
+    public Object pop() {
+        if (stack == null) return null;
+        return stack.pop();
+    }
+    public void push(Object obj) {
+        if (stack == null) stack = new Stack<Object>();
+        stack.add(obj);
+    }
     
     public OACascade() {
         // LOG.finer("new OACascade");
