@@ -86,7 +86,6 @@ public class HubDetailDelegate {
         HubDataMaster dm = getDataMaster(thisHub);
         boolean result = false;
         if (dm.masterHub != null && dm.liDetailToMaster != null) {
-
             if (dm.liDetailToMaster.getType() == OALinkInfo.MANY) { 
                 OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster);
                 if (liRev != null && liRev.getType() == OALinkInfo.MANY) {

@@ -43,6 +43,7 @@ import javax.swing.table.TableColumn;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubAODelegate;
+import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.hub.HubSelectDelegate;
@@ -2155,7 +2156,8 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
             public @Override void afterRemove(HubEvent e) {
                 if (getRunningValueChanged()) return;
-                int pos = hub.getPos(e.getObject());
+                int pos = HubDataDelegate.getPos(hub, e.getObject(), false, false);
+                // int pos = hub.getPos(e.getObject());
                 if (pos >= 0) {
                     _bIgnoreValueChanged = true;
                     ListSelectionModel lsm = table.getSelectionModel();
@@ -2337,7 +2339,8 @@ if (table.bDEBUG) {
         }
         else {
             if (table.hubSelect.getSize() == 1) {
-                int x = hub.getPos(table.hubSelect.getAt(0));
+                int x = HubDataDelegate.getPos(hub, table.hubSelect.getAt(0), false, false);
+                // was: int x = hub.getPos(table.hubSelect.getAt(0));
                 if (x != row) {
                     table.hubSelect.clear();
                     setSelectedRow(row);
