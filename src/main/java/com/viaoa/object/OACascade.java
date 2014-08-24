@@ -40,28 +40,10 @@ public class OACascade {
     private ReentrantReadWriteLock rwLock;
     private ReentrantReadWriteLock rwLockHub;
   
-//qqqqqqqqqqqqqqqqqqqqqqq 20140821 todo: allow for max depth, restrart
-    /*
+    // 20140821 todo: allow for max depth, restrart
     private int depth;
-    private Stack<Object> stack;
-    public void depthAdd() {
-        depth++;
-    }
-    public void depthSubtract() {
-        depth--;
-    }
-    public Object pop() {
-        if (stack == null) return null;
-        return stack.pop();
-    }
-    public void push(Object obj) {
-        if (stack == null) stack = new Stack<Object>();
-        stack.add(obj);
-    }
-*/    
-    public OACascade() {
-        // LOG.finer("new OACascade");
-    }
+    private ArrayList<Object> al;
+
     /**
      * 
      * @param bUseLocks true if this will be used by multiple threads
@@ -72,6 +54,33 @@ public class OACascade {
             rwLock = new ReentrantReadWriteLock();
             rwLockHub = new ReentrantReadWriteLock();
         }
+    }
+
+    public void depthAdd() {
+        depth++;
+    }
+    public void depthSubtract() {
+        depth--;
+    }
+    public int getDepth() {
+        return depth;
+    }
+    public void setDepth(int d) {
+        this.depth = d;
+    }
+    public void add(Object obj) {
+        if (al == null) al = new ArrayList<Object>();
+        al.add(obj);
+    }
+    public ArrayList<Object> getList() {
+        return al;
+    }
+    public void clearList() {
+        al = null;
+    }
+    
+    public OACascade() {
+        // LOG.finer("new OACascade");
     }
 
     public void remove(OAObject oaObj) {

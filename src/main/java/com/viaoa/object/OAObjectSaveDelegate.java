@@ -50,8 +50,15 @@ public class OAObjectSaveDelegate {
     
     // also called by HubSaveDelegate
     public static void save(OAObject oaObj, int iCascadeRule, OACascade cascade, boolean bIsFirst) {
+
+        if (cascade.getDepth() > 35) {
+            if (!cascade.wasCascaded(oaObj, false)) {
+                cascade.add(oaObj);
+            }
+            return;
+        }
         if (cascade.wasCascaded(oaObj, true)) return;
-        
+        cascade.depthAdd();
         
         OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
 
@@ -89,6 +96,18 @@ public class OAObjectSaveDelegate {
             }
         }
         OAObjectSaveDelegate._save(oaObj, false, iCascadeRule, cascade); // "MANY" relationships
+        
+        cascade.depthSubtract();
+        if (cascade.getDepth() < 1) {
+            ArrayList<Object> al = cascade.getList();
+            cascade.clearList();
+            cascade.setDepth(0);
+            if (al != null) {
+                for (Object obj : al) {
+                    save(((OAObject) obj), iCascadeRule, cascade, false);
+                }
+            }
+        }
     }
 
     
