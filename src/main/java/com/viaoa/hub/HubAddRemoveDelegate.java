@@ -263,7 +263,7 @@ public class HubAddRemoveDelegate {
         }
 
         if (thisHub.data.sortListener != null) {
-            insert(thisHub, obj, thisHub.getSize());
+            insert(thisHub, obj, thisHub.getCurrentSize());
             return;
         }
         if (obj instanceof OAObjectKey) {
@@ -277,9 +277,10 @@ public class HubAddRemoveDelegate {
             HubDelegate.setObjectClass(thisHub, c);
         }
         
-        if (thisHub.contains(obj)) return;
+        if (!thisHub.isLoading() && thisHub.contains(obj)) return;
         
-        if (!thisHub.data.bInFetch) {
+        if (!thisHub.isLoading()) {
+            if (thisHub.contains(obj)) return;
             String s = canAddMsg(thisHub, obj);
             if (s != null) {
                 throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
@@ -322,6 +323,7 @@ public class HubAddRemoveDelegate {
     protected static boolean internalAdd(Hub thisHub, Object obj) {
         if (obj == null) return false;
 
+        /* 20140826 not needed
         OAObjectKey key;
         if (obj instanceof OAObjectKey) key = (OAObjectKey) obj;
         else {
@@ -330,9 +332,10 @@ public class HubAddRemoveDelegate {
                 key = OAObjectKeyDelegate.convertToObjectKey(thisHub.getObjectClass(), obj);
             }
         }
-
+        */
         // this will lock, sync(data), and startNextThread
-        if (!HubDataDelegate._add(thisHub, key, obj)) return false;
+        if (!HubDataDelegate._add(thisHub, obj)) return false;
+        //was: if (!HubDataDelegate._add(thisHub, key, obj)) return false;
         
         if (obj instanceof OAObject) {
             OAObjectHubDelegate.addHub((OAObject)obj, thisHub);
@@ -435,40 +438,50 @@ public class HubAddRemoveDelegate {
             HubDelegate.setObjectClass(thisHub, c);
         }
 
-        if (thisHub.contains(obj)) return false; 
+        if (!thisHub.isLoading() && thisHub.contains(obj)) return false; 
         
+        // 20140826 removed to make faster.  Another object could have the same objectId
+        /*
         OAObjectKey key;
         if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
         else key = OAObjectKeyDelegate.convertToObjectKey(thisHub.getObjectClass(), obj);
-        
-        if (HubDataDelegate.getObject(thisHub, key) != null) return false;
+        */
+        // if (HubDataDelegate.getObject(thisHub, key) != null) return false;
 
         if (thisHub.data.sortListener != null) {
             for (int j=-1; ; j++) {  // 201440820 first try expected location
                 int i = j;
-                if (j == -1) {
+                if (j == -1) {  // try last one first, to see if list is already sorted
                     i = pos-1;
                     if (i < 0) {
                         i = 0;
                         j = 0;
                     }
                 }
-                Object cobj = thisHub.elementAt(i);
-                if (cobj == null) {
+                
+                if (i >= thisHub.data.vector.size()) { // dont fetch more
                     pos = i;
                     break;
                 }
-                if (thisHub.data.sortListener.comparator.compare(obj, cobj) <= 0) {
+                Object cobj = thisHub.elementAt(i);
+                int c = thisHub.data.sortListener.comparator.compare(obj, cobj);
+                if (c <= 0) {
                     pos = i;
+                    break;
+                }
+                else if (i == thisHub.data.vector.size()-1) {
+                    pos = i+1;
                     break;
                 }
             }
         }
+        else {
+            thisHub.elementAt(pos); // make sure object is loaded
+        }
     
         if (pos < 0) pos = 0;
-        thisHub.elementAt(pos); // make sure object is loaded
     
-        int x = thisHub.getSize();
+        int x = thisHub.getCurrentSize();
         if (pos > x) pos = x;
         if (!canAdd(thisHub, obj)) return false; 
 
@@ -478,12 +491,16 @@ public class HubAddRemoveDelegate {
         // send message to OAServer
         //  OAClient must send message to OAServer before continuing
         if (thisHub.isOAObject()) {
-            HubCSDelegate.insertInHub(thisHub, (OAObject) obj, pos);
-            if (HubDataDelegate.getObject(thisHub, key) != null) return false;
+            if (HubCSDelegate.insertInHub(thisHub, (OAObject) obj, pos)) {
+                if (thisHub.contains(obj)) return false; // already loaded (another thread)
+            }
+            //was: 20140826 removed to make faster.  Another object could have the same objectId.  (should use contains instead of getObj)
+            // if (HubDataDelegate.getObject(thisHub, key) != null) return false;
         }
         
         // this will lock, sync(data), and startNextThread
-        boolean b = HubDataDelegate._insert(thisHub, key, obj, pos, false);  // false=dont lock, since this method is locked
+        //was: boolean b = HubDataDelegate._insert(thisHub, key, obj, pos, false);  // false=dont lock, since this method is locked
+        boolean b = HubDataDelegate._insert(thisHub, obj, pos, false);  // false=dont lock, since this method is locked
         if (!b) return b;
         
         // moved before listeners are notified.  Else listeners could ask for more objects

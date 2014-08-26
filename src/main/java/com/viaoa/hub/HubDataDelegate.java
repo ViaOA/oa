@@ -153,11 +153,13 @@ public class HubDataDelegate {
 
 	
 	// called by HubAddRemoveDelegate.internalAdd
-	protected static boolean _add(Hub thisHub, OAObjectKey key, Object obj) {
+    protected static boolean _add(Hub thisHub, Object obj) {
+	//was: protected static boolean _add(Hub thisHub, OAObjectKey key, Object obj) {
         boolean b = false;
         try {
             OAThreadLocalDelegate.lock(thisHub);
-            b = _add2(thisHub, key, obj);
+            b = _add2(thisHub, obj);
+            //was: b = _add2(thisHub, key, obj);
         }
         catch (Exception e) {
         }
@@ -167,7 +169,8 @@ public class HubDataDelegate {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
     }
-    private static boolean _add2(Hub thisHub, OAObjectKey key, Object obj) {
+    private static boolean _add2(Hub thisHub, Object obj) {
+    //was: private static boolean _add2(Hub thisHub, OAObjectKey key, Object obj) {
         synchronized (thisHub.data) {
             if (thisHub.contains(obj)) return false;
         	thisHub.data.vector.addElement(obj);
@@ -199,13 +202,16 @@ public class HubDataDelegate {
 	}
 
     protected static boolean _insert(Hub thisHub, OAObjectKey key, Object obj, int pos) {
-        return _insert(thisHub, key, obj, pos, true);
+        //was: return _insert(thisHub, key, obj, pos, true);
+        return _insert(thisHub, obj, pos, true);
     }
-    protected static boolean _insert(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
+    //was: protected static boolean _insert(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
+    protected static boolean _insert(Hub thisHub, Object obj, int pos, boolean bLock) {
         boolean b = false;
         try {
             OAThreadLocalDelegate.lock(thisHub);
-            b = _insert2(thisHub, key, obj, pos, bLock);
+            //was b = _insert2(thisHub, key, obj, pos, bLock);
+            b = _insert2(thisHub, obj, pos, bLock);
         }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
@@ -213,17 +219,18 @@ public class HubDataDelegate {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
     }
-	private static boolean _insert2(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
+    //was: private static boolean _insert2(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
+	private static boolean _insert2(Hub thisHub, Object obj, int pos, boolean bLock) {
 	    if (bLock) {
             synchronized (thisHub.data) {
-                if (thisHub.contains(obj)) return false;
+                if (!thisHub.data.bInFetch && thisHub.contains(obj)) return false;
             	thisHub.data.vector.insertElementAt(obj, pos);
             }
 	    }
 	    else {
             thisHub.data.vector.insertElementAt(obj, pos);
 	    }
-	    if (thisHub.data.bTrackChanges && (obj instanceof OAObject)) {
+	    if (!thisHub.data.bInFetch && thisHub.data.bTrackChanges && (obj instanceof OAObject)) {
 	        synchronized (thisHub.data) {
 	            if (thisHub.data.vecRemove != null && thisHub.data.vecRemove.contains(obj)) {
             		thisHub.data.vecRemove.removeElement(obj);

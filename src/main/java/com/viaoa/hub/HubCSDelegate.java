@@ -150,22 +150,22 @@ public class HubCSDelegate {
 	/**
 	 * Have object inserted in same Hub on other workstations.
 	 */
-	public static void insertInHub(Hub thisHub, OAObject obj, int pos) {
-        if (OASyncDelegate.isSingleUser()) return;
-        if (!OARemoteThreadDelegate.shouldSendMessages()) return;
-        if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
+	public static boolean insertInHub(Hub thisHub, OAObject obj, int pos) {
+        if (OASyncDelegate.isSingleUser()) return false;
+        if (!OARemoteThreadDelegate.shouldSendMessages()) return  false;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return false;
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
-        if (oi.getLocalOnly()) return;
+        if (oi.getLocalOnly()) return false;
 
         OALinkInfo li = thisHub.datam.liDetailToMaster;
         if (li != null) {
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (liRev != null && liRev.getCalculated()) return;
+            if (liRev != null && liRev.getCalculated()) return false;
         }
 
-        if (!(thisHub.datam.masterObject instanceof OAObject)) return;
-        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.masterObject).getLocalOnly()) return;
+        if (!(thisHub.datam.masterObject instanceof OAObject)) return false;
+        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.masterObject).getLocalOnly()) return false;
 
         // must have a master object to be able to know which hub to add object to
         // send ADD message
@@ -179,6 +179,7 @@ public class HubCSDelegate {
                     HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
                     obj, pos);
         }
+        return true;
 	}	
 	
 	/**
