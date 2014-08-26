@@ -221,7 +221,7 @@ public class OAPopup extends JPopupMenu {
 
         if (cmdDisplayFrom != null) comp = cmdDisplayFrom;
         
-        // make sure that comp is on window
+        // make sure that comp is on window 20140826
         Component c = comp;
         for ( ; c != null; ) {
             c = c.getParent();
@@ -232,7 +232,6 @@ public class OAPopup extends JPopupMenu {
             else if (c instanceof JPopupMenu) {
                 JPopupMenu pop = (JPopupMenu) c;
                 comp = c = pop.getInvoker();
-//qqqqqqqqqqq                
             }
         }
         
