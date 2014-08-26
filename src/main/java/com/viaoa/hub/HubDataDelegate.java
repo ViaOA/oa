@@ -172,12 +172,12 @@ public class HubDataDelegate {
     private static boolean _add2(Hub thisHub, Object obj) {
     //was: private static boolean _add2(Hub thisHub, OAObjectKey key, Object obj) {
         synchronized (thisHub.data) {
-            if (thisHub.contains(obj)) return false;
+            if (!thisHub.isLoading() && thisHub.contains(obj)) return false;
         	thisHub.data.vector.addElement(obj);
         }
         
         int xx = thisHub.data.vector.size();
-        if (xx >= 100 && thisHub.datam.masterObject != null && (xx%100)==0) {
+        if (xx >= 200 && thisHub.datam.masterObject != null && (xx%100)==0) {
 //System.out.println("large Hub with masterObject, Hub="+thisHub);//qqqqqqqqqqqqqq
             LOG.fine("large Hub with masterObject, Hub="+thisHub);//qqqqqqqqqqqqqq
         }
@@ -223,14 +223,14 @@ public class HubDataDelegate {
 	private static boolean _insert2(Hub thisHub, Object obj, int pos, boolean bLock) {
 	    if (bLock) {
             synchronized (thisHub.data) {
-                if (!thisHub.data.bInFetch && thisHub.contains(obj)) return false;
+                if (!thisHub.isLoading() && thisHub.contains(obj)) return false;
             	thisHub.data.vector.insertElementAt(obj, pos);
             }
 	    }
 	    else {
             thisHub.data.vector.insertElementAt(obj, pos);
 	    }
-	    if (!thisHub.data.bInFetch && thisHub.data.bTrackChanges && (obj instanceof OAObject)) {
+	    if (!thisHub.isLoading() && thisHub.data.bTrackChanges && (obj instanceof OAObject)) {
 	        synchronized (thisHub.data) {
 	            if (thisHub.data.vecRemove != null && thisHub.data.vecRemove.contains(obj)) {
             		thisHub.data.vecRemove.removeElement(obj);

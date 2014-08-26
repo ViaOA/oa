@@ -277,8 +277,6 @@ public class HubAddRemoveDelegate {
             HubDelegate.setObjectClass(thisHub, c);
         }
         
-        if (!thisHub.isLoading() && thisHub.contains(obj)) return;
-        
         if (!thisHub.isLoading()) {
             if (thisHub.contains(obj)) return;
             String s = canAddMsg(thisHub, obj);
@@ -449,10 +447,15 @@ public class HubAddRemoveDelegate {
         // if (HubDataDelegate.getObject(thisHub, key) != null) return false;
 
         if (thisHub.data.sortListener != null) {
-            for (int j=-1; ; j++) {  // 201440820 first try expected location
+            for (int j=-1; ; j++) {  // 201440820 first try the expected location
                 int i = j;
-                if (j == -1) {  // try last one first, to see if list is already sorted
-                    i = pos-1;
+                if (j == -1) {  // try [pos] first, to see if list is already sorted
+                    if (pos >= thisHub.data.vector.size()) {
+                        pos = thisHub.data.vector.size() - 1;
+                    }
+                    else {
+                        i = pos;
+                    }
                     if (i < 0) {
                         i = 0;
                         j = 0;
@@ -469,14 +472,14 @@ public class HubAddRemoveDelegate {
                     pos = i;
                     break;
                 }
-                else if (i == thisHub.data.vector.size()-1) {
+                else if (i+1 == thisHub.data.vector.size()) {
                     pos = i+1;
                     break;
                 }
             }
         }
         else {
-            thisHub.elementAt(pos); // make sure object is loaded
+            if (pos > 0) thisHub.elementAt(pos-1); // make sure object is loaded
         }
     
         if (pos < 0) pos = 0;
@@ -524,7 +527,7 @@ public class HubAddRemoveDelegate {
     
 
     /**
-        Swap the positon of two different objects within the hub.  This will
+        Swap the position of two different objects within the hub.  This will
         call the move method.
         @param pos1 position of object to move from, if there is not an object at this position, then no move is performed.
         @param pos2 position of object to move to, if there is not an object at this position, then no move is performed.
