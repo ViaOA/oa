@@ -42,7 +42,7 @@ public class OAPopup extends JPopupMenu {
     protected int align;
     protected boolean bRightClick;
     public int widthAdd;
-    protected JComponent popupComponent, cmdOpen;
+    protected JComponent popupComponent, cmdOpen, cmdDisplayFrom;
 
     /** 
         Create new Popup without a controlling component that causes it to popup.
@@ -83,25 +83,35 @@ public class OAPopup extends JPopupMenu {
         this(popupComponent, cmdOpen, cmdClose, 0);
     }
 
-    /** 
+    public OAPopup(JComponent popupComponent, JComponent cmdOpen, JComponent cmdClose, int align) {
+        this(popupComponent, cmdOpen, cmdClose, cmdOpen, align);
+    }
+
+    /**
         Create new Popup with components that wiil cause it to popup/hide on mouse click.
         @param popupComponent component to display
         @param cmdOpen component that causes popup to be displayed.  Popup will be display under
         this component.
         @param cmdClose component that causes popup to be closed.
         @param align SwingConstants.LEFT, RIGHT, CENTER
-    */
-    public OAPopup(JComponent popupComponent, JComponent cmdOpen, JComponent cmdClose, int align) {
+        @param cmdDisplayFrom component used to display the popup in reference to, default is cmdOpen.
+     */
+    public OAPopup(JComponent popupComponent, JComponent cmdOpen, JComponent cmdClose, JComponent cmdDisplayFrom, int align) {
         // was: 070202: this.add(new JScrollPane(popupComponent));
         this.popupComponent = popupComponent;
         this.add(popupComponent);
         this.cmdOpen = cmdOpen;
+        this.cmdDisplayFrom = cmdDisplayFrom;
         setupListener(cmdOpen);
         setupCloseListener(cmdClose);
         setAlign(align);
         // if (popupComponent != null) this.add(popupComponent);
     }
-
+    
+    public JComponent getOpenCommand() {
+        return cmdOpen;
+    }
+    
     /**
         Flag to have the popup displayed only when the right mouse button is clicked.
     */
@@ -197,6 +207,7 @@ public class OAPopup extends JPopupMenu {
                     if (bRightClick && !e.isPopupTrigger()) return;
 
                     Component comp = (Component) e.getSource();
+                    
                     if (comp.isEnabled()) {
                         showPopup(comp);
                     }
@@ -208,6 +219,24 @@ public class OAPopup extends JPopupMenu {
 
     protected void showPopup(Component comp) {
 
+        if (cmdDisplayFrom != null) comp = cmdDisplayFrom;
+        
+        // make sure that comp is on window
+        Component c = comp;
+        for ( ; c != null; ) {
+            c = c.getParent();
+            if (c instanceof OAPopup) { 
+                OAPopup pop = (OAPopup) c;
+                comp = c = pop.getOpenCommand();
+            }
+            else if (c instanceof JPopupMenu) {
+                JPopupMenu pop = (JPopupMenu) c;
+                comp = c = pop.getInvoker();
+//qqqqqqqqqqq                
+            }
+        }
+        
+        
         Dimension dScreen = Toolkit.getDefaultToolkit().getScreenSize();
         //qqqq  needs to use multi monitor screen size qqq 
         Dimension dComp = comp.getSize();
@@ -272,9 +301,4 @@ public class OAPopup extends JPopupMenu {
         }
         show(comp, x, y);
     }
-
-
-        
 }
-
-
