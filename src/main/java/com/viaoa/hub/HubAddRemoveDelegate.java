@@ -263,8 +263,11 @@ public class HubAddRemoveDelegate {
         }
 
         if (thisHub.data.sortListener != null) {
-            insert(thisHub, obj, thisHub.getSize());
-            return;
+            if (thisHub.data.select == null || !thisHub.data.select.hasMore()) {
+                insert(thisHub, obj, thisHub.getCurrentSize());
+                return;
+            }
+            // otherwise, assume that DS is selecting in sort order
         }
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
