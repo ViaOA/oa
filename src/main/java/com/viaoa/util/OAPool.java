@@ -139,9 +139,22 @@ public abstract class OAPool<TYPE> {
             }
         }
     }
+    // remove from the pool
+    public void remove(TYPE resource) {
+        synchronized (alResource) {
+            for (Pool p: alResource) {
+                if (p.resource != resource) continue;
+                if (p.used) currentUsed--;
+                p.used = false;
+                alResource.remove(p);
+                removed(resource);
+                alResource.notifyAll();
+                break;
+            }
+        }        
+    }
     public void release(TYPE resource) {
         synchronized (alResource) {
-            currentUsed--;
             
             // see if the pool can be shrunk, by removing this resource
             boolean bRelease = false;
@@ -157,12 +170,13 @@ public abstract class OAPool<TYPE> {
             
             for (Pool p: alResource) {
                 if (p.resource != resource) continue;
+                if (p.used) currentUsed--;
+                p.used = false;
                 if (bRelease) {
                     alResource.remove(p);
                     removed(resource);
                 }
                 else {
-                    p.used = false;
                     alResource.notifyAll();
                 }
                 break;

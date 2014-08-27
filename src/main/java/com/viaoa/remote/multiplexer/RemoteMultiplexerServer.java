@@ -165,6 +165,7 @@ public class RemoteMultiplexerServer {
             }
         });
         t.setName("VServerSocket_CtoS");
+        t.setDaemon(true);
         t.start();
         LOG.config("created Client to Server serversocket thread");
     }
@@ -186,6 +187,7 @@ public class RemoteMultiplexerServer {
             }
         });
         t.setName("VSocket_CtoS." + iceSocket.getConnectionId() + "." + iceSocket.getId());
+        t.setDaemon(true);
         t.start();
     }
 
@@ -444,6 +446,7 @@ public class RemoteMultiplexerServer {
             }
         });
         t.setName("VServerSocket_StoC");
+        t.setDaemon(true);
         t.start();
         LOG.config("created Server to Client serversocket thread");
     }
@@ -978,6 +981,7 @@ public class RemoteMultiplexerServer {
             }
         });
         t.setName(threadName);
+        t.setDaemon(true);
         t.start();
     }
 
@@ -1302,6 +1306,7 @@ public class RemoteMultiplexerServer {
                     }
                 });
                 t.setName(threadName);
+                t.setDaemon(true);
                 t.start();
             }
         }

@@ -501,7 +501,13 @@ public class RemoteMultiplexerClient {
         return vs;
     }
     protected void releaseSocketForCtoS(VirtualSocket vs) throws Exception {
-        getVirtualSocketCtoSPool().release(vs);
+        if (vs == null) return;
+        if (vs.isClosed()) {
+            getVirtualSocketCtoSPool().remove(vs);
+        }
+        else {
+            getVirtualSocketCtoSPool().release(vs);
+        }
     }
 
     // used to assign unique int for each StoC vsocket 
