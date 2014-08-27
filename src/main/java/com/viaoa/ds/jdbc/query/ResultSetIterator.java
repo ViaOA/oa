@@ -106,7 +106,7 @@ static PrintWriter printWriter;
     }
     
     private ResultSetIterator(OADataSourceJDBC ds, Class clazz, Column[] columns, String query, String query2, int max, DataAccessObject dataAccessObject) {
-        LOG.fine("query="+query+", query2="+query2+", columns.length="+columns.length+", max="+max);
+        // LOG.fine("query="+query+", query2="+query2+", columns.length="+columns.length+", max="+max);
         this.ds = ds;
         this.clazz = clazz;
         this.columns = columns;
