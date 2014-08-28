@@ -9,7 +9,7 @@
 
 
 
-* which HashMap
+* with HashMap
         for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
             e.getValue().setForm(form);
         }
