@@ -31,8 +31,8 @@ import com.viaoa.object.OAObject;
 public class Insert extends OAObject {
     private static final long serialVersionUID = 1L;
 
-    public static final String PROPERTY_Type = "Type";
-    public static final String PROPERTY_Location = "Location";
+    public static final String P_Type = "Type";
+    public static final String P_Location = "Location";
     
     protected int type;
     public static final int TYPE_BR = 0;
@@ -66,7 +66,7 @@ public class Insert extends OAObject {
     public void setType(int newValue) {
         int old = type;
         this.type = newValue;
-        firePropertyChange(PROPERTY_Type, old, this.type);
+        firePropertyChange(P_Type, old, this.type);
     }
     
     public int getLocation() {
@@ -75,7 +75,7 @@ public class Insert extends OAObject {
     public void setLocation(int newValue) {
         int old = location;
         this.location = newValue;
-        firePropertyChange(PROPERTY_Location, old, this.location);
+        firePropertyChange(P_Location, old, this.location);
     }
     
 }

@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 /*
  * Defines an OAObject relationship that is of type "One"
- * example: @OAOne  (reverse=Dept.PROPERTY_Emps, required=false, cascadeSave=false, cascadeDelete=false)
+ * example: @OAOne  (reverse=Dept.P_Emps, required=false, cascadeSave=false, cascadeDelete=false)
  */
 @Documented
 @Target(ElementType.METHOD)

@@ -16,16 +16,16 @@ import com.viaoa.annotation.*;
 )
 public class ObjectDef extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Name = "Name";
-    public static final String PROPERTY_DisplayName = "DisplayName";
+    public static final String P_Name = "Name";
+    public static final String P_DisplayName = "DisplayName";
      
      
-    public static final String PROPERTY_PropertyDefs = "PropertyDefs";
-    public static final String PROPERTY_CalcPropertyDefs = "CalcPropertyDefs";
-    public static final String PROPERTY_LinkPropertyDefs = "LinkPropertyDefs";
-    public static final String PROPERTY_ToLinkPropertyDefs = "ToLinkPropertyDefs";
-    public static final String PROPERTY_OneLinkPropertyDefs = "OneLinkPropertyDefs";
-    public static final String PROPERTY_ManyLinkPropertyDefs = "ManyLinkPropertyDefs";
+    public static final String P_PropertyDefs = "PropertyDefs";
+    public static final String P_CalcPropertyDefs = "CalcPropertyDefs";
+    public static final String P_LinkPropertyDefs = "LinkPropertyDefs";
+    public static final String P_ToLinkPropertyDefs = "ToLinkPropertyDefs";
+    public static final String P_OneLinkPropertyDefs = "OneLinkPropertyDefs";
+    public static final String P_ManyLinkPropertyDefs = "ManyLinkPropertyDefs";
      
     protected String name;
     protected String displayName;
@@ -50,7 +50,7 @@ public class ObjectDef extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
@@ -63,17 +63,17 @@ public class ObjectDef extends OAObject {
     public void setDisplayName(String newValue) {
         String old = displayName;
         this.displayName = newValue;
-        firePropertyChange(PROPERTY_DisplayName, old, this.displayName);
+        firePropertyChange(P_DisplayName, old, this.displayName);
     }
     
      
     @OAMany(
         displayName = "Property Defs", 
-        reverseName = PropertyDef.PROPERTY_ObjectDef
+        reverseName = PropertyDef.P_ObjectDef
     )
     public Hub<PropertyDef> getPropertyDefs() {
         if (hubPropertyDefs == null) {
-            hubPropertyDefs = (Hub<PropertyDef>) getHub(PROPERTY_PropertyDefs);
+            hubPropertyDefs = (Hub<PropertyDef>) getHub(P_PropertyDefs);
         }
         return hubPropertyDefs;
     }
@@ -81,11 +81,11 @@ public class ObjectDef extends OAObject {
      
     @OAMany(
         displayName = "Calc Property Defs", 
-        reverseName = CalcPropertyDef.PROPERTY_ObjectDef
+        reverseName = CalcPropertyDef.P_ObjectDef
     )
     public Hub<CalcPropertyDef> getCalcPropertyDefs() {
         if (hubCalcPropertyDefs == null) {
-            hubCalcPropertyDefs = (Hub<CalcPropertyDef>) getHub(PROPERTY_CalcPropertyDefs);
+            hubCalcPropertyDefs = (Hub<CalcPropertyDef>) getHub(P_CalcPropertyDefs);
         }
         return hubCalcPropertyDefs;
     }
@@ -93,11 +93,11 @@ public class ObjectDef extends OAObject {
      
     @OAMany(
         displayName = "Link Property Defs", 
-        reverseName = LinkPropertyDef.PROPERTY_ObjectDef
+        reverseName = LinkPropertyDef.P_ObjectDef
     )
     public Hub<LinkPropertyDef> getLinkPropertyDefs() {
         if (hubLinkPropertyDefs == null) {
-            hubLinkPropertyDefs = (Hub<LinkPropertyDef>) getHub(PROPERTY_LinkPropertyDefs);
+            hubLinkPropertyDefs = (Hub<LinkPropertyDef>) getHub(P_LinkPropertyDefs);
         }
         return hubLinkPropertyDefs;
     }
@@ -105,7 +105,7 @@ public class ObjectDef extends OAObject {
      
     @OAMany(
         displayName = "To Link Property Defs", 
-        reverseName = LinkPropertyDef.PROPERTY_ToObjectDef, 
+        reverseName = LinkPropertyDef.P_ToObjectDef, 
         createMethod = false
     )
     private Hub<LinkPropertyDef> getToLinkPropertyDefs() {
@@ -120,8 +120,8 @@ public class ObjectDef extends OAObject {
     )
     public Hub<LinkPropertyDef> getOneLinkPropertyDefs() {
         if (hubOneLinkPropertyDefs == null) {
-            hubOneLinkPropertyDefs = (Hub<LinkPropertyDef>) getHub(PROPERTY_OneLinkPropertyDefs);
-            HubFilter hf = new HubFilter(getLinkPropertyDefs(), hubOneLinkPropertyDefs, LinkPropertyDef.PROPERTY_Type) {
+            hubOneLinkPropertyDefs = (Hub<LinkPropertyDef>) getHub(P_OneLinkPropertyDefs);
+            HubFilter hf = new HubFilter(getLinkPropertyDefs(), hubOneLinkPropertyDefs, LinkPropertyDef.P_Type) {
                 @Override
                 public boolean isUsed(Object object) {
                     LinkPropertyDef lp = (LinkPropertyDef) object;
@@ -138,8 +138,8 @@ public class ObjectDef extends OAObject {
     )
     public Hub<LinkPropertyDef> getManyLinkPropertyDefs() {
         if (hubManyLinkPropertyDefs == null) {
-            hubManyLinkPropertyDefs = (Hub<LinkPropertyDef>) getHub(PROPERTY_ManyLinkPropertyDefs);
-            HubFilter hf = new HubFilter(getLinkPropertyDefs(), hubManyLinkPropertyDefs, LinkPropertyDef.PROPERTY_Type) {
+            hubManyLinkPropertyDefs = (Hub<LinkPropertyDef>) getHub(P_ManyLinkPropertyDefs);
+            HubFilter hf = new HubFilter(getLinkPropertyDefs(), hubManyLinkPropertyDefs, LinkPropertyDef.P_Type) {
                 @Override
                 public boolean isUsed(Object object) {
                     LinkPropertyDef lp = (LinkPropertyDef) object;

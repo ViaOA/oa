@@ -124,21 +124,21 @@ public class InsertDialog extends JDialog {
 
         OARadioButton rad;
 
-        rad = new OARadioButton(hubInsert, Insert.PROPERTY_Type, Insert.TYPE_BR);
+        rad = new OARadioButton(hubInsert, Insert.P_Type, Insert.TYPE_BR);
         rad.setToolTipText("HTML <br> break");
         rad.setText("Break");
         bg.add(rad);
         box.add(rad);
         box.add(Box.createHorizontalStrut(7));
         
-        rad = new OARadioButton(hubInsert, Insert.PROPERTY_Type, Insert.TYPE_P);
+        rad = new OARadioButton(hubInsert, Insert.P_Type, Insert.TYPE_P);
         rad.setToolTipText("HTML <p> paragraph");
         rad.setText("Paragraph");
         bg.add(rad);
         box.add(rad);
         box.add(Box.createHorizontalStrut(7));
         
-        rad = new OARadioButton(hubInsert, Insert.PROPERTY_Type, Insert.TYPE_DIV);
+        rad = new OARadioButton(hubInsert, Insert.P_Type, Insert.TYPE_DIV);
         rad.setToolTipText("HTML <div> Division");
         rad.setText("Division");
         bg.add(rad);
@@ -155,21 +155,21 @@ public class InsertDialog extends JDialog {
         box = new Box(BoxLayout.X_AXIS);
         bg = new ButtonGroup();
 
-        rad = new OARadioButton(hubInsert, Insert.PROPERTY_Location, Insert.LOCATION_Inside);
+        rad = new OARadioButton(hubInsert, Insert.P_Location, Insert.LOCATION_Inside);
         rad.setText("Current");
         rad.setToolTipText("Insert at current location");
         bg.add(rad);
         box.add(rad);
         box.add(Box.createHorizontalStrut(7));
 
-        rad = new OARadioButton(hubInsert, Insert.PROPERTY_Location, Insert.LOCATION_Before);
+        rad = new OARadioButton(hubInsert, Insert.P_Location, Insert.LOCATION_Before);
         rad.setText("Before");
         rad.setToolTipText("Insert before current selected tag");
         bg.add(rad);
         box.add(rad);
         box.add(Box.createHorizontalStrut(7));
 
-        rad = new OARadioButton(hubInsert, Insert.PROPERTY_Location, Insert.LOCATION_After);
+        rad = new OARadioButton(hubInsert, Insert.P_Location, Insert.LOCATION_After);
         rad.setText("After");
         rad.setToolTipText("Insert after current selected tag");
         bg.add(rad);

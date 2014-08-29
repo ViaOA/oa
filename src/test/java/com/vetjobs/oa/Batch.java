@@ -17,17 +17,17 @@ import com.viaoa.util.OADate;
 )
 public class Batch extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_FileName = "FileName";
-    public static final String PROPERTY_LoadDate = "LoadDate";
-    public static final String PROPERTY_ProcessDate = "ProcessDate";
-    public static final String PROPERTY_QtyRow = "QtyRow";
-    public static final String PROPERTY_QtyReject = "QtyReject";
-    public static final String PROPERTY_QtyNew = "QtyNew";
+    public static final String P_Id = "Id";
+    public static final String P_FileName = "FileName";
+    public static final String P_LoadDate = "LoadDate";
+    public static final String P_ProcessDate = "ProcessDate";
+    public static final String P_QtyRow = "QtyRow";
+    public static final String P_QtyReject = "QtyReject";
+    public static final String P_QtyNew = "QtyNew";
      
      
-    public static final String PROPERTY_Employer = "Employer";
-    public static final String PROPERTY_BatchRows = "BatchRows";
+    public static final String P_Employer = "Employer";
+    public static final String P_BatchRows = "BatchRows";
      
     protected int id;
     protected String fileName;
@@ -59,7 +59,7 @@ public class Batch extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -72,7 +72,7 @@ public class Batch extends OAObject {
     public void setFileName(String newValue) {
         String old = fileName;
         this.fileName = newValue;
-        firePropertyChange(PROPERTY_FileName, old, this.fileName);
+        firePropertyChange(P_FileName, old, this.fileName);
     }
     
      
@@ -85,7 +85,7 @@ public class Batch extends OAObject {
     public void setLoadDate(OADate newValue) {
         OADate old = loadDate;
         this.loadDate = newValue;
-        firePropertyChange(PROPERTY_LoadDate, old, this.loadDate);
+        firePropertyChange(P_LoadDate, old, this.loadDate);
     }
     
      
@@ -98,7 +98,7 @@ public class Batch extends OAObject {
     public void setProcessDate(OADate newValue) {
         OADate old = processDate;
         this.processDate = newValue;
-        firePropertyChange(PROPERTY_ProcessDate, old, this.processDate);
+        firePropertyChange(P_ProcessDate, old, this.processDate);
     }
     
      
@@ -111,7 +111,7 @@ public class Batch extends OAObject {
     public void setQtyRow(int newValue) {
         int old = qtyRow;
         this.qtyRow = newValue;
-        firePropertyChange(PROPERTY_QtyRow, old, this.qtyRow);
+        firePropertyChange(P_QtyRow, old, this.qtyRow);
     }
     
      
@@ -124,7 +124,7 @@ public class Batch extends OAObject {
     public void setQtyReject(int newValue) {
         int old = qtyReject;
         this.qtyReject = newValue;
-        firePropertyChange(PROPERTY_QtyReject, old, this.qtyReject);
+        firePropertyChange(P_QtyReject, old, this.qtyReject);
     }
     
      
@@ -137,15 +137,15 @@ public class Batch extends OAObject {
     public void setQtyNew(int newValue) {
         int old = qtyNew;
         this.qtyNew = newValue;
-        firePropertyChange(PROPERTY_QtyNew, old, this.qtyNew);
+        firePropertyChange(P_QtyNew, old, this.qtyNew);
     }
     
      
-    @OAOne(reverseName = Employer.PROPERTY_Batches, required = true)
+    @OAOne(reverseName = Employer.P_Batches, required = true)
     @OAFkey(columns = {"EmployerId"})
     public Employer getEmployer() {
         if (employer == null) {
-            employer = (Employer) getObject(PROPERTY_Employer);
+            employer = (Employer) getObject(P_Employer);
         }
         return employer;
     }
@@ -153,14 +153,14 @@ public class Batch extends OAObject {
     public void setEmployer(Employer newValue) {
         Employer old = this.employer;
         this.employer = newValue;
-        firePropertyChange(PROPERTY_Employer, old, this.employer);
+        firePropertyChange(P_Employer, old, this.employer);
     }
     
      
-    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, owner = true, reverseName = BatchRow.PROPERTY_Batch, cascadeSave = true, cascadeDelete = true)
+    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, owner = true, reverseName = BatchRow.P_Batch, cascadeSave = true, cascadeDelete = true)
     public Hub<BatchRow> getBatchRows() {
         if (hubBatchRows == null) {
-            hubBatchRows = (Hub<BatchRow>) getHub(PROPERTY_BatchRows);
+            hubBatchRows = (Hub<BatchRow>) getHub(P_BatchRows);
         }
         return hubBatchRows;
     }

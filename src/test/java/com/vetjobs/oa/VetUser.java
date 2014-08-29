@@ -20,42 +20,42 @@ import com.viaoa.util.OADate;
 )
 public class VetUser extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_CreateDate = "CreateDate";
-    public static final String PROPERTY_LoginId = "LoginId";
-    public static final String PROPERTY_Password = "Password";
-    public static final String PROPERTY_FirstName = "FirstName";
-    public static final String PROPERTY_LastName = "LastName";
-    public static final String PROPERTY_Address1 = "Address1";
-    public static final String PROPERTY_Address2 = "Address2";
-    public static final String PROPERTY_City = "City";
-    public static final String PROPERTY_State = "State";
-    public static final String PROPERTY_Zip = "Zip";
-    public static final String PROPERTY_Country = "Country";
-    public static final String PROPERTY_Phone = "Phone";
-    public static final String PROPERTY_Email = "Email";
-    public static final String PROPERTY_Relocate = "Relocate";
-    public static final String PROPERTY_MinIncomeYear = "MinIncomeYear";
-    public static final String PROPERTY_MinIncomeHourly = "MinIncomeHourly";
-    public static final String PROPERTY_AvailableDate = "AvailableDate";
-    public static final String PROPERTY_InactiveDate = "InactiveDate";
-    public static final String PROPERTY_SpouseName = "SpouseName";
-    public static final String PROPERTY_LastYearService = "LastYearService";
-    public static final String PROPERTY_TotalYears = "TotalYears";
-    public static final String PROPERTY_MilitaryMoveAvail = "MilitaryMoveAvail";
-    public static final String PROPERTY_VetFlag = "VetFlag";
+    public static final String P_Id = "Id";
+    public static final String P_CreateDate = "CreateDate";
+    public static final String P_LoginId = "LoginId";
+    public static final String P_Password = "Password";
+    public static final String P_FirstName = "FirstName";
+    public static final String P_LastName = "LastName";
+    public static final String P_Address1 = "Address1";
+    public static final String P_Address2 = "Address2";
+    public static final String P_City = "City";
+    public static final String P_State = "State";
+    public static final String P_Zip = "Zip";
+    public static final String P_Country = "Country";
+    public static final String P_Phone = "Phone";
+    public static final String P_Email = "Email";
+    public static final String P_Relocate = "Relocate";
+    public static final String P_MinIncomeYear = "MinIncomeYear";
+    public static final String P_MinIncomeHourly = "MinIncomeHourly";
+    public static final String P_AvailableDate = "AvailableDate";
+    public static final String P_InactiveDate = "InactiveDate";
+    public static final String P_SpouseName = "SpouseName";
+    public static final String P_LastYearService = "LastYearService";
+    public static final String P_TotalYears = "TotalYears";
+    public static final String P_MilitaryMoveAvail = "MilitaryMoveAvail";
+    public static final String P_VetFlag = "VetFlag";
      
      
-    public static final String PROPERTY_Categories = "Categories";
-    public static final String PROPERTY_PreferLocations = "PreferLocations";
-    public static final String PROPERTY_RejectLocations = "RejectLocations";
-    public static final String PROPERTY_Resume = "Resume";
-    public static final String PROPERTY_Rank = "Rank";
-    public static final String PROPERTY_Service = "Service";
-    public static final String PROPERTY_Education = "Education";
-    public static final String PROPERTY_VetSecurity = "VetSecurity";
-    public static final String PROPERTY_ServiceStatus = "ServiceStatus";
-    public static final String PROPERTY_EmpQueryVets = "EmpQueryVets";
+    public static final String P_Categories = "Categories";
+    public static final String P_PreferLocations = "PreferLocations";
+    public static final String P_RejectLocations = "RejectLocations";
+    public static final String P_Resume = "Resume";
+    public static final String P_Rank = "Rank";
+    public static final String P_Service = "Service";
+    public static final String P_Education = "Education";
+    public static final String P_VetSecurity = "VetSecurity";
+    public static final String P_ServiceStatus = "ServiceStatus";
+    public static final String P_EmpQueryVets = "EmpQueryVets";
      
     protected int id;
     protected OADate createDate;
@@ -111,7 +111,7 @@ public class VetUser extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -124,7 +124,7 @@ public class VetUser extends OAObject {
     public void setCreateDate(OADate newValue) {
         OADate old = createDate;
         this.createDate = newValue;
-        firePropertyChange(PROPERTY_CreateDate, old, this.createDate);
+        firePropertyChange(P_CreateDate, old, this.createDate);
     }
     
      
@@ -137,7 +137,7 @@ public class VetUser extends OAObject {
     public void setLoginId(String newValue) {
         String old = loginId;
         this.loginId = newValue;
-        firePropertyChange(PROPERTY_LoginId, old, this.loginId);
+        firePropertyChange(P_LoginId, old, this.loginId);
     }
     
      
@@ -150,7 +150,7 @@ public class VetUser extends OAObject {
     public void setPassword(String newValue) {
         String old = password;
         this.password = newValue;
-        firePropertyChange(PROPERTY_Password, old, this.password);
+        firePropertyChange(P_Password, old, this.password);
     }
     
      
@@ -163,7 +163,7 @@ public class VetUser extends OAObject {
     public void setFirstName(String newValue) {
         String old = firstName;
         this.firstName = newValue;
-        firePropertyChange(PROPERTY_FirstName, old, this.firstName);
+        firePropertyChange(P_FirstName, old, this.firstName);
     }
     
      
@@ -176,7 +176,7 @@ public class VetUser extends OAObject {
     public void setLastName(String newValue) {
         String old = lastName;
         this.lastName = newValue;
-        firePropertyChange(PROPERTY_LastName, old, this.lastName);
+        firePropertyChange(P_LastName, old, this.lastName);
     }
     
      
@@ -189,7 +189,7 @@ public class VetUser extends OAObject {
     public void setAddress1(String newValue) {
         String old = address1;
         this.address1 = newValue;
-        firePropertyChange(PROPERTY_Address1, old, this.address1);
+        firePropertyChange(P_Address1, old, this.address1);
     }
     
      
@@ -202,7 +202,7 @@ public class VetUser extends OAObject {
     public void setAddress2(String newValue) {
         String old = address2;
         this.address2 = newValue;
-        firePropertyChange(PROPERTY_Address2, old, this.address2);
+        firePropertyChange(P_Address2, old, this.address2);
     }
     
      
@@ -215,7 +215,7 @@ public class VetUser extends OAObject {
     public void setCity(String newValue) {
         String old = city;
         this.city = newValue;
-        firePropertyChange(PROPERTY_City, old, this.city);
+        firePropertyChange(P_City, old, this.city);
     }
     
      
@@ -228,7 +228,7 @@ public class VetUser extends OAObject {
     public void setState(String newValue) {
         String old = state;
         this.state = newValue;
-        firePropertyChange(PROPERTY_State, old, this.state);
+        firePropertyChange(P_State, old, this.state);
     }
     
      
@@ -241,7 +241,7 @@ public class VetUser extends OAObject {
     public void setZip(String newValue) {
         String old = zip;
         this.zip = newValue;
-        firePropertyChange(PROPERTY_Zip, old, this.zip);
+        firePropertyChange(P_Zip, old, this.zip);
     }
     
      
@@ -254,7 +254,7 @@ public class VetUser extends OAObject {
     public void setCountry(String newValue) {
         String old = country;
         this.country = newValue;
-        firePropertyChange(PROPERTY_Country, old, this.country);
+        firePropertyChange(P_Country, old, this.country);
     }
     
      
@@ -267,7 +267,7 @@ public class VetUser extends OAObject {
     public void setPhone(String newValue) {
         String old = phone;
         this.phone = newValue;
-        firePropertyChange(PROPERTY_Phone, old, this.phone);
+        firePropertyChange(P_Phone, old, this.phone);
     }
     
      
@@ -280,7 +280,7 @@ public class VetUser extends OAObject {
     public void setEmail(String newValue) {
         String old = email;
         this.email = newValue;
-        firePropertyChange(PROPERTY_Email, old, this.email);
+        firePropertyChange(P_Email, old, this.email);
     }
     
      
@@ -293,7 +293,7 @@ public class VetUser extends OAObject {
     public void setRelocate(boolean newValue) {
         boolean old = relocate;
         this.relocate = newValue;
-        firePropertyChange(PROPERTY_Relocate, old, this.relocate);
+        firePropertyChange(P_Relocate, old, this.relocate);
     }
     
      
@@ -306,7 +306,7 @@ public class VetUser extends OAObject {
     public void setMinIncomeYear(int newValue) {
         int old = minIncomeYear;
         this.minIncomeYear = newValue;
-        firePropertyChange(PROPERTY_MinIncomeYear, old, this.minIncomeYear);
+        firePropertyChange(P_MinIncomeYear, old, this.minIncomeYear);
     }
     
      
@@ -319,7 +319,7 @@ public class VetUser extends OAObject {
     public void setMinIncomeHourly(float newValue) {
         float old = minIncomeHourly;
         this.minIncomeHourly = newValue;
-        firePropertyChange(PROPERTY_MinIncomeHourly, old, this.minIncomeHourly);
+        firePropertyChange(P_MinIncomeHourly, old, this.minIncomeHourly);
     }
     
      
@@ -332,7 +332,7 @@ public class VetUser extends OAObject {
     public void setAvailableDate(OADate newValue) {
         OADate old = availableDate;
         this.availableDate = newValue;
-        firePropertyChange(PROPERTY_AvailableDate, old, this.availableDate);
+        firePropertyChange(P_AvailableDate, old, this.availableDate);
     }
     
      
@@ -345,7 +345,7 @@ public class VetUser extends OAObject {
     public void setInactiveDate(OADate newValue) {
         OADate old = inactiveDate;
         this.inactiveDate = newValue;
-        firePropertyChange(PROPERTY_InactiveDate, old, this.inactiveDate);
+        firePropertyChange(P_InactiveDate, old, this.inactiveDate);
     }
     
      
@@ -358,7 +358,7 @@ public class VetUser extends OAObject {
     public void setSpouseName(String newValue) {
         String old = spouseName;
         this.spouseName = newValue;
-        firePropertyChange(PROPERTY_SpouseName, old, this.spouseName);
+        firePropertyChange(P_SpouseName, old, this.spouseName);
     }
     
      
@@ -371,7 +371,7 @@ public class VetUser extends OAObject {
     public void setLastYearService(int newValue) {
         int old = lastYearService;
         this.lastYearService = newValue;
-        firePropertyChange(PROPERTY_LastYearService, old, this.lastYearService);
+        firePropertyChange(P_LastYearService, old, this.lastYearService);
     }
     
      
@@ -384,7 +384,7 @@ public class VetUser extends OAObject {
     public void setTotalYears(int newValue) {
         int old = totalYears;
         this.totalYears = newValue;
-        firePropertyChange(PROPERTY_TotalYears, old, this.totalYears);
+        firePropertyChange(P_TotalYears, old, this.totalYears);
     }
     
      
@@ -397,7 +397,7 @@ public class VetUser extends OAObject {
     public void setMilitaryMoveAvail(boolean newValue) {
         boolean old = militaryMoveAvail;
         this.militaryMoveAvail = newValue;
-        firePropertyChange(PROPERTY_MilitaryMoveAvail, old, this.militaryMoveAvail);
+        firePropertyChange(P_MilitaryMoveAvail, old, this.militaryMoveAvail);
     }
     
      
@@ -410,45 +410,45 @@ public class VetUser extends OAObject {
     public void setVetFlag(boolean newValue) {
         boolean old = vetFlag;
         this.vetFlag = newValue;
-        firePropertyChange(PROPERTY_VetFlag, old, this.vetFlag);
+        firePropertyChange(P_VetFlag, old, this.vetFlag);
     }
     
      
-    @OAMany(toClass = Category.class, reverseName = Category.PROPERTY_VetUsers)
+    @OAMany(toClass = Category.class, reverseName = Category.P_VetUsers)
     @OALinkTable(name = "VetUserCategoryLink", indexName = "CategoryVetUser", columns = {"VetUserId"})
     public Hub<Category> getCategories() {
         if (hubCategories == null) {
-            hubCategories = (Hub<Category>) getHub(PROPERTY_Categories);
+            hubCategories = (Hub<Category>) getHub(P_Categories);
         }
         return hubCategories;
     }
     
      
-    @OAMany(displayName = "Prefer Locations", toClass = Location.class, reverseName = Location.PROPERTY_VetUsers)
+    @OAMany(displayName = "Prefer Locations", toClass = Location.class, reverseName = Location.P_VetUsers)
     @OALinkTable(name = "VetUserLocationLink", indexName = "LocationVetUser", columns = {"VetUserId"})
     public Hub<Location> getPreferLocations() {
         if (hubPreferLocations == null) {
-            hubPreferLocations = (Hub<Location>) getHub(PROPERTY_PreferLocations);
+            hubPreferLocations = (Hub<Location>) getHub(P_PreferLocations);
         }
         return hubPreferLocations;
     }
     
      
-    @OAMany(displayName = "Reject Locations", toClass = Location.class, reverseName = Location.PROPERTY_VetUser2S)
+    @OAMany(displayName = "Reject Locations", toClass = Location.class, reverseName = Location.P_VetUser2S)
     @OALinkTable(name = "VetUserLocationLink1", indexName = "LocationVetUser2", columns = {"VetUserId"})
     public Hub<Location> getRejectLocations() {
         if (hubRejectLocations == null) {
-            hubRejectLocations = (Hub<Location>) getHub(PROPERTY_RejectLocations);
+            hubRejectLocations = (Hub<Location>) getHub(P_RejectLocations);
         }
         return hubRejectLocations;
     }
     
      
-    @OAOne(reverseName = Resume.PROPERTY_VetUser)
+    @OAOne(reverseName = Resume.P_VetUser)
     @OAFkey(columns = {"ResumeId"})
     public Resume getResume() {
         if (resume == null) {
-            resume = (Resume) getObject(PROPERTY_Resume);
+            resume = (Resume) getObject(P_Resume);
         }
         return resume;
     }
@@ -456,15 +456,15 @@ public class VetUser extends OAObject {
     public void setResume(Resume newValue) {
         Resume old = this.resume;
         this.resume = newValue;
-        firePropertyChange(PROPERTY_Resume, old, this.resume);
+        firePropertyChange(P_Resume, old, this.resume);
     }
     
      
-    @OAOne(reverseName = Rank.PROPERTY_VetUsers)
+    @OAOne(reverseName = Rank.P_VetUsers)
     @OAFkey(columns = {"RankId"})
     public Rank getRank() {
         if (rank == null) {
-            rank = (Rank) getObject(PROPERTY_Rank);
+            rank = (Rank) getObject(P_Rank);
         }
         return rank;
     }
@@ -472,15 +472,15 @@ public class VetUser extends OAObject {
     public void setRank(Rank newValue) {
         Rank old = this.rank;
         this.rank = newValue;
-        firePropertyChange(PROPERTY_Rank, old, this.rank);
+        firePropertyChange(P_Rank, old, this.rank);
     }
     
      
-    @OAOne(reverseName = Service.PROPERTY_VetUsers)
+    @OAOne(reverseName = Service.P_VetUsers)
     @OAFkey(columns = {"ServiceId"})
     public Service getService() {
         if (service == null) {
-            service = (Service) getObject(PROPERTY_Service);
+            service = (Service) getObject(P_Service);
         }
         return service;
     }
@@ -488,15 +488,15 @@ public class VetUser extends OAObject {
     public void setService(Service newValue) {
         Service old = this.service;
         this.service = newValue;
-        firePropertyChange(PROPERTY_Service, old, this.service);
+        firePropertyChange(P_Service, old, this.service);
     }
     
      
-    @OAOne(reverseName = Education.PROPERTY_VetUsers)
+    @OAOne(reverseName = Education.P_VetUsers)
     @OAFkey(columns = {"EducationId"})
     public Education getEducation() {
         if (education == null) {
-            education = (Education) getObject(PROPERTY_Education);
+            education = (Education) getObject(P_Education);
         }
         return education;
     }
@@ -504,15 +504,15 @@ public class VetUser extends OAObject {
     public void setEducation(Education newValue) {
         Education old = this.education;
         this.education = newValue;
-        firePropertyChange(PROPERTY_Education, old, this.education);
+        firePropertyChange(P_Education, old, this.education);
     }
     
      
-    @OAOne(displayName = "Vet Security", reverseName = VetSecurity.PROPERTY_VetUsers)
+    @OAOne(displayName = "Vet Security", reverseName = VetSecurity.P_VetUsers)
     @OAFkey(columns = {"VetSecurityId"})
     public VetSecurity getVetSecurity() {
         if (vetSecurity == null) {
-            vetSecurity = (VetSecurity) getObject(PROPERTY_VetSecurity);
+            vetSecurity = (VetSecurity) getObject(P_VetSecurity);
         }
         return vetSecurity;
     }
@@ -520,15 +520,15 @@ public class VetUser extends OAObject {
     public void setVetSecurity(VetSecurity newValue) {
         VetSecurity old = this.vetSecurity;
         this.vetSecurity = newValue;
-        firePropertyChange(PROPERTY_VetSecurity, old, this.vetSecurity);
+        firePropertyChange(P_VetSecurity, old, this.vetSecurity);
     }
     
      
-    @OAOne(displayName = "Service Status", reverseName = ServiceStatus.PROPERTY_VetUsers)
+    @OAOne(displayName = "Service Status", reverseName = ServiceStatus.P_VetUsers)
     @OAFkey(columns = {"ServiceStatusId"})
     public ServiceStatus getServiceStatus() {
         if (serviceStatus == null) {
-            serviceStatus = (ServiceStatus) getObject(PROPERTY_ServiceStatus);
+            serviceStatus = (ServiceStatus) getObject(P_ServiceStatus);
         }
         return serviceStatus;
     }
@@ -536,11 +536,11 @@ public class VetUser extends OAObject {
     public void setServiceStatus(ServiceStatus newValue) {
         ServiceStatus old = this.serviceStatus;
         this.serviceStatus = newValue;
-        firePropertyChange(PROPERTY_ServiceStatus, old, this.serviceStatus);
+        firePropertyChange(P_ServiceStatus, old, this.serviceStatus);
     }
     
      
-    @OAMany(displayName = "Emp Query Vets", toClass = EmpQueryVet.class, reverseName = EmpQueryVet.PROPERTY_VetUser, createMethod = false)
+    @OAMany(displayName = "Emp Query Vets", toClass = EmpQueryVet.class, reverseName = EmpQueryVet.P_VetUser, createMethod = false)
     private Hub<EmpQueryVet> getEmpQueryVets() {
         // oamodel has createMethod set to false, this method exists only for annotations.
         return null;

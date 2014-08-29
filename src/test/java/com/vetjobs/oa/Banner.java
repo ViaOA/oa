@@ -18,19 +18,19 @@ import com.viaoa.util.OADate;
 )
 public class Banner extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_CreateDate = "CreateDate";
-    public static final String PROPERTY_BeginDate = "BeginDate";
-    public static final String PROPERTY_EndDate = "EndDate";
-    public static final String PROPERTY_ImageUrl = "ImageUrl";
-    public static final String PROPERTY_ForwardUrl = "ForwardUrl";
-    public static final String PROPERTY_AltTag = "AltTag";
-    public static final String PROPERTY_Group = "Group";
-    public static final String PROPERTY_Description = "Description";
+    public static final String P_Id = "Id";
+    public static final String P_CreateDate = "CreateDate";
+    public static final String P_BeginDate = "BeginDate";
+    public static final String P_EndDate = "EndDate";
+    public static final String P_ImageUrl = "ImageUrl";
+    public static final String P_ForwardUrl = "ForwardUrl";
+    public static final String P_AltTag = "AltTag";
+    public static final String P_Group = "Group";
+    public static final String P_Description = "Description";
      
      
-    public static final String PROPERTY_BannerStats = "BannerStats";
-    public static final String PROPERTY_Customer = "Customer";
+    public static final String P_BannerStats = "BannerStats";
+    public static final String P_Customer = "Customer";
      
     protected int id;
     protected OADate createDate;
@@ -63,7 +63,7 @@ public class Banner extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -76,7 +76,7 @@ public class Banner extends OAObject {
     public void setCreateDate(OADate newValue) {
         OADate old = createDate;
         this.createDate = newValue;
-        firePropertyChange(PROPERTY_CreateDate, old, this.createDate);
+        firePropertyChange(P_CreateDate, old, this.createDate);
     }
     
      
@@ -89,7 +89,7 @@ public class Banner extends OAObject {
     public void setBeginDate(OADate newValue) {
         OADate old = beginDate;
         this.beginDate = newValue;
-        firePropertyChange(PROPERTY_BeginDate, old, this.beginDate);
+        firePropertyChange(P_BeginDate, old, this.beginDate);
     }
     
      
@@ -102,7 +102,7 @@ public class Banner extends OAObject {
     public void setEndDate(OADate newValue) {
         OADate old = endDate;
         this.endDate = newValue;
-        firePropertyChange(PROPERTY_EndDate, old, this.endDate);
+        firePropertyChange(P_EndDate, old, this.endDate);
     }
     
      
@@ -115,7 +115,7 @@ public class Banner extends OAObject {
     public void setImageUrl(String newValue) {
         String old = imageUrl;
         this.imageUrl = newValue;
-        firePropertyChange(PROPERTY_ImageUrl, old, this.imageUrl);
+        firePropertyChange(P_ImageUrl, old, this.imageUrl);
     }
     
      
@@ -128,7 +128,7 @@ public class Banner extends OAObject {
     public void setForwardUrl(String newValue) {
         String old = forwardUrl;
         this.forwardUrl = newValue;
-        firePropertyChange(PROPERTY_ForwardUrl, old, this.forwardUrl);
+        firePropertyChange(P_ForwardUrl, old, this.forwardUrl);
     }
     
      
@@ -141,7 +141,7 @@ public class Banner extends OAObject {
     public void setAltTag(String newValue) {
         String old = altTag;
         this.altTag = newValue;
-        firePropertyChange(PROPERTY_AltTag, old, this.altTag);
+        firePropertyChange(P_AltTag, old, this.altTag);
     }
     
      
@@ -154,7 +154,7 @@ public class Banner extends OAObject {
     public void setGroup(int newValue) {
         int old = group;
         this.group = newValue;
-        firePropertyChange(PROPERTY_Group, old, this.group);
+        firePropertyChange(P_Group, old, this.group);
     }
     
      
@@ -167,22 +167,22 @@ public class Banner extends OAObject {
     public void setDescription(String newValue) {
         String old = description;
         this.description = newValue;
-        firePropertyChange(PROPERTY_Description, old, this.description);
+        firePropertyChange(P_Description, old, this.description);
     }
     
      
-    @OAMany(displayName = "Banner Stats", toClass = BannerStat.class, reverseName = BannerStat.PROPERTY_Banner, createMethod = false)
+    @OAMany(displayName = "Banner Stats", toClass = BannerStat.class, reverseName = BannerStat.P_Banner, createMethod = false)
     private Hub<BannerStat> getBannerStats() {
         // oamodel has createMethod set to false, this method exists only for annotations.
         return null;
     }
     
      
-    @OAOne(reverseName = Customer.PROPERTY_Banners)
+    @OAOne(reverseName = Customer.P_Banners)
     @OAFkey(columns = {"CustomerId"})
     public Customer getCustomer() {
         if (customer == null) {
-            customer = (Customer) getObject(PROPERTY_Customer);
+            customer = (Customer) getObject(P_Customer);
         }
         return customer;
     }
@@ -190,7 +190,7 @@ public class Banner extends OAObject {
     public void setCustomer(Customer newValue) {
         Customer old = this.customer;
         this.customer = newValue;
-        firePropertyChange(PROPERTY_Customer, old, this.customer);
+        firePropertyChange(P_Customer, old, this.customer);
     }
     
      

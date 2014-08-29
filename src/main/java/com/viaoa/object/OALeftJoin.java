@@ -32,8 +32,8 @@ import com.viaoa.annotation.OAClass;
 public class OALeftJoin<A extends OAObject, B extends OAObject> extends OAObject {
     static final long serialVersionUID = 1L;
     
-    public static final String PROPERTY_A = "A"; 
-    public static final String PROPERTY_B = "B"; 
+    public static final String P_A = "A"; 
+    public static final String P_B = "B"; 
     private A a;
     private B b;
     

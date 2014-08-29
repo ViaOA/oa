@@ -15,14 +15,14 @@ import com.viaoa.annotation.*;
 )
 public class Folder extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Name = "Name";
-    public static final String PROPERTY_Description = "Description";
-    public static final String PROPERTY_Hide = "Hide";
+    public static final String P_Id = "Id";
+    public static final String P_Name = "Name";
+    public static final String P_Description = "Description";
+    public static final String P_Hide = "Hide";
      
      
-    public static final String PROPERTY_Jobs = "Jobs";
-    public static final String PROPERTY_BatchRows = "BatchRows";
+    public static final String P_Jobs = "Jobs";
+    public static final String P_BatchRows = "BatchRows";
      
     protected int id;
     protected String name;
@@ -49,7 +49,7 @@ public class Folder extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -62,7 +62,7 @@ public class Folder extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
@@ -75,7 +75,7 @@ public class Folder extends OAObject {
     public void setDescription(String newValue) {
         String old = description;
         this.description = newValue;
-        firePropertyChange(PROPERTY_Description, old, this.description);
+        firePropertyChange(P_Description, old, this.description);
     }
     
      
@@ -88,18 +88,18 @@ public class Folder extends OAObject {
     public void setHide(boolean newValue) {
         boolean old = hide;
         this.hide = newValue;
-        firePropertyChange(PROPERTY_Hide, old, this.hide);
+        firePropertyChange(P_Hide, old, this.hide);
     }
     
      
-    @OAMany(toClass = Job.class, reverseName = Job.PROPERTY_Folder, createMethod = false)
+    @OAMany(toClass = Job.class, reverseName = Job.P_Folder, createMethod = false)
     private Hub<Job> getJobs() {
         // oamodel has createMethod set to false, this method exists only for annotations.
         return null;
     }
     
      
-    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, reverseName = BatchRow.PROPERTY_Folder, createMethod = false)
+    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, reverseName = BatchRow.P_Folder, createMethod = false)
     private Hub<BatchRow> getBatchRows() {
         // oamodel has createMethod set to false, this method exists only for annotations.
         return null;

@@ -17,14 +17,14 @@ import com.viaoa.util.OADate;
 )
 public class EmpQuery extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Date = "Date";
-    public static final String PROPERTY_QueryText = "QueryText";
-    public static final String PROPERTY_QueryDescription = "QueryDescription";
+    public static final String P_Id = "Id";
+    public static final String P_Date = "Date";
+    public static final String P_QueryText = "QueryText";
+    public static final String P_QueryDescription = "QueryDescription";
      
      
-    public static final String PROPERTY_EmpQueryVets = "EmpQueryVets";
-    public static final String PROPERTY_EmployerUser = "EmployerUser";
+    public static final String P_EmpQueryVets = "EmpQueryVets";
+    public static final String P_EmployerUser = "EmployerUser";
      
     protected int id;
     protected OADate date;
@@ -53,7 +53,7 @@ public class EmpQuery extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -66,7 +66,7 @@ public class EmpQuery extends OAObject {
     public void setDate(OADate newValue) {
         OADate old = date;
         this.date = newValue;
-        firePropertyChange(PROPERTY_Date, old, this.date);
+        firePropertyChange(P_Date, old, this.date);
     }
     
      
@@ -79,7 +79,7 @@ public class EmpQuery extends OAObject {
     public void setQueryText(String newValue) {
         String old = queryText;
         this.queryText = newValue;
-        firePropertyChange(PROPERTY_QueryText, old, this.queryText);
+        firePropertyChange(P_QueryText, old, this.queryText);
     }
     
      
@@ -92,24 +92,24 @@ public class EmpQuery extends OAObject {
     public void setQueryDescription(String newValue) {
         String old = queryDescription;
         this.queryDescription = newValue;
-        firePropertyChange(PROPERTY_QueryDescription, old, this.queryDescription);
+        firePropertyChange(P_QueryDescription, old, this.queryDescription);
     }
     
      
-    @OAMany(displayName = "Emp Query Vets", toClass = EmpQueryVet.class, owner = true, reverseName = EmpQueryVet.PROPERTY_EmpQuery, cascadeSave = true, cascadeDelete = true)
+    @OAMany(displayName = "Emp Query Vets", toClass = EmpQueryVet.class, owner = true, reverseName = EmpQueryVet.P_EmpQuery, cascadeSave = true, cascadeDelete = true)
     public Hub<EmpQueryVet> getEmpQueryVets() {
         if (hubEmpQueryVets == null) {
-            hubEmpQueryVets = (Hub<EmpQueryVet>) getHub(PROPERTY_EmpQueryVets);
+            hubEmpQueryVets = (Hub<EmpQueryVet>) getHub(P_EmpQueryVets);
         }
         return hubEmpQueryVets;
     }
     
      
-    @OAOne(displayName = "Employer User", reverseName = EmployerUser.PROPERTY_EmpQueries, required = true)
+    @OAOne(displayName = "Employer User", reverseName = EmployerUser.P_EmpQueries, required = true)
     @OAFkey(columns = {"EmployerUserId"})
     public EmployerUser getEmployerUser() {
         if (employerUser == null) {
-            employerUser = (EmployerUser) getObject(PROPERTY_EmployerUser);
+            employerUser = (EmployerUser) getObject(P_EmployerUser);
         }
         return employerUser;
     }
@@ -117,7 +117,7 @@ public class EmpQuery extends OAObject {
     public void setEmployerUser(EmployerUser newValue) {
         EmployerUser old = this.employerUser;
         this.employerUser = newValue;
-        firePropertyChange(PROPERTY_EmployerUser, old, this.employerUser);
+        firePropertyChange(P_EmployerUser, old, this.employerUser);
     }
     
      

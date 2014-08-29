@@ -30,7 +30,7 @@ import com.viaoa.hub.Hub;
 /**
     Uses OAFinder to find objects.
     This will use OAObjectCache.selectAllHubs along with any
-    OAObject.OAClass.rootTreePropertyPaths   ex: "[Router]."+Router.PROPERTY_UserLogins+"."+UserLogin.PROPERTY_User
+    OAObject.OAClass.rootTreePropertyPaths   ex: "[Router]."+Router.P_UserLogins+"."+UserLogin.P_User
     to find all of the objects available.
 */
 public class FinderDataSource extends OADataSourceAuto {

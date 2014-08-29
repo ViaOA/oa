@@ -16,13 +16,13 @@ import com.viaoa.annotation.*;
 )
 public class LinkPropertyDef extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Name = "Name";
-    public static final String PROPERTY_DisplayName = "DisplayName";
-    public static final String PROPERTY_Type = "Type";
+    public static final String P_Name = "Name";
+    public static final String P_DisplayName = "DisplayName";
+    public static final String P_Type = "Type";
      
      
-    public static final String PROPERTY_ObjectDef = "ObjectDef";  // from objectDef
-    public static final String PROPERTY_ToObjectDef = "ToObjectDef";
+    public static final String P_ObjectDef = "ObjectDef";  // from objectDef
+    public static final String P_ToObjectDef = "ToObjectDef";
      
     protected String name;
     protected String displayName;
@@ -53,7 +53,7 @@ public class LinkPropertyDef extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
@@ -66,7 +66,7 @@ public class LinkPropertyDef extends OAObject {
     public void setDisplayName(String newValue) {
         String old = displayName;
         this.displayName = newValue;
-        firePropertyChange(PROPERTY_DisplayName, old, this.displayName);
+        firePropertyChange(P_DisplayName, old, this.displayName);
     }
     
      
@@ -79,14 +79,14 @@ public class LinkPropertyDef extends OAObject {
     public void setType(int newValue) {
         int old = type;
         this.type = newValue;
-        firePropertyChange(PROPERTY_Type, old, this.type);
+        firePropertyChange(P_Type, old, this.type);
     }
     
      
-    @OAOne(displayName = "Object Def", reverseName = ObjectDef.PROPERTY_LinkPropertyDefs)
+    @OAOne(displayName = "Object Def", reverseName = ObjectDef.P_LinkPropertyDefs)
     public ObjectDef getObjectDef() {
         if (objectDef == null) {
-            objectDef = (ObjectDef) getObject(PROPERTY_ObjectDef);
+            objectDef = (ObjectDef) getObject(P_ObjectDef);
         }
         return objectDef;
     }
@@ -94,14 +94,14 @@ public class LinkPropertyDef extends OAObject {
     public void setObjectDef(ObjectDef newValue) {
         ObjectDef old = this.objectDef;
         this.objectDef = newValue;
-        firePropertyChange(PROPERTY_ObjectDef, old, this.objectDef);
+        firePropertyChange(P_ObjectDef, old, this.objectDef);
     }
     
      
-    @OAOne(displayName = "To Object Def", reverseName = ObjectDef.PROPERTY_ToLinkPropertyDefs)
+    @OAOne(displayName = "To Object Def", reverseName = ObjectDef.P_ToLinkPropertyDefs)
     public ObjectDef getToObjectDef() {
         if (toObjectDef == null) {
-            toObjectDef = (ObjectDef) getObject(PROPERTY_ToObjectDef);
+            toObjectDef = (ObjectDef) getObject(P_ToObjectDef);
         }
         return toObjectDef;
     }
@@ -109,7 +109,7 @@ public class LinkPropertyDef extends OAObject {
     public void setToObjectDef(ObjectDef newValue) {
         ObjectDef old = this.toObjectDef;
         this.toObjectDef = newValue;
-        firePropertyChange(PROPERTY_ToObjectDef, old, this.toObjectDef);
+        firePropertyChange(P_ToObjectDef, old, this.toObjectDef);
     }
     
      

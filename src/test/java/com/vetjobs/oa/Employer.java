@@ -19,35 +19,35 @@ import com.viaoa.util.OADate;
 )
 public class Employer extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_CreateDate = "CreateDate";
-    public static final String PROPERTY_Company = "Company";
-    public static final String PROPERTY_Address1 = "Address1";
-    public static final String PROPERTY_Address2 = "Address2";
-    public static final String PROPERTY_City = "City";
-    public static final String PROPERTY_State = "State";
-    public static final String PROPERTY_Zip = "Zip";
-    public static final String PROPERTY_Country = "Country";
-    public static final String PROPERTY_Phone = "Phone";
-    public static final String PROPERTY_Fax = "Fax";
-    public static final String PROPERTY_Contact = "Contact";
-    public static final String PROPERTY_Email = "Email";
-    public static final String PROPERTY_Title = "Title";
-    public static final String PROPERTY_Industry = "Industry";
-    public static final String PROPERTY_Url = "Url";
-    public static final String PROPERTY_StartDate = "StartDate";
-    public static final String PROPERTY_EndDate = "EndDate";
-    public static final String PROPERTY_PurchaseDate = "PurchaseDate";
-    public static final String PROPERTY_Note = "Note";
-    public static final String PROPERTY_CompanyAlias = "CompanyAlias";
+    public static final String P_Id = "Id";
+    public static final String P_CreateDate = "CreateDate";
+    public static final String P_Company = "Company";
+    public static final String P_Address1 = "Address1";
+    public static final String P_Address2 = "Address2";
+    public static final String P_City = "City";
+    public static final String P_State = "State";
+    public static final String P_Zip = "Zip";
+    public static final String P_Country = "Country";
+    public static final String P_Phone = "Phone";
+    public static final String P_Fax = "Fax";
+    public static final String P_Contact = "Contact";
+    public static final String P_Email = "Email";
+    public static final String P_Title = "Title";
+    public static final String P_Industry = "Industry";
+    public static final String P_Url = "Url";
+    public static final String P_StartDate = "StartDate";
+    public static final String P_EndDate = "EndDate";
+    public static final String P_PurchaseDate = "PurchaseDate";
+    public static final String P_Note = "Note";
+    public static final String P_CompanyAlias = "CompanyAlias";
      
      
-    public static final String PROPERTY_EmployerUsers = "EmployerUsers";
-    public static final String PROPERTY_Privileges = "Privileges";
-    public static final String PROPERTY_Jobs = "Jobs";
-    public static final String PROPERTY_Employers = "Employers";
-    public static final String PROPERTY_ParentEmployer = "ParentEmployer";
-    public static final String PROPERTY_Batches = "Batches";
+    public static final String P_EmployerUsers = "EmployerUsers";
+    public static final String P_Privileges = "Privileges";
+    public static final String P_Jobs = "Jobs";
+    public static final String P_Employers = "Employers";
+    public static final String P_ParentEmployer = "ParentEmployer";
+    public static final String P_Batches = "Batches";
      
     protected int id;
     protected OADate createDate;
@@ -96,7 +96,7 @@ public class Employer extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -109,7 +109,7 @@ public class Employer extends OAObject {
     public void setCreateDate(OADate newValue) {
         OADate old = createDate;
         this.createDate = newValue;
-        firePropertyChange(PROPERTY_CreateDate, old, this.createDate);
+        firePropertyChange(P_CreateDate, old, this.createDate);
     }
     
      
@@ -122,7 +122,7 @@ public class Employer extends OAObject {
     public void setCompany(String newValue) {
         String old = company;
         this.company = newValue;
-        firePropertyChange(PROPERTY_Company, old, this.company);
+        firePropertyChange(P_Company, old, this.company);
     }
     
      
@@ -135,7 +135,7 @@ public class Employer extends OAObject {
     public void setAddress1(String newValue) {
         String old = address1;
         this.address1 = newValue;
-        firePropertyChange(PROPERTY_Address1, old, this.address1);
+        firePropertyChange(P_Address1, old, this.address1);
     }
     
      
@@ -148,7 +148,7 @@ public class Employer extends OAObject {
     public void setAddress2(String newValue) {
         String old = address2;
         this.address2 = newValue;
-        firePropertyChange(PROPERTY_Address2, old, this.address2);
+        firePropertyChange(P_Address2, old, this.address2);
     }
     
      
@@ -161,7 +161,7 @@ public class Employer extends OAObject {
     public void setCity(String newValue) {
         String old = city;
         this.city = newValue;
-        firePropertyChange(PROPERTY_City, old, this.city);
+        firePropertyChange(P_City, old, this.city);
     }
     
      
@@ -174,7 +174,7 @@ public class Employer extends OAObject {
     public void setState(String newValue) {
         String old = state;
         this.state = newValue;
-        firePropertyChange(PROPERTY_State, old, this.state);
+        firePropertyChange(P_State, old, this.state);
     }
     
      
@@ -187,7 +187,7 @@ public class Employer extends OAObject {
     public void setZip(String newValue) {
         String old = zip;
         this.zip = newValue;
-        firePropertyChange(PROPERTY_Zip, old, this.zip);
+        firePropertyChange(P_Zip, old, this.zip);
     }
     
      
@@ -200,7 +200,7 @@ public class Employer extends OAObject {
     public void setCountry(String newValue) {
         String old = country;
         this.country = newValue;
-        firePropertyChange(PROPERTY_Country, old, this.country);
+        firePropertyChange(P_Country, old, this.country);
     }
     
      
@@ -213,7 +213,7 @@ public class Employer extends OAObject {
     public void setPhone(String newValue) {
         String old = phone;
         this.phone = newValue;
-        firePropertyChange(PROPERTY_Phone, old, this.phone);
+        firePropertyChange(P_Phone, old, this.phone);
     }
     
      
@@ -226,7 +226,7 @@ public class Employer extends OAObject {
     public void setFax(String newValue) {
         String old = fax;
         this.fax = newValue;
-        firePropertyChange(PROPERTY_Fax, old, this.fax);
+        firePropertyChange(P_Fax, old, this.fax);
     }
     
      
@@ -239,7 +239,7 @@ public class Employer extends OAObject {
     public void setContact(String newValue) {
         String old = contact;
         this.contact = newValue;
-        firePropertyChange(PROPERTY_Contact, old, this.contact);
+        firePropertyChange(P_Contact, old, this.contact);
     }
     
      
@@ -252,7 +252,7 @@ public class Employer extends OAObject {
     public void setEmail(String newValue) {
         String old = email;
         this.email = newValue;
-        firePropertyChange(PROPERTY_Email, old, this.email);
+        firePropertyChange(P_Email, old, this.email);
     }
     
      
@@ -265,7 +265,7 @@ public class Employer extends OAObject {
     public void setTitle(String newValue) {
         String old = title;
         this.title = newValue;
-        firePropertyChange(PROPERTY_Title, old, this.title);
+        firePropertyChange(P_Title, old, this.title);
     }
     
      
@@ -278,7 +278,7 @@ public class Employer extends OAObject {
     public void setIndustry(String newValue) {
         String old = industry;
         this.industry = newValue;
-        firePropertyChange(PROPERTY_Industry, old, this.industry);
+        firePropertyChange(P_Industry, old, this.industry);
     }
     
      
@@ -291,7 +291,7 @@ public class Employer extends OAObject {
     public void setUrl(String newValue) {
         String old = url;
         this.url = newValue;
-        firePropertyChange(PROPERTY_Url, old, this.url);
+        firePropertyChange(P_Url, old, this.url);
     }
     
      
@@ -304,7 +304,7 @@ public class Employer extends OAObject {
     public void setStartDate(OADate newValue) {
         OADate old = startDate;
         this.startDate = newValue;
-        firePropertyChange(PROPERTY_StartDate, old, this.startDate);
+        firePropertyChange(P_StartDate, old, this.startDate);
     }
     
      
@@ -317,7 +317,7 @@ public class Employer extends OAObject {
     public void setEndDate(OADate newValue) {
         OADate old = endDate;
         this.endDate = newValue;
-        firePropertyChange(PROPERTY_EndDate, old, this.endDate);
+        firePropertyChange(P_EndDate, old, this.endDate);
     }
     
      
@@ -330,7 +330,7 @@ public class Employer extends OAObject {
     public void setPurchaseDate(OADate newValue) {
         OADate old = purchaseDate;
         this.purchaseDate = newValue;
-        firePropertyChange(PROPERTY_PurchaseDate, old, this.purchaseDate);
+        firePropertyChange(P_PurchaseDate, old, this.purchaseDate);
     }
     
      
@@ -343,7 +343,7 @@ public class Employer extends OAObject {
     public void setNote(String newValue) {
         String old = note;
         this.note = newValue;
-        firePropertyChange(PROPERTY_Note, old, this.note);
+        firePropertyChange(P_Note, old, this.note);
     }
     
      
@@ -356,20 +356,20 @@ public class Employer extends OAObject {
     public void setCompanyAlias(String newValue) {
         String old = companyAlias;
         this.companyAlias = newValue;
-        firePropertyChange(PROPERTY_CompanyAlias, old, this.companyAlias);
+        firePropertyChange(P_CompanyAlias, old, this.companyAlias);
     }
     
      
-    @OAMany(displayName = "Employer Users", toClass = EmployerUser.class, owner = true, reverseName = EmployerUser.PROPERTY_Employer, cascadeSave = true, cascadeDelete = true)
+    @OAMany(displayName = "Employer Users", toClass = EmployerUser.class, owner = true, reverseName = EmployerUser.P_Employer, cascadeSave = true, cascadeDelete = true)
     public Hub<EmployerUser> getEmployerUsers() {
         if (hubEmployerUsers == null) {
-            hubEmployerUsers = (Hub<EmployerUser>) getHub(PROPERTY_EmployerUsers);
+            hubEmployerUsers = (Hub<EmployerUser>) getHub(P_EmployerUsers);
         }
         return hubEmployerUsers;
     }
     
      
-    @OAMany(toClass = Privilege.class, reverseName = Privilege.PROPERTY_Employers, createMethod = false)
+    @OAMany(toClass = Privilege.class, reverseName = Privilege.P_Employers, createMethod = false)
     @OALinkTable(name = "EmployerPrivilegeLink", indexName = "PrivilegeEmployer", columns = {"EmployerId"})
     private Hub<Privilege> getPrivileges() {
         // oamodel has createMethod set to false, this method exists only for annotations.
@@ -377,29 +377,29 @@ public class Employer extends OAObject {
     }
     
      
-    @OAMany(toClass = Job.class, owner = true, reverseName = Job.PROPERTY_Employer, cascadeSave = true, cascadeDelete = true)
+    @OAMany(toClass = Job.class, owner = true, reverseName = Job.P_Employer, cascadeSave = true, cascadeDelete = true)
     public Hub<Job> getJobs() {
         if (hubJobs == null) {
-            hubJobs = (Hub<Job>) getHub(PROPERTY_Jobs);
+            hubJobs = (Hub<Job>) getHub(P_Jobs);
         }
         return hubJobs;
     }
     
      
-    @OAMany(toClass = Employer.class, reverseName = Employer.PROPERTY_ParentEmployer)
+    @OAMany(toClass = Employer.class, reverseName = Employer.P_ParentEmployer)
     public Hub<Employer> getEmployers() {
         if (hubEmployers == null) {
-            hubEmployers = (Hub<Employer>) getHub(PROPERTY_Employers);
+            hubEmployers = (Hub<Employer>) getHub(P_Employers);
         }
         return hubEmployers;
     }
     
      
-    @OAOne(displayName = "Parent Employer", reverseName = Employer.PROPERTY_Employers)
+    @OAOne(displayName = "Parent Employer", reverseName = Employer.P_Employers)
     @OAFkey(columns = {"ParentEmployerId"})
     public Employer getParentEmployer() {
         if (parentEmployer == null) {
-            parentEmployer = (Employer) getObject(PROPERTY_ParentEmployer);
+            parentEmployer = (Employer) getObject(P_ParentEmployer);
         }
         return parentEmployer;
     }
@@ -407,14 +407,14 @@ public class Employer extends OAObject {
     public void setParentEmployer(Employer newValue) {
         Employer old = this.parentEmployer;
         this.parentEmployer = newValue;
-        firePropertyChange(PROPERTY_ParentEmployer, old, this.parentEmployer);
+        firePropertyChange(P_ParentEmployer, old, this.parentEmployer);
     }
     
      
-    @OAMany(toClass = Batch.class, owner = true, reverseName = Batch.PROPERTY_Employer, cascadeSave = true, cascadeDelete = true)
+    @OAMany(toClass = Batch.class, owner = true, reverseName = Batch.P_Employer, cascadeSave = true, cascadeDelete = true)
     public Hub<Batch> getBatches() {
         if (hubBatches == null) {
-            hubBatches = (Hub<Batch>) getHub(PROPERTY_Batches);
+            hubBatches = (Hub<Batch>) getHub(P_Batches);
         }
         return hubBatches;
     }

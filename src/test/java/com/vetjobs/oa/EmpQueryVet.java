@@ -16,12 +16,12 @@ import com.viaoa.annotation.*;
 )
 public class EmpQueryVet extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_ViewType = "ViewType";
+    public static final String P_Id = "Id";
+    public static final String P_ViewType = "ViewType";
      
      
-    public static final String PROPERTY_VetUser = "VetUser";
-    public static final String PROPERTY_EmpQuery = "EmpQuery";
+    public static final String P_VetUser = "VetUser";
+    public static final String P_EmpQuery = "EmpQuery";
      
     protected int id;
     protected int viewType;
@@ -48,7 +48,7 @@ public class EmpQueryVet extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -61,15 +61,15 @@ public class EmpQueryVet extends OAObject {
     public void setViewType(int newValue) {
         int old = viewType;
         this.viewType = newValue;
-        firePropertyChange(PROPERTY_ViewType, old, this.viewType);
+        firePropertyChange(P_ViewType, old, this.viewType);
     }
     
      
-    @OAOne(displayName = "Vet User", reverseName = VetUser.PROPERTY_EmpQueryVets)
+    @OAOne(displayName = "Vet User", reverseName = VetUser.P_EmpQueryVets)
     @OAFkey(columns = {"VetUserId"})
     public VetUser getVetUser() {
         if (vetUser == null) {
-            vetUser = (VetUser) getObject(PROPERTY_VetUser);
+            vetUser = (VetUser) getObject(P_VetUser);
         }
         return vetUser;
     }
@@ -77,15 +77,15 @@ public class EmpQueryVet extends OAObject {
     public void setVetUser(VetUser newValue) {
         VetUser old = this.vetUser;
         this.vetUser = newValue;
-        firePropertyChange(PROPERTY_VetUser, old, this.vetUser);
+        firePropertyChange(P_VetUser, old, this.vetUser);
     }
     
      
-    @OAOne(displayName = "Emp Query", reverseName = EmpQuery.PROPERTY_EmpQueryVets, required = true)
+    @OAOne(displayName = "Emp Query", reverseName = EmpQuery.P_EmpQueryVets, required = true)
     @OAFkey(columns = {"EmpQueryId"})
     public EmpQuery getEmpQuery() {
         if (empQuery == null) {
-            empQuery = (EmpQuery) getObject(PROPERTY_EmpQuery);
+            empQuery = (EmpQuery) getObject(P_EmpQuery);
         }
         return empQuery;
     }
@@ -93,7 +93,7 @@ public class EmpQueryVet extends OAObject {
     public void setEmpQuery(EmpQuery newValue) {
         EmpQuery old = this.empQuery;
         this.empQuery = newValue;
-        firePropertyChange(PROPERTY_EmpQuery, old, this.empQuery);
+        firePropertyChange(P_EmpQuery, old, this.empQuery);
     }
     
      

@@ -6,12 +6,12 @@ import com.viaoa.hub.*;
  
 public class ObjectGraphHub extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Name = "Name";
-    public static final String PROPERTY_Type = "Type";
+    public static final String P_Name = "Name";
+    public static final String P_Type = "Type";
      
      
-    public static final String PROPERTY_ObjectGraph = "ObjectGraph";
-    public static final String PROPERTY_ObjectDef = "ObjectDef";
+    public static final String P_ObjectGraph = "ObjectGraph";
+    public static final String P_ObjectDef = "ObjectDef";
      
     protected String name;
     protected int type;
@@ -48,7 +48,7 @@ public class ObjectGraphHub extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
@@ -59,13 +59,13 @@ public class ObjectGraphHub extends OAObject {
     public void setType(int newValue) {
         int old = type;
         this.type = newValue;
-        firePropertyChange(PROPERTY_Type, old, this.type);
+        firePropertyChange(P_Type, old, this.type);
     }
     
      
     public ObjectGraph getObjectGraph() {
         if (objectGraph == null) {
-        	objectGraph = (ObjectGraph) getObject(PROPERTY_ObjectGraph);
+        	objectGraph = (ObjectGraph) getObject(P_ObjectGraph);
         }
         return objectGraph;
     }
@@ -73,13 +73,13 @@ public class ObjectGraphHub extends OAObject {
     public void setObjectGraph(ObjectGraph newValue) {
     	ObjectGraph old = this.objectGraph;
         this.objectGraph = newValue;
-        firePropertyChange(PROPERTY_ObjectGraph, old, this.objectGraph);
+        firePropertyChange(P_ObjectGraph, old, this.objectGraph);
     }
     
      
     public ObjectDef getObjectDef() {
         if (objectDef == null) {
-            objectDef = (ObjectDef) getObject(PROPERTY_ObjectDef);
+            objectDef = (ObjectDef) getObject(P_ObjectDef);
         }
         return objectDef;
     }
@@ -87,7 +87,7 @@ public class ObjectGraphHub extends OAObject {
     public void setObjectDef(ObjectDef newValue) {
         ObjectDef old = this.objectDef;
         this.objectDef = newValue;
-        firePropertyChange(PROPERTY_ObjectDef, old, this.objectDef);
+        firePropertyChange(P_ObjectDef, old, this.objectDef);
     }
     
     public String toString() {
@@ -104,8 +104,8 @@ public class ObjectGraphHub extends OAObject {
         oaObjectInfo = new OAObjectInfo(new String[] {});
          
         // OALinkInfo(property, toClass, ONE/MANY, cascadeSave, cascadeDelete, reverseProperty, thisOwner)
-        oaObjectInfo.addLink(new OALinkInfo(PROPERTY_ObjectGraph, ObjectGraph.class, OALinkInfo.ONE, false, false, ObjectGraph.PROPERTY_ObjectGraphHubs));
-        oaObjectInfo.addLink(new OALinkInfo(PROPERTY_ObjectDef, ObjectDef.class, OALinkInfo.ONE, false, false, ""));
+        oaObjectInfo.addLink(new OALinkInfo(P_ObjectGraph, ObjectGraph.class, OALinkInfo.ONE, false, false, ObjectGraph.P_ObjectGraphHubs));
+        oaObjectInfo.addLink(new OALinkInfo(P_ObjectDef, ObjectDef.class, OALinkInfo.ONE, false, false, ""));
          
         // OACalcInfo(calcPropertyName, String[] { propertyPath1, propertyPathN })
         // ex: oaObjectInfo.addCalc(new OACalcInfo("calc", new String[] {"name","manager.fullName"} ));

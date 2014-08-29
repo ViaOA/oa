@@ -22,8 +22,8 @@ import com.viaoa.annotation.OAClass;
 @OAClass (addToCache=false, localOnly=true, useDataSource=false)
 public class OAObjectModel extends OAObject {
 
-    public static final String PROPERTY_DisplayName = "DisplayName";
-    public static final String PROPERTY_DisplayNamePlural = "DisplayNamePlural";
+    public static final String P_DisplayName = "DisplayName";
+    public static final String P_DisplayNamePlural = "DisplayNamePlural";
     
     protected boolean bAllowGotoList;
     protected boolean bAllowGotoEdit;
@@ -66,7 +66,7 @@ public class OAObjectModel extends OAObject {
     public void setDisplayName(String newValue) {
         String old = displayName;
         this.displayName = newValue;
-        firePropertyChange(PROPERTY_DisplayName, old, this.displayName);
+        firePropertyChange(P_DisplayName, old, this.displayName);
     }
     
     public String getDisplayNamePlural() {
@@ -75,7 +75,7 @@ public class OAObjectModel extends OAObject {
     public void setDisplayNamePlural(String newValue) {
         String old = displayNamePlural;
         this.displayNamePlural = newValue;
-        firePropertyChange(PROPERTY_DisplayNamePlural, old, this.displayNamePlural);
+        firePropertyChange(P_DisplayNamePlural, old, this.displayNamePlural);
     }
     
     

@@ -20,44 +20,44 @@ import com.viaoa.util.OADate;
 )
 public class Job extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Reference = "Reference";
-    public static final String PROPERTY_CreateDate = "CreateDate";
-    public static final String PROPERTY_RefreshDate = "RefreshDate";
-    public static final String PROPERTY_RateFrom = "RateFrom";
-    public static final String PROPERTY_RateTo = "RateTo";
-    public static final String PROPERTY_Hourly = "Hourly";
-    public static final String PROPERTY_Contract = "Contract";
-    public static final String PROPERTY_Fulltime = "Fulltime";
-    public static final String PROPERTY_Title = "Title";
-    public static final String PROPERTY_Benefits = "Benefits";
-    public static final String PROPERTY_Description = "Description";
-    public static final String PROPERTY_City = "City";
-    public static final String PROPERTY_Region = "Region";
-    public static final String PROPERTY_State = "State";
-    public static final String PROPERTY_Country = "Country";
-    public static final String PROPERTY_Contact = "Contact";
-    public static final String PROPERTY_Email = "Email";
-    public static final String PROPERTY_AutoResponse = "AutoResponse";
-    public static final String PROPERTY_PositionsAvailable = "PositionsAvailable";
-    public static final String PROPERTY_ViewCount = "ViewCount";
-    public static final String PROPERTY_SearchCount = "SearchCount";
-    public static final String PROPERTY_ClickCount = "ClickCount";
-    public static final String PROPERTY_ViewCountMTD = "ViewCountMTD";
-    public static final String PROPERTY_SearchCountMTD = "SearchCountMTD";
-    public static final String PROPERTY_ClickCountMTD = "ClickCountMTD";
-    public static final String PROPERTY_ViewCountWTD = "ViewCountWTD";
-    public static final String PROPERTY_SearchCountWTD = "SearchCountWTD";
-    public static final String PROPERTY_ClickCountWTD = "ClickCountWTD";
-    public static final String PROPERTY_LastMTD = "LastMTD";
-    public static final String PROPERTY_LastWTD = "LastWTD";
+    public static final String P_Id = "Id";
+    public static final String P_Reference = "Reference";
+    public static final String P_CreateDate = "CreateDate";
+    public static final String P_RefreshDate = "RefreshDate";
+    public static final String P_RateFrom = "RateFrom";
+    public static final String P_RateTo = "RateTo";
+    public static final String P_Hourly = "Hourly";
+    public static final String P_Contract = "Contract";
+    public static final String P_Fulltime = "Fulltime";
+    public static final String P_Title = "Title";
+    public static final String P_Benefits = "Benefits";
+    public static final String P_Description = "Description";
+    public static final String P_City = "City";
+    public static final String P_Region = "Region";
+    public static final String P_State = "State";
+    public static final String P_Country = "Country";
+    public static final String P_Contact = "Contact";
+    public static final String P_Email = "Email";
+    public static final String P_AutoResponse = "AutoResponse";
+    public static final String P_PositionsAvailable = "PositionsAvailable";
+    public static final String P_ViewCount = "ViewCount";
+    public static final String P_SearchCount = "SearchCount";
+    public static final String P_ClickCount = "ClickCount";
+    public static final String P_ViewCountMTD = "ViewCountMTD";
+    public static final String P_SearchCountMTD = "SearchCountMTD";
+    public static final String P_ClickCountMTD = "ClickCountMTD";
+    public static final String P_ViewCountWTD = "ViewCountWTD";
+    public static final String P_SearchCountWTD = "SearchCountWTD";
+    public static final String P_ClickCountWTD = "ClickCountWTD";
+    public static final String P_LastMTD = "LastMTD";
+    public static final String P_LastWTD = "LastWTD";
      
      
-    public static final String PROPERTY_Categories = "Categories";
-    public static final String PROPERTY_Locations = "Locations";
-    public static final String PROPERTY_Employer = "Employer";
-    public static final String PROPERTY_Folder = "Folder";
-    public static final String PROPERTY_BatchRows = "BatchRows";
+    public static final String P_Categories = "Categories";
+    public static final String P_Locations = "Locations";
+    public static final String P_Employer = "Employer";
+    public static final String P_Folder = "Folder";
+    public static final String P_BatchRows = "BatchRows";
      
     protected int id;
     protected String reference;
@@ -116,7 +116,7 @@ public class Job extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -129,7 +129,7 @@ public class Job extends OAObject {
     public void setReference(String newValue) {
         String old = reference;
         this.reference = newValue;
-        firePropertyChange(PROPERTY_Reference, old, this.reference);
+        firePropertyChange(P_Reference, old, this.reference);
     }
     
      
@@ -142,7 +142,7 @@ public class Job extends OAObject {
     public void setCreateDate(OADate newValue) {
         OADate old = createDate;
         this.createDate = newValue;
-        firePropertyChange(PROPERTY_CreateDate, old, this.createDate);
+        firePropertyChange(P_CreateDate, old, this.createDate);
     }
     
      
@@ -155,7 +155,7 @@ public class Job extends OAObject {
     public void setRefreshDate(OADate newValue) {
         OADate old = refreshDate;
         this.refreshDate = newValue;
-        firePropertyChange(PROPERTY_RefreshDate, old, this.refreshDate);
+        firePropertyChange(P_RefreshDate, old, this.refreshDate);
     }
     
      
@@ -168,7 +168,7 @@ public class Job extends OAObject {
     public void setRateFrom(float newValue) {
         float old = rateFrom;
         this.rateFrom = newValue;
-        firePropertyChange(PROPERTY_RateFrom, old, this.rateFrom);
+        firePropertyChange(P_RateFrom, old, this.rateFrom);
     }
     
      
@@ -181,7 +181,7 @@ public class Job extends OAObject {
     public void setRateTo(float newValue) {
         float old = rateTo;
         this.rateTo = newValue;
-        firePropertyChange(PROPERTY_RateTo, old, this.rateTo);
+        firePropertyChange(P_RateTo, old, this.rateTo);
     }
     
      
@@ -194,7 +194,7 @@ public class Job extends OAObject {
     public void setHourly(boolean newValue) {
         boolean old = hourly;
         this.hourly = newValue;
-        firePropertyChange(PROPERTY_Hourly, old, this.hourly);
+        firePropertyChange(P_Hourly, old, this.hourly);
     }
     
      
@@ -207,7 +207,7 @@ public class Job extends OAObject {
     public void setContract(boolean newValue) {
         boolean old = contract;
         this.contract = newValue;
-        firePropertyChange(PROPERTY_Contract, old, this.contract);
+        firePropertyChange(P_Contract, old, this.contract);
     }
     
      
@@ -220,7 +220,7 @@ public class Job extends OAObject {
     public void setFulltime(boolean newValue) {
         boolean old = fulltime;
         this.fulltime = newValue;
-        firePropertyChange(PROPERTY_Fulltime, old, this.fulltime);
+        firePropertyChange(P_Fulltime, old, this.fulltime);
     }
     
      
@@ -233,7 +233,7 @@ public class Job extends OAObject {
     public void setTitle(String newValue) {
         String old = title;
         this.title = newValue;
-        firePropertyChange(PROPERTY_Title, old, this.title);
+        firePropertyChange(P_Title, old, this.title);
     }
     
      
@@ -246,7 +246,7 @@ public class Job extends OAObject {
     public void setBenefits(String newValue) {
         String old = benefits;
         this.benefits = newValue;
-        firePropertyChange(PROPERTY_Benefits, old, this.benefits);
+        firePropertyChange(P_Benefits, old, this.benefits);
     }
     
      
@@ -259,7 +259,7 @@ public class Job extends OAObject {
     public void setDescription(String newValue) {
         String old = description;
         this.description = newValue;
-        firePropertyChange(PROPERTY_Description, old, this.description);
+        firePropertyChange(P_Description, old, this.description);
     }
     
      
@@ -272,7 +272,7 @@ public class Job extends OAObject {
     public void setCity(String newValue) {
         String old = city;
         this.city = newValue;
-        firePropertyChange(PROPERTY_City, old, this.city);
+        firePropertyChange(P_City, old, this.city);
     }
     
      
@@ -285,7 +285,7 @@ public class Job extends OAObject {
     public void setRegion(String newValue) {
         String old = region;
         this.region = newValue;
-        firePropertyChange(PROPERTY_Region, old, this.region);
+        firePropertyChange(P_Region, old, this.region);
     }
     
      
@@ -298,7 +298,7 @@ public class Job extends OAObject {
     public void setState(String newValue) {
         String old = state;
         this.state = newValue;
-        firePropertyChange(PROPERTY_State, old, this.state);
+        firePropertyChange(P_State, old, this.state);
     }
     
      
@@ -311,7 +311,7 @@ public class Job extends OAObject {
     public void setCountry(String newValue) {
         String old = country;
         this.country = newValue;
-        firePropertyChange(PROPERTY_Country, old, this.country);
+        firePropertyChange(P_Country, old, this.country);
     }
     
      
@@ -324,7 +324,7 @@ public class Job extends OAObject {
     public void setContact(String newValue) {
         String old = contact;
         this.contact = newValue;
-        firePropertyChange(PROPERTY_Contact, old, this.contact);
+        firePropertyChange(P_Contact, old, this.contact);
     }
     
      
@@ -337,7 +337,7 @@ public class Job extends OAObject {
     public void setEmail(String newValue) {
         String old = email;
         this.email = newValue;
-        firePropertyChange(PROPERTY_Email, old, this.email);
+        firePropertyChange(P_Email, old, this.email);
     }
     
      
@@ -350,7 +350,7 @@ public class Job extends OAObject {
     public void setAutoResponse(boolean newValue) {
         boolean old = autoResponse;
         this.autoResponse = newValue;
-        firePropertyChange(PROPERTY_AutoResponse, old, this.autoResponse);
+        firePropertyChange(P_AutoResponse, old, this.autoResponse);
     }
     
      
@@ -363,7 +363,7 @@ public class Job extends OAObject {
     public void setPositionsAvailable(int newValue) {
         int old = positionsAvailable;
         this.positionsAvailable = newValue;
-        firePropertyChange(PROPERTY_PositionsAvailable, old, this.positionsAvailable);
+        firePropertyChange(P_PositionsAvailable, old, this.positionsAvailable);
     }
     
      
@@ -376,7 +376,7 @@ public class Job extends OAObject {
     public void setViewCount(int newValue) {
         int old = viewCount;
         this.viewCount = newValue;
-        firePropertyChange(PROPERTY_ViewCount, old, this.viewCount);
+        firePropertyChange(P_ViewCount, old, this.viewCount);
     }
     
      
@@ -389,7 +389,7 @@ public class Job extends OAObject {
     public void setSearchCount(int newValue) {
         int old = searchCount;
         this.searchCount = newValue;
-        firePropertyChange(PROPERTY_SearchCount, old, this.searchCount);
+        firePropertyChange(P_SearchCount, old, this.searchCount);
     }
     
      
@@ -402,7 +402,7 @@ public class Job extends OAObject {
     public void setClickCount(int newValue) {
         int old = clickCount;
         this.clickCount = newValue;
-        firePropertyChange(PROPERTY_ClickCount, old, this.clickCount);
+        firePropertyChange(P_ClickCount, old, this.clickCount);
     }
     
      
@@ -415,7 +415,7 @@ public class Job extends OAObject {
     public void setViewCountMTD(int newValue) {
         int old = viewCountMTD;
         this.viewCountMTD = newValue;
-        firePropertyChange(PROPERTY_ViewCountMTD, old, this.viewCountMTD);
+        firePropertyChange(P_ViewCountMTD, old, this.viewCountMTD);
     }
     
      
@@ -428,7 +428,7 @@ public class Job extends OAObject {
     public void setSearchCountMTD(int newValue) {
         int old = searchCountMTD;
         this.searchCountMTD = newValue;
-        firePropertyChange(PROPERTY_SearchCountMTD, old, this.searchCountMTD);
+        firePropertyChange(P_SearchCountMTD, old, this.searchCountMTD);
     }
     
      
@@ -441,7 +441,7 @@ public class Job extends OAObject {
     public void setClickCountMTD(int newValue) {
         int old = clickCountMTD;
         this.clickCountMTD = newValue;
-        firePropertyChange(PROPERTY_ClickCountMTD, old, this.clickCountMTD);
+        firePropertyChange(P_ClickCountMTD, old, this.clickCountMTD);
     }
     
      
@@ -454,7 +454,7 @@ public class Job extends OAObject {
     public void setViewCountWTD(int newValue) {
         int old = viewCountWTD;
         this.viewCountWTD = newValue;
-        firePropertyChange(PROPERTY_ViewCountWTD, old, this.viewCountWTD);
+        firePropertyChange(P_ViewCountWTD, old, this.viewCountWTD);
     }
     
      
@@ -467,7 +467,7 @@ public class Job extends OAObject {
     public void setSearchCountWTD(int newValue) {
         int old = searchCountWTD;
         this.searchCountWTD = newValue;
-        firePropertyChange(PROPERTY_SearchCountWTD, old, this.searchCountWTD);
+        firePropertyChange(P_SearchCountWTD, old, this.searchCountWTD);
     }
     
      
@@ -480,7 +480,7 @@ public class Job extends OAObject {
     public void setClickCountWTD(int newValue) {
         int old = clickCountWTD;
         this.clickCountWTD = newValue;
-        firePropertyChange(PROPERTY_ClickCountWTD, old, this.clickCountWTD);
+        firePropertyChange(P_ClickCountWTD, old, this.clickCountWTD);
     }
     
      
@@ -493,7 +493,7 @@ public class Job extends OAObject {
     public void setLastMTD(OADate newValue) {
         OADate old = lastMTD;
         this.lastMTD = newValue;
-        firePropertyChange(PROPERTY_LastMTD, old, this.lastMTD);
+        firePropertyChange(P_LastMTD, old, this.lastMTD);
     }
     
      
@@ -506,35 +506,35 @@ public class Job extends OAObject {
     public void setLastWTD(OADate newValue) {
         OADate old = lastWTD;
         this.lastWTD = newValue;
-        firePropertyChange(PROPERTY_LastWTD, old, this.lastWTD);
+        firePropertyChange(P_LastWTD, old, this.lastWTD);
     }
     
      
-    @OAMany(toClass = Category.class, reverseName = Category.PROPERTY_Jobs)
+    @OAMany(toClass = Category.class, reverseName = Category.P_Jobs)
     @OALinkTable(name = "JobCategoryLink", indexName = "CategoryJob", columns = {"JobId"})
     public Hub<Category> getCategories() {
         if (hubCategories == null) {
-            hubCategories = (Hub<Category>) getHub(PROPERTY_Categories);
+            hubCategories = (Hub<Category>) getHub(P_Categories);
         }
         return hubCategories;
     }
     
      
-    @OAMany(toClass = Location.class, reverseName = Location.PROPERTY_Jobs)
+    @OAMany(toClass = Location.class, reverseName = Location.P_Jobs)
     @OALinkTable(name = "JobLocationLink", indexName = "LocationJob", columns = {"JobId"})
     public Hub<Location> getLocations() {
         if (hubLocations == null) {
-            hubLocations = (Hub<Location>) getHub(PROPERTY_Locations);
+            hubLocations = (Hub<Location>) getHub(P_Locations);
         }
         return hubLocations;
     }
     
      
-    @OAOne(reverseName = Employer.PROPERTY_Jobs, required = true)
+    @OAOne(reverseName = Employer.P_Jobs, required = true)
     @OAFkey(columns = {"EmployerId"})
     public Employer getEmployer() {
         if (employer == null) {
-            employer = (Employer) getObject(PROPERTY_Employer);
+            employer = (Employer) getObject(P_Employer);
         }
         return employer;
     }
@@ -542,15 +542,15 @@ public class Job extends OAObject {
     public void setEmployer(Employer newValue) {
         Employer old = this.employer;
         this.employer = newValue;
-        firePropertyChange(PROPERTY_Employer, old, this.employer);
+        firePropertyChange(P_Employer, old, this.employer);
     }
     
      
-    @OAOne(reverseName = Folder.PROPERTY_Jobs)
+    @OAOne(reverseName = Folder.P_Jobs)
     @OAFkey(columns = {"FolderId"})
     public Folder getFolder() {
         if (folder == null) {
-            folder = (Folder) getObject(PROPERTY_Folder);
+            folder = (Folder) getObject(P_Folder);
         }
         return folder;
     }
@@ -558,14 +558,14 @@ public class Job extends OAObject {
     public void setFolder(Folder newValue) {
         Folder old = this.folder;
         this.folder = newValue;
-        firePropertyChange(PROPERTY_Folder, old, this.folder);
+        firePropertyChange(P_Folder, old, this.folder);
     }
     
      
-    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, reverseName = BatchRow.PROPERTY_Job)
+    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, reverseName = BatchRow.P_Job)
     public Hub<BatchRow> getBatchRows() {
         if (hubBatchRows == null) {
-            hubBatchRows = (Hub<BatchRow>) getHub(PROPERTY_BatchRows);
+            hubBatchRows = (Hub<BatchRow>) getHub(P_BatchRows);
         }
         return hubBatchRows;
     }

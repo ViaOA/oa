@@ -100,7 +100,7 @@ public class OAPropertyPathTree extends OATree {
 
         setAllowDnD(false);
 
-        OATreeNode nodeObject = new OATreeNode(ObjectDef.PROPERTY_DisplayName, hubObjectDef) {
+        OATreeNode nodeObject = new OATreeNode(ObjectDef.P_DisplayName, hubObjectDef) {
             @Override
             public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded,
                     boolean leaf, int row, boolean hasFocus) {
@@ -122,7 +122,7 @@ public class OAPropertyPathTree extends OATree {
         OATreeNode nodeProp, nodeCalc;
         nodeProp = nodeCalc = null;
         if (bShowProps) {
-            cpp = OAString.cpp(ObjectDef.PROPERTY_PropertyDefs, PropertyDef.PROPERTY_DisplayName);
+            cpp = OAString.cpp(ObjectDef.P_PropertyDefs, PropertyDef.P_DisplayName);
             nodeProp = new PropertyTreeNode(cpp) {
                 @Override
                 public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded,
@@ -154,7 +154,7 @@ public class OAPropertyPathTree extends OATree {
 
         if (bAllowMany || bAllowOne || bShowProps) {
             OATreeNode nodeLink = null;
-            cpp = OAString.cpp(ObjectDef.PROPERTY_LinkPropertyDefs, LinkPropertyDef.PROPERTY_Name);
+            cpp = OAString.cpp(ObjectDef.P_LinkPropertyDefs, LinkPropertyDef.P_Name);
             nodeLink = new OATreeNode(cpp) {
                 @Override
                 public HubFilter getHubFilter(Hub hub) {
@@ -177,8 +177,8 @@ public class OAPropertyPathTree extends OATree {
                             return false;
                         }
                     };
-                    String cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_CalcPropertyDefs,
-                            CalcPropertyDef.PROPERTY_IsForHub);
+                    String cpp = OAString.cpp(LinkPropertyDef.P_ToObjectDef, ObjectDef.P_CalcPropertyDefs,
+                            CalcPropertyDef.P_IsForHub);
                     hf.addDependentProperty(cpp);
                     return hf;
                 }
@@ -203,7 +203,7 @@ public class OAPropertyPathTree extends OATree {
                 OATreeNode node1, node2, node3;
                 node1 = node2 = node3 = null;
                 if (bShowProps) {
-                    cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_PropertyDefs, PropertyDef.PROPERTY_Name);
+                    cpp = OAString.cpp(LinkPropertyDef.P_ToObjectDef, ObjectDef.P_PropertyDefs, PropertyDef.P_Name);
                     node1 = new PropertyTreeNode(cpp) {
                         @Override
                         public HubFilter getHubFilter(final OATreeNodeData parentTnd, Hub hub) {
@@ -230,21 +230,21 @@ public class OAPropertyPathTree extends OATree {
                 }
 
                 if (bShowCalc) {
-                    cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_CalcPropertyDefs,
-                            CalcPropertyDef.PROPERTY_Name);
+                    cpp = OAString.cpp(LinkPropertyDef.P_ToObjectDef, ObjectDef.P_CalcPropertyDefs,
+                            CalcPropertyDef.P_Name);
                     node2 = new CalcTreeNode(cpp, false);
                     nodeLink.add(node2);
                 }
                 else if (bShowProps) {
                     // show hub calcProps only for many links
-                    cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_CalcPropertyDefs,
-                            CalcPropertyDef.PROPERTY_Name);
+                    cpp = OAString.cpp(LinkPropertyDef.P_ToObjectDef, ObjectDef.P_CalcPropertyDefs,
+                            CalcPropertyDef.P_Name);
                     node2 = new CalcTreeNode(cpp, true);
                     nodeLink.add(node2);
                 }
 
                 cpp = OAString
-                        .cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_LinkPropertyDefs, LinkPropertyDef.PROPERTY_Name);
+                        .cpp(LinkPropertyDef.P_ToObjectDef, ObjectDef.P_LinkPropertyDefs, LinkPropertyDef.P_Name);
                 node3 = new OATreeNode(cpp) {
                     @Override
                     public HubFilter getHubFilter(final OATreeNodeData parentTnd, Hub hub) {
@@ -273,8 +273,8 @@ public class OAPropertyPathTree extends OATree {
                                 return false;
                             }
                         };
-                        String cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_CalcPropertyDefs,
-                                CalcPropertyDef.PROPERTY_IsForHub);
+                        String cpp = OAString.cpp(LinkPropertyDef.P_ToObjectDef, ObjectDef.P_CalcPropertyDefs,
+                                CalcPropertyDef.P_IsForHub);
                         hf.addDependentProperty(cpp);
                         return hf;
                     }
@@ -306,7 +306,7 @@ public class OAPropertyPathTree extends OATree {
                 // show hub calc properties only for Many links
                 nodeLink = null;
 
-                cpp = OAString.cpp(ObjectDef.PROPERTY_LinkPropertyDefs, LinkPropertyDef.PROPERTY_Name);
+                cpp = OAString.cpp(ObjectDef.P_LinkPropertyDefs, LinkPropertyDef.P_Name);
                 nodeLink = new OATreeNode(cpp) {
                     @Override
                     public HubFilter getHubFilter(Hub hub) {
@@ -323,10 +323,10 @@ public class OAPropertyPathTree extends OATree {
                             }
                         };
 
-                        String cpp = OAString.cpp(LinkPropertyDef.PROPERTY_ToObjectDef, ObjectDef.PROPERTY_CalcPropertyDefs,
-                                CalcPropertyDef.PROPERTY_IsForHub);
+                        String cpp = OAString.cpp(LinkPropertyDef.P_ToObjectDef, ObjectDef.P_CalcPropertyDefs,
+                                CalcPropertyDef.P_IsForHub);
                         hf.addDependentProperty(cpp);
-                        cpp = OAString.cpp(LinkPropertyDef.PROPERTY_Type);
+                        cpp = OAString.cpp(LinkPropertyDef.P_Type);
                         hf.addDependentProperty(cpp);
                         return hf;
                     }
@@ -348,7 +348,7 @@ public class OAPropertyPathTree extends OATree {
                 nodeLink.setIcon(ii);
                 nodeObject.add(nodeLink);
 
-                cpp = OAString.cpp(ObjectDef.PROPERTY_CalcPropertyDefs, CalcPropertyDef.PROPERTY_Name);
+                cpp = OAString.cpp(ObjectDef.P_CalcPropertyDefs, CalcPropertyDef.P_Name);
                 OATreeNode node2 = new CalcTreeNode(cpp, true);
                 nodeLink.add(node2);
             }
@@ -376,7 +376,7 @@ public class OAPropertyPathTree extends OATree {
         if (this.hubAdditionalObjectDefs != null) return; //qqq remove/replace not done
         this.hubAdditionalObjectDefs = hubAdditionalObjectDefs;
         if (hubAdditionalObjectDefs != null) {
-            OATreeNode node = new OATreeNode(ObjectDef.PROPERTY_DisplayName, hubAdditionalObjectDefs);
+            OATreeNode node = new OATreeNode(ObjectDef.P_DisplayName, hubAdditionalObjectDefs);
             URL url = OAPropertyPathTree.class.getResource("image/objectIcon.gif");
             ImageIcon ii = new ImageIcon(url);
             node.setIcon(ii);
@@ -507,7 +507,7 @@ public class OAPropertyPathTree extends OATree {
 
             String value = st.nextToken();
             if (od == null) {
-                od = (ObjectDef) hubObjectDef.find(ObjectDef.PROPERTY_Name, value);
+                od = (ObjectDef) hubObjectDef.find(ObjectDef.P_Name, value);
                 if (od == null) break;
                 int pos = hubObjectDef.getPos(od);
                 if (pos < 0) break;
@@ -522,7 +522,7 @@ public class OAPropertyPathTree extends OATree {
             else {
                 // try to find as a property
                 Hub h = od.getPropertyDefs();
-                PropertyDef prop = (PropertyDef) h.find(PropertyDef.PROPERTY_Name, value);
+                PropertyDef prop = (PropertyDef) h.find(PropertyDef.P_Name, value);
                 if (prop != null) {
                     OATreeNodeData tnd = null;
                     for (int j = 0; j < nodeData.getChildCount(); j++) {
@@ -537,7 +537,7 @@ public class OAPropertyPathTree extends OATree {
                 else {
                     // try to find as a calc property
                     h = od.getCalcPropertyDefs();
-                    CalcPropertyDef calc = (CalcPropertyDef) h.find(CalcPropertyDef.PROPERTY_Name, value);
+                    CalcPropertyDef calc = (CalcPropertyDef) h.find(CalcPropertyDef.P_Name, value);
                     if (calc != null) {
                         OATreeNodeData tnd = null;
                         for (int j = 0; nodeData != null && j < nodeData.getChildCount(); j++) {
@@ -553,7 +553,7 @@ public class OAPropertyPathTree extends OATree {
                     else {
                         // try to find as a link
                         h = od.getLinkPropertyDefs();
-                        LinkPropertyDef lp = (LinkPropertyDef) h.find(LinkPropertyDef.PROPERTY_Name, value);
+                        LinkPropertyDef lp = (LinkPropertyDef) h.find(LinkPropertyDef.P_Name, value);
                         if (lp != null) {
                             OATreeNodeData tnd = null;
                             for (int j = 0; j < nodeData.getChildCount(); j++) {
@@ -630,11 +630,11 @@ public class OAPropertyPathTree extends OATree {
         Font font;
 
         public CalcTreeNode() {
-            this(OAString.cpp(ObjectDef.PROPERTY_CalcPropertyDefs, CalcPropertyDef.PROPERTY_Name), false);
+            this(OAString.cpp(ObjectDef.P_CalcPropertyDefs, CalcPropertyDef.P_Name), false);
         }
 
         public CalcTreeNode(boolean bHubCalcsOnly) {
-            this(OAString.cpp(ObjectDef.PROPERTY_CalcPropertyDefs, CalcPropertyDef.PROPERTY_Name), bHubCalcsOnly);
+            this(OAString.cpp(ObjectDef.P_CalcPropertyDefs, CalcPropertyDef.P_Name), bHubCalcsOnly);
         }
 
         public CalcTreeNode(String pp, boolean bHubCalcsOnly) {

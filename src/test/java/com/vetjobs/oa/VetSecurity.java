@@ -18,13 +18,13 @@ import com.viaoa.annotation.*;
 )
 public class VetSecurity extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Name = "Name";
+    public static final String P_Id = "Id";
+    public static final String P_Name = "Name";
      
      
-    public static final String PROPERTY_VetUsers = "VetUsers";
-    public static final String PROPERTY_VetSecurities = "VetSecurities";
-    public static final String PROPERTY_ParentVetSecurity = "ParentVetSecurity";
+    public static final String P_VetUsers = "VetUsers";
+    public static final String P_VetSecurities = "VetSecurities";
+    public static final String P_ParentVetSecurity = "ParentVetSecurity";
      
     protected int id;
     protected String name;
@@ -51,7 +51,7 @@ public class VetSecurity extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -64,31 +64,31 @@ public class VetSecurity extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
-    @OAMany(displayName = "Vet Users", toClass = VetUser.class, reverseName = VetUser.PROPERTY_VetSecurity, createMethod = false)
+    @OAMany(displayName = "Vet Users", toClass = VetUser.class, reverseName = VetUser.P_VetSecurity, createMethod = false)
     private Hub<VetUser> getVetUsers() {
         // oamodel has createMethod set to false, this method exists only for annotations.
         return null;
     }
     
      
-    @OAMany(displayName = "Vet Securities", toClass = VetSecurity.class, reverseName = VetSecurity.PROPERTY_ParentVetSecurity)
+    @OAMany(displayName = "Vet Securities", toClass = VetSecurity.class, reverseName = VetSecurity.P_ParentVetSecurity)
     public Hub<VetSecurity> getVetSecurities() {
         if (hubVetSecurities == null) {
-            hubVetSecurities = (Hub<VetSecurity>) getHub(PROPERTY_VetSecurities);
+            hubVetSecurities = (Hub<VetSecurity>) getHub(P_VetSecurities);
         }
         return hubVetSecurities;
     }
     
      
-    @OAOne(displayName = "Parent Vet Security", reverseName = VetSecurity.PROPERTY_VetSecurities)
+    @OAOne(displayName = "Parent Vet Security", reverseName = VetSecurity.P_VetSecurities)
     @OAFkey(columns = {"ParentVetSecurityId"})
     public VetSecurity getParentVetSecurity() {
         if (parentVetSecurity == null) {
-            parentVetSecurity = (VetSecurity) getObject(PROPERTY_ParentVetSecurity);
+            parentVetSecurity = (VetSecurity) getObject(P_ParentVetSecurity);
         }
         return parentVetSecurity;
     }
@@ -96,7 +96,7 @@ public class VetSecurity extends OAObject {
     public void setParentVetSecurity(VetSecurity newValue) {
         VetSecurity old = this.parentVetSecurity;
         this.parentVetSecurity = newValue;
-        firePropertyChange(PROPERTY_ParentVetSecurity, old, this.parentVetSecurity);
+        firePropertyChange(P_ParentVetSecurity, old, this.parentVetSecurity);
     }
     
      

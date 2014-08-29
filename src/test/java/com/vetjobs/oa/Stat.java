@@ -17,13 +17,13 @@ import com.viaoa.util.OADate;
 )
 public class Stat extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Date = "Date";
-    public static final String PROPERTY_EmployerLoginCount = "EmployerLoginCount";
-    public static final String PROPERTY_VetUserLoginCount = "VetUserLoginCount";
+    public static final String P_Id = "Id";
+    public static final String P_Date = "Date";
+    public static final String P_EmployerLoginCount = "EmployerLoginCount";
+    public static final String P_VetUserLoginCount = "VetUserLoginCount";
      
      
-    public static final String PROPERTY_BannerStats = "BannerStats";
+    public static final String P_BannerStats = "BannerStats";
      
     protected int id;
     protected OADate date;
@@ -51,7 +51,7 @@ public class Stat extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -64,7 +64,7 @@ public class Stat extends OAObject {
     public void setDate(OADate newValue) {
         OADate old = date;
         this.date = newValue;
-        firePropertyChange(PROPERTY_Date, old, this.date);
+        firePropertyChange(P_Date, old, this.date);
     }
     
      
@@ -77,7 +77,7 @@ public class Stat extends OAObject {
     public void setEmployerLoginCount(int newValue) {
         int old = employerLoginCount;
         this.employerLoginCount = newValue;
-        firePropertyChange(PROPERTY_EmployerLoginCount, old, this.employerLoginCount);
+        firePropertyChange(P_EmployerLoginCount, old, this.employerLoginCount);
     }
     
      
@@ -90,14 +90,14 @@ public class Stat extends OAObject {
     public void setVetUserLoginCount(int newValue) {
         int old = vetUserLoginCount;
         this.vetUserLoginCount = newValue;
-        firePropertyChange(PROPERTY_VetUserLoginCount, old, this.vetUserLoginCount);
+        firePropertyChange(P_VetUserLoginCount, old, this.vetUserLoginCount);
     }
     
      
-    @OAMany(displayName = "Banner Stats", toClass = BannerStat.class, reverseName = BannerStat.PROPERTY_Stat)
+    @OAMany(displayName = "Banner Stats", toClass = BannerStat.class, reverseName = BannerStat.P_Stat)
     public Hub<BannerStat> getBannerStats() {
         if (hubBannerStats == null) {
-            hubBannerStats = (Hub<BannerStat>) getHub(PROPERTY_BannerStats);
+            hubBannerStats = (Hub<BannerStat>) getHub(P_BannerStats);
         }
         return hubBannerStats;
     }

@@ -15,12 +15,12 @@ import com.viaoa.annotation.*;
 )
 public class MilitaryJobCode extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_JobCode = "JobCode";
-    public static final String PROPERTY_Description = "Description";
+    public static final String P_Id = "Id";
+    public static final String P_JobCode = "JobCode";
+    public static final String P_Description = "Description";
      
      
-    public static final String PROPERTY_Categories = "Categories";
+    public static final String P_Categories = "Categories";
      
     protected int id;
     protected String jobCode;
@@ -47,7 +47,7 @@ public class MilitaryJobCode extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -60,7 +60,7 @@ public class MilitaryJobCode extends OAObject {
     public void setJobCode(String newValue) {
         String old = jobCode;
         this.jobCode = newValue;
-        firePropertyChange(PROPERTY_JobCode, old, this.jobCode);
+        firePropertyChange(P_JobCode, old, this.jobCode);
     }
     
      
@@ -73,15 +73,15 @@ public class MilitaryJobCode extends OAObject {
     public void setDescription(String newValue) {
         String old = description;
         this.description = newValue;
-        firePropertyChange(PROPERTY_Description, old, this.description);
+        firePropertyChange(P_Description, old, this.description);
     }
     
      
-    @OAMany(toClass = Category.class, reverseName = Category.PROPERTY_MilitaryJobCodes)
+    @OAMany(toClass = Category.class, reverseName = Category.P_MilitaryJobCodes)
     @OALinkTable(name = "CategoryMilitaryJobCodeLink", indexName = "CategoryMilitaryJobCode", columns = {"MilitaryJobCodeId"})
     public Hub<Category> getCategories() {
         if (hubCategories == null) {
-            hubCategories = (Hub<Category>) getHub(PROPERTY_Categories);
+            hubCategories = (Hub<Category>) getHub(P_Categories);
         }
         return hubCategories;
     }

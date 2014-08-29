@@ -6,12 +6,12 @@ import com.viaoa.hub.*;
  
 public class AppHub extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Name = "Name";
-    public static final String PROPERTY_Type = "Type";
+    public static final String P_Name = "Name";
+    public static final String P_Type = "Type";
      
      
-    public static final String PROPERTY_AppModel = "AppModel";
-    public static final String PROPERTY_ObjectDef = "ObjectDef";
+    public static final String P_AppModel = "AppModel";
+    public static final String P_ObjectDef = "ObjectDef";
      
     protected String name;
     protected int type;
@@ -47,7 +47,7 @@ public class AppHub extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
@@ -58,13 +58,13 @@ public class AppHub extends OAObject {
     public void setType(int newValue) {
         int old = type;
         this.type = newValue;
-        firePropertyChange(PROPERTY_Type, old, this.type);
+        firePropertyChange(P_Type, old, this.type);
     }
     
      
     public AppModel getAppModel() {
         if (appModel == null) {
-            appModel = (AppModel) getObject(PROPERTY_AppModel);
+            appModel = (AppModel) getObject(P_AppModel);
         }
         return appModel;
     }
@@ -72,13 +72,13 @@ public class AppHub extends OAObject {
     public void setAppModel(AppModel newValue) {
         AppModel old = this.appModel;
         this.appModel = newValue;
-        firePropertyChange(PROPERTY_AppModel, old, this.appModel);
+        firePropertyChange(P_AppModel, old, this.appModel);
     }
     
      
     public ObjectDef getObjectDef() {
         if (objectDef == null) {
-            objectDef = (ObjectDef) getObject(PROPERTY_ObjectDef);
+            objectDef = (ObjectDef) getObject(P_ObjectDef);
         }
         return objectDef;
     }
@@ -86,7 +86,7 @@ public class AppHub extends OAObject {
     public void setObjectDef(ObjectDef newValue) {
         ObjectDef old = this.objectDef;
         this.objectDef = newValue;
-        firePropertyChange(PROPERTY_ObjectDef, old, this.objectDef);
+        firePropertyChange(P_ObjectDef, old, this.objectDef);
     }
     
     public String toString() {
@@ -103,8 +103,8 @@ public class AppHub extends OAObject {
         oaObjectInfo = new OAObjectInfo(new String[] {});
          
         // OALinkInfo(property, toClass, ONE/MANY, cascadeSave, cascadeDelete, reverseProperty, thisOwner)
-        oaObjectInfo.addLink(new OALinkInfo(PROPERTY_AppModel, AppModel.class, OALinkInfo.ONE, false, false, AppModel.PROPERTY_AppHubs));
-        oaObjectInfo.addLink(new OALinkInfo(PROPERTY_ObjectDef, ObjectDef.class, OALinkInfo.ONE, false, false, ""));
+        oaObjectInfo.addLink(new OALinkInfo(P_AppModel, AppModel.class, OALinkInfo.ONE, false, false, AppModel.P_AppHubs));
+        oaObjectInfo.addLink(new OALinkInfo(P_ObjectDef, ObjectDef.class, OALinkInfo.ONE, false, false, ""));
          
         // OACalcInfo(calcPropertyName, String[] { propertyPath1, propertyPathN })
         // ex: oaObjectInfo.addCalc(new OACalcInfo("calc", new String[] {"name","manager.fullName"} ));

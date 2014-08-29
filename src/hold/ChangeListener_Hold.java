@@ -50,7 +50,7 @@ public class ChangeListener {
             public @Override void beforePropertyChange(HubEvent e) {
                 String s = e.getPropertyName();
                 if (s == null) return;
-                if (s.equalsIgnoreCase(ObjectDef.PROPERTY_ParentObjectDef)) {
+                if (s.equalsIgnoreCase(ObjectDef.P_ParentObjectDef)) {
                     ObjectDef objectDef = (ObjectDef) e.getObject();
                     Property[] defs = ObjectDefDelegate.getAllProperties(objectDef);
                     vecHoldPkeys = new Vector(10,10);
@@ -64,17 +64,17 @@ public class ChangeListener {
                 if (!(e.getObject() instanceof ObjectDef)) return;
                 String s = e.getPropertyName();
                 if (s == null) return;
-                if (!s.equalsIgnoreCase(ObjectDef.PROPERTY_Name)) {
-	                if (!s.equalsIgnoreCase(ObjectDef.PROPERTY_DataSourceName)) {
-	                    if (!s.equalsIgnoreCase(ObjectDef.PROPERTY_Transient)) {
-	                        if (!s.equalsIgnoreCase(ObjectDef.PROPERTY_ParentObjectDef)) {
+                if (!s.equalsIgnoreCase(ObjectDef.P_Name)) {
+	                if (!s.equalsIgnoreCase(ObjectDef.P_DataSourceName)) {
+	                    if (!s.equalsIgnoreCase(ObjectDef.P_Transient)) {
+	                        if (!s.equalsIgnoreCase(ObjectDef.P_ParentObjectDef)) {
 	                            return;
 	                        }
                         }
                     }
                 }
                 
-                if (s.equalsIgnoreCase(ObjectDef.PROPERTY_ParentObjectDef)) {
+                if (s.equalsIgnoreCase(ObjectDef.P_ParentObjectDef)) {
                     ObjectDef objectDef = (ObjectDef) e.getObject();
                     if (e.getNewValue() == null) {     
                         if (!(e.getOldValue() instanceof ObjectDef)) return;
@@ -92,7 +92,7 @@ public class ChangeListener {
                             if (!property.getKey()) continue;
                             if (property.getTransient()) continue;
                             Property pd = new Property();
-                            property.copyInto(pd, new String[] { Property.PROPERTY_ObjectDef} );  // using exclude option
+                            property.copyInto(pd, new String[] { Property.P_ObjectDef} );  // using exclude option
                             objectDef.getProperties().insert(pd, pos++);
                         }
                         bIgnorePropertyAdd = false;
@@ -116,7 +116,7 @@ public class ChangeListener {
                 }
 
                 // this must be done after MC is sent
-                if (s.equalsIgnoreCase(ObjectDef.PROPERTY_ParentObjectDef)) {
+                if (s.equalsIgnoreCase(ObjectDef.P_ParentObjectDef)) {
                     ObjectDef objectDef = (ObjectDef) e.getObject();
                     if (e.getNewValue() != null) {
                         // remove ObjectId properties
@@ -136,7 +136,7 @@ public class ChangeListener {
                 Model md = null;
                 if (od != null) md = od.getModel();
 
-                if (s.equalsIgnoreCase(ObjectDef.PROPERTY_Name)) {
+                if (s.equalsIgnoreCase(ObjectDef.P_Name)) {
 	                Hub h = od.getLinkProperties();
 	                for (int i=0; ;i++) {
 	                    LinkProperty lp = (LinkProperty) h.elementAt(i);
@@ -206,7 +206,7 @@ public class ChangeListener {
                         if (!pd.getKey()) {
                             // see if this could be an objectId prop for a linkTo object
                             if (mc.getType() != mc.TYPE_PROPERTYCHANGE) continue;
-                            if (!mc.getProperty().equalsIgnoreCase(Property.PROPERTY_Key)) continue;
+                            if (!mc.getProperty().equalsIgnoreCase(Property.P_Key)) continue;
                         }
                         Hub hub = od.getLinkProperties();
                         for (int j=0; ;j++) {
@@ -326,7 +326,7 @@ public class ChangeListener {
                 
                 Property pd = (Property) e.getObject();
                 
-                if (s.equalsIgnoreCase(Property.PROPERTY_ObjectDef)) {
+                if (s.equalsIgnoreCase(Property.P_ObjectDef)) {
                     ObjectDef od = pd.getObjectDef();
                     if (od == null) return;
 
@@ -367,14 +367,14 @@ public class ChangeListener {
                     return;
                 }
                 else {
-                    // if (!s.equalsIgnoreCase(Property.PROPERTY_Name)) {
-                    if (!s.equalsIgnoreCase(Property.PROPERTY_Key)) {
-                        if (!s.equalsIgnoreCase(Property.PROPERTY_Index)) {
-                            if (!s.equalsIgnoreCase(Property.PROPERTY_Name)) {
-	                            if (!s.equalsIgnoreCase(Property.PROPERTY_DataSourceName)) {
-	                                if (!s.equalsIgnoreCase(Property.PROPERTY_Type)) {
-	                                    if (!s.equalsIgnoreCase(Property.PROPERTY_MaxLength)) {
-	                                        if (!s.equalsIgnoreCase(Property.PROPERTY_MinLength)) {
+                    // if (!s.equalsIgnoreCase(Property.P_Name)) {
+                    if (!s.equalsIgnoreCase(Property.P_Key)) {
+                        if (!s.equalsIgnoreCase(Property.P_Index)) {
+                            if (!s.equalsIgnoreCase(Property.P_Name)) {
+	                            if (!s.equalsIgnoreCase(Property.P_DataSourceName)) {
+	                                if (!s.equalsIgnoreCase(Property.P_Type)) {
+	                                    if (!s.equalsIgnoreCase(Property.P_MaxLength)) {
+	                                        if (!s.equalsIgnoreCase(Property.P_MinLength)) {
 	                                            return;
 	                                        }
 	                                    }
@@ -401,10 +401,10 @@ public class ChangeListener {
                 }
                 
                 s = e.getPropertyName();
-                if (s.equalsIgnoreCase(Property.PROPERTY_Key)) {
+                if (s.equalsIgnoreCase(Property.P_Key)) {
                 	updateFKeys(pd);
                 }
-                else if (s.equalsIgnoreCase(Property.PROPERTY_DataSourceName)) {
+                else if (s.equalsIgnoreCase(Property.P_DataSourceName)) {
                     ObjectDef od = pd.getObjectDef();
                 	Model md = null;
                 	if (od != null) md = od.getModel();
@@ -413,13 +413,13 @@ public class ChangeListener {
                 	}
                 	updateIndexes(e,pd);
                 }
-                else if (s.equalsIgnoreCase(Property.PROPERTY_Index)) {
+                else if (s.equalsIgnoreCase(Property.P_Index)) {
                 	updateIndexes(e,pd);
                 }
             }
             
             protected void updateIndexes(HubEvent e, Property pd) {
-				boolean bNameChange = e.getPropertyName().equalsIgnoreCase(Property.PROPERTY_DataSourceName);
+				boolean bNameChange = e.getPropertyName().equalsIgnoreCase(Property.P_DataSourceName);
             	
             	ObjectDef od = pd.getObjectDef();
                 if (od == null) return;
@@ -443,7 +443,7 @@ public class ChangeListener {
             				else {
                 				mc = new Change();
         	                    mc.type = mc.TYPE_INDEXPROPERTYCHANGE;
-        	                    mc.property = Property.PROPERTY_DataSourceName;
+        	                    mc.property = Property.P_DataSourceName;
         	                    mc.object = ipd;
         	                    mc.oldValue = e.getOldValue();
         	                    mc.newValue = e.getNewValue();
@@ -540,7 +540,7 @@ public class ChangeListener {
                 if (bIgnoreChange) return null;
                 boolean bWasId = false;
                 if (e != null && e.getPropertyName() != null) {
-                    if (e.getPropertyName().equalsIgnoreCase(Property.PROPERTY_Key)) {
+                    if (e.getPropertyName().equalsIgnoreCase(Property.P_Key)) {
                         Object obj = e.getOldValue();
                         if (obj instanceof Boolean) bWasId = ((Boolean) obj).booleanValue();
                     }
@@ -598,7 +598,7 @@ public class ChangeListener {
                         if (!pdx.getKey()) {
                             // see if this could be an objectId prop for a linkTo object
                             if (mc.getType() != mc.TYPE_PROPERTYCHANGE) continue;
-                            if (!mc.getProperty().equalsIgnoreCase(Property.PROPERTY_Key)) continue;
+                            if (!mc.getProperty().equalsIgnoreCase(Property.P_Key)) continue;
                         }
                         if (odx == od) break; 
                         Hub hub = odx.getLinkProperties();
@@ -714,7 +714,7 @@ public class ChangeListener {
             }
         };
         hubProperty = new Hub(Property.class);
-        hmProperty = new HubMerger(model.getObjectDefs(), hubProperty, ObjectDef.PROPERTY_Properties, false, null, true);
+        hmProperty = new HubMerger(model.getObjectDefs(), hubProperty, ObjectDef.P_Properties, false, null, true);
         hubProperty.addHubListener(hlProperty);
     }
 
@@ -725,7 +725,7 @@ public class ChangeListener {
             public void hubPropertyChange(HubEvent e) {
                 String s = e.getPropertyName();
                 if (s == null) return;
-    			if (!s.equalsIgnoreCase(Link.PROPERTY_LinkDataSourceName)) {
+    			if (!s.equalsIgnoreCase(Link.P_LinkDataSourceName)) {
     				return;
     			}
                 Link link = (Link) e.getObject();
@@ -740,10 +740,10 @@ public class ChangeListener {
             public void hubPropertyChange(HubEvent e) {
                 String s = e.getPropertyName();
                 if (s == null) return;
-                if (!s.equalsIgnoreCase(LinkProperty.PROPERTY_Type)) {
-                	if (!s.equalsIgnoreCase(LinkProperty.PROPERTY_Name)) {
-                		if (!s.equalsIgnoreCase(LinkProperty.PROPERTY_CreateMethod)) {
-            				if (!s.equalsIgnoreCase(LinkProperty.PROPERTY_ObjectDef)) {
+                if (!s.equalsIgnoreCase(LinkProperty.P_Type)) {
+                	if (!s.equalsIgnoreCase(LinkProperty.P_Name)) {
+                		if (!s.equalsIgnoreCase(LinkProperty.P_CreateMethod)) {
+            				if (!s.equalsIgnoreCase(LinkProperty.P_ObjectDef)) {
             					return;
                             }
                         }
@@ -752,7 +752,7 @@ public class ChangeListener {
                 LinkProperty lp = (LinkProperty) e.getObject();
 
                 // if From/ToObjectDef is changed, then need to update ObjectDefs.linkProperties
-                if (s.equalsIgnoreCase(LinkProperty.PROPERTY_ObjectDef) && (e.getOldValue() instanceof ObjectDef)) {
+                if (s.equalsIgnoreCase(LinkProperty.P_ObjectDef) && (e.getOldValue() instanceof ObjectDef)) {
                     ObjectDef od = (ObjectDef) e.getOldValue();
                     Hub h = od.getLinkProperties();
 
@@ -761,7 +761,7 @@ public class ChangeListener {
                         od.getLinkProperties().add(new LinkProperty(link, false));
                     }
                 }
-                if (s.equalsIgnoreCase(Link.PROPERTY_ToObjectDef) && (e.getOldValue() instanceof ObjectDef)) {
+                if (s.equalsIgnoreCase(Link.P_ToObjectDef) && (e.getOldValue() instanceof ObjectDef)) {
                     ObjectDef od = (ObjectDef) e.getOldValue();
                     Hub h = od.getLinkProperties();
                     LinkProperty lpd = (LinkProperty) h.find("Link", link);
@@ -780,7 +780,7 @@ public class ChangeListener {
                     return;
                 }
 
-                if (s.equalsIgnoreCase(Link.PROPERTY_FromType) || s.equalsIgnoreCase(Link.PROPERTY_ToType)) {
+                if (s.equalsIgnoreCase(Link.P_FromType) || s.equalsIgnoreCase(Link.P_ToType)) {
                 	if (link.getFromType() == link.MANY && link.getToType() == link.MANY) {
                 		// need to have LinkDataSourceName and FKeys all setup first
 	                	bIgnoreModelChanges = true;
@@ -798,7 +798,7 @@ public class ChangeListener {
                 addModelChange(mc);
 
                 s = e.getPropertyName();
-                if (s.equalsIgnoreCase(Link.PROPERTY_FromType) || s.equalsIgnoreCase(Link.PROPERTY_ToType)) {
+                if (s.equalsIgnoreCase(Link.P_FromType) || s.equalsIgnoreCase(Link.P_ToType)) {
                 	// link.updateFkeys(); // this is done in Link.java
                 }
             }    
@@ -811,7 +811,7 @@ public class ChangeListener {
                     Object obj = mc.getObject();
                     if (obj == link) {
                     	if (mc.getType() == mc.TYPE_LINKCHANGE) {
-                    		if (mc.getProperty().equals(Link.PROPERTY_FromType) || mc.getProperty().equals(Link.PROPERTY_ToType)) {
+                    		if (mc.getProperty().equals(Link.P_FromType) || mc.getProperty().equals(Link.P_ToType)) {
                     			return mc;
                     		}
                     	}
@@ -838,7 +838,7 @@ public class ChangeListener {
                         
                         if (pd.getKey()) return null;
                         if (mc.getType() == mc.TYPE_PROPERTYCHANGE) {
-                            if (mc.getProperty().equalsIgnoreCase(Property.PROPERTY_Key)) return null;
+                            if (mc.getProperty().equalsIgnoreCase(Property.P_Key)) return null;
                         }
                     }
                     else if (obj instanceof Link) {
@@ -926,7 +926,7 @@ public class ChangeListener {
         };
         
         hubLinkProperty = new Hub(LinkProperty.class);
-        hmLinkProperty = new HubMerger(model.getObjectDefs(), hubLinkProperty, ObjectDef.PROPERTY_LinkProperties, false, null, true);
+        hmLinkProperty = new HubMerger(model.getObjectDefs(), hubLinkProperty, ObjectDef.P_LinkProperties, false, null, true);
         hubLinkProperty.addHubListener(hlProperty);
         
     }
@@ -942,7 +942,7 @@ public class ChangeListener {
                 if (!(obj instanceof LinkFKey)) return;
                 LinkFKey fk = (LinkFKey) obj;
                 
-                if (s.equalsIgnoreCase(LinkFKey.PROPERTY_DataSourceName)) {
+                if (s.equalsIgnoreCase(LinkFKey.P_DataSourceName)) {
                     Model mc;
                     mc = getAdd(fk);
                     if (mc != null) {
@@ -1014,11 +1014,11 @@ public class ChangeListener {
             }
         };
         hubLinkFKeyFrom = new Hub(LinkFKey.class);
-        hmLinkFKeyFrom = new HubMerger(getLinks(), hubLinkFKeyFrom, Link.PROPERTY_FromLinkFKeys, false, null, true);
+        hmLinkFKeyFrom = new HubMerger(getLinks(), hubLinkFKeyFrom, Link.P_FromLinkFKeys, false, null, true);
         hubLinkFKeyFrom.addListener(hlLinkFKey);
     	
         hubLinkFKeyTo = new Hub(LinkFKey.class);
-        hmLinkFKeyTo = new HubMerger(getLinks(), hubLinkFKeyTo, Link.PROPERTY_ToLinkFKeys, false, null, true);
+        hmLinkFKeyTo = new HubMerger(getLinks(), hubLinkFKeyTo, Link.P_ToLinkFKeys, false, null, true);
         hubLinkFKeyTo.addListener(hlLinkFKey);
     }
     
@@ -1050,7 +1050,7 @@ public class ChangeListener {
                 Object obj = e.getObject();
                 if (!(obj instanceof Index)) return;
                 Index id = (Index) obj;
-                if (s.equalsIgnoreCase(Index.PROPERTY_DataSourceName)) {
+                if (s.equalsIgnoreCase(Index.P_DataSourceName)) {
                     Change mc = getAdd(id);
                     if (mc != null) generateCode(mc);
                     else {
@@ -1108,7 +1108,7 @@ public class ChangeListener {
             }
         };
         hubIndex = new Hub(Index.class);
-        hmIndex = new HubMerger(getObjectDefs(), hubIndex, ObjectDef.PROPERTY_Indexs, false, null, true);
+        hmIndex = new HubMerger(getObjectDefs(), hubIndex, ObjectDef.P_Indexs, false, null, true);
         hubIndex.addListener(hlIndex);
 
         
@@ -1136,7 +1136,7 @@ public class ChangeListener {
                 if (!(obj instanceof IndexProperty)) return;
                 IndexProperty ipd = (IndexProperty) obj;
                 
-                if (s.equalsIgnoreCase(IndexProperty.PROPERTY_Desc)) {
+                if (s.equalsIgnoreCase(IndexProperty.P_Desc)) {
                     Change mc = getAdd(ipd.getIndex(), ipd);
                     if (mc != null) {
                     	generateCode(mc);
@@ -1198,7 +1198,7 @@ public class ChangeListener {
             }
         };
         hubIndexProperty = new Hub(IndexProperty.class);
-        hmIndexProperty = new HubMerger(hubIndex, hubIndexProperty, Index.PROPERTY_IndexProperties, false, null, true);
+        hmIndexProperty = new HubMerger(hubIndex, hubIndexProperty, Index.P_IndexProperties, false, null, true);
         hubIndexProperty.addListener(hlIndexProperty);
     }
 

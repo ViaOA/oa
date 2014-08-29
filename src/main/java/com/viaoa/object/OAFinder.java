@@ -33,8 +33,8 @@ import com.viaoa.util.*;
  * 
  * example:
     // UserLogin
-    OAFinder<Router, UserLogin> f = new OAFinder<Router, UserLogin>(Router.PROPERTY_UserLogins);
-    String cpp = OAString.cpp(UserLogin.PROPERTY_User, User.PROPERTY_UserId);
+    OAFinder<Router, UserLogin> f = new OAFinder<Router, UserLogin>(Router.P_UserLogins);
+    String cpp = OAString.cpp(UserLogin.P_User, User.P_UserId);
     f.addLikeFilter(cpp, userId);
     UserLogin userLogin = f.findFirst(router);
  * 

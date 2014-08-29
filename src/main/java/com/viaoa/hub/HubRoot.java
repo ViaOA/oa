@@ -29,12 +29,12 @@ import com.viaoa.object.OAObjectInfoDelegate;
 
  * example:
     // get the original root
-    this.hub = hubModel.getDetailHub(Model.PROPERTY_Containers).createSharedHub();
+    this.hub = hubModel.getDetailHub(Model.P_Containers).createSharedHub();
     // create empty hub that will then always contain the root hub objects
     this.hubRoot = new Hub<Container>(Container.class);
     new HubRoot(hub, hubRoot);  // hubRoot will always have top level hub, initially using hub
     ...
-    OATreeNode node = new OATreeNode(App.PROPERTY_Label, hubRoot, hub) ... 
+    OATreeNode node = new OATreeNode(App.P_Label, hubRoot, hub) ... 
  * 
    
  * @author vvia

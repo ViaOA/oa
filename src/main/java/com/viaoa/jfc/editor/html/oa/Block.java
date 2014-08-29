@@ -32,41 +32,41 @@ import com.viaoa.util.OAString;
 @OAClass(addToCache=false, initialize=false, useDataSource=false, localOnly=true)
 public class Block extends OAObject {
 
-    public static final String PROPERTY_Width = "Width";
-    public static final String PROPERTY_Height = "Height";
+    public static final String P_Width = "Width";
+    public static final String P_Height = "Height";
     
-    public static final String PROPERTY_Margin = "Margin";
-    public static final String PROPERTY_MarginTop = "MarginTop";
-    public static final String PROPERTY_MarginBottom = "MarginBottom";
-    public static final String PROPERTY_MarginLeft = "MarginLeft";
-    public static final String PROPERTY_MarginRight = "MarginRight";
+    public static final String P_Margin = "Margin";
+    public static final String P_MarginTop = "MarginTop";
+    public static final String P_MarginBottom = "MarginBottom";
+    public static final String P_MarginLeft = "MarginLeft";
+    public static final String P_MarginRight = "MarginRight";
     
-    public static final String PROPERTY_Padding = "Padding";
-    public static final String PROPERTY_PaddingTop = "PaddingTop";
-    public static final String PROPERTY_PaddingBottom = "PaddingBottom";
-    public static final String PROPERTY_PaddingLeft = "PaddingLeft";
-    public static final String PROPERTY_PaddingRight = "PaddingRight";
+    public static final String P_Padding = "Padding";
+    public static final String P_PaddingTop = "PaddingTop";
+    public static final String P_PaddingBottom = "PaddingBottom";
+    public static final String P_PaddingLeft = "PaddingLeft";
+    public static final String P_PaddingRight = "PaddingRight";
 
-    public static final String PROPERTY_BackgroundColor = "BackgroundColor";
+    public static final String P_BackgroundColor = "BackgroundColor";
 
 
-    public static final String PROPERTY_BorderWidth = "BorderWidth";
-    public static final String PROPERTY_BorderTopWidth = "BorderTopWidth";
-    public static final String PROPERTY_BorderRightWidth = "BorderRightWidth";
-    public static final String PROPERTY_BorderBottomWidth = "BorderBottomWidth";
-    public static final String PROPERTY_BorderLeftWidth = "BorderLeftWidth";
+    public static final String P_BorderWidth = "BorderWidth";
+    public static final String P_BorderTopWidth = "BorderTopWidth";
+    public static final String P_BorderRightWidth = "BorderRightWidth";
+    public static final String P_BorderBottomWidth = "BorderBottomWidth";
+    public static final String P_BorderLeftWidth = "BorderLeftWidth";
 
-    public static final String PROPERTY_BorderColor = "BorderColor";
-    public static final String PROPERTY_BorderTopColor = "BorderTopColor";
-    public static final String PROPERTY_BorderRightColor = "BorderRightColor";
-    public static final String PROPERTY_BorderBottomColor = "BorderBottomColor";
-    public static final String PROPERTY_BorderLeftColor = "BorderLeftColor";
+    public static final String P_BorderColor = "BorderColor";
+    public static final String P_BorderTopColor = "BorderTopColor";
+    public static final String P_BorderRightColor = "BorderRightColor";
+    public static final String P_BorderBottomColor = "BorderBottomColor";
+    public static final String P_BorderLeftColor = "BorderLeftColor";
     
-    public static final String PROPERTY_BorderStyle = "BorderStyle";
-    public static final String PROPERTY_BorderTopStyle = "BorderTopStyle";
-    public static final String PROPERTY_BorderRightStyle = "BorderRightStyle";
-    public static final String PROPERTY_BorderBottomStyle = "BorderBottomStyle";
-    public static final String PROPERTY_BorderLeftStyle = "BorderLeftStyle";
+    public static final String P_BorderStyle = "BorderStyle";
+    public static final String P_BorderTopStyle = "BorderTopStyle";
+    public static final String P_BorderRightStyle = "BorderRightStyle";
+    public static final String P_BorderBottomStyle = "BorderBottomStyle";
+    public static final String P_BorderLeftStyle = "BorderLeftStyle";
     
     protected int width;
     protected int height;
@@ -116,7 +116,7 @@ public class Block extends OAObject {
     public void setBorderLeftWidth(int newValue) {
         int old = this.borderLeftWidth;
         this.borderLeftWidth = newValue;
-        firePropertyChange(PROPERTY_BorderLeftWidth, old, this.borderLeftWidth);
+        firePropertyChange(P_BorderLeftWidth, old, this.borderLeftWidth);
     }
     public int getBorderBottomWidth() {
         return borderBottomWidth;
@@ -124,7 +124,7 @@ public class Block extends OAObject {
     public void setBorderBottomWidth(int newValue) {
         int old = this.borderBottomWidth;
         this.borderBottomWidth = newValue;
-        firePropertyChange(PROPERTY_BorderBottomWidth, old, this.borderBottomWidth);
+        firePropertyChange(P_BorderBottomWidth, old, this.borderBottomWidth);
     }
     public int getBorderRightWidth() {
         return borderRightWidth;
@@ -132,7 +132,7 @@ public class Block extends OAObject {
     public void setBorderRightWidth(int newValue) {
         int old = this.borderRightWidth;
         this.borderRightWidth = newValue;
-        firePropertyChange(PROPERTY_BorderRightWidth, old, this.borderRightWidth);
+        firePropertyChange(P_BorderRightWidth, old, this.borderRightWidth);
     }
     public int getBorderTopWidth() {
         return borderTopWidth;
@@ -140,7 +140,7 @@ public class Block extends OAObject {
     public void setBorderTopWidth(int newValue) {
         int old = this.borderTopWidth;
         this.borderTopWidth = newValue;
-        firePropertyChange(PROPERTY_BorderTopWidth, old, this.borderTopWidth);
+        firePropertyChange(P_BorderTopWidth, old, this.borderTopWidth);
     }
     public int getBorderWidth() {
         return borderWidth;
@@ -148,7 +148,7 @@ public class Block extends OAObject {
     public void setBorderWidth(int newValue) {
         int old = this.borderWidth;
         this.borderWidth = newValue;
-        firePropertyChange(PROPERTY_BorderWidth, old, this.borderWidth);
+        firePropertyChange(P_BorderWidth, old, this.borderWidth);
         if (old != newValue) {
             setBorderTopWidth(newValue);
             setBorderLeftWidth(newValue);
@@ -163,7 +163,7 @@ public class Block extends OAObject {
     public void setBorderLeftStyle(String newValue) {
         String old = this.borderLeftStyle;
         this.borderLeftStyle = newValue;
-        firePropertyChange(PROPERTY_BorderLeftStyle, old, this.borderLeftStyle);
+        firePropertyChange(P_BorderLeftStyle, old, this.borderLeftStyle);
     }
     public String getBorderBottomStyle() {
         return borderBottomStyle;
@@ -171,7 +171,7 @@ public class Block extends OAObject {
     public void setBorderBottomStyle(String newValue) {
         String old = this.borderBottomStyle;
         this.borderBottomStyle = newValue;
-        firePropertyChange(PROPERTY_BorderBottomStyle, old, this.borderBottomStyle);
+        firePropertyChange(P_BorderBottomStyle, old, this.borderBottomStyle);
     }
     public String getBorderRightStyle() {
         return borderRightStyle;
@@ -179,7 +179,7 @@ public class Block extends OAObject {
     public void setBorderRightStyle(String newValue) {
         String old = this.borderRightStyle;
         this.borderRightStyle = newValue;
-        firePropertyChange(PROPERTY_BorderRightStyle, old, this.borderRightStyle);
+        firePropertyChange(P_BorderRightStyle, old, this.borderRightStyle);
     }
     public String getBorderTopStyle() {
         return borderTopStyle;
@@ -187,7 +187,7 @@ public class Block extends OAObject {
     public void setBorderTopStyle(String newValue) {
         String old = this.borderTopStyle;
         this.borderTopStyle = newValue;
-        firePropertyChange(PROPERTY_BorderTopStyle, old, this.borderTopStyle);
+        firePropertyChange(P_BorderTopStyle, old, this.borderTopStyle);
     }
     public String getBorderStyle() {
         return borderStyle;
@@ -195,7 +195,7 @@ public class Block extends OAObject {
     public void setBorderStyle(String newValue) {
         String old = this.borderStyle;
         this.borderStyle = newValue;
-        firePropertyChange(PROPERTY_BorderStyle, old, this.borderStyle);
+        firePropertyChange(P_BorderStyle, old, this.borderStyle);
         if (old != newValue) {
             setBorderTopStyle(newValue);
             setBorderLeftStyle(newValue);
@@ -210,7 +210,7 @@ public class Block extends OAObject {
     public void setBorderLeftColor(Color newValue) {
         Color old = this.borderLeftColor;
         this.borderLeftColor = newValue;
-        firePropertyChange(PROPERTY_BorderLeftColor, old, this.borderLeftColor);
+        firePropertyChange(P_BorderLeftColor, old, this.borderLeftColor);
     }
     public Color getBorderBottomColor() {
         return borderBottomColor;
@@ -218,7 +218,7 @@ public class Block extends OAObject {
     public void setBorderBottomColor(Color newValue) {
         Color old = this.borderBottomColor;
         this.borderBottomColor = newValue;
-        firePropertyChange(PROPERTY_BorderBottomColor, old, this.borderBottomColor);
+        firePropertyChange(P_BorderBottomColor, old, this.borderBottomColor);
     }
     public Color getBorderRightColor() {
         return borderRightColor;
@@ -226,7 +226,7 @@ public class Block extends OAObject {
     public void setBorderRightColor(Color newValue) {
         Color old = this.borderRightColor;
         this.borderRightColor = newValue;
-        firePropertyChange(PROPERTY_BorderRightColor, old, this.borderRightColor);
+        firePropertyChange(P_BorderRightColor, old, this.borderRightColor);
     }
     public Color getBorderTopColor() {
         return borderTopColor;
@@ -234,7 +234,7 @@ public class Block extends OAObject {
     public void setBorderTopColor(Color newValue) {
         Color old = this.borderTopColor;
         this.borderTopColor = newValue;
-        firePropertyChange(PROPERTY_BorderTopColor, old, this.borderTopColor);
+        firePropertyChange(P_BorderTopColor, old, this.borderTopColor);
     }
     public Color getBorderColor() {
         return borderColor;
@@ -242,7 +242,7 @@ public class Block extends OAObject {
     public void setBorderColor(Color newValue) {
         Color old = this.borderColor;
         this.borderColor = newValue;
-        firePropertyChange(PROPERTY_BorderColor, old, this.borderColor);
+        firePropertyChange(P_BorderColor, old, this.borderColor);
         if (old != newValue) {
             setBorderTopColor(newValue);
             setBorderLeftColor(newValue);
@@ -258,7 +258,7 @@ public class Block extends OAObject {
     public void setBackgroundColor(Color newValue) {
         Color old = this.backgroundColor;
         this.backgroundColor = newValue;
-        firePropertyChange(PROPERTY_BackgroundColor, old, this.backgroundColor);
+        firePropertyChange(P_BackgroundColor, old, this.backgroundColor);
     }
     
     public int getPaddingRight() {
@@ -267,7 +267,7 @@ public class Block extends OAObject {
     public void setPaddingRight(int newValue) {
         int old = this.paddingRight;
         this.paddingRight = newValue;
-        firePropertyChange(PROPERTY_PaddingRight, old, this.paddingRight);
+        firePropertyChange(P_PaddingRight, old, this.paddingRight);
     }
     
     public int getPaddingLeft() {
@@ -276,7 +276,7 @@ public class Block extends OAObject {
     public void setPaddingLeft(int newValue) {
         int old = this.paddingLeft;
         this.paddingLeft = newValue;
-        firePropertyChange(PROPERTY_PaddingLeft, old, this.paddingLeft);
+        firePropertyChange(P_PaddingLeft, old, this.paddingLeft);
     }
     
     public int getPaddingBottom() {
@@ -285,7 +285,7 @@ public class Block extends OAObject {
     public void setPaddingBottom(int newValue) {
         int old = this.paddingBottom;
         this.paddingBottom = newValue;
-        firePropertyChange(PROPERTY_PaddingBottom, old, this.paddingBottom);
+        firePropertyChange(P_PaddingBottom, old, this.paddingBottom);
     }
     
     public int getPaddingTop() {
@@ -294,7 +294,7 @@ public class Block extends OAObject {
     public void setPaddingTop(int newValue) {
         int old = this.paddingTop;
         this.paddingTop = newValue;
-        firePropertyChange(PROPERTY_PaddingTop, old, this.paddingTop);
+        firePropertyChange(P_PaddingTop, old, this.paddingTop);
     }
     
     public int getPadding() {
@@ -303,7 +303,7 @@ public class Block extends OAObject {
     public void setPadding(int newValue) {
         int old = this.padding;
         this.padding = newValue;
-        firePropertyChange(PROPERTY_Padding, old, this.padding);
+        firePropertyChange(P_Padding, old, this.padding);
         if (old != newValue) {
             setPaddingTop(newValue);
             setPaddingLeft(newValue);
@@ -318,7 +318,7 @@ public class Block extends OAObject {
     public void setMargin(int newValue) {
         int old = this.margin;
         this.margin = newValue;
-        firePropertyChange(PROPERTY_Margin, old, this.margin);
+        firePropertyChange(P_Margin, old, this.margin);
         if (old != newValue) {
             setMarginTop(newValue);
             setMarginLeft(newValue);
@@ -333,7 +333,7 @@ public class Block extends OAObject {
     public void setMarginRight(int newValue) {
         int old = this.marginRight;
         this.marginRight = newValue;
-        firePropertyChange(PROPERTY_MarginRight, old, this.marginRight);
+        firePropertyChange(P_MarginRight, old, this.marginRight);
     }
     public int getMarginLeft() {
 
@@ -342,7 +342,7 @@ public class Block extends OAObject {
     public void setMarginLeft(int newValue) {
         int old = this.marginLeft;
         this.marginLeft = newValue;
-        firePropertyChange(PROPERTY_MarginLeft, old, this.marginLeft);
+        firePropertyChange(P_MarginLeft, old, this.marginLeft);
     }
     public int getMarginBottom() {
         return marginBottom;
@@ -350,7 +350,7 @@ public class Block extends OAObject {
     public void setMarginBottom(int newValue) {
         int old = this.marginBottom;
         this.marginBottom = newValue;
-        firePropertyChange(PROPERTY_MarginBottom, old, this.marginBottom);
+        firePropertyChange(P_MarginBottom, old, this.marginBottom);
     }
     public int getMarginTop() {
         return marginTop;
@@ -358,7 +358,7 @@ public class Block extends OAObject {
     public void setMarginTop(int newValue) {
         int old = this.marginTop;
         this.marginTop = newValue;
-        firePropertyChange(PROPERTY_MarginTop, old, this.marginTop);
+        firePropertyChange(P_MarginTop, old, this.marginTop);
     }
     
     
@@ -370,7 +370,7 @@ public class Block extends OAObject {
     public void setHeight(int newValue) {
         int old = this.height;
         this.height = newValue;
-        firePropertyChange(PROPERTY_Height, old, this.height);
+        firePropertyChange(P_Height, old, this.height);
     }
     public int getWidth() {
         return width;
@@ -378,7 +378,7 @@ public class Block extends OAObject {
     public void setWidth(int newValue) {
         int old = this.width;
         this.width = newValue;
-        firePropertyChange(PROPERTY_Width, old, this.width);
+        firePropertyChange(P_Width, old, this.width);
     }
 
     

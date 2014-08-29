@@ -18,16 +18,16 @@ import com.viaoa.annotation.*;
 )
 public class Location extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Name = "Name";
+    public static final String P_Id = "Id";
+    public static final String P_Name = "Name";
      
      
-    public static final String PROPERTY_VetUsers = "VetUsers";
-    public static final String PROPERTY_VetUser2S = "VetUser2S";
-    public static final String PROPERTY_Jobs = "Jobs";
-    public static final String PROPERTY_Locations = "Locations";
-    public static final String PROPERTY_ParentLocation = "ParentLocation";
-    public static final String PROPERTY_BatchRows = "BatchRows";
+    public static final String P_VetUsers = "VetUsers";
+    public static final String P_VetUser2S = "VetUser2S";
+    public static final String P_Jobs = "Jobs";
+    public static final String P_Locations = "Locations";
+    public static final String P_ParentLocation = "ParentLocation";
+    public static final String P_BatchRows = "BatchRows";
      
     protected int id;
     protected String name;
@@ -54,7 +54,7 @@ public class Location extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -67,11 +67,11 @@ public class Location extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
-    @OAMany(displayName = "Vet Users", toClass = VetUser.class, reverseName = VetUser.PROPERTY_PreferLocations, createMethod = false)
+    @OAMany(displayName = "Vet Users", toClass = VetUser.class, reverseName = VetUser.P_PreferLocations, createMethod = false)
     @OALinkTable(name = "VetUserLocationLink", indexName = "VetUserPreferLocation", columns = {"LocationId"})
     private Hub<VetUser> getVetUsers() {
         // oamodel has createMethod set to false, this method exists only for annotations.
@@ -79,7 +79,7 @@ public class Location extends OAObject {
     }
     
      
-    @OAMany(displayName = "Vet User2s", toClass = VetUser.class, reverseName = VetUser.PROPERTY_RejectLocations, createMethod = false)
+    @OAMany(displayName = "Vet User2s", toClass = VetUser.class, reverseName = VetUser.P_RejectLocations, createMethod = false)
     @OALinkTable(name = "VetUserLocationLink1", indexName = "VetUserRejectLocation", columns = {"LocationId"})
     private Hub<VetUser> getVetUser2S() {
         // oamodel has createMethod set to false, this method exists only for annotations.
@@ -87,7 +87,7 @@ public class Location extends OAObject {
     }
     
      
-    @OAMany(toClass = Job.class, reverseName = Job.PROPERTY_Locations, createMethod = false)
+    @OAMany(toClass = Job.class, reverseName = Job.P_Locations, createMethod = false)
     @OALinkTable(name = "JobLocationLink", indexName = "JobLocation", columns = {"LocationId"})
     private Hub<Job> getJobs() {
         // oamodel has createMethod set to false, this method exists only for annotations.
@@ -95,20 +95,20 @@ public class Location extends OAObject {
     }
     
      
-    @OAMany(toClass = Location.class, reverseName = Location.PROPERTY_ParentLocation)
+    @OAMany(toClass = Location.class, reverseName = Location.P_ParentLocation)
     public Hub<Location> getLocations() {
         if (hubLocations == null) {
-            hubLocations = (Hub<Location>) getHub(PROPERTY_Locations);
+            hubLocations = (Hub<Location>) getHub(P_Locations);
         }
         return hubLocations;
     }
     
      
-    @OAOne(displayName = "Parent Location", reverseName = Location.PROPERTY_Locations)
+    @OAOne(displayName = "Parent Location", reverseName = Location.P_Locations)
     @OAFkey(columns = {"ParentLocationId"})
     public Location getParentLocation() {
         if (parentLocation == null) {
-            parentLocation = (Location) getObject(PROPERTY_ParentLocation);
+            parentLocation = (Location) getObject(P_ParentLocation);
         }
         return parentLocation;
     }
@@ -116,11 +116,11 @@ public class Location extends OAObject {
     public void setParentLocation(Location newValue) {
         Location old = this.parentLocation;
         this.parentLocation = newValue;
-        firePropertyChange(PROPERTY_ParentLocation, old, this.parentLocation);
+        firePropertyChange(P_ParentLocation, old, this.parentLocation);
     }
     
      
-    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, reverseName = BatchRow.PROPERTY_Location, createMethod = false)
+    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, reverseName = BatchRow.P_Location, createMethod = false)
     private Hub<BatchRow> getBatchRows() {
         // oamodel has createMethod set to false, this method exists only for annotations.
         return null;

@@ -15,11 +15,11 @@ import com.viaoa.annotation.*;
 )
 public class Privilege extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Description = "Description";
+    public static final String P_Id = "Id";
+    public static final String P_Description = "Description";
      
      
-    public static final String PROPERTY_Employers = "Employers";
+    public static final String P_Employers = "Employers";
      
     protected int id;
     protected String description;
@@ -45,7 +45,7 @@ public class Privilege extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -58,15 +58,15 @@ public class Privilege extends OAObject {
     public void setDescription(String newValue) {
         String old = description;
         this.description = newValue;
-        firePropertyChange(PROPERTY_Description, old, this.description);
+        firePropertyChange(P_Description, old, this.description);
     }
     
      
-    @OAMany(toClass = Employer.class, reverseName = Employer.PROPERTY_Privileges)
+    @OAMany(toClass = Employer.class, reverseName = Employer.P_Privileges)
     @OALinkTable(name = "EmployerPrivilegeLink", indexName = "EmployerPrivilege", columns = {"PrivilegeId"})
     public Hub<Employer> getEmployers() {
         if (hubEmployers == null) {
-            hubEmployers = (Hub<Employer>) getHub(PROPERTY_Employers);
+            hubEmployers = (Hub<Employer>) getHub(P_Employers);
         }
         return hubEmployers;
     }

@@ -189,12 +189,12 @@ import com.viaoa.util.OAString;
  * Example: OAHTMLTextPane txt = tabExamVisit.getNoteHTMLTextPane();
  * OAHTMLTextPaneController contEditor = new OAHTMLTextPaneController(txt,
  * SpellCheckDelegate.getSpellChecker(), true);
- * contEditor.bind(model.getExams(), Exam.PROPERTY_Note);
+ * contEditor.bind(model.getExams(), Exam.P_Note);
  * contEditor.createImageHandler(model.getExamImageStores(),
- * ImageStore.PROPERTY_Bytes, ImageStore.PROPERTY_OrigFileName,
- * ImageStore.PROPERTY_Id); // or: contEditor.createFileImageHandler();
+ * ImageStore.P_Bytes, ImageStore.P_OrigFileName,
+ * ImageStore.P_Id); // or: contEditor.createFileImageHandler();
  * contEditor.setEnabled(model.getUserAccess(),
- * UserAccess.PROPERTY_ExamEnabled); OAScroller scroller = new
+ * UserAccess.P_ExamEnabled); OAScroller scroller = new
  * OAScroller(contEditor.getToolBar());
  * tabExamVisit.getNotesPanel().add(scroller, BorderLayout.NORTH);
  * 

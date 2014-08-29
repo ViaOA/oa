@@ -13,13 +13,13 @@ import com.viaoa.annotation.*;
 )
 public class Customer extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Company = "Company";
-    public static final String PROPERTY_Contact = "Contact";
-    public static final String PROPERTY_Phone = "Phone";
+    public static final String P_Id = "Id";
+    public static final String P_Company = "Company";
+    public static final String P_Contact = "Contact";
+    public static final String P_Phone = "Phone";
      
      
-    public static final String PROPERTY_Banners = "Banners";
+    public static final String P_Banners = "Banners";
      
     protected int id;
     protected String company;
@@ -47,7 +47,7 @@ public class Customer extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -60,7 +60,7 @@ public class Customer extends OAObject {
     public void setCompany(String newValue) {
         String old = company;
         this.company = newValue;
-        firePropertyChange(PROPERTY_Company, old, this.company);
+        firePropertyChange(P_Company, old, this.company);
     }
     
      
@@ -73,7 +73,7 @@ public class Customer extends OAObject {
     public void setContact(String newValue) {
         String old = contact;
         this.contact = newValue;
-        firePropertyChange(PROPERTY_Contact, old, this.contact);
+        firePropertyChange(P_Contact, old, this.contact);
     }
     
      
@@ -86,14 +86,14 @@ public class Customer extends OAObject {
     public void setPhone(String newValue) {
         String old = phone;
         this.phone = newValue;
-        firePropertyChange(PROPERTY_Phone, old, this.phone);
+        firePropertyChange(P_Phone, old, this.phone);
     }
     
      
-    @OAMany(toClass = Banner.class, reverseName = Banner.PROPERTY_Customer)
+    @OAMany(toClass = Banner.class, reverseName = Banner.P_Customer)
     public Hub<Banner> getBanners() {
         if (hubBanners == null) {
-            hubBanners = (Hub<Banner>) getHub(PROPERTY_Banners);
+            hubBanners = (Hub<Banner>) getHub(P_Banners);
         }
         return hubBanners;
     }

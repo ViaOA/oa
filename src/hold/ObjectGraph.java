@@ -6,13 +6,13 @@ import com.viaoa.hub.*;
  
 public class ObjectGraph extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Name = "Name";
+    public static final String P_Name = "Name";
      
      
-    public static final String PROPERTY_ObjectGraphHubs = "ObjectGraphHubs";
-    public static final String PROPERTY_ObjectGraphs = "ObjectGraphs";
-    public static final String PROPERTY_ParentObjectGraph = "ParentObjectGraph";
-    public static final String PROPERTY_Model = "Model";
+    public static final String P_ObjectGraphHubs = "ObjectGraphHubs";
+    public static final String P_ObjectGraphs = "ObjectGraphs";
+    public static final String P_ParentObjectGraph = "ParentObjectGraph";
+    public static final String P_Model = "Model";
      
     protected String name;
      
@@ -34,13 +34,13 @@ public class ObjectGraph extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
     public Hub getObjectGraphHubs() {
         if (hubObjectGraphHubs == null) {
-            hubObjectGraphHubs = getHub(PROPERTY_ObjectGraphHubs);
+            hubObjectGraphHubs = getHub(P_ObjectGraphHubs);
         }
         return hubObjectGraphHubs;
     }
@@ -48,7 +48,7 @@ public class ObjectGraph extends OAObject {
      
     public Hub getObjectGraphs() {
         if (hubObjectGraphs == null) {
-            hubObjectGraphs = getHub(PROPERTY_ObjectGraphs);
+            hubObjectGraphs = getHub(P_ObjectGraphs);
         }
         return hubObjectGraphs;
     }
@@ -56,7 +56,7 @@ public class ObjectGraph extends OAObject {
      
     public ObjectGraph getParentObjectGraph() {
         if (parentObjectGraph == null) {
-        	parentObjectGraph = (ObjectGraph) getObject(PROPERTY_ParentObjectGraph);
+        	parentObjectGraph = (ObjectGraph) getObject(P_ParentObjectGraph);
         }
         return parentObjectGraph;
     }
@@ -64,17 +64,17 @@ public class ObjectGraph extends OAObject {
     public void setParentObjectGraph(ObjectGraph newValue) {
         ObjectGraph old = this.parentObjectGraph;
         this.parentObjectGraph = newValue;
-        firePropertyChange(PROPERTY_ParentObjectGraph, old, this.parentObjectGraph);
+        firePropertyChange(P_ParentObjectGraph, old, this.parentObjectGraph);
     }
     
     public Model getModel() {
-        if (model == null) model = (Model) getObject(PROPERTY_Model);
+        if (model == null) model = (Model) getObject(P_Model);
         return model;
     }
     public void setModel(Model model) {
         Model old = this.model;
         this.model = model;
-        firePropertyChange(PROPERTY_Model, old, model);
+        firePropertyChange(P_Model, old, model);
     }
      
     public String toString() {
@@ -91,10 +91,10 @@ public class ObjectGraph extends OAObject {
         oaObjectInfo = new OAObjectInfo(new String[] {});
          
         // OALinkInfo(property, toClass, ONE/MANY, cascadeSave, cascadeDelete, reverseProperty, thisOwner)
-        oaObjectInfo.addLink(new OALinkInfo(PROPERTY_Model,           Model.class,        OALinkInfo.ONE,  false,false, "objectGraphs"));
-        oaObjectInfo.addLink(new OALinkInfo(PROPERTY_ObjectGraphHubs, ObjectGraphHub.class, OALinkInfo.MANY, false, false, ObjectGraphHub.PROPERTY_ObjectGraph));
-        oaObjectInfo.addLink(new OALinkInfo(PROPERTY_ObjectGraphs, ObjectGraph.class, OALinkInfo.MANY, false, false, ObjectGraph.PROPERTY_ParentObjectGraph));
-        oaObjectInfo.addLink(new OALinkInfo(PROPERTY_ParentObjectGraph, ObjectGraph.class, OALinkInfo.ONE, false, false, ObjectGraph.PROPERTY_ObjectGraphs));
+        oaObjectInfo.addLink(new OALinkInfo(P_Model,           Model.class,        OALinkInfo.ONE,  false,false, "objectGraphs"));
+        oaObjectInfo.addLink(new OALinkInfo(P_ObjectGraphHubs, ObjectGraphHub.class, OALinkInfo.MANY, false, false, ObjectGraphHub.P_ObjectGraph));
+        oaObjectInfo.addLink(new OALinkInfo(P_ObjectGraphs, ObjectGraph.class, OALinkInfo.MANY, false, false, ObjectGraph.P_ParentObjectGraph));
+        oaObjectInfo.addLink(new OALinkInfo(P_ParentObjectGraph, ObjectGraph.class, OALinkInfo.ONE, false, false, ObjectGraph.P_ObjectGraphs));
          
         // OACalcInfo(calcPropertyName, String[] { propertyPath1, propertyPathN })
         // ex: oaObjectInfo.addCalc(new OACalcInfo("calc", new String[] {"name","manager.fullName"} ));

@@ -382,7 +382,7 @@ public class OAGrid implements OAJspComponent {
     }
 
     /**
-     * Ex: from: AwardType.getAvailableEcards "ECard.PROPERTY_ImageStore"
+     * Ex: from: AwardType.getAvailableEcards "ECard.P_ImageStore"
      */
     public void setServletImagePropertyPath(String propertyPath) {
         this.servletImagePropertyPath = propertyPath;

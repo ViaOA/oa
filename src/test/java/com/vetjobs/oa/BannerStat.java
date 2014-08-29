@@ -16,13 +16,13 @@ import com.viaoa.annotation.*;
 )
 public class BannerStat extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_DisplayCount = "DisplayCount";
-    public static final String PROPERTY_HitCount = "HitCount";
+    public static final String P_Id = "Id";
+    public static final String P_DisplayCount = "DisplayCount";
+    public static final String P_HitCount = "HitCount";
      
      
-    public static final String PROPERTY_Stat = "Stat";
-    public static final String PROPERTY_Banner = "Banner";
+    public static final String P_Stat = "Stat";
+    public static final String P_Banner = "Banner";
      
     protected int id;
     protected int displayCount;
@@ -50,7 +50,7 @@ public class BannerStat extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -63,7 +63,7 @@ public class BannerStat extends OAObject {
     public void setDisplayCount(int newValue) {
         int old = displayCount;
         this.displayCount = newValue;
-        firePropertyChange(PROPERTY_DisplayCount, old, this.displayCount);
+        firePropertyChange(P_DisplayCount, old, this.displayCount);
     }
     
      
@@ -76,15 +76,15 @@ public class BannerStat extends OAObject {
     public void setHitCount(int newValue) {
         int old = hitCount;
         this.hitCount = newValue;
-        firePropertyChange(PROPERTY_HitCount, old, this.hitCount);
+        firePropertyChange(P_HitCount, old, this.hitCount);
     }
     
      
-    @OAOne(reverseName = Stat.PROPERTY_BannerStats)
+    @OAOne(reverseName = Stat.P_BannerStats)
     @OAFkey(columns = {"StatId"})
     public Stat getStat() {
         if (stat == null) {
-            stat = (Stat) getObject(PROPERTY_Stat);
+            stat = (Stat) getObject(P_Stat);
         }
         return stat;
     }
@@ -92,15 +92,15 @@ public class BannerStat extends OAObject {
     public void setStat(Stat newValue) {
         Stat old = this.stat;
         this.stat = newValue;
-        firePropertyChange(PROPERTY_Stat, old, this.stat);
+        firePropertyChange(P_Stat, old, this.stat);
     }
     
      
-    @OAOne(reverseName = Banner.PROPERTY_BannerStats)
+    @OAOne(reverseName = Banner.P_BannerStats)
     @OAFkey(columns = {"BannerId"})
     public Banner getBanner() {
         if (banner == null) {
-            banner = (Banner) getObject(PROPERTY_Banner);
+            banner = (Banner) getObject(P_Banner);
         }
         return banner;
     }
@@ -108,7 +108,7 @@ public class BannerStat extends OAObject {
     public void setBanner(Banner newValue) {
         Banner old = this.banner;
         this.banner = newValue;
-        firePropertyChange(PROPERTY_Banner, old, this.banner);
+        firePropertyChange(P_Banner, old, this.banner);
     }
     
      

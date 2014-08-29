@@ -17,38 +17,38 @@ import com.viaoa.annotation.*;
 )
 public class BatchRow extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Reference = "Reference";
-    public static final String PROPERTY_RateFrom = "RateFrom";
-    public static final String PROPERTY_RateTo = "RateTo";
-    public static final String PROPERTY_Hourly = "Hourly";
-    public static final String PROPERTY_Benefits = "Benefits";
-    public static final String PROPERTY_City = "City";
-    public static final String PROPERTY_Region = "Region";
-    public static final String PROPERTY_State = "State";
-    public static final String PROPERTY_Country = "Country";
-    public static final String PROPERTY_Title = "Title";
-    public static final String PROPERTY_Description = "Description";
-    public static final String PROPERTY_Contact = "Contact";
-    public static final String PROPERTY_Email = "Email";
-    public static final String PROPERTY_Positions = "Positions";
-    public static final String PROPERTY_OrigCategory1 = "OrigCategory1";
-    public static final String PROPERTY_OrigCategory2 = "OrigCategory2";
-    public static final String PROPERTY_OrigCategory3 = "OrigCategory3";
-    public static final String PROPERTY_OrigCategory4 = "OrigCategory4";
-    public static final String PROPERTY_OrigCategory5 = "OrigCategory5";
-    public static final String PROPERTY_Contract = "Contract";
-    public static final String PROPERTY_ErrorFlag = "ErrorFlag";
-    public static final String PROPERTY_NewFlag = "NewFlag";
-    public static final String PROPERTY_Error = "Error";
-    public static final String PROPERTY_FullTime = "FullTime";
+    public static final String P_Id = "Id";
+    public static final String P_Reference = "Reference";
+    public static final String P_RateFrom = "RateFrom";
+    public static final String P_RateTo = "RateTo";
+    public static final String P_Hourly = "Hourly";
+    public static final String P_Benefits = "Benefits";
+    public static final String P_City = "City";
+    public static final String P_Region = "Region";
+    public static final String P_State = "State";
+    public static final String P_Country = "Country";
+    public static final String P_Title = "Title";
+    public static final String P_Description = "Description";
+    public static final String P_Contact = "Contact";
+    public static final String P_Email = "Email";
+    public static final String P_Positions = "Positions";
+    public static final String P_OrigCategory1 = "OrigCategory1";
+    public static final String P_OrigCategory2 = "OrigCategory2";
+    public static final String P_OrigCategory3 = "OrigCategory3";
+    public static final String P_OrigCategory4 = "OrigCategory4";
+    public static final String P_OrigCategory5 = "OrigCategory5";
+    public static final String P_Contract = "Contract";
+    public static final String P_ErrorFlag = "ErrorFlag";
+    public static final String P_NewFlag = "NewFlag";
+    public static final String P_Error = "Error";
+    public static final String P_FullTime = "FullTime";
      
      
-    public static final String PROPERTY_Categories = "Categories";
-    public static final String PROPERTY_Job = "Job";
-    public static final String PROPERTY_Batch = "Batch";
-    public static final String PROPERTY_Location = "Location";
-    public static final String PROPERTY_Folder = "Folder";
+    public static final String P_Categories = "Categories";
+    public static final String P_Job = "Job";
+    public static final String P_Batch = "Batch";
+    public static final String P_Location = "Location";
+    public static final String P_Folder = "Folder";
      
     protected int id;
     protected String reference;
@@ -101,7 +101,7 @@ public class BatchRow extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -114,7 +114,7 @@ public class BatchRow extends OAObject {
     public void setReference(String newValue) {
         String old = reference;
         this.reference = newValue;
-        firePropertyChange(PROPERTY_Reference, old, this.reference);
+        firePropertyChange(P_Reference, old, this.reference);
     }
     
      
@@ -127,7 +127,7 @@ public class BatchRow extends OAObject {
     public void setRateFrom(String newValue) {
         String old = rateFrom;
         this.rateFrom = newValue;
-        firePropertyChange(PROPERTY_RateFrom, old, this.rateFrom);
+        firePropertyChange(P_RateFrom, old, this.rateFrom);
     }
     
      
@@ -140,7 +140,7 @@ public class BatchRow extends OAObject {
     public void setRateTo(String newValue) {
         String old = rateTo;
         this.rateTo = newValue;
-        firePropertyChange(PROPERTY_RateTo, old, this.rateTo);
+        firePropertyChange(P_RateTo, old, this.rateTo);
     }
     
      
@@ -153,7 +153,7 @@ public class BatchRow extends OAObject {
     public void setHourly(String newValue) {
         String old = hourly;
         this.hourly = newValue;
-        firePropertyChange(PROPERTY_Hourly, old, this.hourly);
+        firePropertyChange(P_Hourly, old, this.hourly);
     }
     
      
@@ -166,7 +166,7 @@ public class BatchRow extends OAObject {
     public void setBenefits(String newValue) {
         String old = benefits;
         this.benefits = newValue;
-        firePropertyChange(PROPERTY_Benefits, old, this.benefits);
+        firePropertyChange(P_Benefits, old, this.benefits);
     }
     
      
@@ -179,7 +179,7 @@ public class BatchRow extends OAObject {
     public void setCity(String newValue) {
         String old = city;
         this.city = newValue;
-        firePropertyChange(PROPERTY_City, old, this.city);
+        firePropertyChange(P_City, old, this.city);
     }
     
      
@@ -192,7 +192,7 @@ public class BatchRow extends OAObject {
     public void setRegion(String newValue) {
         String old = region;
         this.region = newValue;
-        firePropertyChange(PROPERTY_Region, old, this.region);
+        firePropertyChange(P_Region, old, this.region);
     }
     
      
@@ -205,7 +205,7 @@ public class BatchRow extends OAObject {
     public void setState(String newValue) {
         String old = state;
         this.state = newValue;
-        firePropertyChange(PROPERTY_State, old, this.state);
+        firePropertyChange(P_State, old, this.state);
     }
     
      
@@ -218,7 +218,7 @@ public class BatchRow extends OAObject {
     public void setCountry(String newValue) {
         String old = country;
         this.country = newValue;
-        firePropertyChange(PROPERTY_Country, old, this.country);
+        firePropertyChange(P_Country, old, this.country);
     }
     
      
@@ -231,7 +231,7 @@ public class BatchRow extends OAObject {
     public void setTitle(String newValue) {
         String old = title;
         this.title = newValue;
-        firePropertyChange(PROPERTY_Title, old, this.title);
+        firePropertyChange(P_Title, old, this.title);
     }
     
      
@@ -244,7 +244,7 @@ public class BatchRow extends OAObject {
     public void setDescription(String newValue) {
         String old = description;
         this.description = newValue;
-        firePropertyChange(PROPERTY_Description, old, this.description);
+        firePropertyChange(P_Description, old, this.description);
     }
     
      
@@ -257,7 +257,7 @@ public class BatchRow extends OAObject {
     public void setContact(String newValue) {
         String old = contact;
         this.contact = newValue;
-        firePropertyChange(PROPERTY_Contact, old, this.contact);
+        firePropertyChange(P_Contact, old, this.contact);
     }
     
      
@@ -270,7 +270,7 @@ public class BatchRow extends OAObject {
     public void setEmail(String newValue) {
         String old = email;
         this.email = newValue;
-        firePropertyChange(PROPERTY_Email, old, this.email);
+        firePropertyChange(P_Email, old, this.email);
     }
     
      
@@ -283,7 +283,7 @@ public class BatchRow extends OAObject {
     public void setPositions(String newValue) {
         String old = positions;
         this.positions = newValue;
-        firePropertyChange(PROPERTY_Positions, old, this.positions);
+        firePropertyChange(P_Positions, old, this.positions);
     }
     
      
@@ -296,7 +296,7 @@ public class BatchRow extends OAObject {
     public void setOrigCategory1(String newValue) {
         String old = origCategory1;
         this.origCategory1 = newValue;
-        firePropertyChange(PROPERTY_OrigCategory1, old, this.origCategory1);
+        firePropertyChange(P_OrigCategory1, old, this.origCategory1);
     }
     
      
@@ -309,7 +309,7 @@ public class BatchRow extends OAObject {
     public void setOrigCategory2(String newValue) {
         String old = origCategory2;
         this.origCategory2 = newValue;
-        firePropertyChange(PROPERTY_OrigCategory2, old, this.origCategory2);
+        firePropertyChange(P_OrigCategory2, old, this.origCategory2);
     }
     
      
@@ -322,7 +322,7 @@ public class BatchRow extends OAObject {
     public void setOrigCategory3(String newValue) {
         String old = origCategory3;
         this.origCategory3 = newValue;
-        firePropertyChange(PROPERTY_OrigCategory3, old, this.origCategory3);
+        firePropertyChange(P_OrigCategory3, old, this.origCategory3);
     }
     
      
@@ -335,7 +335,7 @@ public class BatchRow extends OAObject {
     public void setOrigCategory4(String newValue) {
         String old = origCategory4;
         this.origCategory4 = newValue;
-        firePropertyChange(PROPERTY_OrigCategory4, old, this.origCategory4);
+        firePropertyChange(P_OrigCategory4, old, this.origCategory4);
     }
     
      
@@ -348,7 +348,7 @@ public class BatchRow extends OAObject {
     public void setOrigCategory5(String newValue) {
         String old = origCategory5;
         this.origCategory5 = newValue;
-        firePropertyChange(PROPERTY_OrigCategory5, old, this.origCategory5);
+        firePropertyChange(P_OrigCategory5, old, this.origCategory5);
     }
     
      
@@ -361,7 +361,7 @@ public class BatchRow extends OAObject {
     public void setContract(String newValue) {
         String old = contract;
         this.contract = newValue;
-        firePropertyChange(PROPERTY_Contract, old, this.contract);
+        firePropertyChange(P_Contract, old, this.contract);
     }
     
      
@@ -374,7 +374,7 @@ public class BatchRow extends OAObject {
     public void setErrorFlag(boolean newValue) {
         boolean old = errorFlag;
         this.errorFlag = newValue;
-        firePropertyChange(PROPERTY_ErrorFlag, old, this.errorFlag);
+        firePropertyChange(P_ErrorFlag, old, this.errorFlag);
     }
     
      
@@ -387,7 +387,7 @@ public class BatchRow extends OAObject {
     public void setNewFlag(boolean newValue) {
         boolean old = newFlag;
         this.newFlag = newValue;
-        firePropertyChange(PROPERTY_NewFlag, old, this.newFlag);
+        firePropertyChange(P_NewFlag, old, this.newFlag);
     }
     
      
@@ -400,7 +400,7 @@ public class BatchRow extends OAObject {
     public void setError(String newValue) {
         String old = error;
         this.error = newValue;
-        firePropertyChange(PROPERTY_Error, old, this.error);
+        firePropertyChange(P_Error, old, this.error);
     }
     
      
@@ -413,25 +413,25 @@ public class BatchRow extends OAObject {
     public void setFullTime(String newValue) {
         String old = fullTime;
         this.fullTime = newValue;
-        firePropertyChange(PROPERTY_FullTime, old, this.fullTime);
+        firePropertyChange(P_FullTime, old, this.fullTime);
     }
     
      
-    @OAMany(toClass = Category.class, reverseName = Category.PROPERTY_BatchRows)
+    @OAMany(toClass = Category.class, reverseName = Category.P_BatchRows)
     @OALinkTable(name = "BatchRowCategoryLink", indexName = "CategoryBatchRow", columns = {"BatchRowId"})
     public Hub<Category> getCategories() {
         if (hubCategories == null) {
-            hubCategories = (Hub<Category>) getHub(PROPERTY_Categories);
+            hubCategories = (Hub<Category>) getHub(P_Categories);
         }
         return hubCategories;
     }
     
      
-    @OAOne(reverseName = Job.PROPERTY_BatchRows)
+    @OAOne(reverseName = Job.P_BatchRows)
     @OAFkey(columns = {"JobId"})
     public Job getJob() {
         if (job == null) {
-            job = (Job) getObject(PROPERTY_Job);
+            job = (Job) getObject(P_Job);
         }
         return job;
     }
@@ -439,15 +439,15 @@ public class BatchRow extends OAObject {
     public void setJob(Job newValue) {
         Job old = this.job;
         this.job = newValue;
-        firePropertyChange(PROPERTY_Job, old, this.job);
+        firePropertyChange(P_Job, old, this.job);
     }
     
      
-    @OAOne(reverseName = Batch.PROPERTY_BatchRows, required = true)
+    @OAOne(reverseName = Batch.P_BatchRows, required = true)
     @OAFkey(columns = {"BatchId"})
     public Batch getBatch() {
         if (batch == null) {
-            batch = (Batch) getObject(PROPERTY_Batch);
+            batch = (Batch) getObject(P_Batch);
         }
         return batch;
     }
@@ -455,15 +455,15 @@ public class BatchRow extends OAObject {
     public void setBatch(Batch newValue) {
         Batch old = this.batch;
         this.batch = newValue;
-        firePropertyChange(PROPERTY_Batch, old, this.batch);
+        firePropertyChange(P_Batch, old, this.batch);
     }
     
      
-    @OAOne(reverseName = Location.PROPERTY_BatchRows)
+    @OAOne(reverseName = Location.P_BatchRows)
     @OAFkey(columns = {"LocationId"})
     public Location getLocation() {
         if (location == null) {
-            location = (Location) getObject(PROPERTY_Location);
+            location = (Location) getObject(P_Location);
         }
         return location;
     }
@@ -471,15 +471,15 @@ public class BatchRow extends OAObject {
     public void setLocation(Location newValue) {
         Location old = this.location;
         this.location = newValue;
-        firePropertyChange(PROPERTY_Location, old, this.location);
+        firePropertyChange(P_Location, old, this.location);
     }
     
      
-    @OAOne(reverseName = Folder.PROPERTY_BatchRows)
+    @OAOne(reverseName = Folder.P_BatchRows)
     @OAFkey(columns = {"FolderId"})
     public Folder getFolder() {
         if (folder == null) {
-            folder = (Folder) getObject(PROPERTY_Folder);
+            folder = (Folder) getObject(P_Folder);
         }
         return folder;
     }
@@ -487,7 +487,7 @@ public class BatchRow extends OAObject {
     public void setFolder(Folder newValue) {
         Folder old = this.folder;
         this.folder = newValue;
-        firePropertyChange(PROPERTY_Folder, old, this.folder);
+        firePropertyChange(P_Folder, old, this.folder);
     }
     
      

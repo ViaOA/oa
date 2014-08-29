@@ -25,7 +25,7 @@ import com.viaoa.object.OAObject;
  * Controls an html img "src" attribute, to use an image using the ImageSerlvet
  * 
  * Example:  if image is in object Employee.ImageStore.bytes
- * OAImage(hubEmployee, Employee.PROPERTY_EmpImageStore);
+ * OAImage(hubEmployee, Employee.P_EmpImageStore);
  * 
  * this will change the <img src=".."> to use the "/servlet/img" url
  * 

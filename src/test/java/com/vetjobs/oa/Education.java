@@ -13,11 +13,11 @@ import com.viaoa.annotation.*;
 )
 public class Education extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Name = "Name";
+    public static final String P_Id = "Id";
+    public static final String P_Name = "Name";
      
      
-    public static final String PROPERTY_VetUsers = "VetUsers";
+    public static final String P_VetUsers = "VetUsers";
      
     protected int id;
     protected String name;
@@ -42,7 +42,7 @@ public class Education extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -55,11 +55,11 @@ public class Education extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
-    @OAMany(displayName = "Vet Users", toClass = VetUser.class, reverseName = VetUser.PROPERTY_Education, createMethod = false)
+    @OAMany(displayName = "Vet Users", toClass = VetUser.class, reverseName = VetUser.P_Education, createMethod = false)
     private Hub<VetUser> getVetUsers() {
         // oamodel has createMethod set to false, this method exists only for annotations.
         return null;

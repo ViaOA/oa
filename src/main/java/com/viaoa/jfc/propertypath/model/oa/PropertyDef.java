@@ -16,11 +16,11 @@ import com.viaoa.annotation.*;
 )
 public class PropertyDef extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Name = "Name";
-    public static final String PROPERTY_DisplayName = "DisplayName";
+    public static final String P_Name = "Name";
+    public static final String P_DisplayName = "DisplayName";
      
      
-    public static final String PROPERTY_ObjectDef = "ObjectDef";
+    public static final String P_ObjectDef = "ObjectDef";
      
     protected String name;
     protected String displayName;
@@ -41,7 +41,7 @@ public class PropertyDef extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
@@ -54,14 +54,14 @@ public class PropertyDef extends OAObject {
     public void setDisplayName(String newValue) {
         String old = displayName;
         this.displayName = newValue;
-        firePropertyChange(PROPERTY_DisplayName, old, this.displayName);
+        firePropertyChange(P_DisplayName, old, this.displayName);
     }
     
      
-    @OAOne(displayName = "Object Def", reverseName = ObjectDef.PROPERTY_PropertyDefs)
+    @OAOne(displayName = "Object Def", reverseName = ObjectDef.P_PropertyDefs)
     public ObjectDef getObjectDef() {
         if (objectDef == null) {
-            objectDef = (ObjectDef) getObject(PROPERTY_ObjectDef);
+            objectDef = (ObjectDef) getObject(P_ObjectDef);
         }
         return objectDef;
     }
@@ -69,7 +69,7 @@ public class PropertyDef extends OAObject {
     public void setObjectDef(ObjectDef newValue) {
         ObjectDef old = this.objectDef;
         this.objectDef = newValue;
-        firePropertyChange(PROPERTY_ObjectDef, old, this.objectDef);
+        firePropertyChange(P_ObjectDef, old, this.objectDef);
     }
     
      

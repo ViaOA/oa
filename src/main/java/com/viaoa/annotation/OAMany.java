@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 /*
  * Defines an OAObject relationship that is of type "Many"
- * example: @OAMany (clazz=Emp.class, owner=false, reverse=Emp.PROPERTY_Dept, cascadeSave=false, cascadeDelete=false)
+ * example: @OAMany (clazz=Emp.class, owner=false, reverse=Emp.P_Dept, cascadeSave=false, cascadeDelete=false)
  */
 @Documented
 @Target(ElementType.METHOD)

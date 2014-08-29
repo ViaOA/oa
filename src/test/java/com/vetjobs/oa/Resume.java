@@ -17,19 +17,19 @@ import com.viaoa.util.OADate;
 )
 public class Resume extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Title = "Title";
-    public static final String PROPERTY_CreateDate = "CreateDate";
-    public static final String PROPERTY_Resume = "Resume";
-    public static final String PROPERTY_RefreshDate = "RefreshDate";
-    public static final String PROPERTY_Summary = "Summary";
-    public static final String PROPERTY_Hold = "Hold";
-    public static final String PROPERTY_ViewCount = "ViewCount";
-    public static final String PROPERTY_SearchCount = "SearchCount";
-    public static final String PROPERTY_ClickCount = "ClickCount";
+    public static final String P_Id = "Id";
+    public static final String P_Title = "Title";
+    public static final String P_CreateDate = "CreateDate";
+    public static final String P_Resume = "Resume";
+    public static final String P_RefreshDate = "RefreshDate";
+    public static final String P_Summary = "Summary";
+    public static final String P_Hold = "Hold";
+    public static final String P_ViewCount = "ViewCount";
+    public static final String P_SearchCount = "SearchCount";
+    public static final String P_ClickCount = "ClickCount";
      
      
-    public static final String PROPERTY_VetUser = "VetUser";
+    public static final String P_VetUser = "VetUser";
      
     protected int id;
     protected String title;
@@ -63,7 +63,7 @@ public class Resume extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -76,7 +76,7 @@ public class Resume extends OAObject {
     public void setTitle(String newValue) {
         String old = title;
         this.title = newValue;
-        firePropertyChange(PROPERTY_Title, old, this.title);
+        firePropertyChange(P_Title, old, this.title);
     }
     
      
@@ -89,7 +89,7 @@ public class Resume extends OAObject {
     public void setCreateDate(OADate newValue) {
         OADate old = createDate;
         this.createDate = newValue;
-        firePropertyChange(PROPERTY_CreateDate, old, this.createDate);
+        firePropertyChange(P_CreateDate, old, this.createDate);
     }
     
      
@@ -102,7 +102,7 @@ public class Resume extends OAObject {
     public void setResume(String newValue) {
         String old = resume;
         this.resume = newValue;
-        firePropertyChange(PROPERTY_Resume, old, this.resume);
+        firePropertyChange(P_Resume, old, this.resume);
     }
     
      
@@ -115,7 +115,7 @@ public class Resume extends OAObject {
     public void setRefreshDate(OADate newValue) {
         OADate old = refreshDate;
         this.refreshDate = newValue;
-        firePropertyChange(PROPERTY_RefreshDate, old, this.refreshDate);
+        firePropertyChange(P_RefreshDate, old, this.refreshDate);
     }
     
      
@@ -128,7 +128,7 @@ public class Resume extends OAObject {
     public void setSummary(String newValue) {
         String old = summary;
         this.summary = newValue;
-        firePropertyChange(PROPERTY_Summary, old, this.summary);
+        firePropertyChange(P_Summary, old, this.summary);
     }
     
      
@@ -141,7 +141,7 @@ public class Resume extends OAObject {
     public void setHold(boolean newValue) {
         boolean old = hold;
         this.hold = newValue;
-        firePropertyChange(PROPERTY_Hold, old, this.hold);
+        firePropertyChange(P_Hold, old, this.hold);
     }
     
      
@@ -154,7 +154,7 @@ public class Resume extends OAObject {
     public void setViewCount(int newValue) {
         int old = viewCount;
         this.viewCount = newValue;
-        firePropertyChange(PROPERTY_ViewCount, old, this.viewCount);
+        firePropertyChange(P_ViewCount, old, this.viewCount);
     }
     
      
@@ -167,7 +167,7 @@ public class Resume extends OAObject {
     public void setSearchCount(int newValue) {
         int old = searchCount;
         this.searchCount = newValue;
-        firePropertyChange(PROPERTY_SearchCount, old, this.searchCount);
+        firePropertyChange(P_SearchCount, old, this.searchCount);
     }
     
      
@@ -180,14 +180,14 @@ public class Resume extends OAObject {
     public void setClickCount(int newValue) {
         int old = clickCount;
         this.clickCount = newValue;
-        firePropertyChange(PROPERTY_ClickCount, old, this.clickCount);
+        firePropertyChange(P_ClickCount, old, this.clickCount);
     }
     
      
-    @OAOne(displayName = "Vet User", reverseName = VetUser.PROPERTY_Resume)
+    @OAOne(displayName = "Vet User", reverseName = VetUser.P_Resume)
     public VetUser getVetUser() {
         if (vetUser == null) {
-            vetUser = (VetUser) getObject(PROPERTY_VetUser);
+            vetUser = (VetUser) getObject(P_VetUser);
         }
         return vetUser;
     }
@@ -195,7 +195,7 @@ public class Resume extends OAObject {
     public void setVetUser(VetUser newValue) {
         VetUser old = this.vetUser;
         this.vetUser = newValue;
-        firePropertyChange(PROPERTY_VetUser, old, this.vetUser);
+        firePropertyChange(P_VetUser, old, this.vetUser);
     }
     
      

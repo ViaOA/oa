@@ -17,17 +17,17 @@ import com.viaoa.annotation.*;
 )
 public class EmployerUser extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_LoginId = "LoginId";
-    public static final String PROPERTY_Password = "Password";
-    public static final String PROPERTY_Email = "Email";
-    public static final String PROPERTY_Name = "Name";
-    public static final String PROPERTY_Admin = "Admin";
-    public static final String PROPERTY_Description = "Description";
+    public static final String P_Id = "Id";
+    public static final String P_LoginId = "LoginId";
+    public static final String P_Password = "Password";
+    public static final String P_Email = "Email";
+    public static final String P_Name = "Name";
+    public static final String P_Admin = "Admin";
+    public static final String P_Description = "Description";
      
      
-    public static final String PROPERTY_Employer = "Employer";
-    public static final String PROPERTY_EmpQueries = "EmpQueries";
+    public static final String P_Employer = "Employer";
+    public static final String P_EmpQueries = "EmpQueries";
      
     protected int id;
     protected String loginId;
@@ -59,7 +59,7 @@ public class EmployerUser extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -72,7 +72,7 @@ public class EmployerUser extends OAObject {
     public void setLoginId(String newValue) {
         String old = loginId;
         this.loginId = newValue;
-        firePropertyChange(PROPERTY_LoginId, old, this.loginId);
+        firePropertyChange(P_LoginId, old, this.loginId);
     }
     
      
@@ -85,7 +85,7 @@ public class EmployerUser extends OAObject {
     public void setPassword(String newValue) {
         String old = password;
         this.password = newValue;
-        firePropertyChange(PROPERTY_Password, old, this.password);
+        firePropertyChange(P_Password, old, this.password);
     }
     
      
@@ -98,7 +98,7 @@ public class EmployerUser extends OAObject {
     public void setEmail(String newValue) {
         String old = email;
         this.email = newValue;
-        firePropertyChange(PROPERTY_Email, old, this.email);
+        firePropertyChange(P_Email, old, this.email);
     }
     
      
@@ -111,7 +111,7 @@ public class EmployerUser extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
@@ -124,7 +124,7 @@ public class EmployerUser extends OAObject {
     public void setAdmin(boolean newValue) {
         boolean old = admin;
         this.admin = newValue;
-        firePropertyChange(PROPERTY_Admin, old, this.admin);
+        firePropertyChange(P_Admin, old, this.admin);
     }
     
      
@@ -137,15 +137,15 @@ public class EmployerUser extends OAObject {
     public void setDescription(String newValue) {
         String old = description;
         this.description = newValue;
-        firePropertyChange(PROPERTY_Description, old, this.description);
+        firePropertyChange(P_Description, old, this.description);
     }
     
      
-    @OAOne(reverseName = Employer.PROPERTY_EmployerUsers, required = true)
+    @OAOne(reverseName = Employer.P_EmployerUsers, required = true)
     @OAFkey(columns = {"EmployerId"})
     public Employer getEmployer() {
         if (employer == null) {
-            employer = (Employer) getObject(PROPERTY_Employer);
+            employer = (Employer) getObject(P_Employer);
         }
         return employer;
     }
@@ -153,14 +153,14 @@ public class EmployerUser extends OAObject {
     public void setEmployer(Employer newValue) {
         Employer old = this.employer;
         this.employer = newValue;
-        firePropertyChange(PROPERTY_Employer, old, this.employer);
+        firePropertyChange(P_Employer, old, this.employer);
     }
     
      
-    @OAMany(displayName = "Emp Queries", toClass = EmpQuery.class, owner = true, reverseName = EmpQuery.PROPERTY_EmployerUser, cascadeSave = true, cascadeDelete = true)
+    @OAMany(displayName = "Emp Queries", toClass = EmpQuery.class, owner = true, reverseName = EmpQuery.P_EmployerUser, cascadeSave = true, cascadeDelete = true)
     public Hub<EmpQuery> getEmpQueries() {
         if (hubEmpQueries == null) {
-            hubEmpQueries = (Hub<EmpQuery>) getHub(PROPERTY_EmpQueries);
+            hubEmpQueries = (Hub<EmpQuery>) getHub(P_EmpQueries);
         }
         return hubEmpQueries;
     }

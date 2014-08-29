@@ -15,9 +15,9 @@ import com.viaoa.annotation.*;
 )
 public class State extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Abbrev = "Abbrev";
-    public static final String PROPERTY_Name = "Name";
+    public static final String P_Id = "Id";
+    public static final String P_Abbrev = "Abbrev";
+    public static final String P_Name = "Name";
      
      
     protected int id;
@@ -42,7 +42,7 @@ public class State extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -55,7 +55,7 @@ public class State extends OAObject {
     public void setAbbrev(String newValue) {
         String old = abbrev;
         this.abbrev = newValue;
-        firePropertyChange(PROPERTY_Abbrev, old, this.abbrev);
+        firePropertyChange(P_Abbrev, old, this.abbrev);
     }
     
      
@@ -68,7 +68,7 @@ public class State extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      

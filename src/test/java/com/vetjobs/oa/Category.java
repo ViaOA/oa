@@ -18,16 +18,16 @@ import com.viaoa.annotation.*;
 )
 public class Category extends OAObject {
     private static final long serialVersionUID = 1L;
-    public static final String PROPERTY_Id = "Id";
-    public static final String PROPERTY_Name = "Name";
+    public static final String P_Id = "Id";
+    public static final String P_Name = "Name";
      
      
-    public static final String PROPERTY_Jobs = "Jobs";
-    public static final String PROPERTY_MilitaryJobCodes = "MilitaryJobCodes";
-    public static final String PROPERTY_VetUsers = "VetUsers";
-    public static final String PROPERTY_BatchRows = "BatchRows";
-    public static final String PROPERTY_Categories = "Categories";
-    public static final String PROPERTY_ParentCategory = "ParentCategory";
+    public static final String P_Jobs = "Jobs";
+    public static final String P_MilitaryJobCodes = "MilitaryJobCodes";
+    public static final String P_VetUsers = "VetUsers";
+    public static final String P_BatchRows = "BatchRows";
+    public static final String P_Categories = "Categories";
+    public static final String P_ParentCategory = "ParentCategory";
      
     protected int id;
     protected String name;
@@ -55,7 +55,7 @@ public class Category extends OAObject {
     public void setId(int newValue) {
         int old = id;
         this.id = newValue;
-        firePropertyChange(PROPERTY_Id, old, this.id);
+        firePropertyChange(P_Id, old, this.id);
     }
     
      
@@ -68,11 +68,11 @@ public class Category extends OAObject {
     public void setName(String newValue) {
         String old = name;
         this.name = newValue;
-        firePropertyChange(PROPERTY_Name, old, this.name);
+        firePropertyChange(P_Name, old, this.name);
     }
     
      
-    @OAMany(toClass = Job.class, reverseName = Job.PROPERTY_Categories, createMethod = false)
+    @OAMany(toClass = Job.class, reverseName = Job.P_Categories, createMethod = false)
     @OALinkTable(name = "JobCategoryLink", indexName = "JobCategory", columns = {"CategoryId"})
     private Hub<Job> getJobs() {
         // oamodel has createMethod set to false, this method exists only for annotations.
@@ -80,17 +80,17 @@ public class Category extends OAObject {
     }
     
      
-    @OAMany(displayName = "Military Job Codes", toClass = MilitaryJobCode.class, reverseName = MilitaryJobCode.PROPERTY_Categories)
+    @OAMany(displayName = "Military Job Codes", toClass = MilitaryJobCode.class, reverseName = MilitaryJobCode.P_Categories)
     @OALinkTable(name = "CategoryMilitaryJobCodeLink", indexName = "MilitaryJobCodeCategory", columns = {"CategoryId"})
     public Hub<MilitaryJobCode> getMilitaryJobCodes() {
         if (hubMilitaryJobCodes == null) {
-            hubMilitaryJobCodes = (Hub<MilitaryJobCode>) getHub(PROPERTY_MilitaryJobCodes);
+            hubMilitaryJobCodes = (Hub<MilitaryJobCode>) getHub(P_MilitaryJobCodes);
         }
         return hubMilitaryJobCodes;
     }
     
      
-    @OAMany(displayName = "Vet Users", toClass = VetUser.class, reverseName = VetUser.PROPERTY_Categories, createMethod = false)
+    @OAMany(displayName = "Vet Users", toClass = VetUser.class, reverseName = VetUser.P_Categories, createMethod = false)
     @OALinkTable(name = "VetUserCategoryLink", indexName = "VetUserCategory", columns = {"CategoryId"})
     private Hub<VetUser> getVetUsers() {
         // oamodel has createMethod set to false, this method exists only for annotations.
@@ -98,7 +98,7 @@ public class Category extends OAObject {
     }
     
      
-    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, reverseName = BatchRow.PROPERTY_Categories, createMethod = false)
+    @OAMany(displayName = "Batch Rows", toClass = BatchRow.class, reverseName = BatchRow.P_Categories, createMethod = false)
     @OALinkTable(name = "BatchRowCategoryLink", indexName = "BatchRowCategory", columns = {"CategoryId"})
     private Hub<BatchRow> getBatchRows() {
         // oamodel has createMethod set to false, this method exists only for annotations.
@@ -106,20 +106,20 @@ public class Category extends OAObject {
     }
     
      
-    @OAMany(toClass = Category.class, reverseName = Category.PROPERTY_ParentCategory)
+    @OAMany(toClass = Category.class, reverseName = Category.P_ParentCategory)
     public Hub<Category> getCategories() {
         if (hubCategories == null) {
-            hubCategories = (Hub<Category>) getHub(PROPERTY_Categories);
+            hubCategories = (Hub<Category>) getHub(P_Categories);
         }
         return hubCategories;
     }
     
      
-    @OAOne(displayName = "Parent Category", reverseName = Category.PROPERTY_Categories)
+    @OAOne(displayName = "Parent Category", reverseName = Category.P_Categories)
     @OAFkey(columns = {"ParentCategoryId"})
     public Category getParentCategory() {
         if (parentCategory == null) {
-            parentCategory = (Category) getObject(PROPERTY_ParentCategory);
+            parentCategory = (Category) getObject(P_ParentCategory);
         }
         return parentCategory;
     }
@@ -127,7 +127,7 @@ public class Category extends OAObject {
     public void setParentCategory(Category newValue) {
         Category old = this.parentCategory;
         this.parentCategory = newValue;
-        firePropertyChange(PROPERTY_ParentCategory, old, this.parentCategory);
+        firePropertyChange(P_ParentCategory, old, this.parentCategory);
     }
     
      

@@ -51,7 +51,7 @@ import com.viaoa.hub.*;
 
         OATreeNode node = new OATreeNode(PP_Display, getRootHub(), getHub());
         tree.add(node);
-        node.add(node, OAString.cpp(User.PROPERTY_Users)); // make recursive
+        node.add(node, OAString.cpp(User.P_Users)); // make recursive
         OATable table = new CustomTable(hub);
         table.addColumn("Users", 12, tree);        
         ...
