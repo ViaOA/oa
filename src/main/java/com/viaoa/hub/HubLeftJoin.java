@@ -189,6 +189,15 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
                     }
                 }
             }
+
+            @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                B b = (B) e.getObject();
+                OALeftJoin lj;
+                if (b != null) lj = hubCombined.find(OALeftJoin.P_B, b);
+                else lj = null;
+                hubCombined.setAO(lj);
+            }
         };
         if (propertyPath == null || propertyPath.indexOf('.') < 0) {
             hubB.addHubListener(hl, propertyPath);
