@@ -438,7 +438,9 @@ public class HubAddRemoveDelegate {
             HubDelegate.setObjectClass(thisHub, c);
         }
 
-        if (thisHub.contains(obj)) return false; // always check, even if isLoadin=true, since it could be loading cached hub 
+        // 20140904 changed from contains to indexOf, since hub might not have been added oaObj.weakHubs
+        //   this can happen when insert.setPropToMaster is called, which happens before hub is added to weakHubs
+        if (thisHub.indexOf(obj) >= 0) return false; // always check, even if isLoadin=true, since it could be loading cached hub 
         
         // 20140826 removed to make faster.  Another object could have the same objectId
         /*
