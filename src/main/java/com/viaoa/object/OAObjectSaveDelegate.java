@@ -50,8 +50,7 @@ public class OAObjectSaveDelegate {
     
     // also called by HubSaveDelegate
     public static void save(OAObject oaObj, int iCascadeRule, OACascade cascade, boolean bIsFirst) {
-
-        if (cascade.getDepth() > 35) {
+        if (cascade.getDepth() > 50) {
             if (!cascade.wasCascaded(oaObj, false)) {
                 cascade.add(oaObj);
             }
@@ -100,11 +99,13 @@ public class OAObjectSaveDelegate {
         cascade.depthSubtract();
         if (cascade.getDepth() < 1) {
             ArrayList<Object> al = cascade.getList();
-            cascade.clearList();
-            cascade.setDepth(0);
             if (al != null) {
-                for (Object obj : al) {
-                    save(((OAObject) obj), iCascadeRule, cascade, false);
+                cascade.clearList();
+                cascade.setDepth(0);
+                if (al != null) {
+                    for (Object obj : al) {
+                        save(((OAObject) obj), iCascadeRule, cascade, false);
+                    }
                 }
             }
         }

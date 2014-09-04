@@ -177,7 +177,7 @@ public class HubDataDelegate {
         }
         
         int xx = thisHub.data.vector.size();
-        if (xx >= 200 && thisHub.datam.masterObject != null && (xx%100)==0) {
+        if (xx >= 250 && thisHub.datam.masterObject != null && (xx%100)==0) {
 //System.out.println("large Hub with masterObject, Hub="+thisHub);//qqqqqqqqqqqqqq
             LOG.fine("large Hub with masterObject, Hub="+thisHub);//qqqqqqqqqqqqqq
         }

@@ -263,7 +263,9 @@ public class HubAddRemoveDelegate {
         }
 
         if (thisHub.data.sortListener != null) {
-            insert(thisHub, obj, thisHub.getCurrentSize());
+            // use getCurrentSize to guess that it will go at the end, in 
+            //  cases where this is loaded in order.
+            insert(thisHub, obj, thisHub.getCurrentSize());  
             return;
         }
         if (obj instanceof OAObjectKey) {
@@ -438,9 +440,12 @@ public class HubAddRemoveDelegate {
             HubDelegate.setObjectClass(thisHub, c);
         }
 
-        // 20140904 changed from contains to indexOf, since hub might not have been added oaObj.weakHubs
-        //   this can happen when insert.setPropToMaster is called, which happens before hub is added to weakHubs
-        if (thisHub.indexOf(obj) >= 0) return false; // always check, even if isLoadin=true, since it could be loading cached hub 
+        // 20140904
+        if (thisHub.contains(obj)) return false;
+        /** if the change below for OAObjectHubDelegate.addHub is done after
+         * calling setPropertyToMasterHub, then indexOf will need to be used instead of contains(..)   
+         */
+        // if (thisHub.indexOf(obj) >= 0) return false; // always check, even if isLoadin=true, since it could be loading cached hub 
         
         // 20140826 removed to make faster.  Another object could have the same objectId
         /*
@@ -509,12 +514,21 @@ public class HubAddRemoveDelegate {
         //was: boolean b = HubDataDelegate._insert(thisHub, key, obj, pos, false);  // false=dont lock, since this method is locked
         boolean b = HubDataDelegate._insert(thisHub, obj, pos, false);  // false=dont lock, since this method is locked
         if (!b) return b;
+
+        /* 20140904 this is moved before setPropertyToMasterHub, so that
+         * hub.contains(obj) will return true.
+         */
+        if (thisHub.isOAObject()) OAObjectHubDelegate.addHub((OAObject)obj,thisHub);
         
-        // moved before listeners are notified.  Else listeners could ask for more objects
+        // moved before listeners are notified.  Else listeners could ask for it.
         HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
 
+/* 20140904 I'm not sure why this was needed to be after setPropertyToMaster,
+ * but it is now moved before so that contains(obj) will return true. 
+ *         
         // 20130726 this needs to be done after setPropertyToMasterHub
         if (thisHub.isOAObject()) OAObjectHubDelegate.addHub((OAObject)obj,thisHub);
+*/        
         
         // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
         if (thisHub.getRootHub() == thisHub) {
