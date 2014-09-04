@@ -277,8 +277,10 @@ public class HubAddRemoveDelegate {
             HubDelegate.setObjectClass(thisHub, c);
         }
         
+        // need to check even if isLoading=true, since datasource could autoadd to a cache hub
+        if (thisHub.contains(obj)) return;
+
         if (!thisHub.isLoading()) {
-            if (thisHub.contains(obj)) return;
             String s = canAddMsg(thisHub, obj);
             if (s != null) {
                 throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
@@ -436,7 +438,7 @@ public class HubAddRemoveDelegate {
             HubDelegate.setObjectClass(thisHub, c);
         }
 
-        if (!thisHub.isLoading() && thisHub.contains(obj)) return false; 
+        if (thisHub.contains(obj)) return false; // always check, even if isLoadin=true, since it could be loading cached hub 
         
         // 20140826 removed to make faster.  Another object could have the same objectId
         /*

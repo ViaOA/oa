@@ -34,6 +34,8 @@ public class OALeftJoin<A extends OAObject, B extends OAObject> extends OAObject
     
     public static final String P_A = "A"; 
     public static final String P_B = "B"; 
+    public static final String PROPERTY_A = "A"; 
+    public static final String PROPERTY_B = "B"; 
     private A a;
     private B b;
     
