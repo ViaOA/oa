@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
 import com.viaoa.remote.multiplexer.OARemoteThread;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.hub.Hub;
 import com.viaoa.transaction.OATransaction;
@@ -1049,6 +1050,14 @@ public class OAThreadLocalDelegate {
     protected static void clearRunnables(OAThreadLocal ti) {
         if (ti == null) return;
         ti.alRunnable = null;
+    }
+    
+    /**
+     * Flag that can be set to allow messages from OARemoteThread to be
+     * sent to other clients/server.
+     */
+    public static boolean setSendMessages(boolean b) {
+        return OARemoteThreadDelegate.sendMessages(b);
     }
 }
 
