@@ -353,7 +353,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     public final boolean equals(Object obj) {
         if (obj == null) return false;
         if (obj == this) return true;
-        if (!obj.getClass().equals(this.getClass())) return false;
+        //20140916 removed: if (!obj.getClass().equals(this.getClass())) return false;
         return OAObjectKeyDelegate.getKey(this).equals(obj);
     }
 
