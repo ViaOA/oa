@@ -111,6 +111,7 @@ public class OATableColumn {
 
     private Hub hubMethodHub; // 2006/12/11
 
+/***qqqqqqq OLD    
     // methods gets set to null whenever Hub or PropertyPath get changed
     public Method[] getMethods_OLD(Hub hub) {
         if (methods != null && hub == hubMethodHub) return methods;
@@ -234,6 +235,7 @@ public class OATableColumn {
 
         return methods;
     }
+*/
 
     public void setMethods(Method[] m) {
         methods = m;
