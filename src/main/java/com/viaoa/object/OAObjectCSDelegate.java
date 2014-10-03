@@ -195,14 +195,23 @@ public class OAObjectCSDelegate {
 	    @return true if delete was sent to server, false if it was not sent.
 	    @see #delete()
 	*/
-	protected static boolean delete(OAObject oaObj) {
-	    if (oaObj == null) return false;
-        RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
-        if (rs != null) {
-            return rs.delete(oaObj.getClass(), oaObj.getObjectKey());
-        }       
-	    return false;
-	}
+    protected static boolean delete(OAObject obj) {
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        if (rs == null) return false;
+        
+        if (!OARemoteThreadDelegate.shouldSendMessages()) return false;
+        
+        if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return false;
+        if (OAThreadLocalDelegate.isSkipObjectInitialize()) return false;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return false;
+
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
+        if (oi.getLocalOnly()) return false;
+
+        OAObjectKey key = obj.getObjectKey();
+        rs.delete(obj.getClass(), key);
+        return true;
+    }
 
     /**
      * Remove object from each workstation.

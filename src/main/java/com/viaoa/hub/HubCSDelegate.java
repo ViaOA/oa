@@ -273,7 +273,9 @@ public class HubCSDelegate {
         String prop = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
         if (prop == null) return false;
 
-        RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        if (rs == null) return false;
+        
         rs.deleteAll(master.getClass(), master.getObjectKey(), prop);
         return true;
     }

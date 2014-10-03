@@ -40,67 +40,28 @@ import com.viaoa.util.OAString;
 
 public class OAObjectDeleteDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectDeleteDelegate.class.getName());
-    /**
-	    Same as delete, without first calling canDelete.
-	    @see #delete()
-	*/
-	public static void delete(OAObject oaObj) {
-		if (OAObjectCSDelegate.isWorkstation()) {
-		    if (OAObjectCSDelegate.delete(oaObj)) {
-		        OARemoteThreadDelegate.startNextThread(); // will be processed by OAObjectServerimpl (delete will be done on server)
-		        return;
-		    }
-		    else {
-		        if (!OAObjectInfoDelegate.getOAObjectInfo(oaObj).getLocalOnly()) {
-		            return;
-		        }
-		        // else, local only object that needs to be removed locally only
-		    }
-		}
 
-		/*
-        OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
-        String s = String.format("Delete, class=%s, id=%s",
-                OAString.getClassName(oaObj.getClass()),
-                key.toString()
-        );
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-        if (oi.bUseDataSource) {
-            OAObject.OALOG.fine(s);
+    public static void delete(OAObject oaObj) {
+	    boolean b = OAObjectCSDelegate.delete(oaObj);
+        try {
+            if (b) OAThreadLocalDelegate.setSuppressCSMessages(true);
+    		OACascade cascade = new OACascade();
+            delete(oaObj, cascade);
         }
-        */
-		
-		OACascade cascade = new OACascade();
-        delete(oaObj, cascade);
+        finally {
+            if (b) OAThreadLocalDelegate.setSuppressCSMessages(false);
+            OARemoteThreadDelegate.startNextThread(); 
+        }
 	}
 
-	
-	// 20090822
 	/**
 	 * Used to know if an object has been deleted, by calling OAObject.delete().
-	 * This will send message, and remove oaObj from any other Hubs.
-	 * @param oaObj
-	 * @param tf
 	 */
     public static void setDeleted(OAObject oaObj, boolean tf) {
         if (oaObj.deletedFlag != tf) {
             boolean bOld = oaObj.deletedFlag;
             oaObj.deletedFlag = tf;
             OAObjectEventDelegate.firePropertyChange(oaObj, OAObjectDelegate.WORD_Deleted, bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, oaObj.deletedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
-            if (tf) {
-                if (OARemoteThreadDelegate.isRemoteThread()) {
-                    // remove from all hubs - in case the object was used in other hubs that were not used on the server where the delete is performed.
-                    WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
-                    if (refs != null) {
-                        for (WeakReference<Hub<?>> ref : refs) {
-                            if (ref == null) continue;
-                            Hub h = ref.get();
-                            if (h == null) continue;
-                            HubAddRemoveDelegate.remove(h, oaObj, true, true, true, true, true, false);  // force, send, deleting, setAO
-                        }
-                    }
-                }
-            }
         }
     }
 	

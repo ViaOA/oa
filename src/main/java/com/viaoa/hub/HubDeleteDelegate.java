@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.*;
 import com.viaoa.ds.OADataSource;
 
@@ -30,28 +31,18 @@ import com.viaoa.ds.OADataSource;
  *
  */
 public class HubDeleteDelegate {
-/*was
+    
     public static void deleteAll(Hub thisHub) {
-        OACascade cascade = new OACascade();
-        HubDeleteDelegate.deleteAll(thisHub, cascade);
-    }
-*/
-    // 20120325
-    public static void deleteAll(Hub thisHub) {
-        if (!OASyncDelegate.isServer()) {
-            if (HubCSDelegate.deleteAll(thisHub)) {
-                return;
-            }
-            else {
-                if (!OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass()).getLocalOnly()) {
-                    return;
-                }
-                // else, local only object that needs to be removed locally only
-            }
+        boolean b = thisHub.getSize() > 0 && HubCSDelegate.deleteAll(thisHub);
+        try {
+            if (b) OAThreadLocalDelegate.setSuppressCSMessages(true);
+            OACascade cascade = new OACascade();
+            deleteAll(thisHub, cascade);
         }
-
-        OACascade cascade = new OACascade();
-        deleteAll(thisHub, cascade);
+        finally {
+            if (b) OAThreadLocalDelegate.setSuppressCSMessages(false);
+            OARemoteThreadDelegate.startNextThread(); 
+        }
     }
     
     

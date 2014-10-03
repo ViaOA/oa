@@ -560,7 +560,10 @@ public class OAObjectEventDelegate {
 	        try {
 	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)oldObj, toLinkInfo.getName())) { 
 	            	obj = OAObjectReflectDelegate.getProperty((OAObject)oldObj, toLinkInfo.getName()); 
-	    	        if (obj instanceof Hub) ((Hub) obj).remove(oaObj);
+	    	        if (obj instanceof Hub) {
+	    	            Hub h = (Hub) obj;
+	    	            if (h.contains(oaObj)) h.remove(oaObj);
+	    	        }
 	        	}
 	        }
 	        catch (Exception e) {

@@ -271,6 +271,10 @@ public class HubMerger {
     }
 
     private boolean isUsed(Object objFind, Node nodeFind) {
+if (DEBUG) {//vvvvvvvqqqqqqq
+    int qq = 0;
+    qq++;
+}
         if (bIgnoreIsUsedFlag) return false;
         if (!bEnabled) return false;
         // go back to dataRoot, or closest type=One

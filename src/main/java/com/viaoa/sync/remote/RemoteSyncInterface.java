@@ -38,6 +38,9 @@ public interface RemoteSyncInterface {
     
     boolean moveObjectInHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName,  int posFrom, int posTo);
     boolean sort(Class objectClass, OAObjectKey objectKey, String hubPropertyName, String propertyPaths, boolean bAscending, Comparator comp);
+
+    boolean delete(Class objectClass, OAObjectKey objectKey);
+    boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName);
 }
 
 

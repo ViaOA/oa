@@ -36,18 +36,6 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
         return "OASyncServer";
     }
 
-    @Override
-    public boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
-        OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (object == null) return false;
-        
-        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
-        if (h == null) return false;
-
-        h.deleteAll();
-        return true;
-    }
-
     protected Hub getHub(OAObject obj, String hubPropertyName, boolean bAutoLoad) {
         if (!bAutoLoad && !OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName)) return null;
         Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);
@@ -67,17 +55,6 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
         return bResult;
     }
 
-    @Override
-    public boolean delete(Class objectClass, OAObjectKey objectKey) {
-        OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
-        boolean bResult;
-        if (obj != null) {
-            obj.delete();
-            bResult = true;
-        }
-        else bResult = false;
-        return bResult;
-    }
 
     @Override
     public int getNextFiftyObjectGuids() {
