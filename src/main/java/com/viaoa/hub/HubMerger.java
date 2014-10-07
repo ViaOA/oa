@@ -271,10 +271,6 @@ public class HubMerger {
     }
 
     private boolean isUsed(Object objFind, Node nodeFind) {
-if (DEBUG) {//vvvvvvvqqqqqqq
-    int qq = 0;
-    qq++;
-}
         if (bIgnoreIsUsedFlag) return false;
         if (!bEnabled) return false;
         // go back to dataRoot, or closest type=One
@@ -1334,6 +1330,7 @@ if (DEBUG) {//vvvvvvvqqqqqqq
         @Override
         public void afterRemove(HubEvent e) {
             Object obj = e.getObject();
+            
             if (obj != null) {
                 if (obj.getClass().equals(hubCombined.getObjectClass())) {
                     HubMerger.this.afterRemoveRealHub(e);
@@ -1452,6 +1449,7 @@ if (DEBUG) {//vvvvvvvqqqqqqq
 
             if (node.child.liFromParentToChild.getType() != OALinkInfo.ONE) return;
             if (!node.child.liFromParentToChild.getName().equalsIgnoreCase(prop)) return;
+
 
             // 20110324 data might not have been created,
             if (node.child.data == null) return;

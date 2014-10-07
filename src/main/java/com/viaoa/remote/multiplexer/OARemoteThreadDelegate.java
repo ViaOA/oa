@@ -27,18 +27,28 @@ public class OARemoteThreadDelegate {
         return (t instanceof OARemoteThread);
     }
 
+    /**
+     * a message queue is used to have another thread call event listeners,
+     * so that the remote msg queue can have it's messages handled quickly.
+     */
     public static boolean shouldMessageBeQueued() {
         Thread t = Thread.currentThread();
         if (!(t instanceof OARemoteThread)) return false;
         OARemoteThread rt = (OARemoteThread) t;
-        return rt.getShouldQueueEvents();
+        
+        if (!rt.getShouldQueueEvents()) return false;
+        // 20141006 delete also causes other events that can change Hub/OAObj.properties, so events will need to be sent out.
+        if (OAThreadLocalDelegate.isDeleting()) return false;
+        return true;
     }
     
+    /**
+     * used to check to make sure that a RemoteThread is not holding up the msg queue
+     */
     public static boolean isSafeToCallRemoteMethod() {
         Thread t = Thread.currentThread();
         if (!(t instanceof OARemoteThread)) return true;
         OARemoteThread rt = (OARemoteThread) t;
-        if (!rt.getShouldQueueEvents()) return true;
         if (rt.startedNextThread) return true;
         return false;
     }
@@ -49,13 +59,15 @@ public class OARemoteThreadDelegate {
         return ((OARemoteThread) t).getSendMessages();
     }
 
+    /**
+     * this will start another thread to process the next msg in the queue.
+     * returns true if current thread is remoteThread.
+     */
     public static void startNextThread() {
         Thread t = Thread.currentThread();
         if (t instanceof OARemoteThread) {
             OARemoteThread rt = (OARemoteThread) t;
-            if (rt.getShouldQueueEvents() || OASyncDelegate.isServer()) {
-                ((OARemoteThread) t).startNextThread();
-            }
+            if (!rt.startedNextThread) rt.startNextThread();
         }
     }
     

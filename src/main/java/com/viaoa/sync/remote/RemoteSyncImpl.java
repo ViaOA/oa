@@ -54,8 +54,6 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         Hub h = getHub(object, hubPropertyName, false);
         if (h == null) return false;
 
-System.out.println("======>> deleteAll =>"+h);        
-        
         h.deleteAll();
         return true;
     }
@@ -78,7 +76,6 @@ System.out.println("======>> deleteAll =>"+h);
     @Override
     public boolean removeObject(Class objectClass, OAObjectKey objectKey) {
         Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
-System.out.println("======>> RemoveObject =>"+obj);        
         boolean bResult;
         if (obj != null) {
             OAObjectCacheDelegate.removeObject((OAObject) obj);
@@ -171,7 +168,6 @@ System.out.println("======>> RemoveObject =>"+obj);
         if (objectx == null) {
             return false;
         }
-System.out.println("======>> removeFromHub obj=>"+objectx+", hub="+h);        
         h.remove(objectx);
         return true;
     }
@@ -187,7 +183,6 @@ System.out.println("======>> removeFromHub obj=>"+objectx+", hub="+h);
         if (h == null) {
             return false;
         }
-System.out.println("======>> removeAllFromHub obj=>"+object+", hub="+h);        
         h.removeAll();
         return true;
     }

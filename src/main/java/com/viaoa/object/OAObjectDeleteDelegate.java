@@ -42,9 +42,9 @@ public class OAObjectDeleteDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectDeleteDelegate.class.getName());
 
     public static void delete(OAObject oaObj) {
-	    boolean b = OAObjectCSDelegate.delete(oaObj);
+	    boolean b = OAObjectCSDelegate.delete(oaObj);  // this will send to other clients
         try {
-            if (b) OAThreadLocalDelegate.setSuppressCSMessages(true);
+            if (b) OAThreadLocalDelegate.setSuppressCSMessages(true); // dont send other events out to clients (make atomic)
     		OACascade cascade = new OACascade();
             delete(oaObj, cascade);
         }
