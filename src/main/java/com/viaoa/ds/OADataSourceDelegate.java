@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 import com.viaoa.ds.jdbc.OADataSourceJDBC;
+import com.viaoa.ds.jdbc.connection.OAConnection;
+import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.transaction.OATransaction;
 
 public class OADataSourceDelegate {
 

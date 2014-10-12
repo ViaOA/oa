@@ -152,37 +152,61 @@ public class ConnectionPool implements Runnable {
      */
     public Connection getConnection() throws Exception {
         OAConnection c = getOAConnection();
+        if (c == null) return null;
         return c.connection;
     }
     
     protected OAConnection getOAConnection() throws Exception {
+        OATransaction tran = OAThreadLocalDelegate.getTransaction();
+
+        OAConnection con = null;
+        if (tran != null) {
+            con = (OAConnection) tran.get(this);
+            if (con != null) return con;
+        }
+
         synchronized(vecConnection) {
             int x = vecConnection.size();
             for (int i=(x-1); i>=0; i--) {
-                OAConnection con = (OAConnection) vecConnection.elementAt(i);
+                con = (OAConnection) vecConnection.elementAt(i);
                 if (!con.bAvailable) continue;
                 if (con.connection.isClosed()) {
                     vecConnection.removeElementAt(i);
                     x--;
                     continue;
                 }
-                if (con.getNumberOfUsedStatements() > 0) continue;
-                con.bAvailable = false;
-                return con;
+                if ((tran != null || !dbmd.getAllowStatementPooling()) && con.getNumberOfUsedStatements() > 0) continue;
+                break;
             }
-            if (x >= dbmd.maxConnections) return null;
+            if (con != null) {
+                con.bAvailable = (tran == null);
+            }
+            else if (x >= dbmd.maxConnections) {
+                return null;
+            }
+            
         }
 
-        Class.forName(dbmd.driverJDBC).newInstance();
-        Connection connection = DriverManager.getConnection(dbmd.urlJDBC, dbmd.user, dbmd.password);
-        connection.setAutoCommit(true);
-        connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
-        OAConnection con = new OAConnection(connection);
-        con.bAvailable = false;
-
+        if (con == null) {
+            Class.forName(dbmd.driverJDBC).newInstance();
+            Connection connection = DriverManager.getConnection(dbmd.urlJDBC, dbmd.user, dbmd.password);
+            connection.setAutoCommit(true);
+            connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
+            con = new OAConnection(connection);
+        }
+        
         synchronized(vecConnection) {
             vecConnection.addElement(con);
         }
+
+        if (tran != null) {
+            con.connection.setTransactionIsolation(tran.getTransactionIsolationLevel());
+            con.connection.setAutoCommit(false);
+            tran.put(this, con);
+            MyOATransactionListener tl = new MyOATransactionListener(con);
+            tran.addTransactionListener(tl);
+        }
+
         return con;
     }
 
@@ -221,12 +245,6 @@ public class ConnectionPool implements Runnable {
         OAConnection conx = null;
         if (tran != null) {
             conx = getOAConnection();
-            if (conx == null) throw new Exception("No available connection (max exceeded)");
-            conx.connection.setTransactionIsolation(tran.getTransactionIsolationLevel());
-            conx.connection.setAutoCommit(false);
-            tran.put(this, conx);
-            MyOATransactionListener tl = new MyOATransactionListener(conx);
-            tran.addTransactionListener(tl);
         }
         else {
             // use an existing connection
@@ -246,7 +264,6 @@ public class ConnectionPool implements Runnable {
                 if (conx == null || (conx.getNumberOfUsedStatements() > 0 && x < dbmd.maxConnections)) {
                     conx = getOAConnection();
                     if (conx == null) return null; // connections have maxed out
-                    conx.bAvailable = true;  // can be shared for other statements
                 }
             }
         }
@@ -266,8 +283,7 @@ public class ConnectionPool implements Runnable {
                     conx.connection.commit();
                 }
                 catch (SQLException e) {
-                    System.out.println("OATransactionListener.commit() exception: "+e);
-                    e.printStackTrace();
+                    LOG.log(Level.WARNING, "OATransactionListener.commit()", e);
                 }
                 finally {
                     releaseConnection(conx.connection);
@@ -281,8 +297,7 @@ public class ConnectionPool implements Runnable {
                     conx.connection.rollback();
                 }
                 catch (SQLException e) {
-                    System.out.println("OATransactionListener.rollback() exception: "+e);
-                    e.printStackTrace();
+                    LOG.log(Level.WARNING, "OATransactionListener.rollback()", e);
                 }
                 finally {
                     releaseConnection(conx.connection);

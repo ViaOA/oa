@@ -128,7 +128,7 @@ static long tsPPLast = 0;
 
     public Statement getStatement(String message) throws SQLException {
         Statement statement = null;
-        message = OAString.format(new OADateTime(),"MM/dd HH:mm:ss") + " " + message;
+        //message = OAString.format(new OADateTime(),"MM/dd HH:mm:ss") + " " + message;
         statementCount++;
 
       //qqqqqqqqqqqqqqqq
