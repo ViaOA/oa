@@ -75,6 +75,9 @@ public @interface OAMany {
     
     /** true if this is a calculated Hub. */
     boolean isCalculated() default false;
+
+    /** true if calc hub is to be done on server side. */
+    boolean isServerSideCalc() default false;
     
     Class[] triggerClasses() default {};
 }

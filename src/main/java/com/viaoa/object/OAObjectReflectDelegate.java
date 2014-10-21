@@ -515,6 +515,7 @@ public class OAObjectReflectDelegate {
         boolean bThisIsServer = OAObjectCSDelegate.isServer();
         // dont get calcs from server, calcs are maintained locally, events are not sent
         boolean bIsCalc = (linkInfo != null && linkInfo.bCalculated);
+        boolean bIsServerSideCalc = (linkInfo != null && linkInfo.bServerSideCalc);
         
         Hub hub = null;
         if (obj == null) { 
@@ -596,7 +597,7 @@ public class OAObjectReflectDelegate {
 
         if (hub != null) {
         }
-        else if (!bThisIsServer && !oi.getLocalOnly() && !bIsCalc) {
+        else if (!bThisIsServer && !oi.getLocalOnly() && (!bIsCalc || bIsServerSideCalc)) {
             // request from server
             hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); // this will always return a Hub
             if (hub == null) {
@@ -665,14 +666,14 @@ public class OAObjectReflectDelegate {
             OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
         }
         
-        if ((bThisIsServer || bIsCalc) && sortOrder != null && sortOrder.length() > 0) {
+        if ((bThisIsServer || (bIsCalc && !bIsServerSideCalc)) && sortOrder != null && sortOrder.length() > 0) {
             if (hub.getSelect() != null) {
                 hub.setSelectOrder(sortOrder);
             }
         }
 
         // needs to loadAllData first, otherwise another thread could get the hub without using the lock
-        if (bThisIsServer || bIsCalc) {
+        if (bThisIsServer || (bIsCalc && !bIsServerSideCalc)) {
             if (!OAObjectCSDelegate.loadReferenceHubDataOnServer(hub)) { // load all data before passing to client
                 hub.loadAllData();
             }

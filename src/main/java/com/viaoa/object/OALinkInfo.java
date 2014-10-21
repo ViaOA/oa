@@ -50,6 +50,7 @@ public class OALinkInfo implements java.io.Serializable {
     protected transient int cacheSize;
     protected OALinkInfo revLinkInfo;
     protected boolean bCalculated;
+    protected boolean bServerSideCalc;
     protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
     
     public OALinkInfo(String name, Class toClass, int type) {
@@ -143,6 +144,13 @@ public class OALinkInfo implements java.io.Serializable {
         return bCalculated;
     }
 
+    public void setServerSideCalc(boolean b) {
+        this.bServerSideCalc = b;
+    }
+    public boolean getServerSideCalc() {
+        return bServerSideCalc;
+    }
+    
     public void setPrivateMethod(boolean b) {
         this.bPrivateMethod = b;
     }

@@ -224,6 +224,7 @@ public class OAAnnotationDelegate {
             li.setReverseName(annotation.reverseName());
             li.setOwner(annotation.owner());
             li.setRecursive(annotation.recursive());
+            li.setCacheSize(annotation.cacheSize());
 
             s = annotation.matchHub();
             if (s != null && s.length() == 0) s = null;
@@ -234,6 +235,7 @@ public class OAAnnotationDelegate {
             li.setMatchProperty(s);
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());
+            li.setServerSideCalc(annotation.isServerSideCalc());
             li.setPrivateMethod(!annotation.createMethod());
             li.setCacheSize(annotation.cacheSize());
             Class[] cs = annotation.triggerClasses();
