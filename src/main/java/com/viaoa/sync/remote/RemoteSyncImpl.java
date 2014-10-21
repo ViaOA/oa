@@ -20,6 +20,7 @@ package com.viaoa.sync.remote;
 import java.util.Comparator;
 import java.util.logging.Logger;
 
+import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.object.OAObject;
@@ -51,7 +52,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
         if (object == null) return false;
         
-        Hub h = getHub(object, hubPropertyName, false);
+        Hub h = getHub(object, hubPropertyName, true);
         if (h == null) return false;
 
         h.deleteAll();
@@ -62,7 +63,10 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         OAObject gobj = OAObjectCacheDelegate.get(objectClass, origKey);
         if (gobj == null) {
-            return false;  // object not on this system
+            // 20141018 need to get from DS since this is a server and the object must have been GCd
+            gobj = (OAObject) OADataSource.getObject(objectClass, origKey);
+            //was: return false;  // object not in this system
+            if (gobj == null) return false;
         }
         OAObjectReflectDelegate.setProperty((OAObject)gobj, propertyName, newValue, null);
         
@@ -115,7 +119,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
             return false;
         }
 
-        Hub h = getHub(object, hubPropertyName, false);
+        Hub h = getHub(object, hubPropertyName, true);
         if (h == null) {
             OAObjectPropertyDelegate.removePropertyIfNull((OAObject)object, hubPropertyName, false);                
             return false;
@@ -132,7 +136,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
         if (object == null) return false;
         
-        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
+        Hub h = getHub(object, hubPropertyName, true);
         if (h == null) return false;
 
         h.move(posFrom, posTo);
@@ -144,7 +148,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
         if (object == null) return false;
         
-        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
+        Hub h = getHub(object, hubPropertyName, true);
         if (h == null) return false;
 
         h.sort(propertyPaths, bAscending, comp);
@@ -159,7 +163,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
             return false;
         }
         
-        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
+        Hub h = getHub(object, hubPropertyName, true);
         if (h == null) {
             return false;
         }
@@ -179,7 +183,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
             return false;
         }
         
-        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
+        Hub h = getHub(object, hubPropertyName, true);
         if (h == null) {
             return false;
         }
@@ -193,7 +197,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         OAObject object = OAObjectCacheDelegate.get(masterObjectClass, masterObjectKey);
         if (object == null) return false;
         
-        Hub h = getHub(object, hubPropertyName, false);  // 20080625 was true
+        Hub h = getHub(object, hubPropertyName, true);
         if (h == null) {
             OAObjectPropertyDelegate.removePropertyIfNull((OAObject)object, hubPropertyName, false);                
             return false;

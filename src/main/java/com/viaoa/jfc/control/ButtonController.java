@@ -565,7 +565,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 case OACommand.SAVE_MANUAL:
                     break;
                 case OACommand.DELETE:
-                    if (ho == null) break;
+                    if (ho == null && mhub == null) break;
 
                     if (bEnableUndo) {
                         OAUndoManager.startCompoundEdit(getUndoText("delete"));

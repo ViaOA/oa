@@ -235,7 +235,7 @@ public class OAAnnotationDelegate {
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());
             li.setPrivateMethod(!annotation.createMethod());
-            
+            li.setCacheSize(annotation.cacheSize());
             Class[] cs = annotation.triggerClasses();
             if (cs != null) {
                 li.setTriggerClasses(cs);

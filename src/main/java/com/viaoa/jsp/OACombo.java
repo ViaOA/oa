@@ -93,6 +93,13 @@ public class OACombo implements OAJspComponent, OATableEditor {
         this.propertyPath = propertyPath;
         this.columns = columns;
     }
+
+    public void setPropertyPath(String pp) {
+        this.propertyPath = pp;
+    }
+    public String getPropertyPath() {
+        return this.propertyPath;
+    }
     
     @Override
     public boolean isChanged() {
@@ -106,6 +113,9 @@ public class OACombo implements OAJspComponent, OATableEditor {
 
     public Hub getHub() {
         return hub;
+    }
+    public void setHub(Hub hub) {
+        this.hub = hub;
     }
     
     @Override

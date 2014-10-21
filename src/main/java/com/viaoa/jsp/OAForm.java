@@ -313,8 +313,8 @@ public class OAForm extends OABase implements Serializable {
 //String s = "\"oaform.jsp?oaform="+getForm().getUrl()+"&"+getName()+"=1\"";
 //s += " onMouseOver=\"this.href='oaform.jsp?oaform="+getForm().getUrl()+"&"+getName()+"=1&oatop='+setOA()+'&oatarget='+this.target+'&oaname='+window.name;\"";
                 
-                
-                break;
+                //20141017 removed:
+                //break;
             }
         }
         getMessages(sb);
