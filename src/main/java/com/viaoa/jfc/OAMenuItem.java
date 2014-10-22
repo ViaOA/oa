@@ -601,7 +601,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent{
 
     /**
      * This is a callback method that can be overwritten to replace the default action when button is clicked.
-     * By default, this will call teh button controller, which will also call performAction().
+     * By default, this will call the button controller, which will also call performAction().
      * @see #performAction to create a custom action.
      */
     public boolean onActionPerformed() {
