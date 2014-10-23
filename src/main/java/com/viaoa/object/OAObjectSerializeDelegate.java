@@ -260,7 +260,11 @@ static int xxx;//qqqqqqqqqq
             String key = (String) objs[i];
             if (key == null) continue;
             OALinkInfo li = oi.getLinkInfo(key);
-            if (li != null && li.bCalculated) continue;
+            if (li != null && li.bCalculated) {
+                if (!li.bServerSideCalc) {
+                    continue;
+                }
+            }
             Object obj = objs[i+1];
 
             boolean bWeakRef = (obj instanceof WeakReference);
@@ -268,7 +272,7 @@ static int xxx;//qqqqqqqqqq
                 obj = ((WeakReference) obj).get();
                 if (obj == null) continue;
             }
-
+            
             if (obj != null && !(obj instanceof OAObject) && !(obj instanceof OAObjectKey) && !(obj instanceof Hub) && !bWeakRef && !(obj instanceof byte[])) {
                 stream.writeObject(key);
                 stream.writeObject(obj);
@@ -277,7 +281,7 @@ static int xxx;//qqqqqqqqqq
 
             boolean b = false;
             if (serializer != null && obj != null && !(obj instanceof byte[])) {
-                b = serializer.shouldSerializeReference(oaObj, (String) key, obj);
+                b = serializer.shouldSerializeReference(oaObj, (String) key, obj, li);
                 if (bWeakRef) {
                     if (b) obj = new HashLinkWrap(obj);  // flag to know that this is weakRef
                 }

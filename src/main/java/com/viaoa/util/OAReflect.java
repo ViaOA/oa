@@ -443,16 +443,6 @@ public class OAReflect {
 	    if (object == null) return null;
 	    if (method == null) return object;
  	    
-        if (object instanceof OAObject) {
-    	    Class c = method.getReturnType();
-    	    if (c != null && c.isPrimitive()) {
-        		String s = method.getName();
-        		if (s.length() > 3) {
-        			s = s.substring(3);
-        			if (((OAObject) object).isNull(s)) return null;
-        		}
-        	}
-	    }	    
 	    Object obj;
 	    try {
 	    	obj = method.invoke(object, null);
@@ -461,6 +451,22 @@ public class OAReflect {
 	        String msg = "Error calling Method "+method+", using object="+object;
 	    	throw new RuntimeException(msg, e);
 	    }
+
+	    // 20141023 moved this to after calling invoke, in case get method changes the value.
+        if (object instanceof OAObject) {
+            Class c = method.getReturnType();
+            if (c != null && c.isPrimitive()) {
+                String s = method.getName();
+                if (s.startsWith("get")) {
+                    s = s.substring(3);
+                }
+                else if (s.startsWith("is")) {
+                    s = s.substring(2);
+                }
+                if (((OAObject) object).isNull(s)) return null;
+            }
+        }       
+	    
 	    return obj;
 	}
 	

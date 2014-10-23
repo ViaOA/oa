@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.object;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.logging.ConsoleHandler;
@@ -222,8 +223,32 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * once the wrapper object is serialized.
      */
     protected boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj) {
+        return shouldSerializeReference(oaObj, propertyName, obj, null);
+    }
+    
+    private HashMap<OALinkInfo, Integer> hmLinkInfoCount;
+    protected boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj, OALinkInfo linkInfo) {
         
         boolean b = _shouldSerializeReference(oaObj, propertyName, obj);
+        
+        // 20141023 dont send more back then cache is setup for
+        if (b && linkInfo != null) {
+            int x = linkInfo.getCacheSize();
+            if (x > 0) {
+                if (hmLinkInfoCount == null) {
+                    hmLinkInfoCount = new HashMap<OALinkInfo, Integer>();
+                }
+                Object objx = hmLinkInfoCount.get(linkInfo);
+                if (objx != null) {
+                    int x2 = ((Integer) objx).intValue(); 
+                    if (x2 > x) {
+                        return false;
+                    }
+                    hmLinkInfoCount.put(linkInfo, new Integer(x2+1));
+                }
+            }
+        }
+        
         if (callback != null) {
             b = callback.shouldSerializeReference(oaObj, propertyName, obj, b);
         }

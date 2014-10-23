@@ -20,6 +20,7 @@ package com.viaoa.object;
 import java.lang.reflect.*;
 import java.util.*;
 import com.viaoa.annotation.OAClass;
+import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
@@ -500,7 +501,20 @@ public class OAObjectInfoDelegate {
         }
         vecCache.removeElement(hub);
         vecCache.addElement(hub);
-        if (OAObjectCSDelegate.isWorkstation() && vecCache.size() > li.cacheSize) vecCache.removeElementAt(0);
+        
+        boolean bIsServer = OAObjectCSDelegate.isServer();
+        int x = vecCache.size();
+        if (bIsServer) x *= 10;
+        
+        if (vecCache.size() > x) {
+            if (bIsServer) {
+                OADataSource ds = OADataSource.getDataSource(hub.getObjectClass());
+                if (ds.supportsStorage()) {
+                    vecCache.removeElementAt(0);
+                }
+            }
+            else vecCache.removeElementAt(0);;
+        }
         return true;
     }
     // for testing
