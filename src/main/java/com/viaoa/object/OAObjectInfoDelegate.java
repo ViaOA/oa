@@ -503,10 +503,10 @@ public class OAObjectInfoDelegate {
         vecCache.addElement(hub);
         
         boolean bIsServer = OAObjectCSDelegate.isServer();
-        int x = vecCache.size();
-        if (bIsServer) x *= 10;
+        int maxCache = li.cacheSize;
+        if (bIsServer) maxCache *= 10;
         
-        if (vecCache.size() > x) {
+        if (vecCache.size() > maxCache) {
             if (bIsServer) {
                 OADataSource ds = OADataSource.getDataSource(hub.getObjectClass());
                 if (ds.supportsStorage()) {

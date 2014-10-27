@@ -278,7 +278,13 @@ public class OAObjectPropertyDelegate {
         for (int i=0; i<objs.length; i+=2) {
             if (objs[i] != null && name.equalsIgnoreCase((String)objs[i])) {
                 Object objx = objs[i+1];
-                if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
+                if (objx instanceof WeakReference) {
+                    objx = ((WeakReference) objx).get();
+                    if (objx == null) {
+                        if (bReturnNotExist) return OANotExist.instance; 
+                        return null;
+                    }
+                }
                 return objx;
             }
         }
