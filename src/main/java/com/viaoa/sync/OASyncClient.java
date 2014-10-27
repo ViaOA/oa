@@ -87,8 +87,9 @@ public class OASyncClient {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
+                getClientInfo();
                 for (;;) {
-                    getClientInfo().setFreeMemory(Runtime.getRuntime().freeMemory());
+                    clientInfo.setFreeMemory(Runtime.getRuntime().freeMemory());
                     clientInfo.setTotalMemory(Runtime.getRuntime().totalMemory());
                     try {
                         getRemoteClientInterface().update(clientInfo);
@@ -403,13 +404,13 @@ public class OASyncClient {
     }
     
     public boolean isStarted() {
-        return clientInfo.isStarted();
+        return getClientInfo().isStarted();
     }
     /** Sets the stop flag */
     public void stop() throws Exception {
         if (!isStarted()) return;
         LOG.fine("Client stop");
-        clientInfo.setStarted(false);
+        getClientInfo().setStarted(false);
         if (isConnected()) {
             getMultiplexerClient().close();
         }
@@ -452,7 +453,7 @@ public class OASyncClient {
      * */
     protected MultiplexerClient getMultiplexerClient() {
         if (multiplexerClient != null) return multiplexerClient; 
-        multiplexerClient = new MultiplexerClient(clientInfo.getServerHostName(), clientInfo.getServerHostPort()) {
+        multiplexerClient = new MultiplexerClient(getClientInfo().getServerHostName(), clientInfo.getServerHostPort()) {
             @Override
             protected void onSocketException(Exception e) {
                 OASyncClient.this.onSocketException(e);
@@ -500,7 +501,7 @@ public class OASyncClient {
             remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient()) {
                 @Override
                 protected void onRemoteThreadCreated(int threadCount) {
-                    clientInfo.setRemoteThreadCount(threadCount);
+                    getClientInfo().setRemoteThreadCount(threadCount);
                     super.onRemoteThreadCreated(threadCount);
                     if (threadCount == MAX_ThreadCount && !bThreadCountWarning) {
                         String s = OALogUtil.getThreadDump();
