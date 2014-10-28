@@ -142,8 +142,7 @@ static int cntq;
     private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll, boolean bIncludeRootHub) {
 //QQQQQQQQQQQQQQQQQqqqqqqqqqqqqqq
-        
-System.out.println((++cntq)+") ******* NEW HubMerger.init hubRoot="+hubRoot+", propertyPath="+propertyPath);        
+//System.out.println((++cntq)+") ******* NEW HubMerger.init hubRoot="+hubRoot+", propertyPath="+propertyPath);        
         
         HubData hd = null;
         try {

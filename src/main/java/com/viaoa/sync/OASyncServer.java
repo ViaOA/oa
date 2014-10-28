@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,7 +45,7 @@ public class OASyncServer {
     public static final String ServerLookupName = "syncserver";
     public static final String SyncLookupName = "oasync";
     public static final String SyncQueueName = "oasync";
-    public static final int QueueSize = 25000;
+    public static final int QueueSize = 15000;
     
     private int port;
     private MultiplexerServer multiplexerServer;

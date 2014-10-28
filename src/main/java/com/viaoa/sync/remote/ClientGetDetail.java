@@ -190,8 +190,11 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
                 if (System.currentTimeMillis() - t1 > 120) break;
                 OAObject obj = OAObjectCacheDelegate.get(c, key);
                 if (obj != null) {
-                    al.add(obj);
-                    OAObjectReflectDelegate.getProperty(obj, propFromMaster);
+                    // make sure that it was not already sent
+                    if (!isOnClient(obj)) {
+                        al.add(obj);
+                        OAObjectReflectDelegate.getProperty(obj, propFromMaster);
+                    }
                 }
             }
         }
