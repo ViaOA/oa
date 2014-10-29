@@ -1089,7 +1089,7 @@ public class OAObjectReflectDelegate {
                     //   where the hub has been added to weakHub, but oaObj.properties is not set
                     if (!isReferenceObjectNullOrEmpty(oaObj, linkPropertyName)) {
                         // only try this if there is a objKey in props
-                        Hub hubx = OAObjectHubDelegate.getWeakRefHub(oaObj, li);
+                        Hub hubx = OAObjectHubDelegate.getHub(oaObj, li);
                         if (hubx != null) {
                             ref = HubDelegate.getMasterObject(hubx);
                         }
@@ -1666,10 +1666,9 @@ public class OAObjectReflectDelegate {
         if (obj1 == null || obj2 == null) return null;
         if (currentLevel >= maxLevelsToCheck) return null;
 
-        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(obj1);
-        for (int i = 0; refs != null && i < refs.length; i++) {
-            WeakReference<Hub<?>> ref = refs[i];
-            Hub nextHub = ref.get();
+        Hub[] hubs = OAObjectHubDelegate.getHubReferences(obj1);
+        for (int i = 0; hubs != null && i < hubs.length; i++) {
+            Hub nextHub = hubs[i];
             if (nextHub == null) continue;
             int x = getHierarchyLevelsToHub(nextHub, obj2, 0, maxLevelsToCheck);
             if (x > 0) return nextHub;
@@ -1689,10 +1688,9 @@ public class OAObjectReflectDelegate {
         if (findHub == null || fromObj == null) return -1;
         if (currentLevel >= maxLevelsToCheck) return -1;
 
-        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(fromObj);
-        for (int i = 0; refs != null && i < refs.length; i++) {
-            WeakReference<Hub<?>> ref1 = refs[i];
-            Hub hub = ref1.get();
+        Hub[] hubs = OAObjectHubDelegate.getHubReferences(fromObj);
+        for (int i = 0; hubs != null && i < hubs.length; i++) {
+            Hub hub = hubs[i];
             if (hub == null) continue;
             if (hub == findHub) return currentLevel;
 

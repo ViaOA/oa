@@ -45,7 +45,7 @@ public class OASyncServer {
     public static final String ServerLookupName = "syncserver";
     public static final String SyncLookupName = "oasync";
     public static final String SyncQueueName = "oasync";
-    public static final int QueueSize = 15000;
+    public static final int QueueSize = 18000;
     
     private int port;
     private MultiplexerServer multiplexerServer;

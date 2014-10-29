@@ -197,13 +197,11 @@ public class OASyncClient {
         }
         
         if (siblingHub == null) {
-            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(masterObject);
+            Hub[] hubs = OAObjectHubDelegate.getHubReferences(masterObject);
             
             int hits = 0;
-            for (int i=0; (refs != null && i < refs.length); i++) {
-                WeakReference<Hub<?>> ref = refs[i];
-                if (ref == null) continue;
-                Hub hub = ref.get();
+            for (int i=0; (hubs != null && i < hubs.length); i++) {
+                Hub hub = hubs[i];
                 if (hub == null) continue;
                 OAObject masterx = hub.getMasterObject();
                 if (masterx == null && hub.getSelect() == null) continue;

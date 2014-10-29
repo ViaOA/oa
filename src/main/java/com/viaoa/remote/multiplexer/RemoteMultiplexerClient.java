@@ -360,6 +360,9 @@ public class RemoteMultiplexerClient {
         
         // check if remoteThread, and if it has already processed it's msg before calling remote method
         if (!OARemoteThreadDelegate.isSafeToCallRemoteMethod()) {
+//qqqqqqqqqq            
+OARemoteThreadDelegate.isSafeToCallRemoteMethod();
+
             if (errorCnt++ < 25) {
                 Exception e = new Exception("isSafeToCallRemoteMethod is false");
                 LOG.log(Level.WARNING, "isSafeToCallRemoteMethod is false, starting another OARemoteThread", e);

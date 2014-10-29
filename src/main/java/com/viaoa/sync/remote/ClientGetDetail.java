@@ -121,7 +121,7 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
      * dont send any references that have detail/hub in it
      * dont send detail if it has already been sent with all references
      * dont send a reference if it has already been sent to client, and has been added to tree
-     * 20141018 send max 20k objects 
+     * 20141018 send max X objects 
      * 
      */
     protected OAObjectSerializer getSerializedDetail(final OAObject masterObject, final Object detailObject, final String propFromMaster, final String[] masterProperties, final OAObjectKey[] siblingKeys) {

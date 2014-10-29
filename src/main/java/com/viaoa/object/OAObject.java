@@ -129,7 +129,15 @@ public class OAObject implements java.io.Serializable, Comparable {
     protected volatile boolean newFlag=true;  // flag to know if this object is new (not yet saved).  The object key properties can be changed as long as isNew is true.
     protected byte[]      nulls;         // keeps track of which primitive type properties that are NULL. Uses bit position, based on OAObjectInfo getPrimitiveProperties() position
     protected boolean     deletedFlag; 
-    protected transient WeakReference<Hub<?>>[] weakHubs;       // list of Hub Collections that this object is a member of.  OAObject uses these Hubs for sending events.  See: OAObjectHubDelegate
+//    protected transient WeakReference<Hub<?>>[] weakHubs;       // list of Hub Collections that this object is a member of.  OAObject uses these Hubs for sending events.  See: OAObjectHubDelegate
+    
+    // list of Hub Collections that this object is a member of.  
+    // OAObject uses these Hubs for sending events.  See: OAObjectHubDelegate
+    // elements will be one of the following: 
+    //   Hub - if a reference to object needs to be maintained, so that it wont be GCd and can be saved
+    //   null - empty slot
+    //   WeakReference<Hub> (default) - so that it does not hold the Hub from being GCd
+    protected transient Object[] hubs;   
     
     // 20120827 flags per many(hub) reference, to know if the size is 0.
     //   uses bitwise operation to flag hub referencs that are empty (size=0) with a '1'
@@ -409,6 +417,7 @@ public class OAObject implements java.io.Serializable, Comparable {
             boolean bOld = changedFlag;
             changedFlag = tf;
         	OAObjectEventDelegate.firePropertyChange(this, OAObjectDelegate.WORD_Changed, bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, changedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
+        	OAObjectHubDelegate.changeHubReferences(this);
         }
     }
 

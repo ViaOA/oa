@@ -63,13 +63,10 @@ public class OAObjectSaveDelegate {
 
         // cascadeSave() will check hash to see if object has already been checked
         if (oaObj.newFlag || oaObj.changedFlag || bIsFirst) {
-            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
-            if (refs != null) {
-                for (WeakReference<Hub<?>> ref : refs) {
-                    if (ref == null) continue;
-                    Hub h = ref.get();
-                    if (h == null) continue;
-                    HubEventDelegate.fireBeforeSaveEvent(h, oaObj);
+            Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
+            if (hubs != null) {
+                for (Hub h : hubs) {
+                    if (h != null) HubEventDelegate.fireBeforeSaveEvent(h, oaObj);
                 }
             }
             
@@ -85,12 +82,9 @@ public class OAObjectSaveDelegate {
                 OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
             }
             
-            if (refs != null) {
-                for (WeakReference<Hub<?>> ref : refs) {
-                    if (ref == null) continue;
-                    Hub h = ref.get();
-                    if (h == null) continue;
-                	HubEventDelegate.fireAfterSaveEvent(h, oaObj);
+            if (hubs != null) {
+                for (Hub h : hubs) {
+                	if (h != null) HubEventDelegate.fireAfterSaveEvent(h, oaObj);
                 }
             }
         }

@@ -68,13 +68,10 @@ public class OAObjectDeleteDelegate {
 	public static void delete(final OAObject oaObj, OACascade cascade) {
 	    if (cascade.wasCascaded(oaObj, true)) return;
 	
-        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
-        if (refs != null) {
-            for (WeakReference<Hub<?>> ref : refs) {
-                if (ref == null) continue;
-                Hub h = ref.get();
-                if (h == null) continue;
-                HubEventDelegate.fireBeforeDeleteEvent(h, oaObj);
+        Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
+        if (hubs != null) {
+            for (Hub h : hubs) {
+                if (h != null) HubEventDelegate.fireBeforeDeleteEvent(h, oaObj);
             }
         }
         try {
@@ -94,12 +91,9 @@ public class OAObjectDeleteDelegate {
             oaObj.setDeleted(true);
 	        
 	        // remove from all hubs
-            if (refs != null) {
-                for (WeakReference<Hub<?>> ref : refs) {
-                    if (ref == null) continue;
-                    Hub h = ref.get();
-                    if (h == null) continue;
-    	            HubAddRemoveDelegate.remove(h, oaObj, true, true, true, true, true, false);  // force, send, deleting, setAO
+            if (hubs != null) {
+                for (Hub h : hubs) {
+                    if (h != null) HubAddRemoveDelegate.remove(h, oaObj, true, true, true, true, true, false);  // force, send, deleting, setAO
     	        }
             }
             
@@ -129,12 +123,9 @@ public class OAObjectDeleteDelegate {
 	    finally {
             OAThreadLocalDelegate.setDeleting(oaObj, false);
 	    }
-        if (refs != null) {
-            for (WeakReference<Hub<?>> ref : refs) {
-                if (ref == null) continue;
-                Hub h = ref.get();
-                if (h == null) continue;
-                HubEventDelegate.fireAfterDeleteEvent(h, oaObj);
+        if (hubs != null) {
+            for (Hub h : hubs) {
+                if (h != null) HubEventDelegate.fireAfterDeleteEvent(h, oaObj);
             }
         }
 	}
@@ -258,7 +249,7 @@ public class OAObjectDeleteDelegate {
                 }
                 
                 OAObject masterObj;
-                Hub hubx = OAObjectHubDelegate.getWeakRefHub(oaObj, li);
+                Hub hubx = OAObjectHubDelegate.getHub(oaObj, li);
                 if (hubx != null) {
                     masterObj = HubDelegate.getMasterObject(hubx);
                 }

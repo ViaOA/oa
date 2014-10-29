@@ -260,13 +260,10 @@ public class OAObjectEventDelegate {
 	
 //qqqqqqqqqqqq remove this?, currently not used qqqqqqqqqq	
 	protected static void sendHubBeforePropertyChange(OAObject oaObj, String propertyName, Object oldObj, Object newObj) {
-        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
-        if (refs == null) return;
-        for (WeakReference<Hub<?>> ref : refs) {
-            if (ref == null) continue;
-            Hub h = ref.get();
-            if (h == null) continue;
-            HubEventDelegate.fireBeforePropertyChange(h, oaObj, propertyName, oldObj, newObj);
+        Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
+        if (hubs == null) return;
+        for (Hub h : hubs) {
+            if (h != null) HubEventDelegate.fireBeforePropertyChange(h, oaObj, propertyName, oldObj, newObj);
         }
 	}	
 
@@ -275,13 +272,10 @@ public class OAObjectEventDelegate {
 		//        if (OAObjectFlagDelegate.isSuppressingPropertyChangeEvents()) return;
 		// Note: oldObj could be OAObjectKey
 		
-        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
-        if (refs == null) return;
-        for (WeakReference<Hub<?>> ref : refs) {
-            if (ref == null) continue;
-            Hub h = ref.get();
-            if (h == null) continue;
-            HubEventDelegate.fireAfterPropertyChange(h, oaObj, propertyName, oldObj, newObj, linkInfo);
+        Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
+        if (hubs == null) return;
+        for (Hub h : hubs) {
+            if (h != null) HubEventDelegate.fireAfterPropertyChange(h, oaObj, propertyName, oldObj, newObj, linkInfo);
         }
 
 /* 20101218 replaced by HubListenerTree
@@ -378,12 +372,10 @@ public class OAObjectEventDelegate {
 	    // By changing a reference property, the object could be moved to another hub
 	    ArrayList<Hub> alUpdateHub = null;
 	    if (oldObj != null || liRecursive != null) {
-	        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
-	        if (refs != null) {
-    	        for (WeakReference<Hub<?>> ref : refs) {
-                    if (ref == null) continue;
-    	            Hub h = ref.get();
-    	            if (h == null) continue;
+	        Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
+	        if (hubs != null) {
+    	        for (Hub h : hubs) {
+                    if (h == null) continue;
     	            
                     // 20120716
                     OAFilter<Hub> filter = new OAFilter<Hub>() {
@@ -613,13 +605,10 @@ public class OAObjectEventDelegate {
 
 	
 	protected static void fireAfterLoadEvent(OAObject oaObj) {
-        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferences(oaObj);
-        if (refs == null) return;
-        for (WeakReference<Hub<?>> ref : refs) {
-            if (ref == null) continue;
-            Hub h = ref.get();
-            if (h == null) continue;
-            HubEventDelegate.fireAfterLoadEvent(h, oaObj);
+        Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
+        if (hubs == null) return;
+        for (Hub h : hubs) {
+            if (h != null) HubEventDelegate.fireAfterLoadEvent(h, oaObj);
         }
 	}
 	

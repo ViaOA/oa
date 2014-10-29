@@ -28,6 +28,7 @@ import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.sync.OASyncDelegate;
 
 /**
  * Broadcast methods used to keep OAObjets, Hubs in sync with all computers.
@@ -63,10 +64,12 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         OAObject gobj = OAObjectCacheDelegate.get(objectClass, origKey);
         if (gobj == null) {
-            // 20141018 need to get from DS since this is a server and the object must have been GCd
-            gobj = (OAObject) OADataSource.getObject(objectClass, origKey);
-            //was: return false;  // object not in this system
-            if (gobj == null) return false;
+            if (OASyncDelegate.isServer()) {
+                // 20141018 need to get from DS since this is a server and the object must have been GCd
+                gobj = (OAObject) OADataSource.getObject(objectClass, origKey);
+                if (gobj == null) return false;
+            }
+            else return false;  // object not in this system
         }
         OAObjectReflectDelegate.setProperty((OAObject)gobj, propertyName, newValue, null);
         
