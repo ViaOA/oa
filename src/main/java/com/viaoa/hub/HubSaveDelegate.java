@@ -41,6 +41,8 @@ public class HubSaveDelegate {
         if (thisHub == null) return; //qq need to log this
         if (cascade.wasCascaded(thisHub, true)) return;
 
+        HubDelegate.setReferenceable(thisHub, false);
+        
         boolean bM2M = false;
         if (iCascadeRule != OAObject.CASCADE_NONE) {
 	        boolean b = thisHub.isOAObject();

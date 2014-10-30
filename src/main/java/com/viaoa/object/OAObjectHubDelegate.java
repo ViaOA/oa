@@ -19,6 +19,7 @@ package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
@@ -96,15 +97,11 @@ public class OAObjectHubDelegate {
 
     public static boolean isInHub(OAObject oaObj) {
         if (oaObj == null) return false;
-        Object[] objs = oaObj.hubs;
-        if (objs == null) return false;
-        for (Object obj : objs) {
-            if (obj != null) {
-                if (obj instanceof WeakReference) {
-                    obj = ((WeakReference) obj).get();
-                    if (obj == null) continue;
-                }
-                return true;
+        WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
+        if (refs == null) return false;
+        for (WeakReference<Hub<?>> ref : refs) {
+            if (ref != null) {
+                if (ref.get() != null) return true;
             }
         }
         return false;
@@ -112,97 +109,65 @@ public class OAObjectHubDelegate {
 
     public static boolean isInHubWithMaster(OAObject oaObj) {
         if (oaObj == null) return false;
-        Object[] objs = oaObj.hubs;
-        if (objs == null) return false;
-        for (Object obj : objs) {
-            if (obj != null) {
-                if (obj instanceof WeakReference) {
-                    obj = ((WeakReference) obj).get();
-                    if (obj == null) continue;
-                }
-                Hub h = (Hub) obj;
-                if (h.getMasterObject() != null) return true;
+        WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
+        if (refs == null) return false;
+        for (WeakReference<Hub<?>> ref : refs) {
+            if (ref != null) {
+                Hub h = ref.get();
+                if (h != null && h.getMasterObject() != null) return true;
             }
         }
         return false;
     }
 
-    /**
-     * 20141029 This is to change an OAObjet.hubs, so that it uses weakReferences or Hub instances.
-     */
-    public static void changeHubReferences(OAObject oaObj) {
-        if (oaObj == null || oaObj.hubs == null) return;
-        if (!OASyncDelegate.isServer()) return;
-
-        boolean b = (oaObj.isChanged() || oaObj.isNew());
-        synchronized (oaObj) {
-            for (int i = 0; oaObj.hubs != null && i < oaObj.hubs.length; i++) {
-                Object obj = oaObj.hubs[i];
-                if (obj == null) break;
-
-                if (b) {
-                    if (obj instanceof WeakReference) {
-                        oaObj.hubs[i] = ((WeakReference) obj).get();
-                    }
-                }
-                else {
-                    if (obj instanceof Hub) oaObj.hubs[i] = new WeakReference((Hub) obj);
-                }
-            }
-        }
-    }
 
     /**
      * Called by Hub when an OAObject is removed from a Hub.
      */
     public static void removeHub(OAObject oaObj, Hub hub) {
-        if (oaObj == null || oaObj.hubs == null) return;
+        if (oaObj == null || oaObj.weakhubs == null) return;
         hub = hub.getRealHub();
 
         boolean bFound = false;
         synchronized (oaObj) {
-            if (oaObj.hubs == null) return;
-            int currentSize = oaObj.hubs.length;
+            if (oaObj.weakhubs == null) return;
+            int currentSize = oaObj.weakhubs.length;
             int lastEndPos = currentSize - 1;
 
             for (int pos = 0; !bFound && pos < currentSize; pos++) {
-                if (oaObj.hubs[pos] == null) break; // the rest will be nulls
+                if (oaObj.weakhubs[pos] == null) break; // the rest will be nulls
 
-                Hub hx;
-                if (oaObj.hubs[pos] instanceof WeakReference) {
-                    hx = (Hub) ((WeakReference) oaObj.hubs[pos]).get();
-                }
-                else hx = (Hub) oaObj.hubs[pos];
+                Hub hx = oaObj.weakhubs[pos].get();
 
                 if (hx != null && hx != hub) continue;
                 bFound = (hx == hub);
-                oaObj.hubs[pos] = null;
+                oaObj.weakhubs[pos] = null;
 
                 // compress: get last one, move it back to this slot
                 for (; lastEndPos > pos; lastEndPos--) {
-                    if (oaObj.hubs[lastEndPos] == null) continue;
-                    if (oaObj.hubs[lastEndPos] instanceof WeakReference && ((WeakReference) oaObj.hubs[lastEndPos]).get() == null) {
-                        oaObj.hubs[lastEndPos] = null;
+                    if (oaObj.weakhubs[lastEndPos] == null) continue;
+                    if (oaObj.weakhubs[lastEndPos] instanceof WeakReference && ((WeakReference) oaObj.weakhubs[lastEndPos]).get() == null) {
+                        oaObj.weakhubs[lastEndPos] = null;
                         continue;
                     }
-                    oaObj.hubs[pos] = oaObj.hubs[lastEndPos];
-                    oaObj.hubs[lastEndPos] = null;
+                    oaObj.weakhubs[pos] = oaObj.weakhubs[lastEndPos];
+                    oaObj.weakhubs[lastEndPos] = null;
                     break;
                 }
                 if (currentSize > 10 && ((currentSize - lastEndPos) > currentSize / 3)) {
                     // resize array
                     int newSize = lastEndPos + (lastEndPos / 10) + 1;
                     newSize = Math.min(lastEndPos + 20, newSize);
-                    Object[] objs = new Object[newSize];
+                    WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
 
-                    System.arraycopy(oaObj.hubs, 0, objs, 0, lastEndPos);
-                    oaObj.hubs = objs;
+                    System.arraycopy(oaObj.weakhubs, 0, refs, 0, lastEndPos);
+                    oaObj.weakhubs = refs;
                     currentSize = newSize;
                 }
             }
 
-            if (oaObj.hubs[0] == null) {
-                oaObj.hubs = null;
+            if (oaObj.weakhubs[0] == null) {
+                oaObj.weakhubs = null;
             }
 
             // 20130707 could be a hub from hubMerger, that populates with One references
@@ -225,33 +190,30 @@ public class OAObjectHubDelegate {
     public static Hub[] getHubReferences(OAObject oaObj) { // Note: this needs to be public
         if (oaObj == null) return null;
 
-        Object[] objs = oaObj.hubs;
-        if (objs == null) return null;
+        WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
+        if (refs == null) return null;
 
-        Hub[] hubs = new Hub[objs.length];
+        Hub[] hubs = new Hub[refs.length];
 
-        for (int i = 0; i < objs.length; i++) {
-            Object obj = objs[i];
-            if (obj instanceof WeakReference) obj = ((WeakReference) obj).get();
-            Hub h = (Hub) obj;
-            hubs[i] = h;
+        for (int i = 0; i < refs.length; i++) {
+            WeakReference<Hub<?>> ref = refs[i];
+            if (ref == null) continue;
+            hubs[i] = ref.get();
         }
         return hubs;
     }
 
-    public static Object[] getHubReferencesNoCopy(OAObject oaObj) { // Note: this needs to be public
+    public static WeakReference<Hub<?>>[] getHubReferencesNoCopy(OAObject oaObj) { // Note: this needs to be public
         if (oaObj == null) return null;
-        return oaObj.hubs;
+        return oaObj.weakhubs;
     }
 
     public static int getHubReferenceCount(OAObject oaObj) {
         if (oaObj == null) return 0;
-        Object[] objs = oaObj.hubs;
+        WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
         int cnt = 0;
-        for (int i = 0; objs != null && i < objs.length; i++) {
-            Object obj = objs[i];
-            if (obj instanceof WeakReference) obj = ((WeakReference) obj).get();
-            if (obj != null) cnt++;
+        for (int i = 0; refs != null && i < refs.length; i++) {
+            if (refs[i] != null && refs[i].get() != null) cnt++;
         }
         return cnt;
     }
@@ -281,8 +243,8 @@ public class OAObjectHubDelegate {
         boolean bRemoveFromServerCache = false;
         synchronized (oaObj) {
             int pos;
-            if (oaObj.hubs == null) {
-                oaObj.hubs = new Object[1];
+            if (oaObj.weakhubs == null) {
+                oaObj.weakhubs = new WeakReference[1];
                 pos = 0;
                 // CACHE_NOTE: if it was on the Server.cache, it can be removed when it is added to a
                 // hub. Need to add to cache if/when it is no longer in a hub.
@@ -291,22 +253,20 @@ public class OAObjectHubDelegate {
                 }
             }
             else {
-                int currentSize = oaObj.hubs.length;
+                int currentSize = oaObj.weakhubs.length;
 
                 if (bCheckExisting) {
                     for (int i = 0; i < currentSize; i++) {
-                        if (oaObj.hubs[i] == null) continue;
-                        if (oaObj.hubs[i] == hub) return false;
-                        if (oaObj.hubs[i] instanceof WeakReference && ((WeakReference) oaObj.hubs[i]).get() == hub) return false;
+                        if (oaObj.weakhubs[i] != null && oaObj.weakhubs[i].get() == hub) return false;
                     }
                 }
 
                 // check for empty slot at the end
                 for (pos = currentSize - 1; pos >= 0; pos--) {
-                    if (oaObj.hubs[pos] == null) continue;
+                    if (oaObj.weakhubs[pos] == null) continue;
 
-                    if (oaObj.hubs[pos] instanceof WeakReference && ((WeakReference) oaObj.hubs[pos]).get() == null) {
-                        oaObj.hubs[pos] = null;
+                    if (oaObj.weakhubs[pos].get() == null) {
+                        oaObj.weakhubs[pos] = null;
                         continue;
                     }
                     // found last used slot
@@ -318,10 +278,10 @@ public class OAObjectHubDelegate {
                     // need to expand
                     int newSize = currentSize + 1 + (currentSize / 3);
                     newSize = Math.min(newSize, currentSize + 50);
-                    Object[] objs = new Object[newSize];
+                    WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
 
-                    System.arraycopy(oaObj.hubs, 0, objs, 0, currentSize);
-                    oaObj.hubs = objs;
+                    System.arraycopy(oaObj.weakhubs, 0, refs, 0, currentSize);
+                    oaObj.weakhubs = refs;
                     pos = currentSize;
                     break;
                 }
@@ -331,14 +291,9 @@ public class OAObjectHubDelegate {
                     bRemoveFromServerCache = true;
                     boolean b = false;
                     for (int i = 0; i < pos; i++) {
-                        Object obj = oaObj.hubs[i];
-                        if (obj == null) continue;
-                        Hub h;
-                        if (obj instanceof WeakReference) {
-                            h = (Hub) ((WeakReference) obj).get();
-                            if (h == null) continue;
-                        }
-                        else h = (Hub) obj;
+                        WeakReference<Hub<?>> ref = oaObj.weakhubs[i];
+                        if (ref == null) continue;
+                        Hub h = ref.get();
 
                         if (h.getMasterObject() != null) {
                             bRemoveFromServerCache = false; // already done
@@ -347,10 +302,7 @@ public class OAObjectHubDelegate {
                     }
                 }
             }
-            if (oaObj.isChanged() || oaObj.isNew()) oaObj.hubs[pos] = hub; // so that it is reachable by
-                                                                           // hubs, and that they dont
-                                                                           // get GCd.
-            else oaObj.hubs[pos] = new WeakReference(hub);
+            oaObj.weakhubs[pos] = new WeakReference(hub);
         }
         if (bRemoveFromServerCache && OARemoteThreadDelegate.shouldSendMessages()) {
             OAObjectCSDelegate.removeFromServerSideCache(oaObj);
@@ -365,14 +317,11 @@ public class OAObjectHubDelegate {
     public static boolean isAlreadyInHub(OAObject oaObj, OALinkInfo li) {
         if (oaObj == null || li == null) return false;
 
-        Object[] objs = oaObj.hubs;
-        for (int i = 0; objs != null && i < objs.length; i++) {
-            Object obj = objs[i];
-            if (obj == null) continue;
-            if (obj instanceof WeakReference) {
-                obj = ((WeakReference) obj).get();
-            }
-            Hub h = (Hub) obj;
+        WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
+        for (int i = 0; refs != null && i < refs.length; i++) {
+            WeakReference<Hub<?>> ref = refs[i];
+            if (ref == null) continue;
+            Hub h = ref.get();
             if (h != null && HubDetailDelegate.getLinkInfoFromDetailToMaster(h) == li) return true;
         }
         return false;
@@ -381,14 +330,11 @@ public class OAObjectHubDelegate {
     public static Hub getHub(OAObject oaObj, OALinkInfo li) {
         if (oaObj == null || li == null) return null;
 
-        Object[] objs = oaObj.hubs;
-        for (int i = 0; objs != null && i < objs.length; i++) {
-            Object obj = objs[i];
-            if (obj == null) continue;
-            if (obj instanceof WeakReference) {
-                obj = ((WeakReference) obj).get();
-            }
-            Hub h = (Hub) obj;
+        WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
+        for (int i = 0; refs != null && i < refs.length; i++) {
+            WeakReference<Hub<?>> ref = refs[i];
+            if (ref == null) continue;
+            Hub h = ref.get();
             if (h != null && HubDetailDelegate.getLinkInfoFromDetailToMaster(h) == li) return h;
         }
         return null;
@@ -422,14 +368,11 @@ public class OAObjectHubDelegate {
     private static boolean _isAlreadyInHub(OAObject oaObj, Hub hubFind) {
         if (oaObj == null) return false;
 
-        Object[] objs = oaObj.hubs;
-        for (int i = 0; objs != null && i < objs.length; i++) {
-            Object obj = objs[i];
-            if (obj == null) continue;
-            if (obj instanceof WeakReference) {
-                obj = ((WeakReference) obj).get();
-            }
-            Hub h = (Hub) obj;
+        WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
+        for (int i = 0; refs != null && i < refs.length; i++) {
+            WeakReference<Hub<?>> ref = refs[i];
+            if (ref == null) continue;
+            Hub h = ref.get();
             if (h == hubFind) return true;
         }
         return false;

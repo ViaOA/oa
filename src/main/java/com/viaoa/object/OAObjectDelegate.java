@@ -164,7 +164,6 @@ public class OAObjectDelegate {
         }
     	OAObjectEventDelegate.firePropertyChange(oaObj, WORD_New, old?TRUE:FALSE, b?TRUE:FALSE, false, false);
         if (!b) setAutoAdd(oaObj, true);
-        OAObjectHubDelegate.changeHubReferences(oaObj);
 	}
 	
     protected static void assignGuid(OAObject obj) {
@@ -239,7 +238,7 @@ public class OAObjectDelegate {
         OAObjectCacheDelegate.removeObject(oaObj);
         if (oaObj.guid > 0) OAObjectCSDelegate.finalizeObject(oaObj);
         hmAutoAdd.remove(oaObj.guid);
-        oaObj.hubs = null;
+        oaObj.weakhubs = null;
 	}
 	
     /**

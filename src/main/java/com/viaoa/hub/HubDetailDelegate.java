@@ -480,6 +480,7 @@ public class HubDetailDelegate {
 
     /** returns any shared hub with a MasterHub set. */
     public static Hub getHubWithMasterHub(final Hub thisHub) {
+        if (thisHub == null) return null;
         if (thisHub.datam.masterHub != null) return thisHub;
 
         OAFilter<Hub> filter = new OAFilter<Hub>() {

@@ -266,10 +266,9 @@ public class OADataSourceAuto extends OADataSource {
     }
 
     /**
-        Overwritten to only initialize object.  OADataSourceNextNumber Does not support data storage.
+        Does not support data storage.
     */
     public void delete(OAObject object) {
-        initializeObject(object);
     }
 
     /**

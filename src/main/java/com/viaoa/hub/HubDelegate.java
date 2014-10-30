@@ -20,8 +20,13 @@ package com.viaoa.hub;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.viaoa.object.*;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
 
 /**
@@ -478,9 +483,64 @@ public class HubDelegate {
         }
     }
     
+    // 20141030
+    /**
+     * Used on server, this will make sure that a Hub does not get GCd on the Server, and is needed when
+     * a hub has a masterObject that has a cacheSize set, which means that it can be GCd.
+     * This is called by Hub.add, Hub.remove, Hub.firepropchange(prop=changed=true), Hub.saveAll 
+
+     * @param bAllowGc true if it is ok for this Hub to be GCd, false if it needs to be kept from GC.
+     */
+static int qq=0;    
+    public static void setReferenceable(Hub thisHub, boolean bDontAllowGc) {
+        if (thisHub == null) return;
+        if (!OASyncDelegate.isServer()) return;
+        
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
+        if (li == null) return;
+        
+        li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+        if (li == null) return;
+        
+        if (li.getType() != li.MANY) return;
+        if (li.getCacheSize() < 1) return;
+
+        try {
+            rwHubCache.writeLock().lock();
+            if (bDontAllowGc) {
+                if (hsHubCache == null) {
+                    hsHubCache = new HashSet<Hub>(97, .75f);
+                }
+                hsHubCache.add(thisHub);
+            }
+            else {
+                if (hsHubCache != null) {
+                    hsHubCache.remove(thisHub);
+                }
+            }
+        }
+        finally {
+            rwHubCache.writeLock().unlock();
+        }
+    }
+    /**
+     * This can be called after saving all app data, so that Hub referenceable cache is empty. 
+     * @return previous hs used of Hubs, so that it's reference can be maintained until save is completed.
+     */
+    public static HashSet<Hub> clearReferenceableCache() {
+        HashSet<Hub> hs = null;
+        try {
+            rwHubCache.writeLock().lock();
+            hs = hsHubCache;
+            hsHubCache = null;
+        }
+        finally {
+            rwHubCache.writeLock().unlock();
+        }
+        return hs;
+    }
+    
+    private static ReadWriteLock rwHubCache = new ReentrantReadWriteLock();
+    private static HashSet<Hub> hsHubCache;
 }
-
-	
-
-
 

@@ -126,6 +126,7 @@ public class HubAddRemoveDelegate {
         if (bSendEvent) {
             HubEventDelegate.fireAfterRemoveEvent(thisHub, obj, pos);
         }
+        HubDelegate.setReferenceable(thisHub, true);
     }
 
     public static void clear(Hub thisHub) {
@@ -313,6 +314,7 @@ public class HubAddRemoveDelegate {
         }
         if (!thisHub.data.bInFetch) {
             HubEventDelegate.fireAfterAddEvent(thisHub, obj, thisHub.getCurrentSize()-1);
+            HubDelegate.setReferenceable(thisHub, true);
         }
         else { // 20120425 need to send ObjectCache event
             // 20130518 dont send if bInFetch (too much noise)

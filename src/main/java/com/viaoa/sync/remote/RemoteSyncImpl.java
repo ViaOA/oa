@@ -19,10 +19,8 @@ package com.viaoa.sync.remote;
 
 import java.util.Comparator;
 import java.util.logging.Logger;
-
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
-import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
@@ -31,115 +29,113 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.sync.OASyncDelegate;
 
 /**
- * Broadcast methods used to keep OAObjets, Hubs in sync with all computers.
+ * Broadcast methods used to keep OAObjects, Hubs in sync with all computers.
+ * Note: there is an instance on the server and each client.  The server needs to always
+ * try to update, even if the object is no longer in memory, then it will need to get from datasource. 
  * @author vvia
  */
 public class RemoteSyncImpl implements RemoteSyncInterface {
     private static Logger LOG = Logger.getLogger(RemoteSyncImpl.class.getName());
 
+    
+static int qq; //qqqqqqqqqqqqq
+
+
     @Override
-    public boolean delete(Class objectClass, OAObjectKey objectKey) {
-        OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
-        boolean bResult;
-        if (obj != null) {
-            obj.delete();
-            bResult = true;
-        }
-        else bResult = false;
-        return bResult;
-    }
-    @Override
-    public boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
-        OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (object == null) return false;
+    public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
+//qqqqqqqqqqqqqqqqqqqq        
+System.out.println((++qq)+") propChange "+propertyName+", new="+newValue);
+        OAObject obj = getObject(objectClass, origKey);
+        if (obj == null) return false;
+        OAObjectReflectDelegate.setProperty((OAObject)obj, propertyName, newValue, null);
         
-        Hub h = getHub(object, hubPropertyName, true);
+        // blob value does not get sent, so clear the property so that a getXxx will retrieve it from server
+        if (bIsBlob && newValue == null) {
+            ((OAObject)obj).removeProperty(propertyName);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object objAdd) {
+System.out.println((++qq)+") addToHub ");//qqqq
+        OAObject obj = getObject(masterObjectClass, masterObjectKey);
+        if (obj == null) return false;
+
+        Hub h = getHub(obj, hubPropertyName);
+        if (h == null) {
+            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)obj, hubPropertyName, false);                
+            return false;
+        }
+        h.add(objAdd);
+        return true;
+    }
+
+    @Override
+    public boolean insertInHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object objInsert, int pos) {
+        OAObject obj = getObject(masterObjectClass, masterObjectKey);
+        if (obj == null) return false;
+        
+        Hub h = getHub(obj, hubPropertyName);
+        if (h == null) {
+            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)obj, hubPropertyName, false);                
+            return false;
+        }
+        h.insert(objInsert, pos);
+        return true;
+    }
+
+    @Override
+    public boolean removeFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName, Class objectClassRemove, OAObjectKey objectKeyRemove) {
+System.out.println((++qq)+") removeFromHub ");//qqqq
+        OAObject obj = getObject(objectClass, objectKey);
+        if (obj == null) return false;
+        
+        Hub h = getHub(obj, hubPropertyName);
         if (h == null) return false;
 
+        OAObject objectRemove = getObject(objectClassRemove, objectKeyRemove);
+        if (objectRemove == null) return false;
+
+        h.remove(objectRemove);
+        return true;
+    }
+    
+    @Override
+    public boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
+        OAObject obj = getObject(objectClass, objectKey);
+        if (obj == null) return false;
+        
+        Hub h = getHub(obj, hubPropertyName);
+        if (h == null) {
+            // store null so that it can be an empty hub if needed (and wont have to get from server)
+            OAObjectPropertyDelegate.setProperty(obj, hubPropertyName, null);                
+            return false;
+        }
         h.deleteAll();
         return true;
     }
     
     @Override
-    public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
-        OAObject gobj = OAObjectCacheDelegate.get(objectClass, origKey);
-        if (gobj == null) {
-            if (OASyncDelegate.isServer()) {
-                // 20141018 need to get from DS since this is a server and the object must have been GCd
-                gobj = (OAObject) OADataSource.getObject(objectClass, origKey);
-                if (gobj == null) return false;
-            }
-            else return false;  // object not in this system
-        }
-        OAObjectReflectDelegate.setProperty((OAObject)gobj, propertyName, newValue, null);
+    public boolean removeAllFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
+        OAObject obj = getObject(objectClass, objectKey);
+        if (obj == null) return false;
         
-        // blob value does not get sent, so clear the property so that a getXxx will retrieve it from server
-        if (bIsBlob && newValue == null) {
-            ((OAObject)gobj).removeProperty(propertyName);
+        Hub h = getHub(obj, hubPropertyName);
+        if (h == null) {
+            OAObjectPropertyDelegate.setProperty(obj, hubPropertyName, null);                
+            return false;
         }
+        h.removeAll();
         return true;
-    }
-
-    @Override
-    public boolean removeObject(Class objectClass, OAObjectKey objectKey) {
-        Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
-        boolean bResult;
-        if (obj != null) {
-            OAObjectCacheDelegate.removeObject((OAObject) obj);
-            bResult = true;
-        }
-        else {
-            bResult = false;
-        }
-        return bResult;
-    }
-
-    protected Hub getHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName, boolean bAutoLoad) {
-        OAObject obj = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (obj == null) {
-            return null;
-        }
-        if (!bAutoLoad && !OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName)) return null;
-        Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);
-        if (objx instanceof Hub) return (Hub) objx;
-        return null;
     }
     
-    protected Hub getHub(OAObject obj, String hubPropertyName, boolean bAutoLoad) {
-        if (!bAutoLoad) {
-            if (!OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName)) return null;
-        }
-        Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);
-        if (objx instanceof Hub) return (Hub) objx;
-        return null;
-    }
-
-    @Override
-    public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, 
-            String hubPropertyName, Object obj) {
-        OAObject object = OAObjectCacheDelegate.get(masterObjectClass, masterObjectKey);
-        if (object == null) {
-            return false;
-        }
-
-        Hub h = getHub(object, hubPropertyName, true);
-        if (h == null) {
-            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)object, hubPropertyName, false);                
-            return false;
-        }
-        
-        if (HubDataDelegate.getPos(h, object, false, false) < 0 ) {
-            h.addElement(obj);
-        }
-        return true;
-    }
-
     @Override
     public boolean moveObjectInHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName,  int posFrom, int posTo) {
-        OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (object == null) return false;
+        OAObject obj = getObject(objectClass, objectKey);
+        if (obj == null) return false;
         
-        Hub h = getHub(object, hubPropertyName, true);
+        Hub h = getHub(obj, hubPropertyName);
         if (h == null) return false;
 
         h.move(posFrom, posTo);
@@ -148,67 +144,55 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     
     @Override
     public boolean sort(Class objectClass, OAObjectKey objectKey, String hubPropertyName, String propertyPaths, boolean bAscending, Comparator comp) {
-        OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (object == null) return false;
+        OAObject obj = getObject(objectClass, objectKey);
+        if (obj == null) return false;
         
-        Hub h = getHub(object, hubPropertyName, true);
+        Hub h = getHub(obj, hubPropertyName);
         if (h == null) return false;
 
         h.sort(propertyPaths, bAscending, comp);
         return true;
     }
 
-   
+    /** remove object from OAObjectCache */
     @Override
-    public boolean removeFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName, Class objectClassX, OAObjectKey objectKeyX) {
-        OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (object == null) {
-            return false;
-        }
-        
-        Hub h = getHub(object, hubPropertyName, true);
-        if (h == null) {
-            return false;
-        }
-
-        OAObject objectx = OAObjectCacheDelegate.get(objectClassX, objectKeyX);
-        if (objectx == null) {
-            return false;
-        }
-        h.remove(objectx);
-        return true;
-    }
-
-    @Override
-    public boolean removeAllFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
-        OAObject object = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (object == null) {
-            return false;
-        }
-        
-        Hub h = getHub(object, hubPropertyName, true);
-        if (h == null) {
-            return false;
-        }
-        h.removeAll();
+    public boolean removeObject(Class objectClass, OAObjectKey objectKey) {
+        Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
+        if (obj == null) return false;
+        OAObjectCacheDelegate.removeObject((OAObject) obj);
         return true;
     }
     
     
     @Override
-    public boolean insertInHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj, int pos) {
-        OAObject object = OAObjectCacheDelegate.get(masterObjectClass, masterObjectKey);
-        if (object == null) return false;
-        
-        Hub h = getHub(object, hubPropertyName, true);
-        if (h == null) {
-            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)object, hubPropertyName, false);                
-            return false;
-        }
-        
-        if (HubDataDelegate.getPos(h, object, false, false) < 0 ) {
-            h.insert(obj, pos);
-        }
+    public boolean delete(Class objectClass, OAObjectKey objectKey) {
+        OAObject obj = getObject(objectClass, objectKey);
+        if (obj == null) return false;
+        obj.delete();
         return true;
+    }
+
+    
+    
+    
+
+    private OAObject getObject(Class objectClass, OAObjectKey origKey) {
+        OAObject obj = OAObjectCacheDelegate.get(objectClass, origKey);
+        if (obj == null) {
+            if (OASyncDelegate.isServer()) {
+                obj = (OAObject) OADataSource.getObject(objectClass, origKey);
+            }
+        }
+        return obj;
+    }
+    
+    private Hub getHub(OAObject obj, String hubPropertyName) {
+        if (!OASyncDelegate.isServer()) {
+            if (!OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName)) return null;
+        }
+        Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);
+        if (objx instanceof Hub) return (Hub) objx;
+        return null;
     }
 }
+

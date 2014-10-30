@@ -137,7 +137,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     //   Hub - if a reference to object needs to be maintained, so that it wont be GCd and can be saved
     //   null - empty slot
     //   WeakReference<Hub> (default) - so that it does not hold the Hub from being GCd
-    protected transient Object[] hubs;   
+    protected transient WeakReference<Hub<?>>[] weakhubs;   
     
     // 20120827 flags per many(hub) reference, to know if the size is 0.
     //   uses bitwise operation to flag hub referencs that are empty (size=0) with a '1'
@@ -417,7 +417,16 @@ public class OAObject implements java.io.Serializable, Comparable {
             boolean bOld = changedFlag;
             changedFlag = tf;
         	OAObjectEventDelegate.firePropertyChange(this, OAObjectDelegate.WORD_Changed, bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, changedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
-        	OAObjectHubDelegate.changeHubReferences(this);
+
+            // 20141030
+            if (changedFlag && isServer()) {
+                Hub[] hubs = OAObjectHubDelegate.getHubReferences(this);
+                if (hubs != null) {
+                    for (Hub h : hubs) {
+                        HubDelegate.setReferenceable(h, true);
+                    }
+                }
+            }
         }
     }
 
