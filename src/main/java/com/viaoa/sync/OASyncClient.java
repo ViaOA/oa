@@ -185,7 +185,7 @@ public class OASyncClient {
     private OAObject[] lastMasterObjects = new OAObject[10];
     private int lastMasterCnter;
     /**
-     * Find any other siblings to get the same property for.
+     * Find any other siblings to get the same property for sibling objects in same hub.
      */
     protected OAObjectKey[] getDetailSiblings(OAObject masterObject, String property, OALinkInfo linkInfo) {
         Hub siblingHub = null;

@@ -799,5 +799,15 @@ public class OAObject implements java.io.Serializable, Comparable {
     public boolean isEmpty(Object obj) {
         return OAString.isEmpty(obj);
     }
+    
+    public boolean isHubLoaded(String name) {
+        Object objx = OAObjectPropertyDelegate.getProperty(this, name, true);
+        if (objx == OANotExist.instance) return false;
+        if (objx == null) return true;
+        if (objx instanceof WeakReference) {
+            if ( ((WeakReference) objx).get() == null) return false;
+        }
+        return true;
+    }
 }
 

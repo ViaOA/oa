@@ -125,7 +125,6 @@ public class OADataSourceClient extends OADataSource {
         return false;
     }
 
-    
     private HashMap<String, Integer> hmMax = new HashMap<String, Integer>();
     public int getMaxLength(Class c, String propertyName) {
         String key = (c.getName() + "-" + propertyName).toUpperCase();
@@ -141,6 +140,12 @@ public class OADataSourceClient extends OADataSource {
         else iResult = -1;
         hmMax.put(key, iResult);
         return iResult;
+    }
+    
+    public void setMaxLength(Class c, String propertyName, int length) {
+        if (c != null ||propertyName == null) return;
+        String key = (c.getName() + "-" + propertyName).toUpperCase();
+        hmMax.put(key, new Integer(length));
     }
 
     protected void verifyConnection() {
@@ -247,7 +252,7 @@ public class OADataSourceClient extends OADataSource {
         }
         Object obj = getRemoteClientSync().datasource(SELECT, new Object[] {clazz, queryWhere, queryOrder, filter} );
         if (obj == null) return null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz, obj, filter);
     }
 
     public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter) {
@@ -263,17 +268,16 @@ public class OADataSourceClient extends OADataSource {
             }
         }
     	int x = params == null ? 0 : params.length;
-    	Object[] objs = new Object[4+x];
+    	Object[] objs = new Object[3+x];
     	objs[0] = clazz;
     	objs[1] = queryWhere;
     	objs[2] = queryOrder;
-        objs[3] = filter;
     	
-    	for (int i=0; i<x; i++) objs[4+i] = params[i];
+    	for (int i=0; i<x; i++) objs[3+i] = params[i];
     	
     	Object obj = getRemoteClientSync().datasource(SELECT, objs );
         if (obj == null) return null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz, obj, filter);
     }
 
     public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
@@ -284,9 +288,9 @@ public class OADataSourceClient extends OADataSource {
                 return it;
             }
         }
-        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, query, null, filter} );
+        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, query, null} );
         if (obj == null) return null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz, obj, filter);
     }
 
 
@@ -298,9 +302,9 @@ public class OADataSourceClient extends OADataSource {
                 return it;
             }
         }
-        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, queryWhere, queryOrder, filter} );
+        Object obj = getRemoteClientSync().datasource(SELECTPASSTHRU, new Object[] {clazz, queryWhere, queryOrder} );
         if (obj == null) return null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz, obj, filter);
     }
 
     public @Override Object execute(String command) {
@@ -327,7 +331,7 @@ public class OADataSourceClient extends OADataSource {
         Object key = OAObjectKeyDelegate.getKey(whereObject);;
         Object obj = getRemoteClientSync().datasource(SELECTUSINGOBJECT, new Object[] {clazz, whereClass, key, extraWhere, args, propertyNameFromMaster, queryOrder} );
         if (obj == null) return null;
-        return new MyIterator(clazz, obj);
+        return new MyIterator(clazz, obj, filter);
     }
 
     public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
@@ -360,10 +364,12 @@ public class OADataSourceClient extends OADataSource {
         boolean bKey;
         Object[] cache;
         int cachePos = 0;
+        OAFilter filter;
 
-        public MyIterator(Class c, Object id) {
+        public MyIterator(Class c, Object id, OAFilter filter) {
             this.clazz = c;
             this.id = id;
+            this.filter = filter;
             next20();
         }
         public MyIterator(OAObjectKey key) {
@@ -373,8 +379,17 @@ public class OADataSourceClient extends OADataSource {
 
         public synchronized boolean hasNext() {
             if (key != null) return (bKey);
-            if (cache == null) return false;
-            return (cache[cachePos] != null);
+            
+            for (;;) {
+                if (cache == null) break;
+                for ( ; cachePos < cache.length; cachePos++) {
+                    if (cache[cachePos] == null) return false;
+                    if (filter == null || filter.isUsed(cache[cachePos])) return true;
+                }
+                next20();
+            }
+            
+            return false;
         }
 
         protected synchronized void next20() {
@@ -395,13 +410,7 @@ public class OADataSourceClient extends OADataSource {
                 return obj;
             }
 
-            obj = cache[cachePos];
-            if (obj == null) return null;
-
-            cachePos++;
-            if (cachePos == 20) next20();
-
-            if (obj == null && hasNext()) return next();
+            obj = cache[cachePos++];
             return obj;
         }
 

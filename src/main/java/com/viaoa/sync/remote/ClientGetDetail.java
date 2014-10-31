@@ -189,12 +189,12 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
             for (OAObjectKey key : siblingKeys) {
                 if (System.currentTimeMillis() - t1 > 120) break;
                 OAObject obj = OAObjectCacheDelegate.get(c, key);
-                if (obj != null) {
-                    // make sure that it was not already sent
-                    if (!isOnClient(obj)) {
-                        al.add(obj);
-                        OAObjectReflectDelegate.getProperty(obj, propFromMaster);
-                    }
+                if (obj == null) continue;
+                
+                Object objz = OAObjectReflectDelegate.getProperty(obj, propFromMaster);
+                if (objz == null) continue;
+                if (!isOnClient(objz)) {
+                    al.add(obj);
                 }
             }
         }

@@ -37,14 +37,8 @@ import com.viaoa.sync.OASyncDelegate;
 public class RemoteSyncImpl implements RemoteSyncInterface {
     private static Logger LOG = Logger.getLogger(RemoteSyncImpl.class.getName());
 
-    
-static int qq; //qqqqqqqqqqqqq
-
-
     @Override
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
-//qqqqqqqqqqqqqqqqqqqq        
-System.out.println((++qq)+") propChange "+propertyName+", new="+newValue);
         OAObject obj = getObject(objectClass, origKey);
         if (obj == null) return false;
         OAObjectReflectDelegate.setProperty((OAObject)obj, propertyName, newValue, null);
@@ -58,7 +52,6 @@ System.out.println((++qq)+") propChange "+propertyName+", new="+newValue);
 
     @Override
     public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object objAdd) {
-System.out.println((++qq)+") addToHub ");//qqqq
         OAObject obj = getObject(masterObjectClass, masterObjectKey);
         if (obj == null) return false;
 
@@ -87,7 +80,6 @@ System.out.println((++qq)+") addToHub ");//qqqq
 
     @Override
     public boolean removeFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName, Class objectClassRemove, OAObjectKey objectKeyRemove) {
-System.out.println((++qq)+") removeFromHub ");//qqqq
         OAObject obj = getObject(objectClass, objectKey);
         if (obj == null) return false;
         
@@ -162,8 +154,7 @@ System.out.println((++qq)+") removeFromHub ");//qqqq
         OAObjectCacheDelegate.removeObject((OAObject) obj);
         return true;
     }
-    
-    
+
     @Override
     public boolean delete(Class objectClass, OAObjectKey objectKey) {
         OAObject obj = getObject(objectClass, objectKey);
@@ -172,9 +163,6 @@ System.out.println((++qq)+") removeFromHub ");//qqqq
         return true;
     }
 
-    
-    
-    
 
     private OAObject getObject(Class objectClass, OAObjectKey origKey) {
         OAObject obj = OAObjectCacheDelegate.get(objectClass, origKey);
@@ -195,4 +183,3 @@ System.out.println((++qq)+") removeFromHub ");//qqqq
         return null;
     }
 }
-
