@@ -129,12 +129,12 @@ public class OASyncClient {
         if (masterObject == null || propertyName == null) return null;
 
         boolean bGetSibs;
+        OAObjectKey[] siblingKeys = null;
         Object result = null;
         boolean b = OARemoteThreadDelegate.shouldMessageBeQueued();
         if (!b) {
             bGetSibs = true;
             // send siblings to return back with same prop
-            OAObjectKey[] siblingKeys = null;
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
             if (li == null || !li.getCalculated()) {
                 siblingKeys = getDetailSiblings(masterObject, propertyName, li);
@@ -165,14 +165,21 @@ public class OASyncClient {
             int iNew = OAObjectSerializeDelegate.cntNew; 
             int iDup = OAObjectSerializeDelegate.cntDup;
             
+if (iNew-xNew == 0) {
+    //qqqqqqqqq
+    int xq = 0;
+    xq++;
+}
+            
             System.out.println(String.format(
-                "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b, " +
-                "newCnt=%d, dupCnt=%d, totNewCnt=%d, totDupCnt=%d",
+                "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b %,d, " +
+                "newCnt=%,d, dupCnt=%,d, totNewCnt=%,d, totDupCnt=%,d",
                 cntGetDetail, 
                 masterObject, 
                 propertyName, 
                 result==null?"null":result.getClass().getName(),
                 bGetSibs,
+                (siblingKeys == null)?0:siblingKeys.length,
                 iNew-xNew, 
                 iDup-xDup,
                 iNew, 
@@ -270,7 +277,7 @@ public class OASyncClient {
                 else if (bIsMany || bIsOne2One) {                
                     OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
                     al.add(key);
-                    if (++cnt == 50) break;
+                    if (++cnt == (50*(hubThreadLocal!=null?2:1))) break;
                 } 
                 // otherwise, it must be null
             }
@@ -278,7 +285,7 @@ public class OASyncClient {
                 if (OAObjectCacheDelegate.get(valueClass, value) == null) {
                     OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
                     al.add(key);
-                    if (++cnt == 75) break;
+                    if (++cnt == (100*(hubThreadLocal!=null?2:1))) break;
                 }
             }
         }

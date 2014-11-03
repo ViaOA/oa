@@ -53,6 +53,8 @@ public class OALinkInfo implements java.io.Serializable {
     protected boolean bServerSideCalc;
     protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
     
+    public boolean bSupportsStorage; // flag set/used by caching
+    
     public OALinkInfo(String name, Class toClass, int type) {
     	this(name, toClass, type, false, false, null, false);
     }

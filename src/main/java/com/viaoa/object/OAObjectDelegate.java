@@ -214,6 +214,7 @@ public class OAObjectDelegate {
 	    Removes object from HubController and calls super.finalize().
 	*/
 	public static void finalizeObject(OAObject oaObj) {
+//System.out.println((++qq)+" finalizeObject: "+oaObj);	    
 		if (oaObj.guid == 0) return; // set to 0 by readResolve or ObjectCacheDelegate.add() to ignore finalization
 	    if (oaObj.guid > 0 && !oaObj.deletedFlag) {  // set to 0 by readResolve or ObjectCacheDelegate.add() to ignore finalization
             if ((oaObj.changedFlag || oaObj.newFlag) && !OAObjectCSDelegate.isWorkstation()) {

@@ -19,6 +19,8 @@ package com.viaoa.object;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import com.viaoa.annotation.OAClass;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
@@ -489,38 +491,80 @@ public class OAObjectInfoDelegate {
     public static boolean cacheHub(OALinkInfo li, Hub hub) {
         if (li == null || hub == null || li.cacheSize < 1) return false;
         
-        Vector vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
-        if (vecCache == null) {
-            synchronized(OAObjectHashDelegate.hashLinkInfoCache) {
-                vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
-                if (vecCache == null) {
-                    vecCache = new Vector(li.cacheSize+5);
-                    OAObjectHashDelegate.hashLinkInfoCache.put(li, vecCache);
-                }
+        ReentrantReadWriteLock rwLock = OAObjectHashDelegate.hashLinkInfoCacheLock.get(li);
+        ArrayList alCache = null;
+        HashSet hsCache = null;
+
+        if (rwLock == null) {
+            synchronized(OAObjectHashDelegate.hashLinkInfoCacheLock) {
+                rwLock = OAObjectHashDelegate.hashLinkInfoCacheLock.get(li);
+                if (rwLock == null) {
+                    rwLock = new ReentrantReadWriteLock();
+                    OAObjectHashDelegate.hashLinkInfoCacheLock.put(li, rwLock);
+
+                    boolean bIsServer = OAObjectCSDelegate.isServer();
+                    
+                    alCache = new ArrayList(li.cacheSize * (bIsServer?10:1));
+                    OAObjectHashDelegate.hashLinkInfoCacheArrayList.put(li, alCache);
+                    hsCache = new HashSet(li.cacheSize * (bIsServer?10:1), .85f);
+                    OAObjectHashDelegate.hashLinkInfoCacheHashSet.put(li, hsCache);
+                }                
             }
         }
-        vecCache.removeElement(hub);
-        vecCache.addElement(hub);
+        if (alCache == null) {
+            alCache = (ArrayList) OAObjectHashDelegate.hashLinkInfoCacheArrayList.get(li);
+            hsCache = (HashSet) OAObjectHashDelegate.hashLinkInfoCacheHashSet.get(li);
+        }
         
-        boolean bIsServer = OAObjectCSDelegate.isServer();
+        try {
+            rwLock.writeLock().lock();
+            return _cacheHub(li, hub, alCache, hsCache);
+        }
+        finally {
+            rwLock.writeLock().unlock();
+        }
+    }    
+    private static boolean _cacheHub(OALinkInfo li, Hub hub, ArrayList alCache, HashSet hsCache) {
+        if (hsCache.contains(hub)) return false; 
+        alCache.add(hub);
+        hsCache.add(hub);
+        
         int maxCache = li.cacheSize;
-        if (bIsServer) maxCache *= 10;
-        
-        if (vecCache.size() > maxCache) {
-            if (bIsServer) {
-                OADataSource ds = OADataSource.getDataSource(hub.getObjectClass());
-                if (ds.supportsStorage()) {
-                    vecCache.removeElementAt(0);
+        int x = alCache.size();
+        if (x > maxCache) {
+            boolean b = false;
+            if (!OAObjectCSDelegate.isServer()) b = true;
+            else if (x > maxCache * 10) {
+                if (li.bSupportsStorage) b = true;
+                else {
+                    OADataSource ds = OADataSource.getDataSource(hub.getObjectClass());
+                    if (ds.supportsStorage()) {
+                        li.bSupportsStorage = true;
+                        b = true;
+                    }                    
                 }
             }
-            else vecCache.removeElementAt(0);;
+            if (b) {
+                hsCache.remove(alCache.remove(0));
+            }
         }
         return true;
     }
     // for testing
     public static boolean isCached(OALinkInfo li, Hub hub) {
-        Vector vecCache = (Vector) OAObjectHashDelegate.hashLinkInfoCache.get(li);
-        return vecCache != null && vecCache.contains(hub);
+        if (li == null || hub == null) return false;
+        ReentrantReadWriteLock rwLock = OAObjectHashDelegate.hashLinkInfoCacheLock.get(li);
+        if (rwLock == null) return false;
+        
+        try {
+            rwLock.readLock().lock();
+            
+            HashSet hs = (HashSet) OAObjectHashDelegate.hashLinkInfoCacheHashSet.get(li);
+            return hs != null && hs.contains(hub);
+        }
+        finally {
+            rwLock.readLock().unlock();
+        }
     }
     
     

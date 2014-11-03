@@ -60,7 +60,7 @@ public class OAObjectSerializeDelegate {
             
             if (value instanceof OANullObject) value = null;
             else if (value instanceof HashLinkWrap) {
-                value = ((HashLinkWrap) value).obj;
+                value = ((HashLinkWrap) value).obj;  // Hub
                 if (oi == null) oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObj);
                 OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
                 if (linkInfo != null) {

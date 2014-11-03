@@ -27,9 +27,11 @@ import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectKeyDelegate;
+import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAObjectSerializerCallback;
+import com.viaoa.util.OANotExist;
 
 /**
  * This is used for each clientSession, that creates a RemoteClientSyncImpl for
@@ -66,7 +68,7 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
 
         Object detailValue = _getDetail(masterObject, property);
         
-        if (masterProps == null) return detailValue;
+        if (masterProps == null && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
         
         OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
         return os;
@@ -131,9 +133,6 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
       
         
         final long t1 = System.currentTimeMillis();
-        if (masterObject instanceof OAObject) {
-            OAObjectReflectDelegate.loadAllReferences((OAObject) masterObject, false);
-        }
 
         int guid = OAObjectKeyDelegate.getKey(masterObject).getGuid();
         rwLockTreeSerialized.readLock().lock();
@@ -142,6 +141,9 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         boolean b = objx != null && ((Boolean) objx).booleanValue();
         final boolean bMasterWasPreviouslySent = b;
 
+        if (!bMasterWasPreviouslySent && masterObject instanceof OAObject) {
+            OAObjectReflectDelegate.loadAllReferences((OAObject) masterObject, false);
+        }
         
         Hub dHub = null;
         if (detailObject instanceof OAObject) {
@@ -167,9 +169,9 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
                     if (b) continue;
                     
                     if (System.currentTimeMillis() - t1 > 100) break;
-                    b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
+                    b = !OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
                     if (!b) {
-                        if (++cnt < 20) {
+                        if (++cnt < 15) {
                             OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 1, false);
                         }
                         else {
@@ -186,14 +188,21 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         if (siblingKeys != null) {
             al = new ArrayList<OAObject>(siblingKeys.length+1);
             Class c = masterObject.getClass();
+            int cntDs = 0;
             for (OAObjectKey key : siblingKeys) {
                 if (System.currentTimeMillis() - t1 > 120) break;
                 OAObject obj = OAObjectCacheDelegate.get(c, key);
                 if (obj == null) continue;
                 
-                Object objz = OAObjectReflectDelegate.getProperty(obj, propFromMaster);
-                if (objz == null) continue;
-                if (!isOnClient(objz)) {
+                // 20141031
+                Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true);
+                if (value instanceof OANotExist) {  // not loaded from ds
+                    if (cntDs++ < 10) {
+                        OAObjectReflectDelegate.getProperty(obj, propFromMaster);
+                        al.add(obj);
+                    }
+                }
+                else if (value != null) {
                     al.add(obj);
                 }
             }

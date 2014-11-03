@@ -21,6 +21,7 @@ package com.viaoa.object;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.viaoa.hub.Hub;
 
@@ -45,9 +46,10 @@ public class OAObjectHashDelegate {
     /** 
      * Used by OALinkInfo to cache Hubs so that they are not strong linked within object.  
      * Key   = OALinkInfo
-     * Value = Vector of Hubs.  The number of hubs is determined by OALinkInfo.setCacheSize(x) method.
      */
-	protected static final Hashtable hashLinkInfoCache = new Hashtable(47,0.75f);
+    protected static final Hashtable<OALinkInfo, ReentrantReadWriteLock> hashLinkInfoCacheLock = new Hashtable<OALinkInfo, ReentrantReadWriteLock>(47,0.75f);
+	protected static final Hashtable<OALinkInfo, ArrayList> hashLinkInfoCacheArrayList = new Hashtable<OALinkInfo, ArrayList>(47,0.75f);
+    protected static final Hashtable<OALinkInfo, HashSet> hashLinkInfoCacheHashSet = new Hashtable<OALinkInfo, HashSet>(47,0.75f);
 
 	
 	/** 
