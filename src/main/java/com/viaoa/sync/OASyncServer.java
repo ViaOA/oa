@@ -59,12 +59,11 @@ public class OASyncServer {
 
     private ConcurrentHashMap<Integer, ClientInfoExt> hmClientInfoExt = new ConcurrentHashMap<Integer, OASyncServer.ClientInfoExt>();
 
-    private ClientInfo clientInfo;
-    private RemoteClientInterface remoteClientForServer;
-    private RemoteClientSyncInterface remoteClientSyncForServer;
-    
-    /** information about this server instance */
+    // for this server instance
     private ServerInfo serverInfo;
+    private ClientInfo clientInfo;
+    private RemoteSessionInterface remoteSessionServer;
+    private RemoteClientInterface remoteClientForServer;
     
     public OASyncServer(int port) {
         this.port = port;
@@ -82,16 +81,20 @@ public class OASyncServer {
         if (remoteServer == null) {
             remoteServer = new RemoteServerImpl() {
                 @Override
-                public RemoteClientInterface getRemoteClientInterface(ClientInfo ci, RemoteClientCallbackInterface callback) {
-                    return createRemoteClient(ci, callback);
+                public RemoteSessionInterface getRemoteSession(ClientInfo ci, RemoteClientCallbackInterface callback) {
+                    return createRemoteSession(ci, callback);
                 }
                 @Override
-                public RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo ci) {
-                    return createRemoteClientSync(ci);
+                public RemoteClientInterface getRemoteClient(ClientInfo ci) {
+                    return createRemoteClient(ci);
+                }
+                @Override
+                public String getDisplayMessage() {
+                    return OASyncServer.this.getDisplayMessage();
                 }
             };
-            OASyncDelegate.setRemoteServerInterface(remoteServer);
-            getRemoteClientForServer();
+            OASyncDelegate.setRemoteServer(remoteServer);
+            getRemoteSessionForServer();
         }
         return remoteServer;
     }
@@ -104,28 +107,28 @@ public class OASyncServer {
         }
         return clientInfo;
     }
+    protected RemoteSessionInterface getRemoteSessionForServer() {
+        if (remoteSessionServer == null) {
+            remoteSessionServer = createRemoteSession(getClientInfo(), null);
+            OASyncDelegate.setRemoteSession(remoteSessionServer);
+        }
+        return remoteSessionServer;
+    }
     protected RemoteClientInterface getRemoteClientForServer() {
         if (remoteClientForServer == null) {
-            remoteClientForServer = createRemoteClient(getClientInfo(), null);
-            OASyncDelegate.setRemoteClientInterface(remoteClientForServer);
+            remoteClientForServer = createRemoteClient(getClientInfo());
+            OASyncDelegate.setRemoteClient(remoteClientForServer);
         }
         return remoteClientForServer;
     }
-    protected RemoteClientSyncInterface getRemoteClientSyncForServer() {
-        if (remoteClientSyncForServer == null) {
-            remoteClientSyncForServer = createRemoteClientSync(getClientInfo());
-            OASyncDelegate.setRemoteClientSyncInterface(remoteClientSyncForServer);
-        }
-        return remoteClientSyncForServer;
-    }
     
-    protected RemoteClientInterface createRemoteClient(final ClientInfo ci, RemoteClientCallbackInterface callback) {
+    protected RemoteSessionInterface createRemoteSession(final ClientInfo ci, RemoteClientCallbackInterface callback) {
         if (ci == null) return null;
         final ClientInfoExt cx = hmClientInfoExt.get(ci.getConnectionId());
         if (cx == null) return null;
         cx.callback = callback;
         
-        RemoteClientImpl rc = new RemoteClientImpl() {
+        RemoteSessionImpl rc = new RemoteSessionImpl() {
             boolean bClearedCache;
             @Override
             public boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey) {
@@ -171,15 +174,22 @@ public class OASyncServer {
         if (cx != null) cx.ci = ci;
     }
     
-    protected RemoteClientSyncInterface createRemoteClientSync(ClientInfo ci) {
+    protected RemoteClientInterface createRemoteClient(ClientInfo ci) {
         if (ci == null) return null;
         final ClientInfoExt cx = hmClientInfoExt.get(ci.getConnectionId());
         if (cx == null) return null;
         
-        RemoteClientSyncImpl rc = new RemoteClientSyncImpl() {
+        RemoteClientImpl rc = new RemoteClientImpl() {
             @Override
             public void setCached(OAObject obj, boolean b) {
                 cx.remoteClient.setCached(obj, b);
+            }
+            @Override
+            public void removeGuid(int guid) {
+                super.removeGuid(guid);
+                // need to also remove from session server side cache
+                OAObject obj = cx.remoteClient.findInCache(guid);
+                if (obj != null) cx.remoteClient.setCached(obj, false);
             }
         };
         cx.remoteClientSync = rc;
@@ -201,7 +211,7 @@ public class OASyncServer {
                         int guid = queRemoveGuid.take(); 
                         for (Map.Entry<Integer, ClientInfoExt> entry : OASyncServer.this.hmClientInfoExt.entrySet()) {
                             ClientInfoExt ciex = entry.getValue();
-                            RemoteClientSyncImpl rcs = ciex.remoteClientSync; 
+                            RemoteClientImpl rcs = ciex.remoteClientSync; 
                             if (rcs != null) {
                                 rcs.removeGuid(guid);
                             }
@@ -213,6 +223,7 @@ public class OASyncServer {
                         if (++cntError > 5) {
                             if (ms - 2000 < msLastError) {
                                 LOG.warning("too many errors, will stop this GuidRemove thread (not critical)");
+                                queRemoveGuid = null;
                                 break;
                             }
                             else {
@@ -311,8 +322,8 @@ public class OASyncServer {
     class ClientInfoExt {
         ClientInfo ci;
         Socket socket;
-        RemoteClientImpl remoteClient;
-        RemoteClientSyncImpl remoteClientSync;
+        RemoteSessionImpl remoteClient;
+        RemoteClientImpl remoteClientSync;
         RemoteClientCallbackInterface callback;
     }
     
@@ -395,10 +406,10 @@ public class OASyncServer {
             getRemoteMultiplexerServer().createLookup(ServerLookupName, getRemoteServer(), RemoteServerInterface.class); 
 
             RemoteSyncInterface rsi = (RemoteSyncInterface) getRemoteMultiplexerServer().createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
-            OASyncDelegate.setRemoteSyncInterface(rsi);
+            OASyncDelegate.setRemoteSync(rsi);
             
             // have RemoteClient objects use sync queue
-            getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientSyncInterface.class, SyncQueueName, QueueSize);            
+            getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientInterface.class, SyncQueueName, QueueSize);            
         }
         return remoteMultiplexerServer;
     }
@@ -415,8 +426,6 @@ public class OASyncServer {
     public Object createBroadcast(final String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
         return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, queueName, queueSize);
     }
-
-    
     
 
     /*

@@ -27,7 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.sync.*;
-import com.viaoa.sync.remote.RemoteClientInterface;
+import com.viaoa.sync.remote.RemoteSessionInterface;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.OASelect;
 import com.viaoa.hub.Hub;
@@ -63,7 +63,7 @@ public class OAObjectReflectDelegate {
         Object obj = null;
 
         if (!oi.getLocalOnly()) {
-            RemoteClientInterface rc = OASyncDelegate.getRemoteClientInterface();
+            RemoteSessionInterface rc = OASyncDelegate.getRemoteSession();
             if (rc != null) {
                 obj = rc.createNewObject(clazz);
                 return obj;

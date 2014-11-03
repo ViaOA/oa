@@ -29,14 +29,13 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.sync.OASyncDelegate;
 
 /**
- * Broadcast methods used to keep OAObjects, Hubs in sync with all computers.
+ * Remote broadcast methods used to keep OAObjects, Hubs in sync with all computers.
  * Note: there is an instance on the server and each client.  The server needs to always
  * try to update, even if the object is no longer in memory, then it will need to get from datasource. 
- * @author vvia
  */
 public class RemoteSyncImpl implements RemoteSyncInterface {
     private static Logger LOG = Logger.getLogger(RemoteSyncImpl.class.getName());
-
+    
     @Override
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         OAObject obj = getObject(objectClass, origKey);
@@ -57,7 +56,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
 
         Hub h = getHub(obj, hubPropertyName);
         if (h == null) {
-            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)obj, hubPropertyName, false);                
+            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)obj, hubPropertyName, false); // if hub is null (empty), then need to get from server                
             return false;
         }
         h.add(objAdd);
@@ -146,7 +145,8 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         return true;
     }
 
-    /** remove object from OAObjectCache */
+    /** this was removed, since caching can cause GC on server
+     * and it will then later refetch the object, etc 
     @Override
     public boolean removeObject(Class objectClass, OAObjectKey objectKey) {
         Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
@@ -154,6 +154,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         OAObjectCacheDelegate.removeObject((OAObject) obj);
         return true;
     }
+    */
 
     @Override
     public boolean delete(Class objectClass, OAObjectKey objectKey) {

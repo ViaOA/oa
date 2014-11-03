@@ -17,14 +17,19 @@ All rights reserved.
 */
 package com.viaoa.sync.remote;
 
+import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.sync.model.ClientInfo;
 
+/**
+ * Server side remote object for clients to use.
+ */
 public abstract class RemoteServerImpl implements RemoteServerInterface {
 
     @Override
@@ -34,13 +39,6 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
     @Override
     public String getDisplayMessage() {
         return "OASyncServer";
-    }
-
-    protected Hub getHub(OAObject obj, String hubPropertyName, boolean bAutoLoad) {
-        if (!bAutoLoad && !OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName)) return null;
-        Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);
-        if (objx instanceof Hub) return (Hub) objx;
-        return null;
     }
 
     @Override
@@ -55,7 +53,6 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
         return bResult;
     }
 
-
     @Override
     public int getNextFiftyObjectGuids() {
         return OAObjectDelegate.getNextFiftyGuids();
@@ -64,13 +61,18 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
     @Override
     public OAObject getObject(Class objectClass, OAObjectKey objectKey) {
         OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
+        if (obj == null) {
+            if (OASyncDelegate.isServer()) {
+                obj = (OAObject) OADataSource.getObject(objectClass, objectKey);
+            }
+        }
         return obj;
     }
 
     @Override
-    public abstract RemoteClientSyncInterface getRemoteClientSyncInterface(ClientInfo clientInfo);    
+    public abstract RemoteClientInterface getRemoteClient(ClientInfo clientInfo);    
     
     @Override
-    public abstract RemoteClientInterface getRemoteClientInterface(ClientInfo clientInfo, RemoteClientCallbackInterface callback);
+    public abstract RemoteSessionInterface getRemoteSession(ClientInfo clientInfo, RemoteClientCallbackInterface callback);
     
 }

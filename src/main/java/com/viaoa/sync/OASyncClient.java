@@ -17,9 +17,9 @@ All rights reserved.
 */
 package com.viaoa.sync;
 
-import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +29,7 @@ import com.viaoa.hub.Hub;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
+import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
@@ -42,8 +43,8 @@ import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientCallbackInterface;
+import com.viaoa.sync.remote.RemoteSessionInterface;
 import com.viaoa.sync.remote.RemoteClientInterface;
-import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncImpl;
 import com.viaoa.sync.remote.RemoteSyncInterface;
@@ -68,8 +69,8 @@ public class OASyncClient {
     private ClientInfo clientInfo;
 
     private RemoteServerInterface remoteServerInterface;
-    private RemoteClientInterface remoteClientInterface;
-    private RemoteClientSyncInterface remoteClientSyncInterface;
+    private RemoteSessionInterface remoteClientInterface;
+    private RemoteClientInterface remoteClientSyncInterface;
     private RemoteSyncInterface remoteSyncInterface;
     private RemoteSyncImpl remoteSyncImpl;
     private String serverHostName;
@@ -92,7 +93,7 @@ public class OASyncClient {
                     clientInfo.setFreeMemory(Runtime.getRuntime().freeMemory());
                     clientInfo.setTotalMemory(Runtime.getRuntime().totalMemory());
                     try {
-                        getRemoteClientInterface().update(clientInfo);
+                        getRemoteSession().update(clientInfo);
                         Thread.sleep(seconds * 1000);
                     }
                     catch (Exception e) {
@@ -100,7 +101,7 @@ public class OASyncClient {
                     }
                 }
             }
-        }, "OASync.updateClientInfo."+seconds);
+        }, "OASyncClient.updateClientInfo."+seconds);
         t.setDaemon(true);
         t.start();
     }
@@ -108,7 +109,7 @@ public class OASyncClient {
     public Object getDetail_OLD(OAObject oaObj, String propertyName) {
         Object objx = null;
         try {
-            objx = getRemoteClientSyncInterface().getDetail(oaObj.getClass(), oaObj.getObjectKey(), propertyName);
+            objx = getRemoteClient().getDetail(oaObj.getClass(), oaObj.getObjectKey(), propertyName);
         }
         catch (Exception e) {
         }
@@ -142,7 +143,7 @@ public class OASyncClient {
             
             String[] props = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
             try {
-                result = getRemoteClientSyncInterface().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, props, siblingKeys);
+                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, props, siblingKeys);
             }
             catch (Exception e) {
                 LOG.log(Level.WARNING, "getDetail error", e);
@@ -150,7 +151,7 @@ public class OASyncClient {
         }
         else {
             try {
-                result = getRemoteClientSyncInterface().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName);
+                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName);
             }
             catch (Exception e) {
                 LOG.log(Level.WARNING, "getDetail error", e);
@@ -299,10 +300,10 @@ if (iNew-xNew == 0) {
     
     
     
-    public RemoteServerInterface getRemoteServerInterface() throws Exception {
+    public RemoteServerInterface getRemoteServer() throws Exception {
         if (remoteServerInterface == null) {
             remoteServerInterface = (RemoteServerInterface) getRemoteMultiplexerClient().lookup(ServerLookupName);
-            OASyncDelegate.setRemoteServerInterface(remoteServerInterface);
+            OASyncDelegate.setRemoteServer(remoteServerInterface);
         }
         return remoteServerInterface;
     }
@@ -313,25 +314,23 @@ if (iNew-xNew == 0) {
         }
         return remoteSyncImpl;
     }
-    public RemoteSyncInterface getRemoteSyncInterface() throws Exception {
+    public RemoteSyncInterface getRemoteSync() throws Exception {
         if (remoteSyncInterface == null) {
             remoteSyncInterface = (RemoteSyncInterface) getRemoteMultiplexerClient().lookupBroadcast(SyncLookupName, getRemoteSyncImpl());
-            OASyncDelegate.setRemoteSyncInterface(remoteSyncInterface);
+            OASyncDelegate.setRemoteSync(remoteSyncInterface);
         }
         return remoteSyncInterface;
     }
-    public RemoteClientInterface getRemoteClientInterface() throws Exception {
+    public RemoteSessionInterface getRemoteSession() throws Exception {
         if (remoteClientInterface == null) {
-
-            
-            remoteClientInterface = getRemoteServerInterface().getRemoteClientInterface(getClientInfo(), getRemoteClientCallbackInterface());
-            OASyncDelegate.setRemoteClientInterface(remoteClientInterface);
+            remoteClientInterface = getRemoteServer().getRemoteSession(getClientInfo(), getRemoteClientCallback());
+            OASyncDelegate.setRemoteSession(remoteClientInterface);
         }
         return remoteClientInterface;
     }
     private RemoteClientCallbackInterface remoteCallback;
     
-    public RemoteClientCallbackInterface getRemoteClientCallbackInterface() {
+    public RemoteClientCallbackInterface getRemoteClientCallback() {
         if (remoteCallback == null) {
             remoteCallback = new RemoteClientCallbackInterface() {
                 @Override
@@ -342,10 +341,10 @@ if (iNew-xNew == 0) {
         }
         return remoteCallback;
     }
-    public RemoteClientSyncInterface getRemoteClientSyncInterface() throws Exception {
+    public RemoteClientInterface getRemoteClient() throws Exception {
         if (remoteClientSyncInterface == null) {
-            remoteClientSyncInterface = getRemoteServerInterface().getRemoteClientSyncInterface(getClientInfo());
-            OASyncDelegate.setRemoteClientSyncInterface(remoteClientSyncInterface);
+            remoteClientSyncInterface = getRemoteServer().getRemoteClient(getClientInfo());
+            OASyncDelegate.setRemoteClient(remoteClientSyncInterface);
         }
         return remoteClientSyncInterface;
     }
@@ -389,10 +388,11 @@ if (iNew-xNew == 0) {
         clientInfo.setConnectionId(getMultiplexerClient().getConnectionId());
         
         LOG.fine("getting remote object for Client Session");
-        getRemoteServerInterface();
-        getRemoteSyncInterface();
-        getRemoteClientInterface();
-        getRemoteClientSyncInterface();
+        getRemoteServer();
+        getRemoteSync();
+        getRemoteSession();
+        getRemoteClient();
+        startQueueGuidThread();
 
         LOG.fine("creating OADataSourceClient for remote database access");
         getOADataSourceClient();
@@ -426,7 +426,7 @@ if (iNew-xNew == 0) {
     public void onStopCalled(String title, String msg) {
         LOG.warning("stopped called by server, title="+title+", msg="+msg);
         try {
-            getRemoteClientInterface().sendException(title+", "+msg, new Exception("onStopCalled on client"));
+            getRemoteSession().sendException(title+", "+msg, new Exception("onStopCalled on client"));
             stop();
         }
         catch (Exception e) {
@@ -534,5 +534,72 @@ if (iNew-xNew == 0) {
         }
     }
 
+    public void removeObject(int guid) {
+        if (guid > 0 && queRemoveGuid != null) {
+            try {
+                queRemoveGuid.add(guid);
+            }
+            catch (Exception e) {
+            }
+        }
+    }
+    public void removeObject(OAObject obj) {
+        if (obj != null && queRemoveGuid != null) {
+            int guid = OAObjectDelegate.getGuid(obj);
+            try {
+                if (guid > 0) queRemoveGuid.add(guid);
+            }
+            catch (Exception e) {
+            }
+        }
+    }
 
+    private LinkedBlockingQueue<Integer> queRemoveGuid;
+    private Thread threadRemoveGuid;
+    private void startQueueGuidThread() {
+        if (queRemoveGuid != null) return;
+        queRemoveGuid = new LinkedBlockingQueue<Integer>();
+        threadRemoveGuid = new Thread(new Runnable() {
+            long msLastError;
+            int cntError;
+            int[] guids = new int[25];
+            @Override
+            public void run() {
+                RemoteClientInterface rci = null;
+                for (int guidPos = 0;;) {
+                    try {
+                        int guid = queRemoveGuid.take(); 
+                        guids[guidPos++ % 25] = guid;
+                        if (guidPos % 25 == 0) {
+                            if (rci == null) {
+                                OASyncClient sc = OASyncDelegate.getSyncClient();
+                                if (sc != null) rci = sc.getRemoteClient();
+                            }
+                            if (rci != null) {
+                                rci.removeGuids(guids);
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "Error in removeGuid thread", e);
+                        long ms = System.currentTimeMillis();
+                        if (++cntError > 5) {
+                            if (ms - 2000 < msLastError) {
+                                LOG.warning("too many errors, will stop this GuidRemove thread (not critical)");
+                                queRemoveGuid = null;
+                                break;
+                            }
+                            else {
+                                cntError = 0;
+                            }
+                        }
+                        msLastError = ms;
+                    }
+                }
+            }
+        }, "OASyncClient.RemoveGuid");
+        threadRemoveGuid.setPriority(Thread.MIN_PRIORITY);
+        threadRemoveGuid.setDaemon(true);
+        threadRemoveGuid.start();
+    }
 }

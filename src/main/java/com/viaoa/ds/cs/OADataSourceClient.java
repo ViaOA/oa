@@ -21,7 +21,7 @@ import java.util.*;
 
 import com.viaoa.object.*;
 import com.viaoa.sync.*;
-import com.viaoa.sync.remote.RemoteClientSyncInterface;
+import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.util.OAFilter;
 import com.viaoa.ds.*;
 import com.viaoa.ds.jdbc.db.Database;
@@ -36,7 +36,7 @@ import com.viaoa.ds.objectcache.ObjectCacheIterator;
 */
 public class OADataSourceClient extends OADataSource {
     private Hashtable hashClass = new Hashtable();
-    private RemoteClientSyncInterface remoteClientSync;
+    private RemoteClientInterface remoteClientSync;
 
     /** internal value to work with OAClient */
     public static final int IS_AVAILABLE = 0;
@@ -102,9 +102,9 @@ public class OADataSourceClient extends OADataSource {
     public OADataSourceClient() {
     }
 
-    public RemoteClientSyncInterface getRemoteClientSync() {
+    public RemoteClientInterface getRemoteClientSync() {
         if (remoteClientSync == null) {
-            remoteClientSync = OASyncDelegate.getRemoteClientSyncInterface();
+            remoteClientSync = OASyncDelegate.getRemoteClient();
         }
         return remoteClientSync;
     }
@@ -223,13 +223,13 @@ public class OADataSourceClient extends OADataSource {
     }
 
     public @Override int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, int max) {
-        Object obj = getRemoteClientSync().datasource(COUNT2, new Object[] {selectClass, extraWhere, args, whereObject, propertyNameFromMaster});
+        Object obj = getRemoteClientSync().datasource(COUNT2, new Object[] {selectClass, whereObject, extraWhere, args, whereObject, propertyNameFromMaster});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
 
     public @Override int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster, int max) {
-        Object obj = getRemoteClientSync().datasource(COUNT2, new Object[] {selectClass, null, whereObject, propertyNameFromMaster});
+        Object obj = getRemoteClientSync().datasource(COUNT2, new Object[] {selectClass, whereObject, null, propertyNameFromMaster});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
@@ -404,7 +404,7 @@ public class OADataSourceClient extends OADataSource {
                 obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) {
                     // not on this system, need to get from server
-                    OASyncDelegate.getRemoteServerInterface().getObject(clazz, key);
+                    OASyncDelegate.getRemoteServer().getObject(clazz, key);
                 }
                 bKey = false;
                 return obj;

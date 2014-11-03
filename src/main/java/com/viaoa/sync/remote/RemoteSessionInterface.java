@@ -19,18 +19,27 @@ package com.viaoa.sync.remote;
 
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 import com.viaoa.sync.model.ClientInfo;
 
-public interface RemoteServerInterface {
+@OARemoteInterface()
+public interface RemoteSessionInterface {
+    OAObject createNewObject(Class clazz);
 
-    boolean save(Class objectClass, OAObjectKey objectKey, int iCascadeRule);
-    OAObject getObject(Class objectClass, OAObjectKey objectKey);
+    @OARemoteMethod(noReturnValue=true)
+    void setCached(Class objectClass, OAObjectKey objectKey, boolean bAddToCache);
+    @OARemoteMethod(noReturnValue=true)
+    void setCached(OAObject obj, boolean bAddToCache);
+    
+    boolean setLock(Class objectClass, OAObjectKey objectKey, boolean bLock);
+    boolean isLocked(Class objectClass, OAObjectKey objectKey);
+    boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey);
+    boolean isLockedByThisClient(Class objectClass, OAObjectKey objectKey);
 
-    RemoteSessionInterface getRemoteSession(ClientInfo clientInfo, RemoteClientCallbackInterface callback);
-    RemoteClientInterface getRemoteClient(ClientInfo clientInfo);
+    @OARemoteMethod(noReturnValue=true)
+    void update(ClientInfo ci); 
     
-    String ping(String msg);
-    String getDisplayMessage();
-    
-    int getNextFiftyObjectGuids();
+    @OARemoteMethod(noReturnValue=true)
+    void sendException(String msg, Throwable ex);
 }

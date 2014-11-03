@@ -25,10 +25,10 @@ import com.viaoa.sync.remote.*;
 public class OASyncDelegate {
     private static Logger LOG = Logger.getLogger(OASyncDelegate.class.getName());
     
-    private static RemoteServerInterface remoteServerInterface;
-    private static RemoteSyncInterface remoteSyncInterface;
-    private static RemoteClientInterface remoteClientInterface;
-    private static RemoteClientSyncInterface remoteClientSyncInterface;
+    private static RemoteServerInterface remoteServer;
+    private static RemoteSyncInterface remoteSync;
+    private static RemoteSessionInterface remoteSession;
+    private static RemoteClientInterface remoteClient;
     private static OASyncClient syncClient;
     private static OASyncServer syncServer;
     
@@ -49,30 +49,30 @@ public class OASyncDelegate {
         syncServer = ss;
     }
     
-    public static void setRemoteClientInterface(RemoteClientInterface rci) {
-        remoteClientInterface = rci;
+    public static void setRemoteSession(RemoteSessionInterface rci) {
+        remoteSession = rci;
     }
-    public static RemoteClientInterface getRemoteClientInterface() {
-        return remoteClientInterface;
+    public static RemoteSessionInterface getRemoteSession() {
+        return remoteSession;
     }
-    public static void setRemoteClientSyncInterface(RemoteClientSyncInterface rci) {
-        remoteClientSyncInterface = rci;
+    public static void setRemoteClient(RemoteClientInterface rci) {
+        remoteClient = rci;
     }
-    public static RemoteClientSyncInterface getRemoteClientSyncInterface() {
-        return remoteClientSyncInterface;
+    public static RemoteClientInterface getRemoteClient() {
+        return remoteClient;
     }
-    public static void setRemoteServerInterface(RemoteServerInterface rsi) {
-        remoteServerInterface = rsi;
+    public static void setRemoteServer(RemoteServerInterface rsi) {
+        remoteServer = rsi;
     }
-    public static RemoteServerInterface getRemoteServerInterface() {
-        return remoteServerInterface;
+    public static RemoteServerInterface getRemoteServer() {
+        return remoteServer;
     }
 
-    public static void setRemoteSyncInterface(RemoteSyncInterface rsi) {
-        remoteSyncInterface = rsi;
+    public static void setRemoteSync(RemoteSyncInterface rsi) {
+        remoteSync = rsi;
     }
-    public static RemoteSyncInterface getRemoteSyncInterface() {
-        return remoteSyncInterface;
+    public static RemoteSyncInterface getRemoteSync() {
+        return remoteSync;
     }
     
     public static boolean isServer() {
@@ -102,7 +102,7 @@ public class OASyncDelegate {
         synchronized (NextGuidLock) {
             if (nextGuid == maxNextGuid) {
                 try {
-                    nextGuid = getRemoteServerInterface().getNextFiftyObjectGuids();
+                    nextGuid = getRemoteServer().getNextFiftyObjectGuids();
                     maxNextGuid = nextGuid + 50; 
                 }
                 catch (Exception ex) {

@@ -25,8 +25,9 @@ import java.util.logging.*;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.*;
+import com.viaoa.sync.remote.RemoteClientImpl;
+import com.viaoa.sync.remote.RemoteSessionInterface;
 import com.viaoa.sync.remote.RemoteClientInterface;
-import com.viaoa.sync.remote.RemoteClientSyncInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.hub.*;
@@ -62,22 +63,14 @@ public class OAObjectCSDelegate {
     }
 
     /**
-    * Called by OAObjectDelegate.initialize().  If Object is being created on workstation, then it needs to be cached on server,
-    * so that it wont be gc'd on server while it is still being used on client(s).
+    * Called by OAObjectDelegate.initialize(). 
+    * If Object is being created on workstation, then it needs to be flagged that it is only on the client.
     */
     protected static void initialize(OAObject oaObj) {
 	    if (oaObj == null) return;
 	    if (!OASyncDelegate.isServer()) {
 	        addToClientSideCache(oaObj);
 	    }
-	    /* 20140314 was:
-	    RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
-	    if (ri != null) {
-            ri.setCached(oaObj, true);
-            int guid = oaObj.getObjectKey().getGuid();
-            hashServerSideCache.add(guid);
- 	    }
- 	    */
     }
 
     public static boolean isInServerSideCache(OAObject oaObj) {
@@ -89,11 +82,10 @@ public class OAObjectCSDelegate {
     protected static void finalizeObject(OAObject oaObj) {
         if (oaObj == null) return;
         if (OASyncDelegate.isServer()) return;
-        if (hashServerSideCache.remove(oaObj.getObjectKey().getGuid()) != null) {
-            RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
-            if (ri != null) {
-                ri.setCached(oaObj, false);
-            }
+        hashServerSideCache.remove(oaObj.getObjectKey().getGuid());
+        OASyncClient sc = OASyncDelegate.getSyncClient();
+        if (sc != null) {
+            sc.removeObject(oaObj);
         }
     }
     
@@ -108,7 +100,7 @@ public class OAObjectCSDelegate {
         if (OASyncDelegate.isSingleUser()) return;
         int guid = oaObj.getObjectKey().getGuid();
         if (hashServerSideCache.contains(guid)) return;
-        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
         if (ri != null) {
             ri.setCached(oaObj, true);
             hashServerSideCache.put(guid, guid);
@@ -124,7 +116,7 @@ public class OAObjectCSDelegate {
         if (OASyncDelegate.isSingleUser()) return;
         int guid = oaObj.getObjectKey().getGuid();
         if (hashServerSideCache.remove(guid) != null) {
-            RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+            RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
             if (ri != null) {
                 ri.setCached(oaObj, false);
             }
@@ -136,7 +128,7 @@ public class OAObjectCSDelegate {
 	   If OAClient.client exists, this will create the object on the server, where the server datasource can initialize object.
 	*/
 	protected static Object createNewObject(Class clazz) {
-        RemoteClientInterface ri = OASyncDelegate.getRemoteClientInterface();
+        RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
         if (ri != null) {
             return ri.createNewObject(clazz);
         }
@@ -168,7 +160,7 @@ public class OAObjectCSDelegate {
      */
      protected static OAObject createCopy(OAObject oaObj, String[] excludeProperties) {
          if (oaObj == null) return null;
-         RemoteClientSyncInterface ri = OASyncDelegate.getRemoteClientSyncInterface();
+         RemoteClientInterface ri = OASyncDelegate.getRemoteClient();
          if (ri != null) {
              return ri.createCopy(oaObj.getClass(), oaObj.getObjectKey(), excludeProperties);
          }
@@ -183,7 +175,7 @@ public class OAObjectCSDelegate {
     // returns true if this was saved on server
     protected static boolean save(OAObject oaObj, int iCascadeRule) {
         if (oaObj == null) return false;
-        RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
+        RemoteServerInterface rs = OASyncDelegate.getRemoteServer();
         if (rs != null) {
             return rs.save(oaObj.getClass(), oaObj.getObjectKey(), iCascadeRule);
         }
@@ -196,7 +188,7 @@ public class OAObjectCSDelegate {
 	    @see #delete()
 	*/
     protected static boolean delete(OAObject obj) {
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs == null) return false;
         
         if (!OARemoteThreadDelegate.shouldSendMessages()) return false;
@@ -218,22 +210,21 @@ public class OAObjectCSDelegate {
      */
     protected static void objectRemovedFromCache(Class clazz, OAObjectKey key) {
         if (key == null) return;
-        /* dont need to call clients, there GC will take care of it
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
-        if (rs != null) {
-            result = rs.removeObject(clazz, key);
-        }
-        */
         // 20140308 call server side cache
         OASyncServer ss = OASyncDelegate.getSyncServer();
         if (ss != null) {
             ss.removeObject(key.getGuid());
         }
+        else {
+            OASyncClient sc = OASyncDelegate.getSyncClient();
+            if (sc != null) {
+                sc.removeObject(key.getGuid());
+            }
+        }
     }    
-    
 
 	protected static OAObject getServerObject(Class clazz, OAObjectKey key) {
-        RemoteServerInterface rs = OASyncDelegate.getRemoteServerInterface();
+        RemoteServerInterface rs = OASyncDelegate.getRemoteServer();
         OAObject result;
         if (rs != null) {
             result = rs.getObject(clazz, key);
@@ -318,7 +309,7 @@ public class OAObjectCSDelegate {
 	
 	
     protected static void fireBeforePropertyChange(OAObject obj, String propertyName, Object oldValue, Object newValue) {
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs == null) return;
         
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
@@ -390,7 +381,7 @@ public class OAObjectCSDelegate {
             }
         }
         
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs != null) {
             rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob);
         }

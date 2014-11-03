@@ -17,113 +17,101 @@ All rights reserved.
 */
 package com.viaoa.sync.remote;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.viaoa.object.OACascade;
+import com.viaoa.ds.OADataSource;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
-import com.viaoa.object.OAObjectSaveDelegate;
 import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
-import com.viaoa.sync.model.ClientInfo;
 
 // see: OAClient
 
 public abstract class RemoteClientImpl implements RemoteClientInterface {
     protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
     protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
+    private ClientGetDetail clientGetDetail = new ClientGetDetail(); 
+    private RemoteDataSource remoteDataSource;
 
+    /**
+     * Called by OASyncServer.removeObject, to have an object guid removed
+     * from clients cache.
+     */
+    public void removeGuid(int guid) {
+        clientGetDetail.removeGuid(guid);
+    }
+
+    /**
+     * called by client when objects are GCd,
+     * so that they can be removed from server side session.
+     */
     @Override
-    public void setCached(Class objectClass, OAObjectKey objectKey, boolean bAddToCache) {
-        Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (obj == null) return;
-
-        if (bAddToCache) {
-            hashCache.put(obj, obj);
+    public void removeGuids(int[] guids) {
+        if (guids == null) return;
+        int x = guids.length;
+        
+        for (int i=0; i<x; i++) {
+            if (guids[i] > 0) this.removeGuid(guids[i]);
         }
-        else {
-            hashCache.remove(obj);
-        }
+        
+        
     }
+    
     @Override
-    public void setCached(OAObject obj, boolean bAddToCache) {
-        if (bAddToCache) {
-            hashCache.put(obj, obj);
-        }
-        else {
-            hashCache.remove(obj);
-        }
-    }
-
-    // called by server to save any client cached objects
-    public void saveCache(OACascade cascade, int iCascadeRule) {
-        for (Map.Entry<Object, Object> entry : hashCache.entrySet()) {
-            Object obj = entry.getKey();
-            if (obj instanceof OAObject) {
-                OAObject oa = (OAObject) obj;
-                if (!oa.wasDeleted()) {
-                    OAObjectSaveDelegate.save(oa, iCascadeRule, cascade);
-                }
-            }
-        }
-    }
-
-    // called by server when client is disconnected, and objects are saved
-    public void clearCache() {
-        hashCache.clear();
-    }
-
-    @Override
-    public boolean setLock(Class objectClass, OAObjectKey objectKey, boolean bLock) {
-        Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (obj == null) return false;
-        setLock(obj, bLock);
-        return true;
-    }
-
-    public void setLock(Object obj, boolean bLock) {
-        if (bLock) {
-            hashLock.put(obj, obj);
-        }
-        else {
-            hashLock.remove(obj);
-        }
-    }
-
-    // this is used at disconnect
-    public void clearLocks() {
-        for (Map.Entry<Object, Object> entry : hashLock.entrySet()) {
-            Object obj = entry.getKey();
-            setLock(obj, false);
-        }
-    }
-
-    @Override
-    public OAObject createNewObject(Class clazz) {
-        OAObject obj = (OAObject) OAObjectReflectDelegate.createNewObject(clazz);
-        setCached(obj, true);
+    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
+        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys);
         return obj;
     }
-    
+
     @Override
-    public boolean isLockedByThisClient(Class objectClass, OAObjectKey objectKey) {
-        Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (obj == null) return false;
-        return (hashLock.get(obj) != null);
+    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property) {
+        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, null, null);
+        return obj;
+    }
+
+    public Object datasource(int command, Object[] objects) {
+        if (remoteDataSource == null) {
+            remoteDataSource = new RemoteDataSource() {
+                @Override
+                public void setCached(OAObject obj, boolean b) {
+                    RemoteClientImpl.this.setCached(obj, b);
+                }
+            };            
+        }
+        Object result = remoteDataSource.datasource(command, objects);
+        return result;
+    }
+    protected OADataSource getDataSource(Class c) {
+        if (c != null) {
+            OADataSource ds = OADataSource.getDataSource(c);
+            if (ds != null) return ds;
+        }
+        if (defaultDataSource == null) {
+            OADataSource[] dss = OADataSource.getDataSources();
+            if (dss != null && dss.length > 0) return dss[0];
+        }
+        return defaultDataSource;
+    }
+    private int selectCount;
+    protected OADataSource defaultDataSource;
+
+    protected OADataSource getDataSource() {
+        return getDataSource(null);
     }
 
     @Override
-    public abstract boolean isLocked(Class objectClass, OAObjectKey objectKey);
-
-    @Override
-    public abstract boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey);
-    
-    @Override
-    public abstract void sendException(String msg, Throwable ex);
-    
-    @Override
-    public void update(ClientInfo ci) {
+    public OAObject createCopy(Class objectClass, OAObjectKey objectKey, String[] excludeProperties) {
+        OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
+        if (obj == null) return null;
+        OAObject objx = OAObjectReflectDelegate.createCopy(obj, excludeProperties);
+        setCached(objx, true);
+        return objx;
     }
+    
+    
+    public abstract void setCached(OAObject obj, boolean b);
+    
 }
+
+
+

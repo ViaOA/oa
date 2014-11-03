@@ -1,0 +1,34 @@
+
+
+
+ClientGetDetail
+    used manage responses to getReferenceHub
+
+RemoteClient Interface, Impl
+    one per client, to manage
+        cache, locks
+        send exceptions
+
+RemoteClientSync Interface, Impl
+    getDetail
+    datasource
+
+RemoteDataSource Interface, Impl
+    used by OADataSourceClient to allow a cleint's DS methods to be executed on the server DS
+    
+RemoteServer Interface, Impl
+    save, getObject
+    create client remote instances:
+        RemoteClientSync
+        RemoteClient
+        
+
+RemoteSync Interface, Impl
+    manages changes to objects and hubs
+        prop changes, add, insert, remove, move, sort, delete, etc
+
+
+RemoteDelegate in OATemplate
+    makes all remote classes available
+
+

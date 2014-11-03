@@ -56,7 +56,7 @@ public class HubCSDelegate {
         }
         
 
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs != null) {
             rs.removeAllFromHub(
                 thisHub.datam.masterObject.getClass(), 
@@ -92,7 +92,7 @@ public class HubCSDelegate {
     	
         // must have a master object to be able to know which hub to add object to
         // send REMOVE message
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs != null) {
             rs.removeFromHub(
                     thisHub.datam.masterObject.getClass(), 
@@ -136,7 +136,7 @@ public class HubCSDelegate {
 	    }
         
         // 20110323 note: must send object, other clients might not have it.        
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs != null) {
             rs.addToHub(
                     thisHub.datam.masterObject.getClass(), 
@@ -171,7 +171,7 @@ public class HubCSDelegate {
         // send ADD message
 
         // 20110323 note: must send object, other clients might not have it.        
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs != null) {
             rs.insertInHub(
                     thisHub.datam.masterObject.getClass(), 
@@ -208,7 +208,7 @@ public class HubCSDelegate {
         // must have a master object to be able to know which hub to use
         // send MOVE message
 	    
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs != null) {
             rs.moveObjectInHub(thisHub.getObjectClass(), 
                     thisHub.datam.masterObject.getObjectKey(), 
@@ -241,7 +241,7 @@ public class HubCSDelegate {
             if (liRev != null && liRev.getCalculated()) return;
         }
 
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs != null) {
             rs.sort(objMaster.getClass(), objMaster.getObjectKey(), 
                     HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
@@ -273,7 +273,7 @@ public class HubCSDelegate {
         String prop = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
         if (prop == null) return false;
 
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSyncInterface();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs == null) return false;
         
         rs.deleteAll(master.getClass(), master.getObjectKey(), prop);

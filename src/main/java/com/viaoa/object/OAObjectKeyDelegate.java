@@ -207,6 +207,7 @@ public class OAObjectKeyDelegate {
 	public static OAObjectKey convertToObjectKey(Class clazz, Object value) {
 		if (clazz == null || value == null) return null;
         if (value instanceof OAObjectKey) return (OAObjectKey) value;
+		if (value instanceof OAObject) return ((OAObject) value).getObjectKey();
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
         return convertToObjectKey(oi, value);
 	}
