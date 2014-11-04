@@ -1,0 +1,22 @@
+
+
+
+
+OAObject.finalize
+    OAObjectDelegate.finalizeObject(obj)
+        OAObjectCSDelegate.finalizeObject(obj)
+            OASyncClient.removeObject(obj)
+                queRemoveGuid.add(guid)  - LinkedBlockingQueue picked up by another thread
+                    thread.take
+                        get[25]  (get 25 at a time to send)
+                            OASyncDelegate.getSyncClient().getRemoteClient
+                                RemoteClientInterface.removeGuids(guids[])
+                                    RemoteClientImpl (created in OASyncServer.createRemoteClient)
+                                        removeGuid(guid)
+                                            ClientGetDetail.removeGuid(guid)  per client, keeps track of all objects sent to client for getHub references
+                                                treeSerialized.remove(guid)
+                        
+                        
+     
+
+
