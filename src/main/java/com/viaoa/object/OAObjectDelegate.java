@@ -237,7 +237,6 @@ public class OAObjectDelegate {
             }
 		}
         OAObjectCacheDelegate.removeObject(oaObj); // remove from class cache
-        if (oaObj.guid > 0) OAObjectCSDelegate.finalizeObject(oaObj);
         hmAutoAdd.remove(oaObj.guid);
         oaObj.weakhubs = null;
 	}

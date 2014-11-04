@@ -29,7 +29,6 @@ import com.viaoa.hub.Hub;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
@@ -165,12 +164,6 @@ public class OASyncClient {
         if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntGetDetail % 100 == 0) {
             int iNew = OAObjectSerializeDelegate.cntNew; 
             int iDup = OAObjectSerializeDelegate.cntDup;
-            
-if (iNew-xNew == 0) {
-    //qqqqqqqqq
-    int xq = 0;
-    xq++;
-}
             
             System.out.println(String.format(
                 "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b %,d, " +
@@ -534,23 +527,18 @@ if (iNew-xNew == 0) {
         }
     }
 
-    public void removeObject(int guid) {
-        if (guid > 0 && queRemoveGuid != null) {
-            try {
+    /**
+     * called when object is removed from object cache (called by oaObject.finalize)
+     * @param bInServerSideCache if the object is in the serverSide cache.
+     */
+    public void objectRemoved(int guid, boolean bInServerSideCache) {
+        try {
+            if (guid > 0) {
+                if (bInServerSideCache) guid *= -1;  // flag for server to remove from sesssion's cache
                 queRemoveGuid.add(guid);
             }
-            catch (Exception e) {
-            }
         }
-    }
-    public void removeObject(OAObject obj) {
-        if (obj != null && queRemoveGuid != null) {
-            int guid = OAObjectDelegate.getGuid(obj);
-            try {
-                if (guid > 0) queRemoveGuid.add(guid);
-            }
-            catch (Exception e) {
-            }
+        catch (Exception e) {
         }
     }
 
@@ -562,21 +550,21 @@ if (iNew-xNew == 0) {
         threadRemoveGuid = new Thread(new Runnable() {
             long msLastError;
             int cntError;
-            int[] guids = new int[25];
+            int[] guids = new int[50];
             @Override
             public void run() {
-                RemoteClientInterface rci = null;
+                RemoteSessionInterface rsi = null;
                 for (int guidPos = 0;;) {
                     try {
                         int guid = queRemoveGuid.take(); 
-                        guids[guidPos++ % 25] = guid;
-                        if (guidPos % 25 == 0) {
-                            if (rci == null) {
+                        guids[guidPos++ % 50] = guid;
+                        if (guidPos % 50 == 0) {
+                            if (rsi == null) {
                                 OASyncClient sc = OASyncDelegate.getSyncClient();
-                                if (sc != null) rci = sc.getRemoteClient();
+                                if (sc != null) rsi = sc.getRemoteSession();
                             }
-                            if (rci != null) {
-                                rci.removeGuids(guids);
+                            if (rsi != null) {
+                                rsi.removeGuids(guids);
                             }
                         }
                     }

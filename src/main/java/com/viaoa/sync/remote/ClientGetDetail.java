@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
-
+import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
@@ -34,9 +34,9 @@ import com.viaoa.object.OAObjectSerializerCallback;
 import com.viaoa.util.OANotExist;
 
 /**
- * This is used for each clientSession, that creates a RemoteClientSyncImpl for
+ * This is used for each clientSession, that creates a RemoteClientImpl for
  * getDetail remote requests.  This class will return the object/s for the
- * request, and "knows" what extra info to include.
+ * request, and "knows" what extra objects to include.
  * @author vvia
  */
 public class ClientGetDetail {
@@ -60,13 +60,15 @@ public class ClientGetDetail {
 
         Object masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         if (masterObject == null) {
-//qqqqqqqqqqqq for DEBUG         
-masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
-            if (errorCnt++ < 100) LOG.warning("cant find masterObject in cache or DS.  masterClass=" + masterClass + ", key=" + masterObjectKey + ", property=" + property);
-            return null;
+            // get from datasource
+            masterObject = (OAObject) OADataSource.getObject(masterClass, masterObjectKey);
+            if (masterObject == null) {
+                if (errorCnt++ < 100) LOG.warning("cant find masterObject in cache or DS.  masterClass=" + masterClass + ", key=" + masterObjectKey + ", property=" + property);
+                return null;
+            }
         }
 
-        Object detailValue = _getDetail(masterObject, property);
+        Object detailValue = OAObjectReflectDelegate.getProperty((OAObject) masterObject, property);
         
         if (masterProps == null && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
         
@@ -74,23 +76,6 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         return os;
     }
     
-    private Object _getDetail(Object masterObject, String propertyName) {
-        Object objx = OAObjectReflectDelegate.getProperty((OAObject) masterObject, propertyName);
-
-        // 20120926 dont send a reference Hub that is shared, since it is a calc Hub and can
-        //    be recreated on the client.  Otherwise all of the sharedHub info is sent and the
-        //     client hub will not handle it correctly (masterObject, etc)
-        if (objx instanceof Hub) {
-            Hub h = (Hub) objx;
-            if (h.getSharedHub() != null) {
-                h = new Hub(h.getObjectClass());
-                objx = h;
-            }
-        }
-
-        return objx;
-    }
-
     public boolean isOnClient(Object obj) {
         if (!(obj instanceof OAObject)) return false;
         rwLockTreeSerialized.readLock().lock();
@@ -98,8 +83,6 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         rwLockTreeSerialized.readLock().unlock();
         return objx != null;
     }
-    
-    
     
     
     protected boolean wasFullySentToClient(Object obj) {
@@ -123,7 +106,7 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
      * dont send any references that have detail/hub in it
      * dont send detail if it has already been sent with all references
      * dont send a reference if it has already been sent to client, and has been added to tree
-     * 20141018 send max X objects 
+     * send max X objects 
      * 
      */
     protected OAObjectSerializer getSerializedDetail(final OAObject masterObject, final Object detailObject, final String propFromMaster, final String[] masterProperties, final OAObjectKey[] siblingKeys) {
@@ -131,7 +114,6 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         // and we know that value != null, since getDetail would not have been called.
         // include the references "around" this object and master object, along with any siblings
       
-        
         final long t1 = System.currentTimeMillis();
 
         int guid = OAObjectKeyDelegate.getKey(masterObject).getGuid();
@@ -142,7 +124,7 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         final boolean bMasterWasPreviouslySent = b;
 
         if (!bMasterWasPreviouslySent && masterObject instanceof OAObject) {
-            OAObjectReflectDelegate.loadAllReferences((OAObject) masterObject, false);
+            OAObjectReflectDelegate.loadReferences((OAObject) masterObject, false, 10);
         }
         
         Hub dHub = null;
@@ -169,15 +151,15 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
                     if (b) continue;
                     
                     if (System.currentTimeMillis() - t1 > 100) break;
-                    b = !OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
+                    b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
                     if (!b) {
                         if (++cnt < 15) {
                             OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 1, false);
                         }
                         else {
                             OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 0, 1, false);
+                            if (cnt > 50) break;
                         }
-                        if (cnt > 50) break;
                     }
                 }
             }
@@ -194,7 +176,6 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
                 OAObject obj = OAObjectCacheDelegate.get(c, key);
                 if (obj == null) continue;
                 
-                // 20141031
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
                     if (cntDs++ < 10) {
@@ -458,5 +439,5 @@ masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         os.setCallback(callback);
         return os;
     }
-
 }
+

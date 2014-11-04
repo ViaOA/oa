@@ -129,24 +129,22 @@ public class HubCSDelegate {
 	        return; // 20140309
 	    }
 	    
-	    // 20140314 dont need to send if only on client
+	    // 20140314 dont need to send if only on client so far
         boolean bClientSideCache = OAObjectCSDelegate.isInClientSideCache(thisHub.datam.masterObject);
 	    if (bClientSideCache) {
 	        return;
 	    }
-        
+
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
         if (rs != null) {
             rs.addToHub(
-                    thisHub.datam.masterObject.getClass(), 
-                    thisHub.datam.masterObject.getObjectKey(), 
-                    HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), obj);
+                thisHub.datam.masterObject.getClass(), 
+                thisHub.datam.masterObject.getObjectKey(), 
+                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), obj);
         }
 	}	
 
-    private static HashSet<Integer> hashServerSideCache = new HashSet<Integer>(379, .75f);
-	
 	/**
 	 * Have object inserted in same Hub on other workstations.
 	 */

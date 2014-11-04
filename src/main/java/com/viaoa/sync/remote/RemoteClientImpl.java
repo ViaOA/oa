@@ -24,8 +24,6 @@ import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
 
-// see: OAClient
-
 public abstract class RemoteClientImpl implements RemoteClientInterface {
     protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
     protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
@@ -33,17 +31,14 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     private RemoteDataSource remoteDataSource;
 
     /**
-     * called by client when objects are GCd,
-     * so that they can be removed from server side session.
+     * this is called when objects are removed on the client,
+     * so that the guid can be removed from the clientGetDetail cache of object.guids that have been sent to client. 
      */
-    @Override
     public void removeGuids(int[] guids) {
         if (guids == null) return;
         int x = guids.length;
         for (int i=0; i<x; i++) {
-            if (guids[i] > 0) {
-                clientGetDetail.removeGuid(guids[i]);
-            }
+            clientGetDetail.removeGuid(guids[i]);
         }
     }
     

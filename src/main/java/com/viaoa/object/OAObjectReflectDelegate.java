@@ -814,13 +814,28 @@ public class OAObjectReflectDelegate {
     }
 
     public static void loadAllReferences(OAObject obj, boolean bIncludeCalc) {
+        loadReferences(obj, bIncludeCalc, 0);
+    }
+    public static void loadReferences(OAObject obj, boolean bIncludeCalc, int max) {
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
         List<OALinkInfo> al = io.getLinkInfos();
+        int cnt = 0;
         for (OALinkInfo li : al) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
             String name = li.getName();
+            if (max > 0) {
+               Object objx = OAObjectPropertyDelegate.getProperty(obj, name, true);
+               if (objx == null) continue;
+               if (objx != OANotExist.instance) {
+                   if (!(objx instanceof OAObjectKey)) {
+                       continue; // already loaded
+                   }
+               }
+            }
             getProperty(obj, name);
+            cnt++;
+            if (max > 0 && cnt >= max) continue;
         }
     }
 
@@ -832,9 +847,10 @@ public class OAObjectReflectDelegate {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
             String name = li.getName();
-            if (!OAObjectPropertyDelegate.isPropertyLoaded(obj, name)) {
-                return false;
-            }
+            
+            Object val = OAObjectPropertyDelegate.getProperty(obj, name, true);
+            if (val == OANotExist.instance) return false;
+            if (val instanceof OAObjectKey) return false;
         }
         return true;
     }

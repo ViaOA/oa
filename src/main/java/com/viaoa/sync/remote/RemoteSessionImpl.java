@@ -71,9 +71,7 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
         }
     }
 
-    // called by server to save any client cached objects
-    /*not needed
-    public OAObject findInCache(int guid) {
+    protected OAObject findInCache(int guid) {
         for (Map.Entry<Object, Object> entry : hashCache.entrySet()) {
             Object obj = entry.getKey();
             if (obj instanceof OAObject) {
@@ -85,10 +83,15 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
         }
         return null;
     }
-    */
+
+    /**
+     * GUIDs of the objects removed from oaObject cache on server.
+     */
+    @Override
+    public abstract void removeGuids(int[] guids);
     
     
-    // called by server when client is disconnected, and objects are saved
+    // called by server when client is disconnected
     public void clearCache() {
         hashCache.clear();
     }

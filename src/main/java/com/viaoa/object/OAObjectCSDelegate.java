@@ -17,26 +17,27 @@ All rights reserved.
 */
 package com.viaoa.object;
 
-import java.lang.ref.*;
-import java.lang.reflect.*;
-import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
-
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.*;
-import com.viaoa.sync.remote.RemoteClientImpl;
 import com.viaoa.sync.remote.RemoteSessionInterface;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.hub.*;
-import com.viaoa.util.*;
 
 public class OAObjectCSDelegate {
 	private static Logger LOG = Logger.getLogger(OAObjectCSDelegate.class.getName());
 
-    private static final ConcurrentHashMap<Integer, Integer> hashServerSideCache = new ConcurrentHashMap<Integer, Integer>(31, .75f);
+    /**
+     * Objects that have been added ont the server.session so that it wont be GCd on the server.
+     */
+	private static final ConcurrentHashMap<Integer, Integer> hashServerSideCache = new ConcurrentHashMap<Integer, Integer>(31, .75f);
+
+    /**
+     * Objects that have been created on the client and have not be sent to the server.
+     */
     private static final ConcurrentHashMap<Integer, Integer> hashClientSideCache = new ConcurrentHashMap<Integer, Integer>(31, .75f);
     
     /**
@@ -79,16 +80,18 @@ public class OAObjectCSDelegate {
         return hashServerSideCache.contains(guid);
     }
     
-    protected static void finalizeObject(OAObject oaObj) {
-        if (oaObj == null) return;
-        if (OASyncDelegate.isServer()) return;
-        hashServerSideCache.remove(oaObj.getObjectKey().getGuid());
+    /**
+     * called when an object has been removed from a client.
+     */
+    protected static void objectRemovedFromCache(int guid) {
+        if (guid < 0) return;
+        Object val = hashServerSideCache.remove(guid);
         OASyncClient sc = OASyncDelegate.getSyncClient();
         if (sc != null) {
-            sc.removeObject(oaObj);
+            if (guid > 0) sc.objectRemoved(guid, (val != null));
         }
+        hashClientSideCache.remove(guid);
     }
-    
     
     /**
      * If Object is not in a Hub, then it could be gc'd on server, while it still exists on a client(s).
@@ -99,7 +102,7 @@ public class OAObjectCSDelegate {
         if (oaObj == null) return;
         if (OASyncDelegate.isSingleUser()) return;
         int guid = oaObj.getObjectKey().getGuid();
-        if (hashServerSideCache.contains(guid)) return;
+        if (guid < 0 || hashServerSideCache.contains(guid)) return;
         RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
         if (ri != null) {
             ri.setCached(oaObj, true);
@@ -135,15 +138,18 @@ public class OAObjectCSDelegate {
         return null;
 	}
 
-    /** 20140314
-     * Objects that are only on the client, and have not been sent to server
+    /**
+     * Objects that are so far only on the client, and have not been sent to server.
+     * This is called during initialization.
+     * Once they are serialized (sent to server), then it will be removed.
      */
-    public static void addToClientSideCache(OAObject oaObj) {
+    protected static void addToClientSideCache(OAObject oaObj) {
         if (oaObj == null) return;
+        if (OASyncDelegate.isServer()) return;
         int guid = oaObj.getObjectKey().getGuid();
         hashClientSideCache.put(guid, guid);
     }
-    public static boolean removeFromClientSideCache(OAObject oaObj) {
+    protected static boolean removeFromClientSideCache(OAObject oaObj) {
         if (oaObj == null) return false;
         int guid = oaObj.getObjectKey().getGuid();
         return (hashClientSideCache.remove(guid) != null);
@@ -162,7 +168,9 @@ public class OAObjectCSDelegate {
          if (oaObj == null) return null;
          RemoteClientInterface ri = OASyncDelegate.getRemoteClient();
          if (ri != null) {
-             return ri.createCopy(oaObj.getClass(), oaObj.getObjectKey(), excludeProperties);
+             OAObject obj = ri.createCopy(oaObj.getClass(), oaObj.getObjectKey(), excludeProperties);;
+             addToServerSideCache(oaObj);
+             return obj; 
          }
          return null;
      }
@@ -205,16 +213,6 @@ public class OAObjectCSDelegate {
         return true;
     }
 
-    /**
-     * Remove object from each workstation.
-     */
-    protected static void objectRemovedFromCache(Class clazz, OAObjectKey key) {
-        if (key == null) return;
-        OASyncClient sc = OASyncDelegate.getSyncClient();
-        if (sc != null) {
-            sc.removeObject(key.getGuid());
-        }
-    }
 	protected static OAObject getServerObject(Class clazz, OAObjectKey key) {
         RemoteServerInterface rs = OASyncDelegate.getRemoteServer();
         OAObject result;

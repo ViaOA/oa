@@ -286,7 +286,7 @@ public abstract class RemoteDataSource {
             al.add(obj);
             if (obj instanceof OAObject) {
                 OAObject oa = (OAObject) obj;
-                if (!OAObjectHubDelegate.isInHub(oa)) {
+                if (!OAObjectHubDelegate.isInHubWithMaster(oa)) {
                     // CACHE_NOTE: need to have OAObject.bCachedOnServer=true set by Client.
                     // see: OAObjectCSDelegate.addedToCache((OAObject) msg.newValue); // flag obj to know that it is cached on server for this client.
                     this.setCached((OAObject) obj, true);

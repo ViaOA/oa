@@ -25,7 +25,6 @@ import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -80,16 +79,14 @@ public class OASyncServer {
     public RemoteServerImpl getRemoteServer() {
         if (remoteServer == null) {
             remoteServer = new RemoteServerImpl() {
-                RemoteClientInterface rci;
-                RemoteSessionInterface rsi;
                 @Override
                 public RemoteSessionInterface getRemoteSession(ClientInfo ci, RemoteClientCallbackInterface callback) {
-                    if (rsi == null) rsi = createRemoteSession(ci, callback);
+                    RemoteSessionInterface rsi = OASyncServer.this.getRemoteSession(ci, callback);
                     return rsi;
                 }
                 @Override
                 public RemoteClientInterface getRemoteClient(ClientInfo ci) {
-                    if (rci == null) rci = createRemoteClient(ci);
+                    RemoteClientInterface rci = OASyncServer.this.getRemoteClient(ci);
                     return rci;
                 }
                 @Override
@@ -113,26 +110,29 @@ public class OASyncServer {
     }
     protected RemoteSessionInterface getRemoteSessionForServer() {
         if (remoteSessionServer == null) {
-            remoteSessionServer = createRemoteSession(getClientInfo(), null);
+            remoteSessionServer = getRemoteSession(getClientInfo(), null);
             OASyncDelegate.setRemoteSession(remoteSessionServer);
         }
         return remoteSessionServer;
     }
     protected RemoteClientInterface getRemoteClientForServer() {
         if (remoteClientForServer == null) {
-            remoteClientForServer = createRemoteClient(getClientInfo());
+            remoteClientForServer = getRemoteClient(getClientInfo());
             OASyncDelegate.setRemoteClient(remoteClientForServer);
         }
         return remoteClientForServer;
     }
     
-    protected RemoteSessionInterface createRemoteSession(final ClientInfo ci, RemoteClientCallbackInterface callback) {
+    protected RemoteSessionInterface getRemoteSession(final ClientInfo ci, RemoteClientCallbackInterface callback) {
         if (ci == null) return null;
         final ClientInfoExt cx = hmClientInfoExt.get(ci.getConnectionId());
         if (cx == null) return null;
+        
+        RemoteSessionImpl rs = cx.remoteSession;
+        if (rs != null) return rs;
         cx.remoteClientCallback = callback;
         
-        RemoteSessionImpl rc = new RemoteSessionImpl() {
+        rs = new RemoteSessionImpl() {
             boolean bClearedCache;
             @Override
             public boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey) {
@@ -167,9 +167,24 @@ public class OASyncServer {
             public void update(ClientInfo ci) {
                 OASyncServer.this.onUpdate(ci);
             }
+            @Override
+            public void removeGuids(int[] guids) {
+                if (guids == null) return;
+                int x = guids.length;
+                for (int i=0; i<x; i++) {
+                    // note: if guid < 0, then it is a flag to be serverSide cached, need to make absolute
+                    if (guids[i] < 0) {
+                        guids[i] *= -1;
+                        OAObject obj = findInCache(guids[i]);
+                        if (obj != null) setCached(obj, false);
+                    }
+                }
+                cx.remoteClient.removeGuids(guids);  // remove from getDetail cache/tree
+            }
+            
         };
-        cx.remoteSession = rc;
-        return rc;
+        cx.remoteSession = rs;
+        return rs;
     }
 
     public void onUpdate(ClientInfo ci) {
@@ -178,12 +193,14 @@ public class OASyncServer {
         if (cx != null) cx.ci = ci;
     }
     
-    protected RemoteClientInterface createRemoteClient(ClientInfo ci) {
+    protected RemoteClientInterface getRemoteClient(ClientInfo ci) {
         if (ci == null) return null;
         final ClientInfoExt cx = hmClientInfoExt.get(ci.getConnectionId());
         if (cx == null) return null;
         
-        RemoteClientImpl rc = new RemoteClientImpl() {
+        RemoteClientImpl rc = cx.remoteClient; 
+        if (rc != null) return rc;
+        rc = new RemoteClientImpl() {
             @Override
             public void setCached(OAObject obj, boolean b) {
                 cx.remoteSession.setCached(obj, b);

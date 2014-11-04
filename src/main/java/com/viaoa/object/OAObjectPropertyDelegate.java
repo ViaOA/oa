@@ -34,8 +34,10 @@ import com.viaoa.util.OANotExist;
  */
 public class OAObjectPropertyDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectPropertyDelegate.class.getName());
+
+    
     /**
-     * Returns true if there is a property = name, even if the value is null 
+     * @return true if prop is loaded - does not need to be loaded from datasource, etc.
      */
     public static boolean isPropertyLoaded(OAObject oaObj, String name) {
         if (oaObj == null || name == null) return false;
@@ -44,7 +46,14 @@ public class OAObjectPropertyDelegate {
 
         for (int i=0; i<objs.length; i+=2) {
             if ( oaObj.properties[i] == null || !name.equalsIgnoreCase((String)oaObj.properties[i]) ) continue;
-            return true; // any value wlll return true
+            
+            Object objx = oaObj.properties[i+1];
+            if (objx instanceof WeakReference) {
+                objx = ((WeakReference) objx).get();
+                if (objx == null) return false;
+            }
+            else if (objx instanceof OAObjectKey) return false;
+            return true; 
         }
         return false;
     }
@@ -265,11 +274,12 @@ public class OAObjectPropertyDelegate {
      * 
      * @param oaObj
      * @param name name to find, not case sensitive
-     * @param bReturnNotExist if true and the property name does not exist, then OANotExist.instance
+     * @param bReturnNotExist if true and the property name does not exist or it's value has not been loaded, then OANotExist.instance
      * is returned.
      */
     public static Object getProperty(OAObject oaObj, String name, boolean bReturnNotExist) {
         if (oaObj == null || name == null) return null;
+        
         Object[] objs = oaObj.properties;
         if (objs == null) {
             if (bReturnNotExist) return OANotExist.instance; 

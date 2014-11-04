@@ -205,11 +205,11 @@ public static volatile int cntSkip;
         }
 		return true;
 	}	
-static int xxx;//qqqqqqqqqq
+//static int xxx;//qqqqqqqqqq
 
 	protected static void _writeObject(OAObject oaObj, java.io.ObjectOutputStream stream) throws IOException {
 
-++xxx;//qqqqqqqqqqqqqqq
+//++xxx;//qqqqqqqqqqqqqqq
 //if (xxx % 1000 == 0) System.out.println((xxx)+") writeObject "+oaObj);
         
 	    OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();
@@ -222,7 +222,7 @@ static int xxx;//qqqqqqqqqq
         if (stream instanceof RemoteObjectOutputStream) {
             if (!bClientSideCache && !OASyncDelegate.isServer()) {
                stream.writeByte((byte) 1); 
-               stream.writeObject(OAObjectKeyDelegate.getKey(oaObj));
+               stream.writeObject(oaObj.getObjectKey());
                if (serializer != null) {
                    serializer.afterSerialize();
                }

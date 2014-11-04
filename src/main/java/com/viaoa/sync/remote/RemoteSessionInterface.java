@@ -23,6 +23,10 @@ import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 import com.viaoa.sync.model.ClientInfo;
 
+
+/**
+ * session for client.
+ */
 @OARemoteInterface()
 public interface RemoteSessionInterface {
     OAObject createNewObject(Class clazz);
@@ -42,4 +46,12 @@ public interface RemoteSessionInterface {
     
     @OARemoteMethod(noReturnValue=true)
     void sendException(String msg, Throwable ex);
+
+    @OARemoteMethod(noReturnValue=true)
+    /**
+     * Objects that have been GDd on the client, so that the server can remove from
+     * the session - so that it can be resent if needed.
+     * note: if the guid < 0, then the object is also in the serverSide cache (and the guid needs to be absolute value)
+     */
+    void removeGuids(int[] guids);
 }
