@@ -210,19 +210,11 @@ public class OAObjectCSDelegate {
      */
     protected static void objectRemovedFromCache(Class clazz, OAObjectKey key) {
         if (key == null) return;
-        // 20140308 call server side cache
-        OASyncServer ss = OASyncDelegate.getSyncServer();
-        if (ss != null) {
-            ss.removeObject(key.getGuid());
+        OASyncClient sc = OASyncDelegate.getSyncClient();
+        if (sc != null) {
+            sc.removeObject(key.getGuid());
         }
-        else {
-            OASyncClient sc = OASyncDelegate.getSyncClient();
-            if (sc != null) {
-                sc.removeObject(key.getGuid());
-            }
-        }
-    }    
-
+    }
 	protected static OAObject getServerObject(Class clazz, OAObjectKey key) {
         RemoteServerInterface rs = OASyncDelegate.getRemoteServer();
         OAObject result;

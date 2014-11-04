@@ -4,12 +4,12 @@
 ClientGetDetail
     used manage responses to getReferenceHub
 
-RemoteClient Interface, Impl
+RemoteSession Interface, Impl
     one per client, to manage
         cache, locks
         send exceptions
 
-RemoteClientSync Interface, Impl
+RemoteClient Interface, Impl
     getDetail
     datasource
 
@@ -27,6 +27,10 @@ RemoteSync Interface, Impl
     manages changes to objects and hubs
         prop changes, add, insert, remove, move, sort, delete, etc
 
+OASyncClient
+
+OASyncServer
+    keeps session per client
 
 RemoteDelegate in OATemplate
     makes all remote classes available

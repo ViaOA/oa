@@ -23,7 +23,6 @@ import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
-import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 
 // see: OAClient
 
@@ -34,14 +33,6 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     private RemoteDataSource remoteDataSource;
 
     /**
-     * Called by OASyncServer.removeObject, to have an object guid removed
-     * from clients cache.
-     */
-    public void removeGuid(int guid) {
-        clientGetDetail.removeGuid(guid);
-    }
-
-    /**
      * called by client when objects are GCd,
      * so that they can be removed from server side session.
      */
@@ -49,12 +40,11 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     public void removeGuids(int[] guids) {
         if (guids == null) return;
         int x = guids.length;
-        
         for (int i=0; i<x; i++) {
-            if (guids[i] > 0) this.removeGuid(guids[i]);
+            if (guids[i] > 0) {
+                clientGetDetail.removeGuid(guids[i]);
+            }
         }
-        
-        
     }
     
     @Override

@@ -80,13 +80,17 @@ public class OASyncServer {
     public RemoteServerImpl getRemoteServer() {
         if (remoteServer == null) {
             remoteServer = new RemoteServerImpl() {
+                RemoteClientInterface rci;
+                RemoteSessionInterface rsi;
                 @Override
                 public RemoteSessionInterface getRemoteSession(ClientInfo ci, RemoteClientCallbackInterface callback) {
-                    return createRemoteSession(ci, callback);
+                    if (rsi == null) rsi = createRemoteSession(ci, callback);
+                    return rsi;
                 }
                 @Override
                 public RemoteClientInterface getRemoteClient(ClientInfo ci) {
-                    return createRemoteClient(ci);
+                    if (rci == null) rci = createRemoteClient(ci);
+                    return rci;
                 }
                 @Override
                 public String getDisplayMessage() {
@@ -126,7 +130,7 @@ public class OASyncServer {
         if (ci == null) return null;
         final ClientInfoExt cx = hmClientInfoExt.get(ci.getConnectionId());
         if (cx == null) return null;
-        cx.callback = callback;
+        cx.remoteClientCallback = callback;
         
         RemoteSessionImpl rc = new RemoteSessionImpl() {
             boolean bClearedCache;
@@ -134,8 +138,8 @@ public class OASyncServer {
             public boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey) {
                 for (Map.Entry<Integer, ClientInfoExt> entry : hmClientInfoExt.entrySet()) {
                     ClientInfoExt cx = entry.getValue();
-                    if (cx.remoteClient == this) continue;
-                    if (cx.remoteClient.isLockedByThisClient(objectClass, objectKey)) return true;
+                    if (cx.remoteSession == this) continue;
+                    if (cx.remoteSession.isLockedByThisClient(objectClass, objectKey)) return true;
                 }
                 return false;
             }
@@ -164,7 +168,7 @@ public class OASyncServer {
                 OASyncServer.this.onUpdate(ci);
             }
         };
-        cx.remoteClient = rc;
+        cx.remoteSession = rc;
         return rc;
     }
 
@@ -182,72 +186,11 @@ public class OASyncServer {
         RemoteClientImpl rc = new RemoteClientImpl() {
             @Override
             public void setCached(OAObject obj, boolean b) {
-                cx.remoteClient.setCached(obj, b);
-            }
-            @Override
-            public void removeGuid(int guid) {
-                super.removeGuid(guid);
-                // need to also remove from session server side cache
-                OAObject obj = cx.remoteClient.findInCache(guid);
-                if (obj != null) cx.remoteClient.setCached(obj, false);
+                cx.remoteSession.setCached(obj, b);
             }
         };
-        cx.remoteClientSync = rc;
+        cx.remoteClient = rc;
         return rc;
-    }
-    
-    private LinkedBlockingQueue<Integer> queRemoveGuid;
-    private Thread threadRemoveGuid;
-    private void startQueueGuidThread() {
-        if (queRemoveGuid != null) return;
-        queRemoveGuid = new LinkedBlockingQueue<Integer>();
-        threadRemoveGuid = new Thread(new Runnable() {
-            long msLastError;
-            int cntError;
-            @Override
-            public void run() {
-                for (;;) {
-                    try {
-                        int guid = queRemoveGuid.take(); 
-                        for (Map.Entry<Integer, ClientInfoExt> entry : OASyncServer.this.hmClientInfoExt.entrySet()) {
-                            ClientInfoExt ciex = entry.getValue();
-                            RemoteClientImpl rcs = ciex.remoteClientSync; 
-                            if (rcs != null) {
-                                rcs.removeGuid(guid);
-                            }
-                        }
-                    }
-                    catch (Exception e) {
-                        LOG.log(Level.WARNING, "Error in removeGuid thread", e);
-                        long ms = System.currentTimeMillis();
-                        if (++cntError > 5) {
-                            if (ms - 2000 < msLastError) {
-                                LOG.warning("too many errors, will stop this GuidRemove thread (not critical)");
-                                queRemoveGuid = null;
-                                break;
-                            }
-                            else {
-                                cntError = 0;
-                            }
-                        }
-                        msLastError = ms;
-                    }
-                }
-            }
-        }, "OASyncServer.RemoveGuid");
-        threadRemoveGuid.setPriority(Thread.MIN_PRIORITY);
-        threadRemoveGuid.setDaemon(true);
-        threadRemoveGuid.start();
-    }
-    
-    public void removeObject(int guid) {
-        if (queRemoveGuid != null) {
-            try {
-                queRemoveGuid.add(guid);
-            }
-            catch (Exception e) {
-            }
-        }
     }
     
     // qqqq needs to be called by server   qqqqqqqqq need something similar ?? this should already be working
@@ -255,8 +198,8 @@ public class OASyncServer {
     public void saveCache(OACascade cascade, int iCascadeRule) {
         for (Map.Entry<Integer, ClientInfoExt> entry : hmClientInfoExt.entrySet()) {
             ClientInfoExt cx = entry.getValue();
-            if (cx.remoteClient != null) {
-                cx.remoteClient.saveCache(cascade, iCascadeRule);
+            if (cx.remoteSession != null) {
+                cx.remoteSession.saveCache(cascade, iCascadeRule);
             }
         }
     }
@@ -322,9 +265,9 @@ public class OASyncServer {
     class ClientInfoExt {
         ClientInfo ci;
         Socket socket;
-        RemoteSessionImpl remoteClient;
-        RemoteClientImpl remoteClientSync;
-        RemoteClientCallbackInterface callback;
+        RemoteSessionImpl remoteSession;
+        RemoteClientImpl remoteClient;
+        RemoteClientCallbackInterface remoteClientCallback;
     }
     
     
@@ -350,8 +293,8 @@ public class OASyncServer {
         ClientInfoExt cx = hmClientInfoExt.get(connectionId);
         if (cx != null) {
             cx.ci.setDisconnected(new OADateTime());
-            cx.remoteClient.clearLocks();
-            cx.remoteClient.clearCache();
+            cx.remoteSession.clearLocks();
+            cx.remoteSession.clearCache();
         }
     }
     public Socket getSocket(int connectionId) {
@@ -396,8 +339,8 @@ public class OASyncServer {
                 @Override
                 protected void onException(int connectionId, String title, String msg, Exception e, boolean bWillDisconnect) {
                     ClientInfoExt cx = hmClientInfoExt.get(connectionId);
-                    if (cx != null && cx.callback != null) {
-                        cx.callback.stop(title, msg);
+                    if (cx != null && cx.remoteClientCallback != null) {
+                        cx.remoteClientCallback.stop(title, msg);
                     }
                 }            
             };
@@ -547,7 +490,6 @@ public class OASyncServer {
         getServerInfo();
         getMultiplexerServer().start();
         getRemoteMultiplexerServer().start();
-        startQueueGuidThread();
     }
     
     public void stop() throws Exception {
