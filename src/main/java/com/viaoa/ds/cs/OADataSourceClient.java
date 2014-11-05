@@ -395,6 +395,13 @@ public class OADataSourceClient extends OADataSource {
         protected synchronized void next20() {
             cache = (Object[]) getRemoteClient().datasource(IT_NEXT, new Object[] {id} );
             cachePos = 0;
+            for (Object obj : cache) {
+                if (obj == null) break;
+                // the server will add the object to the session cache (server side) if it is not in a hub w/master 
+                if (!OAObjectHubDelegate.isInHubWithMaster((OAObject) obj)) {
+                    OAObjectCSDelegate.addToServerSideCache((OAObject)obj, false);
+                }
+            }
         }
 
         public synchronized Object next() {
@@ -409,11 +416,7 @@ public class OADataSourceClient extends OADataSource {
                 bKey = false;
                 return obj;
             }
-
             obj = cache[cachePos++];
-            if (!OAObjectHubDelegate.isInHubWithMaster((OAObject) obj)) {
-                OAObjectCSDelegate.addToServerSideCache((OAObject)obj);
-            }
             
             return obj;
         }

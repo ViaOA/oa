@@ -106,11 +106,11 @@ public class OAObject implements java.io.Serializable, Comparable {
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
 
     
-    public static final int version = 1411020;  
+    public static final int version = 1411050;  
     static {
         Properties props = System.getProperties();
         
-        System.out.println("OA version 3.5.03_" + version + " ViaOA, all rights reserved");
+        System.out.println("OA version 3.5.04_" + version + " ViaOA, all rights reserved");
         System.out.println(String.format("Java version=%s, name=%s", 
                 System.getProperty("java.version"), 
                 System.getProperty("java.vm.name")

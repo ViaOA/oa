@@ -272,7 +272,7 @@ public abstract class RemoteDataSource {
         return getDataSource(null);
     }
     
-    public abstract void setCached(OAObject obj, boolean b);
+    public abstract void setCached(OAObject obj);
 
 
     protected Object[] datasourceNext(String id) {
@@ -289,7 +289,7 @@ public abstract class RemoteDataSource {
                 if (!OAObjectHubDelegate.isInHubWithMaster(oa)) {
                     // CACHE_NOTE: need to have OAObject.bCachedOnServer=true set by Client.
                     // see: OAObjectCSDelegate.addedToCache((OAObject) msg.newValue); // flag obj to know that it is cached on server for this client.
-                    this.setCached((OAObject) obj, true);
+                    this.setCached((OAObject) obj);
                 }
             }
         }

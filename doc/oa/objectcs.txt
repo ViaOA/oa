@@ -6,7 +6,7 @@
 object created on client
     store guid in hash
     dont send any msg to server until it is serialized
-    when serialized
+    when serialized - OAObjectSerializeDelegate._write
         need to write objects (not objId) with it
         remove guid from hash
         

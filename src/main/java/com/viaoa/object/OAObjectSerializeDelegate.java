@@ -30,13 +30,11 @@ import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANullObject;
 
-//20140226 reworked to use PropertyLock
 public class OAObjectSerializeDelegate {
 
 	private static Logger LOG = Logger.getLogger(OAObjectSerializeDelegate.class.getName());
     
 	protected static void _readObject(OAObject oaObj, java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        
 	    // 20140310
 	    if (in instanceof RemoteObjectInputStream) {
             byte bx = in.readByte();
@@ -82,9 +80,12 @@ public class OAObjectSerializeDelegate {
         	OAObjectDelegate.assignGuid(oaObjOrig);
         	oaObjOrig.objectKey.guid = oaObjOrig.guid;
         }
-
+if (oaObjOrig.getClass().getName().indexOf("Silo") >= 0) {
+    int xx = 4;
+    xx++;
+}
 		OAObjectInfo oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObjOrig);
-		if (oi.bAddToCache && !oi.bLocalOnly) {
+		if (oi.bAddToCache) {
 			oaObjNew = OAObjectCacheDelegate.add(oaObjOrig, false, false);
 			bDup = (oaObjOrig != oaObjNew);
 		}
@@ -127,22 +128,22 @@ public class OAObjectSerializeDelegate {
             OAObjectDelegate.dontFinalize(oaObjOrig);
         }
 
-if (bDup) {
-    cntDup++;
-}
-else cntNew++;
+        if (bDup) {
+            cntDup++;
+        }
+        else cntNew++;
 
-/*
-if ( ((cntDup+cntNew) % 5000) == 0) {
-    System.out.println(String.format("OAObjectSerializeDelegate: totDup=%d totNew=%d", cntDup, cntNew));
-}
-*/        
+        /*
+        if ( ((cntDup+cntNew) % 5000) == 0) {
+            System.out.println(String.format("OAObjectSerializeDelegate: totDup=%d totNew=%d", cntDup, cntNew));
+        }
+        */        
         return oaObjNew;
     }
 
-public static volatile int cntDup; 
-public static volatile int cntNew; 
-public static volatile int cntSkip;
+    public static volatile int cntDup; 
+    public static volatile int cntNew; 
+    public static volatile int cntSkip;
 
 	private static boolean replaceReferences(OAObject oaObjOrig, OAObject oaObjNew, OALinkInfo linkInfo, Object value) {
         // 20130215 value can be null
@@ -158,7 +159,8 @@ public static volatile int cntSkip;
 	    String revName = linkInfo.getReverseName();
     	if (revName != null) revName = revName.toUpperCase();
     	
-		if (value instanceof WeakReference) value = ((WeakReference) value).get();
+		Object origValue = value;
+    	if (value instanceof WeakReference) value = ((WeakReference) value).get();
 
 		if (value instanceof Hub) {
         	// handles M-1, M-M
@@ -180,7 +182,6 @@ public static volatile int cntSkip;
             	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjNew, oaObjOrig);
             	}
             	else {
-            		if (ref instanceof WeakReference) ref = ((WeakReference) ref).get();
             		if (ref instanceof Hub) {
                 		HubSerializeDelegate.replaceObject((Hub) ref, oaObjOrig, oaObjNew);
             		}
@@ -205,12 +206,11 @@ public static volatile int cntSkip;
         }
 		return true;
 	}	
-//static int xxx;//qqqqqqqqqq
 
 	protected static void _writeObject(OAObject oaObj, java.io.ObjectOutputStream stream) throws IOException {
 
-//++xxx;//qqqqqqqqqqqqqqq
-//if (xxx % 1000 == 0) System.out.println((xxx)+") writeObject "+oaObj);
+        //++xxx;//qqqqqqqqqqqqqqq
+        //if (xxx % 1000 == 0) System.out.println((xxx)+") writeObject "+oaObj);
         
 	    OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();
         if (serializer != null) {
@@ -228,7 +228,10 @@ public static volatile int cntSkip;
                }
                return;
             }
-            stream.write(0);
+            else if (bClientSideCache){
+                stream.writeByte((byte) 2); 
+            }
+            else stream.writeByte((byte) 0); 
         }
         
         stream.defaultWriteObject();  // does not write references (transient)

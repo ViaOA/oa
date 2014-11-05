@@ -121,6 +121,7 @@ public class OAObjectDelegate {
 	        }
 	        
 	        if (bInitializeWithCS) {
+	            // must be before DS init, since it could add to local client cache
 	        	OAObjectCSDelegate.initialize(oaObj);
 	        }
 	        if (bInitializeWithDS) {  

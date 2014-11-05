@@ -38,6 +38,11 @@ import com.viaoa.sync.model.*;
 import com.viaoa.sync.remote.*;
 import com.viaoa.util.*;
 
+/**
+ * Server used to work with 1+ OASyncClients so that all OAObjects stay in sync.
+ * This allows OASyncClients to connect and lookup remote objects and have a server side session.
+ * @author vvia
+ */
 public class OASyncServer {
     private static Logger LOG = Logger.getLogger(OASyncServer.class.getName());
 
@@ -201,9 +206,13 @@ public class OASyncServer {
         RemoteClientImpl rc = cx.remoteClient; 
         if (rc != null) return rc;
         rc = new RemoteClientImpl() {
+            /**
+             * Add objects that need to be cached to the session.
+             * This is used by datasource and copy methods. 
+             */
             @Override
-            public void setCached(OAObject obj, boolean b) {
-                cx.remoteSession.setCached(obj, b);
+            public void setCached(OAObject obj) {
+                cx.remoteSession.setCached(obj, true);
             }
         };
         cx.remoteClient = rc;
@@ -221,7 +230,6 @@ public class OASyncServer {
         }
     }
 
-    
     public ServerInfo getServerInfo() {
         if (serverInfo == null) {
             serverInfo = new ServerInfo();
@@ -242,6 +250,10 @@ public class OASyncServer {
         getMultiplexerServer().setInvalidConnectionMessage(msg);
     }
     
+    public String getInvalidConnectionMessage(String defaultMsg) {
+        return defaultMsg;
+    }
+    
     /**
      * Used to manage multiplexed socket connections from client computers.
      * @return
@@ -257,19 +269,15 @@ public class OASyncServer {
                 protected void onClientDisconnect(int connectionId) {
                     OASyncServer.this.onClientDisconnect(connectionId);
                 }
-                long msLastMsg;
-                String lastMsg;
+                
                 @Override
                 public String getInvalidConnectionMessage() {
-                    long msNow = System.currentTimeMillis();
-                    if (lastMsg == null || msLastMsg+1000 < msNow) {
-                        lastMsg = super.getInvalidConnectionMessage();
-                        if (OAString.isEmpty(lastMsg)) {
-                            lastMsg = OASyncServer.this.getDisplayMessage();
-                        }
-                        msLastMsg = msNow;
+                    String s = super.getInvalidConnectionMessage();
+                    if (s == null) {
+                        s = OASyncServer.this.getDisplayMessage();
                     }
-                    String s = lastMsg + ", connections=" + hmClientInfoExt.size();
+
+                    s = OASyncServer.this.getInvalidConnectionMessage(s);
                     return s;
                 }
 
@@ -330,14 +338,24 @@ public class OASyncServer {
     }
     
     public String getDisplayMessage() {
+        int ccnt = 0;
+        for (Map.Entry<Integer, ClientInfoExt> entry : hmClientInfoExt.entrySet()) {
+            ClientInfoExt cx = entry.getValue();
+            if (cx.ci.getDisconnected() == null) ccnt++;
+        }
+        
         String msg = String.format("Server started=%s, version=%s, started=%b, host=%s, " +
-                "ipAddress=%s, discovery=%b",
-                serverInfo.getCreated().toString(),
-                serverInfo.getVersion(),
-                serverInfo.isStarted(),
-                serverInfo.getHostName(),
-                serverInfo.getIpAddress(),
-                serverInfo.isDiscoveryEnabled());
+            "ipAddress=%s, discovery=%b, oa=%d, clients connected=%d, total=%d",
+            serverInfo.getCreated().toString(),
+            serverInfo.getVersion(),
+            serverInfo.isStarted(),
+            serverInfo.getHostName(),
+            serverInfo.getIpAddress(),
+            serverInfo.isDiscoveryEnabled(),
+            OAObject.version,
+            ccnt, 
+            hmClientInfoExt.size()
+        );
         return msg;
     }
     
@@ -377,8 +395,17 @@ public class OASyncServer {
     public void createLookup(String name, Object obj, Class interfaceClass) {
         getRemoteMultiplexerServer().createLookup(name, obj, interfaceClass, null, -1);
     }
+    /**
+     * use the same queue that is used by sync remote object.
+     */
+    public void createSyncLookup(String name, Object obj, Class interfaceClass) {
+        getRemoteMultiplexerServer().createLookup(name, obj, interfaceClass, SyncQueueName, QueueSize);
+    }
     public void createLookup(String name, Object obj, Class interfaceClass, String queueName, int queueSize) {
         getRemoteMultiplexerServer().createLookup(name, obj, interfaceClass, queueName, queueSize);
+    }
+    public Object createSyncBroadcast(final String bindName, Class interfaceClass) {
+        return getRemoteMultiplexerServer().createBroadcast(bindName, interfaceClass, SyncQueueName, QueueSize);
     }
     public Object createBroadcast(final String bindName, Class interfaceClass, String queueName, int queueSize) {
         return getRemoteMultiplexerServer().createBroadcast(bindName, interfaceClass, queueName, queueSize);
@@ -386,8 +413,10 @@ public class OASyncServer {
     public Object createBroadcast(final String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
         return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, queueName, queueSize);
     }
+    public Object createSyncBroadcast(final String bindName, Object callback, Class interfaceClass) {
+        return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, SyncQueueName, QueueSize);
+    }
     
-
     /*
     protected void afterInvokeRemoteMethod(RequestInfo ri) {
         if (ri == null) return;

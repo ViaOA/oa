@@ -25,14 +25,17 @@ import com.viaoa.sync.model.ClientInfo;
 
 
 /**
- * session for client.
+ * session for client. 
  */
 @OARemoteInterface()
 public interface RemoteSessionInterface {
     OAObject createNewObject(Class clazz);
 
-    @OARemoteMethod(noReturnValue=true)
-    void setCached(Class objectClass, OAObjectKey objectKey, boolean bAddToCache);
+    /**
+     * Used to make sure that object is stored in the server side 
+     * @param obj
+     * @param bAddToCache
+     */
     @OARemoteMethod(noReturnValue=true)
     void setCached(OAObject obj, boolean bAddToCache);
     

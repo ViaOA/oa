@@ -6,6 +6,7 @@ import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
 /**
  * Client remote methods that will use the same named msg queue as RemoteSync, when set up (bind) on the server.
+ * This is so that changeds can be ordered and instances (clients/server0 will stay in sync.
  * 
  * @author vvia
  */

@@ -564,7 +564,7 @@ public class OAObjectCacheDelegate {
     private static OAObject _add(TreeMap tm, OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
         OAObject result = null;
         Object removeObj = null;
-        OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
+        final OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
 
         WeakReference ref = (WeakReference) tm.get(ok);
 
@@ -592,6 +592,7 @@ public class OAObjectCacheDelegate {
             	bAddToSelectAll = false;
             }
             else if (mode == OVERWRITE_DUPS) {
+                if (ref != null) tm.remove(ok);  // previous value was gc'd
                 ref = new WeakReference(obj);
             	tm.put(ok, ref);
             	removeObj = result;

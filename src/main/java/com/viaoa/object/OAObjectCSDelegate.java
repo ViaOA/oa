@@ -82,6 +82,7 @@ public class OAObjectCSDelegate {
     
     /**
      * called when an object has been removed from a client.
+     * Need to remove on server side session
      */
     protected static void objectRemovedFromCache(int guid) {
         if (guid < 0) return;
@@ -98,16 +99,22 @@ public class OAObjectCSDelegate {
      * To keep the object from gc on server, each OAObjectServer maintains a cache to keep "unattached" objects from being gc'd.
      */
     public static void addToServerSideCache(OAObject oaObj) {
-    	// CACHE_NOTE: this "note" is added to all code that needs to work with the server cache for a client
+        addToServerSideCache(oaObj, true);
+    }
+    public static void addToServerSideCache(OAObject oaObj, boolean bSendToServer) {
+        // CACHE_NOTE: this "note" is added to all code that needs to work with the server cache for a client
         if (oaObj == null) return;
-        if (OASyncDelegate.isSingleUser()) return;
+        if (!OASyncDelegate.isClient()) return;
         int guid = oaObj.getObjectKey().getGuid();
         if (guid < 0 || hashServerSideCache.contains(guid)) return;
-        RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
-        if (ri != null) {
-            ri.setCached(oaObj, true);
-            hashServerSideCache.put(guid, guid);
+    
+        if (bSendToServer) {
+            RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
+            if (ri != null) {
+                ri.setCached(oaObj, true);
+            }
         }
+        hashServerSideCache.put(guid, guid);
     }
 
     /**
@@ -116,7 +123,7 @@ public class OAObjectCSDelegate {
      */
     public static void removeFromServerSideCache(OAObject oaObj) {
         if (oaObj == null) return;
-        if (OASyncDelegate.isSingleUser()) return;
+        if (!OASyncDelegate.isClient()) return;
         int guid = oaObj.getObjectKey().getGuid();
         if (hashServerSideCache.remove(guid) != null) {
             RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
@@ -156,6 +163,7 @@ public class OAObjectCSDelegate {
     }
     public static boolean isInClientSideCache(OAObject oaObj) {
         if (oaObj == null) return false;
+        if (OASyncDelegate.isServer()) return false;
         int guid = oaObj.getObjectKey().getGuid();
         return hashClientSideCache.contains(guid);
     }
@@ -169,7 +177,7 @@ public class OAObjectCSDelegate {
          RemoteClientInterface ri = OASyncDelegate.getRemoteClient();
          if (ri != null) {
              OAObject obj = ri.createCopy(oaObj.getClass(), oaObj.getObjectKey(), excludeProperties);;
-             addToServerSideCache(oaObj);
+             addToServerSideCache(oaObj, true);
              return obj; 
          }
          return null;

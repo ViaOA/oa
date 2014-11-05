@@ -35,7 +35,7 @@ public class OARemoteThread extends Thread {
     volatile boolean watingOnLock;
     volatile long msStartNextThread;
     volatile long msLastUsed;
-    // if true, then some events will be queued to be processed by a Executer in RemoteMultiplerClient
+    // if true, then some events will be queued to be processed by a Executer
     private boolean bQueueEvents;
 
     // volatile boolean sendMessages;  // if false then events are not sent, since this is processing a message

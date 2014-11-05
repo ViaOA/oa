@@ -9,7 +9,7 @@ OALinkInfo will then keep the last cacheSize references.  The cacheSize is the a
 caching support
     OALinkInfo.cacheSize > 0
         determines how many hubs are kept, this is for client apps, server will use * 10
-    HubDelegate.setReferenceable
+    HubDelegate.setReferenceable (used by server only)
         used to make sure that hubs that are changed do not get GCd before the changes can be saved to DS
         called by
             HubAddRemoveDelegate.add & remove

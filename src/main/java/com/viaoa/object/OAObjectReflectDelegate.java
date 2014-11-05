@@ -774,13 +774,16 @@ public class OAObjectReflectDelegate {
 
             Object value = OAObjectReflectDelegate.getRawReference((OAObject) obj, property);
             if (value == null) {
-                if (OAObjectPropertyDelegate.isPropertyLoaded((OAObject) obj, property)) continue;
-                if (al == null) al = new ArrayList<String>();
-                al.add(property);
+                if (!OAObjectPropertyDelegate.isPropertyLoaded((OAObject) obj, property)) {
+                    if (al == null) al = new ArrayList<String>();
+                    al.add(property);
+                }
             }
             else if (value instanceof OAObjectKey) {
-                if (al == null) al = new ArrayList<String>();
-                al.add(property);
+                if (OAObjectCacheDelegate.get(li.toClass, value) == null) {
+                    if (al == null) al = new ArrayList<String>();
+                    al.add(property);
+                }
             }
         }
         if (al == null) return null;

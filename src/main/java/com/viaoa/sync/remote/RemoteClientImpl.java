@@ -57,9 +57,10 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     public Object datasource(int command, Object[] objects) {
         if (remoteDataSource == null) {
             remoteDataSource = new RemoteDataSource() {
+                // used when an object from ds is not already in a hub with master.
                 @Override
-                public void setCached(OAObject obj, boolean b) {
-                    RemoteClientImpl.this.setCached(obj, b);
+                public void setCached(OAObject obj) {
+                    RemoteClientImpl.this.setCached(obj);
                 }
             };            
         }
@@ -77,7 +78,6 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         }
         return defaultDataSource;
     }
-    private int selectCount;
     protected OADataSource defaultDataSource;
 
     protected OADataSource getDataSource() {
@@ -89,12 +89,15 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
         if (obj == null) return null;
         OAObject objx = OAObjectReflectDelegate.createCopy(obj, excludeProperties);
-        setCached(objx, true);
+        setCached(objx);
         return objx;
     }
     
     
-    public abstract void setCached(OAObject obj, boolean b);
+    /**
+     * Called to add objects to a client's server side cache, so that server with not GC the object.
+     */
+    public abstract void setCached(OAObject obj);
     
 }
 

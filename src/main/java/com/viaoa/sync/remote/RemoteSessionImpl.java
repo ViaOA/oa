@@ -33,55 +33,34 @@ import com.viaoa.sync.model.ClientInfo;
 // see: OAClient
 
 public abstract class RemoteSessionImpl implements RemoteSessionInterface {
-    protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
-    protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
+    protected ConcurrentHashMap<OAObject, OAObject> hashCache = new ConcurrentHashMap<OAObject, OAObject>();
+    protected ConcurrentHashMap<Integer, OAObject> hashCacheInt = new ConcurrentHashMap<Integer, OAObject>();
+    protected ConcurrentHashMap<OAObject, OAObject> hashLock = new ConcurrentHashMap<OAObject, OAObject>();
 
-    @Override
-    public void setCached(Class objectClass, OAObjectKey objectKey, boolean bAddToCache) {
-        Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
-        if (obj == null) return;
-
-        if (bAddToCache) {
-            hashCache.put(obj, obj);
-        }
-        else {
-            hashCache.remove(obj);
-        }
-    }
     @Override
     public void setCached(OAObject obj, boolean bAddToCache) {
         if (bAddToCache) {
             hashCache.put(obj, obj);
+            hashCacheInt.put(OAObjectDelegate.getGuid(obj), obj);
         }
         else {
             hashCache.remove(obj);
+            hashCacheInt.remove(OAObjectDelegate.getGuid(obj), obj);
         }
     }
 
     // called by server to save any client cached objects
     public void saveCache(OACascade cascade, int iCascadeRule) {
-        for (Map.Entry<Object, Object> entry : hashCache.entrySet()) {
-            Object obj = entry.getKey();
-            if (obj instanceof OAObject) {
-                OAObject oa = (OAObject) obj;
-                if (!oa.wasDeleted()) {
-                    OAObjectSaveDelegate.save(oa, iCascadeRule, cascade);
-                }
+        for (Map.Entry<OAObject, OAObject> entry : hashCache.entrySet()) {
+            OAObject obj = entry.getKey();
+            if (!obj.wasDeleted()) {
+                OAObjectSaveDelegate.save(obj, iCascadeRule, cascade);
             }
         }
     }
 
     protected OAObject findInCache(int guid) {
-        for (Map.Entry<Object, Object> entry : hashCache.entrySet()) {
-            Object obj = entry.getKey();
-            if (obj instanceof OAObject) {
-                OAObject oa = (OAObject) obj;
-                if (OAObjectDelegate.getGuid(oa) == guid) {
-                    return oa;
-                }
-            }
-        }
-        return null;
+        return hashCacheInt.get(new Integer(guid));
     }
 
     /**
@@ -98,13 +77,13 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
 
     @Override
     public boolean setLock(Class objectClass, OAObjectKey objectKey, boolean bLock) {
-        Object obj = OAObjectCacheDelegate.get(objectClass, objectKey);
+        OAObject obj = OAObjectCacheDelegate.get(objectClass, objectKey);
         if (obj == null) return false;
         setLock(obj, bLock);
         return true;
     }
 
-    public void setLock(Object obj, boolean bLock) {
+    public void setLock(OAObject obj, boolean bLock) {
         if (bLock) {
             hashLock.put(obj, obj);
         }
@@ -115,8 +94,8 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
 
     // this is used at disconnect
     public void clearLocks() {
-        for (Map.Entry<Object, Object> entry : hashLock.entrySet()) {
-            Object obj = entry.getKey();
+        for (Map.Entry<OAObject, OAObject> entry : hashLock.entrySet()) {
+            OAObject obj = entry.getKey();
             setLock(obj, false);
         }
     }

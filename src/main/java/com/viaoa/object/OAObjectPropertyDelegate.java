@@ -225,6 +225,14 @@ public class OAObjectPropertyDelegate {
                     if (bMustNotExist) return oaObj.properties[i+1];
                     
                     if (matchValue != oaObj.properties[i+1]) {
+                        if (oaObj.properties[i+1] instanceof WeakReference) {
+                            Object objx = ((WeakReference) oaObj.properties[i+1]).get();
+                            if (matchValue == objx) {
+                                pos = i;
+                            }
+                            break;
+                        }
+                        
                         if (matchValue == null) return oaObj.properties[i+1];
                         if (!matchValue.equals(oaObj.properties[i+1])) {
                             if (!(matchValue instanceof OAObjectKey) || !(newValue instanceof OAObject)) return false;
