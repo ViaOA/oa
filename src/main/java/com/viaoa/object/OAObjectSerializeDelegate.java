@@ -80,10 +80,6 @@ public class OAObjectSerializeDelegate {
         	OAObjectDelegate.assignGuid(oaObjOrig);
         	oaObjOrig.objectKey.guid = oaObjOrig.guid;
         }
-if (oaObjOrig.getClass().getName().indexOf("Silo") >= 0) {
-    int xx = 4;
-    xx++;
-}
 		OAObjectInfo oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObjOrig);
 		if (oi.bAddToCache) {
 			oaObjNew = OAObjectCacheDelegate.add(oaObjOrig, false, false);

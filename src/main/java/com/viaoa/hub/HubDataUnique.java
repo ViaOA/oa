@@ -45,6 +45,7 @@ class HubDataUnique implements java.io.Serializable {
 	*/
 	boolean dupAllowAddRemove = true;
 	
+
 	/**
 	    Single finder object used by last call to findX methods that did not use a HubFinder object.
 	    <p>
