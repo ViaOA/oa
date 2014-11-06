@@ -53,8 +53,8 @@ public class HubAddRemoveDelegate {
     {
         if (obj == null) return;
         
-        if (thisHub.datau.sharedHub != null) {
-            remove(thisHub.datau.sharedHub, obj, bForce, bSendEvent, bDeleting, bSetAO, true, bIsRemovingAll);
+        if (thisHub.datau.getSharedHub() != null) {
+            remove(thisHub.datau.getSharedHub(), obj, bForce, bSendEvent, bDeleting, bSetAO, true, bIsRemovingAll);
             return;
         }
 
@@ -134,8 +134,8 @@ public class HubAddRemoveDelegate {
     }
     
     public static void clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
-        if (thisHub.datau.sharedHub != null) {
-            clear(thisHub.datau.sharedHub, bSetAOtoNull, bSendNewList);
+        if (thisHub.datau.getSharedHub() != null) {
+            clear(thisHub.datau.getSharedHub(), bSetAOtoNull, bSendNewList);
             return;
         }
     
@@ -206,8 +206,8 @@ public class HubAddRemoveDelegate {
             return "add is disabled";
         }
         
-        if (thisHub.datau.sharedHub != null) {
-            return canAddMsg(thisHub.datau.sharedHub, obj);
+        if (thisHub.datau.getSharedHub() != null) {
+            return canAddMsg(thisHub.datau.getSharedHub(), obj);
         }
     
         HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
@@ -224,7 +224,7 @@ public class HubAddRemoveDelegate {
         if (!thisHub.datau.objClass.isAssignableFrom(c) ) return "class not assignable, class="+c;
 
         if (thisHub.isLoading()) return null;
-        if (thisHub.data.uniqueProperty != null) {
+        if (thisHub.data.getUniqueProperty() != null) {
             if (!HubDelegate.verifyUniqueProperty(thisHub, obj)) {
                 return "verifyUniqueProperty returned false";
             }
@@ -256,14 +256,14 @@ public class HubAddRemoveDelegate {
     
     public static void add(Hub thisHub, Object obj) {
         if (obj == null) return;
-        if (thisHub.datau.sharedHub != null) {
+        if (thisHub.datau.getSharedHub() != null) {
             if (thisHub.getEnabled()) {
-                add(thisHub.datau.sharedHub, obj);
+                add(thisHub.datau.getSharedHub(), obj);
                 return;
             }
         }
 
-        if (thisHub.data.sortListener != null) {
+        if (thisHub.data.getSortListener() != null) {
             // use getCurrentSize to guess that it will go at the end, in 
             //  cases where this is loaded in order.
             insert(thisHub, obj, thisHub.getCurrentSize());  
@@ -306,13 +306,13 @@ public class HubAddRemoveDelegate {
         Hub rootHub = thisHub.getRootHub();
         if (rootHub != null) {
             if (rootHub == thisHub) {
-                OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.objectInfo, OALinkInfo.ONE);
+                OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.getObjectInfo(), OALinkInfo.ONE);
                 if (liRecursive != null) {
                     OAObjectReflectDelegate.setProperty((OAObject)obj, liRecursive.getName(), null, null);
                 }
             }
         }
-        if (!thisHub.data.bInFetch) {
+        if (!thisHub.data.isInFetch()) {
             HubEventDelegate.fireAfterAddEvent(thisHub, obj, thisHub.getCurrentSize()-1);
             HubDelegate.setReferenceable(thisHub, true);
         }
@@ -362,11 +362,11 @@ public class HubAddRemoveDelegate {
     */
     protected static void move(Hub thisHub, int posFrom, int posTo) {
         if (posFrom == posTo) {
-            if (thisHub.data.sortListener == null) return;
+            if (thisHub.data.getSortListener() == null) return;
         }
         if (posFrom < 0 || posTo < 0) return;
-        if (thisHub.datau.sharedHub != null) {
-            move(thisHub.datau.sharedHub, posFrom, posTo);
+        if (thisHub.datau.getSharedHub() != null) {
+            move(thisHub.datau.getSharedHub(), posFrom, posTo);
             return;
         }
         
@@ -377,7 +377,7 @@ public class HubAddRemoveDelegate {
         if (posFrom >= max) return;
     
         /* if Hub is sorted, need to find valid toPosition. */
-        if (thisHub.data.sortListener != null) {
+        if (thisHub.data.getSortListener() != null) {
             boolean b=false;
             for (int i=0; ; i++) {
                 Object cobj = thisHub.elementAt(i);
@@ -389,7 +389,7 @@ public class HubAddRemoveDelegate {
                     b = true;
                     continue; // skip object that is moving
                 }
-                if (thisHub.data.sortListener.comparator.compare(objFrom, cobj) <= 0) {
+                if (thisHub.data.getSortListener().comparator.compare(objFrom, cobj) <= 0) {
                     posTo = i;
                     if (b) posTo--;
                     break;
@@ -429,8 +429,8 @@ public class HubAddRemoveDelegate {
     */
     public static boolean insert(Hub thisHub, Object obj, int pos) {
         if (obj == null) return false;
-        if (thisHub.datau.sharedHub != null) {
-            return insert(thisHub.datau.sharedHub, obj, pos);
+        if (thisHub.datau.getSharedHub() != null) {
+            return insert(thisHub.datau.getSharedHub(), obj, pos);
         }
         
         if (obj instanceof OAObjectKey) {
@@ -457,7 +457,7 @@ public class HubAddRemoveDelegate {
         */
         // if (HubDataDelegate.getObject(thisHub, key) != null) return false;
 
-        if (thisHub.data.sortListener != null) {
+        if (thisHub.data.getSortListener() != null) {
             for (int j=-1; ; j++) {  // 201440820 first try the expected location
                 int i = j;
                 if (j == -1) {  // try [pos] first, to see if list is already sorted
@@ -478,7 +478,7 @@ public class HubAddRemoveDelegate {
                     break;
                 }
                 Object cobj = thisHub.elementAt(i);
-                int c = thisHub.data.sortListener.comparator.compare(obj, cobj);
+                int c = thisHub.data.getSortListener().comparator.compare(obj, cobj);
                 if (c <= 0) {
                     pos = i;
                     break;
@@ -534,7 +534,7 @@ public class HubAddRemoveDelegate {
         
         // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
         if (thisHub.getRootHub() == thisHub) {
-            OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.objectInfo, OALinkInfo.ONE);
+            OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.getObjectInfo(), OALinkInfo.ONE);
             if (liRecursive != null) {
                 OAObjectReflectDelegate.setProperty((OAObject) obj, liRecursive.getName(), null, null);
             }
@@ -554,8 +554,8 @@ public class HubAddRemoveDelegate {
         @see #move
     */
     public static void swap(Hub thisHub, int pos1, int pos2) {
-        if (thisHub.datau.sharedHub != null) {
-            swap(thisHub.datau.sharedHub, pos1, pos2);
+        if (thisHub.datau.getSharedHub() != null) {
+            swap(thisHub.datau.getSharedHub(), pos1, pos2);
             return;
         }
         if (pos1 == pos2) return;
@@ -582,7 +582,7 @@ public class HubAddRemoveDelegate {
     }
     public static boolean isAllowAddRemove(Hub thisHub) {
         if (thisHub == null) return false;
-        return thisHub.datau.dupAllowAddRemove;
+        return thisHub.datau.isDupAllowAddRemove();
     }
     
 }

@@ -148,14 +148,14 @@ static int cntq;
         try {
             // 20120624 hubCombined could be a detail hub.
             OAThreadLocalDelegate.setSuppressCSMessages(true);
-            if (hubCombinedObjects != null && !hubCombinedObjects.data.bInFetch) {
+            if (hubCombinedObjects != null && !hubCombinedObjects.data.isInFetch()) {
                 hd = hubCombinedObjects.data;
-                hd.bInFetch = true;
+                hd.setInFetch(true);
             }
             _init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
         }
         finally {
-            if (hd != null) hd.bInFetch = false;
+            if (hd != null) hd.setInFetch(false);
             OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
     }
@@ -1229,15 +1229,15 @@ static int cntq;
             HubData hd = null;
             try {
                 if (this.hub != hubCombined) {
-                    if (!hubCombined.data.bInFetch) {
+                    if (!hubCombined.data.isInFetch()) {
                         hd = hubCombined.data;
-                        hd.bInFetch = true;
+                        hd.setInFetch(true);
                     }
                 }
                 _onNewList();
             }
             finally {
-                if (hd != null) hd.bInFetch = false;
+                if (hd != null) hd.setInFetch(false);
             }
             if (this.hub != hubCombined) {
                 if (hubCombined.getSharedHub() != this.hub) {
@@ -1501,14 +1501,14 @@ static int cntq;
             }
 
             HubData hd = hubCombined.data;
-            boolean b = hd.bInFetch;
+            boolean b = hd.isInFetch();
             try {
-                hd.bInFetch = true;
+                hd.setInFetch(true);
                 if (!bShareEndHub) hubCombined.clear();
                 _afterChangeActiveObject();
             }
             finally {
-                hd.bInFetch = b;
+                hd.setInFetch(b);
             }
             // 20110419 param was true, but this should only send to other hubs that share this one
             HubEventDelegate.fireOnNewListEvent(hubCombined, false);

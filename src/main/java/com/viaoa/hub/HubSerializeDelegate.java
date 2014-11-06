@@ -77,10 +77,10 @@ public class HubSerializeDelegate {
 	    if (thisHub.datam == null) thisHub.datam = new HubDataMaster();
 
 	    if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
-	        // need to reasign  linkInfo, to eliminate linkinfo dups
+	        // need to reassign  linkInfo, to eliminate linkinfo dups
 	    	boolean bFound = false;	    	
-	        if (thisHub.datau.objectInfo != null) {  // will only happen if objClass is null
-	        	List al = thisHub.datau.objectInfo.getLinkInfos();
+	        if (thisHub.datau.getObjectInfo() != null) { 
+	        	List al = thisHub.datau.getObjectInfo().getLinkInfos();
 	        	OALinkInfo liOld = thisHub.datam.liDetailToMaster;
 	        	for (int i=0; i < al.size(); i++) {
 	            	OALinkInfo li = (OALinkInfo) al.get(i);
@@ -115,11 +115,11 @@ public class HubSerializeDelegate {
 			}
 	        HubDetailDelegate.setMasterObject(thisHub, thisHub.datam.masterObject, thisHub.datam.liDetailToMaster);
 	    }
-	    if (thisHub.datau.sharedHub != null) {
-	        thisHub.datau.sharedHub = null; // so gc() will dispose this hub
+	    if (thisHub.datau.getSharedHub() != null) {
+	        thisHub.datau.setSharedHub(null); // so gc() will dispose this hub
 	    }
 	
-		if (thisHub.data.bSelectAllHub) {
+		if (thisHub.data.isSelectAllHub()) {
 			OAObjectCacheDelegate.setSelectAllHub(thisHub);
 		}
 	    
@@ -141,7 +141,7 @@ public class HubSerializeDelegate {
 		    if (obj == null) break;
 		    
 		    Object key = obj;
-		    if (thisHub.datau.oaObjectFlag) {
+		    if (thisHub.datau.isOAObjectFlag()) {
 		        if (!b) {
 		            // dont initialize this hub if the master object is a duplicate.
 		            // check by looking to see if this object already belongs to a hub that has the same masterObject/linkinfo

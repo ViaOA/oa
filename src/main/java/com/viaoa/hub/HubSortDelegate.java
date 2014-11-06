@@ -55,18 +55,18 @@ public class HubSortDelegate {
     private static void _sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         boolean bSame = false;
-        if (propertyPaths == thisHub.data.sortProperty || (propertyPaths != null && propertyPaths.equalsIgnoreCase(thisHub.data.sortProperty))) {
-            if (bAscending == thisHub.data.sortAsc) {
-                if (comp == null || comp == thisHub.data.sortListener.comparator) {
+        if (propertyPaths == thisHub.data.getSortProperty() || (propertyPaths != null && propertyPaths.equalsIgnoreCase(thisHub.data.getSortProperty()))) {
+            if (bAscending == thisHub.data.isSortAsc()) {
+                if (comp == null || comp == thisHub.data.getSortListener().comparator) {
                     bSame = true;
                 }
             }
         }
         
-        if (thisHub.data.sortListener != null) {
+        if (thisHub.data.getSortListener() != null) {
             if (bSame) return;
-            thisHub.data.sortListener.close();
-            thisHub.data.sortListener = null;
+            thisHub.data.getSortListener().close();
+            thisHub.data.setSortListener(null);
         }
         else {
             if (bSame) {
@@ -74,15 +74,15 @@ public class HubSortDelegate {
             }
         }
         
-        thisHub.data.sortProperty = propertyPaths;
-        thisHub.data.sortAsc = bAscending;
+        thisHub.data.setSortProperty(propertyPaths);
+        thisHub.data.setSortAsc(bAscending);
         
         if (propertyPaths != null || comp != null) {
-            thisHub.data.sortListener = new HubSortListener(thisHub, comp, propertyPaths, bAscending);
+            thisHub.data.setSortListener(new HubSortListener(thisHub, comp, propertyPaths, bAscending));
             if (!bAlreadySortedAndLocalOnly) performSort(thisHub);
         }
         else { // cancel sort
-            thisHub.data.sortAsc = false;
+            thisHub.data.setSortAsc(false);
         }
         
         if (!bAlreadySortedAndLocalOnly) {  // otherwise, no other client has this hub yet
@@ -112,10 +112,10 @@ public class HubSortDelegate {
 	}
 
 	private static void performSort(Hub thisHub) {
-		if (thisHub.data.sortListener == null) return;
+		if (thisHub.data.getSortListener() == null) return;
 		HubSelectDelegate.loadAllData(thisHub);
 	    thisHub.data.changeCount++;
-	    Collections.sort(thisHub.data.vector, thisHub.data.sortListener.comparator);
+	    Collections.sort(thisHub.data.vector, thisHub.data.getSortListener().comparator);
 	    HubEventDelegate.fireAfterSortEvent(thisHub);
 	}
 	
@@ -136,10 +136,10 @@ public class HubSortDelegate {
 	*/
 	public static void keepSorted(Hub thisHub) {
 	    // 20090801 cant have sorter if a AutoSequence is being used
-	    if (thisHub.datau.autoSequence != null) {
+	    if (thisHub.datau.getAutoSequence() != null) {
 	        return;
 	    }
-	    if (thisHub.data.sortListener != null) return;
+	    if (thisHub.data.getSortListener() != null) return;
 	    if (HubSelectDelegate.getSelect(thisHub) == null) return;
 	    String s = HubSelectDelegate.getSelect(thisHub).getOrder();
 	    if (s == null || s.length() == 0) return;
@@ -147,14 +147,14 @@ public class HubSortDelegate {
 	}
 
     public static boolean isSorted(Hub thisHub) {
-        return (thisHub.data.sortListener != null);
+        return (thisHub.data.getSortListener() != null);
     }
 
     public static String getSortProperty(Hub thisHub) {
-        return (thisHub.data.sortProperty);
+        return (thisHub.data.getSortProperty());
     }
     public static boolean getSortAsc(Hub thisHub) {
-        return (thisHub.data.sortAsc);
+        return (thisHub.data.isSortAsc());
     }
 }
 

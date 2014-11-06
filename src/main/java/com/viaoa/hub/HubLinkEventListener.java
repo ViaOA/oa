@@ -49,7 +49,7 @@ class HubLinkEventListener extends HubListenerAdapter implements java.io.Seriali
 	public @Override void afterPropertyChange(HubEvent hubEvent) {
 	    if (hubEvent.getObject() == linkToHub.getActiveObject()) {
 	    	String prop = hubEvent.getPropertyName(); 
-            if (prop != null && prop.equalsIgnoreCase(fromHub.datau.linkToPropertyName)) {
+            if (prop != null && prop.equalsIgnoreCase(fromHub.datau.getLinkToPropertyName())) {
             	HubLinkDelegate.updateLinkedToHub(fromHub, linkToHub, hubEvent.getObject(), prop);
             }
 	    }

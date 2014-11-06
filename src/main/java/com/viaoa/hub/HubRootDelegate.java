@@ -40,12 +40,12 @@ public class HubRootDelegate {
 	*/
 	public static Hub getRootHub(final Hub thisHub) {
 		
-		OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.objectInfo, OALinkInfo.ONE);
+		OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.getObjectInfo(), OALinkInfo.ONE);
 	    // 1: must be recursive
 	    if (liRecursive == null) return null;
 
 	    // 2: check for root hub
-	    Hub h = OAObjectInfoDelegate.getRootHub(thisHub.datau.objectInfo);
+	    Hub h = OAObjectInfoDelegate.getRootHub(thisHub.datau.getObjectInfo());
 	    if (h != null) return h;
 	    
 	    // 3: get dm
@@ -70,10 +70,10 @@ public class HubRootDelegate {
 	    
 	    // 20120304 added other cases on how to find the root hub         
         if (dm.liDetailToMaster == null) {
-            return OAObjectInfoDelegate.getRootHub(thisHub.datau.objectInfo);
+            return OAObjectInfoDelegate.getRootHub(thisHub.datau.getObjectInfo());
         }
         if (thisHub.datam.masterObject == null && thisHub.datam.masterHub == null) {
-            return OAObjectInfoDelegate.getRootHub(thisHub.datau.objectInfo);
+            return OAObjectInfoDelegate.getRootHub(thisHub.datau.getObjectInfo());
         }
         if (thisHub.datam.masterObject == null) {
             if (thisHub.datam.masterHub != null) {
@@ -91,7 +91,7 @@ public class HubRootDelegate {
                     }
                 }
             }
-            return OAObjectInfoDelegate.getRootHub(thisHub.datau.objectInfo);
+            return OAObjectInfoDelegate.getRootHub(thisHub.datau.getObjectInfo());
         }
         // End 20120304     
 	    
@@ -108,7 +108,7 @@ public class HubRootDelegate {
 	    
 	    
 	    // 5: if parent is not recursive - if the LinkInfos are different
-	    if ( dm.liDetailToMaster != OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.objectInfo, OALinkInfo.ONE) ) {
+	    if ( dm.liDetailToMaster != OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.getObjectInfo(), OALinkInfo.ONE) ) {
 	        // if dm.masterObject is owner, then it is owner
 	        OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster);
 	        if (rli == null) {
@@ -126,14 +126,14 @@ public class HubRootDelegate {
 	        // the linkInfo for the parent is not the owner or a recursive parent
 	        // The root hub needs to be manually set by calling Hub.setRootHub,
 	        //     since the recursive hub does not have an owner object
-	        return OAObjectInfoDelegate.getRootHub(thisHub.datau.objectInfo);
+	        return OAObjectInfoDelegate.getRootHub(thisHub.datau.getObjectInfo());
 	    }
 	
 	
 	    // 6: dm.masterObject is the same as this class - recursive parent hub
 	    //    use it to get the owner object and then the root hub (from owner object)
 	    // find owner link
-	    OALinkInfo linkOwner = OAObjectInfoDelegate.getLinkToOwner(thisHub.datau.objectInfo);
+	    OALinkInfo linkOwner = OAObjectInfoDelegate.getLinkToOwner(thisHub.datau.getObjectInfo());
 	    if (linkOwner != null) {
 	        OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(linkOwner);
 	        if (liRev != null && liRev.getType() == OALinkInfo.MANY) {
@@ -171,7 +171,7 @@ public class HubRootDelegate {
 	    @param b if true then set thisHub as the root, else remove as the rootHub.
 	*/
 	public static void setRootHub(Hub thisHub, boolean b) {
-		OAObjectInfoDelegate.setRootHub(thisHub.datau.objectInfo, b?thisHub:null);
+		OAObjectInfoDelegate.setRootHub(thisHub.datau.getObjectInfo(), b?thisHub:null);
 	}
 	
 	

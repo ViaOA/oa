@@ -19,85 +19,37 @@ package com.viaoa.hub;
 
 import java.lang.reflect.Method;
 import java.util.*;
-
-import com.viaoa.object.*;
+import java.util.concurrent.ConcurrentHashMap;
 import com.viaoa.util.OANullObject;
 import com.viaoa.ds.*;
 
 /**
 	Internally used by Hub to store objects.  Shared Hubs will use this same object.<br>
-	A Vector and Hashtable are used to store the objects.
 */
 public class HubData implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 
-	// Used to store objects so that the order of the objects is known.
-	protected transient Vector vector;
+    
+    // Used to store objects so that the order of the objects is known.
+    protected transient Vector vector;
 
-	/**
-	    Counter that is incremented on: add(), insert(), remove(), setting shared hub,
-	    remove(), move(), sort(), select().
-	    This can be used to know if a hub has been changed without requiring the set up of a HubListener.
-	    <p>
-	    This is used by OA.JSP components to know if a frame should be updated.  See com.viaoa.html.OATable.
-	*/
-	protected transient int changeCount;
-	
-	/**
-	    Counter that is incremented when a new list of objects is loaded.
-	    Incremented by select, setSharedHub, and when
-	    detail hubs list is changed to match the master hub's activeObject.<br>
-	    This can be used to know if a hub has been changed without requiring the set up of a HubListener.
-	    <p>
-	    This is used by JSP components to know if a frame should be updated. <br>
-	    See com.viaoa.html.OATable and com.viaoa.html.OANav
-	*/
-	protected transient int newListCount;
-	
-	// used by setChanged
-	protected boolean changed;
-	
-	// Flag to know if add/insert/remove objects should be tracked. Set to true when master object is set.
-	protected boolean bTrackChanges;
-	
-	// If bTrackChanges is true, then all objects that are added to Hub are added to this vector.
-	protected transient Vector vecAdd; // only for OAObjects
-	
-	// If bTrackChanges is true, then all objects that are removed from Hub are added to this vector.
-	protected transient Vector vecRemove;  // only for OAObjects
-	
-	protected transient HubSortListener sortListener;
-    //  info to keep Hub objects sorted when sent to other computers, see HubSerializerDelegate._readResolve - it will set up sorting when received
-	protected String sortProperty;
-	protected boolean sortAsc;
-	
-	// Used to select objects from OADataSource.
-	protected transient OASelect select;
-	
-	
-	/**
-	    Flag used by Hub.setFresh() so that active objects are always refreshed from
-	    datasource.
-	    <p>
-	    Note: this is not implemented.
-	*/
-	protected boolean refresh = false;
-	
-	// Flag to know that all objects are being loaded from datasource.
-	protected transient boolean loadingAllData;
-	
-	// Flag to know that objects are being fetched from datasource.
-	protected transient boolean bInFetch;
-	
-	// used to "know" if hub should be add to HubController.setSelectAllHub()
-	protected boolean bSelectAllHub; 
-	
-	// Name of property that must be unique for all objects in the Hub.
-	protected String uniqueProperty;
-	protected transient Method uniquePropertyGetMethod;
-	
-	protected transient boolean disabled;
-	
+    /**
+        Counter that is incremented on: add(), insert(), remove(), setting shared hub,
+        remove(), move(), sort(), select().
+        This can be used to know if a hub has been changed without requiring the set up of a HubListener.
+        <p>
+        This is used by OA.JSP components to know if a frame should be updated.  See com.viaoa.html.OATable.
+    */
+    protected transient int changeCount;
+    
+    // used by setChanged
+    protected boolean changed;
+    
+    // Flag to know if add/insert/remove objects should be tracked. Set to true when master object is set.
+    protected boolean bTrackChanges;
+
+    private HubDatax hubDatax; // extension
+    
 	/**
 	    Constructor that supplies params for sizing Vector.
 	*/
@@ -105,25 +57,34 @@ public class HubData implements java.io.Serializable {
 	    vector = new Vector(size);
 	}
 	public HubData() {
-		this(10);
+		this(7);
 	}
 	
-	
-	
+	   
     private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{
         s.defaultWriteObject();
         writeVector(s, vector);
-        writeVector(s, vecAdd);
-        writeVector(s, vecRemove);
+        Vector vec;
+        if (hubDatax != null) vec = hubDatax.vecAdd;
+        else vec = null;
+        writeVector(s, vec);
+        if (hubDatax != null) vec = hubDatax.vecRemove;
+        else vec = null;
+        writeVector(s, vec);
     }
     
     private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
         s.defaultReadObject();
         vector = readVector(s);
-        vecAdd = readVector(s);
-        vecRemove = readVector(s);
+        
+        Vector vec = readVector(s);
+        setVecAdd(vec);
+        
+        vec = readVector(s);
+        setVecRemove(vec);
     }
 
+	
     private void writeVector(java.io.ObjectOutputStream s, Vector vec) throws java.io.IOException{
         if (vec == null) {
             s.writeInt(-1);
@@ -168,5 +129,150 @@ public class HubData implements java.io.Serializable {
     }
     
     
+    static int qq;    
+    private HubDatax getHubDatax() {
+        if (hubDatax == null) {
+            synchronized (this) {
+                if (hubDatax == null) {
+//qqqqqqqqqqqqqq                    
+System.out.println((++qq)+") HubDatax created");                    
+                    this.hubDatax = new HubDatax();
+                }
+            }
+        }
+        return hubDatax;
+    }
+    
+
+    
+    public int getNewListCount() {
+        if (hubDatax == null) return 0;
+        return hubDatax.newListCount;
+    }
+    public void setNewListCount(int newListCount) {
+        if (hubDatax != null || newListCount != 0) {
+            getHubDatax().newListCount = newListCount;
+        }
+    }
+    public Vector getVecAdd() {
+        if (hubDatax == null) return null;
+        return hubDatax.vecAdd;
+    }
+    public void setVecAdd(Vector vecAdd) {
+        if (hubDatax != null || vecAdd != null) {
+            getHubDatax().vecAdd = vecAdd;
+        }
+    }
+    public Vector getVecRemove() {
+        if (hubDatax == null) return null;
+        return hubDatax.vecRemove;
+    }
+    public void setVecRemove(Vector vecRemove) {
+        if (hubDatax != null || vecRemove != null) {
+            getHubDatax().vecRemove = vecRemove;
+        }
+    }
+    public HubSortListener getSortListener() {
+        if (hubDatax == null) return null;
+        return hubDatax.sortListener;
+    }
+    public void setSortListener(HubSortListener sortListener) {
+        if (hubDatax != null || sortListener != null) {
+            getHubDatax().sortListener = sortListener;
+        }
+    }
+    public String getSortProperty() {
+        if (hubDatax == null) return null;
+        return hubDatax.sortProperty;
+    }
+    public void setSortProperty(String sortProperty) {
+        if (hubDatax != null || sortProperty != null) {
+            getHubDatax().sortProperty = sortProperty;
+        }
+    }
+    public boolean isSortAsc() {
+        if (hubDatax == null) return false;
+        return hubDatax.sortAsc;
+    }
+    public void setSortAsc(boolean sortAsc) {
+        if (hubDatax != null || sortAsc) {
+            getHubDatax().sortAsc = sortAsc;
+        }
+    }
+    public OASelect getSelect() {
+        if (hubDatax == null) return null;
+        return hubDatax.select;
+    }
+    public void setSelect(OASelect select) {
+        if (hubDatax != null || select != null) {
+            getHubDatax().select = select;
+        }
+    }
+    public boolean isRefresh() {
+        if (hubDatax == null) return false;
+        return hubDatax.refresh;
+    }
+    public void setRefresh(boolean refresh) {
+        if (hubDatax != null || refresh) {
+            getHubDatax().refresh = refresh;
+        }
+    }
+    
+    private static ConcurrentHashMap<HubData, HubData> hmLoadingAllData = new ConcurrentHashMap<HubData, HubData>(11, .85f);
+    public boolean isLoadingAllData() {
+        return hmLoadingAllData.contains(this);
+    }
+    public void setLoadingAllData(boolean loadingAllData) {
+        if (loadingAllData) hmLoadingAllData.put(this, this);
+        else hmLoadingAllData.remove(this);
+    }
+
+    private static ConcurrentHashMap<HubData, HubData> hmInFetch = new ConcurrentHashMap<HubData, HubData>(11, .85f);
+    public boolean isInFetch() {
+        return hmInFetch.contains(this);
+    }
+    public void setInFetch(boolean bInFetch) {
+        if (bInFetch) hmInFetch.put(this, this);
+        else hmInFetch.remove(this);
+    }
+
+    
+    private static ConcurrentHashMap<HubData, HubData> hmSelectAllHub = new ConcurrentHashMap<HubData, HubData>(11, .85f);
+    public boolean isSelectAllHub() {
+        return hmSelectAllHub.contains(this);
+    }
+    public void setSelectAllHub(boolean bSelectAllHub) {
+        if (bSelectAllHub) hmSelectAllHub.put(this, this);
+        else hmSelectAllHub.remove(this);
+    }
+
+    public String getUniqueProperty() {
+        if (hubDatax == null) return null;
+        return hubDatax.uniqueProperty;
+    }
+    public void setUniqueProperty(String uniqueProperty) {
+        if (hubDatax != null || uniqueProperty != null) {
+            getHubDatax().uniqueProperty = uniqueProperty;
+        }
+    }
+    public Method getUniquePropertyGetMethod() {
+        if (hubDatax == null) return null;
+        return hubDatax.uniquePropertyGetMethod;
+    }
+    public void setUniquePropertyGetMethod(Method uniquePropertyGetMethod) {
+        if (hubDatax != null || uniquePropertyGetMethod != null) {
+            getHubDatax().uniquePropertyGetMethod = uniquePropertyGetMethod;
+        }
+    }
+    public boolean isDisabled() {
+        if (hubDatax == null) return false;
+        return hubDatax.disabled;
+    }
+    public void setDisabled(boolean disabled) {
+        if (hubDatax != null || disabled) {
+            getHubDatax().disabled = disabled;
+        }
+    }
+
 }
 

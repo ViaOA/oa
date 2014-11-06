@@ -40,13 +40,13 @@ public class HubLinkDelegate {
 	    // 20110809 add bAutoCreateAllowDups
 	    if (linkToHub == thisHub) return;
 	
-	    if (thisHub.datau.linkToHub != null) {
-	        if (thisHub.datau.linkToHub == linkToHub) return;
-	        HubEventDelegate.removeHubListener(thisHub.datau.linkToHub, thisHub.datau.hubLinkEventListener );
-	        thisHub.datau.linkToHub = null;
-	        thisHub.datau.hubLinkEventListener = null;
-	        thisHub.datau.bAutoCreate = false;
-	        thisHub.datau.bAutoCreateAllowDups = false;
+	    if (thisHub.datau.getLinkToHub() != null) {
+	        if (thisHub.datau.getLinkToHub() == linkToHub) return;
+	        HubEventDelegate.removeHubListener(thisHub.datau.getLinkToHub(), thisHub.datau.getHubLinkEventListener() );
+	        thisHub.datau.setLinkToHub(null);
+	        thisHub.datau.setHubLinkEventListener(null);
+	        thisHub.datau.setAutoCreate(false);
+	        thisHub.datau.setAutoCreateAllowDups(false);
 	    }
 	    if (linkToHub == null) {
 	        HubEventDelegate.fireAfterPropertyChange(thisHub, null, "Link", null, null, null);
@@ -69,20 +69,20 @@ public class HubLinkDelegate {
 	    }
 	
 	    Class verifyClass = thisHub.getObjectClass();
-	    thisHub.datau.linkFromPropertyName = propertyFrom;
-	    thisHub.datau.linkFromGetMethod = null;
+	    thisHub.datau.setLinkFromPropertyName(propertyFrom);
+	    thisHub.datau.setLinkFromGetMethod(null);
 	    if (propertyFrom != null) {  // otherwise, use object
-	    	thisHub.datau.linkFromGetMethod = OAReflect.getMethod(thisHub.getObjectClass(), "get"+propertyFrom);
-	        if (thisHub.datau.linkFromGetMethod == null) throw new RuntimeException("cant find method for property "+propertyFrom);
-	        verifyClass = thisHub.datau.linkFromGetMethod.getReturnType();
+	    	thisHub.datau.setLinkFromGetMethod(OAReflect.getMethod(thisHub.getObjectClass(), "get"+propertyFrom));
+	        if (thisHub.datau.getLinkFromGetMethod() == null) throw new RuntimeException("cant find method for property "+propertyFrom);
+	        verifyClass = thisHub.datau.getLinkFromGetMethod().getReturnType();
 	    }
 	
-	    thisHub.datau.linkToGetMethod = OAReflect.getMethod(linkToHub.getObjectClass(), "get"+propertyTo);
-	    if (thisHub.datau.linkToGetMethod == null) {
+	    thisHub.datau.setLinkToGetMethod(OAReflect.getMethod(linkToHub.getObjectClass(), "get"+propertyTo));
+	    if (thisHub.datau.getLinkToGetMethod() == null) {
 	        throw new RuntimeException("cant find method for property \""+propertyTo+"\" from linkToHub class="+linkToHub.getObjectClass().getName());
 	    }
 	    if (!linkPosFlag) {
-	        Class c = thisHub.datau.linkToGetMethod.getReturnType();
+	        Class c = thisHub.datau.getLinkToGetMethod().getReturnType();
             if ( !c.equals(verifyClass) ) {
                 if (c.isPrimitive()) c = OAReflect.getPrimitiveClassWrapper(c);
                 if ( !c.equals(verifyClass) ) {
@@ -90,10 +90,10 @@ public class HubLinkDelegate {
                 }
             }
 	    }
-	    thisHub.datau.linkToSetMethod = OAReflect.getMethod(linkToHub.getObjectClass(), "set"+propertyTo);
-	    if (thisHub.datau.linkToSetMethod == null) throw new RuntimeException("cant find set method for property "+propertyTo);
+	    thisHub.datau.setLinkToSetMethod(OAReflect.getMethod(linkToHub.getObjectClass(), "set"+propertyTo));
+	    if (thisHub.datau.getLinkToSetMethod() == null) throw new RuntimeException("cant find set method for property "+propertyTo);
 	
-	    Class[] cc = thisHub.datau.linkToSetMethod.getParameterTypes();
+	    Class[] cc = thisHub.datau.getLinkToSetMethod().getParameterTypes();
 	
 	    if (!linkPosFlag) {
 	        if (cc.length == 1 && cc[0].isPrimitive()) cc[0] = OAReflect.getPrimitiveClassWrapper(cc[0]);
@@ -109,26 +109,26 @@ public class HubLinkDelegate {
             }
 	    }
 	
-	    if (thisHub.datau.linkToHub != null) {
+	    if (thisHub.datau.getLinkToHub() != null) {
 	        // remove hub listener from previous linkHub
-	    	thisHub.datau.linkToHub.removeHubListener(thisHub.datau.hubLinkEventListener);
+	    	thisHub.datau.getLinkToHub().removeHubListener(thisHub.datau.getHubLinkEventListener());
 	    }
-	    thisHub.datau.linkPos = linkPosFlag;
-	    thisHub.datau.linkToHub = linkToHub;
-	    thisHub.datau.linkToPropertyName = propertyTo;
-	    thisHub.datau.hubLinkEventListener = new HubLinkEventListener(thisHub, linkToHub);
-	    thisHub.datau.bAutoCreate = bAutoCreate;
-        thisHub.datau.bAutoCreateAllowDups = bAutoCreate && bAutoCreateAllowDups; // 20110809
+	    thisHub.datau.setLinkPos(linkPosFlag);
+	    thisHub.datau.setLinkToHub(linkToHub);
+	    thisHub.datau.setLinkToPropertyName(propertyTo);
+	    thisHub.datau.setHubLinkEventListener(new HubLinkEventListener(thisHub, linkToHub));
+	    thisHub.datau.setAutoCreate(bAutoCreate);
+        thisHub.datau.setAutoCreateAllowDups(bAutoCreate && bAutoCreateAllowDups); // 20110809
 	    
-	    HubEventDelegate.addHubListener(linkToHub, thisHub.datau.hubLinkEventListener);
-	    thisHub.datau.hubLinkEventListener.onNewList(null);
+	    HubEventDelegate.addHubListener(linkToHub, thisHub.datau.getHubLinkEventListener());
+	    thisHub.datau.getHubLinkEventListener().onNewList(null);
 	    
 	    // 20121028
-	    Object ao = thisHub.datau.linkToHub.getActiveObject();
-	    int pos = thisHub.datau.linkToHub.getPos();
+	    Object ao = thisHub.datau.getLinkToHub().getActiveObject();
+	    int pos = thisHub.datau.getLinkToHub().getPos();
 	    
 	    // fire a fake changeActiveObject
-        HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub.datau.linkToHub, ao, pos, true);
+        HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub.datau.getLinkToHub(), ao, pos, true);
 	    //was: HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub.datau.linkToHub, thisHub.datau.linkToHub.getActiveObject(), 0, true);
 	    
 	    HubEventDelegate.fireAfterPropertyChange(thisHub, null, "Link", null, null, null);
@@ -139,13 +139,13 @@ public class HubLinkDelegate {
 	}
 	// 20131116	
     public static boolean isLinkAutoCreated(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.bAutoCreate) return true;
+        if (thisHub.datau.isAutoCreate()) return true;
         if (!bIncludeCopiedHubs) return false;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
-                if (h.datau.bAutoCreate) {
+                if (h.datau.isAutoCreate()) {
                     return true;
                 }
                 return false;
@@ -159,13 +159,13 @@ public class HubLinkDelegate {
 	}
     // 20131116 
     public static boolean getLinkedOnPos(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkPos) return true;
+        if (thisHub.datau.isLinkPos()) return true;
         if (!bIncludeCopiedHubs) return false;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
-                if (h.datau.linkPos) {
+                if (h.datau.isLinkPos()) {
                     return true;
                 }
                 return false;
@@ -175,7 +175,7 @@ public class HubLinkDelegate {
     }
 	
     public static void updateLinkProperty(Hub thisHub, Object fromObject, int pos) {
-        if (thisHub.datau.linkToHub == null || thisHub.datau.linkToHub.datau.bUpdatingActiveObject) return;
+        if (thisHub.datau.getLinkToHub() == null || thisHub.datau.getLinkToHub().datau.isUpdatingActiveObject()) return;
         try {
         	_updateLinkProperty(thisHub, fromObject, pos);
         }
@@ -191,7 +191,7 @@ public class HubLinkDelegate {
     */
     private static void _updateLinkProperty(Hub thisHub, Object fromObject, int pos) throws Exception {
     	Object linkToObject = null;
-        if (thisHub.datau.bAutoCreate) {
+        if (thisHub.datau.isAutoCreate()) {
             boolean bOne = false;  // is there only supposed to be one object in hub
             HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
             if (dm != null && dm.liDetailToMaster  != null) {
@@ -207,62 +207,62 @@ public class HubLinkDelegate {
                 return;
             }
             if (!bOne || thisHub.getSize() == 0) {
-                if (!thisHub.datau.bAutoCreateAllowDups) {  // 20110809 added flag, was: always did this check
+                if (!thisHub.datau.isAutoCreateAllowDups()) {  // 20110809 added flag, was: always did this check
                     // see if object already exists
                     for (int i=0; ;i++) {
-                        Object obj = thisHub.datau.linkToHub.elementAt(i);
+                        Object obj = thisHub.datau.getLinkToHub().elementAt(i);
                         if (obj == null) break;
-                        Object obj2 = thisHub.datau.linkToGetMethod.invoke(obj, null);
+                        Object obj2 = thisHub.datau.getLinkToGetMethod().invoke(obj, null);
                         if (obj2 == fromObject) {
-                        	thisHub.datau.linkToHub.setAO(obj);
+                        	thisHub.datau.getLinkToHub().setAO(obj);
                             return;
                         }
                     }
                 }
                 // create new object and link to it
-                Class c = thisHub.datau.linkToHub.getObjectClass();
+                Class c = thisHub.datau.getLinkToHub().getObjectClass();
                 Constructor constructor = c.getConstructor(new Class[] {});
                 linkToObject = constructor.newInstance(new Object[] {});
 
-                if (fromObject == null && thisHub.datau.linkToSetMethod.getParameterTypes()[0].isPrimitive()) {
-                    ((OAObject)linkToObject).setNull(thisHub.datau.linkToPropertyName);
+                if (fromObject == null && thisHub.datau.getLinkToSetMethod().getParameterTypes()[0].isPrimitive()) {
+                    ((OAObject)linkToObject).setNull(thisHub.datau.getLinkToPropertyName());
                 }
-                else thisHub.datau.linkToSetMethod.invoke(linkToObject, new Object[] { fromObject } );
+                else thisHub.datau.getLinkToSetMethod().invoke(linkToObject, new Object[] { fromObject } );
                 
-                if (thisHub.datau.linkToHub.getObject(linkToObject) == null) { 
-                    thisHub.datau.linkToHub.add(linkToObject);
+                if (thisHub.datau.getLinkToHub().getObject(linkToObject) == null) { 
+                    thisHub.datau.getLinkToHub().add(linkToObject);
                 }
-                thisHub.datau.linkToHub.setAO(linkToObject);
+                thisHub.datau.getLinkToHub().setAO(linkToObject);
                 return;
             }
         }
 
-        if (linkToObject == null) linkToObject = thisHub.datau.linkToHub.getActiveObject();
+        if (linkToObject == null) linkToObject = thisHub.datau.getLinkToHub().getActiveObject();
         if (linkToObject != null) {
-            Object obj = thisHub.datau.linkToGetMethod.invoke(linkToObject, null);
-            if (thisHub.datau.linkPos) {  // allow number returned to set pos of active object, set by setLinkOnPos()
+            Object obj = thisHub.datau.getLinkToGetMethod().invoke(linkToObject, null);
+            if (thisHub.datau.isLinkPos()) {  // allow number returned to set pos of active object, set by setLinkOnPos()
                 if (obj instanceof Number) {
                     int x = ((Number)obj).intValue();
                     if (x != pos) {
-                        thisHub.datau.linkToSetMethod.invoke(linkToObject, new Object[] { new Integer(pos) } );
+                        thisHub.datau.getLinkToSetMethod().invoke(linkToObject, new Object[] { new Integer(pos) } );
                         if (pos == -1 && linkToObject instanceof OAObject) { // 20131101 setting to null
-                            ((OAObject)linkToObject).setNull(thisHub.datau.linkToPropertyName);
+                            ((OAObject)linkToObject).setNull(thisHub.datau.getLinkToPropertyName());
                         }
                     }
                 }
             }
             else {
-                if (fromObject != null && thisHub.datau.linkFromGetMethod != null) {
+                if (fromObject != null && thisHub.datau.getLinkFromGetMethod() != null) {
                     // if linking a property to another property
-                    fromObject = thisHub.datau.linkFromGetMethod.invoke(fromObject, null );
+                    fromObject = thisHub.datau.getLinkFromGetMethod().invoke(fromObject, null );
                 }
 
                 if (obj != null || fromObject != null) {
                     if ( (obj == null || fromObject == null) || (!obj.equals(fromObject)) ) {
-                        if (fromObject == null && thisHub.datau.linkToSetMethod.getParameterTypes()[0].isPrimitive()) {
-                            ((OAObject)linkToObject).setNull(thisHub.datau.linkToPropertyName);
+                        if (fromObject == null && thisHub.datau.getLinkToSetMethod().getParameterTypes()[0].isPrimitive()) {
+                            ((OAObject)linkToObject).setNull(thisHub.datau.getLinkToPropertyName());
                         }
-                        else thisHub.datau.linkToSetMethod.invoke(linkToObject, new Object[] { fromObject } );
+                        else thisHub.datau.getLinkToSetMethod().invoke(linkToObject, new Object[] { fromObject } );
                     }
                 }
             }
@@ -283,26 +283,26 @@ public class HubLinkDelegate {
         return _getPropertyValueInLinkedToHub(h, linkObject);
     }
 	private static Object _getPropertyValueInLinkedToHub(Hub thisHub, Object linkObject) {
-	    if (thisHub.datau.linkToGetMethod == null) return linkObject;
+	    if (thisHub.datau.getLinkToGetMethod() == null) return linkObject;
 	    try {
 	        if (linkObject != null) {
 	            if (linkObject instanceof OAObject) {
 	                OAObject oa = (OAObject) linkObject;
-	                if (oa.isNull(thisHub.datau.linkToPropertyName)) {
+	                if (oa.isNull(thisHub.datau.getLinkToPropertyName())) {
 	                    linkObject = null;
 	                }
 	            }
 	            if (linkObject != null) {
-	                linkObject = thisHub.datau.linkToGetMethod.invoke(linkObject, null);
+	                linkObject = thisHub.datau.getLinkToGetMethod().invoke(linkObject, null);
 	            }
 	        }
-	        if (thisHub.datau.linkPos) {
+	        if (thisHub.datau.isLinkPos()) {
 	            int x = -1;
 	            if (linkObject != null && linkObject instanceof Number) x = ((Number)linkObject).intValue();
 	            return thisHub.elementAt(x);
 	        }
 	
-	        if (thisHub.datau.linkFromGetMethod != null) {
+	        if (thisHub.datau.getLinkFromGetMethod() != null) {
 	            // if linking a property to another property, need to find which object has matching property
 	            for (int i=0; ;i++) {
 	                Object obj = thisHub.elementAt(i);
@@ -310,7 +310,7 @@ public class HubLinkDelegate {
 	                    linkObject = null;
 	                    break;
 	                }
-	                Object obj2 = thisHub.datau.linkFromGetMethod.invoke(obj, null);
+	                Object obj2 = thisHub.datau.getLinkFromGetMethod().invoke(obj, null);
 	                if ((linkObject == obj2) || (obj2 != null && obj2.equals(linkObject)) ) {
 	                    linkObject = obj;
 	                    break;
@@ -337,8 +337,8 @@ public class HubLinkDelegate {
 	}
     // 20131116 
     public static String getLinkToProperty(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkToPropertyName != null) {
-            return thisHub.datau.linkToPropertyName;
+        if (thisHub.datau.getLinkToPropertyName() != null) {
+            return thisHub.datau.getLinkToPropertyName();
         }
         if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
@@ -346,14 +346,14 @@ public class HubLinkDelegate {
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToPropertyName != null) {
+                if (h.datau.getLinkToPropertyName() != null) {
                     return true;
                 }
                 return false;
             }
         }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
-        return hubx.datau.linkToPropertyName;
+        return hubx.datau.getLinkToPropertyName();
     }
 	
 	public static String getLinkFromProperty(Hub thisHub) {
@@ -361,47 +361,47 @@ public class HubLinkDelegate {
 	}
     // 20131116 
     public static String getLinkFromProperty(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkFromPropertyName != null) return thisHub.datau.linkFromPropertyName;
+        if (thisHub.datau.getLinkFromPropertyName() != null) return thisHub.datau.getLinkFromPropertyName();
         if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkFromPropertyName != null) {
+                if (h.datau.getLinkFromPropertyName() != null) {
                     return true;
                 }
                 return false;
             }
         }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
-        return hubx.datau.linkFromPropertyName;
+        return hubx.datau.getLinkFromPropertyName();
     }
 	
     public static Hub getLinkToHub(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkToHub != null) return thisHub.datau.linkToHub;
+        if (thisHub.datau.getLinkToHub() != null) return thisHub.datau.getLinkToHub();
         if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
-                if (h.datau.linkToHub != null) {
+                if (h.datau.getLinkToHub() != null) {
                     return true;
                 }
                 return false;
             }
         }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
-        return hubx.datau.linkToHub;
+        return hubx.datau.getLinkToHub();
     }
     public static Hub getHubWithLink(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkToHub != null) return thisHub;
+        if (thisHub.datau.getLinkToHub() != null) return thisHub;
         if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
-                if (h.datau.linkToHub != null) {
+                if (h.datau.getLinkToHub() != null) {
                     return true;
                 }
                 return false;
@@ -421,7 +421,7 @@ public class HubLinkDelegate {
 	}
     // 20131116 
     public static boolean getLinkHubOnPos(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkPos) return true;
+        if (thisHub.datau.isLinkPos()) return true;
         if (!bIncludeCopiedHubs) return false;
         
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
@@ -429,7 +429,7 @@ public class HubLinkDelegate {
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkPos) {
+                if (h.datau.isLinkPos()) {
                     return true;
                 }
                 return false;
@@ -451,8 +451,8 @@ public class HubLinkDelegate {
 	}
     // 20131116 
     public static Method getLinkSetMethod(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkToSetMethod != null) {
-            return thisHub.datau.linkToSetMethod;
+        if (thisHub.datau.getLinkToSetMethod() != null) {
+            return thisHub.datau.getLinkToSetMethod();
         }
         if (!bIncludeCopiedHubs) return null;
         
@@ -461,14 +461,14 @@ public class HubLinkDelegate {
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToSetMethod != null) {
+                if (h.datau.getLinkToSetMethod() != null) {
                     return true;
                 }
                 return false;
             }
         }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
-        return hubx.datau.linkToSetMethod;
+        return hubx.datau.getLinkToSetMethod();
     }
 
     /**
@@ -481,8 +481,8 @@ public class HubLinkDelegate {
 	}
     // 20131116 
     public static Method getLinkGetMethod(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkToGetMethod != null) {
-            return thisHub.datau.linkToGetMethod;
+        if (thisHub.datau.getLinkToGetMethod() != null) {
+            return thisHub.datau.getLinkToGetMethod();
         }
         if (!bIncludeCopiedHubs) return null;
         
@@ -491,14 +491,14 @@ public class HubLinkDelegate {
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToGetMethod != null) {
+                if (h.datau.getLinkToGetMethod() != null) {
                     return true;
                 }
                 return false;
             }
         }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
-        return hubx.datau.linkToGetMethod;
+        return hubx.datau.getLinkToGetMethod();
     }
 
 	/**
@@ -512,8 +512,8 @@ public class HubLinkDelegate {
 	}
     // 20131116 
     public static String getLinkHubPath(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.linkToPropertyName != null) {
-            return thisHub.datau.linkToPropertyName;
+        if (thisHub.datau.getLinkToPropertyName() != null) {
+            return thisHub.datau.getLinkToPropertyName();
         }
         if (!bIncludeCopiedHubs) return null;
         
@@ -522,14 +522,14 @@ public class HubLinkDelegate {
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
                 if (h == thisHub) return false;
-                if (h.datau.linkToPropertyName != null) {
+                if (h.datau.getLinkToPropertyName() != null) {
                     return true;
                 }
                 return false;
             }
         }, bIncludeCopiedHubs, true);
         if (hubx == null) return null;
-        return hubx.datau.linkToPropertyName;
+        return hubx.datau.getLinkToPropertyName();
     }
 	
 	
@@ -544,17 +544,17 @@ public class HubLinkDelegate {
 		updateLinkedToHub(fromHub, linkToHub, obj, null);
 	}
 	protected static void updateLinkedToHub(final Hub fromHub, Hub linkToHub, Object obj, String changedPropName) {
-		if (fromHub.datau.bAutoCreate) return;
+		if (fromHub.datau.isAutoCreate()) return;
 
 	    obj = HubLinkDelegate.getPropertyValueInLinkedToHub(fromHub, obj);  // link property value
-	    if (fromHub.datau.linkPos) {
+	    if (fromHub.datau.isLinkPos()) {
 	    	fromHub.setActiveObject(obj);
 	    }
 	    else {
 	        // see if master can be set to null (flag)
 	        // see if this hub is linked to a master (bForce)
 	
-	        if (obj != null && fromHub.datau.linkFromGetMethod == null) {
+	        if (obj != null && fromHub.datau.getLinkFromGetMethod() == null) {
 	            int pos = HubDataDelegate.getPos(fromHub, obj, true, false);  // adjust master, bUpdateLink
 	            if (pos < 0 && HubDelegate.isValid(fromHub)) {
 	            	// add to fromHub
@@ -584,7 +584,7 @@ public class HubLinkDelegate {
 	                // activeObject to null
 	                Hub h = fromHub;
 	                for (; h != null;) {
-	                    if (!h.datau.dupAllowAddRemove && h.getSize() == 1) break;  // detail hub using an object instead of a Hub
+	                    if (!h.datau.isDupAllowAddRemove() && h.getSize() == 1) break;  // detail hub using an object instead of a Hub
 	
 	                    Hub[] hubs = HubShareDelegate.getAllSharedHubs(h);
 	                    int flag = 0;
@@ -592,7 +592,7 @@ public class HubLinkDelegate {
 	                        if (hubs[i] == fromHub) continue;
 	                        if (hubs[i] == fromHub.getLinkHub()) flag = 5; // this hub is linked to hubs[i]
 	
-	                        if ( (hubs[i].getLinkHub() != null) || (hubs[i].datau.vecHubDetail != null && hubs[i].datau.vecHubDetail.size() > 1)) {
+	                        if ( (hubs[i].getLinkHub() != null) || (hubs[i].datau.getVecHubDetail() != null && hubs[i].datau.getVecHubDetail().size() > 1)) {
 	                            if (hubs[i].getMasterHub() == h.getMasterHub()) flag = 1;
 	                            if (hubs[i].datam == h.datam) flag = 5; // || (hubs[i] == h) flag = 5;
 	                        }

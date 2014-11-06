@@ -525,7 +525,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         try {
             if (hub != null) {
                 hd = hub.data;
-                hd.bInFetch = true;
+                hd.setInFetch(true);
                 try {
                     aiClearing.incrementAndGet();
                     // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
@@ -549,7 +549,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     	    }
     	}
     	finally {
-    		if (hd != null) hd.bInFetch = false;
+    		if (hd != null) hd.setInFetch(false);
             if (bServerSideOnly) {
                 OARemoteThreadDelegate.sendMessages(false);
             }

@@ -420,9 +420,9 @@ public class HubEventDelegate {
             propertyChangeUpdateDetailHubs(thisHub, oaObj, propertyName);
 	    }
 
-	    if (thisHub.data.uniqueProperty != null && newValue != null && thisHub.data.uniqueProperty.equalsIgnoreCase(propertyName)) {
+	    if (thisHub.data.getUniqueProperty() != null && newValue != null && thisHub.data.getUniqueProperty().equalsIgnoreCase(propertyName)) {
 	        if (!HubDelegate.verifyUniqueProperty(thisHub, oaObj)) {
-	        	throw new RuntimeException("Property "+thisHub.data.uniqueProperty+" already exists");
+	        	throw new RuntimeException("Property "+thisHub.data.getUniqueProperty()+" already exists");
 	        }
 	    }
 	
@@ -468,9 +468,9 @@ public class HubEventDelegate {
 	    int i,x;
 	
 	    if (object == thisHub.dataa.activeObject) {
-	        x = thisHub.datau.vecHubDetail == null ? 0 : thisHub.datau.vecHubDetail.size();
+	        x = thisHub.datau.getVecHubDetail() == null ? 0 : thisHub.datau.getVecHubDetail().size();
 	        for (i=0; i<x; i++) {
-	            HubDetail detail = (HubDetail)(thisHub.datau.vecHubDetail.elementAt(i));
+	            HubDetail detail = (HubDetail)(thisHub.datau.getVecHubDetail().elementAt(i));
 	
 	            Hub dHub = detail.masterHub;
 	            if (dHub != null && detail.liMasterToDetail != null && detail.liMasterToDetail.getName().equalsIgnoreCase(propertyName)) {
@@ -502,7 +502,7 @@ public class HubEventDelegate {
 		    HubEvent hubEvent = new HubEvent(thisHub,null);
 	        for (int i=0; i<x; i++) hl[i].onNewList(hubEvent);
 	    }
-	    thisHub.data.newListCount++;
+	    thisHub.data.setNewListCount(thisHub.data.getNewListCount()+1);
 	}
 
 	public static void fireAfterFetchMoreEvent(Hub thisHub) {
@@ -516,14 +516,14 @@ public class HubEventDelegate {
 
 	private static HubListenerTree getHubListenerTree(Hub thisHub) {
 	    if (thisHub == null) return null;
-	    if (thisHub.datau.listenerTree == null) {
+	    if (thisHub.datau.getListenerTree() == null) {
             synchronized (thisHub.datau) {
-                if (thisHub.datau.listenerTree == null) {
-                    thisHub.datau.listenerTree = new HubListenerTree(thisHub);
+                if (thisHub.datau.getListenerTree() == null) {
+                    thisHub.datau.setListenerTree(new HubListenerTree(thisHub));
                 }
             }
         }
-	    return thisHub.datau.listenerTree;
+	    return thisHub.datau.getListenerTree();
 	}
 	
     /**
@@ -564,8 +564,8 @@ public class HubEventDelegate {
 	    @see #addListener
 	*/
 	protected static void removeHubListener(Hub thisHub, HubListener l) {
-	    if (thisHub.datau.listenerTree == null) return;
-	    thisHub.datau.listenerTree.removeListener(thisHub, l);
+	    if (thisHub.datau.getListenerTree() == null) return;
+	    thisHub.datau.getListenerTree().removeListener(thisHub, l);
 	}
 	
 	/**
@@ -573,8 +573,8 @@ public class HubEventDelegate {
 	    @see #addListener
 	*/
 	protected static HubListener[] getHubListeners(Hub thisHub) {
-	    if (thisHub.datau.listenerTree == null) return new HubListener[0];
-	    HubListener[] hl = thisHub.datau.listenerTree.getHubListeners();
+	    if (thisHub.datau.getListenerTree() == null) return new HubListener[0];
+	    HubListener[] hl = thisHub.datau.getListenerTree().getHubListeners();
 	    return hl;
 	}
 
@@ -605,7 +605,7 @@ public class HubEventDelegate {
 	
 	    // go to beginning of shared hub chain
 	    if (type < 2 && type != 3) {
-	        for ( ; h.datau.sharedHub != null ; ) h = h.datau.sharedHub;
+	        for ( ; h.datau.getSharedHub() != null ; ) h = h.datau.getSharedHub();
 	    }
 	    if (type == 3) type = 1;
 	    ArrayList al = new ArrayList(10);

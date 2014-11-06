@@ -33,194 +33,297 @@ class HubDataUnique implements java.io.Serializable {
 	/** Class of objects in this Hub */
 	protected Class objClass;
 	
-	/** true if this is for a OAObject */
-	protected boolean oaObjectFlag;
-	
-	/** these options are not enforced on OAObjects, they are used to flag options */
-//	boolean allowNew = true, allowDelete = true, allowEdit = true;
-	
-	/**
-	    flag set to know if objects can be added or removed.  This is false when a detail hub
-	    is from an array or non-Hub.  Defalut is true.
-	*/
-	boolean dupAllowAddRemove = true;
-	
-
-	/**
-	    Single finder object used by last call to findX methods that did not use a HubFinder object.
-	    <p>
-	    Note: not using a HubFinder with the Hub.findX methods is not thread safe, since there is only one
-	    hubFinder stored with a Hub.
-	*/
-	transient OAFinder finder;
-	transient int finderPos;
-	
-	/** OAObjectInfo for the Class of objects in this Hub. */
-	transient OAObjectInfo objectInfo;  //
-	
-	/** Misc name/values pairs stored in this Hub.  Name is case insensitive. */
-	protected Hashtable hashProperty;
+	private HubDataUniquex hubDataUniquex;  // extended settings
 	
 	/** property path(s) used for selectOrder */
 	protected String selectOrder;
+
 	
-	/** used to update property in objects to match its position within Hub */
-	protected transient HubAutoSequence autoSequence;
-	
-	/** makes sure that this Hub will have an object with a reference for each object in another Hub. */
-	protected transient HubAutoMatch autoMatch;
-	
-	/**
-	    Position of active object to set for new list. Can be set to 0 so that first object
-	    is always made the active object whenever a new list is created.  Default is -1 (set to null).
-	    <p>
-	    This can be set for Detail Hubs, so that the first object is active whenever a new list
-	    is create - which is when the master Hub changes its active object.
-	*/
-	protected transient int defaultPos = -1;
-	
-	/** Set ActiveObject to null when active object is removed.
-	    Default is false which will go to next object, unless last object in Hub
-	    is being removed, which will set it to previous object.
-	*/
-	protected transient boolean bNullOnRemove;
-	
-	/**
-	    Hub Listeners that receives all Hub and OAObject events.
-	    @see HubListener
-	    @see HubEvent
-	*/
-	// protected transient Vector vecListener;
-	
-	// 20101218 replaces vetListener
-	protected transient HubListenerTree listenerTree;
-	
+    public boolean isOAObjectFlag() {
+        if (hubDataUniquex != null) {
+            if (hubDataUniquex.oaObjectFlag) return true;
+            boolean b = OAObject.class.isAssignableFrom(objClass);
+            hubDataUniquex.oaObjectFlag = b;
+            return b;
+        }
+        return OAObject.class.isAssignableFrom(objClass);
+    }
+    public void setOAObjectFlag(boolean oaObjectFlag) {
+        if (hubDataUniquex != null) hubDataUniquex.oaObjectFlag = oaObjectFlag; 
+    }
+
+static int qq;    
+    private HubDataUniquex getHubDataUniquex() {
+        if (hubDataUniquex == null) {
+            synchronized (this) {
+                if (hubDataUniquex == null) {
+//qqqqqqqqqqqqqq                    
+System.out.println((++qq)+") HubDataUniquex created");                    
+                    this.hubDataUniquex = new HubDataUniquex();
+                }
+            }
+        }
+        return hubDataUniquex;
+    }
     
-	
-	/**
-	    Detail Hubs that this Hub has.
-	    @see Hub#getDetail
-	*/
-	protected transient Vector<HubDetail> vecHubDetail;
-	
-	/** flag set while updating active object */
-	protected transient boolean bUpdatingActiveObject;
-	
-	/**
-	    List of listeners for calculated properties.
-	    The hub will automatically listen for changes to any property that a calculated property
-	    is dependent on.
-	    @see Hub#addListener(HubListener,String)
-	*/
-// 20101218 replaced by HubListenerTree	
-//	transient Vector<HubCalcEventListener> calcEventListeners;
-	
-	
-	/**
-	    "Master" Hub that this Hub is linked to.
-	    <p>
-	    A hub can only be linked to a property in only one "master" hub.
-	    It's active object will then reflect the value of this property in the "master"
-	    hub's active object.  If the active object of the link hub changes, then the
-	    property in the "master" hub will be set to the new object.
-	    @see hub#setLink
-	 */
-	transient Hub linkToHub;
-	
-	
-	/**
-	    This can be used to set a property in the Link Hub to the value
-	    of the position of the active object in this Hub.
-	    <p>
-	    Example: an object can have a property that is set to 0-9.  Another
-	    Hub can be created with ten objects, and linked to this property.
-	    Instead of setting the property to the object, it is set to the position
-	    of the object.
-	*/
-	transient boolean linkPos;
-	
-	/**
-	    Property that this Hub is linked to.
-	*/
-	transient String linkToPropertyName;  // ex: hubDept linked to Emp on property  "dept"
-	
-	/** Method used to get value of link to object. */
-	transient Method linkToGetMethod;     //     getDept()
-	
-	/** Method used to set value of link to object. */
-	transient Method linkToSetMethod;     //     setDept()
-	
-	
-	/**
-	    Links can also be set up so that a property in the link Hub is used to update
-	    a property in the linkedTo/Master Hub.
-	    <p>
-	    LinkPropertyName is the name of the property that is used in the Linked Hub.
-	    <p>
-	    Example:
-	    A Hub that has objects of type "State" can be linked to another Hub, so that the State.name
-	    is linked to a property in the Master Hub.  The linkFromPropertyName is "name".
-	
-	*/
-	transient String linkFromPropertyName;
-	
-	/**
-	    Method that gets value from linkFromPropertyName.
-	*/
-	transient Method linkFromGetMethod;
-	
-	/**
-	    Used to automatically create a new object in the Master Hub whenever
-	    the active object in Link Hub is changed.  The new object will then
-	    have its link property set.
-	*/
-	transient boolean bAutoCreate;
+    public boolean isDupAllowAddRemove() {
+        if (hubDataUniquex == null) return true; // default
+        return hubDataUniquex.dupAllowAddRemove;
+    }
+    public void setDupAllowAddRemove(boolean dupAllowAddRemove) {
+        if (hubDataUniquex != null || !dupAllowAddRemove) {
+            getHubDataUniquex().dupAllowAddRemove = dupAllowAddRemove;
+        }
+    }
+    
+    
+    public OAFinder getFinder() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.finder;
+    }
+    public void setFinder(OAFinder finder) {
+        if (hubDataUniquex != null || finder != null) {
+            getHubDataUniquex().finder = finder;
+        }
+    }
+    
+    public int getFinderPos() {
+        if (hubDataUniquex == null) return 0;
+        return hubDataUniquex.finderPos;
+    }
+    public void setFinderPos(int finderPos) {
+        if (hubDataUniquex != null || finderPos != 0) {
+            getHubDataUniquex().finderPos = finderPos;
+        }
+    }
 
-    /**
-     * If true and bAutoCreate, then new objects will be created.
-     * If false and a new object with value already exists, then a new object will not be created
-     *    and the current object will be set to AO
-    */
-    transient boolean bAutoCreateAllowDups;
-	
-	
-	/**
-	    Hub Listener used to update active object when the active object in
-	    the Master Hub changes, or when the link property in the Master Hub is changed.
-	*/
-	transient HubLinkEventListener hubLinkEventListener;
-	
-	/**
-	    Hub that this Hub is a sharing with.
-	    Hubs can be set up so that they use (share) the same data.  The active object is
-	    not shared, unless specified otherwise.
-	    <p>
-	    Detail Hubs that are using properties that are Hubs will use a shared Hub that is
-	    changed whenever the active object in the Master Hub is changed.
-	
-	    @see Hub#createSharedHub
-	    @see Hub#getDetail
-	*/
-	transient Hub sharedHub;
-	
-	
-	/**
-	    List of Hubs that are sharing the same objects as this Hub.  Each of these Hubs will
-	    have the same HubData object.  If the active object is also being shared, then
-	    the HubDataActive object will also be the same.
-	*/
-//	transient Vector vecSharedHub;
+    public Hashtable getHashProperty() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.hashProperty;
+    }
+    public void setHashProperty(Hashtable hashProperty) {
+        if (hubDataUniquex != null || hashProperty != null) {
+            getHubDataUniquex().hashProperty = hashProperty;
+        }
+    }
+    
+    public OAObjectInfo getObjectInfo() {
+        OAObjectInfo oi;
+        if (hubDataUniquex != null) {
+            oi = hubDataUniquex.objectInfo;
+            if (oi != null) return oi;
+        }
+        oi = OAObjectInfoDelegate.getObjectInfo(objClass);
+        if (hubDataUniquex != null) hubDataUniquex.objectInfo = oi; 
+        return oi;
+    }
+    public void setObjectInfo(OAObjectInfo objectInfo) {
+        if (hubDataUniquex != null) hubDataUniquex.objectInfo = objectInfo; 
+    }
+    public String getSelectOrder() {
+        return selectOrder;
+    }
+    public void setSelectOrder(String selectOrder) {
+        this.selectOrder = selectOrder;
+    }
+    
+    public HubAutoSequence getAutoSequence() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.autoSequence;
+    }
+    public void setAutoSequence(HubAutoSequence autoSequence) {
+        if (hubDataUniquex != null || autoSequence != null) {
+            getHubDataUniquex().autoSequence = autoSequence;
+        }
+    }
+    
+    public HubAutoMatch getAutoMatch() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.autoMatch;
+    }
+    public void setAutoMatch(HubAutoMatch autoMatch) {
+        if (hubDataUniquex != null || autoMatch != null) {
+            getHubDataUniquex().autoMatch = autoMatch;
+        }
+    }
 
-	// 20120715 replaces vecSharedHubs
-	transient WeakReference<Hub>[] weakSharedHubs;	
-	
-	
-	/**
-	    Hub used to add active object to whenever active object is changed in this Hub.
-	    This can be used for building a pick list type program, where a user can select
-	    objects that are then added to a list.
-	*/
-	protected transient Hub addHub;
-	
+    public int getDefaultPos() {
+        if (hubDataUniquex == null) return -1;
+        return hubDataUniquex.defaultPos;
+    }
+    public void setDefaultPos(int defaultPos) {
+        if (hubDataUniquex != null || defaultPos != -1) {
+            getHubDataUniquex().defaultPos = defaultPos;
+        }
+    }
+
+    public boolean isNullOnRemove() {
+        if (hubDataUniquex == null) return false;
+        return hubDataUniquex.bNullOnRemove;
+    }
+    public void setNullOnRemove(boolean bNullOnRemove) {
+        if (hubDataUniquex != null || bNullOnRemove) {
+            getHubDataUniquex().bNullOnRemove = bNullOnRemove;
+        }
+    }
+
+    public HubListenerTree getListenerTree() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.listenerTree;
+    }
+    public void setListenerTree(HubListenerTree listenerTree) {
+        if (hubDataUniquex != null || listenerTree != null) {
+            getHubDataUniquex().listenerTree = listenerTree;
+        }
+    }
+
+    public Vector<HubDetail> getVecHubDetail() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.vecHubDetail;
+    }
+    public void setVecHubDetail(Vector<HubDetail> vecHubDetail) {
+        if (hubDataUniquex != null || vecHubDetail != null) {
+            getHubDataUniquex().vecHubDetail = vecHubDetail;
+        }
+    }
+
+    public boolean isUpdatingActiveObject() {
+        if (hubDataUniquex == null) return false;
+        return hubDataUniquex.bUpdatingActiveObject;
+    }
+    public void setUpdatingActiveObject(boolean bUpdatingActiveObject) {
+        if (hubDataUniquex != null || bUpdatingActiveObject) {
+            getHubDataUniquex().bUpdatingActiveObject = bUpdatingActiveObject;
+        }
+    }
+
+    public Hub getLinkToHub() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.linkToHub;
+    }
+    public void setLinkToHub(Hub linkToHub) {
+        if (hubDataUniquex != null || linkToHub != null) {
+            getHubDataUniquex().linkToHub = linkToHub;
+        }
+    }
+
+    public boolean isLinkPos() {
+        if (hubDataUniquex == null) return false;
+        return hubDataUniquex.linkPos;
+    }
+    public void setLinkPos(boolean linkPos) {
+        if (hubDataUniquex != null || linkPos) {
+            getHubDataUniquex().linkPos = linkPos;
+        }
+    }
+    
+    public String getLinkToPropertyName() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.linkToPropertyName;
+    }
+    public void setLinkToPropertyName(String linkToPropertyName) {
+        if (hubDataUniquex != null || linkToPropertyName != null) {
+            getHubDataUniquex().linkToPropertyName = linkToPropertyName;
+        }
+    }
+
+    public Method getLinkToGetMethod() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.linkToGetMethod;
+    }
+    public void setLinkToGetMethod(Method linkToGetMethod) {
+        if (hubDataUniquex != null || linkToGetMethod != null) {
+            getHubDataUniquex().linkToGetMethod = linkToGetMethod;
+        }
+    }
+
+    public Method getLinkToSetMethod() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.linkToSetMethod;
+    }
+    public void setLinkToSetMethod(Method linkToSetMethod) {
+        if (hubDataUniquex != null || linkToSetMethod != null) {
+            getHubDataUniquex().linkToSetMethod = linkToSetMethod;
+        }
+    }
+
+    public String getLinkFromPropertyName() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.linkFromPropertyName;
+    }
+    public void setLinkFromPropertyName(String linkFromPropertyName) {
+        if (hubDataUniquex != null || linkFromPropertyName != null) {
+            getHubDataUniquex().linkFromPropertyName = linkFromPropertyName;
+        }
+    }
+
+    public Method getLinkFromGetMethod() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.linkFromGetMethod;
+    }
+    public void setLinkFromGetMethod(Method linkFromGetMethod) {
+        if (hubDataUniquex != null || linkFromGetMethod != null) {
+            getHubDataUniquex().linkFromGetMethod = linkFromGetMethod;
+        }
+    }
+
+    public boolean isAutoCreate() {
+        if (hubDataUniquex == null) return false;
+        return hubDataUniquex.bAutoCreate;
+    }
+    public void setAutoCreate(boolean bAutoCreate) {
+        if (hubDataUniquex != null || bAutoCreate) {
+            getHubDataUniquex().bAutoCreate = bAutoCreate;
+        }
+    }
+
+    public boolean isAutoCreateAllowDups() {
+        if (hubDataUniquex == null) return false;
+        return hubDataUniquex.bAutoCreateAllowDups;
+    }
+    public void setAutoCreateAllowDups(boolean bAutoCreateAllowDups) {
+        if (hubDataUniquex != null || bAutoCreateAllowDups) {
+            getHubDataUniquex().bAutoCreateAllowDups = bAutoCreateAllowDups;
+        }
+    }
+
+    public HubLinkEventListener getHubLinkEventListener() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.hubLinkEventListener;
+    }
+    public void setHubLinkEventListener(HubLinkEventListener hubLinkEventListener) {
+        if (hubDataUniquex != null || hubLinkEventListener != null) {
+            getHubDataUniquex().hubLinkEventListener = hubLinkEventListener;
+        }
+    }
+
+    public Hub getSharedHub() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.sharedHub;
+    }
+    public void setSharedHub(Hub sharedHub) {
+        if (hubDataUniquex != null || sharedHub != null) {
+            getHubDataUniquex().sharedHub = sharedHub;
+        }
+    }
+    public WeakReference<Hub>[] getWeakSharedHubs() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.weakSharedHubs;
+    }
+    public void setWeakSharedHubs(WeakReference<Hub>[] weakSharedHubs) {
+        if (hubDataUniquex != null || (weakSharedHubs != null && weakSharedHubs.length > 0)) {
+            getHubDataUniquex().weakSharedHubs = weakSharedHubs;
+        }
+    }
+
+    public Hub getAddHub() {
+        if (hubDataUniquex == null) return null;
+        return hubDataUniquex.addHub;
+    }
+    public void setAddHub(Hub addHub) {
+        if (hubDataUniquex != null || addHub != null) {
+            getHubDataUniquex().addHub = addHub;
+        }
+    }
 	
 }

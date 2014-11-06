@@ -43,7 +43,7 @@ public class HubDetailDelegate {
         @param path is the property path from masterHub to get to this hub
      */
     public static void setMasterHub(Hub thisHub, Hub masterHub, String path, boolean bShared, String selectOrder) {
-        if (thisHub.datau.sharedHub != null) {
+        if (thisHub.datau.getSharedHub() != null) {
             if (masterHub == null) {
                 throw new RuntimeException("sharedHub cant have a master hub");
             }
@@ -100,7 +100,7 @@ public class HubDetailDelegate {
             // 20121010 if obj==null then dont adjust:  ex: hi5  employeeAward.awardType that was from program.awardTypes, and now the list is in location.awardTpes
             if (obj != null && dm.masterHub.getActiveObject() != obj && !(obj instanceof Hub)) { 
             //was: if (dm.masterHub.getActiveObject() != obj) {
-                if (dm.masterHub.datau.bUpdatingActiveObject) return false;
+                if (dm.masterHub.datau.isUpdatingActiveObject()) return false;
                 // see if masterHub (or a share of it) has a link
                 //  if it does, then dont allow it to adjustMaster
                 HubAODelegate.setActiveObject(dm.masterHub, obj, true, bUpdateLink, false); // adjustMaster, updateLink, force
@@ -130,7 +130,7 @@ public class HubDetailDelegate {
         if (dm.liDetailToMaster == null) return;
 
         // 20090705
-        if (thisHub.data.bInFetch) return;
+        if (thisHub.data.isInFetch()) return;
         
         
         // 20120920 if thisHub is a detailHub of type=One, then need to update the masterObj.linkProp
@@ -158,7 +158,7 @@ public class HubDetailDelegate {
         
         if (Hub.class.isAssignableFrom(method.getReturnType())) {
             if (detailObject instanceof OAObjectKey) return;
-            if (thisHub.data.bInFetch) return;  // otherwise, a recursive loop could happen
+            if (thisHub.data.isInFetch()) return;  // otherwise, a recursive loop could happen
             
             // 20140616 if hub is not loaded and isClient, then dont need to load
             if (!OASyncDelegate.isServer()) {
@@ -219,13 +219,13 @@ public class HubDetailDelegate {
         Called by setActiveObject to automatically adjust Detail Hubs.
     */
     protected static void updateAllDetail(Hub thisHub, boolean bUpdateLink) {
-        int x = thisHub.datau.vecHubDetail == null ? 0 : thisHub.datau.vecHubDetail.size();
+        int x = thisHub.datau.getVecHubDetail() == null ? 0 : thisHub.datau.getVecHubDetail().size();
         // get objects that go with detail hub
         for (int i=0; i<x; i++) {
-            HubDetail hd = (HubDetail) thisHub.datau.vecHubDetail.elementAt(i);
+            HubDetail hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
             Hub h = hd.masterHub;
             if (h == null) {
-                thisHub.datau.vecHubDetail.removeElementAt(i);
+                thisHub.datau.getVecHubDetail().removeElementAt(i);
                 x--;
                 i--;
             }
@@ -262,7 +262,7 @@ public class HubDetailDelegate {
         // if ( dHub.isOAObject() ) {
             // dont call setMasterObject(), it will add hub to OAObject
             // 2004/05/14 if this hub was previously shared, it could be sharing datam
-            if (dHub.datau.sharedHub != null && dHub.datau.sharedHub.datam == dHub.datam) dHub.datam = new HubDataMaster();
+            if (dHub.datau.getSharedHub() != null && dHub.datau.getSharedHub().datam == dHub.datam) dHub.datam = new HubDataMaster();
             dHub.datam.masterObject = (OAObject)thisHub.dataa.activeObject;
             dHub.datam.liDetailToMaster = OAObjectInfoDelegate.getReverseLinkInfo(detail.liMasterToDetail);
             dHub.datam.masterHub = thisHub;
@@ -270,9 +270,9 @@ public class HubDetailDelegate {
     
         boolean wasShared = false;
         if (detail.type == HubDetail.HUB) {
-            if (dHub.datau.sharedHub != null) {
-                HubShareDelegate.removeSharedHub(dHub.datau.sharedHub, dHub);
-                dHub.datau.sharedHub = null;
+            if (dHub.datau.getSharedHub() != null) {
+                HubShareDelegate.removeSharedHub(dHub.datau.getSharedHub(), dHub);
+                dHub.datau.setSharedHub(null);
                 wasShared = true;
             }
         }
@@ -296,7 +296,7 @@ public class HubDetailDelegate {
             dHub.data.vector.removeAllElements();
         }
 
-        dHub.datau.dupAllowAddRemove = true;
+        dHub.datau.setDupAllowAddRemove(true);
     
         if (obj == null) {
             HubDataActive daOld = dHub.dataa;
@@ -306,7 +306,7 @@ public class HubDetailDelegate {
                 dHub.data = new HubData();
                 if (detail.bShareActiveObject) dHub.dataa = new HubDataActive();
             }
-            dHub.datau.dupAllowAddRemove = false; // 2004/08/23
+            dHub.datau.setDupAllowAddRemove(false); // 2004/08/23
             //was: if (detail.type != HubDetail.HUB) dHub.datau.dupAllowAddRemove = false;
             HubShareDelegate.syncSharedHubs(dHub, true, daOld, dHub.dataa, bUpdateLink);
         }
@@ -321,12 +321,12 @@ public class HubDetailDelegate {
             // need to select before assigning to detail hub so that add events wont
             //            be sent to detail hubs listeners
             dHub.data = h.data;
-            dHub.datau.sharedHub = h;
+            dHub.datau.setSharedHub(h);
             HubShareDelegate.addSharedHub(h, dHub);
 
             // 20120926 "h" could be a shared/calc Hub 
             if (dHub.datam.masterObject != (OAObject) h.datam.masterObject) {
-                if (dHub.datau.sharedHub != null && dHub.datau.sharedHub.datam == dHub.datam) dHub.datam = new HubDataMaster();
+                if (dHub.datau.getSharedHub() != null && dHub.datau.getSharedHub().datam == dHub.datam) dHub.datam = new HubDataMaster();
                 dHub.datam.masterObject = (OAObject) h.datam.masterObject;
                 dHub.datam.liDetailToMaster = h.datam.liDetailToMaster;
                 dHub.datam.masterHub = h.datam.masterHub;
@@ -342,7 +342,7 @@ public class HubDetailDelegate {
         }
         else if (detail.type == HubDetail.OAOBJECT || detail.type == HubDetail.OBJECT) {
             HubAddRemoveDelegate.internalAdd(dHub, (OAObject) obj);
-            dHub.datau.dupAllowAddRemove = false;
+            dHub.datau.setDupAllowAddRemove(false);
         }
         else {
             // HubDetail.OBJECTARRAY || HubDetail.OAOBJECTARRAY
@@ -351,7 +351,7 @@ public class HubDetailDelegate {
                 Object objx = Array.get(obj,k);
                 HubAddRemoveDelegate.internalAdd(dHub, objx);
             }
-            dHub.datau.dupAllowAddRemove = false;
+            dHub.datau.setDupAllowAddRemove(false);
         }
     
         /** 20111005 internalAdd will .addHub
@@ -380,11 +380,11 @@ public class HubDetailDelegate {
     protected static void updateDetailActiveObject(Hub thisHub, Hub hubDetailHub, boolean bUpdateLink, boolean bShareActiveObject) {
         boolean bUseCurrent = (bShareActiveObject && thisHub.dataa == hubDetailHub.dataa);  // if hubs are sharing active object then dont change it.
         if (!bUseCurrent || (thisHub == hubDetailHub)) {
-            if (thisHub.datau.linkToHub == null) {
+            if (thisHub.datau.getLinkToHub() == null) {
                 // if there is not a linkHub, then go to default object
                 int pos;
                 if (bUseCurrent) pos = thisHub.getPos();
-                else pos = thisHub.datau.defaultPos;  // default is -1
+                else pos = thisHub.datau.getDefaultPos();  // default is -1
                 HubAODelegate.setActiveObject(thisHub, pos, bUpdateLink, true, false);  // bForce=true,bCalledByShareHub=false
             }
             else if (bUpdateLink) {
@@ -397,18 +397,18 @@ public class HubDetailDelegate {
                 // if linkHub & !bUpdateLink, then retreive value from linked property
                 // and make that the activeObject in this Hub
                 try {
-                    Object obj = thisHub.datau.linkToHub.getActiveObject();
-                    if (obj != null) obj = thisHub.datau.linkToGetMethod.invoke(obj, null );
-                    if (thisHub.datau.linkPos) {
+                    Object obj = thisHub.datau.getLinkToHub().getActiveObject();
+                    if (obj != null) obj = thisHub.datau.getLinkToGetMethod().invoke(obj, null );
+                    if (thisHub.datau.isLinkPos()) {
                         int x = -1;
                         if (obj != null && obj instanceof Number) x = ((Number)obj).intValue();
                         if (thisHub.getPos() != x) {
                             HubAODelegate.setActiveObject(thisHub, thisHub.elementAt(x),x,bUpdateLink,false,false);//bUpdateLink,bForce,bCalledByShareHub
                         }
                     }
-                    else if (thisHub.datau.linkFromPropertyName != null ) { // 20110116 ex: Breed.name linked to Pet.breed (string)
+                    else if (thisHub.datau.getLinkFromPropertyName() != null ) { // 20110116 ex: Breed.name linked to Pet.breed (string)
                         Object objx;
-                        if (obj != null) objx = thisHub.find(thisHub.datau.linkFromPropertyName, obj);
+                        if (obj != null) objx = thisHub.find(thisHub.datau.getLinkFromPropertyName(), obj);
                         else objx = null;
                         HubAODelegate.setActiveObject(thisHub,objx,bUpdateLink,false,false);
                     }
@@ -419,7 +419,7 @@ public class HubDetailDelegate {
                     }
                 }
                 catch (Exception e) {
-                    throw new RuntimeException(thisHub.datau.linkToGetMethod.getName(), e); // wrap orig exception
+                    throw new RuntimeException(thisHub.datau.getLinkToGetMethod().getName(), e); // wrap orig exception
                 }
             }
         }
@@ -626,9 +626,9 @@ public class HubDetailDelegate {
             // see if HubDetail is already created
             if (detailHub == null) {
                 HubDetail hd = null;
-                int x = thisHub.datau.vecHubDetail == null ? 0 : thisHub.datau.vecHubDetail.size();
+                int x = thisHub.datau.getVecHubDetail() == null ? 0 : thisHub.datau.getVecHubDetail().size();
                 for (int i=0; i<x; i++) {
-                    hd = (HubDetail) thisHub.datau.vecHubDetail.elementAt(i);
+                    hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
                     if (hd.type == hd.HUBMERGER && path.equalsIgnoreCase(hd.path) ) {
                         hd.referenceCount++;
                         return hd.masterHub;
@@ -645,8 +645,8 @@ public class HubDetailDelegate {
             // 2005/02/23 create HubDetail
             HubDetail hd = new HubDetail(path, detailHub);
             hd.referenceCount = 1;
-            if (thisHub.datau.vecHubDetail == null) thisHub.datau.vecHubDetail = new Vector<HubDetail>(3,5);
-            thisHub.datau.vecHubDetail.addElement(hd);
+            if (thisHub.datau.getVecHubDetail() == null) thisHub.datau.setVecHubDetail(new Vector<HubDetail>(3,5));
+            thisHub.datau.getVecHubDetail().addElement(hd);
     
             return detailHub;
         }
@@ -662,12 +662,12 @@ public class HubDetailDelegate {
         else if (classes != null && classes.length > 0) newClass = classes[0];
     
         // get LinkInfo
-        OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(thisHub.datau.objectInfo, propertyName);
+        OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(thisHub.datau.getObjectInfo(), propertyName);
     
         // find method
         if (linkInfo == null) throw new RuntimeException("cant find linkInfo");
     
-        Method method  = OAObjectInfoDelegate.getMethod(thisHub.datau.objectInfo, "get"+linkInfo.getName(), 0);
+        Method method  = OAObjectInfoDelegate.getMethod(thisHub.datau.getObjectInfo(), "get"+linkInfo.getName(), 0);
         if (method == null) {
             throw new RuntimeException("cant find method get"+linkInfo.getName());
         }
@@ -710,9 +710,9 @@ public class HubDetailDelegate {
         //  see if HubDetail is already created
         Hub hub = null;
         HubDetail hd = null;
-        int x = thisHub.datau.vecHubDetail == null ? 0 : thisHub.datau.vecHubDetail.size();
+        int x = thisHub.datau.getVecHubDetail() == null ? 0 : thisHub.datau.getVecHubDetail().size();
         for (int i=0; i<x; i++) {
-            hd = (HubDetail) thisHub.datau.vecHubDetail.elementAt(i);
+            hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
             if (hd.liMasterToDetail != null && hd.liMasterToDetail.equals(linkInfo) && hd.masterHub != null) {
                 if (detailHub == null || detailHub == hd.masterHub) {
                     hub = hd.masterHub;
@@ -733,8 +733,8 @@ public class HubDetailDelegate {
             else {
                 hd = new HubDetail(null,linkInfo,type,propertyName); // from call to "setMaster()"
             }
-            if (thisHub.datau.vecHubDetail == null) thisHub.datau.vecHubDetail = new Vector(3,5);
-            thisHub.datau.vecHubDetail.addElement(hd);
+            if (thisHub.datau.getVecHubDetail() == null) thisHub.datau.setVecHubDetail(new Vector(3,5));
+            thisHub.datau.getVecHubDetail().addElement(hd);
         }
         else bFound = true;
     
@@ -762,7 +762,7 @@ public class HubDetailDelegate {
             path = path.substring(pos+1);
         }
         hub.datam.masterHub = thisHub;
-        if (type == HubDetail.OAOBJECT || type == HubDetail.OBJECT) hub.datau.defaultPos = 0;
+        if (type == HubDetail.OAOBJECT || type == HubDetail.OBJECT) hub.datau.setDefaultPos(0);
     
         if (!bFound) {
             updateDetail(thisHub, hd, hd.masterHub, false);
@@ -851,15 +851,15 @@ public class HubDetailDelegate {
             return false;
         }
     
-        int x = thisHub.datau.vecHubDetail == null ? 0 : thisHub.datau.vecHubDetail.size();
+        int x = thisHub.datau.getVecHubDetail() == null ? 0 : thisHub.datau.getVecHubDetail().size();
         for (int i=0; i<x; i++) {
-            HubDetail hd = (HubDetail) thisHub.datau.vecHubDetail.elementAt(i);
+            HubDetail hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
             Hub h = hd.masterHub;
             if (h == hubDetail) {
                 hd.referenceCount--;
                 if (hd.referenceCount <=0) {
-                    if (h.datau.vecHubDetail == null || h.datau.vecHubDetail.size() == 0) {
-                        thisHub.datau.vecHubDetail.removeElementAt(i);
+                    if (h.datau.getVecHubDetail() == null || h.datau.getVecHubDetail().size() == 0) {
+                        thisHub.datau.getVecHubDetail().removeElementAt(i);
                         hubDetail.data = new HubData();
                         hubDetail.datam = new HubDataMaster();
                         hubDetail.dataa = new HubDataActive();
@@ -873,7 +873,7 @@ public class HubDetailDelegate {
             if (h != null) {
                 boolean b = removeDetailHub(h, hubDetail);
                 if (b && hd.referenceCount <= 0) {
-                    if (h.datau.vecHubDetail != null || h.datau.vecHubDetail.size() == 0) {
+                    if (h.datau.getVecHubDetail() != null || h.datau.getVecHubDetail().size() == 0) {
                         removeDetailHub(thisHub, h);
                         return true;
                     }
@@ -912,9 +912,9 @@ public class HubDetailDelegate {
         // see if it can be found using detailHub info
         Hub hubMaster = thisHub.datam.masterHub;
         if (hubMaster != null) {
-            int x = hubMaster.datau.vecHubDetail == null ? 0 : hubMaster.datau.vecHubDetail.size();
+            int x = hubMaster.datau.getVecHubDetail() == null ? 0 : hubMaster.datau.getVecHubDetail().size();
             for (int i=0; i<x; i++) {
-                HubDetail hd = (HubDetail) hubMaster.datau.vecHubDetail.elementAt(i);
+                HubDetail hd = (HubDetail) hubMaster.datau.getVecHubDetail().elementAt(i);
                 if (hd.masterHub == thisHub) {
                     OALinkInfo li = hd.liMasterToDetail;
                     if (li != null) {
@@ -989,7 +989,7 @@ public class HubDetailDelegate {
 
     public static boolean hasDetailHubs(Hub thisHub) {
         if (thisHub == null || thisHub.datau == null) return false;
-        return thisHub.datau.vecHubDetail != null && thisHub.datau.vecHubDetail.size() > 0;
+        return thisHub.datau.getVecHubDetail() != null && thisHub.datau.getVecHubDetail().size() > 0;
     }
     
 /** 20111008 finish if/when needed  

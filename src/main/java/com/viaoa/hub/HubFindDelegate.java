@@ -55,15 +55,15 @@ public class HubFindDelegate {
             if (obj == null) break;
             ArrayList al = find.find((OAObject) obj);
             if (al.size() > 0) {
-                thisHub.datau.finderPos = i;
+                thisHub.datau.setFinderPos(i);
                 foundObj = obj;
                 break;
             }
         }
-        if (foundObj != null) thisHub.datau.finder = find;
-        else thisHub.datau.finderPos = -1;
+        if (foundObj != null) thisHub.datau.setFinder(find);
+        else thisHub.datau.setFinderPos(-1);
         
-        if (bSetAO) thisHub.setPos(thisHub.datau.finderPos);
+        if (bSetAO) thisHub.setPos(thisHub.datau.getFinderPos());
         return foundObj;
 	}
 	
@@ -72,28 +72,28 @@ public class HubFindDelegate {
 	    Starts with the next object after last find from findFirst or findNext.
 	*/
 	public static Object findNext(Hub thisHub, boolean bSetAO) {
-		OAFinder find = thisHub.datau.finder;
+		OAFinder find = thisHub.datau.getFinder();
 		if (find == null) {
 	        if (bSetAO) thisHub.setPos(-1);
 	        return null;
 		}
 
         Object foundObj = null;
-        for (int i=thisHub.datau.finderPos+1; ;i++) {
+        for (int i=thisHub.datau.getFinderPos()+1; ;i++) {
             Object obj = thisHub.getAt(i);
             if (obj == null) break;
             ArrayList al = find.find((OAObject) obj);
             if (al.size() > 0) {
-                thisHub.datau.finderPos = i;
+                thisHub.datau.setFinderPos(i);
                 foundObj = obj;
                 break;
             }
         }
         if (foundObj == null) {
-            thisHub.datau.finderPos = -1;
-            thisHub.datau.finder = null;
+            thisHub.datau.setFinderPos(-1);
+            thisHub.datau.setFinder(null);
         }
-        if (bSetAO) thisHub.setPos(thisHub.datau.finderPos);
+        if (bSetAO) thisHub.setPos(thisHub.datau.getFinderPos());
 	    return foundObj;
 	}
 }

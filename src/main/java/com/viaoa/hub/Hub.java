@@ -333,15 +333,15 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
             }
         }
 
-        if (datau.sharedHub != null) {
+        if (datau.getSharedHub() != null) {
             if (cnt > 5) {
                 if (alHub == null) alHub = new ArrayList<Hub>(5);
                 alHub.add(this);
             }
-            s += "->Shared:" + datau.sharedHub._toString(cnt+1, alHub);
+            s += "->Shared:" + datau.getSharedHub()._toString(cnt+1, alHub);
         }
         else {
-            OASelect sel = data.select;
+            OASelect sel = data.getSelect();
             if (sel != null) {
                 boolean b = sel.isCounted();
 
@@ -386,7 +386,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see #getRefresh
      */
     public void setRefresh(boolean b) {
-        data.refresh = b;
+        data.setRefresh(b);
     }
 
     /**
@@ -398,7 +398,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see Hub#getRefresh
      */
     public boolean getRefresh() {
-        return data.refresh;
+        return data.isRefresh();
     }
 
     /**
@@ -472,7 +472,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Returns true if this Hub's objects are a subclass of OAObject
      */
     public boolean isOAObject() {
-        return datau.oaObjectFlag;
+        return datau.isOAObjectFlag();
     }
 
     /**
@@ -489,8 +489,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      */
     protected void finalize() throws Throwable {
         HubSelectDelegate.cancelSelect(this, true);
-        if (this.datau != null && this.datau.sharedHub != null) {
-            HubShareDelegate.removeSharedHub(this.datau.sharedHub, this);
+        if (this.datau != null && this.datau.getSharedHub() != null) {
+            HubShareDelegate.removeSharedHub(this.datau.getSharedHub(), this);
         }
         Vector vec = data.vector;
         if (vec != null) {
@@ -749,7 +749,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * user can select objects that are then added to a list.
      */
     public void setAddHub(Hub addHub) {
-        datau.addHub = addHub;
+        datau.setAddHub(addHub);
         setAO(null);
     }
 
@@ -759,7 +759,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see #setAddHub
      */
     public Hub getAddHub() {
-        return datau.addHub;
+        return datau.getAddHub();
     }
 
     /**
@@ -769,10 +769,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public Hub getRealHub() {
         Hub h = this;
         for (;;) {
-            if (h.datau.sharedHub == null) {
+            if (h.datau.getSharedHub() == null) {
                 break;
             }
-            h = h.datau.sharedHub;
+            h = h.datau.getSharedHub();
         }
         return h;
     }
@@ -803,7 +803,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * active object.
      */
     public void setDefaultPos(int pos) {
-        datau.defaultPos = pos;
+        datau.setDefaultPos(pos);
     }
 
     /**
@@ -813,7 +813,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see #setDefaultPos
      */
     public int getDefaultPos() {
-        return datau.defaultPos;
+        return datau.getDefaultPos();
     }
 
     /**
@@ -879,10 +879,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Flag to know if add/remove are enabled
      */
     public boolean getEnabled() {
-        return !data.disabled;
+        return !data.isDisabled();
     }
     public void setEnabled(boolean b) {
-        this.data.disabled = !b;
+        this.data.setDisabled(!b);
     }
     
     
@@ -999,7 +999,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            object does not exist, then previous object is set.
      */
     public void setNullOnRemove(boolean b) {
-        datau.bNullOnRemove = b;
+        datau.setNullOnRemove(b);
     }
 
     /**
@@ -1009,7 +1009,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see #setNullOnRemove
      */
     public boolean getNullOnRemove() {
-        return datau.bNullOnRemove;
+        return datau.isNullOnRemove();
     }
 
     /**
@@ -1092,7 +1092,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Returns the Hub that this Hub is sharing objects with. Same as getShared.
      */
     public Hub<TYPE> getSharedHub() {
-        return datau.sharedHub;
+        return datau.getSharedHub();
     }
 
     /**
@@ -1303,7 +1303,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Returns true if this Hub has any detail hubs created.
      */
     public boolean hasDetailHubs() {
-        int x = (datau.vecHubDetail == null) ? 0 : datau.vecHubDetail.size();
+        int x = (datau.getVecHubDetail() == null) ? 0 : datau.getVecHubDetail().size();
         return x > 0;
     }
 
@@ -1740,10 +1740,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Checks OAThreadInfoDelegate.isLoadingObject()
      */
     public boolean isLoading() {
-        return data.bInFetch || OAThreadLocalDelegate.isLoadingObject();
+        return data.isInFetch() || OAThreadLocalDelegate.isLoadingObject();
     }
     public void setLoading(boolean b) {
-        data.bInFetch = b;
+        data.setInFetch(b);
     }
 
     /**
@@ -1799,7 +1799,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see HubLink
      */
     public Hub getLinkHub() {
-        return datau.linkToHub;
+        return datau.getLinkToHub();
     }
 
     /**

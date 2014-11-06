@@ -146,11 +146,11 @@ public class HubShareDelegate {
     public static Hub getSharedHub(final Hub thisHub, boolean bIncludeFilteredHubs, boolean bOnlyIfSharedAO) {
         if (thisHub == null) return null;
 
-        if (thisHub.datau.sharedHub != null) {
-            if (bOnlyIfSharedAO && !HubShareDelegate.isUsingSameSharedAO(thisHub, thisHub.datau.sharedHub)) {
+        if (thisHub.datau.getSharedHub() != null) {
+            if (bOnlyIfSharedAO && !HubShareDelegate.isUsingSameSharedAO(thisHub, thisHub.datau.getSharedHub())) {
                 return null;
             }
-            return thisHub.datau.sharedHub;
+            return thisHub.datau.getSharedHub();
         }
         if (!bIncludeFilteredHubs) return null;
         
@@ -271,7 +271,7 @@ public class HubShareDelegate {
 	        		if (hubs[i].dataa.activeObject != null && !hubs[i].contains(hubs[i].dataa.activeObject)) {
 	        			// make sure that it is not linked
 	        		    //   20120505 note: it could have a detail that is linked, so bUpdateLink was added so that the linked to prop wont be changed
-	        			if (hubs[i].datau.linkToHub == null) {
+	        			if (hubs[i].datau.getLinkToHub() == null) {
 	        			    // 20120505 added new arg for bUpdateDetail
 	        			    HubAODelegate.setActiveObject(hubs[i], null, false, bUpdateLink, false);  // adjustMaster, bUpdateLink, bForce	        			    
 	        				// was: hubs[i].setAO(null); 
@@ -310,7 +310,7 @@ public class HubShareDelegate {
 	           could fail when it sends out event.
 	        */
 	    	thisHub.dataa.activeObject = null;
-	        if (thisHub.getSize() == 0 || thisHub.getLinkHub() != null || thisHub.datau.bNullOnRemove) {
+	        if (thisHub.getSize() == 0 || thisHub.getLinkHub() != null || thisHub.datau.isNullOnRemove()) {
 	            // 20120505 dont update a linked value that has already been set  
 	            HubAODelegate.setActiveObject(thisHub, -1, false, true, false); // bUpdateLink, bForce, bCalledByShareHub
                 // was: HubAODelegate.setActiveObject(thisHub, -1, true, true,false); // bUpdateLink,bForce,bCalledByShareHub
@@ -366,8 +366,8 @@ public class HubShareDelegate {
 	    // if (getMasterHub() != null) throw new OAHubException(this,61);
 	
 	    HubDataDelegate.incChangeCount(thisHub);
-	    Hub hubOrigSharedHub = thisHub.datau.sharedHub;
-	    if (thisHub.datau.sharedHub == sharedMasterHub) {
+	    Hub hubOrigSharedHub = thisHub.datau.getSharedHub();
+	    if (thisHub.datau.getSharedHub() == sharedMasterHub) {
 	        if (sharedMasterHub == null) return;
 	        if (shareActiveObject == (thisHub.dataa == sharedMasterHub.dataa)) {
 	            
@@ -381,22 +381,22 @@ public class HubShareDelegate {
 	        
 	            // 20130331 since the SharedHub is the same, do more checking to see if thisHub has changed or not
 	            if (!shareActiveObject || (thisHub.dataa.activeObject == sharedMasterHub.dataa.activeObject))  {
-	                if (thisHub.datau.linkToHub == null) {
+	                if (thisHub.datau.getLinkToHub() == null) {
 	                    if (!shareActiveObject) thisHub.setPos(-1);  // in case masterHub was re-shared after a new select
 	                    return;
 	                }
 	                
 	                // see if this AO is already set correctly with the linkHub
 	                try {
-	                    Object obj = thisHub.datau.linkToHub.getActiveObject();
+	                    Object obj = thisHub.datau.getLinkToHub().getActiveObject();
 	                    if (obj != null) {
-	                        obj = thisHub.datau.linkToGetMethod.invoke(obj, null );
+	                        obj = thisHub.datau.getLinkToGetMethod().invoke(obj, null );
 	                    }
 	                    
 	                    // 20110110 the link value is in the process of being changed - see HubDataDelegate.getPos(...)
 	                    if (newLinkValue != null && newLinkValue != obj) return;
 	                    
-	                    if (thisHub.datau.linkPos) {
+	                    if (thisHub.datau.isLinkPos()) {
 	                        int x = -1;
 	                        if (obj != null && obj instanceof Number) x = ((Number)obj).intValue();
 	                        if (thisHub.getPos() == x) return;
@@ -413,7 +413,7 @@ public class HubShareDelegate {
 	        }
 	    }
 
-        if (sharedMasterHub != null && sharedMasterHub.datau.sharedHub == thisHub) {
+        if (sharedMasterHub != null && sharedMasterHub.datau.getSharedHub() == thisHub) {
             throw new RuntimeException("the masterHub is already shared with thisHub - cant set thisHub.sharedHub with masterHub");
         }
 	    
@@ -439,7 +439,7 @@ public class HubShareDelegate {
 	    HubDataActive originalDataa = thisHub.dataa;
 	
 	    // first unset any prev set sharedHub
-	    Hub h = thisHub.datau.sharedHub;
+	    Hub h = thisHub.datau.getSharedHub();
 	    if (h != null) {
 	        removeSharedHub(h, thisHub);
 	        if (h.dataa == thisHub.dataa) thisHub.dataa = new HubDataActive();
@@ -465,8 +465,8 @@ public class HubShareDelegate {
 	            if (h == thisHub) {
 	                h = sharedMasterHub;
 	                for (;;) {
-	                    if (h.datau.sharedHub == null) break;
-	                    h = h.datau.sharedHub;
+	                    if (h.datau.getSharedHub() == null) break;
+	                    h = h.datau.getSharedHub();
 	                }
 	                sharedMasterHub = h;
 	                shareActiveObject2 = false;
@@ -506,7 +506,7 @@ public class HubShareDelegate {
 	        // sharedMasterHub.datau.addSharedHub(this); // adds to datau.vecSharedHub
 	    }
 	
-	    thisHub.datau.sharedHub = sharedMasterHub; // the master Hub that this hub is shared with
+	    thisHub.datau.setSharedHub(sharedMasterHub); // the master Hub that this hub is shared with
 
 	    Hub[] hubShared = getAllSharedHubs(thisHub, true, null); // get shared hubs under this Hub
 	    if (sharedMasterHub != null && shareActiveObject && shareActiveObject2) {
@@ -520,17 +520,17 @@ public class HubShareDelegate {
 	    // set active object in each shared hub, which will update detail hubs
 	    for (int i=0; i<hubShared.length; i++) {
 	        h = hubShared[i];
-	        if (h.datau.linkToHub == null) {
+	        if (h.datau.getLinkToHub() == null) {
 	            // if there is not a linkHub, then go to first object
 	            int pos;
-	            if (h.datau.sharedHub != null && h.dataa == h.datau.sharedHub.dataa) {
+	            if (h.datau.getSharedHub() != null && h.dataa == h.datau.getSharedHub().dataa) {
 	                // shared hubs
-	                pos = h.datau.sharedHub.getPos();
+	                pos = h.datau.getSharedHub().getPos();
 	            }
 	            else {
 	                // 08/18/2001 - always set to null
 	                // pos = size() > 0 ? 0 :-1;
-	                pos = h.datau.defaultPos;  // default is -1
+	                pos = h.datau.getDefaultPos();  // default is -1
 	            }
 	            HubAODelegate.setActiveObject(h, pos, false, true, true);  // updateLink, bForce, bCalledByShareHub
 	        }
@@ -538,15 +538,15 @@ public class HubShareDelegate {
 	            // if linkHub & !bUpdateLink, then retrieve value from linked property
 	            // and make that the activeObject in this Hub
 	            try {
-	                Object obj = h.datau.linkToHub.getActiveObject();
+	                Object obj = h.datau.getLinkToHub().getActiveObject();
 	                if (obj != null) {
-	                	obj = h.datau.linkToGetMethod.invoke(obj, null );
+	                	obj = h.datau.getLinkToGetMethod().invoke(obj, null );
 	                }
 	                
 	                // 20110110 the link value is in the process of being changed - see HubDataDelegate.getPos(...)
 	                if (newLinkValue != null && newLinkValue != obj) continue;
 	                
-	                if (h.datau.linkPos) {
+	                if (h.datau.isLinkPos()) {
 	                    int x = -1;
 	                    if (obj != null && obj instanceof Number) x = ((Number)obj).intValue();
 	                    if (h.getPos() != x) {
@@ -575,7 +575,7 @@ public class HubShareDelegate {
 	    }
 
 	    // 20130317 added this to stop an infinite loop
-        if (thisHub.datau.sharedHub != hubOrigSharedHub) {
+        if (thisHub.datau.getSharedHub() != hubOrigSharedHub) {
             HubEventDelegate.fireOnNewListEvent(thisHub, false); // only for this shared hub
         }
 	    // was: HubEventDelegate.fireOnNewListEvent(thisHub, false); // only for this shared hub
@@ -641,17 +641,17 @@ public class HubShareDelegate {
     
         int pos;
         synchronized (thisHub.datau) {
-            if (thisHub.datau.weakSharedHubs == null) {
-                thisHub.datau.weakSharedHubs = new WeakReference[1];
+            if (thisHub.datau.getWeakSharedHubs() == null) {
+                thisHub.datau.setWeakSharedHubs(new WeakReference[1]);
                 pos = 0;
             }
             else {
                 // check for empty slot at the end
-                int currentSize = thisHub.datau.weakSharedHubs.length;
+                int currentSize = thisHub.datau.getWeakSharedHubs().length;
                 for (pos=currentSize-1; pos>=0; pos--) {
-                    if (thisHub.datau.weakSharedHubs[pos] == null) continue;
-                    if (thisHub.datau.weakSharedHubs[pos].get() == null) {
-                        thisHub.datau.weakSharedHubs[pos] = null;
+                    if (thisHub.datau.getWeakSharedHubs()[pos] == null) continue;
+                    if (thisHub.datau.getWeakSharedHubs()[pos].get() == null) {
+                        thisHub.datau.getWeakSharedHubs()[pos] = null;
                         continue;
                     }
                     // found last used slot
@@ -665,14 +665,14 @@ public class HubShareDelegate {
                     newSize = Math.min(newSize, currentSize + 50);
                     WeakReference<Hub>[] refs = new WeakReference[newSize];
                     
-                    System.arraycopy(thisHub.datau.weakSharedHubs, 0, refs, 0, currentSize);
-                    thisHub.datau.weakSharedHubs = refs;
+                    System.arraycopy(thisHub.datau.getWeakSharedHubs(), 0, refs, 0, currentSize);
+                    thisHub.datau.setWeakSharedHubs(refs);
                     pos = currentSize;
                     break;
                 }
                 if (pos < 0) pos = 0;
             }
-            thisHub.datau.weakSharedHubs[pos] = new WeakReference(hub);
+            thisHub.datau.getWeakSharedHubs()[pos] = new WeakReference(hub);
         }
         if (pos > 99) {
             if (pos+1 % 25 == 0) {
@@ -682,29 +682,29 @@ public class HubShareDelegate {
     }
 	
     protected static void removeSharedHub(Hub sharedHub, Hub hub) {
-        if (sharedHub.datau.weakSharedHubs == null) return;
+        if (sharedHub.datau.getWeakSharedHubs() == null) return;
         boolean bFound = false;
         synchronized (sharedHub.datau) {
-            if (sharedHub.datau.weakSharedHubs == null) return;
-            int currentSize = sharedHub.datau.weakSharedHubs.length;
+            if (sharedHub.datau.getWeakSharedHubs() == null) return;
+            int currentSize = sharedHub.datau.getWeakSharedHubs().length;
             int lastEndPos = currentSize-1;
             for (int pos=0; !bFound && pos<currentSize; pos++) {
-                if (sharedHub.datau.weakSharedHubs[pos] == null) break;  // the rest will be nulls
+                if (sharedHub.datau.getWeakSharedHubs()[pos] == null) break;  // the rest will be nulls
                 
-                Hub hx = sharedHub.datau.weakSharedHubs[pos].get();
+                Hub hx = sharedHub.datau.getWeakSharedHubs()[pos].get();
                 if (hx != null && hx != hub) continue;
                 bFound = (hx == hub);
-                sharedHub.datau.weakSharedHubs[pos] = null;
+                sharedHub.datau.getWeakSharedHubs()[pos] = null;
                 
                 // compress:  get last one, move it back to this slot
                 for (; lastEndPos>pos; lastEndPos--) {
-                    if (sharedHub.datau.weakSharedHubs[lastEndPos] == null) continue;
-                    if (sharedHub.datau.weakSharedHubs[lastEndPos].get() == null) {
-                        sharedHub.datau.weakSharedHubs[lastEndPos] = null;
+                    if (sharedHub.datau.getWeakSharedHubs()[lastEndPos] == null) continue;
+                    if (sharedHub.datau.getWeakSharedHubs()[lastEndPos].get() == null) {
+                        sharedHub.datau.getWeakSharedHubs()[lastEndPos] = null;
                         continue;
                     }
-                    sharedHub.datau.weakSharedHubs[pos] = sharedHub.datau.weakSharedHubs[lastEndPos];
-                    sharedHub.datau.weakSharedHubs[lastEndPos] = null;
+                    sharedHub.datau.getWeakSharedHubs()[pos] = sharedHub.datau.getWeakSharedHubs()[lastEndPos];
+                    sharedHub.datau.getWeakSharedHubs()[lastEndPos] = null;
                     break;
                 }
                 if (currentSize > 20 && ((currentSize - lastEndPos) > currentSize/3)) {
@@ -713,13 +713,13 @@ public class HubShareDelegate {
                     newSize = Math.min(lastEndPos + 20, newSize);
                     WeakReference<Hub>[] refs = new WeakReference[newSize];
                     
-                    System.arraycopy(sharedHub.datau.weakSharedHubs, 0, refs, 0, lastEndPos);
-                    sharedHub.datau.weakSharedHubs = refs;
+                    System.arraycopy(sharedHub.datau.getWeakSharedHubs(), 0, refs, 0, lastEndPos);
+                    sharedHub.datau.setWeakSharedHubs(refs);
                     currentSize = newSize;
                 }
             }
-            if (sharedHub.datau.weakSharedHubs[0] == null) {
-                sharedHub.datau.weakSharedHubs = null;
+            if (sharedHub.datau.getWeakSharedHubs()[0] == null) {
+                sharedHub.datau.setWeakSharedHubs(null);
             }
         }
     }
@@ -730,20 +730,20 @@ public class HubShareDelegate {
         @deprecated use getAllSharedHubs, or one of the other methods
     */
     protected static Hub[] getSharedHubs(Hub thisHub) {
-        if (thisHub.datau.weakSharedHubs == null) return EmptyHubs;
+        if (thisHub.datau.getWeakSharedHubs() == null) return EmptyHubs;
         synchronized (thisHub.datau) {
-            if (thisHub.datau.weakSharedHubs == null) return EmptyHubs;
+            if (thisHub.datau.getWeakSharedHubs() == null) return EmptyHubs;
             
-            int x = thisHub.datau.weakSharedHubs.length;
+            int x = thisHub.datau.getWeakSharedHubs().length;
             for (int j=x-1; j>=0; j--) {
-                if (thisHub.datau.weakSharedHubs[j] == null) continue;
-                if (thisHub.datau.weakSharedHubs[j].get() == null) {
-                    thisHub.datau.weakSharedHubs[j] = null;
+                if (thisHub.datau.getWeakSharedHubs()[j] == null) continue;
+                if (thisHub.datau.getWeakSharedHubs()[j].get() == null) {
+                    thisHub.datau.getWeakSharedHubs()[j] = null;
                     continue;
                 }
                 Hub[] hubs = new Hub[j+1];
                 for (int i=0; i<hubs.length; i++) {
-                    hubs[i] = thisHub.datau.weakSharedHubs[i].get();
+                    hubs[i] = thisHub.datau.getWeakSharedHubs()[i].get();
                 }
                 // note: could be nulls in array
                 return hubs;
@@ -753,11 +753,11 @@ public class HubShareDelegate {
     }
     public static WeakReference<Hub>[] getSharedWeakHubs(Hub thisHub) {
         if (thisHub == null) return null;
-        return thisHub.datau.weakSharedHubs;
+        return thisHub.datau.getWeakSharedHubs();
     }
     public static int getSharedWeakHubSize(Hub thisHub) {
         if (thisHub == null) return 0;
-        WeakReference<Hub>[] refs = thisHub.datau.weakSharedHubs;
+        WeakReference<Hub>[] refs = thisHub.datau.getWeakSharedHubs();
         if (refs == null) return 0;
         int cnt = 0;
         for (WeakReference<Hub> ref : refs) {

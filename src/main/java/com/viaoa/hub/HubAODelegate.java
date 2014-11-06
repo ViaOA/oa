@@ -138,7 +138,7 @@ public static void clearCache() {
 	protected static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
 		if (thisHub.dataa.activeObject == object && !bForce) return;
 	
-	    if (thisHub.datau.bUpdatingActiveObject) return;
+	    if (thisHub.datau.isUpdatingActiveObject()) return;
 	
 	    Object origActiveObject = thisHub.dataa.activeObject;
 	    thisHub.dataa.activeObject = object;
@@ -147,10 +147,10 @@ public static void clearCache() {
 	    //  if OAObject = null, then set all links to null
 	    try {
 	    	
-	    	thisHub.datau.bUpdatingActiveObject = true;
+	    	thisHub.datau.setUpdatingActiveObject(true);
 	        HubDetailDelegate.updateAllDetail(thisHub, bUpdateLink);
 	        if (bUpdateLink) HubLinkDelegate.updateLinkProperty(thisHub, object, pos);
-	        thisHub.datau.bUpdatingActiveObject = false;
+	        thisHub.datau.setUpdatingActiveObject(false);
 	
 	        // Now call for all sharedHubs with same "dataa"
 	        // 20120716
@@ -165,10 +165,10 @@ public static void clearCache() {
 	        for (int i=0; i<hubs.length; i++) {
 	            Hub h = hubs[i];
 	            if (h != thisHub && h.dataa == thisHub.dataa) {
-                    h.datau.bUpdatingActiveObject = true;
+                    h.datau.setUpdatingActiveObject(true);
                     HubDetailDelegate.updateAllDetail(h, bUpdateLink);
                     if (bUpdateLink) HubLinkDelegate.updateLinkProperty(h,object,pos);
-                    h.datau.bUpdatingActiveObject = false;
+                    h.datau.setUpdatingActiveObject(false);
 	            }
 	        }
 	
@@ -179,15 +179,15 @@ public static void clearCache() {
 	        for (int i=0; object != null && i<hubs.length; i++) {
 	            Hub h = hubs[i];
 	            if (h.dataa == thisHub.dataa) {
-	                if (h.datau.addHub != null) {
-	                    if (h.datau.addHub.getObject(object) == null) h.datau.addHub.add(object);
-	                    setActiveObject(h.datau.addHub, object);
+	                if (h.datau.getAddHub() != null) {
+	                    if (h.datau.getAddHub().getObject(object) == null) h.datau.getAddHub().add(object);
+	                    setActiveObject(h.datau.getAddHub(), object);
 	                }
 	            }
 	        }
 	    }
 	    finally {
-	        thisHub.datau.bUpdatingActiveObject = false;  // just in case it wasnt executed
+	        thisHub.datau.setUpdatingActiveObject(false);  // just in case it wasnt executed
 	    }
 	}
 

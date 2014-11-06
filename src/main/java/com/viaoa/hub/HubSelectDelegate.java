@@ -56,7 +56,7 @@ public class HubSelectDelegate {
         int cnt = 0;
 
         try {
-        	hubData.bInFetch = true;
+        	hubData.setInFetch(true);
 
 			int capacity = hubData.vector.capacity(); // number of available 'slots'
             int size = hubData.vector.size(); // number of elements
@@ -93,7 +93,7 @@ public class HubSelectDelegate {
         	throw new RuntimeException(ex);
         }
         finally {
-            hubData.bInFetch = false;
+            hubData.setInFetch(false);
             hubData.bTrackChanges = bHoldTrackChanges;
             hubData.changed = holdDataChanged;
         }
@@ -105,17 +105,17 @@ public class HubSelectDelegate {
         Used to know if objects are currently being loaded from datasource from last select().
     */
     public static boolean isFetching(Hub thisHub) {
-        return thisHub.data.bInFetch;
+        return thisHub.data.isInFetch();
     }
     public static void setFetching(Hub thisHub, boolean bIsFetching) {
-        thisHub.data.bInFetch = bIsFetching;
+        thisHub.data.setInFetch(bIsFetching);
     }
 
     public static boolean isLoading(Hub thisHub) {
-        return thisHub.data.bInFetch;
+        return thisHub.data.isInFetch();
     }
     public static void setLoading(Hub thisHub, boolean bIsLoading) {
-        thisHub.data.bInFetch = bIsLoading;
+        thisHub.data.setInFetch(bIsLoading);
     }
 	
 	/**
@@ -136,14 +136,14 @@ public class HubSelectDelegate {
 	    By default, only 45 objects are read at a time from datasource.
 	*/
 	public static void loadAllData(Hub thisHub) {
-	    if (thisHub.data.select == null) return;
+	    if (thisHub.data.getSelect() == null) return;
 	    
 	    // 20121015 adjusted locking
 	    for (int i=0; ;i++) {
     	    boolean bCanRun = false;
             synchronized (thisHub.data) {
-                if (!thisHub.data.loadingAllData) {
-                    thisHub.data.loadingAllData = true;
+                if (!thisHub.data.isLoadingAllData()) {
+                    thisHub.data.setLoadingAllData(true);
                     bCanRun = true;
                 }
             }
@@ -156,7 +156,7 @@ public class HubSelectDelegate {
                 }
                 finally {
                     synchronized (thisHub.data) {
-                        thisHub.data.loadingAllData = false;
+                        thisHub.data.setLoadingAllData(false);
                     }
                 }
                 break;
@@ -190,7 +190,7 @@ public class HubSelectDelegate {
 	    Returns OASelect used for querying datasource.
 	*/
 	protected static OASelect getSelect(Hub hub) {
-	    return hub.data.select;
+	    return hub.data.getSelect();
 	}
 	
 	/**
@@ -210,9 +210,9 @@ public class HubSelectDelegate {
 	        return;
 	    }
 	
-	    if (thisHub.datau.sharedHub != null) {
-	        if (thisHub.datau.selectOrder != null) thisHub.datau.sharedHub.setSelectOrder(thisHub.datau.selectOrder);
-	        select(thisHub.datau.sharedHub, select);
+	    if (thisHub.datau.getSharedHub() != null) {
+	        if (thisHub.datau.selectOrder != null) thisHub.datau.getSharedHub().setSelectOrder(thisHub.datau.selectOrder);
+	        select(thisHub.datau.getSharedHub(), select);
 	        return;
 	    }
 	    if (thisHub.datau.objClass == null) {
@@ -221,7 +221,7 @@ public class HubSelectDelegate {
 	    }
 	
 	    if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
-	        if (select != thisHub.data.select && thisHub.data.select != null) {
+	        if (select != thisHub.data.getSelect() && thisHub.data.getSelect() != null) {
 	            throw new RuntimeException("select cant be changed for detail hub");
 	        }
 	        
@@ -255,7 +255,7 @@ public class HubSelectDelegate {
 
 	    HubEventDelegate.fireBeforeSelectEvent(thisHub);
 	    
-        thisHub.data.select = select;
+        thisHub.data.setSelect(select);
         
         boolean bRunSelect;
         bRunSelect = oi.getUseDataSource();
@@ -280,7 +280,7 @@ public class HubSelectDelegate {
                     @Override
                     public boolean isUsed(Hub h) {
                         if (h != thisHub && h.dataa != thisHub.dataa) {
-                            if (h.datau.linkToHub == null) return true;
+                            if (h.datau.getLinkToHub() == null) return true;
                         }
                         return false;
                     }
@@ -291,7 +291,7 @@ public class HubSelectDelegate {
 	            //was: Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub);
 	            for (int i=0; i<hubs.length; i++) {
 	            	if (hubs[i] != thisHub && hubs[i].dataa != thisHub.dataa) {
-	        			if (hubs[i].datau.linkToHub == null) {
+	        			if (hubs[i].datau.getLinkToHub() == null) {
 	        				hubs[i].setAO(null);
 	        			}
 	            	}
@@ -305,11 +305,11 @@ public class HubSelectDelegate {
 	    }
 	
 		if (select.isSelectAll()) {
-			thisHub.data.bSelectAllHub = true;
+			thisHub.data.setSelectAllHub(true);
 			OAObjectCacheDelegate.setSelectAllHub(thisHub);
 		}
 		else {
-			thisHub.data.bSelectAllHub = false;
+			thisHub.data.setSelectAllHub(false);
 			OAObjectCacheDelegate.removeSelectAllHub(thisHub);
 		}
 	    
@@ -324,14 +324,14 @@ public class HubSelectDelegate {
 	protected static OASelect createNewSelect(Hub hub) {
 	    synchronized (hub.data) {
 		    String s = null;
-		    OASelect selHold = hub.data.select;
+		    OASelect selHold = hub.data.getSelect();
 		    cancelSelect(hub, true);
-		    hub.data.select = new OASelect(hub.getObjectClass());
+		    hub.data.setSelect(new OASelect(hub.getObjectClass()));
 		    if (selHold != null) {
-		        hub.data.select.setHubFilter(selHold.getHubFilter());
+		        hub.data.getSelect().setHubFilter(selHold.getHubFilter());
 		    }
 		}
-	    return hub.data.select;
+	    return hub.data.getSelect();
 	}
 	
 	/**
@@ -339,13 +339,13 @@ public class HubSelectDelegate {
 	    This will also set SelectLater to false and RequiredWhere to null.
 	*/
 	protected static void cancelSelect(Hub thisHub, boolean bRemove) {
-		if (thisHub.data.select != null) {
-	    	thisHub.data.select.cancel();
-	        if (bRemove) thisHub.data.select = null;
+		if (thisHub.data.getSelect() != null) {
+	    	thisHub.data.getSelect().cancel();
+	        if (bRemove) thisHub.data.setSelect(null);
 	        HubDataDelegate.resizeToFit(thisHub);
 	    }
-        if (thisHub.data.bSelectAllHub || thisHub.data.select == null || !thisHub.data.select.isSelectAll()) {
-        	thisHub.data.bSelectAllHub = false;
+        if (thisHub.data.isSelectAllHub() || thisHub.data.getSelect() == null || !thisHub.data.getSelect().isSelectAll()) {
+        	thisHub.data.setSelectAllHub(false);
         	OAObjectCacheDelegate.removeSelectAllHub(thisHub);
         }
 	}

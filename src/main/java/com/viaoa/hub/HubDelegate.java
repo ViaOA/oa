@@ -79,7 +79,7 @@ public class HubDelegate {
 	    @returns true if object is valid, false if another object already uses same unique property value.
 	*/
 	public static boolean verifyUniqueProperty(Hub thisHub, Object object) {
-	    if (thisHub == null || object == null || thisHub.data.uniqueProperty == null) return true;
+	    if (thisHub == null || object == null || thisHub.data.getUniqueProperty() == null) return true;
 	
 	    if (object instanceof OAObject) {
 	        if (thisHub.isLoading()) return true;
@@ -87,12 +87,12 @@ public class HubDelegate {
 	
 	    Object object2;
 	    try {
-	        object2 = thisHub.data.uniquePropertyGetMethod.invoke(object, null);
+	        object2 = thisHub.data.getUniquePropertyGetMethod().invoke(object, null);
 	        if (object2 == null) return true;
 	        if (object2 instanceof String && ((String)object2).equals("")) return true;
 	    }
 	    catch (Exception e) {
-	        throw new RuntimeException("Error invoking "+thisHub.data.uniquePropertyGetMethod.getName(), e);
+	        throw new RuntimeException("Error invoking "+thisHub.data.getUniquePropertyGetMethod().getName(), e);
 	    }
 	
 	    for (int i=0; ;i++) {
@@ -100,12 +100,12 @@ public class HubDelegate {
 	        if (obj == null) break;
 	        if (obj == object) continue;
 	        try {
-	            Object obj2 = thisHub.data.uniquePropertyGetMethod.invoke(obj, null);
+	            Object obj2 = thisHub.data.getUniquePropertyGetMethod().invoke(obj, null);
 	            if (obj2 == null) continue;
 	            if (obj2 == object2 || obj2.equals(object2)) return false;
 	        }
 	        catch (Exception e) {
-	            throw new RuntimeException("Error invoking "+thisHub.data.uniquePropertyGetMethod.getName(), e);
+	            throw new RuntimeException("Error invoking "+thisHub.data.getUniquePropertyGetMethod().getName(), e);
 	        }
 	    }
 	    return true;
@@ -183,14 +183,14 @@ public class HubDelegate {
 	*/
 	public static void setObjectClass(Hub thisHub, Class objClass) {
 	    if (thisHub.datau.objClass != null && !thisHub.datau.objClass.equals(objClass)) {
-	        if (HubDataDelegate.getCurrentSize(thisHub) > 0 || (thisHub.datau.vecHubDetail != null && thisHub.datau.vecHubDetail.size() > 0) ) {
+	        if (HubDataDelegate.getCurrentSize(thisHub) > 0 || (thisHub.datau.getVecHubDetail() != null && thisHub.datau.getVecHubDetail().size() > 0) ) {
 	            throw new RuntimeException("cant change object class if objects are in hub");
 	        }
 	        HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
 	        if (dm.masterHub != null || thisHub.datam.masterObject != null) {
 	            throw new RuntimeException("cant change object class if masterObject exists");
 	        }
-	        if (thisHub.datau.sharedHub != null || HubShareDelegate.getSharedWeakHubSize(thisHub) > 0) {
+	        if (thisHub.datau.getSharedHub() != null || HubShareDelegate.getSharedWeakHubSize(thisHub) > 0) {
 	            throw new RuntimeException("cant change object class since this is a shared hub.");
 	        }
 	    }
@@ -199,12 +199,12 @@ public class HubDelegate {
 	
 	    if (objClass != null) {
 	        // find out if class is OAObject
-	    	thisHub.datau.oaObjectFlag = OAObject.class.isAssignableFrom(objClass);
-	    	thisHub.datau.objectInfo = OAObjectInfoDelegate.getOAObjectInfo(objClass);
+	    	thisHub.datau.setOAObjectFlag(OAObject.class.isAssignableFrom(objClass));
+	    	thisHub.datau.setObjectInfo(OAObjectInfoDelegate.getOAObjectInfo(objClass));
 	    }
 	    else {
-	        thisHub.datau.objectInfo = null;
-	        thisHub.datau.oaObjectFlag = false;
+	        thisHub.datau.setObjectInfo(null);
+	        thisHub.datau.setOAObjectFlag(false);
 	    }
 	}
 	
@@ -220,18 +220,18 @@ public class HubDelegate {
 	    if (dm.masterHub != null && dm.masterObject == null) {
 	    	return false;
 	    }
-	    if (hub.datau.linkToHub != null) {
-            if (!HubDelegate.isValid(hub.datau.linkToHub)) {
+	    if (hub.datau.getLinkToHub() != null) {
+            if (!HubDelegate.isValid(hub.datau.getLinkToHub())) {
                 return false;
             }
             
-            if (hub.datau.linkToHub.dataa.activeObject == null) {
-                if (!hub.datau.bAutoCreate) return false;
+            if (hub.datau.getLinkToHub().dataa.activeObject == null) {
+                if (!hub.datau.isAutoCreate()) return false;
             }
             return true;
 	    }
-	    if (hub.datau.addHub != null) {
-	        return HubDelegate.isValid(hub.datau.addHub);
+	    if (hub.datau.getAddHub() != null) {
+	        return HubDelegate.isValid(hub.datau.getAddHub());
 	    }
 	    return true;
 	}
@@ -246,14 +246,14 @@ public class HubDelegate {
         if (dm.masterHub != null) {
             return dm.masterHub;
         }
-        if (hub.datau.linkToHub != null) {
-            if (hub.datau.bAutoCreate) {
-                return getControllingHub(hub.datau.linkToHub);
+        if (hub.datau.getLinkToHub() != null) {
+            if (hub.datau.isAutoCreate()) {
+                return getControllingHub(hub.datau.getLinkToHub());
             }
-            return hub.datau.linkToHub;
+            return hub.datau.getLinkToHub();
         }        
-        if (hub.datau.addHub != null) {
-            return HubDelegate.getControllingHub(hub.datau.addHub);
+        if (hub.datau.getAddHub() != null) {
+            return HubDelegate.getControllingHub(hub.datau.getAddHub());
         }
         return hub;
 	}
@@ -391,22 +391,22 @@ public class HubDelegate {
 	
     public static void setUniqueProperty(Hub thisHub, String propertyName) {
         if (propertyName == null) {
-        	thisHub.data.uniqueProperty = null;
-        	thisHub.data.uniquePropertyGetMethod = null;
+        	thisHub.data.setUniqueProperty(null);
+        	thisHub.data.setUniquePropertyGetMethod(null);
             return;
         }
         if (propertyName.indexOf('.') >= 0) {
             throw new IllegalArgumentException("Property "+propertyName+" can only be for a property in "+thisHub.getObjectClass().getName());
         }
 
-        thisHub.data.uniquePropertyGetMethod = OAObjectInfoDelegate.getMethod(thisHub.getObjectClass(), "get"+propertyName);
-        if (thisHub.data.uniquePropertyGetMethod == null) {
+        thisHub.data.setUniquePropertyGetMethod(OAObjectInfoDelegate.getMethod(thisHub.getObjectClass(), "get"+propertyName));
+        if (thisHub.data.getUniquePropertyGetMethod() == null) {
             throw new IllegalArgumentException("Get Method for Property "+propertyName+" not found");
         }
-        if (thisHub.data.uniquePropertyGetMethod.getParameterTypes().length > 0) {
+        if (thisHub.data.getUniquePropertyGetMethod().getParameterTypes().length > 0) {
             throw new IllegalArgumentException("Get Method for Property "+propertyName+" expects parameters");
         }
-        thisHub.data.uniqueProperty = propertyName;
+        thisHub.data.setUniqueProperty(propertyName);
     }
     
     
@@ -423,9 +423,9 @@ public class HubDelegate {
 	        if (!HubCSDelegate.isServer()) return; // only set up for server
 	        bServerOnly = true;
 	    }
-        if (thisHub.datau.autoSequence != null) thisHub.datau.autoSequence.close();
+        if (thisHub.datau.getAutoSequence() != null) thisHub.datau.getAutoSequence().close();
         thisHub.cancelSort(); // 20090801 need to remove any sorters
-    	thisHub.datau.autoSequence = new HubAutoSequence(thisHub, property, startNumber, bKeepSeq, bServerOnly);
+    	thisHub.datau.setAutoSequence(new HubAutoSequence(thisHub, property, startNumber, bKeepSeq, bServerOnly));
 	}
     
     
@@ -437,10 +437,10 @@ public class HubDelegate {
 	    @param property Property in this hubs objects that match object type in hubMaster
 	*/
 	public static void setAutoMatch(Hub thisHub, String property, Hub hubMaster, boolean bServerSideOnly) {
-	    if (thisHub.datau.autoMatch != null) thisHub.datau.autoMatch.close();
+	    if (thisHub.datau.getAutoMatch() != null) thisHub.datau.getAutoMatch().close();
 	    if (hubMaster != null) {
-	        thisHub.datau.autoMatch = new HubAutoMatch(thisHub, property, hubMaster);
-	        thisHub.datau.autoMatch.setServerSideOnly(bServerSideOnly);
+	        thisHub.datau.setAutoMatch(new HubAutoMatch(thisHub, property, hubMaster));
+	        thisHub.datau.getAutoMatch().setServerSideOnly(bServerSideOnly);
 	    }
 	}
 
@@ -465,21 +465,21 @@ public class HubDelegate {
     protected static void setProperty(Hub thisHub, String name, Object obj) {
         if (name == null) return;
         name = name.toUpperCase();
-        if (thisHub.datau.hashProperty == null) thisHub.datau.hashProperty = new Hashtable(7);
-        thisHub.datau.hashProperty.put(name, (obj==null)?OANullObject.instance:obj);
+        if (thisHub.datau.getHashProperty() == null) thisHub.datau.setHashProperty(new Hashtable(7));
+        thisHub.datau.getHashProperty().put(name, (obj==null)?OANullObject.instance:obj);
     }
     protected static Object getProperty(Hub thisHub, String name) {
-        if (thisHub.datau.hashProperty == null) return null;
+        if (thisHub.datau.getHashProperty() == null) return null;
 
         name = name.toUpperCase();
-        Object obj = thisHub.datau.hashProperty.get(name);
+        Object obj = thisHub.datau.getHashProperty().get(name);
         if (obj instanceof OANullObject) obj = null;
         return obj;
     }
     protected static void removeProperty(Hub thisHub, String name) {
-        if (thisHub.datau.hashProperty != null) {
+        if (thisHub.datau.getHashProperty() != null) {
             name = name.toUpperCase();
-            thisHub.datau.hashProperty.remove(name);
+            thisHub.datau.getHashProperty().remove(name);
         }
     }
     
