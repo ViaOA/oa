@@ -223,7 +223,12 @@ public class HubLinkDelegate {
                 Class c = thisHub.datau.linkToHub.getObjectClass();
                 Constructor constructor = c.getConstructor(new Class[] {});
                 linkToObject = constructor.newInstance(new Object[] {});
-                thisHub.datau.linkToSetMethod.invoke(linkToObject, new Object[] { fromObject } );
+
+                if (fromObject == null && thisHub.datau.linkToSetMethod.getParameterTypes()[0].isPrimitive()) {
+                    ((OAObject)linkToObject).setNull(thisHub.datau.linkToPropertyName);
+                }
+                else thisHub.datau.linkToSetMethod.invoke(linkToObject, new Object[] { fromObject } );
+                
                 if (thisHub.datau.linkToHub.getObject(linkToObject) == null) { 
                     thisHub.datau.linkToHub.add(linkToObject);
                 }
@@ -254,7 +259,10 @@ public class HubLinkDelegate {
 
                 if (obj != null || fromObject != null) {
                     if ( (obj == null || fromObject == null) || (!obj.equals(fromObject)) ) {
-                        thisHub.datau.linkToSetMethod.invoke(linkToObject, new Object[] { fromObject } );
+                        if (fromObject == null && thisHub.datau.linkToSetMethod.getParameterTypes()[0].isPrimitive()) {
+                            ((OAObject)linkToObject).setNull(thisHub.datau.linkToPropertyName);
+                        }
+                        else thisHub.datau.linkToSetMethod.invoke(linkToObject, new Object[] { fromObject } );
                     }
                 }
             }

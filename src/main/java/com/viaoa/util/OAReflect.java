@@ -493,11 +493,18 @@ public class OAReflect {
 	/**
 	    Invokes method for an Object using an object value.
 	 */
-	public static void setPropertyValue(Object object, Method method, Object obj) {
+	public static void setPropertyValue(Object object, Method method, Object newValue) {
 	    Object[] objs = new Object[1];
-	    objs[0] = obj;
+	    objs[0] = newValue;
 	    try {
-	        method.invoke(object, objs);
+            if (newValue == null && object instanceof OAObject && method.getParameterTypes()[0].isPrimitive()) {
+                String s = method.getName();
+                if (s.length() > 3) s = s.substring(3);
+                ((OAObject)object).setNull(s);
+            }
+            else {
+                method.invoke(object, objs);
+            }
 	    }
 	    catch (Exception e) {
 	    	throw new RuntimeException(e);

@@ -166,8 +166,6 @@ public class OAConverterNumber implements OAConverterInterface {
             else if (clazz.equals(Short.class)) num = new Short(num.shortValue());
             else if (clazz.equals(Byte.class)) num = new Byte(num.byteValue());
         }
-        
-        
         return num;
     }
         
