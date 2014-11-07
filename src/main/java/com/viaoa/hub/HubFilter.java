@@ -131,11 +131,11 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     public void close() {
         // need to make sure that no more events get processed
         this.bClosed = true;
-		if (bOAObjectCacheDelegateListener) {
-		    Class c = (hub != null) ? hub.getObjectClass() : hubMaster.getObjectClass();
-		    OAObjectCacheDelegate.removeListener(c, getMasterHubListener());
-		    bOAObjectCacheDelegateListener = false;
-		}
+        if (bOAObjectCacheDelegateListener) {
+            Class c = (hub != null) ? hub.getObjectClass() : hubMaster.getObjectClass();
+            OAObjectCacheDelegate.removeListener(c, getMasterHubListener());
+            bOAObjectCacheDelegateListener = false;
+        }
         if (hub != null) {
             hub.removeHubListener(this);
         }
@@ -536,15 +536,15 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                     aiClearing.decrementAndGet();
                 }
             }
-	        
-    	    try {
+            
+            try {
                 OAThreadLocalDelegate.setLoadingObject(true);
                 _initialize();
-    	        bNewListFlag = true;                   
-    	        if (hub != null) HubEventDelegate.fireOnNewListEvent(hub, true);
-    	    }
-    	    finally {
-    	        bNewListFlag = false;	    	        
+                bNewListFlag = true;                   
+                if (hub != null) HubEventDelegate.fireOnNewListEvent(hub, true);
+            }
+            finally {
+                bNewListFlag = false;                   
                 OAThreadLocalDelegate.setLoadingObject(false);
     	    }
     	}
@@ -553,7 +553,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             if (bServerSideOnly) {
                 OARemoteThreadDelegate.sendMessages(false);
             }
-    	}
+        }
         afterInitialize();
     }    
     
@@ -608,9 +608,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     protected void addObject(TYPE obj) {
         if (bClosed) return;
         try {
-        	if (hub != null) {
-        	    hub.add(obj);
-        	}
+            if (hub != null) {
+                hub.add(obj);
+            }
         }
         catch (Exception e) {
         }
