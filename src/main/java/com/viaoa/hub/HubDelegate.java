@@ -500,7 +500,6 @@ public class HubDelegate {
 
      * @param bAllowGc true if it is ok for this Hub to be GCd, false if it needs to be kept from GC.
      */
-static int qq=0;    
     public static void setReferenceable(Hub thisHub, boolean bDontAllowGc) {
         if (thisHub == null) return;
         if (!OASyncDelegate.isServer()) return;
@@ -532,10 +531,11 @@ static int qq=0;
             rwHubCache.writeLock().unlock();
         }
     }
+    
     /**
      * This can be called after saving all app data, so that Hub referenceable cache is empty. 
      * @return previous hs used of Hubs, so that it's reference can be maintained until save is completed.
-     */
+    */
     public static HashSet<Hub> clearReferenceableCache() {
         HashSet<Hub> hs = null;
         try {
@@ -551,5 +551,6 @@ static int qq=0;
     
     private static ReadWriteLock rwHubCache = new ReentrantReadWriteLock();
     private static HashSet<Hub> hsHubCache;
+    
 }
 
