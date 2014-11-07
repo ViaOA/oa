@@ -62,30 +62,30 @@ public class OAReflect {
     }
     
     
-	public static Method getMethod(Class clazz, String methodName) {
-	    return getMethod(clazz, methodName, -1);
-	}
-	
+    public static Method getMethod(Class clazz, String methodName) {
+        return getMethod(clazz, methodName, -1);
+    }
+    
     /**
-	    Finds a Method in a class.
-	    @param clazz is the Class to use to find method name.
-	    @param methodName is case insensitive name of method.
-	    <br>Example: Employee.class, "getLastName")
-	    @return method in clazz that matches methodName.
-	*/
-	public static Method getMethod(Class clazz, String methodName, int paramCount) {
-	    return getMethod(clazz, methodName, paramCount, null);
-	}
-	
+        Finds a Method in a class.
+        @param clazz is the Class to use to find method name.
+        @param methodName is case insensitive name of method.
+        <br>Example: Employee.class, "getLastName")
+        @return method in clazz that matches methodName.
+    */
+    public static Method getMethod(Class clazz, String methodName, int paramCount) {
+        return getMethod(clazz, methodName, paramCount, null);
+    }
+    
     public static Method getMethod(Class clazz, String methodName, Object[] args) {
         int paramCount = args == null ? 0 : args.length;
         return getMethod(clazz, methodName, paramCount, args);
     }
 
-	/**
-	 * 20121028
-	 * @param args list of arguments used in method call
-	 */
+    /**
+     * 20121028
+     * @param args list of arguments used in method call
+     */
     public static Method getMethod(Class clazz, String methodName, int paramCount, Object[] args) {
         if (clazz == null || methodName == null || methodName.length() == 0) return null;
     
@@ -111,54 +111,54 @@ public class OAReflect {
         }
         return null;
     }
-	
+    
     /**
-	    Get the methods for a property path.
-	    @param clazz beginning Class object to start with.
-	    @param propertyPath is dot "." separated list (case insensitive).
-	    <br>
-	    Example: getMethods(Order.class, "employee.department.region.name") will retrieve the following
-	    methods: Order.getEmployee(), Employee.getDepartment(), Department.getRegion(), Region.getName()
-	    <p>
-	    Note: if any of the propertyNames is a Hub, then it will use the Hub's activeObject when retrieving the property.
-	    @return array of "get' methods that can be used to retrieve a value from an object of type clazz.
-	    @see #getPropertyValue(Object,Method)
-	    @see #getMethods(Class,String,boolean)
-	    @throws OAException if any method can not be found.
-	*/
-	public static Method[] getMethods(Class clazz, String propertyPath) {
-	    return getMethods(clazz, propertyPath, true);
-	}
-	
+        Get the methods for a property path.
+        @param clazz beginning Class object to start with.
+        @param propertyPath is dot "." separated list (case insensitive).
+        <br>
+        Example: getMethods(Order.class, "employee.department.region.name") will retrieve the following
+        methods: Order.getEmployee(), Employee.getDepartment(), Department.getRegion(), Region.getName()
+        <p>
+        Note: if any of the propertyNames is a Hub, then it will use the Hub's activeObject when retrieving the property.
+        @return array of "get' methods that can be used to retrieve a value from an object of type clazz.
+        @see #getPropertyValue(Object,Method)
+        @see #getMethods(Class,String,boolean)
+        @throws OAException if any method can not be found.
+    */
+    public static Method[] getMethods(Class clazz, String propertyPath) {
+        return getMethods(clazz, propertyPath, true);
+    }
+    
 
-	
-	
-	
+    
+    
+    
     /**
-	    Get the methods for a property path.
-	    @param clazz beginning Class object to start with.
-	    @param propertyPath is dot "." separated list (case insensitive).
-	    <br>
-	    Example: getMethods(Order.class, "employee.department.region.name") will retrieve the following
-	    methods: Order.getEmployee(), Employee.getDepartment(), Department.getRegion(), Region.getName()
-	    <p>
-	    Note: if any of the propertyNames is a Hub, then it will use the Hub's activeObject when retrieving the property.
-	    @param bThrowException flag to know if an exception should be thrown if methods are not found.
-	    @return array of "get' methods that can be used to retrieve a value from an object of type clazz.
-	    If the a method can not be found then null is returned.
-	    @see #getPropertyValue(Object,Method)
-	    @throws OAException if methods can not be found and bThrowException is true.
+        Get the methods for a property path.
+        @param clazz beginning Class object to start with.
+        @param propertyPath is dot "." separated list (case insensitive).
+        <br>
+        Example: getMethods(Order.class, "employee.department.region.name") will retrieve the following
+        methods: Order.getEmployee(), Employee.getDepartment(), Department.getRegion(), Region.getName()
+        <p>
+        Note: if any of the propertyNames is a Hub, then it will use the Hub's activeObject when retrieving the property.
+        @param bThrowException flag to know if an exception should be thrown if methods are not found.
+        @return array of "get' methods that can be used to retrieve a value from an object of type clazz.
+        If the a method can not be found then null is returned.
+        @see #getPropertyValue(Object,Method)
+        @throws OAException if methods can not be found and bThrowException is true.
      ** also can use newer OAPropertyPath, which has more info, including the methods
-	*/
+    */
     public static Method[] getMethods(Class clazz, String propertyPath, boolean bThrowException) {
-	    // ex:  (c,"emp.dept.manager.lastname")
-	    int pos,prev;
-	    if (propertyPath == null) propertyPath = "";
-	
-	    Vector vec = new Vector(5, 5);
+        // ex:  (c,"emp.dept.manager.lastname")
+        int pos,prev;
+        if (propertyPath == null) propertyPath = "";
+    
+        Vector vec = new Vector(5, 5);
 
-	    Class classLast = clazz;
-	    for (pos=prev=0; pos >= 0; prev=pos+1) {
+        Class classLast = clazz;
+        for (pos=prev=0; pos >= 0; prev=pos+1) {
 
             int posx = propertyPath.indexOf('(', prev);
             pos = propertyPath.indexOf('.', prev);
@@ -170,65 +170,65 @@ public class OAReflect {
             else {
                 pos = propertyPath.indexOf('.', prev);
             }
-	
-	        String name;
-	        if (pos >= 0) name = propertyPath.substring(prev,pos);
-	        else name = propertyPath.substring(prev);
-	
-	        /** 2004/09/09
-	            Add support for "casting" a property in a PropertyPath.
-	            Example:  "(Manager)Employee.Department"
-	        */
-	        String castName = null;
-	        int p = name.indexOf('(');
-	        if (p >= 0) {
-	            int p2 = name.indexOf(')');
-	            if (p2 > 0) {
-	                castName = name.substring(p+1, p2);
-	                if (p2+1 == name.length()) name = "";
-	                else name = name.substring(p2+1).trim();
-	            }
-	        }
-	
-	
-	        if (name.length() == 0) name = "toString";
-	        else name = "get" + name;
-	
-	        // find method
-	        // 2007/02/16 make sure method does not have any params
-	        Method method = OAReflect.getMethod(clazz, name, 0);
+    
+            String name;
+            if (pos >= 0) name = propertyPath.substring(prev,pos);
+            else name = propertyPath.substring(prev);
+    
+            /** 2004/09/09
+                Add support for "casting" a property in a PropertyPath.
+                Example:  "(Manager)Employee.Department"
+            */
+            String castName = null;
+            int p = name.indexOf('(');
+            if (p >= 0) {
+                int p2 = name.indexOf(')');
+                if (p2 > 0) {
+                    castName = name.substring(p+1, p2);
+                    if (p2+1 == name.length()) name = "";
+                    else name = name.substring(p2+1).trim();
+                }
+            }
+    
+    
+            if (name.length() == 0) name = "toString";
+            else name = "get" + name;
+    
+            // find method
+            // 2007/02/16 make sure method does not have any params
+            Method method = OAReflect.getMethod(clazz, name, 0);
 
-	        
-	        // was: Method method = OAReflect.getMethod(clazz, name);
-	        if (method == null) {
-	            method = OAReflect.getMethod(clazz, name.substring(3), 0);
-	            if (method == null) {
-	                // 20120807 if OAObject, which is the return value when using <generics>, ex: OALeftJoin
+            
+            // was: Method method = OAReflect.getMethod(clazz, name);
+            if (method == null) {
+                method = OAReflect.getMethod(clazz, name.substring(3), 0);
+                if (method == null) {
+                    // 20120807 if OAObject, which is the return value when using <generics>, ex: OALeftJoin
                     if (!bThrowException || clazz.equals(OAObject.class)) return null;
-	                //was: if (!bThrowException) return null;
-	                RuntimeException rex = new RuntimeException("OAReflect.getMethods() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+name+" path="+propertyPath);
-	                rex.printStackTrace();
-	                throw rex;
-	            }
-	        }
-	        vec.addElement(method);
-	
-	        clazz = method.getReturnType();
-	        if (clazz.equals(Hub.class)) {
-	            // try to find the ObjectClass for Hub
-	        	Class c = OAObjectInfoDelegate.getHubPropertyClass(classLast, name.substring(3));
-	            if (c != null) {
-	                // this needs to then get the activeObject out of the Hub object
-	                method = OAReflect.getMethod(clazz, "getActiveObject", 0);
-	                vec.addElement(method);
-	                clazz = c;
-	            }
-	        }
-	        else {
-	            /** 2004/09/09
-	                Add support for "casting" a property in a PropertyPath.
-	                Example:  "(Manager)Employee.Department"
-	            */
+                    //was: if (!bThrowException) return null;
+                    RuntimeException rex = new RuntimeException("OAReflect.getMethods() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+name+" path="+propertyPath);
+                    rex.printStackTrace();
+                    throw rex;
+                }
+            }
+            vec.addElement(method);
+    
+            clazz = method.getReturnType();
+            if (clazz.equals(Hub.class)) {
+                // try to find the ObjectClass for Hub
+                Class c = OAObjectInfoDelegate.getHubPropertyClass(classLast, name.substring(3));
+                if (c != null) {
+                    // this needs to then get the activeObject out of the Hub object
+                    method = OAReflect.getMethod(clazz, "getActiveObject", 0);
+                    vec.addElement(method);
+                    clazz = c;
+                }
+            }
+            else {
+                /** 2004/09/09
+                    Add support for "casting" a property in a PropertyPath.
+                    Example:  "(Manager)Employee.Department"
+                */
                 if (castName != null) {
                     String cn;
                     if (castName.indexOf('.') >= 0) {
@@ -252,181 +252,181 @@ public class OAReflect {
                         throw new RuntimeException(e);
                     }
                 }
-	        }
-	        classLast = clazz;
-	    }
-	    Method[] ms = new Method[vec.size()];
-	    vec.copyInto(ms);
-	    return ms;
-	}
+            }
+            classLast = clazz;
+        }
+        Method[] ms = new Method[vec.size()];
+        vec.copyInto(ms);
+        return ms;
+    }
 
-	
+    
     /**
-	    Convert String to required object needed as a parameter to Method.
-	    This will call OAConverter to do the conversion.
-	    @param method is Method that value will be sent to.
-	    @param value is String that needs to be converted so that it can be used with method.
-	    @return Object that is converted from String value.
-	    @see OAConverter
+        Convert String to required object needed as a parameter to Method.
+        This will call OAConverter to do the conversion.
+        @param method is Method that value will be sent to.
+        @param value is String that needs to be converted so that it can be used with method.
+        @return Object that is converted from String value.
+        @see OAConverter
      */
-	public static Object convertParameterFromString(Method method, String value) {
-	    Class[] params = method.getParameterTypes();
-	    if (params.length != 1) return null; // error
-	    Class param = params[0];
-	    return convertParameterFromString(param, value);
-	}
-	
+    public static Object convertParameterFromString(Method method, String value) {
+        Class[] params = method.getParameterTypes();
+        if (params.length != 1) return null; // error
+        Class param = params[0];
+        return convertParameterFromString(param, value);
+    }
+    
     /**
-	    Convert String to required object needed as a parameter to Method.
-	    This will call OAConverter to do the conversion.
-	    @param method is Method that value will be sent to.
-	    @param value is String that needs to be converted so that it can be used with method.
-	    @param format is text format used for String.
-	    @return Object that is converted from String value.
-	    @see OAConverter
+        Convert String to required object needed as a parameter to Method.
+        This will call OAConverter to do the conversion.
+        @param method is Method that value will be sent to.
+        @param value is String that needs to be converted so that it can be used with method.
+        @param format is text format used for String.
+        @return Object that is converted from String value.
+        @see OAConverter
     */
-	public static Object convertParameterFromString(Method method, String value, String format) {
-	    Class[] params = method.getParameterTypes();
-	    if (params.length != 1) return null; // error
-	    Class param = params[0];
-	    return convertParameterFromString(param, value, format);
-	}
-	
-	
+    public static Object convertParameterFromString(Method method, String value, String format) {
+        Class[] params = method.getParameterTypes();
+        if (params.length != 1) return null; // error
+        Class param = params[0];
+        return convertParameterFromString(param, value, format);
+    }
+    
+    
     /**
-	    Convert a String value to a different value of Class clazz.
-	    This will call OAConverter to do the conversion.
-	    @param clazz Class to convert String value to.
-	    @param value is String to convert.
-	    @return Object that is converted from String value.
-	    @see OAConverter
-	 */
-	public static Object convertParameterFromString(Class clazz, String value) {
-	    return OAConverter.convert(clazz,value);
-	}
-	
-	/**
-	    Convert a String value to a different value of Class clazz.
-	    This will call OAConverter to do the conversion.
-	    @param clazz Class to convert String value to.
-	    @param value is String to convert.
-	    @param format is text format used for String.
-	    @return Object that is converted from String value.
-	    @see OAConverter
-	 */
-	public static Object convertParameterFromString(Class c, String value, String format) {
-	    return OAConverter.convert(c,value,format);
-	}
-	
+        Convert a String value to a different value of Class clazz.
+        This will call OAConverter to do the conversion.
+        @param clazz Class to convert String value to.
+        @param value is String to convert.
+        @return Object that is converted from String value.
+        @see OAConverter
+     */
+    public static Object convertParameterFromString(Class clazz, String value) {
+        return OAConverter.convert(clazz,value);
+    }
+    
     /**
-	    Convert the returned object to a String value.
-	    @param object beginning object to use when calling methods.
-	    @param method array of methods to call.  Will use object for the first method, then will
-	    follow using the returned object for each method.
-	    @return If any method call returns a null, then null will be returned, else the string value of the
-	    last method call.
-	    @see OAReflect#getMethods
-	    @see OAReflect#getPropertyValue
-	 */
-	public static String getPropertyValueAsString(Object object, Method[] method) {
-	    return getPropertyValueAsString(object, method, null);
-	}
-	
+        Convert a String value to a different value of Class clazz.
+        This will call OAConverter to do the conversion.
+        @param clazz Class to convert String value to.
+        @param value is String to convert.
+        @param format is text format used for String.
+        @return Object that is converted from String value.
+        @see OAConverter
+     */
+    public static Object convertParameterFromString(Class c, String value, String format) {
+        return OAConverter.convert(c,value,format);
+    }
+    
     /**
-	    Convert the returned object, from an array of method calls, to a String value.
-	    @param object beginning object to use when calling methods.
-	    @param method array of methods to call.  Will use object for the first method, then will
-	    follow using the returned object for each method.
-	    @param format text format to use for conversion to string value.
-	    @return If any method call returns a null, then null will be returned, else the string value of the
-	    last method call.
-	    @see OAReflect#getMethods
-	    @see OAReflect#getPropertyValue
-	*/
-	public static String getPropertyValueAsString(Object object, Method method[], String format) {
-	    Method m = null;
-	    int x = method.length;
-	    if (x > 0) {
-	        for (int i=0; object != null && i<x-1; i++) {
-	            object = getPropertyValue(object, method[i]);
-	        }
-	        m = method[x-1];
-	    }
-	    if (object == null) return null;
-	    return getPropertyValueAsString(object, m, format);
-	}
-	
-	/**
-	    Convert the returned object of a method call to a String value.
-	    @param object beginning object to use when calling methods.
-	    @param method array of methods to call.  Will use object for the first method, then will
-	    follow using the returned object for each method.
-	    @param format text format to use for conversion to string value.
-	    @return If any method call returns a null, then null will be returned, else the string value of the
-	    last method call.
-	    @see OAReflect#getMethods
-	    @see OAReflect#getPropertyValue
-	 */
-	public static String getPropertyValueAsString(Object object, Method method) {
-	    return getPropertyValueAsString(object, method, null);
-	}
-	
-	
+        Convert the returned object to a String value.
+        @param object beginning object to use when calling methods.
+        @param method array of methods to call.  Will use object for the first method, then will
+        follow using the returned object for each method.
+        @return If any method call returns a null, then null will be returned, else the string value of the
+        last method call.
+        @see OAReflect#getMethods
+        @see OAReflect#getPropertyValue
+     */
+    public static String getPropertyValueAsString(Object object, Method[] method) {
+        return getPropertyValueAsString(object, method, null);
+    }
+    
+    /**
+        Convert the returned object, from an array of method calls, to a String value.
+        @param object beginning object to use when calling methods.
+        @param method array of methods to call.  Will use object for the first method, then will
+        follow using the returned object for each method.
+        @param format text format to use for conversion to string value.
+        @return If any method call returns a null, then null will be returned, else the string value of the
+        last method call.
+        @see OAReflect#getMethods
+        @see OAReflect#getPropertyValue
+    */
+    public static String getPropertyValueAsString(Object object, Method method[], String format) {
+        Method m = null;
+        int x = method.length;
+        if (x > 0) {
+            for (int i=0; object != null && i<x-1; i++) {
+                object = getPropertyValue(object, method[i]);
+            }
+            m = method[x-1];
+        }
+        if (object == null) return null;
+        return getPropertyValueAsString(object, m, format);
+    }
+    
+    /**
+        Convert the returned object of a method call to a String value.
+        @param object beginning object to use when calling methods.
+        @param method array of methods to call.  Will use object for the first method, then will
+        follow using the returned object for each method.
+        @param format text format to use for conversion to string value.
+        @return If any method call returns a null, then null will be returned, else the string value of the
+        last method call.
+        @see OAReflect#getMethods
+        @see OAReflect#getPropertyValue
+     */
+    public static String getPropertyValueAsString(Object object, Method method) {
+        return getPropertyValueAsString(object, method, null);
+    }
+    
+    
     /**
      *  @return if null then "", else formated string, using OAConverter.toString(value, format)
-	    @see getPropertyValueAsString(Object,Method[])
-	*/
-	public static String getPropertyValueAsString(Object object, Method method, String format) {
-	    return getPropertyValueAsString(object, method, format, "");
-	}
+        @see getPropertyValueAsString(Object,Method[])
+    */
+    public static String getPropertyValueAsString(Object object, Method method, String format) {
+        return getPropertyValueAsString(object, method, format, "");
+    }
 
     /**
      *  @return if null then nullValue, else formated string, using OAConverter.toString(value, format)
-	    @see getPropertyValueAsString(Object,Method[])
-	*/
-	public static String getPropertyValueAsString(Object object, Method method, String format, String nullValue) {
-	    object = getPropertyValue(object, method);
-	    if (object == null) return nullValue;
-	    return OAConverter.toString(object, format);
-	}
-	
-	
+        @see getPropertyValueAsString(Object,Method[])
+    */
+    public static String getPropertyValueAsString(Object object, Method method, String format, String nullValue) {
+        object = getPropertyValue(object, method);
+        if (object == null) return nullValue;
+        return OAConverter.toString(object, format);
+    }
+    
+    
     /**
-	    Run the following methods from a starting Object.
-	*/
-	public static Object executeMethod(Object object, Method method[]) {
-	    if (method == null || method.length == 0) return null;
-	    for (int i=0; object != null && i<method.length; i++) {
-	        object = getPropertyValue(object, method[i]);
-	    }
-	    return object;
-	}
+        Run the following methods from a starting Object.
+    */
+    public static Object executeMethod(Object object, Method method[]) {
+        if (method == null || method.length == 0) return null;
+        for (int i=0; object != null && i<method.length; i++) {
+            object = getPropertyValue(object, method[i]);
+        }
+        return object;
+    }
 
     /**
-	    Run the following methods based on a property path from a starting Object.
-	*/
-	public static Object executeMethod(Object object, String path) {
-	    if (object == null || path == null || path.length() == 0) return null;
-	    Method[] method = getMethods(object.getClass(), path);
-	    if (method == null || method.length == 0) throw new RuntimeException("OAReflect.executeMethod() cant find method "+path+" for class "+object.getClass());
-	    return executeMethod(object, method);
-	}
-	
+        Run the following methods based on a property path from a starting Object.
+    */
+    public static Object executeMethod(Object object, String path) {
+        if (object == null || path == null || path.length() == 0) return null;
+        Method[] method = getMethods(object.getClass(), path);
+        if (method == null || method.length == 0) throw new RuntimeException("OAReflect.executeMethod() cant find method "+path+" for class "+object.getClass());
+        return executeMethod(object, method);
+    }
+    
     /**
-	    This method will walk through the methods starting with the object supplied and
-	    then using the returned object.  It will
-	    @param object beginning object to use
-	    @param method[] methods of property path
-	    @see OAReflect#getMethods
-	    @see OAReflect#getPropertyValueAsString
-	 */
-	public static Object getPropertyValue(Object object, Method method[]) {
-	    if (method == null || method.length == 0) return object;
-	    for (int i=0; object != null && i<method.length; i++) {
-	        object = getPropertyValue(object, method[i]);
-	    }
-	    return object;
-	}
+        This method will walk through the methods starting with the object supplied and
+        then using the returned object.  It will
+        @param object beginning object to use
+        @param method[] methods of property path
+        @see OAReflect#getMethods
+        @see OAReflect#getPropertyValueAsString
+     */
+    public static Object getPropertyValue(Object object, Method method[]) {
+        if (method == null || method.length == 0) return object;
+        for (int i=0; object != null && i<method.length; i++) {
+            object = getPropertyValue(object, method[i]);
+        }
+        return object;
+    }
     public static Object getPropertyValue(Object object, Method method[], int amt) {
         if (method == null || method.length == 0) return object;
         for (int i=0; object != null && i<method.length && i<amt; i++) {
@@ -434,141 +434,154 @@ public class OAReflect {
         }
         return object;
     }
-	
+    
     /**
-	    Uses reflection to get returned value of a method.
-	    If object is an OAObject, then object.isNull(...) will be checked.  
-	 */
-	public static Object getPropertyValue(Object object, Method method) {
-	    if (object == null) return null;
-	    if (method == null) return object;
- 	    
-        if (object instanceof OAObject) {
-    	    Class c = method.getReturnType();
-    	    if (c != null && c.isPrimitive()) {
-        		String s = method.getName();
-        		if (s.length() > 3) {
-        			s = s.substring(3);
-        			if (((OAObject) object).isNull(s)) return null;
-        		}
-        	}
-	    }	    
-	    Object obj;
-	    try {
-	    	obj = method.invoke(object, null);
-	    }
-	    catch (Exception e) {
-	        String msg = "Error calling Method "+method+", using object="+object;
-	    	throw new RuntimeException(msg, e);
-	    }
-	    return obj;
-	}
-	
-    /**
-	    Converts a String object to object type required by method and invokes method
-	    @param value String value to use with method
-	    @see OAReflect#convertParameterFromString
-	 */
-	public static void setPropertyValue(Object object, Method method, String value) {
-	    Object obj = convertParameterFromString(method, value);
-	    setPropertyValue(object, method, obj);
-	}
-	/**
-	    Converts a String object to object type required by method and invokes method
-	    @param value String value to use with method
-	    @param format is format used for value.
-	    @see OAReflect#convertParameterFromString
-	 */
-	public static void setPropertyValue(Object object, Method method, String value, String format) {
-	    Object obj = convertParameterFromString(method, value, format);
-	    setPropertyValue(object, method, obj);
-	}
-	
-	/**
-	    Invokes method for an Object using an object value.
-	 */
-	public static void setPropertyValue(Object object, Method method, Object obj) {
-	    Object[] objs = new Object[1];
-	    objs[0] = obj;
-	    try {
-	        method.invoke(object, objs);
-	    }
-	    catch (Exception e) {
-	    	throw new RuntimeException(e);
-	    }
-	}
-	
+        Uses reflection to get returned value of a method.
+        If object is an OAObject, then object.isNull(...) will be checked.  
+     */
+    public static Object getPropertyValue(Object object, Method method) {
+        if (object == null) return null;
+        if (method == null) return object;
+        
+        Object obj;
+        try {
+            obj = method.invoke(object, null);
+        }
+        catch (Exception e) {
+            String msg = "Error calling Method "+method+", using object="+object;
+            throw new RuntimeException(msg, e);
+        }
 
-	
+        // 20141023 moved this to after calling invoke, in case get method changes the value.
+        if (object instanceof OAObject) {
+            Class c = method.getReturnType();
+            if (c != null && c.isPrimitive()) {
+                String s = method.getName();
+                if (s.startsWith("get")) {
+                    s = s.substring(3);
+                }
+                else if (s.startsWith("is")) {
+                    s = s.substring(2);
+                }
+                if (((OAObject) object).isNull(s)) return null;
+            }
+        }       
+        
+        return obj;
+    }
+    
     /**
-	    If a "get" method, will find type of class to send method,
-	    else will find the type of return class.
-	*/
-	static public Class getClass(Method m) {
-		if (m == null) return null;
-		Class[] c = m.getParameterTypes();
-		if (c.length == 0) {
-		    if (m.getReturnType() == void.class) return null;
-		    return m.getReturnType();
-		}
-		if (c.length == 1) return c[0];
-		return null;
-	}
-	
+        Converts a String object to object type required by method and invokes method
+        @param value String value to use with method
+        @see OAReflect#convertParameterFromString
+     */
+    public static void setPropertyValue(Object object, Method method, String value) {
+        Object obj = convertParameterFromString(method, value);
+        setPropertyValue(object, method, obj);
+    }
     /**
-	    Determines if a class is a Number.
-	*/
-	static public boolean isNumber(Class clazz) {
-	    if (clazz == null) {
-	        return false;
-	    }
-	    clazz = getClassWrapper(clazz);
-	    return ( Number.class.isAssignableFrom(clazz) );
-	}
-	
-	/**  Determines if a class is a Integer. */
-	static public boolean isInteger(Class clazz) {
+        Converts a String object to object type required by method and invokes method
+        @param value String value to use with method
+        @param format is format used for value.
+        @see OAReflect#convertParameterFromString
+     */
+    public static void setPropertyValue(Object object, Method method, String value, String format) {
+        Object obj = convertParameterFromString(method, value, format);
+        setPropertyValue(object, method, obj);
+    }
+    
+    /**
+        Invokes method for an Object using an object value.
+     */
+    public static void setPropertyValue(Object object, Method method, Object newValue) {
+        Object[] objs = new Object[1];
+        objs[0] = newValue;
+        try {
+            if (newValue == null && object instanceof OAObject && method.getParameterTypes()[0].isPrimitive()) {
+                String s = method.getName();
+                if (s.length() > 3) s = s.substring(3);
+                ((OAObject)object).setNull(s);
+            }
+            else {
+                method.invoke(object, objs);
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+
+    
+    /**
+        If a "get" method, will find type of class to send method,
+        else will find the type of return class.
+    */
+    static public Class getClass(Method m) {
+        if (m == null) return null;
+        Class[] c = m.getParameterTypes();
+        if (c.length == 0) {
+            if (m.getReturnType() == void.class) return null;
+            return m.getReturnType();
+        }
+        if (c.length == 1) return c[0];
+        return null;
+    }
+    
+    /**
+        Determines if a class is a Number.
+    */
+    static public boolean isNumber(Class clazz) {
+        if (clazz == null) {
+            return false;
+        }
+        clazz = getClassWrapper(clazz);
+        return ( Number.class.isAssignableFrom(clazz) );
+    }
+    
+    /**  Determines if a class is a Integer. */
+    static public boolean isInteger(Class clazz) {
         if (clazz == null) {
             return false;
         }
         clazz = getClassWrapper(clazz);
         return ( clazz.equals(Long.class) || clazz.equals(Integer.class) || clazz.equals(Short.class)
                 || clazz.equals(Character.class) || clazz.equals(Byte.class) || clazz.equals(BigInteger.class));
-	}
-	
-	/**  Determines if a class is a Float. */
-	static public boolean isFloat(Class clazz) {
+    }
+    
+    /**  Determines if a class is a Float. */
+    static public boolean isFloat(Class clazz) {
         if (clazz == null) {
             return false;
         }
         clazz = getClassWrapper(clazz);
         return ( clazz.equals(Double.class) || clazz.equals(Float.class) || clazz.equals(BigDecimal.class) );
-	}
-	
-	
-	/**  */
-	static public Class getClassWrapper(Class clazz) {
-	    Class c = (Class) tblPrimitives.get(clazz);
-	    if (c != null) {
-	        return c;
-	    }
-	    return clazz;
-	}
-	
-	/**
-	    Returns Class used to wrap a primitive Class.
-	*/
-	static public Class getPrimitiveClassWrapper(Class classPrimitive) {
-	    if (classPrimitive == null) {
-	        return null;
-	    }
-	    Class c = (Class) tblPrimitives.get(classPrimitive);
-	    if (c != null) {
-	        return c;
-	    }
-	    return classPrimitive;
-	}
-	
+    }
+    
+    
+    /**  */
+    static public Class getClassWrapper(Class clazz) {
+        Class c = (Class) tblPrimitives.get(clazz);
+        if (c != null) {
+            return c;
+        }
+        return clazz;
+    }
+    
+    /**
+        Returns Class used to wrap a primitive Class.
+    */
+    static public Class getPrimitiveClassWrapper(Class classPrimitive) {
+        if (classPrimitive == null) {
+            return null;
+        }
+        Class c = (Class) tblPrimitives.get(classPrimitive);
+        if (c != null) {
+            return c;
+        }
+        return classPrimitive;
+    }
+    
     static public boolean isPrimitiveClassWrapper(Class clazz) {
         if (clazz == null) {
             return false;

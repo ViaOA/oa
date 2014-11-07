@@ -131,11 +131,11 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     public void close() {
         // need to make sure that no more events get processed
         this.bClosed = true;
-		if (bOAObjectCacheDelegateListener) {
-		    Class c = (hub != null) ? hub.getObjectClass() : hubMaster.getObjectClass();
-		    OAObjectCacheDelegate.removeListener(c, getMasterHubListener());
-		    bOAObjectCacheDelegateListener = false;
-		}
+        if (bOAObjectCacheDelegateListener) {
+            Class c = (hub != null) ? hub.getObjectClass() : hubMaster.getObjectClass();
+            OAObjectCacheDelegate.removeListener(c, getMasterHubListener());
+            bOAObjectCacheDelegateListener = false;
+        }
         if (hub != null) {
             hub.removeHubListener(this);
         }
@@ -148,7 +148,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             linkHubListener = null;
         }
         if (hlDependentProperties != null) {
-            hubMaster.removeHubListener(hlDependentProperties);
+            if (hubMaster != null) hubMaster.removeHubListener(hlDependentProperties);
             hlDependentProperties = null;
         }
     }
@@ -227,7 +227,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         if (bClosed) return;
         if (prop == null || prop.length() == 0) return;
         
-        if (hlDependentProperties != null) {
+        if (hubMaster != null && hlDependentProperties != null) {
             hubMaster.removeHubListener(hlDependentProperties);
         }
 
@@ -237,7 +237,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
 
         hlDependentProperties = new HubListenerAdapter();
         if (uniqueName == null) uniqueName = "HubFilter" + (UniqueNameCnt++);
-        hubMaster.addHubListener(hlDependentProperties, uniqueName, dependentProperties);
+        if (hubMaster != null) hubMaster.addHubListener(hlDependentProperties, uniqueName, dependentProperties);
 
         // hashProp has list of property names that this.hubListener is listening to
         if (hashProp == null) hashProp = new HashSet(5, .75f);
@@ -285,9 +285,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             /** HubListener interface method, used to update filter. */
             public @Override void afterAdd(HubEvent<TYPE> e) {
                 if (bClosed) return;
-                if (!hubMaster.isLoading()) {
+                if (hubMaster == null || !hubMaster.isLoading()) {
                     if (hub == null || !hub.contains(e.getObject())) {
-                        if (hubMaster.contains(e.getObject())) {
+                        if (hubMaster == null || hubMaster.contains(e.getObject())) {
                             try {
                                 aiUpdating.incrementAndGet();
                                 update(e.getObject());
@@ -307,7 +307,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                     if (bServerSideOnly) { 
                         OARemoteThreadDelegate.sendMessages(true);
                     }
-                    if (!hubMaster.contains(e.getObject())) {
+                    if (hubMaster == null || !hubMaster.contains(e.getObject())) {
                         removeObject(getObject(e.getObject()));
                     }
                 }
@@ -331,7 +331,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             }
             
             public void afterChangeActiveObject(HubEvent<TYPE> e) {
-                if (bShareAO && hub != null) {
+                if (bShareAO && hub != null && hubMaster != null) {
                     Object obj = HubFilter.this.hubMaster.getAO();
                     if (obj != null && !HubFilter.this.hub.contains(obj)) obj = null;
                     HubFilter.this.hub.setAO(obj);
@@ -434,11 +434,11 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             aiUpdating.incrementAndGet();
             obj = getObject(obj);
             if (obj != null) {
-                if ( hubMaster.getObjectClass().isAssignableFrom(obj.getClass()) ) {
+                if (hubMaster == null || hubMaster.getObjectClass().isAssignableFrom(obj.getClass()) ) {
                     if (isUsed(obj)) {
                         if (!hub.contains(obj)) {
                             if (obj == objTemp) objTemp = null;
-                            if (hubMaster.contains(obj)) {
+                            if (hubMaster == null || hubMaster.contains(obj)) {
                                 addObject(obj);
                             }
                         }
@@ -458,7 +458,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                                             }
                                         }
                                         objTemp = obj;
-                                        if (hubMaster.contains(obj)) {
+                                        if (hubMaster == null || hubMaster.contains(obj)) {
                                             addObject(obj);
                                         }
                                     }
@@ -536,24 +536,24 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                     aiClearing.decrementAndGet();
                 }
             }
-	        
-    	    try {
+            
+            try {
                 OAThreadLocalDelegate.setLoadingObject(true);
                 _initialize();
-    	        bNewListFlag = true;                   
-    	        if (hub != null) HubEventDelegate.fireOnNewListEvent(hub, true);
-    	    }
-    	    finally {
-    	        bNewListFlag = false;	    	        
+                bNewListFlag = true;                   
+                if (hub != null) HubEventDelegate.fireOnNewListEvent(hub, true);
+            }
+            finally {
+                bNewListFlag = false;                   
                 OAThreadLocalDelegate.setLoadingObject(false);
-    	    }
-    	}
-    	finally {
-    		if (hd != null) hd.bInFetch = false;
+            }
+        }
+        finally {
+            if (hd != null) hd.bInFetch = false;
             if (bServerSideOnly) {
                 OARemoteThreadDelegate.sendMessages(false);
             }
-    	}
+        }
         afterInitialize();
     }    
     
@@ -579,12 +579,12 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                 }
             }
             hub.setAO(objx);
-            if (bShareAO) {
+            if (bShareAO && hubMaster != null) {
                 if (hubMaster.getLinkHub() == null) hubMaster.setAO(objx);
             }
         }
         
-        if (bShareAO && hubLink == null) {
+        if (bShareAO && hubLink == null && hubMaster != null) {
             TYPE obj = hubMaster.getAO();
             if (obj != null && !hub.contains(obj)) {
                 obj = null;
@@ -608,9 +608,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     protected void addObject(TYPE obj) {
         if (bClosed) return;
         try {
-        	if (hub != null) {
-        	    hub.add(obj);
-        	}
+            if (hub != null) {
+                hub.add(obj);
+            }
         }
         catch (Exception e) {
         }
