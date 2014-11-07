@@ -20,6 +20,10 @@ package com.viaoa.hub;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectInfo;
+import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.util.OANullObject;
 import com.viaoa.ds.*;
 
@@ -49,6 +53,12 @@ public class HubData implements java.io.Serializable {
     protected boolean bTrackChanges;
 
     private HubDatax hubDatax; // extension
+
+    /** Class of objects in this Hub */
+    protected Class objClass;
+    
+    /** property path(s) used for selectOrder */
+    protected String selectOrder;
     
 	/**
 	    Constructor that supplies params for sizing Vector.
@@ -246,8 +256,9 @@ System.out.println((++qq)+") HubDatax created");
         else hmSelectAllHub.remove(this);
     }
 
+    // note: could also be in HubDataMaster.
     public String getUniqueProperty() {
-        if (hubDatax == null) return null;
+        if (hubDatax != null) return null;
         return hubDatax.uniqueProperty;
     }
     public void setUniqueProperty(String uniqueProperty) {
@@ -273,6 +284,100 @@ System.out.println((++qq)+") HubDatax created");
             getHubDatax().disabled = disabled;
         }
     }
+//qqqqqqqqqqqqqqqqqqqqqqqq
 
+    public Hashtable getHashProperty() {
+        if (hubDatax == null) return null;
+        return hubDatax.hashProperty;
+    }
+    public void setHashProperty(Hashtable hashProperty) {
+        if (hubDatax != null || hashProperty != null) {
+            getHubDatax().hashProperty = hashProperty;
+        }
+    }
+    public OAObjectInfo getObjectInfo() {
+        OAObjectInfo oi;
+        if (hubDatax != null) {
+            oi = hubDatax.objectInfo;
+            if (oi != null) return oi;
+        }
+        oi = OAObjectInfoDelegate.getObjectInfo(objClass);
+        if (hubDatax != null) hubDatax.objectInfo = oi; 
+        return oi;
+    }
+    public void setObjectInfo(OAObjectInfo objectInfo) {
+        if (hubDatax != null) hubDatax.objectInfo = objectInfo; 
+    }
+    public String getSelectOrder() {
+        return selectOrder;
+    }
+    public void setSelectOrder(String selectOrder) {
+        this.selectOrder = selectOrder;
+    }
+    
+    public HubAutoSequence getAutoSequence() {
+        if (hubDatax == null) return null;
+        return hubDatax.autoSequence;
+    }
+    public void setAutoSequence(HubAutoSequence autoSequence) {
+        if (hubDatax != null || autoSequence != null) {
+            getHubDatax().autoSequence = autoSequence;
+        }
+    }
+    
+    public HubAutoMatch getAutoMatch() {
+        if (hubDatax == null) return null;
+        return hubDatax.autoMatch;
+    }
+    public void setAutoMatch(HubAutoMatch autoMatch) {
+        if (hubDatax != null || autoMatch != null) {
+            getHubDatax().autoMatch = autoMatch;
+        }
+    }
+
+    public boolean isOAObjectFlag() {
+        if (hubDatax != null) {
+            if (hubDatax.oaObjectFlag) return true;
+            boolean b = OAObject.class.isAssignableFrom(objClass);
+            hubDatax.oaObjectFlag = b;
+            return b;
+        }
+        return objClass != null && OAObject.class.isAssignableFrom(objClass);
+    }
+    public void setOAObjectFlag(boolean oaObjectFlag) {
+        if (hubDatax != null) hubDatax.oaObjectFlag = oaObjectFlag; 
+    }
+
+
+    public boolean isDupAllowAddRemove() {
+        if (hubDatax == null) return true; // default
+        return hubDatax.dupAllowAddRemove;
+    }
+    public void setDupAllowAddRemove(boolean dupAllowAddRemove) {
+        if (hubDatax != null || !dupAllowAddRemove) {
+            getHubDatax().dupAllowAddRemove = dupAllowAddRemove;
+        }
+    }
+
+
+    public boolean isAutoCreate() {
+        if (hubDatax == null) return false;
+        return hubDatax.bAutoCreate;
+    }
+    public void setAutoCreate(boolean bAutoCreate) {
+        if (hubDatax != null || bAutoCreate) {
+            getHubDatax().bAutoCreate = bAutoCreate;
+        }
+    }
+
+    public boolean isAutoCreateAllowDups() {
+        if (hubDatax == null) return false;
+        return hubDatax.bAutoCreateAllowDups;
+    }
+    public void setAutoCreateAllowDups(boolean bAutoCreateAllowDups) {
+        if (hubDatax != null || bAutoCreateAllowDups) {
+            getHubDatax().bAutoCreateAllowDups = bAutoCreateAllowDups;
+        }
+    }
 }
 

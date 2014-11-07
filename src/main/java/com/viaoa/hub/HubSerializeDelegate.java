@@ -73,14 +73,14 @@ public class HubSerializeDelegate {
 	    Used by serialization when reading objects from stream.
 	*/
 	protected static Object _readResolve(Hub thisHub) throws ObjectStreamException {
-		HubDelegate.setObjectClass(thisHub, thisHub.datau.objClass);  // this will update HubController and datau
+		HubDelegate.setObjectClass(thisHub, thisHub.data.objClass);  // this will update HubController and datau
 	    if (thisHub.datam == null) thisHub.datam = new HubDataMaster();
 
 	    if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
 	        // need to reassign  linkInfo, to eliminate linkinfo dups
 	    	boolean bFound = false;	    	
-	        if (thisHub.datau.getObjectInfo() != null) { 
-	        	List al = thisHub.datau.getObjectInfo().getLinkInfos();
+	        if (thisHub.data.getObjectInfo() != null) { 
+	        	List al = thisHub.data.getObjectInfo().getLinkInfos();
 	        	OALinkInfo liOld = thisHub.datam.liDetailToMaster;
 	        	for (int i=0; i < al.size(); i++) {
 	            	OALinkInfo li = (OALinkInfo) al.get(i);
@@ -141,7 +141,7 @@ public class HubSerializeDelegate {
 		    if (obj == null) break;
 		    
 		    Object key = obj;
-		    if (thisHub.datau.isOAObjectFlag()) {
+		    if (thisHub.data.isOAObjectFlag()) {
 		        if (!b) {
 		            // dont initialize this hub if the master object is a duplicate.
 		            // check by looking to see if this object already belongs to a hub that has the same masterObject/linkinfo

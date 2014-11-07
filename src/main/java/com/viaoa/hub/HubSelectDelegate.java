@@ -211,13 +211,13 @@ public class HubSelectDelegate {
 	    }
 	
 	    if (thisHub.datau.getSharedHub() != null) {
-	        if (thisHub.datau.selectOrder != null) thisHub.datau.getSharedHub().setSelectOrder(thisHub.datau.selectOrder);
+	        if (thisHub.data.selectOrder != null) thisHub.datau.getSharedHub().setSelectOrder(thisHub.data.selectOrder);
 	        select(thisHub.datau.getSharedHub(), select);
 	        return;
 	    }
-	    if (thisHub.datau.objClass == null) {
-	    	thisHub.datau.objClass = select.getSelectClass();
-	    	if (thisHub.datau.objClass == null) return;
+	    if (thisHub.data.objClass == null) {
+	    	thisHub.data.objClass = select.getSelectClass();
+	    	if (thisHub.data.objClass == null) return;
 	    }
 	
 	    if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
@@ -387,7 +387,7 @@ public class HubSelectDelegate {
 	    @see OASelect
 	*/
 	public static void setSelectOrder(Hub thisHub, String s) {
-		thisHub.datau.selectOrder = s;
+		thisHub.data.selectOrder = s;
 
 		OASelect sel = getSelect(thisHub);
 	    if (!OAString.isEmpty(s) && sel == null) {

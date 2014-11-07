@@ -319,7 +319,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     
     private String _toString(int cnt, ArrayList<Hub> alHub) {
         if (datau == null) return "Hub";
-        String s = OAString.getClassName(this.getClass()) + "." + OAString.getClassName(datau.objClass); 
+        String s = OAString.getClassName(this.getClass()) + "." + OAString.getClassName(data.objClass); 
         // was:  super._toString() datau.objClass;
         
         if (alHub != null) {
@@ -472,14 +472,14 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Returns true if this Hub's objects are a subclass of OAObject
      */
     public boolean isOAObject() {
-        return datau.isOAObjectFlag();
+        return data.isOAObjectFlag();
     }
 
     /**
      * Returns the Class of the objects that are being stored in this Hub.
      */
     public Class getObjectClass() {
-        return datau.objClass;
+        return data.objClass;
     }
 
     /**

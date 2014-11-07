@@ -220,8 +220,8 @@ public class HubAddRemoveDelegate {
         }
         
         final Class c = obj.getClass();
-        if (thisHub.datau.objClass == null) HubDelegate.setObjectClass(thisHub, c);
-        if (!thisHub.datau.objClass.isAssignableFrom(c) ) return "class not assignable, class="+c;
+        if (thisHub.data.objClass == null) HubDelegate.setObjectClass(thisHub, c);
+        if (!thisHub.data.objClass.isAssignableFrom(c) ) return "class not assignable, class="+c;
 
         if (thisHub.isLoading()) return null;
         if (thisHub.data.getUniqueProperty() != null) {
@@ -275,7 +275,7 @@ public class HubAddRemoveDelegate {
             return;
         }
 
-        if (thisHub.datau.objClass == null) {
+        if (thisHub.data.objClass == null) {
             Class c = obj.getClass();
             HubDelegate.setObjectClass(thisHub, c);
         }
@@ -306,7 +306,7 @@ public class HubAddRemoveDelegate {
         Hub rootHub = thisHub.getRootHub();
         if (rootHub != null) {
             if (rootHub == thisHub) {
-                OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.getObjectInfo(), OALinkInfo.ONE);
+                OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
                 if (liRecursive != null) {
                     OAObjectReflectDelegate.setProperty((OAObject)obj, liRecursive.getName(), null, null);
                 }
@@ -437,7 +437,7 @@ public class HubAddRemoveDelegate {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
             return internalAdd(thisHub, obj);
         }
-        if (thisHub.datau.objClass == null) {
+        if (thisHub.data.objClass == null) {
             Class c = obj.getClass();
             HubDelegate.setObjectClass(thisHub, c);
         }
@@ -534,7 +534,7 @@ public class HubAddRemoveDelegate {
         
         // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
         if (thisHub.getRootHub() == thisHub) {
-            OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.getObjectInfo(), OALinkInfo.ONE);
+            OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
             if (liRecursive != null) {
                 OAObjectReflectDelegate.setProperty((OAObject) obj, liRecursive.getName(), null, null);
             }
@@ -582,7 +582,7 @@ public class HubAddRemoveDelegate {
     }
     public static boolean isAllowAddRemove(Hub thisHub) {
         if (thisHub == null) return false;
-        return thisHub.datau.isDupAllowAddRemove();
+        return thisHub.data.isDupAllowAddRemove();
     }
     
 }

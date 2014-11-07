@@ -30,19 +30,10 @@ import com.viaoa.object.*;
 class HubDataUniquex implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 	
-	/** true if this is for a OAObject */
-	protected boolean oaObjectFlag;
 	
 	/** these options are not enforced on OAObjects, they are used to flag options */
-//	boolean allowNew = true, allowDelete = true, allowEdit = true;
+    //	boolean allowNew = true, allowDelete = true, allowEdit = true;
 	
-	/**
-	    flag set to know if objects can be added or removed.  This is false when a detail hub
-	    is from an array or non-Hub.  Defalut is true.
-	*/
-	protected boolean dupAllowAddRemove = true;
-	
-
 	/**
 	    Single finder object used by last call to findX methods that did not use a HubFinder object.
 	    <p>
@@ -52,20 +43,6 @@ class HubDataUniquex implements java.io.Serializable {
 	protected transient OAFinder finder;
 	protected transient int finderPos;
 	
-	/** OAObjectInfo for the Class of objects in this Hub. */
-	protected transient OAObjectInfo objectInfo;  //
-	
-	/** Misc name/values pairs stored in this Hub.  Name is case insensitive. */
-	protected Hashtable hashProperty;
-	
-	/** property path(s) used for selectOrder */
-	protected String selectOrder;
-	
-	/** used to update property in objects to match its position within Hub */
-	protected transient HubAutoSequence autoSequence;
-	
-	/** makes sure that this Hub will have an object with a reference for each object in another Hub. */
-	protected transient HubAutoMatch autoMatch;
 	
 	/**
 	    Position of active object to set for new list. Can be set to 0 so that first object
@@ -166,19 +143,6 @@ class HubDataUniquex implements java.io.Serializable {
 	*/
 	protected transient Method linkFromGetMethod;
 	
-	/**
-	    Used to automatically create a new object in the Master Hub whenever
-	    the active object in Link Hub is changed.  The new object will then
-	    have its link property set.
-	*/
-	protected transient boolean bAutoCreate;
-
-    /**
-     * If true and bAutoCreate, then new objects will be created.
-     * If false and a new object with value already exists, then a new object will not be created
-     *    and the current object will be set to AO
-    */
-	protected transient boolean bAutoCreateAllowDups;
 	
 	
 	/**
@@ -218,6 +182,4 @@ class HubDataUniquex implements java.io.Serializable {
 	    objects that are then added to a list.
 	*/
 	protected transient Hub addHub;
-	
-	
 }

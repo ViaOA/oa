@@ -233,6 +233,11 @@ public class OAAnnotationDelegate {
             s = annotation.matchProperty();
             if (s != null && s.length() == 0) s = null;
             li.setMatchProperty(s);
+            
+            s = annotation.uniqueProperty();
+            if (s != null && s.length() == 0) s = null;
+            li.setUniqueProperty(s);
+            
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());
             li.setServerSideCalc(annotation.isServerSideCalc());
