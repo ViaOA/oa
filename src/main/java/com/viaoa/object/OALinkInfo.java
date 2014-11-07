@@ -45,6 +45,7 @@ public class OALinkInfo implements java.io.Serializable {
     private String matchHub;  // propertyPath to find matching hub
     private String matchProperty;  // propertyPath to match, using HubAutoMatch
     boolean mustBeEmptyForDelete; // this link must be emtpy before other side can be deleted
+    private String uniqueProperty;  // unique propertyPath
     
     // runtime
     protected transient int cacheSize;
@@ -211,6 +212,22 @@ public class OALinkInfo implements java.io.Serializable {
 	    return this.matchProperty;
 	}
 
+    public void setUniqueProperty(String prop) {
+        this.uniqueProperty = prop;
+    }
+    public String getUniqueProperty() {
+        return this.uniqueProperty;
+    }
+    
+    private Method uniquePropertyGetMethod;
+    public Method getUniquePropertyGetMethod() {
+        if (uniquePropertyGetMethod != null) return uniquePropertyGetMethod;
+        if (uniqueProperty == null) return null;
+        uniquePropertyGetMethod = OAObjectInfoDelegate.getMethod(toClass, "get"+uniqueProperty);
+        return uniquePropertyGetMethod;
+    }
+    
+    
 	// pp = propertyPath to matchingHub
     public void setMatchHub(String pp) {
         this.matchHub = pp;

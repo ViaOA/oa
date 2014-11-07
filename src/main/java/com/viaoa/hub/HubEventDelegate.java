@@ -420,9 +420,19 @@ public class HubEventDelegate {
             propertyChangeUpdateDetailHubs(thisHub, oaObj, propertyName);
 	    }
 
-	    if (thisHub.data.getUniqueProperty() != null && newValue != null && thisHub.data.getUniqueProperty().equalsIgnoreCase(propertyName)) {
+	    String s = thisHub.data.getUniqueProperty();
+	    if (s == null) {
+            if (thisHub.datam.liDetailToMaster != null) {
+                OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(thisHub.datam.liDetailToMaster);
+                if (rli != null) {
+                    s = rli.getUniqueProperty();
+                }
+            }
+	    }
+	    
+	    if (s != null && newValue != null && s.equalsIgnoreCase(propertyName)) {
 	        if (!HubDelegate.verifyUniqueProperty(thisHub, oaObj)) {
-	        	throw new RuntimeException("Property "+thisHub.data.getUniqueProperty()+" already exists");
+	        	throw new RuntimeException("Property "+s+" already exists");
 	        }
 	    }
 	

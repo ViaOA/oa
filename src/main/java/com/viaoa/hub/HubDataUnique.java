@@ -30,27 +30,9 @@ import com.viaoa.object.*;
 class HubDataUnique implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 	
-	/** Class of objects in this Hub */
-	protected Class objClass;
 	
 	private HubDataUniquex hubDataUniquex;  // extended settings
-	
-	/** property path(s) used for selectOrder */
-	protected String selectOrder;
 
-	
-    public boolean isOAObjectFlag() {
-        if (hubDataUniquex != null) {
-            if (hubDataUniquex.oaObjectFlag) return true;
-            boolean b = OAObject.class.isAssignableFrom(objClass);
-            hubDataUniquex.oaObjectFlag = b;
-            return b;
-        }
-        return OAObject.class.isAssignableFrom(objClass);
-    }
-    public void setOAObjectFlag(boolean oaObjectFlag) {
-        if (hubDataUniquex != null) hubDataUniquex.oaObjectFlag = oaObjectFlag; 
-    }
 
 static int qq;    
     private HubDataUniquex getHubDataUniquex() {
@@ -66,15 +48,6 @@ System.out.println((++qq)+") HubDataUniquex created");
         return hubDataUniquex;
     }
     
-    public boolean isDupAllowAddRemove() {
-        if (hubDataUniquex == null) return true; // default
-        return hubDataUniquex.dupAllowAddRemove;
-    }
-    public void setDupAllowAddRemove(boolean dupAllowAddRemove) {
-        if (hubDataUniquex != null || !dupAllowAddRemove) {
-            getHubDataUniquex().dupAllowAddRemove = dupAllowAddRemove;
-        }
-    }
     
     
     public OAFinder getFinder() {
@@ -97,55 +70,6 @@ System.out.println((++qq)+") HubDataUniquex created");
         }
     }
 
-    public Hashtable getHashProperty() {
-        if (hubDataUniquex == null) return null;
-        return hubDataUniquex.hashProperty;
-    }
-    public void setHashProperty(Hashtable hashProperty) {
-        if (hubDataUniquex != null || hashProperty != null) {
-            getHubDataUniquex().hashProperty = hashProperty;
-        }
-    }
-    
-    public OAObjectInfo getObjectInfo() {
-        OAObjectInfo oi;
-        if (hubDataUniquex != null) {
-            oi = hubDataUniquex.objectInfo;
-            if (oi != null) return oi;
-        }
-        oi = OAObjectInfoDelegate.getObjectInfo(objClass);
-        if (hubDataUniquex != null) hubDataUniquex.objectInfo = oi; 
-        return oi;
-    }
-    public void setObjectInfo(OAObjectInfo objectInfo) {
-        if (hubDataUniquex != null) hubDataUniquex.objectInfo = objectInfo; 
-    }
-    public String getSelectOrder() {
-        return selectOrder;
-    }
-    public void setSelectOrder(String selectOrder) {
-        this.selectOrder = selectOrder;
-    }
-    
-    public HubAutoSequence getAutoSequence() {
-        if (hubDataUniquex == null) return null;
-        return hubDataUniquex.autoSequence;
-    }
-    public void setAutoSequence(HubAutoSequence autoSequence) {
-        if (hubDataUniquex != null || autoSequence != null) {
-            getHubDataUniquex().autoSequence = autoSequence;
-        }
-    }
-    
-    public HubAutoMatch getAutoMatch() {
-        if (hubDataUniquex == null) return null;
-        return hubDataUniquex.autoMatch;
-    }
-    public void setAutoMatch(HubAutoMatch autoMatch) {
-        if (hubDataUniquex != null || autoMatch != null) {
-            getHubDataUniquex().autoMatch = autoMatch;
-        }
-    }
 
     public int getDefaultPos() {
         if (hubDataUniquex == null) return -1;
@@ -267,25 +191,6 @@ System.out.println((++qq)+") HubDataUniquex created");
         }
     }
 
-    public boolean isAutoCreate() {
-        if (hubDataUniquex == null) return false;
-        return hubDataUniquex.bAutoCreate;
-    }
-    public void setAutoCreate(boolean bAutoCreate) {
-        if (hubDataUniquex != null || bAutoCreate) {
-            getHubDataUniquex().bAutoCreate = bAutoCreate;
-        }
-    }
-
-    public boolean isAutoCreateAllowDups() {
-        if (hubDataUniquex == null) return false;
-        return hubDataUniquex.bAutoCreateAllowDups;
-    }
-    public void setAutoCreateAllowDups(boolean bAutoCreateAllowDups) {
-        if (hubDataUniquex != null || bAutoCreateAllowDups) {
-            getHubDataUniquex().bAutoCreateAllowDups = bAutoCreateAllowDups;
-        }
-    }
 
     public HubLinkEventListener getHubLinkEventListener() {
         if (hubDataUniquex == null) return null;

@@ -296,7 +296,7 @@ public class HubDetailDelegate {
             dHub.data.vector.removeAllElements();
         }
 
-        dHub.datau.setDupAllowAddRemove(true);
+        dHub.data.setDupAllowAddRemove(true);
     
         if (obj == null) {
             HubDataActive daOld = dHub.dataa;
@@ -306,7 +306,7 @@ public class HubDetailDelegate {
                 dHub.data = new HubData();
                 if (detail.bShareActiveObject) dHub.dataa = new HubDataActive();
             }
-            dHub.datau.setDupAllowAddRemove(false); // 2004/08/23
+            dHub.data.setDupAllowAddRemove(false); // 2004/08/23
             //was: if (detail.type != HubDetail.HUB) dHub.datau.dupAllowAddRemove = false;
             HubShareDelegate.syncSharedHubs(dHub, true, daOld, dHub.dataa, bUpdateLink);
         }
@@ -316,7 +316,7 @@ public class HubDetailDelegate {
             // dont share activeObject ("dataa")
             //     unless DetailHub.bShareActiveObject is true then set it after events
             Hub h = (Hub) obj;
-            if (dHub.datau.selectOrder != null) h.setSelectOrder(dHub.datau.selectOrder);
+            if (dHub.data.selectOrder != null) h.setSelectOrder(dHub.data.selectOrder);
     
             // need to select before assigning to detail hub so that add events wont
             //            be sent to detail hubs listeners
@@ -342,7 +342,7 @@ public class HubDetailDelegate {
         }
         else if (detail.type == HubDetail.OAOBJECT || detail.type == HubDetail.OBJECT) {
             HubAddRemoveDelegate.internalAdd(dHub, (OAObject) obj);
-            dHub.datau.setDupAllowAddRemove(false);
+            dHub.data.setDupAllowAddRemove(false);
         }
         else {
             // HubDetail.OBJECTARRAY || HubDetail.OAOBJECTARRAY
@@ -351,7 +351,7 @@ public class HubDetailDelegate {
                 Object objx = Array.get(obj,k);
                 HubAddRemoveDelegate.internalAdd(dHub, objx);
             }
-            dHub.datau.setDupAllowAddRemove(false);
+            dHub.data.setDupAllowAddRemove(false);
         }
     
         /** 20111005 internalAdd will .addHub
@@ -579,7 +579,7 @@ public class HubDetailDelegate {
         // linkHub is Hub that is the detail hub, it is supplied by setMaster()
         // lastClass can be the class to use for the last class in the path
 
-        if (path != null && path.length() > 0 && thisHub.datau.objClass == null) return null;
+        if (path != null && path.length() > 0 && thisHub.data.objClass == null) return null;
 
         // 2004/03/19 taken out, so that it can be set in this method
         // if (linkHub != null) linkHub.checkObjectClass();
@@ -662,12 +662,12 @@ public class HubDetailDelegate {
         else if (classes != null && classes.length > 0) newClass = classes[0];
     
         // get LinkInfo
-        OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(thisHub.datau.getObjectInfo(), propertyName);
+        OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(thisHub.data.getObjectInfo(), propertyName);
     
         // find method
         if (linkInfo == null) throw new RuntimeException("cant find linkInfo");
     
-        Method method  = OAObjectInfoDelegate.getMethod(thisHub.datau.getObjectInfo(), "get"+linkInfo.getName(), 0);
+        Method method  = OAObjectInfoDelegate.getMethod(thisHub.data.getObjectInfo(), "get"+linkInfo.getName(), 0);
         if (method == null) {
             throw new RuntimeException("cant find method get"+linkInfo.getName());
         }

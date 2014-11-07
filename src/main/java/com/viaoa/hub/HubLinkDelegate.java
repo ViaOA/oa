@@ -39,50 +39,50 @@ public class HubLinkDelegate {
     protected static void setLinkHub(Hub thisHub, String propertyFrom, Hub linkToHub, String propertyTo, boolean linkPosFlag, boolean bAutoCreate, boolean bAutoCreateAllowDups) {
         // 20110809 add bAutoCreateAllowDups
         if (linkToHub == thisHub) return;
-    
-        if (thisHub.datau.getLinkToHub() != null) {
-            if (thisHub.datau.getLinkToHub() == linkToHub) return;
-            HubEventDelegate.removeHubListener(thisHub.datau.getLinkToHub(), thisHub.datau.getHubLinkEventListener() );
-            thisHub.datau.setLinkToHub(null);
-            thisHub.datau.setHubLinkEventListener(null);
-            thisHub.datau.setAutoCreate(false);
-            thisHub.datau.setAutoCreateAllowDups(false);
-        }
-        if (linkToHub == null) {
-            HubEventDelegate.fireAfterPropertyChange(thisHub, null, "Link", null, null, null);
-            return;
-        }
-    
-        if (propertyTo == null && linkToHub != null) {
-            Class c = linkToHub.getObjectClass();
-            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);  // this never returns null
-    
-            List al = oi.getLinkInfos();
-            for (int i=0; i<al.size(); i++) {
-                OALinkInfo li = (OALinkInfo) al.get(i);
-                if (li.getType() != li.ONE) continue;
-                if (thisHub.datau.objClass.equals(li.getToClass()) ) {
-                    propertyTo = li.getName();
-                    break;
-                }
-            }
-        }
-    
-        Class verifyClass = thisHub.getObjectClass();
-        thisHub.datau.setLinkFromPropertyName(propertyFrom);
-        thisHub.datau.setLinkFromGetMethod(null);
-        if (propertyFrom != null) {  // otherwise, use object
-            thisHub.datau.setLinkFromGetMethod(OAReflect.getMethod(thisHub.getObjectClass(), "get"+propertyFrom));
-            if (thisHub.datau.getLinkFromGetMethod() == null) throw new RuntimeException("cant find method for property "+propertyFrom);
-            verifyClass = thisHub.datau.getLinkFromGetMethod().getReturnType();
-        }
-    
-        thisHub.datau.setLinkToGetMethod(OAReflect.getMethod(linkToHub.getObjectClass(), "get"+propertyTo));
-        if (thisHub.datau.getLinkToGetMethod() == null) {
-            throw new RuntimeException("cant find method for property \""+propertyTo+"\" from linkToHub class="+linkToHub.getObjectClass().getName());
-        }
-        if (!linkPosFlag) {
-            Class c = thisHub.datau.getLinkToGetMethod().getReturnType();
+	
+	    if (thisHub.datau.getLinkToHub() != null) {
+	        if (thisHub.datau.getLinkToHub() == linkToHub) return;
+	        HubEventDelegate.removeHubListener(thisHub.datau.getLinkToHub(), thisHub.datau.getHubLinkEventListener() );
+	        thisHub.datau.setLinkToHub(null);
+	        thisHub.datau.setHubLinkEventListener(null);
+	        thisHub.data.setAutoCreate(false);
+	        thisHub.data.setAutoCreateAllowDups(false);
+	    }
+	    if (linkToHub == null) {
+	        HubEventDelegate.fireAfterPropertyChange(thisHub, null, "Link", null, null, null);
+	        return;
+	    }
+	
+	    if (propertyTo == null && linkToHub != null) {
+	        Class c = linkToHub.getObjectClass();
+	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);  // this never returns null
+
+	        List al = oi.getLinkInfos();
+		    for (int i=0; i<al.size(); i++) {
+		    	OALinkInfo li = (OALinkInfo) al.get(i);
+		    	if (li.getType() != li.ONE) continue;
+		    	if (thisHub.data.objClass.equals(li.getToClass()) ) {
+		    		propertyTo = li.getName();
+		    		break;
+		    	}
+		    }
+	    }
+	
+	    Class verifyClass = thisHub.getObjectClass();
+	    thisHub.datau.setLinkFromPropertyName(propertyFrom);
+	    thisHub.datau.setLinkFromGetMethod(null);
+	    if (propertyFrom != null) {  // otherwise, use object
+	    	thisHub.datau.setLinkFromGetMethod(OAReflect.getMethod(thisHub.getObjectClass(), "get"+propertyFrom));
+	        if (thisHub.datau.getLinkFromGetMethod() == null) throw new RuntimeException("cant find method for property "+propertyFrom);
+	        verifyClass = thisHub.datau.getLinkFromGetMethod().getReturnType();
+	    }
+	
+	    thisHub.datau.setLinkToGetMethod(OAReflect.getMethod(linkToHub.getObjectClass(), "get"+propertyTo));
+	    if (thisHub.datau.getLinkToGetMethod() == null) {
+	        throw new RuntimeException("cant find method for property \""+propertyTo+"\" from linkToHub class="+linkToHub.getObjectClass().getName());
+	    }
+	    if (!linkPosFlag) {
+	        Class c = thisHub.datau.getLinkToGetMethod().getReturnType();
             if ( !c.equals(verifyClass) ) {
                 if (c.isPrimitive()) c = OAReflect.getPrimitiveClassWrapper(c);
                 if ( !c.equals(verifyClass) ) {
@@ -107,27 +107,27 @@ public class HubLinkDelegate {
                     throw new RuntimeException("wrong type of parameter for method, property:"+propertyTo+" class:" + thisHub.getObjectClass());
                 }
             }
-        }
-    
-        if (thisHub.datau.getLinkToHub() != null) {
-            // remove hub listener from previous linkHub
-            thisHub.datau.getLinkToHub().removeHubListener(thisHub.datau.getHubLinkEventListener());
-        }
-        thisHub.datau.setLinkPos(linkPosFlag);
-        thisHub.datau.setLinkToHub(linkToHub);
-        thisHub.datau.setLinkToPropertyName(propertyTo);
-        thisHub.datau.setHubLinkEventListener(new HubLinkEventListener(thisHub, linkToHub));
-        thisHub.datau.setAutoCreate(bAutoCreate);
-        thisHub.datau.setAutoCreateAllowDups(bAutoCreate && bAutoCreateAllowDups); // 20110809
-        
-        HubEventDelegate.addHubListener(linkToHub, thisHub.datau.getHubLinkEventListener());
-        thisHub.datau.getHubLinkEventListener().onNewList(null);
-        
-        // 20121028
-        Object ao = thisHub.datau.getLinkToHub().getActiveObject();
-        int pos = thisHub.datau.getLinkToHub().getPos();
-        
-        // fire a fake changeActiveObject
+	    }
+	
+	    if (thisHub.datau.getLinkToHub() != null) {
+	        // remove hub listener from previous linkHub
+	    	thisHub.datau.getLinkToHub().removeHubListener(thisHub.datau.getHubLinkEventListener());
+	    }
+	    thisHub.datau.setLinkPos(linkPosFlag);
+	    thisHub.datau.setLinkToHub(linkToHub);
+	    thisHub.datau.setLinkToPropertyName(propertyTo);
+	    thisHub.datau.setHubLinkEventListener(new HubLinkEventListener(thisHub, linkToHub));
+	    thisHub.data.setAutoCreate(bAutoCreate);
+        thisHub.data.setAutoCreateAllowDups(bAutoCreate && bAutoCreateAllowDups); // 20110809
+	    
+	    HubEventDelegate.addHubListener(linkToHub, thisHub.datau.getHubLinkEventListener());
+	    thisHub.datau.getHubLinkEventListener().onNewList(null);
+	    
+	    // 20121028
+	    Object ao = thisHub.datau.getLinkToHub().getActiveObject();
+	    int pos = thisHub.datau.getLinkToHub().getPos();
+	    
+	    // fire a fake changeActiveObject
         HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub.datau.getLinkToHub(), ao, pos, true);
         //was: HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub.datau.linkToHub, thisHub.datau.linkToHub.getActiveObject(), 0, true);
         
@@ -139,13 +139,13 @@ public class HubLinkDelegate {
     }
     // 20131116 
     public static boolean isLinkAutoCreated(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.datau.isAutoCreate()) return true;
+        if (thisHub.data.isAutoCreate()) return true;
         if (!bIncludeCopiedHubs) return false;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
-                if (h.datau.isAutoCreate()) {
+                if (h.data.isAutoCreate()) {
                     return true;
                 }
                 return false;
@@ -191,7 +191,7 @@ public class HubLinkDelegate {
     */
     private static void _updateLinkProperty(Hub thisHub, Object fromObject, int pos) throws Exception {
         Object linkToObject = null;
-        if (thisHub.datau.isAutoCreate()) {
+        if (thisHub.data.isAutoCreate()) {
             boolean bOne = false;  // is there only supposed to be one object in hub
             HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
             if (dm != null && dm.liDetailToMaster  != null) {
@@ -207,7 +207,7 @@ public class HubLinkDelegate {
                 return;
             }
             if (!bOne || thisHub.getSize() == 0) {
-                if (!thisHub.datau.isAutoCreateAllowDups()) {  // 20110809 added flag, was: always did this check
+                if (!thisHub.data.isAutoCreateAllowDups()) {  // 20110809 added flag, was: always did this check
                     // see if object already exists
                     for (int i=0; ;i++) {
                         Object obj = thisHub.datau.getLinkToHub().elementAt(i);
@@ -532,8 +532,6 @@ public class HubLinkDelegate {
         return hubx.datau.getLinkToPropertyName();
     }
     
-    
-    
     /**
      * This is called by HubLinkEventListener, (which is created in this class) whenever the linked to (linkToHub) Hub 
      *   is changed (active object or linked to property).
@@ -544,7 +542,7 @@ public class HubLinkDelegate {
         updateLinkedToHub(fromHub, linkToHub, obj, null);
     }
     protected static void updateLinkedToHub(final Hub fromHub, Hub linkToHub, Object obj, String changedPropName) {
-        if (fromHub.datau.isAutoCreate()) return;
+		if (fromHub.data.isAutoCreate()) return;
 
         obj = HubLinkDelegate.getPropertyValueInLinkedToHub(fromHub, obj);  // link property value
         if (fromHub.datau.isLinkPos()) {
@@ -574,37 +572,37 @@ public class HubLinkDelegate {
                     for (int i=0; i < hubs.length && b; i++) {
                         if (hubs[i].datam.masterObject != null) b = false;
                     }
-                    if (b) fromHub.addElement(obj);
-                }
-            }
-            else {
-                if (changedPropName == null) {
-                    // Update Master/Detail hubs for the LinkedFromHub
-                    // if none of the master hubs have links or details, then set their
-                    // activeObject to null
-                    Hub h = fromHub;
-                    for (; h != null;) {
-                        if (!h.datau.isDupAllowAddRemove() && h.getSize() == 1) break;  // detail hub using an object instead of a Hub
-    
-                        Hub[] hubs = HubShareDelegate.getAllSharedHubs(h);
-                        int flag = 0;
-                        for (int i=0; i < hubs.length && flag == 0; i++) {
-                            if (hubs[i] == fromHub) continue;
-                            if (hubs[i] == fromHub.getLinkHub()) flag = 5; // this hub is linked to hubs[i]
-    
-                            if ( (hubs[i].getLinkHub() != null) || (hubs[i].datau.getVecHubDetail() != null && hubs[i].datau.getVecHubDetail().size() > 1)) {
-                                if (hubs[i].getMasterHub() == h.getMasterHub()) flag = 1;
-                                if (hubs[i].datam == h.datam) flag = 5; // || (hubs[i] == h) flag = 5;
-                            }
-                        }
-                        if (flag < 2 && h != fromHub) HubAODelegate.setActiveObject(h,null,-1,false,false,false); // bUpdateLink, force,bCalledByShareHub
-                        if (flag != 0) break;
-    
-                        HubDataMaster dm = HubDetailDelegate.getDataMaster(h);
-                        h = dm.masterHub;
-                    }
-                }
-            }
+	            	if (b) fromHub.addElement(obj);
+	            }
+	        }
+	        else {
+	            if (changedPropName == null) {
+	            	// Update Master/Detail hubs for the LinkedFromHub
+	                // if none of the master hubs have links or details, then set their
+	                // activeObject to null
+	                Hub h = fromHub;
+	                for (; h != null;) {
+	                    if (!h.data.isDupAllowAddRemove() && h.getSize() == 1) break;  // detail hub using an object instead of a Hub
+	
+	                    Hub[] hubs = HubShareDelegate.getAllSharedHubs(h);
+	                    int flag = 0;
+	                    for (int i=0; i < hubs.length && flag == 0; i++) {
+	                        if (hubs[i] == fromHub) continue;
+	                        if (hubs[i] == fromHub.getLinkHub()) flag = 5; // this hub is linked to hubs[i]
+	
+	                        if ( (hubs[i].getLinkHub() != null) || (hubs[i].datau.getVecHubDetail() != null && hubs[i].datau.getVecHubDetail().size() > 1)) {
+	                            if (hubs[i].getMasterHub() == h.getMasterHub()) flag = 1;
+	                            if (hubs[i].datam == h.datam) flag = 5; // || (hubs[i] == h) flag = 5;
+	                        }
+	                    }
+	                    if (flag < 2 && h != fromHub) HubAODelegate.setActiveObject(h,null,-1,false,false,false); // bUpdateLink, force,bCalledByShareHub
+	                    if (flag != 0) break;
+	
+	                    HubDataMaster dm = HubDetailDelegate.getDataMaster(h);
+	                    h = dm.masterHub;
+	                }
+	            }
+	        }
 
 /*qqqqqqq MIGHT not need this new change (reverted to previous) qqqqqqqqqqqq     
  ** ==> use the hubEvent.newList to get the change       

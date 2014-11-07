@@ -403,7 +403,7 @@ public class HubDataDelegate {
             // 2008/04/19 was: if (thisHub.datau.sharedHub != null) {   // this created a problem when using contains(...), that only wants to know if the current hub has an object - not to "adjust it"
             if (thisHub.datau.getSharedHub() != null && adjustMaster) {
                 
-                OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.datau.getObjectInfo(), OALinkInfo.ONE);
+                OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
 
                 // 20131009 need to verify that this hub is recursive with masterObject
                 if (liRecursive != null) {  
@@ -492,14 +492,14 @@ public class HubDataDelegate {
 
     public static boolean contains(Hub hub, Object obj) {
         if (!(obj instanceof OAObject)) {
-            if (!hub.datau.isOAObjectFlag()) {
+            if (!hub.data.isOAObjectFlag()) {
                 return hub.data.vector.contains(obj);
             }
             obj = OAObjectCacheDelegate.get(hub.getObjectClass(), obj);
             if (obj == null) return false;
         }        
         
-        if (hub.data.vector.size() < 20 || !hub.datau.isOAObjectFlag()) {
+        if (hub.data.vector.size() < 20 || !hub.data.isOAObjectFlag()) {
             return hub.data.vector.contains(obj);
         }
         return OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, hub);

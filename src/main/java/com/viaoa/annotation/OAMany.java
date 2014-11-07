@@ -80,6 +80,9 @@ public @interface OAMany {
     boolean isServerSideCalc() default false;
     
     Class[] triggerClasses() default {};
+    
+    String uniqueProperty() default ""; 
+    
 }
 
 /*  OALinkInfo

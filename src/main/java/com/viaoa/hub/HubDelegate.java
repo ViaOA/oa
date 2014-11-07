@@ -79,20 +79,33 @@ public class HubDelegate {
 	    @returns true if object is valid, false if another object already uses same unique property value.
 	*/
 	public static boolean verifyUniqueProperty(Hub thisHub, Object object) {
-	    if (thisHub == null || object == null || thisHub.data.getUniqueProperty() == null) return true;
+	    if (thisHub == null || object == null) return true;
 	
 	    if (object instanceof OAObject) {
 	        if (thisHub.isLoading()) return true;
 	    }
 	
 	    Object object2;
+	    Method m = null;
 	    try {
-	        object2 = thisHub.data.getUniquePropertyGetMethod().invoke(object, null);
+	        m = thisHub.data.getUniquePropertyGetMethod();
+	        if (m == null) {
+                if (thisHub.datam.liDetailToMaster != null) {
+                    OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(thisHub.datam.liDetailToMaster);
+                    if (rli != null) {
+                        m = rli.getUniquePropertyGetMethod();
+                    }
+                }
+                if (m == null) return true;
+	        }
+	        
+	        object2 = m.invoke(object, null);
 	        if (object2 == null) return true;
 	        if (object2 instanceof String && ((String)object2).equals("")) return true;
 	    }
 	    catch (Exception e) {
-	        throw new RuntimeException("Error invoking "+thisHub.data.getUniquePropertyGetMethod().getName(), e);
+	        String s = m==null?"":m.getName();
+	        throw new RuntimeException("Error invoking "+s, e);
 	    }
 	
 	    for (int i=0; ;i++) {
@@ -100,12 +113,13 @@ public class HubDelegate {
 	        if (obj == null) break;
 	        if (obj == object) continue;
 	        try {
-	            Object obj2 = thisHub.data.getUniquePropertyGetMethod().invoke(obj, null);
+	            Object obj2 = m.invoke(obj, null);
 	            if (obj2 == null) continue;
 	            if (obj2 == object2 || obj2.equals(object2)) return false;
 	        }
 	        catch (Exception e) {
-	            throw new RuntimeException("Error invoking "+thisHub.data.getUniquePropertyGetMethod().getName(), e);
+	            String s = m==null?"":m.getName();
+	            throw new RuntimeException("Error invoking "+s, e);
 	        }
 	    }
 	    return true;
@@ -182,7 +196,7 @@ public class HubDelegate {
 	    @param objClass Class for the object being stored
 	*/
 	public static void setObjectClass(Hub thisHub, Class objClass) {
-	    if (thisHub.datau.objClass != null && !thisHub.datau.objClass.equals(objClass)) {
+	    if (thisHub.data.objClass != null && !thisHub.data.objClass.equals(objClass)) {
 	        if (HubDataDelegate.getCurrentSize(thisHub) > 0 || (thisHub.datau.getVecHubDetail() != null && thisHub.datau.getVecHubDetail().size() > 0) ) {
 	            throw new RuntimeException("cant change object class if objects are in hub");
 	        }
@@ -195,16 +209,16 @@ public class HubDelegate {
 	        }
 	    }
 	    HubSelectDelegate.cancelSelect(thisHub, true);
-	    thisHub.datau.objClass = objClass;
+	    thisHub.data.objClass = objClass;
 	
 	    if (objClass != null) {
 	        // find out if class is OAObject
-	    	thisHub.datau.setOAObjectFlag(OAObject.class.isAssignableFrom(objClass));
-	    	thisHub.datau.setObjectInfo(OAObjectInfoDelegate.getOAObjectInfo(objClass));
+	    	thisHub.data.setOAObjectFlag(OAObject.class.isAssignableFrom(objClass));
+	    	thisHub.data.setObjectInfo(OAObjectInfoDelegate.getOAObjectInfo(objClass));
 	    }
 	    else {
-	        thisHub.datau.setObjectInfo(null);
-	        thisHub.datau.setOAObjectFlag(false);
+	        thisHub.data.setObjectInfo(null);
+	        thisHub.data.setOAObjectFlag(false);
 	    }
 	}
 	
@@ -226,7 +240,7 @@ public class HubDelegate {
             }
             
             if (hub.datau.getLinkToHub().dataa.activeObject == null) {
-                if (!hub.datau.isAutoCreate()) return false;
+                if (!hub.data.isAutoCreate()) return false;
             }
             return true;
 	    }
@@ -247,7 +261,7 @@ public class HubDelegate {
             return dm.masterHub;
         }
         if (hub.datau.getLinkToHub() != null) {
-            if (hub.datau.isAutoCreate()) {
+            if (hub.data.isAutoCreate()) {
                 return getControllingHub(hub.datau.getLinkToHub());
             }
             return hub.datau.getLinkToHub();
@@ -423,9 +437,9 @@ public class HubDelegate {
 	        if (!HubCSDelegate.isServer()) return; // only set up for server
 	        bServerOnly = true;
 	    }
-        if (thisHub.datau.getAutoSequence() != null) thisHub.datau.getAutoSequence().close();
+        if (thisHub.data.getAutoSequence() != null) thisHub.data.getAutoSequence().close();
         thisHub.cancelSort(); // 20090801 need to remove any sorters
-    	thisHub.datau.setAutoSequence(new HubAutoSequence(thisHub, property, startNumber, bKeepSeq, bServerOnly));
+    	thisHub.data.setAutoSequence(new HubAutoSequence(thisHub, property, startNumber, bKeepSeq, bServerOnly));
 	}
     
     
@@ -437,10 +451,10 @@ public class HubDelegate {
 	    @param property Property in this hubs objects that match object type in hubMaster
 	*/
 	public static void setAutoMatch(Hub thisHub, String property, Hub hubMaster, boolean bServerSideOnly) {
-	    if (thisHub.datau.getAutoMatch() != null) thisHub.datau.getAutoMatch().close();
+	    if (thisHub.data.getAutoMatch() != null) thisHub.data.getAutoMatch().close();
 	    if (hubMaster != null) {
-	        thisHub.datau.setAutoMatch(new HubAutoMatch(thisHub, property, hubMaster));
-	        thisHub.datau.getAutoMatch().setServerSideOnly(bServerSideOnly);
+	        thisHub.data.setAutoMatch(new HubAutoMatch(thisHub, property, hubMaster));
+	        thisHub.data.getAutoMatch().setServerSideOnly(bServerSideOnly);
 	    }
 	}
 
@@ -465,21 +479,21 @@ public class HubDelegate {
     protected static void setProperty(Hub thisHub, String name, Object obj) {
         if (name == null) return;
         name = name.toUpperCase();
-        if (thisHub.datau.getHashProperty() == null) thisHub.datau.setHashProperty(new Hashtable(7));
-        thisHub.datau.getHashProperty().put(name, (obj==null)?OANullObject.instance:obj);
+        if (thisHub.data.getHashProperty() == null) thisHub.data.setHashProperty(new Hashtable(7));
+        thisHub.data.getHashProperty().put(name, (obj==null)?OANullObject.instance:obj);
     }
     protected static Object getProperty(Hub thisHub, String name) {
-        if (thisHub.datau.getHashProperty() == null) return null;
+        if (thisHub.data.getHashProperty() == null) return null;
 
         name = name.toUpperCase();
-        Object obj = thisHub.datau.getHashProperty().get(name);
+        Object obj = thisHub.data.getHashProperty().get(name);
         if (obj instanceof OANullObject) obj = null;
         return obj;
     }
     protected static void removeProperty(Hub thisHub, String name) {
-        if (thisHub.datau.getHashProperty() != null) {
+        if (thisHub.data.getHashProperty() != null) {
             name = name.toUpperCase();
-            thisHub.datau.getHashProperty().remove(name);
+            thisHub.data.getHashProperty().remove(name);
         }
     }
     

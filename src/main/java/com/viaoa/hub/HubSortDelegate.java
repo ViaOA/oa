@@ -136,7 +136,7 @@ public class HubSortDelegate {
 	*/
 	public static void keepSorted(Hub thisHub) {
 	    // 20090801 cant have sorter if a AutoSequence is being used
-	    if (thisHub.datau.getAutoSequence() != null) {
+	    if (thisHub.data.getAutoSequence() != null) {
 	        return;
 	    }
 	    if (thisHub.data.getSortListener() != null) return;

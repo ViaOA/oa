@@ -146,7 +146,7 @@ public abstract class HubPropController {
         // 20110905 need to also listen to linked to hub (if any)
         Hub h = hub.getLinkHub();
         if (h != null) {
-            if (hub.datau.isAutoCreate()) {
+            if (hub.data.isAutoCreate()) {
                 // need to listen for AO changes, newList, etc from the linkTo Hub
                 add(h, null, OAAnyValueObject.instance);
             }
