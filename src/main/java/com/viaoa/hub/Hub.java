@@ -139,7 +139,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see #setObjectClass
      */
     public Hub() {
-        this((Class) null, 25);
+        this((Class) null, 5);
     }
 
     /**
@@ -196,7 +196,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see #createSharedHub
      */
     public Hub(Hub masterHub) {
-        this(masterHub == null ? (Class) null : masterHub.getObjectClass(), 25);
+        this(masterHub == null ? (Class) null : masterHub.getObjectClass(), 5);
         if (masterHub != null) {
             HubShareDelegate.setSharedHub(this, masterHub, false);
         }

@@ -90,12 +90,7 @@ public class HubDelegate {
 	    try {
 	        m = thisHub.data.getUniquePropertyGetMethod();
 	        if (m == null) {
-                if (thisHub.datam.liDetailToMaster != null) {
-                    OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(thisHub.datam.liDetailToMaster);
-                    if (rli != null) {
-                        m = rli.getUniquePropertyGetMethod();
-                    }
-                }
+	            m = thisHub.datam.getUniquePropertyGetMethod();
                 if (m == null) return true;
 	        }
 	        

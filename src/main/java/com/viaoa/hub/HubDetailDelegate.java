@@ -316,7 +316,9 @@ public class HubDetailDelegate {
             // dont share activeObject ("dataa")
             //     unless DetailHub.bShareActiveObject is true then set it after events
             Hub h = (Hub) obj;
-            if (dHub.data.selectOrder != null) h.setSelectOrder(dHub.data.selectOrder);
+            
+            String s = HubSortDelegate.getSortProperty(thisHub);
+            if (s != null) h.setSelectOrder(s);
     
             // need to select before assigning to detail hub so that add events wont
             //            be sent to detail hubs listeners
@@ -793,7 +795,6 @@ public class HubDetailDelegate {
         thisHub.datam.liDetailToMaster = liDetailToMaster;
         if (masterObject == thisHub.datam.masterObject) return;
         thisHub.datam.masterObject = masterObject;
-        thisHub.data.bTrackChanges = (masterObject != null) && (liDetailToMaster == null || !liDetailToMaster.getCalculated());
         thisHub.setChanged(false);
     }
     public static void setMasterObject(Hub thisHub, OAObject masterObject) {

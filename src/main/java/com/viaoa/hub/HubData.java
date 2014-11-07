@@ -33,6 +33,8 @@ import com.viaoa.ds.*;
 public class HubData implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 
+    /** Class of objects in this Hub */
+    protected Class objClass;
     
     // Used to store objects so that the order of the objects is known.
     protected transient Vector vector;
@@ -49,94 +51,24 @@ public class HubData implements java.io.Serializable {
     // used by setChanged
     protected boolean changed;
     
-    // Flag to know if add/insert/remove objects should be tracked. Set to true when master object is set.
-    protected boolean bTrackChanges;
 
     private HubDatax hubDatax; // extension
-
-    /** Class of objects in this Hub */
-    protected Class objClass;
     
-    /** property path(s) used for selectOrder */
-    protected String selectOrder;
     
 	/**
 	    Constructor that supplies params for sizing Vector.
 	*/
 	public HubData(int size) {
-	    vector = new Vector(size);
+	    int x = size * 2;
+	    x = Math.max(5, x);
+	    x = Math.min(25, x);
+	    vector = new Vector(size, x);
 	}
 	public HubData() {
-		this(7);
+		this(5);
 	}
 	
 	   
-    private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{
-        s.defaultWriteObject();
-        writeVector(s, vector);
-        Vector vec;
-        if (hubDatax != null) vec = hubDatax.vecAdd;
-        else vec = null;
-        writeVector(s, vec);
-        if (hubDatax != null) vec = hubDatax.vecRemove;
-        else vec = null;
-        writeVector(s, vec);
-    }
-    
-    private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
-        s.defaultReadObject();
-        vector = readVector(s);
-        
-        Vector vec = readVector(s);
-        setVecAdd(vec);
-        
-        vec = readVector(s);
-        setVecRemove(vec);
-    }
-
-	
-    private void writeVector(java.io.ObjectOutputStream s, Vector vec) throws java.io.IOException{
-        if (vec == null) {
-            s.writeInt(-1);
-            return;
-        }
-        
-        int cap = vec.capacity();
-        s.writeInt(cap);
-        int max = vec.size();
-        s.writeInt(max);
-        
-        
-        int i = 0;
-        for (; i<max; i++) {
-            Object obj;
-            try {
-                obj = vec.elementAt(i);
-            }
-            catch (Exception e) {
-                break;
-            }
-            s.writeObject(obj);
-        }
-        for (; i<max; i++) {
-            // write out bogus objects
-            s.writeObject(OANullObject.instance);
-        }        
-    }
-    private Vector readVector(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
-        int capacity = s.readInt();
-        if (capacity < 0) return null;
-        Vector vec = new Vector(capacity);
-
-        int max = s.readInt();
-
-        // Read in all elements in the proper order. 
-        for (int i=0; i<max; i++) {
-            Object obj = s.readObject();
-            if (!(obj instanceof OANullObject)) vec.addElement(obj);
-        }
-        return vec;
-    }
     
     
     static int qq;    
@@ -258,7 +190,7 @@ System.out.println((++qq)+") HubDatax created");
 
     // note: could also be in HubDataMaster.
     public String getUniqueProperty() {
-        if (hubDatax != null) return null;
+        if (hubDatax == null) return null;
         return hubDatax.uniqueProperty;
     }
     public void setUniqueProperty(String uniqueProperty) {
@@ -308,13 +240,7 @@ System.out.println((++qq)+") HubDatax created");
     public void setObjectInfo(OAObjectInfo objectInfo) {
         if (hubDatax != null) hubDatax.objectInfo = objectInfo; 
     }
-    public String getSelectOrder() {
-        return selectOrder;
-    }
-    public void setSelectOrder(String selectOrder) {
-        this.selectOrder = selectOrder;
-    }
-    
+
     public HubAutoSequence getAutoSequence() {
         if (hubDatax == null) return null;
         return hubDatax.autoSequence;
@@ -379,5 +305,84 @@ System.out.println((++qq)+") HubDatax created");
             getHubDatax().bAutoCreateAllowDups = bAutoCreateAllowDups;
         }
     }
+
+    public boolean getTrackChanges() {
+        if (hubDatax == null) return false;
+        return hubDatax.bTrackChanges;
+    }
+    public void setTrackChanges(boolean bTrackChanges) {
+        if (hubDatax != null || bTrackChanges) {
+            getHubDatax().bTrackChanges = bTrackChanges;
+        }
+    }
+
+
+    private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{
+        s.defaultWriteObject();
+        writeVector(s, vector);
+        Vector vec;
+        if (hubDatax != null) vec = hubDatax.vecAdd;
+        else vec = null;
+        writeVector(s, vec);
+        if (hubDatax != null) vec = hubDatax.vecRemove;
+        else vec = null;
+        writeVector(s, vec);
+    }
+    
+    private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
+        s.defaultReadObject();
+        vector = readVector(s);
+        
+        Vector vec = readVector(s);
+        setVecAdd(vec);
+        
+        vec = readVector(s);
+        setVecRemove(vec);
+    }
+
+    
+    private void writeVector(java.io.ObjectOutputStream s, Vector vec) throws java.io.IOException{
+        if (vec == null) {
+            s.writeInt(-1);
+            return;
+        }
+        
+        int cap = vec.capacity();
+        s.writeInt(cap);
+        int max = vec.size();
+        s.writeInt(max);
+        
+        
+        int i = 0;
+        for (; i<max; i++) {
+            Object obj;
+            try {
+                obj = vec.elementAt(i);
+            }
+            catch (Exception e) {
+                break;
+            }
+            s.writeObject(obj);
+        }
+        for (; i<max; i++) {
+            // write out bogus objects
+            s.writeObject(OANullObject.instance);
+        }        
+    }
+    private Vector readVector(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
+        int capacity = s.readInt();
+        if (capacity < 0) return null;
+        Vector vec = new Vector(capacity);
+
+        int max = s.readInt();
+
+        // Read in all elements in the proper order. 
+        for (int i=0; i<max; i++) {
+            Object obj = s.readObject();
+            if (!(obj instanceof OANullObject)) vec.addElement(obj);
+        }
+        return vec;
+    }
+
 }
 

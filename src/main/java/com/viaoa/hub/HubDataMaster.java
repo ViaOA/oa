@@ -17,6 +17,8 @@ All rights reserved.
 */
 package com.viaoa.hub;
 
+import java.lang.reflect.Method;
+
 import com.viaoa.object.*;
 	
 /**
@@ -42,12 +44,35 @@ class HubDataMaster implements java.io.Serializable {
 	/** LinkInfo from Detail (MANY) to Master (ONE).  */
 	protected OALinkInfo liDetailToMaster;  // Note: Dont make transient: it will get replaced in resolveObject, but needs the old one to find the match
 
+	
     public String getUniqueProperty() {
         if (liDetailToMaster == null) return null;
         OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(liDetailToMaster);
         if (rli == null) return null; 
         return rli.getUniqueProperty();
     }
+    public Method getUniquePropertyGetMethod() {
+        if (liDetailToMaster == null) return null;
+        OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(liDetailToMaster);
+        if (rli == null) return null; 
+        return rli.getUniquePropertyGetMethod();
+    }
+    public boolean getTrackChanges() {
+        return (masterObject != null) && (liDetailToMaster == null || !liDetailToMaster.getCalculated());
+    }
 
+    public String getSortProperty() {
+        if (liDetailToMaster == null) return null;
+        OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(liDetailToMaster);
+        if (rli == null) return null; 
+        return rli.getSortProperty();
+    }
+
+    public boolean isSortAsc() {
+        if (liDetailToMaster == null) return false;
+        OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(liDetailToMaster);
+        if (rli == null) return false; 
+        return rli.isSortAsc();
+    }
 }
 

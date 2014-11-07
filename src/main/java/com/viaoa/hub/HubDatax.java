@@ -51,7 +51,7 @@ public class HubDatax implements java.io.Serializable {
 	
 	protected transient HubSortListener sortListener;
     //  info to keep Hub objects sorted when sent to other computers, see HubSerializerDelegate._readResolve - it will set up sorting when received
-	protected String sortProperty;
+	protected String sortProperty;  // defaults to linkInfo.sortProperty
 	protected boolean sortAsc;
 	
 	// Used to select objects from OADataSource.
@@ -111,5 +111,8 @@ public class HubDatax implements java.io.Serializable {
      *    and the current object will be set to AO
     */
     protected transient boolean bAutoCreateAllowDups;
+
+    // Flag to know if add/insert/remove objects should be tracked. Set to true when master object is set.
+    protected boolean bTrackChanges;
 }
 

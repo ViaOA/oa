@@ -83,6 +83,8 @@ public @interface OAMany {
     
     String uniqueProperty() default ""; 
     
+    String sortProperty() default "";
+    boolean sortAsc() default false;
 }
 
 /*  OALinkInfo

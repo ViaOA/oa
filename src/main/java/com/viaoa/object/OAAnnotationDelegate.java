@@ -237,6 +237,10 @@ public class OAAnnotationDelegate {
             s = annotation.uniqueProperty();
             if (s != null && s.length() == 0) s = null;
             li.setUniqueProperty(s);
+
+            s = annotation.sortProperty();
+            if (s != null && s.length() == 0) s = null;
+            li.setSortProperty(s);
             
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());

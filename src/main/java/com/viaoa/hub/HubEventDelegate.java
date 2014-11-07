@@ -421,14 +421,7 @@ public class HubEventDelegate {
 	    }
 
 	    String s = thisHub.data.getUniqueProperty();
-	    if (s == null) {
-            if (thisHub.datam.liDetailToMaster != null) {
-                OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(thisHub.datam.liDetailToMaster);
-                if (rli != null) {
-                    s = rli.getUniqueProperty();
-                }
-            }
-	    }
+	    if (s == null) s = thisHub.datam.getUniqueProperty();
 	    
 	    if (s != null && newValue != null && s.equalsIgnoreCase(propertyName)) {
 	        if (!HubDelegate.verifyUniqueProperty(thisHub, oaObj)) {

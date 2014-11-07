@@ -151,10 +151,14 @@ public class HubSortDelegate {
     }
 
     public static String getSortProperty(Hub thisHub) {
-        return (thisHub.data.getSortProperty());
+        String s = thisHub.data.getSortProperty();
+        if (s == null) s = thisHub.datam.getSortProperty();
+        return s;
     }
     public static boolean getSortAsc(Hub thisHub) {
-        return (thisHub.data.isSortAsc());
+        boolean b = thisHub.data.isSortAsc();
+        if (!b) b = thisHub.datam.isSortAsc();
+        return b;
     }
 }
 

@@ -224,7 +224,7 @@ public class HubAddRemoveDelegate {
         if (!thisHub.data.objClass.isAssignableFrom(c) ) return "class not assignable, class="+c;
 
         if (thisHub.isLoading()) return null;
-        if (thisHub.data.getUniqueProperty() != null) {
+        if (thisHub.data.getUniqueProperty() != null || thisHub.datam.getUniqueProperty() != null) {
             if (!HubDelegate.verifyUniqueProperty(thisHub, obj)) {
                 return "verifyUniqueProperty returned false";
             }

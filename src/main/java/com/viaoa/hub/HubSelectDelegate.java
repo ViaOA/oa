@@ -48,8 +48,6 @@ public class HubSelectDelegate {
 
         HubData hubData = thisHub.data;         
 
-        boolean bHoldTrackChanges = hubData.bTrackChanges;
-        hubData.bTrackChanges = false;
         boolean holdDataChanged = hubData.changed;
 
         if (famt > 0) fa = famt;
@@ -94,7 +92,6 @@ public class HubSelectDelegate {
         }
         finally {
             hubData.setInFetch(false);
-            hubData.bTrackChanges = bHoldTrackChanges;
             hubData.changed = holdDataChanged;
         }
         return cnt;
@@ -211,7 +208,6 @@ public class HubSelectDelegate {
 	    }
 	
 	    if (thisHub.datau.getSharedHub() != null) {
-	        if (thisHub.data.selectOrder != null) thisHub.datau.getSharedHub().setSelectOrder(thisHub.data.selectOrder);
 	        select(thisHub.datau.getSharedHub(), select);
 	        return;
 	    }
@@ -387,7 +383,7 @@ public class HubSelectDelegate {
 	    @see OASelect
 	*/
 	public static void setSelectOrder(Hub thisHub, String s) {
-		thisHub.data.selectOrder = s;
+		thisHub.data.setSortProperty(s);
 
 		OASelect sel = getSelect(thisHub);
 	    if (!OAString.isEmpty(s) && sel == null) {
