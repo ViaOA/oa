@@ -51,9 +51,7 @@ public class HubData implements java.io.Serializable {
     // used by setChanged
     protected boolean changed;
     
-
     private HubDatax hubDatax; // extension
-    
     
 	/**
 	    Constructor that supplies params for sizing Vector.
@@ -67,10 +65,12 @@ public class HubData implements java.io.Serializable {
 	public HubData() {
 		this(5);
 	}
+    public HubData(int size, int incrementSize) {
+        int x = Math.max(1, incrementSize);
+        x = Math.min(100, x);
+        vector = new Vector(size, x);
+    }
 	
-	   
-    
-    
     static int qq;    
     private HubDatax getHubDatax() {
         if (hubDatax == null) {
@@ -84,8 +84,6 @@ System.out.println((++qq)+") HubDatax created");
         }
         return hubDatax;
     }
-    
-
     
     public int getNewListCount() {
         if (hubDatax == null) return 0;
@@ -114,15 +112,8 @@ System.out.println((++qq)+") HubDatax created");
             getHubDatax().vecRemove = vecRemove;
         }
     }
-    public HubSortListener getSortListener() {
-        if (hubDatax == null) return null;
-        return hubDatax.sortListener;
-    }
-    public void setSortListener(HubSortListener sortListener) {
-        if (hubDatax != null || sortListener != null) {
-            getHubDatax().sortListener = sortListener;
-        }
-    }
+    
+    // see also: HubDataMaster.getSortProperty(), which uses linkinfo.sortProperty
     public String getSortProperty() {
         if (hubDatax == null) return null;
         return hubDatax.sortProperty;
@@ -141,6 +132,17 @@ System.out.println((++qq)+") HubDatax created");
             getHubDatax().sortAsc = sortAsc;
         }
     }
+    public HubSortListener getSortListener() {
+        if (hubDatax == null) return null;
+        return hubDatax.sortListener;
+    }
+    public void setSortListener(HubSortListener sortListener) {
+        if (hubDatax != null || sortListener != null) {
+            getHubDatax().sortListener = sortListener;
+        }
+    }
+    
+    
     public OASelect getSelect() {
         if (hubDatax == null) return null;
         return hubDatax.select;

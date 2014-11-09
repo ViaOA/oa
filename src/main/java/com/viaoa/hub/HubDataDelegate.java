@@ -274,7 +274,7 @@ public class HubDataDelegate {
 	private static Vector createVecAdd(Hub thisHub) {
         if (thisHub.data.getVecAdd() == null) {
 	        synchronized (thisHub.data) {
-	            if (thisHub.data.getVecAdd() == null) thisHub.data.setVecAdd(new Vector(10,0));
+	            if (thisHub.data.getVecAdd() == null) thisHub.data.setVecAdd(new Vector(10, 10));
 	        }
         }
         return thisHub.data.getVecAdd();
@@ -282,7 +282,7 @@ public class HubDataDelegate {
 	private static Vector createVecRemove(Hub thisHub) {
 		if (thisHub.data.getVecRemove() == null) {
 	        synchronized (thisHub.data) {
-	            if (thisHub.data.getVecRemove() == null) thisHub.data.setVecRemove(new Vector(10,0));
+	            if (thisHub.data.getVecRemove() == null) thisHub.data.setVecRemove(new Vector(10,10));
 	        }
 		}
         return thisHub.data.getVecRemove();

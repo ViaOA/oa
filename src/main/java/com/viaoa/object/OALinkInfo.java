@@ -48,6 +48,7 @@ public class OALinkInfo implements java.io.Serializable {
     private String uniqueProperty;  // unique propertyPath
     private String sortProperty;  // sort propetyPath
     private boolean sortAsc;  // sort ascending
+    private String seqProperty;  // sequence propetyPath
     
     // runtime
     protected transient int cacheSize;
@@ -234,6 +235,14 @@ public class OALinkInfo implements java.io.Serializable {
     public boolean isSortAsc() {
         return this.sortAsc;
     }
+
+    public void setSeqProperty(String prop) {
+        this.seqProperty = prop;
+    }
+    public String getSeqProperty() {
+        return this.seqProperty;
+    }
+    
     
     private Method uniquePropertyGetMethod;
     public Method getUniquePropertyGetMethod() {

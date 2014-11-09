@@ -186,7 +186,7 @@ public class OAObjectPropertyDelegate {
     public static Object setPropertyCAS(OAObject oaObj, String name, Object newValue, Object matchValue) {
         return setPropertyCAS(oaObj, name, newValue, matchValue, false, false);
     }
-    
+
     /**
      * Compare and swap a property. 
      * @param name property name, not case sensitive
@@ -359,6 +359,28 @@ public class OAObjectPropertyDelegate {
                     lock.notifyAll();
                 }
             }
+        }
+    }
+    
+    // 20141108 "flip" a hub property to/from a weakRef.  Used by HubDelegate.setReferenceable
+    public static void setPropertyWeakRef(OAObject oaObj, String name, boolean bToWeakRef) {
+        if (name == null || oaObj == null || oaObj.properties == null) return;
+
+        for (int i=0; i<oaObj.properties.length; i+=2) {
+            if (!name.equalsIgnoreCase((String)oaObj.properties[i])) continue;
+            synchronized (oaObj) {
+                Object val = oaObj.properties[i+1];
+                if (val == null) break; 
+                if (bToWeakRef) {
+                    if (!(val instanceof WeakReference)) oaObj.properties[i+1] = new WeakReference(val);
+                }
+                else {
+                    if (val instanceof WeakReference) {
+                        oaObj.properties[i+1] = (WeakReference) val;
+                    }
+                }
+            }
+            break;
         }
     }
     

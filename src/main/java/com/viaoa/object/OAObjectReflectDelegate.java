@@ -516,7 +516,20 @@ public class OAObjectReflectDelegate {
         // dont get calcs from server, calcs are maintained locally, events are not sent
         boolean bIsCalc = (linkInfo != null && linkInfo.bCalculated);
         boolean bIsServerSideCalc = (linkInfo != null && linkInfo.bServerSideCalc);
-        
+      
+        // 20141109 need to check for sortProp, sortAsc, 
+        if (sortOrder == null && linkInfo != null) {
+            sortOrder = linkInfo.getSortProperty();
+        }
+        // 20141109 need to check for seqProp, seqAsc, 
+        if (!bSequence && linkInfo != null) {
+            String s = linkInfo.getSeqProperty();
+            if (!OAString.isEmpty(s)) {
+                sortOrder = s;
+                bSequence = true;
+            }
+        }
+
         Hub hub = null;
         if (obj == null) { 
             // since it is in props with a null, then it was placed that way to mean it has 0 objects
@@ -665,6 +678,7 @@ public class OAObjectReflectDelegate {
         else {
             OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
         }
+        
         
         if ((bThisIsServer || (bIsCalc && !bIsServerSideCalc)) && sortOrder != null && sortOrder.length() > 0) {
             if (hub.getSelect() != null) {

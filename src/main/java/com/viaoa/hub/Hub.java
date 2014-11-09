@@ -189,6 +189,15 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
             HubDelegate.setObjectClass(this, objClass);
         }
     }
+    public Hub(Class<TYPE> objClass, int vecSize, int incrementSize) {
+        data = new HubData(vecSize, incrementSize);
+        datau = new HubDataUnique();
+        dataa = new HubDataActive();
+        datam = new HubDataMaster();
+        if (objClass != null) {
+            HubDelegate.setObjectClass(this, objClass);
+        }
+    }
 
     /**
      * Create a shared hub, this is same as calling hub.getSharedHub().
