@@ -31,10 +31,12 @@ import com.viaoa.sync.remote.RemoteSessionInterface;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.OASelect;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubLinkDelegate;
 import com.viaoa.hub.HubMerger;
+import com.viaoa.hub.HubSelectDelegate;
 import com.viaoa.hub.HubShareDelegate;
 import com.viaoa.hub.HubSortDelegate;
 import com.viaoa.util.OAArray;
@@ -518,7 +520,7 @@ public class OAObjectReflectDelegate {
         boolean bIsServerSideCalc = (linkInfo != null && linkInfo.bServerSideCalc);
       
         // 20141109 need to check for sortProp, sortAsc, 
-        if (sortOrder == null && linkInfo != null) {
+        if (sortOrder == null  && linkInfo != null) {
             sortOrder = linkInfo.getSortProperty();
         }
         // 20141109 need to check for seqProp, seqAsc, 
@@ -608,6 +610,7 @@ public class OAObjectReflectDelegate {
             return hub;
         }
 
+        OASelect select = null;
         if (hub != null) {
         }
         else if (!bThisIsServer && !oi.getLocalOnly() && (!bIsCalc || bIsServerSideCalc)) {
@@ -632,7 +635,16 @@ public class OAObjectReflectDelegate {
             Class linkClass = linkInfo.toClass;
             OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
             if (liReverse != null) {
-                hub = new Hub(linkClass, oaObj, liReverse, true); // liReverse = liDetailToMaster
+                
+                // 20141109
+                hub = new Hub(linkClass, oaObj, liReverse, false);
+                select = new OASelect(hub.getObjectClass());
+                if (oaObj != null) {
+                    select.setWhereObject(oaObj);
+                    select.setPropertyFromWhereObject(linkInfo.getName());
+                }
+                
+                //was: hub = new Hub(linkClass, oaObj, liReverse, true); // liReverse = liDetailToMaster
                 /* 2013/01/08 recursive if this object is the owner (or ONE to Many) and the select
                  * hub is recursive of a different class - need to only select root objects. All
                  * children (recursive) hubs will automatically be assigned the same owner as the
@@ -649,7 +661,8 @@ public class OAObjectReflectDelegate {
                         if (li2 != null) {
                             OALinkInfo li3 = OAObjectInfoDelegate.getReverseLinkInfo(li2);
                             if (li3 != linkInfo) {
-                                hub.setSelectWhere(li2.getName() + " == null");
+                                if (select != null) select.setWhere(li2.getName() + " == null");
+                                else hub.setSelectWhere(li2.getName() + " == null");
                             }
                         }
                     }
@@ -684,15 +697,23 @@ public class OAObjectReflectDelegate {
             if (hub.getSelect() != null) {
                 hub.setSelectOrder(sortOrder);
             }
+            else if (select != null) {
+                select.setOrder(sortOrder);
+            }
         }
 
         // needs to loadAllData first, otherwise another thread could get the hub without using the lock
         if (bThisIsServer || (bIsCalc && !bIsServerSideCalc)) {
             if (!OAObjectCSDelegate.loadReferenceHubDataOnServer(hub)) { // load all data before passing to client
                 hub.loadAllData();
+                HubSelectDelegate.loadAllData(hub, select);
             }
 
             hub.cancelSelect();
+            if (select != null) {
+                select.cancel();
+                HubDataDelegate.resizeToFit(hub);
+            }
             if (sortOrder != null && sortOrder.length() > 0) {
                 if (bSequence) {
                     hub.setAutoSequence(sortOrder); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)

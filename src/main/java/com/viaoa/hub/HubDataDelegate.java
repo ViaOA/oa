@@ -50,7 +50,7 @@ public class HubDataDelegate {
 	protected static void ensureCapacity(Hub thisHub, int size) {
 		thisHub.data.vector.ensureCapacity(size);
 	}
-	protected static void resizeToFit(Hub thisHub) {
+	public static void resizeToFit(Hub thisHub) {
 		if (thisHub.data.vector == null) return; // could be called during serialization
 //LOG.config("resizing, from:"+thisHub.data.vector.capacity()+", to:"+x+", hub:"+thisHub);//qqqqqqqqqqqqqqqqqq                        
 		thisHub.data.vector.trimToSize();

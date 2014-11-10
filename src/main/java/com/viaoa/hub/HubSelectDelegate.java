@@ -35,16 +35,24 @@ public class HubSelectDelegate {
     
     /** Internal method to retrieve objects from last select() */
     protected static int fetchMore(Hub thisHub) {
-        if (HubSelectDelegate.getSelect(thisHub) == null) return 0;
-        int x = HubSelectDelegate.getSelect(thisHub).getFetchAmount();
-        x = fetchMore(thisHub, x);
-    	HubEventDelegate.fireAfterFetchMoreEvent(thisHub);
+        int x = fetchMore(thisHub, HubSelectDelegate.getSelect(thisHub));
+        return x;
+    }
+    protected static int fetchMore(Hub thisHub, OASelect sel) {
+        if (sel == null) return 0;
+        int x = sel.getFetchAmount();
+        x = fetchMore(thisHub, sel, x);
+        HubEventDelegate.fireAfterFetchMoreEvent(thisHub);
         return x;
     }
     /** Internal method to retrieve objects from last select() */
     protected static int fetchMore(Hub thisHub, int famt) {
-        if (getSelect(thisHub) == null) return 0;
-        int fa = HubSelectDelegate.getSelect(thisHub).getFetchAmount();  // default amount to load
+        int x = fetchMore(thisHub, HubSelectDelegate.getSelect(thisHub), famt);
+        return x;
+    }
+    protected static int fetchMore(Hub thisHub, OASelect sel, int famt) {
+        if (sel == null) return 0;
+        int fa = sel.getFetchAmount();  // default amount to load
 
         HubData hubData = thisHub.data;         
 
@@ -61,12 +69,13 @@ public class HubSelectDelegate {
             
         	for ( ; cnt < fa || fa == 0; ) {
                 Object obj;
-                if ( !HubSelectDelegate.isMoreData(thisHub) ) {
+                if ( !HubSelectDelegate.isMoreData(sel) ) {
                     thisHub.cancelSelect();
+                    sel.cancel();
                     break;
                 }
 
-                obj = HubSelectDelegate.getSelect(thisHub).next();
+                obj = sel.next();
                 if (obj != null) {
 					if (size == (capacity-1)) {  // resize Vector according to select
 					    /*
@@ -88,6 +97,7 @@ public class HubSelectDelegate {
         catch (Exception ex) {
             LOG.log(Level.WARNING, "Hub="+thisHub+", will cancel select", ex);
             cancelSelect(thisHub, false);
+            sel.cancel();
         	throw new RuntimeException(ex);
         }
         finally {
@@ -127,13 +137,23 @@ public class HubSelectDelegate {
 	    }
 	    return sel.hasMore();
 	}
+    public static boolean isMoreData(OASelect sel) {
+        if (sel == null) return false;
+        if (!sel.hasBeenStarted()) {
+            sel.select();
+        }
+        return sel.hasMore();
+    }
 
     /**
 	    This will automatically read all records from current select().
 	    By default, only 45 objects are read at a time from datasource.
 	*/
-	public static void loadAllData(Hub thisHub) {
-	    if (thisHub.data.getSelect() == null) return;
+    public static void loadAllData(Hub thisHub) {
+        loadAllData(thisHub, thisHub.getSelect());
+    }
+	public static void loadAllData(Hub thisHub, OASelect select) {
+	    if (thisHub == null || select == null) return;
 	    
 	    // 20121015 adjusted locking
 	    for (int i=0; ;i++) {
@@ -147,8 +167,8 @@ public class HubSelectDelegate {
     	    
             if (bCanRun) {
                 try {
-                    while ( isMoreData(thisHub) ) {
-                        fetchMore(thisHub);
+                    while ( isMoreData(select) ) {
+                        fetchMore(thisHub, select);
                     }
                 }
                 finally {
@@ -317,7 +337,7 @@ public class HubSelectDelegate {
 	/**
 	    Creates a new OASelect object by first calling cancelSelect.
 	*/
-	protected static OASelect createNewSelect(Hub hub) {
+	public static OASelect createNewSelect(Hub hub) {
 	    synchronized (hub.data) {
 		    String s = null;
 		    OASelect selHold = hub.data.getSelect();

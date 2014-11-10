@@ -124,11 +124,11 @@ System.out.println((++qq)+") HubDatax created");
         }
     }
     public boolean isSortAsc() {
-        if (hubDatax == null) return false;
+        if (hubDatax == null) return true;
         return hubDatax.sortAsc;
     }
     public void setSortAsc(boolean sortAsc) {
-        if (hubDatax != null || sortAsc) {
+        if (hubDatax != null || !sortAsc) {
             getHubDatax().sortAsc = sortAsc;
         }
     }
