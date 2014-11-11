@@ -20,6 +20,7 @@ package com.viaoa.hub;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.viaoa.object.*;
 
@@ -109,14 +110,13 @@ System.out.println((++qq)+") HubDataUniquex created");
         }
     }
 
+    private static ConcurrentHashMap<HubDataUnique, HubDataUnique> hmUpdatingActiveObject = new ConcurrentHashMap<HubDataUnique, HubDataUnique>(11, .85f);
     public boolean isUpdatingActiveObject() {
-        if (hubDataUniquex == null) return false;
-        return hubDataUniquex.bUpdatingActiveObject;
+        return hmUpdatingActiveObject.contains(this);
     }
     public void setUpdatingActiveObject(boolean bUpdatingActiveObject) {
-        if (hubDataUniquex != null || bUpdatingActiveObject) {
-            getHubDataUniquex().bUpdatingActiveObject = bUpdatingActiveObject;
-        }
+        if (bUpdatingActiveObject) hmUpdatingActiveObject.put(this, this);
+        else hmUpdatingActiveObject.remove(this);
     }
 
     public Hub getLinkToHub() {

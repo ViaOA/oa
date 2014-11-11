@@ -704,7 +704,7 @@ public class OAObjectReflectDelegate {
 
         // needs to loadAllData first, otherwise another thread could get the hub without using the lock
         if (bThisIsServer || (bIsCalc && !bIsServerSideCalc)) {
-            if (!OAObjectCSDelegate.loadReferenceHubDataOnServer(hub)) { // load all data before passing to client
+            if (!OAObjectCSDelegate.loadReferenceHubDataOnServer(hub, select)) { // load all data before passing to client
                 hub.loadAllData();
                 HubSelectDelegate.loadAllData(hub, select);
             }

@@ -25,6 +25,7 @@ import com.viaoa.sync.remote.RemoteSessionInterface;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncInterface;
+import com.viaoa.ds.OASelect;
 import com.viaoa.hub.*;
 
 public class OAObjectCSDelegate {
@@ -280,14 +281,14 @@ public class OAObjectCSDelegate {
 	}
 	
 	// used by OAObjectReflectDelegate.getReferenceHub() to have all data loaded on server.
-	protected static boolean loadReferenceHubDataOnServer(Hub thisHub) {
+	protected static boolean loadReferenceHubDataOnServer(Hub thisHub, OASelect select) {
         boolean bResult;
         
         if (OASyncDelegate.isServer()) {
             //LOG.finest("hub="+hub);
 
             // 20140328 performance improvement 
-            if (thisHub.getSelect() == null) return true;
+            if (thisHub.getSelect() == null && select == null) return true;
             
             
             bResult = true;
@@ -295,7 +296,7 @@ public class OAObjectCSDelegate {
             // even though Hub.writeObject does this, this data could be used on server application
         	try {
         		OAThreadLocalDelegate.setSuppressCSMessages(true);
-	            thisHub.loadAllData();
+        		HubSelectDelegate.loadAllData(thisHub, select);
         	}
         	finally {
         		OAThreadLocalDelegate.setSuppressCSMessages(false);        	

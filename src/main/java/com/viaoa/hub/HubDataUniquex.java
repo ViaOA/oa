@@ -76,9 +76,6 @@ class HubDataUniquex implements java.io.Serializable {
 	*/
 	protected transient Vector<HubDetail> vecHubDetail;
 	
-	/** flag set while updating active object */
-	protected transient boolean bUpdatingActiveObject;
-	
 	/**
 	    List of listeners for calculated properties.
 	    The hub will automatically listen for changes to any property that a calculated property
