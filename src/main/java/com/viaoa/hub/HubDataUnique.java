@@ -39,7 +39,7 @@ static int qq;
             synchronized (this) {
                 if (hubDataUniquex == null) {
 //qqqqqqqqqqqqqq                    
-System.out.println((++qq)+") HubDataUniquex created");                    
+if (++qq % 100 == 0) System.out.println((qq)+") HubDataUniquex created");                    
                     this.hubDataUniquex = new HubDataUniquex();
                 }
             }

@@ -294,6 +294,10 @@ public abstract class RemoteDataSource {
             }
         }
         int x = al.size();
+        if (x == 0) {
+            iterator.remove();
+            hashIterator.remove(id);
+        }
         Object[] objs = new Object[x];
         if (x > 0) al.toArray(objs);
         return objs;
