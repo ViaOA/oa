@@ -203,18 +203,21 @@ public class HubDelegate {
 	            throw new RuntimeException("cant change object class since this is a shared hub.");
 	        }
 	    }
-	    HubSelectDelegate.cancelSelect(thisHub, true);
+	    // 20141111 removed since the select could be valid
+	    // HubSelectDelegate.cancelSelect(thisHub, true);
 	    thisHub.data.objClass = objClass;
 	
+	    /* 20141111 not needed here
 	    if (objClass != null) {
 	        // find out if class is OAObject
 	    	thisHub.data.setOAObjectFlag(OAObject.class.isAssignableFrom(objClass));
-	    	thisHub.data.setObjectInfo(OAObjectInfoDelegate.getOAObjectInfo(objClass));
+	    	// thisHub.data.setObjectInfo(OAObjectInfoDelegate.getOAObjectInfo(objClass));
 	    }
 	    else {
 	        thisHub.data.setObjectInfo(null);
 	        thisHub.data.setOAObjectFlag(false);
 	    }
+	    */
 	}
 	
     /**

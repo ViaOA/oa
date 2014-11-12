@@ -638,12 +638,14 @@ public class OAObjectReflectDelegate {
                 
                 // 20141109
                 hub = new Hub(linkClass, oaObj, liReverse, false);
-                select = new OASelect(hub.getObjectClass());
-                if (oaObj != null) {
-                    select.setWhereObject(oaObj);
-                    select.setPropertyFromWhereObject(linkInfo.getName());
-                }
                 
+                if (!bIsCalc) {
+                    select = new OASelect(hub.getObjectClass());
+                    if (oaObj != null) {
+                        select.setWhereObject(oaObj);
+                        select.setPropertyFromWhereObject(linkInfo.getName());
+                    }
+                }                
                 //was: hub = new Hub(linkClass, oaObj, liReverse, true); // liReverse = liDetailToMaster
                 /* 2013/01/08 recursive if this object is the owner (or ONE to Many) and the select
                  * hub is recursive of a different class - need to only select root objects. All
@@ -654,7 +656,7 @@ public class OAObjectReflectDelegate {
                 //was: if (!OAObjectInfoDelegate.isMany2Many(linkInfo) && (bThisIsServer || bIsCalc) && linkInfo.isOwner()) {
 
                 // 20131009 new LinkProperty recursive flag.  If owned+recursive, then select root
-                if (bThisIsServer) {
+                if (bThisIsServer && !bIsCalc) {
                     if (linkInfo.getOwner() && linkInfo.getRecursive()) {
                         OAObjectInfo oi2 = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.getToClass());
                         OALinkInfo li2 = OAObjectInfoDelegate.getRecursiveLinkInfo(oi2, OALinkInfo.ONE);
@@ -705,7 +707,7 @@ public class OAObjectReflectDelegate {
         // needs to loadAllData first, otherwise another thread could get the hub without using the lock
         if (bThisIsServer || (bIsCalc && !bIsServerSideCalc)) {
             if (!OAObjectCSDelegate.loadReferenceHubDataOnServer(hub, select)) { // load all data before passing to client
-                hub.loadAllData();
+                //hub.loadAllData();
                 HubSelectDelegate.loadAllData(hub, select);
             }
 

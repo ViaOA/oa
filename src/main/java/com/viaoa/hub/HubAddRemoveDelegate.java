@@ -255,7 +255,7 @@ public class HubAddRemoveDelegate {
 
     
     public static void add(Hub thisHub, Object obj) {
-        if (obj == null) return;
+        if (thisHub == null || obj == null) return;
         if (thisHub.datau.getSharedHub() != null) {
             if (thisHub.getEnabled()) {
                 add(thisHub.datau.getSharedHub(), obj);

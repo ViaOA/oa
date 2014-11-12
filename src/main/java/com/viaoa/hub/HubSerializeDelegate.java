@@ -73,7 +73,8 @@ public class HubSerializeDelegate {
 	    Used by serialization when reading objects from stream.
 	*/
 	protected static Object _readResolve(Hub thisHub) throws ObjectStreamException {
-		HubDelegate.setObjectClass(thisHub, thisHub.data.objClass);  // this will update HubController and datau
+		// 20141111 removed since it is now in hubData 
+	    // HubDelegate.setObjectClass(thisHub, thisHub.data.objClass);  // this will update HubController and datau
 	    if (thisHub.datam == null) thisHub.datam = new HubDataMaster();
 
 	    if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {

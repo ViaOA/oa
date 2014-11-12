@@ -449,7 +449,7 @@ public class HubShareDelegate {
 	    boolean shareActiveObject2 = true;
 	
 	    if (sharedMasterHub == null) {
-	    	thisHub.data = new HubData();
+	    	thisHub.data = new HubData(thisHub.data.objClass);
 	    	thisHub.datam = new HubDataMaster();
 	    }
 	    else {

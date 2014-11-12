@@ -31,7 +31,15 @@ import com.viaoa.ds.*;
 public class HubDatax implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 
-	
+
+    public boolean shouldSerialize() {
+        if (sortProperty != null) return true;
+        if (!sortAsc) return true;
+        if (uniqueProperty != null) return true;
+        if (bTrackChanges) return true;
+        return false;
+    }
+    
 	/**
 	    Counter that is incremented when a new list of objects is loaded.
 	    Incremented by select, setSharedHub, and when
@@ -112,7 +120,7 @@ public class HubDatax implements java.io.Serializable {
     */
     protected transient boolean bAutoCreateAllowDups;
 
-    // Flag to know if add/insert/remove objects should be tracked. Set to true when master object is set.
+    // Flag to know if add/insert/remove objects should be tracked. see also datam.getTrackChanges()
     protected boolean bTrackChanges;
 }
 

@@ -61,7 +61,7 @@ public class HubLinkDelegate {
 		    for (int i=0; i<al.size(); i++) {
 		    	OALinkInfo li = (OALinkInfo) al.get(i);
 		    	if (li.getType() != li.ONE) continue;
-		    	if (thisHub.data.objClass.equals(li.getToClass()) ) {
+		    	if (li.getToClass().equals(thisHub.data.objClass)) {
 		    		propertyTo = li.getName();
 		    		break;
 		    	}

@@ -303,7 +303,7 @@ public class HubDetailDelegate {
     
             if (wasShared) {
                 // have to create its own since it might have been sharing the current one
-                dHub.data = new HubData();
+                dHub.data = new HubData(dHub.data.objClass);
                 if (detail.bShareActiveObject) dHub.dataa = new HubDataActive();
             }
             dHub.data.setDupAllowAddRemove(false); // 2004/08/23
@@ -316,9 +316,12 @@ public class HubDetailDelegate {
             // dont share activeObject ("dataa")
             //     unless DetailHub.bShareActiveObject is true then set it after events
             Hub h = (Hub) obj;
-            
-            String s = HubSortDelegate.getSortProperty(thisHub);
-            if (s != null) h.setSelectOrder(s);
+   
+            String s = HubSortDelegate.getSortProperty(dHub);
+            if (s != null) { 
+                boolean b = HubSortDelegate.getSortAsc(thisHub);
+                h.sort(s, b);
+            }
     
             // need to select before assigning to detail hub so that add events wont
             //            be sent to detail hubs listeners
@@ -861,7 +864,7 @@ public class HubDetailDelegate {
                 if (hd.referenceCount <=0) {
                     if (h.datau.getVecHubDetail() == null || h.datau.getVecHubDetail().size() == 0) {
                         thisHub.datau.getVecHubDetail().removeElementAt(i);
-                        hubDetail.data = new HubData();
+                        hubDetail.data = new HubData(hubDetail.data.objClass);
                         hubDetail.datam = new HubDataMaster();
                         hubDetail.dataa = new HubDataActive();
                         return true;

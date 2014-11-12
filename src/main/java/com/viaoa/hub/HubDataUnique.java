@@ -31,7 +31,7 @@ import com.viaoa.object.*;
 class HubDataUnique implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 	
-	private HubDataUniquex hubDataUniquex;  // extended settings
+	private transient HubDataUniquex hubDataUniquex;  // extended settings
 
 static int qq;    
     private HubDataUniquex getHubDataUniquex() {

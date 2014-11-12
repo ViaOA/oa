@@ -40,6 +40,9 @@ public class HubSortDelegate {
     public static void sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp) {
         sort(thisHub, propertyPaths, bAscending, comp, false);
     }
+    public static void sort(Hub thisHub, String propertyPaths, boolean bAscending) {
+        sort(thisHub, propertyPaths, bAscending, null, false);
+    }
     
     public static void sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
         // 20110204 added locking

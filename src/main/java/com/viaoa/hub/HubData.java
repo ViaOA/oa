@@ -51,24 +51,26 @@ public class HubData implements java.io.Serializable {
     // used by setChanged
     protected boolean changed;
     
-    private HubDatax hubDatax; // extension
+    private transient HubDatax hubDatax; // extension
     
 	/**
 	    Constructor that supplies params for sizing Vector.
 	*/
-	public HubData(int size) {
+	public HubData(Class objClass, int size) {
 	    int x = size * 2;
 	    x = Math.max(5, x);
 	    x = Math.min(25, x);
 	    vector = new Vector(size, x);
+	    this.objClass = objClass;
 	}
-	public HubData() {
-		this(5);
+	public HubData(Class objClass) {
+		this(objClass, 5);
 	}
-    public HubData(int size, int incrementSize) {
+    public HubData(Class objClass, int size, int incrementSize) {
         int x = Math.max(1, incrementSize);
         x = Math.min(100, x);
         vector = new Vector(size, x);
+        this.objClass = objClass;
     }
 	
     static int qq;    
@@ -236,11 +238,14 @@ System.out.println((++qq)+") HubDatax created");
             if (oi != null) return oi;
         }
         oi = OAObjectInfoDelegate.getObjectInfo(objClass);
-        if (hubDatax != null) hubDatax.objectInfo = oi; 
+        if (objClass != null && hubDatax != null) hubDatax.objectInfo = oi;
         return oi;
     }
     public void setObjectInfo(OAObjectInfo objectInfo) {
-        if (hubDatax != null) hubDatax.objectInfo = objectInfo; 
+        if (hubDatax != null) hubDatax.objectInfo = objectInfo;
+        if (objectInfo != null && objClass == null) {
+            this.objClass = objectInfo.getForClass();
+        }
     }
 
     public HubAutoSequence getAutoSequence() {
@@ -266,7 +271,7 @@ System.out.println((++qq)+") HubDatax created");
     public boolean isOAObjectFlag() {
         if (hubDatax != null) {
             if (hubDatax.oaObjectFlag) return true;
-            boolean b = OAObject.class.isAssignableFrom(objClass);
+            boolean b = objClass != null && OAObject.class.isAssignableFrom(objClass);
             hubDatax.oaObjectFlag = b;
             return b;
         }
@@ -321,6 +326,11 @@ System.out.println((++qq)+") HubDatax created");
 
     private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{
         s.defaultWriteObject();
+        
+        HubDatax hdx = hubDatax;
+        if (hdx != null && !hdx.shouldSerialize()) hdx = null;
+        s.writeObject(hdx);
+        
         writeVector(s, vector);
         Vector vec;
         if (hubDatax != null) vec = hubDatax.vecAdd;
@@ -333,6 +343,7 @@ System.out.println((++qq)+") HubDatax created");
     
     private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
         s.defaultReadObject();
+        hubDatax = (HubDatax) s.readObject();
         vector = readVector(s);
         
         Vector vec = readVector(s);

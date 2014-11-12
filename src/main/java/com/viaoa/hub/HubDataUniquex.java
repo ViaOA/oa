@@ -29,7 +29,7 @@ import com.viaoa.object.*;
 class HubDataUniquex implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 	
-	
+
 	/** these options are not enforced on OAObjects, they are used to flag options */
     //	boolean allowNew = true, allowDelete = true, allowEdit = true;
 	
