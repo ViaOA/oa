@@ -24,6 +24,7 @@ public abstract class RemoteDataSource {
     private ConcurrentHashMap<String, Iterator> hashIterator = new ConcurrentHashMap<String, Iterator>(); // used to store DB
     
     public Object datasource(int command, Object[] objects) {
+        LOG.fine("command="+command);
         Object obj = null;
         Class clazz, masterClass;
         OADataSource ds;
@@ -165,6 +166,7 @@ public abstract class RemoteDataSource {
             if (iterator != null) {
                 iterator.remove();
                 hashIterator.remove(objects[0]);
+                LOG.fine("remove iterator, size="+hashIterator.size());
             }
             break;
 
@@ -183,6 +185,7 @@ public abstract class RemoteDataSource {
                 iterator = ds.select(clazz, (String) objects[1], (String) objects[2], 0, null); // where, order
                 obj = "select" + aiSelectCount.incrementAndGet();
                 hashIterator.put((String) obj, iterator);
+                LOG.fine("add iterator, size="+hashIterator.size());
             }
             break;
         case OADataSourceClient.SUPPORTSINITIALIZEOBJECT: 
@@ -213,6 +216,7 @@ public abstract class RemoteDataSource {
                 obj = "select" + aiSelectCount.incrementAndGet();
                 if (iterator != null) {
                     hashIterator.put((String) obj, iterator);
+                    LOG.fine("add iterator, size="+hashIterator.size());
                 }
             }
             break;
@@ -297,6 +301,7 @@ public abstract class RemoteDataSource {
         if (x == 0) {
             iterator.remove();
             hashIterator.remove(id);
+            LOG.fine("remove iterator, size="+hashIterator.size());
         }
         Object[] objs = new Object[x];
         if (x > 0) al.toArray(objs);
@@ -314,7 +319,10 @@ public abstract class RemoteDataSource {
         if (ds != null) {
             Iterator iterator = ds.select(clazz, (String) queryWhere, params, (String) queryOrder, 0, null); 
             selectId = "select" + aiSelectCount.incrementAndGet();
-            if (iterator != null) hashIterator.put(selectId, iterator);
+            if (iterator != null) {
+                hashIterator.put(selectId, iterator);
+                LOG.fine("remove iterator, size="+hashIterator.size());
+            }
         }
         else selectId = null;
         return selectId;

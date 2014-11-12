@@ -531,10 +531,9 @@ public class OASyncClient {
      * called when object is removed from object cache (called by oaObject.finalize)
      * @param bInServerSideCache if the object is in the serverSide cache.
      */
-    public void objectRemoved(int guid, boolean bInServerSideCache) {
+    public void objectRemoved(int guid) {
         try {
             if (guid > 0) {
-                if (bInServerSideCache) guid *= -1;  // flag for server to remove from sesssion's cache
                 queRemoveGuid.add(guid);
             }
         }

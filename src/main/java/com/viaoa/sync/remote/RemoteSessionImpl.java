@@ -19,6 +19,7 @@ package com.viaoa.sync.remote;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import com.viaoa.object.OACascade;
 import com.viaoa.object.OAObject;
@@ -27,40 +28,51 @@ import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSaveDelegate;
-import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 import com.viaoa.sync.model.ClientInfo;
 
 // see: OAClient
 
 public abstract class RemoteSessionImpl implements RemoteSessionInterface {
-    protected ConcurrentHashMap<OAObject, OAObject> hashCache = new ConcurrentHashMap<OAObject, OAObject>();
-    protected ConcurrentHashMap<Integer, OAObject> hashCacheInt = new ConcurrentHashMap<Integer, OAObject>();
+    private static Logger LOG = Logger.getLogger(RemoteSessionImpl.class.getName());
+    protected ConcurrentHashMap<Integer, OAObject> hashCache = new ConcurrentHashMap<Integer, OAObject>();
     protected ConcurrentHashMap<OAObject, OAObject> hashLock = new ConcurrentHashMap<OAObject, OAObject>();
-
+    protected int sessionId;
+    
+    public RemoteSessionImpl(int sessionId) {
+        this.sessionId = sessionId;
+    }
+    
+    private int nextWarningCnt = 100;
+    
     @Override
-    public void setCached(OAObject obj, boolean bAddToCache) {
-        if (bAddToCache) {
-            hashCache.put(obj, obj);
-            hashCacheInt.put(OAObjectDelegate.getGuid(obj), obj);
-        }
-        else {
-            hashCache.remove(obj);
-            hashCacheInt.remove(OAObjectDelegate.getGuid(obj), obj);
+    public void addToCache(OAObject obj) {
+        int guid = OAObjectDelegate.getGuid(obj);
+        hashCache.put(guid, obj);
+        int x = hashCache.size();
+        LOG.fine("sessionId="+sessionId+", cache size="+x+", obj="+obj);
+        if (x >= nextWarningCnt) {
+            LOG.warning("sessionId="+sessionId+", cache size="+x+", obj="+obj);
+            nextWarningCnt += 100;
         }
     }
+    @Override
+    public void removeFromCache(int guid) {
+        hashCache.remove(guid);
+        int x = hashCache.size();
+        LOG.fine("sessionId="+sessionId+", cache size="+x+", guid="+guid);
+        if (x < 100) nextWarningCnt = 100;
+    }
 
+    
     // called by server to save any client cached objects
     public void saveCache(OACascade cascade, int iCascadeRule) {
-        for (Map.Entry<OAObject, OAObject> entry : hashCache.entrySet()) {
-            OAObject obj = entry.getKey();
+        LOG.fine("sessionId="+sessionId+", cache size="+hashCache.size());
+        for (Map.Entry<Integer, OAObject> entry : hashCache.entrySet()) {
+            OAObject obj = entry.getValue();
             if (!obj.wasDeleted()) {
                 OAObjectSaveDelegate.save(obj, iCascadeRule, cascade);
             }
         }
-    }
-
-    protected OAObject findInCache(int guid) {
-        return hashCacheInt.get(new Integer(guid));
     }
 
     /**
@@ -73,6 +85,7 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
     // called by server when client is disconnected
     public void clearCache() {
         hashCache.clear();
+        LOG.fine("sessionId="+sessionId+", cache size="+hashCache.size());
     }
 
     @Override
@@ -90,6 +103,7 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
         else {
             hashLock.remove(obj);
         }
+        LOG.fine("sessionId="+sessionId+", cache size="+hashLock.size()+", obj="+obj+", locked="+bLock);
     }
 
     // this is used at disconnect
@@ -98,12 +112,14 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
             OAObject obj = entry.getKey();
             setLock(obj, false);
         }
+        LOG.fine("sessionId="+sessionId+", cache size="+hashLock.size());
     }
 
     @Override
     public OAObject createNewObject(Class clazz) {
         OAObject obj = (OAObject) OAObjectReflectDelegate.createNewObject(clazz);
-        setCached(obj, true);
+        LOG.fine("sessionId="+sessionId+", obj="+obj);
+        addToCache(obj);
         return obj;
     }
     

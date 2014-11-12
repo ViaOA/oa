@@ -18,6 +18,8 @@ All rights reserved.
 package com.viaoa.sync.remote;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
+
 import com.viaoa.ds.OADataSource;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
@@ -25,11 +27,17 @@ import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
 
 public abstract class RemoteClientImpl implements RemoteClientInterface {
+    private static Logger LOG = Logger.getLogger(RemoteClientImpl.class.getName());
     protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
     protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
     private ClientGetDetail clientGetDetail = new ClientGetDetail(); 
     private RemoteDataSource remoteDataSource;
-
+    private int sessionId;
+    
+    public RemoteClientImpl(int sessionId) {
+        this.sessionId = sessionId;
+    }
+    
     /**
      * this is called when objects are removed on the client,
      * so that the guid can be removed from the clientGetDetail cache of object.guids that have been sent to client. 
@@ -39,6 +47,7 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         int x = guids.length;
         for (int i=0; i<x; i++) {
             clientGetDetail.removeGuid(guids[i]);
+            LOG.fine("remove guid="+guids[i]+" for "+sessionId);
         }
     }
     

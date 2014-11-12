@@ -137,7 +137,7 @@ public class OASyncServer {
         if (rs != null) return rs;
         cx.remoteClientCallback = callback;
         
-        rs = new RemoteSessionImpl() {
+        rs = new RemoteSessionImpl(ci.getConnectionId()) {
             boolean bClearedCache;
             @Override
             public boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey) {
@@ -177,12 +177,7 @@ public class OASyncServer {
                 if (guids == null) return;
                 int x = guids.length;
                 for (int i=0; i<x; i++) {
-                    // note: if guid < 0, then it is a flag to be serverSide cached, need to make absolute
-                    if (guids[i] < 0) {
-                        guids[i] *= -1;
-                        OAObject obj = findInCache(guids[i]);
-                        if (obj != null) setCached(obj, false);
-                    }
+                    removeFromCache(guids[i]);
                 }
                 cx.remoteClient.removeGuids(guids);  // remove from getDetail cache/tree
             }
@@ -205,14 +200,14 @@ public class OASyncServer {
         
         RemoteClientImpl rc = cx.remoteClient; 
         if (rc != null) return rc;
-        rc = new RemoteClientImpl() {
+        rc = new RemoteClientImpl(ci.getConnectionId()) {
             /**
              * Add objects that need to be cached to the session.
              * This is used by datasource and copy methods. 
              */
             @Override
             public void setCached(OAObject obj) {
-                cx.remoteSession.setCached(obj, true);
+                cx.remoteSession.addToCache(obj);
             }
         };
         cx.remoteClient = rc;

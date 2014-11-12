@@ -87,10 +87,10 @@ public class OAObjectCSDelegate {
      */
     protected static void objectRemovedFromCache(int guid) {
         if (guid < 0) return;
-        Object val = hashServerSideCache.remove(guid);
+        hashServerSideCache.remove(guid);
         OASyncClient sc = OASyncDelegate.getSyncClient();
         if (sc != null) {
-            if (guid > 0) sc.objectRemoved(guid, (val != null));
+            if (guid > 0) sc.objectRemoved(guid);
         }
         hashClientSideCache.remove(guid);
     }
@@ -112,7 +112,7 @@ public class OAObjectCSDelegate {
         if (bSendToServer) {
             RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
             if (ri != null) {
-                ri.setCached(oaObj, true);
+                ri.addToCache(oaObj);
             }
         }
         hashServerSideCache.put(guid, guid);
@@ -129,7 +129,7 @@ public class OAObjectCSDelegate {
         if (hashServerSideCache.remove(guid) != null) {
             RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
             if (ri != null) {
-                ri.setCached(oaObj, false);
+                ri.removeFromCache(oaObj.getObjectKey().getGuid());
             }
         }
     }

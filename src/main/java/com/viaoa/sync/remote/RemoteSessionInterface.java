@@ -37,7 +37,11 @@ public interface RemoteSessionInterface {
      * @param bAddToCache
      */
     @OARemoteMethod(noReturnValue=true)
-    void setCached(OAObject obj, boolean bAddToCache);
+    void addToCache(OAObject obj);
+
+    @OARemoteMethod(noReturnValue=true)
+    void removeFromCache(int guid);
+
     
     boolean setLock(Class objectClass, OAObjectKey objectKey, boolean bLock);
     boolean isLocked(Class objectClass, OAObjectKey objectKey);
