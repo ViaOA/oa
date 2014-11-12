@@ -29,6 +29,11 @@ import com.viaoa.sync.model.ClientInfo;
  */
 @OARemoteInterface()
 public interface RemoteSessionInterface {
+    
+    /**
+     * create a new object on the server,
+     * and call addToCache
+     */
     OAObject createNewObject(Class clazz);
 
     /**

@@ -97,7 +97,7 @@ public class OAObjectSerializeDelegate {
             Object value = objs[i+1];
 		
             if (bDup) {  // check to see if reference is needed or not
-                Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false);
+                Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false, true);
                 if (objx != null) {
                     if (objx instanceof OAObjectKey && (value instanceof OAObject)) {
                         OAObjectKey k1 = (OAObjectKey) objx;
@@ -172,7 +172,7 @@ public class OAObjectSerializeDelegate {
 			for (int i=0; revName!=null; i++) { 
             	OAObject objx = (OAObject) hub.getAt(i);
             	if (objx == null) break;
-            	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName);
+            	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false, true);
             	if (ref == null) continue;
             	if (ref == oaObjOrig || ref instanceof OAObjectKey) {
             	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjNew, oaObjOrig);
@@ -188,7 +188,7 @@ public class OAObjectSerializeDelegate {
         	// handles 1-1, 1-Many
         	OAObject objx = (OAObject) value;
 
-        	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName);
+        	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false, true);
         	if (ref == null) return true;
         	if (ref == oaObjOrig || ref.equals(oaObjOrig.objectKey)) {
         	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjNew, oaObjOrig);

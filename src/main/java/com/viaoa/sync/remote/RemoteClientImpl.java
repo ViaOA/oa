@@ -53,6 +53,7 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     
     @Override
     public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
+        LOG.fine("masterClass="+masterClass+", prop="+property);
         Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys);
         return obj;
     }

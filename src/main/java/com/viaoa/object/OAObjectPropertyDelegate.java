@@ -274,18 +274,15 @@ public class OAObjectPropertyDelegate {
         return newValue;
     }
 
-    public static Object getProperty(OAObject oaObj, String name) {
-        return getProperty(oaObj, name, false);
-    }
-    
     /**
      * 
      * @param oaObj
      * @param name name to find, not case sensitive
      * @param bReturnNotExist if true and the property name does not exist or it's value has not been loaded, then OANotExist.instance
+     * @param bConvertWeakRef if true and the value is a WeakReference, then it's value will be checked and returned.
      * is returned.
      */
-    public static Object getProperty(OAObject oaObj, String name, boolean bReturnNotExist) {
+    public static Object getProperty(OAObject oaObj, String name, boolean bReturnNotExist, boolean bConvertWeakRef) {
         if (oaObj == null || name == null) return null;
         
         Object[] objs = oaObj.properties;
@@ -296,7 +293,7 @@ public class OAObjectPropertyDelegate {
         for (int i=0; i<objs.length; i+=2) {
             if (objs[i] == null || !name.equalsIgnoreCase((String)objs[i])) continue;
             Object objx = objs[i+1];
-            if (objx instanceof WeakReference) {
+            if (bConvertWeakRef && objx instanceof WeakReference) {
                 objx = ((WeakReference) objx).get();
                 if (objx == null) {
                     if (bReturnNotExist) return OANotExist.instance; 

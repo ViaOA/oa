@@ -176,7 +176,7 @@ public class ClientGetDetail {
                 OAObject obj = OAObjectCacheDelegate.get(c, key);
                 if (obj == null) continue;
                 
-                Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true);
+                Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
                     if (cntDs++ < 10) {
                         OAObjectReflectDelegate.getProperty(obj, propFromMaster);

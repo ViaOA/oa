@@ -121,7 +121,7 @@ public class OASyncClient {
         //System.out.println("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName+", levels="+levels);
         //LOG.finer("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName);
         
-        cntGetDetail++;        
+        int cntx = ++cntGetDetail;        
         int xDup = OAObjectSerializeDelegate.cntDup;
         int xNew = OAObjectSerializeDelegate.cntNew;
 
@@ -161,14 +161,14 @@ public class OASyncClient {
         
         //qqqqqqq        
 
-        if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntGetDetail % 100 == 0) {
+        if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntx % 100 == 0) {
             int iNew = OAObjectSerializeDelegate.cntNew; 
             int iDup = OAObjectSerializeDelegate.cntDup;
             
-            System.out.println(String.format(
+            String s = String.format(
                 "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b %,d, " +
                 "newCnt=%,d, dupCnt=%,d, totNewCnt=%,d, totDupCnt=%,d",
-                cntGetDetail, 
+                cntx, 
                 masterObject, 
                 propertyName, 
                 result==null?"null":result.getClass().getName(),
@@ -178,7 +178,9 @@ public class OASyncClient {
                 iDup-xDup,
                 iNew, 
                 iDup
-            ));        
+            );
+            System.out.println(s);
+            LOG.fine(s);
         }
         return result;
     }
@@ -261,7 +263,7 @@ public class OASyncClient {
             if (obj == null) break;
             if (obj == masterObject) continue;
 
-            Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, property, true);
+            Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, property, true, true);
             if (value instanceof OANotExist) {
                 if (linkInfo == null) {  // must be blob
                     OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);

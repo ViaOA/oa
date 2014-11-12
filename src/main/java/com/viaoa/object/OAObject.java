@@ -801,7 +801,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
     
     public boolean isHubLoaded(String name) {
-        Object objx = OAObjectPropertyDelegate.getProperty(this, name, true);
+        Object objx = OAObjectPropertyDelegate.getProperty(this, name, true, true);
         if (objx == OANotExist.instance) return false;
         if (objx == null) return true;
         if (objx instanceof WeakReference) {
