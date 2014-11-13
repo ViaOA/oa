@@ -1,0 +1,12 @@
+
+
+make sure changed object is not GCd
+    only  needed on server
+    > HubDelegate.setReferenceable
+        called by OAObject.isChanged
+        and Hub.add, remove
+
+
+make sure that a GCd object on server that is changed by client is reloaded 
+    and that it's parents are also reloaded
+    > RemoteSyncImpl.getObject, loadCachedOwners

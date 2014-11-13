@@ -25,6 +25,7 @@ import com.viaoa.object.OACascade;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
+import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
@@ -34,7 +35,7 @@ import com.viaoa.sync.OASyncDelegate;
 
 /**
  * Remote broadcast methods used to keep OAObjects, Hubs in sync with all computers.
- * Note: there is an instance on the server and each client.  The server needs to always
+ * Note: there is an instance on the server and on each client.  The server needs to always
  * try to update, even if the object is no longer in memory, then it will need to get from datasource. 
  */
 public class RemoteSyncImpl implements RemoteSyncInterface {
@@ -174,7 +175,10 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         if (obj == null) {
             if (OASyncDelegate.isServer()) {
                 obj = (OAObject) OADataSource.getObject(objectClass, origKey);
-                loadCachedOwners(obj, null);
+                if (obj != null) {
+                    OAObjectDelegate.reassignGuid(obj, origKey);
+                    loadCachedOwners(obj, null);
+                }
             }
         }
         return obj;

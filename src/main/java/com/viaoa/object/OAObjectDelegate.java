@@ -184,6 +184,18 @@ public class OAObjectDelegate {
     }
 
     /**
+     * This is used by RemoteSyncImpl on the server, when it has to reload a GCd object from DS.
+     * This happens when a client makes a change and the server does not have the object in memory.
+     * @param obj newly loaded object from DS
+     * @param origKey
+     */
+    public static void reassignGuid(OAObject obj, OAObjectKey origKey) {
+        if (obj != null && origKey != null) {
+            obj.guid = origKey.getGuid();
+        }
+    }
+    
+    /**
      * Gets the next GUID for the current computer.
      * also called by OAObjectServerImpl.java
      */
