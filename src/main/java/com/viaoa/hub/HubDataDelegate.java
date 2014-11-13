@@ -185,7 +185,7 @@ public class HubDataDelegate {
         
 	    thisHub.data.changeCount++;
 	    if (!thisHub.isLoading()) {
-	        if ((thisHub.data.getTrackChanges() || thisHub.datam.getTrackChanges()) && (obj instanceof OAObject)) {
+	        if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
 	            synchronized (thisHub.data) {
 	                if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
                 		thisHub.data.getVecRemove().removeElement(obj);
@@ -230,7 +230,7 @@ public class HubDataDelegate {
 	    else {
             thisHub.data.vector.insertElementAt(obj, pos);
 	    }
-	    if (!thisHub.isLoading() && (thisHub.data.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
+	    if (!thisHub.isLoading() && (thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
 	        synchronized (thisHub.data) {
 	            if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
             		thisHub.data.getVecRemove().removeElement(obj);

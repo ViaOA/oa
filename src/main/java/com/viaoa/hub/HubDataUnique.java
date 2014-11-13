@@ -21,6 +21,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import com.viaoa.object.*;
 
@@ -30,7 +31,7 @@ import com.viaoa.object.*;
 */
 class HubDataUnique implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
-	
+	private static Logger LOG = Logger.getLogger(HubDataUnique.class.getName());
 	private transient HubDataUniquex hubDataUniquex;  // extended settings
 
 static int qq;    
@@ -38,8 +39,9 @@ static int qq;
         if (hubDataUniquex == null) {
             synchronized (this) {
                 if (hubDataUniquex == null) {
-//qqqqqqqqqqqqqq                    
-if (++qq % 100 == 0) System.out.println((qq)+") HubDataUniquex created");                    
+                    if (++qq % 500 == 0) {
+                        LOG.fine((qq)+") HubDataUniquex created");
+                    }
                     this.hubDataUniquex = new HubDataUniquex();
                 }
             }

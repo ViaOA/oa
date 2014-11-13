@@ -20,6 +20,7 @@ package com.viaoa.hub;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
@@ -32,6 +33,7 @@ import com.viaoa.ds.*;
 */
 public class HubData implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
+    private static Logger LOG = Logger.getLogger(HubData.class.getName());
 
     /** Class of objects in this Hub */
     protected Class objClass;
@@ -78,8 +80,9 @@ public class HubData implements java.io.Serializable {
         if (hubDatax == null) {
             synchronized (this) {
                 if (hubDatax == null) {
-//qqqqqqqqqqqqqq                    
-if (++qq % 100 == 0) System.out.println((qq)+") HubDatax created");                    
+                    if (++qq % 500 == 0) {
+                        LOG.fine((qq)+") HubDatax created");
+                    }
                     this.hubDatax = new HubDatax();
                 }
             }

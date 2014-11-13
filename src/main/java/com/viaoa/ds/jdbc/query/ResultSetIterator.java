@@ -126,7 +126,10 @@ static PrintWriter printWriter;
             String s = query;
             int pos = s.toUpperCase().indexOf("FROM");
             if (pos > 0) s = s.substring(pos);
-            System.out.println((qqq)+") ResultSetIterator: query="+s);
+            s = (qqq)+") ResultSetIterator: query="+s;
+            
+            LOG.fine(s);
+            System.out.println(s);
         }
         /*
         if ( (qqq%(DisplayMod*4)==0)) {        
