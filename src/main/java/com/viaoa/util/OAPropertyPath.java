@@ -39,7 +39,7 @@ import com.viaoa.object.OAObjectInfoDelegate;
  * can have a filter in the format ":filterName(a,b,n)" 
 
  * Supports casting in property path, 
- *   ex: from Emp, "dept.(manger)employee.name"
+ *   ex: from Emp, "dept.(manager)employee.name"
  *   ex: from OALeftJoin "(Location)A.name"
  *
  * Supports filters:
