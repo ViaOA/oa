@@ -123,6 +123,7 @@ public class OATreeModel implements TreeModel {
     protected void invoke(int type, OATreeNodeData node, int pos, int pos2) {
         this.invoke(type, node, pos, pos2, null);
     }
+    
     protected void invoke(int type, OATreeNodeData node, int pos, int pos2, Object object) {
         synchronized (invokeLock) {
             vecInvoke.addElement(new Invoker(type, node, pos, pos2, object));

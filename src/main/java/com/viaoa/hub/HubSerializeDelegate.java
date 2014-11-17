@@ -30,134 +30,73 @@ import com.viaoa.object.*;
  *
  */
 public class HubSerializeDelegate {
-	private static Logger LOG = Logger.getLogger(HubSerializeDelegate.class.getName());
+    private static Logger LOG = Logger.getLogger(HubSerializeDelegate.class.getName());
 
-	/**
-	    Used by serialization to store Hub.
-	*/
-	protected static void _writeObject(Hub thisHub, java.io.ObjectOutputStream stream) throws IOException {
-	    if (HubSelectDelegate.isMoreData(thisHub)) {
-	        try {
-	        	OAThreadLocalDelegate.setSuppressCSMessages(true);
-	            HubSelectDelegate.loadAllData(thisHub);  // otherwise, client will not have the correct datasource
-	        }
-	        finally {
-	        	OAThreadLocalDelegate.setSuppressCSMessages(false);	        
-	        }
-	    }
-	    stream.defaultWriteObject();
-	}
-	
-	public static int replaceObject(Hub thisHub, OAObject objFrom, OAObject objTo) {
-		if (thisHub == null) return -1;
-        if (thisHub.data == null) return -1;
-		if (thisHub.data.vector == null) return -1;
-		int pos = thisHub.data.vector.indexOf(objFrom);
-		if (pos >= 0) thisHub.data.vector.setElementAt(objTo, pos);
-		return pos;
-	}
-
-	public static void replaceMasterObject(Hub thisHub, OAObject objFrom, OAObject objTo) {
-		if (thisHub == null) return;
-		if (thisHub.datam.masterObject == objFrom) thisHub.datam.masterObject = objTo;
-	}
-	
-	/** qqqqqqqqqqq
-	 * Used by OAObjectSerializeDelegate, should only be needed to handle some temp "bad" files.
-	 */
-	public static boolean isResolved(Hub thisHub) {
-		return (thisHub != null && thisHub.data != null && thisHub.data.vector != null);
-	}
-
-	/**
-	    Used by serialization when reading objects from stream.
-	*/
-	protected static Object _readResolve(Hub thisHub) throws ObjectStreamException {
-		// 20141111 removed since it is now in hubData 
-	    // HubDelegate.setObjectClass(thisHub, thisHub.data.objClass);  // this will update HubController and datau
-	    if (thisHub.datam == null) thisHub.datam = new HubDataMaster();
-
-	    if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
-	        // need to reassign  linkInfo, to eliminate linkinfo dups
-	    	boolean bFound = false;	    	
-	        if (thisHub.data.getObjectInfo() != null) { 
-	        	List al = thisHub.data.getObjectInfo().getLinkInfos();
-	        	OALinkInfo liOld = thisHub.datam.liDetailToMaster;
-	        	for (int i=0; i < al.size(); i++) {
-	            	OALinkInfo li = (OALinkInfo) al.get(i);
-	            	if (liOld == li) {
-	            		bFound = true;
-	            		break;
-	            	}
-	                if ((liOld != null) && (liOld.getName() != null)) {
-	                    if (liOld.getName().equalsIgnoreCase(li.getName())) {
-	                    	thisHub.datam.liDetailToMaster = li;
-	                    	bFound = true;//qqqqqq
-	                        break;
-	                    }
-	                }
-	            }
-	        	if (!bFound) {
-		        	for (int i=0; i < al.size(); i++) {
-		            	OALinkInfo li = (OALinkInfo) al.get(i);
-		            	OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-		            	if (liRev == null) continue;
-	                    if (liRev.getType() == OALinkInfo.MANY && thisHub.datam.masterObject.getClass().equals(li.getToClass()) ) {
-	                    	thisHub.datam.liDetailToMaster = li;
-                    		bFound = true;
-	                        break;
-	                    }
-	                }
-	        		
-	        	}
-	        }
-			if (!bFound) {
-				LOG.warning("Could not find OALinkInfo, hub="+thisHub);
-			}
-	        HubDetailDelegate.setMasterObject(thisHub, thisHub.datam.masterObject, thisHub.datam.liDetailToMaster);
-	    }
-	    if (thisHub.datau.getSharedHub() != null) {
-	        thisHub.datau.setSharedHub(null); // so gc() will dispose this hub
-	    }
-	
-		if (thisHub.data.isSelectAllHub()) {
-			OAObjectCacheDelegate.setSelectAllHub(thisHub);
-		}
-	    
-        /* 20110204 removed - sortListener for client is now created in OAObjectReflectDelegate.getReferenceHub(..)
-            //          otherwise, the hubSortListener might have a dependent propPath that has to fetch other objects from server
-        if (thisHub.data.sortProperty != null) {
-            thisHub.data.sortListener = new HubSortListener(thisHub, null, thisHub.data.sortProperty, thisHub.data.sortAsc);
+    /**
+        Used by serialization to store Hub.
+    */
+    protected static void _writeObject(Hub thisHub, java.io.ObjectOutputStream stream) throws IOException {
+        if (HubSelectDelegate.isMoreData(thisHub)) {
+            try {
+                OAThreadLocalDelegate.setSuppressCSMessages(true);
+                HubSelectDelegate.loadAllData(thisHub);  // otherwise, client will not have the correct datasource
+            }
+            finally {
+                OAThreadLocalDelegate.setSuppressCSMessages(false);         
+            }
         }
-        */
-		boolean b = false;
-		for (int i=0; ; i++) {
-		    
-		    if (thisHub.data == null || thisHub.data.vector == null) {
-		        // break;
-		        //qqqqqqqqqqqqqqqq BAD bugger qqqqqqqqqqqq		        
-		    }
-		    
-		    Object obj = thisHub.getAt(i);
-		    if (obj == null) break;
-		    
-		    Object key = obj;
-		    if (thisHub.data.isOAObjectFlag()) {
-		        if (!b) {
-		            // dont initialize this hub if the master object is a duplicate.
-		            // check by looking to see if this object already belongs to a hub that has the same masterObject/linkinfo
-		            if ( OAObjectHubDelegate.isAlreadyInHub((OAObject)obj, thisHub.datam.liDetailToMaster) ) {
-		                return thisHub;
-		            }
-		            b = true;
-		        }
-		        OAObjectHubDelegate.addHub((OAObject) obj, thisHub);
-		    }
-		}
+        stream.defaultWriteObject();
+    }
+    
+    public static int replaceObject(Hub thisHub, OAObject objFrom, OAObject objTo) {
+        if (thisHub == null) return -1;
+        if (thisHub.data == null) return -1;
+        if (thisHub.data.vector == null) return -1;
+        int pos = thisHub.data.vector.indexOf(objFrom);
+        if (pos >= 0) thisHub.data.vector.setElementAt(objTo, pos);
+        return pos;
+    }
 
-		return thisHub;
-	}
+    public static void replaceMasterObject(Hub thisHub, OAObject objFrom, OAObject objTo) {
+        if (thisHub == null) return;
+        if (thisHub.datam.masterObject == objFrom) thisHub.datam.masterObject = objTo;
+    }
+    
+    /** qqqqqqqqqqq
+     * Used by OAObjectSerializeDelegate, should only be needed to handle some temp "bad" files.
+     */
+    public static boolean isResolved(Hub thisHub) {
+        return (thisHub != null && thisHub.data != null && thisHub.data.vector != null);
+    }
 
-	
-	
+    /**
+        Used by serialization when reading objects from stream.
+        This needs to add the hub to OAObject.hubs, but only if it is not a duplicate (and is not needed)
+    */
+    protected static Object _readResolve(Hub thisHub) throws ObjectStreamException {
+        // 20141115 reworked after changing read/writeObject of hubDataMaster
+        for (int i=0; ; i++) {
+            Object obj = thisHub.getAt(i);
+            if (obj == null) break;
+
+            if (i == 0) {
+                if (obj instanceof OAObject) {
+                    // dont initialize this hub if the master object is a duplicate.
+                    // check by looking to see if this object already belongs to a hub that has the same masterObject/linkinfo
+                    if ( OAObjectHubDelegate.isAlreadyInHub((OAObject)obj, thisHub.datam.liDetailToMaster) ) {
+                        return thisHub; // this hub is a dup and wont be used
+                    }
+                }
+            }
+            OAObjectHubDelegate.addHub((OAObject) obj, thisHub);
+        }
+        // 20141116 make sure that masterObject.properties has hub
+        if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
+            OAObjectPropertyDelegate.setPropertyCAS(
+                thisHub.datam.masterObject, thisHub.datam.liDetailToMaster.getReverseName(), 
+                thisHub, null, true, false); 
+        }
+        
+        return thisHub;
+    }
 }

@@ -161,9 +161,9 @@ public class OAObjectSerializeDelegate {
 		if (value instanceof Hub) {
         	// handles M-1, M-M
         	Hub hub = (Hub) value;
-			if (!HubSerializeDelegate.isResolved(hub)) { //qqqqqqqqqqq Temp only
-				LOG.fine("resolve ref not fully loaded. obj"+oaObjOrig+", new="+oaObjNew+" orig.guid="+oaObjOrig.guid+" new.guid="+oaObjNew.guid);    				
-				return false;  // should only be needed for temp basis
+			if (!HubSerializeDelegate.isResolved(hub)) { 
+			    // not fully loaded, HubSerializeDelegete._readResolve will add it to the object.props
+			    return false;
 			}
 			
 			// this will only replace if current masterObj = oaObjOrig

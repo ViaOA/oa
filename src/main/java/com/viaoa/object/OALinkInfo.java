@@ -25,7 +25,8 @@ import java.lang.reflect.*;
     <b>Note:</b> this will be replaced by com.viaoa.model.OALinkPropertyDef
     <b>WARNING:</b> this object is past with Hub (using RMI), so make sure of transient properties.
 */
-public class OALinkInfo implements java.io.Serializable {
+// 20141115 removed serializable, so that it is always handled in other object's read/writeObject
+public class OALinkInfo { //implements java.io.Serializable {
     static final long serialVersionUID = 1L;    
     public static final int ONE = 0;
     public static final int MANY = 1;
@@ -56,21 +57,22 @@ public class OALinkInfo implements java.io.Serializable {
     protected boolean bCalculated;
     protected boolean bServerSideCalc;
     protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
+    private transient Method uniquePropertyGetMethod;
     
     public boolean bSupportsStorage; // flag set/used by caching
     
     public OALinkInfo(String name, Class toClass, int type) {
-    	this(name, toClass, type, false, false, null, false);
+        this(name, toClass, type, false, false, null, false);
     }
     public OALinkInfo(String name, Class toClass, int type, boolean cascade, String reverseName) {
-    	this(name, toClass, type, cascade, cascade, reverseName, false);
+        this(name, toClass, type, cascade, cascade, reverseName, false);
     }
     public OALinkInfo(String name, Class toClass, int type, boolean cascade, String reverseName, boolean bOwner) {
-    	this(name, toClass, type, cascade, cascade, reverseName, bOwner);
+        this(name, toClass, type, cascade, cascade, reverseName, bOwner);
     }
     
     public OALinkInfo(String name, Class toClass, int type, boolean cascadeSave, boolean cascadeDelete, String reverseName) {
-    	this(name, toClass, type, cascadeSave, cascadeDelete, reverseName, false);
+        this(name, toClass, type, cascadeSave, cascadeDelete, reverseName, false);
     }
     public OALinkInfo(String name, Class toClass, int type, boolean cascadeSave, boolean cascadeDelete, String reverseName, boolean bOwner) {
         this.name = name;
@@ -195,25 +197,25 @@ public class OALinkInfo implements java.io.Serializable {
         
     /**
     Set the number of hubs that will be cached.
-	*/
-	public void setCacheSize(int x) {
-	    this.cacheSize = Math.max(0, x);
-	}
-	public int getCacheSize() {
-	    return this.cacheSize;
-	}
+    */
+    public void setCacheSize(int x) {
+        this.cacheSize = Math.max(0, x);
+    }
+    public int getCacheSize() {
+        return this.cacheSize;
+    }
 
 // 2008/01/02 all of these were created to support the old oa.html package    
-	public Object getValue(Object obj) {
-		return OAObjectReflectDelegate.getProperty((OAObject)obj, name);
-	}
-	
-	public void setMatchProperty(String prop) {
-	    this.matchProperty = prop;
-	}
-	public String getMatchProperty() {
-	    return this.matchProperty;
-	}
+    public Object getValue(Object obj) {
+        return OAObjectReflectDelegate.getProperty((OAObject)obj, name);
+    }
+    
+    public void setMatchProperty(String prop) {
+        this.matchProperty = prop;
+    }
+    public String getMatchProperty() {
+        return this.matchProperty;
+    }
 
     public void setUniqueProperty(String prop) {
         this.uniqueProperty = prop;
@@ -244,7 +246,6 @@ public class OALinkInfo implements java.io.Serializable {
     }
     
     
-    private Method uniquePropertyGetMethod;
     public Method getUniquePropertyGetMethod() {
         if (uniquePropertyGetMethod != null) return uniquePropertyGetMethod;
         if (uniqueProperty == null) return null;
@@ -253,7 +254,7 @@ public class OALinkInfo implements java.io.Serializable {
     }
     
     
-	// pp = propertyPath to matchingHub
+    // pp = propertyPath to matchingHub
     public void setMatchHub(String pp) {
         this.matchHub = pp;
     }
