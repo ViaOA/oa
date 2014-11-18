@@ -34,6 +34,7 @@ import com.viaoa.util.OAPropertyPath;
  * @param <B> type of objects that will be in the group by Hub.
  */
 public class HubGroupBy<A extends OAObject, B extends OAObject> {
+    // 20141117 support for reverse propertyPaths that dont have methods
     
     private Hub<A> hubA;
     private Hub<B> hubB;
@@ -67,8 +68,8 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
     }
 
     void setup() throws RuntimeException {
-        OAPropertyPath pp = new OAPropertyPath(hubA.getObjectClass(), propertyPath);
         
+        OAPropertyPath pp = new OAPropertyPath(hubA.getObjectClass(), propertyPath);
         Class<?>[] cs = pp.getClasses();
         if (cs == null || cs.length == 0) {
             throw new RuntimeException("propertyPath is invalid, "+propertyPath);
@@ -76,44 +77,79 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
         
         hubB = new Hub<B>((Class<B>) cs[cs.length-1]);
         HubMerger hm = new HubMerger(hubA, hubB, propertyPath, false, true);
-        hubDetail = hubB.getDetailHub(pp.getReversePropertyPath().getPropertyPath());
-        hubFiltered = new Hub(hubA.getObjectClass());
-        hubFilter = new HubFilter<A>(hubDetail, hubFiltered) {
-            @Override
-            public boolean isUsed(A object) {
-                return hubA.contains(object);
-            }
-            
-            // custom: if the filtered groupBy hub has an add/remove, then add/remove from the HubA
-            
-            @Override
-            public void afterAdd(A obj) {
-                hubA.add(obj);
-            }
-            @Override
-            public void afterRemove(A obj) {
-                hubA.remove(obj);
-            }
-        };
         
-        hubA.addHubListener(new HubListenerAdapter() {
-            @Override
-            public void afterInsert(HubEvent e) {
-                hubFilter.refresh();
-            }
-            @Override
-            public void afterAdd(HubEvent e) {
-                hubFilter.refresh();
-            }
-            @Override
-            public void afterRemove(HubEvent e) {
-                hubFilter.refresh();
-            }
-        });
+        
+        OAPropertyPath ppRev;
+        try {
+            ppRev = pp.getReversePropertyPath();
+        }
+        catch (Exception e) {
+            ppRev = null;
+        }
+        
+        if (ppRev != null) {
+            hubDetail = hubB.getDetailHub(ppRev.getPropertyPath());
+            hubFiltered = new Hub(hubA.getObjectClass());
+            
+            hubFilter = new HubFilter<A>(hubDetail, hubFiltered) {
+                @Override
+                public boolean isUsed(A object) {
+                    return hubA.contains(object);
+                }
+                
+                // custom: if the filtered groupBy hub has an add/remove, then add/remove from the HubA
+                
+                @Override
+                public void afterAdd(A obj) {
+                    hubA.add(obj);
+                }
+                @Override
+                public void afterRemove(A obj) {
+                    hubA.remove(obj);
+                }
+            };
 
+        
+            hubA.addHubListener(new HubListenerAdapter() {
+                @Override
+                public void afterInsert(HubEvent e) {
+                    hubFilter.refresh();
+                }
+                @Override
+                public void afterAdd(HubEvent e) {
+                    hubFilter.refresh();
+                }
+                @Override
+                public void afterRemove(HubEvent e) {
+                    hubFilter.refresh();
+                }
+            });
+        }
+        else {
+            hubDetail = null; // not used
+            hubFiltered = new Hub(hubA.getObjectClass());
+            
+            hubFilter = new HubFilter<A>(hubA, hubFiltered) {
+                @Override
+                public boolean isUsed(A object) {
+                    return (object.getProperty(propertyPath) == hubB.getAO());
+                }
+                @Override
+                public void afterAdd(A obj) {
+                    hubA.add(obj);
+                }
+                @Override
+                public void afterRemove(A obj) {
+                    hubA.remove(obj);
+                }
+            };
+            
+            hubB.addHubListener(new HubListenerAdapter() {
+                @Override
+                public void afterChangeActiveObject(HubEvent e) {
+                    hubFilter.refresh();
+                }
+            });            
+        }
     }
-    
 }
-
-
-
