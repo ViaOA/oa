@@ -83,6 +83,12 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     }
 
     /**
+     * Max number of objects to serialize.
+     */
+    private int max;
+
+    
+    /**
      * 
      * @param object root object to serialize
      * @param callback object that will be called (setupProperties(obj)) for each object that will be serialized, used
@@ -130,6 +136,16 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     public void excludedClasses(Class ... classes) {
         //LOG.finer("excludedReferences="+classes);
         this.excludedReferences = classes;        
+    }
+    
+    public void setMax(int max) {
+        this.max = max;
+    }
+    public int getMax() {
+        return this.max;
+    }
+    public int getTotalObjectsWritten() {
+        return totalObjectsWritten;
     }
     
     /** 
@@ -229,7 +245,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     private HashMap<OALinkInfo, Integer> hmLinkInfoCount;
     private int cnt;
     protected boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj, OALinkInfo linkInfo) {
-        if (totalObjectsWritten > 10000) return false; // 20141119
         boolean b = _shouldSerializeReference(oaObj, propertyName, obj);
         
         // 20141023 dont send more back then cache is setup for
@@ -275,6 +290,9 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * This will used the excludedClasses, callback, or allReferences flag.
      */
     private boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object reference) {
+        if (max > 0 && totalObjectsWritten > max) {
+            return false; // 20141119
+        }
         if (parentWrapper != null) {
             return parentWrapper._shouldSerializeReference(oaObj, propertyName, reference);
         }
@@ -372,8 +390,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         stream.writeInt(totalObjectsWritten);
 
         wcnter++;
-        LOG.finer(wcnter+") "+msg);      
-        if (totalObjectsWritten > 250 || (wcnter%250 == 0)) {            
+        LOG.finer(wcnter+") "+msg);
+//qqqqqqqqqqqqqqqqq        
+        if (true) {            
+//was        if (totalObjectsWritten > 250 || (wcnter%250 == 0)) {            
             System.out.println(wcnter+") OAObjectSerializer "+msg);
         }
         
@@ -453,8 +473,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
                     totalObjectsWritten);
     	}
     	rcnter++;
-        LOG.finer(rcnter+") "+msg);      
-        if (totalObjectsWritten > 25 || (rcnter%50 == 0)) {            
+        LOG.finer(rcnter+") "+msg);
+//qqqqqqqqqqqqqqq        
+        if (true) {            
+//        if (totalObjectsWritten > 25 || (rcnter%50 == 0)) {            
             System.out.println(rcnter+") OAObjectSerializer "+msg);
         }
     }

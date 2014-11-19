@@ -203,8 +203,22 @@ public class OAObjectSerializeDelegate {
 		return true;
 	}	
 
+//TEST qqqqqqqwwwwwwwwwwwwwwwwwwwwwwbbbbbbbbbbbbbbbbbbbbbvvvvvvvvvvvvvvv
+/*	
+    static volatile int cntx;
+    static volatile int indentx;
+    protected static void _writeObject(OAObject oaObj, java.io.ObjectOutputStream stream) throws IOException {
+        String s = "";
+        for (int i=0; i<indentx; i++) s += "   ";
+        indentx++;
+        int cx = ++cntx;
+        System.out.println(s+":"+(cx)+" "+oaObj);
+        _writeObjectx(oaObj, stream);
+        if (cx != cntx) System.out.println(s+":"+(cx)+" END   "+oaObj);
+        indentx--;
+    }
+*/	
 	protected static void _writeObject(OAObject oaObj, java.io.ObjectOutputStream stream) throws IOException {
-
         //++xxx;//qqqqqqqqqqqqqqq
         //if (xxx % 1000 == 0) System.out.println((xxx)+") writeObject "+oaObj);
         
@@ -217,6 +231,7 @@ public class OAObjectSerializeDelegate {
         
         if (stream instanceof RemoteObjectOutputStream) {
             if (!bClientSideCache && !OASyncDelegate.isServer()) {
+               // only need to send key to the server
                stream.writeByte((byte) 1); 
                stream.writeObject(oaObj.getObjectKey());
                if (serializer != null) {
@@ -244,7 +259,7 @@ public class OAObjectSerializeDelegate {
             OAObjectCSDelegate.removeFromClientSideCache(oaObj);
         }
 	}
-	
+
     protected static void _writeProperties(OAObject oaObj, java.io.ObjectOutputStream stream, OAObjectSerializer serializer, boolean bClientSideCache) throws IOException {
         // this method can not support synchronized blocks, since multiple threads could be calling it and then cause deadlock
         // default way for OAServer to send objects.  Clients always send objectKeys.
@@ -281,8 +296,8 @@ public class OAObjectSerializeDelegate {
             boolean b = false;
             if (serializer != null && obj != null && !(obj instanceof byte[])) {
                 b = serializer.shouldSerializeReference(oaObj, (String) key, obj, li);
-                if (bWeakRef) {
-                    if (b) obj = new HashLinkWrap(obj);  // flag to know that this is weakRef
+                if (b && bWeakRef) {
+                    obj = new HashLinkWrap(obj);  // flag to know that this is weakRef
                 }
             }
 

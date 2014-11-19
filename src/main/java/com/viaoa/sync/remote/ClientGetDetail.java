@@ -52,6 +52,7 @@ public class ClientGetDetail {
         rwLockTreeSerialized.writeLock().unlock();
     }
     
+    private int cntx;
     private int errorCnt;
     public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, 
             String property, String[] masterProps, OAObjectKey[] siblingKeys) {
@@ -73,6 +74,22 @@ public class ClientGetDetail {
         if (masterProps == null && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
         
         OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
+        os.setMax(5500);
+
+//TEST qqqqqqqqqqqqqqqqqqqqqqvvvvvvvvvvvvvvvvvvvvvvwwwwwwwwwwbbbbbbbbbb
+/*        
+        String s = String.format(
+                "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d, masterProps=%s",
+                ++cntx, 
+                masterObject, 
+                property, 
+                detailValue,
+                (siblingKeys == null)?0:siblingKeys.length,
+                masterProps==null?"":(""+masterProps.length)
+            );
+         System.out.println(s);
+*/        
+        
         return os;
     }
     
@@ -203,13 +220,8 @@ public class ClientGetDetail {
         
         OAObjectSerializerCallback callback = new OAObjectSerializerCallback() {                    
             boolean bMasterSent;
-            int cnt;
             @Override
             protected void setup(OAObject obj) {
-                if (++cnt > 10000) {
-                    excludeAllProperties();
-                    return;
-                }
                 // parent object - will send all references
                 if (obj == masterObject) {
                     if (bMasterSent) {

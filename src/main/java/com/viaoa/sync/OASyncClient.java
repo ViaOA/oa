@@ -105,16 +105,6 @@ public class OASyncClient {
         t.start();
     }
     
-    public Object getDetail_OLD(OAObject oaObj, String propertyName) {
-        Object objx = null;
-        try {
-            objx = getRemoteClient().getDetail(oaObj.getClass(), oaObj.getObjectKey(), propertyName);
-        }
-        catch (Exception e) {
-        }
-        return objx;
-    }
-
     public int cntGetDetail;
     public Object getDetail(OAObject masterObject, String propertyName) {
         //qqqqqvvvvv        

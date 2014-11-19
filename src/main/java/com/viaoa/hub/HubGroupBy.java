@@ -132,7 +132,8 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             hubFilter = new HubFilter<A>(hubA, hubFiltered) {
                 @Override
                 public boolean isUsed(A object) {
-                    return (object.getProperty(propertyPath) == hubB.getAO());
+                    Object objx = object.getProperty(propertyPath);
+                    return (objx == hubB.getAO());
                 }
                 @Override
                 public void afterAdd(A obj) {
