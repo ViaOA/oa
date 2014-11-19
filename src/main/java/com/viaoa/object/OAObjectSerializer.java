@@ -227,12 +227,13 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     }
     
     private HashMap<OALinkInfo, Integer> hmLinkInfoCount;
+    private int cnt;
     protected boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj, OALinkInfo linkInfo) {
-        
+        if (totalObjectsWritten > 10000) return false; // 20141119
         boolean b = _shouldSerializeReference(oaObj, propertyName, obj);
         
         // 20141023 dont send more back then cache is setup for
-        if (b && linkInfo != null) {
+        if (b && linkInfo != null && linkInfo.getType() == OALinkInfo.MANY) {
             int x = linkInfo.getCacheSize();
             if (x > 0) {
                 if (hmLinkInfoCount == null) {
