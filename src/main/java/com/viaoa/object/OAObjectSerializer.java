@@ -290,8 +290,12 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * This will used the excludedClasses, callback, or allReferences flag.
      */
     private boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object reference) {
-        if (max > 0 && totalObjectsWritten > max) {
-            return false; // 20141119
+        if (max > 0) {
+            if (totalObjectsWritten > max) return false; // 20141119
+            if (reference instanceof Hub) {
+                Hub h = (Hub) reference;
+                if (totalObjectsWritten + h.getSize() > max) return false; // 20141119
+            }
         }
         if (parentWrapper != null) {
             return parentWrapper._shouldSerializeReference(oaObj, propertyName, reference);
