@@ -86,6 +86,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * Max number of objects to serialize.
      */
     private int max;
+    private int minExpectedAmt; // minimum expected to save
 
     
     /**
@@ -97,18 +98,21 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     public OAObjectSerializer(TYPE object, boolean bCompress, OAObjectSerializerCallback callback) {
         this.object = object;
         this.bCompress = bCompress;
+        if (object instanceof Hub) minExpectedAmt = ((Hub) object).getSize();
         setCallback(callback);
     }
 
     public OAObjectSerializer(TYPE object, boolean bCompress) {
         this.object = object;
         this.bCompress = bCompress;
+        if (object instanceof Hub) minExpectedAmt = ((Hub) object).getSize();
     }
 
     public OAObjectSerializer(TYPE object, Object extraObject, boolean bCompress, OAObjectSerializerCallback callback) {
         this.object = object;
         this.extraObject = extraObject;
         this.bCompress = bCompress;
+        if (object instanceof Hub) minExpectedAmt = ((Hub) object).getSize();
         setCallback(callback);
     }
     
@@ -291,10 +295,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      */
     private boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object reference) {
         if (max > 0) {
-            if (totalObjectsWritten > max) return false; // 20141119
+            if ((totalObjectsWritten+minExpectedAmt) > max) return false; // 20141119
             if (reference instanceof Hub) {
                 Hub h = (Hub) reference;
-                if (totalObjectsWritten + h.getSize() > max) return false; // 20141119
+                if (totalObjectsWritten + minExpectedAmt + h.getSize() > max) return false; // 20141119
             }
         }
         if (parentWrapper != null) {
@@ -364,9 +368,11 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             
         	finishWrite(oos);
         	
-        	oos.flush();
-        	dos.finish();
-        	dos.flush();
+            oos.flush();
+            //oos.close();
+            dos.flush();
+            // d.finish();  //??????? qqqqqqqqqq nOT SURE 
+        	// dos.finish(); // might affect stream by closing it (?? not sure)
             // dos.close(); // might affect stream by closing it (?? not sure)
 
             long sizeBefore = d.getBytesRead();
@@ -441,7 +447,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     	if (bCompress) {
     		Inflater inflater = new Inflater();
         	InflaterInputStream iis = new InflaterInputStream(stream, inflater, 1024*3);
-        	
         	ObjectInputStream ois = new ObjectInputStream(iis);
 
             boolean b = ois.readBoolean();
@@ -450,15 +455,16 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             if (b) {
                 extraObject = ois.readObject();
             }
-
         	finishRead(ois);
+
+            //ois.close();  dont call this, it WILL affect the stream
+        	// iis.close();//qqqqqqqqqqqq not sure
         	totalObjectsWritten = stream.readInt();
-        	
-        	//ois.close();  dont call this, it WILL affect the stream
+
         	long sizeBefore = inflater.getBytesRead();
         	long sizeAfter = inflater.getBytesWritten();
 
-            msg = String.format("Read object=%s, extra=%s, compressed=%,d, uncompressed=%,d, totalObject=%,d", 
+            msg = String.format("Read object=%s, extra=%s, compressed=%,d, uncompressed=%,d, totalObjects=%,d", 
                     object==null?"null":object.getClass().getName(), 
                     extraObject==null?"null":extraObject.getClass().getName(),
                     sizeBefore, sizeAfter, totalObjectsWritten);
@@ -468,10 +474,12 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             boolean b = stream.readBoolean();
         	if (b) object = stream.readObject();
             b = stream.readBoolean();
-            if (b) extraObject = stream.readObject();
+            if (b) {
+                extraObject = stream.readObject();
+            }
         	finishRead(stream);
             totalObjectsWritten = stream.readInt();
-            msg = String.format("Read object=%s, extra=%s, totalObject=%,d", 
+            msg = String.format("Read object=%s, extra=%s, totalObjects=%,d", 
                     object==null?"null":object.getClass().getName(), 
                     extraObject==null?"null":extraObject.getClass().getName(),
                     totalObjectsWritten);

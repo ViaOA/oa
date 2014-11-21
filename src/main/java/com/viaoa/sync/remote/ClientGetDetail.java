@@ -138,7 +138,7 @@ public class ClientGetDetail {
         Object objx = treeSerialized.get(guid);
         rwLockTreeSerialized.readLock().unlock();
         boolean b = objx != null && ((Boolean) objx).booleanValue();
-        final boolean bMasterWasPreviouslySent = b;
+        final boolean bMasterWasPreviouslySent = b && (masterProperties == null || masterProperties.length == 0);
 
         if (!bMasterWasPreviouslySent && masterObject instanceof OAObject) {
             OAObjectReflectDelegate.loadReferences((OAObject) masterObject, false, 10);
