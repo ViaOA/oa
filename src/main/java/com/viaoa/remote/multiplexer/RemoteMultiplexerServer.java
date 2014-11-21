@@ -1328,7 +1328,7 @@ public class RemoteMultiplexerServer {
                 throws Exception {
             int connectionId = vsocket.getConnectionId();
 
-            for (;;) {
+            for (int i=0;;i++) {
                 if (vsocket.isClosed()) {
                     return;
                 }

@@ -108,7 +108,7 @@ public abstract class OACircularQueue<TYPE> {
             int posHead = (int) (queueHeadPosition++ % queueSize);
 /*qqqqqqqqqqqqqqqqqqqqqq            
 if (queueHeadPosition % 1000 == 0) {
-    System.out.println("OACircularQueue size="+queueHeadPosition);
+    System.out.println("OACircularQueue position="+queueHeadPosition);
 }
 */
             if (queueHeadPosition < 0) {
