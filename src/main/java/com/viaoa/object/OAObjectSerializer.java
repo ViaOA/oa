@@ -31,7 +31,6 @@ import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.Tuple;
 
-
 /** 
     OAObjectSerializer is used to control object serialization for 
     an OAObject and its reference objects.
@@ -44,10 +43,11 @@ import com.viaoa.util.Tuple;
     </code>
     
     Note: this is final so that it can not be subclassed, which would cause serialization problems when it tries to recreate 
-    with the new subclass instance - remember this is a wrapper that is serialized and transported, then unserialized (trust me, painful lessons here)
+    with the new subclass instance - remember this is a wrapper that is serialized and transported, then unserialized (trust me, painful lessons here ha)
+    Use setCallback(..) to be able to control each object's setting as it is serialized.
 */
 public final class OAObjectSerializer<TYPE> implements Serializable {
-    static final long serialVersionUID = 6123630200457322203L;
+    static final long serialVersionUID = 1L;
     private static final Logger LOG = Logger.getLogger(OAObjectSerializer.class.getName());
     
     private Object object; // object to serialize
@@ -87,9 +87,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     /**
      * Max number of objects to serialize.
      */
-    private int max;
-    private int minExpectedAmt; // minimum expected to save
+    private transient int max;
+    private transient int minExpectedAmt; // minimum expected to save
 
+    private transient HashMap<OALinkInfo, Integer> hmLinkInfoCount;
     
     /**
      * 
@@ -248,8 +249,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         return shouldSerializeReference(oaObj, propertyName, obj, null);
     }
     
-    private HashMap<OALinkInfo, Integer> hmLinkInfoCount;
-    private int cnt;
     protected boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj, OALinkInfo linkInfo) {
         boolean b = _shouldSerializeReference(oaObj, propertyName, obj);
         
@@ -362,24 +361,24 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         	Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);//BEST_SPEED BEST_COMPRESSION);
         	DeflaterOutputStream dos = new DeflaterOutputStream(stream, deflater, 1024*3);
             
-            ObjectOutputStream doos;
+        	RemoteObjectOutputStream roos;
             if (stream instanceof RemoteObjectOutputStream) {
-                doos = new RemoteObjectOutputStream(dos, (RemoteObjectOutputStream) stream);
+                roos = new RemoteObjectOutputStream(dos, (RemoteObjectOutputStream) stream);
             }
             else {
-                doos = new ObjectOutputStream(dos);
+                roos = new RemoteObjectOutputStream(dos, null);
             }
         	
-            doos.writeBoolean(object != null);
-            if (object != null) doos.writeObject(object);
+            roos.writeBoolean(object != null);
+            if (object != null) roos.writeObject(object);
 
-            doos.writeBoolean(extraObject != null);
-            if (extraObject != null) doos.writeObject(extraObject);
+            roos.writeBoolean(extraObject != null);
+            if (extraObject != null) roos.writeObject(extraObject);
 
-        	finishWrite(doos);
+        	finishWrite(roos);
 
-            doos.flush();
-            doos.close();
+            roos.flush();
+            roos.close();
             dos.finish();
             dos.flush();
             dos.close();
@@ -387,7 +386,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             long sizeBefore = deflater.getBytesRead();
             long sizeAfter = deflater.getBytesWritten();
             deflater.end();
-
         	
             msg = String.format(
                 "wrote object=%s, extra=%s, uncompressed=%,d, compressed=%,d, totalObjects=%,d", 
@@ -459,22 +457,22 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     		Inflater inflater = new Inflater(true);
         	InflaterInputStream iis = new InflaterInputStream(stream, inflater, 1024*3);
         	
-        	ObjectInputStream ois;
+        	RemoteObjectInputStream rois;
             if (stream instanceof RemoteObjectInputStream) {
-                ois = new RemoteObjectInputStream(iis, (RemoteObjectInputStream) stream);
+                rois = new RemoteObjectInputStream(iis, (RemoteObjectInputStream) stream);
             }
             else {
-                ois = new ObjectInputStream(iis);
+                rois = new RemoteObjectInputStream(iis, null);
             }
         	
         	
-            boolean b = ois.readBoolean();
-        	if (b) object = ois.readObject();
-            b = ois.readBoolean();
+            boolean b = rois.readBoolean();
+        	if (b) object = rois.readObject();
+            b = rois.readBoolean();
             if (b) {
-                extraObject = ois.readObject();
+                extraObject = rois.readObject();
             }
-        	finishRead(ois);
+        	finishRead(rois);
 
         	
             //ois.close();  dont call this, it WILL affect the stream
@@ -584,7 +582,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         Object objx = ois.readObject();
         int xx=4;
         System.out.println("DONE");
-
         
         /*
         Object objz = IncludeProperties.values()[0].ordinal();
@@ -594,7 +591,4 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         */
         
     }
-
 }
-
-

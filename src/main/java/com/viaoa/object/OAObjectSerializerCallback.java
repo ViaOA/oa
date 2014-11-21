@@ -17,8 +17,6 @@ All rights reserved.
 */
 package com.viaoa.object;
 
-import static com.viaoa.object.OAObjectSerializer.*;
-
 /**
  * Callback object for OAObjectSerializer
  * @author vincevia
@@ -85,7 +83,9 @@ public abstract class OAObjectSerializerCallback {
         return bDefault;
     }
     
-    
+    /**
+     * Callback from OAObjectSerializer.  Use this method to include/exclude properties per object.
+     */
     protected abstract void setup(OAObject obj);
     // return IncludeProperties.DEFAULT;
 }
