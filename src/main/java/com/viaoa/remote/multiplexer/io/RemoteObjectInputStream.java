@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.remote.multiplexer.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.io.StreamCorruptedException;
@@ -39,6 +40,16 @@ public class RemoteObjectInputStream extends ObjectInputStream {
 
         this.hmClassDesc = hmClassDesc;
     }
+    
+    // 20141121 used by OAObjectSerializer to embed compressed objects
+    public RemoteObjectInputStream(InputStream is, RemoteObjectInputStream rois) throws IOException {
+        super(is);
+        if (rois != null) {
+            this.hmClassDesc = rois.hmClassDesc;
+        }
+    }
+    
+    
     @Override
     protected void readStreamHeader() throws IOException, StreamCorruptedException {
     }

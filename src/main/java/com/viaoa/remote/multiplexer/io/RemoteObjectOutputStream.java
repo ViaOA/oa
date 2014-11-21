@@ -20,6 +20,7 @@ package com.viaoa.remote.multiplexer.io;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
+import java.io.OutputStream;
 import java.io.StreamCorruptedException;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,16 @@ public class RemoteObjectOutputStream extends ObjectOutputStream {
 
     public RemoteObjectOutputStream(VirtualSocket socket) throws IOException {
         this(socket, null, null);
+    }
+
+    // 20141121 used by OAObjectSerializer to embed compressed objects and share the outer remoteObjectStream
+    public RemoteObjectOutputStream(OutputStream os, RemoteObjectOutputStream ros) throws IOException {
+        super(new RemoteBufferedOutputStream(os));
+        if (ros != null) {
+            this.hmClassDesc = ros.hmClassDesc;
+            this.aiClassDesc = ros.aiClassDesc;
+            this.hmTemp = ros.hmTemp;
+        }
     }
     
     public RemoteObjectOutputStream(
@@ -73,6 +84,7 @@ public class RemoteObjectOutputStream extends ObjectOutputStream {
         for (Map.Entry<String, Integer> entry : hmTemp.entrySet()) {
            hmClassDesc.put(entry.getKey(), entry.getValue()); 
         }
+        hmTemp.clear();
     }
     
     @Override

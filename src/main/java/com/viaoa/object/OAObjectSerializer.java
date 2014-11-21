@@ -27,6 +27,8 @@ import java.util.logging.Logger;
 import java.util.zip.*;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
+import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.Tuple;
 
 
@@ -357,26 +359,35 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     private void _writeObject(ObjectOutputStream stream) throws IOException {
         String msg;
         if (bCompress) {
-        	Deflater d = new Deflater(Deflater.DEFAULT_COMPRESSION);//BEST_SPEED BEST_COMPRESSION);
-        	DeflaterOutputStream dos = new DeflaterOutputStream(stream, d, 1024*3);
-        	ObjectOutputStream oos = new ObjectOutputStream(dos);
-        	
-        	oos.writeBoolean(object != null);
-        	if (object != null) oos.writeObject(object);
-        	oos.writeBoolean(extraObject != null);
-            if (extraObject != null) oos.writeObject(extraObject);
+        	Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);//BEST_SPEED BEST_COMPRESSION);
+        	DeflaterOutputStream dos = new DeflaterOutputStream(stream, deflater, 1024*3);
             
-        	finishWrite(oos);
+            ObjectOutputStream doos;
+            if (stream instanceof RemoteObjectOutputStream) {
+                doos = new RemoteObjectOutputStream(dos, (RemoteObjectOutputStream) stream);
+            }
+            else {
+                doos = new ObjectOutputStream(dos);
+            }
         	
-            oos.flush();
-            //oos.close();
-            dos.flush();
-            // d.finish();  //??????? qqqqqqqqqq nOT SURE 
-        	// dos.finish(); // might affect stream by closing it (?? not sure)
-            // dos.close(); // might affect stream by closing it (?? not sure)
+            doos.writeBoolean(object != null);
+            if (object != null) doos.writeObject(object);
 
-            long sizeBefore = d.getBytesRead();
-            long sizeAfter = d.getBytesWritten();
+            doos.writeBoolean(extraObject != null);
+            if (extraObject != null) doos.writeObject(extraObject);
+
+        	finishWrite(doos);
+
+            doos.flush();
+            doos.close();
+            dos.finish();
+            dos.flush();
+            dos.close();
+
+            long sizeBefore = deflater.getBytesRead();
+            long sizeAfter = deflater.getBytesWritten();
+            deflater.end();
+
         	
             msg = String.format(
                 "wrote object=%s, extra=%s, uncompressed=%,d, compressed=%,d, totalObjects=%,d", 
@@ -445,10 +456,18 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     	bCompress = stream.readBoolean();
     	String msg;
     	if (bCompress) {
-    		Inflater inflater = new Inflater();
+    		Inflater inflater = new Inflater(true);
         	InflaterInputStream iis = new InflaterInputStream(stream, inflater, 1024*3);
-        	ObjectInputStream ois = new ObjectInputStream(iis);
-
+        	
+        	ObjectInputStream ois;
+            if (stream instanceof RemoteObjectInputStream) {
+                ois = new RemoteObjectInputStream(iis, (RemoteObjectInputStream) stream);
+            }
+            else {
+                ois = new ObjectInputStream(iis);
+            }
+        	
+        	
             boolean b = ois.readBoolean();
         	if (b) object = ois.readObject();
             b = ois.readBoolean();
@@ -457,6 +476,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             }
         	finishRead(ois);
 
+        	
             //ois.close();  dont call this, it WILL affect the stream
         	// iis.close();//qqqqqqqqqqqq not sure
         	totalObjectsWritten = stream.readInt();
