@@ -90,13 +90,14 @@ public class OAObjectSerializeDelegate {
 			bDup = false;
 		}
 
-        Object[] objs = oaObjOrig.properties;
-        for (int i=0; objs != null && i < objs.length; i+=2) {
-            String key = (String) objs[i];
-            if (key == null) continue;
-            Object value = objs[i+1];
-		
-            if (bDup) {  // check to see if reference is needed or not
+		if (bDup) {
+            // check to see if references are needed or not
+            Object[] objs = oaObjOrig.properties;
+            for (int i=0; objs != null && i < objs.length; i+=2) {
+                String key = (String) objs[i];
+                if (key == null) continue;
+                Object value = objs[i+1];
+    		
                 Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false, true);
                 if (objx != null) {
                     if (objx instanceof OAObjectKey && (value instanceof OAObject)) {
@@ -118,9 +119,7 @@ public class OAObjectSerializeDelegate {
             	    }
         	        // otherwise, the new value is from a property change that will be sent from the server
     			}
-        	}
-        }
-        if (bDup) {
+            }
             OAObjectDelegate.dontFinalize(oaObjOrig);
         }
 
@@ -301,8 +300,14 @@ public class OAObjectSerializeDelegate {
                 }
             }
 
-            // always send OAObjectKey to reference objects
-            if (!b) {
+            if (b) {
+                if (obj instanceof OAObject) {
+                    // dont send oaobj if it is already on the client
+                    obj = serializer.getReferenceValueToSend(obj); 
+                }
+            }
+            else {
+                // always send OAObjectKey to reference objects
                 if (obj instanceof OAObject) {
                     if (!OAObjectCSDelegate.isInClientSideCache((OAObject)obj)) {
                         obj = OAObjectKeyDelegate.getKey((OAObject)obj); // only need to send key

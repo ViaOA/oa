@@ -83,16 +83,40 @@ class HubDataMaster implements java.io.Serializable {
             s.writeByte(0);
         }
         else {
-            s.writeByte(1);
-            s.writeObject(masterObject);
+            OAObjectKey key = null;
+            OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();
+            if (serializer != null) {
+                Object objx = serializer.getReferenceValueToSend(masterObject);
+                if (objx instanceof OAObjectKey) {
+//qqqqqqqqqqqq   change masterObject to type Object, make private, have Hub.resolve clean it up, need to know if not found in cache, etc                    
+//                    key = (OAObjectKey) objx;
+                }
+            }
+            if (key != null) {
+                s.writeByte(1);
+                s.writeObject(masterObject.getClass());
+                s.writeObject(key);
+            }
+            else {
+                s.writeByte(2);
+                s.writeObject(masterObject);
+            }
             s.writeObject(liDetailToMaster==null?null:liDetailToMaster.getReverseName());
         }
     }    
     
     private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
         s.defaultReadObject();
-        if (s.readByte() == 1) {
-            this.masterObject = (OAObject) s.readObject();
+        byte bx = s.readByte();
+        if (bx != 0) {
+            if (bx == 1) {
+                Class cx = (Class) s.readObject();
+                OAObjectKey key = (OAObjectKey) s.readObject();
+                this.masterObject = (OAObject) OAObjectCacheDelegate.get(cx, key);
+            }
+            else if (bx == 2) {
+                this.masterObject = (OAObject) s.readObject();
+            }
             String revName = (String) s.readObject();
             if (revName != null) {
                 OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(masterObject.getClass());

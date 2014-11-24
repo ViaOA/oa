@@ -17,6 +17,7 @@ All rights reserved.
 */
 package com.viaoa.remote.multiplexer.io;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;

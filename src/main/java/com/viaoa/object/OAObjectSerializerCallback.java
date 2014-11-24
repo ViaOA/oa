@@ -88,4 +88,8 @@ public abstract class OAObjectSerializerCallback {
      */
     protected abstract void setup(OAObject obj);
     // return IncludeProperties.DEFAULT;
+    
+    public Object getReferenceValueToSend(Object obj) {
+        return obj;
+    }
 }

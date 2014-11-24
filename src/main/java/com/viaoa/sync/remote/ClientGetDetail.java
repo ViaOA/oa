@@ -353,6 +353,25 @@ public class ClientGetDetail {
                 excludeAllProperties();
             }
 
+            @Override
+            public Object getReferenceValueToSend(Object object) {
+                if (!(object instanceof OAObject)) {
+                    return object;
+                }
+                OAObject obj = (OAObject) object;
+                OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
+                
+                int guid = key.getGuid();
+                rwLockTreeSerialized.readLock().lock();
+                Object objx = treeSerialized.get(guid);
+                rwLockTreeSerialized.readLock().unlock();
+                
+                if (objx != null) {
+                    return key;
+                }
+                return obj;
+            }
+            
             /* this is called when a reference has already been included, by the setup() method.
              * this will see if the object already exists on the client to determine if it will
              * be sent.  Otherwise, oaobject.writeObject will only send the oaKey, so that it will

@@ -17,7 +17,6 @@ All rights reserved.
 */
 package com.viaoa.remote.multiplexer.io;
 
-
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,7 +29,7 @@ import java.io.OutputStream;
  * @author vvia
  */
 public class RemoteBufferedOutputStream extends FilterOutputStream {
-    private static final int TotalBuffers = 18;
+    private static final int TotalBuffers = 32;
     private static final int BufferSize = 1024 * 8;
     protected byte[] bsBuffer;
     protected int count;

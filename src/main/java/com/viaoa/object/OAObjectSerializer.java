@@ -145,6 +145,13 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         this.excludedReferences = classes;        
     }
     
+    /**
+     *    
+     */
+    public Object getReferenceValueToSend(Object obj) {
+        if (callback != null) obj = callback.getReferenceValueToSend(obj);
+        return obj;
+    }
     public void setMax(int max) {
         this.max = max;
     }
