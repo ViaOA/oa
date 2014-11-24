@@ -234,7 +234,7 @@ public class OAObjectSerializeDelegate {
                stream.writeByte((byte) 1); 
                stream.writeObject(oaObj.getObjectKey());
                if (serializer != null) {
-                   serializer.afterSerialize();
+                   serializer.afterSerialize(oaObj);
                }
                return;
             }
@@ -248,14 +248,16 @@ public class OAObjectSerializeDelegate {
         
         _writeProperties(oaObj, stream, serializer, bClientSideCache); // this will write transient properties
         
-        if (serializer != null) {
-            serializer.afterSerialize();
-        }
   		stream.writeObject(OAObjectDelegate.FALSE);  // end of property list
 
   		// 20140314
         if (bClientSideCache) {
             OAObjectCSDelegate.removeFromClientSideCache(oaObj);
+        }
+
+        // 20141124
+        if (serializer != null) {
+            serializer.afterSerialize(oaObj);
         }
 	}
 

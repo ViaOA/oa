@@ -18,6 +18,8 @@ All rights reserved.
 package com.viaoa.sync.remote;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
@@ -181,11 +183,13 @@ public class ClientGetDetail {
                 }
             }
         }
+        
         final Hub detailHub = dHub;
-
-        ArrayList<OAObject> al = null;
+        final HashMap<OAObjectKey, Object> hmExtraData = new HashMap<OAObjectKey, Object>();
+        
         if (siblingKeys != null) {
-            al = new ArrayList<OAObject>(siblingKeys.length+1);
+            // send back a lightweight hashmap (oaObjKey, value)
+            
             Class c = masterObject.getClass();
             int cntDs = 0;
             for (OAObjectKey key : siblingKeys) {
@@ -195,17 +199,25 @@ public class ClientGetDetail {
                 
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
-                    if (cntDs++ < 10) {
-                        OAObjectReflectDelegate.getProperty(obj, propFromMaster);
-                        al.add(obj);
+                    if (cntDs++ > 10) continue;
+                    value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
+                }
+                
+                if (value instanceof OAObject) {
+                    OAObjectKey keyx = OAObjectKeyDelegate.getKey((OAObject) value);
+                    rwLockTreeSerialized.readLock().lock();
+                    objx = treeSerialized.get(keyx.getGuid());
+                    rwLockTreeSerialized.readLock().unlock();
+                    if (objx != null) {
+                        hmExtraData.put(key, keyx); // only need to send the key back
+                        continue;
                     }
                 }
-                else if (value != null) {
-                    al.add(obj);
-                }
+qqqqqqq need to have the client use these                
+                hmExtraData.put(key, value);
             }
         }
-        final ArrayList<OAObject> alExtraData = al;
+        final ArrayList<Object> alExtraData = al;
         
         OAObjectSerializer os = new OAObjectSerializer(detailObject, true);
         if (alExtraData != null) {
@@ -218,10 +230,28 @@ public class ClientGetDetail {
         }
 
         
-        OAObjectSerializerCallback callback = new OAObjectSerializerCallback() {                    
+        OAObjectSerializerCallback callback = new OAObjectSerializerCallback() {
+            
+qqqqqqq need to have the client use these
+this needs to check the hmExtraData
+            
+            
             boolean bMasterSent;
+            HashMap<Integer, Boolean> hmTemp = new HashMap<Integer, Boolean>();
+            
             @Override
-            protected void setup(OAObject obj) {
+            protected void afterSerialize(OAObject obj) {
+                int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
+                Boolean bx = hmTemp.remove(guid);
+                if (bx != null) {
+                    rwLockTreeSerialized.writeLock().lock();
+                    treeSerialized.put(guid, bx.booleanValue());
+                    rwLockTreeSerialized.writeLock().unlock();
+                }
+            }
+            
+            @Override
+            protected void beforeSerialize(OAObject obj) {
                 // parent object - will send all references
                 if (obj == masterObject) {
                     if (bMasterSent) {
@@ -235,9 +265,7 @@ public class ClientGetDetail {
                     }
                     
                     int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-                    rwLockTreeSerialized.writeLock().lock();
-                    treeSerialized.put(guid, true);
-                    rwLockTreeSerialized.writeLock().unlock();
+                    hmTemp.put(guid, true);
                     if (masterProperties == null || masterProperties.length == 0) {
                         includeAllProperties();
                     }
@@ -269,10 +297,8 @@ public class ClientGetDetail {
                         excludeAllProperties(); // already sent
                     }
                     else {
-                        rwLockTreeSerialized.writeLock().lock();
                         b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
-                        treeSerialized.put(guid, b);
-                        rwLockTreeSerialized.writeLock().unlock();
+                        hmTemp.put(guid, b);
                         includeAllProperties();
                     }
                     return;
@@ -291,21 +317,24 @@ public class ClientGetDetail {
                         excludeAllProperties();  // client has it all
                     }
                     else {
-                        rwLockTreeSerialized.writeLock().lock();
-                        treeSerialized.put(guid, true);
-                        rwLockTreeSerialized.writeLock().unlock();
+                        b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
+                        hmTemp.put(guid, b);
                         includeAllProperties();
                     }
                     return;
                 }
 
+                
                 // for siblings, only send the reference property for now
-                if (alExtraData != null && alExtraData.contains(obj)) {
+                if (hsExtraData != null && hsExtraData.contains(obj)) {
                     // sibling object either is not on the client or does not have all references
                     int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-                    rwLockTreeSerialized.writeLock().lock();
-                    treeSerialized.put(guid, false); 
-                    rwLockTreeSerialized.writeLock().unlock();
+
+                    rwLockTreeSerialized.readLock().lock();
+                    Object objx = treeSerialized.get(guid);
+                    rwLockTreeSerialized.readLock().unlock();
+                    boolean b = objx != null && ((Boolean) objx).booleanValue();
+                    hmTemp.put(guid, b);
                     includeProperties(new String[] {propFromMaster});
                     return;
                 }
@@ -330,9 +359,7 @@ public class ClientGetDetail {
                     else {
                         // client does not have it, send whatever is loaded
                         b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
-                        rwLockTreeSerialized.writeLock().lock();
-                        treeSerialized.put(guid, b);
-                        rwLockTreeSerialized.writeLock().unlock();
+                        hmTemp.put(guid, b);
                         includeAllProperties(); // will send whatever is loaded
                     }
                     return;
@@ -346,9 +373,7 @@ public class ClientGetDetail {
                 rwLockTreeSerialized.readLock().unlock();
 
                 if (objx == null) {  // never sent to client
-                    rwLockTreeSerialized.writeLock().lock();
-                    treeSerialized.put(guid, false); // flag it as: object has been sent, but not references
-                    rwLockTreeSerialized.writeLock().unlock();
+                    hmTemp.put(guid, false);
                 }
                 excludeAllProperties();
             }
@@ -384,7 +409,7 @@ public class ClientGetDetail {
                 
                 if (oaObj == masterObject) return !wasFullySentToClient(obj);
                 if (oaObj == detailObject) return !wasFullySentToClient(obj);
-                if (alExtraData != null && alExtraData.contains(oaObj)) {
+                if (hsExtraData != null && hsExtraData.contains(oaObj)) {
                     // sibling object only "ask" for propertyName
                     return true; // propFromMaster.equals(propertyName);
                 }
@@ -396,21 +421,19 @@ public class ClientGetDetail {
                     // dont include hubs with masterObject in it, so that it wont be sending sibling data for masterObj
                     if (hub.contains(masterObject)) {
                         int guid = OAObjectKeyDelegate.getKey(oaObj).getGuid();
-                        rwLockTreeSerialized.writeLock().lock();
-                        treeSerialized.put(guid, false); // it might have been flagged as true
-                        rwLockTreeSerialized.writeLock().unlock();
+                        hmTemp.put(guid, false);
                         return false;  
                     }
 
                     // dont send other sibling data
                     if (detailObject != null && detailHub == null && hub.contains(detailObject)) {
                         int guid = OAObjectKeyDelegate.getKey(oaObj).getGuid();
-                        rwLockTreeSerialized.writeLock().lock();
-                        treeSerialized.put(guid, false); // it might have been flagged as true, need to unflag since this prop wont be sent
-                        rwLockTreeSerialized.writeLock().unlock();
+                        hmTemp.put(guid, false);
+                        // it might have been flagged as true, need to unflag since this prop wont be sent
                         return false;  
                     }
 
+                    
                     // this will do a quick test to see if this is a Hub with any of the same objects in it.
                     if (detailHub != null) {
                         if (!detailHub.getObjectClass().equals(hub.getObjectClass())) {
@@ -430,9 +453,7 @@ public class ClientGetDetail {
                             if (objx == null) break;
                             if (h2.contains(objx)) {
                                 int guid = OAObjectKeyDelegate.getKey(oaObj).getGuid();
-                                rwLockTreeSerialized.writeLock().lock();
-                                treeSerialized.put(guid, false); // it might have been flagged as true
-                                rwLockTreeSerialized.writeLock().unlock();
+                                hmTemp.put(guid, false); // it might have been flagged as true
                                 return false;
                             }
                         }
@@ -442,9 +463,11 @@ public class ClientGetDetail {
 
                 if (!(obj instanceof OAObject)) return true;
                 
+                
+                int level = this.getLevelsDeep();
+                
                 if (obj == masterObject) {
                     if (bMasterSent) return false;
-                    int level = this.getLevelsDeep();
                     if (level > 1) return false; // wait for it to be saved at correct position
                     return true;
                 }
@@ -452,6 +475,10 @@ public class ClientGetDetail {
                 if (obj == detailObject) return false;  // only save as begin obj
                 if (detailHub != null && detailHub.contains(obj)) return false; // only save as begin obj
 
+//qqqqqq test                
+                if (level == 0) {
+                    return false; // extra data that is a values of the hub it contains
+                }
                 
                 int guid = OAObjectKeyDelegate.getKey((OAObject) obj).getGuid();
                 rwLockTreeSerialized.readLock().lock();
@@ -461,9 +488,12 @@ public class ClientGetDetail {
                 if (b) {
                     return false; // already sent with all refs
                 }
-                
-                int level = this.getLevelsDeep();
-                if (level < 3) return true;
+
+//qqqqqqqqqq might not be correct               
+                // second level object - will send all references that are already loaded
+                if (level < 3) {
+                    return true;
+                }
                 return objx == null;
             }
         };

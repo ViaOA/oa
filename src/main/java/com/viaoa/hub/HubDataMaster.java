@@ -88,8 +88,7 @@ class HubDataMaster implements java.io.Serializable {
             if (serializer != null) {
                 Object objx = serializer.getReferenceValueToSend(masterObject);
                 if (objx instanceof OAObjectKey) {
-//qqqqqqqqqqqq   change masterObject to type Object, make private, have Hub.resolve clean it up, need to know if not found in cache, etc                    
-//                    key = (OAObjectKey) objx;
+                    key = (OAObjectKey) objx;
                 }
             }
             if (key != null) {
@@ -113,6 +112,9 @@ class HubDataMaster implements java.io.Serializable {
                 Class cx = (Class) s.readObject();
                 OAObjectKey key = (OAObjectKey) s.readObject();
                 this.masterObject = (OAObject) OAObjectCacheDelegate.get(cx, key);
+if (masterObject == null) {
+    System.out.println("Error: HubDataMaster object not found.  Class="+cx+", key="+key);
+}
             }
             else if (bx == 2) {
                 this.masterObject = (OAObject) s.readObject();

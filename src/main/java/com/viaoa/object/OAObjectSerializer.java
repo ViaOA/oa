@@ -174,7 +174,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             // save and push current settings into stack
             Tuple<String[], String[]> t = new Tuple<String[], String[]>(includeProps, excludeProps);
             stack.push(t);
-            callback.setup(oaObj);
+            callback.beforeSerialize(oaObj);
         }
         
         // now save the obj in stack for further embeded objects to "see" where they are in the object tree.
@@ -187,7 +187,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     /** 
      * Called by OAObjectSerializeDelegate.writeObject(), after an object has been serialized.
      */
-    void afterSerialize() {
+    void afterSerialize(OAObject obj) {
+        if (callback != null) {
+            callback.afterSerialize(obj);
+        }
         stackObject.pop();
         if (callback != null) {
             Tuple<String[], String[]> t = stack.pop();

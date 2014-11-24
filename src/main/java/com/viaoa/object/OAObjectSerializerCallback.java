@@ -86,8 +86,15 @@ public abstract class OAObjectSerializerCallback {
     /**
      * Callback from OAObjectSerializer.  Use this method to include/exclude properties per object.
      */
-    protected abstract void setup(OAObject obj);
+    protected abstract void beforeSerialize(OAObject obj);
     // return IncludeProperties.DEFAULT;
+    
+    /**
+     * Callback from OAObjectSerializer.
+     */
+    protected void afterSerialize(OAObject obj) {
+    }
+    
     
     public Object getReferenceValueToSend(Object obj) {
         return obj;
