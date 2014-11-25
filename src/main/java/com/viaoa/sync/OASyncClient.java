@@ -19,6 +19,8 @@ package com.viaoa.sync;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -147,10 +149,28 @@ public class OASyncClient {
             }
             bGetSibs = false;
         }
-        if (result instanceof OAObjectSerializer) result = ((OAObjectSerializer)result).getObject();
+        if (result instanceof OAObjectSerializer) {
+            // see ClientGetDetail.getSerializedDetail(..)
+            OAObjectSerializer os = (OAObjectSerializer) result;
+            result = os.getObject();
+            
+            Object objx = os.getExtraObject();
+            if (objx instanceof HashMap) {
+                HashMap<OAObjectKey, Object> hmExtraData = (HashMap<OAObjectKey, Object>) objx;
+                for (Entry<OAObjectKey, Object> entry : hmExtraData.entrySet()) {
+                    Object value = entry.getValue();
+                    if (value == masterObject) continue;
+                    if (value instanceof Hub) continue; // Hub.readResolve will take care of this
+                    
+                    OAObject obj = OAObjectCacheDelegate.getObject(masterObject.getClass(), entry.getKey());
+                    if (obj != null) {
+                        OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, value, null, true, false);
+                    }
+                }
+            }
+        }
         
         //qqqqqqq        
-
         if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntx % 100 == 0) {
             int iNew = OAObjectSerializeDelegate.cntNew; 
             int iDup = OAObjectSerializeDelegate.cntDup;

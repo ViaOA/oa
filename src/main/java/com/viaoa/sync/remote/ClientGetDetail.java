@@ -133,13 +133,11 @@ public class ClientGetDetail {
         // and we know that value != null, since getDetail would not have been called.
         // include the references "around" this object and master object, along with any siblings
       
+        // see OASyncClient.getDetail(..)
+        
         final long t1 = System.currentTimeMillis();
 
-        int guid = OAObjectKeyDelegate.getKey(masterObject).getGuid();
-        rwLockTreeSerialized.readLock().lock();
-        Object objx = treeSerialized.get(guid);
-        rwLockTreeSerialized.readLock().unlock();
-        boolean b = objx != null && ((Boolean) objx).booleanValue();
+        boolean b = wasFullySentToClient(masterObject);
         final boolean bMasterWasPreviouslySent = b && (masterProperties == null || masterProperties.length == 0);
 
         if (!bMasterWasPreviouslySent && masterObject instanceof OAObject) {
@@ -147,27 +145,16 @@ public class ClientGetDetail {
         }
         
         Hub dHub = null;
-        if (detailObject instanceof OAObject) {
-            guid = OAObjectKeyDelegate.getKey((OAObject) detailObject).getGuid();
-            rwLockTreeSerialized.readLock().lock();
-            objx = treeSerialized.get(guid);
-            rwLockTreeSerialized.readLock().unlock();
-            b = objx != null && ((Boolean) objx).booleanValue();
-            if (!b) {
-                OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false);
-            }
+        if (!wasFullySentToClient(detailObject)) {
+            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false);
         }
+
         else if (detailObject instanceof Hub) {
             dHub = (Hub) detailObject;
             if (dHub.isOAObject()) {
                 int cnt = 0;
                 for (Object obj : dHub) {
-                    guid = OAObjectKeyDelegate.getKey((OAObject) obj).getGuid();
-                    rwLockTreeSerialized.readLock().lock();
-                    objx = treeSerialized.get(guid);
-                    rwLockTreeSerialized.readLock().unlock();
-                    b = objx != null && ((Boolean) objx).booleanValue();
-                    if (b) continue;
+                    if (wasFullySentToClient(obj)) continue;
                     
                     if (System.currentTimeMillis() - t1 > 100) break;
                     b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
@@ -177,7 +164,7 @@ public class ClientGetDetail {
                         }
                         else {
                             OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 0, 1, false);
-                            if (cnt > 50) break;
+                            if (cnt > 35) break;
                         }
                     }
                 }
@@ -189,7 +176,6 @@ public class ClientGetDetail {
         
         if (siblingKeys != null) {
             // send back a lightweight hashmap (oaObjKey, value)
-            
             Class c = masterObject.getClass();
             int cntDs = 0;
             for (OAObjectKey key : siblingKeys) {
@@ -204,38 +190,25 @@ public class ClientGetDetail {
                 }
                 
                 if (value instanceof OAObject) {
-                    OAObjectKey keyx = OAObjectKeyDelegate.getKey((OAObject) value);
-                    rwLockTreeSerialized.readLock().lock();
-                    objx = treeSerialized.get(keyx.getGuid());
-                    rwLockTreeSerialized.readLock().unlock();
-                    if (objx != null) {
-                        hmExtraData.put(key, keyx); // only need to send the key back
-                        continue;
+                    if (isOnClient(value)) {
+                        value = OAObjectKeyDelegate.getKey((OAObject) value); // only need to send the key back
                     }
                 }
-qqqqqqq need to have the client use these                
                 hmExtraData.put(key, value);
             }
         }
-        final ArrayList<Object> alExtraData = al;
         
         OAObjectSerializer os = new OAObjectSerializer(detailObject, true);
-        if (alExtraData != null) {
-            if (detailObject == null) alExtraData.add(masterObject); // so master can go 
-            os.setExtraObject(alExtraData); 
+        if (hmExtraData.size() > 0) {
+            hmExtraData.put(masterObject.getObjectKey(), masterObject); // so master can go 
+            os.setExtraObject(hmExtraData); 
         }
         else {
-            if (detailObject == null) os.setExtraObject(masterObject);  // so master can be sent to client
-            else if (!(detailObject instanceof Hub)) os.setExtraObject(masterObject); 
+            os.setExtraObject(masterObject);  // so master can be sent to client, and include any other masterProps
         }
 
         
         OAObjectSerializerCallback callback = new OAObjectSerializerCallback() {
-            
-qqqqqqq need to have the client use these
-this needs to check the hmExtraData
-            
-            
             boolean bMasterSent;
             HashMap<Integer, Boolean> hmTemp = new HashMap<Integer, Boolean>();
             
@@ -264,11 +237,8 @@ this needs to check the hmExtraData
                         return;
                     }
                     
-                    int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-                    hmTemp.put(guid, true);
-                    if (masterProperties == null || masterProperties.length == 0) {
-                        includeAllProperties();
-                    }
+                    hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), true);
+                    if (masterProperties == null || masterProperties.length == 0) includeAllProperties();
                     else includeProperties(masterProperties);                    
                     return;
                 }
@@ -287,18 +257,12 @@ this needs to check the hmExtraData
                     }
                     
                     // this Object - will send all references (all have been loaded)
-                    int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-
-                    rwLockTreeSerialized.readLock().lock();
-                    Object objx = treeSerialized.get(guid);
-                    rwLockTreeSerialized.readLock().unlock();
-                    boolean b = objx != null && ((Boolean) objx).booleanValue();
-                    if (b) {
+                    if (wasFullySentToClient(obj)) {
                         excludeAllProperties(); // already sent
                     }
                     else {
-                        b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
-                        hmTemp.put(guid, b);
+                        boolean b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
+                        hmTemp.put(((OAObject) obj).getObjectKey().getGuid(), b);
                         includeAllProperties();
                     }
                     return;
@@ -306,40 +270,25 @@ this needs to check the hmExtraData
 
                 if (detailHub != null && detailHub.contains(obj)) {
                     // this Object is a Hub - will send all references (all have been loaded)
-                    int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-
-                    rwLockTreeSerialized.readLock().lock();
-                    Object objx = treeSerialized.get(guid);
-                    rwLockTreeSerialized.readLock().unlock();
-                    boolean b = objx != null && ((Boolean) objx).booleanValue();
-
-                    if (b) {
+                    if (wasFullySentToClient(obj)) {
                         excludeAllProperties();  // client has it all
                     }
                     else {
-                        b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
-                        hmTemp.put(guid, b);
+                        boolean b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
+                        hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), b);
                         includeAllProperties();
                     }
                     return;
                 }
 
-                
                 // for siblings, only send the reference property for now
-                if (hsExtraData != null && hsExtraData.contains(obj)) {
+                if (hmExtraData != null && hmExtraData.get(obj.getObjectKey()) != null) {
                     // sibling object either is not on the client or does not have all references
-                    int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-
-                    rwLockTreeSerialized.readLock().lock();
-                    Object objx = treeSerialized.get(guid);
-                    rwLockTreeSerialized.readLock().unlock();
-                    boolean b = objx != null && ((Boolean) objx).booleanValue();
-                    hmTemp.put(guid, b);
+                    hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), wasFullySentToClient(obj));
                     includeProperties(new String[] {propFromMaster});
                     return;
                 }
-                
-                
+
                 // second level object - will send all references that are already loaded
                 Object objPrevious = this.getPreviousObject();
                 boolean b = (objPrevious == detailObject);
@@ -347,33 +296,21 @@ this needs to check the hmExtraData
                 if (!b) b = (detailHub != null && (objPrevious != null && detailHub.contains(objPrevious)));
                 
                 if (b && !bMasterWasPreviouslySent) {
-                    int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-
-                    rwLockTreeSerialized.readLock().lock();
-                    Object objx = treeSerialized.get(guid);
-                    rwLockTreeSerialized.readLock().unlock();
-
-                    if (objx != null) {
+                    if (isOnClient(obj)) {
                         excludeAllProperties();  // client already has it, might not be all of it
                     }
                     else {
                         // client does not have it, send whatever is loaded
                         b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
-                        hmTemp.put(guid, b);
+                        hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), b);
                         includeAllProperties(); // will send whatever is loaded
                     }
                     return;
                 }
                 
                 // "leaf" reference that client does not have, only include owned references
-                int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-
-                rwLockTreeSerialized.readLock().lock();
-                Object objx = treeSerialized.get(guid);
-                rwLockTreeSerialized.readLock().unlock();
-
-                if (objx == null) {  // never sent to client
-                    hmTemp.put(guid, false);
+                if (!isOnClient(obj)) {  // never sent to client
+                    hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), false);
                 }
                 excludeAllProperties();
             }
@@ -409,25 +346,26 @@ this needs to check the hmExtraData
                 
                 if (oaObj == masterObject) return !wasFullySentToClient(obj);
                 if (oaObj == detailObject) return !wasFullySentToClient(obj);
-                if (hsExtraData != null && hsExtraData.contains(oaObj)) {
+                
+                OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
+                if (hmExtraData != null && hmExtraData.get(key) != null) {
                     // sibling object only "ask" for propertyName
-                    return true; // propFromMaster.equals(propertyName);
+                    return propFromMaster.equals(propertyName);
                 }
                 
+                int guid = key.getGuid();
                 if (obj instanceof Hub) {
                     Hub hub = (Hub) obj;
                     if (hub.getSize() == 0) return false;
                     
                     // dont include hubs with masterObject in it, so that it wont be sending sibling data for masterObj
                     if (hub.contains(masterObject)) {
-                        int guid = OAObjectKeyDelegate.getKey(oaObj).getGuid();
                         hmTemp.put(guid, false);
                         return false;  
                     }
 
                     // dont send other sibling data
                     if (detailObject != null && detailHub == null && hub.contains(detailObject)) {
-                        int guid = OAObjectKeyDelegate.getKey(oaObj).getGuid();
                         hmTemp.put(guid, false);
                         // it might have been flagged as true, need to unflag since this prop wont be sent
                         return false;  
@@ -452,7 +390,6 @@ this needs to check the hmExtraData
                             Object objx = h1.getAt(i);
                             if (objx == null) break;
                             if (h2.contains(objx)) {
-                                int guid = OAObjectKeyDelegate.getKey(oaObj).getGuid();
                                 hmTemp.put(guid, false); // it might have been flagged as true
                                 return false;
                             }
@@ -477,10 +414,9 @@ this needs to check the hmExtraData
 
 //qqqqqq test                
                 if (level == 0) {
-                    return false; // extra data that is a values of the hub it contains
+                    return false; // extra data does not send it's references
                 }
                 
-                int guid = OAObjectKeyDelegate.getKey((OAObject) obj).getGuid();
                 rwLockTreeSerialized.readLock().lock();
                 Object objx = treeSerialized.get(guid);
                 rwLockTreeSerialized.readLock().unlock();
