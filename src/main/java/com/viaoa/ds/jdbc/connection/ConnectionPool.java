@@ -342,7 +342,7 @@ public class ConnectionPool implements Runnable {
             statement = con.getStatement(message);
         }
         catch (Exception e) {
-            if (con.connection.isClosed()) return getStatement(message);
+            if (con != null && con.connection.isClosed()) return getStatement(message);
             throw e;
         }
         if (dbmd.databaseType != dbmd.ACCESS) {

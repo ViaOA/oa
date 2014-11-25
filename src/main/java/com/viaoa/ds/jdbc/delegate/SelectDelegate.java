@@ -468,8 +468,8 @@ public class SelectDelegate {
         Statement statement = null;
         OATransaction trans = null;
         try {
-            trans = new OATransaction(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
-            trans.start();
+            //trans = new OATransaction(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
+            //trans.start();
             
             statement = ds.getStatement(query);
             ResultSet rs = statement.executeQuery(query);
@@ -482,7 +482,7 @@ public class SelectDelegate {
         }
         finally {
             ds.releaseStatement(statement);
-            trans.commit();
+            //trans.commit();
         }
         return result;
     }
