@@ -75,7 +75,7 @@ class HubDataMaster implements java.io.Serializable {
         return rli.isSortAsc();
     }
     
-    // 20141115
+    // 20141125             
     private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{
         s.defaultWriteObject();
         
@@ -112,15 +112,13 @@ class HubDataMaster implements java.io.Serializable {
                 Class cx = (Class) s.readObject();
                 OAObjectKey key = (OAObjectKey) s.readObject();
                 this.masterObject = (OAObject) OAObjectCacheDelegate.get(cx, key);
-if (masterObject == null) {
-    System.out.println("Error: HubDataMaster object not found.  Class="+cx+", key="+key);
-}
+                // note: OAObjectReflectDelegate._getReferenceHub(..) will set the masterObject if it is null
             }
             else if (bx == 2) {
                 this.masterObject = (OAObject) s.readObject();
             }
             String revName = (String) s.readObject();
-            if (revName != null) {
+            if (revName != null && masterObject != null) {
                 OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(masterObject.getClass());
                 OALinkInfo li = oi.getLinkInfo(revName);
                 if (li != null) {
@@ -130,6 +128,5 @@ if (masterObject == null) {
             }
         }
     }
-    
 }
 

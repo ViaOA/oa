@@ -109,6 +109,7 @@ public class OAObjectSerializeDelegate {
                     }
                     continue;
                 }
+                // else: objx == null, need to use the reference
                 OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
                 
                 // need to replace any references to oaObjOrig with oaObjNew
@@ -117,7 +118,7 @@ public class OAObjectSerializeDelegate {
             	    if (!(value instanceof OAObject) && !(value instanceof OAObjectKey)) {
                         OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, objx);
             	    }
-        	        // otherwise, the new value is from a property change that will be sent from the server
+        	        // otherwise, the existing object will at least have the objKey
     			}
             }
             OAObjectDelegate.dontFinalize(oaObjOrig);
@@ -172,14 +173,13 @@ public class OAObjectSerializeDelegate {
             	OAObject objx = (OAObject) hub.getAt(i);
             	if (objx == null) break;
             	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false, true);
-            	if (ref == null) continue;
-            	if (ref == oaObjOrig || ref instanceof OAObjectKey) {
+            	if (ref == null) {
+            	}
+            	else if (ref == oaObjOrig || ref instanceof OAObjectKey) {
             	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjNew, oaObjOrig);
             	}
-            	else {
-            		if (ref instanceof Hub) {
-                		HubSerializeDelegate.replaceObject((Hub) ref, oaObjOrig, oaObjNew);
-            		}
+            	else if (ref instanceof Hub) {
+            		HubSerializeDelegate.replaceObject((Hub) ref, oaObjOrig, oaObjNew);
             	}
             }        	
         }

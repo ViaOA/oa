@@ -162,6 +162,8 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         return totalObjectsWritten;
     }
     
+    private int indent;
+    
     /** 
      * Called by OAObjectSerializeDelegate.writeObject(), before an object is serialized.
      * If a Callback object is used, then it's setupSerializedProperties() method will be called so
@@ -169,6 +171,12 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * @see OAObjectSerializeCallback#setupSerializedProperties(Object, Stack)
      */
     void beforeSerialize(OAObject oaObj) {
+//qqqqqqqqqqqqqqqqq        
+        indent++;
+        String msg = "";
+        for (int i=0; i<indent; i++) msg += "  ";
+        System.out.println(msg+""+oaObj.getClass()+" "+oaObj.getObjectKey().getGuid());
+        
         totalObjectsWritten++;
         if (callback != null) {
             // save and push current settings into stack
@@ -188,6 +196,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * Called by OAObjectSerializeDelegate.writeObject(), after an object has been serialized.
      */
     void afterSerialize(OAObject obj) {
+indent--;//qqqqqqqqqqqqq        
         if (callback != null) {
             callback.afterSerialize(obj);
         }

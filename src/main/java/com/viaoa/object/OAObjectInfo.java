@@ -32,7 +32,7 @@ import com.viaoa.util.OAPropertyPath;
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
-public class OAObjectInfo implements java.io.Serializable {
+public class OAObjectInfo { //implements java.io.Serializable {
     static final long serialVersionUID = 1L;
     static final Object vlock = new Object();
 

@@ -361,7 +361,12 @@ public class OAObject implements java.io.Serializable, Comparable {
     public final boolean equals(Object obj) {
         if (obj == null) return false;
         if (obj == this) return true;
-        //20140916 removed: if (!obj.getClass().equals(this.getClass())) return false;
+
+        //20141125 if obj is oaObj, then need to make sure that they are same class 
+        if (obj instanceof OAObject) {
+            if (!obj.getClass().equals(this.getClass())) return false;
+        }
+        
         return OAObjectKeyDelegate.getKey(this).equals(obj);
     }
 

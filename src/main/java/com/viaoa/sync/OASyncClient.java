@@ -17,6 +17,7 @@ All rights reserved.
 */
 package com.viaoa.sync;
 
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -169,6 +170,12 @@ public class OASyncClient {
                 }
             }
         }
+        
+        // 20141125 in case Hub.datam.masterObject needs to be set
+        if (result instanceof Hub) {
+            OAObjectHubDelegate.setMasterObject((Hub) result, masterObject, propertyName);
+        }
+        
         
         //qqqqqqq        
         if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntx % 100 == 0) {

@@ -501,16 +501,19 @@ public class OAObjectReflectDelegate {
                     }
                 }
             }            
+            if (hub != null && HubDelegate.getMasterObject(hub) == null) {
+                OAObjectHubDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
+            }            
         }
         finally {
             OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
         }
         return hub;
     }
-    private static Hub _getReferenceHub(OAObject oaObj, String linkPropertyName, String sortOrder, 
-            boolean bSequence, Hub hubMatch, OAObjectInfo oi, OALinkInfo linkInfo ) {
+    private static Hub _getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, 
+            boolean bSequence, Hub hubMatch, final OAObjectInfo oi, final OALinkInfo linkInfo ) {
 
-        Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
+        Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
         
         boolean bThisIsServer = OAObjectCSDelegate.isServer();
         // dont get calcs from server, calcs are maintained locally, events are not sent
@@ -531,27 +534,23 @@ public class OAObjectReflectDelegate {
         }
 
         Hub hub = null;
-        if (obj == null) { 
+        if (propertyValue == null) { 
             // since it is in props with a null, then it was placed that way to mean it has 0 objects
             //   by OAObjectSerializeDelegate._writeObject
             if (linkInfo == null) {
                 hub = new Hub();
-                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
-                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
-                }
-                else {
-                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
-                }
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
                 return hub;
             }
+            // create an empty hub
             hub = new Hub(linkInfo.toClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo), false);
         }
-        else if (obj == OANotExist.instance) {
-            obj = null;
+        else if (propertyValue == OANotExist.instance) {
+            propertyValue = null;
         }
 
-        if (obj instanceof Hub) {
-            hub = (Hub) obj;
+        if (propertyValue instanceof Hub) {
+            hub = (Hub) propertyValue;
             Class c = hub.getObjectClass();
             if (!OAObjectKey.class.equals(c)) { 
                 if (!bThisIsServer) {
@@ -587,8 +586,8 @@ public class OAObjectReflectDelegate {
                 for (int i = 0;; i++) {
                     OAObjectKey key = (OAObjectKey) hub.elementAt(i);
                     if (key == null) break;
-                    obj = getObject(linkClass, key);
-                    if (obj != null) hubNew.add(obj);
+                    Object objx = getObject(linkClass, key);
+                    if (propertyValue != null) hubNew.add(objx);
                 }
                 hub = hubNew;
                 hub.setChanged(false);
@@ -610,7 +609,7 @@ public class OAObjectReflectDelegate {
         }
         else if (!bThisIsServer && !oi.getLocalOnly() && (!bIsCalc || bIsServerSideCalc)) {
             // request from server
-            hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); // this will always return a Hub
+            hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); 
             if (hub == null) {
                 // 20140311 master not on the Server, might have been GCd, create empty Hub 
                 if (linkInfo == null) return null;
@@ -618,12 +617,14 @@ public class OAObjectReflectDelegate {
                 hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo), false);
                 // throw new RuntimeException("getHub from Server failed, this.oaObj="+oaObj+", linkPropertyName="+linkPropertyName);
             }
-            // 20120926 check to see if empty hub was returned from OAObjectServerImpl.getDetail
-            if (HubDelegate.getMasterObject(hub) == null && hub.getSize() == 0 && hub.getObjectClass() == null) {
-                if (linkInfo == null) return null;
-                Class linkClass = linkInfo.toClass;
-                hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo), false);
-            }
+            
+            if (HubDelegate.getMasterObject(hub) == null) {
+                if (hub.getSize() == 0 && hub.getObjectClass() == null) {
+                    if (linkInfo == null) return null;
+                    Class linkClass = linkInfo.toClass;
+                    hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo), false);
+                }
+            }            
         }
         else {  // hub is null, create now
             if (linkInfo == null) return null;

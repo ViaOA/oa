@@ -180,7 +180,14 @@ public class OAObjectPropertyDelegate {
             }
             oaObj.properties[pos] = name;
             oaObj.properties[pos+1] = value;
-        }        
+        }
+        
+        // 20141125 in case Hub.datam.masterObject is not set
+        Object objx = value;
+        if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
+        if (objx instanceof Hub) {
+            OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
+        }
     }
 
     public static Object setPropertyCAS(OAObject oaObj, String name, Object newValue, Object matchValue) {
@@ -269,6 +276,13 @@ public class OAObjectPropertyDelegate {
 
             if (newValue != null || !(oaObj.properties[pos+1] instanceof Hub)) {  // 20120827 dont set an existing Hub to null (sent that way if size is 0)
                 oaObj.properties[pos+1] = newValue;
+            }
+
+            // 20141125 in case Hub.datam.masterObject is not set
+            Object objx = newValue;
+            if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
+            if (objx instanceof Hub) {
+                OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
             }
         }
         return newValue;

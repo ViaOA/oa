@@ -79,7 +79,7 @@ public class ClientGetDetail {
         os.setMax(5500);
 
 //TEST qqqqqqqqqqqqqqqqqqqqqqvvvvvvvvvvvvvvvvvvvvvvwwwwwwwwwwbbbbbbbbbb
-/*        
+        
         String s = String.format(
                 "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d, masterProps=%s",
                 ++cntx, 
@@ -90,7 +90,7 @@ public class ClientGetDetail {
                 masterProps==null?"":(""+masterProps.length)
             );
          System.out.println(s);
-*/        
+        
         
         return os;
     }
@@ -214,7 +214,7 @@ public class ClientGetDetail {
             @Override
             protected void afterSerialize(OAObject obj) {
                 int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-                Boolean bx = hmTemp.remove(guid);
+                Boolean bx = hmTemp.get(guid);
                 if (bx != null) {
                     rwLockTreeSerialized.writeLock().lock();
                     treeSerialized.put(guid, bx.booleanValue());
@@ -316,21 +316,14 @@ public class ClientGetDetail {
 
             @Override
             public Object getReferenceValueToSend(Object object) {
-                if (!(object instanceof OAObject)) {
-                    return object;
-                }
-                OAObject obj = (OAObject) object;
-                OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
-                
-                int guid = key.getGuid();
-                rwLockTreeSerialized.readLock().lock();
-                Object objx = treeSerialized.get(guid);
-                rwLockTreeSerialized.readLock().unlock();
-                
-                if (objx != null) {
-                    return key;
-                }
-                return obj;
+                // dont send sibling objects back, use objKey instead
+                // this is called by HubDataMaster, so that it wont send base masterObject, but it's objKey instead
+                if (!(object instanceof OAObject)) return object;
+                OAObject oaObj = (OAObject) object;
+                OAObjectKey key = oaObj.getObjectKey();
+                if (hmExtraData == null || hmExtraData.get(key) == null) return object;
+                if (hmTemp.get(key.getGuid()) != null) return object; // already sending
+                return key;
             }
             
             /* this is called when a reference has already been included, by the setup() method.
@@ -343,7 +336,7 @@ public class ClientGetDetail {
                 if (!bDefault) return false;
                 if (obj == null) return false;
                 
-                if (oaObj == masterObject) return !wasFullySentToClient(obj);
+                if (oaObj == masterObject) return true;
                 if (oaObj == detailObject) return !wasFullySentToClient(obj);
                 
                 OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
@@ -411,7 +404,6 @@ public class ClientGetDetail {
                 if (obj == detailObject) return false;  // only save as begin obj
                 if (detailHub != null && detailHub.contains(obj)) return false; // only save as begin obj
 
-//qqqqqq test                
                 if (level == 0) {
                     return false; // extra data does not send it's references
                 }
@@ -424,7 +416,6 @@ public class ClientGetDetail {
                     return false; // already sent with all refs
                 }
 
-//qqqqqqqqqq might not be correct               
                 // second level object - will send all references that are already loaded
                 if (level < 3) {
                     return true;

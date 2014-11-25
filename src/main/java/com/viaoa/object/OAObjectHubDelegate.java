@@ -391,10 +391,24 @@ public class OAObjectHubDelegate {
         HubDeleteDelegate.deleteAll(hub, cascade); // cascade delete and update M2M links
     }
 
-    protected static void setMasterObject(Hub hub, OAObject oaObj, OALinkInfo li) {
+    protected static void setMasterObject(Hub hub, OAObject oaObj, OALinkInfo liDetailToMaster) {
         if (HubDetailDelegate.getMasterObject(hub) == null) {
-            HubDetailDelegate.setMasterObject(hub, oaObj, li);
+            HubDetailDelegate.setMasterObject(hub, oaObj, liDetailToMaster);
         }
     }
 
+    public static void setMasterObject(Hub hub, OAObject oaObj, String nameFromMasterToDetail) {
+        if (hub == null || oaObj == null || nameFromMasterToDetail == null) return;
+        Object objx = HubDetailDelegate.getMasterObject(hub);
+        if (objx != null && objx == oaObj) {
+            return;  // already set
+        }
+
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        
+        OALinkInfo li = oi.getLinkInfo(nameFromMasterToDetail);
+        if (li == null) return;
+        li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+        HubDetailDelegate.setMasterObject(hub, oaObj, li);
+    }
 }
