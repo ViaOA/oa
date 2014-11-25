@@ -145,11 +145,7 @@ public class ClientGetDetail {
         }
         
         Hub dHub = null;
-        if (!wasFullySentToClient(detailObject)) {
-            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false);
-        }
-
-        else if (detailObject instanceof Hub) {
+        if (detailObject instanceof Hub) {
             dHub = (Hub) detailObject;
             if (dHub.isOAObject()) {
                 int cnt = 0;
@@ -169,6 +165,9 @@ public class ClientGetDetail {
                     }
                 }
             }
+        }
+        else if ((detailObject instanceof OAObject) && !wasFullySentToClient(detailObject)) {
+            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false);
         }
         
         final Hub detailHub = dHub;
@@ -224,7 +223,7 @@ public class ClientGetDetail {
             }
             
             @Override
-            protected void beforeSerialize(OAObject obj) {
+            protected void beforeSerialize(final OAObject obj) {
                 // parent object - will send all references
                 if (obj == masterObject) {
                     if (bMasterSent) {
@@ -261,8 +260,8 @@ public class ClientGetDetail {
                         excludeAllProperties(); // already sent
                     }
                     else {
-                        boolean b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
-                        hmTemp.put(((OAObject) obj).getObjectKey().getGuid(), b);
+                        boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
+                        hmTemp.put(obj.getObjectKey().getGuid(), b);
                         includeAllProperties();
                     }
                     return;
@@ -274,7 +273,7 @@ public class ClientGetDetail {
                         excludeAllProperties();  // client has it all
                     }
                     else {
-                        boolean b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
+                        boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
                         hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), b);
                         includeAllProperties();
                     }
@@ -301,7 +300,7 @@ public class ClientGetDetail {
                     }
                     else {
                         // client does not have it, send whatever is loaded
-                        b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
+                        b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
                         hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), b);
                         includeAllProperties(); // will send whatever is loaded
                     }
@@ -340,7 +339,7 @@ public class ClientGetDetail {
              * be matched up on the client. 
              */
             @Override
-            public boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj, boolean bDefault) {
+            public boolean shouldSerializeReference(final OAObject oaObj, final String propertyName, final Object obj, final boolean bDefault) {
                 if (!bDefault) return false;
                 if (obj == null) return false;
                 
