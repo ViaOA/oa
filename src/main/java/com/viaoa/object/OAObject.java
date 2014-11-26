@@ -170,13 +170,16 @@ public class OAObject implements java.io.Serializable, Comparable {
     public static final int CASCADE_ALL_LINKS = 4;
     
 
-
+    public static volatile int cntNew;  
+    public static volatile int cntFinal;  
     /**
       	Creates new OAObject and calls OAObjectDelegate.initialize()
         @see OAObjectDelegate#initialize
     */
     public OAObject() {
     	OAObjectDelegate.initialize(this);
+    	cntNew++;
+    	if (cntNew % 500 == 0) System.out.println(cntNew+") new OAObject.guid="+guid+" "+this);
     }
 
     /** Read OAObject data.  Note: This method must stay "private" or it will never be called.  It does
@@ -474,6 +477,8 @@ public class OAObject implements java.io.Serializable, Comparable {
     protected void finalize() throws Throwable {
     	OAObjectDelegate.finalizeObject(this);
         super.finalize();
+        cntFinal++;
+        if (cntFinal % 500 == 0) System.out.println(cntFinal+") finalize OAObject.guid="+guid+" "+this);
     }
 
     /**
