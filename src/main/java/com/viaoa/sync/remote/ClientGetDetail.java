@@ -17,7 +17,6 @@ All rights reserved.
 */
 package com.viaoa.sync.remote;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -37,8 +36,10 @@ import com.viaoa.util.OANotExist;
 
 /**
  * This is used for each clientSession, that creates a RemoteClientImpl for
- * getDetail remote requests.  This class will return the object/s for the
- * request, and "knows" what extra objects to include.
+ * getDetail(..) remote requests.  This class will return the object/s for the
+ * request, and extra objects to include.
+ * 
+ * This works directly with OASyncClient.getDetail(..), returning a custom serializer for it.
  * @author vvia
  */
 public class ClientGetDetail {
@@ -56,8 +57,19 @@ public class ClientGetDetail {
     
     private int cntx;
     private int errorCnt;
-    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, 
-            String property, String[] masterProps, OAObjectKey[] siblingKeys) {
+    /**
+     * called by OASyncClient.getDetail(..), from an OAClient to the OAServer
+     * @param masterClass
+     * @param masterObjectKey object key that needs to get a prop/reference value
+     * @param property name of prop/reference
+     * @param masterProps the names of any other properties to get
+     * @param siblingKeys any other objects of the same class to get the same property from.  This is
+     * usually objects in the same hub of the masterObjectKey
+     * @return the property reference, or an OAObjectSerializer that will wrap the reference, along with additional objects
+     * that will be sent back to the client.
+     */
+    public Object getDetail(final Class masterClass, final OAObjectKey masterObjectKey, 
+            final String property, final String[] masterProps, final OAObjectKey[] siblingKeys) {
 
         if (masterObjectKey == null || property == null) return null;
 
@@ -73,48 +85,26 @@ public class ClientGetDetail {
 
         Object detailValue = OAObjectReflectDelegate.getProperty((OAObject) masterObject, property);
         
-        if (masterProps == null && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
+        if ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
         
         OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
-        os.setMax(5500);
+        os.setMax(7500);
 
 //TEST qqqqqqqqqqqqqqqqqqqqqqvvvvvvvvvvvvvvvvvvvvvvwwwwwwwwwwbbbbbbbbbb
-        
         String s = String.format(
-                "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d, masterProps=%s",
-                ++cntx, 
-                masterObject, 
-                property, 
-                detailValue,
-                (siblingKeys == null)?0:siblingKeys.length,
-                masterProps==null?"":(""+masterProps.length)
-            );
-         System.out.println(s);
-        
+            "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d, masterProps=%s",
+            ++cntx, 
+            masterObject, 
+            property, 
+            detailValue,
+            (siblingKeys == null)?0:siblingKeys.length,
+            masterProps==null?"":(""+masterProps.length)
+        );
+        System.out.println(s);
+        LOG.fine(s);
         
         return os;
     }
-    
-    public boolean isOnClient(Object obj) {
-        if (!(obj instanceof OAObject)) return false;
-        rwLockTreeSerialized.readLock().lock();
-        Object objx = treeSerialized.get( ((OAObject)obj).getObjectKey().getGuid());
-        rwLockTreeSerialized.readLock().unlock();
-        return objx != null;
-    }
-    
-    
-    protected boolean wasFullySentToClient(Object obj) {
-        if (!(obj instanceof OAObject)) return false;
-        rwLockTreeSerialized.readLock().lock();
-        Object objx = treeSerialized.get( ((OAObject)obj).getObjectKey().getGuid());
-        rwLockTreeSerialized.readLock().unlock();
-        if (objx instanceof Boolean) {
-            return ((Boolean) objx).booleanValue();
-        }
-        return false;
-    }
-    
     
     /** 20130213
      *  getDetail() requirements
@@ -134,7 +124,6 @@ public class ClientGetDetail {
         // include the references "around" this object and master object, along with any siblings
       
         // see OASyncClient.getDetail(..)
-        
         final long t1 = System.currentTimeMillis();
 
         boolean b = wasFullySentToClient(masterObject);
@@ -153,15 +142,13 @@ public class ClientGetDetail {
                     if (wasFullySentToClient(obj)) continue;
                     
                     if (System.currentTimeMillis() - t1 > 100) break;
-                    b = OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false);
-                    if (!b) {
-                        if (++cnt < 15) {
-                            OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 1, false);
-                        }
-                        else {
-                            OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 0, 1, false);
-                            if (cnt > 35) break;
-                        }
+                    if (OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false)) continue;
+                    if (++cnt < 15) {
+                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 1, false);
+                    }
+                    else {
+                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 0, 1, false);
+                        if (cnt > 35) break;
                     }
                 }
             }
@@ -170,58 +157,78 @@ public class ClientGetDetail {
             OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false);
         }
         
-        final Hub detailHub = dHub;
         final HashMap<OAObjectKey, Object> hmExtraData = new HashMap<OAObjectKey, Object>();
         
         if (siblingKeys != null) {
             // send back a lightweight hashmap (oaObjKey, value)
-            Class c = masterObject.getClass();
-            int cntDs = 0;
+            Class clazz = masterObject.getClass();
             for (OAObjectKey key : siblingKeys) {
                 if (System.currentTimeMillis() - t1 > 120) break;
-                OAObject obj = OAObjectCacheDelegate.get(c, key);
+                OAObject obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) continue;
                 
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
-                    if (cntDs++ > 10) continue;
+                    if (System.currentTimeMillis() - t1 > 100) break;
                     value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
                 }
-                
-                if (value instanceof OAObject) {
-                    if (isOnClient(value)) {
-                        value = OAObjectKeyDelegate.getKey((OAObject) value); // only need to send the key back
-                    }
-                }
+                // value will never be on the client, since it would not have included it in the siblings
                 hmExtraData.put(key, value);
             }
         }
         
-        OAObjectSerializer os = new OAObjectSerializer(detailObject, true);
+        b = ((hmExtraData.size() > 0) || (masterProperties != null && masterProperties.length > 0));
+        OAObjectSerializer os = new OAObjectSerializer(detailObject, b);
         if (hmExtraData.size() > 0) {
-            hmExtraData.put(masterObject.getObjectKey(), masterObject); // so master can go 
+            if ((masterProperties != null && masterProperties.length > 0)) {
+                hmExtraData.put(masterObject.getObjectKey(), masterObject); // so extra props for master can go 
+            }
             os.setExtraObject(hmExtraData); 
         }
         else {
             os.setExtraObject(masterObject);  // so master can be sent to client, and include any other masterProps
         }
+    
+        OAObjectSerializerCallback cb = createOAObjectSerializerCallback(masterObject, bMasterWasPreviouslySent, 
+                detailObject, dHub, propFromMaster, masterProperties, siblingKeys, hmExtraData);
+        os.setCallback(cb);
 
+        return os;
+    }
+    
+    
+    // callback to customize the return values from getDetail(..) 
+    private OAObjectSerializerCallback createOAObjectSerializerCallback(
+            final OAObject masterObject, final boolean bMasterWasPreviouslySent, 
+            final Object detailObject, final Hub detailHub,
+            final String propFromMaster, 
+            final String[] masterProperties, final OAObjectKey[] siblingKeys,
+            final HashMap<OAObjectKey, Object> hmExtraData) 
+    {
         
+        // this callback is used by OAObjectSerializer to customize what objects will be include in 
+        //    the serialized object.
         OAObjectSerializerCallback callback = new OAObjectSerializerCallback() {
             boolean bMasterSent;
-            HashMap<Integer, Boolean> hmTemp = new HashMap<Integer, Boolean>();
+            
+            // keep track of which objects are being sent to client in this serialization
+            HashSet<Integer> hsSendingGuid = new HashSet<Integer>();
             
             @Override
             protected void afterSerialize(OAObject obj) {
                 int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
-                Boolean bx = hmTemp.get(guid);
-                if (bx != null) {
-                    rwLockTreeSerialized.writeLock().lock();
-                    treeSerialized.put(guid, bx.booleanValue());
-                    rwLockTreeSerialized.writeLock().unlock();
+                boolean bx = hsSendingGuid.remove(guid);
+
+                // update tree of sent objects
+                rwLockTreeSerialized.writeLock().lock();
+                if (treeSerialized.get(guid) == null) {
+                    treeSerialized.put(guid, bx);
                 }
+                rwLockTreeSerialized.writeLock().unlock();
+                
             }
             
+            // this will "tell" OAObjectSerializer which reference properties to include with each OAobj
             @Override
             protected void beforeSerialize(final OAObject obj) {
                 // parent object - will send all references
@@ -236,32 +243,26 @@ public class ClientGetDetail {
                         return;
                     }
                     
-                    hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), true);
+                    hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
                     if (masterProperties == null || masterProperties.length == 0) includeAllProperties();
                     else includeProperties(masterProperties);                    
                     return;
                 }
 
                 if (obj == detailObject) {
-                    int level = this.getLevelsDeep();  // obj is pushed to stack, and level is changed after setup() is called
-                    if (level > 0) {
+                    if (this.getLevelsDeep() > 0) {
                         excludeAllProperties(); // already sent in this batch
-                        return;
                     }
-
-                    if (bMasterWasPreviouslySent) {
+                    else if (bMasterWasPreviouslySent) {
                         // already had all of master, this is only for a calculated prop
                         excludeAllProperties();
-                        return;
                     }
-                    
-                    // this Object - will send all references (all have been loaded)
-                    if (wasFullySentToClient(obj)) {
+                    else if (wasFullySentToClient(obj)) {
                         excludeAllProperties(); // already sent
                     }
                     else {
                         boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
-                        hmTemp.put(obj.getObjectKey().getGuid(), b);
+                        if (b) hsSendingGuid.add(obj.getObjectKey().getGuid());
                         includeAllProperties();
                     }
                     return;
@@ -270,24 +271,27 @@ public class ClientGetDetail {
                 if (detailHub != null && detailHub.contains(obj)) {
                     // this Object is a Hub - will send all references (all have been loaded)
                     if (wasFullySentToClient(obj)) {
+                        hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
                         excludeAllProperties();  // client has it all
                     }
                     else {
                         boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
-                        hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), b);
+                        if (b) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
                         includeAllProperties();
                     }
                     return;
                 }
 
                 // for siblings, only send the reference property for now
-                if (hmExtraData != null && hmExtraData.get(obj.getObjectKey()) != null) {
-                    // sibling object either is not on the client or does not have all references
-                    hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), wasFullySentToClient(obj));
-                    includeProperties(new String[] {propFromMaster});
-                    return;
+                if (hmExtraData != null) {
+                    if (obj.getClass().equals(masterObject.getClass())) {
+                        if (hmExtraData.get(obj.getObjectKey()) != null) {
+                            // sibling object either is not on the client or does not have all references
+                            includeProperties(new String[] {propFromMaster});
+                            return;
+                        }
+                    }
                 }
-
                 // second level object - will send all references that are already loaded
                 Object objPrevious = this.getPreviousObject();
                 boolean b = (objPrevious == detailObject);
@@ -301,65 +305,66 @@ public class ClientGetDetail {
                     else {
                         // client does not have it, send whatever is loaded
                         b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
-                        hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), b);
+                        if (b) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
                         includeAllProperties(); // will send whatever is loaded
                     }
                     return;
                 }
                 
                 // "leaf" reference that client does not have, only include owned references
-                if (!isOnClient(obj)) {  // never sent to client
-                    hmTemp.put(OAObjectKeyDelegate.getKey(obj).getGuid(), false);
-                }
                 excludeAllProperties();
             }
 
+            /**
+             * This allows returning an objKey if the object is already on the client.
+             */
             @Override
-            public Object getReferenceValueToSend(Object object) {
+            public Object getReferenceValueToSend(final Object object) {
                 // dont send sibling objects back, use objKey instead
-                // this is called by HubDataMaster, so that it wont send base masterObject, but it's objKey instead
+                // called by: OAObjectSerializerDelegate for ref props 
+                // called by: HubDataMaster write, so key can be sent instead of masterObject 
                 if (!(object instanceof OAObject)) return object;
-                OAObject oaObj = (OAObject) object;
-                OAObjectKey key = oaObj.getObjectKey();
-                if (hmExtraData == null || hmExtraData.get(key) == null) return object;
-                if (hmTemp.get(key.getGuid()) != null) return object; // already sending
-                return key;
+                
+                if (isOnClient(object)) {
+                    return ((OAObject)object).getObjectKey();
+                }
+                
+                return object;
             }
             
             /* this is called when a reference has already been included, by the setup() method.
              * this will see if the object already exists on the client to determine if it will
              * be sent.  Otherwise, oaobject.writeObject will only send the oaKey, so that it will
-             * be matched up on the client. 
+             * be looked up on the client. 
              */
             @Override
-            public boolean shouldSerializeReference(final OAObject oaObj, final String propertyName, final Object obj, final boolean bDefault) {
+            public boolean shouldSerializeReference(final OAObject oaObj, final String propertyName, final Object referenceValue, final boolean bDefault) {
                 if (!bDefault) return false;
-                if (obj == null) return false;
+                if (referenceValue == null) return false;
                 
                 if (oaObj == masterObject) return true;
-                if (oaObj == detailObject) return !wasFullySentToClient(obj);
+                if (oaObj == detailObject) return !wasFullySentToClient(referenceValue);
                 
                 OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
-                if (hmExtraData != null && hmExtraData.get(key) != null) {
-                    // sibling object only "ask" for propertyName
-                    return propFromMaster.equals(propertyName);
+                if (hmExtraData != null) {
+                    if (oaObj.getClass().equals(masterObject.getClass())) {
+                        if (hmExtraData.get(key) != null) {
+                            // sibling objects only "ask" for propertyName
+                            return propFromMaster.equals(propertyName);
+                        }
+                    }
                 }
-                
-                int guid = key.getGuid();
-                if (obj instanceof Hub) {
-                    Hub hub = (Hub) obj;
+                if (referenceValue instanceof Hub) {
+                    Hub hub = (Hub) referenceValue;
                     if (hub.getSize() == 0) return false;
                     
                     // dont include hubs with masterObject in it, so that it wont be sending sibling data for masterObj
                     if (hub.contains(masterObject)) {
-                        hmTemp.put(guid, false);
                         return false;  
                     }
 
                     // dont send other sibling data
                     if (detailObject != null && detailHub == null && hub.contains(detailObject)) {
-                        hmTemp.put(guid, false);
-                        // it might have been flagged as true, need to unflag since this prop wont be sent
                         return false;  
                     }
 
@@ -382,7 +387,6 @@ public class ClientGetDetail {
                             Object objx = h1.getAt(i);
                             if (objx == null) break;
                             if (h2.contains(objx)) {
-                                hmTemp.put(guid, false); // it might have been flagged as true
                                 return false;
                             }
                         }
@@ -390,24 +394,24 @@ public class ClientGetDetail {
                     return true;
                 }
 
-                if (!(obj instanceof OAObject)) return true;
-                
+                if (!(referenceValue instanceof OAObject)) return true;
                 
                 int level = this.getLevelsDeep();
                 
-                if (obj == masterObject) {
+                if (referenceValue == masterObject) {
                     if (bMasterSent) return false;
                     if (level > 1) return false; // wait for it to be saved at correct position
                     return true;
                 }
 
-                if (obj == detailObject) return false;  // only save as begin obj
-                if (detailHub != null && detailHub.contains(obj)) return false; // only save as begin obj
+                if (referenceValue == detailObject) return false;  // only save as begin obj
+                if (detailHub != null && detailHub.contains(referenceValue)) return false; // only save as begin obj
 
                 if (level == 0) {
                     return false; // extra data does not send it's references
                 }
                 
+                int guid = key.getGuid();
                 rwLockTreeSerialized.readLock().lock();
                 Object objx = treeSerialized.get(guid);
                 rwLockTreeSerialized.readLock().unlock();
@@ -423,8 +427,27 @@ public class ClientGetDetail {
                 return objx == null;
             }
         };
-        os.setCallback(callback);
-        return os;
+        return callback;
+    }
+
+
+    private boolean isOnClient(Object obj) {
+        if (!(obj instanceof OAObject)) return false;
+        rwLockTreeSerialized.readLock().lock();
+        Object objx = treeSerialized.get( ((OAObject)obj).getObjectKey().getGuid());
+        rwLockTreeSerialized.readLock().unlock();
+        return objx != null;
+    }
+    
+    private boolean wasFullySentToClient(Object obj) {
+        if (!(obj instanceof OAObject)) return false;
+        rwLockTreeSerialized.readLock().lock();
+        Object objx = treeSerialized.get( ((OAObject)obj).getObjectKey().getGuid());
+        rwLockTreeSerialized.readLock().unlock();
+        if (objx instanceof Boolean) {
+            return ((Boolean) objx).booleanValue();
+        }
+        return false;
     }
 }
 

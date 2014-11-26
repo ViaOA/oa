@@ -75,7 +75,7 @@ class HubDataMaster implements java.io.Serializable {
         return rli.isSortAsc();
     }
     
-    // 20141125             
+    // 20141125 custom writer so that linkInfo is not written, and so masterObject can use key instead             
     private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{
         s.defaultWriteObject();
         
@@ -108,18 +108,21 @@ class HubDataMaster implements java.io.Serializable {
         s.defaultReadObject();
         byte bx = s.readByte();
         if (bx != 0) {
+            Class cx = null;
             if (bx == 1) {
-                Class cx = (Class) s.readObject();
+                cx = (Class) s.readObject();
                 OAObjectKey key = (OAObjectKey) s.readObject();
                 this.masterObject = (OAObject) OAObjectCacheDelegate.get(cx, key);
                 // note: OAObjectReflectDelegate._getReferenceHub(..) will set the masterObject if it is null
             }
             else if (bx == 2) {
                 this.masterObject = (OAObject) s.readObject();
+                if (masterObject != null) cx = masterObject.getClass();
             }
+            
             String revName = (String) s.readObject();
-            if (revName != null && masterObject != null) {
-                OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(masterObject.getClass());
+            if (revName != null && cx != null) {
+                OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(cx);
                 OALinkInfo li = oi.getLinkInfo(revName);
                 if (li != null) {
                     li = OAObjectInfoDelegate.getReverseLinkInfo(li);

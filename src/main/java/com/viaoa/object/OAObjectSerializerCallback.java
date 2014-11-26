@@ -21,6 +21,7 @@ package com.viaoa.object;
  * Callback object for OAObjectSerializer
  * @author vincevia
  * @see OAObjectSerializer
+ * note: do not serialize this, since it will also include it's outclass, etc.
  */
 public abstract class OAObjectSerializerCallback {
     private OAObjectSerializer os;
@@ -84,18 +85,22 @@ public abstract class OAObjectSerializerCallback {
     }
     
     /**
-     * Callback from OAObjectSerializer.  Use this method to include/exclude properties per object.
+     * Callback from OAObjectSerializer.  Use this method to setup the include/exclude properties per object.
      */
     protected abstract void beforeSerialize(OAObject obj);
     // return IncludeProperties.DEFAULT;
     
     /**
-     * Callback from OAObjectSerializer.
+     * Callback from OAObjectSerializer, to know when the object has been completed.
      */
     protected void afterSerialize(OAObject obj) {
     }
     
     
+    /**
+        called by: OAObjectSerializerDelegate for ref props 
+        called by: HubDataMaster write, so key can be sent instead of masterObject 
+     */
     public Object getReferenceValueToSend(Object obj) {
         return obj;
     }

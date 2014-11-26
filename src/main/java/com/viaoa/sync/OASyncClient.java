@@ -109,6 +109,12 @@ public class OASyncClient {
     }
     
     public int cntGetDetail;
+    /**
+     * This works directly with ClientGetDetail, by using a customized objectSerializer
+     * @param masterObject
+     * @param propertyName
+     * @return
+     */
     public Object getDetail(OAObject masterObject, String propertyName) {
         //qqqqqvvvvv        
         //System.out.println("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName+", levels="+levels);
@@ -123,9 +129,21 @@ public class OASyncClient {
 
         boolean bGetSibs;
         OAObjectKey[] siblingKeys = null;
+        String[] additonialPropertyNamesToGet = null; 
         Object result = null;
-        boolean b = OARemoteThreadDelegate.shouldMessageBeQueued();
-        if (!b) {
+
+        if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
+            // this needs to be fast, and only request the single property
+            bGetSibs = false;
+            try {
+                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "getDetail error", e);
+            }
+        }
+        else {
+            // this will "ask" for additional data "around" the requested property
             bGetSibs = true;
             // send siblings to return back with same prop
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
@@ -133,35 +151,30 @@ public class OASyncClient {
                 siblingKeys = getDetailSiblings(masterObject, propertyName, li);
             }
             
-            String[] props = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
+            additonialPropertyNamesToGet = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
             try {
-                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, props, siblingKeys);
+                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                        additonialPropertyNamesToGet, siblingKeys);
             }
             catch (Exception e) {
                 LOG.log(Level.WARNING, "getDetail error", e);
             }
         }
-        else {
-            try {
-                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName);
-            }
-            catch (Exception e) {
-                LOG.log(Level.WARNING, "getDetail error", e);
-            }
-            bGetSibs = false;
-        }
+        
         if (result instanceof OAObjectSerializer) {
             // see ClientGetDetail.getSerializedDetail(..)
             OAObjectSerializer os = (OAObjectSerializer) result;
             result = os.getObject();
             
+            // the custom serializer can send extra objects, and might using objKey instead of the object. 
             Object objx = os.getExtraObject();
             if (objx instanceof HashMap) {
                 HashMap<OAObjectKey, Object> hmExtraData = (HashMap<OAObjectKey, Object>) objx;
                 for (Entry<OAObjectKey, Object> entry : hmExtraData.entrySet()) {
                     Object value = entry.getValue();
                     if (value == masterObject) continue;
-                    if (value instanceof Hub) continue; // Hub.readResolve will take care of this
+                    if (value instanceof Hub) continue; // Hub.datam.readResolve will take care of this
+                    
                     if (!(value instanceof OAObject)) continue;
                     OAObject obj = OAObjectCacheDelegate.getObject(masterObject.getClass(), entry.getKey());
                     if (obj == null) continue;
@@ -171,20 +184,18 @@ public class OASyncClient {
                 }
             }
         }
-        
-        // 20141125 in case Hub.datam.masterObject needs to be set
         if (result instanceof Hub) {
+            // 20141125 in case Hub.datam.masterObject needs to be set. (should not happen, since only GC of master could cause this)
             OAObjectHubDelegate.setMasterObject((Hub) result, masterObject, propertyName);
         }
-        
-        
+
         //qqqqqqq        
         if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntx % 100 == 0) {
             int iNew = OAObjectSerializeDelegate.cntNew; 
             int iDup = OAObjectSerializeDelegate.cntDup;
             
             String s = String.format(
-                "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b %,d, " +
+                "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b %,d, moreProps=%d, " +
                 "newCnt=%,d, dupCnt=%,d, totNewCnt=%,d, totDupCnt=%,d",
                 cntx, 
                 masterObject, 
@@ -192,6 +203,7 @@ public class OASyncClient {
                 result==null?"null":result.getClass().getName(),
                 bGetSibs,
                 (siblingKeys == null)?0:siblingKeys.length,
+                additonialPropertyNamesToGet==null?0:additonialPropertyNamesToGet.length,
                 iNew-xNew, 
                 iDup-xDup,
                 iNew, 
@@ -286,7 +298,7 @@ public class OASyncClient {
                 if (linkInfo == null) {  // must be blob
                     OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
                     al.add(key);
-                    if (++cnt == 20) break;
+                    if (++cnt == 20) break;  // only get 20 extra blobs, ha
                 }
                 else if (bIsMany || bIsOne2One) {                
                     OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
@@ -302,6 +314,7 @@ public class OASyncClient {
                     if (++cnt == (100*(hubThreadLocal!=null?2:1))) break;
                 }
             }
+            // note: if value is null and a Many, then it's value is an empty Hub
         }
 
         if (al == null || al.size() == 0) return null;

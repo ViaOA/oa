@@ -304,7 +304,7 @@ public class OAObjectSerializeDelegate {
 
             if (b) {
                 if (obj instanceof OAObject) {
-                    // dont send oaobj if it is already on the client
+                    // option to dont send oaobj if it is already on the client
                     obj = serializer.getReferenceValueToSend(obj); 
                 }
             }
