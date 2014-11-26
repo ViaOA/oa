@@ -162,11 +162,12 @@ public class OASyncClient {
                     Object value = entry.getValue();
                     if (value == masterObject) continue;
                     if (value instanceof Hub) continue; // Hub.readResolve will take care of this
-                    
+                    if (!(value instanceof OAObject)) continue;
                     OAObject obj = OAObjectCacheDelegate.getObject(masterObject.getClass(), entry.getKey());
-                    if (obj != null) {
-                        OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, value, null, true, false);
-                    }
+                    if (obj == null) continue;
+                    // note:  only references that had an oaObjectKey that was not in the cache were in the sibling list
+                    OAObject oaValue = (OAObject) value;
+                    OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, oaValue.getObjectKey(), false, false);
                 }
             }
         }

@@ -173,10 +173,11 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     void beforeSerialize(OAObject oaObj) {
 //qqqqqqqqqqqqqqqqq        
         indent++;
+/* test        
         String msg = "";
         for (int i=0; i<indent; i++) msg += "  ";
         System.out.println(msg+""+oaObj.getClass()+" "+oaObj.getObjectKey().getGuid());
-        
+*/        
         totalObjectsWritten++;
         if (callback != null) {
             // save and push current settings into stack
@@ -556,8 +557,8 @@ indent--;//qqqqqqqqqqqqq
         return (TYPE) object;
     }
     public Object getExtraObject() {
-        if (parentWrapper != null) return parentWrapper.getObject();
-        return object;
+        if (parentWrapper != null) return parentWrapper.getExtraObject();
+        return extraObject;
     }
     // send an extra object
     public void setExtraObject(Object extraObject) {
