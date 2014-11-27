@@ -279,9 +279,11 @@ public class HubAddRemoveDelegate {
             Class c = obj.getClass();
             HubDelegate.setObjectClass(thisHub, c);
         }
-        
+
         // need to check even if isLoading=true, since datasource could autoadd to a cache hub
-        if (thisHub.contains(obj)) return;
+        if (thisHub.contains(obj)) {
+            return;
+        }
 
         if (!thisHub.isLoading()) {
             String s = canAddMsg(thisHub, obj);

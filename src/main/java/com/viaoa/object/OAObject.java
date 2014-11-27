@@ -177,11 +177,24 @@ public class OAObject implements java.io.Serializable, Comparable {
         @see OAObjectDelegate#initialize
     */
     public OAObject() {
-    	OAObjectDelegate.initialize(this);
-    	cntNew++;
-    	if (cntNew % 500 == 0) System.out.println(cntNew+") new OAObject.guid="+guid+" "+this);
-    }
+        OAObjectDelegate.initialize(this);
 
+        cntNew++;
+    	if (cntNew % 500 == 0) System.out.println(cntNew+") new OAObject.guid="+guid+" "+this);
+
+        // 20141127 Note: call oaObject.toString(), until the object is loaded, since it will create an objectKey with Id=0
+    	if (objectKey != null) objectKey = null; // in case it was generated before the Id was loaded.
+    	
+        /*qqqqqqqqqqqqqqqqqqqqqqqqqqq    	
+        Exception ex = new Exception();
+        for (StackTraceElement ste : ex.getStackTrace()) {
+            stackTrace += ste.getFileName()+"."+ste.getMethodName()+"("+ste.getLineNumber()+")\n";
+        }
+        stackTrace = ((new OADateTime()).toString())+"\n"+stackTrace;
+        */
+    }
+    //String stackTrace="";
+    
     /** Read OAObject data.  Note: This method must stay "private" or it will never be called.  It does
         not need to be subclassed because any object that is a subclass should have its own readObject()
         method.  ObjectInputStream.readObject() calls the readObject() for each class, superClass,

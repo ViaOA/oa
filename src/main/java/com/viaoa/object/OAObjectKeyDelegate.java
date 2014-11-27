@@ -28,7 +28,9 @@ public class OAObjectKeyDelegate {
 	    returns the OAObjectKey that uniquely represents this object.
 	*/
 	public static OAObjectKey getKey(OAObject oaObj) {
-	    if (oaObj.objectKey == null) oaObj.objectKey = new OAObjectKey(oaObj);
+	    if (oaObj.objectKey == null) {
+	        oaObj.objectKey = new OAObjectKey(oaObj);
+	    }
 	    return oaObj.objectKey;
 	}
 

@@ -277,7 +277,13 @@ static PrintWriter printWriter;
                 bSetChangedAndNew = true;
                 
                 if (bLoadedObject) {
-                    oaObject = (OAObject) OAObjectCacheDelegate.add(oaObject, false, true);
+                    OAObject objx = (OAObject) OAObjectCacheDelegate.add(oaObject, false, true);
+                    if (objx != oaObject) {
+OAObject objz = (OAObject) OAObjectCacheDelegate.add(oaObject, false, true);
+                        oaObject = objx;
+int xx = 4;
+xx++;
+                    }
                 }
             }
             else {

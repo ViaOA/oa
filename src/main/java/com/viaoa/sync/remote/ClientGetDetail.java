@@ -163,15 +163,14 @@ public class ClientGetDetail {
             // send back a lightweight hashmap (oaObjKey, value)
             Class clazz = masterObject.getClass();
             for (OAObjectKey key : siblingKeys) {
-                if (System.currentTimeMillis() - t1 > 120) break;
                 OAObject obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) continue;
                 
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
                     if (System.currentTimeMillis() - t1 > 100) break;
-                    value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
                 }
+                value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
                 // value will never be on the client, since it would not have included it in the siblings
                 hmExtraData.put(key, value);
             }
