@@ -61,7 +61,9 @@ public class HubDataDelegate {
         thisHub.data.changed = b;
         if (!b) {
         	synchronized (thisHub.data) {
-                if (thisHub.data.getVecAdd() != null) thisHub.data.getVecAdd().removeAllElements();
+                if (thisHub.data.getVecAdd() != null) {
+                    thisHub.data.getVecAdd().removeAllElements();
+                }
         		if (thisHub.data.getVecRemove() != null) thisHub.data.getVecRemove().removeAllElements();
         	}
         }

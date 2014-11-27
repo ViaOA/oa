@@ -88,7 +88,7 @@ public class ClientGetDetail {
         if ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
         
         OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
-        os.setMax(7500);
+        os.setMax(5000);
 
 //TEST qqqqqqqqqqqqqqqqqqqqqqvvvvvvvvvvvvvvvvvvvvvvwwwwwwwwwwbbbbbbbbbb
         String s = String.format(
