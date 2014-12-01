@@ -55,10 +55,13 @@ public class OAObjectInfo { //implements java.io.Serializable {
     // All primitive properties, in uppercase and sorted.
     // This is used by OAObject.nulls, to get the bit position for an objects primitive properties.
     protected String[] primitiveProps;
-    
+
     // 20120827 hubs that have a size of 0
     protected String[] hubProps;
 
+    int weakReferenceable=-1; // flag set/used by OAObjectInfoDelegate.isWeakReferenceable -1=not checked, 0=false, 1=true
+    
+    
     public OAObjectInfo() {
         this(new String[] { });
     }

@@ -544,6 +544,10 @@ public class HubAddRemoveDelegate {
 
         HubEventDelegate.fireAfterInsertEvent(thisHub, obj, pos);
         
+        if (!thisHub.data.isInFetch()) {
+            HubDelegate.setReferenceable(thisHub, true);
+        }
+        
         return true;
     }
     

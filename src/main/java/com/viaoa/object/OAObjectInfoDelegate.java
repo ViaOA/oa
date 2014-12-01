@@ -570,19 +570,7 @@ public class OAObjectInfoDelegate {
     
     public static OALinkInfo getReverseLinkInfo(OALinkInfo thisLi) {
         if (thisLi == null) return null;
-        if (thisLi.revLinkInfo != null) return thisLi.revLinkInfo;
-        List al = OAObjectInfoDelegate.getOAObjectInfo(thisLi.toClass).getLinkInfos(); 
-        String findName = thisLi.reverseName;
-        if (findName == null) return null;
-        for (int i=0; i < al.size(); i++) {
-            OALinkInfo lix = (OALinkInfo) al.get(i);
-            String name = lix.name;
-            if (name != null && findName.equalsIgnoreCase(name)) {
-                thisLi.revLinkInfo = lix;
-                return lix;
-            }
-        }
-        return null;
+        return thisLi.getReverseLinkInfo();
     }
 
     public static boolean isMany2Many(OALinkInfo thisLi) {
@@ -875,5 +863,48 @@ public class OAObjectInfoDelegate {
         
         return revPropertyPath;
     }
+
+
+    // 20141130 weakReferencealbe 
+
+    /**
+     * Returns true if any of the parent links has type=Many and cacheSize>0,
+     * which means that this object can be GCd.
+     */
+    public static boolean isWeakReferenceable(OAObject oaObj) {
+        if (oaObj == null) return false;
+        OAObjectInfo oi = getObjectInfo(oaObj);
+        return isWeakReferenceable(oi, null);
+    }
+    public static boolean isWeakReferenceable(OAObjectInfo oi) {
+        if (oi == null) return false;
+        return isWeakReferenceable(oi, null);
+    }
+
+    private static boolean isWeakReferenceable(OAObjectInfo oi, HashSet<OAObjectInfo> hsVisited) {
+        if (oi == null) return false;
+        if (oi.weakReferenceable != -1) return (oi.weakReferenceable==1);
+        if (hsVisited != null && hsVisited.contains(oi)) return false;
+
+        boolean b = false;
+        for (OALinkInfo li : oi.getLinkInfos()) {
+            OALinkInfo liRev = li.getReverseLinkInfo();
+            if (liRev == null) continue;
+            if (liRev.getType() != liRev.MANY) continue;
+            if (liRev.cacheSize > 0) {
+                b = true;
+                break;
+            }
+            
+            if (hsVisited == null) hsVisited = new HashSet<>();
+            hsVisited.add(oi);
+            OAObjectInfo oix = getObjectInfo(li.getToClass());
+            b = isWeakReferenceable(oix, hsVisited);
+            if (b) break;
+        }
+        oi.weakReferenceable = b ? 1 : 0;
+        return b;
+    }
+
 }
 

@@ -41,8 +41,6 @@ public class HubSaveDelegate {
         if (thisHub == null) return; //qq need to log this
         if (cascade.wasCascaded(thisHub, true)) return;
 
-        HubDelegate.setReferenceable(thisHub, false);
-        
         boolean bM2M = false;
         if (iCascadeRule != OAObject.CASCADE_NONE) {
 	        boolean b = thisHub.isOAObject();
@@ -77,6 +75,8 @@ public class HubSaveDelegate {
         
     	HubDelegate._updateHubAddsAndRemoves(thisHub, cascade);
     	thisHub.setChanged(false); // removes all vecAdd, vecRemove objects
+    	
+        HubDelegate.setReferenceable(thisHub, false);
     }
 
 	

@@ -106,7 +106,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
 
     
-    public static final int version = 1411260;  
+    public static final int version = 1411270;  
     static {
         Properties props = System.getProperties();
         
@@ -442,13 +442,8 @@ public class OAObject implements java.io.Serializable, Comparable {
         	OAObjectEventDelegate.firePropertyChange(this, OAObjectDelegate.WORD_Changed, bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, changedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
 
             // 20141030
-            if (changedFlag && isServer()) {
-                Hub[] hubs = OAObjectHubDelegate.getHubReferences(this);
-                if (hubs != null) {
-                    for (Hub h : hubs) {
-                        HubDelegate.setReferenceable(h, true);
-                    }
-                }
+            if (changedFlag) {
+                HubDelegate.setReferenceable(this, true);
             }
         }
     }

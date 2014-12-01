@@ -387,7 +387,13 @@ public class OAObjectPropertyDelegate {
                 }
                 else {
                     if (val instanceof WeakReference) {
-                        oaObj.properties[i+1] = (WeakReference) val;
+                        val = ((WeakReference)val).get();
+                        if (val == null) {
+                            removePropertyIfNull(oaObj, name, false);
+                        }
+                        else {
+                            oaObj.properties[i+1] = val;
+                        }
                     }
                 }
             }

@@ -497,48 +497,58 @@ public class HubDelegate {
     
     // 20141030
     /**
-     * Used on server, this will make sure that a Hub does not get GCd on the Server, and is needed when
+     * Used on server, this will make sure that a Hub does not get GCd on the Server. This is needed when
      * a hub has a masterObject that has a cacheSize set, which means that it can be GCd.
-     * This is called by Hub.add, Hub.remove, Hub.firepropchange(prop=changed=true), Hub.saveAll 
-
+     * This will recursively set any parent/master objects.
+     * This is called by Hub.add, Hub.remove, Hub.firepropchange(), Hub.saveAll.
      * @param bReferenceable true to make sure that it has a hard ref, otherwise a weakRef will be used
      */
-    public static void setReferenceable(Hub thisHub, boolean bReferenceable) {
+    public static void setReferenceable(OAObject obj, boolean bReferenceable) {
+        setReferenceable(obj, bReferenceable, null);
+    }
+    private static void setReferenceable(OAObject obj, boolean bReferenceable, OACascade cascade) {
+        if (obj == null) return;
         if (!OASyncDelegate.isServer()) return;
-        setReferenceable(thisHub, bReferenceable, null);
-    }
-    private static void setReferenceable(Hub thisHub, boolean bReferenceable, OACascade cascade) {
-        if (thisHub == null || (cascade != null && cascade.wasCascaded(thisHub, true))) return;
+        if (cascade != null && cascade.wasCascaded(obj, true)) return;
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
+        if (!OAObjectInfoDelegate.isWeakReferenceable(oi)) return;
+        
+        for (OALinkInfo li : oi.getLinkInfos()) {
+            OALinkInfo liRev = li.getReverseLinkInfo();
+            if (liRev == null) continue;
+            if (liRev.getType() == OALinkInfo.MANY) {
+                Object parent = li.getValue(obj); // parent
+                if (!(parent instanceof OAObject)) continue;
 
-        OAObject master = thisHub.getMasterObject();
-        if (master == null) return;
-        
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
-        if (li == null) return;
-        
-        li = OAObjectInfoDelegate.getReverseLinkInfo(li);
-        if (li == null) return;
-        if (li.getType() != li.MANY) return;
-        if (li.getCacheSize() < 1) return;
-        
-        OAObjectPropertyDelegate.setPropertyWeakRef(master, li.getName(), !bReferenceable);
-
-        if (bReferenceable) {
-            if (cascade == null) {
-                cascade = new OACascade();
-                cascade.add(thisHub);
+                if (liRev.getCacheSize() > 0) {
+                    Object objx = liRev.getValue((OAObject) parent);
+                    if (!(objx instanceof Hub)) continue;
+                    OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) parent, liRev.getName(), !bReferenceable);
+                }
+                if (cascade == null) cascade = new OACascade();
+                cascade.add(obj);
+                setReferenceable((OAObject)parent, bReferenceable, cascade);
             }
-            setReferenceable(master, cascade);
         }
     }
-    
-    private static void setReferenceable(OAObject obj, OACascade cascade) {
-        if (obj == null || cascade.wasCascaded(obj, true)) return;
-        Hub[] hubs = OAObjectHubDelegate.getHubReferences(obj);
-        if (hubs == null) return;
-        for (Hub h : hubs) {
-            setReferenceable(h, true, cascade);
+    public static void setReferenceable(Hub hub, boolean bReferenceable) {
+        if (hub == null) return;
+        if (!OASyncDelegate.isServer()) return;
+
+        Object master = HubDelegate.getMasterObject(hub);
+        if (!(master instanceof OAObject)) return;
+
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
+        if (li == null) return;
+        OALinkInfo liRev = li.getReverseLinkInfo();
+        if (liRev == null) return;
+        
+        OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) master, liRev.getName(), !bReferenceable);
+        if (bReferenceable) {
+            setReferenceable((OAObject)master, bReferenceable, null);
         }
+        // else each parent will call this method
     }
 }
 

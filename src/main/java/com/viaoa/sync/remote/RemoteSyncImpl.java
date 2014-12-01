@@ -21,13 +21,9 @@ import java.util.Comparator;
 import java.util.logging.Logger;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
-import com.viaoa.object.OACascade;
-import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
-import com.viaoa.object.OAObjectInfo;
-import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
@@ -169,52 +165,30 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         return true;
     }
 
-
+    // on the server, if the object is not found in the cache, then it will be loaded by the datasource 
     private OAObject getObject(Class objectClass, OAObjectKey origKey) {
         OAObject obj = OAObjectCacheDelegate.get(objectClass, origKey);
-        if (obj == null) {
-            if (OASyncDelegate.isServer()) {
-                obj = (OAObject) OADataSource.getObject(objectClass, origKey);
-                if (obj != null) {
-                    OAObjectDelegate.reassignGuid(obj, origKey);
-                    loadCachedOwners(obj, null);
-                }
+        if (obj == null && OASyncDelegate.isServer()) {
+            obj = (OAObject) OADataSource.getObject(objectClass, origKey);
+            if (obj != null) {
+                // object must have been GCd, use the original guid
+                OAObjectDelegate.reassignGuid(obj, origKey);
             }
         }
         return obj;
     }
     
-    // make sure that any owner that could have been been GCd is also loaded.
-    private void loadCachedOwners(OAObject obj, OACascade cascade) {
-        if (obj == null) return;
-        if (cascade != null && cascade.wasCascaded(obj, true)) return;
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
-        for (OALinkInfo li : oi.getLinkInfos()) {
-            if (li.getType() != li.ONE) continue;
-            OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (liRev == null) continue;
-            if (liRev.getType() != li.MANY) continue;
-            if (li.getCacheSize() < 1) continue;
-            Object objx = li.getValue(obj);
-            if (!(objx instanceof OAObject)) continue;
-            liRev.getValue(((OAObject)objx));
-            if (cascade == null) {
-                cascade = new OACascade();
-                cascade.add(obj);
-            }
-            loadCachedOwners((OAObject)objx, cascade);  // make recursive
-        }
-        
-    }
-    
-    
-    
+    // on the server, if the Hub is not found in the cache, then it will be loaded by the datasource
     private Hub getHub(OAObject obj, String hubPropertyName) {
-        if (!OASyncDelegate.isServer()) {
-            if (!OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName)) return null;
+        boolean bWasLoaded = OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName);
+        if (!bWasLoaded && !OASyncDelegate.isServer()) {
+            return null;
         }
         Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);
-        if (objx instanceof Hub) return (Hub) objx;
-        return null;
+        if (!(objx instanceof Hub)) return null;
+
+        // loadCachedOwners will have been done by the call to getObject(masterObj)
+        return (Hub) objx;
     }
+
 }

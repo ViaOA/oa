@@ -18,6 +18,8 @@ All rights reserved.
 package com.viaoa.object;
 
 import java.lang.reflect.*;
+import java.util.HashSet;
+import java.util.List;
 
 /** 
     Defines reference properties between OAObjects.
@@ -53,7 +55,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     
     // runtime
     protected transient int cacheSize;
-    protected OALinkInfo revLinkInfo;
+    private OALinkInfo revLinkInfo;
     protected boolean bCalculated;
     protected boolean bServerSideCalc;
     protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
@@ -267,6 +269,19 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     public Class[] getTriggerClasses() {
         return this.triggerClasses;
+    }
+
+    public OALinkInfo getReverseLinkInfo() {
+        if (revLinkInfo != null) return revLinkInfo;
+        String findName = reverseName;
+        if (findName == null) return null;
+        for (OALinkInfo lix : OAObjectInfoDelegate.getOAObjectInfo(toClass).getLinkInfos()) {
+            if (lix.name != null && findName.equalsIgnoreCase(lix.name)) {
+                revLinkInfo = lix;
+                return lix;
+            }
+        }
+        return null;
     }
 }
 
