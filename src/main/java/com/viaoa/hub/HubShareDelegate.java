@@ -111,6 +111,24 @@ public class HubShareDelegate {
         }
     }
 
+    public static HubCopy getHubCopy(Hub thisHub) {
+        Hub h = HubShareDelegate.getMainSharedHub(thisHub);
+        if (h.datam.masterObject != null || h.datam.masterHub != null) {
+            // filtered hubs will not have a master
+            return null;
+        }
+        
+        // find a HubFilter in the listener list
+        HubListener[] hls = HubEventDelegate.getHubListeners(h);
+        for (HubListener hl : hls) {
+            if (hl instanceof HubCopy) {
+                return (HubCopy) hl;
+            }
+        }
+        return null;
+    }
+    
+    
     public static HubFilter getHubFilter(Hub thisHub) {
         Hub h = HubShareDelegate.getMainSharedHub(thisHub);
         if (h.datam.masterObject != null || h.datam.masterHub != null) {
@@ -195,7 +213,7 @@ public class HubShareDelegate {
         }
         if (!bIncludeFilteredHubs || cnter > 0) return null;
         
-        // not found, check to see if there is a copyHub that is shared
+        // not found, check to see if there is a hubFilter (HubCopy) that is shared
         HubFilter hc = getHubFilter(thisHub);
         if (hc != null) {
             if (!bOnlyIfSharedAO || hc.isSharingAO()) {
