@@ -284,7 +284,7 @@ public class HubSelectDelegate {
 	            int z = HubDataDelegate.getCurrentSize(thisHub);
 	            for (int i=0; i<z; i++) {
 	            	OAObject oa = (OAObject) HubDataDelegate.getObjectAt(thisHub,i);
-	            	OAObjectHubDelegate.removeHub(oa, thisHub);
+	            	OAObjectHubDelegate.removeHub(oa, thisHub, false);
 	            }
 	        }
 	    	HubDataDelegate.clearAllAndReset(thisHub);

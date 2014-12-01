@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import com.viaoa.hub.Hub;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANotExist;
 
 // 20140225 redone to simplify property locking using CAS
@@ -374,19 +375,24 @@ public class OAObjectPropertyDelegate {
     }
     
     // 20141108 "flip" a hub property to/from a weakRef.  Used by HubDelegate.setReferenceable
-    public static void setPropertyWeakRef(OAObject oaObj, String name, boolean bToWeakRef) {
-        if (name == null || oaObj == null || oaObj.properties == null) return;
+    public static boolean setPropertyWeakRef(OAObject oaObj, String name, boolean bToWeakRef) {
+        if (name == null || oaObj == null || oaObj.properties == null) return false;
 
+        boolean b = false;
         for (int i=0; i<oaObj.properties.length; i+=2) {
             if (!name.equalsIgnoreCase((String)oaObj.properties[i])) continue;
             synchronized (oaObj) {
                 Object val = oaObj.properties[i+1];
                 if (val == null) break; 
                 if (bToWeakRef) {
-                    if (!(val instanceof WeakReference)) oaObj.properties[i+1] = new WeakReference(val);
+                    if (!(val instanceof WeakReference)) {
+                        oaObj.properties[i+1] = new WeakReference(val);
+                        b = true;
+                    }
                 }
                 else {
                     if (val instanceof WeakReference) {
+                        b = true;
                         val = ((WeakReference)val).get();
                         if (val == null) {
                             removePropertyIfNull(oaObj, name, false);
@@ -399,7 +405,47 @@ public class OAObjectPropertyDelegate {
             }
             break;
         }
+        return b;
     }
     
+    // 20141030
+    /**
+     * Used on server, this will make sure that a Hub does not get GCd on the Server. This is needed when
+     * a hub has a masterObject that has a cacheSize set, which means that it can be GCd.
+     * This will recursively set any parent/master objects.
+     * This is called by Hub.add, Hub.remove, Hub.firepropchange(), Hub.saveAll.
+     * @param bReferenceable true to make sure that it has a hard ref, otherwise a weakRef will be used
+     */
+    public static void setReferenceable(OAObject obj, boolean bReferenceable) {
+        setReferenceable(obj, bReferenceable, null);
+    }
+    private static void setReferenceable(OAObject obj, boolean bReferenceable, OACascade cascade) {
+        if (obj == null) return;
+        if (!OASyncDelegate.isServer()) return;
+        if (cascade != null && cascade.wasCascaded(obj, true)) return;
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
+        if (!OAObjectInfoDelegate.isWeakReferenceable(oi)) return;
+        
+        for (OALinkInfo li : oi.getLinkInfos()) {
+            OALinkInfo liRev = li.getReverseLinkInfo();
+            if (liRev == null) continue;
+            if (liRev.getType() != OALinkInfo.MANY) continue;
+            
+            Object parent = li.getValue(obj); // parent
+            if (!(parent instanceof OAObject)) continue;
+
+            if (liRev.getCacheSize() > 0) {
+                liRev.getValue((OAObject) parent); // need to make sure that the hub is loaded
+                boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) parent, liRev.getName(), !bReferenceable);
+                if (!b) break;  // already changed
+            }
+            if (bReferenceable) {
+                if (cascade == null) cascade = new OACascade();
+                cascade.add(obj);
+                setReferenceable((OAObject)parent, bReferenceable, cascade);
+            }
+        }
+    }
 }
 

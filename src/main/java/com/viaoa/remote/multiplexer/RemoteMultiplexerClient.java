@@ -363,9 +363,9 @@ public class RemoteMultiplexerClient {
 //qqqqqqqqqq            
 OARemoteThreadDelegate.isSafeToCallRemoteMethod();
 
-            if (errorCnt++ < 25) {
+            if (errorCnt++ < 25 || (errorCnt % 100 == 0)) {
                 Exception e = new Exception("isSafeToCallRemoteMethod is false");
-                LOG.log(Level.WARNING, "isSafeToCallRemoteMethod is false, starting another OARemoteThread", e);
+                LOG.log(Level.WARNING, "note: isSafeToCallRemoteMethod is false, will continue, starting another OARemoteThread", e);
             }
             OARemoteThreadDelegate.startNextThread();
         }

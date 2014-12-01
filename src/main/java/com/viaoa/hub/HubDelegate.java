@@ -496,46 +496,10 @@ public class HubDelegate {
     }
     
     // 20141030
-    /**
-     * Used on server, this will make sure that a Hub does not get GCd on the Server. This is needed when
-     * a hub has a masterObject that has a cacheSize set, which means that it can be GCd.
-     * This will recursively set any parent/master objects.
-     * This is called by Hub.add, Hub.remove, Hub.firepropchange(), Hub.saveAll.
-     * @param bReferenceable true to make sure that it has a hard ref, otherwise a weakRef will be used
-     */
-    public static void setReferenceable(OAObject obj, boolean bReferenceable) {
-        setReferenceable(obj, bReferenceable, null);
-    }
-    private static void setReferenceable(OAObject obj, boolean bReferenceable, OACascade cascade) {
-        if (obj == null) return;
-        if (!OASyncDelegate.isServer()) return;
-        if (cascade != null && cascade.wasCascaded(obj, true)) return;
-        
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
-        if (!OAObjectInfoDelegate.isWeakReferenceable(oi)) return;
-        
-        for (OALinkInfo li : oi.getLinkInfos()) {
-            OALinkInfo liRev = li.getReverseLinkInfo();
-            if (liRev == null) continue;
-            if (liRev.getType() == OALinkInfo.MANY) {
-                Object parent = li.getValue(obj); // parent
-                if (!(parent instanceof OAObject)) continue;
-
-                if (liRev.getCacheSize() > 0) {
-                    Object objx = liRev.getValue((OAObject) parent);
-                    if (!(objx instanceof Hub)) continue;
-                    OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) parent, liRev.getName(), !bReferenceable);
-                }
-                if (cascade == null) cascade = new OACascade();
-                cascade.add(obj);
-                setReferenceable((OAObject)parent, bReferenceable, cascade);
-            }
-        }
-    }
     public static void setReferenceable(Hub hub, boolean bReferenceable) {
         if (hub == null) return;
         if (!OASyncDelegate.isServer()) return;
-
+        
         Object master = HubDelegate.getMasterObject(hub);
         if (!(master instanceof OAObject)) return;
 
@@ -544,11 +508,17 @@ public class HubDelegate {
         OALinkInfo liRev = li.getReverseLinkInfo();
         if (liRev == null) return;
         
-        OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) master, liRev.getName(), !bReferenceable);
-        if (bReferenceable) {
-            setReferenceable((OAObject)master, bReferenceable, null);
+        if (!OAObjectInfoDelegate.isWeakReferenceable(liRev.getToObjectInfo())) return;  // true if this or any parent is weakRefable
+
+        if (liRev.getCacheSize() > 0) {
+            boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) master, liRev.getName(), !bReferenceable);
+            if (!b) return; // already done, dont need to check/change parents
         }
-        // else each parent will call this method
+        
+        if (bReferenceable) {
+            // make parents referenceable
+            OAObjectPropertyDelegate.setReferenceable((OAObject)master, bReferenceable);
+        }
     }
 }
 

@@ -125,6 +125,7 @@ public class OAObjectCSDelegate {
     public static void removeFromServerSideCache(OAObject oaObj) {
         if (oaObj == null) return;
         if (!OASyncDelegate.isClient()) return;
+        if (hashServerSideCache.size() == 0) return;
         int guid = oaObj.getObjectKey().getGuid();
         if (hashServerSideCache.remove(guid) != null) {
             RemoteSessionInterface ri = OASyncDelegate.getRemoteSession();
@@ -159,6 +160,7 @@ public class OAObjectCSDelegate {
     }
     protected static boolean removeFromClientSideCache(OAObject oaObj) {
         if (oaObj == null) return false;
+        if (OASyncDelegate.isServer()) return false;
         int guid = oaObj.getObjectKey().getGuid();
         return (hashClientSideCache.remove(guid) != null);
     }

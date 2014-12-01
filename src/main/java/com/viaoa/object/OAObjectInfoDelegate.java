@@ -896,7 +896,7 @@ public class OAObjectInfoDelegate {
                 break;
             }
             
-            if (hsVisited == null) hsVisited = new HashSet<>();
+            if (hsVisited == null) hsVisited = new HashSet<OAObjectInfo>();
             hsVisited.add(oi);
             OAObjectInfo oix = getObjectInfo(li.getToClass());
             b = isWeakReferenceable(oix, hsVisited);

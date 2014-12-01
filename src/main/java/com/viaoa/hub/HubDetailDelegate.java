@@ -290,7 +290,7 @@ public class HubDetailDelegate {
                 for (i=0; ; i++) {
                     Object objx = HubDataDelegate.getObjectAt(dHub, i);
                     if (objx == null) break;
-                    OAObjectHubDelegate.removeHub((OAObject) objx, dHub);
+                    OAObjectHubDelegate.removeHub((OAObject) objx, dHub, false);
                 }
             }
             dHub.data.vector.removeAllElements();

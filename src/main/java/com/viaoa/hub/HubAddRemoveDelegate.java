@@ -113,7 +113,7 @@ public class HubAddRemoveDelegate {
             20130726 moved before setPropertyToMaster
         */
         if (thisHub.isOAObject()) {
-            OAObjectHubDelegate.removeHub((OAObject)obj, thisHub);  
+            OAObjectHubDelegate.removeHub((OAObject)obj, thisHub, false);  
         }
         
         if (bSetPropToMaster) {

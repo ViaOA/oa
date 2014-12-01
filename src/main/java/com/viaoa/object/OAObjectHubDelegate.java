@@ -124,7 +124,7 @@ public class OAObjectHubDelegate {
     /**
      * Called by Hub when an OAObject is removed from a Hub.
      */
-    public static void removeHub(OAObject oaObj, Hub hub) {
+    public static void removeHub(OAObject oaObj, Hub hub, boolean bIsOnHubFinalize) {
         if (oaObj == null || oaObj.weakhubs == null) return;
         hub = hub.getRealHub();
 
@@ -172,7 +172,9 @@ public class OAObjectHubDelegate {
 
             // 20130707 could be a hub from hubMerger, that populates with One references
             // which means that the one reference keeps it from gc
-            if (hub.getMasterObject() != null) {
+            if (!bIsOnHubFinalize && hub.getMasterObject() != null) {
+                // 20141201 add !bIsOnHubFinalize so that if it is from a Hub finalize, then dont 
+                //    use the finalizer thread to send msg to server.
                 if (!isInHubWithMaster(oaObj)) {
                     if (OARemoteThreadDelegate.shouldSendMessages()) {
                         // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added

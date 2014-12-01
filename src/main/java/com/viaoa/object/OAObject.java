@@ -181,7 +181,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
         cntNew++;
     	if (cntNew % 500 == 0) {
-    	    System.out.println(cntNew+") new OAObject.guid="+guid+" "+this);
+    	    System.out.println(cntNew+") new OAObject.guid="+guid+" "+this.getClass().getSimpleName());
     	}
 
         // 20141127 Note: call oaObject.toString(), until the object is loaded, since it will create an objectKey with Id=0
@@ -443,7 +443,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
             // 20141030
             if (changedFlag) {
-                HubDelegate.setReferenceable(this, true);
+                OAObjectPropertyDelegate.setReferenceable(this, true);
             }
         }
     }
@@ -488,7 +488,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectDelegate.finalizeObject(this);
         super.finalize();
         cntFinal++;
-        if (cntFinal % 500 == 0) System.out.println(cntFinal+") finalize OAObject.guid="+guid+" "+this);
+        if (cntFinal % 500 == 0) System.out.println(cntFinal+") finalize OAObject.guid="+guid+" "+this.getClass().getSimpleName());
     }
 
     /**

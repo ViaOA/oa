@@ -251,7 +251,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     public Method getUniquePropertyGetMethod() {
         if (uniquePropertyGetMethod != null) return uniquePropertyGetMethod;
         if (uniqueProperty == null) return null;
-        uniquePropertyGetMethod = OAObjectInfoDelegate.getMethod(toClass, "get"+uniqueProperty);
+        uniquePropertyGetMethod = OAObjectInfoDelegate.getMethod(getToObjectInfo(), "get"+uniqueProperty);
         return uniquePropertyGetMethod;
     }
     
@@ -275,13 +275,21 @@ public class OALinkInfo { //implements java.io.Serializable {
         if (revLinkInfo != null) return revLinkInfo;
         String findName = reverseName;
         if (findName == null) return null;
-        for (OALinkInfo lix : OAObjectInfoDelegate.getOAObjectInfo(toClass).getLinkInfos()) {
+        for (OALinkInfo lix : getToObjectInfo().getLinkInfos()) {
             if (lix.name != null && findName.equalsIgnoreCase(lix.name)) {
                 revLinkInfo = lix;
                 return lix;
             }
         }
         return null;
+    }
+    
+    private transient OAObjectInfo oi;
+    public OAObjectInfo getToObjectInfo() {
+        if (oi == null) {
+            oi = OAObjectInfoDelegate.getOAObjectInfo(toClass);
+        }
+        return oi;
     }
 }
 

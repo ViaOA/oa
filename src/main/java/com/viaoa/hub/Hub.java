@@ -491,6 +491,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @exception Throwable
      */
     protected void finalize() throws Throwable {
+        super.finalize();
         HubSelectDelegate.cancelSelect(this, true);
         if (this.datau != null && this.datau.getSharedHub() != null) {
             HubShareDelegate.removeSharedHub(this.datau.getSharedHub(), this);
@@ -502,13 +503,12 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
                 for (int i=0; i<x; i++) {
                     Object obj = vec.get(i);
                     if (obj instanceof OAObject) {
-                        OAObjectHubDelegate.removeHub((OAObject) obj, this);
+                        OAObjectHubDelegate.removeHub((OAObject) obj, this, true);
                     }
                 }
             }
             catch (Exception e) {}
         }
-        super.finalize();
         // note: objects are automatically release, since they use a weakRef to
         // this hub
     }
