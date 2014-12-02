@@ -32,7 +32,4 @@ Caching Hubs (many links)
         read from DB if not in cache
     finalize on client sends guid[] array to remove from serverSide cache, clientGetDetail guid tree
 
-UI client admin
-    uses weakRef to dialog
-    creates tabs lazy
     
