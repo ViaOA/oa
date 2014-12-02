@@ -39,7 +39,7 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
     private Hub<A> hubA;
     private Hub<B> hubB;
     private Hub<A> hubDetail; // detail hub from hubB, using reverse propertyPath
-    private Hub<A> hubFiltered;  // filtered using hubDetail as root, and filtering only objects that exist in hubA
+    private Hub<A> hubDetailFiltered;  // filtered using hubDetail as root, and filtering only objects that exist in hubA
     private String propertyPath;
     private HubFilter<A> hubFilter;
     
@@ -64,7 +64,7 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
      * @return
      */
     public Hub<A> getDetailHub() {
-        return hubFiltered; // from hubA
+        return hubDetailFiltered; // from hubA
     }
 
     void setup() throws RuntimeException {
@@ -75,6 +75,7 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             throw new RuntimeException("propertyPath is invalid, "+propertyPath);
         }
         
+        // create master/groupBy hub
         hubB = new Hub<B>((Class<B>) cs[cs.length-1]);
         HubMerger hm = new HubMerger(hubA, hubB, propertyPath, false, true);
         
@@ -89,9 +90,9 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
         
         if (ppRev != null) {
             hubDetail = hubB.getDetailHub(ppRev.getPropertyPath());
-            hubFiltered = new Hub(hubA.getObjectClass());
+            hubDetailFiltered = new Hub(hubA.getObjectClass());
             
-            hubFilter = new HubFilter<A>(hubDetail, hubFiltered) {
+            hubFilter = new HubFilter<A>(hubDetail, hubDetailFiltered) {
                 @Override
                 public boolean isUsed(A object) {
                     return hubA.contains(object);
@@ -123,13 +124,17 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
                 public void afterRemove(HubEvent e) {
                     hubFilter.refresh();
                 }
+                @Override
+                public void onNewList(HubEvent e) {
+                    hubFilter.refresh();
+                }
             });
         }
         else {
             hubDetail = null; // not used
-            hubFiltered = new Hub(hubA.getObjectClass());
+            hubDetailFiltered = new Hub(hubA.getObjectClass());
             
-            hubFilter = new HubFilter<A>(hubA, hubFiltered) {
+            hubFilter = new HubFilter<A>(hubA, hubDetailFiltered) {
                 @Override
                 public boolean isUsed(A object) {
                     Object objx = object.getProperty(propertyPath);
