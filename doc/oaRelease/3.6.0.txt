@@ -1,0 +1,38 @@
+
+
+OA 3.6.0 release
+
+20141202
+
+Hub size reduction
+    using extension "x" objects
+        datax, datauniquex
+        
+getDetail improvements
+    ClientGetDetail.java server side, one per client/session.
+    tracking guid of objects on server
+    sending back sibling as hashmap<guid, value>
+    max size set to 5500
+
+Caching Hubs (many links)
+    OAMany.cacheSize
+    10x on server
+    referenceable functionality
+        checks on changs to obj or hub
+        OAObjectPropertyDelegate.setReferenceable(obj, b)
+        HubDelegate.setReferenceable
+        will make sure that a change wont be GCd
+            changes oaObj.prop from/to weakRef
+            recurses to parents
+        after save, it will then use weakRef for obj.prop[] for cached hubs                    
+        OAObjs generated without a property in the object
+            getXxxHub always goes to oaObj.getReferenceHub
+            stores hub in array in OALinkInfo for MRU list
+    RemoteSyncImpl
+        read from DB if not in cache
+    finalize on client sends guid[] array to remove from serverSide cache, clientGetDetail guid tree
+
+UI client admin
+    uses weakRef to dialog
+    creates tabs lazy
+    
