@@ -382,10 +382,13 @@ public class OAString {
      */
     public static String getClassName(Class c) {
         if (c == null) return null;
+        return c.getSimpleName();
+        /*
         String s = c.getName();
         int x = s.lastIndexOf('.');
         if (x > 0) s = s.substring(x+1);
         return s;
+        */
     }
     /**
      * gets package name

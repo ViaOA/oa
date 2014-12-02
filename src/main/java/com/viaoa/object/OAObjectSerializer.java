@@ -433,7 +433,7 @@ indent--;//qqqqqqqqqqqqq
 //qqqqqqqqqqqqqqqqq        
         if (true) {            
 //was        if (totalObjectsWritten > 250 || (wcnter%250 == 0)) {            
-            System.out.println(wcnter+") OAObjectSerializer "+msg);
+            System.out.println(wcnter+") ObjectSerializer "+msg);
         }
         
     }
@@ -527,7 +527,7 @@ indent--;//qqqqqqqqqqqqq
 //qqqqqqqqqqqqqqq        
         if (true) {            
 //        if (totalObjectsWritten > 25 || (rcnter%50 == 0)) {            
-            System.out.println(rcnter+") OAObjectSerializer "+msg);
+            System.out.println(rcnter+") ObjectSerializer "+msg);
         }
     }
 
