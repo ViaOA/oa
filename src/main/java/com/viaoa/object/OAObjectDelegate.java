@@ -112,7 +112,7 @@ public class OAObjectDelegate {
                 // 20140409 added check for 1to1, in which case one side will not have an
                 //    fkey, since it uses it's own pkey as the fkey
                 if (!OAObjectInfoDelegate.isOne2One(li)) {
-                    OAObjectPropertyDelegate.unsafeSetProperty(oaObj, li.getName(), null);
+                    OAObjectPropertyDelegate.unsafeAddProperty(oaObj, li.getName(), null);
                 }
             }
             

@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
@@ -129,7 +130,7 @@ public class OASyncClient {
 
         boolean bGetSibs;
         OAObjectKey[] siblingKeys = null;
-        String[] additonialPropertyNamesToGet = null; 
+        String[] additionalMasterProperties = null; 
         Object result = null;
 
         if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
@@ -151,10 +152,10 @@ public class OASyncClient {
                 siblingKeys = getDetailSiblings(masterObject, propertyName, li);
             }
             
-            additonialPropertyNamesToGet = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false);
+            additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
             try {
                 result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                        additonialPropertyNamesToGet, siblingKeys);
+                        additionalMasterProperties, siblingKeys);
             }
             catch (Exception e) {
                 LOG.log(Level.WARNING, "getDetail error", e);
@@ -168,16 +169,16 @@ public class OASyncClient {
             
             // the custom serializer can send extra objects, and might using objKey instead of the object. 
             Object objx = os.getExtraObject();
+            
             if (objx instanceof HashMap) {
                 HashMap<OAObjectKey, Object> hmExtraData = (HashMap<OAObjectKey, Object>) objx;
                 for (Entry<OAObjectKey, Object> entry : hmExtraData.entrySet()) {
                     Object value = entry.getValue();
                     if (value == masterObject) continue;
-                    if (value instanceof Hub) continue; // Hub.datam.readResolve will take care of this
                     
-                    if (!(value instanceof OAObject)) continue;
                     OAObject obj = OAObjectCacheDelegate.getObject(masterObject.getClass(), entry.getKey());
-                    if (obj == null) continue;
+                    if (!(value instanceof OAObject)) continue;
+                    
                     // note:  only references that had an oaObjectKey that was not in the cache were in the sibling list
                     OAObject oaValue = (OAObject) value;
                     OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, oaValue.getObjectKey(), false, false);
@@ -203,7 +204,7 @@ public class OASyncClient {
                 result==null?"null":result.getClass().getName(),
                 bGetSibs,
                 (siblingKeys == null)?0:siblingKeys.length,
-                additonialPropertyNamesToGet==null?0:additonialPropertyNamesToGet.length,
+                additionalMasterProperties==null?0:additionalMasterProperties.length,
                 iNew-xNew, 
                 iDup-xDup,
                 iNew, 

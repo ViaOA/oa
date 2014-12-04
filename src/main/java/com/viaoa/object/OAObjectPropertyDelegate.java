@@ -77,7 +77,19 @@ public class OAObjectPropertyDelegate {
         }
         return ss;
     }
+
+    
+    static void unsafeAddProperty(OAObject oaObj, String name, Object value) {
+        unsafeSetProperty(oaObj, name, value, false, false);
+    }    
     static void unsafeSetProperty(OAObject oaObj, String name, Object value) {
+        unsafeSetProperty(oaObj, name, value, true, false);
+    }    
+    static void unsafeSetPropertyIfEmpty(OAObject oaObj, String name, Object value) {
+        unsafeSetProperty(oaObj, name, value, true, true);
+    }    
+    
+    private static void unsafeSetProperty(OAObject oaObj, String name, Object value, boolean bCheckFirst, boolean bOnlyIfNotFound) {
         int pos;
         if (oaObj.properties == null) {
             oaObj.properties = new Object[2];
@@ -85,11 +97,16 @@ public class OAObjectPropertyDelegate {
         }
         else {
             pos = -1;
-            for (int i=0; i<oaObj.properties.length; i+=2) {
-                if (pos == -1 && oaObj.properties[i] == null) pos = i; 
-                else if (name.equalsIgnoreCase((String)oaObj.properties[i])) {
-                    pos = i;
-                    break;
+            if (bCheckFirst || bOnlyIfNotFound) {
+                for (int i=0; i<oaObj.properties.length; i+=2) {
+                    if (pos == -1 && oaObj.properties[i] == null) pos = i; 
+                    else if (name.equalsIgnoreCase((String)oaObj.properties[i])) {
+                        if (bOnlyIfNotFound) {
+                            return;
+                        }
+                        pos = i;
+                        break;
+                    }
                 }
             }
             if (pos < 0) {
@@ -208,7 +225,6 @@ public class OAObjectPropertyDelegate {
      */
     public static Object setPropertyCAS(OAObject oaObj, String name, Object newValue, Object matchValue, boolean bMustNotExist, boolean bReturnNotExist) {
         if (oaObj == null || name == null) return null;
-
         synchronized (oaObj) {
             int pos;
             if (oaObj.properties == null) {
@@ -419,6 +435,7 @@ public class OAObjectPropertyDelegate {
     public static void setReferenceable(OAObject obj, boolean bReferenceable) {
         setReferenceable(obj, bReferenceable, null);
     }
+   
     private static void setReferenceable(OAObject obj, boolean bReferenceable, OACascade cascade) {
         if (obj == null) return;
         if (!OASyncDelegate.isServer()) return;
@@ -426,6 +443,9 @@ public class OAObjectPropertyDelegate {
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
         if (!OAObjectInfoDelegate.isWeakReferenceable(oi)) return;
+        
+        boolean bSupportStorage = oi.getSupportsStorage();
+        
         
         for (OALinkInfo li : oi.getLinkInfos()) {
             OALinkInfo liRev = li.getReverseLinkInfo();
@@ -437,8 +457,10 @@ public class OAObjectPropertyDelegate {
 
             if (liRev.getCacheSize() > 0) {
                 liRev.getValue((OAObject) parent); // need to make sure that the hub is loaded
-                boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) parent, liRev.getName(), !bReferenceable);
-                if (!b) break;  // already changed
+                if (bReferenceable || bSupportStorage) {
+                    boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) parent, liRev.getName(), !bReferenceable);
+                    if (!b) break;  // already changed, dont need to continue
+                }
             }
             if (bReferenceable) {
                 if (cascade == null) cascade = new OACascade();

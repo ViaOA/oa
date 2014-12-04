@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.hub;
 
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -84,19 +85,30 @@ public class HubSerializeDelegate {
                     // dont initialize this hub if the master object is a duplicate.
                     // check by looking to see if this object already belongs to a hub that has the same masterObject/linkinfo
                     if ( OAObjectHubDelegate.isAlreadyInHub((OAObject)obj, thisHub.datam.liDetailToMaster) ) {
-                        return thisHub; // this hub is a dup and wont be used
+                        break; // this hub is a dup and wont be used
                     }
                 }
             }
             OAObjectHubDelegate.addHub((OAObject) obj, thisHub);
         }
-        // 20141116 make sure that masterObject.properties has hub
-        if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
-            OAObjectPropertyDelegate.setPropertyCAS(
-                thisHub.datam.masterObject, thisHub.datam.liDetailToMaster.getReverseName(), 
-                thisHub, null, true, false); 
-        }
         
+        // 20141116 make sure that masterObject.properties has hub
+        // 20141204 added caching, weakRef
+        if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
+            // this will always set the locally found masterObject, and not a duplicate
+            Object value = thisHub;
+            OALinkInfo liRev = thisHub.datam.liDetailToMaster.getReverseLinkInfo();
+            
+            if (liRev != null && OAObjectInfoDelegate.cacheHub(liRev, thisHub)) {
+                value = new WeakReference(value);
+            }
+            OAObjectPropertyDelegate.setProperty(thisHub.datam.masterObject, liRev.getName(), value); 
+        }
+        else {
+//qqqqqqqqqqqqqqq
+int xx = 4;
+xx++;
+        }
         return thisHub;
     }
 }

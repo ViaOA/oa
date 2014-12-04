@@ -44,11 +44,16 @@ public class OAObjectInfoDelegate {
     // 20140305 needs to be able to make sure that reverse link is created
     public static OAObjectInfo getOAObjectInfo(Class clazz) {
         OAObjectInfo oi;
+        if (clazz != null) {
+            oi = OAObjectHashDelegate.hashObjectInfo.get(clazz);
+            if (oi != null) return oi;
+        }
+        
         if (clazz == null || !OAObject.class.isAssignableFrom(clazz) || OAObject.class.equals(clazz)) {
             oi = OAObjectHashDelegate.hashObjectInfo.get(String.class); // fake out so that null is never returned
+            if (oi != null) return oi;
         }
-        else oi = OAObjectHashDelegate.hashObjectInfo.get(clazz);
-        if (oi != null) return oi;
+
         oi = getOAObjectInfo(clazz, new HashMap<Class, OAObjectInfo>());
         return oi;
     }
@@ -523,33 +528,29 @@ public class OAObjectInfoDelegate {
         finally {
             rwLock.writeLock().unlock();
         }
-    }    
+    }
+    
     private static boolean _cacheHub(OALinkInfo li, Hub hub, ArrayList alCache, HashSet hsCache) {
         if (hsCache.contains(hub)) return false; 
+        
+        boolean bIsServer = OAObjectCSDelegate.isServer();
+        if (bIsServer) {
+            // dont cache on server if there is not storage
+            //   by returning false, it will not be stored as a weakRef
+            if (!OAObjectInfoDelegate.getOAObjectInfo(li.getToClass()).getSupportsStorage()) return false;  
+        }
+
         alCache.add(hub);
         hsCache.add(hub);
         
-        int maxCache = li.cacheSize;
         int x = alCache.size();
-        if (x > maxCache) {
-            boolean b = false;
-            if (!OAObjectCSDelegate.isServer()) b = true;
-            else if (x > maxCache * 10) {
-                if (li.bSupportsStorage) b = true;
-                else {
-                    OADataSource ds = OADataSource.getDataSource(hub.getObjectClass());
-                    if (ds.supportsStorage()) {
-                        li.bSupportsStorage = true;
-                        b = true;
-                    }                    
-                }
-            }
-            if (b) {
+        if (x > li.cacheSize) {
+            if (!bIsServer || (x > li.cacheSize * 10)) {
                 hsCache.remove(alCache.remove(0));
             }
         }
         return true;
-    }
+    }    
     // for testing
     public static boolean isCached(OALinkInfo li, Hub hub) {
         if (li == null || hub == null) return false;

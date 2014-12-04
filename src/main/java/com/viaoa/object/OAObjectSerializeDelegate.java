@@ -19,10 +19,8 @@ package com.viaoa.object;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
-import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
-
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubSerializeDelegate;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
@@ -35,7 +33,7 @@ public class OAObjectSerializeDelegate {
 	private static Logger LOG = Logger.getLogger(OAObjectSerializeDelegate.class.getName());
     
 	protected static void _readObject(OAObject oaObj, java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-	    // 20140310
+	    // 20140310 client only needs to send the key to the server
 	    if (in instanceof RemoteObjectInputStream) {
             byte bx = in.readByte();
             if (bx == 1) {
@@ -46,8 +44,9 @@ public class OAObjectSerializeDelegate {
                 return;
             }
         }
-	    
 	    in.defaultReadObject();
+
+	    // read properties
         OAObjectInfo oi =  null;
         for ( ; ; ) {
             Object obj = in.readObject();
@@ -55,25 +54,22 @@ public class OAObjectSerializeDelegate {
 
             String key = (String)obj;
             Object value = in.readObject();
-            
             if (value instanceof OANullObject) value = null;
-            else if (value instanceof HashLinkWrap) {
-                value = ((HashLinkWrap) value).obj;  // Hub
-                if (oi == null) oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-                OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
-                if (linkInfo != null) {
-                    if (OAObjectInfoDelegate.cacheHub(linkInfo, (Hub) value)) {
-                        value = new WeakReference(value);
-                    }
-                }
-            }
-            OAObjectPropertyDelegate.unsafeSetProperty(oaObj, key, value);
+
+            OAObjectPropertyDelegate.unsafeSetPropertyIfEmpty(oaObj, key, value);  // HubSerializeDelegate._readResolve could have set this first (as weakref)
         }
         OAObjectDelegate.updateGuid(oaObj.guid);
     }
 	
 	protected static Object _readResolve(final OAObject oaObjOrig) throws ObjectStreamException {
 		OAObject oaObjNew;
+		
+if (oaObjOrig.getClass().getSimpleName().equalsIgnoreCase("ServerRoot")) {
+    //qqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+		
 		boolean bDup;
         if (oaObjOrig.guid == 0) {
         	LOG.warning("received object with guid=0, obj="+oaObjOrig+", reassigning a new guid");
@@ -98,27 +94,25 @@ public class OAObjectSerializeDelegate {
                 if (key == null) continue;
                 Object value = objs[i+1];
     		
-                Object objx = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false, true);
-                if (objx != null) {
-                    if (objx instanceof OAObjectKey && (value instanceof OAObject)) {
-                        OAObjectKey k1 = (OAObjectKey) objx;
+                Object localValue = OAObjectPropertyDelegate.getProperty(oaObjNew, key, false, true);
+                if (localValue != null) {
+                    if (localValue instanceof OAObjectKey && (value instanceof OAObject)) {
+                        OAObjectKey k1 = (OAObjectKey) localValue;
                         OAObjectKey k2 = OAObjectKeyDelegate.getKey( (OAObject) value);
                         if (k1.equals(k2)) {
-                            OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, objx);
+                            OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, localValue);
                         }
                     }
                     continue;
                 }
                 // else: objx == null, need to use the reference
+                
                 OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
                 
                 // need to replace any references to oaObjOrig with oaObjNew
     			boolean b = replaceReferences(oaObjOrig, oaObjNew, linkInfo, value);
     			if (b) {
-            	    if (!(value instanceof OAObject) && !(value instanceof OAObjectKey)) {
-                        OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, objx);
-            	    }
-        	        // otherwise, the existing object will at least have the objKey
+                    OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, localValue);
     			}
             }
             OAObjectDelegate.dontFinalize(oaObjOrig);
@@ -148,7 +142,6 @@ public class OAObjectSerializeDelegate {
 
         // 20130215
         if (value == null) {
-            OAObjectPropertyDelegate.setProperty(oaObjNew, linkInfo.name, null);
             return true;
         }
 	    
@@ -282,13 +275,12 @@ public class OAObjectSerializeDelegate {
             }
             Object obj = objs[i+1];
 
-            boolean bWeakRef = (obj instanceof WeakReference);
-            if (bWeakRef) {
+            if (obj instanceof WeakReference) {
                 obj = ((WeakReference) obj).get();
                 if (obj == null) continue;
             }
             
-            if (obj != null && !(obj instanceof OAObject) && !(obj instanceof OAObjectKey) && !(obj instanceof Hub) && !bWeakRef && !(obj instanceof byte[])) {
+            if (obj != null && !(obj instanceof OAObject) && !(obj instanceof OAObjectKey) && !(obj instanceof Hub) && !(obj instanceof byte[])) {
                 stream.writeObject(key);
                 stream.writeObject(obj);
                 continue;
@@ -297,9 +289,6 @@ public class OAObjectSerializeDelegate {
             boolean b = false;
             if (serializer != null && obj != null && !(obj instanceof byte[])) {
                 b = serializer.shouldSerializeReference(oaObj, (String) key, obj, li);
-                if (b && bWeakRef) {
-                    obj = new HashLinkWrap(obj);  // flag to know that this is weakRef
-                }
             }
 
             if (b) {
@@ -321,7 +310,7 @@ public class OAObjectSerializeDelegate {
                 }
                 else if (obj instanceof Hub) {
                     if (bClientSideCache) {
-                        b = true;
+                        b = true;  // this is when the client is sending an object that the server does not have
                     }
                     else {
                         // 20120926 dont send calc hubs if they are shared, they can be created empty and then
@@ -344,16 +333,6 @@ public class OAObjectSerializeDelegate {
                 stream.writeObject(obj);
             }
         }
-    }
-}
-
-
-//Used for serialized object/property that uses a weakReference, so that unwrapping will "know" to put it in a weakRef 
-class HashLinkWrap implements Serializable {
-    static final long serialVersionUID = 1L;
-    Object obj;
-    public HashLinkWrap(Object obj) {
-        this.obj = obj;
     }
 }
 

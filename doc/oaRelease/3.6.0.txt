@@ -2,7 +2,16 @@
 
 OA 3.6.0 release
 
-20141202
+** todo **
+    method to make cached objects "dirty"
+        from DS change outside of jvm
+    stack trace from Kevin
+        sort with seq property caused large stacktrace
+        
+        
+    
+
+20141202 Hub size reduction and li.many/hub caching
 
 Hub size reduction
     using extension "x" objects
@@ -33,3 +42,50 @@ Caching Hubs (many links)
     finalize on client sends guid[] array to remove from serverSide cache, clientGetDetail guid tree
 
     
+20141204 hub caching for LinkInfo.many with cacheSize>0
+    server uses cacheSize*10
+    use weakref in oaObj.prop for Hub that are cached in LinkInfo.cache
+        unless server, and server DS does not have storage support
+            server needs to be able to re-get any GCd hub, etc.
+            
+
+serializing
+    OAObjectSerializeDelegate
+        _readObject 
+        _readResolve 
+            call cacheHub to see if it should store in props[] as weakRef
+            if dup then need only cache if it is used by existing obj
+
+        _writeObject
+        _writeProperties
+            dont use weakRef wrapper
+
+    OASyncClient
+            HubSerializerDelegate._readResolve will set it to weakRef if needed
+
+caching hub
+    OAObjectInfoDelegeate    
+        cacheHub
+            if cacheSize>0 && (client || server&&supportsStorage)
+
+
+
+getting Hub as a property of oaObj
+    OAObjectReflectDelegate
+        _getReferenceHub
+            call cacheHub to see if weakRef is needed
+
+
+making referenceable
+    OAObjectProeprtyDelegate.setReferenceable
+        server side only        
+    HubDelegate.setReferenceable
+        server side only        
+
+
+
+
+
+
+
+

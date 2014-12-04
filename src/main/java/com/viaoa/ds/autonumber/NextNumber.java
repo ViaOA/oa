@@ -22,6 +22,8 @@ import java.lang.reflect.*;
 
 import com.viaoa.*;
 import com.viaoa.object.*;
+import com.viaoa.annotation.OAClass;
+import com.viaoa.annotation.OAId;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
@@ -30,6 +32,7 @@ import com.viaoa.util.*;
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
+@OAClass(localOnly=true, useDataSource=false, initialize=false)
 public class NextNumber extends OAObject {
     static final long serialVersionUID = 1L;
 
@@ -41,6 +44,7 @@ public class NextNumber extends OAObject {
     /**
         Returns Identifier for this object, the Class name (including package name).
     */
+    @OAId()
     public String getId() {  
         return id;
     }
@@ -80,7 +84,7 @@ public class NextNumber extends OAObject {
     }
     
     
-    //========================= Object Info ============================
+    /*========================= Object Info ============================
     public static OAObjectInfo getOAObjectInfo() {
         return oaObjectInfo;
     }
@@ -91,5 +95,6 @@ public class NextNumber extends OAObject {
         oaObjectInfo.setUseDataSource(false);
         oaObjectInfo.setInitializeNewObjects(false);
     }
+    */
 }
 

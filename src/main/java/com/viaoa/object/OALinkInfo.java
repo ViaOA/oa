@@ -21,6 +21,8 @@ import java.lang.reflect.*;
 import java.util.HashSet;
 import java.util.List;
 
+import com.viaoa.ds.OADataSource;
+
 /** 
     Defines reference properties between OAObjects.
     <p>
@@ -61,7 +63,6 @@ public class OALinkInfo { //implements java.io.Serializable {
     protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
     private transient Method uniquePropertyGetMethod;
     
-    public boolean bSupportsStorage; // flag set/used by caching
     
     public OALinkInfo(String name, Class toClass, int type) {
         this(name, toClass, type, false, false, null, false);
@@ -291,5 +292,6 @@ public class OALinkInfo { //implements java.io.Serializable {
         }
         return oi;
     }
+
 }
 

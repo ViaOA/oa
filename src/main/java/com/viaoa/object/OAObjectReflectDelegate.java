@@ -682,14 +682,17 @@ public class OAObjectReflectDelegate {
             }
         }
 
-        // set property
-        if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
-            OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+        // 20141204 added check to see if property is now there, in case it was deserialized and then
+        //    the property was set by HubSerializeDelegate._readResolve
+        if (bThisIsServer || OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, false) == null) {
+            // set property
+            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+            }
+            else {
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
+            }
         }
-        else {
-            OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
-        }
-        
         
         if ((bThisIsServer || (bIsCalc && !bIsServerSideCalc)) && sortOrder != null && sortOrder.length() > 0) {
             if (hub.getSelect() != null) {
@@ -793,8 +796,11 @@ public class OAObjectReflectDelegate {
         }
         return false;
     }
-
     public static String[] getUnloadedReferences(OAObject obj, boolean bIncludeCalc) {
+        return getUnloadedReferences(obj, bIncludeCalc, null);
+    }
+
+    public static String[] getUnloadedReferences(OAObject obj, boolean bIncludeCalc, String exceptPropertyName) {
         if (obj == null) return null;
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
         ArrayList<String> al = null;
@@ -803,7 +809,9 @@ public class OAObjectReflectDelegate {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
             String property = li.getName();
-
+            
+            if (exceptPropertyName != null && exceptPropertyName.equalsIgnoreCase(property)) continue;
+            
             Object value = OAObjectReflectDelegate.getRawReference((OAObject) obj, property);
             if (value == null) {
                 if (!OAObjectPropertyDelegate.isPropertyLoaded((OAObject) obj, property)) {

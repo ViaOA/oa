@@ -499,6 +499,10 @@ public class HubDelegate {
     public static void setReferenceable(Hub hub, boolean bReferenceable) {
         if (hub == null) return;
         if (!OASyncDelegate.isServer()) return;
+
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hub.getObjectClass());
+        if (!OAObjectInfoDelegate.isWeakReferenceable(oi)) return;
+        boolean bSupportStorage = oi.getSupportsStorage();
         
         Object master = HubDelegate.getMasterObject(hub);
         if (!(master instanceof OAObject)) return;
@@ -508,11 +512,11 @@ public class HubDelegate {
         OALinkInfo liRev = li.getReverseLinkInfo();
         if (liRev == null) return;
         
-        if (!OAObjectInfoDelegate.isWeakReferenceable(liRev.getToObjectInfo())) return;  // true if this or any parent is weakRefable
-
         if (liRev.getCacheSize() > 0) {
-            boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) master, liRev.getName(), !bReferenceable);
-            if (!b) return; // already done, dont need to check/change parents
+            if (bReferenceable || bSupportStorage) {
+                boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) master, liRev.getName(), !bReferenceable);
+                if (!b) return; // already done, dont need to check/change parents
+            }
         }
         
         if (bReferenceable) {

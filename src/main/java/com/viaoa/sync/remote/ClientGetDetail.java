@@ -185,7 +185,9 @@ public class ClientGetDetail {
             os.setExtraObject(hmExtraData); 
         }
         else {
-            os.setExtraObject(masterObject);  // so master can be sent to client, and include any other masterProps
+            if ((masterProperties != null && masterProperties.length > 0)) {
+                os.setExtraObject(masterObject);  // so master can be sent to client, and include any other masterProps
+            }
         }
     
         OAObjectSerializerCallback cb = createOAObjectSerializerCallback(masterObject, bMasterWasPreviouslySent, 
@@ -220,7 +222,7 @@ public class ClientGetDetail {
 
                 // update tree of sent objects
                 rwLockTreeSerialized.writeLock().lock();
-                if (treeSerialized.get(guid) == null) {
+                if (bx || treeSerialized.get(guid) == null) {
                     treeSerialized.put(guid, bx);
                 }
                 rwLockTreeSerialized.writeLock().unlock();
@@ -291,11 +293,12 @@ public class ClientGetDetail {
                         }
                     }
                 }
+                
                 // second level object - will send all references that are already loaded
                 Object objPrevious = this.getPreviousObject();
-                boolean b = (objPrevious == detailObject);
-                if (!b && objPrevious == masterObject) b = true; 
-                if (!b) b = (detailHub != null && (objPrevious != null && detailHub.contains(objPrevious)));
+                boolean b = (objPrevious != null && objPrevious == detailObject);
+                b = b || (objPrevious == masterObject);
+                b = b || (detailHub != null && (objPrevious != null && detailHub.contains(objPrevious)));
                 
                 if (b && !bMasterWasPreviouslySent) {
                     if (isOnClient(obj)) {
@@ -324,7 +327,8 @@ public class ClientGetDetail {
                 // called by: HubDataMaster write, so key can be sent instead of masterObject 
                 if (!(object instanceof OAObject)) return object;
                 
-                if (isOnClient(object)) {
+                if (isOnClient(object) || object == masterObject || object == detailObject) {  
+                    // even have masterObject send key, so that hub.datam will use it to resolve on client and make it faster
                     return ((OAObject)object).getObjectKey();
                 }
                 

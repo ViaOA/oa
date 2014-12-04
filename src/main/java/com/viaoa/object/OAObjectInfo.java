@@ -21,6 +21,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.util.OAPropertyPath;
 
@@ -60,6 +61,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     protected String[] hubProps;
 
     int weakReferenceable=-1; // flag set/used by OAObjectInfoDelegate.isWeakReferenceable -1=not checked, 0=false, 1=true
+    private int supportsStorage=-1; // flag set/used by caching  -1:not checked, 0:false, 1:true
     
     
     public OAObjectInfo() {
@@ -264,6 +266,20 @@ public class OAObjectInfo { //implements java.io.Serializable {
     public OALinkInfo getRecursiveLinkInfo(int type) {
     	return OAObjectInfoDelegate.getRecursiveLinkInfo(this, type);
     }
+
+    private int lastDataSourceChangeCnter;
+    public boolean getSupportsStorage() {
+        if (supportsStorage == -1 || lastDataSourceChangeCnter != OADataSource.getChangeCounter()) {
+            supportsStorage = -1;
+            lastDataSourceChangeCnter = OADataSource.getChangeCounter();
+            OADataSource ds = OADataSource.getDataSource(thisClass);
+            if (ds != null) {
+                supportsStorage = ds.supportsStorage() ? 1 : 0;
+            }
+        }
+        return supportsStorage == 1;
+    }
+
 }
 
 

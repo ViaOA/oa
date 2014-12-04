@@ -240,9 +240,18 @@ public abstract class OADataSource {
     	this(true);
     }
     public OADataSource(boolean bRegister) {
-        if (bRegister) vecDataSource.addElement(this);
+        if (bRegister) {
+            vecDataSource.addElement(this);
+        }
+        dataSourceChangeCnter++;
     }
 
+    protected static int dataSourceChangeCnter;
+    public static int getChangeCounter() {
+        return dataSourceChangeCnter;
+    }
+    
+    
     protected void finalize() throws Throwable {
         close();
         super.finalize();
@@ -252,6 +261,7 @@ public abstract class OADataSource {
         Static method to close all registered DataSources.
     */
     public static void closeAll() {
+        dataSourceChangeCnter++;
         while (vecDataSource.size() > 0) {
             ((OADataSource) vecDataSource.elementAt(0)).close();
         }
@@ -263,6 +273,7 @@ public abstract class OADataSource {
     */
     public void close() {
         vecDataSource.removeElement(this);
+        dataSourceChangeCnter++;
     }
 
     /**
@@ -274,6 +285,7 @@ public abstract class OADataSource {
             int x = vecDataSource.size();
             pos = Math.max(0, Math.min(x, pos));
             vecDataSource.insertElementAt(this, pos);
+            dataSourceChangeCnter++;
         }
     }
     
@@ -294,6 +306,7 @@ public abstract class OADataSource {
 	    int x = vecDataSource.indexOf(this);
 	    if (x < 0) return;
 	    if (x == pos) return;
+	    dataSourceChangeCnter++;
 	    vecDataSource.removeElementAt(x);
 	    x = vecDataSource.size();
 	    if (pos > x) pos = x;
