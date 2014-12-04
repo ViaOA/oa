@@ -245,9 +245,13 @@ public class OAObjectEventDelegate {
         if (!bIsChangeProp && bSetChanged && !bChangeHold && (calcInfo == null)) {
             if (!oaObj.isChanged()) {
                 if (linkInfo == null || !linkInfo.bCalculated) { // 20120429
-                    OAThreadLocalDelegate.setSuppressCSMessages(true);  // the client will setChanged when it gets the propertyChange message
-                    oaObj.setChanged(true);
-                    OAThreadLocalDelegate.setSuppressCSMessages(false);
+                    try {
+                        OAThreadLocalDelegate.setSuppressCSMessages(true);  // the client will setChanged when it gets the propertyChange message
+                        oaObj.setChanged(true);
+                    }
+                    finally {
+                        OAThreadLocalDelegate.setSuppressCSMessages(false);
+                    }
                 }
             }
         }
