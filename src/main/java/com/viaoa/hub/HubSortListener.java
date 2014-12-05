@@ -176,14 +176,18 @@ public class HubSortListener extends HubListenerAdapter implements java.io.Seria
         }
     }
     
+    private boolean bCallingSortMove; // 20141205
     public @Override void afterPropertyChange(HubEvent e) {
+        if (bCallingSortMove) return;
         String s = e.getPropertyName();
         if (s != null && s.equalsIgnoreCase(sortPropertyName)) {
             try {
+                bCallingSortMove = true;
                 OAThreadLocalDelegate.setSuppressCSMessages(true);  // each client will handle it's own sorting
                 HubAddRemoveDelegate.sortMove(hub, e.getObject());
             }
             finally {
+                bCallingSortMove = false;
                 OAThreadLocalDelegate.setSuppressCSMessages(false);
             }
         }

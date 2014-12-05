@@ -525,9 +525,8 @@ indent--;//qqqqqqqqqqqqq
     	rcnter++;
         LOG.finer(rcnter+") "+msg);
 //qqqqqqqqqqqqqqq        
-        if (true) {            
-//        if (totalObjectsWritten > 25 || (rcnter%50 == 0)) {            
-            System.out.println(rcnter+") ObjectSerializer "+msg);
+        if (totalObjectsWritten > 25 || (rcnter%50 == 0)) {            
+//            System.out.println(rcnter+") ObjectSerializer "+msg);
         }
     }
 

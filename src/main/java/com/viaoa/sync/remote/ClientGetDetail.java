@@ -244,7 +244,7 @@ public class ClientGetDetail {
                         return;
                     }
                     
-                    hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                    hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());  // flag that all masterObject props have been sent to client
                     if (masterProperties == null || masterProperties.length == 0) includeAllProperties();
                     else includeProperties(masterProperties);                    
                     return;
