@@ -50,6 +50,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     private OATextAreaController control;
     private OATable table;
     private String heading = "";
+    private boolean bAutoScrollToBottom;  // used for console like data, so that any new changes will scroll the list to the bottom
 
 
     /**
@@ -264,6 +265,14 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     @Override
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     }
+    
+    public void setAutoScrollToBottom(boolean b) {
+        this.bAutoScrollToBottom = b;
+    }
+    public boolean getAutoScrollToBottom() {
+        return bAutoScrollToBottom;
+    }
+    
 }
 
 class OATextAreaTableCellEditor extends OATableCellEditor {

@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.jfc.control;
 
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -379,6 +380,17 @@ public class TextAreaController extends JFCController implements FocusListener, 
                 prevText = text; // 20110112 to fix bug found while testing undo
                 textField.setCaretPosition(0);
                 bSettingText = bHold;
+                
+                if (textField instanceof OATextArea) {
+//qqqqqqqqqqqqq                    
+//                    if (((OATextArea)textField).getAutoScrollToBottom()) {
+                        int y = textField.getHeight();
+                        if (y > 10) {
+                            Rectangle rect = new Rectangle(0, textField.getHeight()-10, 10, 10);
+                            textField.scrollRectToVisible(rect);
+                        }
+//                    }
+                }
             }   
         }        
         super.update();
