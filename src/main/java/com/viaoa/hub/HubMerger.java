@@ -122,7 +122,9 @@ public class HubMerger {
         this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, bIncludeRootHub);
     }
 
+    private boolean bCreatedFromOneObject;
     public HubMerger(OAObject obj, Hub hubCombinedObjects, String propertyPath) {
+        bCreatedFromOneObject = true;
         Hub h = new Hub(obj.getClass());
         h.add(obj);
         h.setPos(0);
@@ -781,7 +783,8 @@ static int cntq;
             else {
                 if (bUseAll || this.node != nodeRoot && nodeRoot != null) {
                     OAThreadLocal tl;
-                    Hub hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
+                    Hub hubx = null;
+                    if (!bCreatedFromOneObject) hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
                     try {
                         for (int i = 0;; i++) {
                             OAObject obj = (OAObject) hub.elementAt(i);
@@ -790,7 +793,7 @@ static int cntq;
                         }
                     }
                     finally {
-                        OAThreadLocalDelegate.resetGetDetailHub(hubx);
+                        if (!bCreatedFromOneObject) OAThreadLocalDelegate.resetGetDetailHub(hubx);
                     }
                 }
                 else {

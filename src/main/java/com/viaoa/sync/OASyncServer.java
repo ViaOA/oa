@@ -25,6 +25,7 @@ import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,7 +50,7 @@ public class OASyncServer {
     public static final String ServerLookupName = "syncserver";
     public static final String SyncLookupName = "oasync";
     public static final String SyncQueueName = "oasync";
-    public static final int QueueSize = 18000;
+    public static final int QueueSize = 20000;
     
     private int port;
     private MultiplexerServer multiplexerServer;
@@ -399,20 +400,20 @@ public class OASyncServer {
     public void createLookup(String name, Object obj, Class interfaceClass, String queueName, int queueSize) {
         getRemoteMultiplexerServer().createLookup(name, obj, interfaceClass, queueName, queueSize);
     }
-    public Object createSyncBroadcast(final String bindName, Class interfaceClass) {
-        return getRemoteMultiplexerServer().createBroadcast(bindName, interfaceClass, SyncQueueName, QueueSize);
-    }
     public Object createBroadcast(final String bindName, Class interfaceClass, String queueName, int queueSize) {
         return getRemoteMultiplexerServer().createBroadcast(bindName, interfaceClass, queueName, queueSize);
     }
     public Object createBroadcast(final String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
         return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, queueName, queueSize);
     }
+    public Object createSyncBroadcast(final String bindName, Class interfaceClass) {
+        return getRemoteMultiplexerServer().createBroadcast(bindName, interfaceClass, SyncQueueName, QueueSize);
+    }
     public Object createSyncBroadcast(final String bindName, Object callback, Class interfaceClass) {
         return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, SyncQueueName, QueueSize);
     }
     
-    /*
+
     protected void afterInvokeRemoteMethod(RequestInfo ri) {
         if (ri == null) return;
         try {
@@ -427,7 +428,7 @@ public class OASyncServer {
         }
         LOG.fine("RemoteLog data: " + ri.toLogString());
     }
-    */
+
     
     /** thread used to log all requests */
     private Thread threadStatsLogger;

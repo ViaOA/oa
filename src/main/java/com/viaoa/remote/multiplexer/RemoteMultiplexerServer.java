@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -778,6 +779,20 @@ public class RemoteMultiplexerServer {
             OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(bind.asyncQueueName);
             if (cq == null) {
                 cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
+                    // 20141208 keep queue elements empty if not used
+                    AtomicLong alLeastValue = new AtomicLong();
+                    @Override
+                    public RequestInfo[] getMessages(long posTail, int maxReturnAmount) throws Exception {
+                        for (;;) {
+                            long x = alLeastValue.get();
+                            if (posTail >= x) break;
+                            if (alLeastValue.compareAndSet(x, posTail)) break;
+                        }
+                        RequestInfo[] ris = super.getMessages(posTail, maxReturnAmount);
+                        
+                        return ris;
+                    }
+                    
                 };
                 hmAsnycCircularQueue.put(bind.asyncQueueName, cq);
             }
@@ -1316,9 +1331,11 @@ public class RemoteMultiplexerServer {
             // have all messages sent using single vsocket
             VirtualSocket vsocket = getSocketForStoC();
             try {
+                cque.registerSession(connectionId);
                 _writeQueueMessages(cque, clientBindName, vsocket, startQuePos);
             }
             finally {
+                cque.unregisterSession(connectionId);
                 releaseSocketForStoC(vsocket);
             }
         }
@@ -1335,7 +1352,7 @@ public class RemoteMultiplexerServer {
 
                 RequestInfo[] ris = null;
                 try {
-                    ris = cque.getMessages(qpos, 100);
+                    ris = cque.getMessages(connectionId, qpos, 100, 0);
                 }
                 catch (Exception e) {
                     LOG.log(Level.WARNING, "Message queue overrun with msg CircularQueue", e);

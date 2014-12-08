@@ -20,6 +20,9 @@ package com.viaoa.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 /**
@@ -47,6 +50,8 @@ public abstract class OACircularQueue<TYPE> {
 
     private Class<TYPE> classType;
 
+    private ConcurrentHashMap<Integer, Long> hmSession;
+    
     /**
      * Create a new circular queue. 
      * @param queueSize actual size of the array that backs the queue.
@@ -87,6 +92,42 @@ public abstract class OACircularQueue<TYPE> {
         return queueSize;
     }
     
+    
+    /**
+     * This is used to let the queue know who the consumers are, so that 
+     * queue slots can be set to null.
+     */
+    public void registerSession(int sessionId) {
+        if (hmSession == null) {
+            hmSession = new ConcurrentHashMap<Integer, Long>();            
+        }
+        hmSession.put(sessionId, queueHeadPosition);
+    }
+    public void unregisterSession(int sessionId) {
+        if (hmSession != null) {
+            hmSession.remove(sessionId);
+        }
+    }
+
+    // 20141208 null out queue slots, so that they can be GC'd
+    //   this is called from a sync block
+    private long lastUsedPos;
+    private void cleanupQueue() {
+        if (hmSession == null) return; // no session registered
+        long pos = queueHeadPosition-1;
+        for (Map.Entry<Integer, Long> entry : hmSession.entrySet()) {
+            long x = entry.getValue();
+            if (x < (queueHeadPosition - queueSize)) {
+                continue; // overflow
+            }
+            if (x < pos) pos = x; 
+        }
+        
+        for (long i=lastUsedPos; i<pos; i++) {
+            msgQueue[(int)(i % queueSize)] = null;
+        }
+        lastUsedPos = pos;
+    }
     
     /**
      * current position where the next message will be added. 
@@ -186,6 +227,22 @@ if (queueHeadPosition % 1000 == 0) {
         }
         return msgs;
     }
+    public TYPE[] getMessages(int sessionId, long posTail, int maxReturnAmount, int maxWait) throws Exception {
+        if (hmSession != null) hmSession.put(sessionId, posTail);
+        TYPE[] msgs = null;
+        for ( ;; ) {
+            msgs =  _getMessages(posTail, maxReturnAmount, maxWait);
+
+            if (msgs != null || maxWait == 0) {
+                break;
+            }
+            // else it waited until a message was available and then returned w/o message
+            //   or waited maxWait and then returned.
+            // ... need to loop again w/o a wait to get any added message(s)
+            maxWait = 0;
+        }
+        return msgs;
+    }
     
     private TYPE[] _getMessages(long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
@@ -205,8 +262,9 @@ if (queueHeadPosition % 1000 == 0) {
             
             if (amt == 0 && maxWait != 0) {
                 // need to wait
+                cleanupQueue(); // 20141208
                 queueWaitFlag = true;
-                if (maxWait > 0) { 
+                if (maxWait > 0) {
                     LOCKQueue.wait(maxWait);
                 }
                 else {
