@@ -74,6 +74,14 @@ class HubDataMaster implements java.io.Serializable {
         if (rli == null) return false; 
         return rli.isSortAsc();
     }
+
+    public String getSeqProperty() {
+        if (liDetailToMaster == null) return null;
+        OALinkInfo rli = OAObjectInfoDelegate.getReverseLinkInfo(liDetailToMaster);
+        if (rli == null) return null; 
+        return rli.getSeqProperty();
+    }
+    
     
     // 20141125 custom writer so that linkInfo is not written, and so masterObject can use key instead             
     private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{

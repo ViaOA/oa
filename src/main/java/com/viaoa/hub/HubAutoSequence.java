@@ -83,7 +83,9 @@ public class HubAutoSequence extends HubListenerAdapter implements java.io.Seria
      * send CS messages to clients.  If true, then the property changes (for seq prop) will need to be sent to clients.
      */
     public HubAutoSequence(Hub hub, String propertyName, int startNumber, boolean bKeepSeq, boolean bServerSideOnly) {
-        if (bServerSideOnly && !HubCSDelegate.isServer()) LOG.warning("bServerSideOnly should be false, since this is not the server");
+        if (bServerSideOnly && !HubCSDelegate.isServer()) {
+            LOG.warning("bServerSideOnly should be false, since this is not the server");
+        }
         this.startNumber = startNumber;
         this.bKeepSeq = bKeepSeq;
         this.bServerSideOnly = bServerSideOnly;

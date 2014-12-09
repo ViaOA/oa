@@ -178,8 +178,10 @@ public class OAObject implements java.io.Serializable, Comparable {
     	    System.out.println(cntNew+") new OAObject.guid="+guid+" "+this.getClass().getSimpleName());
     	}
 
-        // 20141127 Note: call oaObject.toString(), until the object is loaded, since it will create an objectKey with Id=0
-    	if (objectKey != null) objectKey = null; // in case it was generated before the Id was loaded.
+    	// 20141209 removed, since it was creating dup oaObjKeys, one when putting in cache, then clearing it, and then
+    	//    creating another the next time that OAObj calls for it.
+    	// 20141127 Note: call oaObject.toString(), until the object is loaded, since it will create an objectKey with Id=0
+    	//if (objectKey != null) objectKey = null; // in case it was generated before the Id was loaded.
     }
     
     /** Read OAObject data.  Note: This method must stay "private" or it will never be called.  It does

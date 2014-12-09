@@ -149,19 +149,37 @@ public class HubSortDelegate {
 	    sort(thisHub, s, true, null, true);
 	}
 
+	/**
+	 * used to determine if the Hub is currently kept sorted.
+	 * Otherwise, it might have been sorted when it was loaded, but not kept sorted.
+	 * ex: if there is a sequence property used to autoSeq the objects in the hub
+	 */
     public static boolean isSorted(Hub thisHub) {
         return (thisHub.data.getSortListener() != null);
     }
 
+    /**
+     * @see #isSorted(Hub) to see if the hub is kept sorted. 
+     */
     public static String getSortProperty(Hub thisHub) {
         String s = thisHub.data.getSortProperty();
         if (s == null) s = thisHub.datam.getSortProperty();
         return s;
     }
+    /**
+     * @see #isSorted(Hub) to see if the hub is kept sorted. 
+     */
     public static boolean getSortAsc(Hub thisHub) {
         boolean b = thisHub.data.isSortAsc();
-        if (!b) b = thisHub.datam.isSortAsc();
+        b = b || thisHub.datam.isSortAsc();
         return b;
+    }
+    /**
+     * @see #isSorted(Hub) to see if the hub is kept sorted. 
+     */
+    public static String getSeqProperty(Hub thisHub) {
+        String s = thisHub.datam.getSeqProperty();
+        return s;
     }
 }
 

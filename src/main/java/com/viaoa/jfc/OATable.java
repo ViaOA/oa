@@ -100,7 +100,6 @@ import com.viaoa.util.OAString;
     table.addColumn("FT", 6, chk);
     table.setPreferredSize(6, 3, true); // 6 rows, 3 columns, plus width of scrollbar
     table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-    table.sizeColumnsToFit(JTable.AUTO_RESIZE_LAST_COLUMN);
     panel.add(new JScrollPane(table));
     </pre>
     <p>

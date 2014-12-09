@@ -317,10 +317,12 @@ public class HubDetailDelegate {
             //     unless DetailHub.bShareActiveObject is true then set it after events
             Hub h = (Hub) obj;
    
-            String s = HubSortDelegate.getSortProperty(dHub);
-            if (s != null) { 
-                boolean b = HubSortDelegate.getSortAsc(thisHub);
-                h.sort(s, b);
+            if (HubSortDelegate.isSorted(dHub)) { 
+                String s = HubSortDelegate.getSortProperty(dHub);
+                if (s != null) {
+                    boolean b = HubSortDelegate.getSortAsc(dHub);
+                    h.sort(s, b);
+                }
             }
     
             // need to select before assigning to detail hub so that add events wont
