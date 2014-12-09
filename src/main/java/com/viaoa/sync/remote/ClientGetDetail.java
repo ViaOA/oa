@@ -92,7 +92,7 @@ public class ClientGetDetail {
 
 // qqqqqqqqqqqqqq
         String s = String.format(
-            "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d, masterProps=%s",
+            "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d, masterProps=%s",
             ++cntx, 
             masterObject, 
             property, 

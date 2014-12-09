@@ -478,7 +478,7 @@ public class OAFinder<F extends OAObject, T> {
                     
                     bIsUsed = (bIsUsed && ((betweenFromVal == null && betweenToVal == null) || OACompare.isBetween(obj, betweenFromVal, betweenToVal)));
                     bIsUsed = (bIsUsed && ((equalBetweenFromVal == null && equalBetweenToVal == null) || OACompare.isEqualOrBetween(obj, equalBetweenFromVal, equalBetweenToVal)));
-                    bIsUsed = (bIsUsed && (likeValue == null || OACompare.isLike(likeValue, obj)));
+                    bIsUsed = (bIsUsed && (likeValue == null || OACompare.isLike(obj, likeValue)));
                 }
                 if (bIsUsed) {
                     onFound((T) obj);
