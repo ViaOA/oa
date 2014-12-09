@@ -90,7 +90,7 @@ public class ClientGetDetail {
         OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
         os.setMax(5000);
 
-//TEST qqqqqqqqqqqqqqqqqqqqqqvvvvvvvvvvvvvvvvvvvvvvwwwwwwwwwwbbbbbbbbbb
+// qqqqqqqqqqqqqq
         String s = String.format(
             "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d, masterProps=%s",
             ++cntx, 

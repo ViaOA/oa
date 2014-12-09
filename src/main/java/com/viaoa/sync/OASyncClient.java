@@ -117,7 +117,7 @@ public class OASyncClient {
      * @param propertyName
      * @return
      */
-    public Object getDetail(OAObject masterObject, String propertyName) {
+    public Object getDetail(final OAObject masterObject, final String propertyName) {
         //qqqqqvvvvv        
         //System.out.println("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName+", levels="+levels);
         //LOG.finer("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName);
@@ -150,7 +150,7 @@ public class OASyncClient {
             // send siblings to return back with same prop
             OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
             if (li == null || !li.getCalculated()) {
-                siblingKeys = getDetailSiblings(masterObject, li);
+                siblingKeys = getDetailSiblings(masterObject, li, propertyName);
             }
             
             additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
@@ -222,8 +222,7 @@ public class OASyncClient {
     /**
      * Find any other siblings to get the same property for sibling objects in same hub.
      */
-    protected OAObjectKey[] getDetailSiblings(final OAObject masterObject, final OALinkInfo linkInfo) {
-        final String property = linkInfo.getName();
+    protected OAObjectKey[] getDetailSiblings(final OAObject masterObject, final OALinkInfo linkInfo, final String property) {
         // note: could be for a blob property
 
         Hub siblingHub = null;
@@ -240,7 +239,7 @@ public class OASyncClient {
         
         ArrayList<OAObjectKey> al = new ArrayList<OAObjectKey>();
         
-        _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, hubThreadLocal!=null);
+        _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, hubThreadLocal!=null);
 
         if (al == null || al.size() == 0) return null;
         int x = al.size();
@@ -296,10 +295,10 @@ public class OASyncClient {
     
     
     private void _getDetailSiblings(HashSet<Object> hsValues, ArrayList<OAObjectKey> alResults, final OAObject masterObject, 
-            final Hub siblingHub, OALinkInfo linkInfo, boolean bAgressive) {
+            final Hub siblingHub, OALinkInfo linkInfo, String propertyName, boolean bAgressive) {
         
-        _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, bAgressive);
-        if (alResults.size() > 25) return;
+        _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive);
+        if (alResults.size() > 25 || linkInfo == null) return;
 
         // go up to master.parent and get siblings from there
         OAObject parentMasterObject = siblingHub.getMasterObject();
@@ -344,7 +343,7 @@ public class OASyncClient {
             if (!OAObjectPropertyDelegate.isPropertyLoaded(parentMasterObject, liRev.getName())) continue;
 
             Hub h = (Hub) liRev.getValue(obj);
-            _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, bAgressive);
+            _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive);
             
             if (alResults.size() > 100) break;
         }        
@@ -352,30 +351,22 @@ public class OASyncClient {
     
     
     private void _getDetailSiblingsA(HashSet<Object> hsValues, ArrayList<OAObjectKey> al, 
-            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, boolean bAgressive) {
-        // load the same property for siblings
+            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive) {
+        // get the same property for siblings
 
-        final String property = linkInfo.getName();
-        
         // find best starting pos, either before or after
         int pos = siblingHub.getPos(masterObject);
         if (pos < 0) pos = 0;
         else if (pos == 0) pos++;
         else {
-            OALinkInfo liRev = linkInfo.getReverseLinkInfo();
-            if (liRev != null) {
-                // find out what direction to start at
-                OAObject obj = (OAObject) siblingHub.getAt(pos-1);
-                if (!OAObjectPropertyDelegate.isPropertyLoaded(obj, liRev.getName())) {
-                    pos -= 20;
-                    if (pos < 0) pos = 0;
-                }
-                else pos++;
+            // find out what direction to start at
+            OAObject obj = (OAObject) siblingHub.getAt(pos-1);
+            if (!OAObjectPropertyDelegate.isPropertyLoaded(obj, property)) {
+                pos -= (linkInfo == null)?5:20;
+                if (pos < 0) pos = 0;
             }
             else pos++;
         }
-        
-        
         
         Class valueClass = null;
         boolean bIsOne2One = false;
@@ -398,7 +389,7 @@ public class OASyncClient {
             if (value instanceof OANotExist) {
                 if (linkInfo == null) {  // must be blob
                     al.add(key);
-                    if (al.size() >= 20) break;  // only get 20 extra blobs, ha
+                    if (al.size() >= 10) break;  // only get 10 extra blobs, ha
                 }
                 else if (bIsMany || bIsOne2One) {                
                     al.add(key);
