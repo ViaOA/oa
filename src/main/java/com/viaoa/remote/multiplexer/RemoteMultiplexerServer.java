@@ -1365,6 +1365,7 @@ public class RemoteMultiplexerServer {
                 qpos += ris.length;
                 for (RequestInfo ri : ris) {
                     if (vsocket.isClosed()) return;
+                    if (ri == null || ri.bind == null) continue;
                     if (!ri.bind.isBroadcast) {
                         if (ri.connectionId != connectionId) {
                             continue;
