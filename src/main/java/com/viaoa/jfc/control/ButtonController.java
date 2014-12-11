@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.jfc.control;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -26,6 +27,7 @@ import java.awt.datatransfer.FlavorEvent;
 import java.awt.datatransfer.FlavorListener;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
+
 import javax.swing.*;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.*;
@@ -56,6 +58,7 @@ public class ButtonController extends JFCController implements ActionListener {
     private boolean bAnyTime, bManual;
     private String confirmMessage;
     private String completedMessage;
+    private String consoleProperty;
     private JComponent focusComponent; // comp to get focus after click
     private String methodName;
     private Object updateObject, updateValue;
@@ -196,6 +199,13 @@ public class ButtonController extends JFCController implements ActionListener {
     }
     public String getCompletedMessage() {
         return completedMessage;
+    }
+
+    public void setConsoleProperty(String prop) {
+        consoleProperty = prop;
+    }
+    public String getConsoleProperty() {
+        return consoleProperty;
     }
     
     
@@ -415,7 +425,7 @@ public class ButtonController extends JFCController implements ActionListener {
         }
 
         final Window window = OAJFCUtil.getWindow(button);
-        final OAWaitDialog dlg = new OAWaitDialog(window, false);
+        final OAWaitDialog dlg = new OAWaitDialog(window, true);  // allowCancel, was false
 
         String s = processingTitle;
         if (s == null) s = "Processing";
@@ -430,6 +440,23 @@ public class ButtonController extends JFCController implements ActionListener {
         }
         dlg.setStatus(s);
 
+        s = getConsoleProperty();
+        OAConsole con = null;
+        if (!OAString.isEmpty(s)) {
+            con = new OAConsole(getHub(), s) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension d = super.getPreferredSize();
+                    d.width *= 2.2;
+                    return d;
+                }
+            };
+            con.setPreferredSize(15, 1, true);
+            dlg.setConsole(con);
+        }
+        
+        
+        final OAConsole console = con;
         SwingWorker<Boolean, Void> sw = new SwingWorker<Boolean, Void>() {
             @Override
             protected Boolean doInBackground() throws Exception {
@@ -440,8 +467,39 @@ public class ButtonController extends JFCController implements ActionListener {
             @Override
             protected void done() {
                 synchronized (Lock) {
-                    if (dlg.isVisible()) {
-                        dlg.setVisible(false);
+                    if (console == null) {
+                        if (dlg.isVisible()) {
+                            dlg.setVisible(false);
+                        }
+                    }
+                    else {
+                        dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        
+                        JButton cmd = dlg.getCancelButton();
+                        cmd.setText("Close");
+                        cmd.registerKeyboardAction(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                dlg.setVisible(false);
+                            }
+                        }, "xx", KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false), JComponent.WHEN_IN_FOCUSED_WINDOW);
+                        cmd.registerKeyboardAction(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                dlg.setVisible(false);
+                            }
+                        }, "zz", KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_IN_FOCUSED_WINDOW);
+                        
+                        
+                        dlg.getProgressBar().setIndeterminate(false);
+                        dlg.getProgressBar().setMaximum(100);
+                        dlg.getProgressBar().setValue(100);
+                        
+                        if (!OAString.isEmpty(completedMessage)) {
+                            dlg.setStatus(completedMessage);
+                        }
+                        else dlg.setStatus("Command has completed");
+                        dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                     }
                 }
             }
@@ -905,7 +963,7 @@ public class ButtonController extends JFCController implements ActionListener {
     }
 
     public void afterCompleted(String completedMessage) {
-        if (!OAString.isEmpty(completedMessage)) {
+        if (!OAString.isEmpty(completedMessage) && OAString.isEmpty(getConsoleProperty())) {
             JOptionPane.showMessageDialog(
                 OAJFCUtil.getWindow(button), 
                 completedMessage, "Command completed", 

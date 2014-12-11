@@ -467,7 +467,14 @@ public boolean XXX;
         return control.getMethodName();
     }
 
+    public void setConsoleProperty(String prop) {
+        control.setConsoleProperty(prop);
+    }
+    public String getConsoleProperty() {
+        return control.getConsoleProperty();
+    }
 
+    
 
     /** if the hub for this command has a masterHub, then it can control this button if
         this is set to true.  Default = true

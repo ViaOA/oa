@@ -30,6 +30,7 @@ import javax.swing.border.EtchedBorder;
 import java.net.URL;
 import java.util.*;
 
+import com.viaoa.hub.Hub;
 import com.viaoa.jfc.*;
 
 
@@ -40,6 +41,7 @@ public class OAWaitDialog extends JDialog implements ActionListener {
     private JProgressBar progressBar;
     private boolean bAllowCancel;
     private Window parent;
+    private OAConsole console;
 
     public OAWaitDialog(Window parent) {
         this(parent, true);
@@ -66,7 +68,7 @@ public class OAWaitDialog extends JDialog implements ActionListener {
             });
         }
         getContentPane().setLayout(new BorderLayout(2,2));
-        getContentPane().add(getPanel());
+        getContentPane().add(getPanel(), BorderLayout.NORTH);
     }    
     
     public void setStatus(String msg) {
@@ -156,11 +158,26 @@ public class OAWaitDialog extends JDialog implements ActionListener {
             */
         }
     }
+    public void setConsole(OAConsole con) {
+        this.console = con;
+        if (con != null) {
+            getContentPane().add(new JScrollPane(con), BorderLayout.CENTER);
+            setResizable(true);
+        }
+    }
+    
     
     public static void main(String[] args) {
         OAWaitDialog dlg = new OAWaitDialog(null);
         dlg.setTitle("Wait for me");
         dlg.getStatusLabel().setText("this is a wait dialog");
+        Hub h = new Hub();
+        OAConsole c = new OAConsole(h, "");
+        c.setPreferredSize(14, 1, true);
+        Dimension d = c.getPreferredSize();
+        d.width *= 1.8;
+        c.setPreferredSize(d);
+        dlg.setConsole(c);
         dlg.setVisible(true);
     }
 }

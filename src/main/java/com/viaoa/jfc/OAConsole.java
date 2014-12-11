@@ -37,7 +37,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
     public void setup() {
         OALabel lbl;
         // addColumn("xxx", 10, new OALabel(getHub(), Console.P_DateTime, 10));
-        addColumn("xxx", 20, new OALabel(getHub(), Console.P_Text, 20));
+        addColumn("xxx", 30, new OALabel(getHub(), Console.P_Text, 30));
 
         setTableHeader(null);
         setShowHorizontalLines(false);
