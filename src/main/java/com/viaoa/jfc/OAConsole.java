@@ -114,12 +114,10 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
     @Override
     public void focusGained(FocusEvent e) {
         bHasFocus = true;
-System.out.println("bHasFocus="+bHasFocus);        
     }
     @Override
     public void focusLost(FocusEvent e) {
         bHasFocus = false;
-System.out.println("bHasFocus="+bHasFocus);        
     }
 
     private volatile boolean bHasMouse;
@@ -138,13 +136,11 @@ System.out.println("bHasFocus="+bHasFocus);
     @Override
     public void mouseEntered(MouseEvent e) {
         bHasMouse = true;
-System.out.println("bHasMouse="+bHasMouse);        
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
         bHasMouse = false;
-System.out.println("bHasMouse="+bHasMouse);        
     }
     
 }
