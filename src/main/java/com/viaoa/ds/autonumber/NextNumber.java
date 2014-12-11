@@ -18,12 +18,14 @@ All rights reserved.
 package com.viaoa.ds.autonumber;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.lang.reflect.*;
 
 import com.viaoa.*;
 import com.viaoa.object.*;
 import com.viaoa.annotation.OAClass;
 import com.viaoa.annotation.OAId;
+import com.viaoa.annotation.OAProperty;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
@@ -35,15 +37,20 @@ import com.viaoa.util.*;
 @OAClass(localOnly=true, useDataSource=false, initialize=false)
 public class NextNumber extends OAObject {
     static final long serialVersionUID = 1L;
-
+    private static Logger LOG = Logger.getLogger(NextNumber.class.getName());
+    
     protected String id;   // class name
     protected int nextNum = 1;
     protected String propertyName;
     
-    
+    private static int cnter; 
+    public NextNumber() {
+        cnter++;
+    }
     /**
         Returns Identifier for this object, the Class name (including package name).
     */
+    @OAProperty(isUnique = true)
     @OAId()
     public String getId() {  
         return id;
@@ -57,6 +64,10 @@ public class NextNumber extends OAObject {
         String old = this.id;
         this.id = id;
         firePropertyChange("Id", old, this.id);
+        LOG.fine("NextNumber, id="+id);
+        if (cnter > 200) {
+            LOG.warning("NextNumber over 200, id="+id);
+        }
     }
     
     /**

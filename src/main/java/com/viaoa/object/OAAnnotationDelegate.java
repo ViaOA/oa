@@ -72,6 +72,10 @@ public class OAAnnotationDelegate {
         for (Method m : methods) {
             OAId oaid = m.getAnnotation(OAId.class);
             if (oaid == null) continue;
+            OAProperty oaprop = (OAProperty) m.getAnnotation(OAProperty.class);
+            if (oaprop == null) {
+                throw new RuntimeException("annotation OAId - should also have OAProperty annotation");
+            }
             s = getPropertyName(m.getName());
             if (hs.contains("OAId." + s)) continue;
             hs.add("OAId."+s);

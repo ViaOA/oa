@@ -335,16 +335,17 @@ public class OASyncClient {
             }
         }
         
-        for (int i=0; i<50; i++) {
+        for (int i=0; i<250; i++) {
             Object obj = parentSiblingHub.getAt(i+pos);
             if (obj == null) break;
             if (obj == parentMasterObject) continue;
             
-            if (!OAObjectPropertyDelegate.isPropertyLoaded(parentMasterObject, liRev.getName())) continue;
+            if (!OAObjectPropertyDelegate.isPropertyLoaded((OAObject)obj, liRev.getName())) continue;
 
             Hub h = (Hub) liRev.getValue(obj);
-            _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive);
-            
+            if (h.getSize() > 0) {
+                _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive);
+            }
             if (alResults.size() > 100) break;
         }        
     }    

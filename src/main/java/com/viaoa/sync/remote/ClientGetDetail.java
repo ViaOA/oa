@@ -129,26 +129,27 @@ public class ClientGetDetail {
         boolean b = wasFullySentToClient(masterObject);
         final boolean bMasterWasPreviouslySent = b && (masterProperties == null || masterProperties.length == 0);
 
-        if (!bMasterWasPreviouslySent && masterObject instanceof OAObject) {
-            OAObjectReflectDelegate.loadReferences((OAObject) masterObject, false, 10);
+        if (masterProperties != null && masterObject instanceof OAObject) {
+            for (String s : masterProperties) {
+                ((OAObject) masterObject).getProperty(s);
+            }
         }
         
         Hub dHub = null;
         if (detailObject instanceof Hub) {
             dHub = (Hub) detailObject;
             if (dHub.isOAObject()) {
-                int cnt = 0;
                 for (Object obj : dHub) {
                     if (wasFullySentToClient(obj)) continue;
                     
-                    if (System.currentTimeMillis() - t1 > 100) break;
+                    long tDiff = System.currentTimeMillis() - t1;
                     if (OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false)) continue;
-                    if (++cnt < 15) {
+                    if (tDiff < 7L) {
                         OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 1, false);
                     }
                     else {
                         OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 0, 1, false);
-                        if (cnt > 35) break;
+                        if (tDiff > 15L) break;
                     }
                 }
             }
@@ -157,9 +158,10 @@ public class ClientGetDetail {
             OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false);
         }
         
-        final HashMap<OAObjectKey, Object> hmExtraData = new HashMap<OAObjectKey, Object>();
+        HashMap<OAObjectKey, Object> hmExtraData = null;
         
-        if (siblingKeys != null) {
+        if (siblingKeys != null && siblingKeys.length > 0) {
+            hmExtraData = new HashMap<OAObjectKey, Object>();
             // send back a lightweight hashmap (oaObjKey, value)
             Class clazz = masterObject.getClass();
             for (OAObjectKey key : siblingKeys) {
@@ -176,9 +178,9 @@ public class ClientGetDetail {
             }
         }
         
-        b = ((hmExtraData.size() > 0) || (masterProperties != null && masterProperties.length > 0));
+        b = ((hmExtraData != null && hmExtraData.size() > 0) || (masterProperties != null && masterProperties.length > 0));
         OAObjectSerializer os = new OAObjectSerializer(detailObject, b);
-        if (hmExtraData.size() > 0) {
+        if (hmExtraData != null && hmExtraData.size() > 0) {
             if ((masterProperties != null && masterProperties.length > 0)) {
                 hmExtraData.put(masterObject.getObjectKey(), masterObject); // so extra props for master can go 
             }
