@@ -39,11 +39,15 @@ public abstract class OACircularQueue<TYPE> {
     private final Object LOCKQueue = new Object();
     
     private volatile TYPE[] msgQueue;
+    private String name;
 
     /** running value that keeps next position to insert a message.
      *  Uses module queueSize to determine the array position.  
     */
     private volatile long queueHeadPosition;  
+
+    // last position that a registered session has used. All previous positions can be set to null
+    private long lastUsedPos;
 
     // flag to know if there are threads waiting to get a message
     private volatile boolean queueWaitFlag;
@@ -111,7 +115,6 @@ public abstract class OACircularQueue<TYPE> {
 
     // 20141208 null out queue slots, so that they can be GC'd
     //   this is called from a sync block
-    private long lastUsedPos;
     private void cleanupQueue() {
         if (hmSession == null) return; // no session registered
         long pos = queueHeadPosition-1;
@@ -144,12 +147,14 @@ public abstract class OACircularQueue<TYPE> {
     public void addMessageToQueue(TYPE msg) {
         addMessage(msg);
     }
+    
+
     public void addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
             int posHead = (int) (queueHeadPosition++ % queueSize);
 /*qqqqqqqqqqqqqqqqqqqqqq            
 if (queueHeadPosition % 1000 == 0) {
-    System.out.println("OACircularQueue position="+queueHeadPosition);
+    System.out.println(String.format("OACircularQueue %s, position=%,d, lastUsed=%,d", name, queueHeadPosition, lastUsedPos));
 }
 */
             if (queueHeadPosition < 0) {
@@ -244,6 +249,7 @@ if (queueHeadPosition % 1000 == 0) {
         return msgs;
     }
     
+    private int cleanupCnt;
     private TYPE[] _getMessages(long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
         synchronized(LOCKQueue) {
@@ -262,7 +268,7 @@ if (queueHeadPosition % 1000 == 0) {
             
             if (amt == 0 && maxWait != 0) {
                 // need to wait
-                cleanupQueue(); // 20141208
+                if (++cleanupCnt % 50 == 0) cleanupQueue(); // 20141208
                 queueWaitFlag = true;
                 if (maxWait > 0) {
                     LOCKQueue.wait(maxWait);
@@ -295,5 +301,13 @@ if (queueHeadPosition % 1000 == 0) {
         if (pos < 0 || pos >= msgQueue.length) return null;
         TYPE x = msgQueue[pos];
         return x;
-    }   
+    }
+    
+    public void setName(String s) {
+        this.name = s;
+    }
+    public String getName() {
+        return name;
+    }
+    
 }

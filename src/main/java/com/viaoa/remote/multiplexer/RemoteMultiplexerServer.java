@@ -792,8 +792,8 @@ public class RemoteMultiplexerServer {
                         
                         return ris;
                     }
-                    
                 };
+                cq.setName(queueName);
                 hmAsnycCircularQueue.put(bind.asyncQueueName, cq);
             }
         }

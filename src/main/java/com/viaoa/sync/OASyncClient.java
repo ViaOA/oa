@@ -80,6 +80,10 @@ public class OASyncClient {
     private String serverHostName;
     private int serverHostPort;
 
+    // used by getDetail
+    private OAObject[] lastMasterObjects = new OAObject[10];
+    private int lastMasterCnter;
+
     private OADataSourceClient dataSourceClient;
     
     public OASyncClient(String serverHostName, int serverHostPort) {
@@ -163,6 +167,8 @@ public class OASyncClient {
             }
         }
         
+        lastMasterObjects[lastMasterCnter++%lastMasterObjects.length] = masterObject;
+        
         if (result instanceof OAObjectSerializer) {
             // see ClientGetDetail.getSerializedDetail(..)
             OAObjectSerializer os = (OAObjectSerializer) result;
@@ -217,8 +223,6 @@ public class OASyncClient {
         return result;
     }
 
-    private OAObject[] lastMasterObjects = new OAObject[10];
-    private int lastMasterCnter;
     /**
      * Find any other siblings to get the same property for sibling objects in same hub.
      */
@@ -231,16 +235,15 @@ public class OASyncClient {
             siblingHub = hubThreadLocal;
         }
         
-        lastMasterObjects[lastMasterCnter++%lastMasterObjects.length] = masterObject;
         if (siblingHub == null) {
             siblingHub = findBestSiblingHub(masterObject);
             if (siblingHub == null) return null;
         }
         
         ArrayList<OAObjectKey> al = new ArrayList<OAObjectKey>();
-        
         _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, hubThreadLocal!=null);
 
+        
         if (al == null || al.size() == 0) return null;
         int x = al.size();
         OAObjectKey[] keys = new OAObjectKey[x];
@@ -254,38 +257,49 @@ public class OASyncClient {
         Hub siblingHub = null;
         Hub[] hubs = OAObjectHubDelegate.getHubReferences(masterObject);
         
-        int hits = 0;
+        int siblingHits = 0;
+        
         for (int i=0; (hubs != null && i < hubs.length); i++) {
             Hub hub = hubs[i];
             if (hub == null) continue;
-            OAObject masterx = hub.getMasterObject();
-            if (masterx == null && hub.getSelect() == null) continue;
-            
+
             if (siblingHub == null) { 
                 siblingHub = hub;
                 continue;
             }
+            
+            if (hub.getSize() < 2) continue;
+            
             // see if one of the previous objects can be found
-            if (hits == 0) {
-                hits++;
+            if (siblingHits == 0) {
+                siblingHits = 1;  // so it wont be zero
+                if (siblingHub.getMasterObject() != null) siblingHits++;
                 for (OAObject objz : lastMasterObjects) {
-                    if (objz != null && siblingHub.contains(objz)) {
+                    if (objz == null) break;
+                    if (masterObject.getClass().equals(objz.getClass())) {
+                        if (siblingHub.contains(objz)) {
+                            siblingHits++;
+                        }
+                    }
+                }
+            }
+            
+            int hits = 1;
+            if (hub.getMasterObject() != null) hits++;
+            for (OAObject objz : lastMasterObjects) {
+                if (objz == null) break;
+                if (masterObject.getClass().equals(objz.getClass())) {
+                    if (hub.contains(objz)) {
                         hits++;
                     }
                 }
             }
             
-            int hits2 = 1;
-            for (OAObject objz : lastMasterObjects) {
-                if (objz != null && hub.contains(objz)) {
-                    hits2++;
-                }
-            }
-            if (hits2 > hits) {
-                hits = hits2;
+            if (hits > siblingHits) {
+                siblingHits = hits;
                 siblingHub = hub;
             }
-            else if (hits2 == hits) {
+            else if (hits == siblingHits) {
                 if (hub.getSize() > siblingHub.getSize())  siblingHub = hub;
             }
         }
