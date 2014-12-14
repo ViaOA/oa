@@ -32,6 +32,8 @@ import java.util.*;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.jfc.*;
+import com.viaoa.jfc.console.Console;
+import com.viaoa.util.OAString;
 
 
 public class OAWaitDialog extends JDialog implements ActionListener {
@@ -160,8 +162,8 @@ public class OAWaitDialog extends JDialog implements ActionListener {
     }
     public void setConsole(OAConsole con) {
         this.console = con;
-        if (con != null) {
-            getContentPane().add(new JScrollPane(con), BorderLayout.CENTER);
+        if (console != null) {
+            getContentPane().add(new JScrollPane(console), BorderLayout.CENTER);
             setResizable(true);
         }
     }
@@ -171,14 +173,33 @@ public class OAWaitDialog extends JDialog implements ActionListener {
         OAWaitDialog dlg = new OAWaitDialog(null);
         dlg.setTitle("Wait for me");
         dlg.getStatusLabel().setText("this is a wait dialog");
-        Hub h = new Hub();
-        OAConsole c = new OAConsole(h, "");
-        c.setPreferredSize(14, 1, true);
-        Dimension d = c.getPreferredSize();
-        d.width *= 1.8;
-        c.setPreferredSize(d);
-        dlg.setConsole(c);
+
+        Hub<Console> h = new Hub(Console.class);
+        final Console updateObject = new Console();
+        updateObject.setText("");
+        h.add(updateObject);
+        h.setAO(updateObject);
+        
+        OAConsole oac = new OAConsole(h, "text", 45);
+        dlg.setConsole(oac);
+
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    for (int i=0; ;i++) {
+                        updateObject.setText(i+" "+OAString.getRandomString(5, 55, true, true, true));
+                        Thread.sleep(300);
+                    }
+                }
+                catch (Exception e) {
+                    // TODO: handle exception
+                }
+            }
+        };
+        t.start();
         dlg.setVisible(true);
+        System.exit(0);
     }
 }
 

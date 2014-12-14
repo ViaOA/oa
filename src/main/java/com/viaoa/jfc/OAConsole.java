@@ -26,18 +26,21 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
     private Hub hubListen;
     private String property;
     private WeakHashMap<OAObject, Hub<Console>> hmConsole = new WeakHashMap<OAObject, Hub<Console>>();
+    private int columns;
     
-    public OAConsole(Hub hub, String property) {
+    public OAConsole(Hub hub, String property, int columns) {
         super(new Hub<Console>(Console.class));
         this.hubListen = hub;
         this.property = property;
+        this.columns = columns;
         setup();
     }
     
     public void setup() {
         OALabel lbl;
         // addColumn("xxx", 10, new OALabel(getHub(), Console.P_DateTime, 10));
-        addColumn("xxx", 30, new OALabel(getHub(), Console.P_Text, 30));
+        addColumn("xxx", columns, new OALabel(getHub(), Console.P_Text, columns));
+        setPreferredSize(12, 1);
 
         setTableHeader(null);
         setShowHorizontalLines(false);
@@ -76,10 +79,10 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 Object val = oaObj.getProperty(property);
                 if (val == null) val = "";
                 console.setText(""+val);
-                hub.add(console);
-                if (hub.getSize() > 1000) {
+                if (hub.getSize() > 2500) {
                     hub.remove(0);
                 }
+                hub.add(console);
                 
                 Object ao = OAConsole.this.hubListen.getAO();
                         

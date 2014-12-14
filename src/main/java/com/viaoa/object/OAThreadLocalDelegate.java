@@ -526,7 +526,7 @@ public class OAThreadLocalDelegate {
      * lock(s) on other objects, then it can also be allowed to use the object - after waiting
      * a certain amount of time, and still not given the lock.  
      * 
-     * @param maxWaitTries (default=10) max number of waits (each 25 ms) to wait before taking the lock - 0 to wait
+     * @param maxWaitTries (default=10) max number of waits (each 50 ms) to wait before taking the lock - 0 to wait
      * until notified. This will only be used if the current threadLocal has 1+ locks already and object is locked
      * by another threadLocal.
      */
@@ -535,7 +535,7 @@ public class OAThreadLocalDelegate {
     }
     public static void lock(Object object) {
         OAThreadLocal ti = OAThreadLocalDelegate.getThreadLocal(true);
-        lock(ti, object, 20);
+        lock(ti, object, 10);
     }
     public static boolean hasLock() {
         OAThreadLocal ti = OAThreadLocalDelegate.getThreadLocal(false);
@@ -560,7 +560,15 @@ public class OAThreadLocalDelegate {
     // used for lock/unlock
     protected static ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 
+static volatile int openLockCnt;    
+static volatile int lockCnt;    
+static volatile int unlockCnt;    
     protected static void lock(OAThreadLocal tiThis, Object thisLockObject, int maxWaitTries) {
+
+//qqqqqqqqqqqqqqqq        
+//System.out.println((++lockCnt)+") ****** OAThreadLocalDelegate.lock obj="+thisLockObject+", activeLocks="+(++openLockCnt));
+
+
         if (thisLockObject == null || tiThis == null) return;
         
         OARemoteThread rt = null;
@@ -603,9 +611,9 @@ public class OAThreadLocalDelegate {
 
                 int msWait;
                 if (tiThis.locks != null && tiThis.locks.length > 1) {
-                    msWait = 20;  // could be deadlock situation
+                    msWait = 2;  // could be deadlock situation
                 }
-                else msWait = 175;
+                else msWait = 5;
 
                 try {
                     tiThis.wait(msWait);  // wait for wake up
@@ -618,7 +626,7 @@ public class OAThreadLocalDelegate {
         if (rt != null) rt.setWaitingOnLock(false);
     }
 
-    // returns true if it's ok to continue, and not wait on lock to be released
+    // returns true if it's ok to continue, and not if wait on lock to be released
     private static boolean _lock(OAThreadLocal tiThis, Object thisLockObject, int maxWaitTries, int tries) {
         OAThreadLocal[] tls = hmLock.get(thisLockObject); // threadLocals that are using object (locked or waiting)
 
@@ -716,7 +724,12 @@ public class OAThreadLocalDelegate {
     public static void unlock(Object object) {
         unlock(OAThreadLocalDelegate.getThreadLocal(true), object);
     }
+
+//qqqqqq
     protected static void unlock(OAThreadLocal ti, Object object) {
+//qqqqqqqqqqq        
+//System.out.println((++unlockCnt)+") ****** OAThreadLocalDelegate.unlock obj="+object+", activeLocks="+(--openLockCnt));
+        
         try {
             rwLock.writeLock().lock();
             _unlock(ti, object);

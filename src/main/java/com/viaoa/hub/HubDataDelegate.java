@@ -19,10 +19,8 @@ package com.viaoa.hub;
 
 import java.util.*;
 import java.util.logging.Logger;
-
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-
 
 /**
  * Main delegate that works with the HubData class.
@@ -118,32 +116,27 @@ public class HubDataDelegate {
     
     private static int _remove2(Hub thisHub, Object obj, boolean bDeleting, boolean bIsRemovingAll) {
         int pos;
-	    //Object key = obj;
-	    //if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
-	    synchronized (thisHub.data) {
-	        if (bIsRemovingAll) {
-                if (thisHub.data.vector.remove(obj)) pos = 0;
-                else pos = -1;
+        if (bIsRemovingAll) {
+            if (thisHub.data.vector.remove(obj)) pos = 0;
+            else pos = -1;
+        }
+        else {
+	        pos = thisHub.getPos(obj);
+	        if (pos >= 0) {
+	            thisHub.data.vector.removeElementAt(pos);
 	        }
-	        else {
-    	        pos = thisHub.getPos(obj);
-    	        if (pos >= 0) {
-    	            thisHub.data.vector.removeElementAt(pos);
-    	        }
-	        }
-	    }
+        }
+
 	    if (pos >= 0) {
 	    	if (!thisHub.isLoading() && (thisHub.data.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
-		        synchronized (thisHub.data) {
-		            if (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().removeElement(obj)) {
-		                // no-op
-		            }
-		            else {
-		                if (!bDeleting) {
-	                    	createVecRemove(thisHub).addElement(obj);
-		                }
-		            }
-		        }
+	            if (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().removeElement(obj)) {
+	                // no-op
+	            }
+	            else {
+	                if (!bDeleting) {
+                    	createVecRemove(thisHub).addElement(obj);
+	                }
+	            }
 		        thisHub.setChanged( (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
 		    }
 		    else {
@@ -157,45 +150,39 @@ public class HubDataDelegate {
 	// called by HubAddRemoveDelegate.internalAdd
     protected static boolean _add(Hub thisHub, Object obj) {
 	//was: protected static boolean _add(Hub thisHub, OAObjectKey key, Object obj) {
+        boolean bIsLoading = thisHub.isLoading();
         boolean b = false;
         try {
-            OAThreadLocalDelegate.lock(thisHub);
-            b = _add2(thisHub, obj);
+            if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
+            b = _add2(thisHub, obj, bIsLoading);
             //was: b = _add2(thisHub, key, obj);
         }
         catch (Exception e) {
         }
         finally {
-            OAThreadLocalDelegate.unlock(thisHub);
+            if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
     }
-    private static boolean _add2(Hub thisHub, Object obj) {
-    //was: private static boolean _add2(Hub thisHub, OAObjectKey key, Object obj) {
-        synchronized (thisHub.data) {
-            if (!thisHub.isLoading() && thisHub.contains(obj)) return false;
-        	thisHub.data.vector.addElement(obj);
-        }
+    private static boolean _add2(Hub thisHub, Object obj, boolean bIsLoading) {
+        if (!bIsLoading && thisHub.contains(obj)) return false;
+    	thisHub.data.vector.addElement(obj);
         
         int xx = thisHub.data.vector.size();
         if (xx >= 250 && thisHub.datam.masterObject != null && (xx%100)==0) {
-//System.out.println("large Hub with masterObject, Hub="+thisHub);//qqqqqqqqqqqqqq
             LOG.fine("large Hub with masterObject, Hub="+thisHub);//qqqqqqqqqqqqqq
         }
         
-        
 	    thisHub.data.changeCount++;
-	    if (!thisHub.isLoading()) {
+	    if (!bIsLoading) {
 	        if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
-	            synchronized (thisHub.data) {
-	                if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
-                		thisHub.data.getVecRemove().removeElement(obj);
-	                }
-	                else {
-                    	createVecAdd(thisHub).addElement(obj);
-	                }
-	            }
+                if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
+            		thisHub.data.getVecRemove().removeElement(obj);
+                }
+                else {
+                	createVecAdd(thisHub).addElement(obj);
+                }
 	            thisHub.setChanged( (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
 	        }
 	        else thisHub.setChanged(true);
@@ -203,44 +190,33 @@ public class HubDataDelegate {
 	    return true;
 	}
 
-    protected static boolean _insert(Hub thisHub, OAObjectKey key, Object obj, int pos) {
-        //was: return _insert(thisHub, key, obj, pos, true);
-        return _insert(thisHub, obj, pos, true);
-    }
-    //was: protected static boolean _insert(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
-    protected static boolean _insert(Hub thisHub, Object obj, int pos, boolean bLock) {
+
+    protected static boolean _insert(Hub thisHub, Object obj, int pos) {
         boolean b = false;
+        boolean bIsLoading = thisHub.isLoading();
         try {
-            OAThreadLocalDelegate.lock(thisHub);
+            if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
             //was b = _insert2(thisHub, key, obj, pos, bLock);
-            b = _insert2(thisHub, obj, pos, bLock);
+            b = _insert2(thisHub, obj, pos, bIsLoading);
         }
         finally {
-            OAThreadLocalDelegate.unlock(thisHub);
+            if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
     }
     //was: private static boolean _insert2(Hub thisHub, OAObjectKey key, Object obj, int pos, boolean bLock) {
-	private static boolean _insert2(Hub thisHub, Object obj, int pos, boolean bLock) {
-	    if (bLock) {
-            synchronized (thisHub.data) {
-                if (!thisHub.isLoading() && thisHub.contains(obj)) return false;
-            	thisHub.data.vector.insertElementAt(obj, pos);
+	private static boolean _insert2(Hub thisHub, Object obj, int pos, boolean bIsLoading) {
+        if (!bIsLoading && thisHub.contains(obj)) return false;
+    	thisHub.data.vector.insertElementAt(obj, pos);
+
+    	if (!bIsLoading && (thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
+            if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
+        		thisHub.data.getVecRemove().removeElement(obj);
             }
-	    }
-	    else {
-            thisHub.data.vector.insertElementAt(obj, pos);
-	    }
-	    if (!thisHub.isLoading() && (thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
-	        synchronized (thisHub.data) {
-	            if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
-            		thisHub.data.getVecRemove().removeElement(obj);
-	            }
-	            else {
-                	createVecAdd(thisHub).addElement(obj);
-	            }
-	        }
+            else {
+            	createVecAdd(thisHub).addElement(obj);
+            }
 	        thisHub.setChanged( (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
 	    }
 	    else thisHub.setChanged(true);
@@ -254,10 +230,8 @@ public class HubDataDelegate {
         try {
             OAThreadLocalDelegate.lock(thisHub);
             thisHub.data.changeCount++;
-            synchronized (thisHub.data) {
-                thisHub.data.vector.removeElementAt(posFrom);
-                thisHub.data.vector.insertElementAt(obj, posTo);
-            }
+            thisHub.data.vector.removeElementAt(posFrom);
+            thisHub.data.vector.insertElementAt(obj, posTo);
         }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);

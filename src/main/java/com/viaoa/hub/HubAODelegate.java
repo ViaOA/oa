@@ -123,19 +123,26 @@ public class HubAODelegate {
         return ho;
     }
 	
-/* test	
-static HashMap<Hub, Integer> hs = new HashMap<Hub, Integer>(397);
-public static void clearCache() {
-    hs.clear();
-}
-*/
-    /** Main setActiveObject
+	// 20141212 added lock
+    protected static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
+        try {
+            OAThreadLocalDelegate.lock(thisHub);
+            _setActiveObject(thisHub, object, pos, bUpdateLink, bForce, bCalledByShareHub);
+        }
+        catch (Exception e) {
+        }
+        finally {
+            OAThreadLocalDelegate.unlock(thisHub);
+        }
+    }
+
+	/** Main setActiveObject
 	    Naviagational method that sets the current active object.
 	    This is the central routine for changing the ActiveObject.  It is used by setPos,
 	    setActiveObject(int), setActiveObject(object), setActiveObject(object,boolean), replace, setSharedHub
 	    @param bCalledByShareHub true if the active object is being called when a Hub is being shared with an existing hub.  This is so that all of the shared hubs dont recv an event.
 	*/
-	protected static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
+	private static void _setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
 		if (thisHub.dataa.activeObject == object && !bForce) return;
 	
 	    if (thisHub.datau.isUpdatingActiveObject()) return;

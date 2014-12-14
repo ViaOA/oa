@@ -18,10 +18,7 @@ All rights reserved.
 package com.viaoa.hub;
 
 import java.util.logging.Logger;
-
-import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.object.*;
 
 /**
@@ -516,7 +513,7 @@ public class HubAddRemoveDelegate {
         
         // this will lock, sync(data), and startNextThread
         //was: boolean b = HubDataDelegate._insert(thisHub, key, obj, pos, false);  // false=dont lock, since this method is locked
-        boolean b = HubDataDelegate._insert(thisHub, obj, pos, false);  // false=dont lock, since this method is locked
+        boolean b = HubDataDelegate._insert(thisHub, obj, pos);
         if (!b) return b;
 
         /* 20140904 this is moved before setPropertyToMasterHub, so that

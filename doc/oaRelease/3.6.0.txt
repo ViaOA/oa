@@ -82,6 +82,28 @@ making referenceable
     HubDelegate.setReferenceable
         server side only        
 
+20141210
+    OAConsole
+    OAWaitDialog
+        added OAConsole flag
+    
+
+20141214 Sun
+    Improve oa locking
+        added locking in from setAO
+            HubAODelegate
+        removed sync blocks when using OAThreadLocalDelegate.lock
+        dont lock if isLoading/fetching
+            HubAddRemoveDeleget
+            HubDataDelegate
+    OAConsole add width param        
+    oabldr code gen, added console to OAWaitDialog
+        MethodCode.java
+            adds to ButtonController.setConoleProperty
+
+qqqqqqqqqqqqqqqq Todo qqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqq Todo qqqqqqqqqqqqqqqq
+
 
 
 

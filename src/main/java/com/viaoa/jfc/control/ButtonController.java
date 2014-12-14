@@ -443,15 +443,8 @@ public class ButtonController extends JFCController implements ActionListener {
         s = getConsoleProperty();
         OAConsole con = null;
         if (!OAString.isEmpty(s)) {
-            con = new OAConsole(getHub(), s) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension d = super.getPreferredSize();
-                    d.width *= 2.2;
-                    return d;
-                }
-            };
-            con.setPreferredSize(15, 1, true);
+            con = new OAConsole(getHub(), s, 45);
+            con.setPreferredSize(14, 1, true);
             dlg.setConsole(con);
         }
         
