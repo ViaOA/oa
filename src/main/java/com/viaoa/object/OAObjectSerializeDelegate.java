@@ -319,9 +319,12 @@ if (oaObjOrig.getClass().getSimpleName().equalsIgnoreCase("ServerRoot")) {
                         //        need to set up the shared hub correctly
                         Hub hx = (Hub) obj;
                         if (hx.getSharedHub() != null || ((Hub)obj).getSize() == 0) {
-                            // send something to know that there are 0 in hub 
-                            obj = null;
-                            b = true;
+                            String matchProperty = li==null?null:li.getMatchProperty();
+                            if (matchProperty == null || matchProperty.length() == 0) {
+                                // send a null to know that there are 0 in hub 
+                                obj = null;
+                                b = true;
+                            }
                         }
                     }
                 }

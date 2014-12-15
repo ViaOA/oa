@@ -68,6 +68,21 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
     public HubAutoMatch(Hub<TYPE> hub, String property, Hub<PROPTYPE> hubMaster) {
         this(hub, property, hubMaster, false);
     }
+
+    public HubAutoMatch() {
+    }
+    
+    public void init(Hub<TYPE> hub, String property, Hub<PROPTYPE> hubMaster) {
+        if (hub == null) throw new IllegalArgumentException("hub can not be null");
+        if (hubMaster == null) throw new IllegalArgumentException("hubMaster can not be null");
+
+        this.hub = hub;
+        this.hubMaster = hubMaster;
+        hubMaster.addHubListener(this);
+        setProperty(property);
+    }
+    
+    
     
     /**
      * This needs to be set to true if it is only created on the server, but client applications will be

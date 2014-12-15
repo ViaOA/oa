@@ -76,6 +76,10 @@ public class OAJsonReader {
         return new String(sb);
     }
     
+    protected String getName(String name) {
+        return name;
+    }
+    
     /* A "INSERTCLASS" will be inserted as a placeholder for the class name.  OAXMLReader will then
        find the correct value when it is converting to objects. 
      */
@@ -100,7 +104,7 @@ public class OAJsonReader {
             
             String name = null;
             if (token.type == TokenType.string) {
-                name = token.value;
+                name = getName(token.value);
                 sb.append("<" + name + ">");
                 nextToken();
                 if (token.type == TokenType.colon) nextToken();
@@ -120,7 +124,7 @@ public class OAJsonReader {
                 // see if <![CDATA[xxx.value.xxx]]>   is needed   qqqqqqqqqqqqq
                 sb.append(token.value);
             }
-            
+
             if (name != null) sb.append("</" + name + ">\n");
         }
         if (bFirstEver) {

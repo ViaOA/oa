@@ -439,7 +439,9 @@ public class HubDelegate {
         thisHub.cancelSort(); // 20090801 need to remove any sorters
     	thisHub.data.setAutoSequence(new HubAutoSequence(thisHub, property, startNumber, bKeepSeq, bServerOnly));
 	}
-    
+    public static HubAutoSequence getAutoSequence(Hub thisHub) {
+        return thisHub.data.getAutoSequence();
+    }
     
     /**
 	    Makes sure that for each object in a hubMaster, there exists an object in this hub where property
@@ -451,10 +453,15 @@ public class HubDelegate {
 	public static void setAutoMatch(Hub thisHub, String property, Hub hubMaster, boolean bServerSideOnly) {
 	    if (thisHub.data.getAutoMatch() != null) thisHub.data.getAutoMatch().close();
 	    if (hubMaster != null) {
-	        thisHub.data.setAutoMatch(new HubAutoMatch(thisHub, property, hubMaster));
-	        thisHub.data.getAutoMatch().setServerSideOnly(bServerSideOnly);
+	        HubAutoMatch am = new HubAutoMatch();
+            thisHub.data.setAutoMatch(am);
+	        am.init(thisHub, property, hubMaster);
+	        am.setServerSideOnly(bServerSideOnly);
 	    }
 	}
+    public static HubAutoMatch getAutoMatch(Hub thisHub) {
+        return thisHub.data.getAutoMatch();
+    }
 
 	
 	

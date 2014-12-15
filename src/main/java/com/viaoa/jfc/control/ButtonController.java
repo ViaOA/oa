@@ -467,7 +467,7 @@ public class ButtonController extends JFCController implements ActionListener {
                     }
                     else {
                         dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        
+                        console.close();
                         JButton cmd = dlg.getCancelButton();
                         cmd.setText("Close");
                         cmd.registerKeyboardAction(new ActionListener() {

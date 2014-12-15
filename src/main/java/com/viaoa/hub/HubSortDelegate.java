@@ -55,6 +55,10 @@ public class HubSortDelegate {
         }
     }
     
+    public static HubSortListener getSortListener(Hub thisHub) {
+        return thisHub.data.getSortListener();
+    }
+    
     private static void _sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         boolean bSame = false;

@@ -10,6 +10,7 @@ import javax.swing.JTable;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
+import com.viaoa.hub.HubListener;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.jfc.console.Console;
 import com.viaoa.object.OAObject;
@@ -27,6 +28,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
     private String property;
     private WeakHashMap<OAObject, Hub<Console>> hmConsole = new WeakHashMap<OAObject, Hub<Console>>();
     private int columns;
+    private HubListener hubListener; 
     
     public OAConsole(Hub hub, String property, int columns) {
         super(new Hub<Console>(Console.class));
@@ -34,6 +36,13 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
         this.property = property;
         this.columns = columns;
         setup();
+    }
+    
+    public void close() {
+        if (hubListener != null && hubListen != null) {
+            hubListen.removeHubListener(hubListener);
+        }
+        if (hmConsole != null) hmConsole.clear();
     }
     
     public void setup() {
@@ -48,7 +57,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
         setAllowSorting(false);
         setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         
-        hubListen.addHubListener(new HubListenerAdapter() {
+        hubListener = new HubListenerAdapter() {
             @Override
             public void afterChangeActiveObject(HubEvent e) {
                 Object obj = e.getObject();
@@ -106,8 +115,9 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
             public void beforeRemoveAll(HubEvent e) {
                 hmConsole.clear();
             }
-        });
-    
+        };
+        hubListen.addHubListener(hubListener);
+        
         addFocusListener(this);
         
         addMouseListener(this);
