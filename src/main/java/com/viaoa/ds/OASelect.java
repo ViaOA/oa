@@ -91,7 +91,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     protected boolean bHasBeenStarted;
     protected long lastReadTime; // used with timeout
     protected OAFilter<TYPE> oaFilter;  // this will be used by OASelect to filter iterator returned values
-    protected OAFilter<TYPE> dsFilter;  // this will be sent to DataSource, which should only use it if it does not support queries
+    protected OAFilter<TYPE> dsFilter;  // this will be sent to DataSource, which will use it if it does not support queries
     protected OAFinder<?, TYPE> finder; // will be used instead of calling datasource
     protected Hub<TYPE> hubSearch;      // hub used to search from, instead of using DataSource
     private boolean bDirty;  // data should always be loaded from datasource  

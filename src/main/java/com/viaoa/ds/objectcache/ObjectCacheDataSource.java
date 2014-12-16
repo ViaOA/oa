@@ -18,7 +18,6 @@ All rights reserved.
 package com.viaoa.ds.objectcache;
 
 import java.util.*;
-
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
@@ -37,39 +36,27 @@ public class ObjectCacheDataSource extends OADataSourceAuto {
 
     public ObjectCacheDataSource() {
     }
-    
+
     @Override
-    public Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return new ObjectCacheIterator(clazz, filter);
+    public Iterator select(Class selectClass, 
+        String queryWhere, Object[] params, String queryOrder, 
+        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        int max, OAFilter filter, boolean bDirty
+    )
+    {
+        return new ObjectCacheIterator(selectClass, filter);
     }
     
-    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return new ObjectCacheIterator(clazz, filter);
-    }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, boolean bDirty) {
-    	return this.select(clazz, queryWhere, new Object[] {param}, queryOrder, bDirty);
-    }
-
-    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return new ObjectCacheIterator(clazz, filter);
-    }
-
-    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter, boolean bDirty) {
-        return new ObjectCacheIterator(clazz, filter);
-    }
-
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max, OAFilter filter, boolean bDirty) {
-        return new ObjectCacheIterator(clazz, filter);
-    }
-
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+    @Override
+    public Iterator selectPassthru(Class selectClass, 
+        String queryWhere, String queryOrder, 
+        int max, OAFilter filter, boolean bDirty
+    )
+    {
         return new ObjectCacheIterator(selectClass, filter);
     }
 
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return select(selectClass, whereObject, null, null, propertyNameFromMaster, queryOrder, max, filter, bDirty);
-    }
 
     public @Override void initializeObject(OAObject obj) {
         super.initializeObject(obj);  // have autonumber handle this

@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.object.OACascade;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerServer;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -98,6 +99,10 @@ public class OASyncServer {
                 @Override
                 public String getDisplayMessage() {
                     return OASyncServer.this.getDisplayMessage();
+                }
+                @Override
+                public void refresh(Class clazz) {
+                    OAObjectCacheDelegate.refresh(clazz);
                 }
             };
             OASyncDelegate.setRemoteServer(remoteServer);

@@ -196,54 +196,56 @@ public class OADataSourceJDBC extends OADataSource {
         return false;
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-    	return select(clazz, queryWhere, (Object[]) null, queryOrder, max, filter, bDirty);
+
+    @Override
+    public Iterator select(Class selectClass, 
+        String queryWhere, Object[] params, String queryOrder, 
+        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        int max, OAFilter filter, boolean bDirty
+    )
+    {
+        if (whereObject != null) {
+            return SelectDelegate.select(this, selectClass, 
+                    whereObject, extraWhere, params, propertyFromMaster,
+                    queryOrder, max,  bDirty);
+            
+        }
+        return SelectDelegate.select(this, selectClass, 
+                queryWhere, params, queryOrder,
+                max, bDirty);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-    	return SelectDelegate.select(this, clazz, queryWhere, param, queryOrder, max, filter, bDirty);
+    
+    public Iterator selectPassthru(Class selectClass, 
+        String queryWhere, String queryOrder, 
+        int max, OAFilter filter, boolean bDirty
+    )
+    {
+        return SelectDelegate.selectPassthru(this, selectClass, queryWhere, queryOrder, max, bDirty);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return SelectDelegate.select(this, clazz, queryWhere, params, queryOrder, max, filter, bDirty);
-    }
-
-    public @Override Iterator select(Class clazz, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return select(clazz, whereObject, null, null, propertyFromMaster, queryOrder, max, filter, bDirty);
-    }
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return SelectDelegate.select(this, selectClass, whereObject, extraWhere, args,propertyFromMaster, queryOrder, max, bDirty);
-    }
-
+    
     public @Override Object execute(String command) {
-    	return SelectDelegate.execute(this,command);
-    }
-
-    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter, boolean bDirty) {
-    	return SelectDelegate.selectPassthru(this, clazz, query, max, bDirty);
-    }
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-    	return SelectDelegate.selectPassthru(this, clazz, queryWhere, queryOrder, max, bDirty);
+        return SelectDelegate.execute(this,command);
     }
     
-    public @Override int count(Class selectClass, OAObject whereObject, String propertyFromMaster, int max) {
-        return count(selectClass, whereObject, null, null, propertyFromMaster, max);
+    
+    @Override
+    public int count(Class selectClass, 
+        String queryWhere, Object[] params,   
+        OAObject whereObject, String propertyFromMaster, String extraWhere, int max)
+    {
+        if (whereObject != null) {
+            return SelectDelegate.count(this, selectClass, whereObject, extraWhere, params, propertyFromMaster, max);
+        }
+        return SelectDelegate.count(this, selectClass, queryWhere, params, max);
     }
-    public @Override int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, int max) {
-    	return SelectDelegate.count(this, selectClass, whereObject, extraWhere, args, propertyFromMaster, max);
+
+    @Override
+    public int countPassthru(Class selectClass, String queryWhere, int max) {
+        return SelectDelegate.countPassthru(this, queryWhere, max);
     }
-    public @Override int count(Class clazz, String queryWhere, int max) {
-    	return this.count(clazz, queryWhere, (Object[]) null, max);
-    }
-    public @Override int count(Class clazz, String queryWhere, Object param, int max) {
-    	return SelectDelegate.count(this, clazz, queryWhere, param, max);
-    }
-    public @Override int count(Class clazz, String queryWhere, Object[] params, int max) {
-    	return SelectDelegate.count(this, clazz, queryWhere, params, max);
-    }
-    public @Override int countPassthru(String query, int max) {
-    	return SelectDelegate.countPassthru(this, query, max);
-    }
+    
 
 
     

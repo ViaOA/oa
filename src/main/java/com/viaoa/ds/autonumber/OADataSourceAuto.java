@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.ds.autonumber;
 
 import java.util.*;
+
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
@@ -160,81 +161,8 @@ public class OADataSourceAuto extends OADataSource {
 
     
 
-    /**
-        Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter, boolean bDirty) {
-        return null;
-    }
-
-    /**
-        Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return null;
-    }
-
-    /**
-        Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override Iterator select(Class clazz, String queryWhere,  String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return null;
-    }
-    /**
-     	Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
-	*/
-	public @Override Iterator select(Class clazz, String queryWhere,  Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-	    return null;
-	}
-    /**
- 		Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
-	*/
-	public @Override Iterator select(Class clazz, String queryWhere,  Object param, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-	    return null;
-	}
-
-    /**
-        Overwritten to always return 0.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override int count(Class clazz, String queryWhere, int max) {
-        return 0;
-    }
-    /**
-     Overwritten to always return 0.  OADataSourceNextNumber Does not support data storage.
-	*/
-	public @Override int count(Class clazz, String queryWhere, Object[] param, int max) {
-	    return 0;
-	}
-    /**
-    Overwritten to always return 0.  OADataSourceNextNumber Does not support data storage.
-	*/
-	public @Override int count(Class clazz, String queryWhere, Object param, int max) {
-	    return 0;
-	}
-
-    /**
-        Overwritten to always return 0.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override int countPassthru(String query, int max) {
-        return 0;
-    }
-
-    /**
-        Overwritten to always return 0.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster, int max) {
-        return 0;
-    }
-
-    /**
-        Overwritten to always return 0.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, int max) {
-        return 0;
-    }
-
+    @Override
 	public void updateMany2ManyLinks(OAObject masterObject, OAObject[] adds, OAObject[] removes, String propertyNameFromMaster) {
-		
 	}
 
     /**
@@ -273,19 +201,6 @@ public class OADataSourceAuto extends OADataSource {
     public void delete(OAObject object) {
     }
 
-    /**
-        Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return null;
-    }
-
-    /**
-        Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
-    */
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return null;
-    }
 
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
@@ -298,6 +213,26 @@ public class OADataSourceAuto extends OADataSource {
     public byte[] getPropertyBlobValue(OAObject obj, String propertyName) {
         Object objx = obj.getProperty(propertyName);
         if (objx instanceof byte[]) return (byte[]) objx;
+        return null;
+    }
+
+    @Override
+    public int count(Class selectClass, String queryWhere, Object[] params, OAObject whereObject, String propertyFromMaster, String extraWhere, int max) {
+        return 0;
+    }
+
+    @Override
+    public int countPassthru(Class selectClass, String queryWhere, int max) {
+        return 0;
+    }
+
+    @Override
+    public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, OAObject whereObject, String propertyFromMaster, String extraWhere, int max, OAFilter filter, boolean bDirty) {
+        return null;
+    }
+
+    @Override
+    public Iterator selectPassthru(Class selectClass, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
 }

@@ -61,8 +61,7 @@ public abstract class RemoteDataSource {
             ds = getDataSource(clazz);
             if (ds != null) {
                 x = ds.getMaxLength(clazz, (String) objects[1]);
-                //qqqqqqqqq                
-                System.out.println("RemoteDataSourceImpl call to MAX_LENGTH when it should be on the client.");                
+                // System.out.println("note: RemoteDataSource call to MAX_LENGTH when it should be on the client.");                
                 obj = new Integer(x);
             }
             break;
@@ -71,6 +70,7 @@ public abstract class RemoteDataSource {
             ds = getDataSource(clazz);
             obj = new Boolean((ds != null));
             break;
+            
         case OADataSourceClient.UPDATE_MANY2MANY_LINKS:
             clazz = (Class) objects[0];
             ds = getDataSource(clazz);
@@ -115,51 +115,54 @@ public abstract class RemoteDataSource {
                 obj = null;
             }
             break;
+            
         case OADataSourceClient.COUNT:
             clazz = (Class) objects[0];
             ds = getDataSource(clazz);
             if (ds != null) {
-                int z = objects.length - 2;
-                Object[] objs = new Object[z];
-                for (int y = 0; y < z; y++) {
-                    objs[y] = objects[2 + y];
+                String queryWhere = (String) objects[1];
+                Object[] params = (Object[]) objects[2];
+                Class whereClass = (Class) objects[3];
+                OAObjectKey whereKey = (OAObjectKey) objects[4];
+                propFromMaster = (String) objects[5];
+                String extraWhere = (String) objects[6];
+                int max = (Integer) objects[7];
+                
+                whereObject = null;
+                if (whereClass != null && whereKey != null) {
+                    whereObject = getObject(whereClass, whereKey);
                 }
-                x = ds.count(clazz, (String) objects[1], objs);
+                
+                x = ds.count(clazz, queryWhere, params, (OAObject) whereObject, propFromMaster, extraWhere, max);
                 obj = new Integer(x);
             }
+            else obj = new Integer(-1);
             break;
+            
         case OADataSourceClient.COUNTPASSTHRU:
-            ds = getDataSource();
-            if (ds != null) {
-                x = ds.countPassthru((String) objects[0]);
-                obj = new Integer(x);
-            }
-            break;
-        case OADataSourceClient.COUNT2:
             clazz = (Class) objects[0];
-            whereObject = getObject(clazz, objects[1]);
-            String extraWhere = (String) objects[2];
-            Object[] args = (Object[]) objects[3];
-            propFromMaster = (String) objects[4];
-
             ds = getDataSource(clazz);
             if (ds != null) {
-                x = ds.count(clazz, (OAObject) whereObject, extraWhere, args, propFromMaster);
+                x = ds.countPassthru(clazz, (String) objects[1], (Integer) objects[2]);
                 obj = new Integer(x);
             }
+            else obj = new Integer(-1);
             break;
+            
         case OADataSourceClient.SUPPORTSSTORAGE:
             ds = getDataSource();
             if (ds != null) {
                 b = ds.supportsStorage();
                 obj = new Boolean(b);
             }
+            else obj = null;
             break;
         case OADataSourceClient.EXECUTE:
             ds = getDataSource();
             if (ds != null) {
                 return ds.execute((String) objects[0]);
             }
+            else obj = null;
             break;
         case OADataSourceClient.IT_REMOVE:
             Iterator iterator = (Iterator) hashIterator.get(objects[0]);
@@ -171,27 +174,56 @@ public abstract class RemoteDataSource {
             break;
 
         case OADataSourceClient.SELECT:
-            int z = objects.length - 3;
-            Object[] params = new Object[z];
-            for (int y = 0; y < z; y++) {
-                params[y] = objects[3 + y];
+            clazz = (Class) objects[0];
+            ds = getDataSource(clazz);
+            String selectId;
+            if (ds != null) {
+                String queryWhere = (String) objects[1];
+                Object[] params = (Object[]) objects[2];
+                String queryOrder = (String) objects[3];
+                Class whereClass = (Class) objects[4];
+                OAObjectKey whereKey = (OAObjectKey) objects[5];
+                propFromMaster = (String) objects[6];
+                String extraWhere = (String) objects[7];
+                int max = (Integer) objects[8];
+                boolean bDirty = (Boolean) objects[9];
+                
+                whereObject = null;
+                if (whereClass != null && whereKey != null) {
+                    whereObject = getObject(whereClass, whereKey);
+                }
+                
+                iterator = ds.select(clazz, 
+                    queryWhere, params, queryOrder,
+                    (OAObject) whereObject, propFromMaster, extraWhere,
+                    max, null, bDirty);
+                        
+                selectId = "select" + aiSelectCount.incrementAndGet();
+                if (iterator != null) {
+                    hashIterator.put(selectId, iterator);
+                    LOG.fine("add iterator, size="+hashIterator.size());
+                }
             }
-            obj = datasourceSelect((Class) objects[0], (String) objects[1], params, (String) objects[2]);
-            break;
+            else selectId = null;
+            return selectId;
+
         case OADataSourceClient.SELECTPASSTHRU:
             clazz = (Class) objects[0];
             ds = getDataSource(clazz);
             if (ds != null) {
-                iterator = ds.select(clazz, (String) objects[1], (String) objects[2], 0, null); // where, order
+                iterator = ds.selectPassthru(clazz, (String) objects[1], (String) objects[2], (Integer) objects[3], null, (Boolean) objects[4]); 
                 obj = "select" + aiSelectCount.incrementAndGet();
                 hashIterator.put((String) obj, iterator);
                 LOG.fine("add iterator, size="+hashIterator.size());
             }
+            else obj = null;
             break;
+
         case OADataSourceClient.SUPPORTSINITIALIZEOBJECT: 
             clazz = (Class) objects[0];
             ds = getDataSource(clazz);
             if (ds != null) obj = new Boolean(ds.supportsInitializeObject());
+            else obj = null;
             break;
         case OADataSourceClient.INITIALIZEOBJECT:
             clazz = (Class) objects[0].getClass();
@@ -202,24 +234,7 @@ public abstract class RemoteDataSource {
                 OARemoteThreadDelegate.sendMessages(false);
             }
             break;
-        case OADataSourceClient.SELECTUSINGOBJECT:
-            clazz = (Class) objects[0]; // class to select
-            ds = getDataSource(clazz);
-            if (ds != null) {
-                masterClass = (Class) objects[1];
-                whereObject = getObject(masterClass, objects[2]);
-                extraWhere = (String) objects[3];
-                args = (Object[]) objects[4];
-                propFromMaster = (String) objects[5];
-                
-                iterator = ds.select(clazz, (OAObject) whereObject, extraWhere, args, propFromMaster, (String) objects[6]);
-                obj = "select" + aiSelectCount.incrementAndGet();
-                if (iterator != null) {
-                    hashIterator.put((String) obj, iterator);
-                    LOG.fine("add iterator, size="+hashIterator.size());
-                }
-            }
-            break;
+
         case OADataSourceClient.INSERT_WO_REFERENCES:
             whereObject = objects[0];
             if (whereObject == null) break;
@@ -311,20 +326,5 @@ public abstract class RemoteDataSource {
     protected boolean datasourceHasNext(String id) {
         Iterator iterator = (Iterator) hashIterator.get(id);
         return (iterator != null && iterator.hasNext());
-    }    
-
-    protected String datasourceSelect(Class clazz, String queryWhere, Object[] params, String queryOrder) {
-        OADataSource ds = getDataSource(clazz);
-        String selectId;
-        if (ds != null) {
-            Iterator iterator = ds.select(clazz, (String) queryWhere, params, (String) queryOrder, 0, null); 
-            selectId = "select" + aiSelectCount.incrementAndGet();
-            if (iterator != null) {
-                hashIterator.put(selectId, iterator);
-                LOG.fine("remove iterator, size="+hashIterator.size());
-            }
-        }
-        else selectId = null;
-        return selectId;
     }    
 }

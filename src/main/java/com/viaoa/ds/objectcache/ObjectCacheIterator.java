@@ -17,6 +17,7 @@ public class ObjectCacheIterator<T> implements Iterator {
     protected ArrayList<T> alFetchObjects = new ArrayList<T>(50);
     protected int posFetchObjects;
     protected boolean bFetchIsDone;
+    protected int max;
 
     public ObjectCacheIterator(Class<T> c) {
         this.clazz = c;
@@ -38,6 +39,14 @@ public class ObjectCacheIterator<T> implements Iterator {
             if (filter == null || filter.isUsed(obj)) break;
         }
         return obj;
+    }
+    
+//qqqqqqqqq not implemented     
+    public void setMax(int x) {
+        this.max = x;
+    }
+    public int getMax() {
+        return max;
     }
 
     public T _next() {

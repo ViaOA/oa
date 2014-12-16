@@ -43,7 +43,7 @@ import com.viaoa.util.OAFilter;
     @see #getDataSource(Class)
     @see OASelect
 */
-public abstract class OADataSource {
+public abstract class OADataSource implements OADataSourceInterface {
     private static Vector vecDataSource = new Vector(5,5);
     protected String name;
     protected boolean bLast;
@@ -101,15 +101,17 @@ public abstract class OADataSource {
      * Used to turn on/off a DataSource.  If false, then requests to OADataSource.getDataSource will
      * not return a disabled dataSource.
      */
+    @Override
     public void setEnabled(boolean b) {
     	this.bEnable = b;
     }
+    @Override
     public boolean getEnabled() {
     	return this.bEnable;
     }
     
     /**
-        Used to retreive a single object from DataSource.
+        Used to retrieve a single object from DataSource.
         @param id is the property key value for the object.
     */
     public static Object getObject(Class clazz, String id) {
@@ -155,6 +157,8 @@ public abstract class OADataSource {
         if (ds == null) return null;
         return ds.getObject(oi, clazz, key, false);
     }
+
+    @Override
     public Object getObject(OAObjectInfo oi, Class clazz, OAObjectKey key, boolean bDirty) {
         if (clazz == null || key == null || oi == null) return null;
         OADataSource ds = getDataSource(clazz);
@@ -183,6 +187,7 @@ public abstract class OADataSource {
         Used to know if autonumber properties should be assigned on create or on save.
         @param b if true, assign autonumber property when object is created, else assign when object is saved.
     */
+    @Override
     public void setAssignNumberOnCreate(boolean b) {
         bAssignNumberOnCreate = b;
     }
@@ -190,6 +195,7 @@ public abstract class OADataSource {
         Used to know if autonumber properties should be assigned on create or on save.
         @see #setAssignNumberOnCreate
     */
+    @Override
     public boolean getAssignNumberOnCreate() {
         return bAssignNumberOnCreate;
     }
@@ -197,6 +203,7 @@ public abstract class OADataSource {
     /**
         Used to know is datasoure is currently available.
     */
+    @Override
     public boolean isAvailable() {
         return true;
     }
@@ -229,6 +236,7 @@ public abstract class OADataSource {
     /**
         Returns max length allowed for a property.  returns "-1" for any length.
     */
+    @Override
     public int getMaxLength(Class c, String propertyName) {
         return -1;
     }
@@ -272,6 +280,7 @@ public abstract class OADataSource {
     /**
         Close this DataSource.
     */
+    @Override
     public void close() {
         vecDataSource.removeElement(this);
         dataSourceChangeCnter++;
@@ -281,6 +290,7 @@ public abstract class OADataSource {
      * This can be called after a close has been done to make the datasoruce available again.
      * @param pos search location in list of datasources.
      */
+    @Override
     public void reopen(int pos) {
         if (!vecDataSource.contains(this)) {
             int x = vecDataSource.size();
@@ -348,6 +358,7 @@ public abstract class OADataSource {
         Used by static OADataSource to know if a registered OADataSource subclass
         supports a specific Class.
     */
+    @Override
     public abstract boolean isClassSupported(Class clazz);
 
     /**
@@ -358,6 +369,7 @@ public abstract class OADataSource {
         <br>
         This is called by OAObject.cascadeSave/Delete methods
      */
+    @Override
 	public abstract void updateMany2ManyLinks(OAObject masterObject, OAObject[] adds, OAObject[] removes, String propFromMaster);
     
 
@@ -368,6 +380,7 @@ public abstract class OADataSource {
         @param bForce is true, then object should be inserted without verifying.
         @see OAObject#save
     */
+    @Override
     public abstract void insert(OAObject obj);
     
     
@@ -377,6 +390,7 @@ public abstract class OADataSource {
 	    Called directly by OAObject.saveWithoutReferences() to save a reference while saving another Object.
 	    @see OAObject#save
 	*/
+    @Override
     public abstract void insertWithoutReferences(OAObject obj);
     
     /**
@@ -386,13 +400,16 @@ public abstract class OADataSource {
         @param bForce is true, then object should be inserted without verifying.
         @see OAObject#save
     */
+    @Override
     public abstract void update(OAObject obj, String[] includeProperties, String[] excludeProperties);
+    @Override
     public void update(OAObject obj) {
         update(obj, null, null);
     }
     /**
         Remove an Object from a DataSource.
     */
+    @Override
     public abstract void delete(OAObject obj);
 
 
@@ -403,6 +420,7 @@ public abstract class OADataSource {
         @see #insert
         @see #update
     */
+    @Override
     public void save(OAObject obj) {
         // if it can be decided to use either insert() or update()
         if (obj == null) return;
@@ -419,27 +437,65 @@ public abstract class OADataSource {
         @param queryWhere query using property paths based on Object structure.
         @see OASelect
     */
-    public abstract int count(Class clazz, String queryWhere, int max);
-    public int count(Class clazz, String queryWhere) {
-    	return count(clazz, queryWhere, 0);
+    @Override
+    public abstract int count(Class selectClass, 
+        String queryWhere, Object[] params,   
+        OAObject whereObject, String propertyFromMaster, String extraWhere, int max
+    );
+    public int count(Class selectClass, String queryWhere, int max) {
+        int x = count(selectClass,
+            queryWhere, null,
+            null, null, null, max);
+        if (max < 1) return x;
+        return Math.min(x, max);
     }
-
-    /**
-    Perform a count on the DataSource using a query.
-    @param clazz Class to perform query on
-    @param queryWhere query using property paths based on Object structure.
-    @param params list of values to replac '?' within the queryWhere clause.
-    @see OASelect
-	*/
-	public abstract int count(Class clazz, String queryWhere, Object[] params, int max);
-	
-	public int count(Class clazz, String queryWhere, Object[] params) {
-		return count(clazz, queryWhere, params, 0);
+    public int count(Class selectClass, String queryWhere) {
+    	return count(selectClass, queryWhere, 0);
+    }
+	public int count(Class selectClass, String queryWhere, Object[] params, int max) {
+	    int x = count(selectClass,
+	        queryWhere, params,
+	        null, null, null, max);
+        if (max < 1) return x;
+        return Math.min(x, max);
 	}
-	public abstract int count(Class clazz, String queryWhere, Object param, int max);
-	public int count(Class clazz, String queryWhere, Object param) {
-		return count(clazz, queryWhere, param, 0);
+	public int count(Class selectClass, String queryWhere, Object[] params) {
+        return count(selectClass,
+            queryWhere, params,
+            null, null, null, 0);
 	}
+	public int count(Class selectClass, String queryWhere, Object param, int max) {
+        int x = count(selectClass,
+                queryWhere, new Object[] {param},
+                null, null, null, max);
+            if (max < 1) return x;
+            return Math.min(x, max);
+	}
+	public int count(Class selectClass, String queryWhere, Object param) {
+        return count(selectClass,
+            queryWhere, new Object[] {param},
+            null, null, null, 0);
+	}
+    public int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster, int max) {
+        int x = count(selectClass,
+                null, null,
+                whereObject, propertyNameFromMaster, null, max);
+            if (max < 1) return x;
+            return Math.min(x, max);
+    }
+    public int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster) {
+        return count(selectClass, whereObject, propertyNameFromMaster, 0);
+    }
+    public int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] params, String propertyNameFromMaster, int max) {
+        int x = count(selectClass,
+            null, params,
+            whereObject, propertyNameFromMaster, extraWhere, max);
+        if (max < 1) return x;
+        return Math.min(x, max);
+    }
+    public int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] params, String propertyNameFromMaster) {
+        return count(selectClass, whereObject, extraWhere, params, propertyNameFromMaster, 0);
+    }
 
     
     /**
@@ -447,41 +503,24 @@ public abstract class OADataSource {
         @param query query based on DataSource structure.
         @see OASelect
     */
-    public abstract int countPassthru(String query, int max);
-    public int countPassthru(String query) {
-    	return countPassthru(query, 0);
+	@Override
+    public abstract int countPassthru(Class selectClass, 
+        String queryWhere, int max  
+    );
+    public int countPassthru(String queryWhere, int max) {
+        int x = countPassthru(null, queryWhere, max);
+        if (max < 1) return x;
+        return Math.min(x, max);
     }
-
-    /**
-        Perform a count on the DataSource using an object for query.
-        @param selectClass Class to perform query on
-        @param whereObject parent object that is used to build where clause for
-        @param propertyNameFromMaster name of property from where Object.
-        @see OASelect
-    */
-    public abstract int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster, int max);
-    public int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster) {
-    	return count(selectClass, whereObject, propertyNameFromMaster, 0);
-    }
-
-    /**
-        Perform a count on the DataSource using an object for query.
-        @param selectClass Class to perform query on
-        @param whereObject parent object that is used to build where clause for
-        @param extraWhere additional where query to add (using AND) to query string.
-        @param propertyNameFromMaster name of property from where Object.
-        @see OASelect
-    */
-    public abstract int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] params, String propertyNameFromMaster, int max);
-
-    public int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] params, String propertyNameFromMaster) {
-    	return count(selectClass, whereObject, extraWhere, params, propertyNameFromMaster, 0);
+    public int countPassthru(String queryWhere) {
+        return countPassthru(queryWhere, 0);
     }
 
 
     /**
         Returns true if this dataSource supports selecting/storing/deleting.
     */
+    @Override
     public abstract boolean supportsStorage();
 
 
@@ -491,45 +530,105 @@ public abstract class OADataSource {
         See OASelect for complete description on selects/queriess.
         @param selectClass Class of object to create and return
         @param queryWhere query String using property paths based on Object structure.  DataSource
+        @param params list of values to replace '?' in queryWhere clause.
         will convert query to native query language of the datasoure.
         @return Iterator that is used to return objects of type selectClass
         @see OASelect
      */
-    public abstract Iterator select(Class selectClass, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty);
+    @Override
+    public abstract Iterator select(Class selectClass, 
+        String queryWhere, Object[] params, String queryOrder, 
+        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        int max, OAFilter filter, boolean bDirty
+    );
+
+    public Iterator select(Class selectClass) {
+        return select(selectClass, 
+                (String) null, (Object[]) null, (String) null, 
+                (OAObject) null, (String) null, (String) null,
+                0, (OAFilter) null, false);
+    }
+    public Iterator select(Class selectClass, String queryWhere) {
+        return select(selectClass, 
+                queryWhere, (Object[]) null, (String) null, 
+                (OAObject) null, (String) null, (String) null,
+                0, (OAFilter) null, false);
+    }
+    public Iterator select(Class selectClass, String queryWhere, String orderBy) {
+        return select(selectClass, 
+                queryWhere, (Object[]) null, orderBy, 
+                (OAObject) null, (String) null, (String) null,
+                0, (OAFilter) null, false);
+    }
+    public Iterator select(Class selectClass, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+        return select(selectClass, 
+                queryWhere, null, queryOrder, 
+                null, null, null,
+                max, filter, bDirty);
+    }
     public Iterator select(Class selectClass, String queryWhere, String queryOrder, int max, boolean bDirty) {
-        return select(selectClass, queryWhere, queryOrder, max, null, bDirty);
+        return select(selectClass, 
+                queryWhere, null, queryOrder, 
+                null, null, null,
+                max, null, bDirty);
     }
     public Iterator select(Class selectClass, String queryWhere, String queryOrder, boolean bDirty) {
-    	return select(selectClass, queryWhere, queryOrder, 0, null, bDirty);
+        return select(selectClass, 
+                queryWhere, null, queryOrder, 
+                null, null, null,
+                0, null, bDirty);
     }
-
-    /**
-    Perform a query to retrieve objects from DataSource.
-    <p>
-    See OASelect for complete description on selects/queriess.
-    @param selectClass Class of object to create and return
-    @param queryWhere query String using property paths based on Object structure.  DataSource
-    @param params list of values to replace '?' in queryWhere clause.
-    will convert query to native query language of the datasoure.
-    @return Iterator that is used to return objects of type selectClass
-    @see OASelect
-	 */
-	public abstract Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty);
     public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, int max, boolean bDirty) {
-        return select(selectClass, queryWhere, params, queryOrder, max, null, bDirty);
+        return select(selectClass, 
+                queryWhere, params, queryOrder, 
+                null, null, null,
+                max, null, bDirty);
     }
     public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, boolean bDirty) {
-    	return select(selectClass, queryWhere, params, queryOrder, 0, null, bDirty);
+        return select(selectClass, 
+                queryWhere, params, queryOrder, 
+                null, null, null,
+                0, null, bDirty);
     }
-
-	public abstract Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, int max, OAFilter filter, boolean bDirty);
+	public Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+        return select(selectClass, 
+                queryWhere, new Object[] {param}, queryOrder, 
+                null, null, null,
+                max, filter, bDirty);
+	}
     public Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, int max, boolean bDirty) {
         return select(selectClass, queryWhere, param, queryOrder, max, null, bDirty);
     }
     public Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, boolean bDirty) {
 		return select(selectClass, queryWhere, param, queryOrder, 0, null, bDirty);
 	}
-
+    public Iterator select(Class selectClass, 
+            OAObject whereObject, String extraWhere, Object[] args, 
+            String propertyNameFromMaster, String queryOrder, 
+            int max, OAFilter filter, boolean bDirty) {
+        return select(selectClass, 
+            null, args, queryOrder,
+            whereObject, propertyNameFromMaster, extraWhere,
+            max, filter, bDirty);
+    }
+    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, whereObject, extraWhere, null, propertyNameFromMaster, queryOrder, max, null, bDirty);
+    }
+    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, boolean bDirty) {
+        return select(selectClass, whereObject, extraWhere, null, propertyNameFromMaster, queryOrder, 0, null, bDirty);
+    }
+    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+        return select(selectClass, 
+            null, null, queryOrder,
+            whereObject, propertyNameFromMaster, null,
+            max, filter, bDirty);
+    }
+    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, max, null, bDirty);
+    }
+    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, boolean bDirty) {
+        return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, 0, null, bDirty);
+    }
     
     
     // hasNext(), next(), remove() (used to close)
@@ -541,98 +640,60 @@ public abstract class OADataSource {
         @see OASelect
         @return Iterator that is used to return objects of type selectClass
     */
-    public abstract Iterator selectPassthru(Class selectClass, String query, int max, OAFilter filter, boolean bDirty);
+    public abstract Iterator selectPassthru(Class selectClass, 
+        String queryWhere, String queryOrder, 
+        int max, OAFilter filter, boolean bDirty
+    );
+    public Iterator selectPassthru(Class selectClass, String query, int max, OAFilter filter, boolean bDirty) {
+        return selectPassthru(selectClass,
+            query, null,
+            max, filter, bDirty
+        );
+    }
     public Iterator selectPassthru(Class selectClass, String query, int max, boolean bDirty) {
-        return selectPassthru(selectClass, query, max, null, bDirty);
+        return selectPassthru(selectClass,
+            query, null,
+            max, null, bDirty
+        );
     }
     public Iterator selectPassthru(Class selectClass, String query, boolean bDirty) {
-    	return selectPassthru(selectClass, query, 0, null, bDirty);
+        return selectPassthru(selectClass,
+            query, null,
+            0, null, bDirty
+        );
     }
-
-    /**
-        Performs a select using native query language for DataSource.
-        <p>
-        queryWhere should include everything including "FROM", and "WHERE".
-        The selected columns will be done automatically. <br>
-        "ORDER BY" will be supplied if queryOrder exists.
-
-        @param selectClass Class of object to create and return
-        @param query query based on DataSource structure.
-        @see OASelect
-        @return Iterator that is used to return objects of type selectClass
-    */
-    public abstract Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty);
-    public Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, boolean bDirty) {
-        return selectPassthru(clazz, queryWhere, queryOrder, max, null, bDirty);
+    public Iterator selectPassthru(Class selectClass, String query, String queryOrder, int max, boolean bDirty) {
+        return selectPassthru(selectClass,
+            query, queryOrder,
+            max, null, bDirty
+        );
     }
-    public Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, boolean bDirty) {
-    	return selectPassthru(clazz, queryWhere, queryOrder, 0, null, bDirty);
+    public Iterator selectPassthru(Class selectClass, String query, String queryOrder, boolean bDirty) {
+        return selectPassthru(selectClass,
+            query, queryOrder,
+            0, null, bDirty
+        );
     }
 
 
-   
     /**
         Execute a command on the dataSource.
         @param command DataSource native command.
     */
+    @Override
     public abstract Object execute(String command);
 
-    /**
-        Perform a query based on a where object to retrieve objects from DataSource.
-        <p>
-        See OASelect for complete description on selects/queriess.
-        @param selectClass Class of object to create and return
-        @param whereObject parent object that is used to build where clause for.  Uses convertToString()
-        @param extraWhere query String using property paths based on Object structure.  DataSource
-        @param queryOrder comma separated list of property paths for sorting.  "DESC" or "ASC" can
-        be used to determin descending or ascending order.
-        will convert query to native query language of the datasoure.
-        @param propertyNameFromMaster name of property from where object.
-        @return Iterator that is used to return objects of type selectClass
-        @see #convertToString(String,Object)
-        @see OASelect
-    */
-    public abstract Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty);
-
-    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, boolean bDirty) {
-        return select(selectClass, whereObject, extraWhere, null, propertyNameFromMaster, queryOrder, max, null, bDirty);
-    }
-    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, boolean bDirty) {
-    	return select(selectClass, whereObject, extraWhere, null, propertyNameFromMaster, queryOrder, 0, null, bDirty);
-    }
-
-    /**
-        Perform a query based on a where object to retrieve objects from DataSource.
-        <p>
-        See OASelect for complete description on selects/queriess.
-        @param selectClass Class of object to create and return
-        @param whereObject parent object that is used to build where clause for.  Uses convertToString()
-        @param extraWhere query String using property paths based on Object structure.  DataSource
-        @param queryOrder comma separated list of property paths for sorting.  "DESC" or "ASC" can
-        be used to determin descending or ascending order.
-        will convert query to native query language of the datasoure.
-        @param propertyNameFromMaster name of property from where object.
-        @return Iterator that is used to return objects of type selectClass
-        @see #convertToString(String,Object)
-        @see OASelect
-    */
-    public abstract Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty);
-    
-    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, boolean bDirty) {
-        return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, max, null, bDirty);
-    }
-    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, boolean bDirty) {
-    	return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, 0, null, bDirty);
-    }
 
     /**
         Called by OAObject to initialize a new Object.
     */
+    @Override
     public abstract void initializeObject(OAObject obj);
 
     /**
         Called by OAObject to initialize a new Object.
     */
+    @Override
     public boolean supportsInitializeObject() {
         return true;
     }
@@ -640,6 +701,7 @@ public abstract class OADataSource {
     /**
         Returns true if the dataSource will set the property value before saving.
     */
+    @Override
     public boolean willCreatePropertyValue(OAObject object, String propertyName) {
         return false;
     }
@@ -649,6 +711,7 @@ public abstract class OADataSource {
         for references will not allow the object id to be changed after the object has been saved.
         @see OADataSourceJDBC#getAllowIdChange
     */
+    @Override
     public boolean getAllowIdChange() {
         return true;
     }
@@ -656,11 +719,13 @@ public abstract class OADataSource {
     /**
      * Select BLOB (large byte[]) property 
      */
+    @Override
     public abstract byte[] getPropertyBlobValue(OAObject obj, String propertyName);
 
     /**
      * Can this datasource get a count of the objects that will be selected.
      */
+    @Override
     public boolean getSupportsPreCount() {
         return true;
     }

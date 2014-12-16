@@ -19,8 +19,11 @@ package com.viaoa.sync.remote;
 
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 import com.viaoa.sync.model.ClientInfo;
 
+@OARemoteInterface
 public interface RemoteServerInterface {
 
     boolean save(Class objectClass, OAObjectKey objectKey, int iCascadeRule);
@@ -33,4 +36,7 @@ public interface RemoteServerInterface {
     String getDisplayMessage();
     
     int getNextFiftyObjectGuids();
+    
+    @OARemoteMethod(noReturnValue=true)
+    void refresh(Class clazz);
 }

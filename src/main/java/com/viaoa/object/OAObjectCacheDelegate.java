@@ -21,6 +21,8 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -28,11 +30,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
 
+import com.viaoa.ds.OADataSource;
+import com.viaoa.ds.objectcache.ObjectCacheDataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
+import com.viaoa.hub.HubSelectDelegate;
 import com.viaoa.hub.HubTemp;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 
@@ -908,6 +914,59 @@ public class OAObjectCacheDelegate {
         return null;
     }
 
+
+    /**
+     * Refresh all objects from the datasource.
+     * This will be ran on the server, if called by client then it will async to run on server.
+     * @param clazz Class of objects to update, will also requery all hubs for this class.
+     */
+    public static void refresh(Class clazz) {
+        if (clazz == null) return;
+        LOG.fine("refreshing "+clazz.getSimpleName());
+        if (!OASyncDelegate.isServer()) {
+            OASyncDelegate.getRemoteServer().refresh(clazz);
+            LOG.fine("refreshing "+clazz.getSimpleName()+" will be ran on the server");
+            return;
+        }
+        HashSet<Hub> hsHub = new HashSet<Hub>();
+        
+        OADataSource ds = OADataSource.getDataSource(clazz);
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
+        
+        ObjectCacheDataSource dsCache = new ObjectCacheDataSource();
+        Iterator it = dsCache.select(clazz);
+
+        int cntTotal = 0;
+        int cntAlone = 0;
+        for ( ;it.hasNext(); cntTotal++) {
+            OAObject obj = (OAObject) it.next();
+            Hub[] hubs = OAObjectHubDelegate.getHubReferences(obj);
+            if (hubs == null || hubs.length == 0) {
+                OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
+                ds.getObject(oi, clazz, key, true);
+                cntAlone++;
+                continue;
+            }
+            for (Hub h : hubs) {
+                if (hsHub.contains(h)) continue;
+                hsHub.add(h);
+            }
+        }
+
+        int cntHubs = 0;
+        int cntInHubs = 0;
+        for (Hub h: hsHub) {
+            HubSelectDelegate.refreshSelect(h);
+            cntHubs++;
+            cntInHubs += h.getSize();
+        }
+        
+        LOG.fine(String.format("refreshed %s, total=%d, alongCnt=%d, hubCnt=%d, inHubsCnt=%d", 
+                clazz.getSimpleName(), cntTotal, cntAlone, cntHubs, cntInHubs));
+    }
+    
+    
+    
 /*qqqqqqqq    
     public static void updateClientInfo(OAClientInfo ci) {
     	// LOG.fine("called");

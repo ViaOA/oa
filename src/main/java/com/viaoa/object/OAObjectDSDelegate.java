@@ -83,6 +83,16 @@ public class OAObjectDSDelegate {
         }
         return oaObj;
 	}
+    public static void refreshObject(OAObject obj) {
+        if (obj == null) return;
+        Class clazz = obj.getClass();
+        OADataSource ds = OADataSource.getDataSource(clazz);
+        if (ds != null) {
+            OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
+            ds.getObject(oi, clazz, key, true);  // true=reload all props
+        }
+    }
 	
 	
 	protected static Object getObject(Class clazz, OAObjectKey key) {

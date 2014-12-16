@@ -17,6 +17,7 @@ All rights reserved.
 */
 package com.viaoa.hub;
 
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -487,11 +488,11 @@ public class HubSelectDelegate {
 	public static boolean refreshSelect(Hub thisHub) {
         if (thisHub == null) return false;
 	    OASelect sel = getSelect(thisHub);
-        Object obj = thisHub.getAO();
+        Object objAO = thisHub.getAO();
         cancelSelect(thisHub, false);
 
         if (sel != null) {
-            select(thisHub, sel);
+            sel.reset();
         }
         else {
             Object master = thisHub.getMasterObject();
@@ -507,14 +508,25 @@ public class HubSelectDelegate {
             sel.setWhereObject((OAObject) master);
             sel.setPropertyFromWhereObject(li.getName());
             sel.setOrder(li.getSortProperty());
-            
-            thisHub.select(sel);
         }
-        thisHub.setAO(obj);
+        
+        sel.setDirty(true);
+        sel.select();
+        HashSet<Object> hs = new HashSet<Object>();
+        for ( ;sel.hasMore(); ) {
+            Object objx = sel.next();
+            hs.add(objx);
+            thisHub.add(objx);
+        }
+        // check to see if any objects need to be removed from the original list
+        for (Object obj : thisHub) {
+            if (!hs.contains(obj)) {
+                hs.remove(obj);
+            }
+        }
+        
+        thisHub.setAO(objAO);
+        sel.setDirty(false);
         return true;
 	}
 }
-
-
-
-

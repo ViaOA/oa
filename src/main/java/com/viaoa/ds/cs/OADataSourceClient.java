@@ -18,19 +18,16 @@ All rights reserved.
 package com.viaoa.ds.cs;
 
 import java.util.*;
-
 import com.viaoa.object.*;
 import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.util.OAFilter;
 import com.viaoa.ds.*;
-import com.viaoa.ds.jdbc.db.Database;
-import com.viaoa.ds.jdbc.delegate.Delegate;
 import com.viaoa.ds.objectcache.ObjectCacheIterator;
 
 
 /**
-    Uses OAClient to have all methods sent to OADataSource on OAServer.
+    Uses OAClient to have all methods invoked on the OADataSource on OAServer.
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
@@ -64,13 +61,9 @@ public class OADataSourceClient extends OADataSource {
     /** internal value to work with OAClient */
     public static final int COUNTPASSTHRU = 11;
     /** internal value to work with OAClient */
-    public static final int COUNT2 = 12;
-    /** internal value to work with OAClient */
     public static final int SUPPORTSSTORAGE = 13;
-
     
     //public static final int CONVERTTOSTRING = 14;
-
     //public static final int CONVERTTOSTRING2 = 15;
     
     /** internal value to work with OAClient */
@@ -85,10 +78,10 @@ public class OADataSourceClient extends OADataSource {
     public static final int IT_REMOVE = 20;
     /** internal value to work with OAClient */
     public static final int SELECT = 21;
+
     /** internal value to work with OAClient */
     public static final int SELECTPASSTHRU = 22;
-    /** internal value to work with OAClient */
-    public static final int SELECTUSINGOBJECT = 23;
+
     /** internal value to work with OAClient */
     public static final int INITIALIZEOBJECT = 24; 
     /** internal value to work with OAClient */
@@ -196,43 +189,34 @@ public class OADataSourceClient extends OADataSource {
         getRemoteClient().datasource(DELETE, new Object[] { obj });
     }
 
-    public @Override int count(Class clazz, String queryWhere, int max) {
-        Object obj = getRemoteClient().datasource(COUNT, new Object[] {clazz, queryWhere});
-        if (obj instanceof Integer) return ((Integer)obj).intValue();
-        return -1;
-    }
-
-    public @Override int count(Class clazz, String queryWhere, Object param, int max) {
-    	return count(clazz, queryWhere, new Object[] {param});
-    }
-    public @Override int count(Class clazz, String queryWhere, Object[] params, int max) {
-    	int x = params == null ? 0 : params.length;
-    	Object[] objs = new Object[2+x];
-    	objs[0] = clazz;
-    	objs[1] = queryWhere;
-    	for (int i=0; i<x; i++) objs[2+i] = params[i];
+    
+    @Override
+    public int count(Class selectClass, 
+        String queryWhere, Object[] params,   
+        OAObject whereObject, String propertyFromMaster, String extraWhere, int max
+    ) 
+    {
+        Class whereClass = null;
+        OAObjectKey whereKey = null;
+        if (whereObject != null) {
+            whereClass = whereObject.getClass();
+            whereKey = OAObjectKeyDelegate.getKey(whereObject);
+        }
+        
+        Object[] objs = new Object[] {selectClass, queryWhere, params, whereClass, whereKey, propertyFromMaster, extraWhere, max};
+        
         Object obj = getRemoteClient().datasource(COUNT, objs);
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
-
-    public @Override int countPassthru(String query, int max) {
-        Object obj = getRemoteClient().datasource(COUNTPASSTHRU, new Object[] {query});
+    
+    @Override
+    public int countPassthru(Class selectClass, String queryWhere, int max) {
+        Object obj = getRemoteClient().datasource(COUNTPASSTHRU, new Object[] {selectClass, queryWhere, max});
         if (obj instanceof Integer) return ((Integer)obj).intValue();
         return -1;
     }
 
-    public @Override int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, int max) {
-        Object obj = getRemoteClient().datasource(COUNT2, new Object[] {selectClass, whereObject, extraWhere, args, whereObject, propertyNameFromMaster});
-        if (obj instanceof Integer) return ((Integer)obj).intValue();
-        return -1;
-    }
-
-    public @Override int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster, int max) {
-        Object obj = getRemoteClient().datasource(COUNT2, new Object[] {selectClass, whereObject, null, propertyNameFromMaster});
-        if (obj instanceof Integer) return ((Integer)obj).intValue();
-        return -1;
-    }
 
     /** does this dataSource support selecting/storing/deleting  */
     public @Override boolean supportsStorage() {
@@ -242,108 +226,67 @@ public class OADataSourceClient extends OADataSource {
     }
 
 
-    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        // 20140125
+    @Override
+    public Iterator select(Class selectClass, 
+        String queryWhere, Object[] params, String queryOrder, 
+        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        int max, OAFilter filter, boolean bDirty
+    )
+    {
         if (filter != null) {
-            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
+            if (OAObjectCacheDelegate.getSelectAllHub(selectClass) != null) {
+                ObjectCacheIterator it = new ObjectCacheIterator(selectClass, filter);
+                it.setMax(max);
                 return it;
             }
         }
-/qqqqqqq dont send the filter, need to add bDirty        
-        Object obj = getRemoteClient().datasource(SELECT, new Object[] {clazz, queryWhere, queryOrder, filter, bDirty} );
+
+        Class whereClass = null;
+        OAObjectKey whereKey = null;
+        if (whereObject != null) {
+            whereClass = whereObject.getClass();
+            whereKey = OAObjectKeyDelegate.getKey(whereObject);
+        }
+        
+        Object[] objs = new Object[] {
+            selectClass, 
+            queryWhere, params, queryOrder, 
+            whereClass, whereKey,
+            propertyFromMaster, extraWhere,
+            max, bDirty
+        };
+        
+        Object obj = getRemoteClient().datasource(SELECT, objs);
         if (obj == null) return null;
-        return new MyIterator(clazz, obj, filter);
+        // dont send the filter to the server, it could serialize extra data, etc.
+        return new MyIterator(selectClass, obj, filter);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-//qqqqqqq dont send the filter, need to add bDirty        
-    	return this.select(clazz, queryWhere, new Object[] {param}, queryOrder, 0, filter, bDirty);
-    }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        // 20140125
+    @Override
+    public Iterator selectPassthru(Class selectClass, 
+        String queryWhere, String queryOrder, 
+        int max, OAFilter filter, boolean bDirty
+    )
+    {
         if (filter != null) {
-            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
+            if (OAObjectCacheDelegate.getSelectAllHub(selectClass) != null) {
+                ObjectCacheIterator it = new ObjectCacheIterator(selectClass, filter);
+                it.setMax(max);
                 return it;
             }
         }
-    	int x = params == null ? 0 : params.length;
-    	Object[] objs = new Object[3+x];
-    	objs[0] = clazz;
-    	objs[1] = queryWhere;
-    	objs[2] = queryOrder;
-//qqqqqqqqqqqqq add bDirty    	
-    	
-    	for (int i=0; i<x; i++) objs[3+i] = params[i];
-    	
-    	Object obj = getRemoteClient().datasource(SELECT, objs );
+        Object obj = getRemoteClient().datasource(SELECTPASSTHRU, new Object[] {selectClass, queryWhere, queryOrder, max, bDirty} );
         if (obj == null) return null;
-//qqqqqqq dont send the filter, need to add bDirty        
-        return new MyIterator(clazz, obj, filter);
-    }
-
-    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter, boolean bDirty) {
-        // 20140125
-        if (filter != null) {
-            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
-                return it;
-            }
-        }
-//qqqqqqqqqqqq add bDirty qqqqqqq        
-        Object obj = getRemoteClient().datasource(SELECTPASSTHRU, new Object[] {clazz, query, null} );
-        if (obj == null) return null;
-        return new MyIterator(clazz, obj, filter);
+        return new MyIterator(selectClass, obj, filter);
     }
 
 
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max, OAFilter filter, boolean bDirty) {
-        // 20140125
-        if (filter != null) {
-            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
-                return it;
-            }
-        }
-//qqqqqqqqqqqqqqq add bDirty        
-        Object obj = getRemoteClient().datasource(SELECTPASSTHRU, new Object[] {clazz, queryWhere, queryOrder} );
-        if (obj == null) return null;
-        return new MyIterator(clazz, obj, filter);
-    }
 
     public @Override Object execute(String command) {
         return getRemoteClient().datasource(EXECUTE, new Object[] {command});
     }
 
-    public @Override Iterator select(Class clazz, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        // See if OAObjectKey exists in Object to do a lookup
-        if (whereObject instanceof OAObject) {
-            Object obj = ((OAObject)whereObject).getProperty("OA_"+propertyNameFromMaster.toUpperCase());
-            if (obj instanceof OAObjectKey) {
-                return new MyIterator((OAObjectKey)obj);
-            }
-        }
-        // 20140125
-        if (filter != null) {
-            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
-                ObjectCacheIterator it = new ObjectCacheIterator(clazz, filter);
-                return it;
-            }
-        }
-
-        Class whereClass = whereObject == null ? null : whereObject.getClass();
-        Object key = OAObjectKeyDelegate.getKey(whereObject);;
-//qqqqqqqqq send bDirty qqqqqqqqqqqqqqqq        
-        Object obj = getRemoteClient().datasource(SELECTUSINGOBJECT, new Object[] {clazz, whereClass, key, extraWhere, args, propertyNameFromMaster, queryOrder} );
-        if (obj == null) return null;
-        return new MyIterator(clazz, obj, filter);
-    }
-
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
-        return select(selectClass, whereObject, null, null, propertyNameFromMaster, queryOrder, 0, filter, bDirty);
-    }
 
     public @Override void initializeObject(OAObject obj) {
         if (bSupportsInitFlag && !bSupportsInit) return;
@@ -460,5 +403,7 @@ public class OADataSourceClient extends OADataSource {
         Object objx = getRemoteClient().datasource(SUPPORTSINITIALIZEOBJECT, new Object[] { clazz });
         if (objx instanceof Boolean) bSupportsInit = ((Boolean) objx).booleanValue();
     }
+
+
 }
 
