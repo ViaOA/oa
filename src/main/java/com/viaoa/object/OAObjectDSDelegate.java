@@ -91,7 +91,7 @@ public class OAObjectDSDelegate {
     protected static Object getObject(OAObjectInfo oi, Class clazz, OAObjectKey key) {
         OADataSource ds = OADataSource.getDataSource(clazz);
         if (ds == null) return null;
-        return ds.getObject(oi, clazz, key);
+        return ds.getObject(oi, clazz, key, false);
     }
 
     protected static Object getBlob(OAObject obj, String propName) {
@@ -170,10 +170,4 @@ public class OAObjectDSDelegate {
         //qqqqqqq todo: check this out: if (ds == null || ds.isAssigningId(oaObj)) return null;  // datasource could be assigning the Id to a unique value
         return ds.getObject(oaObj.getClass(), OAObjectKeyDelegate.getKey(oaObj));
 	}
-
 }
-
-
-
-
-

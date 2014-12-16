@@ -484,14 +484,34 @@ public class HubSelectDelegate {
 	    This will re-run the last select.
 	    @see OASelect
 	*/
-	public static void refreshSelect(Hub thisHub) {
-        OASelect sel = getSelect(thisHub);
-	    if (sel != null) {
-	        Object obj = thisHub.getAO();
-	        cancelSelect(thisHub, false);
-	        select(thisHub, sel);
-	        thisHub.setAO(obj);
-	    }
+	public static boolean refreshSelect(Hub thisHub) {
+        if (thisHub == null) return false;
+	    OASelect sel = getSelect(thisHub);
+        Object obj = thisHub.getAO();
+        cancelSelect(thisHub, false);
+
+        if (sel != null) {
+            select(thisHub, sel);
+        }
+        else {
+            Object master = thisHub.getMasterObject();
+            if (master == null) return false;
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
+            if (li == null) return false;
+            li = li.getReverseLinkInfo();
+            if (li == null) return false;
+            OADataSource ds = OADataSource.getDataSource(thisHub.getObjectClass());
+            if (ds == null) return false;
+            
+            sel = new OASelect(thisHub.getObjectClass());
+            sel.setWhereObject((OAObject) master);
+            sel.setPropertyFromWhereObject(li.getName());
+            sel.setOrder(li.getSortProperty());
+            
+            thisHub.select(sel);
+        }
+        thisHub.setAO(obj);
+        return true;
 	}
 }
 

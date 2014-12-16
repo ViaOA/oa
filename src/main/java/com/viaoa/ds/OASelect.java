@@ -94,6 +94,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     protected OAFilter<TYPE> dsFilter;  // this will be sent to DataSource, which should only use it if it does not support queries
     protected OAFinder<?, TYPE> finder; // will be used instead of calling datasource
     protected Hub<TYPE> hubSearch;      // hub used to search from, instead of using DataSource
+    private boolean bDirty;  // data should always be loaded from datasource  
     
     /** Create a new OASelect that is not initialzed. */
     public OASelect() {
@@ -540,16 +541,16 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
             if (bCountFirst && amountCount < 0) {
             	amountCount = ds.count(clazz, whereObject, where, params, propertyFromWhereObject, max);
             }
-            query = ds.select(clazz, whereObject, where, params, propertyFromWhereObject, order, max, getDataSourceFilter());
+            query = ds.select(clazz, whereObject, where, params, propertyFromWhereObject, order, max, getDataSourceFilter(), getDirty());
         }
         else {
             if (bPassthru) {
                 if (bCountFirst && amountCount < 0) amountCount = ds.countPassthru(where, max);
-                query = ds.selectPassthru(clazz, where, order, max, getDataSourceFilter());
+                query = ds.selectPassthru(clazz, where, order, max, getDataSourceFilter(), getDirty());
             }
             else {
                 if (bCountFirst && amountCount < 0) amountCount = ds.count(clazz, where, params, max);
-                query = ds.select(clazz, where, params, order, max, getDataSourceFilter());
+                query = ds.select(clazz, where, params, order, max, getDataSourceFilter(), getDirty());
             }
         }
         // 20110407
@@ -705,5 +706,12 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
         };
         return iter;
     }
-    
+
+    public void setDirty(boolean b) {
+        this.bDirty = b;
+    }
+    public boolean getDirty() {
+        return this.bDirty;
+    }
+
 }

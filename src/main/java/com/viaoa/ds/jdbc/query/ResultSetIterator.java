@@ -60,7 +60,7 @@ public class ResultSetIterator implements Iterator {
     Object[] pkeyValues;
     boolean bDatesIncludeTime;
     Object objectTrue, objectFalse;
-    boolean bDirty;  //qqqq Not yet implemented
+    boolean bDirty;  
     boolean bIsSelecting;
     boolean bInit;
     DataAccessObject dataAccessObject; 
@@ -91,6 +91,11 @@ public class ResultSetIterator implements Iterator {
     public ResultSetIterator(OADataSourceJDBC ds, Class clazz, Column[] columns, String query, int max) {
         this(ds, clazz, columns, query, null, max, null);
     }
+
+    public ResultSetIterator(OADataSourceJDBC ds, Class clazz, Column[] columns, String query, Object[] arguments, int max) {
+        this(ds, clazz, columns, query, null, max, null);
+        this.arguments = arguments;
+    }
     
 static int qqq;
 static PrintWriter printWriter2;
@@ -114,6 +119,13 @@ static PrintWriter printWriter;
         this.query2 = query2;
         this.max = max;
         this.dataAccessObject = dataAccessObject;
+    }
+    
+    public void setDirty(boolean b) {
+        this.bDirty = b;
+    }
+    public boolean getDirty() {
+        return this.bDirty;
     }
     
     public static int DisplayMod = 5000;    
@@ -229,8 +241,6 @@ static PrintWriter printWriter;
         boolean bLoadedObject = false;
         boolean bSetChangedAndNew = false;
         try {
-            OAThreadLocalDelegate.setDataSourceLoadingObject(true);
-            
             ResultSet resultSet = rs;
             if (query2 != null) {  // need to do a seperate select to get data for each row
                 if (statement2 == null && ds != null) {
@@ -263,14 +273,12 @@ static PrintWriter printWriter;
                 }
             }
 
-/** qqqqqqqqqqqq  todo:  when implementing bDirty, if true, then need to run the following code, so that events will get sent out correctly
-             if (bDataSourceLoadingObject) {
-                OAThreadLocalDelegate.setDataSourceLoadingObject(false);
-                bDataSourceLoadingObject = false;
+            if (!bDirty) {
+                OAThreadLocalDelegate.setDataSourceLoadingObject(true);
+                bDataSourceLoadingObject = true;
             }
- */
-
-            if (dataAccessObject != null) {
+ 
+            if (!bDirty && dataAccessObject != null) {
                 resultSetInfo.reset(resultSet);
                 oaObject = dataAccessObject.getObject(resultSetInfo);
                 bLoadedObject = !resultSetInfo.getFoundInCache();
@@ -279,10 +287,7 @@ static PrintWriter printWriter;
                 if (bLoadedObject) {
                     OAObject objx = (OAObject) OAObjectCacheDelegate.add(oaObject, false, true);
                     if (objx != oaObject) {
-OAObject objz = (OAObject) OAObjectCacheDelegate.add(oaObject, false, true);
                         oaObject = objx;
-int xx = 4;
-xx++;
                     }
                 }
             }

@@ -196,34 +196,34 @@ public class OADataSourceJDBC extends OADataSource {
         return false;
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
-    	return select(clazz, queryWhere, (Object[]) null, queryOrder, max, filter);
+    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+    	return select(clazz, queryWhere, (Object[]) null, queryOrder, max, filter, bDirty);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter) {
-    	return SelectDelegate.select(this, clazz, queryWhere, param, queryOrder, max, filter);
+    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+    	return SelectDelegate.select(this, clazz, queryWhere, param, queryOrder, max, filter, bDirty);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter) {
-        return SelectDelegate.select(this, clazz, queryWhere, params, queryOrder, max, filter);
+    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+        return SelectDelegate.select(this, clazz, queryWhere, params, queryOrder, max, filter, bDirty);
     }
 
-    public @Override Iterator select(Class clazz, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
-        return select(clazz, whereObject, null, null, propertyFromMaster, queryOrder, max, filter);
+    public @Override Iterator select(Class clazz, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+        return select(clazz, whereObject, null, null, propertyFromMaster, queryOrder, max, filter, bDirty);
     }
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
-        return SelectDelegate.select(this, selectClass, whereObject, extraWhere, args,propertyFromMaster, queryOrder, max);
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+        return SelectDelegate.select(this, selectClass, whereObject, extraWhere, args,propertyFromMaster, queryOrder, max, bDirty);
     }
 
     public @Override Object execute(String command) {
     	return SelectDelegate.execute(this,command);
     }
 
-    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
-    	return SelectDelegate.selectPassthru(this, clazz, query, max);
+    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter, boolean bDirty) {
+    	return SelectDelegate.selectPassthru(this, clazz, query, max, bDirty);
     }
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
-    	return SelectDelegate.selectPassthru(this, clazz, queryWhere, queryOrder, max);
+    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+    	return SelectDelegate.selectPassthru(this, clazz, queryWhere, queryOrder, max, bDirty);
     }
     
     public @Override int count(Class selectClass, OAObject whereObject, String propertyFromMaster, int max) {
@@ -355,12 +355,12 @@ public class OADataSourceJDBC extends OADataSource {
 
     
     @Override
-    public Object getObject(OAObjectInfo oi, Class clazz, OAObjectKey key) {
+    public Object getObject(OAObjectInfo oi, Class clazz, OAObjectKey key, boolean bDirty) {
         Object obj = null;
         try {
-            Iterator it = SelectDelegate.selectObject(this, clazz, key);
+            Iterator it = SelectDelegate.selectObject(this, clazz, key, bDirty);
             if (it == null) {
-                return super.getObject(oi, clazz, key);
+                return super.getObject(oi, clazz, key, bDirty);
             }
             obj = it.next();
         }

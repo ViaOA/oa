@@ -163,33 +163,33 @@ public class OADataSourceAuto extends OADataSource {
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
+    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
 
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
+    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
 
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator select(Class clazz, String queryWhere,  String queryOrder, int max, OAFilter filter) {
+    public @Override Iterator select(Class clazz, String queryWhere,  String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
     /**
      	Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
 	*/
-	public @Override Iterator select(Class clazz, String queryWhere,  Object[] params, String queryOrder, int max, OAFilter filter) {
+	public @Override Iterator select(Class clazz, String queryWhere,  Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty) {
 	    return null;
 	}
     /**
  		Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
 	*/
-	public @Override Iterator select(Class clazz, String queryWhere,  Object param, String queryOrder, int max, OAFilter filter) {
+	public @Override Iterator select(Class clazz, String queryWhere,  Object param, String queryOrder, int max, OAFilter filter, boolean bDirty) {
 	    return null;
 	}
 
@@ -276,14 +276,14 @@ public class OADataSourceAuto extends OADataSource {
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
 
     /**
         Overwritten to always return null.  OADataSourceNextNumber Does not support data storage.
     */
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
 

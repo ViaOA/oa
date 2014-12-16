@@ -230,7 +230,7 @@ public class OAObjectDeleteDelegate {
 		                // 20121011 no method for reference - need to find/select it and remove the reference
 		                OADataSource ds = OADataSource.getDataSource(li.getToClass());
 		                if (ds == null) return;
-		                Iterator itx = ds.select(li.getToClass(), liRev.getName() + " = ?", oaObj, "");
+		                Iterator itx = ds.select(li.getToClass(), liRev.getName() + " = ?", oaObj, "", false);
 		                if (itx != null && itx.hasNext()) obj = itx.next();
 			    	}
 

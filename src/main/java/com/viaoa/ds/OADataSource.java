@@ -19,6 +19,7 @@ package com.viaoa.ds;
 
 import java.util.*;
 
+import com.viaoa.hub.Hub;
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 
@@ -152,9 +153,9 @@ public abstract class OADataSource {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
         OADataSource ds = getDataSource(clazz);
         if (ds == null) return null;
-        return ds.getObject(oi, clazz, key);
+        return ds.getObject(oi, clazz, key, false);
     }
-    public Object getObject(OAObjectInfo oi, Class clazz, OAObjectKey key) {
+    public Object getObject(OAObjectInfo oi, Class clazz, OAObjectKey key, boolean bDirty) {
         if (clazz == null || key == null || oi == null) return null;
         OADataSource ds = getDataSource(clazz);
         if (ds == null) return null;
@@ -169,7 +170,7 @@ public abstract class OADataSource {
         }
 
         Object obj = null;
-        Iterator it = ds.select(clazz, query, key.getObjectIds(), "");
+        Iterator it = ds.select(clazz, query, key.getObjectIds(), "", false);
         if (it != null && it.hasNext()) {
             obj = it.next();
             it.remove();
@@ -494,12 +495,12 @@ public abstract class OADataSource {
         @return Iterator that is used to return objects of type selectClass
         @see OASelect
      */
-    public abstract Iterator select(Class selectClass, String queryWhere, String queryOrder, int max, OAFilter filter);
-    public Iterator select(Class selectClass, String queryWhere, String queryOrder, int max) {
-        return select(selectClass, queryWhere, queryOrder, max, null);
+    public abstract Iterator select(Class selectClass, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty);
+    public Iterator select(Class selectClass, String queryWhere, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, queryWhere, queryOrder, max, null, bDirty);
     }
-    public Iterator select(Class selectClass, String queryWhere, String queryOrder) {
-    	return select(selectClass, queryWhere, queryOrder, 0, null);
+    public Iterator select(Class selectClass, String queryWhere, String queryOrder, boolean bDirty) {
+    	return select(selectClass, queryWhere, queryOrder, 0, null, bDirty);
     }
 
     /**
@@ -513,20 +514,20 @@ public abstract class OADataSource {
     @return Iterator that is used to return objects of type selectClass
     @see OASelect
 	 */
-	public abstract Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter);
-    public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, int max) {
-        return select(selectClass, queryWhere, params, queryOrder, max, null);
+	public abstract Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty);
+    public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, queryWhere, params, queryOrder, max, null, bDirty);
     }
-    public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder) {
-    	return select(selectClass, queryWhere, params, queryOrder, 0, null);
+    public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, boolean bDirty) {
+    	return select(selectClass, queryWhere, params, queryOrder, 0, null, bDirty);
     }
 
-	public abstract Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, int max, OAFilter filter);
-    public Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, int max) {
-        return select(selectClass, queryWhere, param, queryOrder, max, null);
+	public abstract Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, int max, OAFilter filter, boolean bDirty);
+    public Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, queryWhere, param, queryOrder, max, null, bDirty);
     }
-    public Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder) {
-		return select(selectClass, queryWhere, param, queryOrder, 0, null);
+    public Iterator select(Class selectClass, String queryWhere, Object param, String queryOrder, boolean bDirty) {
+		return select(selectClass, queryWhere, param, queryOrder, 0, null, bDirty);
 	}
 
     
@@ -540,12 +541,12 @@ public abstract class OADataSource {
         @see OASelect
         @return Iterator that is used to return objects of type selectClass
     */
-    public abstract Iterator selectPassthru(Class selectClass, String query, int max, OAFilter filter);
-    public Iterator selectPassthru(Class selectClass, String query, int max) {
-        return selectPassthru(selectClass, query, max, null);
+    public abstract Iterator selectPassthru(Class selectClass, String query, int max, OAFilter filter, boolean bDirty);
+    public Iterator selectPassthru(Class selectClass, String query, int max, boolean bDirty) {
+        return selectPassthru(selectClass, query, max, null, bDirty);
     }
-    public Iterator selectPassthru(Class selectClass, String query) {
-    	return selectPassthru(selectClass, query, 0, null);
+    public Iterator selectPassthru(Class selectClass, String query, boolean bDirty) {
+    	return selectPassthru(selectClass, query, 0, null, bDirty);
     }
 
     /**
@@ -560,12 +561,12 @@ public abstract class OADataSource {
         @see OASelect
         @return Iterator that is used to return objects of type selectClass
     */
-    public abstract Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter);
-    public Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max) {
-        return selectPassthru(clazz, queryWhere, queryOrder, max, null);
+    public abstract Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty);
+    public Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, int max, boolean bDirty) {
+        return selectPassthru(clazz, queryWhere, queryOrder, max, null, bDirty);
     }
-    public Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder) {
-    	return selectPassthru(clazz, queryWhere, queryOrder, 0, null);
+    public Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder, boolean bDirty) {
+    	return selectPassthru(clazz, queryWhere, queryOrder, 0, null, bDirty);
     }
 
 
@@ -591,12 +592,13 @@ public abstract class OADataSource {
         @see #convertToString(String,Object)
         @see OASelect
     */
-    public abstract Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter);
-    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max) {
-        return select(selectClass, whereObject, extraWhere, null, propertyNameFromMaster, queryOrder, max, null);
+    public abstract Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty);
+
+    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, whereObject, extraWhere, null, propertyNameFromMaster, queryOrder, max, null, bDirty);
     }
-    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder) {
-    	return select(selectClass, whereObject, extraWhere, null, propertyNameFromMaster, queryOrder, 0, null);
+    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, boolean bDirty) {
+    	return select(selectClass, whereObject, extraWhere, null, propertyNameFromMaster, queryOrder, 0, null, bDirty);
     }
 
     /**
@@ -614,12 +616,13 @@ public abstract class OADataSource {
         @see #convertToString(String,Object)
         @see OASelect
     */
-    public abstract Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter);
-    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max) {
-        return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, max, null);
+    public abstract Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty);
+    
+    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, max, null, bDirty);
     }
-    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder) {
-    	return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, 0, null);
+    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, boolean bDirty) {
+    	return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, 0, null, bDirty);
     }
 
     /**
@@ -661,6 +664,7 @@ public abstract class OADataSource {
     public boolean getSupportsPreCount() {
         return true;
     }
+
 }
 
 

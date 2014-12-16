@@ -124,28 +124,28 @@ public class FinderDataSource extends OADataSourceAuto {
     }
 
     @Override
-    public Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter) {
+    public Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return new MyIterator(clazz, filter);
     }
     
-    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter) {
+    public @Override Iterator select(Class clazz, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return new MyIterator(clazz, filter);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max) {
-    	return this.select(clazz, queryWhere, new Object[] {param}, queryOrder);
+    public @Override Iterator select(Class clazz, String queryWhere, Object param, String queryOrder, int max, boolean bDirty) {
+    	return this.select(clazz, queryWhere, new Object[] {param}, queryOrder, bDirty);
     }
 
-    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter) {
+    public @Override Iterator select(Class clazz, String queryWhere, Object[] params, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return new MyIterator(clazz, filter);
     }
 
-    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter) {
+    public @Override Iterator selectPassthru(Class clazz, String query, int max, OAFilter filter, boolean bDirty) {
         return new MyIterator(clazz, filter);
     }
 
 
-    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max, OAFilter filter) {
+    public @Override Iterator selectPassthru(Class clazz, String queryWhere, String queryOrder,int max, OAFilter filter, boolean bDirty) {
         return new MyIterator(clazz, filter);
     }
 
@@ -153,12 +153,12 @@ public class FinderDataSource extends OADataSourceAuto {
         return null;
     }
 
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return new MyIterator(selectClass, filter);
     }
 
-    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter) {
-        return select(selectClass, whereObject, null, null, propertyNameFromMaster, queryOrder, max, filter);
+    public @Override Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+        return select(selectClass, whereObject, null, null, propertyNameFromMaster, queryOrder, max, filter, bDirty);
     }
 
     public @Override void initializeObject(OAObject obj) {
