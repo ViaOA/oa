@@ -868,6 +868,11 @@ if (tx > 200) {
 
         try {
             OAThreadLocalDelegate.setRemoteRequestInfo(ri);
+            
+            // 20141217
+            if (!ri.bind.isBroadcast) {
+                OARemoteThreadDelegate.sendMessages(true);
+            }
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
         }
         catch (InvocationTargetException e) {
@@ -880,6 +885,12 @@ if (tx > 200) {
                 }
                 ex = (Exception) t;
                 ri.exception = ex;
+            }
+        }
+        finally {
+            // 20141217
+            if (!ri.bind.isBroadcast) {
+                OARemoteThreadDelegate.sendMessages(false);
             }
         }
         OAThreadLocalDelegate.setRemoteRequestInfo(null);

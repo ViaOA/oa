@@ -18,7 +18,6 @@ All rights reserved.
 package com.viaoa.ds.jdbc.delegate;
 
 import java.sql.Blob;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Iterator;
@@ -39,6 +38,12 @@ import com.viaoa.util.OAString;
  */
 public class SelectDelegate {
     private static Logger LOG = Logger.getLogger(SelectDelegate.class.getName());
+
+    private static ConcurrentHashMap<WhereObjectSelect, String> hmPreparedStatementSql = new ConcurrentHashMap<WhereObjectSelect, String>();
+    private static ConcurrentHashMap<Class, String> hmPreparedStatementSqlx = new ConcurrentHashMap<Class, String>();
+    
+    private static ConcurrentHashMap<Class, String> hmPreparedStatementSqlxDirty = new ConcurrentHashMap<Class, String>();
+    private static ConcurrentHashMap<Class, Column[]> hmPreparedStatementSqlxDirtyColumns = new ConcurrentHashMap<Class, Column[]>();
     
     /*
     public static Iterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, String queryOrder, int max, boolean bDirty) {
@@ -59,15 +64,14 @@ public class SelectDelegate {
         if (clazz == null) return null;
         Table table = ds.getDatabase().getTable(clazz);
         if (table == null) return null;
-
+//if (table == null || ds == null) return null;//qqqqqqqqqqqqq test/debugging
         QueryConverter qc = new QueryConverter(ds);
-    	String[] queries = getSelectSQL(qc, ds, clazz, queryWhere, params, queryOrder, max);
+    	String[] queries = getSelectSQL(qc, ds, clazz, queryWhere, params, queryOrder, max, bDirty);
         
         ResultSetIterator rsi;
         DataAccessObject dao = table.getDataAccessObject();
         if (!bDirty && dao != null) {
             rsi = new ResultSetIterator(ds, clazz, dao, queries[0], queries[1], max);
-            rsi.setDirty(bDirty);
         }    	
         else {    	
         	Column[] columns = qc.getSelectColumnArray(clazz);
@@ -79,15 +83,15 @@ public class SelectDelegate {
             else {
                 rsi = new ResultSetIterator(ds, clazz, columns, queries[0], max);
             }
-            rsi.setDirty(bDirty);
         }
+        rsi.setDirty(bDirty);
         return rsi;
     }
 
     /**
      *  @returns array [0]=sql [1]=sql2 (if needed) 
      */
-    private static String[] getSelectSQL(QueryConverter qc, OADataSourceJDBC ds, Class clazz, String queryWhere, Object[] params, String queryOrder, int max) {
+    private static String[] getSelectSQL(QueryConverter qc, OADataSourceJDBC ds, Class clazz, String queryWhere, Object[] params, String queryOrder, int max, boolean bDirty) {
         String[] queries = new String[2];
         
         queries[0] = qc.convertToSql(clazz, queryWhere, params, queryOrder);
@@ -129,11 +133,11 @@ public class SelectDelegate {
 				params[i] = "7"; // fake out/position holder
 			}
 			queries[1] = qc.convertToSql(clazz, queries[1], params, null);
-			queries[1] = "SELECT " + qc.getSelectColumns(clazz) + " " + queries[1];
+			queries[1] = "SELECT " + qc.getSelectColumns(clazz, bDirty) + " " + queries[1];
 			queries[1] = OAString.convert(queries[1], "7", "?");
         }
         else {
-        	queries[0] = "SELECT " + getMax(ds,max) + qc.getSelectColumns(clazz) + " " + queries[0];
+        	queries[0] = "SELECT " + getMax(ds,max) + qc.getSelectColumns(clazz, bDirty) + " " + queries[0];
         }
         return queries;
     }
@@ -176,7 +180,6 @@ public class SelectDelegate {
             return x;
         } 
     }
-    private static ConcurrentHashMap<WhereObjectSelect, String> hmPreparedStatementSql = new ConcurrentHashMap<WhereObjectSelect, String>();
     
     // 20121013 changes to use PreparedStatements for Selecting Many link
     public static Iterator select(OADataSourceJDBC ds, Class clazz, OAObject whereObject, String extraWhere, Object[] params, String propertyFromMaster, String queryOrder, int max, boolean bDirty) {
@@ -189,7 +192,7 @@ public class SelectDelegate {
     
         if (dao == null || whereObject == null || OAString.isEmpty(propertyFromMaster) || (params != null && params.length > 0) || max > 0) {
             QueryConverter qc = new QueryConverter(ds);
-            String query = getSelectSQL(ds, qc, clazz, whereObject, extraWhere, params, propertyFromMaster, queryOrder, max);
+            String query = getSelectSQL(ds, qc, clazz, whereObject, extraWhere, params, propertyFromMaster, queryOrder, max, bDirty);
             
             ResultSetIterator rsi;
             if (!bDirty && dao != null) {
@@ -204,16 +207,16 @@ public class SelectDelegate {
         }
 
         WhereObjectSelect wos = new WhereObjectSelect(clazz, whereObject==null?null:whereObject.getClass(), propertyFromMaster);
-        String query = hmPreparedStatementSql.get(wos);
+        String query = bDirty ? null : hmPreparedStatementSql.get(wos);
         
         if (query == null) {
             QueryConverter qc = new QueryConverter(ds);
-            query = "SELECT " + qc.getSelectColumns(clazz);
+            query = "SELECT " + qc.getSelectColumns(clazz, bDirty);
             query  += " " + qc.convertToPreparedStatementSql(clazz, whereObject, extraWhere, params, propertyFromMaster, queryOrder);
 
             params = qc.getArguments();
             if (params == null || params.length == 0) return null; // null reference
-            hmPreparedStatementSql.put(wos, query);
+            if (!bDirty) hmPreparedStatementSql.put(wos, query);
         }
         else {
             OAObjectKey key = OAObjectKeyDelegate.getKey(whereObject);
@@ -227,16 +230,12 @@ public class SelectDelegate {
         else {
             QueryConverter qc = new QueryConverter(ds);
             Column[] columns = qc.getSelectColumnArray(clazz);
-            rsi = new ResultSetIterator(ds, clazz, columns, query, max);
+            rsi = new ResultSetIterator(ds, clazz, columns, query, params, max);
         }
         rsi.setDirty(bDirty);
         return rsi;
     }
     
-    private static ConcurrentHashMap<Class, String> hmPreparedStatementSqlx = new ConcurrentHashMap<Class, String>();
-    private static ConcurrentHashMap<Class, String> hmPreparedStatementSqlxDirty = new ConcurrentHashMap<Class, String>();
-    private static ConcurrentHashMap<Class, Column[]> hmPreparedStatementSqlxDirtyColumns = new ConcurrentHashMap<Class, Column[]>();
-
     // 20121013
     public static Iterator selectObject(OADataSourceJDBC ds, Class clazz, OAObjectKey key, boolean bDirty) throws Exception {
         if (ds == null) return null;
@@ -273,10 +272,10 @@ public class SelectDelegate {
 
             if (sql == null) {
                 QueryConverter qc = new QueryConverter(ds);
-                sql = "SELECT " + qc.getSelectColumns(clazz);
+                sql = "SELECT " + qc.getSelectColumns(clazz, bDirty);  // could use dao
                 sql  += " FROM " + table.name + " WHERE ";
     
-                Column[] cols = table.getSelectColumns();
+                Column[] cols = table.getSelectColumns();  // 
                 boolean b = false;
                 for (Column c : cols) {
                     if (c.primaryKey) {
@@ -296,9 +295,9 @@ public class SelectDelegate {
     }
     
     
-    public static String getSelectSQL(OADataSourceJDBC ds, QueryConverter qc, Class clazz, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max) {
+    public static String getSelectSQL(OADataSourceJDBC ds, QueryConverter qc, Class clazz, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, boolean bDirty) {
         if (propertyFromMaster == null) propertyFromMaster = "";
-        String query = "SELECT " + getMax(ds,max) + qc.getSelectColumns(clazz);
+        String query = "SELECT " + getMax(ds,max) + qc.getSelectColumns(clazz, bDirty);
         query  += " " + qc.convertToSql(clazz, whereObject, extraWhere, args, propertyFromMaster, queryOrder);
     	return query;
     }
@@ -310,7 +309,7 @@ public class SelectDelegate {
 
         QueryConverter qc = new QueryConverter(ds);
 
-        query = qc.getSelectColumns(clazz) + " " + query;
+        query = qc.getSelectColumns(clazz, bDirty) + " " + query;
 
         ResultSetIterator rsi;
         DataAccessObject dao = table.getDataAccessObject();
@@ -345,7 +344,7 @@ public class SelectDelegate {
         if (table == null) return null;
         
         QueryConverter qc = new QueryConverter(ds);
-        String query = qc.getSelectColumns(clazz);
+        String query = qc.getSelectColumns(clazz, bDirty);
         if (queryWhere != null && queryWhere.length() > 0) query += " " + queryWhere;
         if (queryOrder != null && queryOrder.length() > 0) {
             query += " ORDER BY " + queryOrder;
@@ -527,6 +526,5 @@ public class SelectDelegate {
         }
         return result;
     }
-
 }
 

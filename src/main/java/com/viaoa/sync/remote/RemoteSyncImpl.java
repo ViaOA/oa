@@ -36,7 +36,7 @@ import com.viaoa.sync.OASyncDelegate;
  */
 public class RemoteSyncImpl implements RemoteSyncInterface {
     private static Logger LOG = Logger.getLogger(RemoteSyncImpl.class.getName());
-    
+
     @Override
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         OAObject obj = getObject(objectClass, origKey);

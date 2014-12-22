@@ -50,7 +50,6 @@ public class ObjectCacheIterator<T> implements Iterator {
     }
 
     public T _next() {
-        if (filter == null) return null;
         if (posFetchObjects >= alFetchObjects.size()) {
             posFetchObjects = 0;
             alFetchObjects.clear();

@@ -1,0 +1,18 @@
+
+
+
+
+-- comment
+
+
+
+update employee set firstname = 'NEW NAME HERE' where id = 54587;
+
+
+select id,firstname, lastname from employee where id = 54587;
+
+insert into Employee (id, locationId, firstName) values (999999, 205, 'TEMP fname')
+
+delete from Employee where id = 999999
+
+

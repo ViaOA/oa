@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -359,13 +358,17 @@ public class RemoteMultiplexerServer {
         }
 
         if (ri.bind.isBroadcast) {
-            return true;
+            return true;  // will be processed from the queue
         }
 
         int x = (ri.args == null) ? 0 : ri.args.length;
 
         try {
             OAThreadLocalDelegate.setRemoteRequestInfo(ri);
+            // 20141217
+            if (!ri.bind.isBroadcast) {
+                OARemoteThreadDelegate.sendMessages(true);
+            }
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
         }
         catch (InvocationTargetException e) {
@@ -382,6 +385,12 @@ public class RemoteMultiplexerServer {
         }
         catch (Throwable tx) {
             ri.exception = new Exception(tx.toString(), tx);
+        }
+        finally {
+            // 20141217
+            if (!ri.bind.isBroadcast) {
+                OARemoteThreadDelegate.sendMessages(false);
+            }
         }
         OAThreadLocalDelegate.setRemoteRequestInfo(null);
 
@@ -778,21 +787,7 @@ public class RemoteMultiplexerServer {
         if (bind.usesQueue) {
             OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(bind.asyncQueueName);
             if (cq == null) {
-                cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
-                    // 20141208 keep queue elements empty if not used
-                    AtomicLong alLeastValue = new AtomicLong();
-                    @Override
-                    public RequestInfo[] getMessages(long posTail, int maxReturnAmount) throws Exception {
-                        for (;;) {
-                            long x = alLeastValue.get();
-                            if (posTail >= x) break;
-                            if (alLeastValue.compareAndSet(x, posTail)) break;
-                        }
-                        RequestInfo[] ris = super.getMessages(posTail, maxReturnAmount);
-                        
-                        return ris;
-                    }
-                };
+                cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {};
                 cq.setName(queueName);
                 hmAsnycCircularQueue.put(bind.asyncQueueName, cq);
             }

@@ -149,9 +149,9 @@ public class QueryConverter {
     }        
     
     /** returns list of columns to select for clazz, not pkey or fkey columns, includes columns for superClasses */
-    public String getSelectColumns(Class clazz) {
+    public String getSelectColumns(Class clazz, boolean bDirty) {
         Table tableMain = database.getTable(clazz);
-        if (tableMain.selectColumns != null) return tableMain.selectColumns;
+        if (!bDirty && tableMain.selectColumns != null) return tableMain.selectColumns;
 
     	Class[] classes = getSelectClasses(clazz);
         String strColumn = "";
@@ -161,9 +161,10 @@ public class QueryConverter {
             Table table = database.getTable(c);
             
             DataAccessObject dao = table.getDataAccessObject();
-            if (dao != null) {
+            if (!bDirty && dao != null) {
                 if (strColumn.length() > 0) strColumn += ", ";
                 strColumn += dao.getSelectColumns();
+                tableMain.selectColumns = strColumn;
             }
             else {
                 String tableName = table.name.toUpperCase();
@@ -176,7 +177,6 @@ public class QueryConverter {
                 }
             }
         }
-        tableMain.selectColumns = strColumn;
         return strColumn;
     }        
 

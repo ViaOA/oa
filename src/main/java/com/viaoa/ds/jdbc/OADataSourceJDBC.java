@@ -197,6 +197,10 @@ public class OADataSourceJDBC extends OADataSource {
     }
 
 
+    /**
+     * 
+     * @param filter not used, since the jdbc ds supports queries.
+     */
     @Override
     public Iterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 

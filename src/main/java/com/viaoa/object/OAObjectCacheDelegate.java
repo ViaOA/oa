@@ -33,6 +33,8 @@ import java.util.logging.*;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.objectcache.ObjectCacheDataSource;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubDeleteDelegate;
+import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
 import com.viaoa.hub.HubSelectDelegate;
@@ -923,6 +925,7 @@ public class OAObjectCacheDelegate {
     public static void refresh(Class clazz) {
         if (clazz == null) return;
         LOG.fine("refreshing "+clazz.getSimpleName());
+        
         if (!OASyncDelegate.isServer()) {
             OASyncDelegate.getRemoteServer().refresh(clazz);
             LOG.fine("refreshing "+clazz.getSimpleName()+" will be ran on the server");
@@ -941,15 +944,29 @@ public class OAObjectCacheDelegate {
         for ( ;it.hasNext(); cntTotal++) {
             OAObject obj = (OAObject) it.next();
             Hub[] hubs = OAObjectHubDelegate.getHubReferences(obj);
-            if (hubs == null || hubs.length == 0) {
+
+            boolean bNeedsRefreshed = true;
+            if (hubs != null) {
+                for (Hub h : hubs) {
+                    if (h == null) continue;
+                    if (h.getSelect() == null) {
+                        if (h.getMasterObject() == null) continue;
+                        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(h);
+                        if (li != null) {
+                            li = li.getReverseLinkInfo();
+                            if (li == null || li.getCalculated()) continue;
+                        }
+                    }                
+                    bNeedsRefreshed = false;
+                    if (!hsHub.contains(h)) hsHub.add(h);
+                }
+            }
+            
+            if (bNeedsRefreshed) {
                 OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
                 ds.getObject(oi, clazz, key, true);
                 cntAlone++;
                 continue;
-            }
-            for (Hub h : hubs) {
-                if (hsHub.contains(h)) continue;
-                hsHub.add(h);
             }
         }
 

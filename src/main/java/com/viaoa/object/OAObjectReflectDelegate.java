@@ -300,7 +300,10 @@ public class OAObjectReflectDelegate {
         boolean bCallSetMethod = true;
         try {
             if (bPrimitiveNull) {
-                if (!bIsLoading) previousValue = getProperty(oaObj, propName);
+                if (!bIsLoading) {
+                    previousValue = getProperty(oaObj, propName);
+                    if (previousValue == null) return; // no change 
+                }
                 value = OAReflect.getPrimitiveClassWrapperObject(clazz);
                 if (value == null) bCallSetMethod = false; // cant call the setMethod, since it is a primitive type that cant be represented with a value
                 else if (value.equals(previousValue)) bCallSetMethod = false; // no change, dont need to set the default value.

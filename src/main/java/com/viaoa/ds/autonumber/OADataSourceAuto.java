@@ -33,11 +33,12 @@ import com.viaoa.ds.*;
 */
 
 public class OADataSourceAuto extends OADataSource {
-    private Hub hubNextNumber; // new numbers for seq ids
+    private static Hub hubNextNumberGlobal; // new numbers for seq ids
     private boolean bSupportAllClasses = true;
+    private Hub hubNextNumber; // new numbers for seq ids
 
     public OADataSourceAuto() {
-        this(new Hub(NextNumber.class));
+        this(null);
     }
 
     /** Hub hubNextNumber must include a separate NextNumber2 object for each class
@@ -47,6 +48,14 @@ public class OADataSourceAuto extends OADataSource {
     */
     public OADataSourceAuto(Hub hubNextNumber) {
         super.bLast = true;
+        if (hubNextNumber == null) {
+            hubNextNumber = hubNextNumberGlobal;
+            if (hubNextNumber == null) {
+                hubNextNumber = new Hub(NextNumber.class);
+            }
+        }
+        hubNextNumberGlobal = hubNextNumber;
+        
         setHub(hubNextNumber);
         setName("OADataSourceAuto DataSource");
     }

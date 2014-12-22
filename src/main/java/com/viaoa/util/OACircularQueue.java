@@ -22,7 +22,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 /**
@@ -31,6 +30,7 @@ import java.util.logging.Logger;
  * Client access (getMessageXxx methods) will check overruns, and will throw an 
  * exception if a queue overrun occurs. 
  * @author vvia
+ * Note: this is made abstract to be able to get the Generic class that is used.
  */
 public abstract class OACircularQueue<TYPE> {
     private static Logger LOG = Logger.getLogger(OACircularQueue.class.getName());

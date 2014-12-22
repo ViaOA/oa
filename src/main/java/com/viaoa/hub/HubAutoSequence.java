@@ -169,7 +169,7 @@ public class HubAutoSequence extends HubListenerAdapter implements java.io.Seria
         resequence(0);
     }
         
-    private int resequenceCnt;  // used instead of synchronization
+    private volatile int resequenceCnt;  // used instead of synchronization
     protected void resequence(int startPos) {
         if (hub.isDeletingAll()) return;
         int cnt = (++resequenceCnt);

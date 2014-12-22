@@ -356,12 +356,17 @@ public class HubSelectDelegate {
 	    This will also set SelectLater to false and RequiredWhere to null.
 	*/
 	protected static void cancelSelect(Hub thisHub, boolean bRemove) {
-		if (thisHub.data.getSelect() != null) {
-	    	thisHub.data.getSelect().cancel();
+	    OASelect sel = thisHub.data.getSelect();
+	    boolean bHasMoreData;
+		if (sel != null) {
+		    bHasMoreData = (sel != null && sel.hasMore());
+	    	sel.cancel();
 	        if (bRemove) thisHub.data.setSelect(null);
 	        HubDataDelegate.resizeToFit(thisHub);
 	    }
-        if (thisHub.data.isSelectAllHub() || thisHub.data.getSelect() == null || !thisHub.data.getSelect().isSelectAll()) {
+		else bHasMoreData = false;
+		
+        if (thisHub.data.isSelectAllHub() && bHasMoreData) {
         	thisHub.data.setSelectAllHub(false);
         	OAObjectCacheDelegate.removeSelectAllHub(thisHub);
         }
@@ -487,11 +492,11 @@ public class HubSelectDelegate {
 	*/
 	public static boolean refreshSelect(Hub thisHub) {
         if (thisHub == null) return false;
-	    OASelect sel = getSelect(thisHub);
         Object objAO = thisHub.getAO();
-        cancelSelect(thisHub, false);
+        OASelect sel = getSelect(thisHub);
 
         if (sel != null) {
+            cancelSelect(thisHub, false);  // dont remove select from hub
             sel.reset();
         }
         else {
@@ -521,7 +526,7 @@ public class HubSelectDelegate {
         // check to see if any objects need to be removed from the original list
         for (Object obj : thisHub) {
             if (!hs.contains(obj)) {
-                hs.remove(obj);
+                thisHub.remove(obj);
             }
         }
         

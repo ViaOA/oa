@@ -66,7 +66,7 @@ public class ResultSetIterator implements Iterator {
     DataAccessObject dataAccessObject; 
     DataAccessObject.ResultSetInfo resultSetInfo = new DataAccessObject.ResultSetInfo();
     Object[] arguments; // when using preparedStatement
-    boolean bUsePreparedStatement;
+    private boolean bUsePreparedStatement;
 
     class ColumnInfo {
         Column column;
@@ -86,15 +86,14 @@ public class ResultSetIterator implements Iterator {
         this.arguments = arguments;
         bUsePreparedStatement = true;
     }
-    
-    
-    public ResultSetIterator(OADataSourceJDBC ds, Class clazz, Column[] columns, String query, int max) {
-        this(ds, clazz, columns, query, null, max, null);
-    }
-
     public ResultSetIterator(OADataSourceJDBC ds, Class clazz, Column[] columns, String query, Object[] arguments, int max) {
         this(ds, clazz, columns, query, null, max, null);
         this.arguments = arguments;
+        bUsePreparedStatement = true;
+    }
+
+    public ResultSetIterator(OADataSourceJDBC ds, Class clazz, Column[] columns, String query, int max) {
+        this(ds, clazz, columns, query, null, max, null);
     }
     
 static int qqq;
@@ -132,7 +131,6 @@ static PrintWriter printWriter;
     protected synchronized void init() {
         if (bInit) return;
         bInit = true;
-
 
         if ( ((++qqq)%DisplayMod==0)) {
             String s = query;
@@ -275,8 +273,8 @@ static PrintWriter printWriter;
 
             if (!bDirty) {
                 OAThreadLocalDelegate.setDataSourceLoadingObject(true);
-                bDataSourceLoadingObject = true;
             }
+            else bDataSourceLoadingObject = false;
  
             if (!bDirty && dataAccessObject != null) {
                 resultSetInfo.reset(resultSet);
