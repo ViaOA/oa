@@ -155,8 +155,9 @@ public class ConnectionPool implements Runnable {
         if (c == null) return null;
         return c.connection;
     }
-    
+int qqq;    
     protected OAConnection getOAConnection() throws Exception {
+System.out.println(++qqq+" wwwwwwwwwwwwwwww  getOAConnection");        
         OATransaction tran = OAThreadLocalDelegate.getTransaction();
 
         OAConnection con = null;
@@ -165,8 +166,9 @@ public class ConnectionPool implements Runnable {
             if (con != null) return con;
         }
 
+        int x;
         synchronized(vecConnection) {
-            int x = vecConnection.size();
+            x = vecConnection.size();
             for (int i=(x-1); i>=0; i--) {
                 con = (OAConnection) vecConnection.elementAt(i);
                 if (!con.bAvailable) continue;
@@ -175,32 +177,31 @@ public class ConnectionPool implements Runnable {
                     x--;
                     continue;
                 }
-                if ((tran != null || !dbmd.getAllowStatementPooling()) && con.getNumberOfUsedStatements() > 0) continue;
+                if ((tran != null || !dbmd.getAllowStatementPooling())) {
+                    if (con.getNumberOfUsedStatements() > 0) continue;
+                }
                 break;
             }
             if (con != null) {
                 con.bAvailable = (tran == null);
             }
             else if (x >= dbmd.maxConnections) {
-                return null;
+                return con;
             }
-            
         }
 
-        if (con == null) {
+        if (con == null || x < dbmd.minConnections) {
             Class.forName(dbmd.driverJDBC).newInstance();
             Connection connection = DriverManager.getConnection(dbmd.urlJDBC, dbmd.user, dbmd.password);
             connection.setAutoCommit(true);
             connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
-            con = new OAConnection(connection);
+            OAConnection conNew = new OAConnection(connection);
 
             synchronized(vecConnection) {
-                int x = vecConnection.size();
+                x = vecConnection.size();
                 if (x < dbmd.maxConnections) {
-                    vecConnection.addElement(con);
-                }
-                else {
-                    con = null;
+                    vecConnection.addElement(conNew);
+                    con = conNew;
                 }
             }
         }
@@ -246,11 +247,12 @@ public class ConnectionPool implements Runnable {
         return null;
     }
         
-
+int qqqq;
     /**
      * Returns an unused JDBC connection, null if maxConnections has been reached and all current connections are used.
      */
     private OAConnection _getStatementConnection() throws Exception {
+System.out.println(++qqqq+" XXXXXXXXXXXXXXXZXXXXXXXXXXXXX _getStatementConnection");        
         OATransaction tran = OAThreadLocalDelegate.getTransaction();
         if (tran != null) {
             OAConnection con = (OAConnection) tran.get(this);
@@ -283,6 +285,9 @@ public class ConnectionPool implements Runnable {
             }
             if (conx == null || (conx.getNumberOfUsedStatements() > 0 && x < dbmd.maxConnections)) {
                 conx = getOAConnection();
+            }
+            else if (x < dbmd.minConnections) {
+                getOAConnection();
             }
         }
         return conx;
