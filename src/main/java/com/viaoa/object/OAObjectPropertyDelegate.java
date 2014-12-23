@@ -82,7 +82,7 @@ public class OAObjectPropertyDelegate {
     static void unsafeAddProperty(OAObject oaObj, String name, Object value) {
         unsafeSetProperty(oaObj, name, value, false, false);
     }    
-    static void unsafeSetProperty(OAObject oaObj, String name, Object value) {
+    public static void unsafeSetProperty(OAObject oaObj, String name, Object value) {
         unsafeSetProperty(oaObj, name, value, true, false);
     }    
     static void unsafeSetPropertyIfEmpty(OAObject oaObj, String name, Object value) {
@@ -303,6 +303,9 @@ public class OAObjectPropertyDelegate {
             }
         }
         return newValue;
+    }
+    public static Object getProperty(OAObject oaObj, String name) {
+        return getProperty(oaObj, name, false, false);
     }
 
     /**

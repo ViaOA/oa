@@ -17,6 +17,7 @@ All rights reserved.
 */
 package com.viaoa.util;
 
+
 import java.util.*;
 import java.io.*;
 import java.net.*;
@@ -213,6 +214,7 @@ public class OAXMLReader extends DefaultHandler {
         p(eName);
         indent++;
 
+        
         if (indent == 1) {
             //qqqq need to verify that this is a valid OAXML file
             // ex:  <OAXML VERSION='1.0' DATETIME='08/12/2003 11:56AM'>
@@ -222,7 +224,6 @@ public class OAXMLReader extends DefaultHandler {
         }
 
         // stack ex:  null | null | Department object | "Employees" | Hub object | Employee | "name" ...
-
         // stack ex:  null | null | Employee object | "Department" | Department object | "Manager" | Employee ...
 
         if (stack.length <= indent) {
@@ -238,7 +239,7 @@ public class OAXMLReader extends DefaultHandler {
             // whenever startElement() is called and the previous stack element has a String in it,
             //   then the next property is the reference Object/Hub
 
-            Class c;
+            Class c = null;
             try {
                 // Note: "INSERTCLASS" is used by JSON, and needs to be resolved by OAXMLReader here
                 if ("INSERTCLASS".equalsIgnoreCase(eName)) {
@@ -267,12 +268,20 @@ public class OAXMLReader extends DefaultHandler {
                         }
                     }
                 }
-                c = Class.forName(resolveClassName(eName));
+                if ("com.viaoa.hub.Hub".equals(eName)) {
+                    c = Hub.class;
+                }
+                else {
+                    eName = resolveClassName(eName);
+                    if (eName == null) eName = "com.viaoa.object.OAObject";
+                    c = Class.forName(eName);
+                }
             }
             catch (Exception e) {
                 throw new SAXException("cant find class "+eName+" Error:"+e);
             }
 
+            
             if (c.equals(Hub.class)) {
                 String className = attrs.getValue("ObjectClass");
                 // Note: "INSERTCLASS" is used by JSON, and needs to be resolved by OAXMLReader here
@@ -294,6 +303,8 @@ public class OAXMLReader extends DefaultHandler {
                         }
                     }
                 }
+                className = resolveClassName(className);
+                
                 int tot;
                 String stot = attrs.getValue("total");
                 if (OAString.isEmpty(stot)) tot = 0;
@@ -311,7 +322,7 @@ public class OAXMLReader extends DefaultHandler {
                 }
                 else {
                     try {
-                        Hub h = new Hub(Class.forName(resolveClassName(attrs.getValue("ObjectClass"))));
+                        Hub h = new Hub(Class.forName(resolveClassName(className)));
                         stack[indent] = h;
                         vecRoot.add(h);
                     }
@@ -526,11 +537,6 @@ public class OAXMLReader extends DefaultHandler {
     protected void processProperty(String eName, String value, Class conversionClass, Hashtable hash) {
         Object objValue = value;
         
-if ("vvvvv".equals(value)) {
-    int xx = 4;
-    xx++;
-}
-        
         if (bUseRef) {
             bUseRef = false;
             objValue = refValue;
@@ -544,7 +550,11 @@ if ("vvvvv".equals(value)) {
         if (objValue != null) hash.put(eName.toUpperCase(), objValue);
     }
 
-
+    // return null to ignore property
+    protected String getPropertyName(OAObject obj, String propName) {
+        return propName;
+    }
+    
     protected void processProperties(OAObject object, Hashtable hash) {
     	boolean bLoadingObject = false;
         if (object.getNew()) {
@@ -566,6 +576,9 @@ if ("vvvvv".equals(value)) {
             Object v = hash.get(k);
             if (v == object) continue;
 
+            k = getPropertyName(object, (String)k);
+            if (k == null) continue;
+            
             if (v instanceof Vector) {
                 Vector vec = (Vector) v;
 

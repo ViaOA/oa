@@ -17,6 +17,8 @@ All rights reserved.
 */
 package com.viaoa.util;
 
+import com.viaoa.object.OAObject;
+
 /**
     OAJsonReader that converts to XML, and then uses OAXMLReader to convert to OAObjects and Hubs.  
     @see OAJsonWriter
@@ -31,6 +33,7 @@ public class OAJsonReader {
     private JsonToken token, lastToken;
     private Class rootClass;
 
+    
     /**
      * Parses the JSON text and returns the root object(s).
      * @param rootClass class for the root object.  If it is a Hub, then it needs to be the OAObjectClass of the Hub.
@@ -49,6 +52,22 @@ public class OAJsonReader {
                     if (OADateTime.class.equals(propertyClass)) return new OADate(value, "yyyy-MM-dd'T'HH:mm:ss");
                     return super.convertToObject(propertyName, value, propertyClass);
                 }
+                @Override
+                protected String resolveClassName(String className) {
+                    return OAJsonReader.this.getClassName(className);
+                }
+                @Override
+                public Object getValue(OAObject obj, String name, Object value) {
+                    return OAJsonReader.this.getValue(obj, name, value);
+                }
+                @Override
+                protected String getPropertyName(OAObject obj, String propName) {
+                    return OAJsonReader.this.getPropertyName(obj, propName);
+                }
+                @Override
+                public void endObject(OAObject obj, boolean hasParent) {
+                    OAJsonReader.this.endObject(obj, hasParent);
+                }
             };
             xmlReader.parseString(xml);
             return xmlReader.getRootObjects();
@@ -57,12 +76,27 @@ public class OAJsonReader {
             throw new RuntimeException(e);
         }
     }
-    
-    protected String getName(String name) {
-        return name;
-    }
 
-//qqqqqqqqqqqqqqqqqqq begin    
+    // get the classname to use for a property
+    protected String getClassName(String className) {
+//System.out.println("getClassName className="+className);//qqqqqqqqq
+//        className = "com.viaoa.object.OAObject";
+        return className;
+    }
+    // get the propertyName to use
+    protected String getPropertyName(OAObject obj, String propName) {
+//System.out.println("getPropertyName obj="+obj+", propName="+propName);//qqqqqqqqq
+//propName = null;
+        return propName;
+    }
+    // get the value to use when setting a property
+    protected Object getValue(OAObject obj, String name, Object value) {
+//System.out.println("getValue obj="+obj+", propName="+name+", value="+value);//qqqqqqqqq        
+        return value;
+    }
+    protected void endObject(OAObject obj, boolean hasParent) {
+    }
+    
    
     
     // 20141222 rewrote
@@ -75,16 +109,14 @@ public class OAJsonReader {
 
         sb.append("<?xml version='1.0' encoding='utf-8'?>\n");
         sb.append("<OAXML VERSION='1.0' DATETIME='5/18/12 10:42 AM'>\n");
-        sb.append("<com.viaoa.hub.Hub ObjectClass=\""+rootClass.getName()+"\">\n");
-sb.append("---------------------------\n"); //qqqqqqqqqq
+        //sb.append("<com.viaoa.hub.Hub ObjectClass=\""+rootClass.getName()+"\">\n");
         
         for (int i=0; ;i++) {
             parseRootObject();
             if (token.type == TokenType.eof) break;
         }
         
-sb.append("---------------------------\n");
-        sb.append("</com.viaoa.hub.Hub ObjectClass=\""+rootClass.getName()+"\">\n");
+        //sb.append("</com.viaoa.hub.Hub>\n");
         sb.append("</OAXML>\n");
         return new String(sb);
     }
@@ -153,6 +185,7 @@ sb.append("---------------------------\n");
      * Convert to OAXML so that OAXMLReader can be used to load the Hubs and OAObjects
      * @param rootClass class for the root object.  If it is a Hub, then it needs to be the OAObjectClass of the Hub.
      */
+// NOT USED qqqqqqqqq    
     public String convertToXML__OLD__(String jsonText, Class rootClass) {
         this.jsonText = jsonText;
         this.rootClass = rootClass;
@@ -171,6 +204,7 @@ sb.append("---------------------------\n");
     /* A "INSERTCLASS" will be inserted as a placeholder for the class name.  OAXMLReader will then
        find the correct value when it is converting to objects. 
      */
+// NOT USED qqqqqqqqq    
     protected void convert(boolean bNeedsTag) {
         boolean bFirstEver = (token == null && lastToken == null);
         boolean bFirstIsHub = false;
@@ -193,7 +227,7 @@ sb.append("---------------------------\n");
             
             String name = null;
             if (token.type == TokenType.string) {
-                name = getName(token.value);
+//qqqq                name = getName(token.value);
                 sb.append("<" + name + ">");
                 nextToken();
                 if (token.type == TokenType.colon) nextToken();
