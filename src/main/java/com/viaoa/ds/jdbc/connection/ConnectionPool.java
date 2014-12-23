@@ -193,17 +193,19 @@ public class ConnectionPool implements Runnable {
             connection.setAutoCommit(true);
             connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
             con = new OAConnection(connection);
+
+            synchronized(vecConnection) {
+                int x = vecConnection.size();
+                if (x < dbmd.maxConnections) {
+                    vecConnection.addElement(con);
+                }
+                else {
+                    con = null;
+                }
+            }
         }
         
-        synchronized(vecConnection) {
-            int x = vecConnection.size();
-            if (x < dbmd.maxConnections) {
-                vecConnection.addElement(con);
-            }
-            else {
-                con = null;
-            }
-        }
+        
 
         if (tran != null && con != null) {
             con.connection.setTransactionIsolation(tran.getTransactionIsolationLevel());
@@ -273,7 +275,10 @@ public class ConnectionPool implements Runnable {
                     }
                     if (!c.bAvailable) continue;
                     if (!dbmd.getAllowStatementPooling() && c.getNumberOfUsedStatements() > 0) continue;
-                    if (conx == null || c.getNumberOfUsedStatements() < conx.getNumberOfUsedStatements()) conx = c;
+                    if (conx == null || c.getNumberOfUsedStatements() < conx.getNumberOfUsedStatements()) {
+                        conx = c;
+                        if (c.getNumberOfUsedStatements() < 1) break;
+                    }
                 }
             }
             if (conx == null || (conx.getNumberOfUsedStatements() > 0 && x < dbmd.maxConnections)) {
@@ -410,7 +415,7 @@ public class ConnectionPool implements Runnable {
     }
 
 
-    /**
+    /** ? not used?
         Creates new connection and adds it to connection pool.
     */
     protected OAConnection createConnection() throws Exception {
