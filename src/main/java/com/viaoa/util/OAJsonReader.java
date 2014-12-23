@@ -58,11 +58,102 @@ public class OAJsonReader {
         }
     }
     
+    protected String getName(String name) {
+        return name;
+    }
+
+//qqqqqqqqqqqqqqqqqqq begin    
+   
+    
+    // 20141222 rewrote
+    public String convertToXML(String jsonText, Class rootClass) {
+        this.jsonText = jsonText;
+        this.rootClass = rootClass;
+        pos = 0;
+        len = jsonText.length();
+        sb = new StringBuilder(len*3);
+
+        sb.append("<?xml version='1.0' encoding='utf-8'?>\n");
+        sb.append("<OAXML VERSION='1.0' DATETIME='5/18/12 10:42 AM'>\n");
+        sb.append("<com.viaoa.hub.Hub ObjectClass=\""+rootClass.getName()+"\">\n");
+sb.append("---------------------------\n"); //qqqqqqqqqq
+        
+        for (int i=0; ;i++) {
+            parseRootObject();
+            if (token.type == TokenType.eof) break;
+        }
+        
+sb.append("---------------------------\n");
+        sb.append("</com.viaoa.hub.Hub ObjectClass=\""+rootClass.getName()+"\">\n");
+        sb.append("</OAXML>\n");
+        return new String(sb);
+    }
+
+    protected void parseRootObject() {
+        for (int i=0; ;i++) {
+            nextToken();
+            if (token.type == TokenType.eof) break;
+            if (token.type == TokenType.string) {
+                String s = token.value;
+                nextToken();
+                parseObject(s);
+            }
+            else {
+                parseObject(rootClass.getName());
+            }
+        }
+    }
+    
+    protected void parseObject(String name) {
+        name = OAString.trim(name);
+        if (token.type == TokenType.leftSquareBracket) {
+            parseObjects(name);
+        }
+        else if (token.type == TokenType.leftBracket) {
+            sb.append("<"+name+">\n");
+            parseProperties();
+            sb.append("</"+name+">\n");
+        }
+    }
+
+    protected void parseObjects(String name) {
+        for (;;) {
+            nextToken();
+            if (token.type == TokenType.rightSquareBracket) break;
+            if (token.type == TokenType.eof) break;
+            parseObject(name);
+        }
+    }
+
+    protected void parseProperties() {
+        for (;;) {
+            nextToken();
+            if (token.type == TokenType.rightBracket) break;
+            if (token.type == TokenType.eof) break;
+            
+            String pname = OAString.trim(token.value);
+            nextToken(); // colon
+            nextToken(); // propValue, [, or {
+            
+            if (token.type == TokenType.leftSquareBracket || token.type == TokenType.leftBracket) {
+                parseObject(pname);
+            }
+            else {
+                sb.append("<"+pname+">");
+                sb.append(token.value);
+                sb.append("</"+pname+">\n");
+            }
+        }
+    }
+//qqqqqqqqqqqqqqqq end
+    
+    
+    
     /**
      * Convert to OAXML so that OAXMLReader can be used to load the Hubs and OAObjects
      * @param rootClass class for the root object.  If it is a Hub, then it needs to be the OAObjectClass of the Hub.
      */
-    public String convertToXML(String jsonText, Class rootClass) {
+    public String convertToXML__OLD__(String jsonText, Class rootClass) {
         this.jsonText = jsonText;
         this.rootClass = rootClass;
         pos = 0;
@@ -76,9 +167,6 @@ public class OAJsonReader {
         return new String(sb);
     }
     
-    protected String getName(String name) {
-        return name;
-    }
     
     /* A "INSERTCLASS" will be inserted as a placeholder for the class name.  OAXMLReader will then
        find the correct value when it is converting to objects. 
@@ -86,6 +174,7 @@ public class OAJsonReader {
     protected void convert(boolean bNeedsTag) {
         boolean bFirstEver = (token == null && lastToken == null);
         boolean bFirstIsHub = false;
+
         for (;;) {
             nextToken();
             
@@ -165,9 +254,9 @@ public class OAJsonReader {
         boolean bReturn = false;
         String sError = null;
         StringBuilder sb = new StringBuilder(64);
+        boolean bComma = false;
 
         for ( ; !bReturn && pos<len; pos++) {
-            boolean bReturnNow = false;
             chLast = ch;
             ch = jsonText.charAt(pos);
             
@@ -187,8 +276,13 @@ public class OAJsonReader {
 
             if (ch == '\t' || ch == '\f' || ch == '\n' || ch == '\r' || ch == ' ') continue;
             
+            if (ch == ',') {
+                bComma = true;
+                continue;
+            }
+            
             if (ch == '\'') {
-                if (token.type != null) break; // bad
+                if (token.type != null) break; // start of next
                 charWaitFor = ch;
                 token.type = TokenType.string;
                 continue;
@@ -250,7 +344,14 @@ public class OAJsonReader {
                     token.type = TokenType.string;
                 }
             }
-            if (bReturnNow) break; // leave on current pos
+            else if (ch == '{' || ch == '}' || ch == '[' || ch == ']') {
+                break;
+            }
+            
+            if (bComma) {
+                sb.append(',');
+                bComma = false;
+            }
             sb.append(ch);
         }
 

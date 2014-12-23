@@ -1,0 +1,429 @@
+DeployDownloadOutput
+{
+  "elapsed_time": 897, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEteconfig", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEteconfig-12.925.7.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEteconfig-12.925.7.pom", 
+  "start_time": 1417806966782, 
+  "stop_time": 1417806967679, 
+  "version": "12.925.7"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 5357, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEte-Sol64-release-12-925-9", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEte-Sol64-release-12-925-9-12.925.9.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEte-Sol64-release-12-925-9-12.925.9.pom", 
+  "start_time": 1417806966827, 
+  "stop_time": 1417806972184, 
+  "version": "12.925.9"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 4368, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEdlmr", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEdlmr-12.900.23.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEdlmr-12.900.23.pom", 
+  "start_time": 1417806972185, 
+  "stop_time": 1417806976553, 
+  "version": "12.900.23"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 8804, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEpos", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEpos-12.900.34.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEpos-12.900.34.pom", 
+  "start_time": 1417806967865, 
+  "stop_time": 1417806976669, 
+  "version": "12.900.34"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 9580, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEfixos", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEfixos-12.925.15.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEfixos-12.925.15.pom", 
+  "start_time": 1417806967198, 
+  "stop_time": 1417806976778, 
+  "version": "12.925.15"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 11278, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEMCPriceFeed", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEMCPriceFeed-12.925.6.6.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEMCPriceFeed-12.925.6.6.pom", 
+  "start_time": 1417806966875, 
+  "stop_time": 1417806978153, 
+  "version": "12.925.6.6"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 1527, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICELoginLogoutAdmin", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICELoginLogoutAdmin-12.900.1.13.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICELoginLogoutAdmin-12.900.1.13.pom", 
+  "start_time": 1417806978154, 
+  "stop_time": 1417806979681, 
+  "version": "12.900.1.13"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 5840, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEupsmr", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEupsmr-12.900.15.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEupsmr-12.900.15.pom", 
+  "start_time": 1417806976779, 
+  "stop_time": 1417806982619, 
+  "version": "12.900.15"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 8672, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEobmr", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEobmr-12.900.28.3.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEobmr-12.900.28.3.pom", 
+  "start_time": 1417806976554, 
+  "stop_time": 1417806985226, 
+  "version": "12.900.28.3"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 9792, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEPriceFeed", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEPriceFeed-12.900.19.1.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEPriceFeed-12.900.19.1.pom", 
+  "start_time": 1417806976670, 
+  "stop_time": 1417806986462, 
+  "version": "12.900.19.1"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 3809, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICESales", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICESales-12.900.11.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICESales-12.900.11.pom", 
+  "start_time": 1417806985227, 
+  "stop_time": 1417806989036, 
+  "version": "12.900.11"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 9583, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEorderrouter", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEorderrouter-12.900.35.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEorderrouter-12.900.35.pom", 
+  "start_time": 1417806979682, 
+  "stop_time": 1417806989265, 
+  "version": "12.900.35"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 7740, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICELoginLogoutServer", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICELoginLogoutServer-12.900.1.23.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICELoginLogoutServer-12.900.1.23.pom", 
+  "start_time": 1417806982620, 
+  "stop_time": 1417806990360, 
+  "version": "12.900.1.23"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 4206, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEsomr", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEsomr-12.900.11.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEsomr-12.900.11.pom", 
+  "start_time": 1417806986462, 
+  "stop_time": 1417806990668, 
+  "version": "12.900.11"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 1661, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEfixadmin", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEfixadmin-1.3.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEfixadmin-1.3.pom", 
+  "start_time": 1417806989074, 
+  "stop_time": 1417806990735, 
+  "version": "1.3"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 2252, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEdeallogger", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEdeallogger-12.900.18.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEdeallogger-12.900.18.pom", 
+  "start_time": 1417806990361, 
+  "stop_time": 1417806992613, 
+  "version": "12.900.18"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 6218, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEpdmroptions", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEpdmroptions-12.900.35.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEpdmroptions-12.900.35.pom", 
+  "start_time": 1417806990669, 
+  "stop_time": 1417806996887, 
+  "version": "12.900.35"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 7206, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEpof", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEpof-12.925.7.1.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEpof-12.925.7.1.pom", 
+  "start_time": 1417806990735, 
+  "stop_time": 1417806997941, 
+  "version": "12.925.7.1"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 9889, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEpkmr", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEpkmr-12.925.05.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEpkmr-12.925.05.pom", 
+  "start_time": 1417806989266, 
+  "stop_time": 1417806999155, 
+  "version": "12.925.05"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 1611, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEwts", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEwts-12.900.27.2.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEwts-12.900.27.2.pom", 
+  "start_time": 1417806997941, 
+  "stop_time": 1417806999552, 
+  "version": "12.900.27.2"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 7019, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEtbmr", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEtbmr-12.900.17.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEtbmr-12.900.17.pom", 
+  "start_time": 1417806992614, 
+  "stop_time": 1417806999633, 
+  "version": "12.900.17"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 1483, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEpofclient", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEpofclient-1.65.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEpofclient-1.65.pom", 
+  "start_time": 1417806999634, 
+  "stop_time": 1417807001117, 
+  "version": "1.65"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 7389, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEatlas", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEatlas-12.925.7.4.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEatlas-12.925.7.4.pom", 
+  "start_time": 1417806996983, 
+  "stop_time": 1417807004372, 
+  "version": "12.925.7.4"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 6064, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEfixtc", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEfixtc-12.925.13.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEfixtc-12.925.13.pom", 
+  "start_time": 1417806999552, 
+  "stop_time": 1417807005616, 
+  "version": "12.925.13"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 6769, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEibmrFixml", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEibmrFixml-12.900.43.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEibmrFixml-12.900.43.pom", 
+  "start_time": 1417806999157, 
+  "stop_time": 1417807005926, 
+  "version": "12.900.43"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 1573, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEtadmin", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEtadmin-12.900.12.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEtadmin-12.900.12.pom", 
+  "start_time": 1417807005617, 
+  "stop_time": 1417807007190, 
+  "version": "12.900.12"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 2925, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEsso-server", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEsso-server-12.900.1.3.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEsso-server-12.900.1.3.pom", 
+  "start_time": 1417807004373, 
+  "stop_time": 1417807007298, 
+  "version": "12.900.1.3"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 1537, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEcewa", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEcewa-12.925.12.6.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEcewa-12.925.12.6.pom", 
+  "start_time": 1417807005927, 
+  "stop_time": 1417807007464, 
+  "version": "12.925.12.6"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 1938, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEwebreports", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEwebreports-12.925.2.1.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEwebreports-12.925.2.1.pom", 
+  "start_time": 1417807007190, 
+  "stop_time": 1417807009128, 
+  "version": "12.925.2.1"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 8270, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEmarketmonitor", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEmarketmonitor-12.900.35.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEmarketmonitor-12.900.35.pom", 
+  "start_time": 1417807001118, 
+  "stop_time": 1417807009388, 
+  "version": "12.900.35"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 4119, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEace", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEace-12.925.1.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEace-12.925.1.pom", 
+  "start_time": 1417807007465, 
+  "stop_time": 1417807011584, 
+  "version": "12.925.1"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 3734, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEcma", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEcma-1.100.44.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEcma-1.100.44.pom", 
+  "start_time": 1417807009389, 
+  "stop_time": 1417807013123, 
+  "version": "1.100.44"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 2158, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEappmgr", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEappmgr-12.800.1.9.solaris", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEappmgr-12.800.1.9.pom", 
+  "start_time": 1417807011587, 
+  "stop_time": 1417807013745, 
+  "version": "12.800.1.9"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 6531, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICEpdmrfutures", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICEpdmrfutures-12.900.35.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICEpdmrfutures-12.900.35.pom", 
+  "start_time": 1417807007299, 
+  "stop_time": 1417807013830, 
+  "version": "12.900.35"
+}
+DeployDownloadOutput
+{
+  "elapsed_time": 5406, 
+  "error": null, 
+  "message": "pom already downloaded / pkg already downloaded", 
+  "package": "ICERPPriceFeed", 
+  "pkg_file": "/home/tsacadmin/remote_control/download/ICERPPriceFeed-12.925.5.pkg", 
+  "pom_file": "/home/tsacadmin/remote_control/download/ICERPPriceFeed-12.925.5.pom", 
+  "start_time": 1417807009129, 
+  "stop_time": 1417807014535, 
+  "version": "12.925.5"
+}
+CommandOutput
+{
+  "action": "download", 
+  "command": "rc-deploy", 
+  "elapsed_time": 47790, 
+  "error": null, 
+  "start_time": 1417806966748, 
+  "stop_time": 1417807014538
+}

@@ -6,30 +6,33 @@ public class CirculrQueueTest {
     OACircularQueue<Short> que;
     
     public CirculrQueueTest() {
-        que = new OACircularQueue<Short>(35) {};
+        que = new OACircularQueue<Short>(1000) {};
+        que.setName("testQueue");
     }
     
     void runWriter() {
         for (int i=0;;i++) {
             Short st = new Short((short)i);
-            if ((i%100)==0) System.out.printf("\n(W."+i+") ");
-            // else if ((i%20)==0) System.out.printf( ((i%2==0)?'W':'w')+".");
             que.addMessageToQueue(st);
-            try {
-                Thread.sleep(2);
+            if ((i%100)==0) {
+                if ((i%1000)==0) System.out.printf("\n(W."+i+") ");
+                try {
+                    Thread.sleep(1);
+                }
+                catch (Exception e) {}
             }
-            catch (Exception e) {}
         }
     }
     
     void runReader(int id) {
-        long pos = que.getHeadPostion();
+        
+        long pos = que.registerSession(id);
         for (int i=0;;i++) {
             try {
-                Short[] sms = que.getMessages(pos);
+                Short[] sms = que.getMessages(id, pos, 500, 2000);
                 pos += sms == null ? 0 : sms.length;
                 if ((i%20)==0) System.out.printf("[R"+id+"."+pos+"] ");
-                Thread.sleep(32);
+                // Thread.sleep(32);
             }
             catch (Exception e) {
                 System.out.println("runReader Exception: "+e);

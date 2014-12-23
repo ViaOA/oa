@@ -1,0 +1,5 @@
+
+Test
+{
+  "array": [{ "p1": AAAAAAAAAAA1, "p2": XXXXXX1 }, { "p1": AAAAAAAAAAA2, "p2": XXXXXX2 }, { "p1": AAAAAAAAAAA3, "p2": XXXXXX3 }]
+}

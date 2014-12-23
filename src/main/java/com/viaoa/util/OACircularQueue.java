@@ -101,11 +101,13 @@ public abstract class OACircularQueue<TYPE> {
      * This is used to let the queue know who the consumers are, so that 
      * queue slots can be set to null.
      */
-    public void registerSession(int sessionId) {
+    public long registerSession(int sessionId) {
         if (hmSession == null) {
             hmSession = new ConcurrentHashMap<Integer, Long>();            
         }
-        hmSession.put(sessionId, queueHeadPosition);
+        long x = queueHeadPosition;
+        hmSession.put(sessionId, x);
+        return x;
     }
     public void unregisterSession(int sessionId) {
         if (hmSession != null) {
