@@ -23,8 +23,8 @@ package com.viaoa.transaction;
  * and be called at the end of the transaction.
  * 
  * A datasource will use OAThreadInfoDelegate.getTransaction to get the 
- * current OATransaction for the current thread.  It there is a transaction,
- * then the datasource will create and add a listener, to be notified at end of transaction.L 
+ * current OATransaction for the current thread.  If there is a transaction,
+ * then the datasource will create and add a listener, to be notified at end of transaction. 
  *
  */
 public interface OATransactionListener {

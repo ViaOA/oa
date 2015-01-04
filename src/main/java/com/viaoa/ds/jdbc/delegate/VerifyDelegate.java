@@ -35,7 +35,7 @@ public class VerifyDelegate {
     public static boolean verify(OADataSourceJDBC ds) throws Exception {
         Connection connection = null;
         try {
-            connection = ds.getConnection();
+            connection = ds.getConnection(true);
             boolean b = _verify(ds, connection);
             return b;
         }

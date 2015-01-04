@@ -337,7 +337,10 @@ public class OADataSourceJDBC extends OADataSource {
         Get a jdbc Connection from Connection Pool.
     */
     public Connection getConnection() throws Exception {
-        return connectionPool.getConnection();
+        return connectionPool.getConnection(false);
+    }
+    public Connection getConnection(boolean bExclusive) throws Exception {
+        return connectionPool.getConnection(bExclusive);
     }
     public void releaseConnection(Connection connection) {
         if (connection != null) connectionPool.releaseConnection(connection);

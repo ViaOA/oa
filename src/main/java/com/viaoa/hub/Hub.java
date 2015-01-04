@@ -232,7 +232,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
             if (bCreateSelect) {
                 // create select, but dont call select.select(), since it could be
                 // coming from server. See: OAObjectReflectDelegate.getReferenceHub(..)
-                OASelect sel = HubSelectDelegate.createNewSelect(this);
+                OASelect sel = HubSelectDelegate.createNewSelect(this, true);
                 if (masterObject != null) {
                     sel.setWhereObject(masterObject);
                     sel.setPropertyFromWhereObject(linkInfo.getReverseName());
@@ -1771,8 +1771,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
     public OASelect getSelect(boolean bCreateIfNull) {
         OASelect sel = HubSelectDelegate.getSelect(this);
-        if (sel == null) {
-            sel = HubSelectDelegate.createNewSelect(this);
+        if (sel == null && bCreateIfNull) {
+            sel = HubSelectDelegate.createNewSelect(this, true);
         }
         return sel;
     }

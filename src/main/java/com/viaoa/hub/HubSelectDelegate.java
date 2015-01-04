@@ -241,8 +241,7 @@ public class HubSelectDelegate {
 	        if (select != thisHub.data.getSelect() && thisHub.data.getSelect() != null) {
 	            throw new RuntimeException("select cant be changed for detail hub");
 	        }
-	        
-	        
+
 	        if (thisHub.datam.masterObject != null) {
 	            if (thisHub.datam.masterObject != select.getWhereObject()) {
     	            if (select.getWhere() == null || select.getWhere().length() == 0) {
@@ -266,8 +265,6 @@ public class HubSelectDelegate {
 	    }
 	
 	    select.setSelectClass(thisHub.getObjectClass());
-	
-
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
 
 	    HubEventDelegate.fireBeforeSelectEvent(thisHub);
@@ -338,17 +335,20 @@ public class HubSelectDelegate {
 	/**
 	    Creates a new OASelect object by first calling cancelSelect.
 	*/
-	public static OASelect createNewSelect(Hub hub) {
+	public static OASelect createNewSelect(Hub hub, boolean bAddToHub) {
+	    OASelect sel;
 	    synchronized (hub.data) {
 		    String s = null;
 		    OASelect selHold = hub.data.getSelect();
 		    cancelSelect(hub, true);
-		    hub.data.setSelect(new OASelect(hub.getObjectClass()));
+		    
+		    sel = new OASelect(hub.getObjectClass());
+		    if (bAddToHub) hub.data.setSelect(sel);
 		    if (selHold != null) {
-		        hub.data.getSelect().setHubFilter(selHold.getHubFilter());
+		        sel.setHubFilter(selHold.getHubFilter());
 		    }
 		}
-	    return hub.data.getSelect();
+	    return sel;
 	}
 	
 	/**
@@ -359,10 +359,11 @@ public class HubSelectDelegate {
 	    OASelect sel = thisHub.data.getSelect();
 	    boolean bHasMoreData;
 		if (sel != null) {
-		    bHasMoreData = (sel != null && sel.hasMore());
-	    	sel.cancel();
+		    boolean b = sel.hasBeenStarted();
+		    bHasMoreData = (sel != null && b && sel.hasMore());
+	    	if (b) sel.cancel();
 	        if (bRemove) thisHub.data.setSelect(null);
-	        HubDataDelegate.resizeToFit(thisHub);
+	        if (b) HubDataDelegate.resizeToFit(thisHub);
 	    }
 		else bHasMoreData = false;
 		
@@ -393,7 +394,7 @@ public class HubSelectDelegate {
 	public static void setSelectWhere(Hub thisHub, String s) {
         OASelect sel = getSelect(thisHub);
 	    if (sel == null) {
-	        sel = createNewSelect(thisHub);
+	        sel = createNewSelect(thisHub, true);
 	    }
 	    sel.setWhere(s);
 	}
@@ -413,7 +414,7 @@ public class HubSelectDelegate {
 
 		OASelect sel = getSelect(thisHub);
 	    if (!OAString.isEmpty(s) && sel == null) {
-	        sel = createNewSelect(thisHub);
+	        sel = createNewSelect(thisHub, true);
 	    }
         sel.setOrder(s);
 	}
@@ -432,7 +433,7 @@ public class HubSelectDelegate {
 	
 	public static void select(Hub thisHub, boolean bAppendFlag) {
 		OASelect sel = getSelect(thisHub);
-		if (sel == null) sel = createNewSelect(thisHub);
+		if (sel == null) sel = createNewSelect(thisHub, true);
 		else {
 		    sel.setWhereObject(null);
 		    sel.setParams(null);
@@ -447,7 +448,7 @@ public class HubSelectDelegate {
 	// Main Select here:
 	protected static void select(Hub thisHub, OAObject whereObject, String whereClause, Object[] whereParams, String orderByClause, boolean bAppendFlag) {
 		OASelect sel = getSelect(thisHub);
-		if (sel == null) sel = createNewSelect(thisHub);
+		if (sel == null) sel = createNewSelect(thisHub, false);
 		else {
 	        sel.setPassthru(false);
 		}
@@ -461,7 +462,7 @@ public class HubSelectDelegate {
 
     public static void selectPassthru(Hub thisHub, String whereClause, String orderClause) {
 		OASelect sel = getSelect(thisHub);
-		if (sel == null) sel = createNewSelect(thisHub);
+		if (sel == null) sel = createNewSelect(thisHub, true);
 		else {
             sel.setWhereObject(null);
             sel.setParams(null);
@@ -474,7 +475,7 @@ public class HubSelectDelegate {
     }
     public static void selectPassthru(Hub thisHub, String whereClause, String orderClause, boolean bAppend) {
         OASelect sel = getSelect(thisHub);
-        if (sel == null) sel = createNewSelect(thisHub);
+        if (sel == null) sel = createNewSelect(thisHub, true);
         else {
             sel.setWhereObject(null);
             sel.setParams(null);

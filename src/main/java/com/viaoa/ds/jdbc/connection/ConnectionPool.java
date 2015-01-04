@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.ds.jdbc.connection;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.sql.*;
@@ -34,11 +35,13 @@ import com.viaoa.transaction.OATransactionListener;
 public class ConnectionPool implements Runnable {
     private static Logger LOG = Logger.getLogger(ConnectionPool.class.getName());
     
-    private Vector vecConnection = new Vector(10,10);
-    private transient Thread thread; // used to release connections
     private DBMetaData dbmd;
+    private ArrayList<OAConnection> alOAConnection = new ArrayList<OAConnection>();
+    private transient Thread thread; // used to release connections
     private boolean bStopThread;     // tells thread to stop
     private Object threadLOCK = new Object();
+    
+    private final ReentrantLock lock = new ReentrantLock();
     
     /**
         Create new Pool that is used for a OADataSourceJDBC.
@@ -50,17 +53,6 @@ public class ConnectionPool implements Runnable {
         open();
     }
 
-    public void close() {
-    	if (thread != null) {
-	        thread = null;
-	        bStopThread = true;
-	        synchronized (threadLOCK) {
-	            threadLOCK.notify();
-	        }
-	        closeAllConnections();	        
-    	}
-    }
-
     public void open() {
         bStopThread = false;
         if (thread == null) {
@@ -70,35 +62,77 @@ public class ConnectionPool implements Runnable {
             thread.start();
         }
     }
+    public void close() {
+        if (thread != null) {
+            thread = null;
+            bStopThread = true;
+            synchronized (threadLOCK) {
+                threadLOCK.notify();
+            }
+            closeAllConnections();          
+        }
+    }
     
     /** 
         Low priority Thread used to close extra connections that are not being used. 
         Runs every 10 minutes.
     */
     public void run() {
+        if (dbmd.minConnections < 1) {
+            LOG.warning("dbmd.minConnections="+dbmd.minConnections+", will use one instead");
+            dbmd.minConnections = 1;
+        }
+        if (dbmd.maxConnections < dbmd.minConnections) {
+            LOG.warning("invalid dbmd.maxConnections="+dbmd.maxConnections+" is less then dbmd.minConnections="+dbmd.minConnections+", will use "+dbmd.minConnections+"+1 for max");
+            dbmd.maxConnections = dbmd.minConnections + 1;
+        }
         for ( ; !bStopThread; ) {
-            synchronized(vecConnection) {
-                int x = vecConnection.size();
-                int cntClosed = 0;
-                int current = 0;
-                for (int i=0; i<x; i++) {
-                    OAConnection con = (OAConnection) vecConnection.elementAt(i);
-                    try {
-                        if (con.connection.isClosed()) continue;
-                        current++;
-                        if (!con.bAvailable) continue;
-                        if (con.getNumberOfUsedStatements() > 0) continue;
-                        if (current <= dbmd.minConnections) continue;
-                        
-                        con.connection.close();
-                        if (++cntClosed == 2) break; // only release max 2 at each check.
+            int cntAvailable = 0;
+            int cntClosed = 0;
+            
+            try {
+                lock.lock();
+                for (int i=0; i<alOAConnection.size(); i++) {
+                    OAConnection con = alOAConnection.get(i);
+                    if (con.connection.isClosed()) {
+                        alOAConnection.remove(i);
+                        i--;
+                        continue;
                     }
-                    catch (java.sql.SQLException e) {
-                        System.out.println("Connection.run() exception: "+e);
-                        e.printStackTrace();
-                    }
+                    if (!con.bAvailable) continue;
+                    if (con.getTotalUsed() > 0) continue;
+                    if (++cntAvailable <= dbmd.minConnections) continue;  // keep min connections
+                    
+                    con.connection.close();
+                    alOAConnection.remove(i);
+                    i--;
+                    
+                    if (++cntClosed == 2) break; // only release max 2 at each check.
                 }
             }
+            catch (java.sql.SQLException e) {
+                LOG.log(Level.WARNING, "exception while checking connections, will continue", e);
+            }
+            finally {
+                lock.unlock();
+            }
+
+            for (int i=cntAvailable; i<dbmd.minConnections && (alOAConnection.size() < dbmd.maxConnections) ; i++) {
+                try {
+                    OAConnection con = createNewOAConnection();
+                    lock.lock();
+                    if (alOAConnection.size() >= dbmd.maxConnections) break;
+                    con.bAvailable = true;
+                    alOAConnection.add(con);
+                }
+                catch (Exception e) {
+                    LOG.log(Level.WARNING, "error trying to create a new JDBC connection", e);
+                }
+                finally {
+                    lock.unlock();
+                }
+            }
+            
             try {
                 synchronized (threadLOCK) {
                 	if (!bStopThread) threadLOCK.wait(1000 * 60 * 5);
@@ -110,7 +144,7 @@ public class ConnectionPool implements Runnable {
     }
 
     /**
-        Returns true is database is still connected.
+        Returns true if database is still connected.
     */
     public boolean isDatabaseAvailable() {
         try {
@@ -128,21 +162,23 @@ public class ConnectionPool implements Runnable {
         Close all connections and remove from Connection Pool.
     */
     public void closeAllConnections() {
-        synchronized(vecConnection) {
-            int x = vecConnection.size();
-            for (int i=0; i<x; i++) {
-                OAConnection con = (OAConnection) vecConnection.elementAt(i);
+        try {
+            lock.lock();
+            for (OAConnection con : alOAConnection) {
                 try {
                     if (!con.connection.isClosed()) {
                         con.connection.close();
                     }
                 }
-                catch (SQLException e) {
+                catch (Exception e) {
                     System.out.println("Connection.close() exception: "+e);
                     e.printStackTrace();
                 }
             }
-            vecConnection.clear();
+            alOAConnection.clear();
+        }
+        finally {
+            lock.unlock();
         }
     }
     
@@ -150,148 +186,123 @@ public class ConnectionPool implements Runnable {
     /**
      * Returns an unused JDBC connection, null if maxConnections has been reached and all current connections are used.
      */
-    public Connection getConnection() throws Exception {
-        OAConnection c = getOAConnection();
+    public Connection getConnection(boolean bExclusive) throws Exception {
+        OAConnection c = getOAConnection(false, bExclusive);
         if (c == null) return null;
         return c.connection;
     }
-int qqq;    
-    protected OAConnection getOAConnection() throws Exception {
-System.out.println(++qqq+" wwwwwwwwwwwwwwww  getOAConnection");        
+
+    
+    protected OAConnection getOAConnection(boolean bForStatement, boolean bExclusive) throws Exception {
         OATransaction tran = OAThreadLocalDelegate.getTransaction();
 
         OAConnection con = null;
         if (tran != null) {
             con = (OAConnection) tran.get(this);
             if (con != null) return con;
+            bExclusive = true;
         }
-
-        int x;
-        synchronized(vecConnection) {
-            x = vecConnection.size();
-            for (int i=(x-1); i>=0; i--) {
-                con = (OAConnection) vecConnection.elementAt(i);
-                if (!con.bAvailable) continue;
-                if (con.connection.isClosed()) {
-                    vecConnection.removeElementAt(i);
-                    x--;
-                    continue;
+        if (!dbmd.getAllowStatementPooling()) bExclusive = true;
+        
+        try {
+            lock.lock();
+            
+            for (OAConnection conx : alOAConnection) {
+                if (!conx.bAvailable) continue;
+                int used = conx.getTotalUsed(); 
+                if (bExclusive) {
+                    if (used > 0) continue;
                 }
-                if ((tran != null || !dbmd.getAllowStatementPooling())) {
-                    if (con.getNumberOfUsedStatements() > 0) continue;
+                if (con == null || used <= con.getTotalUsed()) {
+                    con = conx;
+                    if (used == 0) break;
                 }
-                break;
             }
+
+            boolean bMaxed = (alOAConnection.size() >= dbmd.maxConnections);
             if (con != null) {
-                con.bAvailable = (tran == null);
-            }
-            else if (x >= dbmd.maxConnections) {
-                return con;
-            }
-        }
-
-        if (con == null || x < dbmd.minConnections) {
-            Class.forName(dbmd.driverJDBC).newInstance();
-            Connection connection = DriverManager.getConnection(dbmd.urlJDBC, dbmd.user, dbmd.password);
-            connection.setAutoCommit(true);
-            connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
-            OAConnection conNew = new OAConnection(connection);
-
-            synchronized(vecConnection) {
-                x = vecConnection.size();
-                if (x < dbmd.maxConnections) {
-                    vecConnection.addElement(conNew);
-                    con = conNew;
+                int used = con.getTotalUsed(); 
+                if (used > 0 && !bMaxed) {
+                    con = null;
+                }
+                else {
+                    con.bAvailable = !bExclusive;
+                    if (bForStatement) con.bGettingStatement = true;
                 }
             }
+            else if (bMaxed) {
+                return null;
+            }
         }
-        
-        
+        finally {
+            lock.unlock();
+        }
 
-        if (tran != null && con != null) {
+        
+        if (con == null) {
+            con = createNewOAConnection();
+            try {
+                lock.lock();
+                con.bAvailable = !bExclusive;
+                if (bForStatement) con.bGettingStatement = true;
+                alOAConnection.add(con);
+            }
+            finally {
+                lock.unlock();
+            }
+        }
+
+        if (tran != null) {
             con.connection.setTransactionIsolation(tran.getTransactionIsolationLevel());
             con.connection.setAutoCommit(false);
             tran.put(this, con);
             MyOATransactionListener tl = new MyOATransactionListener(con);
             tran.addTransactionListener(tl);
         }
-
         return con;
     }
 
+    protected OAConnection createNewOAConnection() throws Exception {
+        Class.forName(dbmd.driverJDBC).newInstance();
+        Connection connection = DriverManager.getConnection(dbmd.urlJDBC, dbmd.user, dbmd.password);
+        connection.setAutoCommit(true);
+        connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
+        OAConnection oacon = new OAConnection(connection);
+        return oacon;
+    }
+    
     public void releaseConnection(Connection connection) {
-        Object[] objs = vecConnection.toArray();
-        for (Object objx : objs) {
-            OAConnection con = (OAConnection) objx;
-            if (con.connection == connection) {
+        try {
+            lock.lock();
+            for (OAConnection con : alOAConnection) {
+                if (con.connection != connection) continue;
                 try {
                     connection.setAutoCommit(true);
                     connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
                     con.bAvailable = true;
                 }
                 catch (SQLException e) {
-                    System.out.println("releaseConnection() exception: "+e);
-                    e.printStackTrace();
+                    LOG.log(Level.WARNING, "releaseConnection() exception", e);
                 }
                 break;
             }
+        }
+        finally {
+            lock.unlock();
         }
     }
     
     protected OAConnection getStatementConnection() throws Exception {
         for (int i=0; i<100; i++) {
-            OAConnection c = _getStatementConnection();
-            if (c != null) return c;
-            Thread.sleep(25);
+            OAConnection c = getOAConnection(true, false);
+            if (c != null) {
+                return c;
+            }
+            Thread.sleep(2);
         }
         return null;
     }
         
-int qqqq;
-    /**
-     * Returns an unused JDBC connection, null if maxConnections has been reached and all current connections are used.
-     */
-    private OAConnection _getStatementConnection() throws Exception {
-System.out.println(++qqqq+" XXXXXXXXXXXXXXXZXXXXXXXXXXXXX _getStatementConnection");        
-        OATransaction tran = OAThreadLocalDelegate.getTransaction();
-        if (tran != null) {
-            OAConnection con = (OAConnection) tran.get(this);
-            if (con != null) return con;
-        }
-
-        OAConnection conx = null;
-        if (tran != null) {
-            conx = getOAConnection();
-        }
-        else {
-            int x;
-            // use an existing connection
-            synchronized(vecConnection) {
-                x = vecConnection.size();
-                for (int i=(x-1); i>=0; i--) {
-                    OAConnection c = (OAConnection) vecConnection.elementAt(i);
-                    if (c.connection.isClosed()) {
-                        vecConnection.removeElementAt(i);
-                        x--;
-                        continue;
-                    }
-                    if (!c.bAvailable) continue;
-                    if (!dbmd.getAllowStatementPooling() && c.getNumberOfUsedStatements() > 0) continue;
-                    if (conx == null || c.getNumberOfUsedStatements() < conx.getNumberOfUsedStatements()) {
-                        conx = c;
-                        if (c.getNumberOfUsedStatements() < 1) break;
-                    }
-                }
-            }
-            if (conx == null || (conx.getNumberOfUsedStatements() > 0 && x < dbmd.maxConnections)) {
-                conx = getOAConnection();
-            }
-            else if (x < dbmd.minConnections) {
-                getOAConnection();
-            }
-        }
-        return conx;
-    }
     
 
     class MyOATransactionListener implements OATransactionListener {
@@ -329,24 +340,12 @@ System.out.println(++qqqq+" XXXXXXXXXXXXXXXZXXXXXXXXXXXXX _getStatementConnectio
         }
     }
     
-// temp fix    
-    // 20120625 temp added synchronized, since there is a problem with resultSets getting closed on Hi5 derby database
-//qqqqqqq more then one thread cant share a connection if there are LOB involved.  Derby uses ThreadLocal to manage them    
     /**
         Returns a JDBC Statement that can be used for direct JDBC calls.
         @message message reason/description for using statement.  This is used by getInfo(),
     */  
-    public synchronized Statement getStatement(String message) throws Exception {
-        if (dbmd.minConnections < 1) {
-            LOG.warning("dbmd.minConnections="+dbmd.minConnections+", will use one instead");
-            dbmd.minConnections = 1;
-        }
-        if (dbmd.maxConnections < dbmd.minConnections) {
-            LOG.warning("invalid dbmd.maxConnections="+dbmd.maxConnections+" is less then dbmd.minConnections="+dbmd.minConnections+", will use "+dbmd.minConnections+" for max");
-            dbmd.maxConnections = dbmd.minConnections;
-        }
+    public Statement getStatement(String message) throws Exception {
         OAConnection con = getStatementConnection();
-        
         Statement statement;
         try {
             statement = con.getStatement(message);
@@ -367,7 +366,14 @@ System.out.println(++qqqq+" XXXXXXXXXXXXXXXZXXXXXXXXXXXXX _getStatementConnectio
     */
     public void releaseStatement(Statement statement) {
         if (statement == null) return;
-        Object[] objs = vecConnection.toArray();
+        Object[] objs = null;
+        try {
+            lock.lock();
+            objs = alOAConnection.toArray();
+        }
+        finally {
+            lock.unlock();
+        }
         for (Object objx : objs) {
             OAConnection con = (OAConnection) objx;
             if (con.releaseStatement(statement)) {
@@ -408,63 +414,54 @@ System.out.println(++qqqq+" XXXXXXXXXXXXXXXZXXXXXXXXXXXXX _getStatementConnectio
     /**
         Release a PreparedStatement obtained from getPreparedStatement.
     */
-    public void releasePreparedStatement(PreparedStatement ps, boolean bCanBeReused) {
-        if (ps == null) return;
-        Object[] objs = vecConnection.toArray();
+    public void releasePreparedStatement(PreparedStatement statement, boolean bCanBeReused) {
+        if (statement == null) return;
+        Object[] objs = null;
+        try {
+            lock.lock();
+            objs = alOAConnection.toArray();
+        }
+        finally {
+            lock.unlock();
+        }
         for (Object objx : objs) {
             OAConnection con = (OAConnection) objx;
-            if (con.releasePreparedStatement(ps, bCanBeReused)) {
-            	break;
+            if (con.releasePreparedStatement(statement, bCanBeReused)) {
+                break;
             }
         }
     }
 
-
-    /** ? not used?
-        Creates new connection and adds it to connection pool.
-    */
-    protected OAConnection createConnection() throws Exception {
-        Class.forName(dbmd.driverJDBC).newInstance();
-        OAConnection myCon = null;
-
-        boolean b = true;  // create at least one more connection
-        for (int i=0; b || i < dbmd.minConnections; i++) {
-            b = false;
-            Connection connection = DriverManager.getConnection(dbmd.urlJDBC, dbmd.user, dbmd.password);
-            connection.setAutoCommit(true); 
-            myCon = new OAConnection(connection);
-            myCon.bAvailable = false; // make sure that this cant be used yet.
-            synchronized(vecConnection) {
-            	vecConnection.addElement(myCon);
-            }
-        }
-        return myCon;
-    }
-
-    
     /**
 	    Called by OADataSource.getInfo to return information about database connections.
 	*/
-	public void getInfo(Vector vec) {
+	public void getInfo(Vector<Object> vec) {
 	    vec.addElement("Driver: "+dbmd.driverJDBC);
 	    vec.addElement("URL: "+dbmd.urlJDBC);
 	    vec.addElement("User: "+dbmd.user);
 	    vec.addElement("Min Connections: "+dbmd.minConnections);
 	    vec.addElement("Max Connections: "+dbmd.maxConnections);
 	    vec.addElement("Connections");
-	
-	    synchronized(vecConnection) {
-	        int x = vecConnection.size();
-	        for (int i=0; i < x; i++) {
-	            OAConnection con = (OAConnection) vecConnection.elementAt(i);
-	            // vec.addElement(i+") Total Statements: "+con.vecStatement.size() + "/ Used: "+con.getNumberOfUsedStatements());
-                vec.addElement(i+") JDBC Connection, total Statements: "+con.vecStatement.size() + "/ Used: "+con.getNumberOfUsedStatements()+", statementsUsed="+con.getStatementUsedCount());
-                if (!con.bAvailable) vec.addElement(" * connection not available");
 
-	            con.getInfo(vec);	            
-	        }
+	    try {
+	        lock.lock();
+	        int cnter = 0;
+            for (OAConnection con : alOAConnection) {
+                String s = String.format("%d) JDBC Connection, Statements current=%d/used=%d/created=%,d/queries=%,d," +
+                		" Prepared current=%d/used=%d/created=%,d/queries=%,d", 
+                        cnter++, 
+                        con.vecStatement.size(), con.getCurrentlyUsedStatementCount(), con.cntCreateStatement, con.cntGetStatement,
+                        con.getTotalPreparedStatements(), con.vecUsedPreparedStatement.size(), con.cntCreatePreparedStatement, con.cntGetPreparedStatement 
+                );
+                if (!con.bAvailable) s += (" * connection not available");
+
+                vec.addElement(s);
+                con.getInfo(vec);               
+            }
+	    }
+	    finally {
+	        lock.unlock();
 	    }
 	}
-
 }
 
