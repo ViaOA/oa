@@ -52,3 +52,46 @@
         
         return executorService;
     }
+
+    
+    qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+    
+    
+        Future<Boolean> future = getExecutorService().submit(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                boolean b = performRunExecute(execute);
+                return b;
+            }
+        });
+        
+        Object objx = future.get(secondsTimeout, TimeUnit.SECONDS);
+    
+    
+    ...
+    
+        private static ThreadPoolExecutor executorService;
+        private static ExecutorService getExecutorService() {
+            if (executorService != null) return executorService;
+            // min/max must be equal, since new threads are only created when queue is full
+            executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, 
+                    new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE)) 
+            {
+                @Override
+                public Future<?> submit(Runnable task) {
+                    LOG.fine("running task in thread="+Thread.currentThread().getName());
+                    return super.submit(task);
+                }
+            };
+            executorService.allowCoreThreadTimeOut(true);
+            
+            return executorService;
+        }
+    
+    
+    
+    
+    
+    
+    
+    

@@ -1,7 +1,5 @@
 package com.viaoa.util;
 
-import java.util.HashMap;
-
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectPropertyDelegate;
 

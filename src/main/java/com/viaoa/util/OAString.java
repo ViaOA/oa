@@ -1585,6 +1585,12 @@ public class OAString {
         return d != null;
     }
 
+    public static boolean isInteger(String str) {
+        if (str == null) return false;
+        Long d = (Long) OAConverter.convert(Long.class, str);
+        return d != null;
+    }
+    
     /**
         Returns true if String is a valid Date.
         This will try to convert the String to a OADate.
