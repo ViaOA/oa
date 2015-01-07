@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.object;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
@@ -564,11 +565,7 @@ static volatile int openLockCnt;
 static volatile int lockCnt;    
 static volatile int unlockCnt;    
     protected static void lock(OAThreadLocal tiThis, Object thisLockObject, int maxWaitTries) {
-
-//qqqqqqqqqqqqqqqq        
-//System.out.println((++lockCnt)+") ****** OAThreadLocalDelegate.lock obj="+thisLockObject+", activeLocks="+(++openLockCnt));
-
-
+        //System.out.println((++lockCnt)+") ****** OAThreadLocalDelegate.lock obj="+thisLockObject+", activeLocks="+(++openLockCnt));
         if (thisLockObject == null || tiThis == null) return;
         
         OARemoteThread rt = null;
@@ -611,7 +608,7 @@ static volatile int unlockCnt;
 
                 int msWait;
                 if (tiThis.locks != null && tiThis.locks.length > 1) {
-                    msWait = 2;  // could be deadlock situation
+                    msWait = 1;  // could be deadlock situation
                 }
                 else msWait = 5;
 
@@ -725,11 +722,9 @@ static volatile int unlockCnt;
         unlock(OAThreadLocalDelegate.getThreadLocal(true), object);
     }
 
-//qqqqqq
+
     protected static void unlock(OAThreadLocal ti, Object object) {
-//qqqqqqqqqqq        
-//System.out.println((++unlockCnt)+") ****** OAThreadLocalDelegate.unlock obj="+object+", activeLocks="+(--openLockCnt));
-        
+        //System.out.println((++unlockCnt)+") ****** OAThreadLocalDelegate.unlock obj="+object+", activeLocks="+(--openLockCnt));
         try {
             rwLock.writeLock().lock();
             _unlock(ti, object);
@@ -739,25 +734,27 @@ static volatile int unlockCnt;
         }
     }    
     private static void _unlock(OAThreadLocal ti, Object object) {
-        OAThreadLocal[] tis = hmLock.get(object);
+        OAThreadLocal[] tls = hmLock.get(object);
         
-        if (tis != null) {
-            boolean bIsLockOwner = (tis.length > 0 && tis[0] == ti);
-            
-            if (tis.length == 1) {
+        if (tls != null) {
+            boolean bIsLockOwner = (tls.length > 0 && tls[0] == ti);
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+ThreadLocal might have multiple locks on it qqqqqqqqqqqqqq
+
+            if (tls.length == 1) {
                 if (bIsLockOwner) {
                     hmLock.remove(object);
                 }
-                tis = null;
+                tls = null;
             }
             else {
-                tis = (OAThreadLocal[]) OAArray.removeValue(OAThreadLocal.class, tis, ti);
-                hmLock.put(object, tis);
+                tls = (OAThreadLocal[]) OAArray.removeValue(OAThreadLocal.class, tls, ti);
+                hmLock.put(object, tls);
             }                
-            if (tis != null && bIsLockOwner) {
-                synchronized (tis[0]) {
-                    tis[0].bIsWaitingOnLock = false;
-                    tis[0].notify();
+            if (tls != null && bIsLockOwner) {
+                synchronized (tls[0]) {
+                    tls[0].bIsWaitingOnLock = false;
+                    tls[0].notify();
                 }
             }
         }

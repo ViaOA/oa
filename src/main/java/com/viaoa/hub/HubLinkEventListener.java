@@ -62,7 +62,7 @@ class HubLinkEventListener extends HubListenerAdapter implements java.io.Seriali
 	    if (!bUpdateWeakHub) return;
 	    for (Object objx : linkToHub) {
 	        OAObject oaObj = (OAObject) objx;
-	        if (!OAObjectHubDelegate.addHub(oaObj, linkToHub, true, true)) {
+	        if (!OAObjectHubDelegate.addHub(oaObj, linkToHub, true)) {
 	            break;
 	        }
         }

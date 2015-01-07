@@ -57,12 +57,15 @@ public class HubDataDelegate {
 	protected static void setChanged(Hub thisHub, boolean b) {
         boolean old = thisHub.data.changed;
         thisHub.data.changed = b;
+        thisHub.data.changeCount++;
         if (!b) {
         	synchronized (thisHub.data) {
-                if (thisHub.data.getVecAdd() != null) {
-                    thisHub.data.getVecAdd().removeAllElements();
+        	    Vector v = thisHub.data.getVecAdd(); 
+                if (v != null) {
+                    v.removeAllElements();
                 }
-        		if (thisHub.data.getVecRemove() != null) thisHub.data.getVecRemove().removeAllElements();
+                v = thisHub.data.getVecRemove(); 
+        		if (v != null) v.removeAllElements();
         	}
         }
     }
@@ -148,19 +151,16 @@ public class HubDataDelegate {
 
 	
 	// called by HubAddRemoveDelegate.internalAdd
-    protected static boolean _add(Hub thisHub, Object obj) {
-	//was: protected static boolean _add(Hub thisHub, OAObjectKey key, Object obj) {
-        boolean bIsLoading = thisHub.isLoading();
+    protected static boolean _add(Hub thisHub, Object obj, boolean bIsLoading, boolean bHasLock) {
         boolean b = false;
         try {
-            if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
+            if (!bHasLock && !bIsLoading) OAThreadLocalDelegate.lock(thisHub);
             b = _add2(thisHub, obj, bIsLoading);
-            //was: b = _add2(thisHub, key, obj);
         }
         catch (Exception e) {
         }
         finally {
-            if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
+            if (!bHasLock && !bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
@@ -191,16 +191,15 @@ public class HubDataDelegate {
 	}
 
 
-    protected static boolean _insert(Hub thisHub, Object obj, int pos) {
+    protected static boolean _insert(Hub thisHub, Object obj, int pos, boolean bIsLoading, boolean bIsLocked) {
         boolean b = false;
-        boolean bIsLoading = thisHub.isLoading();
         try {
-            if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
+            if (!bIsLocked && !bIsLoading) OAThreadLocalDelegate.lock(thisHub);
             //was b = _insert2(thisHub, key, obj, pos, bLock);
             b = _insert2(thisHub, obj, pos, bIsLoading);
         }
         finally {
-            if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
+            if (!bIsLocked && !bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
@@ -247,7 +246,7 @@ public class HubDataDelegate {
 	    }
 	}
 	
-	private static Vector createVecAdd(Hub thisHub) {
+	protected static Vector createVecAdd(Hub thisHub) {
         if (thisHub.data.getVecAdd() == null) {
 	        synchronized (thisHub.data) {
 	            if (thisHub.data.getVecAdd() == null) thisHub.data.setVecAdd(new Vector(10, 10));
@@ -255,7 +254,7 @@ public class HubDataDelegate {
         }
         return thisHub.data.getVecAdd();
 	}
-	private static Vector createVecRemove(Hub thisHub) {
+	protected static Vector createVecRemove(Hub thisHub) {
 		if (thisHub.data.getVecRemove() == null) {
 	        synchronized (thisHub.data) {
 	            if (thisHub.data.getVecRemove() == null) thisHub.data.setVecRemove(new Vector(10,10));

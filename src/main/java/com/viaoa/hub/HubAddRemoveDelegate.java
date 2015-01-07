@@ -17,6 +17,7 @@ All rights reserved.
 */
 package com.viaoa.hub;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.object.*;
@@ -131,6 +132,15 @@ public class HubAddRemoveDelegate {
     }
     
     public static void clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
+        try {
+            OAThreadLocalDelegate.lock(thisHub);
+            _clear(thisHub, bSetAOtoNull, bSendNewList);
+        }
+        finally {
+            OAThreadLocalDelegate.unlock(thisHub);
+        }
+    }
+    private static void _clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
         if (thisHub.datau.getSharedHub() != null) {
             clear(thisHub.datau.getSharedHub(), bSetAOtoNull, bSendNewList);
             return;
@@ -139,7 +149,7 @@ public class HubAddRemoveDelegate {
         if (!thisHub.getEnabled()) {
             return;
         }
-        
+
         HubSelectDelegate.cancelSelect(thisHub, false);
 
         // 20140616 moved this here since other objects (ex: HubMerger) uses the
@@ -158,13 +168,20 @@ public class HubAddRemoveDelegate {
             HubCSDelegate.removeAllFromHub(thisHub);
         }
         
-        // 20140505
-        for ( ; thisHub.data.vector.size() > 0; ) {
-        //was: for ( x--; x>=0; x-- ) {
-            Object ho = HubDataDelegate.getObjectAt(thisHub, 0);
-
+        Object objLast = null;
+        for (int pos=0 ; ; ) {
+            Object obj = thisHub.elementAt(pos);
+            if (obj == null) break;
+            
+            if (obj == objLast) {
+                // object was not deleted
+                pos++;
+                continue;
+            }
+            objLast = obj;
+            
             // 20140422 set to false, since clients will now have clear msg         
-            remove(thisHub, ho, false, false, 
+            remove(thisHub, obj, false, false, 
                     false, false, true, true); // dont force, dont send remove events
             //was: remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull, true); // dont force, dont send remove events
         }
@@ -259,16 +276,32 @@ public class HubAddRemoveDelegate {
                 return;
             }
         }
-
         if (thisHub.data.getSortListener() != null) {
             // use getCurrentSize to guess that it will go at the end, in 
             //  cases where this is loaded in order.
             insert(thisHub, obj, thisHub.getCurrentSize());  
             return;
         }
+        
+        boolean bIsLoading = thisHub.isLoading();
+        try {
+            if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
+if (HubDeleteDelegate.DELETEALL) {
+    int xx = 4;//qqqqqqqqq
+    xx++;
+    OAThreadLocalDelegate.lock(thisHub);
+    OAThreadLocalDelegate.unlock(thisHub);
+}
+            _add(thisHub, obj, bIsLoading);
+        }
+        finally {
+            if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
+        }
+    }
+    private static void _add(Hub thisHub, Object obj, boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            internalAdd(thisHub, obj);
+            internalAdd(thisHub, obj, bIsLoading, true);
             return;
         }
 
@@ -282,7 +315,7 @@ public class HubAddRemoveDelegate {
             return;
         }
 
-        if (!thisHub.isLoading()) {
+        if (!bIsLoading) {
             String s = canAddMsg(thisHub, obj);
             if (s != null) {
                 throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
@@ -293,7 +326,7 @@ public class HubAddRemoveDelegate {
         if (thisHub.isOAObject()) {
             HubCSDelegate.addToHub(thisHub, (OAObject) obj);
         }
-        if (!internalAdd(thisHub, obj)) {
+        if (!internalAdd(thisHub, obj, bIsLoading, true)) {
             //LOG.warning(" NOT ADDED <<<<<");
             return;
         }
@@ -323,22 +356,13 @@ public class HubAddRemoveDelegate {
 
     /** internal method to add to vector and hashtable
      */
-    protected static boolean internalAdd(Hub thisHub, Object obj) {
+    protected static boolean internalAdd(Hub thisHub, Object obj, boolean bIsLoading, boolean bHasLock) {
         if (obj == null) return false;
 
-        /* 20140826 not needed
-        OAObjectKey key;
-        if (obj instanceof OAObjectKey) key = (OAObjectKey) obj;
-        else {
-            if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject)obj);
-            else {
-                key = OAObjectKeyDelegate.convertToObjectKey(thisHub.getObjectClass(), obj);
-            }
-        }
-        */
         // this will lock, sync(data), and startNextThread
-        if (!HubDataDelegate._add(thisHub, obj)) return false;
-        //was: if (!HubDataDelegate._add(thisHub, key, obj)) return false;
+        if (!HubDataDelegate._add(thisHub, obj, bIsLoading, bHasLock)) {
+            return false;
+        }
         
         if (obj instanceof OAObject) {
             OAObjectHubDelegate.addHub((OAObject)obj, thisHub);
@@ -432,9 +456,21 @@ public class HubAddRemoveDelegate {
             return insert(thisHub.datau.getSharedHub(), obj, pos);
         }
         
+        boolean bIsLoading = thisHub.isLoading();
+        try {
+            if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
+            return _insert(thisHub, obj, pos, bIsLoading);
+        }
+        finally {
+            if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
+        }
+    }        
+        
+    private static boolean _insert(Hub thisHub, Object obj, int pos, boolean bIsLoading) {
+        
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            return internalAdd(thisHub, obj);
+            return internalAdd(thisHub, obj, bIsLoading, true);
         }
         if (thisHub.data.objClass == null) {
             Class c = obj.getClass();
@@ -513,7 +549,7 @@ public class HubAddRemoveDelegate {
         
         // this will lock, sync(data), and startNextThread
         //was: boolean b = HubDataDelegate._insert(thisHub, key, obj, pos, false);  // false=dont lock, since this method is locked
-        boolean b = HubDataDelegate._insert(thisHub, obj, pos);
+        boolean b = HubDataDelegate._insert(thisHub, obj, pos, bIsLoading, true);
         if (!b) return b;
 
         /* 20140904 this is moved before setPropertyToMasterHub, so that

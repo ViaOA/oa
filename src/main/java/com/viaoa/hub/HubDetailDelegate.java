@@ -348,7 +348,7 @@ public class HubDetailDelegate {
             }
         }
         else if (detail.type == HubDetail.OAOBJECT || detail.type == HubDetail.OBJECT) {
-            HubAddRemoveDelegate.internalAdd(dHub, (OAObject) obj);
+            HubAddRemoveDelegate.internalAdd(dHub, (OAObject) obj, false, false);
             dHub.data.setDupAllowAddRemove(false);
         }
         else {
@@ -356,7 +356,7 @@ public class HubDetailDelegate {
             int j = Array.getLength(obj);
             for (int k=0; k<j; k++) {
                 Object objx = Array.get(obj,k);
-                HubAddRemoveDelegate.internalAdd(dHub, objx);
+                HubAddRemoveDelegate.internalAdd(dHub, objx, false, false);
             }
             dHub.data.setDupAllowAddRemove(false);
         }

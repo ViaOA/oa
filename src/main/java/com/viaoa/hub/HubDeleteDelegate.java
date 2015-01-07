@@ -19,6 +19,7 @@ package com.viaoa.hub;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -31,8 +32,11 @@ import com.viaoa.ds.OADataSource;
  *
  */
 public class HubDeleteDelegate {
-    
+
+static volatile boolean DELETEALL; //qqqqqqqqqqqq
+
     public static void deleteAll(Hub thisHub) {
+DELETEALL=true;        
         boolean b = thisHub.getSize() > 0 && HubCSDelegate.deleteAll(thisHub);
         try {
             if (b) OAThreadLocalDelegate.setSuppressCSMessages(true);
@@ -42,6 +46,7 @@ public class HubDeleteDelegate {
         finally {
             if (b) OAThreadLocalDelegate.setSuppressCSMessages(false);
             OARemoteThreadDelegate.startNextThread(); 
+DELETEALL=false;        
         }
     }
     
@@ -54,9 +59,11 @@ public class HubDeleteDelegate {
         if (cascade.wasCascaded(thisHub, true)) return;
         try {
             OAThreadLocalDelegate.setDeleting(thisHub, true);
+            OAThreadLocalDelegate.lock(thisHub);
             _deleteAll(thisHub, cascade);
         }
         finally {
+            OAThreadLocalDelegate.unlock(thisHub);
             OAThreadLocalDelegate.setDeleting(thisHub, false);
         }
     }
@@ -82,7 +89,6 @@ public class HubDeleteDelegate {
             }
         }        
 
-        
         for (; ; ) {
             Object obj = thisHub.elementAt(pos);
             if (obj == null) break;
@@ -93,7 +99,10 @@ public class HubDeleteDelegate {
                 continue;
             }
             objLast = obj;
-            thisHub.remove(obj);  // oaobject.delete will remove object from hubs, this "remove" will make sure that recursive owner reference is removed. 
+            
+            // 20150107
+            HubAddRemoveDelegate.remove(thisHub, obj, false, true, true, true, true, true);
+            //was:thisHub.remove(obj);  // oaobject.delete will remove object from hubs, this "remove" will make sure that recursive owner reference is removed. 
        
             // 20121005
             if (dataSource != null) {
@@ -108,6 +117,7 @@ public class HubDeleteDelegate {
             }
         }
     	HubDelegate._updateHubAddsAndRemoves(thisHub, cascade);
+     	
     	thisHub.setChanged(false); // removes all vecAdd, vecRemove objects
     }
 }

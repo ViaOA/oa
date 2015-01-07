@@ -222,13 +222,13 @@ public class OAObjectHubDelegate {
 
     public static boolean addHub(OAObject oaObj, Hub hub) {
         // 20140313 was: addHub(oaObj, hub, true, false);
-        return addHub(oaObj, hub, false, false);
+        return addHub(oaObj, hub, false);
     }
 
     /**
      * Called by Hub when an OAObject is added to a Hub.
      */
-    public static boolean addHub(OAObject oaObj, Hub hub, boolean bAlwaysAddIfM2M, boolean bCheckExisting) {
+    public static boolean addHub(OAObject oaObj, Hub hub, boolean bAlwaysAddIfM2M) {
         if (oaObj == null || hub == null) return false;
         hub = hub.getRealHub();
 
@@ -257,20 +257,20 @@ public class OAObjectHubDelegate {
             else {
                 int currentSize = oaObj.weakhubs.length;
 
-                if (bCheckExisting) {
-                    for (int i = 0; i < currentSize; i++) {
-                        if (oaObj.weakhubs[i] != null && oaObj.weakhubs[i].get() == hub) return false;
-                    }
-                }
-
                 // check for empty slot at the end
                 for (pos = currentSize - 1; pos >= 0; pos--) {
                     if (oaObj.weakhubs[pos] == null) continue;
 
-                    if (oaObj.weakhubs[pos].get() == null) {
+                    Hub h = oaObj.weakhubs[pos].get(); 
+                    if (h == null) {
                         oaObj.weakhubs[pos] = null;
                         continue;
                     }
+                    
+                    if (h == hub) {
+                        return false;
+                    }
+                    
                     // found last used slot
                     if (pos < currentSize - 1) {
                         pos++; // first empty slot
