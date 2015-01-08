@@ -157,8 +157,6 @@ public class HubDataDelegate {
             if (!bHasLock && !bIsLoading) OAThreadLocalDelegate.lock(thisHub);
             b = _add2(thisHub, obj, bIsLoading);
         }
-        catch (Exception e) {
-        }
         finally {
             if (!bHasLock && !bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }

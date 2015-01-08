@@ -33,10 +33,7 @@ import com.viaoa.ds.OADataSource;
  */
 public class HubDeleteDelegate {
 
-static volatile boolean DELETEALL; //qqqqqqqqqqqq
-
     public static void deleteAll(Hub thisHub) {
-DELETEALL=true;        
         boolean b = thisHub.getSize() > 0 && HubCSDelegate.deleteAll(thisHub);
         try {
             if (b) OAThreadLocalDelegate.setSuppressCSMessages(true);
@@ -46,7 +43,6 @@ DELETEALL=true;
         finally {
             if (b) OAThreadLocalDelegate.setSuppressCSMessages(false);
             OARemoteThreadDelegate.startNextThread(); 
-DELETEALL=false;        
         }
     }
     

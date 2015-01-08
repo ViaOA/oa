@@ -286,12 +286,6 @@ public class HubAddRemoveDelegate {
         boolean bIsLoading = thisHub.isLoading();
         try {
             if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
-if (HubDeleteDelegate.DELETEALL) {
-    int xx = 4;//qqqqqqqqq
-    xx++;
-    OAThreadLocalDelegate.lock(thisHub);
-    OAThreadLocalDelegate.unlock(thisHub);
-}
             _add(thisHub, obj, bIsLoading);
         }
         finally {
