@@ -624,55 +624,55 @@ static volatile int unlockCnt;
     }
 
     // returns true if it's ok to continue, and not if wait on lock to be released
-    private static boolean _lock(OAThreadLocal tiThis, Object thisLockObject, int maxWaitTries, int tries) {
+    private static boolean _lock(OAThreadLocal tlThis, Object thisLockObject, int maxWaitTries, int tries) {
         OAThreadLocal[] tls = hmLock.get(thisLockObject); // threadLocals that are using object (locked or waiting)
 
-        if (tls != null && tls.length > 0 && tls[0] == tiThis) {
+        if (tls != null && tls.length > 0 && tls[0] == tlThis) {
             // this ThreadLocal already is the owner for this object
             if (tries == 0) {
                 // need to add it to ti.locks, since it will be released more then once
-                tiThis.locks = OAArray.add(Object.class, tiThis.locks, thisLockObject);
+                tlThis.locks = OAArray.add(Object.class, tlThis.locks, thisLockObject);
             }
             // check locks to make sure that it is not getting too big
-            if (tiThis.locks.length > 39 && (tiThis.locks.length % 10) == 0) {
+            if (tlThis.locks.length > 39 && (tlThis.locks.length % 10) == 0) {
                 // see if all objects are still locked
                 String s = "";
-                for (Object objx : tiThis.locks) {
+                for (Object objx : tlThis.locks) {
                     OAThreadLocal[] tisx = hmLock.get(objx);
                     if (tisx == null) {
                         s = ", error: there are objects in ti.locks that are no longer locked";
                     }
                 }
-                s = "OAThreadLocal.locks size="+tiThis.locks.length+s;
+                s = "OAThreadLocal.locks size="+tlThis.locks.length+s;
                 LOG.warning(s);   
             }
-            tiThis.bIsWaitingOnLock = false;
+            tlThis.bIsWaitingOnLock = false;
             return true; // already is the lock owner
         }
         
         if (tries == 0) {  
             // must be inside sync: add to list of objects that this TI is locking
-            tiThis.locks = OAArray.add(Object.class, tiThis.locks, thisLockObject);
+            tlThis.locks = OAArray.add(Object.class, tlThis.locks, thisLockObject);
 
-            if (tls == null) tls = new OAThreadLocal[] {tiThis};
-            else tls = (OAThreadLocal[]) OAArray.add(OAThreadLocal.class, tls, tiThis);
+            if (tls == null) tls = new OAThreadLocal[] {tlThis};
+            else tls = (OAThreadLocal[]) OAArray.add(OAThreadLocal.class, tls, tlThis);
             hmLock.put(thisLockObject, tls);
         }
 
-        if (tls[0] == tiThis) {
-            tiThis.bIsWaitingOnLock = false;
+        if (tls[0] == tlThis) {
+            tlThis.bIsWaitingOnLock = false;
             return true; // this thread owns the lock
         }
 
         if (tries >= maxWaitTries && tries > 1) {
-            if (tls[1] != tiThis) {
+            if (tls[1] != tlThis) {
                 // need to be second in list, since the owner (at pos [0]) will notify [1] when it is done - and not another threadLocal                     
-                tls = (OAThreadLocal[]) OAArray.removeValue(OAThreadLocal.class, tls, tiThis);
-                tls = (OAThreadLocal[]) OAArray.insert(OAThreadLocal.class, tls, tiThis, 1);
+                tls = (OAThreadLocal[]) OAArray.removeValue(OAThreadLocal.class, tls, tlThis);
+                tls = (OAThreadLocal[]) OAArray.insert(OAThreadLocal.class, tls, tlThis, 1);
                 hmLock.put(thisLockObject, tls);
             }
-            tiThis.bIsWaitingOnLock = false;
-            String s = "thread "+Thread.currentThread().getName()+" max wait, is waiting on Object="+thisLockObject+", current has lock on object[0]="+tiThis.locks[0]+", and "+(tiThis.locks.length-1)+" other objects, will continue";
+            tlThis.bIsWaitingOnLock = false;
+            String s = "thread "+Thread.currentThread().getName()+" max wait, is waiting on Object="+thisLockObject+", current has lock on object[0]="+tlThis.locks[0]+", and "+(tlThis.locks.length-1)+" other objects, will continue";
             LOG.warning(s);
             return true; // done trying
         }
@@ -734,10 +734,10 @@ static volatile int unlockCnt;
         }
     }    
     private static void _unlock(OAThreadLocal tl, Object object) {
-        int pos = OAArray.indexOf(tl.locks, object);
+        final int pos = OAArray.indexOf(tl.locks, object);
         if (pos < 0) return;
         
-        boolean bMoreLocks = OAArray.indexOf(tl.locks, object, pos+1) >= 0;
+        final boolean bMoreLocks = OAArray.indexOf(tl.locks, object, pos+1) >= 0;
         
         OAThreadLocal[] tls = hmLock.get(object);
         if (tls != null) {
