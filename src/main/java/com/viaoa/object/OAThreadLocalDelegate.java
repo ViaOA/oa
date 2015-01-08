@@ -733,32 +733,37 @@ static volatile int unlockCnt;
             rwLock.writeLock().unlock();
         }
     }    
-    private static void _unlock(OAThreadLocal ti, Object object) {
-        OAThreadLocal[] tls = hmLock.get(object);
+    private static void _unlock(OAThreadLocal tl, Object object) {
+        int pos = OAArray.indexOf(tl.locks, object);
+        if (pos < 0) return;
         
+        boolean bMoreLocks = OAArray.indexOf(tl.locks, object, pos+1) >= 0;
+        
+        OAThreadLocal[] tls = hmLock.get(object);
         if (tls != null) {
-            boolean bIsLockOwner = (tls.length > 0 && tls[0] == ti);
-qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-ThreadLocal might have multiple locks on it qqqqqqqqqqqqqq
+            boolean bIsLockOwner = (tls.length > 0 && tls[0] == tl);
 
             if (tls.length == 1) {
-                if (bIsLockOwner) {
+                if (bIsLockOwner && !bMoreLocks) {
                     hmLock.remove(object);
                 }
                 tls = null;
             }
             else {
-                tls = (OAThreadLocal[]) OAArray.removeValue(OAThreadLocal.class, tls, ti);
-                hmLock.put(object, tls);
-            }                
-            if (tls != null && bIsLockOwner) {
+                if (!bMoreLocks) {
+                    tls = (OAThreadLocal[]) OAArray.removeValue(OAThreadLocal.class, tls, tl);
+                    hmLock.put(object, tls);
+                }
+            }
+            
+            if (tls != null && bIsLockOwner && !bMoreLocks) {
                 synchronized (tls[0]) {
-                    tls[0].bIsWaitingOnLock = false;
+                    tls[0].bIsWaitingOnLock = false;  // notify the next one waiting
                     tls[0].notify();
                 }
             }
         }
-        ti.locks = OAArray.removeValue(Object.class, ti.locks, object); // must be inside sync
+        tl.locks = OAArray.removeAt(Object.class, tl.locks, pos); // must be inside sync
     }
 
     

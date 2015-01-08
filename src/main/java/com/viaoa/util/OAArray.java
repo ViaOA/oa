@@ -74,6 +74,19 @@ public class OAArray {
         }
         return -1;
     }
+    
+    public static int indexOf(Object[] array, Object searchValue, int startPos) {
+        if (array == null || array.length == 0) return -1;
+        if (startPos < 0 || startPos >= array.length) return -1;
+        
+        for (int i=startPos; i<array.length; i++) {
+            if (array[i] == searchValue) return i;
+            if (array[i] != null && array[i].equals(searchValue)) return i;
+        }
+        return -1;
+    }
+    
+    
     public static int indexOf(int[] array, int searchValue) {
         if (array
                 == null || array.length == 0) return -1;
