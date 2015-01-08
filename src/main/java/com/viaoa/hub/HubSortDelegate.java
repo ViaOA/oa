@@ -53,6 +53,7 @@ public class HubSortDelegate {
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
         }
+        afterPerformSort(thisHub); // outside of lock
     }
     
     public static HubSortListener getSortListener(Hub thisHub) {
@@ -116,6 +117,7 @@ public class HubSortDelegate {
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
         }
+        afterPerformSort(thisHub); // outside of lock
 	}
 
 	private static void performSort(Hub thisHub) {
@@ -123,8 +125,12 @@ public class HubSortDelegate {
 		HubSelectDelegate.loadAllData(thisHub);
 	    thisHub.data.changeCount++;
 	    Collections.sort(thisHub.data.vector, thisHub.data.getSortListener().comparator);
-	    HubEventDelegate.fireAfterSortEvent(thisHub);
 	}
+    private static void afterPerformSort(Hub thisHub) {
+        HubEventDelegate.fireAfterSortEvent(thisHub);
+    }
+	
+	
 	
     /**
 	    Removes/disconnects HubSorter (if any) that is keeping objects in a sorted order.

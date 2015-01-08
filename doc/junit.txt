@@ -1,0 +1,49 @@
+
+
+JVM needs argument
+
+    -enableassertions
+       or
+    -ea
+    
+    
+@Test(.. )  expected=Exception.className  timeout(Xms)
+@Before
+@After
+@BeforeClass
+@AfterClass
+@Ignore
+
+
+
+JUnit assert methods
+    http://www.vogella.com/tutorials/JUnit/article.html
+    throws AssertionExcepiton on failure
+    
+    import static org.junit.Assert.*;
+    
+fail(String)
+assertTrue/false([msg], condition)
+
+assertEquals([String message], expected, actual)
+assertEquals([String message], expected, actual, tolerance)   tolerance=number of decimals to use
+
+assertNull([message], object)
+
+assertNotNull([message], object)
+
+assertSame([String], expected, actual)
+
+assertNotSame([String], expected, actual)
+
+
+
+
+
+
+
+
+
+    
+    
+           

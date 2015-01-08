@@ -199,6 +199,7 @@ public class HubDataDelegate {
         finally {
             if (!bIsLocked && !bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
+        
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
     }

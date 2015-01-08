@@ -608,9 +608,9 @@ static volatile int unlockCnt;
 
                 int msWait;
                 if (tiThis.locks != null && tiThis.locks.length > 1) {
-                    msWait = 1;  // could be deadlock situation
+                    msWait = 5;  // could be deadlock situation
                 }
-                else msWait = 5;
+                else msWait = 25;
 
                 try {
                     tiThis.wait(msWait);  // wait for wake up

@@ -1,5 +1,6 @@
 package com.viaoa.util;
 
+import org.junit.Test;
 
 public class CirculrQueueTest {
 
@@ -42,7 +43,8 @@ public class CirculrQueueTest {
         }
     }
     
-    void runTests() {
+    @Test
+    public void runTests() {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {

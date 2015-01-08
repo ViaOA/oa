@@ -116,9 +116,15 @@ static int qq;
     public boolean isUpdatingActiveObject() {
         return hmUpdatingActiveObject.contains(this);
     }
-    public void setUpdatingActiveObject(boolean bUpdatingActiveObject) {
-        if (bUpdatingActiveObject) hmUpdatingActiveObject.put(this, this);
-        else hmUpdatingActiveObject.remove(this);
+    public boolean setUpdatingActiveObject(boolean bUpdatingActiveObject) {
+        if (bUpdatingActiveObject) {
+            Object objx = hmUpdatingActiveObject.put(this, this);
+            return objx != null;
+        }
+        else {
+            Object objx = hmUpdatingActiveObject.remove(this);
+            return objx != null;
+        }
     }
 
     public Hub getLinkToHub() {

@@ -738,19 +738,24 @@ OARemoteThreadDelegate.isSafeToCallRemoteMethod();
 
         if (ri.bind.usesQueue) {
             OARemoteThread t = getRemoteClientThread(ri);
-// test  qqqqqqqqqqqqqqqqqqq
-long t1 = System.currentTimeMillis();                
+
+            long t1 = System.currentTimeMillis();                
             synchronized (t.Lock) {
                 if (t.requestInfo != null) {
                     t.Lock.notify();  // have RemoteClientThread process the message
                     t.Lock.wait(250);
                 }
             }
-long t2 = System.currentTimeMillis();
-long tx = t2 - t1;
-if (tx > 200) {
-    System.out.println("RemoteMultiplexerClient timeout waiting on RemoteThread, waited for "+tx + "ms");
-}
+            
+            long t2 = System.currentTimeMillis();
+            long tx = t2 - t1;
+            if (tx >= 250) {
+                String stackTrace="";
+                for (StackTraceElement ste : t.getStackTrace()) {
+                    stackTrace += "\n    "+ste.getFileName()+"."+ste.getMethodName()+" line "+ste.getLineNumber();
+                }
+                LOG.log(Level.WARNING, "timeout waiting on RemoteThread to process message, waited for "+tx + "ms, will continue.\nStacktrace for RemoteThread: "+t.getName()+stackTrace);
+            }
         }
         else {
             processMessageForStoC2(ri, bSendResponse);

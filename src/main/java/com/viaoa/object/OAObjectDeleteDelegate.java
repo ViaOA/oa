@@ -35,6 +35,7 @@ import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubEventDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAString;
 
@@ -317,15 +318,17 @@ public class OAObjectDeleteDelegate {
 	
 	
 	/** called after beforeDelete() and after all listeners have been called.
-	    It will find the OADataSource to use and call its "delete(this)"
+	    If this is the server, then it will find the OADataSource to use and call its "delete(this)"
 	*/
 	private static void onDelete(OAObject oaObj) {
 		if (oaObj == null) return;
-	    OAObjectLogDelegate.logToXmlFile(oaObj, false);
-	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
-	    if (oi.getUseDataSource()) {
-        	OAObjectDSDelegate.delete(oaObj);
-	    }
+		if (OASyncDelegate.isServer()) {
+    	    OAObjectLogDelegate.logToXmlFile(oaObj, false);
+    	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
+    	    if (oi.getUseDataSource()) {
+            	OAObjectDSDelegate.delete(oaObj);
+    	    }
+		}
 	    oaObj.deleted();
 	}
 }

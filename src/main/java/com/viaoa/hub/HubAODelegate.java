@@ -123,79 +123,79 @@ public class HubAODelegate {
         return ho;
     }
 	
-	// 20141212 added lock
-    protected static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
-        try {
-            OAThreadLocalDelegate.lock(thisHub);
-            _setActiveObject(thisHub, object, pos, bUpdateLink, bForce, bCalledByShareHub);
-        }
-        catch (Exception e) {
-        }
-        finally {
-            OAThreadLocalDelegate.unlock(thisHub);
-        }
-    }
-
 	/** Main setActiveObject
 	    Naviagational method that sets the current active object.
 	    This is the central routine for changing the ActiveObject.  It is used by setPos,
 	    setActiveObject(int), setActiveObject(object), setActiveObject(object,boolean), replace, setSharedHub
 	    @param bCalledByShareHub true if the active object is being called when a Hub is being shared with an existing hub.  This is so that all of the shared hubs dont recv an event.
 	*/
-	private static void _setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
-		if (thisHub.dataa.activeObject == object && !bForce) return;
-	
-	    if (thisHub.datau.isUpdatingActiveObject()) return;
-	
-	    Object origActiveObject = thisHub.dataa.activeObject;
-	    thisHub.dataa.activeObject = object;
-	    
-	    // notify all HubDetail links
-	    //  if OAObject = null, then set all links to null
-	    try {
-	    	
-	    	thisHub.datau.setUpdatingActiveObject(true);
-	        HubDetailDelegate.updateAllDetail(thisHub, bUpdateLink);
-	        if (bUpdateLink) HubLinkDelegate.updateLinkProperty(thisHub, object, pos);
-	        thisHub.datau.setUpdatingActiveObject(false);
-	
-	        // Now call for all sharedHubs with same "dataa"
-	        // 20120716
-	        OAFilter<Hub> filter = new OAFilter<Hub>() {
-	            @Override
-	            public boolean isUsed(Hub h) {
-	                return h.dataa == thisHub.dataa; 
-	            }
-	        };
-	        Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub, filter);
-	
-	        for (int i=0; i<hubs.length; i++) {
-	            Hub h = hubs[i];
-	            if (h != thisHub && h.dataa == thisHub.dataa) {
-                    h.datau.setUpdatingActiveObject(true);
+	public static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
+        if (thisHub.dataa.activeObject == object && !bForce) return;
+        if (thisHub.datau.isUpdatingActiveObject()) return;
+        
+        boolean bUnlocked = false;
+        boolean b = false;
+        try {
+            OAThreadLocalDelegate.lock(thisHub);
+            b = thisHub.datau.setUpdatingActiveObject(true);
+
+            Object origActiveObject = thisHub.dataa.activeObject;
+            thisHub.dataa.activeObject = object;
+
+            OAThreadLocalDelegate.unlock(thisHub);
+            bUnlocked = true;
+            
+            // notify all HubDetail links
+            //  if OAObject = null, then set all links to null
+            HubDetailDelegate.updateAllDetail(thisHub, bUpdateLink);
+            if (bUpdateLink) HubLinkDelegate.updateLinkProperty(thisHub, object, pos);
+            
+            _setActiveObject(thisHub, origActiveObject, pos, bUpdateLink, bForce, bCalledByShareHub);
+        }
+        finally {
+            thisHub.datau.setUpdatingActiveObject(b);
+            if (!bUnlocked) OAThreadLocalDelegate.unlock(thisHub);
+        }
+	}
+    private static void _setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
+        // Now call for all sharedHubs with same "dataa"
+        // 20120716
+        OAFilter<Hub> filter = new OAFilter<Hub>() {
+            @Override
+            public boolean isUsed(Hub h) {
+                return h.dataa == thisHub.dataa; 
+            }
+        };
+        Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub, filter);
+
+        for (int i=0; i<hubs.length; i++) {
+            Hub h = hubs[i];
+            if (h != thisHub && h.dataa == thisHub.dataa) {
+                boolean b = false;
+                try {
+                    b = h.datau.setUpdatingActiveObject(true);
                     HubDetailDelegate.updateAllDetail(h, bUpdateLink);
                     if (bUpdateLink) HubLinkDelegate.updateLinkProperty(h,object,pos);
-                    h.datau.setUpdatingActiveObject(false);
-	            }
-	        }
-	
-	        // must send event After updateAllDetail()
-	        // this will send event to all sharedHubs with same "dataa" only
-		    HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub, object, pos, !bCalledByShareHub);
-	
-	        for (int i=0; object != null && i<hubs.length; i++) {
-	            Hub h = hubs[i];
-	            if (h.dataa == thisHub.dataa) {
-	                if (h.datau.getAddHub() != null) {
-	                    if (h.datau.getAddHub().getObject(object) == null) h.datau.getAddHub().add(object);
-	                    setActiveObject(h.datau.getAddHub(), object);
-	                }
-	            }
-	        }
-	    }
-	    finally {
-	        thisHub.datau.setUpdatingActiveObject(false);  // just in case it wasnt executed
-	    }
+                }
+                finally {
+                    h.datau.setUpdatingActiveObject(b);
+                }
+            }
+        }
+
+        // must send event After updateAllDetail()
+        // this will send event to all sharedHubs with same "dataa" only
+	    HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub, object, pos, !bCalledByShareHub);
+
+        for (int i=0; object != null && i<hubs.length; i++) {
+            Hub h = hubs[i];
+            if (h.dataa == thisHub.dataa) {
+                if (h.datau.getAddHub() != null) {
+                    if (h.datau.getAddHub().getObject(object) == null) h.datau.getAddHub().add(object);
+                    setActiveObject(h.datau.getAddHub(), object);
+                }
+            }
+        }
 	}
 
 }

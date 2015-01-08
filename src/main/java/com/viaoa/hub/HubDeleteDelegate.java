@@ -109,7 +109,7 @@ public class HubDeleteDelegate {
                 OAObjectDeleteDelegate.delete((OAObject)obj, cascade);
             }
             else {
-            	if (thisHub.isOAObject()) OAObjectDSDelegate.delete((OAObject)obj);
+            	if (thisHub.isOAObject() && obj instanceof OAObject) OAObjectDSDelegate.delete((OAObject)obj);
             }
         }
     	HubDelegate._updateHubAddsAndRemoves(thisHub, cascade);
