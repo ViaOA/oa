@@ -456,22 +456,26 @@ public class HubAddRemoveDelegate {
         }
         
         boolean bIsLoading = thisHub.isLoading();
+        int newPos = pos;
         boolean bResult;
         try {
             if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
-            bResult = _insert(thisHub, obj, pos, bIsLoading);
+            newPos = _insert(thisHub, obj, pos, bIsLoading);
         }
         finally {
             if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
-        if (bResult) _afterInsert(thisHub, obj, pos);
+        bResult = newPos >= 0;
+        if (bResult) _afterInsert(thisHub, obj, newPos);
         return bResult;
     }        
         
-    private static boolean _insert(Hub thisHub, Object obj, int pos, boolean bIsLoading) {
+    // returns new Pos
+    private static int _insert(Hub thisHub, Object obj, int pos, boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            return internalAdd(thisHub, obj, bIsLoading, true);
+            boolean b = internalAdd(thisHub, obj, bIsLoading, true);
+            return b?pos:-1;
         }
         if (thisHub.data.objClass == null) {
             Class c = obj.getClass();
@@ -479,7 +483,7 @@ public class HubAddRemoveDelegate {
         }
 
         // 20140904
-        if (thisHub.contains(obj)) return false;
+        if (thisHub.contains(obj)) return -1;
         /** if the change below for OAObjectHubDelegate.addHub is done after
          * calling setPropertyToMasterHub, then indexOf will need to be used instead of contains(..)   
          */
@@ -533,7 +537,7 @@ public class HubAddRemoveDelegate {
     
         int x = thisHub.getCurrentSize();
         if (pos > x) pos = x;
-        if (!canAdd(thisHub, obj)) return false; 
+        if (!canAdd(thisHub, obj)) return -1; 
 
         
         HubEventDelegate.fireBeforeInsertEvent(thisHub, obj, pos);
@@ -542,7 +546,7 @@ public class HubAddRemoveDelegate {
         //  OAClient must send message to OAServer before continuing
         if (thisHub.isOAObject()) {
             if (HubCSDelegate.insertInHub(thisHub, (OAObject) obj, pos)) {
-                if (thisHub.contains(obj)) return false; // already loaded (another thread)
+                if (thisHub.contains(obj)) return -1; // already loaded (another thread)
             }
             //was: 20140826 removed to make faster.  Another object could have the same objectId.  (should use contains instead of getObj)
             // if (HubDataDelegate.getObject(thisHub, key) != null) return false;
@@ -551,7 +555,7 @@ public class HubAddRemoveDelegate {
         // this will lock, sync(data), and startNextThread
         //was: boolean b = HubDataDelegate._insert(thisHub, key, obj, pos, false);  // false=dont lock, since this method is locked
         boolean b = HubDataDelegate._insert(thisHub, obj, pos, bIsLoading, true);
-        if (!b) return b;
+        if (!b) return -1;
 
         /* 20140904 this is moved before setPropertyToMasterHub, so that
          * hub.contains(obj) will return true.
@@ -576,7 +580,7 @@ public class HubAddRemoveDelegate {
             }
         }
 
-        return true;
+        return pos;
     }
     private static void _afterInsert(Hub thisHub, Object obj, int pos) {
         HubEventDelegate.fireAfterInsertEvent(thisHub, obj, pos);

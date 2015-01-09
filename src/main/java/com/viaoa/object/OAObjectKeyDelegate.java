@@ -81,59 +81,10 @@ public class OAObjectKeyDelegate {
 	
 	    // make sure objectId is unique.  Check in Cache, on Server, in Database
 	    if (bVerify) {
-		    if (!oaObj.getNew()) {
-	    	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-	            if (oi.getUseDataSource()) {
-	                if (OAObjectDSDelegate.allowIdChange(oaObj.getClass())) {
-	                	oaObj.objectKey = oldKey;
-	                	throw new RuntimeException("can not be changed if " + oaObj.getClass().getName()+" has already been saved");
-	                }
-	            }
-	        }
-	    	
-	        Object o = OAObjectCacheDelegate.get(oaObj.getClass(), oaObj.objectKey);
-	        if ((o == null || o == oaObj)) {
-	            if (OAObjectCSDelegate.isWorkstation()) {
-	                // check on server.  If server has same object as this, resolve() will return this object
-	                o = OAObjectCSDelegate.getServerObject(oaObj.getClass(), oaObj.objectKey);
-	            }
-	        }
-	
-	        if (o != oaObj) {
-	            if (o != null) {
-	                if (OAThreadLocalDelegate.getObjectCacheAddMode() == OAObjectCacheDelegate.NO_DUPS) {
-	                    // id already used
-	                    Object[] ids = OAObjectInfoDelegate.getPropertyIdValues(oaObj);
-	                    String s = "";
-	                    for (int i=0; i<ids.length; i++) {
-	                        if (ids[i] != null) {
-	                            if (s.length() > 0) s += " ";
-	                            s += ids[i];
-	                        }
-	                    }
-	                	oaObj.objectKey = oldKey;
-	                    throw new RuntimeException("ObjectId \""+ s +"\" already used.");// by another object - "+oaObj.getClass());
-	                }
-	            }
-	            else {
-	                if (!OAThreadLocalDelegate.isLoadingObject()) {
-	                    // make sure object does not already exist in datasource
-	                    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-	                    if (oi.getUseDataSource()) {
-	                    	o = OAObjectDSDelegate.getObject(oaObj);
-                            if (o != oaObj && o != null) {
-                                Object[] ids = OAObjectInfoDelegate.getPropertyIdValues(oaObj);
-                                String s = "";
-                                for (int i=0; i<ids.length; i++) {
-                                    if (i > 0) s += " ";
-                                    s += s + ids[i];
-                                }
-        	                	oaObj.objectKey = oldKey;
-                                throw new RuntimeException("ObjectId \""+ s +"\" already used");// by another object - "+oaObj.getClass());
-                            }
-	                    }
-	                }
-	            }
+	        String s = verifyKeyChange(oaObj);
+	        if (s != null) {
+	            oaObj.objectKey = oldKey;
+	            throw new RuntimeException(s);
 	        }
 	    }
 	
@@ -171,6 +122,63 @@ public class OAObjectKeyDelegate {
 	    }
 	    return true;
 	}
+	
+	// 20150109
+	public static String verifyKeyChange(OAObject oaObj) {
+        if (!oaObj.getNew()) {
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+            if (oi.getUseDataSource()) {
+                if (OAObjectDSDelegate.allowIdChange(oaObj.getClass())) {
+                    return ("can not be changed if " + oaObj.getClass().getName()+" has already been saved");
+                }
+            }
+        }
+        
+        Object o = OAObjectCacheDelegate.get(oaObj.getClass(), oaObj.objectKey);
+        if ((o == null || o == oaObj)) {
+            if (OAObjectCSDelegate.isWorkstation()) {
+                // check on server.  If server has same object as this, resolve() will return this object
+                o = OAObjectCSDelegate.getServerObject(oaObj.getClass(), oaObj.objectKey);
+            }
+        }
+
+        if (o != oaObj) {
+            if (o != null) {
+                if (OAThreadLocalDelegate.getObjectCacheAddMode() == OAObjectCacheDelegate.NO_DUPS) {
+                    // id already used
+                    Object[] ids = OAObjectInfoDelegate.getPropertyIdValues(oaObj);
+                    String s = "";
+                    for (int i=0; i<ids.length; i++) {
+                        if (ids[i] != null) {
+                            if (s.length() > 0) s += " ";
+                            s += ids[i];
+                        }
+                    }
+                    return ("ObjectId \""+ s +"\" already used.");// by another object - "+oaObj.getClass());
+                }
+            }
+            else {
+                if (!OAThreadLocalDelegate.isLoadingObject()) {
+                    // make sure object does not already exist in datasource
+                    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+                    if (oi.getUseDataSource()) {
+                        o = OAObjectDSDelegate.getObject(oaObj);
+                        if (o != oaObj && o != null) {
+                            Object[] ids = OAObjectInfoDelegate.getPropertyIdValues(oaObj);
+                            String s = "";
+                            for (int i=0; i<ids.length; i++) {
+                                if (i > 0) s += " ";
+                                s += s + ids[i];
+                            }
+                            return ("ObjectId \""+ s +"\" already used");// by another object - "+oaObj.getClass());
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+	}
+	
 
 	/**
 	 * Convert a value to an OAObjectKey

@@ -6,8 +6,6 @@ import com.vetjobs.Job;
 
 public class OAObjectCacheDelegateTest {
 
-    
-    
     private Test[] tests;
     
     public OAObjectCacheDelegateTest() throws Exception {

@@ -10,9 +10,11 @@ JVM needs argument
 @Test(.. )  expected=Exception.className  timeout(Xms)
 @Before
 @After
-@BeforeClass
-@AfterClass
+@BeforeClass  must be static
+@AfterClass   must be static
 @Ignore
+
+
 
 
 
@@ -20,7 +22,11 @@ JUnit assert methods
     http://www.vogella.com/tutorials/JUnit/article.html
     throws AssertionExcepiton on failure
     
-    import static org.junit.Assert.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+
+assert
     
 fail(String)
 assertTrue/false([msg], condition)

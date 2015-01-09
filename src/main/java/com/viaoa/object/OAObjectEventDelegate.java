@@ -61,6 +61,54 @@ public class OAObjectEventDelegate {
         if (oldObj == newObj) return;
         if (oldObj != null && oldObj.equals(newObj)) return;
 
+        
+        // 20150109 verify that change is permitted
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        String propertyU = propertyName.toUpperCase();
+        OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, propertyU);
+        OALinkInfo toLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
+        if (toLinkInfo == null) return;
+        OALinkInfo liRecursive;
+        if (toLinkInfo.bRecursive) {
+            liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
+            if (liRecursive == linkInfo) {
+                // parent property changed.  ex: "setParentSection"
+                // verify that it can be placed
+                if (newObj != null) {
+                    if (oaObj == newObj) {  // object cant be its own parent
+                        throw new RuntimeException("Can not set the Parent to itself");
+                    }
+                    // cant assign a child of this object as the new parent - causes orphaned objects
+                    for (Object obj=newObj; ;) {
+                        obj = OAObjectReflectDelegate.getProperty((OAObject)obj, liRecursive.getName());
+                        if (obj == null) break;
+                        if (obj == oaObj) {
+                            OAObjectReflectDelegate.setProperty(oaObj, linkInfo.getName(), oldObj, null);
+                            throw new RuntimeException("Can not assign Parent to a Child");// causes orphans
+                        }
+                    }
+                }
+            }
+        }     
+        
+        OAPropertyInfo propInfo = null;
+        OACalcInfo calcInfo = null;
+        if (linkInfo == null) {
+            propInfo = OAObjectInfoDelegate.getPropertyInfo(oi, propertyU);            
+            if (propInfo == null) {
+                calcInfo = OAObjectInfoDelegate.getOACalcInfo(oi, propertyU);
+            }
+        }       
+        OAObjectKey origKey; 
+        if (propInfo != null && propInfo.getId()) {
+            String s = OAObjectKeyDelegate.verifyKeyChange(oaObj);
+            if (s != null) {
+                throw new RuntimeException(s);
+            }
+        }
+        
+//qqqqqqqqqqqqqq        
+        
         sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
         
         if (!bLocalOnly) {
@@ -70,6 +118,9 @@ public class OAObjectEventDelegate {
             }
         }
 	}
+	
+	
+	
 	
 
     /**
@@ -94,7 +145,7 @@ public class OAObjectEventDelegate {
 	    	if (OAObjectReflectDelegate.getPrimitiveNull(oaObj, propertyU) || oldObj instanceof OANullObject) oldObj = null;
 	    }
 		
-	    //    note: a primitive null can only be set by calling OAObjectReflectDelegate.setProperty(...)
+	    //  note: a primitive null can only be set by calling OAObjectReflectDelegate.setProperty(...)
         if (newObj instanceof OANullObject) newObj = null;
 		if (newObj != null) {
 		    OAObjectReflectDelegate.removePrimitiveNull(oaObj, propertyU);
@@ -418,7 +469,6 @@ public class OAObjectEventDelegate {
 	            To find all root (top level) sections for a catalog, select sections without a parentSection assigned
 	    */
 	    if (liRecursive != null) {  // if recursive
-
 	        if (toLinkInfo.getOwner() && linkInfo != liRecursive) {
 	            // owner property changed.  ex: "Catalog"
 	            // need to update all recursive objects under this one.  ex: "hubSections.section.catalog = catalog"

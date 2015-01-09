@@ -116,14 +116,12 @@ static int qq;
     public boolean isUpdatingActiveObject() {
         return hmUpdatingActiveObject.contains(this);
     }
-    public boolean setUpdatingActiveObject(boolean bUpdatingActiveObject) {
+    public void setUpdatingActiveObject(boolean bUpdatingActiveObject) {
         if (bUpdatingActiveObject) {
             Object objx = hmUpdatingActiveObject.put(this, this);
-            return objx != null;
         }
         else {
             Object objx = hmUpdatingActiveObject.remove(this);
-            return objx != null;
         }
     }
 

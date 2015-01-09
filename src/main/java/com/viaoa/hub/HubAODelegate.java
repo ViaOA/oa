@@ -123,43 +123,28 @@ public class HubAODelegate {
         return ho;
     }
 	
-	/** Main setActiveObject
-	    Naviagational method that sets the current active object.
-	    This is the central routine for changing the ActiveObject.  It is used by setPos,
-	    setActiveObject(int), setActiveObject(object), setActiveObject(object,boolean), replace, setSharedHub
-	    @param bCalledByShareHub true if the active object is being called when a Hub is being shared with an existing hub.  This is so that all of the shared hubs dont recv an event.
-	*/
-	public static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
+
+    /** Main setActiveObject
+        Naviagational method that sets the current active object.
+        This is the central routine for changing the ActiveObject.  It is used by setPos,
+        setActiveObject(int), setActiveObject(object), setActiveObject(object,boolean), replace, setSharedHub
+        @param bCalledByShareHub true if the active object is being called when a Hub is being shared with an existing hub.  This is so that all of the shared hubs dont recv an event.
+    */
+    protected static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
         if (thisHub.dataa.activeObject == object && !bForce) return;
         if (thisHub.datau.isUpdatingActiveObject()) return;
+    
+        OAThreadLocalDelegate.lock(thisHub);
+        Object origActiveObject = thisHub.dataa.activeObject;
+        thisHub.dataa.activeObject = object;
+        OAThreadLocalDelegate.unlock(thisHub);
         
-        boolean bUnlocked = false;
-        boolean b = false;
-        try {
-            OAThreadLocalDelegate.lock(thisHub);
-            b = thisHub.datau.setUpdatingActiveObject(true);
-
-            Object origActiveObject = thisHub.dataa.activeObject;
-            thisHub.dataa.activeObject = object;
-
-            OAThreadLocalDelegate.unlock(thisHub);
-            bUnlocked = true;
-            
-            // notify all HubDetail links
-            //  if OAObject = null, then set all links to null
-            HubDetailDelegate.updateAllDetail(thisHub, bUpdateLink);
-            if (bUpdateLink) HubLinkDelegate.updateLinkProperty(thisHub, object, pos);
-            
-            _setActiveObject(thisHub, origActiveObject, pos, bUpdateLink, bForce, bCalledByShareHub);
-        }
-        finally {
-            thisHub.datau.setUpdatingActiveObject(b);
-            if (!bUnlocked) OAThreadLocalDelegate.unlock(thisHub);
-        }
-	}
-    private static void _setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
+        thisHub.datau.setUpdatingActiveObject(true);
+        HubDetailDelegate.updateAllDetail(thisHub, bUpdateLink);
+        if (bUpdateLink) HubLinkDelegate.updateLinkProperty(thisHub, object, pos);
+        thisHub.datau.setUpdatingActiveObject(false);
+        
         // Now call for all sharedHubs with same "dataa"
-        // 20120716
         OAFilter<Hub> filter = new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub h) {
@@ -171,21 +156,16 @@ public class HubAODelegate {
         for (int i=0; i<hubs.length; i++) {
             Hub h = hubs[i];
             if (h != thisHub && h.dataa == thisHub.dataa) {
-                boolean b = false;
-                try {
-                    b = h.datau.setUpdatingActiveObject(true);
-                    HubDetailDelegate.updateAllDetail(h, bUpdateLink);
-                    if (bUpdateLink) HubLinkDelegate.updateLinkProperty(h,object,pos);
-                }
-                finally {
-                    h.datau.setUpdatingActiveObject(b);
-                }
+                h.datau.setUpdatingActiveObject(true);
+                HubDetailDelegate.updateAllDetail(h, bUpdateLink);
+                if (bUpdateLink) HubLinkDelegate.updateLinkProperty(h,object,pos);
+                h.datau.setUpdatingActiveObject(false);
             }
         }
 
         // must send event After updateAllDetail()
         // this will send event to all sharedHubs with same "dataa" only
-	    HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub, object, pos, !bCalledByShareHub);
+        HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub, object, pos, !bCalledByShareHub);
 
         for (int i=0; object != null && i<hubs.length; i++) {
             Hub h = hubs[i];
@@ -196,8 +176,7 @@ public class HubAODelegate {
                 }
             }
         }
-	}
-
+    }
 }
 
 
