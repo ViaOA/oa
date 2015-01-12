@@ -20,10 +20,12 @@ package com.viaoa.object;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
+import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
@@ -44,7 +46,9 @@ public class OAObjectEventDelegate {
 	    Used to manage property changes.
 	    Sends a "hubPropertyChange()" to all listeners of the Hubs that this object is a member of.  <br>
 	*/
-	protected static void fireBeforePropertyChange(OAObject oaObj, String propertyName, Object oldObj, Object newObj, boolean bLocalOnly, boolean bSetChanged) {
+	protected static void fireBeforePropertyChange(final OAObject oaObj, final String propertyName, 
+	        Object oldObj, final Object newObj, final boolean bLocalOnly, final boolean bSetChanged) {
+	    
 	    if (oaObj == null || propertyName == null) return;
 	    if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
 	    if (OAThreadLocalDelegate.isLoadingObject()) {
@@ -63,8 +67,9 @@ public class OAObjectEventDelegate {
 
         
         // 20150109 verify that change is permitted
+        // verify if recursive link that new parent is allowed
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-        String propertyU = propertyName.toUpperCase();
+        final String propertyU = propertyName.toUpperCase();
         OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, propertyU);
         OALinkInfo toLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
         if (toLinkInfo == null) return;
@@ -100,14 +105,43 @@ public class OAObjectEventDelegate {
             }
         }       
         OAObjectKey origKey; 
-        if (propInfo != null && propInfo.getId()) {
-            String s = OAObjectKeyDelegate.verifyKeyChange(oaObj);
-            if (s != null) {
-                throw new RuntimeException(s);
+        if (propInfo != null) {
+            if (propInfo.getId()) {
+                String s = OAObjectKeyDelegate.verifyKeyChange(oaObj);
+                if (s != null) {
+                    throw new RuntimeException(s);
+                }
+            }
+            if (propInfo.getUnique() && newObj != null) {
+//qqqqqqqqqqqqqqqqqqq
+//qqqq if null qqqqqqqq                
+                OADataSource ds = OADataSource.getDataSource(oaObj.getClass());
+                OAFilter<OAObject> filter = new OAFilter<OAObject>() {
+                    public boolean isUsed(OAObject obj) {
+                        Object objx = obj.getProperty(propertyU);
+                        if (objx == null) return false;
+                        return objx.equals(newObj);
+                    }
+     9           };
+//qqqqqqqqqq                
+                Iterator it = ds.select(oaObj.getClass(), null, new Object[] {newObj}, null, null, propertyU, null, 0, filter, false);
+                try {
+                    for ( ;it.hasNext(); ) {
+                        Object objx = it.next();
+                        if (objx == null || objx == oaObj) continue;
+                        
+                        throw new RuntimeException("property is unique, and value is assigned to another object.");
+//qqqqqqqq need to build tests for this qqqqqqqqq
+                    }
+                }
+                finally {
+                    it.remove();
+                }
+                    
+
             }
         }
-        
-//qqqqqqqqqqqqqq        
+
         
         sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
         

@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
 
 import com.viaoa.ds.OADataSource;
-import com.viaoa.ds.objectcache.ObjectCacheDataSource;
+import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDeleteDelegate;
 import com.viaoa.hub.HubDetailDelegate;
@@ -936,7 +936,7 @@ public class OAObjectCacheDelegate {
         OADataSource ds = OADataSource.getDataSource(clazz);
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
         
-        ObjectCacheDataSource dsCache = new ObjectCacheDataSource();
+        OADataSourceObjectCache dsCache = new OADataSourceObjectCache();
         Iterator it = dsCache.select(clazz);
 
         int cntTotal = 0;

@@ -40,6 +40,10 @@ public class OADataSourceAuto extends OADataSource {
     public OADataSourceAuto() {
         this(null);
     }
+    public OADataSourceAuto(boolean bMakeLastDataSource) {
+        this(null);
+        super.bLast = bMakeLastDataSource;
+    }
 
     /** Hub hubNextNumber must include a separate NextNumber2 object for each class
         that needs to have a seqId assigned to its objectId property. The objects in
@@ -108,7 +112,8 @@ public class OADataSourceAuto extends OADataSource {
         @see #getHub
         @see #setSupportAllClasses
     */
-    public boolean isClassSupported(Class clazz) {
+    @Override
+    public boolean isClassSupported(Class clazz, OAFilter filter) {
         if (clazz == null) return false;
         if (clazz.equals(NextNumber.class)) return true;
 

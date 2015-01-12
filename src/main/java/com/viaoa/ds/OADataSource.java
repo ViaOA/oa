@@ -48,19 +48,22 @@ public abstract class OADataSource implements OADataSourceInterface {
     protected boolean bAssignNumberOnCreate;  // if true, then Id will be assigned when object is created, else when saved
     protected String guid; // seed value to use when creating GUID for seq assigned object keys
     protected boolean bEnable=true;
+
+    private static OADataSource[] dsAll;
     
     //-------- static methods -------------------------------
     /**
         Get all registered/loaded DataSources.
     */
     public static OADataSource[] getDataSources() {
-        OADataSource[] ds;
-        synchronized(vecDataSource) {
-            int x = vecDataSource.size();
-            ds = new OADataSource[x];
-            vecDataSource.copyInto(ds);
+        if (dsAll == null) {
+            synchronized(vecDataSource) {
+                int x = vecDataSource.size();
+                dsAll = new OADataSource[x];
+                vecDataSource.copyInto(dsAll);
+            }
         }
-        return ds;
+        return dsAll;
     }
 
     /**
@@ -68,11 +71,14 @@ public abstract class OADataSource implements OADataSourceInterface {
         @see #setEnabled
     */
     public static OADataSource getDataSource(Class clazz) {
+        return getDataSource(clazz, (OAFilter) null);
+    }
+    public static OADataSource getDataSource(Class clazz, OAFilter filter) {
         OADataSource[] ds = getDataSources();
         int x = ds.length;
         OADataSource dsFound = null;
         for (int i=0; i<x; i++) {
-            if (ds[i].bEnable && ds[i].isClassSupported(clazz)) {
+            if (ds[i].bEnable && ds[i].isClassSupported(clazz, filter)) {
                 if (dsFound == null || (dsFound.bLast && !ds[i].bLast)) dsFound = ds[i];
             }
         }
@@ -127,7 +133,7 @@ public abstract class OADataSource implements OADataSourceInterface {
     }
 
     /**
-        Used to retreive a single object from DataSource.
+        Used to retrieve a single object from DataSource.
         @param id is the property key value for the object.
     */
     public static Object getObject(Class clazz, long id) {
@@ -248,9 +254,12 @@ public abstract class OADataSource implements OADataSourceInterface {
     }
     public OADataSource(boolean bRegister) {
         if (bRegister) {
-            vecDataSource.addElement(this);
+            synchronized(vecDataSource) {
+                dsAll = null;
+                vecDataSource.addElement(this);
+                dataSourceChangeCnter++;
+            }
         }
-        dataSourceChangeCnter++;
     }
 
     protected static int dataSourceChangeCnter;
@@ -268,11 +277,14 @@ public abstract class OADataSource implements OADataSourceInterface {
         Static method to close all registered DataSources.
     */
     public static void closeAll() {
-        dataSourceChangeCnter++;
-        while (vecDataSource.size() > 0) {
-            ((OADataSource) vecDataSource.elementAt(0)).close();
+        synchronized(vecDataSource) {
+            dataSourceChangeCnter++;
+            while (vecDataSource.size() > 0) {
+                ((OADataSource) vecDataSource.elementAt(0)).close();
+            }
+            vecDataSource.removeAllElements();
+            dsAll = null;
         }
-        vecDataSource.removeAllElements();
     }
 
     /**
@@ -280,8 +292,11 @@ public abstract class OADataSource implements OADataSourceInterface {
     */
     @Override
     public void close() {
-        vecDataSource.removeElement(this);
-        dataSourceChangeCnter++;
+        synchronized(vecDataSource) {
+            vecDataSource.removeElement(this);
+            dataSourceChangeCnter++;
+            dsAll = null;
+        }
     }
 
     /**
@@ -290,11 +305,14 @@ public abstract class OADataSource implements OADataSourceInterface {
      */
     @Override
     public void reopen(int pos) {
-        if (!vecDataSource.contains(this)) {
-            int x = vecDataSource.size();
-            pos = Math.max(0, Math.min(x, pos));
-            vecDataSource.insertElementAt(this, pos);
-            dataSourceChangeCnter++;
+        synchronized(vecDataSource) {
+            if (!vecDataSource.contains(this)) {
+                int x = vecDataSource.size();
+                pos = Math.max(0, Math.min(x, pos));
+                vecDataSource.insertElementAt(this, pos);
+                dataSourceChangeCnter++;
+                dsAll = null;
+            }
         }
     }
     
@@ -311,15 +329,18 @@ public abstract class OADataSource implements OADataSourceInterface {
 	    Sets the position of this OADataSource within the list of datasources. (0 based).
 	*/
 	public void setPosition(int pos) {
-	    if (pos < 0) pos = 0;
-	    int x = vecDataSource.indexOf(this);
-	    if (x < 0) return;
-	    if (x == pos) return;
-	    dataSourceChangeCnter++;
-	    vecDataSource.removeElementAt(x);
-	    x = vecDataSource.size();
-	    if (pos > x) pos = x;
-	    vecDataSource.insertElementAt(this, pos);
+        synchronized(vecDataSource) {
+    	    if (pos < 0) pos = 0;
+    	    int x = vecDataSource.indexOf(this);
+    	    if (x < 0) return;
+    	    if (x == pos) return;
+    	    dataSourceChangeCnter++;
+    	    vecDataSource.removeElementAt(x);
+    	    x = vecDataSource.size();
+    	    if (pos > x) pos = x;
+    	    vecDataSource.insertElementAt(this, pos);
+    	    dsAll = null;
+        }
 	}
 	
 	/**
@@ -355,10 +376,17 @@ public abstract class OADataSource implements OADataSourceInterface {
     /**
         Used by static OADataSource to know if a registered OADataSource subclass
         supports a specific Class.
+        @param clazz class
+        @param filter used to query the datasource
     */
     @Override
-    public abstract boolean isClassSupported(Class clazz);
-
+    public abstract boolean isClassSupported(Class clazz, OAFilter filter);
+    
+    @Override
+    public boolean isClassSupported(Class clazz) {
+        return isClassSupported(clazz, null); 
+    }
+    
     /**
         Used by dataSources to update special requirements for handling Many2Many relationships (ex:Link Table).
         <p>

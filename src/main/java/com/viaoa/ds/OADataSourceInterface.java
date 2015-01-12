@@ -10,6 +10,7 @@ import com.viaoa.util.OAFilter;
 public interface OADataSourceInterface {
    
     boolean isClassSupported(Class clazz);
+    boolean isClassSupported(Class clazz, OAFilter filter);
     boolean supportsStorage();
     boolean isAvailable();
     boolean getEnabled();

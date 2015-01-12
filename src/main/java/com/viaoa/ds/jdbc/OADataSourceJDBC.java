@@ -97,7 +97,7 @@ public class OADataSourceJDBC extends OADataSource {
     /**
         Returns true if Database has Table that is mapped to Class.
     */
-    public @Override boolean isClassSupported(Class clazz) {
+    public @Override boolean isClassSupported(Class clazz, OAFilter filter) {
         boolean b = (database.getTable(clazz) != null);
         return b;
     }

@@ -218,7 +218,7 @@ public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
     */
     public OADataSource getDataSource() {
         if (clazz == null) return null;
-        OADataSource ds = OADataSource.getDataSource(clazz);
+        OADataSource ds = OADataSource.getDataSource(clazz, getDataSourceFilter());
         return ds;
     }
 

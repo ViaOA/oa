@@ -148,12 +148,16 @@ public class OADataSourceClient extends OADataSource {
     }
 
     //NOTE: this needs to see if any of "clazz" superclasses are supported
-    public boolean isClassSupported(Class clazz) {
+    public boolean isClassSupported(Class clazz, OAFilter filter) {
         if (clazz == null) return false;
         
         Boolean B = (Boolean) hashClass.get(clazz);
         if (B != null) return B.booleanValue();
 
+        if (filter != null) {
+            if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) return true;
+        }
+        
         verifyConnection();
         Object obj = getRemoteClient().datasource(IS_CLASS_SUPPORTED, new Object[] {clazz});
         boolean b = false;

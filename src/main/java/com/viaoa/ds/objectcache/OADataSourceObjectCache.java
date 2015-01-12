@@ -20,6 +20,7 @@ package com.viaoa.ds.objectcache;
 import java.util.*;
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
+import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 
 // 20140124 
@@ -31,10 +32,10 @@ import com.viaoa.ds.autonumber.OADataSourceAuto;
 
     subclassed to allow initializeObject(..) to auto assign Object Ids
 */
-public class ObjectCacheDataSource extends OADataSourceAuto {
-    private HashSet<Class> hashClasses = new HashSet<Class>();
+public class OADataSourceObjectCache extends OADataSourceAuto {
 
-    public ObjectCacheDataSource() {
+    public OADataSourceObjectCache() {
+        super(false);
     }
 
     @Override
@@ -67,6 +68,26 @@ public class ObjectCacheDataSource extends OADataSourceAuto {
     }
     @Override
     public boolean supportsInitializeObject() {
+        return false;
+    }
+
+    protected boolean isOtherDataSource() {
+        OADataSource[] dss = OADataSource.getDataSources();
+        return dss != null && dss.length > 1;
+    }
+    
+    @Override
+    public boolean isClassSupported(Class clazz, OAFilter filter) {
+        if (filter == null) {
+            if (isOtherDataSource()) return false;
+            return super.isClassSupported(clazz, filter);
+        }
+        // only if all objects are loaded, or no other DS
+        if (!isOtherDataSource()) return true;
+        
+        if (OAObjectCacheDelegate.getSelectAllHub(clazz) != null) {
+            return true;
+        }
         return false;
     }
 }

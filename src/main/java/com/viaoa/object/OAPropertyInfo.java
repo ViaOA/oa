@@ -28,6 +28,7 @@ public class OAPropertyInfo implements java.io.Serializable {
     
 	private boolean required;
 	private boolean id;
+    private boolean unique;
 	private Class classType;
 	private int decimalPlaces = -1;
 	private boolean isBlob;
@@ -51,6 +52,12 @@ public class OAPropertyInfo implements java.io.Serializable {
 	public void setId(boolean id) {
 		this.id = id;
 	}
+    public boolean getUnique() {
+        return unique;
+    }
+    public void setUnique(boolean bUnique) {
+        this.unique = bUnique;
+    }
 	public int getMaxLength() {
 		return maxLength;
 	}

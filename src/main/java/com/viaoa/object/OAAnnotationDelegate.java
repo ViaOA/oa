@@ -130,6 +130,7 @@ public class OAAnnotationDelegate {
             pi.setRequired(oaprop.required());
             pi.setDecimalPlaces(oaprop.decimalPlaces());
             pi.setId(m.getAnnotation(OAId.class) != null);
+            pi.setUnique(oaprop.isUnique());
             pi.setClassType(m.getReturnType());
             
             boolean b = oaprop.isBlob();
