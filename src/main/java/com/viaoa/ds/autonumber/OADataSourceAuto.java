@@ -58,12 +58,20 @@ public class OADataSourceAuto extends OADataSource {
                 hubNextNumber = new Hub(NextNumber.class);
             }
         }
-        hubNextNumberGlobal = hubNextNumber;
+        setGlobalNextNumber(hubNextNumber);
         
         setHub(hubNextNumber);
         setName("OADataSourceAuto DataSource");
     }
 
+    public static void setGlobalNextNumber(Hub hubNextNumber) {
+        hubNextNumberGlobal = hubNextNumber;
+    }
+    public static Hub<NextNumber> getGlobalNextNumber() {
+        return hubNextNumberGlobal;
+    }
+    
+    
 
     /**
         Hub used to store NextNumber2 objects used for assigning new property ids.

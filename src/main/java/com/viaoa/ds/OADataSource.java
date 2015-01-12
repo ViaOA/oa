@@ -292,6 +292,9 @@ public abstract class OADataSource implements OADataSourceInterface {
     */
     @Override
     public void close() {
+        removeFromList();
+    }
+    public void removeFromList() {
         synchronized(vecDataSource) {
             vecDataSource.removeElement(this);
             dataSourceChangeCnter++;

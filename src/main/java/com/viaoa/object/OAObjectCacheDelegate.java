@@ -530,6 +530,12 @@ public class OAObjectCacheDelegate {
     public static void clearCache() {
         OAObjectHashDelegate.hashCacheClass.clear();
     }
+    public static void clearCache(Class clazz) {
+        synchronized (OAObjectHashDelegate.hashCacheClass) {
+            OAObjectHashDelegate.hashCacheClass.remove(clazz);
+        }        
+    }
+
     
     public static OAObject add(OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
         if (bDisableCache) return obj;
@@ -807,6 +813,11 @@ public class OAObjectCacheDelegate {
     	if (fromObject == null) return null;
         return _find(fromObject, fromObject.getClass(), propertyPath, findObject, bSkipNew, bThrowException);
     }
+    public static Object findNext(Object fromObject, Class fromClass, String propertyPath, Object findObject) {
+        if (fromObject == null && fromClass == null) return null;
+        if (fromClass == null) fromClass = fromObject.getClass();
+        return _find(fromObject, fromClass, propertyPath, findObject, false, true);
+    }
     
     /** 
         Searches all objects in Class clazz for an object with property equalTo findObject.
@@ -934,9 +945,11 @@ public class OAObjectCacheDelegate {
         HashSet<Hub> hsHub = new HashSet<Hub>();
         
         OADataSource ds = OADataSource.getDataSource(clazz);
+        if (ds == null) return;
+        
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
         
-        OADataSourceObjectCache dsCache = new OADataSourceObjectCache();
+        OADataSourceObjectCache dsCache = new OADataSourceObjectCache(false);
         Iterator it = dsCache.select(clazz);
 
         int cntTotal = 0;
@@ -977,7 +990,7 @@ public class OAObjectCacheDelegate {
             cntHubs++;
             cntInHubs += h.getSize();
         }
-        
+        dsCache.close();
         LOG.fine(String.format("refreshed %s, total=%d, alongCnt=%d, hubCnt=%d, inHubsCnt=%d", 
                 clazz.getSimpleName(), cntTotal, cntAlone, cntHubs, cntInHubs));
     }

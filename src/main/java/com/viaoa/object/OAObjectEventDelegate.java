@@ -72,9 +72,8 @@ public class OAObjectEventDelegate {
         final String propertyU = propertyName.toUpperCase();
         OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, propertyU);
         OALinkInfo toLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
-        if (toLinkInfo == null) return;
         OALinkInfo liRecursive;
-        if (toLinkInfo.bRecursive) {
+        if (toLinkInfo != null && toLinkInfo.bRecursive) {
             liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
             if (liRecursive == linkInfo) {
                 // parent property changed.  ex: "setParentSection"
@@ -96,52 +95,52 @@ public class OAObjectEventDelegate {
             }
         }     
         
-        OAPropertyInfo propInfo = null;
-        OACalcInfo calcInfo = null;
         if (linkInfo == null) {
-            propInfo = OAObjectInfoDelegate.getPropertyInfo(oi, propertyU);            
-            if (propInfo == null) {
-                calcInfo = OAObjectInfoDelegate.getOACalcInfo(oi, propertyU);
-            }
-        }       
-        OAObjectKey origKey; 
-        if (propInfo != null) {
-            if (propInfo.getId()) {
-                String s = OAObjectKeyDelegate.verifyKeyChange(oaObj);
-                if (s != null) {
-                    throw new RuntimeException(s);
-                }
-            }
-            if (propInfo.getUnique() && newObj != null) {
-//qqqqqqqqqqqqqqqqqqq
-//qqqq if null qqqqqqqq                
-                OADataSource ds = OADataSource.getDataSource(oaObj.getClass());
-                OAFilter<OAObject> filter = new OAFilter<OAObject>() {
-                    public boolean isUsed(OAObject obj) {
-                        Object objx = obj.getProperty(propertyU);
-                        if (objx == null) return false;
-                        return objx.equals(newObj);
-                    }
-     9           };
-//qqqqqqqqqq                
-                Iterator it = ds.select(oaObj.getClass(), null, new Object[] {newObj}, null, null, propertyU, null, 0, filter, false);
-                try {
-                    for ( ;it.hasNext(); ) {
-                        Object objx = it.next();
-                        if (objx == null || objx == oaObj) continue;
-                        
-                        throw new RuntimeException("property is unique, and value is assigned to another object.");
-//qqqqqqqq need to build tests for this qqqqqqqqq
+            OAPropertyInfo propInfo = OAObjectInfoDelegate.getPropertyInfo(oi, propertyU);
+            if (propInfo != null) {
+                if (propInfo.getId()) {
+                    String s = OAObjectKeyDelegate.verifyKeyChange(oaObj);
+                    if (s != null) {
+                        throw new RuntimeException(s);
                     }
                 }
-                finally {
-                    it.remove();
+                if (propInfo.getUnique() && newObj != null) {
+                    OAFilter<OAObject> filter = new OAFilter<OAObject>() {
+                        public boolean isUsed(OAObject obj) {
+                            Object objx = obj.getProperty(propertyU);
+                            if (objx == null) return false;
+                            return objx.equals(newObj);
+                        }
+                    };
+                    OADataSource ds = OADataSource.getDataSource(oaObj.getClass(), filter);
+                    if (ds != null) {
+                        Iterator it = ds.select(oaObj.getClass(), propertyU+" = ?", new Object[] {newObj}, null, null, null, null, 2, filter, false);
+                        try {
+                            for ( ;it != null && it.hasNext(); ) {
+                                Object objx = it.next();
+                                if (objx != oaObj) {
+                                    throw new RuntimeException("property is unique, and value is assigned to another object.");
+                                }
+                            }
+                        }
+                        finally {
+                            if (it != null) it.remove();
+                        }
+                    }
+                    else {
+                        Object objLast = null;
+                        for (;;) {
+                            Object objx = OAObjectCacheDelegate.findNext(objLast, oaObj.getClass(), propertyU, newObj);
+                            if (objx == null) break;
+                            if (objx != oaObj) {
+                                throw new RuntimeException("property is unique, and value is assigned to another object.");
+                            }
+                            objLast = objx;
+                        }
+                    }
                 }
-                    
-
             }
         }
-
         
         sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
         

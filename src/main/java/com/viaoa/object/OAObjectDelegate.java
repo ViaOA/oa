@@ -205,6 +205,9 @@ public class OAObjectDelegate {
     public static int getNextFiftyGuids() { 
         return guidCounter.getAndAdd(50) + 1; 
     }
+    protected static void setNextGuid(int x) { 
+        guidCounter.set(x); 
+    }
     
     /**
      * Used when there is a duplicate object created, so that it will not be finalized

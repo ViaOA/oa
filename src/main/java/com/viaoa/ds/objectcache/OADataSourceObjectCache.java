@@ -35,7 +35,11 @@ import com.viaoa.ds.autonumber.OADataSourceAuto;
 public class OADataSourceObjectCache extends OADataSourceAuto {
 
     public OADataSourceObjectCache() {
+        this(true);
+    }
+    public OADataSourceObjectCache(boolean bRegister) {
         super(false);
+        if (!bRegister) removeFromList();
     }
 
     @Override
