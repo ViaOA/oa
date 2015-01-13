@@ -284,12 +284,15 @@ public class OAString {
      * @param line original data
      */
     public static String removeNonDigits(String line) {
+        return removeNonDigits(line, false);
+    }    
+    public static String removeNonDigits(String line, boolean bAllowDot) {
         if (line == null) return line;
         StringBuffer sb = new StringBuffer(line.length());
         int x = line.length();
         for (int i=0; i<x; i++) {
             char ch = line.charAt(i);
-            if (Character.isDigit(ch)) sb.append(ch);
+            if (Character.isDigit(ch) || (bAllowDot && ch == '.')) sb.append(ch);
         }
         return new String(sb);
     }

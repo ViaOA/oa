@@ -2,17 +2,21 @@ package com.viaoa.util;
 
 import org.junit.Test;
 
-public class CirculrQueueTest {
+import com.viaoa.OAUnitTest;
 
-    OACircularQueue<Short> que;
+import static org.junit.Assert.*;
+
+public class OACircularQueueTest extends OAUnitTest {
+    private OACircularQueue<Short> que;
+    private volatile boolean bStop;
     
-    public CirculrQueueTest() {
+    public OACircularQueueTest() {
         que = new OACircularQueue<Short>(1000) {};
         que.setName("testQueue");
     }
     
     void runWriter() {
-        for (int i=0;;i++) {
+        for (int i=0; !bStop; i++) {
             Short st = new Short((short)i);
             que.addMessageToQueue(st);
             if ((i%100)==0) {
@@ -26,9 +30,8 @@ public class CirculrQueueTest {
     }
     
     void runReader(int id) {
-        
         long pos = que.registerSession(id);
-        for (int i=0;;i++) {
+        for (int i=0; !bStop ;i++) {
             try {
                 Short[] sms = que.getMessages(id, pos, 500, 2000);
                 pos += sms == null ? 0 : sms.length;
@@ -65,12 +68,19 @@ public class CirculrQueueTest {
             tx.setName("Reader."+i);
             tx.start();
         }
+        
+        for (int i=0; i<3; i++) {
+            try {
+                Thread.sleep(1000);
+            }
+            catch (Exception e) {
+                // TODO: handle exception
+            }
+            if (que.getHeadPostion() > 1000) break;
+        }
+        bStop = true;
+        assertTrue(que.getHeadPostion() > 100);
     }
 
-    
-    public static void main(String[] args) {
-        CirculrQueueTest test = new CirculrQueueTest();
-        test.runTests();
-    }
     
 }

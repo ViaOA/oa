@@ -105,7 +105,7 @@ public class OAThreadLocal {
     
     protected String ignoreTreeListenerProperty;
     
-    protected Hub getDetailHub; // hub that a get detail is being called for
+    protected Hub getDetailHub; // hub that a get detail is being called for. This is a helper for getting detail from server
     
     public OAThreadLocal() {
         this.threadName = Thread.currentThread().getName();

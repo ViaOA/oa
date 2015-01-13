@@ -180,7 +180,12 @@ public class OAObjectCacheDelegate {
 	        	}
 	        }
 		}
-    }
+     }
+     public static void removeAllSelectAllHubs() {
+         synchronized (OAObjectHashDelegate.hashCacheSelectAllHub) {
+             OAObjectHashDelegate.hashCacheSelectAllHub.clear();
+         }
+     }
 
     /**
      * Used to store a global hub by name, using a weakReference.

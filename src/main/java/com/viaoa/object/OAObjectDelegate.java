@@ -205,7 +205,7 @@ public class OAObjectDelegate {
     public static int getNextFiftyGuids() { 
         return guidCounter.getAndAdd(50) + 1; 
     }
-    protected static void setNextGuid(int x) { 
+    public static void setNextGuid(int x) { 
         guidCounter.set(x); 
     }
     

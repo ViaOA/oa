@@ -542,11 +542,34 @@ public class OAThreadLocalDelegate {
         OAThreadLocal ti = OAThreadLocalDelegate.getThreadLocal(false);
         return (ti != null && ti.locks != null && ti.locks.length > 0);
     }
+    public static boolean hasLock(Object obj) {
+        OAThreadLocal ti = OAThreadLocalDelegate.getThreadLocal(false);
+        if (ti == null) return false;
+        Object[] objs = ti.locks;
+        if (objs == null) return false;
+        for (Object objx :  objs) {
+            if (objx == obj) return true;
+        }
+        return false;
+    }
+    public static Object[] getLocks() {
+        OAThreadLocal ti = OAThreadLocalDelegate.getThreadLocal(false);
+        if (ti == null) return null;
+        return ti.locks;
+    }
 
     public static boolean isLocked(Object object) {
         synchronized (hmLock) {
             OAThreadLocal[] tis = hmLock.get(object); // threadLocals that are using object (locked or waiting)
-            return (tis != null || tis.length > 0);
+            return (tis != null && tis.length > 0);
+        }        
+    }
+    public static boolean isLockOwner(Object object) {
+        OAThreadLocal ti = OAThreadLocalDelegate.getThreadLocal(false);
+        if (ti == null) return false;
+        synchronized (hmLock) {
+            OAThreadLocal[] tis = hmLock.get(object); // threadLocals that are using object (locked or waiting)
+            return (tis != null && tis.length > 0 && tis[0] == ti);
         }        
     }
 
@@ -664,7 +687,7 @@ static volatile int unlockCnt;
             return true; // this thread owns the lock
         }
 
-        if (tries >= maxWaitTries && tries > 1) {
+        if (maxWaitTries > 0 && tries >= maxWaitTries && tries > 1) {
             if (tls[1] != tlThis) {
                 // need to be second in list, since the owner (at pos [0]) will notify [1] when it is done - and not another threadLocal                     
                 tls = (OAThreadLocal[]) OAArray.removeValue(OAThreadLocal.class, tls, tlThis);
@@ -672,20 +695,31 @@ static volatile int unlockCnt;
                 hmLock.put(thisLockObject, tls);
             }
             tlThis.bIsWaitingOnLock = false;
-            String s = "thread "+Thread.currentThread().getName()+" max wait, is waiting on Object="+thisLockObject+", current has lock on object[0]="+tlThis.locks[0]+", and "+(tlThis.locks.length-1)+" other objects, will continue";
-            LOG.warning(s);
+            if (maxWaitTries > 2) {
+                String s = "thread "+Thread.currentThread().getName()+" max wait, is waiting on Object="+thisLockObject+", current has lock on object[0]="+tlThis.locks[0]+", and "+(tlThis.locks.length-1)+" other objects, will continue";
+                LOG.warning(s);
+            }
             return true; // done trying
         }
         return false;
     }
     
     
+    public static int cntDeadlock;
+    public static int getDeadlockCount() {
+        return cntDeadlock;
+    }
+    
     // this should be called with rwLock.write locked
     private static void releaseDeadlock(OAThreadLocal tiThis, Object lockObject) {
         OAThreadLocal[] tls = hmLock.get(lockObject);
+        if (tls == null) return;
         OAThreadLocal tlOwner = tls[0];
         
-        for (Object ownerLockObj : tlOwner.locks) {
+        Object[] ownerLocks = tlOwner.locks;
+        if (ownerLocks == null) return;
+        
+        for (Object ownerLockObj : ownerLocks) {
             if (ownerLockObj == lockObject) continue;
             tls = hmLock.get(ownerLockObj);
             if (tls == null || tls[0] != tiThis) continue; // not locked by ti
@@ -700,6 +734,7 @@ static volatile int unlockCnt;
                 tls[1] = tiThis;
             }
             
+            cntDeadlock++;
             synchronized (tlOwner) {
                 tlOwner.bIsWaitingOnLock = false;
                 tlOwner.notify();
@@ -712,8 +747,9 @@ static volatile int unlockCnt;
     public static void releaseAllLocks() {
         OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(false);
         if (tl == null) return;
-        if (tl.locks == null) return;
-        for (Object obj : tl.locks) {
+        Object[] locks = tl.locks;
+        if (locks == null) return;
+        for (Object obj : locks) {
             unlock(obj);
         }
     }

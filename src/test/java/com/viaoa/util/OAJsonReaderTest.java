@@ -1,14 +1,19 @@
 package com.viaoa.util;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
+
+import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectPropertyDelegate;
 
-public class OAJsonReaderTest {
+public class OAJsonReaderTest extends OAUnitTest {
 
     private static final String cid = "_cid";
     
-    public void test() throws Exception {
-        String txt = OAFile.readTextFile("test.txt", 0);
+    @Test
+    public void jsonTest() throws Exception {
+        String txt = OAFile.readTextFile("runtime/test/OAJsonReaderTest/test.txt", 0);
      
         OAJsonReader jr = new OAJsonReader() {
             String lastName;
@@ -44,17 +49,9 @@ public class OAJsonReaderTest {
             if (objectName == null) continue;
             if (objectName.equalsIgnoreCase("RepoVersionOutput")) {
                 String repoVersion = (String) OAObjectPropertyDelegate.getProperty(oaObj, "build_date");
-                // error
-                // package
-                // version
             }
         }
     
     }
     
-    public static void main(String[] args) throws Exception {
-        OAJsonReaderTest test = new OAJsonReaderTest();
-        test.test();
-        
-    }
 }
