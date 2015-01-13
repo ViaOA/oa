@@ -20,7 +20,7 @@ public class OACircularQueueTest extends OAUnitTest {
             Short st = new Short((short)i);
             que.addMessageToQueue(st);
             if ((i%100)==0) {
-                if ((i%1000)==0) System.out.printf("\n(W."+i+") ");
+                //if ((i%1000)==0) System.out.printf("\n(W."+i+") ");
                 try {
                     Thread.sleep(1);
                 }
@@ -35,7 +35,7 @@ public class OACircularQueueTest extends OAUnitTest {
             try {
                 Short[] sms = que.getMessages(id, pos, 500, 2000);
                 pos += sms == null ? 0 : sms.length;
-                if ((i%20)==0) System.out.printf("[R"+id+"."+pos+"] ");
+                //if ((i%20)==0) System.out.printf("[R"+id+"."+pos+"] ");
                 // Thread.sleep(32);
             }
             catch (Exception e) {

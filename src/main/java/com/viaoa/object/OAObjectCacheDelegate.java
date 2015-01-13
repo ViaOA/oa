@@ -388,7 +388,7 @@ public class OAObjectCacheDelegate {
         Removes all objects from HubController.
     */
     public static void removeAllObjects() {
-        LOG.info("removing all Objects");
+        LOG.warning("removing all Objects was called (fyi only)");
         OAObjectHashDelegate.hashCacheClass.clear();
     }
     

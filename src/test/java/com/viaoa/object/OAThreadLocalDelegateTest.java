@@ -16,14 +16,15 @@ public class OAThreadLocalDelegateTest extends OAUnitTest {
 
         assertFalse(OAThreadLocalDelegate.hasLock());
         assertFalse(OAThreadLocalDelegate.isLocked(lock));
-        assertNull(OAThreadLocalDelegate.getLocks());
+        Object[] locks = OAThreadLocalDelegate.getLocks();
+        assertTrue(locks == null || locks.length == 0);
         
         OAThreadLocalDelegate.lock(lock);
         assertTrue(OAThreadLocalDelegate.isLockOwner(lock));
         
         assertTrue(OAThreadLocalDelegate.hasLock());
         assertTrue(OAThreadLocalDelegate.isLocked(lock));
-        Object[] locks = OAThreadLocalDelegate.getLocks();
+        locks = OAThreadLocalDelegate.getLocks();
         assertTrue(locks != null && locks.length == 1 && locks[0] == lock);
         
         OAThreadLocalDelegate.unlock(lock);
