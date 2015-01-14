@@ -11,16 +11,14 @@ public class HubCopyTest extends OAUnitTest {
     @Test
     public void test() {
 
-        // create 2 Hubs
+        Hub hub1 = new Hub(VetUser.class);
+        for (int i=0; i<10; i++) hub1.add(createVetUser());
         
-        Hub h1 = new Hub(VetUser.class);
-        for (int i=0; i<10; i++) h1.add(createVetUser());
-        
-        Hub h2 = new Hub(VetUser.class);
-        for (int i=0; i<10; i++) h2.add(createVetUser());
+        Hub hub2 = new Hub(VetUser.class);
+        for (int i=0; i<12; i++) hub2.add(createVetUser());
 
-        Hub h3 = new Hub(VetUser.class);
-        HubFilter hf = new HubFilter(h2,h3) {
+        Hub hubFiltered = new Hub(VetUser.class);
+        HubFilter hf = new HubFilter(hub2, hubFiltered) {
             @Override
             public boolean isUsed(Object object) {
                 return true;
@@ -28,62 +26,57 @@ public class HubCopyTest extends OAUnitTest {
         };
         
         
-        // create a Main hub that will share h1 or h2
-        Hub hubMain = new Hub(VetUser.class);
+        // create a hub that will share h1 or h2
+        Hub hubShared = new Hub(VetUser.class);
         
-        // create a copyHub that will have the same objects as main
+        // create a copyHub that will have the same objects as hubShared
         Hub hubCopy = new Hub(VetUser.class);
         
-        // have the copy share the same object as hubMain, which is sharing same AO as h1 or h2
-        HubCopy hc = new HubCopy(hubMain, hubCopy, true);
-        if (hubCopy.getSize() != 0) p("error 1");
+        // have the copy share the same object as hubShare, which is sharing same AO as h1 or h2
+        HubCopy hc = new HubCopy(hubShared, hubCopy, true);
+        assertEquals(hubCopy.getSize(), 0);
         
-        hubMain.setSharedHub(h1, true);
-        if (!verifyCopy(hubMain, hubCopy)) p("error 2.1");
+        hubShared.setSharedHub(hub1, true);
+        assertTrue(verifyCopy(hubShared, hubCopy));
     
-        if (hubCopy.getSize() != 10) p("error 2");
+        assertEquals(hubCopy.getSize(), 10);
         
-        if (hubCopy.getAO() != null) p("error 3");
+        assertNull(hubCopy.getAO());
 
-        h1.setPos(3);
+        hub1.setPos(3);
 
-        if (hubCopy.getAO() != h1.getAO()) p("error 4");
+        assertEquals(hubCopy.getAO(), hub1.getAO());
 
         hubCopy.setPos(8);
         VetUser vu = (VetUser) hubCopy.getAO();
-        if (hubCopy.getAO() != h1.getAO()) p("error 5");
+        assertEquals(hub1.getAO(), vu);
+        assertEquals(hubShared.getAO(), vu);
         
         
         // use filtered hub
-        hubMain.setSharedHub(h3, true);
+        hubShared.setSharedHub(hubFiltered, true);
         
-        if (!verifyCopy(hubMain, hubCopy)) p("error 5.1");
-        if (hubCopy.getAO() != null) p("error 5.2");
+        assertTrue(verifyCopy(hubShared, hubCopy));
+        assertNull(hubCopy.getAO());
 
-        VetUser vu3 = (VetUser) h3.setPos(4);
-        if (hubCopy.getAO() != vu3) p("error 5.2.1, "+hubCopy.getAO());
+        VetUser vu3 = (VetUser) hubFiltered.setPos(4);
+        assertEquals(hubCopy.getAO(), vu3);
+        assertEquals(hubShared.getAO(), vu3);
         
 
         // go back to h1, make sure that AO is being used
-        hubMain.setSharedHub(h1, true);
         
-        if (h1.getAO() != vu) p("error 5.3");
-        if (hubMain.getAO() != vu) p("error 5.4");
-        if (!verifyCopy(hubMain, hubCopy)) p("error 5.5");
+        hubShared.setSharedHub(hub1, true);
+        
+        assertEquals(hub1.getAO(), vu);
+        assertEquals(hubShared.getAO(), vu);
+        assertTrue(verifyCopy(hubShared, hubCopy));
         
         
-        if (hubMain.getAO() != vu) p("error 6, "+hubCopy.getAO());
+        assertEquals(hubShared.getAO(), vu);
         
-        if (hubCopy.getAO() != vu) p("error 6.1, "+hubCopy.getAO());
-        if (hubCopy.getAO() != h1.getAO()) p("error 6.2");
-    
-    
-    
-    
-    }
-    
-    void p(String msg) {
-        System.out.println("error ===> "+msg);
+        assertEquals(hubCopy.getAO(), vu);
+        assertEquals(hubCopy.getAO(), hub1.getAO());
     }
     
     boolean verifyCopy(Hub h, Hub h2) {
@@ -100,14 +93,6 @@ public class HubCopyTest extends OAUnitTest {
         id++;
         vu.setId(id);
         return vu;
-    }
-
-    void display(Hub<VetUser> h) {
-        for (VetUser vu : h) {
-            System.out.println("==> "+vu.getId());
-        }
-        VetUser vu = h.getAO();
-        System.out.println("AO ==> " + (vu==null?"null":vu.getId()) );
     }
 
     public static void main(String[] args) {

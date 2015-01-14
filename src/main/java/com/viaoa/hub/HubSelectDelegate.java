@@ -360,7 +360,7 @@ public class HubSelectDelegate {
 	    boolean bHasMoreData;
 		if (sel != null) {
 		    boolean b = sel.hasBeenStarted();
-		    bHasMoreData = (sel != null && b && sel.hasMore());
+		    bHasMoreData = (b && sel.hasMore());
 	    	if (b) sel.cancel();
 	        if (bRemove) thisHub.data.setSelect(null);
 	        if (b) HubDataDelegate.resizeToFit(thisHub);

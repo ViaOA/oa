@@ -331,16 +331,22 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             }
             
             public void afterChangeActiveObject(HubEvent<TYPE> e) {
-                if (bShareAO && hub != null && hubMaster != null) {
-                    Object obj = HubFilter.this.hubMaster.getAO();
-                    if (obj != null && !HubFilter.this.hub.contains(obj)) obj = null;
-                    HubFilter.this.hub.setAO(obj);
+                if (!bShareAO || hub == null || hubMaster == null) return;
+                
+                Object obj = HubFilter.this.hubMaster.getAO();
+                if (obj != null && !HubFilter.this.hub.contains(obj)) {
+                    obj = null;
                 }
+                bIgnoreSettingAO = true;
+                HubFilter.this.hub.setAO(obj);
+                bIgnoreSettingAO = false;
             }
         };
         return hlHubMaster;
     }
 
+    private boolean bIgnoreSettingAO;
+    
     protected void setup() {
         if (bClosed) return;
         if (hubMaster == null) {
@@ -514,6 +520,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     public void afterInitialize() {
     }
     
+    
     /** HubListener interface method, used to update filter. */
     public void initialize() {
         if (bClosed) return;
@@ -529,8 +536,10 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                 try {
                     aiClearing.incrementAndGet();
                     // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
+                    bIgnoreSettingAO = true;
                     HubAddRemoveDelegate.clear(hub, false, false);  // false:dont set AO to null,  false: send newList event
                     objTemp = null;
+                    bIgnoreSettingAO = false;
                 }
                 finally {
                     aiClearing.decrementAndGet();
@@ -541,7 +550,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                 OAThreadLocalDelegate.setLoadingObject(true);
                 _initialize();
                 bNewListFlag = true;                   
-                if (hub != null) HubEventDelegate.fireOnNewListEvent(hub, true);
+                if (hub != null) {
+                    HubEventDelegate.fireOnNewListEvent(hub, true);
+                }
             }
             finally {
                 bNewListFlag = false;                   
@@ -678,7 +689,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         if (bShareAO && hub != null && hubMaster != null) {
             Object obj = HubFilter.this.hub.getAO();
             if (obj != null && !HubFilter.this.hubMaster.contains(obj)) obj = null;
-            HubFilter.this.hubMaster.setAO(obj);
+            if (!bIgnoreSettingAO) {
+                HubFilter.this.hubMaster.setAO(obj);
+            }
         }
     }
     
