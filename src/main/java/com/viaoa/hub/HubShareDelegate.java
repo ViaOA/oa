@@ -303,7 +303,7 @@ public class HubShareDelegate {
 	// 20140501 similiar to setSharedHubAfterRemove(..)
     protected static void setSharedHubsAfterRemoveAll(Hub thisHub) {
         thisHub.dataa.activeObject = null;
-        HubAODelegate.setActiveObject(thisHub, -1, false, true, false); // bUpdateLink, bForce, bCalledByShareHub
+        HubAODelegate.setActiveObject(thisHub, -1, false, false, false); // bUpdateLink, bForce, bCalledByShareHub
 
         WeakReference<Hub>[] refs = HubShareDelegate.getSharedWeakHubs(thisHub);
         for (int i=0; refs != null && i<refs.length; i++) {

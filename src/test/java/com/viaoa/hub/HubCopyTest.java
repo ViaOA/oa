@@ -1,10 +1,14 @@
 package com.viaoa.hub;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+import com.viaoa.OAUnitTest;
 import com.vetjobs.VetUser;
 
-public class HubCopyTest {
+public class HubCopyTest extends OAUnitTest {
 
-    
+    @Test
     public void test() {
 
         // create 2 Hubs

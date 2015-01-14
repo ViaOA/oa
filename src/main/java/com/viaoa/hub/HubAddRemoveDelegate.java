@@ -132,23 +132,23 @@ public class HubAddRemoveDelegate {
     }
     
     public static void clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
+        boolean b = false;
         try {
             OAThreadLocalDelegate.lock(thisHub);
-            _clear(thisHub, bSetAOtoNull, bSendNewList);
+            b = _clear(thisHub, bSetAOtoNull, bSendNewList);
         }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
         }
-        _afterClear(thisHub, bSetAOtoNull, bSendNewList);
+        if (b) _afterClear(thisHub, bSetAOtoNull, bSendNewList);
     }
-    private static void _clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
+    private static boolean _clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
         if (thisHub.datau.getSharedHub() != null) {
-            clear(thisHub.datau.getSharedHub(), bSetAOtoNull, bSendNewList);
-            return;
+            return _clear(thisHub.datau.getSharedHub(), bSetAOtoNull, bSendNewList);
         }
     
         if (!thisHub.getEnabled()) {
-            return;
+            return false;
         }
 
         HubSelectDelegate.cancelSelect(thisHub, false);
@@ -183,9 +183,10 @@ public class HubAddRemoveDelegate {
             
             // 20140422 set to false, since clients will now have clear msg         
             remove(thisHub, obj, false, false, 
-                    false, false, true, true); // dont force, dont send remove events
+                    false, true, true, true); // dont force, dont send remove events
             //was: remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull, true); // dont force, dont send remove events
         }
+        return true;
     }
     private static void _afterClear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
         // 20140501
@@ -286,20 +287,20 @@ public class HubAddRemoveDelegate {
         }
         
         boolean bIsLoading = thisHub.isLoading();
+        boolean b = false;
         try {
             if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
-            _add(thisHub, obj, bIsLoading);
+            b = _add(thisHub, obj, bIsLoading);
         }
         finally {
             if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
-        _afterAdd(thisHub, obj);
+        if (b) _afterAdd(thisHub, obj);
     }
-    private static void _add(Hub thisHub, Object obj, boolean bIsLoading) {
+    private static boolean _add(Hub thisHub, Object obj, boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            internalAdd(thisHub, obj, bIsLoading, true);
-            return;
+            return internalAdd(thisHub, obj, bIsLoading, true);
         }
 
         if (thisHub.data.objClass == null) {
@@ -309,7 +310,7 @@ public class HubAddRemoveDelegate {
 
         // need to check even if isLoading=true, since datasource could autoadd to a cache hub
         if (thisHub.contains(obj)) {
-            return;
+            return false;
         }
 
         if (!bIsLoading) {
@@ -325,7 +326,7 @@ public class HubAddRemoveDelegate {
         }
         if (!internalAdd(thisHub, obj, bIsLoading, true)) {
             //LOG.warning(" NOT ADDED <<<<<");
-            return;
+            return false;
         }
         
         // moved before listeners are notified.  Else listeners could ask for more objects
@@ -341,6 +342,7 @@ public class HubAddRemoveDelegate {
                 }
             }
         }
+        return true;
     }
     private static void _afterAdd(Hub thisHub, Object obj) {
         if (!thisHub.data.isInFetch()) {
@@ -457,7 +459,6 @@ public class HubAddRemoveDelegate {
         
         boolean bIsLoading = thisHub.isLoading();
         int newPos = pos;
-        boolean bResult;
         try {
             if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
             newPos = _insert(thisHub, obj, pos, bIsLoading);
@@ -465,7 +466,7 @@ public class HubAddRemoveDelegate {
         finally {
             if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
-        bResult = newPos >= 0;
+        boolean bResult = newPos >= 0;
         if (bResult) _afterInsert(thisHub, obj, newPos);
         return bResult;
     }        
