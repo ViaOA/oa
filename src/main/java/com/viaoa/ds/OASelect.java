@@ -66,7 +66,7 @@ import com.viaoa.hub.*;
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
-public class OASelect<TYPE> implements Serializable, Iterable<TYPE> {
+public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<TYPE> {
     static final long serialVersionUID = 1L;
 
     private static Logger LOG = Logger.getLogger(OASelect.class.getName());
