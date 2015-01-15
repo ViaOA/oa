@@ -26,7 +26,7 @@ import com.viaoa.util.*;
 
 // 20140124
 /**
- * This is used to find all values in a propertyPath, from a root hub/obj to an OAObject 
+ * This is used to find all values in a propertyPath. 
  *
  * @param <F> type of hub or OAObject to use as the root (from)
  * @param <T> type of hub for the to class (to).
@@ -37,13 +37,9 @@ import com.viaoa.util.*;
     String cpp = OAString.cpp(UserLogin.P_User, User.P_UserId);
     f.addLikeFilter(cpp, userId);
     UserLogin userLogin = f.findFirst(router);
- 
-  
-    The propertyPath is how to get from F to T, and then return the T objects.
-    Filters for T can be added.
-  
+ * 
  */
-public class OAFinder<F extends OAObject, T extends OAObject> {
+public class OAFinder<F extends OAObject, T> {
     private String strPropertyPath;
     private OAPropertyPath<T> propertyPath;
 
@@ -62,7 +58,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     // optional filter that can be used on objects <T> that are found.
     private OAFilter<T> filter;
     // optional finder that can be used on objects <T> that are found.
-//    private OAFinder finder;    
+    private OAFinder finder;    
     
     // stack
     private boolean bEnableStack;
@@ -71,8 +67,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
 
     private int maxFound;
 
-    
-/*    
     // if true, then values will need to be null to have onFound(..) called
     private boolean bEqualNull;  
     // if true, then values will need to be not null to have onFound(..) called 
@@ -83,7 +77,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private T betweenFromVal, betweenToVal;
     private T equalBetweenFromVal, equalBetweenToVal;
     private String likeValue;
-*/
+
     private F fromObject;
     private Hub<F> fromHub;
     private boolean bUseAll;
@@ -138,16 +132,14 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      * Used for all objects that are found, to perform another find to see if
      * that onFound(..) should be called for the object.
      */
-/*    
-    public void setFinder(OAFinder<OAObject, Object> finder) {
+    public void setFinder(OAFinder finder) {
         if (finder == this) throw new IllegalArgumentException("finder can not be itself");
         this.finder = finder;
     }
-    
     public OAFinder getFinder() {
         return this.finder;
     }
-*/    
+    
     public void setMaxFound(int x) {
         this.maxFound = x;
     }
@@ -195,15 +187,13 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return al;        
     }
 
-
-/*qqqqqqqqqq    
+    
     public void setLikeValue(String val) {
         this.likeValue = val;
     }
     public String getLikeValue() {
         return likeValue;
     }
-    
     public void setEqualValue(T val) {
         this.equalValue = val;
     }
@@ -233,7 +223,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         this.equalBetweenFromVal = val1;
         this.equalBetweenToVal = val2;
     }
-*/    
+    
     public void clearFilters() {
         alFilters = null;
     }
