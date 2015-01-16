@@ -8,6 +8,50 @@ import com.viaoa.OAUnitTest;
 
 public class OAStringTest extends OAUnitTest {
 
+    
+    @Test 
+    public void dcountTest() {
+        String s = "A.b.c.d";
+        assertEquals(OAString.dcount(s, '.'), 4);
+        
+        s = "A..c.d";
+        assertEquals(OAString.dcount(s, '.'), 4);
+
+        s = null;
+        assertEquals(OAString.dcount(s, '.'), 0);
+
+        s = "A.b.   .d";
+        assertEquals(OAString.dcount(s, '.'), 4);
+        
+        s = "A.b:.'.c.d";
+        assertEquals(OAString.dcount(s, '.'), 5);
+        
+        s = ".";
+        assertEquals(OAString.dcount(s, '.'), 2);
+    }
+    @Test 
+    public void fieldTest() {
+        String s = "A.b.c.d";
+        assertEquals(OAString.field(s, '.', OAString.dcount(s, '.')), "d");
+        assertEquals(OAString.field(s, '.', 0), null);  // first field is 1, not 0.  0 will always return null
+
+        s = "A.b.c.d";
+        assertEquals(OAString.field(s, '.', 9), null);
+
+        s = "A.b..d";
+        assertEquals(OAString.field(s, '.', 3), "");
+
+        s = "A.b..d";
+        assertEquals(OAString.field(s, '.', -1), null);
+        
+        s = "A.b..d";
+        assertEquals(OAString.field(s, '.', 3, 2), ".d");
+        assertEquals(OAString.field(s, '.', 2, 3), "b..d");
+        assertEquals(OAString.field(s, '.', 1, 99), s);
+    }
+    
+    
+    
     @Test
     public void formatTest() {
         String s = OAString.format("1234.56", "  R4,");

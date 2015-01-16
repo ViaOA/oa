@@ -3,7 +3,6 @@ package com.viaoa;
 import com.theice.tsac.delegate.ModelDelegate;
 import com.theice.tsac.model.oa.Environment;
 import com.theice.tsac.model.oa.Server;
-import com.theice.tsac.model.oa.ServerInfo;
 import com.theice.tsac.model.oa.ServerInstall;
 import com.theice.tsac.model.oa.ServerType;
 import com.theice.tsac.model.oa.Silo;
@@ -13,61 +12,66 @@ import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
 
-public class SampleDataGeneratorDelegate {
+public class TsacDataGenerator {
 
+    
+    public static final int MaxSiteLoop = 3;
+    public static final int MaxEnviromentLoop = 3;
+    public static final int MaxSiloLoop = 3;
+    public static final int MaxServerLoop = 5;
+    public static final int MaxServerInstallLoop = 2;
+
+    
     public void createSampleData() {
         OAThreadLocalDelegate.setLoadingObject(true);
-        for (int i = 0; i < 10; i++) {
-System.out.println("site="+i);                
+        
+        for (int i=0; i<10; i++) {
+            ServerType st = new ServerType();
+            st.setName("ServerType."+i);
+            ModelDelegate.getServerTypes().add(st);
+        }
+
+        for (int i=0; i<MaxSiloLoop; i++) {
+            SiloType siloType = new SiloType();
+            siloType.setType(i);
+            ModelDelegate.getSiloTypes().add(siloType);
+        }
+        
+        
+        int cntServer = 0;
+        for (int i = 0; i < MaxSiteLoop; i++) {
             Site site = new Site();
             site.setName("Site." + i);
             ModelDelegate.getSites().add(site);
             if (i == 0) site.setProduction(true);
             
-            for (int ii = 0; ii < 50; ii++) {
+            for (int ii = 0; ii < MaxEnviromentLoop; ii++) {
                 Environment env = new Environment();
-System.out.println("site="+i+", env="+ii);                
-                env.setName("Env." + i + "." + ii);
+                System.out.println("site="+i+", env="+ii);                
+                env.setName("Environment." + i + "." + ii);
                 site.getEnvironments().add(env);
 
-                Site sitex = ModelDelegate.getSites().getAt(0);
-                for (;;) {
-                    if (sitex.getProduction()) break;
-                    //System.out.println("waiting for Site[0].production=true before creating more sample data");
-                    try {
-                        Thread.sleep(1000);
-                    }
-                    catch (Exception e) {
-                    }
-                }
-                
-                
                 for (int iii = 0; iii < ModelDelegate.getSiloTypes().getSize(); iii++) {
                     Silo silo = new Silo();
                     SiloType siloType = ModelDelegate.getSiloTypes().find(SiloType.P_Type, iii);
                     silo.setSiloType(siloType);
                     env.getSilos().add(silo);
-//System.out.println("site="+i+", env="+ii+", silo="+iii);                
+                
 
-                    for (int iiii = 0; iiii < 5; iiii++) {
+                    for (int iiii = 0; iiii < MaxServerLoop; iiii++) {
                         Server server = new Server();
+                        server.setId(++cntServer);
                         server.setName("Server." + i + "." + ii + "." + iii + "." + iiii);
                         Hub<ServerType> h = ModelDelegate.getServerTypes();
-                        server.setServerType(h.find(ServerType.P_Type, iiii % h.getSize()));
+                        // server.setServerType(h.find(ServerType.P_Type, iiii % h.getSize()));
                         silo.getServers().add(server);
-                        for (int i5 = 0; i5 < 2; i5++) {
+                        for (int i5 = 0; i5 < MaxServerInstallLoop; i5++) {
                             ServerInstall si = new ServerInstall();
                             server.getServerInstalls().add(si);
                         }                        
                     }
-//                    silo.save(OAObject.CASCADE_ALL_LINKS);
-                    try {
-//                        Thread.sleep(1000);
-                    }
-                    catch (Exception e) {
-                    }
                 }
-//                env.save(OAObject.CASCADE_ALL_LINKS);
+                env.save(OAObject.CASCADE_ALL_LINKS);
             }
             site.save(OAObject.CASCADE_ALL_LINKS);
         }

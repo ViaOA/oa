@@ -30,37 +30,30 @@ import com.viaoa.util.OACompare;
  */
 public class HubFindDelegate {
 // 20140120 changed from HubFinder to OAFinder
-    
+
 	/**
-	    Returns first object in Hub that matches propertyPath findObj.
+	    Returns first object in Hub that matches propertyPath findValue.
 	    Returns null if not found.
-	    @param bSetAO if true then the active object is set to found object.
+	    @param bSetAO if true then the active object is set to the found object.
 	    @see HubFind
 	*/
-    public static Object findFirst(Hub thisHub, String propertyPath, final Object findObject, final boolean bSetAO) {
+    public static Object findFirst(Hub thisHub, String propertyPath, final Object findValue, final boolean bSetAO) {
         if (thisHub == null) return null;
         
-        OAFinder find = new OAFinder(propertyPath) {
-            @Override
-            protected void onFound(Object obj) {
-                if (OACompare.isLike(obj, findObject) ) {
-                    super.onFound(obj);
-                    stop();
-                }
-            }
-        };
+        OAFinder finder = new OAFinder();
+        finder.addEqualFilter(propertyPath, findValue);
+        
         Object foundObj = null;
         for (int i=0; ;i++) {
             Object obj = thisHub.getAt(i);
             if (obj == null) break;
-            ArrayList al = find.find((OAObject) obj);
-            if (al.size() > 0) {
-                thisHub.datau.setFinderPos(i);
+            if (finder.findFirst((OAObject) obj) != null) {
                 foundObj = obj;
+                thisHub.datau.setFinderPos(i);
                 break;
             }
         }
-        if (foundObj != null) thisHub.datau.setFinder(find);
+        if (foundObj != null) thisHub.datau.setFinder(finder);
         else thisHub.datau.setFinderPos(-1);
         
         if (bSetAO) thisHub.setPos(thisHub.datau.getFinderPos());

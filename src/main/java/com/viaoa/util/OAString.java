@@ -856,6 +856,10 @@ public class OAString {
         if (str == null || str.length() == 0) return 0;
         return count(str, sep) + 1;
     }
+    public static int dcount(String str, char sep) {
+        if (str == null || str.length() == 0) return 0;
+        return count(str, sep+"") + 1;
+    }
 
     /**
         Returns the amount of particular String within a String.
@@ -1980,9 +1984,8 @@ public class OAString {
 
 
     /**
-     * 
-     * @param obj
      * @return If null, then returns true; if String and length is 0, returns true; if array and length == 0, returns true.
+     * all others return false.
      */
     public static boolean isEmpty(Object obj) {
         return isEmpty(obj, false);

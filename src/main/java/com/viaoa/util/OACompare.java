@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OAObjectReflectDelegate;
 
 // 20140124
 /**
@@ -121,10 +122,11 @@ public class OACompare {
             }
         }
         else {
-            Class c = value.getClass();
-            if (!c.equals(matchValue.getClass())) {
-                matchValue = OAConverter.convert(c, matchValue);
-                if (matchValue == null) return false;
+            Class c = matchValue.getClass();
+            if (!c.equals(value.getClass())) {
+                Object valx = OAConverter.convert(c, value);
+                if (valx == null) return false;
+                return matchValue.equals(valx);
             }
         }
         
@@ -157,12 +159,19 @@ public class OACompare {
         if (x > 0) return false;
         return true;
     }    
+    public static boolean isBetweenOrEqual(Object value, Object fromValue, Object toValue) {
+        return isEqualOrBetween(value, fromValue, toValue);
+    }
 
     public static boolean isGreater(Object value, Object fromValue) {
         int x = compare(value, fromValue);
         return x > 0;
     }
     public static boolean isEqualOrGreater(Object value, Object fromValue) {
+        int x = compare(value, fromValue);
+        return x >= 0;
+    }
+    public static boolean isGreaterOrEqual(Object value, Object fromValue) {
         int x = compare(value, fromValue);
         return x >= 0;
     }
@@ -175,24 +184,30 @@ public class OACompare {
         int x = compare(value, fromValue);
         return x <= 0;
     }
+    public static boolean isLessOrEqual(Object value, Object fromValue) {
+        int x = compare(value, fromValue);
+        return x <= 0;
+    }
     
-    public static int compare(Object value, Object fromValue) {
+    public static int compare(Object value, Object matchValue) {
         if (value == null) {
-            if (fromValue == null) return 0;
+            if (matchValue == null) return 0;
             return -1;
         }
-        if (fromValue == null) return 1;
-        Class c = value.getClass();
-
-        if (!c.equals(fromValue.getClass())) {
-            fromValue = OAConverter.convert(c, fromValue);
-            if (fromValue == null) return 1;
+        if (matchValue == null) return 1;
+        
+        
+        Class c = matchValue.getClass();
+        if (!c.equals(value.getClass())) {
+            value = OAConverter.convert(c, value);
+            if (value == null) return -1;
         }
-        if (!(fromValue instanceof Comparable)) {
-            if (value.equals(fromValue)) return 0;
+        
+        if (!(matchValue instanceof Comparable)) {
+            if (value.equals(matchValue)) return 0;
             return -1;
         }
-        int x = ((Comparable)value).compareTo(fromValue);
+        int x = ((Comparable)value).compareTo(matchValue);
         return x;
     }
     
@@ -211,16 +226,8 @@ public class OACompare {
         if (obj.getClass().isArray()) {
             return (Array.getLength(obj) == 0);
         }
-        
-        if (obj instanceof String) {
-            if (bTrim) {
-                if (((String)obj).trim().length() == 0) return true;
-            }
-            else {
-                if (((String)obj).length() == 0) return true;
-            }
-        }
-        return false;
+
+        return OAString.isEmpty(obj, bTrim);
     }
     
     public static void main(String[] args) {

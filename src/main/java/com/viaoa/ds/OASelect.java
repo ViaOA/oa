@@ -509,11 +509,9 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
         
         // 20140129
         if (finder != null) {
-            final OAFilter origFilter = finder.getFilter();
             OAFilter filter = new OAFilter<TYPE>() {
                 @Override
                 public boolean isUsed(TYPE obj) {
-                    if (origFilter != null && !origFilter.isUsed(obj)) return false;
                     if (dsFilter != null && !dsFilter.isUsed(obj)) return false;
                     if (oaFilter != null && !oaFilter.isUsed(obj)) return false;
                     if (hubSearch != null) {
@@ -522,9 +520,7 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
                     return true;
                 }
             };
-            finder.setFilter(filter);
             alFinderResults = finder.find();
-            finder.setFilter(origFilter);
             return;
         }
 
