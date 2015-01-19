@@ -205,15 +205,15 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         alFilters = null;
     }
 
-    public void addFilter(OAFilter filter) {
+    public void addFilter(OAFilter<T> filter) {
         if (alFilters == null) alFilters = new ArrayList<OAFilter>();
         alFilters.add(filter);
     }
     public void addEqualFilter(final String propPath, final Object value) {
-        addFilter(propPath, new OAEqualFilter(value));
+        _addFilter(propPath, new OAEqualFilter(value));
     }
     public void addNotEqualFilter(final String propPath, final Object value) {
-        addFilter(propPath, new OANotEqualFilter(value));
+        _addFilter(propPath, new OANotEqualFilter(value));
     }
     /**
      * Create a filter that is used on every object for this finder.
@@ -221,25 +221,25 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      * @param value value to compare with using OACompare.isLike(..).
      */
     public void addLikeFilter(final String propPath, final Object value) {
-        addFilter(propPath, new OALikeFilter(value));
+        _addFilter(propPath, new OALikeFilter(value));
     }
     public void addNotLikeFilter(final String propPath, final Object value) {
-        addFilter(propPath, new OANotLikeFilter(value));
+        _addFilter(propPath, new OANotLikeFilter(value));
     }
     public void addGreaterFilter(final String propPath, final Object value) {
-        addFilter(propPath, new OAGreaterFilter(value));
+        _addFilter(propPath, new OAGreaterFilter(value));
     }
     public void addGreaterOrEqualFilter(final String propPath, final Object value) {
-        addFilter(propPath, new OAGreaterOrEqualFilter(value));
+        _addFilter(propPath, new OAGreaterOrEqualFilter(value));
     }
     public void addLessFilter(final String propPath, final Object value) {
-        addFilter(propPath, new OALessFilter(value));
+        _addFilter(propPath, new OALessFilter(value));
     }
     public void addLessOrEqualFilter(final String propPath, final Object value) {
-        addFilter(propPath, new OALessOrEqualFilter(value));
+        _addFilter(propPath, new OALessOrEqualFilter(value));
     }
     public void addBetweenFilter(final String propPath, final Object value1, final Object value2) {
-        addFilter(propPath, new OABetweenFilter(value1, value2));
+        _addFilter(propPath, new OABetweenFilter(value1, value2));
     }
     
     
@@ -247,7 +247,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      * Create a filter that is used on every object for this finder.
      * @param propPath property path from this Finder from object to the object that will be compared.
      */
-    private void addFilter(final String propPath, final OAFilter filter) {
+    private void _addFilter(final String propPath, final OAFilter filter) {
         if (filter == null) return;
         OAFilter<T> f;
         if (OAString.isEmpty(propPath)) {
@@ -265,14 +265,13 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
         else {
             int dcnt = OAString.dcount(propPath, '.');
-            OAFinder<T, OAObject> find = new OAFinder<T, OAObject>(OAString.field(propPath, '.', 1, dcnt-1));
+            final OAFinder<T, OAObject> find = new OAFinder<T, OAObject>(OAString.field(propPath, '.', 1, dcnt-1));
             String prop = OAString.field(propPath, '.', dcnt);
-            find.addFilter(prop, filter);
+            find._addFilter(prop, filter);
             
             f = new OAFilter<T>() {
-                OAFinder finder;
                 public boolean isUsed(T obj) {
-                    return finder.canFindFirst((OAObject)obj);
+                    return find.canFindFirst(obj);
                 }
             };
         }

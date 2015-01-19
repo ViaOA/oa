@@ -85,8 +85,9 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
     protected int amountCount=-1;
     protected Object[] params;
     public transient Iterator query;
-    protected int fetchAmount=defalutFetchAmount;  // used by Hub to know how many to read at a time
+
     public static final int defalutFetchAmount = 45;
+    protected int fetchAmount=defalutFetchAmount;  // used by Hub to know how many to read at a time
     protected boolean bCancelled;
     protected boolean bHasBeenStarted;
     protected long lastReadTime; // used with timeout
@@ -171,9 +172,9 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
         order = null;
         whereObject = null;
         amountCount = -1;
-        amountRead=-1;
-        bCancelled=false;
-        bHasBeenStarted=false;
+        amountRead = -1;
+        bCancelled = false;
+        bHasBeenStarted = false;
         lastReadTime = 0;
     }
 
@@ -520,6 +521,7 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
                     return true;
                 }
             };
+            finder.addFilter(filter);
             alFinderResults = finder.find();
             return;
         }

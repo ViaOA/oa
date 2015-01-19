@@ -3,10 +3,13 @@ package com.viaoa;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+
+import com.theice.tsactest.model.oa.*;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectCacheDelegateTest;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
@@ -122,10 +125,10 @@ public class Test {
             Hub h = (Hub) OAObjectPropertyDelegate.getProperty(silo, Silo.P_Servers, false, true);
             if (h == null) {
                 ArrayList al = new ArrayList();
-                Server sx = (Server) OAObjectCacheDelegateTestXxx.find(Server.class, Server.P_Silo, silo);
+                Server sx = (Server) OAObjectCacheDelegate.find(Server.class, Server.P_Silo, silo);
                 for (;sx!=null;) {
                     al.add(sx);
-                    sx = (Server) OAObjectCacheDelegateTestXxx.findNext(sx, Server.P_Silo, silo);
+                    sx = (Server) OAObjectCacheDelegate.findNext(sx, Server.P_Silo, silo);
                 }
                 
                 int xx = 4;

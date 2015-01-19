@@ -3,7 +3,7 @@ package com.viaoa.hub;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theice.tsac.model.oa.Server;
+import com.theice.tsactest.model.oa.Server;
 import com.viaoa.OAUnitTest;
 
 public class HubListenerTest extends OAUnitTest {

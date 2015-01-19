@@ -4,8 +4,8 @@ import java.util.HashSet;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theice.tsac.model.oa.*;
-import com.theice.tsac.model.oa.search.*;
+import com.theice.tsactest.model.oa.*;
+import com.theice.tsactest.model.oa.search.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.*;
 import com.viaoa.util.OANotExist;

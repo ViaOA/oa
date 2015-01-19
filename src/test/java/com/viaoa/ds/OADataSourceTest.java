@@ -3,7 +3,7 @@ package com.viaoa.ds;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theice.tsac.model.oa.*;
+import com.theice.tsactest.model.oa.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
 import com.viaoa.util.OAFilter;

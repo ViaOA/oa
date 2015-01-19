@@ -6,7 +6,7 @@
 <%@page import="com.viaoa.object.*, com.viaoa.hub.*, com.viaoa.util.*, com.viaoa.jsp.*, com.viaoa.ds.*, com.viaoa.ds.jdbc.*, com.viaoa.jfc.image.*"%>
 
 <%-- Model --%>
-<%@page import="com.tmgsc.hifive.model.oa.*, com.tmgsc.hifive.model.oa.search.*"%>
+<%@page import="com.tmgsc.hifivetest.model.oa.*,com.tmgsc.hifivetest.model.oa.search.*"%>
 <%@page import="com.tmgsc.hifive.model.*, com.tmgsc.hifive.model.search.*"%>
 
 <%-- misc --%>

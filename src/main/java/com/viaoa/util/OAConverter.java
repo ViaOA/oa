@@ -507,7 +507,7 @@ public class OAConverter {
         return mathOp(MATH_OP_SUBTRACT, d, new BigDecimal(d1), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double subtract(double d1, double d2, int decimalPlaces) {
-        double d = d1 + d2;
+        double d = d1 - d2;
         return round(d, decimalPlaces);
         // return mathOp(MATH_OP_SUBTRACT, new BigDecimal(d1), new BigDecimal(d2), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    

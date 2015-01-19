@@ -1,13 +1,14 @@
 package com.viaoa;
 
-import com.theice.tsac.delegate.ModelDelegate;
-import com.theice.tsac.model.oa.Environment;
-import com.theice.tsac.model.oa.Server;
-import com.theice.tsac.model.oa.ServerInstall;
-import com.theice.tsac.model.oa.ServerType;
-import com.theice.tsac.model.oa.Silo;
-import com.theice.tsac.model.oa.SiloType;
-import com.theice.tsac.model.oa.Site;
+import com.theice.tsactest.delegate.ModelDelegate;
+import com.theice.tsactest.model.oa.Environment;
+import com.theice.tsactest.model.oa.Server;
+import com.theice.tsactest.model.oa.ServerInstall;
+import com.theice.tsactest.model.oa.ServerStatus;
+import com.theice.tsactest.model.oa.ServerType;
+import com.theice.tsactest.model.oa.Silo;
+import com.theice.tsactest.model.oa.SiloType;
+import com.theice.tsactest.model.oa.Site;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
@@ -37,6 +38,12 @@ public class TsacDataGenerator {
             ModelDelegate.getSiloTypes().add(siloType);
         }
         
+        for (int i=0; i<ServerStatus.hubType.getSize(); i++) {
+            ServerStatus st = new ServerStatus();
+            st.setName("ServerStatus."+i);
+            st.setType(i);
+            ModelDelegate.getServerStatuses().add(st);
+        }
         
         int cntServer = 0;
         for (int i = 0; i < MaxSiteLoop; i++) {
