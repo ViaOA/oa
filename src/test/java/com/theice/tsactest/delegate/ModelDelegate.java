@@ -2,7 +2,6 @@
 package com.theice.tsactest.delegate;
 
 import com.theice.tsactest.model.oa.*;
-import com.theice.tsactest.model.oa.filter.*;
 import com.viaoa.hub.*;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAString;

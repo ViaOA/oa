@@ -23,7 +23,7 @@ public class TsacDataGenerator {
     public static final int MaxServerInstallLoop = 2;
 
     
-    public void createSampleData() {
+    public void createSampleData1() {
         OAThreadLocalDelegate.setLoadingObject(true);
         
         for (int i=0; i<10; i++) {

@@ -475,7 +475,7 @@ public class HubEventDelegate {
 	        for (i=0; i<x; i++) {
 	            HubDetail detail = (HubDetail)(thisHub.datau.getVecHubDetail().elementAt(i));
 	
-	            Hub dHub = detail.masterHub;
+	            Hub dHub = detail.hubDetail;
 	            if (dHub != null && detail.liMasterToDetail != null && detail.liMasterToDetail.getName().equalsIgnoreCase(propertyName)) {
 	                HubDetailDelegate.updateDetail(thisHub, detail,dHub,false); // ex: from activeObject.setDept(dept), dont updateLinkProperty
 	            }

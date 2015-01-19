@@ -68,12 +68,8 @@ class HubDetail implements java.io.Serializable {
     /** Information about the reference, from master to detail. */
     protected OALinkInfo liMasterToDetail;
 
-	/**
-	   Dont use WeakReference to the masterHub,
-	   since if the master was garbage collected, it would cause
-	   problems with the detail hub.
-	*/
-	protected Hub masterHub;
+    protected Hub hubMaster;
+	protected Hub hubDetail;
     
     
     /**
@@ -82,22 +78,70 @@ class HubDetail implements java.io.Serializable {
         @param linkInfo is from master object to detail property
         @param type of value in property.
     */
-    public HubDetail(Hub hub, OALinkInfo liMasterToDetail, int type, String path) {
-        this.masterHub = hub;
+    public HubDetail(Hub hubMaster, Hub hubDetail, OALinkInfo liMasterToDetail, int type, String path) {
+        this.hubMaster = hubMaster;
+        this.hubDetail = hubDetail;
         this.liMasterToDetail = liMasterToDetail;
         this.type = type;
         this.referenceCount = 0;
         this.path = path;
+        setup();
     }
 
     /**
 	    Used by HubMerger
 	*/
-    HubDetail(String path, Hub hub) {
-        this.masterHub = hub;
+    HubDetail(String path, Hub hubDetail) {
+        this.hubDetail = hubDetail;
         this.path = path;
         this.type = HUBMERGER;
         this.referenceCount = 0;
+    }
+    
+    boolean bIgnoreUpdate;
+
+    /** 20150119 
+     * if hubDetail.isRecursive, and hubMaster.hubDetail is recursive, and they are not the same obj class, 
+     * then need to listen if a change to hubDetail.ao needs to change the hubMaster.ao
+     */
+    protected void setup() {
+        if (hubMaster == null) return;
+        if (hubDetail == null) return;
+        if (liMasterToDetail == null) return;
+        if (!liMasterToDetail.getRecursive()) return;
+        
+        
+        OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(hubDetail.data.getObjectInfo(), OALinkInfo.ONE);
+        if (liRecursive == null) return;
+        if (liRecursive == liMasterToDetail) return;
+
+        final OALinkInfo liDetailToMaster = liMasterToDetail.getReverseLinkInfo();
+        if (liDetailToMaster == null) return;
+        
+        
+        hubDetail.addHubListener(new HubListenerAdapter() {
+            @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                
+                // only need to know if the masterHub changs to one of the "children" recursive hubs
+                if (hubDetail.datam.masterHub == hubMaster) return;
+
+                Object obj = e.getObject();
+                if (!(obj instanceof OAObject)) return;
+
+                Object parent = OAObjectReflectDelegate.getProperty((OAObject)obj, liDetailToMaster.getName());
+                if (hubMaster.getAO() == parent) return;
+                
+                try {
+                    bIgnoreUpdate = true;
+                    hubMaster.setAO(parent);
+                }
+                finally {
+                    bIgnoreUpdate = false;
+                }
+            }
+        });
+        
     }
 }
 	

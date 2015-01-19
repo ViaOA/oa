@@ -33,7 +33,7 @@ public class OASelectTest extends OAUnitTest {
         // specific tests
         
         TsacDataGenerator data = new TsacDataGenerator();
-        data.createSampleData();
+        data.createSampleData1();
 
         selSite = new OASelect<Site>(Site.class);
         selSite.select();

@@ -223,7 +223,7 @@ public class HubDetailDelegate {
         // get objects that go with detail hub
         for (int i=0; i<x; i++) {
             HubDetail hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
-            Hub h = hd.masterHub;
+            Hub h = hd.hubDetail;
             if (h == null) {
                 thisHub.datau.getVecHubDetail().removeElementAt(i);
                 x--;
@@ -248,6 +248,7 @@ public class HubDetailDelegate {
            then add to dHub.vector
         */
         if (detail == null || detail.type == detail.HUBMERGER) return;
+        if (detail.bIgnoreUpdate) return;
         Object obj = null; // reference property
         try {
             if (thisHub.dataa.activeObject == null) obj = null;
@@ -638,7 +639,7 @@ public class HubDetailDelegate {
                     hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
                     if (hd.type == hd.HUBMERGER && path.equalsIgnoreCase(hd.path) ) {
                         hd.referenceCount++;
-                        return hd.masterHub;
+                        return hd.hubDetail;
                     }
                 }
             }
@@ -720,9 +721,9 @@ public class HubDetailDelegate {
         int x = thisHub.datau.getVecHubDetail() == null ? 0 : thisHub.datau.getVecHubDetail().size();
         for (int i=0; i<x; i++) {
             hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
-            if (hd.liMasterToDetail != null && hd.liMasterToDetail.equals(linkInfo) && hd.masterHub != null) {
-                if (detailHub == null || detailHub == hd.masterHub) {
-                    hub = hd.masterHub;
+            if (hd.liMasterToDetail != null && hd.liMasterToDetail.equals(linkInfo) && hd.hubDetail != null) {
+                if (detailHub == null || detailHub == hd.hubDetail) {
+                    hub = hd.hubDetail;
                     break;
                 }
             }
@@ -735,10 +736,10 @@ public class HubDetailDelegate {
         if (hub == null) {
             if (pos > 0 || detailHub == null) {
                 hub = new Hub(newClass); // create new hub to reference objects
-                hd = new HubDetail(hub,linkInfo,type,propertyName);
+                hd = new HubDetail(thisHub, hub, linkInfo, type, propertyName);
             }
             else {
-                hd = new HubDetail(null,linkInfo,type,propertyName); // from call to "setMaster()"
+                hd = new HubDetail(thisHub, null, linkInfo, type, propertyName); // from call to "setMaster()"
             }
             if (thisHub.datau.getVecHubDetail() == null) thisHub.datau.setVecHubDetail(new Vector(3,5));
             thisHub.datau.getVecHubDetail().addElement(hd);
@@ -758,7 +759,7 @@ public class HubDetailDelegate {
                     }
                 }
                 hub = detailHub;
-                hd.masterHub = hub;
+                hd.hubDetail = hub;
             }
             if (selectOrder != null) hub.setSelectOrder(selectOrder);
             hd.referenceCount++;
@@ -772,7 +773,7 @@ public class HubDetailDelegate {
         if (type == HubDetail.OAOBJECT || type == HubDetail.OBJECT) hub.datau.setDefaultPos(0);
     
         if (!bFound) {
-            updateDetail(thisHub, hd, hd.masterHub, false);
+            updateDetail(thisHub, hd, hd.hubDetail, false);
         }
 
         int i = (classes == null) ? 0 : classes.length;
@@ -860,7 +861,7 @@ public class HubDetailDelegate {
         int x = thisHub.datau.getVecHubDetail() == null ? 0 : thisHub.datau.getVecHubDetail().size();
         for (int i=0; i<x; i++) {
             HubDetail hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
-            Hub h = hd.masterHub;
+            Hub h = hd.hubDetail;
             if (h == hubDetail) {
                 hd.referenceCount--;
                 if (hd.referenceCount <=0) {
@@ -921,7 +922,7 @@ public class HubDetailDelegate {
             int x = hubMaster.datau.getVecHubDetail() == null ? 0 : hubMaster.datau.getVecHubDetail().size();
             for (int i=0; i<x; i++) {
                 HubDetail hd = (HubDetail) hubMaster.datau.getVecHubDetail().elementAt(i);
-                if (hd.masterHub == thisHub) {
+                if (hd.hubDetail == thisHub) {
                     OALinkInfo li = hd.liMasterToDetail;
                     if (li != null) {
                         return li.getName();

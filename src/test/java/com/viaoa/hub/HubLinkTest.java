@@ -13,7 +13,7 @@ public class HubLinkTest extends OAUnitTest {
     public void linkTest() {
         reset();
         TsacDataGenerator data = new TsacDataGenerator();
-        data.createSampleData();
+        data.createSampleData1();
 
         Hub<ServerType> hubServerType = ModelDelegate.getServerTypes();
         Hub<ServerStatus> hubServerStatus = ModelDelegate.getServerStatuses();

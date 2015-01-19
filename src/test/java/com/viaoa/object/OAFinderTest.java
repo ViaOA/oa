@@ -17,7 +17,7 @@ public class OAFinderTest extends OAUnitTest {
     public void finderTest() {
         reset();
         TsacDataGenerator data = new TsacDataGenerator();
-        data.createSampleData();
+        data.createSampleData1();
 
         OAFinder<Site, Server> finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);
 
