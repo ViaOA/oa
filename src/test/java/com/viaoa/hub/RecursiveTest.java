@@ -119,8 +119,47 @@ public class RecursiveTest extends OAUnitTest {
         program = emp.getLocation().getProgram();
         assertNotNull(program);
         assertEquals(hubProgram.getAO(), program);
+        assertEquals(hubLocation.getAO(), emp.getLocation());
+        
+        // link
+        Hub<EmployeeAward> hubEmployeeAward = new Hub<EmployeeAward>(EmployeeAward.class);
+        EmployeeAward ea = new EmployeeAward();
+        hubEmployeeAward.add(ea);
+        
+        hubEmployee.setLinkHub(hubEmployeeAward, EmployeeAward.P_Employee);
+        assertNull(hubEmployee.getAO());
+
+        hubEmployeeAward.setAO(ea);
+        assertNull(hubEmployee.getAO());
+        
+        ea.setEmployee(emp);
+        assertNotNull(hubEmployee.getAO());
+        assertNotNull(hubLocation.getAO());
+        assertEquals(hubLocation.getAO(), emp.getLocation());
+        assertNotNull(hubProgram.getAO());
+        assertEquals(hubProgram.getAO(), emp.getLocation().getProgram());
+        
+        assertEquals(hubEmployee.getAO(), emp);
+        assertEquals(hubLocation.getAO(), emp.getLocation());
+
+        emp = hubProgram.getAt(1).getLocations().getAt(0).getEmployees().getAt(0);
+        hubEmployee.setAO(emp);
+        assertEquals(emp, ea.getEmployee());
+        assertEquals(hubLocation.getAO(), emp.getLocation());
+        assertEquals(hubProgram.getAO(), emp.getLocation().getProgram());
+        assertEquals(hubEmployee.getMasterObject(), emp.getLocation());
+        assertNotNull(hubEmployee.getMasterHub());
+        assertEquals(hubEmployee.getAO(), emp);
+        
+        emp = hubProgram.getAt(2).getLocations().getAt(0).getEmployees().getAt(0);
+        ea.setEmployee(emp);
+        assertEquals(hubEmployee.getAO(), emp);
+        assertEquals(hubLocation.getAO(), emp.getLocation());
+        assertEquals(hubProgram.getAO(), hubProgram.getAt(2));
         
         
+        
+//location links qqqqqqqq        
         
         reset();
     }
