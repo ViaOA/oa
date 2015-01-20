@@ -41,8 +41,7 @@ public class OAObjectHashDelegate {
      */
     static private final ConcurrentHashMap<Class, Map<String, Method>> hashClassMethod = new ConcurrentHashMap<Class, Map<String, Method>>(151, 0.75F);
     static private final ConcurrentHashMap<Class, Set<String>> hashClassMethodNotFound = new ConcurrentHashMap<Class, Set<String>>(151, 0.75F);
-	
-	
+
     /** 
      * Used by OALinkInfo to cache Hubs so that they are not strong linked within object.  
      * Key   = OALinkInfo

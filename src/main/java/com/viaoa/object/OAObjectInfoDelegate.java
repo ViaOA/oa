@@ -431,10 +431,23 @@ public class OAObjectInfoDelegate {
         @return OALinkInfo for recursive link for this class, or null if not recursive
     */
     public static OALinkInfo getRecursiveLinkInfo(OAObjectInfo thisOI, int type) {
+        boolean b = thisOI.bSetRecursive;
+        try {
+            return  _getRecursiveLinkInfo(thisOI, type);
+        }
+        finally {
+            if (!b) thisOI.bSetRecursive = true;
+        }
+    }
+    private static OALinkInfo _getRecursiveLinkInfo(OAObjectInfo thisOI, int type) {
+        if (thisOI == null) return null;
+        if (thisOI.bSetRecursive) {
+            if (type == OALinkInfo.ONE) return thisOI.liRecursiveOne;
+            else return thisOI.liRecursiveMany;
+        }
+        
         if (thisOI.thisClass == null) return null;
         List al = thisOI.getLinkInfos();
-        OALinkInfo liOne = null;
-        OALinkInfo liMany = null;
 
         for (int i=0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
@@ -442,20 +455,21 @@ public class OAObjectInfoDelegate {
             if (!li.bRecursive) continue; // 20131009
             if (li.toClass != null && li.toClass.equals(thisOI.thisClass)) {
                 if (li.getType() == OALinkInfo.MANY) {
-                    liMany = li;
+                    thisOI.liRecursiveMany = li;
                     break;
                 }
-                else liOne = li;
+                else thisOI.liRecursiveOne = li;
             }
         }
-        if (liMany != null) {
+
+        if (thisOI.liRecursiveMany != null) {
             if (type == OALinkInfo.ONE) {
-                if (liOne == null && liMany != null) {
-                    liOne = getReverseLinkInfo(liMany);  // 20131010 type=One are not annotated as recursive
+                if (thisOI.liRecursiveOne == null) {
+                    thisOI.liRecursiveOne = getReverseLinkInfo(thisOI.liRecursiveMany);  // 20131010 type=One are not annotated as recursive
                 }
-                return liOne;
+                return thisOI.liRecursiveOne;
             }
-            return liMany;
+            return thisOI.liRecursiveMany;
         }
         return null;
     }

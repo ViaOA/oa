@@ -1,10 +1,13 @@
 package com.viaoa.hub;
 
-
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.theice.tsactest.model.oa.*;
+import com.tmgsc.hifivetest.delegate.ModelDelegate;
+import com.tmgsc.hifivetest.model.oa.*;
 
 public class HubDetailTest extends OAUnitTest {
 
@@ -27,5 +30,25 @@ public class HubDetailTest extends OAUnitTest {
         
         reset();
     }
+    
+    @Test
+    public void detailHub2Test() {
+        reset();
+
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData1();
+
+        final Hub<Program> hubProgram = ModelDelegate.getPrograms();
+        final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
+        final Hub<Employee> hubEmployee = hubLocation.getDetailHub(Location.P_Employees);
+        final Hub<EmployeeAward> hubEmployeeAward = hubEmployee.getDetailHub(Employee.P_EmployeeAwards);
+        
+        
+        
+        
+        reset();
+    }
+    
+    
     
 }

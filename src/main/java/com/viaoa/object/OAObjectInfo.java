@@ -63,6 +63,9 @@ public class OAObjectInfo { //implements java.io.Serializable {
     int weakReferenceable=-1; // flag set/used by OAObjectInfoDelegate.isWeakReferenceable -1=not checked, 0=false, 1=true
     private int supportsStorage=-1; // flag set/used by caching  -1:not checked, 0:false, 1:true
     
+    protected volatile boolean bSetRecursive;
+    protected OALinkInfo liRecursiveOne, liRecursiveMany;
+    
     
     public OAObjectInfo() {
         this(new String[] { });
@@ -88,11 +91,30 @@ public class OAObjectInfo { //implements java.io.Serializable {
 
     public List<OALinkInfo> getLinkInfos() {
     	if (alLinkInfo == null) alLinkInfo = new CopyOnWriteArrayList<OALinkInfo>() {
+    	    void reset() {
+                hmLinkInfo = null;
+                ownedLinkInfos = null;
+                bSetRecursive = false;
+    	    }
     	    @Override
     	    public boolean add(OALinkInfo e) {
-    	        hmLinkInfo = null;
-    	        ownedLinkInfos = null;
-    	        return super.add(e);
+                reset();
+                return super.add(e);
+    	    }
+    	    @Override
+    	    public OALinkInfo remove(int index) {
+                reset();
+    	        return super.remove(index);
+    	    }
+    	    @Override
+    	    public boolean removeAll(Collection<?> c) {
+    	        reset();
+    	        return super.removeAll(c);
+    	    }
+    	    @Override
+    	    public boolean remove(Object o) {
+                reset();
+    	        return super.remove(o);
     	    }
     	};
     	return alLinkInfo;

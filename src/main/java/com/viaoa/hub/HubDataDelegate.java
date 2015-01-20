@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.hub;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -351,7 +352,7 @@ public class HubDataDelegate {
 	/*
 	    Find the position for an object within the Hub.  If the object is not in the Hub and there
 	    is a Master Hub from getDetailHub(), then the Master Hub will updated to the master object.
-	    This will cause this Hub to have the object.
+	    This will also check and adjust for recursive hubs.
 	    <p>
 	    Note: if masterHub (or one of its shared) has a linkHub, it will still be updated.
 	*/
@@ -372,51 +373,77 @@ public class HubDataDelegate {
 	            if (!HubSelectDelegate.isMoreData(thisHub)) break;
                 HubSelectDelegate.fetchMore(thisHub);
 	        }
-	    }	        
-        if (pos < 0) {
-            // 2008/04/19 was: if (thisHub.datau.sharedHub != null) {   // this created a problem when using contains(...), that only wants to know if the current hub has an object - not to "adjust it"
-            if (thisHub.datau.getSharedHub() != null && adjustMaster) {
-                
-                OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
+	    }
+	    
+        if (pos < 0 && adjustMaster && thisHub.datau.getSharedHub() != null) {
+            OALinkInfo liRecursiveOne = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
+            boolean bUseMaster = false;
 
-                // 20131009 need to verify that this hub is recursive with masterObject
-                if (liRecursive != null) {  
-                    OALinkInfo li = thisHub.datam.liDetailToMaster;
-                    if (li != null) {
-                        li = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                        if (li == null || !li.getRecursive()) {
-                            liRecursive = null;
-                        }
+            // need to verify that this hub is recursive with masterObject
+            if (liRecursiveOne != null) {  
+                OALinkInfo li = thisHub.datam.liDetailToMaster;
+                if (li != null) {
+                    li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                    if (li == null || !li.getRecursive()) {
+                        liRecursiveOne = null;
                     }
                 }
+            }
 
-                if (liRecursive != null) {  // if recursive
-                    Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, liRecursive.getName());
-                    if (parent == null) {  // must be in root hub
-                        Hub h = thisHub.getRootHub();
-                        // 20130801
-                        // was: if (h != null && h != thisHub) {
-                        if (h != null && h != thisHub && thisHub.datau.getSharedHub() != h) {
-                        	HubShareDelegate.setSharedHub(thisHub, h, false);
-                            pos = getPos(h, object, adjustMaster, bUpdateLink);
-                        }
+            if (liRecursiveOne != null) {  // if recursive
+                Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, liRecursiveOne.getName());
+                if (parent == null) {  // must be in root hub
+                    Hub h = thisHub.getRootHub();  // could be owner of hub
+                    if (h != null && h != thisHub && thisHub.datau.getSharedHub() != h) {
+                        HubShareDelegate.setSharedHub(thisHub, h, false);
+                        pos = getPos(h, object, adjustMaster, bUpdateLink);
                     }
-                    else {
-                    	OALinkInfo li = OAObjectInfoDelegate.getReverseLinkInfo(liRecursive);
-                    	if (li != null) {
-	                    	Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, li.getName());
-	                    	// 20110110 if there is a linkToHub, then ignore the linkToProp.value (use object instead)
-                            HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
-	                    	//was:  HubShareDelegate.setSharedHub(thisHub, (Hub) val, false);
-
-                            // 20120229
-                            pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
-	                        //was: pos = getPos(thisHub, object, adjustMaster, bUpdateLink);
-                    	}
+                    if (pos < 0) {
+                        bUseMaster = true;  // adjust master hub
+                    }
+                }
+                else {
+                	OALinkInfo liMany = OAObjectInfoDelegate.getReverseLinkInfo(liRecursiveOne);
+                	if (liMany != null) {
+                        if (hashRecursiveHubDetail.get(thisHub) == null) {
+                            hashRecursiveHubDetail.put(thisHub, thisHub.datam.liDetailToMaster);
+                        }
+                    	Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, liMany.getName());
+                    	HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
+                        pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
+                	}
+                }
+            }
+            else {
+                bUseMaster = true;
+            }
+            if (bUseMaster) {
+                if (thisHub.datam.masterHub != null && thisHub.datam.liDetailToMaster != null) {  
+                    // only do this if a masterHub, since a hub that has a masterObject (w/o hub) should not do this adjustment
+                    Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, thisHub.datam.liDetailToMaster.getName());
+                    OALinkInfo li = OAObjectInfoDelegate.getReverseLinkInfo(thisHub.datam.liDetailToMaster);
+                    if (li != null) {
+                        if (hashRecursiveHubDetail.get(thisHub) == null) {
+                            hashRecursiveHubDetail.put(thisHub, thisHub.datam.liDetailToMaster);
+                        }
+                        Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, li.getName());
+                        HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
+                        pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
+                    }
+                }
+                else {
+                    // see if it was a master/detail that was reassigned (shared) to a child hub that is recursive
+                    OALinkInfo li = hashRecursiveHubDetail.get(thisHub);
+                    if (li != null) {
+                        Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, li.getName());
+                        Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, li.getReverseName());
+                        HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
+                        pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
                     }
                 }
             }
         }
+        
 
         if (pos < 0 && adjustMaster) {
             if (HubDetailDelegate.setMasterHubActiveObject(thisHub, object, bUpdateLink)) {
@@ -425,7 +452,13 @@ public class HubDataDelegate {
         }
 	    return pos;
 	}
-		
+    /**
+     * Used by HubDataDelegate.getPos(..) when finding the object for recursive links
+     */
+    static private final ConcurrentHashMap<Hub, OALinkInfo> hashRecursiveHubDetail = new ConcurrentHashMap<Hub, OALinkInfo>(11, 0.75F);
+    
+	
+	
 	protected static void removeFromAddedList(Hub thisHub, Object obj) {
 	    synchronized (thisHub.data) {
 	    	Vector v = thisHub.data.getVecAdd();

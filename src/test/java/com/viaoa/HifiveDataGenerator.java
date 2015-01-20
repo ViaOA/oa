@@ -70,5 +70,12 @@ public class HifiveDataGenerator {
             createEmployees(emp.getEmployees(), level+1, maxLevels);
             assertEquals(emp.getEmployees().getAt(0).getParentEmployee(), emp);
         }
+        for (int i=0; i<2; i++) {
+            createEmployeeAwards(emp.getEmployeeAwards());
+        }
+    }
+    private void createEmployeeAwards(Hub<EmployeeAward> hub) {
+        EmployeeAward ea = new EmployeeAward();
+        hub.add(ea);
     }
 }

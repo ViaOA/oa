@@ -101,15 +101,14 @@ class HubDetail implements java.io.Serializable {
     boolean bIgnoreUpdate;
 
     /** 20150119 
-     * if hubDetail.isRecursive, and hubMaster.hubDetail is recursive, and they are not the same obj class, 
-     * then need to listen if a change to hubDetail.ao needs to change the hubMaster.ao
+     *  this is for master.detail that are recursive, in cases where the detail hub could be
+     *  pointing (shared) to a child hub.
+     *  This is used by HubDetailDelegate.updateDetail(..)
      */
     protected void setup() {
         if (hubMaster == null) return;
         if (hubDetail == null) return;
         if (liMasterToDetail == null) return;
-        if (!liMasterToDetail.getRecursive()) return;
-        
         
         OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(hubDetail.data.getObjectInfo(), OALinkInfo.ONE);
         if (liRecursive == null) return;
@@ -118,20 +117,16 @@ class HubDetail implements java.io.Serializable {
         final OALinkInfo liDetailToMaster = liMasterToDetail.getReverseLinkInfo();
         if (liDetailToMaster == null) return;
         
-        
         hubDetail.addHubListener(new HubListenerAdapter() {
             @Override
             public void afterChangeActiveObject(HubEvent e) {
                 
-                // only need to know if the masterHub changs to one of the "children" recursive hubs
-                if (hubDetail.datam.masterHub == hubMaster) return;
-
                 Object obj = e.getObject();
                 if (!(obj instanceof OAObject)) return;
 
                 Object parent = OAObjectReflectDelegate.getProperty((OAObject)obj, liDetailToMaster.getName());
                 if (hubMaster.getAO() == parent) return;
-                
+
                 try {
                     bIgnoreUpdate = true;
                     hubMaster.setAO(parent);

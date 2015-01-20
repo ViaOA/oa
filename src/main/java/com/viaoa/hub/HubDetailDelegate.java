@@ -238,7 +238,7 @@ public class HubDetailDelegate {
         Internal method to update any detail hubs.  This is called whenever activeObject is
         changed, or the property value that is used for the link gets modified
      */
-    protected static void updateDetail(Hub thisHub, HubDetail detail, Hub dHub, boolean bUpdateLink) {
+    protected static void updateDetail(final Hub thisHub, final HubDetail detail, final Hub detailHub, final boolean bUpdateLink) {
         /* get Hub, Object, OAObject or Array value from property
            ex:  Emp
                   String name;
@@ -248,7 +248,25 @@ public class HubDetailDelegate {
            then add to dHub.vector
         */
         if (detail == null || detail.type == detail.HUBMERGER) return;
-        if (detail.bIgnoreUpdate) return;
+        if (detail.bIgnoreUpdate) {  // set by hubDetail.setup()
+            if (detailHub.datam.masterObject == (OAObject)thisHub.dataa.activeObject) {
+                // in case it was set to a recursive child hub
+                detailHub.datam.liDetailToMaster = OAObjectInfoDelegate.getReverseLinkInfo(detail.liMasterToDetail);
+                detailHub.datam.masterHub = thisHub;
+            }
+            return;
+        }
+        
+        if (detailHub.datau.getSharedHub() != null) {
+            if (detailHub.datau.getSharedHub().datam == detailHub.datam) {
+                detailHub.datam = new HubDataMaster();
+            }
+        }
+        detailHub.datam.masterObject = (OAObject)thisHub.dataa.activeObject;
+        detailHub.datam.liDetailToMaster = OAObjectInfoDelegate.getReverseLinkInfo(detail.liMasterToDetail);
+        detailHub.datam.masterHub = thisHub;
+
+
         Object obj = null; // reference property
         try {
             if (thisHub.dataa.activeObject == null) obj = null;
@@ -257,59 +275,48 @@ public class HubDetailDelegate {
         catch(Exception e) {
             throw new RuntimeException("error calling get method for master to detail: " + detail.liMasterToDetail.getName());
         }
-    
-        int i, x;
-        // 20080627 commented out next line.  It should always set datam properties
-        // if ( dHub.isOAObject() ) {
-            // dont call setMasterObject(), it will add hub to OAObject
-            // 2004/05/14 if this hub was previously shared, it could be sharing datam
-            if (dHub.datau.getSharedHub() != null && dHub.datau.getSharedHub().datam == dHub.datam) dHub.datam = new HubDataMaster();
-            dHub.datam.masterObject = (OAObject)thisHub.dataa.activeObject;
-            dHub.datam.liDetailToMaster = OAObjectInfoDelegate.getReverseLinkInfo(detail.liMasterToDetail);
-            dHub.datam.masterHub = thisHub;
-        //}
-    
+        
         boolean wasShared = false;
         if (detail.type == HubDetail.HUB) {
-            if (dHub.datau.getSharedHub() != null) {
-                HubShareDelegate.removeSharedHub(dHub.datau.getSharedHub(), dHub);
-                dHub.datau.setSharedHub(null);
+            if (detailHub.datau.getSharedHub() != null) {
+                HubShareDelegate.removeSharedHub(detailHub.datau.getSharedHub(), detailHub);
+                detailHub.datau.setSharedHub(null);
                 wasShared = true;
             }
         }
         else {
             // see if the detail list needs changed
-            if (obj == dHub.dataa.activeObject) {
+            if (obj == detailHub.dataa.activeObject) {
                 // 20120720 need to send newList event, in case master object was previously null
                 if (obj == null) {
-                    HubEventDelegate.fireOnNewListEvent(dHub, false);  // notifies all of this hub's shared hubs
+                    HubEventDelegate.fireOnNewListEvent(detailHub, false);  // notifies all of this hub's shared hubs
                 }
                 return;
             }
     
-            if (dHub.isOAObject()) {
-                for (i=0; ; i++) {
-                    Object objx = HubDataDelegate.getObjectAt(dHub, i);
+            if (detailHub.isOAObject()) {
+                for (int i=0; ; i++) {
+                    Object objx = HubDataDelegate.getObjectAt(detailHub, i);
                     if (objx == null) break;
-                    OAObjectHubDelegate.removeHub((OAObject) objx, dHub, false);
+                    OAObjectHubDelegate.removeHub((OAObject) objx, detailHub, false);
                 }
             }
-            dHub.data.vector.removeAllElements();
+            detailHub.data.vector.removeAllElements();
         }
 
-        dHub.data.setDupAllowAddRemove(true);
+        detailHub.data.setDupAllowAddRemove(true);
     
         if (obj == null) {
-            HubDataActive daOld = dHub.dataa;
+            HubDataActive daOld = detailHub.dataa;
     
             if (wasShared) {
                 // have to create its own since it might have been sharing the current one
-                dHub.data = new HubData(dHub.data.objClass);
-                if (detail.bShareActiveObject) dHub.dataa = new HubDataActive();
+                detailHub.data = new HubData(detailHub.data.objClass);
+                if (detail.bShareActiveObject) detailHub.dataa = new HubDataActive();
             }
-            dHub.data.setDupAllowAddRemove(false); // 2004/08/23
+            detailHub.data.setDupAllowAddRemove(false); // 2004/08/23
             //was: if (detail.type != HubDetail.HUB) dHub.datau.dupAllowAddRemove = false;
-            HubShareDelegate.syncSharedHubs(dHub, true, daOld, dHub.dataa, bUpdateLink);
+            HubShareDelegate.syncSharedHubs(detailHub, true, daOld, detailHub.dataa, bUpdateLink);
         }
         else if (detail.type == HubDetail.HUB) { // Hub
             // share oaObject info and activeObject info
@@ -318,67 +325,58 @@ public class HubDetailDelegate {
             //     unless DetailHub.bShareActiveObject is true then set it after events
             Hub h = (Hub) obj;
    
-            if (HubSortDelegate.isSorted(dHub)) { 
-                String s = HubSortDelegate.getSortProperty(dHub);
+            if (HubSortDelegate.isSorted(detailHub)) { 
+                String s = HubSortDelegate.getSortProperty(detailHub);
                 if (s != null) {
-                    boolean b = HubSortDelegate.getSortAsc(dHub);
+                    boolean b = HubSortDelegate.getSortAsc(detailHub);
                     h.sort(s, b);
                 }
             }
     
             // need to select before assigning to detail hub so that add events wont
             //            be sent to detail hubs listeners
-            dHub.data = h.data;
-            dHub.datau.setSharedHub(h);
-            HubShareDelegate.addSharedHub(h, dHub);
+            detailHub.data = h.data;
+            detailHub.datau.setSharedHub(h);
+            HubShareDelegate.addSharedHub(h, detailHub);
 
             // 20120926 "h" could be a shared/calc Hub 
-            if (dHub.datam.masterObject != (OAObject) h.datam.masterObject) {
-                if (dHub.datau.getSharedHub() != null && dHub.datau.getSharedHub().datam == dHub.datam) dHub.datam = new HubDataMaster();
-                dHub.datam.masterObject = (OAObject) h.datam.masterObject;
-                dHub.datam.liDetailToMaster = h.datam.liDetailToMaster;
-                dHub.datam.masterHub = h.datam.masterHub;
+            if (detailHub.datam.masterObject != (OAObject) h.datam.masterObject) {
+                if (detailHub.datau.getSharedHub() != null && detailHub.datau.getSharedHub().datam == detailHub.datam) detailHub.datam = new HubDataMaster();
+                detailHub.datam.masterObject = (OAObject) h.datam.masterObject;
+                detailHub.datam.liDetailToMaster = h.datam.liDetailToMaster;
+                detailHub.datam.masterHub = h.datam.masterHub;
             }            
             
             
-            HubShareDelegate.syncSharedHubs(dHub, detail.bShareActiveObject, dHub.dataa, h.dataa, bUpdateLink); 
+            HubShareDelegate.syncSharedHubs(detailHub, detail.bShareActiveObject, detailHub.dataa, h.dataa, bUpdateLink); 
 
             // 20080628 add "if" statement.
-            if (dHub.datam.masterObject != null && h.datam.masterObject == null) {
-                HubDetailDelegate.setMasterObject(h, dHub.datam.masterObject, dHub.datam.liDetailToMaster);
+            if (detailHub.datam.masterObject != null && h.datam.masterObject == null) {
+                HubDetailDelegate.setMasterObject(h, detailHub.datam.masterObject, detailHub.datam.liDetailToMaster);
             }
         }
         else if (detail.type == HubDetail.OAOBJECT || detail.type == HubDetail.OBJECT) {
-            HubAddRemoveDelegate.internalAdd(dHub, (OAObject) obj, false, false);
-            dHub.data.setDupAllowAddRemove(false);
+            HubAddRemoveDelegate.internalAdd(detailHub, (OAObject) obj, false, false);
+            detailHub.data.setDupAllowAddRemove(false);
         }
         else {
             // HubDetail.OBJECTARRAY || HubDetail.OAOBJECTARRAY
             int j = Array.getLength(obj);
             for (int k=0; k<j; k++) {
                 Object objx = Array.get(obj,k);
-                HubAddRemoveDelegate.internalAdd(dHub, objx, false, false);
+                HubAddRemoveDelegate.internalAdd(detailHub, objx, false, false);
             }
-            dHub.data.setDupAllowAddRemove(false);
+            detailHub.data.setDupAllowAddRemove(false);
         }
     
-        /** 20111005 internalAdd will .addHub
-        if ( detail.type != HubDetail.HUB && thisHub.isOAObject() ) {
-            for (i=0; ; i++) {
-                OAObject oaObj = (OAObject) HubDataDelegate.getObjectAt(dHub,i);
-                if (oaObj == null) break;
-                OAObjectHubDelegate.addHub(oaObj, dHub);
-            }
-        }
-        */
-        HubDataDelegate.incChangeCount(dHub);
+        HubDataDelegate.incChangeCount(detailHub);
         //was: HubDetailDelegate.updateDetailActiveObject(dHub, dHub, bUpdateLink, detail.bShareActiveObject);
-        HubEventDelegate.fireOnNewListEvent(dHub, false);  // notifies all of this hub's shared hubs
+        HubEventDelegate.fireOnNewListEvent(detailHub, false);  // notifies all of this hub's shared hubs
         // 20140421 moved to after newList
-        HubDetailDelegate.updateDetailActiveObject(dHub, dHub, bUpdateLink, detail.bShareActiveObject);
+        HubDetailDelegate.updateDetailActiveObject(detailHub, detailHub, bUpdateLink, detail.bShareActiveObject);
     
         if (detail.type == HubDetail.OAOBJECT || detail.type == HubDetail.OBJECT) {
-            dHub.setPos(0);
+            detailHub.setPos(0);
         }
     }
 
