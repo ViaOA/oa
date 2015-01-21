@@ -185,7 +185,7 @@ public class MultiplexerServer {
                 }
 
                 @Override
-                public void onClientDisconnet(int connectionId) {
+                public void onClientDisconnect(int connectionId) {
                     MultiplexerServer.this.onClientDisconnect(connectionId);
                 }
 

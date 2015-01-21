@@ -321,7 +321,7 @@ public class MultiplexerServerSocketController {
             b = _alSocketController.remove(vsc) && vsc.isValid();
         }
         if (b) {
-            onClientDisconnet(vsc.getId());
+            onClientDisconnect(vsc.getId());
         }
     }
 
@@ -402,6 +402,6 @@ public class MultiplexerServerSocketController {
     public void onClientConnect(Socket socket, int connectionId) {
     }
 
-    public void onClientDisconnet(int connectionId) {
+    public void onClientDisconnect(int connectionId) {
     }
 }
