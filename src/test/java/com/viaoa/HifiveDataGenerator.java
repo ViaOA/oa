@@ -16,6 +16,7 @@ public class HifiveDataGenerator {
     public static final int MaxServerLoop = 5;
     public static final int MaxServerInstallLoop = 2;
     
+    public int cntEmployee;
     
     public void createSampleData1() {
         // OAThreadLocalDelegate.setLoadingObject(true); // dont set, since it wont set recursive parents
@@ -65,6 +66,7 @@ public class HifiveDataGenerator {
     }
     private void createEmployees(Hub<Employee> hub, int level, int maxLevels) {
         Employee emp = new Employee();
+        cntEmployee++;
         hub.add(emp);
         if (level+1 < maxLevels) {
             createEmployees(emp.getEmployees(), level+1, maxLevels);
