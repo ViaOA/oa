@@ -6,7 +6,7 @@ import com.viaoa.OAUnitTest;
 import com.viaoa.TsacDataGenerator;
 import com.viaoa.object.OAFinder;
 import com.viaoa.util.OAFilter;
-import com.theice.tsactest.delegate.ModelDelegate;
+import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.SitePP;
 
@@ -32,7 +32,7 @@ public class OASelectTest extends OAUnitTest {
         
         // specific tests
         
-        TsacDataGenerator data = new TsacDataGenerator();
+        TsacDataGenerator data = new TsacDataGenerator(model);
         data.createSampleData1();
 
         selSite = new OASelect<Site>(Site.class);
@@ -42,7 +42,7 @@ public class OASelectTest extends OAUnitTest {
         
         
         selSite = new OASelect<Site>(Site.class);
-        selSite.setSearchHub(ModelDelegate.getSites());
+        selSite.setSearchHub(model.getSites());
         selSite.select();
         assertTrue(selSite.hasMore());
         for ( ;;) {
@@ -81,7 +81,7 @@ public class OASelectTest extends OAUnitTest {
         
         
         OASelect<Server> selServer = new OASelect<Server>(Server.class);
-        OAFinder<Site, Server> finder = new OAFinder<Site, Server>(ModelDelegate.getSites(), SitePP.environments().silos().servers().pp);
+        OAFinder<Site, Server> finder = new OAFinder<Site, Server>(model.getSites(), SitePP.environments().silos().servers().pp);
         selServer.setFinder(finder);
         selServer.setFilter(new OAFilter<Server>() {
             @Override

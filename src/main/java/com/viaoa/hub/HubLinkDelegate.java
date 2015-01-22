@@ -41,12 +41,16 @@ public class HubLinkDelegate {
         if (linkToHub == thisHub) return;
 	
 	    if (thisHub.datau.getLinkToHub() != null) {
-	        if (thisHub.datau.getLinkToHub() == linkToHub) return;
+	        if (thisHub.datau.getLinkToHub() == linkToHub) {
+	            if (thisHub.datau.isAutoCreate() == bAutoCreate && thisHub.datau.isAutoCreateAllowDups() == bAutoCreateAllowDups) {
+	                return;
+	            }
+	        }
 	        HubEventDelegate.removeHubListener(thisHub.datau.getLinkToHub(), thisHub.datau.getHubLinkEventListener() );
 	        thisHub.datau.setLinkToHub(null);
 	        thisHub.datau.setHubLinkEventListener(null);
-	        thisHub.data.setAutoCreate(false);
-	        thisHub.data.setAutoCreateAllowDups(false);
+	        thisHub.datau.setAutoCreate(false);
+	        thisHub.datau.setAutoCreateAllowDups(false);
 	    }
 	    if (linkToHub == null) {
 	        HubEventDelegate.fireAfterPropertyChange(thisHub, null, "Link", null, null, null);
@@ -117,8 +121,8 @@ public class HubLinkDelegate {
 	    thisHub.datau.setLinkToHub(linkToHub);
 	    thisHub.datau.setLinkToPropertyName(propertyTo);
 	    thisHub.datau.setHubLinkEventListener(new HubLinkEventListener(thisHub, linkToHub));
-	    thisHub.data.setAutoCreate(bAutoCreate);
-        thisHub.data.setAutoCreateAllowDups(bAutoCreate && bAutoCreateAllowDups); // 20110809
+	    thisHub.datau.setAutoCreate(bAutoCreate);
+        thisHub.datau.setAutoCreateAllowDups(bAutoCreate && bAutoCreateAllowDups); // 20110809
 	    
 	    HubEventDelegate.addHubListener(linkToHub, thisHub.datau.getHubLinkEventListener());
 	    thisHub.datau.getHubLinkEventListener().onNewList(null);
@@ -139,13 +143,13 @@ public class HubLinkDelegate {
     }
     // 20131116 
     public static boolean isLinkAutoCreated(final Hub thisHub, boolean bIncludeCopiedHubs) {
-        if (thisHub.data.isAutoCreate()) return true;
+        if (thisHub.datau.isAutoCreate()) return true;
         if (!bIncludeCopiedHubs) return false;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
                 Hub h = (Hub) obj;
-                if (h.data.isAutoCreate()) {
+                if (h.datau.isAutoCreate()) {
                     return true;
                 }
                 return false;
@@ -191,7 +195,7 @@ public class HubLinkDelegate {
     */
     private static void _updateLinkProperty(Hub thisHub, Object fromObject, int pos) throws Exception {
         Object linkToObject = null;
-        if (thisHub.data.isAutoCreate()) {
+        if (thisHub.datau.isAutoCreate()) {
             boolean bOne = false;  // is there only supposed to be one object in hub
             HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
             if (dm != null && dm.liDetailToMaster  != null) {
@@ -207,7 +211,7 @@ public class HubLinkDelegate {
                 return;
             }
             if (!bOne || thisHub.getSize() == 0) {
-                if (!thisHub.data.isAutoCreateAllowDups()) {  // 20110809 added flag, was: always did this check
+                if (!thisHub.datau.isAutoCreateAllowDups()) {  // 20110809 added flag, was: always did this check
                     // see if object already exists
                     for (int i=0; ;i++) {
                         Object obj = thisHub.datau.getLinkToHub().elementAt(i);
@@ -542,7 +546,7 @@ public class HubLinkDelegate {
         updateLinkedToHub(fromHub, linkToHub, obj, null);
     }
     protected static void updateLinkedToHub(final Hub fromHub, Hub linkToHub, Object obj, String changedPropName) {
-		if (fromHub.data.isAutoCreate()) return;
+		if (fromHub.datau.isAutoCreate()) return;
 
         obj = HubLinkDelegate.getPropertyValueInLinkedToHub(fromHub, obj);  // link property value
         if (fromHub.datau.isLinkPos()) {

@@ -238,7 +238,7 @@ public class HubDelegate {
             }
             
             if (hub.datau.getLinkToHub().dataa.activeObject == null) {
-                if (!hub.data.isAutoCreate()) return false;
+                if (!hub.datau.isAutoCreate()) return false;
             }
             return true;
 	    }
@@ -259,7 +259,7 @@ public class HubDelegate {
             return dm.masterHub;
         }
         if (hub.datau.getLinkToHub() != null) {
-            if (hub.data.isAutoCreate()) {
+            if (hub.datau.isAutoCreate()) {
                 return getControllingHub(hub.datau.getLinkToHub());
             }
             return hub.datau.getLinkToHub();

@@ -296,26 +296,6 @@ public class HubData implements java.io.Serializable {
     }
 
 
-    public boolean isAutoCreate() {
-        if (hubDatax == null) return false;
-        return hubDatax.bAutoCreate;
-    }
-    public void setAutoCreate(boolean bAutoCreate) {
-        if (hubDatax != null || bAutoCreate) {
-            getHubDatax().bAutoCreate = bAutoCreate;
-        }
-    }
-
-    public boolean isAutoCreateAllowDups() {
-        if (hubDatax == null) return false;
-        return hubDatax.bAutoCreateAllowDups;
-    }
-    public void setAutoCreateAllowDups(boolean bAutoCreateAllowDups) {
-        if (hubDatax != null || bAutoCreateAllowDups) {
-            getHubDatax().bAutoCreateAllowDups = bAutoCreateAllowDups;
-        }
-    }
-
     public boolean getTrackChanges() {
         if (hubDatax == null) return false;
         return hubDatax.bTrackChanges;

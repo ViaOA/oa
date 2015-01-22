@@ -539,13 +539,22 @@ public class HubEventDelegate {
     */
     public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths) {
         if (property != null && property.indexOf('.') >= 0) {
-            throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[]) instead");
+            throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
         }
         getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
+    }
+    public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+        if (property != null && property.indexOf('.') >= 0) {
+            throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
+        }
+        getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths, bActiveObjectOnly);
     }
     public static void addHubListener(Hub thisHub, HubListener hl, String property) {
         getHubListenerTree(thisHub).addListener(hl, property);
 	}
+    public static void addHubListener(Hub thisHub, HubListener hl, String property, boolean bActiveObjectOnly) {
+        getHubListenerTree(thisHub).addListener(hl, property, bActiveObjectOnly);
+    }
 	
 	// this is taken from HubDataUnique
 	/**

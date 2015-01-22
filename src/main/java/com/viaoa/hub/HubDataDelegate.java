@@ -356,9 +356,9 @@ public class HubDataDelegate {
 	    <p>
 	    Note: if masterHub (or one of its shared) has a linkHub, it will still be updated.
 	*/
-	public static int getPos(Hub thisHub, Object object, boolean adjustMaster, boolean bUpdateLink) {
+	public static int getPos(final Hub thisHub, Object object, final boolean adjustMaster, final boolean bUpdateLink) {
 	    int pos;
-	    if (object == null) return -1;
+	    if (object == null || thisHub == null) return -1;
 
 	    if (!(object instanceof OAObject)) {
 	        if (OAObject.class.isAssignableFrom(object.getClass())) {  // could be hub of strings
@@ -421,14 +421,16 @@ public class HubDataDelegate {
                 if (thisHub.datam.masterHub != null && thisHub.datam.liDetailToMaster != null) {  
                     // only do this if a masterHub, since a hub that has a masterObject (w/o hub) should not do this adjustment
                     Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, thisHub.datam.liDetailToMaster.getName());
-                    OALinkInfo li = OAObjectInfoDelegate.getReverseLinkInfo(thisHub.datam.liDetailToMaster);
-                    if (li != null) {
-                        if (hashRecursiveHubDetail.get(thisHub) == null) {
-                            hashRecursiveHubDetail.put(thisHub, thisHub.datam.liDetailToMaster);
+                    if (parent != null) {
+                        OALinkInfo li = OAObjectInfoDelegate.getReverseLinkInfo(thisHub.datam.liDetailToMaster);
+                        if (li != null) {
+                            if (hashRecursiveHubDetail.get(thisHub) == null) {
+                                hashRecursiveHubDetail.put(thisHub, thisHub.datam.liDetailToMaster);
+                            }
+                            Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, li.getName());
+                            HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
+                            pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
                         }
-                        Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, li.getName());
-                        HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
-                        pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
                     }
                 }
                 else {
@@ -436,9 +438,11 @@ public class HubDataDelegate {
                     OALinkInfo li = hashRecursiveHubDetail.get(thisHub);
                     if (li != null) {
                         Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, li.getName());
-                        Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, li.getReverseName());
-                        HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
-                        pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
+                        if (parent != null) {
+                            Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, li.getReverseName());
+                            HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
+                            pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
+                        }
                     }
                 }
             }

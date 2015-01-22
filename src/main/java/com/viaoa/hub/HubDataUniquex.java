@@ -178,4 +178,19 @@ class HubDataUniquex implements java.io.Serializable {
 	    objects that are then added to a list.
 	*/
 	protected transient Hub addHub;
+
+    /**
+        Used to automatically create a new object in the LinkTo Hub whenever
+        the active object in Link Hub is changed.  The new object will then
+        have its link property set.
+    */
+    protected transient boolean bAutoCreate;
+    
+    /**
+     * If true and bAutoCreate, then new objects will be created.
+     * If false and a new object with value already exists, then a new object will not be created
+     *    and the current object will be set to AO
+    */
+    protected transient boolean bAutoCreateAllowDups;
+
 }

@@ -56,6 +56,8 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
         setAllowDnD(false);
         setAllowSorting(false);
         setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+        
         
         hubListener = new HubListenerAdapter() {
             @Override
@@ -77,7 +79,16 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
             @Override
             public void afterPropertyChange(HubEvent e) {
                 if (property == null) return;
-                if (!property.equalsIgnoreCase(e.getPropertyName())) return;
+                
+                String prop = e.getPropertyName();
+                if (prop == null) return;
+                int pos = property.lastIndexOf('.');
+                if (pos > 0) {
+                    if (!prop.equalsIgnoreCase("xxxConsole")) return;
+                    //if (!property.substring(pos+1).equalsIgnoreCase(prop)) return;
+                }
+                else if (!property.equalsIgnoreCase(prop)) return;
+                
                 if (getHub() == null) return;
                 Object obj = e.getObject();
                 if (obj == null) return;
@@ -96,7 +107,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 Object ao = OAConsole.this.hubListen.getAO();
                         
                 if (!OAConsole.this.bHasFocus && !OAConsole.this.bHasMouse && ao == oaObj) {
-                    int pos = OAConsole.this.getHub().getSize();
+                    pos = OAConsole.this.getHub().getSize();
                     Rectangle rect = OAConsole.this.getCellRect(pos, 0, true);
                     OAConsole.this.scrollRectToVisible(rect);
                     OAConsole.this.repaint();
@@ -116,7 +127,10 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 hmConsole.clear();
             }
         };
-        hubListen.addHubListener(hubListener);
+        if (property != null) {
+            if (property.indexOf('.') > 0) hubListen.addHubListener(hubListener, "xxxConsole", new String[]{property});
+            else hubListen.addHubListener(hubListener, property, true);
+        }
         
         addFocusListener(this);
         

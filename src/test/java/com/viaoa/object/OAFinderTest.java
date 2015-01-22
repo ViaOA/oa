@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsacDataGenerator;
 import com.viaoa.hub.Hub;
-import com.theice.tsactest.delegate.ModelDelegate;
+import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.*;
 
@@ -16,17 +16,17 @@ public class OAFinderTest extends OAUnitTest {
     @Test
     public void finderTest() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator();
+        TsacDataGenerator data = new TsacDataGenerator(model);
         data.createSampleData1();
 
         OAFinder<Site, Server> finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);
 
-        Hub<Site> hubSite = ModelDelegate.getSites();
+        Hub<Site> hubSite = model.getSites();
         Server server = finder.findFirst(hubSite);
         assertEquals(server.getName(), "Server.0.0.0.0");
         assertEquals(server.getId(), 1);
         
-        ArrayList<Server> alServer = finder.find(ModelDelegate.getSites());
+        ArrayList<Server> alServer = finder.find(model.getSites());
         int cnt = 0;
         for (Server ser : alServer) {
             assertEquals(ser.getId(), ++cnt);

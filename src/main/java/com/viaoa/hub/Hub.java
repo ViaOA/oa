@@ -692,8 +692,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            null, and getPos() will return -1
      * @see Hub#getActiveObject
      */
-    public Object setActiveObject(int pos) {
-        return HubAODelegate.setActiveObject(this, pos);
+    public TYPE setActiveObject(int pos) {
+        return (TYPE) HubAODelegate.setActiveObject(this, pos);
     }
 
     public Object setAO(int pos) {
@@ -826,7 +826,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @see Hub#setActiveObject
      */
-    public Object setPos(int pos) {
+    public TYPE setPos(int pos) {
         return setActiveObject(pos);
     }
 
@@ -1331,9 +1331,15 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public void addHubListener(HubListener hl, String property) {
         HubEventDelegate.addHubListener(this, hl, property);
     }
+    public void addHubListener(HubListener hl, String property, boolean bActiveObjectOnly) {
+        HubEventDelegate.addHubListener(this, hl, property, bActiveObjectOnly);
+    }
 
     public void addHubListener(HubListener hl, String property, String[] dependentPropertyPaths) {
         HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths);
+    }
+    public void addHubListener(HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+        HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths, bActiveObjectOnly);
     }
 
     /**
@@ -2056,5 +2062,5 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         return iter;
     }
 
-    // public int QQQ; // used for debugging
+    // public transient boolean DEBUG; // for debugging
 }

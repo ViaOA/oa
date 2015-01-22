@@ -234,4 +234,25 @@ static int qq;
             getHubDataUniquex().addHub = addHub;
         }
     }
+
+    public boolean isAutoCreate() {
+        if (hubDataUniquex == null) return false;
+        return hubDataUniquex.bAutoCreate;
+    }
+    public void setAutoCreate(boolean bAutoCreate) {
+        if (hubDataUniquex != null || bAutoCreate) {
+            getHubDataUniquex().bAutoCreate = bAutoCreate;
+        }
+    }
+
+    public boolean isAutoCreateAllowDups() {
+        if (hubDataUniquex == null) return false;
+        return hubDataUniquex.bAutoCreateAllowDups;
+    }
+    public void setAutoCreateAllowDups(boolean bAutoCreateAllowDups) {
+        if (hubDataUniquex != null || bAutoCreateAllowDups) {
+            getHubDataUniquex().bAutoCreateAllowDups = bAutoCreateAllowDups;
+        }
+    }
+
 }

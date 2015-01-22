@@ -1,6 +1,6 @@
 package com.viaoa;
 
-import com.theice.tsactest.delegate.ModelDelegate;
+import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.Environment;
 import com.theice.tsactest.model.oa.Server;
 import com.theice.tsactest.model.oa.ServerInstall;
@@ -22,6 +22,11 @@ public class TsacDataGenerator {
     public static final int MaxServerLoop = 5;
     public static final int MaxServerInstallLoop = 2;
 
+    protected Model model;
+    
+    public TsacDataGenerator(Model model) {
+        this.model = model;
+    }
     
     public void createSampleData1() {
         OAThreadLocalDelegate.setLoadingObject(true);
@@ -29,27 +34,30 @@ public class TsacDataGenerator {
         for (int i=0; i<10; i++) {
             ServerType st = new ServerType();
             st.setName("ServerType."+i);
-            ModelDelegate.getServerTypes().add(st);
+            model.getServerTypes().add(st);
         }
 
         for (int i=0; i<MaxSiloLoop; i++) {
             SiloType siloType = new SiloType();
             siloType.setType(i);
-            ModelDelegate.getSiloTypes().add(siloType);
+            model.getSiloTypes().add(siloType);
+            for (int ii=0; ii<5; ii++) {
+                siloType.getServerTypes().add(model.getServerTypes().getAt(ii));
+            }
         }
         
         for (int i=0; i<ServerStatus.hubType.getSize(); i++) {
             ServerStatus st = new ServerStatus();
             st.setName("ServerStatus."+i);
             st.setType(i);
-            ModelDelegate.getServerStatuses().add(st);
+            model.getServerStatuses().add(st);
         }
         
         int cntServer = 0;
         for (int i = 0; i < MaxSiteLoop; i++) {
             Site site = new Site();
             site.setName("Site." + i);
-            ModelDelegate.getSites().add(site);
+            model.getSites().add(site);
             if (i == 0) site.setProduction(true);
             
             for (int ii = 0; ii < MaxEnviromentLoop; ii++) {
@@ -58,9 +66,9 @@ public class TsacDataGenerator {
                 env.setName("Environment." + i + "." + ii);
                 site.getEnvironments().add(env);
 
-                for (int iii = 0; iii < ModelDelegate.getSiloTypes().getSize(); iii++) {
+                for (int iii = 0; iii < model.getSiloTypes().getSize(); iii++) {
                     Silo silo = new Silo();
-                    SiloType siloType = ModelDelegate.getSiloTypes().find(SiloType.P_Type, iii);
+                    SiloType siloType = model.getSiloTypes().find(SiloType.P_Type, iii);
                     silo.setSiloType(siloType);
                     env.getSilos().add(silo);
                 
@@ -69,8 +77,8 @@ public class TsacDataGenerator {
                         Server server = new Server();
                         server.setId(++cntServer);
                         server.setName("Server." + i + "." + ii + "." + iii + "." + iiii);
-                        Hub<ServerType> h = ModelDelegate.getServerTypes();
-                        // server.setServerType(h.find(ServerType.P_Type, iiii % h.getSize()));
+                        Hub<ServerType> h = model.getServerTypes();
+                        server.setServerType(h.getAt(iii));
                         silo.getServers().add(server);
                         for (int i5 = 0; i5 < MaxServerInstallLoop; i5++) {
                             ServerInstall si = new ServerInstall();
@@ -102,7 +110,7 @@ public class TsacDataGenerator {
     public void runRandomChanges() {
         for (int cnt=0;;cnt++) {
             
-            Hub h = ModelDelegate.getSites();
+            Hub h = model.getSites();
             
             Site site = (Site) h.getAt(0); 
             if (site != null && site.getProduction()) {
@@ -119,7 +127,7 @@ public class TsacDataGenerator {
                 catch (Exception e) {
                 }
             }
-            Site sitex = ModelDelegate.getSites().getAt(0);
+            Site sitex = model.getSites().getAt(0);
             
             site.setName("Site cnt=" + cnt);
 

@@ -626,11 +626,11 @@ public class ButtonController extends JFCController implements ActionListener {
                             Object[] objs = mhub.toArray();
                             for (Object obj : objs) {
                                 if (obj instanceof OAObject) {
+                                    int posx = hub.getPos(obj);
                                     if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
                                         getHub().remove(obj); // keep "noise" down
                                     }
                                     if (bEnableUndo) {
-                                        int posx = hub.getPos(obj);
                                         OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, posx));
                                     }
                                     String msg = null;

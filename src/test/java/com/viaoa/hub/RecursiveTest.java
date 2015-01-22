@@ -98,8 +98,17 @@ public class RecursiveTest extends OAUnitTest {
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
         final Hub<Employee> hubEmployee = hubLocation.getDetailHub(Location.P_Employees);
 
+        Program program = new Program();
+        int pos = hubProgram.getPos(program);
+        assertEquals(pos, -1);
+        Location loc = new Location();
+        pos = hubLocation.getPos(loc);
+        assertEquals(pos, -1);
+        pos = hubLocation.getPos(null);
+        assertEquals(pos, -1);
+        
         hubProgram.setPos(0);
-        Program program = hubProgram.getAO();
+        program = hubProgram.getAO();
         assertEquals(program.getName(), "program.0");
         
         assertEquals(hubLocation.getMasterObject(), program); 
@@ -140,7 +149,6 @@ public class RecursiveTest extends OAUnitTest {
         // create shared hub that is linked 
         Hub<Program> hubProgramLinked = ModelDelegate.getPrograms().createSharedHub();
         hubProgramLinked.setLinkHub(hubLocation, Location.P_Program);
-        
         
         hubEmployeeAward.setAO(ea);
         emp = hubEmployee.getAO();
@@ -190,16 +198,98 @@ public class RecursiveTest extends OAUnitTest {
 
         emp = hubEmployee.getAO();
         program = hubProgram.getAO();
-        Location loc = emp.getLocation();
+        loc = emp.getLocation();
         emp.delete();
         assertNull(hubEmployee.getAO());
         assertNull(ea.getEmployee());
         assertNull(emp.getLocation());
         assertNull(hubLocation.getAO());
         assertNotNull(hubProgram.getAO());  // since hubProgramLinked is also being used
+        assertNull(hubEmployeeAward.getAO());
+        assertEquals(hubEmployeeAward.getSize(), 0);
         
         assertEquals(hubEmployee.getMasterHub(), hubLocation);
         assertEquals(hubLocation.getMasterHub(), hubProgram);
+
+        loc = hubProgram.getAt(2).getLocations().getAt(1).getLocations().getAt(0);
+        program = loc.getProgram();
+        hubLocation.setAO(loc);
+        assertNull(hubLocation.getMasterHub());
+        assertEquals(loc.getParentLocation(), hubLocation.getMasterObject());
+        assertEquals(hubLocation.getAO(), loc);
+        assertNull(hubEmployee.getAO());
+        assertNotNull(hubLocation.getAO());
+        assertNotNull(hubProgram.getAO());
+        assertEquals(hubProgram.getAO(), program);
+        assertEquals(hubProgramLinked.getAO(), program);
+        assertNull(ea.getEmployee());
+
+        ea = new EmployeeAward();
+        hubEmployeeAward.add(ea);
+        hubEmployeeAward.setAO(ea);
+        assertNotNull(hubEmployeeAward.getAO());
+        
+        
+        loc = hubProgram.getAt(0).getLocations().getAt(0);
+        program = loc.getProgram();
+        hubLocation.setAO(loc);
+        assertNotNull(hubLocation.getMasterHub());
+        assertEquals(hubLocation.getMasterObject(), program);
+        assertEquals(hubLocation.getAO(), loc);
+        assertNull(hubEmployee.getAO());
+        assertNotNull(hubLocation.getAO());
+        assertNotNull(hubProgram.getAO());
+        assertEquals(hubProgram.getAO(), program);
+        assertEquals(hubProgramLinked.getAO(), program);
+        assertNull(ea.getEmployee());
+        assertEquals(loc.getProgram(), program);
+        
+        loc = null;
+        hubLocation.setAO(loc);
+        assertNotNull(hubLocation.getMasterHub());
+        assertEquals(hubLocation.getMasterObject(), program);
+        assertEquals(hubLocation.getAO(), loc);
+        assertNull(hubEmployee.getAO());
+        assertNull(hubLocation.getAO());
+        assertNotNull(hubProgram.getAO());
+        assertEquals(hubProgram.getAO(), program);
+        assertEquals(hubProgramLinked.getAO(), null); // linked to hubLocation
+        assertNull(ea.getEmployee());
+        assertNotNull(hubEmployeeAward.getAO());
+
+        
+        loc = hubProgram.getAt(0).getLocations().getAt(0);
+        hubLocation.setAO(loc);
+        assertNotNull(hubLocation.getMasterHub());
+        assertEquals(hubLocation.getMasterObject(), program);
+        assertEquals(hubLocation.getAO(), loc);
+        assertNull(hubEmployee.getAO());
+        assertNotNull(hubLocation.getAO());
+        assertNotNull(hubProgram.getAO());
+        assertEquals(hubProgram.getAO(), program);
+        assertEquals(hubProgramLinked.getAO(), program);
+        assertNull(ea.getEmployee());
+        assertEquals(loc.getProgram(), program);
+        assertNotNull(hubEmployeeAward.getAO());
+        
+        hubProgramLinked.setPos(1);
+        program = hubProgram.getAO();
+        assertNotNull(program);
+        assertEquals(hubLocation.getAO(), loc);
+        assertEquals(hubProgramLinked.getAO(), program);
+        assertEquals(loc.getProgram(), program);
+        assertEquals(hubLocation.getAO(), loc);
+        assertNotNull(hubLocation.getMasterHub());
+        assertEquals(hubLocation.getMasterObject(), program);
+        assertNull(hubEmployee.getAO());
+        assertNotNull(hubLocation.getAO());
+        assertNull(ea.getEmployee());
+        assertEquals(loc.getProgram(), program);
+
+        hubEmployee.setPos(0);
+        assertEquals(ea.getEmployee(), hubEmployee.getAO());
+        assertNotNull(hubEmployeeAward.getAO());
+        
         
         reset();
     }

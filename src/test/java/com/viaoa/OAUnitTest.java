@@ -1,5 +1,6 @@
 package com.viaoa;
 
+import com.theice.tsactest.model.Model;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.autonumber.NextNumber;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
@@ -11,6 +12,8 @@ public class OAUnitTest {
 
     protected OADataSourceAuto dsAuto;
     protected OADataSourceAuto dsCache;
+    protected Model model;
+    
     protected OADataSource getDataSource() {
         return getAutoDataSource();
     }
@@ -30,6 +33,7 @@ public class OAUnitTest {
     
     
     protected void reset() {
+        model = new Model();
         if (dsCache != null) {
             dsCache.close();
             dsCache.setGlobalNextNumber(null);
