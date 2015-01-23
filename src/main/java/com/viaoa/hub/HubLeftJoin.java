@@ -105,7 +105,7 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
             @Override
             public void afterRemove(HubEvent e) {
                 A a = (A) e.getObject();
-                OALeftJoin c = hubCombined.find(OALeftJoin.P_A, a);
+                OALeftJoin c = hubCombined.findFirst(OALeftJoin.P_A, a);
                 hubCombined.remove(c);
             }
             @Override
@@ -118,7 +118,7 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
                     Object valueA = b.getProperty(propertyPath);
 
                     if (valueA != null) {
-                        OALeftJoin c = hubCombined.find(OALeftJoin.P_A, valueA);
+                        OALeftJoin c = hubCombined.findFirst(OALeftJoin.P_A, valueA);
                         if (c != null) c.setB(b);
                     }
                 }
@@ -142,7 +142,7 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
                 Object value = b.getProperty(propertyPath);
                 
                 if (value != null) {
-                    OALeftJoin c = hubCombined.find(OALeftJoin.P_A, value);
+                    OALeftJoin c = hubCombined.findFirst(OALeftJoin.P_A, value);
                     if (c != null) c.setB((B) e.getObject());
                 }
             }
@@ -152,7 +152,7 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
                 Object value = b.getProperty(propertyPath);
 
                 if (value != null) {
-                    OALeftJoin c = hubCombined.find(OALeftJoin.P_A, value);
+                    OALeftJoin c = hubCombined.findFirst(OALeftJoin.P_A, value);
                     if (c != null) c.setB(null);
                 }
             }
@@ -165,13 +165,13 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
                 if (objx instanceof OANullObject) objx = null;
                 A a = (A) objx;
                 if (a != null) {
-                    OALeftJoin c = (OALeftJoin) hubCombined.find(OALeftJoin.P_A, a);
+                    OALeftJoin c = (OALeftJoin) hubCombined.findFirst(OALeftJoin.P_A, a);
                     if (c != null) c.setB(null);
                 }
 
                 a = (A) e.getNewValue(); 
                 if (a != null) {
-                    OALeftJoin c = (OALeftJoin) hubCombined.find(OALeftJoin.P_A, a);
+                    OALeftJoin c = (OALeftJoin) hubCombined.findFirst(OALeftJoin.P_A, a);
                     if (c != null) c.setB((B) e.getObject());
                 }
             }
@@ -184,7 +184,7 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
                     Object value = b.getProperty(propertyPath);
 
                     if (value != null) {
-                        OALeftJoin c = hubCombined.find(OALeftJoin.P_A, value);
+                        OALeftJoin c = hubCombined.findFirst(OALeftJoin.P_A, value);
                         if (c != null) c.setB(b);
                     }
                 }
@@ -194,7 +194,7 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
             public void afterChangeActiveObject(HubEvent e) {
                 B b = (B) e.getObject();
                 OALeftJoin lj;
-                if (b != null) lj = hubCombined.find(OALeftJoin.P_B, b);
+                if (b != null) lj = hubCombined.findFirst(OALeftJoin.P_B, b);
                 else lj = null;
                 hubCombined.setAO(lj);
             }
@@ -212,7 +212,7 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
             Object value = b.getProperty(propertyPath);
 
             if (value != null) {
-                OALeftJoin c = hubCombined.find(OALeftJoin.P_A, value);
+                OALeftJoin c = hubCombined.findFirst(OALeftJoin.P_A, value);
                 if (c != null) c.setB(b);
             }
         }

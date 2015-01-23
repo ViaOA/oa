@@ -414,7 +414,7 @@ public class HubDetailDelegate {
                     }
                     else if (thisHub.datau.getLinkFromPropertyName() != null ) { // 20110116 ex: Breed.name linked to Pet.breed (string)
                         Object objx;
-                        if (obj != null) objx = thisHub.find(thisHub.datau.getLinkFromPropertyName(), obj);
+                        if (obj != null) objx = thisHub.findFirst(thisHub.datau.getLinkFromPropertyName(), obj);
                         else objx = null;
                         HubAODelegate.setActiveObject(thisHub,objx,bUpdateLink,false,false);
                     }

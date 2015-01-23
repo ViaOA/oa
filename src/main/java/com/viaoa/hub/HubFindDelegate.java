@@ -42,7 +42,10 @@ public class HubFindDelegate {
         
         OAFinder finder = new OAFinder();
         finder.addEqualFilter(propertyPath, findValue);
+        Object foundObj = finder.findFirst(thisHub);
+
         
+/*        
         Object foundObj = null;
         for (int i=0; ;i++) {
             Object obj = thisHub.getAt(i);
@@ -57,13 +60,16 @@ public class HubFindDelegate {
         else thisHub.datau.setFinderPos(-1);
         
         if (bSetAO) thisHub.setPos(thisHub.datau.getFinderPos());
+*/        
+        if (bSetAO) thisHub.setAO(foundObj);
         return foundObj;
 	}
-	
+
+    
     /**
 	    Find the next object in Hub that has property equal to findObject.
 	    Starts with the next object after last find from findFirst or findNext.
-	*/
+	
 	public static Object findNext(Hub thisHub, boolean bSetAO) {
 		OAFinder find = thisHub.datau.getFinder();
 		if (find == null) {
@@ -89,5 +95,7 @@ public class HubFindDelegate {
         if (bSetAO) thisHub.setPos(thisHub.datau.getFinderPos());
 	    return foundObj;
 	}
+	*/
+    	
 }
 

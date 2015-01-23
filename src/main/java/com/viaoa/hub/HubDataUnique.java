@@ -49,28 +49,6 @@ static int qq;
         return hubDataUniquex;
     }
     
-    
-    
-    public OAFinder getFinder() {
-        if (hubDataUniquex == null) return null;
-        return hubDataUniquex.finder;
-    }
-    public void setFinder(OAFinder finder) {
-        if (hubDataUniquex != null || finder != null) {
-            getHubDataUniquex().finder = finder;
-        }
-    }
-    
-    public int getFinderPos() {
-        if (hubDataUniquex == null) return 0;
-        return hubDataUniquex.finderPos;
-    }
-    public void setFinderPos(int finderPos) {
-        if (hubDataUniquex != null || finderPos != 0) {
-            getHubDataUniquex().finderPos = finderPos;
-        }
-    }
-
 
     public int getDefaultPos() {
         if (hubDataUniquex == null) return -1;

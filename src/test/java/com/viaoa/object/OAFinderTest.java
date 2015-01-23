@@ -70,6 +70,4 @@ public class OAFinderTest extends OAUnitTest {
         reset();
     }
     
-    
-    
 }

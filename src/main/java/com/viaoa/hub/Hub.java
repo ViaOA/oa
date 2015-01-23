@@ -1581,7 +1581,12 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public TYPE findFirst(String propertyPath, Object findObject, boolean bSetAO) {
         return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findObject, bSetAO);
     }
+/*    
     public TYPE find(String propertyPath, Object findObject) {
+        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findObject, false);
+    }
+*/    
+    public TYPE findFirst(String propertyPath, Object findObject) {
         return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findObject, false);
     }
 
@@ -1595,10 +1600,11 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @see findPrevious(HubFinder)
      */
+/*    
     public TYPE findNext(boolean bSetAO) {
         return (TYPE) HubFindDelegate.findNext(this, bSetAO);
     }
-
+*/
     /**
      * WHERE clause to use for select.
      * 

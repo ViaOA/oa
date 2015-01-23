@@ -34,16 +34,6 @@ class HubDataUniquex implements java.io.Serializable {
     //	boolean allowNew = true, allowDelete = true, allowEdit = true;
 	
 	/**
-	    Single finder object used by last call to findX methods that did not use a HubFinder object.
-	    <p>
-	    Note: not using a HubFinder with the Hub.findX methods is not thread safe, since there is only one
-	    hubFinder stored with a Hub.
-	*/
-	protected transient OAFinder finder;
-	protected transient int finderPos;
-	
-	
-	/**
 	    Position of active object to set for new list. Can be set to 0 so that first object
 	    is always made the active object whenever a new list is created.  Default is -1 (set to null).
 	    <p>

@@ -56,7 +56,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private boolean bStop;
     private ArrayList<T> alFound;
 
-    
     // stack
     private boolean bEnableStack;
     private int stackPos;
@@ -144,6 +143,15 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      * Given the propertyPath, find all of the objects from a Hub.
      */
     public ArrayList<T> find(Hub<F> hubRoot) {
+        return find(hubRoot, null);
+    }
+    
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    
+    /**
+     * Given the propertyPath, find all of the objects from a Hub,
+     * starting after objectLastFound
+     */
+    public ArrayList<T> find(Hub<F> hubRoot, F objectLastUsed) {
         alFound = new ArrayList<T>();
         if (bEnableStack) stack = new StackValue[5];
 
@@ -152,7 +160,13 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         bStop = false;
         setup(hubRoot.getObjectClass());
         
-        for (F objectRoot : hubRoot) {
+        int pos;
+        if (objectLastUsed == null) pos = 0;
+        else pos = hubRoot.getPos(objectLastUsed) + 1;
+        
+        for ( ; ;pos++) {
+            F objectRoot = hubRoot.getAt(pos);
+            if (objectRoot == null) break;
             stackPos = 0;
             performFind(objectRoot);
             if (bStop) break;
@@ -313,6 +327,19 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         if (getMaxFound() == 1) setMaxFound(holdMax);
         return obj;
     }
+
+    
+    public T findNext(Hub<F> hub, F objectLastUsed) {
+        int holdMax = getMaxFound();
+        setMaxFound(1);
+        ArrayList<T> al = find(hub, objectLastUsed);
+        T obj;
+        if (al.size() > 0) obj = al.get(0);
+        else obj = null;
+        if (getMaxFound() == 1) setMaxFound(holdMax);
+        return obj;
+    }
+    
     
     /**
      * Given the propertyPath, find all of the objects from a root object.

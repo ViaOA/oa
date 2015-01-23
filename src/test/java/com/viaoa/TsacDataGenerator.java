@@ -30,7 +30,7 @@ public class TsacDataGenerator {
     
     public void createSampleData1() {
         OAThreadLocalDelegate.setLoadingObject(true);
-        
+
         for (int i=0; i<10; i++) {
             ServerType st = new ServerType();
             st.setName("ServerType."+i);
