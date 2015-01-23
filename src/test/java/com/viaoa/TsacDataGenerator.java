@@ -68,7 +68,7 @@ public class TsacDataGenerator {
 
                 for (int iii = 0; iii < model.getSiloTypes().getSize(); iii++) {
                     Silo silo = new Silo();
-                    SiloType siloType = model.getSiloTypes().find(SiloType.P_Type, iii);
+                    SiloType siloType = model.getSiloTypes().findFirst(SiloType.P_Type, iii);
                     silo.setSiloType(siloType);
                     env.getSilos().add(silo);
                 

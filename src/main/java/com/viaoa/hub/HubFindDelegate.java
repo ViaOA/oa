@@ -37,12 +37,12 @@ public class HubFindDelegate {
 	    @param bSetAO if true then the active object is set to the found object.
 	    @see HubFind
 	*/
-    public static Object findFirst(Hub thisHub, String propertyPath, final Object findValue, final boolean bSetAO) {
+    public static Object findFirst(Hub thisHub, String propertyPath, final Object findValue, final boolean bSetAO, OAObject lastFoundObject) {
         if (thisHub == null) return null;
         
         OAFinder finder = new OAFinder();
         finder.addEqualFilter(propertyPath, findValue);
-        Object foundObj = finder.findFirst(thisHub);
+        Object foundObj = finder.findNext(thisHub, (OAObject) lastFoundObject);
 
         
 /*        

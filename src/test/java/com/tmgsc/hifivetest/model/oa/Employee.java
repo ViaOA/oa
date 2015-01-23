@@ -1609,7 +1609,7 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
      
     // customData
     public EmployeeCustomData getEmployeeCustomData(String code) {
-        EmployeeCustomData employeeCustomData = getEmployeeCustomDatas().find(Employee.PROPERTY_EmployeeCustomDatas, EmployeeCustomData.PROPERTY_Code);
+        EmployeeCustomData employeeCustomData = getEmployeeCustomDatas().findFirst(Employee.PROPERTY_EmployeeCustomDatas, EmployeeCustomData.PROPERTY_Code);
         return employeeCustomData;
     }
      

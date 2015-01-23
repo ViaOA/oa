@@ -146,7 +146,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return find(hubRoot, null);
     }
     
-qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    
+    
     /**
      * Given the propertyPath, find all of the objects from a Hub,
      * starting after objectLastFound

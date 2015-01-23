@@ -95,16 +95,16 @@ public class Hub2ImageHandler implements ImageHandlerInterface {
                 if (id.length() == 3) id = "";
                 else id = id.substring(3);
             }
-            obj = (OAObject)hub.find(idPropertyName, id);
+            obj = (OAObject)hub.findFirst(idPropertyName, id);
         }
         
         if (obj == null) { // not using "oaproperty://",
             // might be using the src=Id
-            obj = (OAObject)hub.find(idPropertyName, srcName);
+            obj = (OAObject)hub.findFirst(idPropertyName, srcName);
 
             if (obj == null) {  
                 // try to find the object that is using the image name.
-                obj = (OAObject) hub.find(sourceNamePropertyName, srcName);
+                obj = (OAObject) hub.findFirst(sourceNamePropertyName, srcName);
             }
         }
         return obj;
