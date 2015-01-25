@@ -29,7 +29,8 @@ public class HubMergerTest extends OAUnitTest {
 
         final Hub<Employee> hubEmployees = new Hub<Employee>(Employee.class);
         
-        HubMerger hm = new HubMerger(hubProgram, hubEmployees, OAString.cpp(Program.P_Locations, Location.P_Employees), true); 
+        HubMerger hm = new HubMerger(hubProgram, hubEmployees, ProgramPP.locations().employees().pp, true);
+        
 
         int x = hubEmployees.getSize();
         
