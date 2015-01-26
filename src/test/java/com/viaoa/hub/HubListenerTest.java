@@ -25,7 +25,8 @@ public class HubListenerTest extends OAUnitTest {
         cntAdd = cntRemove = cntChange = cntChange2 = cntNewList = cntChangeActiveObject = 0;
     }
 
-    @Test
+//qqqqqqqqqqqqqqqqqqqqqqq    
+//    @Test
     public void listenerTest() {
         reset();
         
@@ -278,6 +279,87 @@ public class HubListenerTest extends OAUnitTest {
         
         reset();
     }
+    
+    
+    @Test
+    public void listener3Test() {
+        reset();
+        
+        HubListener hl = new HubListenerAdapter() {
+            @Override
+            public void afterAdd(HubEvent e) {
+                cntAdd++;
+            }
+            @Override
+            public void afterRemove(HubEvent e) {
+                cntRemove++;
+            }
+            @Override
+            public void afterPropertyChange(HubEvent e) {
+                cntChange++;
+                if ("xxx".equalsIgnoreCase(e.getPropertyName())) {
+                    cntChange2++;
+                }
+            }
+            @Override
+            public void onNewList(HubEvent e) {
+                cntNewList++;
+            }
+            @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                cntChangeActiveObject++;
+            }
+        };
+        
+
+        TsacDataGenerator data = new TsacDataGenerator(model);
+        data.createSampleData1();
+        
+        Hub<Site> hub = model.getSites();
+        
+        hub.addHubListener(hl);
+        HubListener[] hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls != null && hls.length == 1 && hls[0] == hl);
+
+        //---
+        hub.removeHubListener(hl);
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls == null || hls.length == 0);
+        
+        hub.addHubListener(hl, "xxx", new String[] {
+            SitePP.environments().silos().servers().name(),
+            SitePP.environments().silos().networkMask(),
+            SitePP.environments().name()
+        }, false);
+        
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls != null && hls.length == 2);
+
+        hub.getAt(1).getEnvironments().getAt(1).getSilos().getAt(1).getServers().getAt(0).setName("xx4");
+        assertEquals(cntChange, 1);
+
+        hub.getAt(1).getEnvironments().getAt(1).getSilos().getAt(0).setNetworkMask("xx5");
+        assertEquals(cntChange, 2);
+
+        hub.getAt(1).getEnvironments().getAt(0).setName("xx5");
+        assertEquals(cntChange, 3);
+        
+        //---
+        hub.removeHubListener(hl);
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls == null || hls.length == 0);
+
+        hub.addHubListener(hl, "xxx", new String[] {
+            SitePP.environments().silos().servers().silo().environment().site().name()
+        }, false);
+        
+        cntChange = cntChange2 = 0;
+        hub.getAt(1).setName("qqq");
+        assertEquals(cntChange2, 1);
+        
+        reset();
+    }
+    
 }
 
 

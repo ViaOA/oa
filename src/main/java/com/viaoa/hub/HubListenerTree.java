@@ -704,8 +704,5 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
         }
         return false;
     }
-
 }
-
-
 
