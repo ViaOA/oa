@@ -3,20 +3,31 @@ package com.viaoa.hub;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theice.tsactest.model.oa.Server;
+import com.theice.tsactest.model.Model;
+import com.theice.tsactest.model.oa.*;
+import com.theice.tsactest.model.oa.propertypath.EnvironmentPP;
+import com.theice.tsactest.model.oa.propertypath.ServerPP;
+import com.theice.tsactest.model.oa.propertypath.SitePP;
+import com.viaoa.TsacDataGenerator;
 import com.viaoa.OAUnitTest;
+import com.viaoa.object.OAFinder;
 
 public class HubListenerTest extends OAUnitTest {
-
     private int cntAdd;
     private int cntRemove;
-    private int cntChange;
+    private int cntChange, cntChange2;
     private int cntNewList;
     private int cntChangeActiveObject;
+    
+    @Override
+    protected void reset() {
+        super.reset();
+        cntAdd = cntRemove = cntChange = cntChange2 = cntNewList = cntChangeActiveObject = 0;
+    }
+
     @Test
     public void listenerTest() {
         reset();
-        cntAdd = cntRemove = cntChange = cntNewList = cntChangeActiveObject = 0;
         
         HubListener hl = new HubListenerAdapter() {
             @Override
@@ -150,5 +161,132 @@ public class HubListenerTest extends OAUnitTest {
         
         reset();
     }
+
     
+    @Test
+    public void listener2Test() {
+        reset();
+        
+        HubListener hl = new HubListenerAdapter() {
+            @Override
+            public void afterAdd(HubEvent e) {
+                cntAdd++;
+            }
+            @Override
+            public void afterRemove(HubEvent e) {
+                cntRemove++;
+            }
+            @Override
+            public void afterPropertyChange(HubEvent e) {
+                cntChange++;
+                if ("xxx".equalsIgnoreCase(e.getPropertyName())) {
+                    cntChange2++;
+                }
+            }
+            @Override
+            public void onNewList(HubEvent e) {
+                cntNewList++;
+            }
+            @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                cntChangeActiveObject++;
+            }
+        };
+        
+
+        TsacDataGenerator data = new TsacDataGenerator(model);
+        data.createSampleData1();
+        
+        
+        Hub<Server> hub = new Hub<Server>(Server.class);
+        HubListener[] hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls == null || hls.length == 0);
+
+        HubMerger<Site, Server> hm = new HubMerger<Site, Server>(model.getSites(), hub, SitePP.environments().silos().servers().pp, true);
+
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls == null || hls.length == 0);
+        
+        hub.addHubListener(hl);
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls != null && hls.length == 1 && hls[0] == hl);
+
+        //---
+        hub.removeHubListener(hl);
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls == null || hls.length == 0);
+        
+        //(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+        hub.addHubListener(hl, "xxx", new String[] {
+            ServerPP.silo().environment().name(), 
+            ServerPP.silo().mradServer().mradClients().server().name(),
+            ServerPP.silo().servers().name() 
+        }, false);
+        
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls != null && hls.length == 3);
+        
+        int cChange2 = 0;
+        assertEquals(cntChange2, cChange2); 
+
+        Server server = hub.getAt(5);
+        server.getSilo().getEnvironment().setName("xxx");
+        
+        OAFinder<Environment, Server> finder = new OAFinder<Environment, Server>(EnvironmentPP.silos().servers().pp);
+        cChange2 += finder.find(server.getSilo().getEnvironment()).size();
+        
+        assertEquals(cntChange2, cChange2); 
+        assertEquals(cntChange, cChange2); 
+        
+        cntChange = cntChange2 = cChange2 = 0;
+        
+        server.setName("zzz");
+        assertEquals(cntChange2, 5); 
+        assertEquals(cntChange, 7);  
+
+        
+        //---
+        hub.removeHubListener(hl);
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls == null || hls.length == 0);
+        
+        //(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+        hub.addHubListener(hl, "name");
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls != null && hls.length == 1);
+        
+
+        server = hub.getAt(4);
+        cntChange = cntChange2 = 0;
+        
+        server.setName("zz1");
+        assertEquals(cntChange, 2);  
+        assertEquals(cntChange2, 0); 
+
+        //---
+        hub.addHubListener(hl);
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls != null && hls.length == 2);
+        
+        hub.removeHubListener(hl);
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls != null && hls.length == 1);
+
+        hub.removeHubListener(hl);
+        hls = HubEventDelegate.getAllListeners(hub);
+        assertTrue(hls == null || hls.length == 0);
+        
+        reset();
+    }
 }
+
+
+
+
+
+
+
+
+
+
+

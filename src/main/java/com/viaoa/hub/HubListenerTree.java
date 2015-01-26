@@ -101,7 +101,9 @@ public class HubListenerTree {
                 OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(c, property);
                 liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
             }
-            Object[] newObjects = null;
+            
+            ArrayList<Object> alNewObjects = new ArrayList<Object>();
+            
             Method m = null;
             for (Object obj : objs) {
                 OAObject oaObj = (OAObject) obj;
@@ -115,7 +117,9 @@ public class HubListenerTree {
 
                 if (oaObj == lastRemoveObject && lastRemoveMasterObject != null) {
                     // from a remove
-                    newObjects = (Object[]) OAArray.add(Object.class, newObjects, lastRemoveMasterObject);
+                    if (alNewObjects.indexOf(lastRemoveMasterObject) < 0) {
+                        alNewObjects.add(lastRemoveMasterObject);
+                    }
                     lastRemoveObject = null;
                 }
                 else if (m == null) {
@@ -126,12 +130,16 @@ public class HubListenerTree {
                         Object objz = OAObjectReflectDelegate.getProperty((OAObject) objx, this.property);
                         if (objz == obj || lastRemoveObject == obj) {
                             // found a parent object that has a reference to child
-                            newObjects = (Object[]) OAArray.add(Object.class, newObjects, objx);
+                            if (alNewObjects.indexOf(objx) < 0) {
+                                alNewObjects.add(objx);
+                            }
                         }
                         else if (objz instanceof Hub) {
                             if (((Hub)objz).contains(obj)) {
                                 // found a parent object that has a reference to child
-                                newObjects = (Object[]) OAArray.add(Object.class, newObjects, objx);
+                                if (alNewObjects.indexOf(objx) < 0) {
+                                    alNewObjects.add(objx);
+                                }
                             }
                         }
                     }
@@ -146,20 +154,26 @@ public class HubListenerTree {
                     }
                     
                     if (value instanceof Hub) {
-                        newObjects = ((Hub) value).toArray();
+                        for (Object objx : ((Hub) value)) {
+                            if (alNewObjects.indexOf(objx) < 0) {
+                                alNewObjects.add(objx);
+                            }
+                        }
                     }
                     else {
-                        if (value != null) newObjects = new Object[] {value};
+                        if (value != null) {
+                            if (alNewObjects.indexOf(value) < 0) {
+                                alNewObjects.add(value);
+                            }
+                        }
                     }
                 }                
             }
-            objs = newObjects;
+            objs = alNewObjects.toArray();
             objs = parent.getRootValues(objs);
             
             return objs;
         }
-
-        
     }
     
     public HubListenerTree(Hub hub) {
@@ -456,13 +470,26 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                         else {
                             // 20140527 need to listen to property
                             if (OAObject.class.isAssignableFrom(returnClass)) {
-                                hub.addHubListener(new HubListenerAdapter() {
+                                HubListenerAdapter hl = new HubListenerAdapter() {
                                     @Override
                                     public void afterPropertyChange(HubEvent e) {
                                         if (!property.equalsIgnoreCase(e.getPropertyName())) return;
                                         HubEventDelegate.fireCalcPropertyChange(root.hub, e.getObject(), origPropertyName);
                                     }
-                                });
+                                };
+                                hub.addHubListener(hl);                                
+                                // 20150126
+                                HubListener[] hls;
+                                if (node.hmListener == null) {
+                                    node.hmListener = new HashMap<HubListener, HubListener[]>(3, .75f);
+                                    hls = null;
+                                }
+                                else {
+                                    hls = node.hmListener.get(origHubListener);
+                                }
+                                
+                                hls = (HubListener[]) OAArray.add(HubListener.class, hls, hl);
+                                node.hmListener.put(origHubListener, hls);
                             }
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {
                                 @Override

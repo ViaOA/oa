@@ -39,7 +39,7 @@ import com.viaoa.util.OAPropertyPath;
  * @created 2004/08/20, rewritten 20080804, added recursive links 20120527
  * @see OAPropertyPath for more information about property paths
  */
-public class HubMerger {
+public class HubMerger<F extends OAObject, T extends OAObject> {
     private static Logger LOG = Logger.getLogger(HubMerger.class.getName());
     public boolean DEBUG;
 
@@ -72,15 +72,15 @@ public class HubMerger {
 
     private boolean bServerSideOnly;
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bUseAll) {
+    public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bUseAll) {
         this(hubRoot, hubCombinedObjects, propertyPath, false, null, bUseAll, false);
     }
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll) {
+    public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll) {
         this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, false);
     }
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
+    public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll) {
         this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, false);
     }
@@ -106,7 +106,7 @@ public class HubMerger {
      * @param bIncludeRootHub
      *            if the objects in the rootHub should also be included.
      */
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
+    public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll, boolean bIncludeRootHub) {
         if (hubRoot == null) {
             throw new IllegalArgumentException("Root hub can not be null");
@@ -117,13 +117,13 @@ public class HubMerger {
         init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
     }
 
-    public HubMerger(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll,
+    public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll,
             boolean bIncludeRootHub) {
         this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, bIncludeRootHub);
     }
 
     private boolean bCreatedFromOneObject;
-    public HubMerger(OAObject obj, Hub hubCombinedObjects, String propertyPath) {
+    public HubMerger(F obj, Hub<T> hubCombinedObjects, String propertyPath) {
         bCreatedFromOneObject = true;
         Hub h = new Hub(obj.getClass());
         h.add(obj);
