@@ -1578,28 +1578,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see #findNext
      * @see HubFinder#equals(Object)
      */
-    public TYPE findFirst(String propertyPath, Object findValue, boolean bSetAO) {
-        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, bSetAO, null);
-    }
-    public TYPE findFirst(String propertyPath, Object findValue) {
-        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, false, null);
-    }
-
-    public TYPE findNext(String propertyPath, Object findValue) {
-        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, false, (OAObject) getAO());
-    }
-    public TYPE findNext(TYPE fromObject, String propertyPath, Object findValue) {
-        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, false, (OAObject) fromObject);
-    }
-
-    public TYPE findNext(String propertyPath, Object findValue, boolean bSetAO) {
-        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, bSetAO, (OAObject) getAO());
-    }
-    public TYPE findNext(TYPE fromObject, String propertyPath, Object findValue, boolean bSetAO) {
-        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, bSetAO, (OAObject) fromObject);
-    }
-    
-
     public TYPE find(String propertyPath, Object findValue) {
         return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, false, null);
     }
@@ -1612,6 +1590,14 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public TYPE find(TYPE fromObject, String propertyPath, Object findValue, boolean bSetAO) {
         return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, bSetAO, (OAObject) fromObject);
     }
+
+    public TYPE findNext(TYPE fromObject, String propertyPath, Object findValue) {
+        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, false, (OAObject) fromObject);
+    }
+    public TYPE findNext(TYPE fromObject, String propertyPath, Object findValue, boolean bSetAO) {
+        return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, bSetAO, (OAObject) fromObject);
+    }
+    
     
 
     /**

@@ -43,59 +43,9 @@ public class HubFindDelegate {
         OAFinder finder = new OAFinder();
         finder.addEqualFilter(propertyPath, findValue);
         Object foundObj = finder.findNext(thisHub, (OAObject) lastFoundObject);
-
         
-/*        
-        Object foundObj = null;
-        for (int i=0; ;i++) {
-            Object obj = thisHub.getAt(i);
-            if (obj == null) break;
-            if (finder.findFirst((OAObject) obj) != null) {
-                foundObj = obj;
-                thisHub.datau.setFinderPos(i);
-                break;
-            }
-        }
-        if (foundObj != null) thisHub.datau.setFinder(finder);
-        else thisHub.datau.setFinderPos(-1);
-        
-        if (bSetAO) thisHub.setPos(thisHub.datau.getFinderPos());
-*/        
         if (bSetAO) thisHub.setAO(foundObj);
         return foundObj;
 	}
-
-    
-    /**
-	    Find the next object in Hub that has property equal to findObject.
-	    Starts with the next object after last find from findFirst or findNext.
-	
-	public static Object findNext(Hub thisHub, boolean bSetAO) {
-		OAFinder find = thisHub.datau.getFinder();
-		if (find == null) {
-	        if (bSetAO) thisHub.setPos(-1);
-	        return null;
-		}
-
-        Object foundObj = null;
-        for (int i=thisHub.datau.getFinderPos()+1; ;i++) {
-            Object obj = thisHub.getAt(i);
-            if (obj == null) break;
-            ArrayList al = find.find((OAObject) obj);
-            if (al.size() > 0) {
-                thisHub.datau.setFinderPos(i);
-                foundObj = obj;
-                break;
-            }
-        }
-        if (foundObj == null) {
-            thisHub.datau.setFinderPos(-1);
-            thisHub.datau.setFinder(null);
-        }
-        if (bSetAO) thisHub.setPos(thisHub.datau.getFinderPos());
-	    return foundObj;
-	}
-	*/
-    	
 }
 

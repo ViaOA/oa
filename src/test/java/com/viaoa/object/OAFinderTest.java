@@ -4,12 +4,17 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsacDataGenerator;
 import com.viaoa.hub.Hub;
 import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.*;
+import com.tmgsc.hifivetest.delegate.ModelDelegate;
+import com.tmgsc.hifivetest.model.oa.*;
+import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
 
 public class OAFinderTest extends OAUnitTest {
     
@@ -70,4 +75,26 @@ public class OAFinderTest extends OAUnitTest {
         reset();
     }
     
+    @Test
+    public void recursiveFinderTest() {
+        reset();
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData1();
+        
+        Employee emp = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
+        emp.setLastName("xxx");
+        
+        OAFinder<Program, Employee> finder = new OAFinder<Program, Employee>(ProgramPP.locations().employees().pp);
+        finder.addEqualFilter(Employee.P_LastName, "xxx");
+        Employee empx = finder.findFirst(ModelDelegate.getPrograms());
+        assertEquals(emp, empx);
+        
+        emp.setLastName("");
+        empx = finder.findFirst(ModelDelegate.getPrograms());
+        assertNull(empx);
+        
+        
+        reset();
+    }
+
 }

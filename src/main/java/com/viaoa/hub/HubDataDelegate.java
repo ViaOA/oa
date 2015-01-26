@@ -58,7 +58,7 @@ public class HubDataDelegate {
 	protected static void setChanged(Hub thisHub, boolean b) {
         boolean old = thisHub.data.changed;
         thisHub.data.changed = b;
-        thisHub.data.changeCount++;
+        if (b != old) thisHub.data.changeCount++;
         if (!b) {
         	synchronized (thisHub.data) {
         	    Vector v = thisHub.data.getVecAdd(); 

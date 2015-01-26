@@ -178,7 +178,7 @@ public class HubLinkTest extends OAUnitTest {
         // change serverType AO - create new server
         assertEquals(hubServer.getSize(), x);
         st = hubServerType.setPos(1);
-        assertNotEquals(server, hubServer.getAO());
+        assertTrue(server != hubServer.getAO());
         server = hubServer.getAO();
         assertEquals(server.getServerType(), st);
         assertEquals(hubServer.getSize(), x+1);
@@ -194,7 +194,7 @@ public class HubLinkTest extends OAUnitTest {
         x = hubServer.getSize();
         st = hubServerType.setPos(2);
         assertEquals(hubServer.getSize(), x+1);
-        assertNotEquals(server, hubServer.getAO());
+        assertTrue(server != hubServer.getAO());
         server = hubServer.getAO();
         assertEquals(server.getServerType(), st);
         

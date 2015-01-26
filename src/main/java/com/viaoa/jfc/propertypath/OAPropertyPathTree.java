@@ -507,7 +507,7 @@ public class OAPropertyPathTree extends OATree {
 
             String value = st.nextToken();
             if (od == null) {
-                od = (ObjectDef) hubObjectDef.findFirst(ObjectDef.P_Name, value);
+                od = (ObjectDef) hubObjectDef.find(ObjectDef.P_Name, value);
                 if (od == null) break;
                 int pos = hubObjectDef.getPos(od);
                 if (pos < 0) break;
@@ -522,7 +522,7 @@ public class OAPropertyPathTree extends OATree {
             else {
                 // try to find as a property
                 Hub h = od.getPropertyDefs();
-                PropertyDef prop = (PropertyDef) h.findFirst(PropertyDef.P_Name, value);
+                PropertyDef prop = (PropertyDef) h.find(PropertyDef.P_Name, value);
                 if (prop != null) {
                     OATreeNodeData tnd = null;
                     for (int j = 0; j < nodeData.getChildCount(); j++) {
@@ -537,7 +537,7 @@ public class OAPropertyPathTree extends OATree {
                 else {
                     // try to find as a calc property
                     h = od.getCalcPropertyDefs();
-                    CalcPropertyDef calc = (CalcPropertyDef) h.findFirst(CalcPropertyDef.P_Name, value);
+                    CalcPropertyDef calc = (CalcPropertyDef) h.find(CalcPropertyDef.P_Name, value);
                     if (calc != null) {
                         OATreeNodeData tnd = null;
                         for (int j = 0; nodeData != null && j < nodeData.getChildCount(); j++) {
@@ -553,7 +553,7 @@ public class OAPropertyPathTree extends OATree {
                     else {
                         // try to find as a link
                         h = od.getLinkPropertyDefs();
-                        LinkPropertyDef lp = (LinkPropertyDef) h.findFirst(LinkPropertyDef.P_Name, value);
+                        LinkPropertyDef lp = (LinkPropertyDef) h.find(LinkPropertyDef.P_Name, value);
                         if (lp != null) {
                             OATreeNodeData tnd = null;
                             for (int j = 0; j < nodeData.getChildCount(); j++) {

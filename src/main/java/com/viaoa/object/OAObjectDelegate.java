@@ -298,7 +298,9 @@ public class OAObjectDelegate {
             
             if (OAObjectInfoDelegate.isMany2Many(li)) {
             	Hub hub = (Hub) OAObjectReflectDelegate.getRawReference(oaObj, prop);
-            	if (HubDelegate.getChanged(hub, OAObject.CASCADE_NONE, cascade)) return true;
+            	if (HubDelegate.getChanged(hub, OAObject.CASCADE_NONE, cascade)) {
+            	    return true;
+            	}
             }
         	if (!bValidCascade) continue;
             
@@ -306,11 +308,15 @@ public class OAObjectDelegate {
 	        if (obj == null) continue;
 	
 	        if (obj instanceof Hub) {
-	            if (OAObjectHubDelegate.getChanged((Hub) obj, iCascadeRule, cascade)) return true;  //  if there have been adds/removes to hub
+	            if (OAObjectHubDelegate.getChanged((Hub) obj, iCascadeRule, cascade)) {
+	                return true;  //  if there have been adds/removes to hub
+	            }
 	        }
 	        else {
 	            if (obj instanceof OAObject) { // 20110420 could be OANullObject
-	                if (getChanged((OAObject)obj, iCascadeRule, cascade)) return true;
+	                if (getChanged((OAObject)obj, iCascadeRule, cascade)) {
+	                    return true;
+	                }
 	            }
 	        }
 	    }
