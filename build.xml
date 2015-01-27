@@ -3,7 +3,7 @@
 <project name="OA" default="Dist" basedir=".">
 	<description>OA by ViaOA, Inc.</description> 
 
-    <property name="Version" value="3.0"/>
+    <property name="Version" value="3.6"/>
     <property name="FullName" value="OA"/>
     <property name="FileName" value="oa"/>
 	<property name="BackupDirectory" location="/projects/backup/oa"/>
