@@ -16,6 +16,42 @@ public class OAFilterTest extends OAUnitTest {
         assertTrue(f.isUsed(null));
         assertTrue(f.isUsed(""));
         assertTrue(f.isUsed(""));
+        assertFalse(f.isUsed("X"));
+        assertFalse(f.isUsed(0));
+        assertFalse(f.isUsed(1));
+    }
+
+    @Test
+    public void likeFilterTest() {
+        OALikeFilter f = new OALikeFilter("abc");
+        
+        assertTrue(f.isUsed("Abc"));
+        assertTrue(f.isUsed("abc"));
+        assertTrue(f.isUsed("ABC"));
+        assertFalse(f.isUsed("Abcd"));
+
+        f = new OALikeFilter("abc*");
+        assertTrue(f.isUsed("Abc"));
+        assertTrue(f.isUsed("abc"));
+        assertTrue(f.isUsed("ABC"));
+        assertTrue(f.isUsed("Abcd"));
+        assertTrue(f.isUsed("Abcdadfadfadfa"));
+    }
+    @Test
+    public void notLikeFilterTest() {
+        OANotLikeFilter f = new OANotLikeFilter("abc");
+        
+        assertTrue(!f.isUsed("Abc"));
+        assertTrue(!f.isUsed("abc"));
+        assertTrue(!f.isUsed("ABC"));
+        assertFalse(!f.isUsed("Abcd"));
+
+        f = new OANotLikeFilter("abc*");
+        assertTrue(!f.isUsed("Abc"));
+        assertTrue(!f.isUsed("abc"));
+        assertTrue(!f.isUsed("ABC"));
+        assertTrue(!f.isUsed("Abcd"));
+        assertTrue(!f.isUsed("Abcdadfadfadfa"));
     }
     
     @Test

@@ -549,6 +549,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public int getSize() {
         return HubDelegate.getSize(this);
     }
+    public int size() {
+        return HubDelegate.getSize(this);
+    }
 
     /**
      * Save all objects in this hub. If objects are OAObjects, then each object
@@ -1572,8 +1575,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param propertyPath
      *            property to use to find value
-     * @parma findObject value to find
-     * @parma bSetAO if true, then set active object to object found (null if
+     * @param findObject value to find
+     * @param bSetAO if true, then set active object to object found (null if
      *        not found), else dont set active object.
      * @see #findNext
      * @see HubFinder#equals(Object)

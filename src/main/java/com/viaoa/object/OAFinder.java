@@ -229,6 +229,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     public void addNotEqualFilter(final String propPath, final Object value) {
         _addFilter(propPath, new OANotEqualFilter(value));
     }
+    
+    
+    
+    
     /**
      * Create a filter that is used on every object for this finder.
      * @param propPath property path from this Finder from object to the object that will be compared.

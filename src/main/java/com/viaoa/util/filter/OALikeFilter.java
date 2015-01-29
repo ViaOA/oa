@@ -11,7 +11,7 @@ public class OALikeFilter implements OAFilter {
     }
     @Override
     public boolean isUsed(Object obj) {
-        return !OACompare.isLike(obj, value);
+        return OACompare.isLike(obj, value);
     }
 }
 
