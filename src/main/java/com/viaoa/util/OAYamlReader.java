@@ -36,13 +36,14 @@ public class OAYamlReader {
     private int pos;
     private StringBuilder sb;
     private Class rootClass;
-    private String rootPropertyName;
+    private String rootPropertyName, rootPropertyName2;
     private String rootObjectName;
 
     
-    public OAYamlReader(String rootObjectName, String rootPropertyName) {
+    public OAYamlReader(String rootObjectName, String rootPropertyName, String rootPropertyName2) {
         this.rootObjectName = rootObjectName;
         this.rootPropertyName = rootPropertyName;
+        this.rootPropertyName2 = rootPropertyName2;
     }
     
     /**
@@ -128,9 +129,11 @@ public class OAYamlReader {
                 String line = br.readLine();
                 if (line == null) break;
                 // System.out.println(i+") "+line);
-
+                
                 String name = OAString.field(line, ':', 1);
                 if (name.trim().length() == 0) continue;
+                
+                if (name.charAt(0) == '#') continue;
 
                 String value = OAString.field(line, ':', 2, 999);
 
@@ -144,9 +147,26 @@ public class OAYamlReader {
                     if (cntObject++ > 0) {
                         sb.append("</" + rootObjectName + ">\n");
                     }
-                    value = name;
-                    name = rootPropertyName;
                     sb.append("<" + rootObjectName + ">\n");
+
+                    /*
+                        te:    << rootPropertyName value
+                          order: 6      << name/value props
+                          login: impact
+                          packages: [te, teconfig]
+                          type: te
+                    
+                    
+                        pdk-st-ixmts-01: [mts]   <<  rootPropertyName value and rootPropertyName2 value 
+                    */
+                    if (!OAString.isEmpty(value)) {
+                        sb.append("  <" + rootPropertyName + ">" + name + "</" + rootPropertyName + ">\n");
+                        name = rootPropertyName2;
+                    }
+                    else {
+                        value = name;
+                        name = rootPropertyName;
+                    }
                 }
                 sb.append("  <" + name + ">" + value + "</" + name + ">\n");
             }
