@@ -480,8 +480,6 @@ public class OAObjectReflectDelegate {
             hub = (Hub) obj;
             if (!OAObjectCSDelegate.isServer()) return hub;
 
-/**qqqqqqqq 20150130 an autoMatcher could cause this to keep getting the hub (internal loop)
- * qqqqqqqqqq need to have a way to only rerun this if it is loading from serialized file             
             // check to see if there needs to be an autoMatch set up
             if (HubDelegate.getAutoMatch(hub) == null) {
                 oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
@@ -520,7 +518,6 @@ public class OAObjectReflectDelegate {
                     HubSortDelegate.sort(hub, sortOrder, true, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
                 }
             }
-**/            
             return hub;
         }
 
