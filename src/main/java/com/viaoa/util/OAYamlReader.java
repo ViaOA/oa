@@ -133,7 +133,7 @@ public class OAYamlReader {
                 String name = OAString.field(line, ':', 1);
                 if (name.trim().length() == 0) continue;
                 
-                if (name.charAt(0) == '#') continue;
+                if (name.trim().charAt(0) == '#') continue;
 
                 String value = OAString.field(line, ':', 2, 999);
 
