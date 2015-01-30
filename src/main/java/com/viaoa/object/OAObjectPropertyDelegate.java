@@ -392,6 +392,11 @@ public class OAObjectPropertyDelegate {
             }
         }
     }
+    public static boolean isPropertyLocked(OAObject oaObj, String name) {
+        if (oaObj == null || name == null) return false;
+        String key = OAObjectKeyDelegate.getKey(oaObj).getGuid() + "." + name.toUpperCase();
+        return (hmLock.get(key) != null);
+    }
     
     // 20141108 "flip" a hub property to/from a weakRef.  Used by HubDelegate.setReferenceable
     public static boolean setPropertyWeakRef(OAObject oaObj, String name, boolean bToWeakRef) {

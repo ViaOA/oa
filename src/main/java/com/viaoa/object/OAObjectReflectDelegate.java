@@ -480,6 +480,9 @@ public class OAObjectReflectDelegate {
             hub = (Hub) obj;
             if (!OAObjectCSDelegate.isServer()) return hub;
 
+            // 20150130
+            if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
+
             // check to see if there needs to be an autoMatch set up
             if (HubDelegate.getAutoMatch(hub) == null) {
                 oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
