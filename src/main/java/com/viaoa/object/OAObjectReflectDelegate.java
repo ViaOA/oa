@@ -480,7 +480,7 @@ public class OAObjectReflectDelegate {
             hub = (Hub) obj;
             if (!OAObjectCSDelegate.isServer()) return hub;
 
-            // 20150130
+            // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))
             if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
 
             // check to see if there needs to be an autoMatch set up
@@ -936,7 +936,9 @@ public class OAObjectReflectDelegate {
         if (obj == null) return false;
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
         List<OALinkInfo> al = io.getLinkInfos();
+        boolean bIsServer = OASyncDelegate.isServer();
         for (OALinkInfo li : al) {
+            if (al == null) continue;
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
             String name = li.getName();
@@ -944,6 +946,14 @@ public class OAObjectReflectDelegate {
             Object val = OAObjectPropertyDelegate.getProperty(obj, name, true, true);
             if (val == OANotExist.instance) return false;
             if (val instanceof OAObjectKey) return false;
+            if (val instanceof Hub && bIsServer) {
+                Hub hubx = (Hub) val;
+                // see if autoMatch (if used) is set up 
+                String matchProperty = li.getMatchProperty();
+                if (matchProperty != null && matchProperty.length() > 0) {
+                    if (HubDelegate.getAutoMatch(hubx) == null) return false;
+                }
+            }
         }
         return true;
     }

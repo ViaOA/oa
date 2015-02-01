@@ -21,7 +21,7 @@ public class OAYamlReaderTest extends OAUnitTest {
     public void yamlTest() throws Exception {
         String txt = OAFile.readTextFile("runtime/test/OAYamlReaderTest/services.yaml", 0);
 
-        OAYamlReader yamlReader = new OAYamlReader("Service", "name") {
+        OAYamlReader yamlReader = new OAYamlReader("Service", "name", "") {
             String lastName;
 
             @Override

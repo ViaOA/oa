@@ -22,7 +22,10 @@ import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubSerializeDelegate;
+import com.viaoa.hub.HubSortDelegate;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.sync.OASyncDelegate;
@@ -263,6 +266,7 @@ if (oaObjOrig.getClass().getSimpleName().equalsIgnoreCase("ServerRoot")) {
         if (objs == null) return;
         
         OAObjectInfo oi = OAObjectHashDelegate.hashObjectInfo.get(oaObj.getClass());
+        boolean bIsServer = OASyncDelegate.isServer();
         
         for (int i=0; i<objs.length; i+=2) {
             String key = (String) objs[i];
@@ -297,33 +301,42 @@ if (oaObjOrig.getClass().getSimpleName().equalsIgnoreCase("ServerRoot")) {
                     obj = serializer.getReferenceValueToSend(obj); 
                 }
             }
-            else {
-                // always send OAObjectKey to reference objects
+            else {  
+                // see if something can be sent to the client
                 if (obj instanceof OAObject) {
+                    // always send OAObjectKey to reference objects
                     if (!OAObjectCSDelegate.isInClientSideCache((OAObject)obj)) {
-                        obj = OAObjectKeyDelegate.getKey((OAObject)obj); // only need to send key
+                        obj = OAObjectKeyDelegate.getKey((OAObject)obj);
                     }
                     b = true;
                 }
-                else if (obj == null || obj instanceof OAObjectKey) { // 20120827 changed to include nulls
+                else if (obj == null || obj instanceof OAObjectKey) {
                     b = true;
                 }
                 else if (obj instanceof Hub) {
+                    // see if a hub.size=0 can be sent
+                    
+                    Hub hubx = (Hub) obj;
                     if (bClientSideCache) {
                         b = true;  // this is when the client is sending an object that the server does not have
                     }
+                    else if (hubx.size() > 0 || hubx.getSharedHub() != null) {
+                        b = false;  // dont send
+                    }
                     else {
-                        // 20120926 dont send calc hubs if they are shared, they can be created empty and then
-                        //         have the calc method code set it up.
-                        //     If it is sent here then the above code (see: 20120926 commented out code) will
-                        //        need to set up the shared hub correctly
-                        Hub hx = (Hub) obj;
-                        if (hx.getSharedHub() != null || ((Hub)obj).getSize() == 0) {
-                            String matchProperty = li==null?null:li.getMatchProperty();
-                            if (matchProperty == null || matchProperty.length() == 0) {
-                                // send a null to know that there are 0 in hub 
-                                obj = null;
-                                b = true;
+                        // if hx.size=0
+                        if (!bIsServer || li == null) {
+                            obj = null;
+                            b = true;
+                        }
+                        else {
+                            // server. need to make sure that autoMatch (if needed) was set up.
+                            String matchProperty = li.getMatchProperty();
+                            if (matchProperty != null && matchProperty.length() > 0) {
+                                if (HubDelegate.getAutoMatch(hubx) != null) {
+                                    obj = null;
+                                    b = true;
+                                }
                             }
                         }
                     }

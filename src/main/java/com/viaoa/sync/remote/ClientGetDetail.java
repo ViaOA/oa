@@ -144,12 +144,12 @@ public class ClientGetDetail {
                     
                     long tDiff = System.currentTimeMillis() - t1;
                     if (OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false)) continue;
-                    if (tDiff < 7L) {
+                    if (tDiff < 3L) {
                         OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 1, false);
                     }
                     else {
                         OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 0, 1, false);
-                        if (tDiff > 15L) break;
+                        if (tDiff > 8L) break;
                     }
                 }
             }

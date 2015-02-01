@@ -1,4 +1,26 @@
 
+20150201 change access level for private
+
+ObjectInputStream ois = new ObjectInputStream(inflaterInputStream) {
+    @Override
+    protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
+        ObjectStreamClass cd = super.readClassDescriptor();
+        try {
+>>>        
+            Field f = cd.getClass().getDeclaredField("name");
+            f.setAccessible(true);
+            String name = (String) f.get(cd);
+            f.set(cd, name);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return cd;
+    }
+};
+ 
+
+
+qqqqqqqqqqqqqqq
 
 
 public static void ensureDefaultGUIFontSize() {
