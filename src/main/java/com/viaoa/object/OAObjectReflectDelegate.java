@@ -1546,14 +1546,28 @@ public class OAObjectReflectDelegate {
      * For links of type Many, only the owned links are used, and clones of the objects are created in
      * the Hub of the new object. OACopyCallback can be used to control what is copied.
      * 
-     * note: OAThreadLocalDelegate.setLoadingObject(true/false) is not set, and will need to be set before hand 
      */
-qqqqqqqqqqqq create another one that will setLoading qqqqqq????    
     public static void copyInto(OAObject oaObj, OAObject newObject, String[] excludeProperties, OACopyCallback copyCallback) {
         HashMap<Integer, Object> hmNew = new HashMap<Integer, Object>();
-        _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
+        copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
     }    
 
+    public static void copyInto(OAObject oaObj, OAObject newObject, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew) {
+        try {
+            OAThreadLocalDelegate.setLoadingObject(true);
+            OAThreadLocalDelegate.setSuppressCSMessages(true);
+            _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
+        }
+        finally {
+            OAThreadLocalDelegate.setLoadingObject(false);
+            OAThreadLocalDelegate.setSuppressCSMessages(false);
+        }
+    }
+
+    /*
+     * note: OAThreadLocalDelegate.setLoadingObject(true/false) is not set in this method.
+     *      it is set by copyInto 
+     */
     public static void _copyInto(OAObject oaObj, OAObject newObject, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew) {
         if (oaObj == null || newObject == null) return;
         hmNew.put(OAObjectDelegate.getGuid(oaObj), newObject);
