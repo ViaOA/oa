@@ -1545,7 +1545,10 @@ public class OAObjectReflectDelegate {
      * links of type One, all of the links are used, the same ref object from the source object is used.
      * For links of type Many, only the owned links are used, and clones of the objects are created in
      * the Hub of the new object. OACopyCallback can be used to control what is copied.
+     * 
+     * note: OAThreadLocalDelegate.setLoadingObject(true/false) is not set, and will need to be set before hand 
      */
+qqqqqqqqqqqq create another one that will setLoading qqqqqq????    
     public static void copyInto(OAObject oaObj, OAObject newObject, String[] excludeProperties, OACopyCallback copyCallback) {
         HashMap<Integer, Object> hmNew = new HashMap<Integer, Object>();
         _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
