@@ -465,7 +465,7 @@ public class OAString {
         uppercase.  Words will be seperated using space character.
         <p>
         Example: "yourNameTest" converts to "Your Name Test"  <br>
-        Example: "USAmerica" converts to "USAmerica"  <br>
+        Example: "USAmerica" converts to "US America"  <br>
         Example: "v.via" converts to "V.Via"  
         @param value String to convert
         @return new String that is titled case, with spaces to seperate words.  If value is null, then 
@@ -479,9 +479,12 @@ public class OAString {
         
         char c;
         char cLast = 0;
+        char cNext = 0;
         
         for (int i=0; i<x; i++) {
-            c = value.charAt(i);
+            c = (cNext>0) ? cNext : value.charAt(i);
+            if (i+1 < x) cNext = value.charAt(i+1);
+            else cNext = 0;
             
             if (i == 0) {
                 if (Character.isLowerCase(c)) c = Character.toUpperCase(c);
@@ -490,8 +493,11 @@ public class OAString {
             else if (cLast == '_') {
                 if (Character.isLowerCase(c)) c = Character.toUpperCase(c);
             }
-            else {
-                if (Character.isUpperCase(c) && !Character.isUpperCase(cLast)) sb.append(" ");
+            else if (Character.isUpperCase(c)) {
+                if (!Character.isUpperCase(cLast)) sb.append(" ");
+                else {
+                    if (cNext > 0 && Character.isLowerCase(cNext)) sb.append(" ");
+                }
             }
             sb.append(c);
             cLast = c;
