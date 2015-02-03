@@ -83,7 +83,7 @@ public class HubLinkDelegate {
 	
 	    thisHub.datau.setLinkToGetMethod(OAReflect.getMethod(linkToHub.getObjectClass(), "get"+propertyTo));
 	    if (thisHub.datau.getLinkToGetMethod() == null) {
-	        throw new RuntimeException("cant find method for property \""+propertyTo+"\" from linkToHub class="+linkToHub.getObjectClass().getName());
+	        throw new RuntimeException("cant find method for property \""+propertyTo+"\" from linkToHub class="+linkToHub.getObjectClass());
 	    }
 	    if (!linkPosFlag) {
 	        Class c = thisHub.datau.getLinkToGetMethod().getReturnType();

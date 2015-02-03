@@ -857,7 +857,12 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @returns position of object in the Hub, else -1.
      */
     public int getPos(Object object) {
-        return HubDataDelegate.getPos(this, object, true, true);
+        // 20150203 changed to not update master/detail if object is not in this hub
+        return HubDataDelegate.getPos(this, object, false, false);
+        //was: return HubDataDelegate.getPos(this, object, true, true);
+    }
+    public int getPos(Object object, boolean bAdjustMaster) {
+        return HubDataDelegate.getPos(this, object, bAdjustMaster, false);
     }
 
     /**

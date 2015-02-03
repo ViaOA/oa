@@ -370,8 +370,12 @@ public class HubDetailDelegate {
         }
     
         HubDataDelegate.incChangeCount(detailHub);
-        //was: HubDetailDelegate.updateDetailActiveObject(dHub, dHub, bUpdateLink, detail.bShareActiveObject);
+        Object aoHold = detailHub.dataa.activeObject;
+        HubData hd = detailHub.data;
+        detailHub.dataa.activeObject = null;
         HubEventDelegate.fireOnNewListEvent(detailHub, false);  // notifies all of this hub's shared hubs
+        if (detailHub.data == hd && detailHub.dataa.activeObject==null) detailHub.dataa.activeObject = aoHold;
+  
         // 20140421 moved to after newList
         HubDetailDelegate.updateDetailActiveObject(detailHub, detailHub, bUpdateLink, detail.bShareActiveObject);
     

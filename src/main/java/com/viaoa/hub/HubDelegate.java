@@ -455,8 +455,8 @@ public class HubDelegate {
 	    if (hubMaster != null) {
 	        HubAutoMatch am = new HubAutoMatch();
             thisHub.data.setAutoMatch(am);
+            am.setServerSideOnly(bServerSideOnly);
 	        am.init(thisHub, property, hubMaster);
-	        am.setServerSideOnly(bServerSideOnly);
 	    }
 	}
     public static HubAutoMatch getAutoMatch(Hub thisHub) {

@@ -10,8 +10,6 @@ import java.net.Socket;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
-import org.junit.Test;
-import org.junit.BeforeClass;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.util.*;
@@ -21,18 +19,16 @@ import com.theice.tsactest2.model.oa.cs.ServerRoot;
 /**
  *  Run this manually to then run Client junit tests.
  */
-public class ServerTest extends OAUnitTest {
+public class ServerTest {
     private OASyncServer syncServer;
     private int port = 1099;
     private ServerRoot serverRoot;    
     
-    @Test
     public void serverTest() {
        int xx = 4;
        xx++;
     }
     
-    @BeforeClass
     public static void init() throws Exception {
         ServerTest control = new ServerTest();
         control.start();

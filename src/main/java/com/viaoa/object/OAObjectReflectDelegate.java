@@ -1601,6 +1601,7 @@ public class OAObjectReflectDelegate {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getType() != li.MANY) continue;
             if (li.getCalculated()) continue;
+            if (li.getPrivateMethod()) continue;
 
             boolean bCopy = (li.isOwner());
             if (bCopy && excludeProperties != null) {
@@ -1647,6 +1648,7 @@ public class OAObjectReflectDelegate {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getType() != li.ONE) continue;
             if (li.getCalculated()) continue;
+            if (li.getPrivateMethod()) continue;
             
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
             if (liRev != null && liRev.isOwner()) {
@@ -1711,6 +1713,7 @@ public class OAObjectReflectDelegate {
         List<OALinkInfo> alLinkInfo = oi.getLinkInfos();
         for (OALinkInfo li : alLinkInfo) {
             if (li.getCalculated()) continue;
+            if (li.getPrivateMethod()) continue;
             
             if (excludeProperties != null) {
                 boolean b = true;

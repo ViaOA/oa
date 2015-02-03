@@ -503,7 +503,9 @@ public class HubEventDelegate {
 	    int x = hl.length;
 	    if (x > 0) {
 		    HubEvent hubEvent = new HubEvent(thisHub,null);
-	        for (int i=0; i<x; i++) hl[i].onNewList(hubEvent);
+	        for (int i=0; i<x; i++) {
+	            hl[i].onNewList(hubEvent);
+	        }
 	    }
 	    thisHub.data.setNewListCount(thisHub.data.getNewListCount()+1);
 	}

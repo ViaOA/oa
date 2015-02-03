@@ -973,6 +973,7 @@ public class OAObjectCacheDelegate {
                         if (li != null) {
                             li = li.getReverseLinkInfo();
                             if (li == null || li.getCalculated()) continue;
+                            if (li.getPrivateMethod()) continue;
                         }
                     }                
                     bNeedsRefreshed = false;

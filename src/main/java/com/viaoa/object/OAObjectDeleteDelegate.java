@@ -206,6 +206,9 @@ public class OAObjectDeleteDelegate {
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getCalculated()) continue;
+            if (li.getPrivateMethod()) {
+                continue;
+            }
 			
 	    	String prop = li.name;
 		    if (prop == null || prop.length() < 1) continue;

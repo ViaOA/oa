@@ -201,6 +201,60 @@ public class HubLinkTest extends OAUnitTest {
         
         reset();
     }
+
+
+    @Test
+    public void linkAOTest() {
+        reset();
+        TsacDataGenerator data = new TsacDataGenerator(model);
+        data.createSampleData1();
+
+        Hub<ServerType> hubServerType = model.getServerTypes();
+        Hub<ServerStatus> hubServerStatus = model.getServerStatuses();
+        
+        Hub<Site> hubSite = model.getSites();
+        Hub<Environment> hubEnvironment = hubSite.getDetailHub(Site.P_Environments);
+        Hub<Silo> hubSilo = hubEnvironment.getDetailHub(Environment.P_Silos);
+        Hub<Server> hubServer = hubSilo.getDetailHub(Silo.P_Servers);
+        
+
+        Hub<ServerInstall> hubServerInstall = new Hub<ServerInstall>(ServerInstall.class);
+        
+        hubServer.setLinkHub(hubServerInstall, ServerInstall.P_Server);
+        
+        assertNull(hubServer.getAO());
+        
+        Server server = hubSite.getAt(0).getEnvironments().getAt(0).getSilos().getAt(0).getServers().getAt(0);
+        Server server2 = hubSite.getAt(1).getEnvironments().getAt(0).getSilos().getAt(0).getServers().getAt(0);
+        
+        ServerInstall si = new ServerInstall();
+        hubServerInstall.add(si);
+        assertNull(hubServer.getAO());
+        hubServerInstall.setAO(si);
+        assertNull(hubServer.getAO());
+        
+        si.setServer(server);
+        assertEquals(server, hubServer.getAO());
+        assertEquals(hubSite.getAO(), hubSite.getAt(0));
+        assertNotNull(hubServer.getMasterHub());
+        
+        int pos = hubServer.getPos(server2);        
+        assertEquals(pos, -1);
+        
+        si.setServer(server2);
+        
+        assertNotNull(hubServer.getMasterHub());
+        
+        pos = hubServer.getPos(server2);        
+        assertEquals(pos, 0);
+        
+        assertEquals(server2, hubServer.getAO());
+        assertEquals(hubSite.getAO(), hubSite.getAt(1));
+        
+        
+        
+        reset();
+    }
 }
 
 

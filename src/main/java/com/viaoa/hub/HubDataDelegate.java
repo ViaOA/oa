@@ -377,7 +377,6 @@ public class HubDataDelegate {
 	    
         if (pos < 0 && adjustMaster && thisHub.datau.getSharedHub() != null) {
             OALinkInfo liRecursiveOne = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
-            boolean bUseMaster = false;
 
             // need to verify that this hub is recursive with masterObject
             if (liRecursiveOne != null) {  
@@ -390,6 +389,7 @@ public class HubDataDelegate {
                 }
             }
 
+            boolean bUseMaster = false;
             if (liRecursiveOne != null) {  // if recursive
                 Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, liRecursiveOne.getName());
                 if (parent == null) {  // must be in root hub
@@ -414,9 +414,7 @@ public class HubDataDelegate {
                 	}
                 }
             }
-            else {
-                bUseMaster = true;
-            }
+
             if (bUseMaster) {
                 if (thisHub.datam.masterHub != null && thisHub.datam.liDetailToMaster != null) {  
                     // only do this if a masterHub, since a hub that has a masterObject (w/o hub) should not do this adjustment

@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 
 import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
+import com.viaoa.TsacDataGenerator;
 import com.theice.tsactest.model.oa.*;
 import com.tmgsc.hifivetest.delegate.ModelDelegate;
 import com.tmgsc.hifivetest.model.oa.*;
@@ -40,15 +41,52 @@ public class HubDetailTest extends OAUnitTest {
 
         final Hub<Program> hubProgram = ModelDelegate.getPrograms();
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
-        final Hub<Employee> hubEmployee = hubLocation.getDetailHub(Location.P_Employees);
-        final Hub<EmployeeAward> hubEmployeeAward = hubEmployee.getDetailHub(Employee.P_EmployeeAwards);
         
+        hubProgram.setPos(0);
+        hubLocation.setPos(0);
+
+        assertNotNull(hubLocation.getAO());
         
+        hubProgram.setPos(1);
         
+        assertNull(hubLocation.getAO());
         
         reset();
     }
     
+    @Test
+    public void detailHub3Test() {
+        reset();
+        
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData1();
+
+        final Hub<Program> hubProgram = ModelDelegate.getPrograms();
+        final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
+        
+        hubProgram.setPos(0);
+        assertEquals(hubLocation.getSharedHub(), hubProgram.getAO().getLocations());
+
+        hubLocation.setPos(0);
+        assertNotNull(hubLocation.getAO());
+        
+        
+        HubListener hl = new HubListenerAdapter<Location>() {
+            @Override
+            public void onNewList(HubEvent<Location> e) {
+                assertNull(e.getHub().getAO());
+            }
+        };
+        hubLocation.addHubListener(hl);        
+        
+        hubProgram.setPos(1);
+        assertNull(hubLocation.getAO());
+        assertEquals(hubLocation.getSharedHub(), hubProgram.getAO().getLocations());
+
+        hubLocation.removeHubListener(hl);        
+
+        reset();
+    }
     
     
 }
