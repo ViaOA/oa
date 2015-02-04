@@ -195,7 +195,7 @@ public class HubListenerTest extends OAUnitTest {
         };
         
 
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
         data.createSampleData1();
         
         
@@ -203,7 +203,7 @@ public class HubListenerTest extends OAUnitTest {
         HubListener[] hls = HubEventDelegate.getAllListeners(hub);
         assertTrue(hls == null || hls.length == 0);
 
-        HubMerger<Site, Server> hm = new HubMerger<Site, Server>(model.getSites(), hub, SitePP.environments().silos().servers().pp, true);
+        HubMerger<Site, Server> hm = new HubMerger<Site, Server>(modelTsac.getSites(), hub, SitePP.environments().silos().servers().pp, true);
 
         hls = HubEventDelegate.getAllListeners(hub);
         assertTrue(hls == null || hls.length == 0);
@@ -312,10 +312,10 @@ public class HubListenerTest extends OAUnitTest {
         };
         
 
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
         data.createSampleData1();
         
-        Hub<Site> hub = model.getSites();
+        Hub<Site> hub = modelTsac.getSites();
         
         hub.addHubListener(hl);
         HubListener[] hls = HubEventDelegate.getAllListeners(hub);

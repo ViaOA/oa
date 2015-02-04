@@ -12,7 +12,7 @@ public class OAUnitTest {
 
     protected OADataSourceAuto dsAuto;
     protected OADataSourceAuto dsCache;
-    protected Model model;
+    protected com.theice.tsactest.model.Model modelTsac;
     
     protected OADataSource getDataSource() {
         return getAutoDataSource();
@@ -33,7 +33,7 @@ public class OAUnitTest {
     
     
     protected void reset() {
-        model = new Model();
+        modelTsac = new com.theice.tsactest.model.Model();
         if (dsCache != null) {
             dsCache.close();
             dsCache.setGlobalNextNumber(null);

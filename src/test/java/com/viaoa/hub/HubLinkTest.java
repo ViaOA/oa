@@ -2,24 +2,32 @@ package com.viaoa.hub;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsacDataGenerator;
 import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.SiloPP;
+import com.tmgsc.hifivetest.delegate.ModelDelegate;
+import com.tmgsc.hifivetest.model.oa.Employee;
+import com.tmgsc.hifivetest.model.oa.EmployeeAward;
+import com.tmgsc.hifivetest.model.oa.Location;
+import com.tmgsc.hifivetest.model.oa.Program;
+import com.tmgsc.hifivetest.model.oa.propertypath.EmployeeAwardPP;
 
 public class HubLinkTest extends OAUnitTest {
 
     @Test
     public void linkTest() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
         data.createSampleData1();
 
-        Hub<ServerType> hubServerType = model.getServerTypes();
-        Hub<ServerStatus> hubServerStatus = model.getServerStatuses();
+        Hub<ServerType> hubServerType = modelTsac.getServerTypes();
+        Hub<ServerStatus> hubServerStatus = modelTsac.getServerStatuses();
         
-        Hub<Site> hubSite = model.getSites();
+        Hub<Site> hubSite = modelTsac.getSites();
         Hub<Environment> hubEnvironment = hubSite.getDetailHub(Site.P_Environments);
         Hub<Silo> hubSilo = hubEnvironment.getDetailHub(Environment.P_Silos);
         Hub<Server> hubServer = hubSilo.getDetailHub(Silo.P_Servers);
@@ -76,16 +84,16 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void autoCreateLinkTest() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
         data.createSampleData1();
     
         
-        Hub<Site> hubSite = model.getSites();
+        Hub<Site> hubSite = modelTsac.getSites();
         Hub<Environment> hubEnvironment = hubSite.getDetailHub(Site.P_Environments);
         Hub<Silo> hubSilo = hubEnvironment.getDetailHub(Environment.P_Silos);
         Hub<Server> hubServer = hubSilo.getDetailHub(Silo.P_Servers);
 
-        Hub<ServerType> hubServerType = model.getServerTypes();
+        Hub<ServerType> hubServerType = modelTsac.getServerTypes();
         hubServerType.setLinkHub(hubServer, Server.P_ServerType, true, true);
 
         hubSite.setPos(0);
@@ -124,11 +132,11 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void autoCreateLinkTest2() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
         data.createSampleData1();
     
         
-        Hub<Site> hubSite = model.getSites();
+        Hub<Site> hubSite = modelTsac.getSites();
         Hub<Environment> hubEnvironment = hubSite.getDetailHub(Site.P_Environments);
         Hub<Silo> hubSilo = hubEnvironment.getDetailHub(Environment.P_Silos);
         Hub<Server> hubServer = hubSilo.getDetailHub(Silo.P_Servers);
@@ -140,7 +148,7 @@ public class HubLinkTest extends OAUnitTest {
         new HubMerger(hubSilo, hubServerType, SiloPP.siloType().serverTypes().pp, false);
         hubServerType.setLinkHub(hubServer, Server.P_ServerType, true, true);
 
-        Hub<ServerType> hubServerType2 = model.getServerTypes().createShared();
+        Hub<ServerType> hubServerType2 = modelTsac.getServerTypes().createShared();
         hubServerType2.setLinkHub(hubServer, Server.P_ServerType);
         
         hubSite.setPos(0);
@@ -164,7 +172,7 @@ public class HubLinkTest extends OAUnitTest {
         assertEquals(hubServerType2.getAO(), st);
 
         // set Server.serverType
-        st = model.getServerTypes().getAt(3);
+        st = modelTsac.getServerTypes().getAt(3);
         server.setServerType(st);
         assertNull(hubServerType.getAO());
         assertEquals(hubServerType2.getAO(), st);
@@ -206,13 +214,13 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void linkAOTest() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
         data.createSampleData1();
 
-        Hub<ServerType> hubServerType = model.getServerTypes();
-        Hub<ServerStatus> hubServerStatus = model.getServerStatuses();
+        Hub<ServerType> hubServerType = modelTsac.getServerTypes();
+        Hub<ServerStatus> hubServerStatus = modelTsac.getServerStatuses();
         
-        Hub<Site> hubSite = model.getSites();
+        Hub<Site> hubSite = modelTsac.getSites();
         Hub<Environment> hubEnvironment = hubSite.getDetailHub(Site.P_Environments);
         Hub<Silo> hubSilo = hubEnvironment.getDetailHub(Environment.P_Silos);
         Hub<Server> hubServer = hubSilo.getDetailHub(Silo.P_Servers);
@@ -251,10 +259,84 @@ public class HubLinkTest extends OAUnitTest {
         assertEquals(server2, hubServer.getAO());
         assertEquals(hubSite.getAO(), hubSite.getAt(1));
         
+        reset();
+    }
+
+    @Test
+    public void recursiveLinkTest() {
+        reset();
+        
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData1();
+
+        final Hub<Program> hubProgram = ModelDelegate.getPrograms();
+        final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
+        final Hub<Employee> hubEmployee = hubLocation.getDetailHub(Location.P_Employees);
+
+        Hub<EmployeeAward> hubEmployeeAward = new Hub<EmployeeAward>(EmployeeAward.class);
+        hubEmployee.setLinkHub(hubEmployeeAward, EmployeeAward.P_Employee);
+
+        
+        Employee emp = hubProgram.getAt(0).getLocations().getAt(0).getEmployees().getAt(0);
+        
+        EmployeeAward ea = new EmployeeAward();
+        hubEmployeeAward.add(ea);
+        
+        assertNull(hubEmployee.getAO());
+        assertNull(hubEmployee.getAO());
+
+        hubEmployeeAward.setPos(0);
+        assertNull(hubEmployee.getAO());
+        assertNull(hubLocation.getAO());
+        assertNull(hubProgram.getAO());
+        
+        ea.setEmployee(emp);
+        assertEquals(emp, hubEmployee.getAO());
+        assertEquals(hubProgram.getAO(), hubProgram.getAt(0));
+        assertEquals(hubLocation.getAO(),  hubProgram.getAt(0).getLocations().getAt(0));
+
+        emp = hubProgram.getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
+        ea.setEmployee(emp);
+        assertEquals(emp, hubEmployee.getAO());
+        assertEquals(hubProgram.getAO(), hubProgram.getAt(0));
+        assertEquals(hubLocation.getAO(), hubProgram.getAt(0).getLocations().getAt(0));
+        assertNotNull(hubEmployee.getMasterHub());
+        
+        Program prog = hubProgram.getAt(1);
+        Location loc = prog.getLocations().getAt(0); 
+        emp = loc.getEmployees().getAt(0).getEmployees().getAt(0);
+
+        hubEmployee.setAO(emp);
+        assertEquals(emp, hubEmployee.getAO());
+        assertEquals(loc, hubLocation.getAO());
+        assertEquals(prog, hubProgram.getAO());
+
+        
+        prog = hubProgram.getAt(2);
+        loc = prog.getLocations().getAt(0);
+        loc = loc.getLocations().getAt(0);
+        emp = loc.getEmployees().getAt(0).getEmployees().getAt(0);
+
+        hubEmployee.setAO(emp);
+        assertEquals(emp, hubEmployee.getAO());
+        assertEquals(loc, hubLocation.getAO());
+        assertEquals(prog, hubProgram.getAO());
+        
+        prog = hubProgram.getAt(1);
+        loc = prog.getLocations().getAt(1);
+        loc = loc.getLocations().getAt(0);
+        emp = loc.getEmployees().getAt(1);
+        emp = emp.getEmployees().getAt(0);
+
+        ea.setEmployee(emp);
+        assertEquals(emp, hubEmployee.getAO());
+        assertEquals(loc, hubLocation.getAO());
+        assertEquals(prog, hubProgram.getAO());
         
         
         reset();
     }
+
 }
 
 

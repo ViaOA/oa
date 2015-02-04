@@ -88,5 +88,40 @@ public class HubDetailTest extends OAUnitTest {
         reset();
     }
     
+
+    @Test
+    public void detailHub4Test() {
+        reset();
+        
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData1();
+
+        final Hub<Program> hubProgram = ModelDelegate.getPrograms();
+        final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
+        
+        hubProgram.setPos(0);
+        assertEquals(hubLocation.getSharedHub(), hubProgram.getAO().getLocations());
+
+        hubLocation.setPos(0);
+        assertNotNull(hubLocation.getAO());
+        
+        
+        HubListener hl = new HubListenerAdapter<Location>() {
+            @Override
+            public void onNewList(HubEvent<Location> e) {
+                assertNull(e.getHub().getAO());
+            }
+        };
+        hubLocation.addHubListener(hl);        
+        
+        hubProgram.setPos(1);
+        assertNull(hubLocation.getAO());
+        assertEquals(hubLocation.getSharedHub(), hubProgram.getAO().getLocations());
+
+        hubLocation.removeHubListener(hl);        
+
+        reset();
+    }
+    
     
 }

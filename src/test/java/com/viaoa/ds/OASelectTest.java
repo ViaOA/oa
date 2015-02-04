@@ -32,7 +32,7 @@ public class OASelectTest extends OAUnitTest {
         
         // specific tests
         
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
         data.createSampleData1();
 
         selSite = new OASelect<Site>(Site.class);
@@ -42,7 +42,7 @@ public class OASelectTest extends OAUnitTest {
         
         
         selSite = new OASelect<Site>(Site.class);
-        selSite.setSearchHub(model.getSites());
+        selSite.setSearchHub(modelTsac.getSites());
         selSite.select();
         assertTrue(selSite.hasMore());
         for ( ;;) {
@@ -81,7 +81,7 @@ public class OASelectTest extends OAUnitTest {
         
         
         OASelect<Server> selServer = new OASelect<Server>(Server.class);
-        OAFinder<Site, Server> finder = new OAFinder<Site, Server>(model.getSites(), SitePP.environments().silos().servers().pp);
+        OAFinder<Site, Server> finder = new OAFinder<Site, Server>(modelTsac.getSites(), SitePP.environments().silos().servers().pp);
         selServer.setFinder(finder);
         selServer.setFilter(new OAFilter<Server>() {
             @Override
