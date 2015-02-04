@@ -103,19 +103,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         bStop = true;
     }
 
-    /**
-     * Used for all objects that are found, to perform another find to see if
-     * that onFound(..) should be called for the object.
-     */
-/*    
-    public void setFinder(OAFinder finder) {
-        if (finder == this) throw new IllegalArgumentException("finder can not be itself");
-        this.finder = finder;
-    }
-    public OAFinder getFinder() {
-        return this.finder;
-    }
-*/    
     public void setMaxFound(int x) {
         this.maxFound = x;
     }
@@ -144,6 +131,41 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      */
     public ArrayList<T> find(Hub<F> hubRoot) {
         return find(hubRoot, null);
+    }
+
+    public ArrayList<T> find(ArrayList<F> alRoot) {
+        return find(alRoot, null);
+    }
+
+    public ArrayList<T> find(ArrayList<F> alRoot, F objectLastUsed) {
+        alFound = new ArrayList<T>();
+        if (bEnableStack) stack = new StackValue[5];
+
+        if (alRoot == null) return alFound;
+        int x = alRoot.size();
+        if (x == 0) return alFound;
+        
+        F sample = alRoot.get(0);
+        
+        bStop = false;
+        setup(sample.getClass());
+        
+        int pos;
+        if (objectLastUsed == null) pos = 0;
+        else pos = alRoot.indexOf(objectLastUsed) + 1;
+        
+        for ( ; pos<x ;pos++) {
+            F objectRoot = alRoot.get(pos);
+            if (objectRoot == null) continue;
+            stackPos = 0;
+            performFind(objectRoot);
+            if (bStop) break;
+        }
+        ArrayList<T> al = alFound;
+        this.alFound = null;
+        this.stack = null;
+        this.stackPos = 0;
+        return al;        
     }
     
     
@@ -178,43 +200,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return al;        
     }
 
-/*    
-    public void setLikeValue(String val) {
-        this.likeValue = val;
-    }
-    public String getLikeValue() {
-        return likeValue;
-    }
-    public void setEqualValue(T val) {
-        this.equalValue = val;
-    }
-    public T getEqualValue() {
-        return equalValue;
-    }
-
-    public void setEqualNull(boolean b) {
-        this.bEqualNull = b;
-        if (b) bEqualNotNull = false;
-    }
-    public boolean getEqualNull() {
-        return this.bEqualNull;
-    }
-    public void setEqualNotNull(boolean b) {
-        this.bEqualNotNull = b;
-        if (b) bEqualNull = false;
-    }
-    public boolean getEqualNotNull() {
-        return this.bEqualNotNull;
-    }
-    public void setBetweenValues(T val1, T val2) {
-        this.betweenFromVal = val1;
-        this.betweenToVal = val2;
-    }
-    public void setEqualOrBetweenValues(T val1, T val2) {
-        this.equalBetweenFromVal = val1;
-        this.equalBetweenToVal = val2;
-    }
-*/    
     public void clearFilters() {
         alFilters = null;
     }
