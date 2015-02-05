@@ -2,6 +2,8 @@ package com.viaoa.sync;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,7 +44,29 @@ public class ClientTest extends OAUnitTest {
         }
     }
     
-//    @BeforeClass
+    @Test
+    public void deleteTest() {
+        if (serverRoot == null) return;
+        String pp = SitePP.environments().silos().pp;
+        OAFinder<Site, Silo> finder = new OAFinder<Site, Silo>(pp) {
+            @Override
+            protected void onFound(Silo silo) {
+                silo.getServers().deleteAll();
+            }
+        };
+        
+        ArrayList<Silo> al = finder.find(serverRoot.getSites());
+        
+        for (Silo silo : al) {
+            assertEquals(silo.getServers().size(), 0);
+        }
+        
+        
+        
+        
+    }
+    
+    @BeforeClass
     public static void start() throws Exception {
         ClientTest control = new ClientTest();
         syncClient = new OASyncClient("localhost", port);
