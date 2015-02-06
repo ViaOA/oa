@@ -27,6 +27,7 @@ import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
 
 /**
@@ -101,10 +102,17 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         Hub h = getHub(obj, hubPropertyName);
         if (h == null) {
             // store null so that it can be an empty hub if needed (and wont have to get from server)
-            OAObjectPropertyDelegate.setProperty(obj, hubPropertyName, null);                
+            if (!OASyncDelegate.isServer()) {
+                OAObjectPropertyDelegate.setPropertyCAS(obj, hubPropertyName, null, null, true, false);                
+            }
             return false;
         }
-        h.deleteAll();
+//qqqqqqqqqqqqqq dont have this go to clients
+//   have the server send each one?
+   
+        if (OASyncDelegate.isServer()) {
+            h.deleteAll();
+        }
         return true;
     }
     

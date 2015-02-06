@@ -68,11 +68,6 @@ public class OARemoteThreadDelegate {
         if (t instanceof OARemoteThread) {
             OARemoteThread rt = (OARemoteThread) t;
             if (!rt.startedNextThread) rt.startNextThread();
-            else {
-//qqqqqqqqqqqq this was already called.
-                int xx = 4;
-                xx++;
-            }
         }
     }
     
