@@ -830,16 +830,26 @@ public class RemoteMultiplexerServer {
         if (callback != null) hmBindObject.put(bind, callback); // hold from getting gc'd
 
         InvocationHandler handler = new InvocationHandler() {
+            int errorCnt;
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 RequestInfo ri = onInvokeBroadcast(bind, method, args);
                 if (ri.object != null) {
                     synchronized (ri) {
-                        for (; !ri.processedByServer;) {
-                            try {
-                                ri.wait();
+                        // 20150206
+qqqqqqqqqqqqqqqqqqqqqqq                        
+                        if (OARemoteThreadDelegate.isRemoteThread()) {
+                            if (errorCnt++ < 20) {
+                                LOG.warning("OARemoteThread is sending a broadcast msg, will continue, msg="+ri.toLogString());
                             }
-                            catch (Exception e) {
+                        }
+                        else {
+                            for (; !ri.processedByServer;) {
+                                try {
+                                    ri.wait();
+                                }
+                                catch (Exception e) {
+                                }
                             }
                         }
                     }
@@ -1107,6 +1117,7 @@ public class RemoteMultiplexerServer {
 
             @Override
             public void startNextThread() {
+                if (startedNextThread) return;
                 super.startNextThread();
                 synchronized (Lock) {
                     Lock.notify(); // lets the main queue reader thread get the next msg

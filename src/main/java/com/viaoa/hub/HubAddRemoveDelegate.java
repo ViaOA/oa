@@ -134,6 +134,7 @@ public class HubAddRemoveDelegate {
     public static void clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
         boolean b = false;
         try {
+qqqqqqqqqqq from client, lock could be calling remote methods and keep hub locked            
             OAThreadLocalDelegate.lock(thisHub);
             b = _clear(thisHub, bSetAOtoNull, bSendNewList);
         }
@@ -289,6 +290,7 @@ public class HubAddRemoveDelegate {
         boolean bIsLoading = thisHub.isLoading();
         boolean b = false;
         try {
+qqqqqqqqqqqqqqqqqqqq            
             if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
             b = _add(thisHub, obj, bIsLoading);
         }

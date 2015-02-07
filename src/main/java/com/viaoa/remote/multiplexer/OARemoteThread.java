@@ -17,6 +17,8 @@ All rights reserved.
 */
 package com.viaoa.remote.multiplexer;
 
+import java.util.logging.Logger;
+
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 
 /**
@@ -26,8 +28,10 @@ import com.viaoa.remote.multiplexer.info.RequestInfo;
  * @author vvia
  */
 public class OARemoteThread extends Thread {
+    private static Logger LOG = Logger.getLogger(OARemoteThread.class.getName());
     
     final Object Lock = new Object();
+    private static int warningMsgCnt;
     
     volatile boolean stopCalled;
     volatile RequestInfo requestInfo;

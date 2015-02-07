@@ -346,7 +346,7 @@ public class OAObjectEventDelegate {
 	}
 
 	
-//qqqqqqqqqqqq remove this?, currently not used qqqqqqqqqq	
+	
 	protected static void sendHubBeforePropertyChange(OAObject oaObj, String propertyName, Object oldObj, Object newObj) {
         Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
         if (hubs == null) return;

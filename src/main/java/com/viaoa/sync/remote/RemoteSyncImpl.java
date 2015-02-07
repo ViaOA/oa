@@ -94,6 +94,7 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         return true;
     }
     
+qqqqqqqqqq dont have in broadcast remote object    
     @Override
     public boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
         OAObject obj = getObject(objectClass, objectKey);
@@ -107,15 +108,12 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
             }
             return false;
         }
-//qqqqqqqqqqqqqq dont have this go to clients
-//   have the server send each one?
-   
-        if (OASyncDelegate.isServer()) {
-            h.deleteAll();
-        }
+        h.deleteAll();
         return true;
     }
     
+    
+qqqqqqqqqq where is this called, have it moved/reworked like deleteAll    
     @Override
     public boolean removeAllFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
         OAObject obj = getObject(objectClass, objectKey);
@@ -123,7 +121,9 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         
         Hub h = getHub(obj, hubPropertyName);
         if (h == null) {
-            OAObjectPropertyDelegate.setProperty(obj, hubPropertyName, null);                
+            if (!OASyncDelegate.isServer()) {
+                OAObjectPropertyDelegate.setProperty(obj, hubPropertyName, null);
+            }
             return false;
         }
         h.removeAll();

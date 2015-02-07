@@ -296,8 +296,7 @@ public class OAObjectHubDelegate {
                         WeakReference<Hub<?>> ref = oaObj.weakhubs[i];
                         if (ref == null) continue;
                         Hub h = ref.get();
-
-                        if (h.getMasterObject() != null) {
+                        if (h != null && h.getMasterObject() != null) {
                             bRemoveFromServerCache = false; // already done
                             break;
                         }

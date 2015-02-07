@@ -37,7 +37,11 @@ public class OAThreadLocal {
 	protected long time;
 	
 	protected Object[] deleting;
-	
+
+	// test
+qqqqqqqqqqqqq	
+String lockStackTrace;//qqqqqqqqqqqqqqqqqq
+
 	
 	// current mode for used by OAObjectCache
 	// see: OAObjectCacheDelegate for list of mode

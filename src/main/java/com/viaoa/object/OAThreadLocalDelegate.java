@@ -633,8 +633,8 @@ static volatile int unlockCnt;
                 if (tiThis.locks != null && tiThis.locks.length > 1) {
                     msWait = 5;  // could be deadlock situation
                 }
-                else msWait = 25;
-
+                else msWait = 50;
+                
                 try {
                     tiThis.wait(msWait);  // wait for wake up
                 }
@@ -677,7 +677,19 @@ static volatile int unlockCnt;
             // must be inside sync: add to list of objects that this TI is locking
             tlThis.locks = OAArray.add(Object.class, tlThis.locks, thisLockObject);
 
-            if (tls == null) tls = new OAThreadLocal[] {tlThis};
+            if (tls == null) {
+                tls = new OAThreadLocal[] {tlThis};
+                
+//qqqqqqqqqqq
+String stackTrace="";
+Exception ex = new Exception();
+for (StackTraceElement ste : ex.getStackTrace()) {
+    stackTrace += ste.getFileName()+"."+ste.getMethodName()+"("+ste.getLineNumber()+")\n";
+}
+stackTrace = ((new OADateTime()).toString())+"\n"+stackTrace;
+tlThis.lockStackTrace = stackTrace;                
+                
+            }
             else tls = (OAThreadLocal[]) OAArray.add(OAThreadLocal.class, tls, tlThis);
             hmLock.put(thisLockObject, tls);
         }

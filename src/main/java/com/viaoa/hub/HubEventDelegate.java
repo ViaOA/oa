@@ -373,7 +373,6 @@ public class HubEventDelegate {
 	        for (int i=0; i<x; i++) {
 	            hl[i].afterPropertyChange(hubEvent);
 	        }
-	        x += 0;//qqqq debug here
 	    }
 	}
 

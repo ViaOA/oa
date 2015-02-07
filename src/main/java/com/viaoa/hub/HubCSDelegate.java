@@ -248,34 +248,41 @@ public class HubCSDelegate {
 	}
 	
     /**
-     * 20120325
+     * 20150206 returns true if this should be deleted on this computer, false if it is done on the server. 
     */
     protected static boolean deleteAll(Hub thisHub) {
         LOG.fine("hub="+thisHub);
-        if (OASyncDelegate.isSingleUser()) return false;
-        if (!OARemoteThreadDelegate.shouldSendMessages()) return false;
-        if (OAThreadLocalDelegate.isSuppressCSMessages()) return false;
+        if (OASyncDelegate.isServer()) return true;  // invoke on the server
+        
+        if (OARemoteThreadDelegate.isRemoteThread()) {
+            if (!OARemoteThreadDelegate.sendMessages()) {
+                return false; // received the "deleteAll" msg and will ignore, since the server will process it.
+            }
+        }
+        
+        if (!OARemoteThreadDelegate.shouldSendMessages()) return true;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return true;
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
-        if (oi.getLocalOnly()) return false; 
+        if (oi.getLocalOnly()) return true; 
         
         OALinkInfo li = thisHub.datam.liDetailToMaster;
         if (li != null) {
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (liRev != null && liRev.getCalculated()) return false;
+            if (liRev != null && liRev.getCalculated()) return true;
         }
 
         OAObject master = thisHub.getMasterObject();
-        if (master == null) return false;
+        if (master == null) return true;
 
         String prop = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-        if (prop == null) return false;
+        if (prop == null) return true;
 
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
-        if (rs == null) return false;
+        if (rs == null) return true;
         
         rs.deleteAll(master.getClass(), master.getObjectKey(), prop);
-        return true;
+        return false;
     }
 }
 
