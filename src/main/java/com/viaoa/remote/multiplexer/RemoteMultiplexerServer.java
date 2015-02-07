@@ -836,9 +836,8 @@ public class RemoteMultiplexerServer {
                 RequestInfo ri = onInvokeBroadcast(bind, method, args);
                 if (ri.object != null) {
                     synchronized (ri) {
-                        // 20150206
-qqqqqqqqqqqqqqqqqqqqqqq                        
-                        if (OARemoteThreadDelegate.isRemoteThread()) {
+                        // 20150206 check to see if nextThread was started                        
+                        if (!OARemoteThreadDelegate.isSafeToCallRemoteMethod()) {
                             if (errorCnt++ < 20) {
                                 LOG.warning("OARemoteThread is sending a broadcast msg, will continue, msg="+ri.toLogString());
                             }
