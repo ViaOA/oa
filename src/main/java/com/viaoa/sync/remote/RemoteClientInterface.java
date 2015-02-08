@@ -21,4 +21,6 @@ public interface RemoteClientInterface {
             String property, String[] masterProps, OAObjectKey[] siblingKeys);
     
     Object datasource(int command, Object[] objects);
+
+    boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName);
 }

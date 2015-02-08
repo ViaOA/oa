@@ -21,10 +21,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.viaoa.ds.OADataSource;
+import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
+import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.sync.OASyncDelegate;
 
 public abstract class RemoteClientImpl implements RemoteClientInterface {
     private static Logger LOG = Logger.getLogger(RemoteClientImpl.class.getName());
@@ -109,6 +113,49 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
      */
     public abstract void setCached(OAObject obj);
     
+
+    @Override
+    public boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
+        OAObject obj = getObject(objectClass, objectKey);
+        if (obj == null) return false;
+        
+        Hub h = getHub(obj, hubPropertyName);
+        if (h == null) {
+            // store null so that it can be an empty hub if needed (and wont have to get from server)
+            if (!OASyncDelegate.isServer()) {
+                OAObjectPropertyDelegate.setPropertyCAS(obj, hubPropertyName, null, null, true, false);                
+            }
+            return false;
+        }
+        h.deleteAll();
+        return true;
+    }
+
+    // on the server, if the object is not found in the cache, then it will be loaded by the datasource 
+    private OAObject getObject(Class objectClass, OAObjectKey origKey) {
+        OAObject obj = OAObjectCacheDelegate.get(objectClass, origKey);
+        if (obj == null && OASyncDelegate.isServer()) {
+            obj = (OAObject) OADataSource.getObject(objectClass, origKey);
+            if (obj != null) {
+                // object must have been GCd, use the original guid
+                OAObjectDelegate.reassignGuid(obj, origKey);
+            }
+        }
+        return obj;
+    }
+    
+    // on the server, if the Hub is not found in the cache, then it will be loaded by the datasource
+    private Hub getHub(OAObject obj, String hubPropertyName) {
+        boolean bWasLoaded = OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName);
+        if (!bWasLoaded && !OASyncDelegate.isServer()) {
+            return null;
+        }
+        Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);
+        if (!(objx instanceof Hub)) return null;
+
+        // loadCachedOwners will have been done by the call to getObject(masterObj)
+        return (Hub) objx;
+    }
 }
 
 

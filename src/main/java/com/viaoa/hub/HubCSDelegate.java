@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.*;
+import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.object.*;
@@ -254,12 +255,6 @@ public class HubCSDelegate {
         LOG.fine("hub="+thisHub);
         if (OASyncDelegate.isServer()) return true;  // invoke on the server
         
-        if (OARemoteThreadDelegate.isRemoteThread()) {
-            if (!OARemoteThreadDelegate.sendMessages()) {
-                return false; // received the "deleteAll" msg and will ignore, since the server will process it.
-            }
-        }
-        
         if (!OARemoteThreadDelegate.shouldSendMessages()) return true;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return true;
         
@@ -278,7 +273,7 @@ public class HubCSDelegate {
         String prop = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
         if (prop == null) return true;
 
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
+        RemoteClientInterface rs = OASyncDelegate.getRemoteClient();
         if (rs == null) return true;
         
         rs.deleteAll(master.getClass(), master.getObjectKey(), prop);

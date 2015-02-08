@@ -60,7 +60,7 @@ public class RequestInfo {
     public Object response;
     public boolean responseReturned;
     
-    public volatile boolean processedByServer; // flag set on server when it has invoked    
+    public volatile boolean processedByServer;  // flag set on server after it's processed    
     
     public RequestInfo() {
         this.cnt = aiCount.incrementAndGet();

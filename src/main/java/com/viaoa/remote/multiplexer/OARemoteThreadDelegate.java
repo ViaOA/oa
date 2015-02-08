@@ -70,6 +70,14 @@ public class OARemoteThreadDelegate {
             if (!rt.startedNextThread) rt.startNextThread();
         }
     }
+    public static boolean startedNextThread() {
+        Thread t = Thread.currentThread();
+        if (t instanceof OARemoteThread) {
+            OARemoteThread rt = (OARemoteThread) t;
+            return rt.startedNextThread();
+        }
+        return true;
+    }
     
     
     public static boolean sendMessages() {

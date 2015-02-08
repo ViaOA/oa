@@ -24,11 +24,11 @@ public class ClientTest extends OAUnitTest {
     private static ServerRoot serverRoot;    
     private static OASyncClient syncClient;
     
-    @Test
+    //@Test
     public void clientTest() {
     }
     
-    @Test
+    //@Test
     public void objectLinkMatchTest() {
         if (serverRoot == null) return;
         OAFinder<Site, Application> finder = new OAFinder<Site, Application>(SitePP.environments().silos().servers().applications().pp);
@@ -44,7 +44,7 @@ public class ClientTest extends OAUnitTest {
         }
     }
     
-    @Test
+    //@Test
     public void deleteTest() {
         if (serverRoot == null) return;
         String pp = SitePP.environments().silos().pp;
@@ -61,12 +61,9 @@ public class ClientTest extends OAUnitTest {
             assertEquals(silo.getServers().size(), 0);
         }
         
-        
-        
-        
     }
     
-    @BeforeClass
+    //@BeforeClass
     public static void start() throws Exception {
         ClientTest control = new ClientTest();
         syncClient = new OASyncClient("localhost", port);

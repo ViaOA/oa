@@ -68,6 +68,10 @@ public class OARemoteThread extends Thread {
         startedNextThread = true;
         msStartNextThread = System.currentTimeMillis();
     }
+    public boolean startedNextThread() {
+        return startedNextThread;
+    }
+    
     public void setSendMessages(boolean b) {
         if (b) sendMessageCount++;
         else sendMessageCount--;

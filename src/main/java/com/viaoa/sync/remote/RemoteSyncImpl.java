@@ -93,8 +93,8 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         h.remove(objectRemove);
         return true;
     }
-    
-qqqqqqqqqq dont have in broadcast remote object    
+
+    /* moved to RemoteClientImpl, so that it would be ran on the server
     @Override
     public boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
         OAObject obj = getObject(objectClass, objectKey);
@@ -111,9 +111,9 @@ qqqqqqqqqq dont have in broadcast remote object
         h.deleteAll();
         return true;
     }
+    */
     
     
-qqqqqqqqqq where is this called, have it moved/reworked like deleteAll    
     @Override
     public boolean removeAllFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName) {
         OAObject obj = getObject(objectClass, objectKey);

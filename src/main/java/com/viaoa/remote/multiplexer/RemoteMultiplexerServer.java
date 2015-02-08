@@ -983,6 +983,7 @@ public class RemoteMultiplexerServer {
 
         final OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(asyncQueueName);
         final long qPos = cq.getHeadPostion();
+        cq.registerSession(0);
 
         // set up thread that will get messages from queue and send to client
         final String threadName = "Broadcast.queue." + asyncQueueName;
@@ -1008,7 +1009,7 @@ public class RemoteMultiplexerServer {
         int cntMsg = 0;
         for (;;) {
             RequestInfo[] ris;
-            ris = cque.getMessages(qpos, 50, 2000);
+            ris = cque.getMessages(0, qpos, 250, 200);
             
             if (ris == null) {  // remove any unneeded threads
                 if (alRemoteClientThread.size() > 3) {
@@ -1027,8 +1028,8 @@ public class RemoteMultiplexerServer {
             qpos += ris.length;
             for (RequestInfo ri : ris) {
                 if (ri.connectionId == 0) { // sent from object on this server
-                    ri.processedByServer = true;
                     synchronized (ri) {
+                        ri.processedByServer = true;
                         ri.notifyAll();
                     }
                     continue;
@@ -1068,9 +1069,9 @@ public class RemoteMultiplexerServer {
                     remoteThread.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
                     remoteThread.Lock.wait(25000);
                 }
-                long ms2 = System.currentTimeMillis();
 
-                // qqqqqq this can be removed, sanity check only
+                long ms2 = System.currentTimeMillis();
+                // this can be removed, sanity check only
                 if (!ri.processedByServer && (ms2-ms1) > 12000) {
                     StackTraceElement[] stes = remoteThread.getStackTrace();
                     Exception ex = new Exception();
@@ -1078,6 +1079,7 @@ public class RemoteMultiplexerServer {
                     LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
                             + ri.toLogString(), ex);
                 }
+
             }
         }
     }
@@ -1149,6 +1151,7 @@ public class RemoteMultiplexerServer {
             ri.exception = e;
         }
         ri.processedByServer = true;
+        
         OAThreadLocalDelegate.setRemoteRequestInfo(null);
         synchronized (ri) {
             ri.notifyAll(); // waiting clients getting messages from queue 
@@ -1357,7 +1360,7 @@ public class RemoteMultiplexerServer {
 
                 RequestInfo[] ris = null;
                 try {
-                    ris = cque.getMessages(connectionId, qpos, 100, 0);
+                    ris = cque.getMessages(connectionId, qpos, 100, 2000);
                 }
                 catch (Exception e) {
                     LOG.log(Level.WARNING, "Message queue overrun with msg CircularQueue", e);
@@ -1367,6 +1370,7 @@ public class RemoteMultiplexerServer {
                 if (ris == null) {
                     continue;
                 }
+                
                 qpos += ris.length;
                 for (RequestInfo ri : ris) {
                     if (vsocket.isClosed()) return;
@@ -1409,7 +1413,7 @@ public class RemoteMultiplexerServer {
                         oos.writeInt(ri.messageId);
                     }
                     else {
-//qqqqqqq create hook to see if the client will need this                        
+                        //qqqqqq create hook to see if the client will need this                        
                         oos.writeBoolean(false); // broadcast
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
                         oos.writeObject(ri.args);

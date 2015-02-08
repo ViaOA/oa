@@ -1,4 +1,11 @@
 
+    StackTraceElement[] stes = remoteThread.getStackTrace();
+    Exception ex = new Exception();
+    ex.setStackTrace(stes);
+
+
+qqqqqqqqqqqqqqqqqqqqqq
+
     String stackTrace="";
 
     Exception ex = new Exception();

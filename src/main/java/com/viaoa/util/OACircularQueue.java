@@ -119,6 +119,7 @@ public abstract class OACircularQueue<TYPE> {
     //   this is called from a sync block
     private void cleanupQueue() {
         if (hmSession == null) return; // no session registered
+        if (queueHeadPosition < 1) return;
         long pos = queueHeadPosition-1;
         for (Map.Entry<Integer, Long> entry : hmSession.entrySet()) {
             long x = entry.getValue();

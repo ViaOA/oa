@@ -39,7 +39,9 @@ public interface RemoteSyncInterface {
     boolean sort(Class objectClass, OAObjectKey objectKey, String hubPropertyName, String propertyPaths, boolean bAscending, Comparator comp);
 
     boolean delete(Class objectClass, OAObjectKey objectKey);
-    boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName);
+    
+    // moved to remoteClient so that it will be performed on the server
+    // boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName);
 }
 
 

@@ -39,7 +39,7 @@ public class OAThreadLocal {
 	protected Object[] deleting;
 
 	// test
-qqqqqqqqqqqqq	
+//qqqqqqqqqqqqq	
 String lockStackTrace;//qqqqqqqqqqqqqqqqqq
 
 	

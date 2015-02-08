@@ -33,18 +33,15 @@ import com.viaoa.ds.OADataSource;
  */
 public class HubDeleteDelegate {
 
-    
     public static void deleteAll(Hub thisHub) {
         // 20150206 send to server
         if (thisHub.getSize() == 0) return;
         if (!HubCSDelegate.deleteAll(thisHub)) {
-            return;  // dont process it. Done on server.
+            return;  // Done on server.
         }
 
         boolean b = OASyncDelegate.isServer();
         try {
-qqqqqqqqqq dont call in OARemoteThread, by moving deleteAll remote method to another remote object
-this will need to be changed in HubCSDelegate.deleteAll
             if (b) OARemoteThreadDelegate.sendMessages(true);
             OACascade cascade = new OACascade();
             deleteAll(thisHub, cascade);
@@ -52,19 +49,6 @@ this will need to be changed in HubCSDelegate.deleteAll
         finally {
             if (b) OARemoteThreadDelegate.sendMessages(false);
         }
-        
-        /*was 20150205        
-        boolean b = thisHub.getSize() > 0 && HubCSDelegate.deleteAll(thisHub);
-        try {
-            if (b) OAThreadLocalDelegate.setSuppressCSMessages(true);
-            OACascade cascade = new OACascade();
-            deleteAll(thisHub, cascade);
-        }
-        finally {
-            if (b) OAThreadLocalDelegate.setSuppressCSMessages(false);
-            OARemoteThreadDelegate.startNextThread(); 
-        }
-        */                
     }
     
     
