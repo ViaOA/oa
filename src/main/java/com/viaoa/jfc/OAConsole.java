@@ -109,7 +109,10 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 if (!OAConsole.this.bHasFocus && !OAConsole.this.bHasMouse && ao == oaObj) {
                     pos = OAConsole.this.getHub().getSize();
                     Rectangle rect = OAConsole.this.getCellRect(pos, 0, true);
-                    OAConsole.this.scrollRectToVisible(rect);
+                    try {
+                        OAConsole.this.scrollRectToVisible(rect);
+                    }
+                    catch (Exception ex) {}
                     OAConsole.this.repaint();
                 }
             }

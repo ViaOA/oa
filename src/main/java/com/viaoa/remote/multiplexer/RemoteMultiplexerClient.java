@@ -317,7 +317,6 @@ public class RemoteMultiplexerClient {
     // class
     private final Object stuntObject = new Object();
     private int errorCnt;
-    private int errorCnt2;
 
     /**
      * Called when a remote/proxy object method is invoked. The method info will be sent to the server,
@@ -366,20 +365,6 @@ public class RemoteMultiplexerClient {
                 LOG.log(Level.WARNING, "note: isSafeToCallRemoteMethod is false, will continue, starting another OARemoteThread", e);
             }
             OARemoteThreadDelegate.startNextThread();
-        }
-        
-        if (errorCnt2 < 20) {
-            Object[] locks = OAThreadLocalDelegate.getLocks();
-            if (locks != null && locks.length > 0) {
-                for (Object lock : locks) {
-                    if (OAThreadLocalDelegate.isLockOwner(lock)) {
-                        errorCnt2++;
-                        String s = "remote method call while locks are set";
-                        Exception e = new Exception(s);
-                        LOG.log(Level.WARNING, s+", obj="+lock, e);
-                    }
-                }
-            }
         }
         
         // compress flagged arguments

@@ -20,6 +20,7 @@ package com.viaoa.sync;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.remote.*;
 
 public class OASyncDelegate {
@@ -117,5 +118,9 @@ public class OASyncDelegate {
         }
         return x;
     }
-    
+
+    public static boolean sendMessages(boolean b) {
+        return OARemoteThreadDelegate.sendMessages(b);
+    }
+        
 }
