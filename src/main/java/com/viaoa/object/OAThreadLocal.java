@@ -38,11 +38,6 @@ public class OAThreadLocal {
 	
 	protected Object[] deleting;
 
-	// test
-//qqqqqqqqqqqqq	
-String lockStackTrace;//qqqqqqqqqqqqqqqqqq
-
-	
 	// current mode for used by OAObjectCache
 	// see: OAObjectCacheDelegate for list of mode
 	protected int cacheAddMode; // 0 means that it has not been set and will use OAObjectCacheDelegate.DefaultAddMode

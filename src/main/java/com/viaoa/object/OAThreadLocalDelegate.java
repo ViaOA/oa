@@ -633,7 +633,7 @@ static volatile int unlockCnt;
                 if (tiThis.locks != null && tiThis.locks.length > 1) {
                     msWait = 5;  // could be deadlock situation
                 }
-                else msWait = 50;
+                else msWait = 25;
                 
                 try {
                     tiThis.wait(msWait);  // wait for wake up
@@ -679,16 +679,6 @@ static volatile int unlockCnt;
 
             if (tls == null) {
                 tls = new OAThreadLocal[] {tlThis};
-                
-//qqqqqqqqqqq
-String stackTrace="";
-Exception ex = new Exception();
-for (StackTraceElement ste : ex.getStackTrace()) {
-    stackTrace += ste.getFileName()+"."+ste.getMethodName()+"("+ste.getLineNumber()+")\n";
-}
-stackTrace = ((new OADateTime()).toString())+"\n"+stackTrace;
-tlThis.lockStackTrace = stackTrace;                
-                
             }
             else tls = (OAThreadLocal[]) OAArray.add(OAThreadLocal.class, tls, tlThis);
             hmLock.put(thisLockObject, tls);
