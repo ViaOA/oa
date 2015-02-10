@@ -419,6 +419,10 @@ public class OASyncServer {
         return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, SyncQueueName, QueueSize);
     }
     
+    public void registerClassWithQueue(Class clazz) {
+        getRemoteMultiplexerServer().registerClassWithQueue(clazz, SyncQueueName, QueueSize);
+    }
+    
 
     protected void afterInvokeRemoteMethod(RequestInfo ri) {
         if (ri == null) return;
