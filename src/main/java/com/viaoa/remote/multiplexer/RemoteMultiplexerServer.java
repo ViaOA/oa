@@ -604,6 +604,8 @@ if (ri.bind != null && ri.bind.usesQueue) {
     cq.addMessageToQueue(ri);
 
     //qqqqqqqq wait for to get back from client
+    
+    wait for server to get it back from queue, which  client needs to return   
 }
 
 
