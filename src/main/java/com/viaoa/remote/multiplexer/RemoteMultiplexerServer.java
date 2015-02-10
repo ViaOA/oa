@@ -81,7 +81,7 @@ public class RemoteMultiplexerServer {
     private ConcurrentHashMap<BindInfo, Object> hmBindObject = new ConcurrentHashMap<BindInfo, Object>();
 
     // used for queued messages 
-    private ConcurrentHashMap<String, OACircularQueue<RequestInfo>> hmAsnycCircularQueue = new ConcurrentHashMap<String, OACircularQueue<RequestInfo>>();
+    private ConcurrentHashMap<String, OACircularQueue<RequestInfo>> hmAsyncCircularQueue = new ConcurrentHashMap<String, OACircularQueue<RequestInfo>>();
 
     // track connections
     private ConcurrentHashMap<Integer, Session> hmSession = new ConcurrentHashMap<Integer, Session>();
@@ -219,7 +219,7 @@ public class RemoteMultiplexerServer {
             long t1 = System.nanoTime();
             // return response
             if (ri.bind != null && ri.bind.usesQueue) {
-                OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(ri.bind.asyncQueueName);
+                OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
                 cq.addMessageToQueue(ri);
             }
             else if (bShouldReturnValue && (ri.methodInfo == null || !ri.methodInfo.noReturnValue)) {
@@ -524,7 +524,7 @@ public class RemoteMultiplexerServer {
     protected void onInvokeForStoC(Session session, RequestInfo ri) throws Exception {
         ri.bind = session.getBindInfo(ri.bindName);
         if (ri.bind == null) {
-            ri.exceptionMessage = "object was remved on client (GCd)";
+            ri.exceptionMessage = "object was removed on client (GCd)";
             return;
         }
         if (ri.bind != null) {
@@ -594,6 +594,21 @@ public class RemoteMultiplexerServer {
             }
         }
 
+qqqqqqqqqqqqqqqqq what if it should be using queue qqqqqqqqqq
+>> put in queue, and client will need to have a StoC to add the response back to the queue
+>>    the server will wait on the client response, and then wake up the waiting thread
+         
+
+if (ri.bind != null && ri.bind.usesQueue) {
+    OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
+    cq.addMessageToQueue(ri);
+
+    //qqqqqqqq wait for to get back from client
+}
+
+
+        
+        
         ri.socket = session.getSocketForStoC();
 
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, session.hmClassDescOutput, session.aiClassDescOutput);
@@ -785,11 +800,11 @@ public class RemoteMultiplexerServer {
         bind.loadMethodInfo();
         hmNameToBind.put(name, bind);
         if (bind.usesQueue) {
-            OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(bind.asyncQueueName);
+            OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(bind.asyncQueueName);
             if (cq == null) {
                 cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {};
                 cq.setName(queueName);
-                hmAsnycCircularQueue.put(bind.asyncQueueName, cq);
+                hmAsyncCircularQueue.put(bind.asyncQueueName, cq);
             }
         }
         return bind;
@@ -967,7 +982,7 @@ public class RemoteMultiplexerServer {
         }
 
         // put "ri" in circular queue for clients to pick up.       
-        OACircularQueue<RequestInfo> cque = hmAsnycCircularQueue.get(ri.bind.asyncQueueName);
+        OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
         cque.addMessageToQueue(ri);
         return ri;
     }
@@ -981,7 +996,7 @@ public class RemoteMultiplexerServer {
             hmAsyncQueue.put(asyncQueueName, "");
         }
 
-        final OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(asyncQueueName);
+        final OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(asyncQueueName);
         final long qPos = cq.getHeadPostion();
         cq.registerSession(0);
 
@@ -1067,7 +1082,7 @@ public class RemoteMultiplexerServer {
                 synchronized (remoteThread.Lock) {
                     remoteThread.requestInfo = ri;
                     remoteThread.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
-                    remoteThread.Lock.wait(25000);
+                    remoteThread.Lock.wait(30000);
                 }
 
                 long ms2 = System.currentTimeMillis();
@@ -1306,7 +1321,7 @@ public class RemoteMultiplexerServer {
                 if (hmAsyncQueue.get(asyncQueueName) != null) return;
 
                 hmAsyncQueue.put(asyncQueueName, "");
-                final OACircularQueue<RequestInfo> cq = hmAsnycCircularQueue.get(asyncQueueName);
+                final OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(asyncQueueName);
                 final long qPos = cq.getHeadPostion();
 
                 // set up thread that will get messages from queue and send to client
