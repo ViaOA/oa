@@ -31,6 +31,21 @@ import com.viaoa.comm.multiplexer.io.VirtualSocket;
 public class RequestInfo {
     private final static AtomicInteger aiCount = new AtomicInteger();
 
+    // types of commands sent between Client and Server
+    public static final byte CtoS_Command_RunMethod = 0;
+//qqqqqqqqqqq document data formats for each command    
+    public static final byte CtoS_Command_GetLookupInfo = 1;
+    public static final byte CtoS_Command_RemoveSessionBroadcastThread = 2;
+    public static final byte CtoS_Command_GetBroadcastClass = 3;
+    public static final byte CtoS_Command_ReturningResponse = 4;
+
+    public static final byte StoC_Command_CreateNewStoCSocket = 5;
+    public static final byte StoC_Command_SendBroadcast = 6;
+    public static final byte StoC_Command_SendResponse = 7;
+    public static final byte StoC_Command_SendRequest = 8;
+    
+    public byte currentCommand;
+
     final public int cnt;
     public long msStart;
     public long nsStart; 

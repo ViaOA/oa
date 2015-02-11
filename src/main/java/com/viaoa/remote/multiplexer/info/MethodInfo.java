@@ -40,4 +40,6 @@ public class MethodInfo {
     
     // true if dont wait for return value (void methods)
     public boolean noReturnValue;
+    
+    public int timeoutSeconds = 30;
 }

@@ -126,7 +126,7 @@ public class RemoteMultiplexerClient {
         VirtualSocket socket = getSocketForCtoS();
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
         
-        oos.writeByte(CtoS_Command_GetBroadcastClass);
+        oos.writeByte(RequestInfo.CtoS_Command_GetBroadcastClass);
         oos.writeAsciiString(lookupName);
         oos.flush();
 
@@ -165,7 +165,7 @@ public class RemoteMultiplexerClient {
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
         
         // 20130601 changed from boolean to byte
-        oos.writeByte(CtoS_Command_GetLookupInfo); // 0=method, 1=get interface class, 2=remove session bindInfo
+        oos.writeByte(RequestInfo.CtoS_Command_GetLookupInfo); // 0=method, 1=get interface class, 2=remove session bindInfo
         oos.writeAsciiString(lookupName);
         oos.flush();
 
@@ -407,7 +407,7 @@ public class RemoteMultiplexerClient {
         long ns1 = System.nanoTime();
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
         // 20130601 changed from boolean to byte
-        oos.writeByte(CtoS_Command_RunMethod);
+        oos.writeByte(RequestInfo.CtoS_Command_RunMethod);
         oos.writeAsciiString(ri.bind.name);
         oos.writeAsciiString(ri.methodNameSignature);
         oos.writeObject(ri.args);
@@ -671,14 +671,16 @@ public class RemoteMultiplexerClient {
     protected void processMessageForStoC(final VirtualSocket socket, int threadId) throws Exception {
         if (socket.isClosed()) return;
         RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
-        if (ois.readBoolean()) {
+        
+        
+        byte msgType = ois.readByte();
+        
+        if (msgType == RequestInfo.StoC_Command_CreateNewStoCSocket) {
             // server is requesting another vsocket "stoc"
             createSocketForStoC();
             return;
         }
 
-        boolean bSendResponse = ois.readBoolean(); // flag to know if this is a broadcast message (false) or not.
-        
         RequestInfo ri = new RequestInfo();
         ri.msStart = System.currentTimeMillis();
         ri.nsStart = System.nanoTime();
@@ -686,23 +688,18 @@ public class RemoteMultiplexerClient {
         ri.connectionId = socket.getConnectionId();
         ri.vsocketId = socket.getId();
         ri.threadId = threadId;
-
         ri.bindName = ois.readAsciiString();
+
         ri.bind = getBindInfo(ri.bindName);
         if (ri.bind == null) {
-            // broadcast message not set up for this client
+            // broadcast message not set up for this client, need to read remaining data from stream
             ois.readBoolean(); // will be false
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
             return;  
         }
         
-        boolean b;
-        if (ri.bind.usesQueue) {
-            b = ois.readBoolean();
-        }
-        else b = false;
-        if (b) { // private message for this client only
+        if (msgType == RequestInfo.StoC_Command_SendResponse) {
             byte bx = ois.readByte();
             Object objx = ois.readObject();
             if (bx == 0) ri.exception = (Exception) objx;
@@ -733,13 +730,13 @@ public class RemoteMultiplexerClient {
 
         beforeInvokForStoC(ri);
 
-        if (ri.bind.usesQueue) {
+        if (msgType == RequestInfo.StoC_Command_SendBroadcast) {
             OARemoteThread t = getRemoteClientThread(ri);
 
             long t1 = System.currentTimeMillis();                
             synchronized (t.Lock) {
                 if (t.requestInfo != null) {
-                    t.Lock.notify();  // have RemoteClientThread process the message
+                    t.Lock.notify();  // have RemoteClientThread call processMessageforStoC2(..)
                     t.Lock.wait(250);
                 }
             }
@@ -755,41 +752,70 @@ public class RemoteMultiplexerClient {
             }
         }
         else {
-            processMessageForStoC2(ri, bSendResponse);
+            // msgType == RemoteMultiplexerServer.StoC_Command_SendRequest
+            processMessageForStoC2(ri, true);
         }
     }
     
     protected void processMessageForStoC2(RequestInfo ri, boolean bSendResponse) throws Exception {
         try {
-            processMessageForStoC(ri);
+            processMessageForStoC3(ri);  // invoke
         }
         catch (Exception e) {
             ri.exception = e;
         }
 
         if (bSendResponse && (ri.methodInfo == null || !ri.methodInfo.noReturnValue)) {
-            RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
-            if (ri.exception != null) {
-                Object resp;
-                if (ri.exception instanceof Serializable) {
-                    resp = ri.exception;
+
+            // 20150211 S2C using queue
+            if (ri.socket == null) {
+                // need to send back a async response message 
+                
+                VirtualSocket socket = getSocketForCtoS();
+                RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
+  
+                oos.writeByte(RequestInfo.CtoS_Command_ReturningResponse);
+                oos.writeInt(ri.messageId);
+                if (ri.exception != null) {
+                    oos.writeByte(0);
+                    oos.writeObject(ri.exception);
+                }
+                else if (ri.exceptionMessage != null) {
+                    oos.writeByte(1);
+                    oos.writeObject(ri.exceptionMessage);
                 }
                 else {
-                    resp = new Exception(ri.exception.toString() + ", info: " + ri.toLogString());
+                    oos.writeByte(2);
+                    oos.writeObject(ri.response);
                 }
-                oos.writeBoolean(false); // false=error
-                oos.writeObject(resp);
-            }
-            else if (ri.exceptionMessage != null) {
-                oos.writeBoolean(false);  // false=error
-                Exception ex = new Exception(ri.exceptionMessage + ", info: " + ri.toLogString());
-                oos.writeObject(ex);
+                
+                oos.flush();
+                releaseSocketForCtoS(socket);
             }
             else {
-                oos.writeBoolean(true);  // true=success
-                oos.writeObject(ri.response);
+                RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
+                if (ri.exception != null) {
+                    Object resp;
+                    if (ri.exception instanceof Serializable) {
+                        resp = ri.exception;
+                    }
+                    else {
+                        resp = new Exception(ri.exception.toString() + ", info: " + ri.toLogString());
+                    }
+                    oos.writeBoolean(false); // false=error
+                    oos.writeObject(resp);
+                }
+                else if (ri.exceptionMessage != null) {
+                    oos.writeBoolean(false);  // false=error
+                    Exception ex = new Exception(ri.exceptionMessage + ", info: " + ri.toLogString());
+                    oos.writeObject(ex);
+                }
+                else {
+                    oos.writeBoolean(true);  // true=success
+                    oos.writeObject(ri.response);
+                }
+                oos.flush();
             }
-            oos.flush();
         }
         else {
             if (ri.exception != null) {
@@ -804,7 +830,7 @@ public class RemoteMultiplexerClient {
         afterInvokForStoC(ri);
     }
 
-    protected void processMessageForStoC(RequestInfo ri) throws Exception {
+    protected void processMessageForStoC3(RequestInfo ri) throws Exception {
         ri.bind = getBindInfo(ri.bindName);
         if (ri.bind == null) {
             ri.exceptionMessage = "bind Object not found";
