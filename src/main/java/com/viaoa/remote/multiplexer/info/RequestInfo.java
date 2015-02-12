@@ -33,15 +33,20 @@ public class RequestInfo {
 
     // types of commands sent between Client and Server
     public static final byte CtoS_Command_RunMethod = 0;
-//qqqqqqqqqqq document data formats for each command    
+qqqqqqqq changed to    
+public static final byte CtoS_Command_SendAsyncRequest = 0;
+public static final byte CtoS_Command_SendSyncRequest = 0;
+    
+    
     public static final byte CtoS_Command_GetLookupInfo = 1;
     public static final byte CtoS_Command_RemoveSessionBroadcastThread = 2;
     public static final byte CtoS_Command_GetBroadcastClass = 3;
-    public static final byte CtoS_Command_ReturningResponse = 4;
+qqqq change to SendAsyncResponse    
+    public static final byte CtoS_Command_ReturningAsyncResponse = 4;
 
     public static final byte StoC_Command_CreateNewStoCSocket = 5;
     public static final byte StoC_Command_SendBroadcast = 6;
-    public static final byte StoC_Command_SendResponse = 7;
+    public static final byte StoC_Command_SendAsyncResponse = 7;
     public static final byte StoC_Command_SendAsyncRequest = 8;
     public static final byte StoC_Command_SendSyncRequest = 8;
     

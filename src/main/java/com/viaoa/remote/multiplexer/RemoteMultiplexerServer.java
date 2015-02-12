@@ -215,7 +215,7 @@ public class RemoteMultiplexerServer {
             
             // return response
             if (ri.bind != null && ri.bind.usesQueue) {
-                ri.currentCommand = RequestInfo.StoC_Command_SendResponse;
+                ri.currentCommand = RequestInfo.StoC_Command_SendAsyncResponse;
                 OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
                 cq.addMessageToQueue(ri);
             }
@@ -256,7 +256,7 @@ public class RemoteMultiplexerServer {
         ri.nsStart = System.nanoTime();
 
         // 20150211 client is responding to an async request
-        if (ri.currentCommand == RequestInfo.CtoS_Command_ReturningResponse) {
+        if (ri.currentCommand == RequestInfo.CtoS_Command_ReturningAsyncResponse) {
             ri.messageId = ois.readInt();
             RequestInfo rix = hmClientCallbackRequestInfo.remove(ri.messageId);
      
@@ -1505,7 +1505,7 @@ public class RemoteMultiplexerServer {
 //qqqqqqqqqqqqqqqqqqqq
                     oos.writeByte(ri.currentCommand);
                     
-                    if (ri.currentCommand == ri.StoC_Command_SendResponse) {
+                    if (ri.currentCommand == ri.StoC_Command_SendAsyncResponse) {
                         if (ri.exception != null) {
                             oos.writeByte(0);
                             oos.writeObject(ri.exception);

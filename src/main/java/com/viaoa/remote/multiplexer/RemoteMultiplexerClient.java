@@ -692,7 +692,7 @@ public class RemoteMultiplexerClient {
         ri.currentCommand = msgType;
 
         
-        if (ri.currentCommand == ri.StoC_Command_SendResponse) {
+        if (ri.currentCommand == ri.StoC_Command_SendAsyncResponse) {
             byte bx = ois.readByte();
             Object objx = ois.readObject();
             if (bx == 0) ri.exception = (Exception) objx;
@@ -800,7 +800,7 @@ public class RemoteMultiplexerClient {
                 VirtualSocket socket = getSocketForCtoS();
                 RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
   
-                oos.writeByte(RequestInfo.CtoS_Command_ReturningResponse);
+                oos.writeByte(RequestInfo.CtoS_Command_ReturningAsyncResponse);
                 oos.writeInt(ri.messageId);
                 if (ri.exception != null) {
                     oos.writeByte(0);
