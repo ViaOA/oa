@@ -253,6 +253,8 @@ public class RemoteMultiplexerServer {
 
         
 //aaaaaaaaaaaaaaa the format for these must match client side
+        
+        // reading based on type
         if (ri.currentCommand == RequestInfo.CtoS_SocketRequest) {
             ri.bindName = ois.readAsciiString();
             ri.methodNameSignature = ois.readAsciiString();
@@ -306,7 +308,7 @@ public class RemoteMultiplexerServer {
             }
         }
         
-        
+        // processing based on type
         if (ri.currentCommand == RequestInfo.CtoS_SocketRequest) {
             // send back on same socket
 
@@ -458,6 +460,8 @@ public class RemoteMultiplexerServer {
             }
         }
     }
+    
+     
     private void processCtoSReturnValue(final RequestInfo ri, final Session session) throws Exception {
         // check the return value to see if it is a remote object, and if it needs compression
         if (ri.methodInfo.noReturnValue) return;
@@ -473,11 +477,10 @@ public class RemoteMultiplexerServer {
                         bindx = null;
                     }
                 }
-                else bindx = null;
                 if (bindx == null) {
                     // make remote
                     String bindNamex = "server." + aiBindCount.incrementAndGet(); // this will be sent to client
-                    bindx = createBindInfo(bindNamex, ri.response, ri.methodInfo.remoteReturn);
+                    bindx = session.createBindInfo(bindNamex, ri.response, ri.methodInfo.remoteReturn);
                 }
             }
             ri.responseBindName = bindx.name; // this will be returned to client
@@ -1311,7 +1314,7 @@ public class RemoteMultiplexerServer {
         protected BindInfo getBindInfo(Object obj) {
             if (obj == null) return null;
             for (BindInfo bindx : hmNameToBind.values()) {
-                if (bindx.weakRef.get() == obj) {
+                if (obj.equals(bindx.weakRef.get())) {
                     return bindx;
                 }
             }
