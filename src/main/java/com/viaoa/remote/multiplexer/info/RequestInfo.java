@@ -42,7 +42,8 @@ public class RequestInfo {
     public static final byte StoC_Command_CreateNewStoCSocket = 5;
     public static final byte StoC_Command_SendBroadcast = 6;
     public static final byte StoC_Command_SendResponse = 7;
-    public static final byte StoC_Command_SendRequest = 8;
+    public static final byte StoC_Command_SendAsyncRequest = 8;
+    public static final byte StoC_Command_SendSyncRequest = 8;
     
     public byte currentCommand;
 

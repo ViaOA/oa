@@ -334,8 +334,7 @@ public class RemoteMultiplexerServer {
             return false; // do not respond
         }
         
-        
-        // else: ri.currentCommand == RequestInfo.CtoS_Command_RunMethod
+        // ri.currentCommand == RequestInfo.CtoS_Command_RunMethod
 
         
         ri.bindName = ois.readAsciiString();
@@ -347,7 +346,6 @@ public class RemoteMultiplexerServer {
             return true;
         }
 
-//qqqqqqqq???         
         if (ri.bind.usesQueue) {
             ri.messageId = ois.readInt();
             session.setupAsyncQueueSender(ri.bind.asyncQueueName, ri.bindName);
@@ -399,7 +397,7 @@ public class RemoteMultiplexerServer {
         }
 
         if (ri.bind.isBroadcast) {
-            return true;  // will be processed from the queue
+            return true;  // will be processed from the queue by the server's client.
         }
 
         int x = (ri.args == null) ? 0 : ri.args.length;
@@ -652,7 +650,7 @@ public class RemoteMultiplexerServer {
   
             hmClientCallbackRequestInfo.put(ri.messageId, ri);
             
-            ri.currentCommand = RequestInfo.StoC_Command_SendRequest;
+            ri.currentCommand = RequestInfo.StoC_Command_SendAsyncRequest;
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
             cq.addMessageToQueue(ri);
             synchronized (ri) {
@@ -694,7 +692,7 @@ public class RemoteMultiplexerServer {
             ri.socket = session.getSocketForStoC();
     
             RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, session.hmClassDescOutput, session.aiClassDescOutput);
-            oos.writeByte(RequestInfo.StoC_Command_SendRequest); // flag to know this is a method call
+            oos.writeByte(RequestInfo.StoC_Command_SendAsyncRequest); // flag to know this is a method call
             oos.writeAsciiString(ri.bind.name);
             oos.writeAsciiString(ri.methodInfo.methodNameSignature);
             oos.writeObject(ri.args);
@@ -1505,8 +1503,37 @@ public class RemoteMultiplexerServer {
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
 
 //qqqqqqqqqqqqqqqqqqqq
-                    oos.writeBoolean(false); // see: RemoeMultiplexerClient.processMessageForStoC
-         
+                    oos.writeByte(ri.currentCommand);
+                    
+                    if (ri.currentCommand == ri.StoC_Command_SendResponse) {
+                        if (ri.exception != null) {
+                            oos.writeByte(0);
+                            oos.writeObject(ri.exception);
+                        }
+                        else if (ri.exceptionMessage != null) {
+                            oos.writeByte(1);
+                            oos.writeObject(ri.exceptionMessage);
+                        }
+                        else {
+                            oos.writeByte(2);
+                            oos.writeObject(ri.response);
+                        }
+                        oos.writeInt(ri.messageId);
+                    }
+                    else if (ri.currentCommand == ri.StoC_Command_SendAsyncRequest) {
+                        //qqqqqqqq
+                        oos.writeAsciiString(ri.bindName);
+                        oos.writeAsciiString(ri.methodInfo.methodNameSignature);
+                        oos.writeObject(ri.args);
+                        oos.writeInt(ri.messageId);
+                    }
+                    else if (ri.currentCommand == ri.StoC_Command_SendBroadcast) {
+                        //qqqqqqqq
+                        oos.writeAsciiString(ri.bindName);
+                        oos.writeAsciiString(ri.methodInfo.methodNameSignature);
+                        oos.writeObject(ri.args);
+                    }
+                    
                     
                     if (!ri.bind.isBroadcast) {
                         if (ri.responseReturned) {

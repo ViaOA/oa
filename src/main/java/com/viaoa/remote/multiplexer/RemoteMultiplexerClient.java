@@ -669,9 +669,9 @@ public class RemoteMultiplexerClient {
     }
     
     protected void processMessageForStoC(final VirtualSocket socket, int threadId) throws Exception {
+        
         if (socket.isClosed()) return;
         RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
-        
         
         byte msgType = ois.readByte();
         
@@ -680,7 +680,8 @@ public class RemoteMultiplexerClient {
             createSocketForStoC();
             return;
         }
-
+        
+        
         RequestInfo ri = new RequestInfo();
         ri.msStart = System.currentTimeMillis();
         ri.nsStart = System.nanoTime();
@@ -688,18 +689,10 @@ public class RemoteMultiplexerClient {
         ri.connectionId = socket.getConnectionId();
         ri.vsocketId = socket.getId();
         ri.threadId = threadId;
-        ri.bindName = ois.readAsciiString();
+        ri.currentCommand = msgType;
 
-        ri.bind = getBindInfo(ri.bindName);
-        if (ri.bind == null) {
-            // broadcast message not set up for this client, need to read remaining data from stream
-            ois.readBoolean(); // will be false
-            ri.methodNameSignature = ois.readAsciiString();
-            ri.args = (Object[]) ois.readObject();
-            return;  
-        }
         
-        if (msgType == RequestInfo.StoC_Command_SendResponse) {
+        if (ri.currentCommand == ri.StoC_Command_SendResponse) {
             byte bx = ois.readByte();
             Object objx = ois.readObject();
             if (bx == 0) ri.exception = (Exception) objx;
@@ -724,13 +717,39 @@ public class RemoteMultiplexerClient {
             afterInvokForStoC(ri);
             return;
         }
+        
+        if (ri.currentCommand == ri.StoC_Command_SendAsyncRequest) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+            ri.messageId = ois.readInt();
 
-        ri.methodNameSignature = ois.readAsciiString();
-        ri.args = (Object[]) ois.readObject();
+            ri.bind = getBindInfo(ri.bindName);
+            if (ri.bind == null) return;  
 
-        beforeInvokForStoC(ri);
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+            ri.messageId = ois.readInt();
+            beforeInvokForStoC(ri);
+            
+            OARemoteThread t = getRemoteClientThread(ri);
+            synchronized (t.Lock) {
+                if (t.requestInfo != null) {
+                    t.Lock.notify();  // have RemoteClientThread call processMessageforStoC2(..)
+                    t.Lock.wait(250);
+                }
+            }
+            return;
+        }
 
-        if (msgType == RequestInfo.StoC_Command_SendBroadcast) {
+        if (ri.currentCommand == ri.StoC_Command_SendBroadcast) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+            ri.bind = getBindInfo(ri.bindName);
+            if (ri.bind == null) return;  
+            beforeInvokForStoC(ri);
+            
             OARemoteThread t = getRemoteClientThread(ri);
 
             long t1 = System.currentTimeMillis();                
@@ -751,10 +770,17 @@ public class RemoteMultiplexerClient {
                 LOG.log(Level.WARNING, "timeout waiting on RemoteThread to process message, waited for "+tx + "ms, will continue.\nStacktrace for RemoteThread: "+t.getName()+stackTrace);
             }
         }
-        else {
-            // msgType == RemoteMultiplexerServer.StoC_Command_SendRequest
+        else if (ri.currentCommand == ri.StoC_Command_SendSyncRequest) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+            ri.bind = getBindInfo(ri.bindName);
+            if (ri.bind == null) return;  
+            beforeInvokForStoC(ri);
+            
             processMessageForStoC2(ri, true);
         }
+        
     }
     
     protected void processMessageForStoC2(RequestInfo ri, boolean bSendResponse) throws Exception {
