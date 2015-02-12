@@ -279,11 +279,11 @@ public class RemoteMultiplexerClient {
                 socket = null;
                 synchronized (ri) {
                     for (;;) {
-                        if (ri.responseReturned) break;
+                        if (ri.methodInvoked) break;
                         ri.wait(60000);  // request timeout
                     }
                 }
-                if (!ri. responseReturned) {
+                if (!ri.methodInvoked) {
                     ri.exceptionMessage = "timeout waiting on response from server";
                 }
             }
@@ -428,7 +428,7 @@ public class RemoteMultiplexerClient {
             }
 
             ns1 = System.nanoTime();
-            ri.responseReturned = true;
+            ri.methodInvoked = true;
             ri.response = ois.readObject();
             ri.nsRead = System.nanoTime() - ns1;
 
@@ -709,7 +709,7 @@ public class RemoteMultiplexerClient {
                     rix.response = ri.response;
                     rix.exception = ri.exception; 
                     rix.exceptionMessage = ri.exceptionMessage; 
-                    rix.responseReturned = true;
+                    rix.methodInvoked = true;
                     rix.notify();
                 }
             }

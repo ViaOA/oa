@@ -159,7 +159,7 @@ public class RemoteMultiplexerServer {
                 }
             }
         });
-        t.setName("VServerSocket_CtoS");
+        t.setName("OAServerSocket_CtoS");
         t.setDaemon(true);
         t.start();
         LOG.config("created Client to Server serversocket thread");
@@ -172,7 +172,7 @@ public class RemoteMultiplexerServer {
             @Override
             public void run() {
                 try {
-                    processSocketForCtoS(iceSocket);
+                    processSocketCtoS(iceSocket);
                 }
                 catch (Exception e) {
                     if (!iceSocket.isClosed()) {
@@ -181,73 +181,30 @@ public class RemoteMultiplexerServer {
                 }
             }
         });
-        t.setName("VSocket_CtoS." + iceSocket.getConnectionId() + "." + iceSocket.getId());
+        t.setName("OASocket_CtoS." + iceSocket.getConnectionId() + "." + iceSocket.getId());
         t.setDaemon(true);
         t.start();
     }
 
-    protected void processSocketForCtoS(final VirtualSocket socket) throws Exception {
+    protected void processSocketCtoS(final VirtualSocket socket) throws Exception {
+        final int socketId = socket.getId();
+        final int connectionId = socket.getConnectionId();
+        final Session session = getSession(connectionId);
+        
         for (;;) {
-            if (socket.isClosed()) {
-                break;
-            }
+            if (socket.isClosed()) break;
 
             RequestInfo ri = new RequestInfo();
             ri.socket = socket;
             ri.connectionId = ri.socket.getConnectionId();
-            ri.vsocketId = ri.socket.getId();
-
-            Session session = getSession(ri.connectionId);
-            boolean bShouldReturnValue;
-            try {
-                bShouldReturnValue = processNextRequestForCtoS(ri, session);
-            }
-            catch (Exception e) {
-                bShouldReturnValue = true;
-                ri.exception = e;
-            }
-            catch (Throwable tx) {
-                bShouldReturnValue = true;
-                ri.exception = new Exception(tx.toString(), tx);
-            }
-
-            long t1 = System.nanoTime();
-            
-            // return response
-            if (ri.bind != null && ri.bind.usesQueue) {
-                ri.currentCommand = RequestInfo.StoC_Command_SendAsyncResponse;
-                OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-                cq.addMessageToQueue(ri);
-            }
-            else if (bShouldReturnValue && (ri.methodInfo == null || !ri.methodInfo.noReturnValue)) {
-                RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, session.hmClassDescOutput, session.aiClassDescOutput);
-                oos.writeBoolean(ri.exception == null && ri.exceptionMessage == null);
-                Object resp;
-                if (ri.exception != null) {
-                    if (ri.exception instanceof Serializable) {
-                        resp = ri.exception;
-                    }
-                    else resp = new Exception(ri.exception.toString() + ", info: " + ri.toLogString());
-                }
-                else if (ri.exceptionMessage != null) {
-                    resp = new Exception(ri.exceptionMessage + ", info: " + ri.toLogString());
-                }
-                else if (ri.responseBindName != null) {
-                    resp = new Object[] { ri.responseBindName, ri.responseBindUsesQueue };
-                }
-                else resp = ri.response;
-                oos.writeObject(resp);
-                oos.flush();
-            }
+            ri.vsocketId = socketId;
+            processSocketRequest(ri, session);
 
             ri.nsEnd = System.nanoTime();
-            ri.nsWrite = ri.nsEnd - t1;
-
-            afterInvokeForCtoS(ri);
         }
     }
 
-    protected boolean processNextRequestForCtoS(final RequestInfo ri, final Session session) throws Exception {
+    protected void processSocketRequest(final RequestInfo ri, final Session session) throws Exception {
         RemoteObjectInputStream ois = new RemoteObjectInputStream(ri.socket, session.hmClassDescInput);
 
         // wait for next message
@@ -255,47 +212,7 @@ public class RemoteMultiplexerServer {
         ri.msStart = System.currentTimeMillis();
         ri.nsStart = System.nanoTime();
 
-        // 20150211 client is responding to an async request
-        if (ri.currentCommand == RequestInfo.CtoS_Command_ReturningAsyncResponse) {
-            ri.messageId = ois.readInt();
-            RequestInfo rix = hmClientCallbackRequestInfo.remove(ri.messageId);
-     
-            byte bx = ois.readByte();  // flag to know if response is an exception, errorMsg, or value
-            Object objx = ois.readObject();
-            
-            if (bx == 0) ri.exception = rix.exception = (Exception) objx;
-            else if (bx == 1) ri.exceptionMessage = rix.exceptionMessage = (String) objx;
-            else ri.response = rix.response = objx;
-            rix.responseReturned = true;
-
-            // put a "dummy" msg in queue
-            ri.bind = null; // so that msg wont be sent to clients
-            ri.connectionId = 0;  // so that only the server will get it
-            ri.processedByServer = false;
-
-
-            OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(rix.bind.asyncQueueName);
-            cq.addMessageToQueue(ri);
-            
-            
-            synchronized (ri) {
-                // make sure that server is caught up with queue
-                for (; !ri.processedByServer;) {
-                    try {
-                        ri.wait();   
-                    }
-                    catch (Exception e) {
-                    }
-                }
-            }
-            synchronized (rix) {
-                // wake up server thread waiting on the client response
-                rix.notifyAll(); 
-            }
-            return false;
-        }    
-        
-        if (ri.currentCommand == RequestInfo.CtoS_Command_GetLookupInfo) {
+        if (ri.currentCommand == RequestInfo.CtoS_GetLookupInfo) {
             // lookup, needs to return Java Interface class.
             ri.bindName = ois.readAsciiString();
             BindInfo bind = getBindInfo(ri.bindName);
@@ -308,9 +225,9 @@ public class RemoteMultiplexerServer {
             else {
                 ri.exceptionMessage = "object not found";
             }
-            return true;
+            return;
         }
-        if (ri.currentCommand == RequestInfo.CtoS_Command_GetBroadcastClass) {
+        if (ri.currentCommand == RequestInfo.CtoS_GetBroadcastClass) {
             ri.bindName = ois.readAsciiString();
             BindInfo bind = getBindInfo(ri.bindName);
             if (bind != null) {
@@ -325,42 +242,187 @@ public class RemoteMultiplexerServer {
             else {
                 ri.exceptionMessage = "object not found";
             }
-            return true;
+            return;
         }
-        if (ri.currentCommand == RequestInfo.CtoS_Command_RemoveSessionBroadcastThread) {
+        if (ri.currentCommand == RequestInfo.CtoS_RemoveSessionBroadcastThread) {
             // remove StoC thread used for broadcast object
             ri.bindName = ois.readAsciiString();
             session.removeBindInfo(ri.bindName);
-            return false; // do not respond
-        }
-        
-        // ri.currentCommand == RequestInfo.CtoS_Command_RunMethod
-
-        
-        ri.bindName = ois.readAsciiString();
-        ri.methodNameSignature = ois.readAsciiString();
-        ri.args = (Object[]) ois.readObject();
-        ri.bind = getBindInfo(ri.bindName);
-        if (ri.bind == null) {
-            ri.exceptionMessage = "bind Object not found on server";
-            return true;
+            return;
         }
 
-        if (ri.bind.usesQueue) {
+        
+//aaaaaaaaaaaaaaa the format for these must match client side
+        if (ri.currentCommand == RequestInfo.CtoS_SocketRequest) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_SocketRequestNoReturnValue) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_QueuedRequest) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
             ri.messageId = ois.readInt();
-            session.setupAsyncQueueSender(ri.bind.asyncQueueName, ri.bindName);
         }
+        else if (ri.currentCommand == RequestInfo.CtoS_QueuedRequestNoReturnValue) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_QueuedResponse) {
+            ri.messageId = ois.readInt();
+            byte b = ois.readByte();
+            Object objx = ois.readObject();
+            if (b == 0) ri.exception = (Exception) objx;
+            else if (b == 1) ri.exceptionMessage = (String) objx;
+            else ri.response = objx;
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_QueuedBroadcast) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+        }
+        
         ri.nsRead = System.nanoTime() - ri.nsStart;
 
-        ri.object = ri.bind.getObject();
-        ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
-        if (ri.methodInfo != null) ri.method = ri.methodInfo.method;
-        if (ri.method == null) {
-            if (ri.exceptionMessage == null) ri.exceptionMessage = "method not found";
-            return true;
+        
+        BindInfo bind;
+        if (ri.bindName != null) {
+            bind = getBindInfo(ri.bindName);
+            if (ri.bind == null) {
+                ri.exceptionMessage = "bind Object not found on server";
+            }
+            else {
+                ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
+                if (ri.methodInfo != null) ri.method = ri.methodInfo.method;
+                if (ri.method == null) {
+                    ri.exceptionMessage = "method not found";
+                }
+            }
         }
+        
+        
+        if (ri.currentCommand == RequestInfo.CtoS_SocketRequest) {
+            // send back on same socket
 
-        // check for compressed params
+            invokeCtoS(ri, session);
+            
+            long t1 = System.nanoTime();
+            Object resp = null;
+            RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, session.hmClassDescOutput, session.aiClassDescOutput);
+            if (ri.exception != null) {
+                if (ri.exception instanceof Serializable) {
+                    resp = ri.exception;
+                }
+                else resp = new Exception(ri.exception.toString());
+                oos.writeByte(0);
+            }
+            else if (ri.exceptionMessage != null) {
+                oos.writeByte(1);
+            }
+            else if (ri.responseBindName != null) {
+                oos.writeByte(2);
+                resp = new Object[] { ri.responseBindName, ri.responseBindUsesQueue };
+            }
+            else {
+                oos.writeByte(3);
+                resp = ri.response;
+            }
+            oos.writeObject(resp);
+            oos.flush();
+            ri.nsWrite = System.nanoTime() - t1;
+            afterInvokeForCtoS(ri);
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_SocketRequestNoReturnValue) {
+            invokeCtoS(ri, session);
+            afterInvokeForCtoS(ri);
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_QueuedRequest) {
+            // unless there is an error, then this will be invoked by the queue thread
+            if (ri.exceptionMessage != null) ri.methodInvoked = true;
+            OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
+            cq.addMessageToQueue(ri);
+            session.setupAsyncQueueSender(ri.bind.asyncQueueName, ri.bindName);
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_QueuedRequestNoReturnValue) {
+            // this will be invoked by the queue thread
+            if (ri.exceptionMessage == null) {
+                OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
+                cq.addMessageToQueue(ri);
+                session.setupAsyncQueueSender(ri.bind.asyncQueueName, ri.bindName);
+            }
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_QueuedResponse) {
+            // received the response from a prev S2C, put it in the queue so that it will notify the thread that is waiting
+            RequestInfo rix = hmClientCallbackRequestInfo.remove(ri.messageId);
+            rix.exception = ri.exception;
+            rix.exceptionMessage = ri.exceptionMessage;
+            rix.response = ri.response;
+            rix.methodInvoked = true;
+
+            processCtoSReturnValue(ri, session);
+            OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(rix.bind.asyncQueueName);
+            rix.currentCommand = RequestInfo.CtoS_QueuedResponse;
+            cq.addMessageToQueue(rix);
+        }
+        else if (ri.currentCommand == RequestInfo.CtoS_QueuedBroadcast) {
+            ri.currentCommand = RequestInfo.StoC_SendBroadcast;
+            OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
+            cq.addMessageToQueue(ri);
+        }
+    }
+
+    protected void invokeCtoS(final RequestInfo ri, final Session session) throws Exception {
+        if (ri == null) return;
+
+        if (ri.methodInfo == null) {
+            if (ri.exceptionMessage != null) ri.exceptionMessage = "method not found";
+            return;
+        }
+        
+        processCtoSArguments(ri, session);
+        
+        try {
+            OAThreadLocalDelegate.setRemoteRequestInfo(ri);
+            if (!ri.bind.isBroadcast) {
+                OARemoteThreadDelegate.sendMessages(true);
+            }
+            ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
+        }
+        catch (InvocationTargetException e) {
+            Exception ex = e;
+            for (int i=0 ; i<10; i++) {
+                Throwable t = ex.getCause();
+                if (t == null || t == ex || !(t instanceof Exception)) { 
+                    ri.exception = ex;
+                    break;
+                }
+                ex = (Exception) t;
+                ri.exception = ex;
+            }
+        }
+        catch (Throwable tx) {
+            ri.exception = new Exception(tx.toString(), tx);
+        }
+        finally {
+            if (!ri.bind.isBroadcast) {
+                OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
+        OAThreadLocalDelegate.setRemoteRequestInfo(null);
+
+        processCtoSReturnValue(ri, session);
+        
+        ri.methodInvoked = true;
+        
+    }
+    
+    private void processCtoSArguments(final RequestInfo ri, final Session session) throws Exception {
         if (ri.methodInfo.compressedParams != null && ri.args != null) {
             for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
@@ -370,7 +432,7 @@ public class RemoteMultiplexerServer {
         }
 
         // check to see if any of the args[] are remote objects
-        if (ri.methodInfo.remoteParams != null && ri.args != null) {
+        if (session != null && ri.methodInfo.remoteParams != null && ri.args != null) {
             for (int i = 0; i < ri.methodInfo.remoteParams.length && i < ri.args.length; i++) {
                 if (ri.methodInfo.remoteParams[i] == null) continue;
                 // convert the param to real object (proxy)
@@ -395,76 +457,42 @@ public class RemoteMultiplexerServer {
                 ri.args[i] = bindx.getObject();
             }
         }
-
-        if (ri.bind.isBroadcast) {
-            return true;  // will be processed from the queue by the server's client.
-        }
-
-        int x = (ri.args == null) ? 0 : ri.args.length;
-
-        try {
-            OAThreadLocalDelegate.setRemoteRequestInfo(ri);
-            // 20141217
-            if (!ri.bind.isBroadcast) {
-                OARemoteThreadDelegate.sendMessages(true);
-            }
-            ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
-        }
-        catch (InvocationTargetException e) {
-            Exception ex = e;
-            for (int i=0 ; i<10; i++) {
-                Throwable t = ex.getCause();
-                if (t == null || t == ex || !(t instanceof Exception)) { 
-                    ri.exception = ex;
-                    break;
-                }
-                ex = (Exception) t;
-                ri.exception = ex;
-            }
-        }
-        catch (Throwable tx) {
-            ri.exception = new Exception(tx.toString(), tx);
-        }
-        finally {
-            // 20141217
-            if (!ri.bind.isBroadcast) {
-                OARemoteThreadDelegate.sendMessages(false);
-            }
-            ri.responseReturned = true;
-        }
-        OAThreadLocalDelegate.setRemoteRequestInfo(null);
-
-
-        if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
-            if (ri.response != null && ri.methodInfo.remoteReturn != null) {
-                BindInfo bindx = getBindInfo(ri.response);
-                Object objx = bindx != null ? bindx.weakRef.get() : null; // make sure obj is not gc'd
-                if (bindx == null || objx == null) {
-                    if (bindx == null) {
-                        bindx = session.getBindInfo(ri.response);
-                        objx = bindx != null ? bindx.weakRef.get() : null;
-                        if (objx == null) { // object was gc'd
-                            bindx = null;
-                        }
-                    }
-                    else bindx = null;
-                    if (bindx == null) {
-                        // make remote
-                        String bindNamex = "server." + aiBindCount.incrementAndGet(); // this will be sent to client
-                        bindx = createBindInfo(bindNamex, ri.response, ri.methodInfo.remoteReturn);
-                    }
-                }
-                ri.responseBindName = bindx.name; // this will be returned to client
-                ri.responseBindUsesQueue = bindx.usesQueue;
-                session.hmBindObject.put(bindx, ri.response); // make sure it wont get gc'd
-            }
-            else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
-                ri.response = new OACompressWrapper(ri.response);
-            }
-        }
-        return true;
     }
-
+    private void processCtoSReturnValue(final RequestInfo ri, final Session session) throws Exception {
+        // check the return value to see if it is a remote object, and if it needs compression
+        if (ri.methodInfo.noReturnValue) return;
+        
+        if (session != null && ri.response != null && ri.methodInfo.remoteReturn != null) {
+            BindInfo bindx = getBindInfo(ri.response);
+            Object objx = bindx != null ? bindx.weakRef.get() : null; // make sure obj is not gc'd
+            if (bindx == null || objx == null) {
+                if (bindx == null) {
+                    bindx = session.getBindInfo(ri.response);
+                    objx = bindx != null ? bindx.weakRef.get() : null;
+                    if (objx == null) { // object was gc'd
+                        bindx = null;
+                    }
+                }
+                else bindx = null;
+                if (bindx == null) {
+                    // make remote
+                    String bindNamex = "server." + aiBindCount.incrementAndGet(); // this will be sent to client
+                    bindx = createBindInfo(bindNamex, ri.response, ri.methodInfo.remoteReturn);
+                }
+            }
+            ri.responseBindName = bindx.name; // this will be returned to client
+            ri.responseBindUsesQueue = bindx.usesQueue;
+            session.hmBindObject.put(bindx, ri.response); // make sure it wont get gc'd
+        }
+        else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
+            ri.response = new OACompressWrapper(ri.response);
+        }
+    }
+    
+    
+    
+    
+    
     /**
      * Called after a CtoS remote method is called.
      */
@@ -495,7 +523,7 @@ public class RemoteMultiplexerServer {
                 }
             }
         });
-        t.setName("VServerSocket_StoC");
+        t.setName("OAServerSocket_StoC");
         t.setDaemon(true);
         t.start();
         LOG.config("created Server to Client serversocket thread");
@@ -610,49 +638,19 @@ public class RemoteMultiplexerServer {
             return;
         }
 
-        // compress flagged arguments
-        if (ri.methodInfo.compressedParams != null && ri.args != null) {
-            for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
-                if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
-                if (ri.methodInfo.compressedParams[i]) {
-                    ri.args[i] = new OACompressWrapper(ri.args[i]);
-                }
-            }
-        }
-
-        // check to see if any of the args[] are remote objects
-        if (ri.methodInfo.remoteParams != null && ri.args != null) {
-            for (int i = 0; i < ri.methodInfo.remoteParams.length && i < ri.args.length; i++) {
-                if (ri.methodInfo.remoteParams[i] == null) continue;
-                if (ri.args[i] == null) continue;
-
-                BindInfo bindx = getBindInfo((Object) ri.args[i]);
-                Object objx = bindx != null ? bindx.weakRef.get() : null;
-                if (bindx == null || objx == null) {
-                    if (bindx == null) {
-                        String bindNamex = "server." + aiBindCount.incrementAndGet();
-                        bindx = createBindInfo(bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
-                    }
-                    else {
-                        bindx.setObject(ri.args[i], referenceQueue);
-                    }
-                }
-                session.hmBindObject.put(bindx, ri.args[i]); // hold the remote object from getting GCd
-                ri.args[i] = bindx.name;
-            }
-        }
-
-
-        // 20150211 client callback that uses queue (async request to client)
-        //    response will come back from client using CtoS_Command_ReturnAsyncClientResponse message
+        
         if (ri.bind != null && ri.bind.usesQueue) {
             ri.connectionId = session.connectionId;  // so that the _writeQueueMessages will send to only the client (not all clients)
   
-            hmClientCallbackRequestInfo.put(ri.messageId, ri);
-            
-            ri.currentCommand = RequestInfo.StoC_Command_SendAsyncRequest;
+            if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
+                hmClientCallbackRequestInfo.put(ri.messageId, ri);
+                ri.currentCommand = RequestInfo.StoC_SendAsyncRequest;
+            }
+            else ri.currentCommand = RequestInfo.StoC_SendAsyncRequestNoReturnValue;
+
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
             cq.addMessageToQueue(ri);
+            
             synchronized (ri) {
                 for (; !ri.processedByServer;) {
                     try {
@@ -662,11 +660,14 @@ public class RemoteMultiplexerServer {
                     }
                 }
             }
+
             if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
                 // need to wait for return value
                 synchronized (ri) {
                     int maxSeconds = ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds; 
-                    for (int i=0; !ri.responseReturned ; i++) {
+//qqqqqqq make sure that ri.methodInvoked  is set when getting it from the queue qqqqqqqqq
+
+                    for (int i=0; !ri.methodInvoked ; i++) {
                         try {
                             if (i == maxSeconds) {
                                 ri.exceptionMessage = "timeout waiting for response";
@@ -689,52 +690,89 @@ public class RemoteMultiplexerServer {
             }
         }
         else {
+            ri.currentCommand = RequestInfo.StoC_SendSyncRequest;
+            processStoCArguments(ri, session);
             ri.socket = session.getSocketForStoC();
     
             RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, session.hmClassDescOutput, session.aiClassDescOutput);
-            oos.writeByte(RequestInfo.StoC_Command_SendAsyncRequest); // flag to know this is a method call
+            oos.writeByte(RequestInfo.StoC_SendAsyncRequest);
             oos.writeAsciiString(ri.bind.name);
             oos.writeAsciiString(ri.methodInfo.methodNameSignature);
             oos.writeObject(ri.args);
             oos.flush();
-        }
-        
-        
-        if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
-            if (ri.socket != null) {
+
+            if (ri.methodInfo == null || !ri.methodInfo.noReturnValue) {
                 RemoteObjectInputStream ois = new RemoteObjectInputStream(ri.socket, session.hmClassDescInput);
-                ri.responseReturned = true;
                 if (ois.readBoolean()) {
                     ri.response = ois.readObject();
                 }
                 else ri.exception = (Exception) ois.readObject();
+                processCtoSReturnValue(ri, session);
+            }      
+            session.releaseSocketForStoC(ri.socket);
+            ri.socket = null;
+        }
+        ri.methodInvoked = true;
+
+        processStoCReturnValue(ri, session);
+    }
+    private void processStoCArguments(final RequestInfo ri, final Session session) throws Exception {
+        if (ri.methodInfo.compressedParams != null && ri.args != null) {
+            for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
+                if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
+                if (ri.methodInfo.compressedParams[i]) {
+                    ri.args[i] = new OACompressWrapper(ri.args[i]);
+                }
             }
-            
-            // check to see if return value is a remote object
-            if (ri.response != null && ri.methodInfo.remoteReturn != null) {
-                String bindNamex = (String) ri.response;
-                BindInfo bindx = session.getBindInfo(bindNamex);
+        }
+        // check to see if any of the args[] are remote objects
+        if (ri.methodInfo.remoteParams != null && ri.args != null) {
+            for (int i = 0; i < ri.methodInfo.remoteParams.length && i < ri.args.length; i++) {
+                if (ri.methodInfo.remoteParams[i] == null) continue;
+                if (ri.args[i] == null) continue;
+
+                BindInfo bindx = getBindInfo((Object) ri.args[i]);
                 Object objx = bindx != null ? bindx.weakRef.get() : null;
                 if (bindx == null || objx == null) {
                     if (bindx == null) {
-                        bindx = getBindInfo(ri.response);
-                        objx = bindx != null ? bindx.weakRef.get() : null;
-                        if (objx == null) bindx = null;
+                        String bindNamex = "server." + aiBindCount.incrementAndGet();
+                        bindx = createBindInfo(bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
                     }
-                    else bindx = null;
-                    if (bindx == null) {
-                        Object obj = createProxyForStoC(session, ri.methodInfo.remoteReturn, bindNamex);
-                        bindx = createBindInfo(bindNamex, obj, ri.methodInfo.remoteReturn);
+                    else {
+                        bindx.setObject(ri.args[i], referenceQueue);
                     }
                 }
-                ri.response = bindx.getObject();
-            }
-            else if (ri.response != null && ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
-                ri.response = ((OACompressWrapper) ri.response).getObject();
+                session.hmBindObject.put(bindx, ri.args[i]); // hold the remote object from getting GCd
+                ri.args[i] = bindx.name;
             }
         }
     }
-
+    private void processStoCReturnValue(final RequestInfo ri, final Session session) throws Exception {
+        // check to see if return value is a remote object
+        if (ri.methodInfo.noReturnValue) return;
+        if (ri.response != null && ri.methodInfo.remoteReturn != null) {
+            String bindNamex = (String) ri.response;
+            BindInfo bindx = session.getBindInfo(bindNamex);
+            Object objx = bindx != null ? bindx.weakRef.get() : null;
+            if (bindx == null || objx == null) {
+                if (bindx == null) {
+                    bindx = getBindInfo(ri.response);
+                    objx = bindx != null ? bindx.weakRef.get() : null;
+                    if (objx == null) bindx = null;
+                }
+                else bindx = null;
+                if (bindx == null) {
+                    Object obj = createProxyForStoC(session, ri.methodInfo.remoteReturn, bindNamex);
+                    bindx = createBindInfo(bindNamex, obj, ri.methodInfo.remoteReturn);
+                }
+            }
+            ri.response = bindx.getObject();
+        }
+        else if (ri.response != null && ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
+            ri.response = ((OACompressWrapper) ri.response).getObject();
+        }
+    }
+    
     /**
      * Called after a StoC remote method is called.
      */
@@ -1011,36 +1049,7 @@ public class RemoteMultiplexerServer {
             return ri;
         }
 
-        // compress flagged arguments
-        if (ri.methodInfo.compressedParams != null && ri.args != null) {
-            for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
-                if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
-                if (ri.methodInfo.compressedParams[i]) {
-                    ri.args[i] = new OACompressWrapper(ri.args[i]);
-                }
-            }
-        }
-
-        // check to see if any of the args[] are remote objects
-        if (ri.methodInfo.remoteParams != null && ri.args != null) {
-            for (int i = 0; i < ri.methodInfo.remoteParams.length && i < ri.args.length; i++) {
-                if (ri.methodInfo.remoteParams[i] == null) continue;
-                if (ri.args[i] == null) continue;
-
-                BindInfo bindx = getBindInfo((Object) ri.args[i]);
-                Object objx = bindx != null ? bindx.weakRef.get() : null;
-                if (bindx == null || objx == null) {
-                    if (bindx == null) {
-                        String bindNamex = "server." + aiBindCount.incrementAndGet();
-                        bindx = createBindInfo(bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
-                    }
-                    else {
-                        bindx.setObject(ri.args[i], referenceQueue);
-                    }
-                }
-                ri.args[i] = bindx.name;
-            }
-        }
+        processStoCArguments(ri, null);
 
         // check to see if return is a primitive
         Class c = ri.method.getReturnType();
@@ -1066,7 +1075,8 @@ public class RemoteMultiplexerServer {
         }
 
         // put "ri" in circular queue for clients to pick up.       
-        ri.currentCommand = RequestInfo.StoC_Command_SendBroadcast;
+        ri.currentCommand = RequestInfo.StoC_SendBroadcast;
+        processStoCArguments(ri, null);
         OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
         cque.addMessageToQueue(ri);
         return ri;
@@ -1091,7 +1101,7 @@ public class RemoteMultiplexerServer {
             @Override
             public void run() {
                 try {
-                    processBroadcastMessages(cq, bindName, qPos);
+                    processQueueMessagesOnServer(cq, bindName, qPos);
                 }
                 catch (Exception e) {
                     String s = "async queue thread exception, thread=" + threadName + ", thread is stopping, "
@@ -1105,11 +1115,11 @@ public class RemoteMultiplexerServer {
         t.start();
     }
 
-    private void processBroadcastMessages(final OACircularQueue<RequestInfo> cque, final String bindName, long qpos) throws Exception {
-        int cntMsg = 0;
+    
+    private void processQueueMessagesOnServer(final OACircularQueue<RequestInfo> cque, final String bindName, long qpos) throws Exception {
         for (;;) {
             RequestInfo[] ris;
-            ris = cque.getMessages(0, qpos, 250, 200);
+            ris = cque.getMessages(0, qpos, 50, 500);
             
             if (ris == null) {  // remove any unneeded threads
                 if (alRemoteClientThread.size() > 3) {
@@ -1127,63 +1137,82 @@ public class RemoteMultiplexerServer {
             
             qpos += ris.length;
             for (RequestInfo ri : ris) {
-                if (ri.connectionId == 0) { // sent from object on this server
-                    synchronized (ri) {
-                        ri.processedByServer = true;
-                        ri.notifyAll();
-                    }
-                    continue;
+                if (ri.currentCommand == RequestInfo.CtoS_QueuedRequest) {
+                    // invoke 
+                    invokeQueueMesssage(ri);
+                    // only one client gets this
                 }
-                if (!ri.bind.isBroadcast) { // msg is using queue, but is not a broadcast
-                    synchronized (ri) {
-                        ri.processedByServer = true;
-                        ri.notifyAll();
-                    }
-                    continue;
+                else if (ri.currentCommand == RequestInfo.CtoS_QueuedRequestNoReturnValue) {
+                    invokeQueueMesssage(ri);
+                    // no clients get this
                 }
-
-                // sent by client, invoke method on object
-                Object obj = ri.bind.getObject();
-                if (obj == null) continue;
-
-                OARemoteThread remoteThread = null;
-                int x = alRemoteClientThread.size();
-                for (int i=0; i<x; i++) {
-                    OARemoteThread rct = alRemoteClientThread.get(cntMsg++ % x);
-                    if (rct.requestInfo == null) {
-                        remoteThread = rct;
-                        break;
-                    }
+                else if (ri.currentCommand == RequestInfo.StoC_SendAsyncRequest) {
+                    // only one client gets this
                 }
-                if (remoteThread == null) {
-                    remoteThread = createRemoteClientThread();
-                    alRemoteClientThread.add(remoteThread);
-                    if (alRemoteClientThread.size() > 20) {
-                        LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
-                    }
+                else if (ri.currentCommand == RequestInfo.StoC_SendAsyncRequestNoReturnValue) {
+                    // only one client gets this
+                }
+                else if (ri.currentCommand == RequestInfo.CtoS_QueuedResponse) {
+                    ri.methodInvoked = true; // waiting thread will wake up on ri.notifyAll()  
+                    // clients need to ignore this
+                    // client is returning value for a S2C request
+                }
+                else if (ri.currentCommand == RequestInfo.StoC_SendBroadcast) {
+                    invokeQueueMesssage(ri);
                 }
                 
-                int maxSeconds = ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds; 
-                long ms1 = System.currentTimeMillis();                    
-                synchronized (remoteThread.Lock) {
-                    remoteThread.requestInfo = ri;
-                    remoteThread.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
-                    remoteThread.Lock.wait(maxSeconds * 1000);
+                synchronized (ri) {
+                    ri.processedByServer = true;
+                    ri.notifyAll();
                 }
-
-                long ms2 = System.currentTimeMillis();
-                // this can be removed, sanity check only
-                if (!ri.processedByServer && (ms2-ms1) >= (maxSeconds * 1000)) {
-                    StackTraceElement[] stes = remoteThread.getStackTrace();
-                    Exception ex = new Exception();
-                    ex.setStackTrace(stes);
-                    LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
-                            + ri.toLogString(), ex);
-                }
-
             }
         }
     }
+    
+    
+    protected void invokeQueueMesssage(final RequestInfo ri) throws Exception {
+        if (ri == null) return;
+        if (ri.methodInvoked) return; 
+        // sent by client, invoke method on object
+        Object obj = ri.bind.getObject();
+        if (obj == null) return;
+
+        OARemoteThread remoteThread = null;
+        int x = alRemoteClientThread.size();
+        for (int i=0; i<x; i++) {
+            OARemoteThread rct = alRemoteClientThread.get(i);
+            if (rct.requestInfo == null) {
+                remoteThread = rct;
+                break;
+            }
+        }
+        if (remoteThread == null) {
+            remoteThread = createRemoteClientThread();
+            alRemoteClientThread.add(remoteThread);
+            if (alRemoteClientThread.size() > 20) {
+                LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
+            }
+        }
+        
+        int maxSeconds = ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds; 
+        long ms1 = System.currentTimeMillis();                    
+        synchronized (remoteThread.Lock) {
+            remoteThread.requestInfo = ri;
+            remoteThread.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
+            remoteThread.Lock.wait(maxSeconds * 1000);
+        }
+
+        long ms2 = System.currentTimeMillis();
+        // this can be removed, sanity check only
+        if (!ri.processedByServer && (ms2-ms1) >= (maxSeconds * 1000)) {
+            StackTraceElement[] stes = remoteThread.getStackTrace();
+            Exception ex = new Exception();
+            ex.setStackTrace(stes);
+            LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
+                    + ri.toLogString(), ex);
+        }
+    }
+    
 
     // use OARemoteThread to process broadcast messages on the server
     private AtomicInteger aiClientThreadCount = new AtomicInteger();
@@ -1202,8 +1231,12 @@ public class RemoteMultiplexerServer {
                                 if (requestInfo == null) continue;
                             }
                         }
+                        
+                        Session session;
+                        if (requestInfo.connectionId != 0) session = getSession(requestInfo.connectionId);
+                        else session = null;
+                        invokeCtoS(requestInfo, session);
 
-                        processBroadcast(this.requestInfo);
                         this.msLastUsed = System.currentTimeMillis();                
 
                         synchronized (Lock) {
@@ -1229,34 +1262,6 @@ public class RemoteMultiplexerServer {
         t.setName("OARemoteThread." + aiClientThreadCount.getAndIncrement());
         t.start();
         return t;
-    }
-
-    protected void processBroadcast(RequestInfo ri) throws Exception {
-        try {
-            OAThreadLocalDelegate.setRemoteRequestInfo(ri);
-            ri.response = ri.method.invoke(ri.object, ri.args);
-        }
-        catch (InvocationTargetException e) {
-            Exception ex = e;
-            for (int i=0 ; i<10; i++) {
-                Throwable t = ex.getCause();
-                if (t == null || t == ex || !(t instanceof Exception)) { 
-                    ri.exception = ex;
-                    break;
-                }
-                ex = (Exception) t;
-                ri.exception = ex;
-            }
-        }
-        catch (Exception e) {
-            ri.exception = e;
-        }
-        ri.processedByServer = true;
-        
-        OAThreadLocalDelegate.setRemoteRequestInfo(null);
-        synchronized (ri) {
-            ri.notifyAll(); // waiting clients getting messages from queue 
-        }
     }
 
     protected void onException(int connectionId, String title, String msg, Exception e, boolean bWillDisconnect) {
@@ -1356,7 +1361,7 @@ public class RemoteMultiplexerServer {
                 }
                 if (bRequestNew) {
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket);
-                    oos.writeByte(RequestInfo.StoC_Command_CreateNewStoCSocket);
+                    oos.writeByte(RequestInfo.StoC_CreateNewStoCSocket);
                     oos.flush();
                     bRequestedNew = true;
                     releaseSocketForStoC(socket);
@@ -1485,11 +1490,34 @@ public class RemoteMultiplexerServer {
                 for (RequestInfo ri : ris) {
                     if (vsocket.isClosed()) return;
                     if (ri == null || ri.bind == null) continue;
-                    if (!ri.bind.isBroadcast) {
+                    
+                    if (ri.currentCommand == RequestInfo.CtoS_QueuedRequest) {
                         if (ri.connectionId != connectionId) {
                             continue;
                         }
                     }
+                    else if (ri.currentCommand == RequestInfo.StoC_QueuedResponse) {
+                        if (ri.connectionId != connectionId) {
+                            continue;
+                        }
+                    }
+                    else if (ri.currentCommand == RequestInfo.CtoS_SendAsyncRequestNoReturnValue) {
+                        continue;
+                    }
+                    else if (ri.currentCommand == RequestInfo.StoC_SendAsyncRequest) {
+                        if (ri.connectionId != connectionId) {
+                            continue;
+                        }
+                    }
+                    else if (ri.currentCommand == RequestInfo.StoC_SendAsyncRequestNoReturnValue) {
+                        if (ri.connectionId != connectionId) {
+                            continue;
+                        }
+                    }
+                    else if (ri.currentCommand == RequestInfo.CtoS_SendAsyncResponse) {
+                        continue;
+                    }
+
                     synchronized (ri) {
                         for (; !ri.processedByServer;) {
                             try {
@@ -1499,13 +1527,12 @@ public class RemoteMultiplexerServer {
                             }
                         }
                     }
+                    
 
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
-
-//qqqqqqqqqqqqqqqqqqqq
                     oos.writeByte(ri.currentCommand);
                     
-                    if (ri.currentCommand == ri.StoC_Command_SendAsyncResponse) {
+                    if (ri.currentCommand == ri.CtoS_QueuedRequest) {
                         if (ri.exception != null) {
                             oos.writeByte(0);
                             oos.writeObject(ri.exception);
@@ -1514,60 +1541,29 @@ public class RemoteMultiplexerServer {
                             oos.writeByte(1);
                             oos.writeObject(ri.exceptionMessage);
                         }
-                        else {
+                        else if (ri.responseBindName != null) {
                             oos.writeByte(2);
+                            oos.writeObject(ri.response);
+                        }
+                        else {
+                            oos.writeByte(3);
                             oos.writeObject(ri.response);
                         }
                         oos.writeInt(ri.messageId);
                     }
-                    else if (ri.currentCommand == ri.StoC_Command_SendAsyncRequest) {
-                        //qqqqqqqq
+                    else if (ri.currentCommand == ri.StoC_SendAsyncRequest) {
                         oos.writeAsciiString(ri.bindName);
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
+                        processStoCArguments(ri, Session.this);  // this is only done once, right before it's sent
                         oos.writeObject(ri.args);
                         oos.writeInt(ri.messageId);
                     }
-                    else if (ri.currentCommand == ri.StoC_Command_SendBroadcast) {
-                        //qqqqqqqq
+                    else if (ri.currentCommand == ri.StoC_SendBroadcast) {
                         oos.writeAsciiString(ri.bindName);
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
-                        oos.writeObject(ri.args);
+                        oos.writeObject(ri.args);  // args should already be processed (processStoCArguments)
                     }
                     
-                    
-                    if (!ri.bind.isBroadcast) {
-                        if (ri.responseReturned) {
-                            // C2S response
-                            oos.writeBoolean(false); // false=no return response
-                        }
-                        else {
-                            // S2C request
-                            oos.writeBoolean(true); // true=client will return a response
-                        }
-                        if (ri.exception != null) oos.writeByte(0);
-                        else if (ri.exceptionMessage != null) oos.writeByte(1);
-                        else oos.writeByte(2);
-
-                        if (ri.exception != null) oos.writeObject(ri.exception);
-                        else if (ri.exceptionMessage != null) oos.writeObject(ri.exceptionMessage);
-                        else oos.writeObject(ri.response);
-                        oos.writeInt(ri.messageId);
-                    }
-                    else {
-                        oos.writeBoolean(false); // false=no return response
-                    }
-                    oos.writeAsciiString(ri.bindName);
-                    
-                    // return a remote request using the queue
-                    if (!ri.bind.isBroadcast || ri.connectionId == connectionId) {
-
-                    }
-                    else {
-                        //qqqqqq create a client-side hook to see if the client will need this msg                        
-                        oos.writeBoolean(false); // broadcast
-                        oos.writeAsciiString(ri.methodInfo.methodNameSignature);
-                        oos.writeObject(ri.args);
-                    }
                     oos.flush();
                 }
             }

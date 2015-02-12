@@ -32,23 +32,23 @@ public class RequestInfo {
     private final static AtomicInteger aiCount = new AtomicInteger();
 
     // types of commands sent between Client and Server
-    public static final byte CtoS_Command_RunMethod = 0;
-qqqqqqqq changed to    
-public static final byte CtoS_Command_SendAsyncRequest = 0;
-public static final byte CtoS_Command_SendSyncRequest = 0;
-    
-    
-    public static final byte CtoS_Command_GetLookupInfo = 1;
-    public static final byte CtoS_Command_RemoveSessionBroadcastThread = 2;
-    public static final byte CtoS_Command_GetBroadcastClass = 3;
-qqqq change to SendAsyncResponse    
-    public static final byte CtoS_Command_ReturningAsyncResponse = 4;
+    public static final byte CtoS_GetLookupInfo = 1;
+    public static final byte CtoS_RemoveSessionBroadcastThread = 2;
+    public static final byte CtoS_GetBroadcastClass = 3;
 
-    public static final byte StoC_Command_CreateNewStoCSocket = 5;
-    public static final byte StoC_Command_SendBroadcast = 6;
-    public static final byte StoC_Command_SendAsyncResponse = 7;
-    public static final byte StoC_Command_SendAsyncRequest = 8;
-    public static final byte StoC_Command_SendSyncRequest = 8;
+    public static final byte CtoS_SocketRequest = 6;
+    public static final byte CtoS_SocketRequestNoReturnValue = 7;
+    public static final byte CtoS_QueuedRequest = 8;
+    public static final byte CtoS_QueuedRequestNoReturnValue = 9;
+    public static final byte CtoS_QueuedResponse = 10;
+    public static final byte CtoS_QueuedBroadcast = 11;
+
+//qqqqqqqqqqqqqq    
+    public static final byte StoC_CreateNewStoCSocket = 15;
+    public static final byte StoC_QueuedBroadcast = 16;     // uses queue
+    public static final byte StoC_QueuedResponse = 17; // uses queue
+    public static final byte StoC_QueuedRequest = 18;  // uses queue
+    public static final byte StoC_QueuedRequestNoReturnValue = 19; // uses queue  
     
     public byte currentCommand;
 
@@ -79,7 +79,7 @@ qqqq change to SendAsyncResponse
     public Exception exception;
     public String exceptionMessage;
     public Object response;
-    public boolean responseReturned;
+    public boolean methodInvoked;  // set to true with the method has been invoked
     
     public volatile boolean processedByServer;  // flag set on server after it's processed    
     
