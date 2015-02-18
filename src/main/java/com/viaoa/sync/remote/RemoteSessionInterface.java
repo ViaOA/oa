@@ -66,4 +66,9 @@ public interface RemoteSessionInterface {
      * note: if the guid < 0, then the object is also in the serverSide cache (and the guid needs to be absolute value)
      */
     void removeGuids(int[] guids);
+    
+    String ping(String msg);
+    
+    @OARemoteMethod(noReturnValue=true)
+    void ping2(String msg);
 }

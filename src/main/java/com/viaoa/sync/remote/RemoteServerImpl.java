@@ -37,6 +37,9 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
         return msg;
     }
     @Override
+    public void ping2(String msg) {
+    }
+    @Override
     public String getDisplayMessage() {
         return "OASyncServer";
     }

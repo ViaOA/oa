@@ -47,6 +47,7 @@ public class TextFieldController extends JFCController implements FocusListener,
     private Object activeObject;
     private Object focusActiveObject;
     private int dataSourceMax=-2;
+    private int propertyInfoMax=-2;
     private int max=-1;
     private OAPlainDocument document;
     protected char conversion;  // 'U'pper, 'L'ower, 'T'itle, 'P'assword
@@ -213,12 +214,34 @@ public class TextFieldController extends JFCController implements FocusListener,
         }
         return dataSourceMax;
     }
-    public int getMax() {
-        getDataSourceMax();
-        if (max < 0) {
-            if (dataSourceMax >= 0) return dataSourceMax;
+    
+    public int getPropertyInfoMax() {
+        if (propertyInfoMax == -2) {
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(actualHub.getObjectClass());
+            OAPropertyInfo pi = oi.getPropertyInfo(getPropertyPathFromActualHub());
+            
+            propertyInfoMax = (pi == null) ? -1 : pi.getMaxLength();
+
+            Method method = getLastMethod();
+            if (method != null) {
+                if (method.getReturnType().equals(String.class)) {
+                    if (propertyInfoMax > 254) propertyInfoMax = -1;
+                }
+                else propertyInfoMax = -1;
+            }
         }
-        if (dataSourceMax > 0 && max > dataSourceMax) return dataSourceMax; 
+        return propertyInfoMax;
+    }
+    
+    public int getMax() {
+        // getDataSourceMax();
+        getPropertyInfoMax();
+        if (max < 0) {
+            // if (dataSourceMax >= 0) return dataSourceMax;
+            if (propertyInfoMax >= 0) return propertyInfoMax;
+        }
+        //if (dataSourceMax > 0 && max > dataSourceMax) return dataSourceMax; 
+        if (propertyInfoMax > 0 && max > propertyInfoMax) return propertyInfoMax; 
         return max;
     }
     /** max length of text.  If -1 (default) then unlimited.  

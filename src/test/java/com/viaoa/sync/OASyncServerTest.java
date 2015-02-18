@@ -9,8 +9,6 @@ import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
-
-import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.util.*;
 import com.theice.tsactest2.delegate.ModelDelegate;
@@ -19,7 +17,7 @@ import com.theice.tsactest2.model.oa.cs.ServerRoot;
 /**
  *  Run this manually to then run Client junit tests.
  */
-public class ServerTest {
+public class OASyncServerTest {
     private OASyncServer syncServer;
     private int port = 1099;
     private ServerRoot serverRoot;    
@@ -30,7 +28,7 @@ public class ServerTest {
     }
     
     public static void init() throws Exception {
-        ServerTest control = new ServerTest();
+        OASyncServerTest control = new OASyncServerTest();
         control.start();
     }
     
@@ -40,12 +38,12 @@ public class ServerTest {
             @Override
             protected void onClientConnect(Socket socket, int connectionId) {
                 super.onClientConnect(socket, connectionId);
-                ServerTest.this.onClientConnect(socket, connectionId);
+                OASyncServerTest.this.onClientConnect(socket, connectionId);
             }
             @Override
             protected void onClientDisconnect(int connectionId) {
                 super.onClientDisconnect(connectionId);
-                ServerTest.this.onClientDisconnect(connectionId);
+                OASyncServerTest.this.onClientDisconnect(connectionId);
             }
         };
         return syncServer;
@@ -74,7 +72,7 @@ public class ServerTest {
     }
 
     private boolean readSerializeFromFile() throws Exception {
-        File file = new File(OAFile.convertFileName("runtime/test/RemoteServerControllerTest/data.bin"));
+        File file = new File(OAFile.convertFileName("runtime/test/tsactest2/data.bin"));
         if (!file.exists()) {
             return false;
         }
@@ -111,7 +109,7 @@ public class ServerTest {
     }
 
     public static void main(String[] args) throws Exception {
-        ServerTest test = new ServerTest();
+        OASyncServerTest test = new OASyncServerTest();
         test.init();
         for (int i=1;;i++) {
             System.out.println(i+") ServerTest is running "+(new OATime()));

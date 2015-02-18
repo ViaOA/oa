@@ -17,7 +17,6 @@ All rights reserved.
 */
 package com.viaoa.remote.multiplexer.info;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,26 +30,51 @@ import com.viaoa.comm.multiplexer.io.VirtualSocket;
 public class RequestInfo {
     private final static AtomicInteger aiCount = new AtomicInteger();
 
-    // types of commands sent between Client and Server
-    public static final byte CtoS_GetLookupInfo = 1;
-    public static final byte CtoS_RemoveSessionBroadcastThread = 2;
-    public static final byte CtoS_GetBroadcastClass = 3;
 
-    public static final byte CtoS_SocketRequest = 6;
-    public static final byte CtoS_SocketRequestNoReturnValue = 7;
-    public static final byte CtoS_QueuedRequest = 8;
-    public static final byte CtoS_QueuedRequestNoReturnValue = 9;
-    public static final byte CtoS_QueuedResponse = 10;
-    public static final byte CtoS_QueuedBroadcast = 11;
-
-//qqqqqqqqqqqqqq    
-    public static final byte StoC_CreateNewStoCSocket = 15;
-    public static final byte StoC_QueuedBroadcast = 16;     // uses queue
-    public static final byte StoC_QueuedResponse = 17; // uses queue
-    public static final byte StoC_QueuedRequest = 18;  // uses queue
-    public static final byte StoC_QueuedRequestNoReturnValue = 19; // uses queue  
+    public static Type getType(int val) {
+        Type[] types = Type.values();
+        if (val >= 0 && val < types.length) return types[val];
+        return null;
+    }
     
-    public byte currentCommand;
+    public enum Type {
+        CtoS_GetLookupInfo(false, true),
+        CtoS_RemoveSessionBroadcastThread (false, false),
+        CtoS_GetBroadcastClass(false, true),
+        
+        CtoS_SocketRequest(false, true),
+        CtoS_SocketRequestNoResponse(false, false),
+        
+        CtoS_QueuedRequest(true, true),  // server will process it from the queue, client will then pick it up
+        CtoS_QueuedRequestNoResponse(true, false),
+        CtoS_QueuedReturnedResponse(true, false),  // return from StoC_QueuedRequestResponse
+        CtoS_QueuedBroadcast(true, false),
+        
+        StoC_CreateNewStoCSocket(false, false),
+        StoC_QueuedBroadcast(true, false),
+        
+        StoC_QueuedRequest(true, true),
+        StoC_QueuedRequestNoResponse(true, false),
+
+        StoC_SocketRequestReponse(false, true),
+        StoC_SocketRequestNoResponse(false, false);
+        
+        Type(boolean usesQueue, boolean hasReturnValue) {
+            this.usesQueue = usesQueue;
+            this.hasReturnValue = hasReturnValue;
+        }
+        private final boolean usesQueue;
+        private final boolean hasReturnValue;
+        
+        public boolean usesQueue() {
+            return this.usesQueue;
+        }
+        public boolean hasReturnValue() {
+            return this.hasReturnValue;
+        }
+    }
+    
+    public Type type;
 
     final public int cnt;
     public long msStart;

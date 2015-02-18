@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -19,14 +20,44 @@ import com.theice.tsactest2.model.oa.propertypath.*;
  * **** IMPORTANT **** 
  *      to run as Junit test, ServerTest will need to be running in a separate JVM
  */
-public class ClientTest extends OAUnitTest {
+public class OASyncClientTest extends OAUnitTest {
     private static int port = 1099;
     private static ServerRoot serverRoot;    
     private static OASyncClient syncClient;
     
-    //@Test
-    public void clientTest() {
+    
+    @Test
+    public void test() {
+        if (serverRoot == null) return;
+/*        
+        for (Site site : serverRoot.getSites()) {
+            int x = 0;
+            for (Environment env : site.getEnvironments()) {
+                x++;
+                for (Silo silo : env.getSilos()) {
+                    x++;
+                    for (Server server : silo.getServers()) {
+                        x++;
+                        for (Application app : server.getApplications()) {
+                            x++;
+                        }
+                    }
+                }
+            }
+        }
+*/        
+  
+        OAFinder<Site, Application> finder = new OAFinder<Site, Application>(SitePP.environments().silos().servers().applications().pp);
+        for (Application app : finder.find(serverRoot.getSites())) {
+            //System.out.println(app.getApplicationType().getName());
+            int x = 0;
+            x++;
+        }
+  
+        System.out.println("Done reading on client");
     }
+    
+    
     
     //@Test
     public void objectLinkMatchTest() {
@@ -60,12 +91,10 @@ public class ClientTest extends OAUnitTest {
         for (Silo silo : al) {
             assertEquals(silo.getServers().size(), 0);
         }
-        
     }
     
-    //@BeforeClass
-    public static void start() throws Exception {
-        ClientTest control = new ClientTest();
+    @Before
+    public void setup() throws Exception {
         syncClient = new OASyncClient("localhost", port);
         
         // **NOTE** need to make sure that ServerTest is running in another jvm
@@ -78,9 +107,18 @@ public class ClientTest extends OAUnitTest {
             System.out.println("NOT running ClientTest, ServerTest is not running in a separate jvm");
         }
     }
+    @After
+    public void tearDown() throws Exception {
+        System.out.println("stopping client");
+        syncClient.stop();
+        System.out.println("client stopped");
+    }
 
     public static void main(String[] args) throws Exception {
-        ClientTest control = new ClientTest();
-        control.start();
+        OASyncClientTest test = new OASyncClientTest();
+        test.setup();
+        test.test();
+        //Thread.sleep(1300);
+        test.tearDown();
     }
 }

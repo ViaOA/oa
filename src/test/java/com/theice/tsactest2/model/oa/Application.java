@@ -262,8 +262,6 @@ public class Application extends OAObject {
     public Hub<ApplicationVersion> getApplicationVersions() {
         if (hubApplicationVersions == null) {
             hubApplicationVersions = (Hub<ApplicationVersion>) getHub(P_ApplicationVersions);
-            
-            System.out.println(">>>>>>>>> "+hubApplicationVersions+", aaaaaa SIZE="+hubApplicationVersions.size());
         }
         return hubApplicationVersions;
     }
@@ -301,8 +299,6 @@ public class Application extends OAObject {
     public Hub<InstallVersion> getInstallVersions() {
         if (hubInstallVersions == null) {
             hubInstallVersions = (Hub<InstallVersion>) getHub(P_InstallVersions);
-      
-            System.out.println("<<<<<<<<<< "+hubInstallVersions+", xxxxx SIZE="+hubInstallVersions.size());
         }
         return hubInstallVersions;
     }

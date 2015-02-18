@@ -33,6 +33,10 @@ public interface RemoteServerInterface {
     RemoteClientInterface getRemoteClient(ClientInfo clientInfo);
     
     String ping(String msg);
+    
+    @OARemoteMethod(noReturnValue=true)
+    void ping2(String msg);
+    
     String getDisplayMessage();
     
     int getNextFiftyObjectGuids();

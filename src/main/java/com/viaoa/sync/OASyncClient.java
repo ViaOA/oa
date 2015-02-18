@@ -465,6 +465,10 @@ public class OASyncClient {
                 public void stop(String title, String msg) {
                     OASyncClient.this.onStopCalled(title, msg);
                 }
+                @Override
+                public String ping(String msg) {
+                    return "client recvd "+msg;
+                }
             };
         }
         return remoteCallback;

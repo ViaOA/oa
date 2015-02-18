@@ -23,5 +23,5 @@ import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 public interface RemoteClientCallbackInterface {
     
     void stop(String title, String msg);
-    
+    String ping(String msg);
 }
