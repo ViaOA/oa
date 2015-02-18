@@ -137,10 +137,8 @@ public class RemoteMultiplexerTest extends OAUnitTest {
     }
 
     
-    @Test
-    //(timeout=5000)
+    @Test(timeout=5000)
     public void test() throws Exception {
-        
         // C2S using socket request/reply
         RemoteServerInterface remoteServer = (RemoteServerInterface) remoteMultiplexerClient.lookup("server");
         serverPingCount = 0;

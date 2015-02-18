@@ -21,7 +21,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -215,6 +217,10 @@ public class RemoteMultiplexerServer {
         ri.msStart = System.currentTimeMillis();
         ri.nsStart = System.nanoTime();
 
+//qqqqqqqqqqqqqqqqqq        
+System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());        
+        
+        
         if (ri.type == RequestInfo.Type.CtoS_GetLookupInfo) {
             // lookup, needs to return Java Interface class.
             ri.bindName = ois.readAsciiString();
@@ -225,8 +231,14 @@ public class RemoteMultiplexerServer {
                 if (bind.usesQueue) {
                     session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
                 }
-                oos.writeBoolean(true);
+                oos.writeBoolean(true); // valid response
                 oos.writeObject(ri.response);
+                
+                Set<Class<?>> set = new HashSet<Class<?>>();
+                for (Class c : hmClassQueue.keySet()) {
+                    set.add(c);
+                }
+                oos.writeObject(set);
             }
             else {
                 ri.exceptionMessage = "object not found";
@@ -251,6 +263,11 @@ public class RemoteMultiplexerServer {
                     ri.response = bind.interfaceClass;
                     oos.writeBoolean(true);
                     oos.writeObject(ri.response);
+                    Set<Class<?>> set = new HashSet<Class<?>>();
+                    for (Class c : hmClassQueue.keySet()) {
+                        set.add(c);
+                    }
+                    oos.writeObject(set);
                     session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
                 }
             }
@@ -308,6 +325,8 @@ public class RemoteMultiplexerServer {
             ri.bindName = ois.readAsciiString();
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
+            ri.connectionId = ois.readInt();
+            ri.messageId = ois.readInt();
         }
         
         ri.nsRead = System.nanoTime() - ri.nsStart;
@@ -1053,6 +1072,7 @@ public class RemoteMultiplexerServer {
         ri.method = method;
         ri.args = args;
         ri.bind = bind;
+        ri.type = RequestInfo.Type.StoC_QueuedBroadcast;
 
         ri.methodInfo = ri.bind.getMethodInfo(ri.method);
         ri.object = ri.bind.getObject();
@@ -1114,7 +1134,6 @@ public class RemoteMultiplexerServer {
         }
 
         // put "ri" in circular queue for clients to pick up.       
-        ri.type = RequestInfo.Type.StoC_QueuedBroadcast;
         OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
         cque.addMessageToQueue(ri);
         return ri;
@@ -1603,7 +1622,12 @@ public class RemoteMultiplexerServer {
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
                         oos.writeAsciiString(ri.bindName);
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
-                        oos.writeObject(ri.args);  
+                        oos.writeObject(ri.args);
+                        oos.writeInt(ri.connectionId);
+                        oos.writeInt(ri.messageId);
+                        if (ri.connectionId == this.connectionId) {
+                            oos.writeObject(ri.response);
+                        }
                     }
                     else if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
                         oos.writeAsciiString(ri.bindName);
