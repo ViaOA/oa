@@ -383,13 +383,13 @@ public class OASyncServer {
             };
             
             // register remote objects
-            getRemoteMultiplexerServer().createLookup(ServerLookupName, getRemoteServer(), RemoteServerInterface.class); 
+            getRemoteMultiplexerServer().createLookup(ServerLookupName, getRemoteServer(), RemoteServerInterface.class, SyncQueueName, QueueSize); 
 
             RemoteSyncInterface rsi = (RemoteSyncInterface) getRemoteMultiplexerServer().createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
             OASyncDelegate.setRemoteSync(rsi);
             
             // have RemoteClient objects use sync queue
-            getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientInterface.class, SyncQueueName, QueueSize);            
+            //getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientInterface.class, SyncQueueName, QueueSize);            
         }
         return remoteMultiplexerServer;
     }
@@ -419,10 +419,11 @@ public class OASyncServer {
         return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, SyncQueueName, QueueSize);
     }
     
+/*qqq removed  args/result that are remote objects will use same queue as parent object    
     public void registerClassWithQueue(Class clazz) {
         getRemoteMultiplexerServer().registerClassWithQueue(clazz, SyncQueueName, QueueSize);
     }
-    
+*/    
 
     protected void afterInvokeRemoteMethod(RequestInfo ri) {
         if (ri == null) return;

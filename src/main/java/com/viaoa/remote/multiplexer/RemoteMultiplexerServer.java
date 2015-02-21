@@ -21,9 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -220,7 +218,6 @@ public class RemoteMultiplexerServer {
 //qqqqqqqqqqqqqqqqqq        
 System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());        
         
-        
         if (ri.type == RequestInfo.Type.CtoS_GetLookupInfo) {
             // lookup, needs to return Java Interface class.
             ri.bindName = ois.readAsciiString();
@@ -233,12 +230,6 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                 }
                 oos.writeBoolean(true); // valid response
                 oos.writeObject(ri.response);
-                
-                Set<Class<?>> set = new HashSet<Class<?>>();
-                for (Class c : hmClassQueue.keySet()) {
-                    set.add(c);
-                }
-                oos.writeObject(set);
             }
             else {
                 ri.exceptionMessage = "object not found";
@@ -263,11 +254,6 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                     ri.response = bind.interfaceClass;
                     oos.writeBoolean(true);
                     oos.writeObject(ri.response);
-                    Set<Class<?>> set = new HashSet<Class<?>>();
-                    for (Class c : hmClassQueue.keySet()) {
-                        set.add(c);
-                    }
-                    oos.writeObject(set);
                     session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
                 }
             }
@@ -318,7 +304,6 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
             else if (b == 1) ri.exceptionMessage = (String) objx;
             else {
                 ri.response = objx;
-                processCtoSReturnValue(ri, session);
             }
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
@@ -353,7 +338,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
         if (ri.type == RequestInfo.Type.CtoS_SocketRequest) {
             // send back on same socket
 
-            invokeCtoS(ri, session);
+            invokeCtoS(ri, session); // includes converting args and result
             
             long t1 = System.nanoTime();
             Object resp = null;
@@ -406,15 +391,17 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
         else if (ri.type == RequestInfo.Type.CtoS_QueuedReturnedResponse) {
             // received the response from a prev S2C, put it in the queue so that it will notify the thread that is waiting
             RequestInfo rix = hmClientCallbackRequestInfo.remove(ri.messageId);
-            rix.exception = ri.exception;
-            rix.exceptionMessage = ri.exceptionMessage;
-            rix.response = ri.response;
-            rix.methodInvoked = true;
-
-            processCtoSReturnValue(ri, session);
-            OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(rix.bind.asyncQueueName);
-            rix.type = RequestInfo.Type.CtoS_QueuedReturnedResponse;
-            cq.addMessageToQueue(rix);
+            if (rix != null) {
+                rix.exception = ri.exception;
+                rix.exceptionMessage = ri.exceptionMessage;
+                rix.response = ri.response;
+                processCtoSReturnValue(rix, session);
+                rix.methodInvoked = true;
+                rix.type = RequestInfo.Type.CtoS_QueuedReturnedResponse;
+                OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(rix.bind.asyncQueueName);
+                cq.addMessageToQueue(rix);
+            }
+            else ri.exceptionMessage = "original message timed out waiting for response";
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
@@ -498,7 +485,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                     else bindx = null;
                     if (bindx == null) {
                         Object obj = createProxyForStoC(session, ri.methodInfo.remoteParams[i], bindName);
-                        bindx = session.createBindInfo(bindName, obj, ri.methodInfo.remoteParams[i]);
+                        bindx = session.createBindInfo(ri.bind, bindName, obj, ri.methodInfo.remoteParams[i]);
                     }
                 }
                 ri.args[i] = bindx.getObject();
@@ -525,7 +512,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                 if (bindx == null) {
                     // make remote
                     String bindNamex = "server." + aiBindCount.incrementAndGet(); // this will be sent to client
-                    bindx = session.createBindInfo(bindNamex, ri.response, ri.methodInfo.remoteReturn);
+                    bindx = session.createBindInfo(ri.bind, bindNamex, ri.response, ri.methodInfo.remoteReturn);
                 }
             }
             ri.responseBindName = bindx.name; // this will be returned to client
@@ -715,8 +702,8 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
 
             if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
                 // need to wait for return value 
+                int maxSeconds = ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds; 
                 synchronized (ri) {
-                    int maxSeconds = ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds; 
                     for (int i=0; !ri.methodInvoked ; i++) {
                         try {
                             if (i == maxSeconds) {
@@ -796,13 +783,44 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                 if (bindx == null || objx == null) {
                     if (bindx == null) {
                         String bindNamex = "server." + aiBindCount.incrementAndGet();
-                        bindx = createBindInfo(bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
+                        bindx = getBindInfo(ri.bind, bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
                     }
                     else {
                         bindx.setObject(ri.args[i], referenceQueue);
                     }
                 }
                 session.hmBindObject.put(bindx, ri.args[i]); // hold the remote object from getting GCd
+                ri.args[i] = bindx.name;
+            }
+        }
+    }
+    private void processStoCArguments(final RequestInfo ri) throws Exception {
+        if (ri.methodInfo.compressedParams != null && ri.args != null) {
+            for (int i = 0; i < ri.methodInfo.compressedParams.length && i < ri.args.length; i++) {
+                if (ri.methodInfo.remoteParams != null && ri.methodInfo.remoteParams[i] != null) continue;
+                if (ri.methodInfo.compressedParams[i]) {
+                    ri.args[i] = new OACompressWrapper(ri.args[i]);
+                }
+            }
+        }
+        // check to see if any of the args[] are remote objects
+        if (ri.methodInfo.remoteParams != null && ri.args != null) {
+            for (int i = 0; i < ri.methodInfo.remoteParams.length && i < ri.args.length; i++) {
+                if (ri.methodInfo.remoteParams[i] == null) continue;
+                if (ri.args[i] == null) continue;
+
+                BindInfo bindx = getBindInfo((Object) ri.args[i]);
+                Object objx = bindx != null ? bindx.weakRef.get() : null;
+                if (bindx == null || objx == null) {
+                    if (bindx == null) {
+                        String bindNamex = "server." + aiBindCount.incrementAndGet();
+                        bindx = getBindInfo(ri.bind, bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
+                    }
+                    else {
+                        bindx.setObject(ri.args[i], referenceQueue);
+                    }
+                }
+                hmBindObject.put(bindx, ri.args[i]); // hold the remote object from getting GCd
                 ri.args[i] = bindx.name;
             }
         }
@@ -823,7 +841,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                 else bindx = null;
                 if (bindx == null) {
                     Object obj = createProxyForStoC(session, ri.methodInfo.remoteReturn, bindNamex);
-                    bindx = createBindInfo(bindNamex, obj, ri.methodInfo.remoteReturn);
+                    bindx = getBindInfo(ri.bind, bindNamex, obj, ri.methodInfo.remoteReturn);
                 }
             }
             ri.response = bindx.getObject();
@@ -857,26 +875,6 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
         }
     }
 
-    /**
-     * Get the Bind information for the name assigned to a remote object.
-     */
-    protected BindInfo getBindInfo(String name) {
-        if (name == null) return null;
-        return hmNameToBind.get(name);
-    }
-
-    /**
-     * Get the Bind information for a remote object.
-     */
-    protected BindInfo getBindInfo(Object obj) {
-        if (obj == null) return null;
-        for (BindInfo bindx : hmNameToBind.values()) {
-            if (bindx.weakRef != null && bindx.weakRef.get() == obj) {
-                return bindx;
-            }
-        }
-        return null;
-    }
 
     /**
      * Register/Bind an Object so that it can be used by clients
@@ -902,7 +900,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
      * @param queueSize
      */
     public void createLookup(String name, Object obj, Class interfaceClass, String queueName, int queueSize) {
-        BindInfo bind = createBindInfo(name, obj, interfaceClass, false, queueName, queueSize);
+        BindInfo bind = getBindInfo(name, obj, interfaceClass, queueName, queueSize);
         hmBindObject.put(bind, obj);
     }
 
@@ -918,69 +916,53 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
     }
 
     /**
-     * Create a queue that will be used by any remote objects for a class.
-     * 
-     * @param clazz
-     *            type of remote object created
-     * @param qname
-     *            name of queue
-     * @param size
-     *            size of queue
+     * Get the Bind information for the name assigned to a remote object.
      */
-    public void registerClassWithQueue(Class clazz, String qname, int size) {
-        ClassQueue cq = new ClassQueue();
-        cq.clazz = clazz;
-        cq.queueName = qname;
-        cq.queueSize = size;
-        hmClassQueue.put(clazz, cq);
-    }
-
-    /** used to map Class to a queue */
-    private ConcurrentHashMap<Class<?>, ClassQueue> hmClassQueue = new ConcurrentHashMap<Class<?>, RemoteMultiplexerServer.ClassQueue>();
-
-    class ClassQueue {
-        Class clazz;
-        String queueName;
-        int queueSize;
+    protected BindInfo getBindInfo(String name) {
+        if (name == null) return null;
+        return hmNameToBind.get(name);
     }
 
     /**
-     * Create Bind information for a remote object.
-     * 
-     * @param name
-     *            of object.
-     * @param obj
-     *            instance
-     * @param interfaceClass
-     *            the Interface of the obj. This is used when creating the proxy instance. Important: a
-     *            weakref is used to store the remote object "obj"
+     * Get the Bind information for a remote object.
      */
-    protected BindInfo createBindInfo(String name, Object obj, Class interfaceClass) {
-        return createBindInfo(name, obj, interfaceClass, false, null, -1);
+    protected BindInfo getBindInfo(Object obj) {
+        if (obj == null) return null;
+        for (BindInfo bindx : hmNameToBind.values()) {
+            if (bindx.weakRef != null && bindx.weakRef.get() == obj) {
+                return bindx;
+            }
+        }
+        return null;
     }
 
-    protected BindInfo createBindInfo(String name, Object obj, Class interfaceClass, boolean bIsBroadcast, String queueName, int queueSize) {
+    
+    protected BindInfo getBindInfo(BindInfo biParent, String name, Object obj, Class interfaceClass) {
+        return getBindInfo(biParent, name, obj, interfaceClass, false, null, 0);
+    }
+    protected BindInfo getBindInfo(String name, Object obj, Class interfaceClass, String queueName, int queueSize) {
+        return getBindInfo(null, name, obj, interfaceClass, false, queueName, queueSize);
+    }
+    protected BindInfo getBindInfo(BindInfo biParent, String name, Object obj, Class interfaceClass, boolean bIsBroadcast, String queueName, int queueSize) {
         if (name == null || interfaceClass == null) {
             throw new IllegalArgumentException("name and interfaceClass can not be null");
         }
         if (!interfaceClass.isInterface()) {
             throw new IllegalArgumentException("interfaceClass must be a Java interface");
         }
-
-        if (queueName == null) {
-            // check to see if the remote class has a queue assigned for it
-            ClassQueue cq = hmClassQueue.get(interfaceClass);
-            if (cq == null) cq = hmClassQueue.get(obj.getClass());
-            if (cq != null) {
-                queueName = cq.queueName;
-                queueSize = cq.queueSize;
-            }
+        
+        BindInfo bind = hmNameToBind.get(name);
+        if (bind != null) return bind;
+        if (biParent != null) {
+            queueName = biParent.asyncQueueName;  
+            queueSize = biParent.asyncQueueSize;
         }
-
-        BindInfo bind = new BindInfo(name, obj, interfaceClass, referenceQueue, bIsBroadcast, queueName, queueSize);
+        
+        bind = new BindInfo(name, obj, interfaceClass, referenceQueue, bIsBroadcast, queueName, queueSize);
 
         bind.loadMethodInfo();
         hmNameToBind.put(name, bind);
+        
         if (bind.usesQueue) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(bind.asyncQueueName);
             if (cq == null) {
@@ -1011,7 +993,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
      * @return proxy instance where all methods will be sent to and invoked on all clients
      * @see RemoteMultiplexerClient#createBroadcastProxy(String, Object)
      */
-    public Object createBroadcast(final String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
+    public Object createBroadcast(String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
         if (bindName == null) throw new IllegalArgumentException("bindName can not be null");
         if (interfaceClass == null) throw new IllegalArgumentException("interfaceClass can not be null");
         if (callback != null && !interfaceClass.isAssignableFrom(callback.getClass())) {
@@ -1023,7 +1005,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
         }
 
         if (queueName == null) queueName = bindName;
-        final BindInfo bind = createBindInfo(bindName, callback, interfaceClass, true, queueName, queueSize);
+        final BindInfo bind = getBindInfo(null, bindName, callback, interfaceClass, true, queueName, queueSize);
         if (callback != null) hmBindObject.put(bind, callback); // hold from getting gc'd
 
         InvocationHandler handler = new InvocationHandler() {
@@ -1110,6 +1092,8 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
             return ri;
         }
 
+        processStoCArguments(ri);        
+        
         // check to see if return is a primitive
         Class c = ri.method.getReturnType();
         if (c.isPrimitive()) {
@@ -1223,6 +1207,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                     // only one client gets this
                 }
                 else if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
+                    ri.methodInvoked = true;
                     afterInvokeForStoC(ri);
                 }
                 
@@ -1459,7 +1444,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
             }
         }
 
-        public BindInfo createBindInfo(String name, Object obj, Class interfaceClass) {
+        public BindInfo createBindInfo(BindInfo biParent, String name, Object obj, Class interfaceClass) {
             if (name == null || interfaceClass == null) {
                 throw new IllegalArgumentException("name and interfaceClass can not be null");
             }
@@ -1467,15 +1452,9 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                 throw new IllegalArgumentException("interfaceClass must be a Java interface");
             }
             
-            String queueName = null;
-            int queueSize = 0;
-            ClassQueue cq = hmClassQueue.get(interfaceClass);
-            if (cq != null) {
-                queueName = cq.queueName;
-                queueSize = cq.queueSize;
-            }
+            BindInfo bind = new BindInfo(name, obj, interfaceClass, null, false, 
+                    biParent.asyncQueueName, biParent.asyncQueueSize); 
 
-            BindInfo bind = new BindInfo(name, obj, interfaceClass, null, false, queueName, queueSize); // dont need to use referenceQueue
             bind.loadMethodInfo();
             hmNameToBind.put(name, bind);
             return bind;
@@ -1569,8 +1548,10 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                         continue;  // server msg, already handled by processQueueMessagesOnServer(..)
                     }                    
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
+                        // qqqq todo: clients dont need it if they are not registered for it
                     }                    
                     else if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
+                        // qqqq todo: clients dont need it if they are not registered for it
                     }                    
                     else if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
                         if (ri.connectionId != connectionId) {
@@ -1581,9 +1562,6 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                         if (ri.connectionId != connectionId) {
                             continue;
                         }
-                    }
-                    else if (ri.type == RequestInfo.Type.CtoS_QueuedReturnedResponse) {
-                        continue;
                     }
 
                     synchronized (ri) {
@@ -1636,10 +1614,16 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                         oos.writeObject(ri.args);
                         oos.writeInt(ri.messageId);
                     }
+                    else if (ri.type == RequestInfo.Type.StoC_QueuedRequestNoResponse) {
+                        oos.writeAsciiString(ri.bindName);
+                        oos.writeAsciiString(ri.methodInfo.methodNameSignature);
+                        processStoCArguments(ri, Session.this);  // this is only done once, right before it's sent
+                        oos.writeObject(ri.args);
+                    }
                     else if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
                         oos.writeAsciiString(ri.bindName);
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
-                        oos.writeObject(ri.args);  // args should already be processed (processStoCArguments)
+                        oos.writeObject(ri.args);  // args are already be processed (processStoCArguments)
                     }
                     
                     oos.flush();

@@ -42,21 +42,40 @@ public class RequestInfo {
         CtoS_RemoveSessionBroadcastThread (false, false),
         CtoS_GetBroadcastClass(false, true),
         
+// ********************* CODE REVIEWED
         CtoS_SocketRequest(false, true),
+// ********************* CODE REVIEWED
         CtoS_SocketRequestNoResponse(false, false),
         
+// ********************* CODE REVIEWED
         CtoS_QueuedRequest(true, true),  // server will process it from the queue, client will then pick it up
+
+// ********************* CODE REVIEWED
         CtoS_QueuedRequestNoResponse(true, false),
+
+//qqqqqqqq after StoC...        
         CtoS_QueuedReturnedResponse(true, false),  // return from StoC_QueuedRequestResponse
+
+        
+// ********************* CODE REVIEWED
         CtoS_QueuedBroadcast(true, false),
         
+// ********************* CODE REVIEWED
         StoC_CreateNewStoCSocket(false, false),
-        StoC_QueuedBroadcast(true, false),
         
+// ********************* CODE REVIEWED        
+        StoC_QueuedBroadcast(true, false),          
+        
+// ********************* CODE REVIEWED
         StoC_QueuedRequest(true, true),
+        
+// ********************* CODE REVIEWED 
         StoC_QueuedRequestNoResponse(true, false),
 
+
+// ********************* CODE REVIEWED
         StoC_SocketRequestReponse(false, true),
+// ********************* CODE REVIEWED
         StoC_SocketRequestNoResponse(false, false);
         
         Type(boolean usesQueue, boolean hasReturnValue) {
@@ -115,6 +134,7 @@ public class RequestInfo {
         String msg = String.format("%1$tm/%1$td|%1$tH:%1$tM:%1$tS.%1$tL", new Date(msStart));
         msg += "|" + connectionId;
         msg += "|" + bindName;
+        msg += "|" + type;
         
         if (method != null) {
             Class c = method.getDeclaringClass();
@@ -149,6 +169,7 @@ public class RequestInfo {
         String msg = "Date|Time";
         msg += "|ConnectionId";
         msg += "|BindName";
+        msg += "|Type";
         msg += "|Object";
         msg += "|Method";
         msg += "|nsRead";
