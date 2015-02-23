@@ -7,5 +7,6 @@ public interface RemoteBroadcastInterface {
 
     void start();
     void stop();
+    void close();
     
 }

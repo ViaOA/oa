@@ -6,7 +6,7 @@ import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 public interface RemoteServerInterface {
 
     void register(int id, RemoteClientInterface rci);
+    boolean isRegister(int id);
     
     boolean isStarted();
-    
 }

@@ -228,7 +228,14 @@ public class RemoteMultiplexerClient {
         InvocationHandler handler = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+//qqqqqqqqqqqqqqqqqqqqq                    
+System.out.println("Proxy Start "+Thread.currentThread().getName());                    
                 Object result = RemoteMultiplexerClient.this.onInvokeForCtoS(bind, proxy, method, args);
+                
+//qqqqqqqqqqqqqqqqqqqqq                    
+//System.out.println("Proxy returning result: "+result);                    
+System.out.println("Proxy DONE "+Thread.currentThread().getName()+", result="+result);                    
+                                
                 return result;
             }
         };
@@ -294,6 +301,9 @@ public class RemoteMultiplexerClient {
             if (ri.bSent && ri.bind.usesQueue && (ri.type.hasReturnValue() || ri.bind.isBroadcast)) {
                 releaseSocketForCtoS(socket);
                 socket = null;
+//qqqqqqqqqqqqqqqqqqqqq                    
+System.out.println("CLIENT waiting: "+ri.toLogString());                    
+
                 synchronized (ri) {
                     for (int i=0; i<20; i++) {
                         if (ri.methodInvoked) break;
@@ -303,6 +313,8 @@ public class RemoteMultiplexerClient {
                 if (!ri.methodInvoked) {
                     ri.exceptionMessage = "timeout waiting on response from server";
                 }
+//qqqqqqqqqqqqqqqqqqqqq                    
+System.out.println("CLIENT notified: "+ri.toLogString());                    
             }
         }
         catch (Exception e) {
@@ -319,6 +331,7 @@ public class RemoteMultiplexerClient {
             Exception ex = new Exception(ri.exceptionMessage + ", info: " + ri.toLogString());
             throw ex;
         }
+System.out.println("CLIENT notified2: "+ri.toLogString()+", "+Thread.currentThread().getName());                    
         return ri.response;
     }
 
@@ -735,6 +748,11 @@ public class RemoteMultiplexerClient {
 
         LOG.fine("starting, "+ri.toLogString());
         
+        
+//qqqqqqqqqqqqqqqqqqqqq                    
+//System.out.println("XXXX processMessageForStoC: "+ri.toLogString());                    
+        
+        
         if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
             int x = ois.readByte();
             if (x == 0) {
@@ -761,6 +779,10 @@ public class RemoteMultiplexerClient {
             }
             ri.messageId = ois.readInt();
 
+//qqqqqqqqqqqqqqqqqqqqq                    
+//System.out.println("CLIENT recv: "+ri.toLogString());                    
+            
+            
             RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
             if (rix == null) {
                 ri.exceptionMessage = "StoC requestInfo not found";  
@@ -774,10 +796,18 @@ public class RemoteMultiplexerClient {
                     rix.exception = ri.exception; 
                     rix.exceptionMessage = ri.exceptionMessage; 
                     rix.methodInvoked = true;
-                    rix.notify();  // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                    
+                    
+//qqqqqqqqqqqqqqqqqqqqq                    
+System.out.println("CLIENT recv: "+ri.toLogString());                    
+                    
+                    rix.notifyAll();  // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
                 }
             }
             LOG.fine("returning, "+ri.toLogString());
+//qqqqqqqqqqqqqqqqqqqqq                    
+//System.out.println("XXXX3 processMessageForStoC: "+ri.toLogString());                    
+            
             return;
         }
         
@@ -851,7 +881,7 @@ public class RemoteMultiplexerClient {
                     synchronized (rix) {
                         rix.response = ri.response;
                         rix.methodInvoked = true;
-                        rix.notify();  // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                        rix.notifyAll();  // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
                     }
                 }
                 return;
@@ -949,6 +979,11 @@ public class RemoteMultiplexerClient {
     }
     
     protected void processMessageForStoC(RequestInfo ri, boolean bSendReponse) throws Exception {
+
+//qqqqqqqqqqqqqqqqqqqqq                    
+System.out.println("processMessageForStoC: "+ri.toLogString());                    
+        
+        
         LOG.fine("starting, "+ri.toLogString());
         try {
             _processMessageForStoC(ri);  // invoke

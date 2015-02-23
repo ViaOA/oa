@@ -216,7 +216,7 @@ public class RemoteMultiplexerServer {
         ri.nsStart = System.nanoTime();
 
 //qqqqqqqqqqqqqqqqqq        
-System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());        
+//System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());        
         
         if (ri.type == RequestInfo.Type.CtoS_GetLookupInfo) {
             // lookup, needs to return Java Interface class.
@@ -1536,6 +1536,7 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                     if (vsocket.isClosed()) return;
                     if (ri == null || ri.bind == null) continue;
                     
+                    
                     if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
                         if (ri.connectionId != connectionId) {
                             continue;
@@ -1573,12 +1574,15 @@ System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());
                             }
                         }
                     }
-                    
 
+                    
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     oos.writeByte(ri.type.ordinal());
                     
                     if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
+//qqqqqqqqqqqqqqqqqqqqq                    
+System.out.println("SERVER send: "+ri.toLogString());                    
+
                         if (ri.exception != null) {
                             oos.writeByte(0);
                             oos.writeObject(ri.exception);
