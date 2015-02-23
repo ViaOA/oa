@@ -44,14 +44,14 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
         RemoteServerInterface remoteServer = new RemoteServerInterface() {
             @Override
             public void register(int id, RemoteClientInterface rci) {
-                System.out.println("Server. registered called, client id="+id+"");                
+                //System.out.println("Server. registered called, client id="+id+"");                
                 if (id < 0|| id >= testClients.length) return;
                 aiClientRegisterCount.incrementAndGet();
                 RequestInfo ri = OAThreadLocalDelegate.getRemoteRequestInfo();
                 synchronized (testClients) {
                     testClients[id].remoteClientInterface = rci;
                 }
-                System.out.println("Server. registered DONE, client id="+id+"");                
+                //System.out.println("Server. registered DONE, client id="+id+"");                
                 synchronized (lockServer) {
                     lockServer.notifyAll();
                 }
@@ -125,8 +125,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
 
     
     
-    @Test
-    //(timeout=40000)
+    @Test(timeout=40000)
     public void test() throws Exception {
         
         System.out.println("creating "+testClients.length+" clients");
@@ -160,7 +159,6 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
         }
         assertEquals(aiClientRegisterCount.get(), testClients.length);
 
-/*        
         for (int i=0 ; i<5 && aiClientRegisterCountNoQ.get() != testClients.length; i++) {
             synchronized (lockServerNoQ) {
                 System.out.println("   serverNoQ is waiting for all clients to call register(..), total regsitered="+aiClientRegisterCountNoQ.get());
@@ -173,7 +171,6 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             if (tc.remoteClientInterfaceNoQ == null) System.out.println("testClient NoQ not registered ====> id="+tc.id);
         }
         assertEquals(aiClientRegisterCountNoQ.get(), testClients.length);
-*/
         
         for (TestClient tc : testClients) {
             if (!tc.bInitialized) {
@@ -185,14 +182,13 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
         }
         System.out.println(testClients.length+" clients created and registered with server");
         
-/*        
         for (TestClient tc : testClients) {
             boolean b = tc.remoteClientInterface.isStarted();
             assertFalse(b);
             b = tc.remoteClientInterfaceNoQ.isStarted();
             assertFalse(b);
         }
-*/
+
         System.out.println("calling broadcast Start");
         remoteBroadcast.start();
         
@@ -201,39 +197,37 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             boolean b = tc.remoteClientInterface.isStarted();
             // System.out.println("client #"+tc.id+" started="+b);            
             assertTrue(b);
-//            b = tc.remoteClientInterfaceNoQ.isStarted();
-//            assertTrue(b);
+            b = tc.remoteClientInterfaceNoQ.isStarted();
+            assertTrue(b);
         }
         
         System.out.println("   ... all clients are Started, each client is calling remoteServer ping, and server is calling each client ping (100 times)");
 
-/*        
+        
         for (int i=0; i<100; i++) {
             for (TestClient tc : testClients) {
                 String s = OAString.getRandomString(3, 22);
                 assertEquals(tc.remoteClientInterface.ping(s), tc.id+s);
 
                 s = OAString.getRandomString(3, 22);
-//                assertEquals(tc.remoteClientInterfaceNoQ.ping(s), tc.id+s);
+                assertEquals(tc.remoteClientInterfaceNoQ.ping(s), tc.id+s);
             }
         }
-*/
-Thread.sleep(5000);        
-        
+
         System.out.println("calling broadcast Stop");
         remoteBroadcast.stop();
-/*        
+        
         for (TestClient tc : testClients) {
             assertFalse(tc.remoteClientInterface.isStarted());
         }
-*/        
+        
         System.out.println("    ... all clients are Stopped");
 
-Thread.sleep(500);
+        Thread.sleep(500);
         System.out.println("calling broadcast Close");
         
         remoteBroadcast.close();
-        Thread.sleep(500);
+        Thread.sleep(750);
     }
     
     class TestClient {
@@ -255,7 +249,7 @@ Thread.sleep(500);
             remoteMultiplexerClient = new RemoteMultiplexerClient(multiplexerClient);
             multiplexerClient.start();
             
-System.out.println("TestClient. id="+this.id+""+", Thread="+Thread.currentThread().getName()+", connectionId="+multiplexerClient.getConnectionId());                
+            System.out.println("TestClient, id="+this.id+""+", Thread="+Thread.currentThread().getName()+", connectionId="+multiplexerClient.getConnectionId());                
             
             RemoteServerInterface remoteServer = (RemoteServerInterface) remoteMultiplexerClient.lookup("server");
             RemoteServerInterface remoteServerNoQ = (RemoteServerInterface) remoteMultiplexerClient.lookup("serverNoQ");
@@ -297,13 +291,13 @@ System.out.println("TestClient. id="+this.id+""+", Thread="+Thread.currentThread
                 }
             };
             
-//System.out.println("TestClient. register START, client id="+this.id+", thread="+Thread.currentThread().getName());                
+            //System.out.println("TestClient. register START, client id="+this.id+", thread="+Thread.currentThread().getName());                
             remoteServer.register(this.id, remoteClient);
-//System.out.println("TestClient. register DONE, client id="+this.id+"");                
+            //System.out.println("TestClient. register DONE, client id="+this.id+"");                
                 
-//            assertTrue(remoteServer.isRegister(id));
+            assertTrue(remoteServer.isRegister(id));
 
-/*            
+            
             RemoteClientInterface remoteClientNoQ = new RemoteClientInterface() {
                 @Override
                 public String ping(String msg) {
@@ -317,7 +311,7 @@ System.out.println("TestClient. id="+this.id+""+", Thread="+Thread.currentThread
             
             remoteServerNoQ.register(this.id, remoteClientNoQ);
             assertTrue(remoteServerNoQ.isRegister(id));
-*/            
+            
             bInitialized = true;
             
             for ( ;!bClosed; ) {
@@ -329,7 +323,7 @@ System.out.println("TestClient. id="+this.id+""+", Thread="+Thread.currentThread
                 }
                 // System.out.println("Thread #"+id+" is running, server is started="+remoteServer.isStarted());
                 remoteServer.isStarted();
-//                remoteServerNoQ.isStarted();
+                remoteServerNoQ.isStarted();
                 
                 Thread.sleep(10);
             }
