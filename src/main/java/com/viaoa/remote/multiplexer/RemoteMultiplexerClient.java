@@ -229,12 +229,12 @@ public class RemoteMultiplexerClient {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 //qqqqqqqqqqqqqqqqqqqqq                    
-System.out.println("Proxy Start "+Thread.currentThread().getName());                    
+//System.out.println("Proxy Start "+Thread.currentThread().getName());                    
                 Object result = RemoteMultiplexerClient.this.onInvokeForCtoS(bind, proxy, method, args);
                 
 //qqqqqqqqqqqqqqqqqqqqq                    
 //System.out.println("Proxy returning result: "+result);                    
-System.out.println("Proxy DONE "+Thread.currentThread().getName()+", result="+result);                    
+//System.out.println("Proxy DONE "+Thread.currentThread().getName()+", result="+result);                    
                                 
                 return result;
             }
@@ -302,7 +302,7 @@ System.out.println("Proxy DONE "+Thread.currentThread().getName()+", result="+re
                 releaseSocketForCtoS(socket);
                 socket = null;
 //qqqqqqqqqqqqqqqqqqqqq                    
-System.out.println("CLIENT waiting: "+ri.toLogString());                    
+//System.out.println("CLIENT waiting: "+ri.toLogString()+", "+Thread.currentThread().getName());                    
 
                 synchronized (ri) {
                     for (int i=0; i<20; i++) {
@@ -314,7 +314,7 @@ System.out.println("CLIENT waiting: "+ri.toLogString());
                     ri.exceptionMessage = "timeout waiting on response from server";
                 }
 //qqqqqqqqqqqqqqqqqqqqq                    
-System.out.println("CLIENT notified: "+ri.toLogString());                    
+//System.out.println("CLIENT notified: "+ri.toLogString()+", "+Thread.currentThread().getName());                    
             }
         }
         catch (Exception e) {
@@ -331,7 +331,7 @@ System.out.println("CLIENT notified: "+ri.toLogString());
             Exception ex = new Exception(ri.exceptionMessage + ", info: " + ri.toLogString());
             throw ex;
         }
-System.out.println("CLIENT notified2: "+ri.toLogString()+", "+Thread.currentThread().getName());                    
+//System.out.println("CLIENT notified2: "+ri.toLogString()+", "+Thread.currentThread().getName());                    
         return ri.response;
     }
 
@@ -799,7 +799,7 @@ System.out.println("CLIENT notified2: "+ri.toLogString()+", "+Thread.currentThre
                     
                     
 //qqqqqqqqqqqqqqqqqqqqq                    
-System.out.println("CLIENT recv: "+ri.toLogString());                    
+//System.out.println("CLIENT recv: "+ri.toLogString());                    
                     
                     rix.notifyAll();  // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
                 }
@@ -981,7 +981,7 @@ System.out.println("CLIENT recv: "+ri.toLogString());
     protected void processMessageForStoC(RequestInfo ri, boolean bSendReponse) throws Exception {
 
 //qqqqqqqqqqqqqqqqqqqqq                    
-System.out.println("processMessageForStoC: "+ri.toLogString());                    
+//System.out.println("processMessageForStoC: "+ri.toLogString());                    
         
         
         LOG.fine("starting, "+ri.toLogString());

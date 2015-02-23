@@ -216,7 +216,7 @@ public class RemoteMultiplexerServer {
         ri.nsStart = System.nanoTime();
 
 //qqqqqqqqqqqqqqqqqq        
-//System.out.println("==>"+ri.type+" socket="+ri.socket.getConnectionId());        
+//System.out.println("1==>"+ri.type+" connectionId=|"+ri.socket.getConnectionId()+"|");        
         
         if (ri.type == RequestInfo.Type.CtoS_GetLookupInfo) {
             // lookup, needs to return Java Interface class.
@@ -226,7 +226,7 @@ public class RemoteMultiplexerServer {
             if (bind != null) {
                 ri.response = new Object[] { bind.interfaceClass, bind.usesQueue, bind.isBroadcast };
                 if (bind.usesQueue) {
-                    session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
+                    session.setupAsyncQueueSender(bind.asyncQueueName);
                 }
                 oos.writeBoolean(true); // valid response
                 oos.writeObject(ri.response);
@@ -254,7 +254,7 @@ public class RemoteMultiplexerServer {
                     ri.response = bind.interfaceClass;
                     oos.writeBoolean(true);
                     oos.writeObject(ri.response);
-                    session.setupAsyncQueueSender(bind.asyncQueueName, bind.name);
+                    session.setupAsyncQueueSender(bind.asyncQueueName);
                 }
             }
             else {
@@ -290,6 +290,10 @@ public class RemoteMultiplexerServer {
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
             ri.messageId = ois.readInt();
+
+//qqqqqqqqqqqqqqqqqq        
+//System.out.println("2==>"+ri.type+" "+ri.toLogString());        
+        
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
             ri.bindName = ois.readAsciiString();
@@ -376,16 +380,19 @@ public class RemoteMultiplexerServer {
             if (ri.exceptionMessage != null) {
                 ri.methodInvoked = true;
             }
+            session.setupAsyncQueueSender(ri.bind.asyncQueueName);
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-            cq.addMessageToQueue(ri);
-            session.setupAsyncQueueSender(ri.bind.asyncQueueName, ri.bindName);
+            int xx = cq.addMessageToQueue(ri);
+//qqqqqqqqqqqqqqqqqq    
+boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);                    
+//if (bDisplay) System.out.println("3==>"+ri.type+" "+ri.toLogString()+", qpos="+xx);        
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
             // this will be invoked by the queue thread on the server
             if (ri.exceptionMessage == null) {
                 OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
                 cq.addMessageToQueue(ri);
-                session.setupAsyncQueueSender(ri.bind.asyncQueueName, ri.bindName);
+                session.setupAsyncQueueSender(ri.bind.asyncQueueName);
             }
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedReturnedResponse) {
@@ -1461,21 +1468,22 @@ public class RemoteMultiplexerServer {
         }
 
         // start thread that will send async return values back to client
-        public void setupAsyncQueueSender(final String asyncQueueName, final String bindName) {
+        public void setupAsyncQueueSender(final String asyncQueueName) {
+            if (hmAsyncQueue.get(asyncQueueName) != null) return;
             synchronized (hmAsyncQueue) {
                 if (hmAsyncQueue.get(asyncQueueName) != null) return;
 
                 hmAsyncQueue.put(asyncQueueName, "");
                 final OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(asyncQueueName);
-                final long qPos = cq.getHeadPostion();
-
+                final long qPos = cq.registerSession(connectionId);
+                
                 // set up thread that will get messages from queue and send to client
                 final String threadName = "Client." + connectionId + ".queue." + asyncQueueName;
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            writeQueueMessages(cq, bindName, qPos);
+                            writeQueueMessages(cq, qPos);
 //qqqqqqqqqq need to send client overflow error
 //qqqqq so that it can show error and disconnect                           
                         }
@@ -1494,13 +1502,12 @@ public class RemoteMultiplexerServer {
             }
         }
 
-        private void writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String clientBindName, final long startQuePos)
+        private void writeQueueMessages(final OACircularQueue<RequestInfo> cque, final long startQuePos)
                 throws Exception {
             // have all messages sent using single vsocket
             VirtualSocket vsocket = getSocketForStoC();
             try {
-                cque.registerSession(connectionId);
-                _writeQueueMessages(cque, clientBindName, vsocket, startQuePos);
+                _writeQueueMessages(cque, vsocket, startQuePos);
             }
             finally {
                 cque.unregisterSession(connectionId);
@@ -1509,12 +1516,19 @@ public class RemoteMultiplexerServer {
         }
 
         // used to send broadcast messages to client
-        private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, final String bindName, VirtualSocket vsocket, long qpos)
+        private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, VirtualSocket vsocket, long qpos)
                 throws Exception {
             int connectionId = vsocket.getConnectionId();
 
+            
+//qqqqqqqqqqqqqqqqqqqqq                    
+//System.out.println("SERVER _writeQueueMessages START, connectionId=|"+connectionId+"|, qpos="+qpos);                    
+
+final long origQpos = qpos;
+
             for (int i=0;;i++) {
                 if (vsocket.isClosed()) {
+//System.out.println("SERVER _writeQueueMessages, VSOCKET.isCLOSED connectionId=|"+connectionId+"|");                    
                     return;
                 }
 
@@ -1530,17 +1544,29 @@ public class RemoteMultiplexerServer {
                 if (ris == null) {
                     continue;
                 }
-                
-                qpos += ris.length;
+
+
+//System.out.println("SERVER _writeQueueMessages, connectionId=|"+connectionId+"|, qpos="+qpos);                    
+
                 for (RequestInfo ri : ris) {
+                    qpos++;
                     if (vsocket.isClosed()) return;
-                    if (ri == null || ri.bind == null) continue;
+                    if (ri == null || ri.bind == null) {
+System.out.println("vvvVVVVVVVVVVVVVVVVVVVVVVVVVWWWWWWWWWWwwwwwwvvvvvvvvvvvvvvvvvvvvvvvvvvvv");                        
+                        continue;
+                    }
+  
                     
+                    
+boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);                    
+//if (bDisplay || origQpos+10<qpos) System.out.println("WRITE QUE connectionId=|"+connectionId+"| "+ri.toLogString()+", qpos="+(qpos-1));                    
                     
                     if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
                         if (ri.connectionId != connectionId) {
                             continue;
                         }
+//qqqqqqqqqqqqqqqqqqqqq                    
+//if (bDisplay) System.out.println("SERVER in the queue to send: "+ri.toLogString());                    
                     }
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
                         continue;
@@ -1581,7 +1607,7 @@ public class RemoteMultiplexerServer {
                     
                     if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
 //qqqqqqqqqqqqqqqqqqqqq                    
-System.out.println("SERVER send: "+ri.toLogString());                    
+//if (bDisplay) System.out.println("SERVER send: "+ri.toLogString());                    
 
                         if (ri.exception != null) {
                             oos.writeByte(0);

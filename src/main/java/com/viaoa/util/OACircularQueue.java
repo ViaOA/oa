@@ -147,12 +147,12 @@ public abstract class OACircularQueue<TYPE> {
     /**
      * Add a new message to the queue.
      */
-    public void addMessageToQueue(TYPE msg) {
-        addMessage(msg);
+    public int addMessageToQueue(TYPE msg) {
+        return addMessage(msg);
     }
     
 
-    public void addMessage(TYPE msg) {
+    public int addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
             int posHead = (int) (queueHeadPosition++ % queueSize);
 /*qqqqqqqqqqqqqqqqqqqqqq            
@@ -168,6 +168,8 @@ if (queueHeadPosition % 1000 == 0) {
                 queueWaitFlag = false;
                 LOCKQueue.notifyAll();
             }
+            
+            return posHead;
         }
     }
     
