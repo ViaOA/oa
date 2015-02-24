@@ -121,18 +121,21 @@ public abstract class OACircularQueue<TYPE> {
         if (hmSession == null) return; // no session registered
         if (queueHeadPosition < 1) return;
         long pos = queueHeadPosition-1;
+        boolean bFoundOne = false;
         for (Map.Entry<Integer, Long> entry : hmSession.entrySet()) {
             long x = entry.getValue();
             if (x < (queueHeadPosition - queueSize)) {
                 continue; // overflow
             }
+            bFoundOne = true;
             if (x < pos) pos = x; 
         }
-        
-        for (long i=lastUsedPos; i<pos; i++) {
-            msgQueue[(int)(i % queueSize)] = null;
+        if (bFoundOne) {
+            for (long i=lastUsedPos; i<pos; i++) {
+                msgQueue[(int)(i % queueSize)] = null;
+            }
+            lastUsedPos = pos;
         }
-        lastUsedPos = pos;
     }
     
     /**

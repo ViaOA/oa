@@ -125,7 +125,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
 
     
     
-    @Test(timeout=40000)
+    @Test(timeout=30000)
     public void test() throws Exception {
         
         System.out.println("creating "+testClients.length+" clients");
@@ -201,10 +201,12 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             assertTrue(b);
         }
         
-        System.out.println("   ... all clients are Started, each client is calling remoteServer ping, and server is calling each client ping (100 times)");
+        System.out.println("   ... all clients are Started, each client is calling remoteServer ping, and server is calling each client ping");
 
         
+        long tsBegin = System.currentTimeMillis();
         for (int i=0; i<100; i++) {
+            System.out.print(i+" ");
             for (TestClient tc : testClients) {
                 String s = OAString.getRandomString(3, 22);
                 assertEquals(tc.remoteClientInterface.ping(s), tc.id+s);
@@ -212,7 +214,9 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
                 s = OAString.getRandomString(3, 22);
                 assertEquals(tc.remoteClientInterfaceNoQ.ping(s), tc.id+s);
             }
+            if ((System.currentTimeMillis() - tsBegin) > 15000) break;
         }
+        System.out.println("");
 
         System.out.println("calling broadcast Stop");
         remoteBroadcast.stop();
