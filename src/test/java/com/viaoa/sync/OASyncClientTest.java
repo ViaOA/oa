@@ -26,7 +26,7 @@ public class OASyncClientTest extends OAUnitTest {
     private static OASyncClient syncClient;
     
     
-    @Test
+    //@Test
     public void test() {
         if (serverRoot == null) return;
 /*        
@@ -93,7 +93,7 @@ public class OASyncClientTest extends OAUnitTest {
         }
     }
     
-    @Before
+    //@Before
     public void setup() throws Exception {
         syncClient = new OASyncClient("localhost", port);
         
@@ -107,7 +107,7 @@ public class OASyncClientTest extends OAUnitTest {
             System.out.println("NOT running ClientTest, ServerTest is not running in a separate jvm");
         }
     }
-    @After
+    //@After
     public void tearDown() throws Exception {
         System.out.println("stopping client");
         syncClient.stop();
