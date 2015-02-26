@@ -188,7 +188,7 @@ public class HubListenerTree {
                     listeners = alHuge.toArray(new HubListener[0]);
                     hugeListener = null;
                     alHuge = null;
-                    LOG.fine("removed hugeListener array, size="+listeners.length);
+                    //LOG.fine("removed hugeListener array, size="+listeners.length);
                 }
             }
         }
@@ -215,7 +215,7 @@ public class HubListenerTree {
         
         if (listeners != null && listeners.length > 70) {
             if (listeners.length % 70 == 0) {
-                LOG.fine("HubListenerTree.listeners.size()=" +listeners.length+", hub="+(root==null?"null":root.hub));
+                //LOG.fine("HubListenerTree.listeners.size()=" +listeners.length+", hub="+(root==null?"null":root.hub));
             }
         }
         // System.out.println("HubListenerTree.addListener() ListenerCount="+(ListenerCount));        
@@ -231,7 +231,7 @@ public class HubListenerTree {
                     alHuge = new ArrayList<HubListener>(250);
                     alHuge.addAll(Arrays.asList(listeners));
                     listeners = null;
-                    LOG.fine("Using hugeListener, size="+alHuge.size());
+                    //LOG.fine("Using hugeListener, size="+alHuge.size());
                 }
 
                 if (loc == HubListener.InsertLocation.LAST) lastCount++;
@@ -324,7 +324,7 @@ public class HubListenerTree {
         }
     }    
     private void addDependentListeners(final String origPropertyName, HubListener origHubListener, String[] dependentPropertyNames, boolean bActiveObjectOnly) {
-        LOG.finer("Hub="+root.hub+", property="+origPropertyName);
+        //LOG.finer("Hub="+root.hub+", property="+origPropertyName);
 
         // 20120826 check for endless loops
         if (OAThreadLocalDelegate.getHubListenerTreeCount() > 50) {
@@ -342,13 +342,13 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
     System.out.println(" ==> "+dependentPropertyNames[i]+" ............ "+this.root.hub);
 }
 */
-            LOG.finer("Hub="+root.hub+", property="+origPropertyName+", dependentProp="+dependentPropertyNames[i]);
+            //LOG.finer("Hub="+root.hub+", property="+origPropertyName+", dependentProp="+dependentPropertyNames[i]);
 
             // 20120826 if recursive prop then dont need to listen to more, since a hubMerger is already listening
             if (ignore != null && dependentPropertyNames[i].equalsIgnoreCase(ignore) ) {
                 // todo: might want to have a better check.  This will only check to see if a recursive property
                 //   has the same dependency.  This might be good enough, since there is also a check (begin of method) for endless loop
-                LOG.fine("ignoring "+dependentPropertyNames[i]+", since it was already being listened to");
+                //LOG.fine("ignoring "+dependentPropertyNames[i]+", since it was already being listened to");
                 continue;
             }
             if (dependentPropertyNames[i].indexOf('.') > 0) {
@@ -421,7 +421,7 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                         }
                     }
                     if (!b) {
-                        LOG.finer("creating hubMerger");
+                        //LOG.finer("creating hubMerger");
                         final HubListenerTreeNode newTreeNode = new HubListenerTreeNode();
                         newTreeNode.parent = node;
                         newTreeNode.property = property;
@@ -537,7 +537,7 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                     if (bx) {
                         HubListener hl;
                         final HubListenerTreeNode nodeThis = node;
-                        LOG.finer("creating dependent prop hubListner for Hub");
+                        //LOG.finer("creating dependent prop hubListner for Hub");
                         hl = new HubListenerAdapter() {
                             @Override
                             public void afterAdd(HubEvent e) {
@@ -604,7 +604,7 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                 // Add a hub listener to end of propertyPath
                 
                 if (hubClass == null) {
-                    LOG.finer("creating dependent prop hubListner, dependProp="+property);
+                    //LOG.finer("creating dependent prop hubListner, dependProp="+property);
                     final String propx = property;
                     final HubListenerTreeNode nodeThis = node;
                     HubListener hl = new HubListenerAdapter() {
@@ -649,7 +649,7 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
         // testing
         // hmAll.remove(hl);        
         
-        LOG.finer("Hub="+thisHub);
+        //LOG.finer("Hub="+thisHub);
         removeHugeListener();
         synchronized (root) {
             HubListener[] hold = listeners; 
@@ -670,7 +670,7 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
         if (node.hmListener != null) {
             HubListener[] hls = node.hmListener.remove(origHubListener);
             if (hls != null) {
-                LOG.finer("removing dependentProp listener, name="+node.property);
+                //LOG.finer("removing dependentProp listener, name="+node.property);
                 for (HubListener hl : hls) {
                     node.hub.removeHubListener(hl);
                 }
@@ -686,7 +686,7 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
             if (childNode.hmListener == null || childNode.hmListener.size() == 0 ) {
                 // remove child
                 if (!isUsed(childNode)) {
-                    LOG.finer("removing hubMerger for dependProp, name="+childNode.property);
+                    //LOG.finer("removing hubMerger for dependProp, name="+childNode.property);
                     node.children = (HubListenerTreeNode[]) OAArray.removeAt(HubListenerTreeNode.class, node.children, k);
                     childNode.hubMerger.close();
                     k--;

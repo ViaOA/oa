@@ -22,7 +22,6 @@ import java.lang.reflect.Proxy;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -49,7 +48,7 @@ import com.viaoa.util.OAPool;
  * objects. It allows for any method to have args that are remote objects, which would allow the server
  * to call the client. A method can also return a remote object.
  * 
- * Broadcasting is support, where calling a method on a remote object will be invoked on all other
+ * Broadcasting is supported, where calling a method on a remote object will be invoked on all other
  * clients and server.
  * 
  * This is similar to RMI, except that it allows for many objects (on either server or client) to be

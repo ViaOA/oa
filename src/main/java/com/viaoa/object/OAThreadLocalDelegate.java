@@ -1016,7 +1016,7 @@ static volatile int unlockCnt;
         Hub hubx = ti.getDetailHub;
         ti.getDetailHub = hub;
         int x = OAThreadLocalDelegate.TotalGetDetailHub.getAndIncrement();
-        if (x > 25 || x < 0) {
+        if (x > 50 || x < 0) {
             LOG.warning("TotalGetDetailHub="+x);
         }
         return hubx;

@@ -175,7 +175,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
         cntNew++;
     	if (cntNew % 500 == 0) {
-    	    System.out.println(cntNew+") new OAObject.guid="+guid+" "+this.getClass().getSimpleName());
+    	    //System.out.println(cntNew+") new OAObject.guid="+guid+" "+this.getClass().getSimpleName());
     	}
 
     	// 20141209 removed, since it was creating dup oaObjKeys, one when putting in cache, then clearing it, and then
@@ -475,7 +475,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectDelegate.finalizeObject(this);
         super.finalize();
         cntFinal++;
-        if (cntFinal % 500 == 0) System.out.println(cntFinal+") finalize OAObject.guid="+guid+" "+this.getClass().getSimpleName());
+        //if (cntFinal % 500 == 0) System.out.println(cntFinal+") finalize OAObject.guid="+guid+" "+this.getClass().getSimpleName());
     }
 
     /**

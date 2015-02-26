@@ -9,6 +9,6 @@ public interface RemoteBroadcastInterface {
     void stop();
     void close();
     
-    void ping(String msg);
+    boolean ping(String msg);
     
 }

@@ -28,7 +28,12 @@ import java.util.logging.Logger;
  * Thread safe Circular Queue.
  * There is a single headPostion, and each consumer can have  a tailPosition.
  * Client access (getMessageXxx methods) will check overruns, and will throw an 
- * exception if a queue overrun occurs. 
+ * exception if a queue overrun occurs.
+ * 
+ * A session id can be used so that entries can be removed from the queue once all sessions have received it.
+ * 
+ * A "pace" session can be set, so that it will never incur a queue overrun.  Any add will then wait for this session to be caught up.
+ *  
  * @author vvia
  * Note: this is made abstract to be able to get the Generic class that is used.
  */
@@ -59,6 +64,13 @@ public abstract class OACircularQueue<TYPE> {
     private Class<TYPE> classType;
 
     private ConcurrentHashMap<Integer, Long> hmSession;
+    
+    /**
+     * This is the registered session ID that is used to make sure that the queue will never overrun this session.
+     */
+    private int paceSessionId = -1;
+    private volatile long paceQueuePos;
+    private boolean bWaitingForPaceSession;
     
     /**
      * Create a new circular queue. 
@@ -100,6 +112,22 @@ public abstract class OACircularQueue<TYPE> {
         return queueSize;
     }
     
+    /**
+     * This is used so that the queue position for the sessionId will never have a queue overrun.
+     * This will affect the add(..) method, which will wait if the pace sessionId is "full". 
+     * @param id registered sessionId
+     */
+    public void setPaceSessionId(int id) {
+        this.paceSessionId = id;
+        if (id >= 0) {
+            Long l = hmSession.get(id);
+            if (l != null) paceQueuePos = l.longValue();
+        }
+
+    }
+    public int getPaceSessionId() {
+        return this.paceSessionId;
+    }
     
     /**
      * This is used to let the queue know who the consumers are, so that 
@@ -111,16 +139,19 @@ public abstract class OACircularQueue<TYPE> {
         }
         long x = queueHeadPosition;
         hmSession.put(sessionId, x);
+        if (sessionId == paceSessionId) paceQueuePos = x;
         return x;
     }
     public void unregisterSession(int sessionId) {
         if (hmSession != null) {
             hmSession.remove(sessionId);
         }
+        if (sessionId == paceSessionId) paceSessionId = -1;
     }
     
     // 20141208 null out queue slots, so that they can be GC'd
     //   this is called from a sync block
+    
     private void cleanupQueue() {
         if (hmSession == null) return; // no session registered
         if (queueHeadPosition < 1) return;
@@ -134,7 +165,8 @@ public abstract class OACircularQueue<TYPE> {
             bFoundOne = true;
             if (x < pos) pos = x; 
         }
-        if (bFoundOne) {
+        if (bFoundOne && lastUsedPos < pos) {
+            lastUsedPos = Math.max(queueHeadPosition-queueSize, lastUsedPos);
             for (long i=lastUsedPos; i<pos; i++) {
                 msgQueue[(int)(i % queueSize)] = null;
             }
@@ -158,15 +190,35 @@ public abstract class OACircularQueue<TYPE> {
         return addMessage(msg);
     }
     
-
+    
+    
     public int addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
+
+            if (paceSessionId >= 0 && paceQueuePos >= 0) {
+                for (int i=0; ;i++) {
+                    if ((paceQueuePos + queueSize) > queueHeadPosition) break;
+                    bWaitingForPaceSession = true;
+                    if (i == 8) {
+                        LOG.warning("queue is waiting on pace sessionId to pick up messages from queue name="+name+", paceSessionId="+paceSessionId+", paceQueuePos="+paceQueuePos+", queueHeadPosition="+queueHeadPosition);
+                    }
+                    try {
+                        LOCKQueue.wait(250);
+                    }
+                    catch (Exception e) {
+                    }
+                }
+            }
+            bWaitingForPaceSession = false;
+            
             int posHead = (int) (queueHeadPosition++ % queueSize);
-/*qqqqqqqqqqqqqqqqqqqqqq            
-if (queueHeadPosition % 1000 == 0) {
-    System.out.println(String.format("OACircularQueue %s, position=%,d, lastUsed=%,d", name, queueHeadPosition, lastUsedPos));
-}
-*/
+            
+            /*qqqqqqqqqqqqqqqqqqqqqq            
+            if (queueHeadPosition % 1000 == 0) {
+                System.out.println(String.format("OACircularQueue %s, position=%,d, lastUsed=%,d", name, queueHeadPosition, lastUsedPos));
+            }
+            */
+            
             if (queueHeadPosition < 0) {
                 queueHeadPosition = posHead + 1;
             }
@@ -244,8 +296,10 @@ if (queueHeadPosition % 1000 == 0) {
         }
         return msgs;
     }
-    public TYPE[] getMessages(int sessionId, long posTail, int maxReturnAmount, int maxWait) throws Exception {
+    public TYPE[] getMessages(final int sessionId, final long posTail, final int maxReturnAmount, int maxWait) throws Exception {
         if (hmSession != null) hmSession.put(sessionId, posTail);
+        if (sessionId == paceSessionId) paceQueuePos = posTail;
+
         TYPE[] msgs = null;
         for ( ;; ) {
             msgs =  _getMessages(posTail, maxReturnAmount, maxWait);
@@ -258,6 +312,16 @@ if (queueHeadPosition % 1000 == 0) {
             // ... need to loop again w/o a wait to get any added message(s)
             maxWait = 0;
         }
+
+        if (msgs != null && msgs.length > 0) {
+            if (hmSession != null) hmSession.put(sessionId, posTail+msgs.length);
+            if (sessionId == paceSessionId) paceQueuePos = posTail + msgs.length; 
+            if (bWaitingForPaceSession && sessionId == paceSessionId) {
+                synchronized(LOCKQueue) {
+                    LOCKQueue.notifyAll();
+                }            
+            }
+        }        
         return msgs;
     }
     
@@ -265,12 +329,13 @@ if (queueHeadPosition % 1000 == 0) {
     private TYPE[] _getMessages(long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
         synchronized(LOCKQueue) {
-            if ((posTail + queueSize) <= queueHeadPosition) {
+            if ((posTail + queueSize) < queueHeadPosition) {
                 throw new Exception("message queue overrun");
             }
             else {
                 if (posTail > queueHeadPosition) {
-                    throw new IllegalArgumentException("posTail should not be larger then headPos");
+                    posTail = queueHeadPosition;
+                    //throw new IllegalArgumentException("posTail should not be larger then headPos");
                 }
             }
             amt = (int) (queueHeadPosition - posTail);
@@ -280,7 +345,9 @@ if (queueHeadPosition % 1000 == 0) {
             
             if (amt == 0 && maxWait != 0) {
                 // need to wait
-                if (++cleanupCnt % 50 == 0) cleanupQueue(); // 20141208
+                if (++cleanupCnt % 50 == 0) {
+                    cleanupQueue();
+                }
                 queueWaitFlag = true;
                 if (maxWait > 0) {
                     LOCKQueue.wait(maxWait);
