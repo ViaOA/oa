@@ -62,7 +62,7 @@ public class TsacDataGenerator {
             
             for (int ii = 0; ii < MaxEnviromentLoop; ii++) {
                 Environment env = new Environment();
-                System.out.println("site="+i+", env="+ii);                
+                //System.out.println("site="+i+", env="+ii);                
                 env.setName("Environment." + i + "." + ii);
                 site.getEnvironments().add(env);
 
