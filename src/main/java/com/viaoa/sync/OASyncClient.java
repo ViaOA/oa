@@ -156,7 +156,8 @@ public class OASyncClient {
             if (li == null || !li.getCalculated()) {
                 siblingKeys = getDetailSiblings(masterObject, li, propertyName);
             }
-            
+  
+//result == null qqqqqqqqqqqqqqqqqqqqq            
             additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
             try {
                 result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 

@@ -3,12 +3,9 @@ package com.viaoa.remote.multiplexer.remote;
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
 @OARemoteInterface()
-public interface RemoteBroadcastInterface {
+public interface RemoteSessionInterface {
 
-    void start();
-    void stop();
-    void close();
+    String ping(String msg);
     
-    void ping(String msg);
     
 }

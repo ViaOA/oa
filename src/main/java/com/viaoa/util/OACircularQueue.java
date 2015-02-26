@@ -32,6 +32,10 @@ import java.util.logging.Logger;
  * @author vvia
  * Note: this is made abstract to be able to get the Generic class that is used.
  */
+
+// todo: option to registerSession as a "leader", so that it will never have a queue overrun.  A call to add when then have to 
+//         make sure that the leader is not overran, and must wait, etc.
+
 public abstract class OACircularQueue<TYPE> {
     private static Logger LOG = Logger.getLogger(OACircularQueue.class.getName());
     
@@ -114,7 +118,7 @@ public abstract class OACircularQueue<TYPE> {
             hmSession.remove(sessionId);
         }
     }
-
+    
     // 20141208 null out queue slots, so that they can be GC'd
     //   this is called from a sync block
     private void cleanupQueue() {

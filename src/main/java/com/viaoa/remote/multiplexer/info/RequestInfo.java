@@ -42,40 +42,23 @@ public class RequestInfo {
         CtoS_RemoveSessionBroadcastThread (false, false),
         CtoS_GetBroadcastClass(false, true),
         
-// ********************* CODE REVIEWED
         CtoS_SocketRequest(false, true),
-// ********************* CODE REVIEWED
         CtoS_SocketRequestNoResponse(false, false),
-        
-// ********************* CODE REVIEWED
         CtoS_QueuedRequest(true, true),  // server will process it from the queue, client will then pick it up
-
-// ********************* CODE REVIEWED
         CtoS_QueuedRequestNoResponse(true, false),
-
-//qqqqqqqq after StoC...        
+        
         CtoS_QueuedReturnedResponse(true, false),  // return from StoC_QueuedRequestResponse
-
-        
-// ********************* CODE REVIEWED
         CtoS_QueuedBroadcast(true, false),
-        
-// ********************* CODE REVIEWED
+
         StoC_CreateNewStoCSocket(false, false),
+        StoC_QueuedBroadcast(true, false),
         
-// ********************* CODE REVIEWED        
-        StoC_QueuedBroadcast(true, false),          
-        
-// ********************* CODE REVIEWED
+        /** this is the complicated one.
+         *    S.onInvoke&wait -> queue.add -> toClientX -> socketToServer -> queue.add 
+         */
         StoC_QueuedRequest(true, true),
-        
-// ********************* CODE REVIEWED 
         StoC_QueuedRequestNoResponse(true, false),
-
-
-// ********************* CODE REVIEWED
         StoC_SocketRequestReponse(false, true),
-// ********************* CODE REVIEWED
         StoC_SocketRequestNoResponse(false, false);
         
         Type(boolean usesQueue, boolean hasReturnValue) {
@@ -98,8 +81,6 @@ public class RequestInfo {
     final public int cnt;
     public long msStart;
     public long nsStart; 
-    public long nsRead; 
-    public long nsWrite; 
     public long nsEnd; 
 
     public BindInfo bind;
@@ -122,14 +103,14 @@ public class RequestInfo {
     public Exception exception;
     public String exceptionMessage;
     public Object response;
-    public boolean methodInvoked;  // set to true with the method has been invoked
-    
+
+    public volatile boolean methodInvoked;  // set to true with the method has been invoked
     public volatile boolean processedByServer;  // flag set on server after it's processed    
     
     public RequestInfo() {
         this.cnt = aiCount.incrementAndGet();
     }
-    
+
     public String toLogString() {
         String msg = String.format("%1$tm/%1$td|%1$tH:%1$tM:%1$tS.%1$tL", new Date(msStart));
         msg += "|" + connectionId;
@@ -152,8 +133,6 @@ public class RequestInfo {
             msg += "|";
             msg += "|";
         }
-        msg += "|" + nsRead;
-        msg += "|" + nsWrite;
         msg += "|" + (nsEnd-nsStart);
                 
         if (exception != null) {
@@ -173,8 +152,6 @@ public class RequestInfo {
         msg += "|Object";
         msg += "|Method";
         msg += "|nsRead";
-        msg += "|nsWrite";
-        msg += "|nsTime";
         msg += "[|exception]";
         return msg;
     }

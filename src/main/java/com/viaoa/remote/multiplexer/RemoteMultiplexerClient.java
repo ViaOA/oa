@@ -225,14 +225,7 @@ public class RemoteMultiplexerClient {
         InvocationHandler handler = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                //qqqqqqqqqqqqqqqqqqqqq                    
-                //System.out.println("Proxy Start "+Thread.currentThread().getName());                    
                 Object result = RemoteMultiplexerClient.this.onInvokeForCtoS(bind, proxy, method, args);
-
-                //qqqqqqqqqqqqqqqqqqqqq                    
-                //System.out.println("Proxy returning result: "+result);                    
-                //System.out.println("Proxy DONE "+Thread.currentThread().getName()+", result="+result);                    
-
                 return result;
             }
         };
@@ -276,7 +269,7 @@ public class RemoteMultiplexerClient {
     }
 
     protected Object onInvokeForCtoS(BindInfo bind, Object proxy, Method method, Object[] args) throws Throwable {
-        LOG.fine(method.getName());
+        //LOG.fine(method.getName());
         RequestInfo ri = new RequestInfo();
         VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
         try {
@@ -299,20 +292,15 @@ public class RemoteMultiplexerClient {
             if (ri.bSent && ri.bind.usesQueue && (ri.type.hasReturnValue() || ri.bind.isBroadcast)) {
                 releaseSocketForCtoS(socket);
                 socket = null;
-                //qqqqqqqqqqqqqqqqqqqqq                    
-                //System.out.println("CLIENT waiting: "+ri.toLogString()+", "+Thread.currentThread().getName());                    
-
                 synchronized (ri) {
-                    for (int i = 0; i < 20; i++) {
+                    for (int i = 0; i < ri.methodInfo.timeoutSeconds; i++) {
                         if (ri.methodInvoked) break;
-                        ri.wait(3000); // request timeout
+                        ri.wait(1000); // request timeout
                     }
                 }
                 if (!ri.methodInvoked) {
                     ri.exceptionMessage = "timeout waiting on response from server";
                 }
-                //qqqqqqqqqqqqqqqqqqqqq                    
-                //System.out.println("CLIENT notified: "+ri.toLogString()+", "+Thread.currentThread().getName());                    
             }
         }
         catch (Exception e) {
@@ -329,7 +317,6 @@ public class RemoteMultiplexerClient {
             Exception ex = new Exception(ri.exceptionMessage + ", info: " + ri.toLogString());
             throw ex;
         }
-        //System.out.println("CLIENT notified2: "+ri.toLogString()+", "+Thread.currentThread().getName());                    
         return ri.response;
     }
 
@@ -338,7 +325,7 @@ public class RemoteMultiplexerClient {
      */
     protected void afterInvokeForCtoS(RequestInfo ri) {
         if (ri == null || !ri.bSent) return;
-        LOG.fine(ri.toLogString());
+        // LOG.fine(ri.toLogString());
     }
 
     // "dummy" object, that is used when methods are not supported in proxy interface, but are in Object
@@ -351,7 +338,6 @@ public class RemoteMultiplexerClient {
      * and return the method return value from the server.
      */
     protected boolean _onInvokeForCtoS(RequestInfo ri) throws Exception {
-        LOG.fine(ri.toLogString());
         if (ri.methodInfo == null) {
             // check to see if method from Object.class is being invoked
             if (ri.method.getDeclaringClass().equals(Object.class)) {
@@ -432,7 +418,6 @@ public class RemoteMultiplexerClient {
             }
         }
 
-        long ns1 = System.nanoTime();
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
 
         if (ri.bind.usesQueue) {
@@ -468,7 +453,6 @@ public class RemoteMultiplexerClient {
             oos.writeInt(ri.messageId);
         }
         oos.flush();
-        ri.nsWrite = System.nanoTime() - ns1;
 
         if (ri.type == RequestInfo.Type.CtoS_SocketRequest) {
             RemoteObjectInputStream ois = new RemoteObjectInputStream(ri.socket, hmClassDescInput);
@@ -498,10 +482,7 @@ public class RemoteMultiplexerClient {
                     ri.response = ((OACompressWrapper) ri.response).getObject();
                 }
             }
-
-            ns1 = System.nanoTime();
             ri.methodInvoked = true;
-            ri.nsRead = System.nanoTime() - ns1;
         }
         return true;
     }
@@ -698,7 +679,7 @@ public class RemoteMultiplexerClient {
         };
         t.setName("OARemoteThread." + aiClientThreadCount.getAndIncrement());
         t.start();
-        LOG.fine("thread name=" + t.getName());
+        //LOG.fine("thread name=" + t.getName());
         return t;
     }
 
@@ -754,42 +735,50 @@ public class RemoteMultiplexerClient {
         ri.connectionId = socket.getConnectionId();
         ri.vsocketId = socket.getId();
         ri.threadId = threadId;
-
-        LOG.fine("starting, " + ri.toLogString());
-
-        //qqqqqqqqqqqqqqqqqqqqq                    
-        //System.out.println("XXXX processMessageForStoC: "+ri.toLogString());                    
-
+        
+        try {
+            _processMessageForStoC(ri, ois);
+        }
+        finally {
+            ri.nsEnd = System.nanoTime();
+            afterInvokForStoC(ri);
+        }
+    }
+    private void _processMessageForStoC(final RequestInfo ri, final RemoteObjectInputStream ois) throws Exception {
         if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
             int x = ois.readByte();
+            Object objx = ois.readObject();
+            
+//System.out.println("===> rmltpxClient reading "+objx);//qqqqqqqqqqqqqqqqqqq                            
+            
+            ri.messageId = ois.readInt();
+            RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
+            
             if (x == 0) {
-                ri.exception = (Exception) ois.readObject();
+                ri.exception = (Exception) objx;
             }
             else if (x == 1) {
-                ri.exceptionMessage = (String) ois.readObject();
+                ri.exceptionMessage = (String) objx;
             }
             else if (x == 2) {
-                Object[] responses = (Object[]) ois.readObject();
+                Object[] responses = (Object[]) objx;
                 String bindName = (String) responses[0];
 
-                BindInfo bindx = getBindInfo(bindName);
-                Object objx = bindx != null ? bindx.weakRef.get() : null;
-                if (bindx == null || objx == null) {
-                    boolean bUsesQueue = (Boolean) responses[1];
-                    Object obj = getProxyForCtoS(bindName, ri.methodInfo.remoteReturn, bUsesQueue);
-                    ri.response = obj;
+                if (rix != null) {
+                    BindInfo bindx = getBindInfo(bindName);
+                    objx = bindx != null ? bindx.weakRef.get() : null;
+                    if (bindx == null || objx == null) {
+                        boolean bUsesQueue = (Boolean) responses[1];
+                        Object obj = getProxyForCtoS(bindName, rix.methodInfo.remoteReturn, bUsesQueue);
+                        ri.response = obj;
+                    }
+                    else ri.response = bindx.getObject();
                 }
-                else ri.response = bindx.getObject();
             }
             else {
-                ri.response = ois.readObject();
+                ri.response = objx;
             }
-            ri.messageId = ois.readInt();
 
-            //qqqqqqqqqqqqqqqqqqqqq                    
-            //System.out.println("CLIENT recv: "+ri.toLogString());                    
-
-            RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
             if (rix == null) {
                 ri.exceptionMessage = "StoC requestInfo not found";
             }
@@ -802,17 +791,9 @@ public class RemoteMultiplexerClient {
                     rix.exception = ri.exception;
                     rix.exceptionMessage = ri.exceptionMessage;
                     rix.methodInvoked = true;
-
-                    //qqqqqqqqqqqqqqqqqqqqq                    
-                    //System.out.println("CLIENT recv: "+ri.toLogString());                    
-
                     rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
                 }
             }
-            LOG.fine("returning, " + ri.toLogString());
-            //qqqqqqqqqqqqqqqqqqqqq                    
-            //System.out.println("XXXX3 processMessageForStoC: "+ri.toLogString());                    
-
             return;
         }
 
@@ -826,21 +807,21 @@ public class RemoteMultiplexerClient {
             if (ri.bind == null) {
                 ri.exceptionMessage = "could not find bind object";
             }
+            ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
             beforeInvokForStoC(ri);
 
             OARemoteThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
                 t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-                for (int i = 0; t.requestInfo != null && !ri.methodInvoked && i < 10; i++) {
-                    t.Lock.wait(250);
+                for (int i = 0; t.requestInfo != null && !ri.methodInvoked && i < ri.methodInfo.timeoutSeconds; i++) {
+                    t.Lock.wait(1000);
                 }
             }
             if (!ri.methodInvoked) {
                 if (ri.exceptionMessage != null) ri.exceptionMessage = "timeout waiting for message to be processed";
             }
             sendResponseForStoC(ri);
-            LOG.fine("returning, " + ri.toLogString());
             return;
         }
         if (ri.type == RequestInfo.Type.StoC_QueuedRequestNoResponse) {
@@ -852,20 +833,20 @@ public class RemoteMultiplexerClient {
             if (ri.bind == null) {
                 ri.exceptionMessage = "could not find bind object";
             }
+            ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
             beforeInvokForStoC(ri);
 
             OARemoteThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
                 t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-                for (int i = 0; t.requestInfo != null && !ri.methodInvoked && i < 10; i++) {
-                    t.Lock.wait(250);
+                for (int i = 0; t.requestInfo != null && !ri.methodInvoked && i < ri.methodInfo.timeoutSeconds; i++) {
+                    t.Lock.wait(1000);
                 }
             }
             if (!ri.methodInvoked) {
                 if (ri.exceptionMessage != null) ri.exceptionMessage = "timeout waiting for message to be processed";
             }
-            LOG.fine("returning, " + ri.toLogString());
             return;
         }
 
@@ -875,8 +856,15 @@ public class RemoteMultiplexerClient {
             ri.args = (Object[]) ois.readObject();
             ri.connectionId = ois.readInt();
             ri.messageId = ois.readInt();
+            
+            ri.bind = getBindInfo(ri.bindName);
+            if (ri.bind == null) {
+                ri.exceptionMessage = "could not find bind object";
+            }
+            else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
-            if (ri.connectionId == socket.getConnectionId()) {
+            if (ri.connectionId == multiplexerClient.getConnectionId()) {
+                // this client called the broadcast
                 ri.response = ois.readObject();
                 RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
                 if (rix == null) {
@@ -901,8 +889,8 @@ public class RemoteMultiplexerClient {
             OARemoteThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
                 t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-                for (int i = 0; t.requestInfo != null && !ri.methodInvoked && i < 10; i++) {
-                    t.Lock.wait(250);
+                for (int i = 0; t.requestInfo != null && !ri.methodInvoked && i < ri.methodInfo.timeoutSeconds; i++) {
+                    t.Lock.wait(1000);
                 }
             }
             if (!ri.methodInvoked) {
@@ -911,7 +899,7 @@ public class RemoteMultiplexerClient {
 
             long t2 = System.currentTimeMillis();
             long tx = t2 - t1;
-            if (tx >= 2000) {
+            if (tx >= (ri.methodInfo.timeoutSeconds*1000)) {
                 String stackTrace = "";
                 for (StackTraceElement ste : t.getStackTrace()) {
                     stackTrace += "\n    " + ste.getFileName() + "." + ste.getMethodName() + " line " + ste.getLineNumber();
@@ -926,14 +914,15 @@ public class RemoteMultiplexerClient {
             ri.args = (Object[]) ois.readObject();
             ri.bind = getBindInfo(ri.bindName);
             if (ri.bind == null) return;
+            ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
             beforeInvokForStoC(ri);
 
             long t1 = System.currentTimeMillis();
             OARemoteThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
                 t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-                for (int i = 0; t.requestInfo != null && !ri.methodInvoked && i < 10; i++) {
-                    t.Lock.wait(250);
+                for (int i = 0; t.requestInfo != null && !ri.methodInvoked && i < ri.methodInfo.timeoutSeconds; i++) {
+                    t.Lock.wait(1000);
                 }
             }
             if (!ri.methodInvoked) {
@@ -942,7 +931,7 @@ public class RemoteMultiplexerClient {
 
             long t2 = System.currentTimeMillis();
             long tx = t2 - t1;
-            if (tx >= 2000) {
+            if (tx >= (ri.methodInfo.timeoutSeconds*1000)) {
                 String stackTrace = "";
                 for (StackTraceElement ste : t.getStackTrace()) {
                     stackTrace += "\n    " + ste.getFileName() + "." + ste.getMethodName() + " line " + ste.getLineNumber();
@@ -959,6 +948,7 @@ public class RemoteMultiplexerClient {
             if (ri.bind == null) {
                 ri.exceptionMessage = "invalid bind name";
             }
+            else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
             beforeInvokForStoC(ri);
 
             processMessageForStoC(ri);
@@ -971,6 +961,7 @@ public class RemoteMultiplexerClient {
             if (ri.bind == null) {
                 ri.exceptionMessage = "invalid bind name";
             }
+            else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
             beforeInvokForStoC(ri);
 
             processMessageForStoC(ri, false);
@@ -978,7 +969,6 @@ public class RemoteMultiplexerClient {
         else {
             ri.exceptionMessage = "invalid command";
         }
-        LOG.fine("returning, " + ri.toLogString());
     }
 
     protected void processMessageForStoC(RequestInfo ri) throws Exception {
@@ -986,11 +976,6 @@ public class RemoteMultiplexerClient {
     }
 
     protected void processMessageForStoC(RequestInfo ri, boolean bSendReponse) throws Exception {
-
-        //qqqqqqqqqqqqqqqqqqqqq                    
-        //System.out.println("processMessageForStoC: "+ri.toLogString());                    
-
-        LOG.fine("starting, " + ri.toLogString());
         try {
             _processMessageForStoC(ri); // invoke
             if (bSendReponse) sendResponseForStoC(ri);
@@ -1074,10 +1059,6 @@ public class RemoteMultiplexerClient {
                 LOG.warning("error processing StoC, exception=" + ri.exceptionMessage);
             }
         }
-        ri.nsEnd = System.nanoTime();
-
-        LOG.fine("completed, " + ri.toLogString());
-        afterInvokForStoC(ri);
     }
 
     private void _processMessageForStoC(RequestInfo ri) throws Exception {
@@ -1086,10 +1067,8 @@ public class RemoteMultiplexerClient {
             ri.exceptionMessage = "bind Object not found";
             return;
         }
-        else {
-            ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
-            if (ri.methodInfo != null) ri.method = ri.methodInfo.method;
-        }
+        if (ri.methodInfo == null) ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
+        if (ri.methodInfo != null) ri.method = ri.methodInfo.method;
 
         if (ri.method == null) {
             ri.exceptionMessage = "method not found";
@@ -1181,6 +1160,7 @@ public class RemoteMultiplexerClient {
         else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
             ri.response = new OACompressWrapper(ri.response);
         }
+        ri.nsEnd = System.nanoTime();
     }
 
     /**
@@ -1194,7 +1174,7 @@ public class RemoteMultiplexerClient {
      */
     public void afterInvokForStoC(RequestInfo ri) {
         if (ri == null) return;
-        LOG.fine(ri.toLogString());
+        //LOG.fine(ri.toLogString());
     }
 
     /**
@@ -1284,7 +1264,7 @@ public class RemoteMultiplexerClient {
         executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, queExecutorService, tf) {
             @Override
             public Future<?> submit(Runnable task) {
-                LOG.fine("running task in thread=" + Thread.currentThread().getName());
+                //LOG.fine("running task in thread=" + Thread.currentThread().getName());
                 return super.submit(task);
             }
         };

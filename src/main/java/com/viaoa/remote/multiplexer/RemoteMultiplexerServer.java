@@ -55,8 +55,7 @@ import com.viaoa.util.OACompressWrapper;
  * </ol>
  *
  * Notes:
- * Anything queued will use an OARemoteThread to process it.  If it is a broadcast msg, then it will
- * not send out OA events. 
+ * Anything queued will use an OARemoteThread to process it. 
  * 
  * @author vvia
  */
@@ -165,26 +164,26 @@ public class RemoteMultiplexerServer {
         t.setName("OAServerSocket_CtoS");
         t.setDaemon(true);
         t.start();
-        LOG.config("created Client to Server serversocket thread");
+        //LOG.config("created Client to Server serversocket thread");
     }
 
     // new vsocket connection for client to server messages
     protected void onNewConnectionForCtoS(Socket socket) {
-        final VirtualSocket iceSocket = (VirtualSocket) socket;
+        final VirtualSocket vSocket = (VirtualSocket) socket;
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    processSocketCtoS(iceSocket);
+                    processSocketCtoS(vSocket);
                 }
                 catch (Exception e) {
-                    if (!iceSocket.isClosed()) {
+                    if (!vSocket.isClosed()) {
                         LOG.log(Level.WARNING, "error processing socket request", e);
                     }
                 }
             }
         });
-        t.setName("OASocket_CtoS." + iceSocket.getConnectionId() + "." + iceSocket.getId());
+        t.setName("OASocket_CtoS." + vSocket.getConnectionId() + "." + vSocket.getId());
         t.setDaemon(true);
         t.start();
     }
@@ -201,13 +200,16 @@ public class RemoteMultiplexerServer {
             ri.socket = socket;
             ri.connectionId = ri.socket.getConnectionId();
             ri.vsocketId = socketId;
-            processSocketRequest(ri, session);
-
+            
+            boolean b = _processSocketCtoSRequest(ri, session);
             ri.nsEnd = System.nanoTime();
+            if (b) {
+                afterInvokeForCtoS(ri);
+            }
         }
     }
 
-    protected void processSocketRequest(final RequestInfo ri, final Session session) throws Exception {
+    private boolean _processSocketCtoSRequest(final RequestInfo ri, final Session session) throws Exception {
         RemoteObjectInputStream ois = new RemoteObjectInputStream(ri.socket, session.hmClassDescInput);
 
         // wait for next message
@@ -215,9 +217,6 @@ public class RemoteMultiplexerServer {
         ri.msStart = System.currentTimeMillis();
         ri.nsStart = System.nanoTime();
 
-//qqqqqqqqqqqqqqqqqq        
-//System.out.println("1==>"+ri.type+" connectionId=|"+ri.socket.getConnectionId()+"|");        
-        
         if (ri.type == RequestInfo.Type.CtoS_GetLookupInfo) {
             // lookup, needs to return Java Interface class.
             ri.bindName = ois.readAsciiString();
@@ -237,8 +236,7 @@ public class RemoteMultiplexerServer {
                 oos.writeObject(ri.exceptionMessage);
             }
             oos.flush();
-            afterInvokeForCtoS(ri);
-            return;
+            return true;
         }
         if (ri.type == RequestInfo.Type.CtoS_GetBroadcastClass) {
             ri.bindName = ois.readAsciiString();
@@ -263,15 +261,13 @@ public class RemoteMultiplexerServer {
                 oos.writeObject(ri.exceptionMessage);
             }
             oos.flush();
-            afterInvokeForCtoS(ri);
-            return;
+            return true;
         }
         if (ri.type == RequestInfo.Type.CtoS_RemoveSessionBroadcastThread) {
             // remove StoC thread used for broadcast object
             ri.bindName = ois.readAsciiString();
             session.removeBindInfo(ri.bindName);
-            afterInvokeForCtoS(ri);
-            return;
+            return true;
         }
 
         // reading based on type
@@ -290,10 +286,6 @@ public class RemoteMultiplexerServer {
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
             ri.messageId = ois.readInt();
-
-//qqqqqqqqqqqqqqqqqq        
-//System.out.println("2==>"+ri.type+" "+ri.toLogString());        
-        
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
             ri.bindName = ois.readAsciiString();
@@ -318,8 +310,6 @@ public class RemoteMultiplexerServer {
             ri.messageId = ois.readInt();
         }
         
-        ri.nsRead = System.nanoTime() - ri.nsStart;
-
         
         if (ri.bindName != null) {
             ri.bind = getBindInfo(ri.bindName);
@@ -337,6 +327,8 @@ public class RemoteMultiplexerServer {
                 }
             }
         }
+
+        boolean bResult = false;
         
         // processing based on type
         if (ri.type == RequestInfo.Type.CtoS_SocketRequest) {
@@ -344,7 +336,6 @@ public class RemoteMultiplexerServer {
 
             invokeCtoS(ri, session); // includes converting args and result
             
-            long t1 = System.nanoTime();
             Object resp = null;
             RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, session.hmClassDescOutput, session.aiClassDescOutput);
             if (ri.exception != null) {
@@ -368,12 +359,11 @@ public class RemoteMultiplexerServer {
             }
             oos.writeObject(resp);
             oos.flush();
-            ri.nsWrite = System.nanoTime() - t1;
-            afterInvokeForCtoS(ri);
+            bResult = true;            
         }
         else if (ri.type == RequestInfo.Type.CtoS_SocketRequestNoResponse) {
             invokeCtoS(ri, session);
-            afterInvokeForCtoS(ri);
+            bResult = true;            
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
             // unless there is an error, then this will be invoked by the queue thread on the server
@@ -382,10 +372,8 @@ public class RemoteMultiplexerServer {
             }
             session.setupAsyncQueueSender(ri.bind.asyncQueueName);
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-            int xx = cq.addMessageToQueue(ri);
-//qqqqqqqqqqqqqqqqqq    
-boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);                    
-//if (bDisplay) System.out.println("3==>"+ri.type+" "+ri.toLogString()+", qpos="+xx);        
+            cq.addMessageToQueue(ri);
+            bResult = false;            
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
             // this will be invoked by the queue thread on the server
@@ -394,29 +382,33 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
                 cq.addMessageToQueue(ri);
                 session.setupAsyncQueueSender(ri.bind.asyncQueueName);
             }
+            bResult = true;            
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedReturnedResponse) {
-            // received the response from a prev S2C, put it in the queue so that it will notify the thread that is waiting
+            // received the response from a prev onInvokeForStoC, type:StoC_QueuedRequest, notify the waiting thread
             RequestInfo rix = hmClientCallbackRequestInfo.remove(ri.messageId);
             if (rix != null) {
                 rix.exception = ri.exception;
                 rix.exceptionMessage = ri.exceptionMessage;
                 rix.response = ri.response;
                 processCtoSReturnValue(rix, session);
-                rix.methodInvoked = true;
-                rix.type = RequestInfo.Type.CtoS_QueuedReturnedResponse;
+                rix.type = RequestInfo.Type.CtoS_QueuedReturnedResponse;  // was StoC_QueuedRequest
                 OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(rix.bind.asyncQueueName);
-                cq.addMessageToQueue(rix);
+                cq.addMessageToQueue(rix);  // which will then set methodInvoked=true and notify orig thread
             }
-            else ri.exceptionMessage = "original message timed out waiting for response";
+            else {
+                ri.exceptionMessage = "original message timed out waiting for response";
+            }
+            bResult = false;            
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
             cq.addMessageToQueue(ri);
         }
         else {
-            throw new Exception("request command not processed");
+            ri.exception = new Exception("invalid request command, it could not be processed");
         }
+        return bResult;
     }
 
     protected void invokeCtoS(final RequestInfo ri, final Session session) throws Exception {
@@ -459,8 +451,7 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
         OAThreadLocalDelegate.setRemoteRequestInfo(null);
 
         processCtoSReturnValue(ri, session);
-        
-        ri.methodInvoked = true;
+        notifyMethodInvoked(ri);
     }
     
     private void processCtoSArguments(final RequestInfo ri, final Session session) throws Exception {
@@ -540,7 +531,7 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
      */
     protected void afterInvokeForCtoS(RequestInfo ri) {
         if (ri == null) return;
-        LOG.fine(ri.toLogString());
+        // LOG.fine(ri.toLogString());
     }
 
     /**
@@ -568,7 +559,7 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
         t.setName("OAServerSocket_StoC");
         t.setDaemon(true);
         t.start();
-        LOG.config("created Server to Client serversocket thread");
+        //LOG.config("created Server to Client serversocket thread");
     }
 
     /**
@@ -576,10 +567,10 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
      * call methods on a client's remote object.
      */
     protected void onNewConnectionForStoC(Socket socket) {
-        final VirtualSocket iceSocket = (VirtualSocket) socket;
-        int connectionId = iceSocket.getConnectionId();
+        final VirtualSocket vSocket = (VirtualSocket) socket;
+        int connectionId = vSocket.getConnectionId();
         Session session = getSession(connectionId);
-        session.addSocketForStoC(iceSocket);
+        session.addSocketForStoC(vSocket);
     }
 
     /**
@@ -622,11 +613,11 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
             ri.exception = e;
         }
         finally {
+            ri.nsEnd = System.nanoTime();
             if (ri.socket != null) {
                 session.addSocketForStoC(ri.socket);
             }
         }
-        ri.nsEnd = System.nanoTime();
         afterInvokeForStoC(ri);
 
         if (ri.exception != null) throw ri.exception;
@@ -696,41 +687,29 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
                 
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
             cq.addMessageToQueue(ri);
-            
-            synchronized (ri) {
-                for (; !ri.processedByServer;) {
-                    try {
-                        ri.wait();  // wait for processBroadcastMessages to flag as processed 
-                    }
-                    catch (Exception e) {
-                    }
-                }
-            }
+            waitForProcessedByServer(ri);
 
             if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
                 // need to wait for return value 
-                int maxSeconds = ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds; 
-                synchronized (ri) {
-                    for (int i=0; !ri.methodInvoked ; i++) {
-                        try {
-                            if (i == maxSeconds) {
-                                ri.exceptionMessage = "timeout waiting for response";
-                                break;
-                            }
-                            
-                            if (session.bDisconnected) {
-                                ri.exceptionMessage = "disconnected from remote client";
-                                break;
-                            }
-                            ri.wait(1000);  // see: processQueueMessagesOnServer(), msg CtoS_QueuedReturnedResponse  
+                int maxSeconds = Math.max(ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds, 1);
+                for (int i=0; ; i++) {
+                    try {
+                        if (waitForMethodInvoked(ri, 1)) break;  //wait for response back from client, which puts it in the queue                      
+                        if (i == maxSeconds) {
+                            ri.exceptionMessage = "timeout waiting for response";
+                            break;
                         }
-                        catch (Exception e) {
-                            ri.exception = e;
+                        if (session.bDisconnected) {
+                            ri.exceptionMessage = "disconnected from remote client";
                             break;
                         }
                     }
-                    hmClientCallbackRequestInfo.remove(ri.messageId);
+                    catch (Exception e) {
+                        ri.exception = e;
+                        break;
+                    }
                 }
+                hmClientCallbackRequestInfo.remove(ri.messageId);
             }
         }
         else {
@@ -765,9 +744,8 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
             session.releaseSocketForStoC(ri.socket);
             ri.socket = null;
         }
-        ri.methodInvoked = true;
-
         processStoCReturnValue(ri, session);
+        notifyMethodInvoked(ri);
     }
     private void processStoCArguments(final RequestInfo ri, final Session session) throws Exception {
         if (ri.methodInfo.compressedParams != null && ri.args != null) {
@@ -863,7 +841,7 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
      */
     protected void afterInvokeForStoC(RequestInfo ri) {
         if (ri == null) return;
-        LOG.log(Level.FINE, ri.toLogString(), ri.exception);
+        // LOG.log(Level.FINE, ri.toLogString(), ri.exception);
     }
 
     // remove gc'd binding objects
@@ -1021,23 +999,7 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 RequestInfo ri = onInvokeBroadcast(bind, method, args);
                 if (ri.object != null) {
-                    synchronized (ri) {
-                        // 20150206 check to see if nextThread was started                        
-                        if (!OARemoteThreadDelegate.isSafeToCallRemoteMethod()) {
-                            if (errorCnt++ < 20) {
-                                LOG.warning("OARemoteThread is sending a broadcast msg, will continue, msg="+ri.toLogString());
-                            }
-                        }
-                        else {
-                            for (; !ri.processedByServer;) {
-                                try {
-                                    ri.wait();
-                                }
-                                catch (Exception e) {
-                                }
-                            }
-                        }
-                    }
+                    waitForProcessedByServer(ri);
                 }
                 ri.nsEnd = System.nanoTime();
                 return ri.response;
@@ -1130,7 +1092,6 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
         return ri;
     }
 
-    // queues that this session has a thread created to send to client
     private ConcurrentHashMap<String, String> hmAsyncQueue = new ConcurrentHashMap<String, String>();
 
     protected void setupBroadcastQueueReader(final String asyncQueueName, final String bindName) {
@@ -1163,29 +1124,41 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
         t.start();
     }
 
-    
     private void processQueueMessagesOnServer(final OACircularQueue<RequestInfo> cque, final String bindName, long qpos) throws Exception {
+        int cqueWaitMs = 2500;
         for (;;) {
             RequestInfo[] ris;
-            ris = cque.getMessages(0, qpos, 50, 500);
+            ris = cque.getMessages(0, qpos, 20, cqueWaitMs);
             
-            if (ris == null) {  // remove any unneeded threads
-                if (alRemoteClientThread.size() > 3) {
-                    for (OARemoteThread rct : alRemoteClientThread) {
-                        alRemoteClientThread.remove(rct);
-                        synchronized (rct.Lock) {
-                            rct.stopCalled = true;
-                            rct.Lock.notify();
+            if (ris == null) {  // remove any unneeded threads, one at a time
+                synchronized (alRemoteClientThread) {
+                    if (alRemoteClientThread.size() > 3) {
+                        for (OARemoteThread rct : alRemoteClientThread) {
+                            if (rct.requestInfo != null) continue;
+                            synchronized (rct.Lock) {
+                                if (rct.requestInfo != null) continue;
+                                rct.stopCalled = true;
+                                alRemoteClientThread.remove(rct);
+                                rct.Lock.notifyAll();
+                            }
+                            break;
                         }
-                        break;
+                        cqueWaitMs = 2000;
                     }
+                    else cqueWaitMs = 30000; 
                 }
                 continue;
             }
             
             qpos += ris.length;
-            boolean bInvokedCtoS = false;
+            
             for (RequestInfo ri : ris) {
+                if (ri == null) continue;
+
+                boolean bInvokedCtoS = false;
+                boolean bInvokedStoC = false;
+                boolean bNotifyMethodInvoked = false;
+                
                 if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
                     // invoke 
                     bInvokedCtoS = true;
@@ -1198,8 +1171,8 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
                     // no clients get this
                 }
                 else if (ri.type == RequestInfo.Type.CtoS_QueuedReturnedResponse) {
-                    ri.methodInvoked = true; // waiting thread will wake up on ri.notifyAll()
-                    bInvokedCtoS = true;  // invoked on client, this is the response
+                    bNotifyMethodInvoked = true; // waiting thread will wake up on ri.notifyAll()
+                    bInvokedStoC = true;  // invoked on client, this is the response
                     // clients need to ignore this
                     // client is returning value for a S2C request
                 }
@@ -1214,20 +1187,25 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
                     // only one client gets this
                 }
                 else if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
-                    ri.methodInvoked = true;
-                    afterInvokeForStoC(ri);
+                    bInvokedStoC = true;
+                    bNotifyMethodInvoked = true; 
                 }
                 
-                synchronized (ri) {
-                    ri.processedByServer = true;
-                    ri.notifyAll();
+                notifyProcessedByServer(ri);
+                if (bNotifyMethodInvoked) {
+                    notifyMethodInvoked(ri);
                 }
+                
                 if (bInvokedCtoS) afterInvokeForCtoS(ri);
+                if (bInvokedStoC) afterInvokeForStoC(ri);
             }
         }
     }
     
     
+    /**
+     * This will have the currentThread wait for RemoteThread.invokeCtoS(..) to process the message.
+     */
     protected void invokeCtoSQueueMesssage(final RequestInfo ri) throws Exception {
         if (ri == null) return;
         if (ri.methodInvoked) return; 
@@ -1235,40 +1213,50 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
         Object obj = ri.bind.getObject();
         if (obj == null) return;
 
+        // get a remoteThread to process the request
         OARemoteThread remoteThread = null;
-        int x = alRemoteClientThread.size();
-        for (int i=0; i<x; i++) {
-            OARemoteThread rct = alRemoteClientThread.get(i);
-            if (rct.requestInfo == null) {
-                remoteThread = rct;
-                break;
+        synchronized (alRemoteClientThread) {        
+            for (OARemoteThread rct : alRemoteClientThread) {
+                synchronized (rct.Lock) {
+                    if (rct.requestInfo == null) {
+                        remoteThread = rct;
+                        rct.requestInfo = ri;
+                        rct.Lock.notifyAll(); 
+                        break;
+                    }
+                }
             }
-        }
-        if (remoteThread == null) {
-            remoteThread = createRemoteClientThread();
-            alRemoteClientThread.add(remoteThread);
-            if (alRemoteClientThread.size() > 20) {
-                LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
+            if (remoteThread == null) {
+                remoteThread = createRemoteClientThread();
+                alRemoteClientThread.add(remoteThread);
+                if (alRemoteClientThread.size() > 20) {
+                    LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
+                }
+                synchronized (remoteThread.Lock) {
+                    remoteThread.requestInfo = ri;
+                    remoteThread.Lock.notifyAll(); 
+                }
             }
         }
         
-        int maxSeconds = ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds; 
-        long ms1 = System.currentTimeMillis();                    
-        synchronized (remoteThread.Lock) {
-            remoteThread.requestInfo = ri;
-            remoteThread.Lock.notify(); // so that remoteThread will call processBroadcast(ri)
-            remoteThread.Lock.wait(maxSeconds * 1000);
+        int maxSeconds = Math.max(ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds, 1); 
+        long ms1 = System.currentTimeMillis();
+   
+        if (!waitForMethodInvoked(ri, maxSeconds)) {
+            ri.exceptionMessage = "timeout waiting for response";
         }
-
+        
+        
         long ms2 = System.currentTimeMillis();
         // this can be removed, sanity check only
-        if (!ri.processedByServer && (ms2-ms1) >= (maxSeconds * 1000)) {
+        if ((ms2-ms1) >= (maxSeconds * 1000)) {
             StackTraceElement[] stes = remoteThread.getStackTrace();
             Exception ex = new Exception();
             ex.setStackTrace(stes);
             LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
                     + ri.toLogString(), ex);
         }
+        ri.nsEnd = System.nanoTime();
     }
     
 
@@ -1299,7 +1287,6 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
                         
                         synchronized (Lock) {
                             this.requestInfo = null;
-                            Lock.notify(); // notify socket reader thread to continue to next message
                         }
                     }
                     catch (Exception e) {
@@ -1312,8 +1299,8 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
             public void startNextThread() {
                 if (startedNextThread) return;
                 super.startNextThread();
-                synchronized (Lock) {
-                    Lock.notify(); // lets the main queue reader thread get the next msg
+                if (requestInfo != null && !requestInfo.processedByServer) {
+                    notifyProcessedByServer(requestInfo);
                 }
             }
         };
@@ -1484,8 +1471,6 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
                     public void run() {
                         try {
                             writeQueueMessages(cq, qPos);
-//qqqqqqqqqq need to send client overflow error
-//qqqqq so that it can show error and disconnect                           
                         }
                         catch (Exception e) {
                             if (realSocket != null && !realSocket.isClosed()) {
@@ -1519,16 +1504,8 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
         private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, VirtualSocket vsocket, long qpos)
                 throws Exception {
             int connectionId = vsocket.getConnectionId();
-
-            
-//qqqqqqqqqqqqqqqqqqqqq                    
-//System.out.println("SERVER _writeQueueMessages START, connectionId=|"+connectionId+"|, qpos="+qpos);                    
-
-final long origQpos = qpos;
-
             for (int i=0;;i++) {
                 if (vsocket.isClosed()) {
-//System.out.println("SERVER _writeQueueMessages, VSOCKET.isCLOSED connectionId=|"+connectionId+"|");                    
                     return;
                 }
 
@@ -1545,28 +1522,17 @@ final long origQpos = qpos;
                     continue;
                 }
 
-
-//System.out.println("SERVER _writeQueueMessages, connectionId=|"+connectionId+"|, qpos="+qpos);                    
-
                 for (RequestInfo ri : ris) {
                     qpos++;
                     if (vsocket.isClosed()) return;
                     if (ri == null || ri.bind == null) {
-System.out.println("vvvVVVVVVVVVVVVVVVVVVVVVVVVVWWWWWWWWWWwwwwwwvvvvvvvvvvvvvvvvvvvvvvvvvvvv");                        
                         continue;
                     }
   
-                    
-                    
-boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);                    
-//if (bDisplay || origQpos+10<qpos) System.out.println("WRITE QUE connectionId=|"+connectionId+"| "+ri.toLogString()+", qpos="+(qpos-1));                    
-                    
                     if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
                         if (ri.connectionId != connectionId) {
                             continue;
                         }
-//qqqqqqqqqqqqqqqqqqqqq                    
-//if (bDisplay) System.out.println("SERVER in the queue to send: "+ri.toLogString());                    
                     }
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
                         continue;
@@ -1591,24 +1557,13 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
                         }
                     }
 
-                    synchronized (ri) {
-                        for (; !ri.processedByServer;) {
-                            try {
-                                ri.wait();
-                            }
-                            catch (Exception e) {
-                            }
-                        }
-                    }
-
+                    waitForProcessedByServer(ri);
                     
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     oos.writeByte(ri.type.ordinal());
                     
                     if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
-//qqqqqqqqqqqqqqqqqqqqq                    
-//if (bDisplay) System.out.println("SERVER send: "+ri.toLogString());                    
-
+                        waitForMethodInvoked(ri);
                         if (ri.exception != null) {
                             oos.writeByte(0);
                             oos.writeObject(ri.exception);
@@ -1659,6 +1614,60 @@ boolean bDisplay = (ri.toLogString().indexOf("register") >= 0);
                     oos.flush();
                 }
             }
+        }
+    }
+
+    
+    
+    
+    
+    protected void notifyMethodInvoked(RequestInfo ri) {
+        if (ri == null) return;
+        synchronized (ri) {
+            ri.methodInvoked = true;
+            ri.notifyAll();
+        }
+    }
+    protected boolean waitForMethodInvoked(RequestInfo ri) {
+        return waitForMethodInvoked(ri, 0);
+    }
+    protected boolean waitForMethodInvoked(RequestInfo ri, int maxSeconds) {
+        if (ri == null) return false;
+        boolean bResult = true;
+        synchronized (ri) {
+            for (int i=0; !ri.methodInvoked; i++) {
+                try {
+                    if (maxSeconds > 0) {
+                        if (i >= maxSeconds) {
+                            bResult = false;
+                            break;
+                        }
+                    }
+                    ri.wait(1000);
+                }
+                catch (Exception e) {}
+            }
+        }
+        return bResult;
+    }
+    
+    protected void notifyProcessedByServer(RequestInfo ri) {
+        if (ri == null) return;
+        synchronized (ri) {
+            ri.processedByServer = true;
+            ri.notifyAll();
+        }
+    }
+    protected boolean waitForProcessedByServer(RequestInfo ri) {
+        if (ri == null) return false;
+        synchronized (ri) {
+            for (int i=0; !ri.processedByServer; i++) {
+                try {
+                    ri.wait(1000);
+                }
+                catch (Exception e) {}
+            }
+            return true;
         }
     }
 }
