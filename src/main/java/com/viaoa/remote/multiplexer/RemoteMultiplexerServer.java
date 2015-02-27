@@ -1298,12 +1298,21 @@ public class RemoteMultiplexerServer {
                 }
             }
 
+//qqqqqqqqqqqq check all OA code that calls this, to make sure that it only calls it when the requestInfo matches the method
+qqqqqqq if remoteThread writes to the same queue, then need to startNextThread ...qqqqqqqq            
             @Override
             public void startNextThread() {
                 if (startedNextThread) return;
                 super.startNextThread();
-                if (requestInfo != null && !requestInfo.processedByServer) {
-                    notifyProcessedByServer(requestInfo);
+                if (requestInfo != null) {
+                    if (!requestInfo.processedByServer) notifyProcessedByServer(requestInfo);
+                    if (!requestInfo.methodInvoked) {
+qqqqqq only matters if the srever queue thread is waiting and this thread adds a que request that waits on it                        
+//qqqqqqqqqqqqqq if method is not done, then the request could be notified before there is a return value
+//qqqqqqqq cant let the request return to the client (if that is the ri.type) until it is actually finished (has a response)
+//qqqq need similar solution on the client                        
+                        notifyMethodInvoked(requestInfo);
+                    }
                 }
             }
         };
