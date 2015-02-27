@@ -259,7 +259,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
         System.out.println("       10 server threads are calling clients, main server thread is calling each client");
         
         for (; ;) {
-            System.out.print(".");
+            System.out.print(" ."+aiRemoteCount.get());
             for (TestClient tc : testClients) {
                 String s = OAString.getRandomString(3, 22);
                 String s2 = tc.remoteClientInterface.ping(s);
@@ -431,7 +431,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
         }
         System.out.println("START: "+(new OADateTime()));
         RemoteMultiplexer2Test test = new RemoteMultiplexer2Test();
-        test.maxSecondsToRun = 60 * 5;
+        test.maxSecondsToRun = 60 * 60 * 5; // 5hrs
         test.setup();
         test.test();
         test.tearDown();
