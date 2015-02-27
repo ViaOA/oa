@@ -237,8 +237,8 @@ public class TextFieldController extends JFCController implements FocusListener,
         // getDataSourceMax();
         getPropertyInfoMax();
         if (max < 0) {
-            // if (dataSourceMax >= 0) return dataSourceMax;
-            if (propertyInfoMax >= 0) return propertyInfoMax;
+            // if (dataSourceMax > 0) return dataSourceMax;
+            if (propertyInfoMax > 0) return propertyInfoMax;
         }
         //if (dataSourceMax > 0 && max > dataSourceMax) return dataSourceMax; 
         if (propertyInfoMax > 0 && max > propertyInfoMax) return propertyInfoMax; 
