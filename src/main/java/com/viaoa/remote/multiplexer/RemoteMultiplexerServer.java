@@ -1586,13 +1586,13 @@ public class RemoteMultiplexerServer {
                         oos.writeInt(ri.messageId);
                     }
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
+                        waitForMethodInvoked(ri);
                         oos.writeAsciiString(ri.bindName);
                         oos.writeAsciiString(ri.methodInfo.methodNameSignature);
                         oos.writeObject(ri.args);
                         oos.writeInt(ri.connectionId);
                         oos.writeInt(ri.messageId);
                         if (ri.connectionId == this.connectionId) {
-                            waitForMethodInvoked(ri);
                             oos.writeObject(ri.response);
                         }
                     }
