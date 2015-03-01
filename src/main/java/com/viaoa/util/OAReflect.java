@@ -32,6 +32,7 @@ import java.net.URI;
 import java.net.URL;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.hub.*;
 
 
@@ -616,7 +617,31 @@ public class OAReflect {
         return null;
     }
 
-    
+    public static Object getEmptyPrimitive(Class c) {
+        Object response = null;
+        if (c.isPrimitive()) {
+            if (c.equals(boolean.class)) {
+                response = true;
+            }
+            else if (c.equals(int.class)) {
+                response = 0;
+            }
+            else if (c.equals(long.class)) {
+                response = 0L;
+            }
+            else if (c.equals(short.class)) {
+                response = (short) 0;
+            }
+            else if (c.equals(double.class)) {
+                response = 0.0D;
+            }
+            else if (c.equals(float.class)) {
+                response = 0.0F;
+            }
+        }
+        return response;
+    }
+
     /**
      * Get name of all classes in a package.
      * 

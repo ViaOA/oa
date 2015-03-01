@@ -44,11 +44,15 @@ public class RequestInfo {
         
         CtoS_SocketRequest(false, true),
         CtoS_SocketRequestNoResponse(false, false),
-        CtoS_QueuedRequest(true, true),  // server will process it from the queue, client will then pick it up
-        CtoS_QueuedRequestNoResponse(true, false),
         
-        CtoS_QueuedReturnedResponse(true, false),  // return from StoC_QueuedRequestResponse
-        CtoS_QueuedBroadcast(true, false),
+        CtoS_QueuedRequest(true, true),
+        CtoS_QueuedRequestNoResponse(true, false),
+
+//qqqqqq        
+CtoS_QueuedResponse(true, false), // client returning result from stoc_queuedRequest
+        
+        CtoS_QueuedBroadcast(true, true),          // will return to client, once it is processed (not invoked) on the server
+
 
         StoC_CreateNewStoCSocket(false, false),
         StoC_QueuedBroadcast(true, false),
@@ -56,10 +60,12 @@ public class RequestInfo {
         /** this is the complicated one.
          *    S.onInvoke&wait -> queue.add -> toClientX -> socketToServer -> queue.add 
          */
-        StoC_QueuedRequest(true, true),
-        StoC_QueuedRequestNoResponse(true, false),
-        StoC_SocketRequestReponse(false, true),
-        StoC_SocketRequestNoResponse(false, false);
+        StoC_QueuedRequest(true, true),   // server calling remote method on client, and get queued response CtoS_ResponseForQueuedRequest
+        StoC_QueuedRequestNoResponse(true, false),  
+        StoC_SocketRequest(false, true),     // send request on socket.output and get result from socket.input
+        StoC_SocketRequestNoResponse(false, false),
+        StoC_QueuedResponse(true, false);
+        
         
         Type(boolean usesQueue, boolean hasReturnValue) {
             this.usesQueue = usesQueue;
@@ -105,7 +111,7 @@ public class RequestInfo {
     public Object response;
 
     public volatile boolean methodInvoked;  // set to true with the method has been invoked
-    public volatile boolean processedByServer;  // flag set on server after it's processed    
+    public volatile boolean processedByServerQueue;  // flag set on server after it's processed    
     
     public RequestInfo() {
         this.cnt = aiCount.incrementAndGet();

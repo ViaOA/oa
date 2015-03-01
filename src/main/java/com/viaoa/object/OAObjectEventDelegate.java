@@ -17,29 +17,24 @@ All rights reserved.
 */
 package com.viaoa.object;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.util.OAFilter;
-import com.viaoa.util.OAConv;
 import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
-import com.viaoa.util.OAString;
 
 
 public class OAObjectEventDelegate {
 
     private static Logger LOG = Logger.getLogger(OAObjectEventDelegate.class.getName());
-
     private static final String WORD_CHANGED = "CHANGED";
     
     /**

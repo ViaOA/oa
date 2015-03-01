@@ -10,6 +10,7 @@ import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.remote.*;  // test package only
 import com.viaoa.util.OADateTime;
@@ -28,7 +29,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
     
     private RemoteBroadcastInterface remoteBroadcast;
     private RemoteBroadcastInterface remoteBroadcastProxy;
-    final TestClient[] testClients = new TestClient[75];
+    final TestClient[] testClients = new TestClient[50];
     final RemoteSessionInterface[] remoteSessions = new RemoteSessionInterface[testClients.length];
     private volatile boolean bServerStarted;
     private volatile boolean bServerClosed;
@@ -84,6 +85,9 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
                 }
                 return remoteSessions[id];
             }
+            @Override
+            public void pingNoReturn(String msg) {
+            }
         };
         // with queue
         remoteMultiplexerServer.createLookup("server", remoteServer, RemoteServerInterface.class, queueName, queueSize);
@@ -121,6 +125,9 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
                     };
                 }
                 return remoteSessions[id];
+            }
+            @Override
+            public void pingNoReturn(String msg) {
             }
         };
         remoteMultiplexerServer.createLookup("serverNoQ", remoteServerNoQ, RemoteServerInterface.class);
@@ -258,9 +265,13 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
         
         System.out.println("       10 server threads are calling clients, main server thread is calling each client");
         
-        for (; ;) {
-            System.out.print(" ."+aiRemoteCount.get());
+        for (int cnt=1; ;) {
             for (TestClient tc : testClients) {
+                cnt++;
+                if (cnt % 500 == 0) {
+                    if (cnt % 15000 == 0) System.out.println(" "+aiRemoteCount.get());
+                    else System.out.print(" "+aiRemoteCount.get());
+                }
                 String s = OAString.getRandomString(3, 22);
                 String s2 = tc.remoteClientInterface.ping(s);
                 assertEquals(s2, tc.id+s);
@@ -306,6 +317,8 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
         volatile boolean bInitialized;
         final Object lock = new Object();
         volatile RemoteClientInterface remoteClientInterface, remoteClientInterfaceNoQ;
+
+        volatile RemoteClientInterface remoteClient, remoteClientNoQ;
         MultiplexerClient multiplexerClient;
         RemoteMultiplexerClient remoteMultiplexerClient;
         
@@ -354,7 +367,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             };
             RemoteBroadcastInterface remoteBroadcast = (RemoteBroadcastInterface) remoteMultiplexerClient.lookupBroadcast("broadcast", remoteBroadcastImpl);
             
-            RemoteClientInterface remoteClient = new RemoteClientInterface() {
+            remoteClient = new RemoteClientInterface() {
                 @Override
                 public String ping(String msg) {
                     return id+msg;
@@ -381,7 +394,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             assertSame(session, sessionNoQ);
             
             
-            RemoteClientInterface remoteClientNoQ = new RemoteClientInterface() {
+            remoteClientNoQ = new RemoteClientInterface() {
                 @Override
                 public String ping(String msg) {
                     return id+msg;

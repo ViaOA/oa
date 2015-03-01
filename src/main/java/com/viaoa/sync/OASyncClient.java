@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
+import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDetailDelegate;
@@ -101,7 +102,9 @@ public class OASyncClient {
                     clientInfo.setFreeMemory(Runtime.getRuntime().freeMemory());
                     clientInfo.setTotalMemory(Runtime.getRuntime().totalMemory());
                     try {
-                        getRemoteSession().update(clientInfo);
+                        if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                            getRemoteSession().update(clientInfo);
+                        }
                         Thread.sleep(seconds * 1000);
                     }
                     catch (Exception e) {

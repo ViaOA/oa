@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.remote.multiplexer;
 
 import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.OASyncDelegate;
 
 public class OARemoteThreadDelegate {
@@ -77,6 +78,15 @@ public class OARemoteThreadDelegate {
             return rt.startedNextThread();
         }
         return true;
+    }
+    
+    public static RequestInfo getRequestInfo() {
+        Thread t = Thread.currentThread();
+        if (t instanceof OARemoteThread) {
+            OARemoteThread rt = (OARemoteThread) t;
+            return rt.requestInfo;
+        }
+        return null;
     }
     
     

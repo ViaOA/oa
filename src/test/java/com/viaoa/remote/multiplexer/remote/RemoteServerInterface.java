@@ -1,6 +1,7 @@
 package com.viaoa.remote.multiplexer.remote;
 
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 
 @OARemoteInterface()
 public interface RemoteServerInterface {
@@ -11,4 +12,7 @@ public interface RemoteServerInterface {
     RemoteSessionInterface getSession(int id);
     
     boolean isStarted();
+    
+    @OARemoteMethod(noReturnValue=true)
+    void pingNoReturn(String msg);
 }

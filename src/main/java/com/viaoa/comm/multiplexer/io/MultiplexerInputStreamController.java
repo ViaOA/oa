@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.comm.multiplexer.MultiplexerClient;
+import com.viaoa.comm.multiplexer.MultiplexerServer;
+
 /**
  * Internally created by MultiplexerSocketController to manage the InputStream for the 
  * "real" socket.
@@ -164,12 +167,12 @@ public abstract class MultiplexerInputStreamController {
                                 }
                             }
                             else if (cnt == (_timeoutSeconds * 4)) {
-                                LOG.warning("VSocket id=" + vs._id + ", name=" + vs.getServerSocketName() + ", has been timed out, will disconnect socket and continue");
-/*qqqqqqqqqqqqqqqqqqqqqqqqqqqqq  turned off for test ... need to put back in
-                                synchronized (vs._lockObject) {
-                                    vs.close(); // this will notify the thread
+                                if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                                    LOG.warning("VSocket id=" + vs._id + ", name=" + vs.getServerSocketName() + ", has been timed out, will disconnect socket and continue");
+                                    synchronized (vs._lockObject) {
+                                        vs.close(); // this will notify the thread
+                                    }
                                 }
-*/                                
                             }
                         }
                     }
