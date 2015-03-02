@@ -273,6 +273,10 @@ public class RemoteMultiplexerClient {
     protected Object onInvokeForCtoS(BindInfo bind, Object proxy, Method method, Object[] args) throws Throwable {
         //LOG.fine(method.getName());
         RequestInfo ri = new RequestInfo();
+        // 1:CtoS_QueuedRequest start
+        // 1:CtoS_QueuedRequestNoResponse
+
+        
         VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
         try {
             ri.msStart = System.currentTimeMillis();
@@ -291,9 +295,12 @@ public class RemoteMultiplexerClient {
 
             ri.bSent = _onInvokeForCtoS(ri);
 
+            // 4:CtoS_QueuedRequestNoResponse END
+            
             if (ri.bSent && ri.bind.usesQueue && ri.type.hasReturnValue()) {
                 releaseSocketForCtoS(socket);
                 socket = null;
+                // 4:CtoS_QueuedRequest wait on return value from server
                 synchronized (ri) {
                     for (int i = 0; ; i++) {
                         if (ri.methodInvoked) break;
@@ -305,6 +312,7 @@ public class RemoteMultiplexerClient {
                         }
                     }
                 }
+                // 7:CtoS_QueuedRequest END
                 if (!ri.methodInvoked) {
                     ri.exceptionMessage = "timeout waiting on response from server";
                 }
@@ -425,9 +433,11 @@ public class RemoteMultiplexerClient {
                 ri.type = RequestInfo.Type.CtoS_QueuedBroadcast;
             }
             else if (ri.methodInfo != null && ri.methodInfo.noReturnValue) {
+                // 2:CtoS_QueuedRequestNoResponse
                 ri.type = RequestInfo.Type.CtoS_QueuedRequestNoResponse;
             }
             else {
+                // 2:CtoS_QueuedRequest send to server
                 ri.type = RequestInfo.Type.CtoS_QueuedRequest;
             }
         }
@@ -441,12 +451,14 @@ public class RemoteMultiplexerClient {
         }
 
         if (ri.type.usesQueue() && ri.type.hasReturnValue()) {
+            // 3:CtoS_QueuedRequest put in hm to wait on server response
             hmAsyncRequestInfo.put(ri.messageId, ri); // used to wait for server to send it back on StoC
             if (!bFirstStoCsocketCreated) {
                 createSocketForStoC(); // to process message from server to this object
             }
         }
         else if (!ri.type.hasReturnValue()) {
+            // 3:CtoS_QueuedRequestNoResponse
             ri.response = OAReflect.getEmptyPrimitive(ri.method.getReturnType());
         }
         
@@ -760,8 +772,10 @@ if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq
         }
     }
     private boolean _processSocket(final RequestInfo ri, final RemoteObjectInputStream ois) throws Exception {
-        if (ri.type == RequestInfo.Type.CtoS_ResponseForQueuedRequest) {
-            // from CtoS_QueuedRequest
+
+        if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
+            // 5:CtoS_QueuedRequest get back from server
+            // response for CtoS_QueuedRequest
             int x = ois.readByte();
             Object objx = ois.readObject();
             
@@ -805,6 +819,7 @@ if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq
                     rix.exception = ri.exception;
                     rix.exceptionMessage = ri.exceptionMessage;
                     rix.methodInvoked = true;
+                    // 6:CtoS_QueuedRequest  notify waiting thread from #4
                     rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
                 }
             }
@@ -923,7 +938,7 @@ if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq
             }
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
             processMessageForStoC(ri);
-            return true;
+            return false;
         }
         
         if (ri.type == RequestInfo.Type.StoC_SocketRequestNoResponse) {
@@ -937,7 +952,7 @@ if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
             processMessageForStoC(ri);
-            return true;
+            return false;
         }
 
         ri.exceptionMessage = "invalid command";
@@ -1070,7 +1085,7 @@ if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq
                 VirtualSocket socket = getSocketForCtoS();
                 RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket, hmClassDescOutput, aiClassDescOutput);
 
-                oos.writeByte(RequestInfo.Type.CtoS_QueuedReturnedResponse.ordinal());
+                oos.writeByte(RequestInfo.Type.CtoS_QueuedResponse.ordinal());
                 oos.writeInt(ri.messageId);
                 if (ri.exception != null) {
                     Object resp;

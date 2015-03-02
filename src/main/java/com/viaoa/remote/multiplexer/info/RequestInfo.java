@@ -47,19 +47,13 @@ public class RequestInfo {
         
         CtoS_QueuedRequest(true, true),
         CtoS_QueuedRequestNoResponse(true, false),
-
-//qqqqqq        
-CtoS_QueuedResponse(true, false), // client returning result from stoc_queuedRequest
+        CtoS_QueuedResponse(true, false), // client returning result from stoc_queuedRequest
         
         CtoS_QueuedBroadcast(true, true),          // will return to client, once it is processed (not invoked) on the server
-
 
         StoC_CreateNewStoCSocket(false, false),
         StoC_QueuedBroadcast(true, false),
         
-        /** this is the complicated one.
-         *    S.onInvoke&wait -> queue.add -> toClientX -> socketToServer -> queue.add 
-         */
         StoC_QueuedRequest(true, true),   // server calling remote method on client, and get queued response CtoS_ResponseForQueuedRequest
         StoC_QueuedRequestNoResponse(true, false),  
         StoC_SocketRequest(false, true),     // send request on socket.output and get result from socket.input

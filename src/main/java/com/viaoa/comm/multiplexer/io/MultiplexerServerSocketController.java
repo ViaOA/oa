@@ -396,7 +396,7 @@ public class MultiplexerServerSocketController {
             catch (Exception e) {
             }
         }
-        _serverSocket.close();
+        if (_serverSocket != null) _serverSocket.close();
     }
 
     public void onClientConnect(Socket socket, int connectionId) {

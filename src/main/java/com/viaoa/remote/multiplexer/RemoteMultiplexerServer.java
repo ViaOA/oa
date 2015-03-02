@@ -217,6 +217,9 @@ public class RemoteMultiplexerServer {
 
         // wait for next message
         ri.type = RequestInfo.getType(ois.readByte());
+        // 1:CtoS_QueuedRequest recv from client
+        // 1:CtoS_QueuedRequestNoResponse
+        
         ri.nsStart = System.nanoTime();
         ri.msStart = System.currentTimeMillis();
 
@@ -285,12 +288,14 @@ public class RemoteMultiplexerServer {
             ri.args = (Object[]) ois.readObject();
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
+            // 2:CtoS_QueuedRequest read from client
             ri.bindName = ois.readAsciiString();
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
             ri.messageId = ois.readInt();
         }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
+            // 2:CtoS_QueuedRequestNoResponse
             ri.bindName = ois.readAsciiString();
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
@@ -334,7 +339,7 @@ public class RemoteMultiplexerServer {
         if (ri.type == RequestInfo.Type.CtoS_SocketRequest) {
             // send back on same socket, in same thread
             if (ri.exceptionMessage == null) {
-                invokeByRemoteThread(ri, false);
+                invokeUsingRemoteThread(ri, false);
             }
             
             Object resp = null;
@@ -365,11 +370,12 @@ public class RemoteMultiplexerServer {
         
         if (ri.type == RequestInfo.Type.CtoS_SocketRequestNoResponse) {
             if (ri.exceptionMessage != null) return true;
-            invokeByRemoteThread(ri, false);
+            invokeUsingRemoteThread(ri, false);
             return false;            
         }
 
         if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
+            // 3:CtoS_QueuedRequest put in queue
             // unless there is an error, then this will be invoked by the queue thread on the server
             if (ri.exceptionMessage != null) {
                 ri.methodInvoked = true;
@@ -381,6 +387,7 @@ public class RemoteMultiplexerServer {
         }
         
         if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
+            // 3:CtoS_QueuedRequestNoResponse
             // this will be invoked by the queue thread on the server
             if (ri.exceptionMessage != null) return true;
             session.setupAsyncQueueSender(ri.bind.asyncQueueName);
@@ -1036,29 +1043,24 @@ public class RemoteMultiplexerServer {
             for (RequestInfo ri : ris) {
                 if (ri == null) continue;
 
-                boolean bInvokedStoC = false;
                 boolean bNotifyMethodInvoked = false;
 
-                if (ri.type == RequestInfo.Type.CtoS_QueuedResponse) {
-                    bNotifyMethodInvoked = true;
-                }
-                else if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
-                    // invoke 
-                    invokeByRemoteThread(ri, true);
-                    // only one client gets this
+                if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
+                    // 4:CtoS_QueuedRequest invoke 
+                    invokeUsingRemoteThread(ri, true);
                 }
                 else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
-                    invokeByRemoteThread(ri, true);
+                    // 4:CtoS_QueuedRequestNoResponse
+                    invokeUsingRemoteThread(ri, true);
                     // no clients get this
                 }
-                else if (ri.type == RequestInfo.Type.CtoS_QueuedReturnedResponse) {
+                else if (ri.type == RequestInfo.Type.CtoS_QueuedResponse) {
                     bNotifyMethodInvoked = true; // waiting thread will wake up on ri.notifyAll()
-                    bInvokedStoC = true;  // invoked on client, this is the response
                     // clients need to ignore this
                     // client is returning value for a S2C request
                 }
                 else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
-                    invokeByRemoteThread(ri, true);
+                    invokeUsingRemoteThread(ri, true);
                 }
                 else if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
                     // only one client gets this
@@ -1068,13 +1070,14 @@ public class RemoteMultiplexerServer {
                 }
                 else if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
                 }
+                else if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
+                    // 8:CtoS_QueuedRequest flag as processed
+                }
                 
                 if (!ri.processedByServerQueue) notifyProcessedByServer(ri);
                 if (bNotifyMethodInvoked) {
                     notifyMethodInvoked(ri);
                 }
-                
-                if (bInvokedStoC) afterInvokeForStoC(ri);
             }
         }
     }
@@ -1084,7 +1087,7 @@ public class RemoteMultiplexerServer {
     /**
      * This will have the currentThread wait for a RemoteThread process the request using invokeCtoS _invokeCtoS
      */
-    protected void invokeByRemoteThread(final RequestInfo ri, boolean bFromServerQueueThread) throws Exception {
+    protected void invokeUsingRemoteThread(final RequestInfo ri, boolean bFromServerQueueThread) throws Exception {
         if (ri == null) return;
         if (ri.methodInvoked) return; 
         // sent by client, invoke method on object
@@ -1095,7 +1098,9 @@ public class RemoteMultiplexerServer {
             return;
         }
 
-        // get a remoteThread to process the request
+        // 5:CtoS_QueuedRequest remoteThread invokes the request
+        // 5:CtoS_QueuedRequestNoResponse
+        
         OARemoteThread remoteThread = null;
         synchronized (alRemoteClientThread) {    
             int x = alRemoteClientThread.size();
@@ -1126,8 +1131,9 @@ public class RemoteMultiplexerServer {
         int maxSeconds = Math.max(ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds, 1); 
         long ms1 = System.currentTimeMillis();
 
-//qqqqqqqqqqqqqqqqqqqqqqqqq TEST THIS qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq                
-        if (bFromServerQueueThread) {
+        // remoteThread is now processing the request
+        
+        if (bFromServerQueueThread) {  // if true, then need to get back to queue asap
             if (RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
                 // wait for OA to call OARemoteThread.startNextThread
                 waitForProcessedByServer(ri);
@@ -1194,8 +1200,8 @@ public class RemoteMultiplexerServer {
         ri.nsEnd = System.nanoTime();
 
         if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
-            // put back in the queue with the result 
-            ri.type = RequestInfo.Type.CtoS_ResponseForQueuedRequest;
+            // 7:CtoS_QueuedRequest put result back in queue
+            ri.type = RequestInfo.Type.StoC_QueuedResponse;
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
             cq.addMessageToQueue(ri);
         }
@@ -1295,6 +1301,8 @@ public class RemoteMultiplexerServer {
                         Session session;
                         if (requestInfo.connectionId != 0) session = getSession(requestInfo.connectionId);
                         else session = null;
+                        // 6:CtoS_QueuedRequest invoke
+                        // 6:CtoS_QueuedRequestNoResponse
                         _invoke(this, requestInfo, session);
 
                         this.msLastUsed = System.currentTimeMillis();
@@ -1514,6 +1522,7 @@ public class RemoteMultiplexerServer {
             }
         }
 
+        
         // used to send broadcast messages to client
         private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, VirtualSocket vsocket, long qpos)
                 throws Exception {
@@ -1547,11 +1556,13 @@ public class RemoteMultiplexerServer {
                         continue;
                     }
                     else if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
+                        // 9:CtoS_QueuedRequest send back to client
                         if (ri.connectionId != connectionId) {
                             continue;
                         }
                     }
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
+                        // 7:CtoS_QueuedRequestNoResponse END
                         continue;
                     }
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedResponse) {
@@ -1579,7 +1590,7 @@ public class RemoteMultiplexerServer {
                     oos.writeByte(ri.type.ordinal());
 
                     if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
-                        waitForMethodInvoked(ri);
+                        // 10:CtoS_QueuedRequest write to client END 
                         if (ri.exception != null) {
                             oos.writeByte(0);
                             oos.writeObject(ri.exception);

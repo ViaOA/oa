@@ -25,7 +25,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
     final String queueName = "que";
     final int queueSize = 2500;
     
-    int maxSecondsToRun = 20;
+    int maxSecondsToRun = 15;
     
     private RemoteBroadcastInterface remoteBroadcast;
     private RemoteBroadcastInterface remoteBroadcastProxy;
@@ -88,6 +88,10 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             @Override
             public void pingNoReturn(String msg) {
             }
+            @Override
+            public void registerNoResponse(int id, RemoteClientInterface rci) {
+                register(id, rci);
+            }
         };
         // with queue
         remoteMultiplexerServer.createLookup("server", remoteServer, RemoteServerInterface.class, queueName, queueSize);
@@ -128,6 +132,11 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             }
             @Override
             public void pingNoReturn(String msg) {
+            }
+            @Override
+            @OARemoteMethod(noReturnValue = true)
+            public void registerNoResponse(int id, RemoteClientInterface rci) {
+                register(id, rci);
             }
         };
         remoteMultiplexerServer.createLookup("serverNoQ", remoteServerNoQ, RemoteServerInterface.class);
