@@ -1878,7 +1878,6 @@ public class OAObjectReflectDelegate {
             }
             h = hx;
         }
-
         // see if if there is a detail path using masterHub
         h = hubChild;
         for ( ;; ) {
