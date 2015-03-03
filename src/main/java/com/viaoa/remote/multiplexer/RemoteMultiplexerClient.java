@@ -660,7 +660,8 @@ public class RemoteMultiplexerClient {
 
                         processMessageForStoC(requestInfo);
 
-//qqqqqqqqqqqqqqqqqqqqq this is not needed anymore, since remoteThread can continue qqqqqqq remove other logic                        
+                        
+/**qqqqqqqqqqqqqqqqqqqqq this is not needed anymore, since remoteThread can continue qqqqqqq remove other logic                        
                         // 20140303 get events that need to be processed in another thread
                         final ArrayList<Runnable> al = OAThreadLocalDelegate.getRunnables(true);
                         if (al != null) {
@@ -679,7 +680,7 @@ public class RemoteMultiplexerClient {
                                 LOG.fine("queueSize=" + x);
                             }
                         }
-
+*/
                         synchronized (Lock) {
                             this.requestInfo = null;
                             Lock.notify();
@@ -1222,6 +1223,7 @@ if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq
         return getBindInfo(name, obj, interfaceClass, ri.bind.usesQueue, ri.bind.isBroadcast);
     }
 
+/*    
     // thread pool
     private ThreadPoolExecutor executorService;
     private LinkedBlockingQueue<Runnable> queExecutorService;
@@ -1255,6 +1257,6 @@ if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq
 
         return executorService;
     }
-
+*/
 
 }

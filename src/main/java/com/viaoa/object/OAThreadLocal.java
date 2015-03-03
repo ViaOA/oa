@@ -114,10 +114,11 @@ public class OAThreadLocal {
     // current remote request that is being invoked
     protected RequestInfo requestInfo;
 
+/*    
     // 20140303
     // these are from RemoteThread evetns, will be queue up and executed 
     protected ArrayList<Runnable> alRunnable;
-    
+*/    
 }
 
 

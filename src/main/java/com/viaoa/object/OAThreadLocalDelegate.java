@@ -60,7 +60,7 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalIsSendingEvent = new AtomicInteger(); // used to manage calcPropertyChanges while another event(s) is being processed
     private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
     private static AtomicInteger TotalGetDetailHub = new AtomicInteger();
-    private static AtomicInteger TotalRunnable = new AtomicInteger();
+//qqq    private static AtomicInteger TotalRunnable = new AtomicInteger();
 
     public static final HashMap<Object, OAThreadLocal[]> hmLock = new HashMap<Object, OAThreadLocal[]>(53, .75f);
     
@@ -1070,6 +1070,7 @@ static volatile int unlockCnt;
        These are the events from a OARemoteThread, that will be put in a queue
        to be processed by an ExecutionerService
     */
+/**QQQQQQQQQQQQQ    
     public static ArrayList<Runnable> getRunnables(boolean bClear) {
         if (OAThreadLocalDelegate.TotalRunnable.get() == 0) {
             return null;
@@ -1104,7 +1105,7 @@ static volatile int unlockCnt;
         if (ti == null) return;
         ti.alRunnable = null;
     }
-    
+***/    
     /**
      * Flag that can be set to allow messages from OARemoteThread to be
      * sent to other clients/server.

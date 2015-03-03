@@ -280,6 +280,7 @@ public class OAObjectCacheDelegate {
             if (hl != null && hl.length > 0) {
                 final HubEvent e = new HubEvent(obj,propertyName,oldValue,newValue);
                 
+/*qqqqqq remove                
                 if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                     Runnable r = new Runnable() {
                         @Override
@@ -292,10 +293,11 @@ public class OAObjectCacheDelegate {
                     OAThreadLocalDelegate.addRunnable(r);
                 }
                 else {
+*/                
                     for (int i=0; i<hl.length; i++) {
                         hl[i].afterPropertyChange(e);
                     }
-                }
+//                }
             }
         }
     }
@@ -308,6 +310,7 @@ public class OAObjectCacheDelegate {
 	    final int x = hl.length;
 	    if (x > 0) {
             final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+/**qqqqqq remove            
             if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                 Runnable r = new Runnable() {
                     @Override
@@ -320,11 +323,12 @@ public class OAObjectCacheDelegate {
                 OAThreadLocalDelegate.addRunnable(r);
             }
             else {
+*/            
                 // LOG.finest("Hub="+thisHub+", object="+obj);
     	        for (int i=0; i<x; i++) { 
     	        	hl[i].afterRemove(hubEvent);
     	        }
-            }	        
+//            }	        
 	    }
 	}
     
@@ -337,6 +341,8 @@ public class OAObjectCacheDelegate {
 	    if (x > 0) {
             // LOG.finest("Hub="+thisHub+", object="+obj);
 	        final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+	        
+/*qqqq	        
             if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                 Runnable r = new Runnable() {
                     @Override
@@ -349,10 +355,11 @@ public class OAObjectCacheDelegate {
                 OAThreadLocalDelegate.addRunnable(r);
             }
             else {
+*/            
     	        for (int i=0; i<x; i++) { 
     	        	hl[i].afterAdd(hubEvent);
     	        }
-            }
+//            }
 	    }
 	}
     
@@ -365,6 +372,7 @@ public class OAObjectCacheDelegate {
 	    if (x > 0) {
             // LOG.finest("Hub="+thisHub+", object="+obj);
 	        final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+/*qqqqqq	        
             if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
                 Runnable r = new Runnable() {
                     @Override
@@ -377,10 +385,11 @@ public class OAObjectCacheDelegate {
                 OAThreadLocalDelegate.addRunnable(r);
             }
             else {
+*/            
                 for (int i=0; i<x; i++) { 
                     hl[i].afterInsert(hubEvent);
                 }
-            }	        
+//            }	        
 	    }
 	}
     

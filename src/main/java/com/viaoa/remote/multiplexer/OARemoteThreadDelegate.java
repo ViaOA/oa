@@ -28,10 +28,11 @@ public class OARemoteThreadDelegate {
         return (t instanceof OARemoteThread);
     }
 
+//qqqqqqqqqqqq mreove    
     /**
      * a message queue is used to have another thread call event listeners,
      * so that the remote msg queue can have it's messages handled quickly.
-     */
+     *
     public static boolean shouldMessageBeQueued() {
         Thread t = Thread.currentThread();
         if (!(t instanceof OARemoteThread)) return false;
@@ -42,7 +43,7 @@ public class OARemoteThreadDelegate {
         if (OAThreadLocalDelegate.isDeleting()) return false;
         return true;
     }
-    
+*/    
     /**
      * used to check to make sure that a RemoteThread is not holding up the msg queue
      */
