@@ -27,7 +27,6 @@ import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
 
 /**

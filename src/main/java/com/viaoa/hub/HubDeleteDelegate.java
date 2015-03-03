@@ -19,7 +19,6 @@ package com.viaoa.hub;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -41,8 +40,13 @@ public class HubDeleteDelegate {
         }
 
         boolean b = OASyncDelegate.isServer();
+        
         try {
-            if (b) OARemoteThreadDelegate.sendMessages(true);
+            if (b) {
+                OARemoteThreadDelegate.sendMessages(true);
+                // 20150303
+                HubCSDelegate.removeAllFromHub(thisHub);
+            }
             OACascade cascade = new OACascade();
             deleteAll(thisHub, cascade);
         }

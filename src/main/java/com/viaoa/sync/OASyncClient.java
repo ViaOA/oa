@@ -17,7 +17,6 @@ All rights reserved.
 */
 package com.viaoa.sync;
 
-import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +43,6 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializeDelegate;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocalDelegate;
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientCallbackInterface;
@@ -141,6 +139,7 @@ public class OASyncClient {
         String[] additionalMasterProperties = null; 
         Object result = null;
 
+/*        
         if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
             // this needs to be fast, and only request the single property
             bGetSibs = false;
@@ -152,6 +151,7 @@ public class OASyncClient {
             }
         }
         else {
+*/        
             // this will "ask" for additional data "around" the requested property
             bGetSibs = true;
             // send siblings to return back with same prop
@@ -169,7 +169,7 @@ public class OASyncClient {
             catch (Exception e) {
                 LOG.log(Level.WARNING, "getDetail error", e);
             }
-        }
+//        }
         
         lastMasterObjects[lastMasterCnter++%lastMasterObjects.length] = masterObject;
         

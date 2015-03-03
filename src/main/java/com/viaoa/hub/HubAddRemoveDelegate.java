@@ -17,7 +17,6 @@ All rights reserved.
 */
 package com.viaoa.hub;
 
-import java.util.Arrays;
 import java.util.logging.Logger;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.object.*;
@@ -140,7 +139,10 @@ public class HubAddRemoveDelegate {
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
         }
-        if (b) _afterClear(thisHub, bSetAOtoNull, bSendNewList);
+        if (b) {
+            OARemoteThreadDelegate.startNextThread(); // if this is RemoteThread, then start the next one
+            _afterClear(thisHub, bSetAOtoNull, bSendNewList);
+        }
     }
     private static boolean _clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
         if (thisHub.datau.getSharedHub() != null) {
