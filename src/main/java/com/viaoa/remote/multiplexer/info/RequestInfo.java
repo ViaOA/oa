@@ -116,14 +116,16 @@ public class RequestInfo {
         msg += "|" + connectionId;
         msg += "|" + bindName;
         msg += "|" + type;
+
+        if (method == null && methodInfo != null) {
+            method = methodInfo.method;
+        }
         
         if (method != null) {
             Class c = method.getDeclaringClass();
             String s;
             if (c != null) {
-                s = c.getName();
-                int x = s.lastIndexOf('.');
-                if (x > 0) s = s.substring(x+1);
+                s = c.getSimpleName();
             }
             else s = "";
             msg += "|" + s;

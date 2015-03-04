@@ -46,6 +46,10 @@ import com.viaoa.util.OACompressWrapper;
 import com.viaoa.util.OAPool;
 import com.viaoa.util.OAReflect;
 
+
+// use this for debugging, so that remote methods wont timeout while debugging:  MultiplexerClient.DEBUG = true;
+
+
 /**
  * Remoting client, that allows a client to access Objects on a server, and call methods on those
  * objects. It allows for any method to have args that are remote objects, which would allow the server
@@ -618,9 +622,9 @@ public class RemoteMultiplexerClient {
         LOG.fine("created StoC socket and thread, connectionId=" + socket.getConnectionId() + ", vid=" + id);
     }
 
-    private AtomicInteger aiClientThreadCount = new AtomicInteger();
-    private ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
-    private long msLastCreatedRemoteThread;
+    private final AtomicInteger aiClientThreadCount = new AtomicInteger();
+    private final ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
+    private volatile long msLastCreatedRemoteThread;
 
     private OARemoteThread getRemoteClientThread(RequestInfo ri) {
         OARemoteThread remoteThread;
@@ -633,12 +637,16 @@ public class RemoteMultiplexerClient {
                     }
                 }
             }
-            msLastCreatedRemoteThread = System.currentTimeMillis();
-            remoteThread = createRemoteClientThread();
+        }
+        msLastCreatedRemoteThread = System.currentTimeMillis();
+        remoteThread = createRemoteClientThread();
+            
+        synchronized (alRemoteClientThread) {
             remoteThread.requestInfo = ri;
             alRemoteClientThread.add(remoteThread);
         }
         onRemoteThreadCreated(alRemoteClientThread.size());
+        
         return remoteThread;
     }
 
@@ -646,9 +654,12 @@ public class RemoteMultiplexerClient {
         OARemoteThread t = new OARemoteThread(true) {
             @Override
             public void run() {
-                for (; !stopCalled;) {
+                for (; ;) {
                     try {
                         synchronized (Lock) {
+                            if (stopCalled) {
+                                break;
+                            }
                             reset();
                             if (requestInfo == null) {
                                 Lock.wait();
@@ -660,32 +671,11 @@ public class RemoteMultiplexerClient {
 
                         processMessageForStoC(requestInfo);
 
-                        
-/**qqqqqqqqqqqqqqqqqqqqq this is not needed anymore, since remoteThread can continue qqqqqqq remove other logic                        
-                        // 20140303 get events that need to be processed in another thread
-                        final ArrayList<Runnable> al = OAThreadLocalDelegate.getRunnables(true);
-                        if (al != null) {
-                            Runnable rr = new Runnable() {
-                                @Override
-                                public void run() {
-                                    // set thread to match???
-                                    for (Runnable r : al) {
-                                        r.run();
-                                    }
-                                }
-                            };
-                            getExecutorService().submit(rr);
-                            int x = queExecutorService.size();
-                            if (x > 19 && x % 10 == 0) {
-                                LOG.fine("queueSize=" + x);
-                            }
-                        }
-*/
                         synchronized (Lock) {
                             this.requestInfo = null;
                             Lock.notify();
                         }
-                        if (shouldClose(this)) break;
+                        shouldClose(this);
                     }
                     catch (Exception e) {
                         LOG.log(Level.WARNING, "error in OARemoteThread", e);
@@ -698,7 +688,7 @@ public class RemoteMultiplexerClient {
                 if (startedNextThread) return;
                 super.startNextThread();
                 synchronized (Lock) {
-if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq                    
+                    if (requestInfo != null) requestInfo.methodInvoked = true;                    
                     Lock.notify();
                 }
             }
@@ -711,31 +701,47 @@ if (requestInfo != null) requestInfo.methodInvoked = true; //qqqqqqqqqq
     }
 
     protected void onRemoteThreadCreated(int threadCount) {
-        if (threadCount > 25) {
+        if (threadCount > 75) {
             LOG.warning("alRemoteClientThread.size() = " + threadCount);
+        }
+        if (threadCount > 25) {
+            int ms;
+            if (threadCount < 30) ms = 1;
+            else if (threadCount < 38) ms = 2;
+            else if (threadCount < 50) ms = 3;
+            else ms = 4;
+            
+            try {
+                Thread.currentThread().sleep(ms);
+            }
+            catch (Exception e) {
+            }
         }
     }
 
-    private boolean shouldClose(OARemoteThread remoteThread) {
+    private boolean shouldClose(final OARemoteThread remoteThread) {
         if (alRemoteClientThread.size() < 4) return false;
         long msNow = System.currentTimeMillis();
         if (msNow - msLastCreatedRemoteThread < 1000) return false;
-        ;
         int cnt = 0;
         int minFree = 2;
         if (alRemoteClientThread.size() > 10) minFree = 4;
         synchronized (alRemoteClientThread) {
+            synchronized (remoteThread.Lock) {
+                if (remoteThread.requestInfo != null) return false;
+            }
             for (OARemoteThread rt : alRemoteClientThread) {
                 if (rt.msLastUsed + 1000 > msNow) continue;
+                if (rt == remoteThread) continue;
                 synchronized (rt.Lock) {
                     if (rt.requestInfo == null) {
                         cnt++;
-                        if (cnt > minFree) {
-                            alRemoteClientThread.remove(remoteThread);
-                            remoteThread.stopCalled = true;
-                            return true;
-                        }
                     }
+                }
+                if (cnt > minFree) {
+                    alRemoteClientThread.remove(remoteThread);
+                    remoteThread.stopCalled = true;
+                    return true;
                 }
             }
         }

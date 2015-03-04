@@ -2094,6 +2094,11 @@ obj = tc.getValue(hub, obj);
         }
         return true;
     }
+
+    @Override
+    public TableCellEditor getCellEditor(int row, int column) {
+        return super.getCellEditor(row, column);
+    }
 }
 
 /**
@@ -2503,6 +2508,7 @@ if (table.bDEBUG) {
         onNewList(e);
     }
 
+  
 }
 
 // 2006/10/13

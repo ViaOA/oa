@@ -41,6 +41,8 @@ import com.viaoa.util.OACircularQueue;
 import com.viaoa.util.OACompressWrapper;
 import com.viaoa.util.OAReflect;
 
+// use this for debugging, so that remote methods wont timeout while debugging:  MultiplexerClient.DEBUG = true;
+
 /**
  * Server component used to allow remoting method calls with Clients. Uses a MultiplexerServer for
  * communication with clients.

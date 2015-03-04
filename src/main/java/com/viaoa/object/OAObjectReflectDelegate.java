@@ -2028,27 +2028,29 @@ public class OAObjectReflectDelegate {
      * @param hubChild child Hub that has a path
      */
     public static String getPropertyPathBetweenHubs(final Hub hubParent, final Hub hubChild) {
-        return getPropertyPathBetweenHubs(null, hubParent, hubChild);
+        return getPropertyPathBetweenHubs(null, hubParent, hubChild, true);
     }
-    private static String getPropertyPathBetweenHubs(final String propPath, final Hub hubParent, final Hub hubChild) {
+    private static String getPropertyPathBetweenHubs(final String propPath, final Hub hubParent, final Hub hubChild, boolean bCheckLink) {
         if (hubChild == hubParent) return null;
         
         if (hubChild == null || hubParent == null) return null;
         
         if (HubShareDelegate.isUsingSameSharedHub(hubParent, hubChild)) return null;
         
-        Hub hx = HubLinkDelegate.getLinkToHub(hubChild, true);
-        if (hx != null) {
-            String s = HubLinkDelegate.getLinkHubPath(hubChild, true);
-            if (propPath != null) s = propPath + "." + s;
-            
-            if (hx == hubParent) {
-                return s;
+        Hub hx;
+        if (bCheckLink) {
+            hx = HubLinkDelegate.getLinkToHub(hubChild, true);
+            if (hx != null) {
+                String s = HubLinkDelegate.getLinkHubPath(hubChild, true);
+                if (propPath != null) s = propPath + "." + s;
+                
+                if (hx == hubParent) {
+                    return s;
+                }
+                s = getPropertyPathBetweenHubs(s, hubParent, hx, true);
+                if (s != null) return s;
             }
-            s = getPropertyPathBetweenHubs(s, hubParent, hx);
-            if (s != null) return s;
         }
-        
         
         hx = hubChild.getMasterHub();
         if (hx == null) return null;
@@ -2062,7 +2064,7 @@ public class OAObjectReflectDelegate {
 
         String pathFromParent = HubDetailDelegate.getPropertyFromMasterToDetail(hubChild);
         if (pathFromParent == null) return null;
-        if (propPath != null) pathFromParent = propPath + "." + pathFromParent;
+        if (propPath != null) pathFromParent = pathFromParent + "." + propPath;
         
         if (hx == hubParent) {
             return pathFromParent;
@@ -2076,7 +2078,7 @@ public class OAObjectReflectDelegate {
             }
         }
         
-        String sx = getPropertyPathBetweenHubs(pathFromParent, hubParent, hx);
+        String sx = getPropertyPathBetweenHubs(pathFromParent, hubParent, hx, false);
         if (sx != null) return sx;
         
         return null;
