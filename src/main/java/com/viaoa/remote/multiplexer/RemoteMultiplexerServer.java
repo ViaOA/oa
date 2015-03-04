@@ -998,13 +998,14 @@ public class RemoteMultiplexerServer {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    processQueueMessagesOnServer(cq, bindName, qPos);
-                }
-                catch (Exception e) {
-                    String s = "async queue thread exception, thread=" + threadName + ", thread is stopping, "
-                            + "which will stop message from being sent to this client, queue=" + asyncQueueName;
-                    LOG.log(Level.WARNING, s, e);
+                for (;;) {
+                    try {
+                        processQueueMessagesOnServer(cq, bindName, qPos);
+                    }
+                    catch (Exception e) {
+                        String s = "processQueueMessagesOnServer thread exception, thread="+threadName+", queue=" + asyncQueueName;
+                        LOG.log(Level.WARNING, s, e);
+                    }
                 }
             }
         });

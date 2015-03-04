@@ -2047,6 +2047,9 @@ public class OAObjectReflectDelegate {
                 if (hx == hubParent) {
                     return s;
                 }
+                if (HubShareDelegate.isUsingSameSharedAO(hubParent, hx, true)) {
+                    return s;
+                }
                 s = getPropertyPathBetweenHubs(s, hubParent, hx, true);
                 if (s != null) return s;
             }
