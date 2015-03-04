@@ -475,7 +475,7 @@ public class JFCController extends HubListenerAdapter {
         
         if (fromParentClass == null || !fromParentClass.equals(object.getClass())) {
             fromParentClass = object.getClass();
-            fromParentPropertyPath = OAObjectReflectDelegate.getPropertyPathFromMaster(object, getHub());
+            fromParentPropertyPath = OAObjectReflectDelegate.getPropertyPathFromMaster((OAObject)object, getHub());
 //            if (fromParentPropertyPath == null) fromParentPropertyPath = propertyPath;
 //            else fromParentPropertyPath += "." + propertyPath;
         }

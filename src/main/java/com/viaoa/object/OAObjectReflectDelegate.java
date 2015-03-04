@@ -1828,14 +1828,13 @@ public class OAObjectReflectDelegate {
         return -1;
     }
 
-    /** 20140211
-     * Expand a propertyPath to include the path to a parent Hub. 
+    /**
+     * get the property path from a Parent hub to a child hub. 
      * @param hubParent  parent hub that needs to have the path expanded from.
      * @param hubChild child Hub that has a path
-     * @param pathFromChild propertyPath from the hubChild
      * @return
      */
-    public static String getPropertyPathFromMaster(final Hub hubParent, final Hub hubChild) {
+    private static String getPropertyPathFromMaster(final Hub hubParent, final Hub hubChild) {
         if (hubParent == null) return null;
         if (hubChild == null) return null;
         String pathFromParent = null;
@@ -1902,7 +1901,7 @@ public class OAObjectReflectDelegate {
             h = hx;
         }
     }
-    public static String getPropertyPathFromMaster(final Object objParent, final Hub hubChild) {
+    public static String getPropertyPathFromMaster(final OAObject objParent, final Hub hubChild) {
         if (objParent == null) return null;
         if (hubChild == null) return null;
         String pathFromParent = null;
@@ -2020,6 +2019,67 @@ public class OAObjectReflectDelegate {
         Object objx = getProperty((OAObject) fromObject, fromProp);
         int x = OAConv.toInt(objx);
         return hubChild.getAt(x);
+    }
+    
+    
+    /**
+     * get the property path from a Parent hub to a child hub, that is all of type=One. 
+     * @param hubParent  parent hub that needs to have the path expanded from.
+     * @param hubChild child Hub that has a path
+     */
+    public static String getPropertyPathBetweenHubs(final Hub hubParent, final Hub hubChild) {
+        return getPropertyPathBetweenHubs(null, hubParent, hubChild);
+    }
+    private static String getPropertyPathBetweenHubs(final String propPath, final Hub hubParent, final Hub hubChild) {
+        if (hubChild == hubParent) return null;
+        
+        if (hubChild == null || hubParent == null) return null;
+        
+        if (HubShareDelegate.isUsingSameSharedHub(hubParent, hubChild)) return null;
+        
+        Hub hx = HubLinkDelegate.getLinkToHub(hubChild, true);
+        if (hx != null) {
+            String s = HubLinkDelegate.getLinkHubPath(hubChild, true);
+            if (propPath != null) s = propPath + "." + s;
+            
+            if (hx == hubParent) {
+                return s;
+            }
+            s = getPropertyPathBetweenHubs(s, hubParent, hx);
+            if (s != null) return s;
+        }
+        
+        
+        hx = hubChild.getMasterHub();
+        if (hx == null) return null;
+        
+        // links must be type=one from master to detail.
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hubChild);
+        if (li == null) return null;
+        li = OAObjectInfoDelegate.getReverseLinkInfo(li);
+        if (li == null) return null;
+        if (li.getType() != OALinkInfo.ONE) return null;
+
+        String pathFromParent = HubDetailDelegate.getPropertyFromMasterToDetail(hubChild);
+        if (pathFromParent == null) return null;
+        if (propPath != null) pathFromParent = propPath + "." + pathFromParent;
+        
+        if (hx == hubParent) {
+            return pathFromParent;
+        }
+        if (HubShareDelegate.isUsingSameSharedAO(hubParent, hx, true)) {
+            return pathFromParent;
+        }
+        if (hubChild.getMasterHub() == null) { // could be a hub copy
+            if (hx.getObjectClass().equals(hubParent.getObjectClass())) {
+                return pathFromParent;
+            }
+        }
+        
+        String sx = getPropertyPathBetweenHubs(pathFromParent, hubParent, hx);
+        if (sx != null) return sx;
+        
+        return null;
     }
     
 }

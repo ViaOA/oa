@@ -381,7 +381,9 @@ public class OATableColumn {
             bLinkOnPos = HubLinkDelegate.getLinkedOnPos(oaComp.getHub(), true);
             path = origPath;
             if (!bIsAlreadyExpanded) {
-                String s = OAObjectReflectDelegate.getPropertyPathFromMaster(hubTable, oaComp.getHub());
+                // 20150303
+                //was: String s = OAObjectReflectDelegate.getPropertyPathFromMaster(hubTable, oaComp.getHub());
+                String s = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
                 if (s != null) { 
                     path = s + "." + path;
                 }
