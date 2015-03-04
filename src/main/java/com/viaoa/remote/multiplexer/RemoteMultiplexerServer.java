@@ -1309,7 +1309,11 @@ public class RemoteMultiplexerServer {
 
                         this.msLastUsed = System.currentTimeMillis();
                         synchronized (Lock) {
-                            this.requestInfo = null;
+                            if (requestInfo != null) {
+                                if (!requestInfo.processedByServerQueue) notifyProcessedByServer(requestInfo);
+                                this.requestInfo = null;
+                            }
+                            Lock.notifyAll();
                         }
                     }
                     catch (Exception e) {
