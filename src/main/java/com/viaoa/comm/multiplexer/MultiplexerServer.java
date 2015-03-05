@@ -43,6 +43,7 @@ import com.viaoa.comm.multiplexer.io.MultiplexerServerSocketController;
 public class MultiplexerServer {
     private static Logger LOG = Logger.getLogger(MultiplexerServer.class.getName());
 
+//qqqqqqqqqqqq    
     public static boolean DEBUG = false;
     
     /**

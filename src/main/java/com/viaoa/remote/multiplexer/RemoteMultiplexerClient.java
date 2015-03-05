@@ -672,7 +672,10 @@ public class RemoteMultiplexerClient {
                         processMessageForStoC(requestInfo);
 
                         synchronized (Lock) {
-                            this.requestInfo = null;
+                            if (requestInfo != null) {
+                                requestInfo.methodInvoked = true;
+                                this.requestInfo = null;
+                            }
                             Lock.notify();
                         }
                         shouldClose(this);
@@ -727,13 +730,13 @@ public class RemoteMultiplexerClient {
         int minFree = 2;
         if (alRemoteClientThread.size() > 10) minFree = 4;
         synchronized (alRemoteClientThread) {
-            synchronized (remoteThread.Lock) {
-                if (remoteThread.requestInfo != null) return false;
-            }
             for (OARemoteThread rt : alRemoteClientThread) {
                 if (rt.msLastUsed + 1000 > msNow) continue;
-                if (rt == remoteThread) continue;
                 synchronized (rt.Lock) {
+                    if (rt == remoteThread) {
+                        if (rt.requestInfo != null) return false;
+                        continue;
+                    }
                     if (rt.requestInfo == null) {
                         cnt++;
                     }

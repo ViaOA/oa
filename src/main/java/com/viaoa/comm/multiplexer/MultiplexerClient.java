@@ -40,7 +40,7 @@ public class MultiplexerClient {
     private static Logger LOG = Logger.getLogger(MultiplexerClient.class.getName());
 
 //qqqqqqqqqqqqqqqqqqqq    
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     
     static {
         System.out.println("******* qqqqqqqqqq MultiplexerClient.DEBUG="+DEBUG);
