@@ -1,5 +1,10 @@
 
 
+creating templates
+    menu: window/preferences    
+    java/editor/templates
+
+
 Eclipse MarketPlace installer
         this will add MarketPlace to the Help menu
     select Help/Install New Software
