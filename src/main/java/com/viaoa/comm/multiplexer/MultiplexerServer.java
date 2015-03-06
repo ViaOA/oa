@@ -46,6 +46,10 @@ public class MultiplexerServer {
 //qqqqqqqqqqqq    
     public static boolean DEBUG = false;
     
+    static {
+//      System.out.println("******* qqqqqqqqqq MultiplexerClient.DEBUG="+DEBUG);
+    }
+    
     /**
      * Server port.
      */

@@ -43,7 +43,7 @@ public class MultiplexerClient {
     public static boolean DEBUG = false;
     
     static {
-        System.out.println("******* qqqqqqqqqq MultiplexerClient.DEBUG="+DEBUG);
+//        System.out.println("******* qqqqqqqqqq MultiplexerClient.DEBUG="+DEBUG);
     }
     
     /**
