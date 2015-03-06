@@ -138,7 +138,7 @@ public class BindInfo {
                     }
                 }
                 mi.noReturnValue = remoteMethod.noReturnValue();
-                mi.timeoutSeconds = Math.max(1, remoteMethod.timeoutSeconds());
+                mi.timeoutSeconds = Math.max(0, remoteMethod.timeoutSeconds());
             }
 
             // check to see if any of the params are remote

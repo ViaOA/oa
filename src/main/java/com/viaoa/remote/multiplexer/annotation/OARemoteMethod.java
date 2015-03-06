@@ -39,6 +39,6 @@ public @interface OARemoteMethod {
     // true if return value should not be returned
     boolean noReturnValue() default false;
     
-    int timeoutSeconds() default 20;
+    int timeoutSeconds() default 0;
 }
 

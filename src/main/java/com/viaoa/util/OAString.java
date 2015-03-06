@@ -2469,6 +2469,11 @@ public class OAString {
         return str;
     }
     
+    public static String notNull(String s) {
+        if (s == null) s = "";
+        return s;
+    }
+    
     public static String substring(String s, int pos1, int pos2) {
         if (s == null) return null;
         if (s.length() <= pos1) return "";

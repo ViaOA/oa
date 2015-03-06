@@ -594,11 +594,11 @@ public class RemoteMultiplexerServer {
 
             if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
                 // need to wait for return value 
-                int maxSeconds = Math.max(ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds, 1);
+                int maxSeconds = Math.max(ri.methodInfo == null ? 0 : ri.methodInfo.timeoutSeconds, 0);
                 for (int i=0; ; i++) {
                     try {
                         if (waitForMethodInvoked(ri, 1)) break;  //wait for response back from client, which puts it in the queue                      
-                        if (i >= maxSeconds) {
+                        if (maxSeconds > 0 && i >= maxSeconds) {
                             ri.exceptionMessage = "timeout waiting for response";
                             break;
                         }
@@ -1131,7 +1131,7 @@ public class RemoteMultiplexerServer {
             }
         }
         
-        int maxSeconds = Math.max(ri.methodInfo == null ? 30 : ri.methodInfo.timeoutSeconds, 1); 
+        int maxSeconds = Math.max(ri.methodInfo == null ? 0 : ri.methodInfo.timeoutSeconds, 0); 
         long ms1 = System.currentTimeMillis();
 
         // remoteThread is now processing the request
@@ -1151,7 +1151,7 @@ public class RemoteMultiplexerServer {
         
         long ms2 = System.currentTimeMillis();
         // this can be removed, sanity check only
-        if ((ms2-ms1) >= (maxSeconds * 1000)) {
+        if (maxSeconds > 0 && (ms2-ms1) >= (maxSeconds * 1000)) {
             StackTraceElement[] stes = remoteThread.getStackTrace();
             Exception ex = new Exception();
             ex.setStackTrace(stes);

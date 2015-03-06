@@ -309,7 +309,7 @@ public class RemoteMultiplexerClient {
                     for (int i = 0; ; i++) {
                         if (ri.methodInvoked) break;
                         ri.wait(1000); // request timeout
-                        if (i >= ri.methodInfo.timeoutSeconds) {
+                        if (ri.methodInfo.timeoutSeconds > 0 && i >= ri.methodInfo.timeoutSeconds) {
                             if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
                                 break;
                             }

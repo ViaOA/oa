@@ -33,6 +33,8 @@ import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.*;
 import java.lang.reflect.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -448,25 +450,28 @@ public class ButtonController extends JFCController implements ActionListener {
             dlg.setConsole(con);
         }
         
-        
+        final AtomicInteger aiCompleted = new AtomicInteger(); 
         final OAConsole console = con;
         SwingWorker<Boolean, Void> sw = new SwingWorker<Boolean, Void>() {
             @Override
             protected Boolean doInBackground() throws Exception {
                 _onActionPerformed();
+                aiCompleted.incrementAndGet();
                 return true;
             }
 
             @Override
             protected void done() {
                 synchronized (Lock) {
-                    if (console == null) {
+                    dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    if (dlg.wasCancelled()) {
+                    }
+                    else if (console == null) {
                         if (dlg.isVisible()) {
                             dlg.setVisible(false);
                         }
                     }
                     else {
-                        dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         console.close();
                         JButton cmd = dlg.getCancelButton();
                         cmd.setText("Close");
@@ -499,13 +504,14 @@ public class ButtonController extends JFCController implements ActionListener {
         };
         sw.execute();
         synchronized (Lock) {
-            if (sw.getState() != StateValue.DONE) {
-                dlg.setVisible(true);
+            if (sw.getState() != StateValue.DONE && aiCompleted.get() == 0) {
+                dlg.setVisible(true);  // the thread will wait until the dialog is closed
             }
         }
+        dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         try {
-            sw.get();
-            bResult = true;
+            // sw.get();  dont need this, since the dlg.setVisible is modal and will wait until it is closed
+            bResult = aiCompleted.get() > 0;
         }
         catch (Exception ex) {
             LOG.log(Level.WARNING, "error while performing command action", ex);
