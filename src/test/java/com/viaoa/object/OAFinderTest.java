@@ -97,4 +97,22 @@ public class OAFinderTest extends OAUnitTest {
         reset();
     }
 
+    @Test
+    public void equalsTest() {
+        reset();
+
+        OAFinder<Site, Site> finder = new OAFinder<Site, Site>();
+        String pp = SitePP.environments().silos().servers().hostName();
+        finder.addEqualFilter(pp, "none");
+        
+        pp = SitePP.environments().silos().servers().gsmrServer().instanceNumber();
+        finder.addEqualFilter(pp, 1);
+        
+        Hub<Site> hub = new Hub<Site>(Site.class);
+        Site site = finder.findFirst(hub);
+
+        assertNull(site);
+    }
+   
+    
 }
