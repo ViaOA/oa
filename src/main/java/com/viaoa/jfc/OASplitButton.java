@@ -31,7 +31,7 @@ import com.viaoa.jfc.control.EnabledController;
  * The SplitButton will manage the settings and events for mainButton, and the application will need to
  * create an actionListener to the dropDownButton.
  * 
- * This is a subclass of JButton, since toolbars have methods that work specificially  with buttons. ex: toolbar.setRollOver()
+ * This is a subclass of JButton, since toolbars have methods that work with buttons. ex: toolbar.setRollOver()
  *    
  * @author vvia
  */
