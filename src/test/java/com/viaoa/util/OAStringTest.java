@@ -28,6 +28,18 @@ public class OAStringTest extends OAUnitTest {
         
         s = ".";
         assertEquals(OAString.dcount(s, '.'), 2);
+        
+        s = "1.2.3.4";
+        s = OAString.field(s, ".", OAString.dcount(s, '.'));
+        assertEquals(s, "4");
+
+        s = "1.2.3.4";
+        s = OAString.field(s, ".", OAString.dcount(s, '.'));
+        assertEquals(s, "4");
+
+        s = "1.2.3.4";
+        s = OAString.field(s, ".", 1, OAString.dcount(s, '.')-1);
+        assertEquals(s, "1.2.3");
     }
     @Test 
     public void fieldTest() {
@@ -127,5 +139,7 @@ public class OAStringTest extends OAUnitTest {
         s2 = OAString.makeSingular(s2);
         assertEquals(s, s2);
     }
+
+    
     
 }

@@ -12,8 +12,10 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
 import com.viaoa.hub.HubListenerAdapter;
+import com.viaoa.hub.HubMerger;
 import com.viaoa.jfc.console.Console;
 import com.viaoa.object.OAObject;
+import com.viaoa.util.OAString;
 
 
 /**
@@ -26,6 +28,7 @@ import com.viaoa.object.OAObject;
 public class OAConsole extends OATable implements FocusListener, MouseListener {
     private Hub hubListen;
     private String property;
+    private String listenProperty;
     private WeakHashMap<OAObject, Hub<Console>> hmConsole = new WeakHashMap<OAObject, Hub<Console>>();
     private int columns;
     private HubListener hubListener; 
@@ -82,12 +85,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 
                 String prop = e.getPropertyName();
                 if (prop == null) return;
-                int pos = property.lastIndexOf('.');
-                if (pos > 0) {
-                    if (!prop.equalsIgnoreCase("xxxConsole")) return;
-                    //if (!property.substring(pos+1).equalsIgnoreCase(prop)) return;
-                }
-                else if (!property.equalsIgnoreCase(prop)) return;
+                if (!listenProperty.equalsIgnoreCase(prop)) return;
                 
                 if (getHub() == null) return;
                 Object obj = e.getObject();
@@ -107,7 +105,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 Object ao = OAConsole.this.hubListen.getAO();
                         
                 if (!OAConsole.this.bHasFocus && !OAConsole.this.bHasMouse && ao == oaObj) {
-                    pos = OAConsole.this.getHub().getSize();
+                    int pos = OAConsole.this.getHub().getSize();
                     Rectangle rect = OAConsole.this.getCellRect(pos, 0, true);
                     try {
                         OAConsole.this.scrollRectToVisible(rect);
@@ -130,8 +128,16 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 hmConsole.clear();
             }
         };
+        listenProperty = property;
         if (property != null) {
-            if (property.indexOf('.') > 0) hubListen.addHubListener(hubListener, "xxxConsole", new String[]{property});
+            if (property.indexOf('.') > 0) {
+                Hub h = new Hub();
+                int dcnt = OAString.dcount(property, '.');
+                String s = OAString.field(property, ".", 1, dcnt-1);
+                new HubMerger(hubListen, h, s, false);
+                listenProperty = OAString.field(property, ".", dcnt);
+                h.addHubListener(hubListener, listenProperty, true);
+            }
             else hubListen.addHubListener(hubListener, property, true);
         }
         

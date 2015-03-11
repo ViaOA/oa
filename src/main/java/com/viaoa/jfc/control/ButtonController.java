@@ -508,9 +508,9 @@ public class ButtonController extends JFCController implements ActionListener {
                 dlg.setVisible(true);  // the thread will wait until the dialog is closed
             }
         }
-        dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
         try {
-            // sw.get();  dont need this, since the dlg.setVisible is modal and will wait until it is closed
+            sw.get(); // even though dlg.setVisible is modal, we need to get an exception
             bResult = aiCompleted.get() > 0;
         }
         catch (Exception ex) {

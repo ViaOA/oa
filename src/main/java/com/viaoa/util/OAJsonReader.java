@@ -307,11 +307,26 @@ public class OAJsonReader {
                 }
                 continue;
             }
-
-            if (ch == '\t' || ch == '\f' || ch == '\n' || ch == '\r' || ch == ' ') continue;
+            
+            if (ch == '\n' || ch == '\r') {
+                if (token.type != null) {
+                    bComma = false;
+                    bReturn = true;
+                }
+                continue;
+            }
+            if (ch == '\t' || ch == '\f' || ch == ' ') {
+                if (token.type == null) {
+                    continue;
+                }
+            }
+            //was: if (ch == '\t' || ch == '\f' || ch == '\n' || ch == '\r' || ch == ' ') continue;
             
             if (ch == ',') {
-                bComma = true;
+                if (token.type != null) {
+                    bReturn = true;
+                }
+                else bComma = true;
                 continue;
             }
             
@@ -372,9 +387,7 @@ public class OAJsonReader {
                 }
             }
             else if (token.type == TokenType.number) {
-                if (Character.isDigit(ch)) {
-                }
-                else {
+                if (!Character.isDigit(ch)) {
                     token.type = TokenType.string;
                 }
             }
