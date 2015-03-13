@@ -503,6 +503,7 @@ public class ButtonController extends JFCController implements ActionListener {
             }
         };
         sw.execute();
+
         synchronized (Lock) {
             if (sw.getState() != StateValue.DONE && aiCompleted.get() == 0) {
                 dlg.setVisible(true);  // the thread will wait until the dialog is closed
@@ -510,7 +511,13 @@ public class ButtonController extends JFCController implements ActionListener {
         }
 
         try {
-            sw.get(); // even though dlg.setVisible is modal, we need to get an exception
+            if (aiCompleted.get() == 0) {
+                // cancelled,closed
+                // sw.cancel(true);  //qqqq need to test to see how it affects the thread.isInterrupted flag
+            }
+            else {
+                sw.get(); // even though dlg.setVisible is modal, we need to check for an exception, if it was not cancelled
+            }
             bResult = aiCompleted.get() > 0;
         }
         catch (Exception ex) {

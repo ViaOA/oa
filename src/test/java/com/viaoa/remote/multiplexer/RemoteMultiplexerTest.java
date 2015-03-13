@@ -378,7 +378,7 @@ public class RemoteMultiplexerTest extends OAUnitTest {
         };
         
         remoteServer.register(1, rci);
-        Thread.sleep(100);
+        Thread.sleep(120);
         
         assertNotNull(remoteClientInterfaceOnServerNoQ);
         assertEquals(0, cntStoCRequestClient);
