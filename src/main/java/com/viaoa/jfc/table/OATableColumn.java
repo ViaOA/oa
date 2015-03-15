@@ -436,10 +436,27 @@ public class OATableColumn {
                     String s = e.getPropertyName();
                     if (s != null && s.equalsIgnoreCase(propx)) {
                         table.repaint();
+                        // 20150315
+                        int col = table.getColumnIndex(oaComp);
+                        table.setChanged(e.getHub().getPos(e.getObject()), col);
                     }
                 }
             };
             table.getHub().addHubListener(hubListener, propx, new String[] { path });
+        }
+        else if (methods != null && !OAString.isEmpty(path)) {
+            // 20150315
+            hubListener = new HubListenerAdapter() {
+                public @Override
+                void afterPropertyChange(HubEvent e) {
+                    String s = e.getPropertyName();
+                    if (s != null && s.equalsIgnoreCase(path)) {
+                        int col = table.getColumnIndex(oaComp);
+                        table.setChanged(e.getHub().getPos(e.getObject()), col);
+                    }
+                }
+            };
+            table.getHub().addHubListener(hubListener);
         }
         return methods;
     }

@@ -31,7 +31,9 @@ import java.awt.dnd.*;
 import java.awt.event.*;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -664,7 +666,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     private MyTableCellRenderer myRend;
 
     
-    
     /**
         JTable method used to get the renderer for a cell.  This is set up to
         automatically call getRenderer(), which is much easier to use.
@@ -678,6 +679,64 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return myRend;
     }
 
+    // 20150315
+    protected ConcurrentHashMap<String, Long> hmColumnRowChanged;
+    private boolean bShowChanges;
+    private Timer timerShowChanges;
+    private final Object lockShowChanges = new Object();
+    
+    /**
+     * Flag to track changes to row,col (cells).
+     */
+    public void setShowChanges(boolean b) {
+        synchronized (lockShowChanges) {
+            bShowChanges = b;
+            if (!b) {
+                hmColumnRowChanged = null;
+                if (timerShowChanges != null) {
+                    timerShowChanges.stop();
+                    timerShowChanges = null;
+                }
+            }
+            else if (b && hmColumnRowChanged == null) {
+                hmColumnRowChanged = new ConcurrentHashMap<String, Long>();
+                
+                timerShowChanges = new Timer(100, new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        long tsNow = 0;
+                        for (Map.Entry<String, Long> entry : hmColumnRowChanged.entrySet()) {
+                            if (tsNow == 0) tsNow = System.currentTimeMillis();
+                            if (tsNow > entry.getValue().longValue()+100) hmColumnRowChanged.remove(entry.getKey());
+                        }
+                        if (tsNow > 0) OATable.this.repaint(100);
+                        else {
+                            synchronized (OATable.this.lockShowChanges) {
+                                if (hmColumnRowChanged.size() == 0) timerShowChanges.stop();
+                            }
+                        }
+                    }
+                }); 
+                timerShowChanges.setRepeats(true);
+            }
+        }
+    }
+    public void setChanged(int row, int col) {
+        synchronized (lockShowChanges) {
+            if (!bShowChanges) return;
+            hmColumnRowChanged.put(row+"."+col, System.currentTimeMillis());
+            if (!timerShowChanges.isRunning()) {
+                timerShowChanges.start();
+            }
+        }
+    }
+    
+    public boolean wasChanged(int row, int col) {
+        ConcurrentHashMap<String, Long> hm = hmColumnRowChanged;
+        if (hm == null) return false;
+        Long longx = hm.get(row+"."+col);
+        return (longx != null);
+    }
+    
     /**
         Can be overwritten to customize the component used to renderer a Table cell.
         @see #getRenderer(JComponent, JTable, Object, boolean, boolean, int, int) to customize the component
@@ -2212,12 +2271,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             return;
         }
 
-if (table.bDEBUG) {
-    int xx = 4;
-    xx++; //qqqqqqqqqqqqqqq
-}
-        
-        
         if (getIgnoreValueChanged()) {
             return;
         }
@@ -2501,6 +2554,7 @@ if (table.bDEBUG) {
     public @Override void afterAdd(HubEvent e) {
         if (getHub() != null && !HubSelectDelegate.isFetching(getHub())) {
             insertInvoker(e.getPos());
+            table.setChanged(e.getPos(), -1);
         }
     }
     
