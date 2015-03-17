@@ -114,7 +114,7 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
         
         Color color = UIManager.getLookAndFeelDefaults().getColor("Table.gridColor");
         if (color == null) color = Color.lightGray;
-        Border b = new CustomLineBorder(0, 0, 0, 1, color);
+        Border b = new CustomLineBorder(0, 0, 0, 3, color);
         b = new CompoundBorder(new CustomLineBorder(0, 0, 0, 1, color.brighter()), b);
         b = new CompoundBorder(b, new EmptyBorder(0, 0, 0, 2));
 

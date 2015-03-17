@@ -59,6 +59,7 @@ import com.viaoa.jfc.table.OATableListener;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.object.OAObject;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAReflect;
@@ -723,6 +724,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public void setChanged(int row, int col) {
         synchronized (lockShowChanges) {
             if (!bShowChanges) return;
+            if (!OARemoteThreadDelegate.isRemoteThread()) return;
             hmColumnRowChanged.put(row+"."+col, System.currentTimeMillis());
             if (!timerShowChanges.isRunning()) {
                 timerShowChanges.start();

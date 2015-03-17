@@ -453,10 +453,17 @@ public class ButtonController extends JFCController implements ActionListener {
         final AtomicInteger aiCompleted = new AtomicInteger(); 
         final OAConsole console = con;
         SwingWorker<Boolean, Void> sw = new SwingWorker<Boolean, Void>() {
+            boolean bHadException;
             @Override
             protected Boolean doInBackground() throws Exception {
-                _onActionPerformed();
-                aiCompleted.incrementAndGet();
+                try {
+                    bHadException = true;
+                    _onActionPerformed();
+                    bHadException = false;
+                }
+                finally {
+                    aiCompleted.incrementAndGet();
+                }
                 return true;
             }
 
@@ -493,10 +500,10 @@ public class ButtonController extends JFCController implements ActionListener {
                         dlg.getProgressBar().setMaximum(100);
                         dlg.getProgressBar().setValue(100);
                         
-                        if (!OAString.isEmpty(completedMessage)) {
-                            dlg.setStatus(completedMessage);
-                        }
-                        else dlg.setStatus("Command has completed");
+                        String s = completedMessage;
+                        if (bHadException) s = "Command had an exception, close to see description"; 
+                        else if (OAString.isEmpty(s)) s = "Command has completed";
+                        dlg.setStatus(s);
                         dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                     }
                 }
