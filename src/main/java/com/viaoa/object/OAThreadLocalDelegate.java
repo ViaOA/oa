@@ -863,12 +863,46 @@ static volatile int unlockCnt;
         if (ti == null) return false;
         return ti.createUndoablePropertyChanges;
     }
+
+
+//qqqqqqqqqq add support for other undoables, like:  hub.add, .remove, etc.    
+    
+    
+    
+    public static void startUndoable(String compoundName) {
+        startUndoable(OAThreadLocalDelegate.getThreadLocal(true), compoundName);
+    }
+    protected static void startUndoable(OAThreadLocal ti, String compoundName) {
+        if (ti == null) return;
+        if (compoundName == null) compoundName = "changes";
+        ti.createUndoablePropertyChanges = true;
+        ti.compoundUndoableName = compoundName;
+
+        int x = OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.getAndIncrement();
+        if (x > 50 || x < 0) {
+            LOG.warning("TotalCaptureUndoablePropertyChanges="+x+", ti.createUndoablePropertyChanges="+ti.createUndoablePropertyChanges);
+        }
+    }
+    public static void endUndoable() {
+        endUndoable(OAThreadLocalDelegate.getThreadLocal(true));
+    }
+    protected static void endUndoable(OAThreadLocal ti) {
+        if (ti == null) return;
+        ti.createUndoablePropertyChanges = false;
+        ti.compoundUndoableName = null;
+
+        OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.decrementAndGet();
+    }
+
+    
+    
     public static void setCreateUndoablePropertyChanges(boolean b) {
         // LOG.finer(""+b);
         setCreateUndoablePropertyChanges(OAThreadLocalDelegate.getThreadLocal(b), b);
     }
     protected static void setCreateUndoablePropertyChanges(OAThreadLocal ti, boolean b) {
         if (ti == null) return;
+        if (ti.compoundUndoableName != null) return;
         int x;
         ti.createUndoablePropertyChanges = b;
         if (b) {

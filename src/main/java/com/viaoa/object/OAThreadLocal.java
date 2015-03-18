@@ -99,6 +99,7 @@ public class OAThreadLocal {
      *  @see OAUndoableManager#startCapturePropertyChanges
     */
     protected boolean createUndoablePropertyChanges;
+    protected String compoundUndoableName;
     protected Tuple<Object, String>[] calcPropertyEvents;
     
     
