@@ -470,7 +470,6 @@ public class ButtonController extends JFCController implements ActionListener {
             @Override
             protected void done() {
                 synchronized (Lock) {
-                    dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     if (dlg.wasCancelled()) {
                     }
                     else if (console == null) {
@@ -479,6 +478,8 @@ public class ButtonController extends JFCController implements ActionListener {
                         }
                     }
                     else {
+                        dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        dlg.done();//hack
                         console.close();
                         JButton cmd = dlg.getCancelButton();
                         cmd.setText("Close");

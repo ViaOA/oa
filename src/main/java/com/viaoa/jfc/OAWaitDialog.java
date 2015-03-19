@@ -135,6 +135,7 @@ public class OAWaitDialog extends JDialog implements ActionListener {
     @Override
     public void setVisible(boolean b) {
         if (b) {
+            bDone = false;
             bCancelled = false;
             pack();
             this.setLocationRelativeTo(parent);
@@ -167,10 +168,21 @@ public class OAWaitDialog extends JDialog implements ActionListener {
             setResizable(true);
         }
     }
+
+    private boolean bDone;
+    public void done() {
+        bDone = true;
+    }
+    
+    @Override
+    public void setCursor(Cursor cursor) {
+        if (bDone && cursor.equals(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))) cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+        super.setCursor(cursor);
+    }
     
     
     public static void main(String[] args) {
-        OAWaitDialog dlg = new OAWaitDialog(null);
+        final OAWaitDialog dlg = new OAWaitDialog(null);
         dlg.setTitle("Wait for me");
         dlg.getStatusLabel().setText("this is a wait dialog");
 
@@ -187,11 +199,12 @@ public class OAWaitDialog extends JDialog implements ActionListener {
             @Override
             public void run() {
                 try {
-                    for (int i=0; ;i++) {
+                    for (int i=0; i<20;i++) {
                         updateObject.setText(i+" "+OAString.getRandomString(5, 55, true, true, true));
                         Thread.sleep(300);
                     }
-                }
+dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+               }
                 catch (Exception e) {
                     // TODO: handle exception
                 }
@@ -201,6 +214,7 @@ public class OAWaitDialog extends JDialog implements ActionListener {
         dlg.setVisible(true);
         System.exit(0);
     }
+    
 }
 
 

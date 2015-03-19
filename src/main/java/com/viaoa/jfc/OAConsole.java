@@ -31,7 +31,8 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
     private String listenProperty;
     private WeakHashMap<OAObject, Hub<Console>> hmConsole = new WeakHashMap<OAObject, Hub<Console>>();
     private int columns;
-    private HubListener hubListener; 
+    private HubListener hubListener;
+    private Hub hubFromMerger;
     
     public OAConsole(Hub hub, String property, int columns) {
         super(new Hub<Console>(Console.class));
@@ -102,16 +103,20 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 }
                 hub.add(console);
                 
-                Object ao = OAConsole.this.hubListen.getAO();
                         
-                if (!OAConsole.this.bHasFocus && !OAConsole.this.bHasMouse && ao == oaObj) {
-                    int pos = OAConsole.this.getHub().getSize();
-                    Rectangle rect = OAConsole.this.getCellRect(pos, 0, true);
-                    try {
-                        OAConsole.this.scrollRectToVisible(rect);
+                if (!OAConsole.this.bHasFocus && !OAConsole.this.bHasMouse) {
+                    boolean b;
+                    if (hubFromMerger != null) b = hubFromMerger.contains(oaObj);
+                    else b = (OAConsole.this.hubListen.getAO() == oaObj); 
+                    if (b) {
+                        int pos = OAConsole.this.getHub().getSize();
+                        Rectangle rect = OAConsole.this.getCellRect(pos, 0, true);
+                        try {
+                            OAConsole.this.scrollRectToVisible(rect);
+                        }
+                        catch (Exception ex) {}
+                        OAConsole.this.repaint();
                     }
-                    catch (Exception ex) {}
-                    OAConsole.this.repaint();
                 }
             }
             
@@ -131,12 +136,12 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
         listenProperty = property;
         if (property != null) {
             if (property.indexOf('.') > 0) {
-                Hub h = new Hub();
+                hubFromMerger = new Hub();
                 int dcnt = OAString.dcount(property, '.');
                 String s = OAString.field(property, ".", 1, dcnt-1);
-                new HubMerger(hubListen, h, s, false);
+                new HubMerger(hubListen, hubFromMerger, s, false);
                 listenProperty = OAString.field(property, ".", dcnt);
-                h.addHubListener(hubListener, listenProperty, true);
+                hubFromMerger.addHubListener(hubListener, listenProperty, true);
             }
             else hubListen.addHubListener(hubListener, property, true);
         }
