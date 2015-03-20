@@ -676,7 +676,7 @@ public class RemoteMultiplexerClient {
                                 requestInfo.methodInvoked = true;
                                 this.requestInfo = null;
                             }
-                            Lock.notify();
+                            Lock.notifyAll();
                         }
                         shouldClose(this);
                     }
@@ -729,16 +729,18 @@ public class RemoteMultiplexerClient {
         int cnt = 0;
         int minFree = 2;
         if (alRemoteClientThread.size() > 10) minFree = 4;
+        
         synchronized (alRemoteClientThread) {
             for (OARemoteThread rt : alRemoteClientThread) {
-                if (rt.msLastUsed + 1000 > msNow) continue;
                 synchronized (rt.Lock) {
                     if (rt == remoteThread) {
                         if (rt.requestInfo != null) return false;
                         continue;
                     }
                     if (rt.requestInfo == null) {
-                        cnt++;
+                        if (rt.msLastUsed + 1000 < msNow) { 
+                            cnt++;
+                        }
                     }
                 }
                 if (cnt > minFree) {
@@ -756,7 +758,6 @@ public class RemoteMultiplexerClient {
         RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
 
         RequestInfo.Type type = RequestInfo.getType(ois.readByte());
-
         if (type == RequestInfo.Type.StoC_CreateNewStoCSocket) {
             // server is requesting another vsocket "stoc"
             createSocketForStoC();
@@ -924,9 +925,9 @@ public class RemoteMultiplexerClient {
 
             long t1 = System.currentTimeMillis();
             OARemoteThread t = getRemoteClientThread(ri);
+            
             synchronized (t.Lock) {
                 t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-
                 if (RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
                     // if sync broadcast
                     for (; t.requestInfo != null && !ri.methodInvoked;) {
