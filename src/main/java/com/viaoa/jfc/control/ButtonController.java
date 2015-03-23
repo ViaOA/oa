@@ -428,7 +428,9 @@ public class ButtonController extends JFCController implements ActionListener {
 
         final Window window = OAJFCUtil.getWindow(button);
         final OAWaitDialog dlg = new OAWaitDialog(window, true);  // allowCancel, was false
-
+        dlg.getCancelButton().setText("Run in background");
+        dlg.getCancelButton().setToolTipText("use this to close the dialog, and allow the the procss to run in the background");
+        
         String s = processingTitle;
         if (s == null) s = "Processing";
         dlg.setTitle(s);
@@ -470,9 +472,8 @@ public class ButtonController extends JFCController implements ActionListener {
             @Override
             protected void done() {
                 synchronized (Lock) {
-                    if (dlg.wasCancelled()) {
-                    }
-                    else if (console == null) {
+                    
+                    if (!dlg.wasCancelled() && console == null) {
                         if (dlg.isVisible()) {
                             dlg.setVisible(false);
                         }
@@ -483,6 +484,8 @@ public class ButtonController extends JFCController implements ActionListener {
                         console.close();
                         JButton cmd = dlg.getCancelButton();
                         cmd.setText("Close");
+                        cmd.setToolTipText("the command has completed, click to close window.");
+                        
                         cmd.registerKeyboardAction(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -504,8 +507,12 @@ public class ButtonController extends JFCController implements ActionListener {
                         String s = completedMessage;
                         if (bHadException) s = "Command had an exception, close to see description"; 
                         else if (OAString.isEmpty(s)) s = "Command has completed";
+                        
                         dlg.setStatus(s);
                         dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                        if (dlg.wasCancelled()) {
+                            dlg.setVisible(true, false);
+                        }
                     }
                 }
             }
@@ -520,13 +527,13 @@ public class ButtonController extends JFCController implements ActionListener {
 
         try {
             if (aiCompleted.get() == 0) {
-                // cancelled,closed
+                // run in background
                 // sw.cancel(true);  //qqqq need to test to see how it affects the thread.isInterrupted flag
             }
             else {
                 sw.get(); // even though dlg.setVisible is modal, we need to check for an exception, if it was not cancelled
             }
-            bResult = aiCompleted.get() > 0;
+            bResult = true;//aiCompleted.get() > 0;
         }
         catch (Exception ex) {
             LOG.log(Level.WARNING, "error while performing command action", ex);

@@ -26,6 +26,7 @@ import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.hub.Hub;
+import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OADateTime;
@@ -844,8 +845,6 @@ static volatile int unlockCnt;
         }
     }
 
-    
-    
     // CaptureUndoablePropertyChanges -----------------------
     public static boolean getCreateUndoablePropertyChanges() {
         boolean b; 
@@ -877,6 +876,7 @@ static volatile int unlockCnt;
         if (compoundName == null) compoundName = "changes";
         ti.createUndoablePropertyChanges = true;
         ti.compoundUndoableName = compoundName;
+        OAUndoManager.startCompoundEdit(compoundName);
 
         int x = OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.getAndIncrement();
         if (x > 50 || x < 0) {
@@ -890,12 +890,13 @@ static volatile int unlockCnt;
         if (ti == null) return;
         ti.createUndoablePropertyChanges = false;
         ti.compoundUndoableName = null;
+        OAUndoManager.endCompoundEdit();
 
         OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.decrementAndGet();
     }
 
     
-    
+/// 20150323 remove this qqqqqqqq    
     public static void setCreateUndoablePropertyChanges(boolean b) {
         // LOG.finer(""+b);
         setCreateUndoablePropertyChanges(OAThreadLocalDelegate.getThreadLocal(b), b);
@@ -915,6 +916,8 @@ static volatile int unlockCnt;
             LOG.warning("TotalCaptureUndoablePropertyChanges="+x+", ti.createUndoablePropertyChanges="+ti.createUndoablePropertyChanges);
         }
     }
+/*qqqqqqqqqqqqqqq*/
+    
     
     
     // TotalIsSendingEvent  20120104

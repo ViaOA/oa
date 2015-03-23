@@ -84,12 +84,14 @@ public class OAUndoManager extends UndoManager {
      * which is used by OAObject.firePropertyChange to add undoableEdits using UndoableEdit.createUndoablePropertyChange
      */
     public static void startCompoundEditForPropertyChanges(final String presentationName) {
-        startCompoundEdit(presentationName);
-        OAThreadLocalDelegate.setCreateUndoablePropertyChanges(true);
+        OAThreadLocalDelegate.startUndoable(presentationName);
+        //startCompoundEdit(presentationName);
+        //OAThreadLocalDelegate.setCreateUndoablePropertyChanges(true);
     }    
     public static void endCompoundEditForPropertyChanges() {
-        endCompoundEdit();
-        OAThreadLocalDelegate.setCreateUndoablePropertyChanges(false);
+        OAThreadLocalDelegate.endUndoable();
+        //endCompoundEdit();
+        //OAThreadLocalDelegate.setCreateUndoablePropertyChanges(false);
     }    
     
     public static void startCompoundEdit(final String presentationName, final boolean bCanRedoThis) {

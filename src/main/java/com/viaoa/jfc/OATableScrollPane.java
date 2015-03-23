@@ -52,15 +52,41 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
     public OATableScrollPane(OATable table, int fixedColumns)
     {
         super(table);
-
+        
         mainTable = table; // ((OATable)scrollPane.getViewport().getView());
         // mainTable.addPropertyChangeListener(this);
 
+        mainTable.addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (fixedTable == null) return;
+                TableCellEditor tced = fixedTable.getCellEditor();
+                if (tced != null) tced.stopCellEditing();
+                
+            }
+        });
+        
+        
         if (fixedColumns < 1) return;
         
         int totalColumns = mainTable.getColumnCount();
 
         fixedTable = createFixedTable(mainTable);
+        fixedTable.addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (mainTable == null) return;
+                TableCellEditor tced = mainTable.getCellEditor();
+                if (tced != null) tced.stopCellEditing();
+                
+            }
+        });
 
         // 20101229 need to have both tables aware of each other - for column sorting, arrow keys, etc.
         fixedTable.setJoinedTable(mainTable, true);

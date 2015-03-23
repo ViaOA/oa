@@ -546,6 +546,10 @@ public class MultiplexerSocketController implements Serializable {
         close(false);
     }
 
+    public boolean wasCloseAlreadyCalled() {
+        return _abClosing.get();
+    }
+    
     protected void close(boolean bError) throws IOException {
         if (this._socket == null) return;
         if (!_abClosing.compareAndSet(false, true)) {

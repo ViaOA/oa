@@ -115,12 +115,16 @@ public class MultiplexerClient {
 
         _controlSocket = new MultiplexerSocketController(_socket) {
             protected void onSocketException(Exception e) {
-                MultiplexerClient.this.onSocketException(e);
+                if (!_controlSocket.wasCloseAlreadyCalled()) {
+                    MultiplexerClient.this.onSocketException(e);
+                }
             };
             @Override
             protected void close(boolean bError) throws IOException {
-                super.close(bError);
-                MultiplexerClient.this.onClose(bError);
+                if (!_controlSocket.wasCloseAlreadyCalled()) {
+                    super.close(bError);
+                    MultiplexerClient.this.onClose(bError);
+                }
             }
         };
         setThrottleLimit(this.mbThrottleLimit);
