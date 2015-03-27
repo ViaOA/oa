@@ -118,6 +118,11 @@ public class MultiplexerClient {
                 if (!_controlSocket.wasCloseAlreadyCalled()) {
                     MultiplexerClient.this.onSocketException(e);
                 }
+                try {
+                    close(true);
+                }
+                catch (Exception e2) {
+                }
             };
             @Override
             protected void close(boolean bError) throws IOException {

@@ -8,7 +8,7 @@ import com.theice.tsactest.model.oa.*;
 public class EmptyTest extends OAUnitTest {
 
     @Test
-    public void Test() {
+    public void test() {
         
     }
     
