@@ -1,5 +1,10 @@
 
 
+20150327 Importing an ICE project
+use file/import/maven/checkout from scm
+    ex: ssh://git@stash.intcx.net:7999/mrtools/admin.git
+
+
 creating templates
     menu: window/preferences    
     java/editor/templates
