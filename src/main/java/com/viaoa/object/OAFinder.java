@@ -216,6 +216,40 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     }
     
     
+    public void addNullFilter(final String propPath) {
+        _addFilter(propPath, new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                return obj == null;
+            }
+        });
+    }
+    public void addNotNullFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                return obj != null;
+            }
+        });
+    }
+  
+    
+    public void addEmptyFilter(final String propPath) {
+        _addFilter(propPath, new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                return OAString.isEmpty(obj);
+            }
+        });
+    }
+    public void addNotEmptyFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                return !OAString.isEmpty(obj);
+            }
+        });
+    }
     
     
     /**
