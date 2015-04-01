@@ -1,3 +1,27 @@
+
+
+
+// ex: see if an ip matches a network mask
+public static void main(String[] args) {
+    String ip = "123.21.125.14";
+    String mask = "123.255.255.14";
+    
+    mask = OAString.convert(mask, "255", "\\d{1,3}");
+    mask = OAString.convert(mask, ".", "\\.");
+    
+    //mask = "123\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
+    
+    boolean b = ip.matches(mask); 
+    
+    //boolean b = s.matches("123\\.\\d{1,3}");
+    
+    System.out.println(""+b);
+}
+
+
+
+
+
 findFileName = "OA[a-zA-Z0-9.]{6}\\.class"; // works        
 findFileName = "OA[^$]{12,}\\.class";  // works     
 findFileName = "OA.*\\.class";  // works        

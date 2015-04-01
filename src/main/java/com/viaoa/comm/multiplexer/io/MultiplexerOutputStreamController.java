@@ -20,6 +20,7 @@ package com.viaoa.comm.multiplexer.io;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Internally created by MultiplexerSocketController to manage the OutputStream for the "real" socket.
@@ -27,6 +28,7 @@ import java.io.IOException;
  * @author vvia
  */
 public class MultiplexerOutputStreamController {
+    private static Logger LOG = Logger.getLogger(MultiplexerOutputStreamController.class.getName());
 
     /** outputstream for "real" socket. */
     private DataOutputStream _dataOutputStream;
@@ -202,8 +204,8 @@ public class MultiplexerOutputStreamController {
      */
     private DataOutputStream getOutputStream() throws IOException {
         // long tsBegin = System.nanoTime(); // measurement
-        for (;;) {
-            synchronized (WRITELOCK) {
+        synchronized (WRITELOCK) {
+            for (;;) {
                 if (_bIsClosed) {
                     throw new IOException("real socket has been closed");
                 }
@@ -213,7 +215,7 @@ public class MultiplexerOutputStreamController {
                 }
                 try {
                     _writeLockWaitingCount++;
-                    WRITELOCK.wait();
+                    WRITELOCK.wait(250);
                 }
                 catch (InterruptedException e) {
                 }
@@ -247,7 +249,7 @@ public class MultiplexerOutputStreamController {
             }
             finally {
                 _bWritingLock = false;
-                WRITELOCK.notify();
+                WRITELOCK.notifyAll();
             }
         }
     }
