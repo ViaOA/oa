@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.remote.*;
 
 public class OASyncDelegate {
@@ -119,8 +120,19 @@ public class OASyncDelegate {
         return x;
     }
 
+    public static boolean sendMessages() {
+        return OARemoteThreadDelegate.sendMessages();
+    }
     public static boolean sendMessages(boolean b) {
         return OARemoteThreadDelegate.sendMessages(b);
     }
-        
+    public static boolean isRemoteThread() {
+        return OARemoteThreadDelegate.isRemoteThread();
+    }
+    public static boolean shouldSendMessages() {
+        return OARemoteThreadDelegate.shouldSendMessages();
+    }
+    public static RequestInfo getRequestInfo() {
+        return OARemoteThreadDelegate.getRequestInfo();
+    }
 }

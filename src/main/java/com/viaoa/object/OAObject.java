@@ -816,5 +816,21 @@ public class OAObject implements java.io.Serializable, Comparable {
         }
         return true;
     }
+
+
+    public void loadReferences(boolean bIncludeCalc) {
+        OAObjectReflectDelegate.loadAllReferences(this, bIncludeCalc);
+    }
+    public void loadReferences(boolean bOne, boolean bMany, boolean bIncludeCalc) {
+        OAObjectReflectDelegate.loadAllReferences(this, bOne, bMany, bIncludeCalc); 
+    }
+    public void loadReferences(int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc) {
+        OAObjectReflectDelegate.loadAllReferences(this, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc);
+    }
+
+    
+    
 }
+
+
 
