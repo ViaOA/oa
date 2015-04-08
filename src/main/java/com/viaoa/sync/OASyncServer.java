@@ -63,7 +63,7 @@ public class OASyncServer {
     /** used to log requests to a log file */
     private ArrayBlockingQueue<RequestInfo> queRemoteRequestLogging;
 
-    private ConcurrentHashMap<Integer, ClientInfoExt> hmClientInfoExt = new ConcurrentHashMap<Integer, OASyncServer.ClientInfoExt>();
+    private ConcurrentHashMap<Integer, ClientInfoExt> hmClientInfoExt = new ConcurrentHashMap<Integer, ClientInfoExt>();
 
     // for this server instance
     private ServerInfo serverInfo;
@@ -382,13 +382,13 @@ public class OASyncServer {
             };
             
             // register remote objects
-            getRemoteMultiplexerServer().createLookup(ServerLookupName, getRemoteServer(), RemoteServerInterface.class, SyncQueueName, QueueSize); 
+            remoteMultiplexerServer.createLookup(ServerLookupName, getRemoteServer(), RemoteServerInterface.class, SyncQueueName, QueueSize); 
 
-            RemoteSyncInterface rsi = (RemoteSyncInterface) getRemoteMultiplexerServer().createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
+            RemoteSyncInterface rsi = (RemoteSyncInterface) remoteMultiplexerServer.createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
             OASyncDelegate.setRemoteSync(rsi);
             
             // have RemoteClient objects use sync queue
-            //getRemoteMultiplexerServer().registerClassWithQueue(RemoteClientInterface.class, SyncQueueName, QueueSize);            
+            // remoteMultiplexerServer.registerClassWithQueue(RemoteClientInterface.class, SyncQueueName, QueueSize);            
         }
         return remoteMultiplexerServer;
     }

@@ -108,13 +108,15 @@ public class OAObject implements java.io.Serializable, Comparable {
     
     public static final int version = 1504060;  
     static {
+        /*
         Properties props = System.getProperties();
-        
         System.out.println("OA version 3.6.0-SNAPSHOT_" + version + " ViaOA, all rights reserved");
         System.out.println(String.format("Java version=%s, name=%s", 
                 System.getProperty("java.version"), 
                 System.getProperty("java.vm.name")
         ));
+        */
+        System.out.println("OA_" + version);
     }
     
     

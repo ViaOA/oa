@@ -115,7 +115,7 @@ public class MultiplexerClient {
 
         _controlSocket = new MultiplexerSocketController(_socket) {
             protected void onSocketException(Exception e) {
-                if (!_controlSocket.wasCloseAlreadyCalled()) {
+                if (_controlSocket != null && !_controlSocket.wasCloseAlreadyCalled()) {
                     MultiplexerClient.this.onSocketException(e);
                 }
                 try {

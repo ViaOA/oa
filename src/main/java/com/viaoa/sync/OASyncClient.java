@@ -638,23 +638,22 @@ public class OASyncClient {
     private boolean bThreadCountWarning;
     /** allows remote method calls to GSMR server. */
     public RemoteMultiplexerClient getRemoteMultiplexerClient() {
-        if (remoteMultiplexerClient == null) { 
-            remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient()) {
-                @Override
-                protected void onRemoteThreadCreated(int threadCount) {
-                    getClientInfo().setRemoteThreadCount(threadCount);
-                    super.onRemoteThreadCreated(threadCount);
-                    if (threadCount == MAX_ThreadCount && !bThreadCountWarning) {
-                        String s = OALogUtil.getThreadDump();
-                        LOG.warning("RemoteThread count == "+MAX_ThreadCount+"\n"+s);
-                        bThreadCountWarning = true;
-                    }
-                    if (threadCount >= MAX_ThreadCount) {
-                        onRemoteThreadCountExceeded();
-                    }
-                }                
-            };
-        }
+        if (remoteMultiplexerClient != null) return remoteMultiplexerClient; 
+        remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient()) {
+            @Override
+            protected void onRemoteThreadCreated(int threadCount) {
+                getClientInfo().setRemoteThreadCount(threadCount);
+                super.onRemoteThreadCreated(threadCount);
+                if (threadCount == MAX_ThreadCount && !bThreadCountWarning) {
+                    String s = OALogUtil.getThreadDump();
+                    LOG.warning("RemoteThread count == "+MAX_ThreadCount+"\n"+s);
+                    bThreadCountWarning = true;
+                }
+                if (threadCount >= MAX_ThreadCount) {
+                    onRemoteThreadCountExceeded();
+                }
+            }                
+        };
         return remoteMultiplexerClient;
     }
     public int getConnectionId() {

@@ -135,4 +135,13 @@ public class OASyncDelegate {
     public static RequestInfo getRequestInfo() {
         return OARemoteThreadDelegate.getRequestInfo();
     }
+    /**
+     * If the current thread is processing a remote request, then this
+     * will return the connection Id of the client.  If not, then -1 is returned.
+     */
+    public static int getRequestConnectionId() {
+        RequestInfo ri = OARemoteThreadDelegate.getRequestInfo();
+        if (ri == null) return -1;
+        return ri.connectionId;
+    }
 }
