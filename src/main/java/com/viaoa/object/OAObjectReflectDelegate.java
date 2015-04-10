@@ -1136,18 +1136,27 @@ public class OAObjectReflectDelegate {
      */
     public static Object getReferenceObject(OAObject oaObj, String linkPropertyName) {
         Object objOriginal = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
-        if (objOriginal == null) return null;
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
+
+        if (objOriginal == null) {
+            if (!li.getAutoCreateNew() && !li.getCalculated()) return null;
+        }
 
         boolean bDidNotExist = (objOriginal == OANotExist.instance);
         if (bDidNotExist) {
             objOriginal = null;
         }
+        else if (objOriginal == null) {
+            if (!li.getAutoCreateNew() && !li.getCalculated()) {
+                return null;
+            }            
+        }
         else if (!(objOriginal instanceof OAObjectKey)) {
             return objOriginal; // found it
         }
 
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-        OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
 
         Object result = null;
         try {
@@ -1176,7 +1185,10 @@ public class OAObjectReflectDelegate {
 
         if (!(obj instanceof OAObjectKey)) {
             if (obj != OANotExist.instance) {
-                return obj; // found it
+                if (obj != null) return obj;
+                if (!li.getAutoCreateNew() && !li.getCalculated()) {
+                    return obj; // found it
+                }
             }
 
             // =null.  check to see if it is One2One, and if a select must be used to get the object.

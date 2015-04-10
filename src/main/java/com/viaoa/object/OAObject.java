@@ -774,8 +774,20 @@ public class OAObject implements java.io.Serializable, Comparable {
     public static boolean isServer() {
         return OASyncDelegate.isServer();
     }
+    /**
+     * All OASync messages will be processed by an OARemoteThread.
+     */
     public static boolean isRemoteThread() {
         return OARemoteThreadDelegate.isRemoteThread();
+    }
+    /**
+     * This is used to send out OASync messages, even if the currentThread is a OARemoteThread.
+     */
+    public static boolean sendMessages(boolean b) {
+        return OARemoteThreadDelegate.sendMessages(b);
+    }
+    public static boolean sendMessages() {
+        return OARemoteThreadDelegate.sendMessages(true);
     }
     
    
