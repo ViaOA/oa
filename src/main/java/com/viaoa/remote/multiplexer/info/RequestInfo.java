@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
 
 /**
- * This is used to track and capture information for each request.
+ * This is used to track and capture information for each sync request that is being processed.
  * @author vvia
  */
 public class RequestInfo {

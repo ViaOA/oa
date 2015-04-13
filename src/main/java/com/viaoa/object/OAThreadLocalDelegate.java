@@ -18,7 +18,6 @@ All rights reserved.
 package com.viaoa.object;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
@@ -32,9 +31,8 @@ import com.viaoa.util.OAArray;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.Tuple;
 
-
 /**
- * Delegate class used to store information about a thread. 
+ * Delegate class used to store information about the local thread. 
  * This is used internally throughout OA to set specific features for a thread.
  * 
  * Note: it is important to make sure to call the corresponding reverse value, so that the flags and counters will be unset and 

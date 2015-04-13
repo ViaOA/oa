@@ -57,6 +57,11 @@ import com.viaoa.util.OANotExist;
 
 import static com.viaoa.sync.OASyncServer.*;
 
+/**
+ * Used to connect to OASyncServer and setup OASync.
+ * @author vvia
+ * @see OASync
+ */
 public class OASyncClient {
     protected static Logger LOG = Logger.getLogger(OASyncClient.class.getName());
 

@@ -44,6 +44,7 @@ import com.viaoa.util.*;
  * Server used to work with 1+ OASyncClients so that all OAObjects stay in sync.
  * This allows OASyncClients to connect and lookup remote objects and have a server side session.
  * @author vvia
+ * @see OASync
  */
 public class OASyncServer {
     private static Logger LOG = Logger.getLogger(OASyncServer.class.getName());

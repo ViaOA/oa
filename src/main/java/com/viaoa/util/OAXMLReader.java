@@ -278,7 +278,7 @@ public class OAXMLReader extends DefaultHandler {
                 }
             }
             catch (Exception e) {
-                throw new SAXException("cant find class "+eName+" Error:"+e);
+                throw new SAXException("cant find class "+eName+" Error: "+e);
             }
 
             

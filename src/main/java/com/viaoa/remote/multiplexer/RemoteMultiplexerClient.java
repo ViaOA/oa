@@ -23,12 +23,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +41,10 @@ import com.viaoa.util.OAPool;
 import com.viaoa.util.OAReflect;
 
 
-// use this for debugging, so that remote methods wont timeout while debugging:  MultiplexerClient.DEBUG = true;
+/*** DEBUGing 
+ *  use this for debugging, so that remote methods wont timeout while debugging:  
+ *      MultiplexerClient.DEBUG = true;
+ */
 
 
 /**
@@ -63,6 +60,9 @@ import com.viaoa.util.OAReflect;
  * 
  * Example: get a remote object "A" from server call method "a.test(argX)", where arg is a RemoteClass -
  * the server will then be able to call methods on argX.
+ *
+ * Note:
+ * OARemoteThread is used to process requests. 
  * 
  * @author vvia
  */

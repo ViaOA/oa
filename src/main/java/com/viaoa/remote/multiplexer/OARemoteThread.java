@@ -22,9 +22,7 @@ import java.util.logging.Logger;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 
 /**
- * Threads that process remote broadcast messages from queue.
- * Since they are broadcast and all other clients will get the same
- * message, then by default any changes will not send out events.
+ * Thread that is used to process all remote method calls.
  * @author vvia
  */
 public class OARemoteThread extends Thread {
@@ -72,6 +70,14 @@ public class OARemoteThread extends Thread {
         return startedNextThread;
     }
     
+    /**
+     * Any OAsync changes (OAObject/Hub) that are made within an OARemoteThread will not be broadcast to
+     * other computers, since they will also be processing the same originating message.
+     * 
+     * This can be set to true, so that any OASync changes will be sent out.  This is useful when 
+     * an event listener will only run on the server, and any sync changes will then be sent to others. 
+     * False by default.
+     */
     public void setSendMessages(boolean b) {
         if (b) sendMessageCount++;
         else sendMessageCount--;
@@ -79,13 +85,20 @@ public class OARemoteThread extends Thread {
     public boolean getSendMessages() {
         return sendMessageCount > 0;
     }
+    /**
+     * Flag to know if this thread is waiting on a lock set by OATreadLocalDelegate.
+     * @param b
+     */
     public void setWaitingOnLock(boolean b) {
         watingOnLock = b;
     }
     public boolean isWaitingOnLock() {
         return watingOnLock;
     }
-    
+
+    /**
+     * called before processing the next OASync message.
+     */
     public void reset() {
         // sendMessages = false;
         sendMessageCount = 0;
