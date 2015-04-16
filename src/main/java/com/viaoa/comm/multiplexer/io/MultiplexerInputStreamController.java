@@ -220,10 +220,10 @@ public abstract class MultiplexerInputStreamController {
                     return readAmt;
                 }
                 try {
-                    if (vs.isClosed()) {
+                    if (this._bIsClosed || vs.isClosed()) {
                         throw new IOException("socket has been closed");
                     }
-                    vs._lockObject.wait();
+                    vs._lockObject.wait(1000);
                 }
                 catch (InterruptedException e) {
                     // ignore
