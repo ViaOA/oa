@@ -10,8 +10,8 @@
     ;      separates formats.
     -      default negative prefix.
     %      multiply by 100 and show as percentage
-    (\u2030) ‰ multiply by 1000 and show as per mille
-    (\u00A4) ¤ currency sign; replaced by currency symbol; if
+    (\u2030) ï¿½ multiply by 1000 and show as per mille
+    (\u00A4) ï¿½ currency sign; replaced by currency symbol; if
             doubled, replaced by international currency symbol.
             If present in a pattern, the monetary decimal separator
             is used instead of the decimal separator.
@@ -113,6 +113,12 @@ System.out.printf("total files=%,d, total socketMessages=%,d, Total time=%,d sec
 
 
 Format ==========
+
+example:
+    String msg = String.format("%1$tm/%1$td/%1$tY %1$tH:%1$tM:%1$tS.%1$tL", new Date(System.currentTimeMillis()));
+
+
+
 %[argument_index$][flags][width][.precision]conversion
 
 The optional argument_index is a decimal integer indicating the position of the argument in the argument list. 
