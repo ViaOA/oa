@@ -67,7 +67,15 @@
             }
         });
         
-        Object objx = future.get(secondsTimeout, TimeUnit.SECONDS);
+        try {
+            Object objx = future.get(secondsTimeout, TimeUnit.SECONDS);
+        }
+        catch (TimeoutException e) {
+            
+        }
+        catch (ExecutionException e) {
+            
+        }
     
     
     ...
@@ -91,6 +99,11 @@
         }
     
     
+xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+
+
     
     
     
