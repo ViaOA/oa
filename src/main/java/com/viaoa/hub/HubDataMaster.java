@@ -57,6 +57,9 @@ class HubDataMaster implements java.io.Serializable {
         if (rli == null) return null; 
         return rli.getUniquePropertyGetMethod();
     }
+    /**
+     * True if there is a masterObject and it is not a calculated Hub.
+     */
     public boolean getTrackChanges() {
         if (masterObject == null) return false;
         if (liDetailToMaster == null) return true;

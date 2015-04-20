@@ -56,20 +56,38 @@ public class HubDataDelegate {
 	}
 
 	protected static void setChanged(Hub thisHub, boolean b) {
+	    if (thisHub == null) return;
         boolean old = thisHub.data.changed;
+        if (b == old) return;
         thisHub.data.changed = b;
         if (b != old) thisHub.data.changeCount++;
         if (!b) {
-        	synchronized (thisHub.data) {
-        	    Vector v = thisHub.data.getVecAdd(); 
-                if (v != null) {
-                    v.removeAllElements();
-                }
-                v = thisHub.data.getVecRemove(); 
-        		if (v != null) v.removeAllElements();
-        	}
+            clearHubChanges(thisHub);
         }
     }
+	
+    // 20150420
+	public static void clearHubChanges(Hub thisHub) {
+	    if (thisHub == null) return;
+        boolean bSendEvent = false;
+        synchronized (thisHub.data) {
+            Vector v = thisHub.data.getVecAdd(); 
+            if (v != null) {
+                bSendEvent = v.size() > 0;
+                v.removeAllElements();
+            }
+            v = thisHub.data.getVecRemove(); 
+            if (v != null) {
+                bSendEvent = bSendEvent || v.size() > 0;
+                v.removeAllElements();
+            }
+        }
+        if (bSendEvent) {
+            HubCSDelegate.clearHubChanges(thisHub);
+        }
+	}
+	
+	
     protected static void copyInto(Hub thisHub, Object anArray[]) {
         synchronized (thisHub.data) {
             thisHub.data.vector.copyInto(anArray);
@@ -132,7 +150,7 @@ public class HubDataDelegate {
         }
 
 	    if (pos >= 0) {
-	    	if (!thisHub.isLoading() && (thisHub.data.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
+	    	if (!thisHub.isLoading() && (thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
 	            if (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().removeElement(obj)) {
 	                // no-op
 	            }

@@ -20,6 +20,7 @@ package com.viaoa.sync;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.remote.*;
@@ -218,6 +219,15 @@ public class OASyncDelegate {
     public static boolean shouldSendMessages() {
         return OARemoteThreadDelegate.shouldSendMessages();
     }
+    
+    public static void setSuppressCSMessages(boolean b) {
+        OAThreadLocalDelegate.setSuppressCSMessages(b);
+    }
+    public static boolean getSuppressCSMessages() {
+        return OAThreadLocalDelegate.isSuppressCSMessages();
+    }
+
+    
     /**
      * If the current thread is an OARemoteThread, then this will return information about the currently processed
      * sync message. 

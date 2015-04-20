@@ -296,6 +296,11 @@ public class HubData implements java.io.Serializable {
     }
 
 
+    /**
+     * Used to have Hub add/removes tracked.  By default, this is false.
+     * @see HubDataMaster#getTrackChanges()
+     * @return
+     */
     public boolean getTrackChanges() {
         if (hubDatax == null) return false;
         return hubDatax.bTrackChanges;

@@ -40,6 +40,8 @@ public interface RemoteSyncInterface {
 
     boolean delete(Class objectClass, OAObjectKey objectKey);
     
+    void clearHubChanges(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName);
+    
     // moved to remoteClient so that it will be performed on the server
     // boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName);
 }

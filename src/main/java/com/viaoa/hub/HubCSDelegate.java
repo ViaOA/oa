@@ -277,5 +277,38 @@ public class HubCSDelegate {
         rs.deleteAll(master.getClass(), master.getObjectKey(), prop);
         return false;
     }
+    
+    // 20150420
+    /**
+     * Hub hubData.vecAdd/Remove cleared on clients
+     */
+    public static boolean clearHubChanges(Hub thisHub) {
+        if (thisHub == null) return false;
+        if (OASync.isSingleUser()) return false;
+        if (!OASync.shouldSendMessages()) return  false;
+        if (OASync.getSuppressCSMessages()) return false;
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.getObjectClass());
+        if (oi.getLocalOnly()) return false;
+
+        OALinkInfo li = thisHub.datam.liDetailToMaster;
+        if (li != null) {
+            OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+            if (liRev != null && liRev.getCalculated()) return false;
+        }
+
+        if (!(thisHub.datam.masterObject instanceof OAObject)) return false;
+        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.masterObject).getLocalOnly()) return false;
+
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
+        if (rs != null) {
+            rs.clearHubChanges(
+                thisHub.datam.masterObject.getClass(), 
+                thisHub.datam.masterObject.getObjectKey(), 
+                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub) 
+            );
+        }
+        return true;
+    }   
 }
 

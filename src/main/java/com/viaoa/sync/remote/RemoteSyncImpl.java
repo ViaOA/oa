@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.logging.Logger;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
@@ -198,4 +199,16 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         return (Hub) objx;
     }
 
+    // 20150420
+    @Override
+    public void clearHubChanges(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName) {
+        OAObject obj = getObject(masterObjectClass, masterObjectKey);
+        if (obj == null) return;
+        
+        Hub h = getHub(obj, hubPropertyName);
+        if (h == null) return;
+
+        HubDataDelegate.clearHubChanges(h);
+    }
 }
+
