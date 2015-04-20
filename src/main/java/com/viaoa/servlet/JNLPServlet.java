@@ -156,17 +156,28 @@ public class JNLPServlet extends HttpServlet
                 return true;
             }
         });
+        
+        // replace the main jar file name with the version that was installed.
+        // ex: "tsac-core.jar"  =>  "tsac-core-12.900.01.jar"
         if (files == null) return text;
         for (File f : files) {
             String fname = f.getName();
             int x = fname.length();
+            boolean bDash = false;
             for (int i=0; i<x; i++) {
                 char ch = fname.charAt(i);
-                if (!Character.isLetter(ch) && !Character.isDigit(ch)) {
-                    text = OAString.convert(text, "/lib/"+fname.substring(0, i)+".jar", "/"+jarDirName+"/"+fname);
-                    text = OAString.convert(text, "/jar/"+fname.substring(0, i)+".jar", "/"+jarDirName+"/"+fname);
-                    break;
+                if (!bDash) {
+                    if (ch == '-') bDash = true;
+                    continue;
                 }
+                if (!Character.isDigit(ch)) {
+                    bDash = false;
+                    continue;
+                }
+                
+                text = OAString.convert(text, "/lib/"+fname.substring(0, i-1)+".jar", "/"+jarDirName+"/"+fname);
+                text = OAString.convert(text, "/jar/"+fname.substring(0, i-1)+".jar", "/"+jarDirName+"/"+fname);
+                break;
             }
         }
         return text;

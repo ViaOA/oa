@@ -83,6 +83,9 @@ public class RemoteSyncTest extends OAUnitTest {
             public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj) {
                 return false;
             }
+            @Override
+            public void clearHubChanges(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName) {
+            }
         };
         return rsi;
     }
