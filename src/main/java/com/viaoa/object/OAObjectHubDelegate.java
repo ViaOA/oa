@@ -176,7 +176,7 @@ public class OAObjectHubDelegate {
                 // 20141201 add !bIsOnHubFinalize so that if it is from a Hub finalize, then dont 
                 //    use the finalizer thread to send msg to server.
                 if (!isInHubWithMaster(oaObj)) {
-                    if (OARemoteThreadDelegate.shouldSendMessages()) {
+                    if (OARemoteThreadDelegate.shouldSendMessages() && !oaObj.isDeleted()) {
                         // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added
                         // to a hub. Need to add to cache now that it is no longer in a hub.
                         OAObjectCSDelegate.addToServerSideCache(oaObj);

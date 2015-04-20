@@ -906,7 +906,7 @@ public class RemoteMultiplexerClient {
             OARemoteThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
                 t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(ri)
-                if (RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
+                if (ri.bind != null && RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
                     // sync broadcast
                     for ( ; t.requestInfo != null && !ri.methodInvoked; ) {
                         t.Lock.wait();
