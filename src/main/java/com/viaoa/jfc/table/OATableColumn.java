@@ -97,6 +97,10 @@ public class OATableColumn {
     // 2006/10/12
     TableCellRenderer headerRenderer;
 
+    public TableColumn getTableColumn() {
+        return tc;
+    }
+    
     public void setupTableColumn() {
         if (tc != null && headerRenderer == null) {
             headerRenderer = tc.getHeaderRenderer();
@@ -272,6 +276,11 @@ public class OATableColumn {
             else {
                 // obj = "Invalid";
             }
+        }
+        else if ((path == null || path.length()==0) && table.getSelectHub() != null) {
+            // see if it is in the select hub
+            Hub h = table.getSelectHub();
+            obj = h.contains(obj); 
         }
         else {
             obj = OAReflect.getPropertyValue(obj, ms);

@@ -63,17 +63,20 @@ public class HubSortDelegate {
     private static void _sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         boolean bSame = false;
+        HubSortListener hsl = thisHub.data.getSortListener();
         if (propertyPaths == thisHub.data.getSortProperty() || (propertyPaths != null && propertyPaths.equalsIgnoreCase(thisHub.data.getSortProperty()))) {
             if (bAscending == thisHub.data.isSortAsc()) {
-                if (comp == null || comp == thisHub.data.getSortListener().comparator) {
-                    bSame = true;
+                if (comp == null) {
+                    if (hsl != null && comp == hsl.comparator) {
+                        bSame = true;
+                    }
                 }
             }
         }
         
-        if (thisHub.data.getSortListener() != null) {
+        if (hsl != null) {
             if (bSame) return;
-            thisHub.data.getSortListener().close();
+            hsl.close();
             thisHub.data.setSortListener(null);
         }
         else {

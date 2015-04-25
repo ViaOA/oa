@@ -31,6 +31,10 @@ import java.awt.dnd.*;
 import java.awt.event.*;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +64,8 @@ import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.object.OAObject;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.util.OAArray;
+import com.viaoa.util.OACompare;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAReflect;
@@ -186,7 +192,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // AUTO_RESIZE_LAST_COLUMN
         getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        
         setDoubleBuffered(true);
         setPreferredScrollableViewportSize(new Dimension(150,100));
         setAutoCreateColumnsFromModel(false);
@@ -240,10 +246,12 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
     
     public String getToolTipText(int row, int col, String defaultValue) {
+        /*
         OATable t = getRightTable();
         if (t != this && t != null) {
             return t.getToolTipText(row, col, defaultValue);
         }
+        */
         // 20110905
         if (col >= 0 && col < columns.size()) {
             OATableColumn tc = (OATableColumn) columns.elementAt(col);
@@ -292,35 +300,86 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         OATableColumn[] allColumns = getAllTableColumns();
         
         int x = allColumns.length;
+        OATableColumn colHubSelect = null;
+        
+        final ArrayList<OATableColumn> alSelectedColumns = new ArrayList<OATableColumn>(); 
+        
         for (int i=1; ; i++) {
             boolean b = false;
             for (int j=0; j<x; j++) {
                 OATableColumn col = allColumns[j];
                 col.getMethods(this.hub);  // make sure that path has been set up correctly, to match to table.hub
                 if (col.sortOrder == i) {
+                    alSelectedColumns.add(col);
                     if (OAString.isEmpty(col.path)) {
-                        if (s == null) s = col.pathIntValue;
-                        else s += ", " + col.pathIntValue;
+                        if (!OAString.isEmpty(col.pathIntValue)) {
+                            if (s == null) s = col.pathIntValue;
+                            else s += ", " + col.pathIntValue;
+                            if (col.sortDesc) s += " DESC";
+                        }
+                        else {
+                            if (hubSelect != null) {
+                                colHubSelect = col;
+                            }
+                        }
                     }
                     else {
                         if (s == null) s = col.path;
                         else s += ", " + col.path;
+                        if (col.sortDesc) s += " DESC";
                     }
-                    if (col.sortDesc) s += " DESC";
                     b = true;
                 }
             }
             if (!b) break;
         }
-        if (s != null) {
+
+        final Object[] objs = new Object[hubSelect==null?0:hubSelect.getSize()];
+        if (hubSelect != null) {
+            hubSelect.copyInto(objs);
+        }
+        
+        if (colHubSelect != null) {
+            final OATableColumn tcSelect = colHubSelect;
+            hub.sort(new Comparator() {
+                @Override
+                public int compare(Object o1, Object o2) {
+                    if (o1 == o2) return 0;
+                    int x = 0;
+                    for (OATableColumn col : alSelectedColumns) {
+                        
+                        Object z1 = col.getValue(hub, o1);
+                        Object z2 = col.getValue(hub, o2);
+                        
+                        x = OACompare.compare(z1, z2);
+                        if (x != 0) {
+                            if (col.sortDesc) x *= -1; 
+                            if (col == tcSelect) x *= -1;
+                            break;
+                        }
+                    }
+                    return x;
+                }
+            });
+        }
+        else if (s != null) {
             hub.sort(s);
         }
         else {
             hub.cancelSort();
         }
+        
+        if (hubSelect != null) {
+            getSelectionModel().clearSelection();
+            hubSelect.clear();
+            for (Object obj : objs) {
+                hubSelect.add(obj);
+            }
+        }
+        
         // reset AO
         // 20111008  add if
-        if (hub.getAO() != null) {
+        if (hub.getAO() != null && hubSelect == null) {
             HubAODelegate.setActiveObjectForce(hub, hub.getAO());
         }
     }
@@ -575,7 +634,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         hubAdapter.setSelectHub(hubSelect);
     }
     /**
-        Seperate Hub that can contain selected objects.
+        Separate Hub that can contain selected objects.
         This will allow for a multi-select table.
     */
     public Hub getSelectHub() {
@@ -907,6 +966,73 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             if (oaTableModel != null) oaTableModel.fireTableStructureChanged();
         }
     }
+    
+
+    // 20150423
+    /**
+     * Add a column that will that will use checkboxes to show selected rows.
+     * @param hubSelect
+     * @param heading
+     * @param width
+     */
+    public void addSelectionColumn(Hub hubSelect, String heading, int width) {
+        if (hubSelect == null) return;
+        setSelectHub(hubSelect);
+        chkSelection = new OACheckBox(hub, hubSelect) {
+            @Override
+            public String getToolTipText(int row, int col, String defaultValue) {
+                Object obj = hub.getAt(row);
+                if (obj == null || OATable.this.hubSelect == null) {
+                    return super.getToolTipText(row, col, defaultValue);
+                }
+                int pos = OATable.this.hubSelect.getPos(obj);
+                if (pos < 0) return OATable.this.hubSelect.getSize()+" selected";
+                return (pos+1) + " of " + OATable.this.hubSelect.getSize()+" selected";
+            }
+        };
+        chkSelection.setToolTipText(" ");
+        chkSelection.setTableHeading(heading);
+        OATableColumn tc = addColumn(heading, width, chkSelection);
+        
+        
+    }
+    
+    protected OACheckBox chkSelection;
+    
+    // 20150423
+    @Override
+    public void changeSelection(int rowIndex, int columnIndex, boolean toggleUsingControlKey, boolean extendUsingShiftKey) {
+        // extendUsingShiftKey=true if its a mouse drag
+
+        if (chkSelection == null && joinedTable != null) {
+            chkSelection = joinedTable.chkSelection;
+        }
+        
+        if (chkSelection != null && hubSelect != null) {
+            
+            if (extendUsingShiftKey) {
+                if (bIsMouseDragging) {
+                    if (lastMouseDragRow < 0) {
+                        lastMouseDragRow = rowIndex;
+                        return; // ignore right now
+                    }
+                    if (rowIndex == lastMouseDragRow) return;
+                    getSelectionModel().addSelectionInterval(lastMouseDragRow, lastMouseDragRow);
+                }
+            }
+            
+            if (columnIndex == getColumnIndex(chkSelection)) {
+                if (!extendUsingShiftKey) toggleUsingControlKey = true;
+            }
+            else {
+                if (!extendUsingShiftKey && hubSelect.getSize() > 0 && !toggleUsingControlKey) {
+                    toggleUsingControlKey = true;
+                }
+            }
+        }
+        super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
+    }                    
+    
     
     /**
         Create a new column using an OATableComponent.
@@ -1427,6 +1553,10 @@ obj = tc.getValue(hub, obj);
         return this.compPopupMenu;
     }
 
+    // 20150424
+    private int lastMouseDragRow = -1;
+    private boolean bIsMouseDragging;
+    
     /**
         Capture double click and call double click button.
         @see #getDoubleClickButton
@@ -1434,6 +1564,11 @@ obj = tc.getValue(hub, obj);
     @Override
     protected void processMouseEvent(MouseEvent e) {
 
+        if (e.getID() == MouseEvent.MOUSE_RELEASED) {
+            lastMouseDragRow = -1;
+            bIsMouseDragging = false;
+        }
+        
         if (compPopupMenu != null) {
             if (e.getID() == MouseEvent.MOUSE_RELEASED) {
                 if ( (e.getModifiers() & Event.META_MASK) != 0) {
@@ -1441,10 +1576,13 @@ obj = tc.getValue(hub, obj);
                         Point pt = e.getPoint();
                         int row = rowAtPoint(pt);
          
+                        hub.setPos(row);
+                        /*
                         ListSelectionModel lsm = getSelectionModel();
                         if (!lsm.isSelectedIndex(row)) {
                             getSelectionModel().setSelectionInterval(row, row);
                         }
+                        */
                         compPopupMenu.show(this, pt.x, pt.y);
                     }
                 }
@@ -1467,6 +1605,7 @@ obj = tc.getValue(hub, obj);
         super.processMouseEvent(e);
     }
 
+    
     @Override
     protected void processMouseMotionEvent(MouseEvent e) {
         if (e.getID() == MouseEvent.MOUSE_MOVED) {
@@ -1474,6 +1613,10 @@ obj = tc.getValue(hub, obj);
             int col = columnAtPoint(e.getPoint());
             onMouseOver(row, col, e);
         }
+        else if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
+            bIsMouseDragging = true;
+        }
+        
         super.processMouseMotionEvent(e);
     }
     
@@ -1957,7 +2100,33 @@ obj = tc.getValue(hub, obj);
     protected void setJoinedTable(OATable table, boolean bLeftJoinedTable) {
         this.joinedTable = table;
         this.bLeftJoinedTable = bLeftJoinedTable;
+        if (chkSelection != null) {
+            joinedTable.chkSelection = chkSelection;
+        }
+        else {
+            this.chkSelection = joinedTable.chkSelection;
+        }
+        
+        if (!bLeftJoinedTable) return;
+        
+        setSelectHub(joinedTable.hubSelect);
+        
+        // fixedTable.setModel( mainTable.getModel() );
+        setSelectionModel(table.getSelectionModel() );
+
+        setAllowDrag(table.getAllowDrag());
+        setAllowDrop(table.getAllowDrop());
+        setAllowSorting(table.getAllowSorting());
+        setDoubleClickButton(table.getDoubleClickButton());
+
+        setComponentPopupMenu(table.getMyComponentPopupMenu());
+        
+        /*
+        getTableHeader().setResizingAllowed(false);
+        getTableHeader().setReorderingAllowed(false);
+        */
     }
+    
     // if used with OATableScrollPane, this will return the left table.
     public OATable getLeftTable() {
         if (bLeftJoinedTable) return this;
@@ -2196,6 +2365,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     
     protected void setSelectHub(Hub hubSelect) {
         if (this.hubSelect == hubSelect) return;
+        
         if (this.hubSelect != null && hlSelect != null) {
             this.hubSelect.removeHubListener(hlSelect);
             hlSelect = null;
@@ -2207,8 +2377,11 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             public @Override void afterAdd(HubEvent e) {
                 Object obj = e.getObject();
                 if (obj == null || hub == null) return;
+                // 20150424
+                if (table.chkSelection != null) table.repaint();
                 if (getRunningValueChanged()) return;
                 int pos = hub.getPos(obj);
+                hub.setPos(pos);
                 if (pos >= 0) {
                     _bIgnoreValueChanged = true;
                     ListSelectionModel lsm = table.getSelectionModel();
@@ -2220,6 +2393,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 afterAdd(e);
             }
             public @Override void afterRemove(HubEvent e) {
+                if (table.chkSelection != null) table.repaint();
                 if (getRunningValueChanged()) return;
                 int pos = HubDataDelegate.getPos(hub, e.getObject(), false, false);
                 // int pos = hub.getPos(e.getObject());
@@ -2232,12 +2406,13 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
             public @Override void onNewList(HubEvent e) {
                 rebuildListSelectionModel();
+                if (table.chkSelection != null) table.repaint();
             }
         };
         hubSelect.addHubListener(hlSelect);
         rebuildListSelectionModel();
     }
-    private void rebuildListSelectionModel() {
+    protected void rebuildListSelectionModel() {
         ListSelectionModel lsm = table.getSelectionModel();
         _bIgnoreValueChanged = true;
         lsm.clearSelection();
@@ -2276,39 +2451,29 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         if (getIgnoreValueChanged()) {
             return;
         }
-        
-        int row = table.getSelectedRow();
-        if (row < 0 || !table.getSelectionModel().isSelectedIndex(row)) {
-            return;
-        }
 
+        int row1 = e.getFirstIndex();
+        int row2 = e.getLastIndex();
+        if (row2 < 0) row2 = row1;
+        
         _bRunningValueChanged = true;
-        getHub().setActiveObject(row);
 
         if (hubSelect != null) {
-            int p1 = e.getFirstIndex();
-            int p2 = e.getLastIndex();
             ListSelectionModel lsm = table.getSelectionModel();
-            int beginAdd = hubSelect.getSize();
-            for (int i=p1; i<=p2; i++) {
-                if (!lsm.isSelectedIndex(i)) continue;
+
+            for (int i=row1; i<=row2; i++) {
                 Object obj = table.hub.elementAt(i);
                 if (obj == null) continue;
-                if (!hubSelect.contains(obj)) {
+                if (!lsm.isSelectedIndex(i)) {
+                    hubSelect.remove(obj);
+                }
+                else if (!hubSelect.contains(obj)) {
                     hubSelect.add(obj);
                 }
             }
-            // remove all objects in hubSelect that are no longer selected
-            for (int i=0; i<beginAdd ;i++) {
-                Object obj = hubSelect.getAt(i);
-                if (obj == null) break;
-                int pos = hub.getPos(obj);
-                if (lsm.isSelectedIndex(pos)) continue;
-                hubSelect.removeAt(i);
-                i--;
-            }
         }
         else {
+            int row = table.getSelectedRow();
             int pos = getHub().getPos();
             if (pos != row) {  // if the hub.pos is not the same, set it back
                 _bRunningValueChanged = false;
@@ -2397,6 +2562,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
         }
         else {
+/** 20150424 dont do anything            
             if (table.hubSelect.getSize() == 1) {
                 int x = HubDataDelegate.getPos(hub, table.hubSelect.getAt(0), false, false);
                 // was: int x = hub.getPos(table.hubSelect.getAt(0));
@@ -2411,6 +2577,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
             if (row >= 0) table.hubSelect.add(e.getObject());
             // rebuildListSelectionModel();
+*/
         }
     }
 
@@ -2466,7 +2633,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             
         }
         _bIgnoreValueChanged = false;
-
     }
 
     public @Override void afterPropertyChange(HubEvent e) {

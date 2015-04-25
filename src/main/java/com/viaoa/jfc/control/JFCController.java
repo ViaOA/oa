@@ -656,6 +656,13 @@ public class JFCController extends HubListenerAdapter {
      * @param obj object from actual hub
      */
     public Object getPropertyPathValue(Object obj) {
+
+        // 20150424 if using hubSelect only (no propPath), checkBox select column for table
+        if (methodsFromActualHub == null || methodsFromActualHub.length == 0) {
+            if (hubMultiSelect != null) {
+                return hubMultiSelect.contains(obj);
+            }
+        }
         
         // 20140409
         if (bIsHubCalc) {
@@ -670,7 +677,14 @@ public class JFCController extends HubListenerAdapter {
     }
     public String getPropertyPathValueAsString(Object obj, String fmt) {
         if (obj == null) return null;
-        if (methodsFromActualHub == null || methodsFromActualHub.length == 0) return obj.toString();
+        if (methodsFromActualHub == null || methodsFromActualHub.length == 0) {
+            // 20150424 if using hubSelect only (no propPath), checkBox select column for table
+            if (hubMultiSelect != null) {
+                return hubMultiSelect.contains(obj)?"True":"False";
+            }
+            
+            return obj.toString();
+        }
         String s;
         // 20140409
         if (bIsHubCalc) {

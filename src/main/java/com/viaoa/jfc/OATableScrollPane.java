@@ -88,29 +88,16 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
             }
         });
 
-        // 20101229 need to have both tables aware of each other - for column sorting, arrow keys, etc.
-        fixedTable.setJoinedTable(mainTable, true);
-        mainTable.setJoinedTable(fixedTable, false);
-
         if (mainTable.getHub() != fixedTable.getHub()) {
             throw new RuntimeException("must use the same Hub for both main and fixed tables");
         }
         
         
-        // fixedTable.setModel( mainTable.getModel() );
-        fixedTable.setSelectionModel( mainTable.getSelectionModel() );
+        // 20101229 need to have both tables aware of each other - for column sorting, arrow keys, etc.
+        fixedTable.setJoinedTable(mainTable, true);
+        mainTable.setJoinedTable(fixedTable, false);
 
-        fixedTable.setAllowDrag(mainTable.getAllowDrag());
-        fixedTable.setAllowDrop(mainTable.getAllowDrop());
-        fixedTable.setAllowSorting(mainTable.getAllowSorting());
-        fixedTable.setDoubleClickButton(mainTable.getDoubleClickButton());
         
-        fixedTable.setComponentPopupMenu(mainTable.getMyComponentPopupMenu());
-
-        /*
-        fixed.getTableHeader().setResizingAllowed(false);
-        fixed.getTableHeader().setReorderingAllowed(false);
-         */
         
         for (int i = 0; i < fixedColumns; i++) {
             OATableColumn tc = (OATableColumn) mainTable.columns.get(0);
