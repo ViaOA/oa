@@ -204,6 +204,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         Class c = b.getClass();
         setSurrendersFocusOnKeystroke(true);
 
+        setIntercellSpacing(new Dimension(4,1));
+        
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE,this);
         dropTarget = new DropTarget(this,this);
         
@@ -726,17 +728,26 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         public Component getTableCellRendererComponent(JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column) {
             if (rend == null) return null;
-            
+
             column = convertColumnIndexToModel(column);
+            boolean bMouseOver = (row == mouseOverRow && column == mouseOverColumn);
+            
+            Component comp = rend.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            Component compOrig = comp;
+            
             OATable t = getRightTable();
             if (t != null) {
-                return t.getRenderer(table, value, isSelected, hasFocus, row, column);
+                comp = t.getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged(row,column), bMouseOver);
             }
-            t = getLeftTable();
-            if (t != null) {
-                column += t.getColumnCount();
+            else {
+                t = getLeftTable();
+                if (t != null) {
+                    column += t.getColumnCount();
+                }
+                comp = getRenderer(comp, table, value, isSelected, hasFocus, row, column,wasChanged(row,column), bMouseOver);
             }
-            return getRenderer(table, value, isSelected, hasFocus, row, column);
+            if (comp == null) comp = compOrig;
+            return comp;
         }
     }
     private MyTableCellRenderer myRend;
@@ -748,6 +759,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         @see #getRenderer This needs to be used instead of overwriting this method - especially with OATableScrollPane.
         @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean)
     */
+    @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
         // This will call MyTableCellRenderer.getTableCellRendererComponent(),
         //  which will then call OATable.getRenderer()
@@ -759,7 +771,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     // 20150315
-    protected ConcurrentHashMap<String, Long> hmColumnRowChanged;
+    protected ConcurrentHashMap<String, Long> hmRowColumnChanged;
     private boolean bShowChanges;
     private Timer timerShowChanges;
     private final Object lockShowChanges = new Object();
@@ -767,30 +779,41 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     /**
      * Flag to track changes to row,col (cells).
      */
-    public void setShowChanges(boolean b) {
+    public boolean getShowChanges() {
+        return bShowChanges;
+    }
+    public void setShowChanges(final boolean b) {
         synchronized (lockShowChanges) {
             bShowChanges = b;
             if (!b) {
-                hmColumnRowChanged = null;
+                hmRowColumnChanged = null;
                 if (timerShowChanges != null) {
                     timerShowChanges.stop();
                     timerShowChanges = null;
+                    hmRowColumnValue = null;
                 }
             }
-            else if (b && hmColumnRowChanged == null) {
-                hmColumnRowChanged = new ConcurrentHashMap<String, Long>();
+            else if (b && hmRowColumnChanged == null) {
+                hmRowColumnChanged = new ConcurrentHashMap<String, Long>();
                 
-                timerShowChanges = new Timer(100, new ActionListener() {
+                timerShowChanges = new Timer(25, new ActionListener() {
+                    int emptyCount;
                     public void actionPerformed(ActionEvent e) {
                         long tsNow = 0;
-                        for (Map.Entry<String, Long> entry : hmColumnRowChanged.entrySet()) {
-                            if (tsNow == 0) tsNow = System.currentTimeMillis();
-                            if (tsNow > entry.getValue().longValue()+100) hmColumnRowChanged.remove(entry.getKey());
+                        for (Map.Entry<String, Long> entry : hmRowColumnChanged.entrySet()) {
+                            if (tsNow == 0) {
+                                tsNow = System.currentTimeMillis();
+                            }
+                            if (tsNow > entry.getValue().longValue()+500) hmRowColumnChanged.remove(entry.getKey());
                         }
-                        if (tsNow > 0) OATable.this.repaint(100);
+                        if (tsNow > 0) OATable.this.repaint(250);
                         else {
-                            synchronized (OATable.this.lockShowChanges) {
-                                if (hmColumnRowChanged.size() == 0) timerShowChanges.stop();
+                            emptyCount++;
+                            if (emptyCount > 10) {
+                                emptyCount = 0;
+                                synchronized (OATable.this.lockShowChanges) {
+                                    if (hmRowColumnChanged.size() == 0) timerShowChanges.stop();
+                                }
                             }
                         }
                     }
@@ -798,15 +821,35 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 timerShowChanges.setRepeats(true);
             }
         }
+        if (tableLeft != null) tableLeft.setShowChanges(b);
     }
     public void setChanged(int row, int col) {
+        if (!bShowChanges) return;
         synchronized (lockShowChanges) {
-            if (!bShowChanges) return;
             if (!OARemoteThreadDelegate.isRemoteThread()) return;
-            hmColumnRowChanged.put(row+"."+col, System.currentTimeMillis());
+            hmRowColumnChanged.put(row+"."+col, System.currentTimeMillis());
             if (!timerShowChanges.isRunning()) {
                 timerShowChanges.start();
             }
+        }
+    }
+    protected ConcurrentHashMap<String, Object> hmRowColumnValue;
+    public void setChanged(int row, int col, final Object newValue) {
+        if (!bShowChanges) return;
+        ConcurrentHashMap<String, Object> hm = hmRowColumnValue;
+        if (hm == null) {
+            hm = new ConcurrentHashMap<String, Object>();
+            hmRowColumnValue = hm;
+        }
+if (col == 6) {
+    int xx=0;
+    xx++;//qqqqqqqqqqqqq
+}
+        String k = row+"."+col;
+        Object old = hm.get(k);
+        if (!OACompare.isEqual(old, newValue)) {
+            if (old != null) setChanged(row, col);
+            hm.put(k, newValue);
         }
     }
     
@@ -816,17 +859,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             return false;
         }
 
-        if (t == null) {
-            t = getLeftTable();
-            if (t != null) {
-                if (col < t.getColumnCount()) return t.wasChanged(row, col);
-                col -= t.getColumnCount();
-            }
+        t = getLeftTable();
+        if (t != null) {
+            if (col < t.getColumnCount()) return t.wasChanged(row, col);
         }
         
-        ConcurrentHashMap<String, Long> hm = hmColumnRowChanged;
-        if (hm == null) return false;
-        Long longx = hm.get(row+"."+col);
+        if (hmRowColumnChanged == null) return false;
+        Long longx = hmRowColumnChanged.get(row+"."+col);
         return (longx != null);
     }
 
@@ -844,7 +883,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         @see #getRenderer(JComponent, JTable, Object, boolean, boolean, int, int) to customize the component
         @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int) Preferred way
     */
-    public Component getRenderer(JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column) {
+    public Component getRenderer_OLD(JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column) {
         Component comp = null;
         if (myRend != null) {
             comp = myRend.rend.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -852,36 +891,19 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (comp instanceof JLabel) {
             OATable t = getRightTable();
             if (t != null) {
-                t.customizeRenderer((JLabel) comp, table, value, isSelected, hasFocus, row, column);
+//qq                t.customizeRenderer((JLabel) comp, table, value, isSelected, hasFocus, row, column);
             }
             else {
                 t = getLeftTable();
                 if (t != null) {
                     column += t.getColumnCount();
                 }
-                customizeRenderer((JLabel) comp, table, value, isSelected, hasFocus, row, column);
+//qq                customizeRenderer((JLabel) comp, table, value, isSelected, hasFocus, row, column);
             }
         }
         return comp;
     }
-
-    /** called after getRenderer, to customize the renderer component
-     */
-    protected void customizeRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        customizeRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged(row, column));
-    }
     
-    /** called after getRenderer, to customize the renderer component
-     */
-    protected void customizeRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged) {
-        if (column >= 0 && column < columns.size()) {
-            OATableColumn tc = (OATableColumn) columns.elementAt(column);
-            OATableComponent oacomp = tc.getOATableComponent();
-            if (oacomp != null) {
-                oacomp.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column);
-            }
-        }
-    }
 
     // listeners for customizing Renderers
     Vector vecListener;
@@ -1242,7 +1264,7 @@ e.printStackTrace();
         return (averageCharHeight);
     }
 
-/*qqqqqqq later ...    
+/* later ...    
     public void addColumn(String heading, int width, OATableColumn oatc) {
         int pos = columns.size();
         columns.insertElementAt(oatc, pos);
@@ -1506,25 +1528,10 @@ e.printStackTrace();
             }
 
             obj = hub.elementAt(row);
-            if (obj == null) return "";//qqqqqq
-
+            if (obj == null) return "";
 
             OATableColumn tc = (OATableColumn) columns.elementAt(col);
-// 2006/02/09
-obj = tc.getValue(hub, obj);
-/* was:
-            Method[] m = tc.getMethods(hub);
-            if (tc.bLinkOnPos) {
-                Method[] m2 = tc.methodsIntValue;
-                obj = ClassModifier.getPropertyValue( obj, m2 );
-                if (obj instanceof Number) {
-                    obj = tc.oaComp.getHub().elementAt( ((Number)obj).intValue() );
-                    obj = ClassModifier.getPropertyValue( obj, m );
-                }
-                else obj = "Invalid";
-            }
-            else obj = ClassModifier.getPropertyValue( obj, m );
-*/
+            obj = tc.getValue(hub, obj);
             return obj;
         }
     }
@@ -1704,19 +1711,14 @@ obj = tc.getValue(hub, obj);
         // hack: editCellAt() will not hide the current cell editor if the new "column"
         //       does not have an editorComponent.  If this happens, then it will return
         //       false.
-//qqqqqqqqqqqqqqqqqqqqq
-//long lx = System.currentTimeMillis();        
+
         if (hub.getPos() != row) {
             hubAdapter._bRunningValueChanged = true;  // 20131113
             hub.setPos(row);
             hubAdapter._bRunningValueChanged = false;
         }
-//lx = System.currentTimeMillis() - lx;
-//double d = (lx/1000.0d);
-//System.out.printf("OATable.editCellAt row="+row+",  --> %.2f\n", d);        
         
         if (hubSelect != null) {
-            // 20131113
             int x = hubSelect.getSize();
             if (x > 0) {
                 if (x > 1) return false;
@@ -2165,6 +2167,7 @@ obj = tc.getValue(hub, obj);
 
         setIntercellSpacing(table.getIntercellSpacing());
         setRowHeight(table.getRowHeight());
+        setShowChanges(table.getShowChanges());
         
         /*
         getTableHeader().setResizingAllowed(false);
@@ -2382,28 +2385,52 @@ obj = tc.getValue(hub, obj);
         super.setToolTipText(text);
     }
 
-    
     protected int mouseOverRow=-1, mouseOverColumn;
     private Rectangle rectMouseOver;
     public void onMouseOver(int row, int column, MouseEvent evt) {
         super.setToolTipText("");
         mouseOverRow = row;
         mouseOverColumn = column;
+        
         if (rectMouseOver != null) repaint(rectMouseOver);
         if (row < 0) rectMouseOver = null;
-        else rectMouseOver = getCellRect(row, column, true);
+        else {
+            rectMouseOver = getCellRect(row, column, true);
+            repaint(rectMouseOver);
+        }
     }
 
+
+    public static final Color COLOR_Odd = UIManager.getColor("Table.background");
+    public static final Color COLOR_Even = new Color(249, 255, 255);
+    public static final Color COLOR_Focus = UIManager.getColor("Table.foreground");
+    
+    public static final Color COLOR_Change_Foreground = Color.yellow;  
+    public static final Color COLOR_Change_Background = new Color(0,0,105);  
+    public static final Border BORDER_Change = new LineBorder(COLOR_Change_Background, 1);
+    
+    public static final Color COLOR_Focus_Forground = UIManager.getColor("Table.background"); 
+    public static final Border BORDER_Focus = new LineBorder(Color.white, 1);
+    
     private JLabel lblDummy;
     private Border borderDummy;
 
-qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    
-    @Override
-    public Component getRendererXXXXX(JTable table,Object value, boolean isSelected, boolean hasFocus,int row, int column) {
-        // if (row == mouseOverRow && column == mouseOverColumn) hasFocus = true;
-        Component comp = super.getRenderer(table, value, isSelected, hasFocus, row, column);
+    /** qqqqqqq add more details qqqqqqqqq
+     * Called by getCellRender to customize the renderer.
+     * @param comp
+     * @param table
+     * @param value
+     * @param isSelected
+     * @param hasFocus
+     * @param row
+     * @param column
+     * @param wasChanged
+     * @param wasMouseOver
+     * @return
+     */
+    public Component getRenderer(Component comp, JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column,boolean wasChanged, boolean wasMouseOver) {
         JLabel lbl = null;
-        
+    
         if (!(comp instanceof JLabel)) {
             if (lblDummy == null) lblDummy = new JLabel();
             lbl = lblDummy;
@@ -2414,7 +2441,6 @@ qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
         }
         else lbl = (JLabel) comp;
         
-        
         if (hub.getAt(row) != null) {
             if (!isSelected && !hasFocus) {
                 lbl.setForeground(Color.BLACK);
@@ -2423,31 +2449,45 @@ qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
             }
         }
 
-        OATable tabx = (OATable) table;
-/*qqqqqqq turn on with new OA        
-        if (tabx.wasChanged(row, column)) {
-            lbl.setForeground(Color.yellow);
-            lbl.setBackground(COLOR_Focus);
-            lbl.setBorder(BORDER_Focus);
+        if (wasChanged) {
+            lbl.setForeground(COLOR_Change_Foreground);
+            lbl.setBackground(COLOR_Change_Background);
+            lbl.setBorder(BORDER_Change);
+            if (isSelected) {
+                // lbl.setBorder(??);  // use selected background color
+            }
         }
         else {
-*/        
             if (hasFocus) {
                 lbl.setForeground(Color.white);
                 lbl.setBackground(COLOR_Focus);
             }
-            if (row == mouseOverRow && column == mouseOverColumn) {
+            
+            if (wasMouseOver) {
                 lbl.setForeground(Color.white);
                 lbl.setBackground(COLOR_Focus);
                 lbl.setBorder(BORDER_Focus);
             }
             else lbl.setBorder(null);
-//        }
+        }
 
+        // have the component customize
+        OATableComponent oacomp = null;
+        if (tableLeft != null && column < tableLeft.columns.size()) {
+            OATableColumn tc = (OATableColumn) columns.elementAt(column);
+            oacomp = tc.getOATableComponent();
+            
+        }
+        else if (column >= 0 && column < columns.size()) {
+            OATableColumn tc = (OATableColumn) columns.elementAt(column);
+            oacomp = tc.getOATableComponent();
+        }
+        if (oacomp != null) {
+//qqqqqq add additional args            
+            oacomp.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column);
+        }
         
-        customizeRenderer(lbl, table, value, isSelected, hasFocus, row, column);
-        
-        if (lbl == lblDummy) {
+        if (lbl == lblDummy && comp != null) {
             Color c = lblDummy.getBackground();
             if (!Color.cyan.equals(c)) comp.setBackground(c); 
             c = lblDummy.getForeground();
@@ -2458,7 +2498,6 @@ qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
                 }
             }
         }
-        
         return comp;
     }
 
@@ -2753,7 +2792,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
 
     public @Override void afterPropertyChange(HubEvent e) {
-        // if (Hub.DEBUG) System.out.println("OATable.hubpropertyChange()");//qqqqq
         if (!(e.getObject() instanceof OAObject)) return;
         
         //was: if ( ((OAObject)e.getObject()).isProperty(e.getPropertyName())) {

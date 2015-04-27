@@ -443,12 +443,19 @@ public class OATableColumn {
                 public @Override
                 void afterPropertyChange(HubEvent e) {
                     String s = e.getPropertyName();
-                    if (s != null && s.equalsIgnoreCase(propx)) {
-                        table.repaint();
-                        // 20150315
-                        int col = table.getColumnIndex(oaComp);
-                        table.setChanged(e.getHub().getPos(e.getObject()), col);
+                    if (s == null || !s.equalsIgnoreCase(propx)) {
+                        return;
                     }
+                    table.repaint();
+                    
+                    // 20150315
+                    Object objx = e.getObject();
+                    if (!(objx instanceof OAObject)) return;
+                    Object val = ((OAObject) objx).getProperty(path);
+                    
+                    int col = table.getColumnIndex(oaComp);
+                    int row = e.getHub().getPos(objx);
+                    table.setChanged(row, col, val);
                 }
             };
             table.getHub().addHubListener(hubListener, propx, new String[] { path });

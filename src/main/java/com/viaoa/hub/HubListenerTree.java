@@ -474,7 +474,15 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                                     @Override
                                     public void afterPropertyChange(HubEvent e) {
                                         if (!property.equalsIgnoreCase(e.getPropertyName())) return;
-                                        HubEventDelegate.fireCalcPropertyChange(root.hub, e.getObject(), origPropertyName);
+                                        
+                                        // 20150427
+                                        Object[] rootObjects = newTreeNode.parent.getRootValues(e.getObject());
+                                        if (rootObjects != null && rootObjects.length > 0) {
+                                            for (Object obj : rootObjects) {
+                                                HubEventDelegate.fireCalcPropertyChange(root.hub, obj, origPropertyName);
+                                            }
+                                        }
+                                        // was: HubEventDelegate.fireCalcPropertyChange(root.hub, e.getObject(), origPropertyName);
                                     }
                                 };
                                 hub.addHubListener(hl);                                
