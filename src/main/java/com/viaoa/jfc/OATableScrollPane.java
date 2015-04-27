@@ -49,13 +49,10 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
     }
 */
     
-    public OATableScrollPane(OATable table, int fixedColumns)
-    {
+    public OATableScrollPane(OATable table, int fixedColumns) {
         super(table);
         
-        mainTable = table; // ((OATable)scrollPane.getViewport().getView());
-        // mainTable.addPropertyChangeListener(this);
-
+        mainTable = table; 
         mainTable.addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -65,13 +62,10 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
                 if (fixedTable == null) return;
                 TableCellEditor tced = fixedTable.getCellEditor();
                 if (tced != null) tced.stopCellEditing();
-                
             }
         });
         
-        
         if (fixedColumns < 1) return;
-        
         int totalColumns = mainTable.getColumnCount();
 
         fixedTable = createFixedTable(mainTable);
@@ -92,12 +86,9 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
             throw new RuntimeException("must use the same Hub for both main and fixed tables");
         }
         
-        
         // 20101229 need to have both tables aware of each other - for column sorting, arrow keys, etc.
-        fixedTable.setJoinedTable(mainTable, true);
-        mainTable.setJoinedTable(fixedTable, false);
-
-        
+        fixedTable.setRightTable(mainTable);
+        mainTable.setLeftTable(fixedTable);
         
         for (int i = 0; i < fixedColumns; i++) {
             OATableColumn tc = (OATableColumn) mainTable.columns.get(0);
@@ -122,7 +113,7 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
             columnModel.getColumn(i).setModelIndex(i);
         }
         
-        
+       
         //  Add the fixed table to the scroll pane
         
         Color color = UIManager.getLookAndFeelDefaults().getColor("Table.gridColor");
