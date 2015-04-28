@@ -56,7 +56,12 @@ public class HubListenerTree {
         HubListenerTreeNode parent;
         HashMap<HubListener, HubListener[]> hmListener;  // list of HubListeners created for a HubListener
         private OALinkInfo liReverse;
+        private ArrayList<String> alCalcPropertyNames;
         
+        public ArrayList<String> getCalcPropertyNames() {
+            if (alCalcPropertyNames == null) alCalcPropertyNames = new ArrayList<String>(3);
+            return alCalcPropertyNames;
+        }
         
         // when an object is removed from a hub, the parent property reference could already be null.
         //    this will use the masterObject in the hub.
@@ -337,11 +342,6 @@ public class HubListenerTree {
         for (int i=0; i < dependentPropertyNames.length ; i++) {
             if (dependentPropertyNames[i] == null) continue;
             if (dependentPropertyNames[i].length() == 0) continue;
-/* qqqq testing            
-if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
-    System.out.println(" ==> "+dependentPropertyNames[i]+" ............ "+this.root.hub);
-}
-*/
             //LOG.finer("Hub="+root.hub+", property="+origPropertyName+", dependentProp="+dependentPropertyNames[i]);
 
             // 20120826 if recursive prop then dont need to listen to more, since a hubMerger is already listening
@@ -420,12 +420,19 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                             break;
                         }
                     }
-                    if (!b) {
+                    
+                    if (b) {
+                        if (node.getCalcPropertyNames().indexOf(origPropertyName) < 0) {
+                            node.getCalcPropertyNames().add(origPropertyName);
+                        }
+                    }
+                    else {
                         //LOG.finer("creating hubMerger");
                         final HubListenerTreeNode newTreeNode = new HubListenerTreeNode();
                         newTreeNode.parent = node;
                         newTreeNode.property = property;
                         newTreeNode.hub = new Hub(hubClass);
+                        newTreeNode.getCalcPropertyNames().add(origPropertyName);
 
                         String spp = "(" + hubClass.getName() + ")" + property;
                         
@@ -456,13 +463,20 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                                 }
                                 private void onEvent(HubEvent e) {
                                     if (nodeThis == root) {
-                                        HubEventDelegate.fireCalcPropertyChange(root.hub, e.getHub().getMasterObject(), origPropertyName);
+                                        for (String s : newTreeNode.getCalcPropertyNames()) {
+                                            HubEventDelegate.fireCalcPropertyChange(root.hub, e.getHub().getMasterObject(), s);
+                                        }
                                     }
                                     else {
                                         Object[] rootObjects = nodeThis.parent.getRootValues(e.getHub().getMasterObject());
                                         if (rootObjects != null && rootObjects.length > 0) {
-                                            HubEventDelegate.fireCalcPropertyChange(root.hub, rootObjects[0], origPropertyName);
+                                            for (Object obj : rootObjects) {
+                                                for (String s : newTreeNode.getCalcPropertyNames()) {
+                                                    HubEventDelegate.fireCalcPropertyChange(root.hub, obj, s);
+                                                }
+                                            }
                                         }
+                                        
                                     }
                                 }
                             };
@@ -479,7 +493,9 @@ if (dependentPropertyNames[i].toUpperCase().indexOf("EMPL") >= 0) {
                                         Object[] rootObjects = newTreeNode.parent.getRootValues(e.getObject());
                                         if (rootObjects != null && rootObjects.length > 0) {
                                             for (Object obj : rootObjects) {
-                                                HubEventDelegate.fireCalcPropertyChange(root.hub, obj, origPropertyName);
+                                                for (String s : newTreeNode.getCalcPropertyNames()) {
+                                                    HubEventDelegate.fireCalcPropertyChange(root.hub, obj, s);
+                                                }
                                             }
                                         }
                                         // was: HubEventDelegate.fireCalcPropertyChange(root.hub, e.getObject(), origPropertyName);

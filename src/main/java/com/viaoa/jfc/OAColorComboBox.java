@@ -186,25 +186,29 @@ public class OAColorComboBox extends OACustomComboBox {
         }
 
         super.getTableRenderer(lblRendererTable, table, value, isSelected, hasFocus, row, column);
-        lblRendererTable.setText("  ");
+        return lblRendererTable;
+    }
+    @Override
+    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
+        super.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+        lbl.setText("  ");
         Color color = null;
-    	Hub h = ((OATable) table).getHub();
+        Hub h = ((OATable) table).getHub();
         if (h != null) {
             Object obj = h.elementAt(row);
             obj = control.getPropertyPathValue(obj);
             //was:  obj = OAReflect.getPropertyValue(obj, control.getGetMethods());
             if (obj instanceof Color) color = (Color) obj;
         }
+        if (lblRendererTable == null) {
+            lblRendererTable = new MyTableLabel();
+            lblRendererTable.setText("  ");
+        }
         lblRendererTable.color = color;
-        return lblRendererTable;
     }
-
     @Override
     public String getToolTipText(int row, int col, String defaultValue) {
         return defaultValue;
-    }
-    @Override
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     }
     
 

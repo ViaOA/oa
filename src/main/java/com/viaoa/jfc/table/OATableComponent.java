@@ -88,10 +88,16 @@ public interface OATableComponent {
     public String getFormat();
     
     /**
-        Renderer for this component when it is used as a column in an OATable.
+        Get the Renderer for this component when it is used as a column in an OATable.
+        @see #customizeTableRenderer(JLabel, JTable, Object, boolean, boolean, int, int)
     */
     public Component getTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column);
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column);
+    
+    /**
+     * This will be called after the default OATable settings are set for the cell, and before the
+     * OATable.customizeRenderer is called.
+     */
+    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver);
 
     public String getToolTipText(int row, int col, String defaultValue);
 }

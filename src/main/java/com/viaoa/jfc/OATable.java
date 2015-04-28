@@ -204,7 +204,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         Class c = b.getClass();
         setSurrendersFocusOnKeystroke(true);
 
-        setIntercellSpacing(new Dimension(4,1));
+        setIntercellSpacing(new Dimension(4, 1));
         
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE,this);
         dropTarget = new DropTarget(this,this);
@@ -213,6 +213,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         setFillsViewportHeight(true);
     }
 
+    @Override
+    public void setIntercellSpacing(Dimension dim) {
+        super.setIntercellSpacing(dim);
+    }
+    
     /** 2006/10/12    
      * If you would like to allow for sorting on a clicked column heading.  The
      * user can use [ctrl] to click on multiple headings.  Re-clicking on a heading
@@ -732,6 +737,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             column = convertColumnIndexToModel(column);
             boolean bMouseOver = (row == mouseOverRow && column == mouseOverColumn);
             
+            // see: OATableCellRenderer
             Component comp = rend.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             Component compOrig = comp;
             
@@ -754,10 +760,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
     
     /**
-        JTable method used to get the renderer for a cell.  This is set up to automatically call getRenderer().
+        JTable method used to get the renderer for a cell.  
+        This is set up to automatically call getRenderer() from the column's component.
         Dont overwrite this method, since OATable could be made up of 2 tables.
         @see #getRenderer This needs to be used instead of overwriting this method - especially with OATableScrollPane.
-        @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean)
+        @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean, boolean)
     */
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
@@ -765,7 +772,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         //  which will then call OATable.getRenderer()
         if (myRend == null) myRend = new MyTableCellRenderer(this);
 
-        // this will set the default renderer
+        // this will set the default renderer, ex: 
         myRend.rend = super.getCellRenderer(row, column);
         return myRend;
     }
@@ -1039,7 +1046,37 @@ if (col == 6) {
         }
     }
     
+    // 20150428
+    /**
+     * Add a column that will that will use checkboxes to show selected rows.
+     * @param hubSelect
+     * @param heading
+     * @param width
+     */
+    public void addCounterColumn() {
+        addCounterColumn("#", 4);
+    }
+    public void addCounterColumn(String heading, int width) {
+        OALabel lbl = new OALabel(getHub(), "") {
+            @Override
+            public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
+                lbl.setText(""+(row+1)+" ");
+                lbl.setHorizontalAlignment(SwingConstants.RIGHT);
+                if (!isSelected) lbl.setForeground(Color.gray);
+            }
+            @Override
+            public String getToolTipText(int row, int col, String defaultValue) {
+                defaultValue = super.getToolTipText(row, col, defaultValue);
+                if (OAString.isEmpty(defaultValue)) {
+                    defaultValue = (row+1)+" of "+getHub().getSize();
+                }
+                return defaultValue;
+            }
+        };
+        OATableColumn tc = addColumn(heading, width, lbl);
+    }
 
+    
     // 20150423
     /**
      * Add a column that will that will use checkboxes to show selected rows.
@@ -2427,10 +2464,13 @@ e.printStackTrace();
      * @param wasChanged
      * @param wasMouseOver
      * @return
+     * @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean, boolean) which is called by this 
+     * method after it sets the defaults. 
      */
     public Component getRenderer(Component comp, JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column,boolean wasChanged, boolean wasMouseOver) {
         JLabel lbl = null;
     
+        // 1of3: set default settings
         if (!(comp instanceof JLabel)) {
             if (lblDummy == null) lblDummy = new JLabel();
             lbl = lblDummy;
@@ -2474,7 +2514,7 @@ e.printStackTrace();
         // have the component customize
         OATableComponent oacomp = null;
         if (tableLeft != null && column < tableLeft.columns.size()) {
-            OATableColumn tc = (OATableColumn) columns.elementAt(column);
+            OATableColumn tc = (OATableColumn) tableLeft.columns.elementAt(column);
             oacomp = tc.getOATableComponent();
             
         }
@@ -2482,11 +2522,7 @@ e.printStackTrace();
             OATableColumn tc = (OATableColumn) columns.elementAt(column);
             oacomp = tc.getOATableComponent();
         }
-        if (oacomp != null) {
-//qqqqqq add additional args            
-            oacomp.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column);
-        }
-        
+
         if (lbl == lblDummy && comp != null) {
             Color c = lblDummy.getBackground();
             if (!Color.cyan.equals(c)) comp.setBackground(c); 
@@ -2498,8 +2534,29 @@ e.printStackTrace();
                 }
             }
         }
+        
+        
+        // 1of3: is done, defaults are set
+        
+        // 2of3: allow component to customize
+        if (oacomp != null) {
+            oacomp.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+        }
+        
+        // 3of3: allow App to customize
+        customizeRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+        
+        
         return comp;
     }
+
+    /**
+     * This is called by getRenderer(..) after the default settings have been set.
+     */
+    public void customizeRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {        
+        // to be overwritten
+    }
+    
 
 }
 

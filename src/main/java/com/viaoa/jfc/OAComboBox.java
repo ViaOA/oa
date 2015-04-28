@@ -650,13 +650,13 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
         
         return renderer;
     }
+    @Override
+    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
+    }
 
     @Override
     public String getToolTipText(int row, int col, String defaultValue) {
         return defaultValue;
-    }
-    @Override
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     }
     
     /**

@@ -132,8 +132,8 @@ public class LabelController extends JFCController {
     }
     
     public Component getTableRenderer(JLabel label, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        super.getTableRenderer(label, table, value, isSelected, hasFocus, row, column);
-        return label;
+        Component comp = super.getTableRenderer(label, table, value, isSelected, hasFocus, row, column);
+        return comp;
     }
 
 

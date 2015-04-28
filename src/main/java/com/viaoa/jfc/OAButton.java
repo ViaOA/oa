@@ -815,13 +815,13 @@ public boolean XXX;
     public Component getTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         return this;
     }
+    @Override
+    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
+    }
 
     @Override
     public String getToolTipText(int row, int col, String defaultValue) {
         return defaultValue;
-    }
-    @Override
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     }
 
     

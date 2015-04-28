@@ -37,13 +37,13 @@ public class OATableCellRenderer implements TableCellRenderer, java.io.Serializa
     OATableColumn tableColumn;
     private JLabel lblRenderer;
     static Border noFocusBorder = new EmptyBorder(0, 2, 0, 2);
-
+    private boolean bWasAligned;
     
     public OATableCellRenderer(OATableColumn column) {
         this.tableColumn = column;;
     }
                 
-
+    @Override
     public Component getTableCellRendererComponent(JTable table, Object value,
                           boolean isSelected, boolean hasFocus, int row, int column) {
 
@@ -71,11 +71,13 @@ public class OATableCellRenderer implements TableCellRenderer, java.io.Serializa
             }
             lblRenderer.setBorder(noFocusBorder);
 
-            int align;
-            if (value != null && OAReflect.isNumber(value.getClass()) ) align = JLabel.RIGHT;
-            else align = JLabel.LEFT;
-            lblRenderer.setHorizontalAlignment( align );
-            
+            if (!bWasAligned && value != null) {
+                bWasAligned = true;
+                int align;
+                if (OAReflect.isNumber(value.getClass()) ) align = JLabel.RIGHT;
+                else align = JLabel.LEFT;
+                lblRenderer.setHorizontalAlignment( align );
+            }            
             lblRenderer.setText(s);
           	comp = tableColumn.getOATableComponent().getTableRenderer(lblRenderer, table, value, isSelected, hasFocus, row, column);
         }

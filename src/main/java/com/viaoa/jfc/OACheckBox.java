@@ -325,13 +325,13 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
         
         return chkRenderer;
     }
+    @Override
+    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
+    }
 
     @Override
     public String getToolTipText(int row, int col, String defaultValue) {
         return defaultValue;
-    }
-    @Override
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     }
     
     // 200804/27 Hack: to work with OATable, to have mouse click check the box.

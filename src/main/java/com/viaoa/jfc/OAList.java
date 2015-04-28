@@ -671,7 +671,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         return defaultValue;
     }
     @Override
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
     }
 
     public void setIconColorProperty(String s) {

@@ -402,18 +402,18 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         Can be overwritten to customize the rendering.
     */
     public Component getTableRenderer(JLabel renderer, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-    	Hub h = ((OATable) table).getHub();
+        Hub h = ((OATable) table).getHub();
         if (h != null) {
             Object obj = h.elementAt(row);
             if (h == this.getHub()) {
                 String s = control.getPropertyPathValueAsString(obj, control.getFormat());
-	            //was: String s = OAReflect.getPropertyValueAsString(obj, control.getGetMethods(), control.getFormat());
-	            renderer.setText(s);
-	            renderer.setIcon(this.getIcon(obj));
+                //was: String s = OAReflect.getPropertyValueAsString(obj, control.getGetMethods(), control.getFormat());
+                renderer.setText(s);
+                renderer.setIcon(this.getIcon(obj));
             }
         }
 
-    	if (hasFocus) renderer.setBorder( UIManager.getBorder("Table.focusCellHighlightBorder") );
+        if (hasFocus) renderer.setBorder( UIManager.getBorder("Table.focusCellHighlightBorder") );
         else renderer.setBorder(null);
         // 20080906 was: if (hasFocus) renderer.setBorder(new LineBorder(UIManager.getColor("Table.selectionBackground"), 1));
 
@@ -429,7 +429,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
             renderer.setForeground( UIManager.getColor(table.getForeground()) );
             renderer.setBackground( UIManager.getColor(table.getBackground()) );
         }
-        
         return renderer;
     }
 
@@ -438,7 +437,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         return defaultValue;
     }
     @Override
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    public void customizeTableRenderer(JLabel renderer, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
     }
     
     

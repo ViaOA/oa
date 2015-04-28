@@ -261,7 +261,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
         return defaultValue;
     }
     @Override
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
     }
 }
 
