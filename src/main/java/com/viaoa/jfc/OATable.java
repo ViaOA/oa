@@ -1682,9 +1682,19 @@ e.printStackTrace();
         }        
         
         if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+            Point pt = e.getPoint();
+            int row = rowAtPoint(pt);
+            if (row < 0) {  // 20150428
+                hub.setPos(-1);
+                if (hubSelect == null) {
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq                    
+                    getSelectionModel().clearSelection();
+int xx = columnModel.getSelectionModel().getLeadSelectionIndex();                    
+                    columnModel.getSelectionModel().clearSelection();
+xx = columnModel.getSelectionModel().getLeadSelectionIndex();                    
+                }
+            }
             if (e.getClickCount() == 2) {
-                Point pt = e.getPoint();
-                int row = rowAtPoint(pt);
                 if (hub.getPos() == row && row >= 0) {
                     onDoubleClick();
                 }
