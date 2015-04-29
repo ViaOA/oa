@@ -1645,6 +1645,24 @@ e.printStackTrace();
         return this.compPopupMenu;
     }
 
+    // similar to private in jtable
+    private void myClearSelectionAndLeadAnchor() {
+        selectionModel.setValueIsAdjusting(true);
+        columnModel.getSelectionModel().setValueIsAdjusting(true);
+
+        clearSelection();
+
+        selectionModel.setAnchorSelectionIndex(-1);
+        selectionModel.setLeadSelectionIndex(-1);
+        columnModel.getSelectionModel().setAnchorSelectionIndex(-1);
+        columnModel.getSelectionModel().setLeadSelectionIndex(-1);
+
+        selectionModel.setValueIsAdjusting(false);
+        columnModel.getSelectionModel().setValueIsAdjusting(false);
+    }
+
+    
+    
     // 20150424
     private int lastMouseDragRow = -1;
     private boolean bIsMouseDragging;
@@ -1687,11 +1705,8 @@ e.printStackTrace();
             if (row < 0) {  // 20150428
                 hub.setPos(-1);
                 if (hubSelect == null) {
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq                    
-                    getSelectionModel().clearSelection();
-int xx = columnModel.getSelectionModel().getLeadSelectionIndex();                    
-                    columnModel.getSelectionModel().clearSelection();
-xx = columnModel.getSelectionModel().getLeadSelectionIndex();                    
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+                    myClearSelectionAndLeadAnchor();
                 }
             }
             if (e.getClickCount() == 2) {
