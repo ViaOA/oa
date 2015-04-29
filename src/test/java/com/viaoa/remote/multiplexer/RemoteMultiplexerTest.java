@@ -507,6 +507,7 @@ public class RemoteMultiplexerTest extends OAUnitTest {
         cntCtoSRequestServer = cntCtoSRequestClient = 0;
         
         boolean b = remoteBroadcast.ping("test");
+        Thread.sleep(200);
         assertEquals(0, cntClientBroadcastPing);
         
         assertEquals(1, cntCtoSRequestClient);

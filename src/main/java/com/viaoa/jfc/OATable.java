@@ -213,11 +213,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         setFillsViewportHeight(true);
     }
 
-    @Override
-    public void setIntercellSpacing(Dimension dim) {
-        super.setIntercellSpacing(dim);
-    }
-    
     /** 2006/10/12    
      * If you would like to allow for sorting on a clicked column heading.  The
      * user can use [ctrl] to click on multiple headings.  Re-clicking on a heading
@@ -252,17 +247,26 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
             OATable t = getRightTable();
             if (t != null) {
-                s = t.getToolTipText(row, col, s);
+                s = t.getToolTipText1(row, col, s);
             }
             else {
                 t = getLeftTable();
                 if (t != null) {
                     col += t.getColumnCount();
                 }
-                s = getToolTipText(row, col, s);
+                s = getToolTipText1(row, col, s);
             }
         }
         return s;
+    }
+    private String getToolTipText1(int row, int col, String defaultValue) {
+        OATableColumn[] tcs = getAllTableColumns();
+        if (col >= 0 && col < tcs.length) {
+            OATableColumn tc = (OATableColumn) tcs[col];
+            defaultValue = tc.getToolTipText(row, col, defaultValue);
+        }
+        defaultValue = getToolTipText(row, col, defaultValue);
+        return defaultValue;
     }
     
     public String getToolTipText(int row, int col, String defaultValue) {
@@ -385,7 +389,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         
         if (hubSelect != null) {
-            getSelectionModel().clearSelection();
             hubSelect.clear();
             for (Object obj : objs) {
                 hubSelect.add(obj);
@@ -848,10 +851,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             hm = new ConcurrentHashMap<String, Object>();
             hmRowColumnValue = hm;
         }
-if (col == 6) {
-    int xx=0;
-    xx++;//qqqqqqqqqqqqq
-}
         String k = row+"."+col;
         Object old = hm.get(k);
         if (!OACompare.isEqual(old, newValue)) {
@@ -1646,7 +1645,7 @@ e.printStackTrace();
     }
 
     // similar to private in jtable
-    private void myClearSelectionAndLeadAnchor() {
+    protected void myClearSelectionAndLeadAnchor() {
         selectionModel.setValueIsAdjusting(true);
         columnModel.getSelectionModel().setValueIsAdjusting(true);
 
@@ -1704,10 +1703,6 @@ e.printStackTrace();
             int row = rowAtPoint(pt);
             if (row < 0) {  // 20150428
                 hub.setPos(-1);
-                if (hubSelect == null) {
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-                    myClearSelectionAndLeadAnchor();
-                }
             }
             if (e.getClickCount() == 2) {
                 if (hub.getPos() == row && row >= 0) {
@@ -2395,7 +2390,6 @@ e.printStackTrace();
         }
     }
 
-    
     // 20101229 add this to be able to left/right arrow between joined tables
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
@@ -2477,7 +2471,7 @@ e.printStackTrace();
     private JLabel lblDummy;
     private Border borderDummy;
 
-    /** qqqqqqq add more details qqqqqqqqq
+    /** qqqqqqq add more doc here qqqqqqqqq
      * Called by getCellRender to customize the renderer.
      * @param comp
      * @param table
@@ -2665,6 +2659,9 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 }
             }
             public @Override void onNewList(HubEvent e) {
+                if (getRunningValueChanged()) return;
+                
+                table.myClearSelectionAndLeadAnchor();
                 rebuildListSelectionModel();
                 if (table.chkSelection != null) table.repaint();
             }
@@ -2709,6 +2706,10 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             return;
         }
 
+        if (_bRunningValueChanged) {
+            return;
+        }
+        
         if (getIgnoreValueChanged()) {
             return;
         }
@@ -2722,19 +2723,43 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         if (hubSelect != null) {
             ListSelectionModel lsm = table.getSelectionModel();
 
-            for (int i=row1; i<=row2; i++) {
+            int newAoPos = -1;
+            
+            for (int i=row1; ; ) {
                 Object obj = table.hub.elementAt(i);
-                if (obj == null) continue;
-                if (!lsm.isSelectedIndex(i)) {
-                    hubSelect.remove(obj);
+                if (obj != null) { 
+                    if (lsm.isSelectedIndex(i)) {
+                        if (!hubSelect.contains(obj)) {
+                            hubSelect.add(obj);
+                            newAoPos = i;
+                        }
+                        else if (newAoPos < 0) newAoPos = i;
+                    }
                 }
-                else if (!hubSelect.contains(obj)) {
-                    hubSelect.add(obj);
+                if (row2 > row1) {
+                    i++;
+                    if (i > row2) break;
+                }
+                else {
+                    i--;
+                    if (i < row2) break;
                 }
             }
+            for (Object obj : hubSelect) {
+                int pos = table.hub.getPos(obj);
+                if (pos >= 0 && !lsm.isSelectedIndex(pos)) {
+                    hubSelect.remove(obj);
+                }
+            }
+            
+            if (newAoPos < 0) {
+                newAoPos = getHub().getPos(hubSelect.getAt(0));
+            }
+            getHub().setAO(newAoPos);
         }
         else {
             int row = table.getSelectedRow();
+            getHub().setPos(row);
             int pos = getHub().getPos();
             if (pos != row) {  // if the hub.pos is not the same, set it back
                 _bRunningValueChanged = false;
@@ -2814,6 +2839,9 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
         // 20131113 
         if (table.hubSelect == null) {
+            if (row < 0) {
+                table.myClearSelectionAndLeadAnchor();
+            }
             setSelectedRow(row);
             rebuildListSelectionModel();
         }
