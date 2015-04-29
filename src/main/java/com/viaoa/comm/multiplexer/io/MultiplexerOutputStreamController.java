@@ -199,22 +199,28 @@ public class MultiplexerOutputStreamController {
         return max;
     }
 
+    private Thread threadNextToWrite;
     /**
      * Used to synchronized access the the real outputstream.
      */
     private DataOutputStream getOutputStream() throws IOException {
         // long tsBegin = System.nanoTime(); // measurement
         synchronized (WRITELOCK) {
-            for (;;) {
+            for (int i=0;;i++) {
                 if (_bIsClosed) {
                     throw new IOException("real socket has been closed");
                 }
                 if (!_bWritingLock) {
-                    _bWritingLock = true;
-                    return _dataOutputStream;
+                    if (threadNextToWrite == null || threadNextToWrite == Thread.currentThread()) {
+                        threadNextToWrite = null;
+                        _bWritingLock = true;
+                        return _dataOutputStream;
+                    }
                 }
+                
                 try {
                     _writeLockWaitingCount++;
+                    if (i>5) threadNextToWrite = Thread.currentThread();
                     WRITELOCK.wait(250);
                 }
                 catch (InterruptedException e) {
