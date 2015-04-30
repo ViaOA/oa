@@ -68,6 +68,7 @@ import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OANullObject;
 import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
@@ -844,7 +845,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
     }
     protected ConcurrentHashMap<String, Object> hmRowColumnValue;
-    public void setChanged(int row, int col, final Object newValue) {
+    public void setChanged(int row, int col, Object newValue) {
         if (!bShowChanges) return;
         ConcurrentHashMap<String, Object> hm = hmRowColumnValue;
         if (hm == null) {
@@ -852,6 +853,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             hmRowColumnValue = hm;
         }
         String k = row+"."+col;
+        if (newValue == null) newValue = OANullObject.instance;
         Object old = hm.get(k);
         if (!OACompare.isEqual(old, newValue)) {
             if (old != null) setChanged(row, col);
