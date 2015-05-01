@@ -200,8 +200,8 @@ public class MultiplexerOutputStreamController {
         return max;
     }
 
+    // used to determine the next thread that can write
     private Thread threadNextToWrite;
-    private Thread threadNextToWrite2;
     private ArrayList<Thread> alThreadWaitingToWrite = new ArrayList<Thread>(10);
 
     /**
@@ -226,11 +226,11 @@ public class MultiplexerOutputStreamController {
                     _writeLockWaitingCount++;
 
                     if (i == 5) {
-                        if (threadNextToWrite2 == null && alThreadWaitingToWrite.size() == 0) threadNextToWrite2 = Thread.currentThread();  
+                        if (threadNextToWrite == null && alThreadWaitingToWrite.size() == 0) threadNextToWrite = Thread.currentThread();  
                         else alThreadWaitingToWrite.add(Thread.currentThread());
                     }
-                    if (threadNextToWrite2 == null) {
-                        if (alThreadWaitingToWrite.size() > 0) threadNextToWrite2 = alThreadWaitingToWrite.remove(0);
+                    if (threadNextToWrite == null) {
+                        if (alThreadWaitingToWrite.size() > 0) threadNextToWrite = alThreadWaitingToWrite.remove(0);
                     }
                     
                     WRITELOCK.wait(250);
@@ -266,13 +266,8 @@ public class MultiplexerOutputStreamController {
                 }
             }
             finally {
-                if (threadNextToWrite2 != null) {
-                    threadNextToWrite = threadNextToWrite2;
-                    threadNextToWrite2 = null;
-                }
-                else {
+                if (threadNextToWrite == null) {
                     if (alThreadWaitingToWrite.size() > 0) threadNextToWrite = alThreadWaitingToWrite.remove(0);
-                    else threadNextToWrite = null;
                 }
                 _bWritingLock = false;
                 WRITELOCK.notifyAll();
