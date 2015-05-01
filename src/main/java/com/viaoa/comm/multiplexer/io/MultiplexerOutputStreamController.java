@@ -201,6 +201,7 @@ public class MultiplexerOutputStreamController {
     }
 
     private Thread threadNextToWrite;
+    private Thread threadNextToWrite2;
     private ArrayList<Thread> alThreadWaitingToWrite = new ArrayList<Thread>(10);
 
     /**
@@ -223,9 +224,15 @@ public class MultiplexerOutputStreamController {
                 
                 try {
                     _writeLockWaitingCount++;
-                    if (i == 3) {
-                        alThreadWaitingToWrite.add(Thread.currentThread());
+
+                    if (i == 5) {
+                        if (threadNextToWrite2 == null && alThreadWaitingToWrite.size() == 0) threadNextToWrite2 = Thread.currentThread();  
+                        else alThreadWaitingToWrite.add(Thread.currentThread());
                     }
+                    if (threadNextToWrite2 == null) {
+                        if (alThreadWaitingToWrite.size() > 0) threadNextToWrite2 = alThreadWaitingToWrite.remove(0);
+                    }
+                    
                     WRITELOCK.wait(250);
                 }
                 catch (InterruptedException e) {
@@ -259,8 +266,14 @@ public class MultiplexerOutputStreamController {
                 }
             }
             finally {
-                if (alThreadWaitingToWrite.size() > 0) threadNextToWrite = alThreadWaitingToWrite.remove(0);
-                else threadNextToWrite = null;
+                if (threadNextToWrite2 != null) {
+                    threadNextToWrite = threadNextToWrite2;
+                    threadNextToWrite2 = null;
+                }
+                else {
+                    if (alThreadWaitingToWrite.size() > 0) threadNextToWrite = alThreadWaitingToWrite.remove(0);
+                    else threadNextToWrite = null;
+                }
                 _bWritingLock = false;
                 WRITELOCK.notifyAll();
             }
