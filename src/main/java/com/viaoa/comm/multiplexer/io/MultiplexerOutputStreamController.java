@@ -20,6 +20,7 @@ package com.viaoa.comm.multiplexer.io;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
@@ -200,6 +201,8 @@ public class MultiplexerOutputStreamController {
     }
 
     private Thread threadNextToWrite;
+    private ArrayList<Thread> alThreadWaitingToWrite = new ArrayList<Thread>(10);
+
     /**
      * Used to synchronized access the the real outputstream.
      */
@@ -220,7 +223,9 @@ public class MultiplexerOutputStreamController {
                 
                 try {
                     _writeLockWaitingCount++;
-                    if (i>5) threadNextToWrite = Thread.currentThread();
+                    if (i == 3) {
+                        alThreadWaitingToWrite.add(Thread.currentThread());
+                    }
                     WRITELOCK.wait(250);
                 }
                 catch (InterruptedException e) {
@@ -254,6 +259,8 @@ public class MultiplexerOutputStreamController {
                 }
             }
             finally {
+                if (alThreadWaitingToWrite.size() > 0) threadNextToWrite = alThreadWaitingToWrite.remove(0);
+                else threadNextToWrite = null;
                 _bWritingLock = false;
                 WRITELOCK.notifyAll();
             }
