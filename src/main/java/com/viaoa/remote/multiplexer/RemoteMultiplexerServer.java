@@ -108,10 +108,10 @@ public class RemoteMultiplexerServer {
     }
 
     /**
-     * This can be called when MultiplexerServer.onClientDisconnet(..) is called. If this is not called,
+     * This can be called when MultiplexerServer.onClientDisconnect(..) is called. If this is not called,
      * then the next socket.IO method will throw an IOException.
      * 
-     * @see MultiplexerServer#onClientDisconnet
+     * @see MultiplexerServer#onClientDisconnect
      */
     public void removeSession(int connectionId) {
         Session s = hmSession.remove(connectionId);

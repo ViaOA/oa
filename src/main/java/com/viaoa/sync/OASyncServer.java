@@ -269,6 +269,7 @@ public class OASyncServer {
                 }
                 @Override
                 protected void onClientDisconnect(int connectionId) {
+                    getRemoteMultiplexerServer().removeSession(connectionId);
                     OASyncServer.this.onClientDisconnect(connectionId);
                 }
                 
