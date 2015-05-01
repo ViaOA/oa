@@ -27,6 +27,7 @@ import javax.swing.text.DocumentFilter;
 import javax.swing.text.DocumentFilter.FilterBypass;
 
 import java.lang.reflect.*;
+import java.util.logging.Logger;
 
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
@@ -41,6 +42,7 @@ import com.viaoa.jfc.*;
  *
  */
 public class TextFieldController extends JFCController implements FocusListener, ActionListener, KeyListener, MouseListener {
+    private static Logger LOG = Logger.getLogger(TextFieldController.class.getName());
     protected JTextField textField;
     protected String prevText;
     private boolean bSettingText;
@@ -128,12 +130,22 @@ public class TextFieldController extends JFCController implements FocusListener,
             	String msg = "";
             	switch (errorType) {
             	case OAPlainDocument.ERROR_MAX_LENGTH:
-            		msg = "Maximum input exceeded, currently set to " + getMax(); 
+            		msg = "Maximum input exceeded, currently set to " + getMax();
+
+            		if (textField instanceof OATextField) {
+            		    msg += " for " + ((OATextField)textField).getPropertyPath();
+            		    Hub h = ((OATextField)textField).getHub();
+            		    if (h != null) msg += ", in "+OAString.getDisplayName(h.getObjectClass().getSimpleName());
+            		}
+            		
             		break;
             	case OAPlainDocument.ERROR_INVALID_CHAR:
             		return;
             	}
-                JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(TextFieldController.this.textField), msg, "Error", JOptionPane.ERROR_MESSAGE);
+            	if (!OAString.isEmpty(msg)) LOG.warning(msg);
+                if (textField != null && textField.hasFocus()) {
+                    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(TextFieldController.this.textField), msg, "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
             @Override
             public void insertString(int offset, String str, AttributeSet attr)

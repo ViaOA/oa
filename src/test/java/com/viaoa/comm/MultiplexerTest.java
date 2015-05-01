@@ -15,7 +15,7 @@ import com.theice.tsactest.model.oa.*;
 public class MultiplexerTest extends OAUnitTest {
     private final static int[] Maxes = {8000000, 200000, 500, 250000, 10000, 5, 20};
     
-    @Test
+//    @Test
     public void test() throws Exception {
         
         MultiplexerServerTest stest = new MultiplexerServerTest();
