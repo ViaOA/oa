@@ -38,6 +38,10 @@ public class JNLPServlet extends HttpServlet
     {
         String s;
 
+        resp.setHeader("Cache-Control", "no-cache"); //HTTP 1.1
+        resp.setHeader("Pragma", "no-cache"); //HTTP 1.0
+        resp.setDateHeader("Expires", 0); //prevents caching at the proxy server
+        
         // ex:   "http://localhost:8082/jnlp/template.jnlp"
         /*
         s = req.getQueryString(); // null,  would be anything past "?"
@@ -166,11 +170,12 @@ public class JNLPServlet extends HttpServlet
             boolean bDash = false;
             for (int i=0; i<x; i++) {
                 char ch = fname.charAt(i);
-                if (!bDash) {
+                if (ch == '.'); // found one, ex: jh.jar 
+                else if (!bDash) {
                     if (ch == '-') bDash = true;
                     continue;
                 }
-                if (!Character.isDigit(ch)) {
+                else if (!Character.isDigit(ch)) {
                     bDash = false;
                     continue;
                 }
