@@ -427,8 +427,13 @@ public class OAObject implements java.io.Serializable, Comparable {
     public void setChanged(boolean tf) {
         if (changedFlag != tf) {
             boolean bOld = changedFlag;
+            OAObjectEventDelegate.fireBeforePropertyChange(this, OAObjectDelegate.WORD_Changed, 
+                    bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
+                            tf?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
             changedFlag = tf;
-        	OAObjectEventDelegate.firePropertyChange(this, OAObjectDelegate.WORD_Changed, bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, changedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
+        	OAObjectEventDelegate.firePropertyChange(this, OAObjectDelegate.WORD_Changed, 
+        	        bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
+        	        changedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
 
             // 20141030
             if (changedFlag) {

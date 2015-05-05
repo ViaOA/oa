@@ -61,7 +61,11 @@ public class OAObjectDeleteDelegate {
     public static void setDeleted(OAObject oaObj, boolean tf) {
         if (oaObj.deletedFlag != tf) {
             boolean bOld = oaObj.deletedFlag;
+            OAObjectEventDelegate.fireBeforePropertyChange(oaObj, OAObjectDelegate.WORD_Deleted, 
+                    bOld ?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
+                    tf ?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, true);
             oaObj.deletedFlag = tf;
+            
             OAObjectEventDelegate.firePropertyChange(oaObj, OAObjectDelegate.WORD_Deleted, bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, oaObj.deletedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
         }
     }

@@ -157,12 +157,14 @@ public class OAObjectDelegate {
 	    if (b == oaObj.newFlag) return;
         boolean old = oaObj.newFlag;
         oaObj.newFlag = b;
+        OAObjectEventDelegate.fireBeforePropertyChange(oaObj, WORD_New, old?TRUE:FALSE, b?TRUE:FALSE, false, false);
         try {
         	OAObjectKeyDelegate.updateKey(oaObj, false);
         }
         catch (Exception e) {
             LOG.log(Level.WARNING, "oaObj="+oaObj.getClass()+", key="+OAObjectKeyDelegate.getKey(oaObj), e);
         }
+        OAObjectEventDelegate.fireBeforePropertyChange(oaObj, WORD_New, old?TRUE:FALSE, b?TRUE:FALSE, false, false);
     	OAObjectEventDelegate.firePropertyChange(oaObj, WORD_New, old?TRUE:FALSE, b?TRUE:FALSE, false, false);
         if (!b) setAutoAdd(oaObj, true);
 	}

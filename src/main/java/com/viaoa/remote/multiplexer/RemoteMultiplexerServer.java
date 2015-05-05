@@ -911,10 +911,11 @@ public class RemoteMultiplexerServer {
         };
         Object obj = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
 
-        if (callback != null) {
+        //20150505 need to have the server process the queue, since clients wait for server to "catch up"
+        //if (callback != null) {
             // create thread to get messages from queue
             setupBroadcastQueueReader(bind.asyncQueueName, bind.name);
-        }
+        //}
         return obj;
     }
 

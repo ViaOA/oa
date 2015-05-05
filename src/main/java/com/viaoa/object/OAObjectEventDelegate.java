@@ -298,8 +298,9 @@ public class OAObjectEventDelegate {
             if (!bLocalOnly) {
                 // prior to 20100406, this was always calling these methods
                 OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
-                //note: this next method will just return, since fireBeforePropChange doing this
-                OAObjectCSDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj);
+                
+                //note: this next method will just return, since fireBeforePropChange is now doing this
+                // OAObjectCSDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj);
             }
         }
 

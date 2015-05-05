@@ -18,10 +18,12 @@ All rights reserved.
 package com.viaoa.sync.remote;
 
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 
 @OARemoteInterface()
 public interface RemoteClientCallbackInterface {
     
+    @OARemoteMethod(noReturnValue=true, timeoutSeconds=2)
     void stop(String title, String msg);
     String ping(String msg);
 }

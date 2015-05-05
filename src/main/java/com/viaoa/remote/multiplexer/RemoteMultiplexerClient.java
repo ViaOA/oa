@@ -108,7 +108,7 @@ public class RemoteMultiplexerClient {
     }
 
     /**
-     * Create a remote object that is sent to all clients.
+     * Register a remote object to be called for server broadcasts.
      * 
      * @param lookupName
      *            name used on server, see: RemoteMultiplexerServer.createClientBroadcast
@@ -116,6 +116,9 @@ public class RemoteMultiplexerClient {
      *            an impl used when receiving messages from other clients
      * @see RemoteMultiplexerServer#createClientBroadcast(String, Class)
      */
+    public void registerBroadcast(final String lookupName, Object callback) throws Exception {
+        lookupBroadcast(lookupName, callback);
+    }
     public Object lookupBroadcast(final String lookupName, Object callback) throws Exception {
         if (lookupName == null) throw new IllegalArgumentException("lookupName cant be null");
         if (callback == null) throw new IllegalArgumentException("callback cant be null");
@@ -395,8 +398,8 @@ public class RemoteMultiplexerClient {
         // check if remoteThread, and if it has already processed it's msg before calling remote method
         if (!OARemoteThreadDelegate.isSafeToCallRemoteMethod()) {
             if (errorCnt++ < 25 || (errorCnt % 100 == 0)) {
-                Exception e = new Exception("isSafeToCallRemoteMethod is false");
-                LOG.log(Level.WARNING, "note: isSafeToCallRemoteMethod is false, will continue, starting another OARemoteThread", e);
+                //Exception e = new Exception("isSafeToCallRemoteMethod is false");
+                //LOG.log(Level.WARNING, "note: isSafeToCallRemoteMethod is false, will continue, starting another OARemoteThread", e);
             }
             OARemoteThreadDelegate.startNextThread();
         }

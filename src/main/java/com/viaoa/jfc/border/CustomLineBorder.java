@@ -31,7 +31,7 @@ import javax.swing.border.*;
  * @author vincevia
  */
 public class CustomLineBorder extends AbstractBorder {
-    private Insets insets;
+    //private Insets insets;
     private int t,l,b,r;
     private Color color;
 
@@ -43,14 +43,15 @@ public class CustomLineBorder extends AbstractBorder {
         this.l = l;
         this.b = b;
         this.r = r;
-        insets = new Insets(t, l, b, r);
+        //insets = new Insets(t, l, b, r);
         if (c == null) c = UIManager.getColor("controlDkShadow");
         if (c == null) c = Color.gray;
         this.color = c;
     }
 
-    public Insets getBorderInsets(Component c) { 
-        return insets; 
+    public Insets getBorderInsets(Component c) {
+        return super.getBorderInsets(c);
+        //was: return insets; 
     }
     
     public void paintBorder(Component comp, Graphics gr, int x, int y, int w, int h) {

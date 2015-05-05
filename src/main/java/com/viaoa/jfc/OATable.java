@@ -260,6 +260,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         return s;
     }
+    private int cntTT;
     private String getToolTipText1(int row, int col, String defaultValue) {
         OATableColumn[] tcs = getAllTableColumns();
         if (col >= 0 && col < tcs.length) {
@@ -267,6 +268,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             defaultValue = tc.getToolTipText(row, col, defaultValue);
         }
         defaultValue = getToolTipText(row, col, defaultValue);
+        if (!OAString.isEmpty(OAString.trim(defaultValue))) {
+            if (cntTT++ % 2 == 0) defaultValue += " "; // so that it is changed and will show by mouse
+        }
         return defaultValue;
     }
     

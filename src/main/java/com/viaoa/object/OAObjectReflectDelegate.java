@@ -229,6 +229,7 @@ public class OAObjectReflectDelegate {
             }
             if (!bIsLoading) previousValue = oaObj.getProperty(propName);
 
+            OAObjectEventDelegate.fireBeforePropertyChange(oaObj, propName, previousValue, value, oi.getLocalOnly(), true);
             OAObjectPropertyDelegate.setProperty(oaObj, propName, value);
             OAObjectEventDelegate.firePropertyChange(oaObj, propName, previousValue, value, oi.getLocalOnly(), true);
             return;

@@ -170,7 +170,10 @@ public class JNLPServlet extends HttpServlet
             boolean bDash = false;
             for (int i=0; i<x; i++) {
                 char ch = fname.charAt(i);
-                if (ch == '.'); // found one, ex: jh.jar 
+                if (ch == '.') {
+                    // found one, ex: jh.jar
+                    i++;
+                }
                 else if (!bDash) {
                     if (ch == '-') bDash = true;
                     continue;
