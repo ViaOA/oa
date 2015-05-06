@@ -579,7 +579,7 @@ public class RemoteMultiplexerServer {
         }
 
         
-        if (ri.bind != null && ri.bind.usesQueue) {
+        if (ri.bind != null && ri.bind.usesQueue && (ri.methodInfo == null || !ri.methodInfo.dontUseQueue)) {
             ri.connectionId = session.connectionId;  // so that the _writeQueueMessages will send to only the client (not all clients)
   
             if (ri.methodInfo != null && ri.methodInfo.noReturnValue) {
@@ -676,7 +676,9 @@ public class RemoteMultiplexerServer {
                 if (bindx == null || objx == null) {
                     if (bindx == null) {
                         String bindNamex = "server." + aiBindCount.incrementAndGet();
-                        bindx = getBindInfo(ri.bind, bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
+                        
+                        boolean b = ri.methodInfo.dontUseQueues != null && ri.methodInfo.dontUseQueues[i]; 
+                        bindx = getBindInfo(ri.bind, bindNamex, ri.args[i], ri.methodInfo.remoteParams[i], b);
                     }
                     else {
                         bindx.setObject(ri.args[i], referenceQueue);
@@ -707,7 +709,8 @@ public class RemoteMultiplexerServer {
                 if (bindx == null || objx == null) {
                     if (bindx == null) {
                         String bindNamex = "server." + aiBindCount.incrementAndGet();
-                        bindx = getBindInfo(ri.bind, bindNamex, ri.args[i], ri.methodInfo.remoteParams[i]);
+                        boolean b = ri.methodInfo.dontUseQueues != null && ri.methodInfo.dontUseQueues[i]; 
+                        bindx = getBindInfo(ri.bind, bindNamex, ri.args[i], ri.methodInfo.remoteParams[i], b);
                     }
                     else {
                         bindx.setObject(ri.args[i], referenceQueue);
@@ -734,7 +737,8 @@ public class RemoteMultiplexerServer {
                 else bindx = null;
                 if (bindx == null) {
                     Object obj = createProxyForStoC(session, ri.methodInfo.remoteReturn, bindNamex);
-                    bindx = getBindInfo(ri.bind, bindNamex, obj, ri.methodInfo.remoteReturn);
+                    boolean b = ri.methodInfo.dontUseQueueForReturnValue; 
+                    bindx = getBindInfo(ri.bind, bindNamex, obj, ri.methodInfo.remoteReturn, b);
                 }
             }
             ri.response = bindx.getObject();
@@ -830,13 +834,14 @@ public class RemoteMultiplexerServer {
     }
 
     
-    protected BindInfo getBindInfo(BindInfo biParent, String name, Object obj, Class interfaceClass) {
-        return getBindInfo(biParent, name, obj, interfaceClass, false, null, 0);
+    protected BindInfo getBindInfo(BindInfo biParent, String name, Object obj, Class interfaceClass, boolean bDontUseQueue) {
+        return getBindInfo(biParent, name, obj, interfaceClass, false, null, 0, bDontUseQueue);
     }
     protected BindInfo getBindInfo(String name, Object obj, Class interfaceClass, String queueName, int queueSize) {
-        return getBindInfo(null, name, obj, interfaceClass, false, queueName, queueSize);
+        return getBindInfo(null, name, obj, interfaceClass, false, queueName, queueSize, false);
     }
-    protected BindInfo getBindInfo(BindInfo biParent, String name, Object obj, Class interfaceClass, boolean bIsBroadcast, String queueName, int queueSize) {
+    protected BindInfo getBindInfo(BindInfo biParent, String name, Object obj, Class interfaceClass, boolean bIsBroadcast, String queueName, int queueSize, boolean bDontUseQueue) {
+//qqqqqqqqqq needs to use bDontUseQueue        
         if (name == null || interfaceClass == null) {
             throw new IllegalArgumentException("name and interfaceClass can not be null");
         }
@@ -898,7 +903,7 @@ public class RemoteMultiplexerServer {
         }
 
         if (queueName == null) queueName = bindName;
-        final BindInfo bind = getBindInfo(null, bindName, callback, interfaceClass, true, queueName, queueSize);
+        final BindInfo bind = getBindInfo(null, bindName, callback, interfaceClass, true, queueName, queueSize, false);
         if (callback != null) hmBindObject.put(bind, callback); // hold from getting gc'd
 
         InvocationHandler handler = new InvocationHandler() {
@@ -1277,7 +1282,7 @@ public class RemoteMultiplexerServer {
                 }
             }
             ri.responseBindName = bindx.name; // this will be returned to client
-            ri.responseBindUsesQueue = bindx.usesQueue;
+            ri.responseBindUsesQueue = bindx.usesQueue && !ri.methodInfo.dontUseQueueForReturnValue;
             session.hmBindObject.put(bindx, ri.response); // make sure it wont get gc'd
         }
         else if (ri.methodInfo.compressedReturn && ri.methodInfo.remoteReturn == null) {
