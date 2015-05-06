@@ -23,7 +23,9 @@ import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 @OARemoteInterface()
 public interface RemoteClientCallbackInterface {
     
-    @OARemoteMethod(noReturnValue=true, timeoutSeconds=2)
+    @OARemoteMethod(noReturnValue=true, timeoutSeconds=2, dontUseQueue=true)
     void stop(String title, String msg);
+    
+    @OARemoteMethod(dontUseQueue=true)
     String ping(String msg);
 }

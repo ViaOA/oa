@@ -139,6 +139,8 @@ public class BindInfo {
                 }
                 mi.noReturnValue = remoteMethod.noReturnValue();
                 mi.timeoutSeconds = Math.max(0, remoteMethod.timeoutSeconds());
+                mi.dontUseQueue = remoteMethod.dontUseQueue();
+                mi.dontUseQueueForReturnValue = remoteMethod.dontUseQueueForReturnValue();
             }
 
             // check to see if any of the params are remote
@@ -149,6 +151,7 @@ public class BindInfo {
 
             for (int i=0; i<x; i++) {
                 boolean bCompressed = false;
+                boolean bDontUseQue = false;
                 
                 OARemoteInterface rc = (OARemoteInterface) cs[i].getAnnotation(OARemoteInterface.class);
                 bRemote = (rc != null) && !cs[i].isPrimitive();
@@ -157,6 +160,7 @@ public class BindInfo {
                     OARemoteParameter rp = (OARemoteParameter)(anns[i][0]);
                     if (rp != null) {
                         bCompressed = rp.compressed();
+                        bDontUseQue = rp.dontUseQueue();
                     }
                 }
                 if (bCompressed) {
@@ -164,6 +168,12 @@ public class BindInfo {
                         mi.compressedParams = new boolean[cs.length];
                     }
                     mi.compressedParams[i] = true;
+                }
+                if (bDontUseQue) {
+                    if (mi.dontUseQueues == null) {
+                        mi.dontUseQueues = new boolean[cs.length];
+                    }
+                    mi.dontUseQueues[i] = true;
                 }
                 
                 if (bRemote) {

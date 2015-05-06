@@ -41,10 +41,10 @@ public interface RemoteSessionInterface {
      * @param obj
      * @param bAddToCache
      */
-    @OARemoteMethod(noReturnValue=true)
+    @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void addToCache(OAObject obj);
 
-    @OARemoteMethod(noReturnValue=true)
+    @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void removeFromCache(int guid);
 
     
@@ -53,13 +53,13 @@ public interface RemoteSessionInterface {
     boolean isLockedByAnotherClient(Class objectClass, OAObjectKey objectKey);
     boolean isLockedByThisClient(Class objectClass, OAObjectKey objectKey);
 
-    @OARemoteMethod(noReturnValue=true)
+    @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void update(ClientInfo ci); 
     
-    @OARemoteMethod(noReturnValue=true)
+    @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void sendException(String msg, Throwable ex);
 
-    @OARemoteMethod(noReturnValue=true)
+    @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     /**
      * Objects that have been GDd on the client, so that the server can remove from
      * the session - so that it can be resent if needed.
@@ -67,8 +67,9 @@ public interface RemoteSessionInterface {
      */
     void removeGuids(int[] guids);
     
+    @OARemoteMethod(dontUseQueue=true)
     String ping(String msg);
     
-    @OARemoteMethod(noReturnValue=true)
+    @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void ping2(String msg);
 }

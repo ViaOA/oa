@@ -24,6 +24,11 @@ import java.lang.reflect.Method;
  * @author vvia
  */
 public class MethodInfo {
+    
+    public MethodInfo() {
+        
+    }
+    
     public Method method;
     // unique name based on methodName and params
     public String methodNameSignature;
@@ -37,9 +42,14 @@ public class MethodInfo {
     public Class[] remoteParams;
     
     public boolean[] compressedParams;
+    public boolean[] dontUseQueues;
     
     // true if dont wait for return value (void methods)
     public boolean noReturnValue;
+
+    public boolean dontUseQueueForReturnValue;
+    
+    public boolean dontUseQueue;
     
     public int timeoutSeconds = 0;
 }

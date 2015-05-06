@@ -35,4 +35,7 @@ public @interface OARemoteParameter {
     
     // true if the param should be compressed when it is transmitted
     boolean compressed() default false;
+    
+    // if true and this is a remote object, then it will not use a queue when messaging (even if parent uses a msg queue)
+    boolean dontUseQueue() default false;
 }

@@ -17,10 +17,10 @@ All rights reserved.
 */
 package com.viaoa.sync.remote;
 
+
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectKey;
-import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
-import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
+import com.viaoa.remote.multiplexer.annotation.*;
 import com.viaoa.sync.model.ClientInfo;
 
 @OARemoteInterface
@@ -29,18 +29,26 @@ public interface RemoteServerInterface {
     boolean save(Class objectClass, OAObjectKey objectKey, int iCascadeRule);
     OAObject getObject(Class objectClass, OAObjectKey objectKey);
 
-    RemoteSessionInterface getRemoteSession(ClientInfo clientInfo, RemoteClientCallbackInterface callback);
+    RemoteSessionInterface getRemoteSession(
+        ClientInfo clientInfo, 
+        @OARemoteParameter(dontUseQueue=true) RemoteClientCallbackInterface callback
+    );
+    
+    
     RemoteClientInterface getRemoteClient(ClientInfo clientInfo);
     
+    @OARemoteMethod(dontUseQueue=true)
     String ping(String msg);
     
-    @OARemoteMethod(noReturnValue=true)
+    @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void ping2(String msg);
     
+    @OARemoteMethod(dontUseQueue=true)
     String getDisplayMessage();
     
+    @OARemoteMethod(dontUseQueue=true)
     int getNextFiftyObjectGuids();
     
-    @OARemoteMethod(noReturnValue=true)
+    @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void refresh(Class clazz);
 }
