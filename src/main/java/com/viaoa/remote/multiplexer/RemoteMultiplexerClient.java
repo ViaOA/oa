@@ -221,8 +221,8 @@ public class RemoteMultiplexerClient {
      * the server returns a remote instance. All methods that are called on the proxy will be sent to
      * the server, and act as-if it were ran locally.
      */
-    protected Object getProxyForCtoS(RequestInfo ri, String name, Class c) throws Exception {
-        return getProxyForCtoS(name, c, ri.bind.usesQueue);
+    protected Object getProxyForCtoS(RequestInfo ri, String name, Class c, boolean bDontUseQueue) throws Exception {
+        return getProxyForCtoS(name, c, (ri.bind.usesQueue && !bDontUseQueue));
     }
 
     protected Object getProxyForCtoS(String name, Class c, boolean bUsesQueue) throws Exception {
@@ -242,7 +242,7 @@ public class RemoteMultiplexerClient {
         hmProxyCtoS.put(name, proxy);
         bind.setObject(proxy, referenceQueue);
 
-        if (bind.usesQueue) {
+        if (bind.usesQueue && bUsesQueue) {
             if (!bFirstStoCsocketCreated) {
                 createSocketForStoC(); // to process message from server to this object
             }
@@ -435,7 +435,7 @@ public class RemoteMultiplexerClient {
 
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
 
-        if (ri.bind.usesQueue) {
+        if (ri.bind.usesQueue && !ri.methodInfo.dontUseQueue) {
             if (ri.bind.isBroadcast) {
                 ri.type = RequestInfo.Type.CtoS_QueuedBroadcast;
             }
@@ -1041,7 +1041,9 @@ public class RemoteMultiplexerClient {
                 BindInfo bindx = getBindInfo(bindName);
                 Object objx = bindx != null ? bindx.weakRef.get() : null;
                 if (bindx == null || objx == null) {
-                    Object obj = getProxyForCtoS(ri, bindName, ri.methodInfo.remoteParams[i]);
+                    boolean bDontUseQueue = (ri.methodInfo.dontUseQueues != null && ri.methodInfo.dontUseQueues[i]); 
+                    Object obj = getProxyForCtoS(ri, bindName, ri.methodInfo.remoteParams[i], bDontUseQueue); 
+                    
                     ri.args[i] = obj;
                 }
                 else ri.args[i] = bindx.getObject();

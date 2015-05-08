@@ -841,7 +841,6 @@ public class RemoteMultiplexerServer {
         return getBindInfo(null, name, obj, interfaceClass, false, queueName, queueSize, false);
     }
     protected BindInfo getBindInfo(BindInfo biParent, String name, Object obj, Class interfaceClass, boolean bIsBroadcast, String queueName, int queueSize, boolean bDontUseQueue) {
-//qqqqqqqqqq needs to use bDontUseQueue        
         if (name == null || interfaceClass == null) {
             throw new IllegalArgumentException("name and interfaceClass can not be null");
         }
@@ -861,7 +860,7 @@ public class RemoteMultiplexerServer {
         bind.loadMethodInfo();
         hmNameToBind.put(name, bind);
         
-        if (bind.usesQueue) {
+        if (bind.usesQueue && !bDontUseQueue) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(bind.asyncQueueName);
             if (cq == null) {
                 cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {};
