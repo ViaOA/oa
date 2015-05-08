@@ -424,7 +424,9 @@ public class RemoteMultiplexerClient {
                 BindInfo bindx = getBindInfoForObject((Object) ri.args[i]);
                 Object objx = bindx != null ? bindx.weakRef.get() : null;
                 if (bindx == null || objx == null) {
-                    bindx = getBindInfo(ri, createBindName(ri), ri.args[i], ri.methodInfo.remoteParams[i]);
+                    
+                    boolean b = ri.methodInfo.dontUseQueues != null && ri.methodInfo.dontUseQueues[i];
+                    bindx = getBindInfo(ri, createBindName(ri), ri.args[i], ri.methodInfo.remoteParams[i], b);
                     if (!bFirstStoCsocketCreated) {
                         createSocketForStoC(); // to process message from server to this object
                     }
@@ -1084,7 +1086,8 @@ public class RemoteMultiplexerClient {
             Object objx = bindx != null ? bindx.weakRef.get() : null;
             if (bindx == null || objx == null) {
                 // make remote
-                bindx = getBindInfo(ri, createBindName(ri), ri.response, ri.methodInfo.remoteReturn);
+                boolean b = ri.methodInfo.dontUseQueueForReturnValue;
+                bindx = getBindInfo(ri, createBindName(ri), ri.response, ri.methodInfo.remoteReturn, b);
             }
             ri.responseBindName = bindx.name; // this will be the return value
         }
@@ -1234,8 +1237,8 @@ public class RemoteMultiplexerClient {
         return bind;
     }
 
-    protected BindInfo getBindInfo(RequestInfo ri, String name, Object obj, Class interfaceClass) {
-        return getBindInfo(name, obj, interfaceClass, ri.bind.usesQueue, ri.bind.isBroadcast);
+    protected BindInfo getBindInfo(RequestInfo ri, String name, Object obj, Class interfaceClass, boolean bDontUseQueue) {
+        return getBindInfo(name, obj, interfaceClass, (ri.bind.usesQueue||!bDontUseQueue), ri.bind.isBroadcast);
     }
 
 /*    
