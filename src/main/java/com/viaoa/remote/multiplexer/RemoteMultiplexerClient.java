@@ -1238,7 +1238,7 @@ public class RemoteMultiplexerClient {
     }
 
     protected BindInfo getBindInfo(RequestInfo ri, String name, Object obj, Class interfaceClass, boolean bDontUseQueue) {
-        return getBindInfo(name, obj, interfaceClass, (ri.bind.usesQueue||!bDontUseQueue), ri.bind.isBroadcast);
+        return getBindInfo(name, obj, interfaceClass, (ri.bind.usesQueue&&!bDontUseQueue), ri.bind.isBroadcast);
     }
 
 /*    

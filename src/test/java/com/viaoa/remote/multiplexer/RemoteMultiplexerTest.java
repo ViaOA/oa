@@ -339,8 +339,10 @@ public class RemoteMultiplexerTest extends OAUnitTest {
         
         multiplexerClient.close();
     }    
-    
-    @Test(timeout=2000)
+
+//qqqqqqqqqqqqqqq    
+//    @Test(timeout=2000)
+    @Test
     public void testStoC_SocketRequest() throws Exception {
         RemoteClientInterface remoteClient;
         MultiplexerClient multiplexerClient;
@@ -536,8 +538,12 @@ public class RemoteMultiplexerTest extends OAUnitTest {
         MultiplexerClient.DEBUG = MultiplexerServer.DEBUG = true;
         
         System.out.println("START: "+(new OADateTime()));
+        
         RemoteMultiplexerTest test = new RemoteMultiplexerTest();
         test.setup();
+//qqqqqqqqqqqqqqqqqqqq        
+test.testStoC_SocketRequest();        
+        
         test.testCtoS_QueuedRequest();
         test.testCtoS_QueuedRequestNoResponse();
         test.testStoC_QueuedRequest();
