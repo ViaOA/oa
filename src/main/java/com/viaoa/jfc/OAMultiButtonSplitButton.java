@@ -41,6 +41,7 @@ public class OAMultiButtonSplitButton extends OASplitButton {
     private JPopupMenu popup;
     private JButton cmdSelected;
     private boolean bShowTextInSelectedButton = true;
+    private boolean bShowSelectedButton = true;
     private GridBagConstraints gc;
     private boolean bIsPopupVisible;
     
@@ -88,6 +89,14 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         
     }
     
+    public void setShowSelectedButton(boolean b) {
+        bShowSelectedButton = b;
+    }
+    public boolean getShowSelectedButton() {
+        return bShowSelectedButton;
+    }
+    
+    
     public void setShowTextInSelectedButton(boolean b) {
         bShowTextInSelectedButton = b;
     }
@@ -103,8 +112,14 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         mainButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (cmdSelected != null) {
-                    cmdSelected.doClick();
+                if (bShowSelectedButton) {
+                    if (cmdSelected != null) {
+                        cmdSelected.doClick();
+                    }
+                }
+                else {
+                    // show popup
+                    dropDownButton.doClick();
                 }
             }
         });
@@ -121,12 +136,20 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         
         // cmd.setAlignmentX(LEFT_ALIGNMENT);
         cmd.setHorizontalAlignment(SwingConstants.LEFT);  // Sets the horizontal alignment of the icon and text.
-        
-        popup.add(cmd, gc);
+
+        boolean bAdd = true;
         if (bDefault || bFirst) {
             bFirst = false;
             setSelected(cmd);
+            if (!bAllowChangeMasterButton) {
+                if (bShowSelectedButton) {
+                    bAdd = false;
+                }
+            }
         }
+
+        if (bAdd) popup.add(cmd, gc);
+        
         cmd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -139,6 +162,7 @@ public class OAMultiButtonSplitButton extends OASplitButton {
     }
 
     public void setSelected(JButton cmd) {
+        if (!bShowSelectedButton) return;
         cmdSelected = cmd;
         if (bShowTextInSelectedButton) {
             mainButton.setText(cmdSelected.getText());

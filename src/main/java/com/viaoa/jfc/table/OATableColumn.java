@@ -52,7 +52,14 @@ public class OATableColumn {
     public boolean bDefault = true; // 2006/12/28
     public int defaultWidth; // 2006/12/28
     public int currentWidth; // 2006/12/28
+    boolean allowSorting=true;
     
+    public boolean getAllowSorting() {
+        return allowSorting;
+    }
+    public void setAllowSorting(boolean b) {
+        allowSorting = b;
+    }
     
     // flag to know if the propertyPath needs to be expanded to include any
     //    additional path from the component's Hub to the Table's hub.

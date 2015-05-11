@@ -1079,6 +1079,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
         };
         OATableColumn tc = addColumn(heading, width, lbl);
+        tc.setAllowSorting(false);
     }
 
     
@@ -1111,9 +1112,37 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     
     protected OACheckBox chkSelection;
     
-    // 20150423
+    // 20150511
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggleUsingControlKey, boolean extendUsingShiftKey) {
+        // extendUsingShiftKey=true if its a mouse drag
+
+        if (chkSelection == null && tableRight != null) {
+            chkSelection = tableRight.chkSelection;
+        }
+        
+        if (chkSelection != null && hubSelect != null) {
+            
+            if (extendUsingShiftKey) {
+                if (bIsMouseDragging) {
+                    if (lastMouseDragRow < 0) {
+                        lastMouseDragRow = rowIndex;
+                        return; // ignore right now
+                    }
+                    if (rowIndex == lastMouseDragRow) return;
+                    getSelectionModel().addSelectionInterval(lastMouseDragRow, lastMouseDragRow);
+                }
+            }
+            
+            if (columnIndex == getColumnIndex(chkSelection) && (tableRight != null)) {
+                if (!extendUsingShiftKey) toggleUsingControlKey = true;
+            }
+        }
+        super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
+    }                    
+    // 20150423
+    //was: qqqqqqq
+    public void changeSelection_OLD(int rowIndex, int columnIndex, boolean toggleUsingControlKey, boolean extendUsingShiftKey) {
         // extendUsingShiftKey=true if its a mouse drag
 
         if (chkSelection == null && tableRight != null) {
@@ -1676,6 +1705,7 @@ e.printStackTrace();
         Capture double click and call double click button.
         @see #getDoubleClickButton
     */
+int ii;//qqqqqqqqqqqqqq    
     @Override
     protected void processMouseEvent(MouseEvent e) {
 
@@ -1683,7 +1713,23 @@ e.printStackTrace();
             lastMouseDragRow = -1;
             bIsMouseDragging = false;
         }
+      
+// 20150511 popup trigger to work for windows and Mac
+  
+        if (compPopupMenu != null) {
+            if (e.getID() == MouseEvent.MOUSE_RELEASED || e.getID() == MouseEvent.MOUSE_PRESSED) {
+                if (e.isPopupTrigger()) {
+                    Point pt = e.getPoint();
+                    int row = rowAtPoint(pt);
+     
+                    hub.setPos(row);
+                    compPopupMenu.show(this, pt.x, pt.y);
+                }
+            }
+        }        
         
+        
+/*was        
         if (compPopupMenu != null) {
             if (e.getID() == MouseEvent.MOUSE_RELEASED) {
                 if ( (e.getModifiers() & Event.META_MASK) != 0) {
@@ -1692,17 +1738,18 @@ e.printStackTrace();
                         int row = rowAtPoint(pt);
          
                         hub.setPos(row);
-                        /*
+                        / *
                         ListSelectionModel lsm = getSelectionModel();
                         if (!lsm.isSelectedIndex(row)) {
                             getSelectionModel().setSelectionInterval(row, row);
                         }
-                        */
+                        * /
                         compPopupMenu.show(this, pt.x, pt.y);
                     }
                 }
             }
-        }        
+        }
+*/        
         
         if (e.getID() == MouseEvent.MOUSE_PRESSED) {
             Point pt = e.getPoint();
@@ -2275,6 +2322,7 @@ e.printStackTrace();
     protected void onHeadingClick(OATableColumn tc, MouseEvent e, Point pt) {
         if (!bAllowSorting) return;
         if (tc == null) return;
+        if (!tc.getAllowSorting()) return;
         tc.setupTableColumn();
         
         // 20101229 setup to be able to remove the sort order on a column
@@ -2354,6 +2402,7 @@ e.printStackTrace();
             tc = (OATableColumn) columns.elementAt(pos);
         }
         if (tc == null) return;
+        
         if ((e.getModifiers() & Event.META_MASK) !=0) {
             if (!e.isPopupTrigger()) return;
         }
@@ -2761,7 +2810,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             if (newAoPos < 0) {
                 newAoPos = getHub().getPos(hubSelect.getAt(0));
             }
-            getHub().setAO(newAoPos);
+            // was: getHub().setAO(newAoPos);  not needed, since the mouse event will setPos
         }
         else {
             int row = table.getSelectedRow();

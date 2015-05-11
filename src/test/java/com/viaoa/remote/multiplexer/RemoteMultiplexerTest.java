@@ -398,6 +398,7 @@ public class RemoteMultiplexerTest extends OAUnitTest {
         cntStoCRequestServer = cntStoCRequestClient = 0;
         String s = remoteClientInterfaceOnServerNoQ.ping("xxx");
         assertEquals("xxx", s);
+        Thread.sleep(120);
         
         assertEquals(1, cntStoCRequestClient);
         
