@@ -21,11 +21,6 @@ EGit
     
 M2E for Maven plugin
 
-Subversion plugin
-    subversion client adapter (required)
-    subversion Java HL (required)
-    subclipse
-
 Quickmarks plugin
     2012/08/14
     Download from:
@@ -39,7 +34,13 @@ Quickmarks plugin
 
      
 Export general/preferences from existing Eclipse and import into new     
-     
+    ? or just use same workspace     
+
+Subversion plugin
+    subversion client adapter (required)
+    subversion Java HL (required)
+    subclipse
+
 
 installing JavaScript support
     Add JavaScript to program
