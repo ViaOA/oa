@@ -800,6 +800,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public void setShowChanges(final boolean b) {
         synchronized (lockShowChanges) {
             bShowChanges = b;
+            if (tableRight != null) return;
             if (!b) {
                 hmRowColumnChanged = null;
                 if (timerShowChanges != null) {
@@ -821,7 +822,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                             }
                             if (tsNow > entry.getValue().longValue()+500) hmRowColumnChanged.remove(entry.getKey());
                         }
-                        if (tsNow > 0) OATable.this.repaint(250);
+                        if (tsNow > 0) {
+                            OATable.this.repaint(250);
+                            if (tableLeft != null) tableLeft.repaint(250);
+                        }
                         else {
                             emptyCount++;
                             if (emptyCount > 10) {
@@ -839,9 +843,20 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (tableLeft != null) tableLeft.setShowChanges(b);
     }
     public void setChanged(int row, int col) {
+        OATable t = getRightTable();
+        if (t != null) {
+            t.setChanged(row, col);
+            return;
+        }
         if (!bShowChanges) return;
+        
+        // if (!OARemoteThreadDelegate.isRemoteThread()) return;
         synchronized (lockShowChanges) {
-            if (!OARemoteThreadDelegate.isRemoteThread()) return;
+            ConcurrentHashMap<String, Object> hm = hmRowColumnValue;
+            if (hm == null) {
+                hm = new ConcurrentHashMap<String, Object>();
+                hmRowColumnValue = hm;
+            }
             hmRowColumnChanged.put(row+"."+col, System.currentTimeMillis());
             if (!timerShowChanges.isRunning()) {
                 timerShowChanges.start();
@@ -850,6 +865,12 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
     protected ConcurrentHashMap<String, Object> hmRowColumnValue;
     public void setChanged(int row, int col, Object newValue) {
+        OATable t = getRightTable();
+        if (t != null) {
+            t.setChanged(row, col, newValue);
+            return;
+        }
+
         if (!bShowChanges) return;
         ConcurrentHashMap<String, Object> hm = hmRowColumnValue;
         if (hm == null) {
@@ -867,15 +888,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     
     public boolean wasChanged(int row, int col) {
         OATable t = getRightTable();
-        if (!bShowChanges && (t == null || !t.bShowChanges)) {
-            return false;
-        }
-
-        t = getLeftTable();
         if (t != null) {
-            if (col < t.getColumnCount()) return t.wasChanged(row, col);
+            return t.wasChanged(row, col);
         }
-        
+        if (!bShowChanges) return false;
+
         if (hmRowColumnChanged == null) return false;
         Long longx = hmRowColumnChanged.get(row+"."+col);
         return (longx != null);
@@ -1122,7 +1139,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         
         if (chkSelection != null && hubSelect != null) {
-            
             if (extendUsingShiftKey) {
                 if (bIsMouseDragging) {
                     if (lastMouseDragRow < 0) {
@@ -1135,10 +1151,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
             
             if (columnIndex == getColumnIndex(chkSelection) && (tableRight != null)) {
-                if (!extendUsingShiftKey) toggleUsingControlKey = true;
+                if (!bIsProcessKeyBinding) {
+                    if (!extendUsingShiftKey) toggleUsingControlKey = true;
+                }
             }
         }
         super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
+        repaint();
     }                    
     // 20150423
     //was: qqqqqqq
@@ -2445,39 +2464,101 @@ int ii;//qqqqqqqqqqqqqq
         }
     }
 
+    
+    private boolean bIsProcessKeyBinding;
     // 20101229 add this to be able to left/right arrow between joined tables
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
 
-        if (tableLeft == null && tableRight == null) {
-            return super.processKeyBinding(ks, e, condition, pressed);
-        }
-
-        int col = getSelectedColumn();
-        boolean b = super.processKeyBinding(ks, e, condition, pressed);
-        
-        if (!b) return false;  // only want to know when a key was actually used
-        if (col != getSelectedColumn()) return true;  // column change was able to be made
-
+        Hub hub = getHub();
+        final int rowBefore = (hub == null) ? 0 : hub.getPos();
         int code = e.getKeyCode();
-        if (code == KeyEvent.VK_LEFT) {
-            if (col != 0 || tableLeft == null) return true;
-            // goto left table, last column
-            col = tableLeft.getColumnCount() - 1;
-            tableLeft.setColumnSelectionInterval(col,col);
-            int row = this.getSelectedRow();
-            tableLeft.setRowSelectionInterval(row, row);
-            tableLeft.requestFocus();
+        int colBefore = getSelectedColumn();
+        
+        bIsProcessKeyBinding = true;
+        boolean bWasUsed = super.processKeyBinding(ks, e, condition, pressed);
+        bIsProcessKeyBinding = false;
+        
+        if (!bWasUsed) return false;  // only want to know when a key was actually used
+        final int rowAfter = (hub == null) ? 0 : hub.getPos();
+        
+        if (tableLeft == null && tableRight == null) {
         }
-        else if (code == KeyEvent.VK_RIGHT) {
-            if (tableRight == null) return true;
-            if (col != this.getColumnCount() - 1) return true;
-            // goto first column in right table
-            tableRight.setColumnSelectionInterval(0, 0); 
-            int row = this.getSelectedRow();
-            tableRight.setRowSelectionInterval(row, row);
-            tableRight.requestFocus();
+        else {
+            if (colBefore == getSelectedColumn()) {  // column change was not able to be made
+                if (code == KeyEvent.VK_LEFT) {
+                    if (colBefore != 0 || tableLeft == null) return true;
+                    // goto left table, last column
+                    int col = tableLeft.getColumnCount() - 1;
+                    tableLeft.setColumnSelectionInterval(col, col);
+                    int row = this.getSelectedRow();
+                    tableLeft.setRowSelectionInterval(row, row);
+                    tableLeft.requestFocus();
+                }
+                else if (code == KeyEvent.VK_RIGHT) {
+                    if (tableRight == null) return true;
+                    if (colBefore != this.getColumnCount() - 1) return true;
+                    // goto first column in right table
+                    tableRight.setColumnSelectionInterval(0, 0); 
+                    int row = this.getSelectedRow();
+                    tableRight.setRowSelectionInterval(row, row);
+                    tableRight.requestFocus();
+                }
+            }
         }
+        
+        // 20150512
+        if (code == KeyEvent.VK_UP) {
+            if (rowAfter == rowBefore && rowBefore != 0) {
+                if (hub != null) {
+                    int pos = hub.getPos() - 1;
+                    //if (pos >= 0) hub.setPos(pos);
+                }
+            }
+        }
+        else if (code == KeyEvent.VK_DOWN) {
+            if (rowAfter == rowBefore) {
+                if (hub != null) {
+                    int pos = hub.getPos() + 1;
+                    //if (pos < hub.getSize()) hub.setPos(pos);
+                }
+            }
+        }
+        else if (code == KeyEvent.VK_HOME) {
+            if ( (e.getModifiers() & Event.CTRL_MASK) != 0) {
+                if (rowAfter == rowBefore) {
+                    //if (hub != null) hub.setPos(0);
+                }
+            }
+            else {
+                if (tableLeft != null) {
+                    tableLeft.setColumnSelectionInterval(0,0);
+                    int row = this.getSelectedRow();
+                    tableLeft.setRowSelectionInterval(row, row);
+                    tableLeft.requestFocus();
+                }
+            }
+        }
+        else if (code == KeyEvent.VK_END) {
+            if ( (e.getModifiers() & Event.CTRL_MASK) != 0) {
+                if (rowAfter == rowBefore) {
+                    if (hub != null) {
+                        int pos = hub.getSize() - 1;
+                        //if (pos >= 0) hub.setPos(pos);
+                    }
+                }
+            }
+            else {
+                if (tableRight != null) {
+                    int col = tableRight.getColumnCount() - 1;
+                    tableRight.setColumnSelectionInterval(col,col);
+                    int row = this.getSelectedRow();
+                    tableRight.setRowSelectionInterval(row, row);
+                    tableRight.requestFocus();
+                }
+            }
+        }
+
         return true;
     }
 
@@ -2810,7 +2891,12 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             if (newAoPos < 0) {
                 newAoPos = getHub().getPos(hubSelect.getAt(0));
             }
-            // was: getHub().setAO(newAoPos);  not needed, since the mouse event will setPos
+            
+            //newAoPos = table.getEditingRow();
+            //if (newAoPos < 0) newAoPos = table.getSelectedRow();
+            newAoPos = table.getSelectionModel().getLeadSelectionIndex();
+            
+            getHub().setAO(newAoPos);  
         }
         else {
             int row = table.getSelectedRow();
