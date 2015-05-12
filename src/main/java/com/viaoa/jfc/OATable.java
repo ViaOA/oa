@@ -1150,14 +1150,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 }
             }
             
-            if (columnIndex == getColumnIndex(chkSelection) && (tableRight != null)) {
-                if (!bIsProcessKeyBinding) {
-                    if (!extendUsingShiftKey) toggleUsingControlKey = true;
+            if (columnIndex == getColumnIndex(chkSelection)) {
+                if (!extendUsingShiftKey) {
+//qqqqqqqqq                    if (bIsProcessKeyBinding) return;
+                    toggleUsingControlKey = true;
                 }
             }
         }
         super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
-        repaint();
     }                    
     // 20150423
     //was: qqqqqqq
@@ -2909,6 +2909,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
         }
         _bRunningValueChanged = false;
+        table.repaint();
     }
 
     public @Override void onNewList(HubEvent e) {
