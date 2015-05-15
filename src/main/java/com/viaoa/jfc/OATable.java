@@ -1150,7 +1150,12 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 }
             }
             
-            if (columnIndex == getColumnIndex(chkSelection)) {
+            int addColumns = 0;
+            if (tableLeft != null) {
+                addColumns = tableLeft.getColumnCount();
+            }
+            
+            if ((columnIndex+addColumns) == getColumnIndex(chkSelection)) {
                 if (!extendUsingShiftKey) {
                     if (!bIsProcessKeyBinding) {
                         toggleUsingControlKey = true;

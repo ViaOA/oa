@@ -1413,7 +1413,6 @@ public class RemoteMultiplexerServer {
          */
         public VirtualSocket getSocketForStoC() throws Exception {
             VirtualSocket socket = null;
-            boolean bRequestedNew = false;
             boolean bWaitedForFirst = false;
             for (int i = 0; socket == null; i++) {
                 boolean bRequestNew = false;
@@ -1422,19 +1421,15 @@ public class RemoteMultiplexerServer {
                         throw new Exception("closed connection/session=" + connectionId);
                     }
                     int x = alSocketFromStoC.size();
-                    if (x > 1) {
+                    if (x > 0) {
                         socket = alSocketFromStoC.remove(0);
+                        if (x == 1) bRequestNew = true;
                     }
-                    else if (x == 1 && !bRequestedNew) {
-                        // request client to open more CtoS sockets
-                        bRequestNew = true;
-                        socket = alSocketFromStoC.remove(0);
-                    }
-                    else if (x == 0 && !bWaitedForFirst) {
+                    else if (!bWaitedForFirst) {
                         alSocketFromStoC.wait(250);
                         bWaitedForFirst = true;
                     }
-                    else if (x == 0 && i > 10) {
+                    else if (i > 20) {
                         throw new Exception("no StoC sockets available for connection/session=" + connectionId);
                     }
                     else {
@@ -1445,9 +1440,6 @@ public class RemoteMultiplexerServer {
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket);
                     oos.writeByte(RequestInfo.Type.StoC_CreateNewStoCSocket.ordinal());
                     oos.flush();
-                    bRequestedNew = false;
-                    releaseSocketForStoC(socket);
-                    socket = null;
                 }
             }
             return socket;

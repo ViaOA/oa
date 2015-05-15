@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import com.viaoa.util.OADateTime;
 import com.viaoa.util.OAFile;
 import com.viaoa.util.OAString;
 
@@ -38,9 +40,17 @@ public class JNLPServlet extends HttpServlet
     {
         String s;
 
-        resp.setHeader("Cache-Control", "no-cache"); //HTTP 1.1
+        resp.addHeader("Expires", "Fri, 15 May 2015 8:00:00 GMT");
+        
+        // Set standard HTTP/1.1 no-cache headers.
+        resp.addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+        // Set IE extended HTTP/1.1 no-cache headers 
+        resp.addHeader("Cache-Control", "post-check=0, pre-check=0");
+        
         resp.setHeader("Pragma", "no-cache"); //HTTP 1.0
         resp.setDateHeader("Expires", 0); //prevents caching at the proxy server
+        
+        resp.setDateHeader("Last-Modified", (new OADateTime()).getTime());
         
         // ex:   "http://localhost:8082/jnlp/template.jnlp"
         /*

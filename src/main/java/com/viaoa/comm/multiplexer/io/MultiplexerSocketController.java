@@ -112,7 +112,7 @@ public class MultiplexerSocketController implements Serializable {
     private int _status; // see STATUS_* above
 
     /** */
-    static final String Signature = "MULTIPLEXER_SIGNATURE_50515"; // unique signature expected from MultiplexerServerSocketController.accept()
+    static final String Signature = "MULTIPLEXER_SIGNATURE_B"; // unique signature expected from MultiplexerServerSocketController.accept()
 
     /**
      * Assigned on server to create a unique identifier for the server instance.
