@@ -1152,8 +1152,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             
             if (columnIndex == getColumnIndex(chkSelection)) {
                 if (!extendUsingShiftKey) {
-//qqqqqqqqq                    if (bIsProcessKeyBinding) return;
-                    toggleUsingControlKey = true;
+                    if (!bIsProcessKeyBinding) {
+                        toggleUsingControlKey = true;
+                    }
                 }
             }
         }
