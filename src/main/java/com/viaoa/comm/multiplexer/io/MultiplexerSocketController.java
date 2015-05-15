@@ -112,7 +112,7 @@ public class MultiplexerSocketController implements Serializable {
     private int _status; // see STATUS_* above
 
     /** */
-    static final String Signature = "MULTIPLEXER_SIGNATURE_A"; // unique signature expected from MultiplexerServerSocketController.accept()
+    static final String Signature = "MULTIPLEXER_SIGNATURE_50515"; // unique signature expected from MultiplexerServerSocketController.accept()
 
     /**
      * Assigned on server to create a unique identifier for the server instance.
@@ -231,7 +231,7 @@ public class MultiplexerSocketController implements Serializable {
     /**
      * This will verify that the client that is connected is a valid MultiplexerSocket. To be valid, the client will send a "signature" string that must match the signature on the server.
      * 
-     * @return true if client is a valid vsoceket, else returns false.
+     * @return true if client is a valid vsocket, else returns false.
      * @throws IOException
      */
     protected boolean verifyServerSideHandshake() throws IOException {

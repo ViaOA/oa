@@ -1445,7 +1445,7 @@ public class RemoteMultiplexerServer {
                     RemoteObjectOutputStream oos = new RemoteObjectOutputStream(socket);
                     oos.writeByte(RequestInfo.Type.StoC_CreateNewStoCSocket.ordinal());
                     oos.flush();
-                    bRequestedNew = true;
+                    bRequestedNew = false;
                     releaseSocketForStoC(socket);
                     socket = null;
                 }

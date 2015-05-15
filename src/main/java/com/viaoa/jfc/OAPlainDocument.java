@@ -120,8 +120,14 @@ public class OAPlainDocument extends PlainDocument {
         int x = str.length();
         int x2 = getLength();
         if (bMaxUsed && (x + x2) > max) {
+            int x3 = max - x2;
+            if (x3 > 0) {
+                str = str.substring(0, x3);
+            }
+            else str = "";
+            x = str.length();
             handleError(ERROR_MAX_LENGTH);
-            return;
+            //return;
         }
 
         for (int i=0; i<x; i++) {

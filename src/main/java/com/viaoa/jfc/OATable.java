@@ -2597,6 +2597,7 @@ int ii;//qqqqqqqqqqqqqq
     public static final Color COLOR_Odd = UIManager.getColor("Table.background");
     public static final Color COLOR_Even = new Color(249, 255, 255);
     public static final Color COLOR_Focus = UIManager.getColor("Table.foreground");
+    public static final Color COLOR_MouseOver = new Color(0,0,110);
     
     public static final Color COLOR_Change_Foreground = Color.yellow;  
     public static final Color COLOR_Change_Background = new Color(0,0,105);  
@@ -2661,7 +2662,7 @@ int ii;//qqqqqqqqqqqqqq
             
             if (wasMouseOver) {
                 lbl.setForeground(Color.white);
-                lbl.setBackground(COLOR_Focus);
+                lbl.setBackground(COLOR_MouseOver);
                 lbl.setBorder(BORDER_Focus);
             }
             else lbl.setBorder(null);
