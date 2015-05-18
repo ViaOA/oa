@@ -1,19 +1,12 @@
-/*
-This software and documentation is the confidential and proprietary
-information of ViaOA, Inc. ("Confidential Information").
-You shall not disclose such Confidential Information and shall use
-it only in accordance with the terms of the license agreement you
-entered into with ViaOA, Inc.
-
-ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
-SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
-SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
-THIS SOFTWARE OR ITS DERIVATIVES.
-
-Copyright (c) 2001-2013 ViaOA, Inc.
-All rights reserved.
+/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 package com.viaoa.jsp;
 
@@ -113,11 +106,11 @@ public class OATablePager implements java.io.Serializable {
 
         if (totalPages > 1) {
             String dis = (currentPage > 0) ? "" : " class='oatablePagerDisable'";
-            sb.append("<li oaValue='0'" + dis + ">««</li>");
+            sb.append("<li oaValue='0'" + dis + ">ï¿½ï¿½</li>");
 
             int x = currentPage - 1;
             if (x < 0) x = 0;
-            sb.append("<li oaValue='" + x + "'" + dis + ">«</li>");
+            sb.append("<li oaValue='" + x + "'" + dis + ">ï¿½</li>");
 
             for (int i = beginPage; i <= endPage; i++) {
                 String s = (i == currentPage) ? " class='oatablePagerSelected'" : "";
@@ -131,10 +124,10 @@ public class OATablePager implements java.io.Serializable {
             x = currentPage + 1;
             if (x >= totalPages) x = currentPage;
             dis = (currentPage < (totalPages - 1)) ? "" : " class='oatablePagerDisable'";
-            sb.append("<li oaValue='" + x + "'" + dis + ">»</li>");
+            sb.append("<li oaValue='" + x + "'" + dis + ">ï¿½</li>");
 
             dis = (currentPage + 1 != totalPages) ? "" : " class='oatablePagerDisable'";
-            sb.append("<li oaValue='" + (totalPages - 1) + "'" + dis + ">»»</a></li>");
+            sb.append("<li oaValue='" + (totalPages - 1) + "'" + dis + ">ï¿½ï¿½</a></li>");
         }
         if (totalPages > 0) {
             sb.append("</ul>");

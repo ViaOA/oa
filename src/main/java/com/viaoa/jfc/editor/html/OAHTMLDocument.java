@@ -1,82 +1,13 @@
-/*
-This software and documentation is the confidential and proprietary
-information of ViaOA, Inc. ("Confidential Information").
-You shall not disclose such Confidential Information and shall use
-it only in accordance with the terms of the license agreement you
-entered into with ViaOA, Inc.
-
-ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
-SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
-SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
-THIS SOFTWARE OR ITS DERIVATIVES.
-
-Copyright (c) 2001-2013 ViaOA, Inc.
-All rights reserved.
+/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
-/*
-    Goals:
-    
-    Reading HTML - load as CSS.Attributes, strip out HTML.Attributes that are converted to CSS.Attributes
-    Writing - use Styles instead of HTML.Attributes
-    
-    Attributes (name/value pairs):
-    CSS.Attributes.XX / value   - ex: CSS.Attribute.Color / CSS.ColorValue
-    StyleConstant.Name / HTML.TAG.XX  - to store html tag name
-    HTML.Attribute.Class / "class name" 
-
-
-    Fonts:
-    All fonts are using pixel sizes
-    
-    
-    See:
-    StyleConstants
-    StyleSheet
-    CSS  -   ** this has a list of supported attributes
-    CSS.Attribute
-
-
-    Supported CSS styles: 
-        font-style
-        font-size (supports relative units)
-        font-weight
-        font
-        color
-        vertical-align (only sup and super)
-        text-align (justify is treated as center)
-        text-indent
-        text-decoration 
-        
-        margin-top
-        margin-right
-        margin-bottom
-        margin-left
-        margin
-        padding-top
-        padding-right
-        padding-bottom
-        padding-left
-        padding
-        
-        border
-        border-style (only supports inset, outset and none)
-        border-left-style
-        
-        border-top
-        border-top-width
-        border-right-width
-        border-bottom-width
-        border-left-width
-        border-width
-        border-right
-        border-bottom
-        border-left
-        border-color
-        border-left-color
-
- */
 package com.viaoa.jfc.editor.html;
 
 import java.awt.*;
