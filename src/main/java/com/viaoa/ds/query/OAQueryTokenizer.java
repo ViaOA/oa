@@ -1,79 +1,13 @@
-/*
-This software and documentation is the confidential and proprietary
-information of ViaOA, Inc. ("Confidential Information").
-You shall not disclose such Confidential Information and shall use
-it only in accordance with the terms of the license agreement you
-entered into with ViaOA, Inc.
-
-ViaOA, Inc. MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
-SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT. ViaOA, Inc. SHALL NOT BE LIABLE FOR ANY DAMAGES
-SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
-THIS SOFTWARE OR ITS DERIVATIVES.
-
-Copyright (c) 2001-2013 ViaOA, Inc.
-All rights reserved.
+/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
-
-/***
-
-client.pets.exams.tech.phones.number = '7707951623'
-
-
--- client.pets.exams.examItems.item.sectionItems.examItemStatus.name like 'Re%' OR client.pets.exams.examItems == null
---    AND client.pets.exams.examItems.item.name != 'Test'
-
-select * from client where
-exists (select * from pet where pet.clientId = client.id and
-exists (select * from exam where exam.petId = pet.id and
-exists (select * from examItem, item where examItem.examId = exam.id and examItem.itemId = item.id AND item.name <> 'Test' AND
-exists (select * from sectionItem, examItemStatus where sectionItem.itemId = item.id and examItemStatus.name like 'Re%')))
-OR (0 = (select count(*) from exam where exam.pet = pet.id))
-)
-
-
--- client.pets.exams.examItems.item.sectionItems.examItemStatus.name like 'Re%'
-
-select * from client where
-exists (select * from pet where pet.clientId = client.id and
-exists (select * from exam where exam.petId = pet.id and
-exists (select * from examItem, item where examItem.examId = exam.id and examItem.itemId = item.id and
-exists (select * from sectionItem, examItemStatus where sectionItem.itemId = item.id and examItemStatus.name like 'Re%'))))
-
--- client.pets.exams.examItems.item.sectionItems.examItemStatus = null
-
-select * from client where
-exists (select * from pet where pet.clientId = client.id and
-exists (select * from exam where exam.petId = pet.id and
-exists (select * from examItem, item where examItem.examId = exam.id and examItem.itemId = item.id and
-exists (select * from sectionItem where sectionItem.examItemStatusId is null))))
-
-
--- client.pets.exams.examItems.item.sectionItems.examItemStatus != null
-
-select * from client where
-exists (select * from pet where pet.clientId = client.id and
-exists (select * from exam where exam.petId = pet.id and
-exists (select * from examItem, item where examItem.examId = exam.id and examItem.itemId = item.id and
-exists (select * from sectionItem where sectionItem.examItemStatusId is not null))))
-
--- client.pets.exams != null
-
-select * from client where
-exists (select * from pet where pet.clientId = client.id and
-0 < (select count(*) from exam where exam.petId = pet.id))
-
-
--- client.pets.exams == null
-
-select * from client where
-exists (select * from pet where pet.clientId = client.id and
-0 = (select count(*) from exam where exam.petId = pet.id))
-
-***/
-
-
 package com.viaoa.ds.query;
 
 import java.util.*;
