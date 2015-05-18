@@ -1,5 +1,30 @@
 
 
+20150516 Luna installation
+
+Quickmarks plugin
+    2012/08/14
+    Download from:
+    http://sourceforge.net/projects/eclipse-tools/files/quickmarks/
+    v.3.0.2
+    
+    ** unzip and add directories in zip file to: "features", and "plugins" under eclipse directory
+        C:\eclipse\plugins
+        C:\eclipse\features
+
+    quickmarks would not load
+        error in log file:  C:\Projects\eclipse\workspace\.metadata\.log
+            !ENTRY org.eclipse.equinox.p2.publisher.eclipse 4 0 2015-05-16 19:37:03.014
+            !MESSAGE Unable to acquire PluginConverter service during generation for: C:\eclipse\plugins\net.sourceforge.eclipsetools.quickmarks_3.0.2.
+
+    >> Solution for running old plugin Quickmarks in newer Eclipse
+    http://stackoverflow.com/questions/24467105/tools-for-eclipse-2-0-plugins-upgrade
+        You can install support for 2.0 style plugins using Help > Install New Software.
+        Select the 'Eclipse Project Updates' site (http://download.eclipse.org/eclipse/updates/4.4).
+        You will find 'Eclipse 2.0 Style Plugin Support' in the 'Eclipse Tests, Examples and Extras' section.
+
+
+
 20150327 Importing an ICE project
 use file/import/maven/checkout from scm
     ex: ssh://git@stash.intcx.net:7999/mrtools/admin.git
@@ -21,16 +46,6 @@ EGit
     
 M2E for Maven plugin
 
-Quickmarks plugin
-    2012/08/14
-    Download from:
-    http://sourceforge.net/projects/eclipse-tools/files/quickmarks/
-    v.3.0.2
-    
-    ** unzip and add directories in zip file to: "features", and "plugins" under eclipse directory
-    
-    C:\eclipse\plugins
-    C:\eclipse\features
 
      
 Export general/preferences from existing Eclipse and import into new     
