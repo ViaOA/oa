@@ -474,7 +474,7 @@ public class ButtonController extends JFCController implements ActionListener {
                     else {
                         dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         dlg.done();//hack
-                        console.close();
+                        if (console != null) console.close();
                         JButton cmd = dlg.getCancelButton();
                         cmd.setText("Close");
                         cmd.setToolTipText("the command has completed, click to close window.");

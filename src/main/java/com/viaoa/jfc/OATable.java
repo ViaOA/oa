@@ -11,6 +11,7 @@
 package com.viaoa.jfc;
 
 import java.awt.AWTEvent;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -33,6 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
@@ -47,6 +50,7 @@ import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.hub.HubSelectDelegate;
+import com.viaoa.jfc.border.CustomLineBorder;
 import com.viaoa.jfc.control.JFCController;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.jfc.table.OATableCellEditor;
@@ -124,13 +128,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     protected DropTarget dropTarget;
     protected DragSource dragSource = DragSource.getDefaultDragSource();
     final static DragSourceListener dragSourceListener = new MyDragSourceListener();
-    protected ButtonHeaderRenderer headerRenderer; // 2006/10/13
+    protected PanelHeaderRenderer headerRenderer; // 2006/10/13
     protected JPopupMenu popupMenu;  // used for alignment options
     protected boolean bAllowSorting;
     protected static Icon[] iconDesc;
     protected static Icon[] iconAsc;
     private boolean bEnableEditors=true;
+    protected boolean bEnableFilterRow;
     public boolean bDEBUG;
+   
     
     static {
         iconAsc = new Icon[4];
@@ -280,7 +286,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     
     // 2006/12/29 called by superclass, this is overwritten from JTable
     protected JTableHeader createDefaultTableHeader() {
-        headerRenderer = new ButtonHeaderRenderer(this);
+        headerRenderer = new PanelHeaderRenderer(this);
         
         JTableHeader th = new JTableHeader(columnModel) {
             public String getToolTipText(MouseEvent e) {
@@ -1047,7 +1053,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             tc.path = propertyPath;
             tc.bIsAlreadyExpanded = true;
             tc.setMethods(null);
-            if (oaTableModel != null) oaTableModel.fireTableStructureChanged();
+            if (oaTableModel != null) {
+                try {
+                    if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = true;
+                    oaTableModel.fireTableStructureChanged();
+                }
+                finally {
+                    if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = false;
+                }
+            }
         }
     }
 
@@ -1057,7 +1071,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             OATableColumn tc = (OATableColumn) columns.elementAt(col);
             tc.path = comp.getPropertyPath();
             tc.setMethods(null);
-            if (oaTableModel != null) oaTableModel.fireTableStructureChanged();
+            if (oaTableModel != null) {
+                try {
+                    if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = true;
+                    oaTableModel.fireTableStructureChanged();
+                }
+                finally {
+                    if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = false;
+                }
+            }
         }
     }
     
@@ -1428,7 +1450,15 @@ e.printStackTrace();
         if (index == -1) col = columns.size();
 
         columns.insertElementAt( column, col );
-        if (oaTableModel != null) oaTableModel.fireTableStructureChanged();
+        if (oaTableModel != null) {
+            try {
+                if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = true;
+                oaTableModel.fireTableStructureChanged();
+            }
+            finally {
+                if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = false;
+            }
+        }
 
         TableColumn tc = new TableColumn(col);
         tc.setPreferredWidth(w);
@@ -1723,7 +1753,6 @@ e.printStackTrace();
         Capture double click and call double click button.
         @see #getDoubleClickButton
     */
-int ii;//qqqqqqqqqqqqqq    
     @Override
     protected void processMouseEvent(MouseEvent e) {
 
@@ -1829,6 +1858,18 @@ int ii;//qqqqqqqqqqqqqq
     }
     public boolean getEnableEditors() {
         return bEnableEditors;
+    }
+    
+    public void setEnableFilterRow(boolean b) {
+        bEnableFilterRow = b;
+        if (headerRenderer != null) {
+            if (!b) headerRenderer.remove(headerRenderer.label);
+            else headerRenderer.add(headerRenderer.label, BorderLayout.CENTER);
+            repaint();
+        }
+    }
+    public boolean getEnableFilterRow() {
+        return bEnableFilterRow;
     }
     
     /** 
@@ -2405,6 +2446,7 @@ int ii;//qqqqqqqqqqqqqq
     }
 
     protected void onHeadingMouseReleased(MouseEvent e, Point pt) {
+       
         if (pt != null && !e.isPopupTrigger()) {
             Rectangle rec = new Rectangle(pt.x-3, pt.y-3, 6, 6);
             Point pt2 = e.getPoint();
@@ -2412,14 +2454,47 @@ int ii;//qqqqqqqqqqqqqq
             // if (pt2 != null && (pt.x != pt2.x || pt.y != pt2.y)) return;
         }
 
-        int pos = columnModel.getColumnIndexAtX(e.getX());
-        if (pos < 0) return;
-        pos = columnModel.getColumn(pos).getModelIndex();
+        int column = columnModel.getColumnIndexAtX(e.getX());
+        if (column < 0) return;
+        column = columnModel.getColumn(column).getModelIndex();
         OATableColumn tc = null;
-        if (pos >= 0 && pos < columns.size()) {
-            tc = (OATableColumn) columns.elementAt(pos);
+        if (column >= 0 && column < columns.size()) {
+            tc = (OATableColumn) columns.elementAt(column);
         }
         if (tc == null) return;
+        
+        
+//qqqqqqqqq start 20150518 heading has textfield for filtering
+System.out.println("onHeadingMouseReleased ");//qqqqqqqq                
+        
+        PanelHeaderRenderer bhr = headerRenderer;
+        if (bhr == null || tableRight != null) bhr = tableRight.headerRenderer;
+        if (bhr != null && bhr.buttonHeight > 0 && pt.y > bhr.buttonHeight) {
+            // header editor
+
+            TableCellEditor ed = getCellEditor();
+            if (ed != null) ed.stopCellEditing();
+            if (tableRight != null) {
+                ed = tableRight.getCellEditor();
+                if (ed != null) ed.stopCellEditing();
+            }
+            if (tableLeft != null) {
+                ed = tableLeft.getCellEditor();
+                if (ed != null) ed.stopCellEditing();
+            }
+
+            if (bhr.txt.getParent() != getTableHeader()) {
+                getTableHeader().add(bhr.txt);
+            }
+            Rectangle rect = getTableHeader().getHeaderRect(column);
+            rect.y += bhr.buttonHeight+1;
+            rect.height -= bhr.buttonHeight+2;
+            bhr.txt.setBounds(rect);
+            bhr.txt.requestFocusInWindow();
+            return;
+        }
+//qqqqqq end
+        
         
         if ((e.getModifiers() & Event.META_MASK) !=0) {
             if (!e.isPopupTrigger()) return;
@@ -3142,15 +3217,136 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     public @Override void afterFetchMore(HubEvent e) {
         onNewList(e);
     }
+}
 
+// 20150518 add header editor, for entering filter data
+class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
+    OATable table;
+    JButton button;
+    JLabel label;
+    int buttonHeight, labelHeight;
+    JTextField txt;
+    
+    public PanelHeaderRenderer(OATable t) {
+        this.table = t;
+        setBorder(null);
+        
+        txt = new JTextField() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                if (labelHeight != 0) {
+                    dim.height = labelHeight-2;
+                }
+                return dim;
+            }
+        };
+        
+        txt.addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                Container cont = txt.getParent();
+                if (cont != null) {
+                    cont.remove(txt);
+                    cont.repaint();
+                    cont = cont.getParent();
+                    if (cont != null) {
+                        cont.repaint();
+                    }
+                }
+            }
+            @Override
+            public void focusGained(FocusEvent e) {
+            }
+        });
+        button = new JButton() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                if (buttonHeight == 0) {
+                    buttonHeight = dim.height;
+                }
+                else dim.height = buttonHeight;
+                return dim;
+            }
+        };
+        button.setMargin(new Insets(0,0,0,0));
+        button.setHorizontalTextPosition(SwingConstants.LEFT);
+        setLayout(new BorderLayout());
+        add(button, BorderLayout.NORTH);
+        
+        label = new JLabel() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                if (labelHeight == 0) {
+                    labelHeight = dim.height;
+                }
+                else dim.height = labelHeight;
+                return dim;
+            }
+        };
+        label.setBackground(Color.yellow);
+        label.setOpaque(true);
+        label.setBorder(new CompoundBorder(new EmptyBorder(2,2,2,2), new LineBorder(Color.green)));
+        if (table.bEnableFilterRow) {
+            add(label, BorderLayout.CENTER);
+        }
+    }
 
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        button.setText((value ==null) ? "" : value.toString());
+
+        if (table instanceof OATable) this.table = (OATable) table;
+        
+        TableColumn jtc = table.getTableHeader().getColumnModel().getColumn(column);
+        
+        OATableColumn tc = (OATableColumn) this.table.columns.elementAt(column);
+        
+        tc.updateFilter(label);
+
+        
+        // 2006/11/28
+        if (tc.tc != jtc) {
+            int x = this.table.columns.size();
+            for (int i=0; i<x; i++) {
+                tc = (OATableColumn) this.table.columns.elementAt(i);
+                if (tc.tc == jtc) break;
+            }
+        }
+        if (tc == null) {  // should not happen
+            tc = (OATableColumn) this.table.columns.elementAt(column);
+        }
+        
+        Icon icon = null;
+        if (tc.sortOrder > 0) {
+            int pos = tc.sortOrder;
+            if (tc.sortOrder == 1) {
+                pos = 0;
+                int x = this.table.columns.size();
+                for (int i=0; i<x;i++) {
+                    OATableColumn tcx = (OATableColumn) this.table.columns.elementAt(i);
+                    if (tcx.sortOrder > 0 && tcx != tc) {
+                        pos = 1;
+                        break;
+                    }
+                }
+            }
+            else if (pos > 3) pos = 0;
+            if (tc.sortDesc) icon = this.table.iconDesc[pos];
+            else icon = this.table.iconAsc[pos];
+        }
+        button.setIcon(icon);
+        
+        return this;
+    }
     
 }
 
 // 2006/10/13
-class ButtonHeaderRenderer extends JButton implements TableCellRenderer {
+class ButtonHeaderRenderer_OLD extends JButton implements TableCellRenderer {
     OATable table;
-    public ButtonHeaderRenderer(OATable t) {
+    public ButtonHeaderRenderer_OLD(OATable t) {
         this.table = t;
         setMargin(new Insets(0,0,0,0));
         this.setHorizontalTextPosition(SwingConstants.LEFT);

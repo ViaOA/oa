@@ -54,6 +54,10 @@ public class OATableColumn {
         allowSorting = b;
     }
     
+    public void updateFilter(JLabel lbl) {
+        lbl.setText("xxxxxxxxxxx");//qqqqqqqqqqqqqqqq
+    }
+    
     // flag to know if the propertyPath needs to be expanded to include any
     //    additional path from the component's Hub to the Table's hub.
     public boolean bIsAlreadyExpanded; 

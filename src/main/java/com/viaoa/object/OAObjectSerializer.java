@@ -340,7 +340,7 @@ indent--;//qqqqqqqqqqqqq
             }
             return false;
         }
-        return false;
+        return true;  // 20150519 was false
     }
     
     /**
