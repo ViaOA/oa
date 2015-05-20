@@ -12,6 +12,7 @@ package com.viaoa.jfc.table;
 
 import java.awt.*;
 import java.lang.reflect.*;
+
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -53,9 +54,14 @@ public class OATableColumn {
     public void setAllowSorting(boolean b) {
         allowSorting = b;
     }
-    
-    public void updateFilter(JLabel lbl) {
-        lbl.setText("xxxxxxxxxxx");//qqqqqqqqqqqqqqqq
+
+//qqqqqqqqqqqqqqqqqq 20150520
+    private Component compFilter;
+    public void setFilterEditor(Component comp) {
+        compFilter = comp;
+    }
+    public Component getFilterEditor() {
+        return compFilter;
     }
     
     // flag to know if the propertyPath needs to be expanded to include any

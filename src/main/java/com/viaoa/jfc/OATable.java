@@ -7,7 +7,7 @@
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-*/
+ */
 package com.viaoa.jfc;
 
 import java.awt.AWTEvent;
@@ -70,56 +70,57 @@ import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 
-
 /**
-    Used for building a Table of columns/rows listing Objects.  All columns are
-    created by adding an OATableComponent as a column to the Table.
-    Current components that support the OATableComponent interface,that can be used/added as table columns include:
-    OACheckBox, OAComboBox, OALabel, OAPasswordField, OARadioButton, OATextField.
-    <p>
-    Full support for Drag and Drop (DND), and options to control how it works.
-    <p>
-    OATable supports a multi selection list, by supplying a second Hub that is used
-    to contain the selected objects.
-    <p>
-    OATable allows for creating custom renderers.
-    Each component can have its own renderer, and OATable has its own own renderer that
-    is called for each cell.<br>
-    Also see OATable.getRenderer(...) to be able to customize any cell.
-    <p>
-    &nbsp;&nbsp;&nbsp;<img src="doc-files/table.gif">
-    <p>
-    Example:<br>
-    <p>
-    Create an OATable that will display a list (Hub) of Employees
-    <pre>
-    Hub hubEmployee = new Hub(Employee.class);
-    Hub hubDepartment = new Hub(Department.class);
-    hubDepartment.setLink(hubEmployee);
-
-    OATable table = new OATable();
-    OALabel lbl = new OALabel(hubEmployee, "Id");
-    table.addColumn("Id", 14, lbl);
-    OATextField txt = new OATextField(hubEmployee, "firstName");
-    table.addColumn("First Name", 14, txt);
-    OAComboBox cbo = new OAComboBox(hubDepartment, "name");
-    table.addColumn("Department", 22, cbo);
-    OACheckBox chk = new OACheckBox(hubEmployee, "fullTime");
-    table.addColumn("FT", 6, chk);
-    table.setPreferredSize(6, 3, true); // 6 rows, 3 columns, plus width of scrollbar
-    table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-    panel.add(new JScrollPane(table));
-    </pre>
-    <p>
-    For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
-    @see OATableComponent
-*/
+ * Used for building a Table of columns/rows listing Objects. All columns are created by adding an
+ * OATableComponent as a column to the Table. Current components that support the OATableComponent
+ * interface,that can be used/added as table columns include: OACheckBox, OAComboBox, OALabel,
+ * OAPasswordField, OARadioButton, OATextField.
+ * <p>
+ * Full support for Drag and Drop (DND), and options to control how it works.
+ * <p>
+ * OATable supports a multi selection list, by supplying a second Hub that is used to contain the
+ * selected objects.
+ * <p>
+ * OATable allows for creating custom renderers. Each component can have its own renderer, and OATable
+ * has its own own renderer that is called for each cell.<br>
+ * Also see OATable.getRenderer(...) to be able to customize any cell.
+ * <p>
+ * &nbsp;&nbsp;&nbsp;<img src="doc-files/table.gif">
+ * <p>
+ * Example:<br>
+ * <p>
+ * Create an OATable that will display a list (Hub) of Employees
+ * 
+ * <pre>
+ * Hub hubEmployee = new Hub(Employee.class);
+ * Hub hubDepartment = new Hub(Department.class);
+ * hubDepartment.setLink(hubEmployee);
+ * 
+ * OATable table = new OATable();
+ * OALabel lbl = new OALabel(hubEmployee, &quot;Id&quot;);
+ * table.addColumn(&quot;Id&quot;, 14, lbl);
+ * OATextField txt = new OATextField(hubEmployee, &quot;firstName&quot;);
+ * table.addColumn(&quot;First Name&quot;, 14, txt);
+ * OAComboBox cbo = new OAComboBox(hubDepartment, &quot;name&quot;);
+ * table.addColumn(&quot;Department&quot;, 22, cbo);
+ * OACheckBox chk = new OACheckBox(hubEmployee, &quot;fullTime&quot;);
+ * table.addColumn(&quot;FT&quot;, 6, chk);
+ * table.setPreferredSize(6, 3, true); // 6 rows, 3 columns, plus width of scrollbar
+ * table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+ * panel.add(new JScrollPane(table));
+ * </pre>
+ * <p>
+ * For more information about this package, see <a
+ * href="package-summary.html#package_description">documentation</a>.
+ * 
+ * @see OATableComponent
+ */
 public class OATable extends JTable implements DragGestureListener, DropTargetListener {
-    protected int prefCols=1, prefRows=5;
+    protected int prefCols = 1, prefRows = 5;
     protected Hub hub;
     protected Hub hubSelect;
     protected OATableModel oaTableModel;
-    protected Vector columns = new Vector(5,5);
+    protected Vector columns = new Vector(5, 5);
     protected MyHubAdapter hubAdapter;
     protected boolean includeScrollBar; // used by setPreferredSize
     protected boolean bAllowDrag = false;
@@ -129,15 +130,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     protected DragSource dragSource = DragSource.getDefaultDragSource();
     final static DragSourceListener dragSourceListener = new MyDragSourceListener();
     protected PanelHeaderRenderer headerRenderer; // 2006/10/13
-    protected JPopupMenu popupMenu;  // used for alignment options
+    protected JPopupMenu popupMenu; // used for alignment options
     protected boolean bAllowSorting;
     protected static Icon[] iconDesc;
     protected static Icon[] iconAsc;
-    private boolean bEnableEditors=true;
+    private boolean bEnableEditors = true;
     protected boolean bEnableFilterRow;
     public boolean bDEBUG;
-   
-    
+
     static {
         iconAsc = new Icon[4];
         iconDesc = new Icon[4];
@@ -162,8 +162,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         url = OAButton.class.getResource("icons/sortDesc3.gif");
         if (url != null) iconDesc[3] = new ImageIcon(url);
     }
-    
-    
+
     /** Create a new Table. */
     public OATable() {
         this(true);
@@ -175,27 +174,29 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     /**
-        Create a new Table that is bound to a Hub.
-        @param bAddHack if true (default) then register [Enter] key and consume
-    */
+     * Create a new Table that is bound to a Hub.
+     * 
+     * @param bAddHack
+     *            if true (default) then register [Enter] key and consume
+     */
     public OATable(Hub hub, boolean bAddHack) {
         this(bAddHack);
         setHub(hub);
     }
-    
-    
+
     /**
-        @param bAddHack if true (default) then register [Enter] key and consume
-    */
+     * @param bAddHack
+     *            if true (default) then register [Enter] key and consume
+     */
     protected OATable(boolean bAddHack) {
         JTableHeader head = getTableHeader();
         head.setUpdateTableInRealTime(false);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // AUTO_RESIZE_LAST_COLUMN
         getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        
+
         setDoubleBuffered(true);
-        setPreferredScrollableViewportSize(new Dimension(150,100));
+        setPreferredScrollableViewportSize(new Dimension(150, 100));
         setAutoCreateColumnsFromModel(false);
         setColumnSelectionAllowed(false);
         if (bAddHack) addHack();
@@ -205,43 +206,40 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         setSurrendersFocusOnKeystroke(true);
 
         setIntercellSpacing(new Dimension(4, 1));
-        
-        dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE,this);
-        dropTarget = new DropTarget(this,this);
-        
+
+        dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
+        dropTarget = new DropTarget(this, this);
+
         // 20101031 have table fill the scrollpane viewport area, instead of just the rows area
         setFillsViewportHeight(true);
     }
 
-    /** 2006/10/12    
-     * If you would like to allow for sorting on a clicked column heading.  The
-     * user can use [ctrl] to click on multiple headings.  Re-clicking on a heading
-     * will changed from ascending to descending order.
+    /**
+     * 2006/10/12 If you would like to allow for sorting on a clicked column heading. The user can use
+     * [ctrl] to click on multiple headings. Re-clicking on a heading will changed from ascending to
+     * descending order.
+     * 
      * @param b
      */
     public void setAllowSorting(boolean b) {
         bAllowSorting = b;
         /*
-        if (headerRenderer == null) {
-            headerRenderer = new ButtonHeaderRenderer(this);
-            Enumeration e = columnModel.getColumns();
-            for ( ;e.hasMoreElements(); ) {
-                TableColumn col = (TableColumn) e.nextElement();
-                col.setHeaderRenderer(headerRenderer);
-            }
-        }
-        */
+         * if (headerRenderer == null) { headerRenderer = new ButtonHeaderRenderer(this); Enumeration e
+         * = columnModel.getColumns(); for ( ;e.hasMoreElements(); ) { TableColumn col = (TableColumn)
+         * e.nextElement(); col.setHeaderRenderer(headerRenderer); } }
+         */
     }
+
     public boolean getAllowSorting() {
         return bAllowSorting;
-    }    
-    
+    }
+
     @Override
     public String getToolTipText(MouseEvent event) {
         String s = super.getToolTipText(event);
         if (event != null) {
             Point pt = event.getPoint();
-            
+
             int col = columnAtPoint(pt);
             int row = rowAtPoint(pt);
 
@@ -259,7 +257,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         return s;
     }
+
     private int cntTT;
+
     private String getToolTipText1(int row, int col, String defaultValue) {
         OATableColumn[] tcs = getAllTableColumns();
         if (col >= 0 && col < tcs.length) {
@@ -272,22 +272,21 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         return defaultValue;
     }
-    
+
     public String getToolTipText(int row, int col, String defaultValue) {
         OATableColumn[] tcs = getAllTableColumns();
-        
+
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
             defaultValue = tc.getToolTipText(row, col, defaultValue);
         }
         return defaultValue;
     }
-    
-    
+
     // 2006/12/29 called by superclass, this is overwritten from JTable
     protected JTableHeader createDefaultTableHeader() {
         headerRenderer = new PanelHeaderRenderer(this);
-        
+
         JTableHeader th = new JTableHeader(columnModel) {
             public String getToolTipText(MouseEvent e) {
                 java.awt.Point p = e.getPoint();
@@ -304,9 +303,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         };
         th.addMouseListener(new MouseAdapter() {
             Point pt;
+
             public void mousePressed(MouseEvent e) {
                 pt = e.getPoint();
             }
+
             public void mouseReleased(MouseEvent e) {
                 if (pt != null) onHeadingMouseReleased(e, pt);
                 pt = null;
@@ -314,24 +315,25 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         });
         return th;
     }
-    
-    // 2006/10/12    
+
+    // 2006/10/12
     protected void performSort() {
         if (!bAllowSorting) return;
         String s = null;
 
         OATableColumn[] allColumns = getAllTableColumns();
-        
+
         int x = allColumns.length;
         OATableColumn colHubSelect = null;
-        
-        final ArrayList<OATableColumn> alSelectedColumns = new ArrayList<OATableColumn>(); 
-        
-        for (int i=1; ; i++) {
+
+        final ArrayList<OATableColumn> alSelectedColumns = new ArrayList<OATableColumn>();
+
+        for (int i = 1;; i++) {
             boolean b = false;
-            for (int j=0; j<x; j++) {
+            for (int j = 0; j < x; j++) {
                 OATableColumn col = allColumns[j];
-                col.getMethods(this.hub);  // make sure that path has been set up correctly, to match to table.hub
+                col.getMethods(this.hub); // make sure that path has been set up correctly, to match to
+                                          // table.hub
                 if (col.sortOrder == i) {
                     alSelectedColumns.add(col);
                     if (OAString.isEmpty(col.path)) {
@@ -357,11 +359,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             if (!b) break;
         }
 
-        final Object[] objs = new Object[hubSelect==null?0:hubSelect.getSize()];
+        final Object[] objs = new Object[hubSelect == null ? 0 : hubSelect.getSize()];
         if (hubSelect != null) {
             hubSelect.copyInto(objs);
         }
-        
+
         if (colHubSelect != null) {
             final OATableColumn tcSelect = colHubSelect;
             hub.sort(new Comparator() {
@@ -370,13 +372,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     if (o1 == o2) return 0;
                     int x = 0;
                     for (OATableColumn col : alSelectedColumns) {
-                        
+
                         Object z1 = col.getValue(hub, o1);
                         Object z2 = col.getValue(hub, o2);
-                        
+
                         x = OACompare.compare(z1, z2);
                         if (x != 0) {
-                            if (col.sortDesc) x *= -1; 
+                            if (col.sortDesc) x *= -1;
                             if (col == tcSelect) x *= -1;
                             break;
                         }
@@ -391,35 +393,36 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         else {
             hub.cancelSort();
         }
-        
+
         if (hubSelect != null) {
             hubSelect.clear();
             for (Object obj : objs) {
                 hubSelect.add(obj);
             }
         }
-        
+
         // reset AO
-        // 20111008  add if
+        // 20111008 add if
         if (hub.getAO() != null && hubSelect == null) {
             HubAODelegate.setActiveObjectForce(hub, hub.getAO());
         }
     }
-    
+
     /**
-        Returns Hub that is bound to Table.
-    */
+     * Returns Hub that is bound to Table.
+     */
     public Hub getHub() {
         return hub;
     }
+
     /**
-        Sets Hub that is bound to Table.
-    */
+     * Sets Hub that is bound to Table.
+     */
     public void setHub(Hub h) {
         this.hub = h;
 
         int x = columns.size();
-        for (int i=0; i<x; i++) {
+        for (int i = 0; i < x; i++) {
             OATableColumn tc = (OATableColumn) columns.elementAt(i);
             tc.setMethods(null);
         }
@@ -428,20 +431,27 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         hubAdapter = new MyHubAdapter(hub, this);
     }
 
-
     // START Drag&Drop
     static class MyDragSourceListener implements DragSourceListener {
-        public void dragEnter(DragSourceDragEvent e) {}
-        public void dragOver(DragSourceDragEvent e) { }
-        public void dropActionChanged(DragSourceDragEvent e) {}
-        public void dragExit(DragSourceEvent e) {}
+        public void dragEnter(DragSourceDragEvent e) {
+        }
+
+        public void dragOver(DragSourceDragEvent e) {
+        }
+
+        public void dropActionChanged(DragSourceDragEvent e) {
+        }
+
+        public void dragExit(DragSourceEvent e) {
+        }
+
         public void dragDropEnd(DragSourceDropEvent e) {
         }
     }
 
     /**
-        Flag to enable Drag and Drop. default=true
-    */
+     * Flag to enable Drag and Drop. default=true
+     */
     public void setAllowDnd(boolean b) {
         setAllowDrop(b);
         setAllowDrag(b);
@@ -450,35 +460,38 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             t.setAllowDnd(b);
         }
     }
+
     /**
-        Flag to enable Drag and Drop. default=true
-    */
+     * Flag to enable Drag and Drop. default=true
+     */
     public void setAllowDnD(boolean b) {
         setAllowDnd(b);
     }
 
     /**
-        Flag to enable Drag and Drop. default=true
-    */
+     * Flag to enable Drag and Drop. default=true
+     */
     public void allowDnd(boolean b) {
         setAllowDnd(b);
     }
+
     /**
-        Flag to enable Drag and Drop. default=true
-    */
+     * Flag to enable Drag and Drop. default=true
+     */
     public void allowDnD(boolean b) {
         setAllowDnd(b);
     }
 
     /**
-        Flag to enable Dropping. default=true
-    */
+     * Flag to enable Dropping. default=true
+     */
     public boolean getAllowDrop() {
         return bAllowDrop;
     }
+
     /**
-        Flag to enable Dropping. default=true
-    */
+     * Flag to enable Dropping. default=true
+     */
     public void setAllowDrop(boolean b) {
         bAllowDrop = b;
         OATable t = getLeftTable();
@@ -488,8 +501,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     /**
-        Flag to enable Dragging. default=true
-    */
+     * Flag to enable Dragging. default=true
+     */
     public boolean getAllowDrag() {
         OATable t = getRightTable();
         if (t != null) {
@@ -497,9 +510,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         return bAllowDrag;
     }
+
     /**
-        Flag to enable Dragging. default=true
-    */
+     * Flag to enable Dragging. default=true
+     */
     public void setAllowDrag(boolean b) {
         bAllowDrag = b;
         OATable t = getLeftTable();
@@ -509,8 +523,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     /**
-        Flag to have a Dragged object removed from Hub. default=true
-    */
+     * Flag to have a Dragged object removed from Hub. default=true
+     */
     public void setRemoveDragObject(boolean b) {
         bRemoveDragObject = b;
         OATable t = getLeftTable();
@@ -518,9 +532,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             t.bRemoveDragObject = b;
         }
     }
+
     /**
-        Flag to have a Dragged object removed from Hub. default=true
-    */
+     * Flag to have a Dragged object removed from Hub. default=true
+     */
     public boolean getRemoveDragObject() {
         return bRemoveDragObject;
     }
@@ -531,7 +546,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (hub != null) {
             Object obj = hub.getActiveObject();
             if (obj != null) {
-                OATransferable t = new OATransferable(hub,obj);
+                OATransferable t = new OATransferable(hub, obj);
                 dragSource.startDrag(e, null, t, dragSourceListener);
             }
         }
@@ -546,34 +561,28 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             e.rejectDrag();
         }
     }
+
     /** Used to support drag and drop (DND). */
     public void dragOver(DropTargetDragEvent e) {
         Point pt = e.getLocation();
         autoscroll(pt);
     }
+
     private static Insets autoScrollInsets = new Insets(20, 20, 20, 20);
+
     private void autoscroll(Point cursorLocation) {
         Rectangle rectOuter = getVisibleRect();
-        Rectangle rectInner = new Rectangle(
-                rectOuter.x + autoScrollInsets.left,
-                rectOuter.y + autoScrollInsets.top,
-                rectOuter.width - (autoScrollInsets.left + autoScrollInsets.right),
-                rectOuter.height - (autoScrollInsets.top + autoScrollInsets.bottom));
+        Rectangle rectInner = new Rectangle(rectOuter.x + autoScrollInsets.left, rectOuter.y + autoScrollInsets.top, rectOuter.width - (autoScrollInsets.left + autoScrollInsets.right), rectOuter.height - (autoScrollInsets.top + autoScrollInsets.bottom));
         if (!rectInner.contains(cursorLocation)) {
-            Rectangle rect = new Rectangle(
-                    cursorLocation.x - autoScrollInsets.left,
-                    cursorLocation.y - autoScrollInsets.top,
-                    autoScrollInsets.left + autoScrollInsets.right,
-                    autoScrollInsets.top + autoScrollInsets.bottom);
+            Rectangle rect = new Rectangle(cursorLocation.x - autoScrollInsets.left, cursorLocation.y - autoScrollInsets.top, autoScrollInsets.left + autoScrollInsets.right, autoScrollInsets.top + autoScrollInsets.bottom);
             scrollRectToVisible(rect);
         }
     }
-    
-    
-    
+
     /** Used to support drag and drop (DND). */
     public void dropActionChanged(DropTargetDragEvent e) {
     }
+
     /** Used to support drag and drop (DND). */
     public void dragExit(DropTargetEvent e) {
     }
@@ -581,7 +590,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public boolean getAllowDrop(Hub hubDrag, Object objectDrag, Hub hubDrop) {
         return true;
     }
-    
+
     /** Used to support drag and drop (DND). */
     public void drop(DropTargetDropEvent e) {
         try {
@@ -604,9 +613,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
             Rectangle rect = getCellRect(row, 0, true);
 
-            if (rect != null && pt.y > (rect.y + (rect.height/2))) row++;
+            if (rect != null && pt.y > (rect.y + (rect.height / 2))) row++;
 
-            if ( hub.getObjectClass().isAssignableFrom(dragObject.getClass()) ) {
+            if (hub.getObjectClass().isAssignableFrom(dragObject.getClass())) {
                 if (!getAllowDrop(dragHub, dragObject, hub)) {
                     return;
                 }
@@ -642,144 +651,141 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         catch (Exception ex) {
         }
     }
-    //END Drag&Drop
 
+    // END Drag&Drop
 
     /**
-        Separate Hub that can contain selected objects.
-        This will allow for a multi-select table.
-    */
+     * Separate Hub that can contain selected objects. This will allow for a multi-select table.
+     */
     public void setSelectHub(Hub hub) {
         this.hubSelect = hub;
-        int x = (hub==null) ? ListSelectionModel.SINGLE_SELECTION : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
+        int x = (hub == null) ? ListSelectionModel.SINGLE_SELECTION : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
         getSelectionModel().setSelectionMode(x);
         hubAdapter.setSelectHub(hubSelect);
     }
+
     /**
-        Separate Hub that can contain selected objects.
-        This will allow for a multi-select table.
-    */
+     * Separate Hub that can contain selected objects. This will allow for a multi-select table.
+     */
     public Hub getSelectHub() {
         return hubSelect;
     }
 
-
-
-
-
     /****
-    public void setEditingRow(int aRow) {
-        if (Hub.DEBUG) System.out.println("OATable.setEditingRow()");
-        super.setEditingRow(aRow);
-        if (aRow >= 0 && hub != null) {
-            if (hub.getPos(hub.getActiveObject()) != aRow) {
-                hub.setActiveObject(aRow);
-                int pos = hub.getPos();
-                if (pos != aRow) {
-                    getCellEditor().stopCellEditing();
-                    setRowSelectionInterval(pos,pos);
-                }
-
-            }
-        }
-    }
-    ****/
-
+     * public void setEditingRow(int aRow) { if (Hub.DEBUG)
+     * System.out.println("OATable.setEditingRow()"); super.setEditingRow(aRow); if (aRow >= 0 && hub !=
+     * null) { if (hub.getPos(hub.getActiveObject()) != aRow) { hub.setActiveObject(aRow); int pos =
+     * hub.getPos(); if (pos != aRow) { getCellEditor().stopCellEditing();
+     * setRowSelectionInterval(pos,pos); }
+     * 
+     * } } }
+     ****/
 
     /**
-        Number of columns that should be visible when determinng the preferred size of the Table.
-    */
+     * Number of columns that should be visible when determinng the preferred size of the Table.
+     */
     public int getPreferredColumns() {
         return prefCols;
     }
+
     /**
-        Number of columns that should be visible when determinng the preferred size of the Table.
-    */
+     * Number of columns that should be visible when determinng the preferred size of the Table.
+     */
     public void setPreferredColumns(int cols) {
-        setPreferredSize(cols,prefRows);
+        setPreferredSize(cols, prefRows);
     }
 
     /**
-        Number of rows that should be visible when determinng the preferred size of the Table.
-    */
+     * Number of rows that should be visible when determinng the preferred size of the Table.
+     */
     public int getPreferredRows() {
         return prefRows;
     }
+
     /**
-        Number of rows that should be visible when determinng the preferred size of the Table.
-    */
+     * Number of rows that should be visible when determinng the preferred size of the Table.
+     */
     public void setPreferredRows(int rows) {
-        setPreferredSize(prefCols,rows);
+        setPreferredSize(prefCols, rows);
     }
 
     /**
-        Number of columns and rows that should be visible when determinng the preferred size of the Table.
-    */
+     * Number of columns and rows that should be visible when determinng the preferred size of the
+     * Table.
+     */
     public void setPreferredSize(int rows, int cols) {
-        this.setPreferredSize(rows,cols,true);
+        this.setPreferredSize(rows, cols, true);
     }
+
     /**
-        Number of columns and rows that should be visible when determinng the preferred size of the Table.
-        @param includeScrollBar add the width of a scrollbar to the preferred width of the Table.
-    */
+     * Number of columns and rows that should be visible when determinng the preferred size of the
+     * Table.
+     * 
+     * @param includeScrollBar
+     *            add the width of a scrollbar to the preferred width of the Table.
+     */
     public void setPreferredSize(int rows, int cols, boolean includeScrollBar) {
-        prefCols = ((cols > 0) ? cols : 1 );
-        prefRows = ((rows > 0) ? rows : 1 );
+        prefCols = ((cols > 0) ? cols : 1);
+        prefRows = ((rows > 0) ? rows : 1);
         this.includeScrollBar = includeScrollBar;
         calcPreferredSize();
     }
 
     /**
-        Used to have JTable.getCellRenderer(row, column) call OATable.getRenderer()
-    */
+     * Used to have JTable.getCellRenderer(row, column) call OATable.getRenderer()
+     */
     class MyTableCellRenderer implements TableCellRenderer {
         TableCellRenderer rend;
         OATable table;
+
         public MyTableCellRenderer(OATable t) {
             this.table = t;
         }
-        public Component getTableCellRendererComponent(JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column) {
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (rend == null) return null;
 
             column = convertColumnIndexToModel(column);
             boolean bMouseOver = (row == mouseOverRow && column == mouseOverColumn);
-            
+
             // see: OATableCellRenderer
             Component comp = rend.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             Component compOrig = comp;
-            
+
             OATable t = getRightTable();
             if (t != null) {
-                comp = t.getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged(row,column), bMouseOver);
+                comp = t.getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged(row, column), bMouseOver);
             }
             else {
                 t = getLeftTable();
                 if (t != null) {
                     column += t.getColumnCount();
                 }
-                comp = getRenderer(comp, table, value, isSelected, hasFocus, row, column,wasChanged(row,column), bMouseOver);
+                comp = getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged(row, column), bMouseOver);
             }
             if (comp == null) comp = compOrig;
             return comp;
         }
     }
+
     private MyTableCellRenderer myRend;
 
-    
     /**
-        JTable method used to get the renderer for a cell.  
-        This is set up to automatically call getRenderer() from the column's component.
-        Dont overwrite this method, since OATable could be made up of 2 tables.
-        @see #getRenderer This needs to be used instead of overwriting this method - especially with OATableScrollPane.
-        @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean, boolean)
-    */
+     * JTable method used to get the renderer for a cell. This is set up to automatically call
+     * getRenderer() from the column's component. Dont overwrite this method, since OATable could be
+     * made up of 2 tables.
+     * 
+     * @see #getRenderer This needs to be used instead of overwriting this method - especially with
+     *      OATableScrollPane.
+     * @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean, boolean)
+     */
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
         // This will call MyTableCellRenderer.getTableCellRendererComponent(),
-        //  which will then call OATable.getRenderer()
+        // which will then call OATable.getRenderer()
         if (myRend == null) myRend = new MyTableCellRenderer(this);
 
-        // this will set the default renderer, ex: 
+        // this will set the default renderer, ex:
         myRend.rend = super.getCellRenderer(row, column);
         return myRend;
     }
@@ -789,13 +795,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     private boolean bShowChanges;
     private Timer timerShowChanges;
     private final Object lockShowChanges = new Object();
-    
+
     /**
      * Flag to track changes to row,col (cells).
      */
     public boolean getShowChanges() {
         return bShowChanges;
     }
+
     public void setShowChanges(final boolean b) {
         synchronized (lockShowChanges) {
             bShowChanges = b;
@@ -810,16 +817,17 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
             else if (b && hmRowColumnChanged == null) {
                 hmRowColumnChanged = new ConcurrentHashMap<String, Long>();
-                
+
                 timerShowChanges = new Timer(25, new ActionListener() {
                     int emptyCount;
+
                     public void actionPerformed(ActionEvent e) {
                         long tsNow = 0;
                         for (Map.Entry<String, Long> entry : hmRowColumnChanged.entrySet()) {
                             if (tsNow == 0) {
                                 tsNow = System.currentTimeMillis();
                             }
-                            if (tsNow > entry.getValue().longValue()+500) hmRowColumnChanged.remove(entry.getKey());
+                            if (tsNow > entry.getValue().longValue() + 500) hmRowColumnChanged.remove(entry.getKey());
                         }
                         if (tsNow > 0) {
                             OATable.this.repaint(250);
@@ -835,12 +843,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                             }
                         }
                     }
-                }); 
+                });
                 timerShowChanges.setRepeats(true);
             }
         }
         if (tableLeft != null) tableLeft.setShowChanges(b);
     }
+
     public void setChanged(int row, int col) {
         OATable t = getRightTable();
         if (t != null) {
@@ -848,7 +857,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             return;
         }
         if (!bShowChanges) return;
-        
+
         // if (!OARemoteThreadDelegate.isRemoteThread()) return;
         synchronized (lockShowChanges) {
             ConcurrentHashMap<String, Object> hm = hmRowColumnValue;
@@ -856,13 +865,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 hm = new ConcurrentHashMap<String, Object>();
                 hmRowColumnValue = hm;
             }
-            hmRowColumnChanged.put(row+"."+col, System.currentTimeMillis());
+            hmRowColumnChanged.put(row + "." + col, System.currentTimeMillis());
             if (!timerShowChanges.isRunning()) {
                 timerShowChanges.start();
             }
         }
     }
+
     protected ConcurrentHashMap<String, Object> hmRowColumnValue;
+
     public void setChanged(int row, int col, Object newValue) {
         OATable t = getRightTable();
         if (t != null) {
@@ -876,7 +887,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             hm = new ConcurrentHashMap<String, Object>();
             hmRowColumnValue = hm;
         }
-        String k = row+"."+col;
+        String k = row + "." + col;
         if (newValue == null) newValue = OANullObject.instance;
         Object old = hm.get(k);
         if (!OACompare.isEqual(old, newValue)) {
@@ -884,7 +895,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             hm.put(k, newValue);
         }
     }
-    
+
     public boolean wasChanged(int row, int col) {
         OATable t = getRightTable();
         if (t != null) {
@@ -893,7 +904,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (!bShowChanges) return false;
 
         if (hmRowColumnChanged == null) return false;
-        Long longx = hmRowColumnChanged.get(row+"."+col);
+        Long longx = hmRowColumnChanged.get(row + "." + col);
         return (longx != null);
     }
 
@@ -905,13 +916,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             t.setRowHeight(rowHeight);
         }
     }
-    
+
     /**
-        Can be overwritten to customize the component used to renderer a Table cell.
-        @see #getRenderer(JComponent, JTable, Object, boolean, boolean, int, int) to customize the component
-        @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int) Preferred way
-    */
-    public Component getRenderer_OLD(JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column) {
+     * Can be overwritten to customize the component used to renderer a Table cell.
+     * 
+     * @see #getRenderer(JComponent, JTable, Object, boolean, boolean, int, int) to customize the
+     *      component
+     * @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int) Preferred way
+     */
+    public Component getRenderer_OLD(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Component comp = null;
         if (myRend != null) {
             comp = myRend.rend.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -919,36 +932,38 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (comp instanceof JLabel) {
             OATable t = getRightTable();
             if (t != null) {
-//qq                t.customizeRenderer((JLabel) comp, table, value, isSelected, hasFocus, row, column);
+                // qq t.customizeRenderer((JLabel) comp, table, value, isSelected, hasFocus, row,
+                // column);
             }
             else {
                 t = getLeftTable();
                 if (t != null) {
                     column += t.getColumnCount();
                 }
-//qq                customizeRenderer((JLabel) comp, table, value, isSelected, hasFocus, row, column);
+                // qq customizeRenderer((JLabel) comp, table, value, isSelected, hasFocus, row, column);
             }
         }
         return comp;
     }
-    
 
     // listeners for customizing Renderers
     Vector vecListener;
 
     /**
-        Add a listener that is called to customize the rendering component for a cell.
-    */
+     * Add a listener that is called to customize the rendering component for a cell.
+     */
     public void addListener(OATableListener l) {
-        if (vecListener == null) vecListener = new Vector(2,2);
+        if (vecListener == null) vecListener = new Vector(2, 2);
         if (!vecListener.contains(l)) vecListener.addElement(l);
     }
+
     /**
-        Remove a listener that is called to customize the rendering component for a cell.
-    */
+     * Remove a listener that is called to customize the rendering component for a cell.
+     */
     public void removeListener(OATableListener l) {
         vecListener.removeElement(l);
     }
+
     public OATableListener[] getListeners() {
         if (vecListener == null) return null;
         OATableListener[] l = new OATableListener[vecListener.size()];
@@ -956,11 +971,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return l;
     }
 
-    
     public boolean debug;
+
     /**
-        Determine preferred size based on number of preferred number of columns and rows.
-    */
+     * Determine preferred size based on number of preferred number of columns and rows.
+     */
     protected void calcPreferredSize() {
         int w = 0;
         int cols = prefCols;
@@ -971,10 +986,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             w += tc.tc.getWidth();
         }
 
-        
         w += cols * getIntercellSpacing().width;
         w += 2;
-        //was: int h = getIntercellSpacing().height + getRowHeight();
+        // was: int h = getIntercellSpacing().height + getRowHeight();
         // 20101027 rowHeight includes spacing
         int h = getRowHeight();
         h *= prefRows;
@@ -998,19 +1012,18 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             c.validate();
         }
     }
-    
-    
+
     /**
-        Returns the column position for an OATableComponent.
-    */
+     * Returns the column position for an OATableComponent.
+     */
     public int getColumnIndex(OATableComponent c) {
         if (tableLeft != null) {
             int x = tableLeft.getColumnIndex(c);
             if (x >= 0) return x;
         }
-        
+
         int x = columns.size();
-        for (int i = 0; i<x; i++) {
+        for (int i = 0; i < x; i++) {
             OATableColumn tc = (OATableColumn) columns.elementAt(i);
             if (tc.getOATableComponent() == c) {
                 if (tableLeft != null) {
@@ -1023,8 +1036,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     /**
-        Change the heading for a column number.  First column is at postion 0.
-    */
+     * Change the heading for a column number. First column is at postion 0.
+     */
     public void setColumnHeading(int col, String heading) {
         if (col < columns.size() && col >= 0) {
             getColumnModel().getColumn(col).setHeaderValue(heading);
@@ -1034,8 +1047,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     /**
-        Change the width for a column number, based on character width.  First column is at postion 0.
-    */
+     * Change the width for a column number, based on character width. First column is at postion 0.
+     */
     public void setColumnWidth(int col, int w) {
         if (col < columns.size() && col >= 0) {
             getColumnModel().getColumn(col).setWidth(w);
@@ -1044,9 +1057,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     /**
-        Set the property path used to display values for a column.
-        This could be necessary when it can not be determined by the columns OATableComponent.
-    */
+     * Set the property path used to display values for a column. This could be necessary when it can
+     * not be determined by the columns OATableComponent.
+     */
     public void setColumnPropertyPath(int col, String propertyPath) {
         if (col < columns.size() && col >= 0) {
             OATableColumn tc = (OATableColumn) columns.elementAt(col);
@@ -1082,10 +1095,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
         }
     }
-    
+
     // 20150428
     /**
      * Add a column that will that will use checkboxes to show selected rows.
+     * 
      * @param hubSelect
      * @param heading
      * @param width
@@ -1093,19 +1107,21 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public void addCounterColumn() {
         addCounterColumn("#", 4);
     }
+
     public void addCounterColumn(String heading, int width) {
         OALabel lbl = new OALabel(getHub(), "") {
             @Override
-            public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
-                lbl.setText(""+(row+1)+" ");
+            public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
+                lbl.setText("" + (row + 1) + " ");
                 lbl.setHorizontalAlignment(SwingConstants.RIGHT);
                 if (!isSelected) lbl.setForeground(Color.gray);
             }
+
             @Override
             public String getToolTipText(int row, int col, String defaultValue) {
                 defaultValue = super.getToolTipText(row, col, defaultValue);
                 if (OAString.isEmpty(defaultValue)) {
-                    defaultValue = (row+1)+" of "+getHub().getSize();
+                    defaultValue = (row + 1) + " of " + getHub().getSize();
                 }
                 return defaultValue;
             }
@@ -1114,10 +1130,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         tc.setAllowSorting(false);
     }
 
-    
     // 20150423
     /**
      * Add a column that will that will use checkboxes to show selected rows.
+     * 
      * @param hubSelect
      * @param heading
      * @param width
@@ -1133,17 +1149,17 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     return super.getToolTipText(row, col, defaultValue);
                 }
                 int pos = OATable.this.hubSelect.getPos(obj);
-                if (pos < 0) return OATable.this.hubSelect.getSize()+" selected";
-                return (pos+1) + " of " + OATable.this.hubSelect.getSize()+" selected";
+                if (pos < 0) return OATable.this.hubSelect.getSize() + " selected";
+                return (pos + 1) + " of " + OATable.this.hubSelect.getSize() + " selected";
             }
         };
         chkSelection.setToolTipText(" ");
         chkSelection.setTableHeading(heading);
         OATableColumn tc = addColumn(heading, width, chkSelection);
     }
-    
+
     protected OACheckBox chkSelection;
-    
+
     // 20150511
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggleUsingControlKey, boolean extendUsingShiftKey) {
@@ -1152,7 +1168,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (chkSelection == null && tableRight != null) {
             chkSelection = tableRight.chkSelection;
         }
-        
+
         if (chkSelection != null && hubSelect != null) {
             if (extendUsingShiftKey) {
                 if (bIsMouseDragging) {
@@ -1164,13 +1180,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     getSelectionModel().addSelectionInterval(lastMouseDragRow, lastMouseDragRow);
                 }
             }
-            
+
             int addColumns = 0;
             if (tableLeft != null) {
                 addColumns = tableLeft.getColumnCount();
             }
-            
-            if ((columnIndex+addColumns) == getColumnIndex(chkSelection)) {
+
+            if ((columnIndex + addColumns) == getColumnIndex(chkSelection)) {
                 if (!extendUsingShiftKey) {
                     if (!bIsProcessKeyBinding) {
                         toggleUsingControlKey = true;
@@ -1179,18 +1195,19 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
         }
         super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
-    }                    
+    }
+
     // 20150423
-    //was: qqqqqqq
+    // was: qqqqqqq
     public void changeSelection_OLD(int rowIndex, int columnIndex, boolean toggleUsingControlKey, boolean extendUsingShiftKey) {
         // extendUsingShiftKey=true if its a mouse drag
 
         if (chkSelection == null && tableRight != null) {
             chkSelection = tableRight.chkSelection;
         }
-        
+
         if (chkSelection != null && hubSelect != null) {
-            
+
             if (extendUsingShiftKey) {
                 if (bIsMouseDragging) {
                     if (lastMouseDragRow < 0) {
@@ -1201,7 +1218,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     getSelectionModel().addSelectionInterval(lastMouseDragRow, lastMouseDragRow);
                 }
             }
-            
+
             if (columnIndex == getColumnIndex(chkSelection)) {
                 if (!extendUsingShiftKey) toggleUsingControlKey = true;
             }
@@ -1212,56 +1229,66 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
         }
         super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
-    }                    
-    
-    
+    }
+
     /**
-        Create a new column using an OATableComponent.
-    */
+     * Create a new column using an OATableComponent.
+     */
     public OATableColumn addColumn(OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         return this.addColumnMain(comp.getTableHeading(), -1, comp.getPropertyPath(), comp, c, -1, null);
     }
+
     /**
-        Create a new column using an OATableComponent.
-    */
+     * Create a new column using an OATableComponent.
+     */
     public OATableColumn add(OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         return this.addColumnMain(comp.getTableHeading(), -1, comp.getPropertyPath(), comp, c, -1, null);
     }
 
-
     /**
-        Create a new column using an OATableComponent.
-        @param heading column heading
-        @param width of column based on average character width.
-    */
+     * Create a new column using an OATableComponent.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     */
     public OATableColumn addColumn(String heading, int width, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         return this.addColumnMain(heading, width, comp.getPropertyPath(), comp, c, -1, null);
     }
+
     public OATableColumn addColumn(String heading, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         return this.addColumnMain(heading, -1, comp.getPropertyPath(), comp, c, -1, null);
     }
 
     /**
-        Create a new column using an OATableComponent.
-        @param heading column heading
-        @param width of column based on average character width.
-    */
+     * Create a new column using an OATableComponent.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     */
     public OATableColumn add(String heading, int width, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         return this.addColumnMain(heading, width, comp.getPropertyPath(), comp, c, -1, null);
     }
 
     /**
-        Create a new column using an OATableComponent.
-        @param heading column heading
-        @param width of column based on average character width.
-        @param path  Set the property path used to display values for a column.
-        This could be necessary when it can not be determined by the columns OATableComponent.
-    */
+     * Create a new column using an OATableComponent.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     * @param path
+     *            Set the property path used to display values for a column. This could be necessary
+     *            when it can not be determined by the columns OATableComponent.
+     */
     public OATableColumn addColumn(String heading, int width, String path, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, -1, null);
@@ -1269,12 +1296,16 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     /**
-        Create a new column using an OATableComponent.
-        @param heading column heading
-        @param width of column based on average character width.
-        @param path  Set the property path used to display values for a column.
-        This could be necessary when it can not be determined by the columns OATableComponent.
-    */
+     * Create a new column using an OATableComponent.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     * @param path
+     *            Set the property path used to display values for a column. This could be necessary
+     *            when it can not be determined by the columns OATableComponent.
+     */
     public OATableColumn add(String heading, int width, String path, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
         OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, -1, null);
@@ -1282,82 +1313,111 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     /**
-        Create a new column using an OATableComponent.
-        @param heading column heading
-        @param width of column based on average character width.
-        @param path  Set the property path used to display values for a column.
-        This could be necessary when it can not be determined by the columns OATableComponent.
-        @param index column number, -1 to append to existing columns
-    */
+     * Create a new column using an OATableComponent.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     * @param path
+     *            Set the property path used to display values for a column. This could be necessary
+     *            when it can not be determined by the columns OATableComponent.
+     * @param index
+     *            column number, -1 to append to existing columns
+     */
     public OATableColumn addColumn(String heading, int width, String path, OATableComponent comp, int index) {
         TableCellEditor c = comp.getTableCellEditor();
         OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, index, comp.getFormat());
         return tc;
     }
 
-    
     /**
-        Create a new column using an OATableComponent.
-        @param heading column heading
-        @param width of column based on average character width.
-        @param path  Set the property path used to display values for a column.
-        This could be necessary when it can not be determined by the columns OATableComponent.
-        @param index column number, -1 to append to existing columns
-    */
+     * Create a new column using an OATableComponent.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     * @param path
+     *            Set the property path used to display values for a column. This could be necessary
+     *            when it can not be determined by the columns OATableComponent.
+     * @param index
+     *            column number, -1 to append to existing columns
+     */
     public OATableColumn add(String heading, int width, String path, OATableComponent comp, int index) {
         TableCellEditor c = comp.getTableCellEditor();
         return this.addColumnMain(heading, width, path, comp, c, index, null);
     }
 
     /**
-        Create a new column using a path.
-        @param heading column heading
-        @param width of column based on average character width.
-        @param path  Set the property path used to display values for a column.
-    */
+     * Create a new column using a path.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     * @param path
+     *            Set the property path used to display values for a column.
+     */
     public OATableColumn addColumn(String heading, int width, String path) {
-        return this.addColumnMain(heading,width,path,null,(TableCellEditor)null,-1,null);
+        return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, null);
     }
+
     /**
-    Create a new column using a path.
-    @param heading column heading
-    @param width of column based on average character width.
-    @param path  Set the property path used to display values for a column.
-    */
+     * Create a new column using a path.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     * @param path
+     *            Set the property path used to display values for a column.
+     */
     public OATableColumn addColumn(String heading, int width, String path, String fmt) {
-        return this.addColumnMain(heading,width,path,null,(TableCellEditor)null,-1,fmt);
+        return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, fmt);
     }
+
     /**
-        Create a new column using a path.
-        @param heading column heading
-        @param width of column based on average character width.
-        @param path  Set the property path used to display values for a column.
-    */
+     * Create a new column using a path.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     * @param path
+     *            Set the property path used to display values for a column.
+     */
     public OATableColumn add(String heading, int width, String path) {
-        return this.addColumnMain(heading,width,path,null,(TableCellEditor)null,-1,null);
+        return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, null);
     }
+
     /**
-    Create a new column using a path.
-    @param heading column heading
-    @param width of column based on average character width.
-    @param path  Set the property path used to display values for a column.
-    */
+     * Create a new column using a path.
+     * 
+     * @param heading
+     *            column heading
+     * @param width
+     *            of column based on average character width.
+     * @param path
+     *            Set the property path used to display values for a column.
+     */
     public OATableColumn add(String heading, int width, String path, String fmt) {
-        return this.addColumnMain(heading,width,path,null,(TableCellEditor)null,-1,fmt);
+        return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, fmt);
     }
 
     static int averageCharWidth = 0;
     static int averageCharHeight = 0;
     static int lastFontSize = 0;
+
     /**
-        Used to determine the pixel width based on the average width of a character.
-    */
+     * Used to determine the pixel width based on the average width of a character.
+     */
     public static int getCharWidth(Component comp, Font font, int x) {
         if (averageCharWidth == 0 || (font != null && font.getSize() != lastFontSize)) {
             if (font == null) {
-System.out.println("OATable.getCharWidth=null, will use average=12 as default");
-Exception e = new Exception("OATable.getCharWidth=null, will use average=12 as default");
-e.printStackTrace();
+                System.out.println("OATable.getCharWidth=null, will use average=12 as default");
+                Exception e = new Exception("OATable.getCharWidth=null, will use average=12 as default");
+                e.printStackTrace();
                 return (12 * x);
             }
             lastFontSize = font.getSize();
@@ -1366,6 +1426,7 @@ e.printStackTrace();
         }
         return (averageCharWidth * x);
     }
+
     public static int getCharHeight(Component comp, Font font) {
         if (averageCharHeight == 0 || (font != null && font.getSize() != lastFontSize)) {
             lastFontSize = font.getSize();
@@ -1375,47 +1436,37 @@ e.printStackTrace();
         return (averageCharHeight);
     }
 
-/* later ...    
-    public void addColumn(String heading, int width, OATableColumn oatc) {
-        int pos = columns.size();
-        columns.insertElementAt(oatc, pos);
+    /*
+     * later ... public void addColumn(String heading, int width, OATableColumn oatc) { int pos =
+     * columns.size(); columns.insertElementAt(oatc, pos);
+     * 
+     * Font font = ((JComponent)oatc.oaComp).getFont(); if (width < 0 && oatc.oaComp != null) { width =
+     * ((JComponent)oatc.oaComp).getPreferredSize().width; width /=
+     * getCharWidth((JComponent)oatc.oaComp, font, 1); } int w = OATable.getCharWidth(this,font,width);
+     * w += 8; // borders, etc.
+     * 
+     * TableColumn tc = new TableColumn(pos); tc.setPreferredWidth(oatc.defaultWidth); tc.setWidth(w);
+     * tc.setCellEditor(oatc.comp);
+     * 
+     * tc.setCellRenderer( new OATableCellRenderer(oatc) ); tc.setHeaderValue(heading);
+     * tc.sizeWidthToFit(); getColumnModel().addColumn(tc);
+     * 
+     * column.tc = oatc; if (headerRenderer != null) tc.setHeaderRenderer(headerRenderer); // 2006/10/13
+     * 
+     * tc.setHeaderRenderer(headerRenderer); // 2006/12/29
+     * 
+     * calcPreferredSize(); }
+     */
 
-        Font font = ((JComponent)oatc.oaComp).getFont();
-        if (width < 0 && oatc.oaComp != null) {
-            width = ((JComponent)oatc.oaComp).getPreferredSize().width;
-            width /= getCharWidth((JComponent)oatc.oaComp, font, 1);
-        }
-        int w = OATable.getCharWidth(this,font,width);
-        w += 8; // borders, etc.
-        
-        TableColumn tc = new TableColumn(pos);
-        tc.setPreferredWidth(oatc.defaultWidth);
-        tc.setWidth(w);
-        tc.setCellEditor(oatc.comp);
-
-        tc.setCellRenderer( new OATableCellRenderer(oatc) );
-        tc.setHeaderValue(heading);
-        tc.sizeWidthToFit();
-        getColumnModel().addColumn(tc);
-
-        column.tc = oatc;
-        if (headerRenderer != null) tc.setHeaderRenderer(headerRenderer); // 2006/10/13
-        
-        tc.setHeaderRenderer(headerRenderer);  // 2006/12/29
-        
-        calcPreferredSize();
-    }
-**/
-    
     /**
-        Main method for adding a new Table Column.
-    */
+     * Main method for adding a new Table Column.
+     */
     protected OATableColumn addColumnMain(String heading, int width, String path, OATableComponent oaComp, TableCellEditor editComp, int index, String fmt) {
         Font font;
-        
+
         Component comp = null;
         if (oaComp instanceof JComponent) {
-            comp = (Component)oaComp;
+            comp = (Component) oaComp;
         }
         else if (oaComp != null) {
             TableCellEditor tce = oaComp.getTableCellEditor();
@@ -1427,7 +1478,7 @@ e.printStackTrace();
             int xx = 4;
             xx++;
         }
-        
+
         if (comp != null) {
             font = comp.getFont();
         }
@@ -1437,7 +1488,7 @@ e.printStackTrace();
             width = comp.getPreferredSize().width;
             width /= getCharWidth(comp, font, 1);
         }
-        int w = OATable.getCharWidth(this,font,width);
+        int w = OATable.getCharWidth(this, font, width);
         w += 8; // borders, etc.
 
         TableCellRenderer rend = null;
@@ -1449,7 +1500,7 @@ e.printStackTrace();
         int col = index;
         if (index == -1) col = columns.size();
 
-        columns.insertElementAt( column, col );
+        columns.insertElementAt(column, col);
         if (oaTableModel != null) {
             try {
                 if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = true;
@@ -1465,23 +1516,23 @@ e.printStackTrace();
         tc.setWidth(w);
         tc.setCellEditor(editComp);
 
-        tc.setCellRenderer( new OATableCellRenderer(column) );
+        tc.setCellRenderer(new OATableCellRenderer(column));
         tc.setHeaderValue(heading);
-        tc.sizeWidthToFit();  // 2006/12/26
+        tc.sizeWidthToFit(); // 2006/12/26
         getColumnModel().addColumn(tc);
 
         column.tc = tc; // 2006/10/12
         if (headerRenderer != null) tc.setHeaderRenderer(headerRenderer); // 2006/10/13
-        
-        tc.setHeaderRenderer(headerRenderer);  // 2006/12/29
-        
+
+        tc.setHeaderRenderer(headerRenderer); // 2006/12/29
+
         calcPreferredSize();
         return column;
     }
 
     /**
-        Remove a column from Table.
-    */
+     * Remove a column from Table.
+     */
     public void removeColumn(int pos) {
         if (pos < 0) return;
         if (pos >= columns.size()) return;
@@ -1491,153 +1542,116 @@ e.printStackTrace();
     }
 
     /*****
-    protected void addImpl(Component comp,Object constraints,int index) {
-        if (comp instanceof OATableComponent) {
-            OATableComponent oacomp = (OATableComponent) comp;
-            int w = oacomp.getColumns();
-            if (w < 0) w = 8;
-            addColumn(oacomp.getTableHeading(), w, oacomp.getPropertyPath(), oacomp, index);
-        }
-        else super.addImpl(comp,constraints,index);
-    }
-
-    public Component getComponent(int n) {
-        if (!bDesignTime) return super.getComponent(n);
-        int x = columns.size();
-        for (int i=0,j=0; i<x; i++) {
-            OATableColumn tc = (OATableColumn) columns.elementAt(i);
-            if (tc.oaComp != null) {
-                if (j == n) return (Component) tc.oaComp;
-                j++;
-            }
-        }
-        return null;
-    }
-    public int getComponentCount() {
-        if (!bDesignTime) return super.getComponentCount();
-        int x = columns.size();
-        int cnt=0;
-        for (int i=0; i<x; i++) {
-            OATableColumn tc = (OATableColumn) columns.elementAt(i);
-            if (tc.oaComp != null) cnt++;
-        }
-        return cnt;
-    }
-    public Component[] getComponents() {
-        if (!bDesignTime) return super.getComponents();
-        Component[] comps = new Component[getComponentCount()];
-        int x = columns.size();
-        for (int i=0,j=0; i<x; i++) {
-            OATableColumn tc = (OATableColumn) columns.elementAt(i);
-            if (tc.oaComp != null) {
-                comps[j] = (Component) tc.oaComp;
-                j++;
-            }
-        }
-        return comps;
-    }
-
-    public void remove(Component comp) {
-        if (!bDesignTime) return super.remove(comp);
-        int x = columns.size();
-        for (int i=0; i<x; i++) {
-            OATableColumn tc = (OATableColumn) columns.elementAt(i);
-            if (tc.comp == comp) removeColumn(i);
-        }
-    }
-
-    public void removeAll() {
-        int x = columns.size();
-        for (int i=0; i<x; i++) {
-            removeColumn(0);
-        }
-    }
-    ******/
-
+     * protected void addImpl(Component comp,Object constraints,int index) { if (comp instanceof
+     * OATableComponent) { OATableComponent oacomp = (OATableComponent) comp; int w =
+     * oacomp.getColumns(); if (w < 0) w = 8; addColumn(oacomp.getTableHeading(), w,
+     * oacomp.getPropertyPath(), oacomp, index); } else super.addImpl(comp,constraints,index); }
+     * 
+     * public Component getComponent(int n) { if (!bDesignTime) return super.getComponent(n); int x =
+     * columns.size(); for (int i=0,j=0; i<x; i++) { OATableColumn tc = (OATableColumn)
+     * columns.elementAt(i); if (tc.oaComp != null) { if (j == n) return (Component) tc.oaComp; j++; } }
+     * return null; } public int getComponentCount() { if (!bDesignTime) return
+     * super.getComponentCount(); int x = columns.size(); int cnt=0; for (int i=0; i<x; i++) {
+     * OATableColumn tc = (OATableColumn) columns.elementAt(i); if (tc.oaComp != null) cnt++; } return
+     * cnt; } public Component[] getComponents() { if (!bDesignTime) return super.getComponents();
+     * Component[] comps = new Component[getComponentCount()]; int x = columns.size(); for (int i=0,j=0;
+     * i<x; i++) { OATableColumn tc = (OATableColumn) columns.elementAt(i); if (tc.oaComp != null) {
+     * comps[j] = (Component) tc.oaComp; j++; } } return comps; }
+     * 
+     * public void remove(Component comp) { if (!bDesignTime) return super.remove(comp); int x =
+     * columns.size(); for (int i=0; i<x; i++) { OATableColumn tc = (OATableColumn)
+     * columns.elementAt(i); if (tc.comp == comp) removeColumn(i); } }
+     * 
+     * public void removeAll() { int x = columns.size(); for (int i=0; i<x; i++) { removeColumn(0); } }
+     ******/
 
     /**
-        Table Model using a Hub.
-    */
+     * Table Model using a Hub.
+     */
     class OATableModel extends DefaultTableModel {
         Hub hub;
+
         public OATableModel(Hub hub) {
             this.hub = hub;
         }
+
         public int getColumnCount() {
             return columns.size();
         }
 
         public int getRowCount() {
             if (hub == null) return 0;
-            return Math.abs( hub.getSize() );
+            return Math.abs(hub.getSize());
         }
 
         public void fireTableStructureChanged() {
-           super.fireTableStructureChanged();
+            super.fireTableStructureChanged();
         }
 
         public void fireTableRowsUpdated(int pos1, int pos2) {
-           super.fireTableRowsUpdated(pos1, pos2);
+            super.fireTableRowsUpdated(pos1, pos2);
         }
 
         public void fireTableRowsInserted(int firstRow, int lastRow) {
-            super.fireTableRowsInserted(firstRow,lastRow);
+            super.fireTableRowsInserted(firstRow, lastRow);
         }
+
         public void fireTableRowsDeleted(int firstRow, int lastRow) {
-            super.fireTableRowsDeleted(firstRow,lastRow);
+            super.fireTableRowsDeleted(firstRow, lastRow);
         }
 
         public Class getColumnClass(int c) {
-            Method[] ms = ((OATableColumn)columns.elementAt(c)).getMethods(hub);
+            Method[] ms = ((OATableColumn) columns.elementAt(c)).getMethods(hub);
 
             int i = ms.length;
             if (i == 0) return hub.getObjectClass();
-            Method m = ms[i-1];
+            Method m = ms[i - 1];
             Class cl = m.getReturnType();
 
             return OAReflect.getPrimitiveClassWrapper(cl);
         }
 
-        public boolean isCellEditable(int rowIndex,int columnIndex) {
-            boolean b = ( ((OATableColumn)columns.elementAt(columnIndex)).getTableCellEditor() != null );
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            boolean b = (((OATableColumn) columns.elementAt(columnIndex)).getTableCellEditor() != null);
             return b;
         }
+
         public void setValueAt(Object obj, int row, int col) {
-            //dont do this:   if (hub.getActiveObject() != hub.elementAt(row)) hub.setActiveObject(row);
+            // dont do this: if (hub.getActiveObject() != hub.elementAt(row)) hub.setActiveObject(row);
             // do nothing, the editor component is object aware
         }
 
         boolean loadMoreFlag;
         boolean loadingMoreFlag;
+
         public Object getValueAt(int row, int col) {
             if (hub == null) return "";
             Object obj;
             int cnt = hub.getSize();
 
-
             if (hub.isMoreData()) {
-                if ( row+5 >= cnt) {
+                if (row + 5 >= cnt) {
                     if (!loadMoreFlag && !loadingMoreFlag) {
                         loadMoreFlag = true;
                         loadingMoreFlag = true;
 
-                        if (isEditing()) getCellEditor().stopCellEditing(); //instead of "removeEditor();"
+                        if (isEditing()) getCellEditor().stopCellEditing(); // instead of
+                                                                            // "removeEditor();"
                         obj = hub.elementAt(row);
-                        hub.elementAt(row+5);
+                        hub.elementAt(row + 5);
                         hubAdapter.onNewList(null);
 
                         // make sure cell is visible
                         int pos = hub.getPos(obj);
                         if (pos < 0) pos = 0;
                         Rectangle cellRect;
-                        cellRect = getCellRect(pos,col,true);
+                        cellRect = getCellRect(pos, col, true);
                         scrollRectToVisible(cellRect);
                         repaint();
 
-
                         pos = hub.getPos(hub.getActiveObject());
                         if (pos < 0) getSelectionModel().clearSelection();
-                        else setRowSelectionInterval(pos,pos);
+                        else setRowSelectionInterval(pos, pos);
 
                         loadingMoreFlag = false;
 
@@ -1655,43 +1669,43 @@ e.printStackTrace();
         }
     }
 
-    //******************************** H A C K S ********************************************
-    //******************************** H A C K S ********************************************
-    //******************************** H A C K S ********************************************
+    // ******************************** H A C K S ********************************************
+    // ******************************** H A C K S ********************************************
+    // ******************************** H A C K S ********************************************
     // Hack: this should to be called within the constructor
     private void addHack() {
         // this is needed so that other components that have called registerKeyboardAction()
         // wont get <enter> key
-        registerKeyboardAction( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {   
-                }
-            },  KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        registerKeyboardAction( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {  
-                }
-            },  KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        //10/18/99 jdk1.2  The new BasicTableUI ignores the [Enter], but we want to have it setFocus
-        registerKeyboardAction( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    int row = getSelectedRow();
-                    int col = getSelectedColumn();
-                    editCellAt(row, col, e);
-                    requestFocus();
-                }
-            },  KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_FOCUSED);
-        registerKeyboardAction( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                }
-            },  KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), JComponent.WHEN_FOCUSED);
+        // 10/18/99 jdk1.2 The new BasicTableUI ignores the [Enter], but we want to have it setFocus
+        registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int row = getSelectedRow();
+                int col = getSelectedColumn();
+                editCellAt(row, col, e);
+                requestFocus();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_FOCUSED);
+        registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), JComponent.WHEN_FOCUSED);
     }
 
     protected AbstractButton cmdDoubleClick;
 
     /**
-        Button to perform a doClick() when table clickCount == 2
-    */
+     * Button to perform a doClick() when table clickCount == 2
+     */
     public void setDoubleClickButton(AbstractButton cmd) {
         cmdDoubleClick = cmd;
         OATable t = getLeftTable();
@@ -1699,30 +1713,31 @@ e.printStackTrace();
             t.cmdDoubleClick = cmd;
         }
     }
+
     /**
-        Button to perform a doClick() when table clickCount == 2
-    */
+     * Button to perform a doClick() when table clickCount == 2
+     */
     public AbstractButton getDoubleClickButton() {
         return cmdDoubleClick;
     }
 
-    
     private JPopupMenu compPopupMenu;
+
     @Override
     public void setComponentPopupMenu(JPopupMenu popup) {
-        //super.setComponentPopupMenu(popup);
+        // super.setComponentPopupMenu(popup);
         this.compPopupMenu = popup;
         OATable t = getLeftTable();
         if (t != null) {
             t.compPopupMenu = popup;
         }
     }
-    /*  dont include this, since it will then be used by JFC, which wont then use 
-     *  special code in processMouseEvent to show the popupMenu 
-    public JPopupMenu getComponentPopupMenu() {
-        return this.compPopupMenu;
-    }
-    */
+
+    /*
+     * dont include this, since it will then be used by JFC, which wont then use special code in
+     * processMouseEvent to show the popupMenu public JPopupMenu getComponentPopupMenu() { return
+     * this.compPopupMenu; }
+     */
     public JPopupMenu getMyComponentPopupMenu() {
         return this.compPopupMenu;
     }
@@ -1743,16 +1758,15 @@ e.printStackTrace();
         columnModel.getSelectionModel().setValueIsAdjusting(false);
     }
 
-    
-    
     // 20150424
     private int lastMouseDragRow = -1;
     private boolean bIsMouseDragging;
-    
+
     /**
-        Capture double click and call double click button.
-        @see #getDoubleClickButton
-    */
+     * Capture double click and call double click button.
+     * 
+     * @see #getDoubleClickButton
+     */
     @Override
     protected void processMouseEvent(MouseEvent e) {
 
@@ -1760,48 +1774,35 @@ e.printStackTrace();
             lastMouseDragRow = -1;
             bIsMouseDragging = false;
         }
-      
-// 20150511 popup trigger to work for windows and Mac
-  
+
+        // 20150511 popup trigger to work for windows and Mac
+
         if (compPopupMenu != null) {
             if (e.getID() == MouseEvent.MOUSE_RELEASED || e.getID() == MouseEvent.MOUSE_PRESSED) {
                 if (e.isPopupTrigger()) {
                     Point pt = e.getPoint();
                     int row = rowAtPoint(pt);
-     
+
                     hub.setPos(row);
                     compPopupMenu.show(this, pt.x, pt.y);
                 }
             }
-        }        
-        
-        
-/*was        
-        if (compPopupMenu != null) {
-            if (e.getID() == MouseEvent.MOUSE_RELEASED) {
-                if ( (e.getModifiers() & Event.META_MASK) != 0) {
-                    if (e.isPopupTrigger()) {
-                        Point pt = e.getPoint();
-                        int row = rowAtPoint(pt);
-         
-                        hub.setPos(row);
-                        / *
-                        ListSelectionModel lsm = getSelectionModel();
-                        if (!lsm.isSelectedIndex(row)) {
-                            getSelectionModel().setSelectionInterval(row, row);
-                        }
-                        * /
-                        compPopupMenu.show(this, pt.x, pt.y);
-                    }
-                }
-            }
         }
-*/        
-        
+
+        /*
+         * was if (compPopupMenu != null) { if (e.getID() == MouseEvent.MOUSE_RELEASED) { if (
+         * (e.getModifiers() & Event.META_MASK) != 0) { if (e.isPopupTrigger()) { Point pt =
+         * e.getPoint(); int row = rowAtPoint(pt);
+         * 
+         * hub.setPos(row); / * ListSelectionModel lsm = getSelectionModel(); if
+         * (!lsm.isSelectedIndex(row)) { getSelectionModel().setSelectionInterval(row, row); } /
+         * compPopupMenu.show(this, pt.x, pt.y); } } } }
+         */
+
         if (e.getID() == MouseEvent.MOUSE_PRESSED) {
             Point pt = e.getPoint();
             int row = rowAtPoint(pt);
-            if (row < 0) {  // 20150428
+            if (row < 0) { // 20150428
                 hub.setPos(-1);
             }
             if (e.getClickCount() == 2) {
@@ -1812,12 +1813,11 @@ e.printStackTrace();
             }
         }
         else if (e.getID() == MouseEvent.MOUSE_EXITED) {
-            onMouseOver(-1,-1, e);
+            onMouseOver(-1, -1, e);
         }
         super.processMouseEvent(e);
     }
 
-    
     @Override
     protected void processMouseMotionEvent(MouseEvent e) {
         if (e.getID() == MouseEvent.MOUSE_MOVED) {
@@ -1828,24 +1828,23 @@ e.printStackTrace();
         else if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
             bIsMouseDragging = true;
         }
-        
+
         super.processMouseMotionEvent(e);
     }
-    
-    
+
     /**
-        Method that is called whenever mouse click count = 2.
-        Note: the activeObject of the clicked row will be the active object in the OATables Hub.
-        
-        Default behaviour is to call doubleClick Command, if it is enabled.
-    */
+     * Method that is called whenever mouse click count = 2. Note: the activeObject of the clicked row
+     * will be the active object in the OATables Hub.
+     * 
+     * Default behaviour is to call doubleClick Command, if it is enabled.
+     */
     public void onDoubleClick() {
         OATable t = getRightTable();
         if (t != null) {
             t.onDoubleClick();
             return;
         }
-        
+
         if (cmdDoubleClick != null) {
             if (cmdDoubleClick.isEnabled()) {
                 cmdDoubleClick.doClick();
@@ -1856,10 +1855,11 @@ e.printStackTrace();
     public void setEnableEditors(boolean b) {
         bEnableEditors = b;
     }
+
     public boolean getEnableEditors() {
         return bEnableEditors;
     }
-    
+
     public void setEnableFilterRow(boolean b) {
         bEnableFilterRow = b;
         if (headerRenderer != null) {
@@ -1868,80 +1868,81 @@ e.printStackTrace();
             repaint();
         }
     }
+
     public boolean getEnableFilterRow() {
         return bEnableFilterRow;
     }
-    
-    /** 
-        Overwritten to set active object in Hub.
-    */
+
+    /**
+     * Overwritten to set active object in Hub.
+     */
     @Override
-    public boolean editCellAt(int row, int column, java.util.EventObject e){
+    public boolean editCellAt(int row, int column, java.util.EventObject e) {
         // hack: editCellAt() will not hide the current cell editor if the new "column"
-        //       does not have an editorComponent.  If this happens, then it will return
-        //       false.
+        // does not have an editorComponent. If this happens, then it will return
+        // false.
 
         if (hub.getPos() != row) {
-            hubAdapter._bRunningValueChanged = true;  // 20131113
+            hubAdapter._bRunningValueChanged = true; // 20131113
             hub.setPos(row);
             hubAdapter._bRunningValueChanged = false;
         }
-        
+
         if (hubSelect != null) {
             int x = hubSelect.getSize();
             if (x > 0) {
                 if (x > 1) return false;
-                if (hubSelect.getAt(0) != hub.getAO()) return false; 
+                if (hubSelect.getAt(0) != hub.getAO()) return false;
             }
         }
         else {
             try {
-                // Note: 20100529 calling setRowSelectionInterval(row,row), which will call valueChanged(evt) 
-                //    will have e.getValueIsAdjusting() = true
-                // was: setRowSelectionInterval(row,row); // this will not call setActiveObject(), since e.getValueIsAdjusting() will be true
+                // Note: 20100529 calling setRowSelectionInterval(row,row), which will call
+                // valueChanged(evt)
+                // will have e.getValueIsAdjusting() = true
+                // was: setRowSelectionInterval(row,row); // this will not call setActiveObject(), since
+                // e.getValueIsAdjusting() will be true
             }
             catch (RuntimeException ex) {
             }
-            
+
             if (hub.getPos() != row) {
-                return false;  // cant change activeObject
+                return false; // cant change activeObject
             }
         }
-    
+
         if (!bEnableEditors) return false;
-        
-        boolean b = super.editCellAt(row,column,e);
-        
+
+        boolean b = super.editCellAt(row, column, e);
+
         // hack: if editCellAt() returned false and the old column had an editor, then
-        //       we must stop it now.  Calling stopCellEditor() has no side effects, other
-        //       then removing the editorComponent
-    
-    
+        // we must stop it now. Calling stopCellEditor() has no side effects, other
+        // then removing the editorComponent
+
         if (!b && isEditing()) {
             getCellEditor().stopCellEditing();
         }
         else {
             if (getCellEditor() instanceof OATableCellEditor) {
-                ((OATableCellEditor)getCellEditor()).startCellEditing(e);
+                ((OATableCellEditor) getCellEditor()).startCellEditing(e);
             }
-            requestFocus();  // make sure component gets input
+            requestFocus(); // make sure component gets input
         }
-        
+
         return b;
     }
-    
-    
-    // hack: called by OATableCellEditor because  JTable.removeEditor() sets isEditing to false
-    //       after it removes the component from the Table
+
+    // hack: called by OATableCellEditor because JTable.removeEditor() sets isEditing to false
+    // after it removes the component from the Table
     boolean checkFocusFlag = true;
+
     public void setCheckFocus(boolean b) {
         checkFocusFlag = b;
     }
 
-
     /**
-        Overwritten to resume edit mode when focus is regained.
-    */
+     * Overwritten to resume edit mode when focus is regained.
+     */
     @Override
     public void requestFocus() {
         // hack: set focus to editorComponent if it is showing.
@@ -1953,8 +1954,8 @@ e.printStackTrace();
         }
     }
 
-//  ================== 2006/12/29 :) =============================    
-    
+    // ================== 2006/12/29 :) =============================
+
     private OATableColumn popupTableColumn;
     private JMenuItem miAdd, miFind;
     private JMenu menuAddColumn, menuLoad, menuSave;
@@ -1969,8 +1970,10 @@ e.printStackTrace();
 
     /**
      * The properties used to store the settings.
-     * @param props 
-     * @param name prefix used for storing properties, unique name for this table.
+     * 
+     * @param props
+     * @param name
+     *            prefix used for storing properties, unique name for this table.
      */
     public void setColumnProperties(OAProperties props, String name) {
         columnProperties = props;
@@ -1981,17 +1984,17 @@ e.printStackTrace();
     protected void loadColumnProperties() {
         if (bColumnPropertiesLoaded || columnProperties == null || columnPrefix == null) return;
         bColumnPropertiesLoaded = true;
-        for (int i=0; i<3; i++) {
-            String line1 = columnProperties.getProperty(columnPrefix + ".setup" + (i+1) + ".columns");
+        for (int i = 0; i < 3; i++) {
+            String line1 = columnProperties.getProperty(columnPrefix + ".setup" + (i + 1) + ".columns");
             if (line1 == null) continue;
-            String line2 = columnProperties.getProperty(columnPrefix + ".setup" + (i+1) + ".widths");
+            String line2 = columnProperties.getProperty(columnPrefix + ".setup" + (i + 1) + ".widths");
             if (line2 == null) continue;
             int x = OAString.dcount(line1, ",");
 
             tcColumnSetup[i] = new OATableColumn[x];
             intColumnSetup[i] = new int[x];
-            
-            for (int j=1; j<=x ;j++) {
+
+            for (int j = 1; j <= x; j++) {
                 String w1 = OAString.field(line1, ',', j);
                 if (w1 == null) break;
                 w1 = w1.trim();
@@ -1999,13 +2002,13 @@ e.printStackTrace();
                 if (w2 == null) continue;
                 int w = OAConv.toInt(w2);
                 if (w <= 0) continue;
-                intColumnSetup[i][j-1] = w;
-                
+                intColumnSetup[i][j - 1] = w;
+
                 int kx = columns.size();
-                for (int k=0; k<kx; k++) {
+                for (int k = 0; k < kx; k++) {
                     OATableColumn tc = (OATableColumn) columns.elementAt(k);
                     if (!w1.equalsIgnoreCase(tc.origPath)) continue;
-                    tcColumnSetup[i][j-1] = tc;
+                    tcColumnSetup[i][j - 1] = tc;
                     break;
                 }
             }
@@ -2015,12 +2018,12 @@ e.printStackTrace();
     protected void saveColumnProperties() {
         loadColumnProperties();
         if (!bColumnPropertiesLoaded) return;
-        for (int i=0; i<3; i++) {
+        for (int i = 0; i < 3; i++) {
             if (tcColumnSetup[i] == null) continue;
             if (intColumnSetup[i] == null) continue;
             String line1 = "";
             String line2 = "";
-            for (int j=0; j<tcColumnSetup[i].length; j++) {
+            for (int j = 0; j < tcColumnSetup[i].length; j++) {
                 if (j > 0) {
                     line1 += ",";
                     line2 += ",";
@@ -2030,24 +2033,24 @@ e.printStackTrace();
                     line2 += intColumnSetup[i][j];
                 }
             }
-            columnProperties.put(columnPrefix + ".setup" + (i+1) + ".columns", line1);
-            columnProperties.put(columnPrefix + ".setup" + (i+1) + ".widths", line2);
+            columnProperties.put(columnPrefix + ".setup" + (i + 1) + ".columns", line1);
+            columnProperties.put(columnPrefix + ".setup" + (i + 1) + ".widths", line2);
         }
         columnProperties.save();
     }
-    
+
     protected void displayPopupMenu(OATableColumn tc, Point pt) {
         if (columnProperties == null) return;
         getPopupMenu();
         loadColumnProperties();
-        
+
         // list of columns
         int x = columns.size();
         menuCheckBoxes = new JCheckBoxMenuItem[x];
         menuAddColumn.removeAll();
-        for (int i=0; i<x; i++) {
+        for (int i = 0; i < x; i++) {
             final OATableColumn tcx = (OATableColumn) columns.elementAt(i);
-            menuCheckBoxes[i] = new JCheckBoxMenuItem(tcx.tc.getHeaderValue()+"", tcx.bVisible);
+            menuCheckBoxes[i] = new JCheckBoxMenuItem(tcx.tc.getHeaderValue() + "", tcx.bVisible);
             menuCheckBoxes[i].addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     JCheckBoxMenuItem chk = (JCheckBoxMenuItem) e.getSource();
@@ -2062,7 +2065,7 @@ e.printStackTrace();
             }
             menuAddColumn.add(menuCheckBoxes[i]);
         }
-        
+
         // list of Save As
         if (!bColumnPropertiesLoaded) {
             menuSave.setVisible(false);
@@ -2072,14 +2075,14 @@ e.printStackTrace();
             menuSaveRadios = new JRadioButtonMenuItem[3];
             menuSave.removeAll();
             ButtonGroup grp = new ButtonGroup();
-            for (int i=0; i<3; i++) {
-                menuSaveRadios[i] = new JRadioButtonMenuItem("Setup #" + (i+1), false);
+            for (int i = 0; i < 3; i++) {
+                menuSaveRadios[i] = new JRadioButtonMenuItem("Setup #" + (i + 1), false);
                 grp.add(menuSaveRadios[i]);
                 menuSaveRadios[i].addItemListener(new ItemListener() {
                     public void itemStateChanged(ItemEvent e) {
                         JRadioButtonMenuItem rad = (JRadioButtonMenuItem) e.getSource();
                         if (rad.isSelected()) {
-                            for (int i=0; i<menuSaveRadios.length; i++) {
+                            for (int i = 0; i < menuSaveRadios.length; i++) {
                                 if (menuSaveRadios[i] == rad) {
                                     saveColumnSetup(i);
                                     break;
@@ -2091,16 +2094,16 @@ e.printStackTrace();
                 menuSave.add(menuSaveRadios[i]);
             }
         }
-        
+
         // list of Load
         menuLoadRadios = new JRadioButtonMenuItem[4];
         menuLoad.removeAll();
         ButtonGroup grp = new ButtonGroup();
-        for (int i=0; i<4; i++) {
+        for (int i = 0; i < 4; i++) {
             if (i == 0) menuLoadRadios[i] = new JRadioButtonMenuItem("Default", false);
             else {
                 menuLoadRadios[i] = new JRadioButtonMenuItem("Setup #" + i, false);
-                menuLoadRadios[i].setEnabled(tcColumnSetup[i-1] != null);
+                menuLoadRadios[i].setEnabled(tcColumnSetup[i - 1] != null);
             }
             grp.add(menuLoadRadios[i]);
             menuLoadRadios[i].addItemListener(new ItemListener() {
@@ -2111,9 +2114,9 @@ e.printStackTrace();
                             onLoadDefault();
                         }
                         else {
-                            for (int i=0; i<menuLoadRadios.length; i++) {
+                            for (int i = 0; i < menuLoadRadios.length; i++) {
                                 if (menuLoadRadios[i] == rad) {
-                                    loadColumnSetup(i-1);
+                                    loadColumnSetup(i - 1);
                                     break;
                                 }
                             }
@@ -2124,23 +2127,23 @@ e.printStackTrace();
             menuLoad.add(menuLoadRadios[i]);
             if (!bColumnPropertiesLoaded) break;
         }
-        
+
         this.popupTableColumn = tc;
         getPopupMenu().show(OATable.this, pt.x, pt.y);
     }
 
     protected void saveColumnSetup(int pos) {
         if (pos > 2 || pos < 0) return;
-        
+
         int x = columnModel.getColumnCount();
         tcColumnSetup[pos] = new OATableColumn[x];
         intColumnSetup[pos] = new int[x];
-        
+
         OATableColumn[] tcs = new OATableColumn[x];
-        for (int i=0; i<x; i++) {
+        for (int i = 0; i < x; i++) {
             TableColumn tc = columnModel.getColumn(i);
             int x2 = columns.size();
-            for (int i2=0; i2<x2; i2++) {
+            for (int i2 = 0; i2 < x2; i2++) {
                 OATableColumn tcx = (OATableColumn) columns.elementAt(i2);
                 if (tcx.tc == tc) {
                     tcx.currentWidth = tcx.tc.getWidth();
@@ -2149,29 +2152,29 @@ e.printStackTrace();
                 }
             }
         }
-        saveColumnProperties();     
+        saveColumnProperties();
     }
 
     protected void loadColumnSetup(int pos) {
         if (pos > 2 || pos < 0) return;
         if (tcColumnSetup[pos] == null) return;
-        for ( ;columnModel.getColumnCount()>0; ) {
+        for (; columnModel.getColumnCount() > 0;) {
             columnModel.removeColumn(columnModel.getColumn(0));
         }
         int x = columns.size();
-        for (int i=0; i<x; i++) {
+        for (int i = 0; i < x; i++) {
             OATableColumn tcx = (OATableColumn) columns.elementAt(i);
             tcx.bVisible = false;
         }
         x = tcColumnSetup[pos].length;
-        for (int i=0; i<x; i++) {
+        for (int i = 0; i < x; i++) {
             OATableColumn tcx = tcColumnSetup[pos][i];
             tcx.bVisible = true;
             tcx.tc.setWidth(intColumnSetup[pos][i]);
             columnModel.addColumn(tcx.tc);
         }
     }
-    
+
     protected void onAddColumn(OATableColumn tc) {
         if (tc != null) {
             tc.bVisible = true;
@@ -2179,12 +2182,12 @@ e.printStackTrace();
             int x = columns.size();
             int pos = 0;
             columnModel.addColumn(tc.tc);
-            for (int i=0; i<x; i++) {
+            for (int i = 0; i < x; i++) {
                 OATableColumn tcx = (OATableColumn) columns.elementAt(i);
                 if (tcx == tc) {
                     int cnt = columnModel.getColumnCount();
-                    if (pos != cnt-1) {
-                        columnModel.moveColumn(cnt-1, pos);
+                    if (pos != cnt - 1) {
+                        columnModel.moveColumn(cnt - 1, pos);
                     }
                     return;
                 }
@@ -2199,20 +2202,20 @@ e.printStackTrace();
             columnModel.removeColumn(tc.tc);
         }
     }
-    
+
     protected void onLoadDefault() {
-        for ( ;columnModel.getColumnCount()>0; ) {
+        for (; columnModel.getColumnCount() > 0;) {
             columnModel.removeColumn(columnModel.getColumn(0));
         }
         int x = columns.size();
-        for (int i=0; i<x; i++) {
+        for (int i = 0; i < x; i++) {
             OATableColumn tcx = (OATableColumn) columns.elementAt(i);
             tcx.bVisible = tcx.bDefault;
             tcx.tc.setWidth(tcx.defaultWidth);
             if (tcx.bVisible) columnModel.addColumn(tcx.tc);
         }
     }
-    
+
     protected void onFind() {
     }
 
@@ -2223,29 +2226,24 @@ e.printStackTrace();
 
         menuAddColumn = new JMenu("Select Columns");
         popupMenu.add(menuAddColumn);
-/*
-        miFind = new JMenuItem("Find ...");
-        miFind.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onFind();
-            }
-        });
-        popupMenu.add(miFind);
-*/        
+        /*
+         * miFind = new JMenuItem("Find ..."); miFind.addActionListener(new ActionListener() { public
+         * void actionPerformed(ActionEvent e) { onFind(); } }); popupMenu.add(miFind);
+         */
         popupMenu.addSeparator();
-        
+
         menuLoad = new JMenu("Load");
         popupMenu.add(menuLoad);
 
         menuSave = new JMenu("Save As");
         popupMenu.add(menuSave);
-        
+
         return popupMenu;
     }
 
     public void setSortColumn(OATableComponent oaComp, boolean bAsc, int pos) {
         OATableColumn tc;
-        for (int i=0; i<columns.size(); i++) {
+        for (int i = 0; i < columns.size(); i++) {
             tc = (OATableColumn) columns.elementAt(i);
             if (tc.getOATableComponent() == oaComp) {
                 tc.sortOrder = pos;
@@ -2255,16 +2253,16 @@ e.printStackTrace();
         }
         getTableHeader().repaint();
     }
-    
+
     public void removeSort() {
         OATableColumn tc;
-        for (int i=0; i<columns.size(); i++) {
+        for (int i = 0; i < columns.size(); i++) {
             tc = (OATableColumn) columns.elementAt(i);
             tc.sortOrder = 0;
         }
         getTableHeader().repaint();
     }
-    
+
     public int getDisplayedColumnCount() {
         return columnModel.getColumnCount();
     }
@@ -2274,7 +2272,7 @@ e.printStackTrace();
         if (pos >= x) return null;
         TableColumn tc = columnModel.getColumn(pos);
         x = columns.size();
-        for (int i=0; i<x; i++) {
+        for (int i = 0; i < x; i++) {
             OATableColumn tcx = (OATableColumn) columns.elementAt(i);
             if (tcx.tc == tc) return tcx.getOATableComponent();
         }
@@ -2317,16 +2315,18 @@ e.printStackTrace();
     protected void setLeftTable(OATable table) {
         this.tableLeft = table;
     }
+
     public OATable getLeftTable() {
         return tableLeft;
     }
+
     protected void setRightTable(OATable table) {
         this.tableRight = table;
 
-        setSelectionModel(table.getSelectionModel() );
+        setSelectionModel(table.getSelectionModel());
         setSelectHub(table.hubSelect);
         this.chkSelection = table.chkSelection;
-        
+
         setAllowDrag(table.getAllowDrag());
         setAllowDrop(table.getAllowDrop());
         setAllowSorting(table.getAllowSorting());
@@ -2337,18 +2337,15 @@ e.printStackTrace();
         setIntercellSpacing(table.getIntercellSpacing());
         setRowHeight(table.getRowHeight());
         setShowChanges(table.getShowChanges());
-        
+
         /*
-        getTableHeader().setResizingAllowed(false);
-        getTableHeader().setReorderingAllowed(false);
-        */
+         * getTableHeader().setResizingAllowed(false); getTableHeader().setReorderingAllowed(false);
+         */
     }
+
     public OATable getRightTable() {
         return tableRight;
     }
-    
-        
-    
 
     // includes joinedTable from OATableScrollPane
     protected OATableColumn[] getAllTableColumns() {
@@ -2356,10 +2353,10 @@ e.printStackTrace();
         int tot = columns.size();
         if (tableLeft != null) tot += tableLeft.columns.size();
         if (tableRight != null) tot += tableRight.columns.size();
-        
+
         OATableColumn[] allColumns = new OATableColumn[tot];
         int pos = 0;
-        for (int z=0; z<2; z++) {
+        for (int z = 0; z < 2; z++) {
             OATable t;
             if (z == 0) {
                 if (this.tableLeft != null) t = tableLeft;
@@ -2369,29 +2366,29 @@ e.printStackTrace();
                 if (this.tableRight != null) t = tableRight;
                 else t = this;
             }
-            for (int i=0; i<t.columns.size(); i++) {
+            for (int i = 0; i < t.columns.size(); i++) {
                 OATableColumn col = (OATableColumn) t.columns.elementAt(i);
                 allColumns[pos++] = col;
             }
             if (tableLeft == null && tableRight == null) break;
-        }        
+        }
         return allColumns;
     }
-    
+
     protected void onHeadingClick(OATableColumn tc, MouseEvent e, Point pt) {
         if (!bAllowSorting) return;
         if (tc == null) return;
         if (!tc.getAllowSorting()) return;
         tc.setupTableColumn();
-        
+
         // 20101229 setup to be able to remove the sort order on a column
-        
+
         OATableColumn[] allColumns = getAllTableColumns();
-        
+
         if (e.isControlDown() || e.isShiftDown()) {
             if (tc.sortOrder == 0) {
                 int max = 0;
-                for (int i=0; i<allColumns.length; i++) {
+                for (int i = 0; i < allColumns.length; i++) {
                     OATableColumn col = allColumns[i];
                     tc.sortOrder = Math.max(tc.sortOrder, col.sortOrder);
                 }
@@ -2399,7 +2396,7 @@ e.printStackTrace();
             }
             else {
                 boolean bTurnOff = true;
-                for (int i=0; i<allColumns.length; i++) {
+                for (int i = 0; i < allColumns.length; i++) {
                     OATableColumn col = allColumns[i];
                     if (col != tc && col.sortOrder > 0) {
                         bTurnOff = tc.sortDesc;
@@ -2417,7 +2414,7 @@ e.printStackTrace();
             boolean bTurnOff = false;
             if (tc.sortOrder > 0) {
                 boolean b = false;
-                for (int i=0; !b && i<allColumns.length; i++) {
+                for (int i = 0; !b && i < allColumns.length; i++) {
                     OATableColumn col = allColumns[i];
                     if (col != tc & col.sortOrder > 0) b = true;
                 }
@@ -2427,7 +2424,7 @@ e.printStackTrace();
                 }
             }
             tc.sortOrder = 1;
-            for (int i=0; i<allColumns.length; i++) {
+            for (int i = 0; i < allColumns.length; i++) {
                 OATableColumn col = allColumns[i];
                 if (col != tc || bTurnOff) {
                     col.sortOrder = 0;
@@ -2446,9 +2443,9 @@ e.printStackTrace();
     }
 
     protected void onHeadingMouseReleased(MouseEvent e, Point pt) {
-       
+
         if (pt != null && !e.isPopupTrigger()) {
-            Rectangle rec = new Rectangle(pt.x-3, pt.y-3, 6, 6);
+            Rectangle rec = new Rectangle(pt.x - 3, pt.y - 3, 6, 6);
             Point pt2 = e.getPoint();
             if (!rec.contains(pt2)) return;
             // if (pt2 != null && (pt.x != pt2.x || pt.y != pt2.y)) return;
@@ -2462,11 +2459,10 @@ e.printStackTrace();
             tc = (OATableColumn) columns.elementAt(column);
         }
         if (tc == null) return;
-        
-        
-//qqqqqqqqq start 20150518 heading has textfield for filtering
-System.out.println("onHeadingMouseReleased ");//qqqqqqqq                
-        
+
+        // qqqqqqqqq start 20150518 heading has textfield for filtering
+        System.out.println("onHeadingMouseReleased ");// qqqqqqqq
+
         PanelHeaderRenderer bhr = headerRenderer;
         if (bhr == null || tableRight != null) bhr = tableRight.headerRenderer;
         if (bhr != null && bhr.buttonHeight > 0 && pt.y > bhr.buttonHeight) {
@@ -2483,20 +2479,35 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
                 if (ed != null) ed.stopCellEditing();
             }
 
+//qqqqqqqqqq 20150520            
+            Component compFilter = tc.getFilterEditor();
+            if (compFilter != null) {
+                if (compFilter.getParent() != getTableHeader()) {
+                    getTableHeader().add(compFilter);
+                }
+              
+            }
+/*was            
             if (bhr.txt.getParent() != getTableHeader()) {
                 getTableHeader().add(bhr.txt);
             }
+*/            
             Rectangle rect = getTableHeader().getHeaderRect(column);
-            rect.y += bhr.buttonHeight+1;
-            rect.height -= bhr.buttonHeight+2;
+            rect.y += bhr.buttonHeight + 1;
+            rect.height -= bhr.buttonHeight + 2;
+            
+            compFilter.setBounds(rect);
+            compFilter.requestFocusInWindow();
+//qqqqqqqqq need to remove/addFocusListener            
+/*was            
             bhr.txt.setBounds(rect);
             bhr.txt.requestFocusInWindow();
+*/            
             return;
         }
-//qqqqqq end
-        
-        
-        if ((e.getModifiers() & Event.META_MASK) !=0) {
+        // qqqqqq end
+
+        if ((e.getModifiers() & Event.META_MASK) != 0) {
             if (!e.isPopupTrigger()) return;
         }
         if (e.isPopupTrigger()) {
@@ -2506,10 +2517,9 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
         if (tc != null) onHeadingClick(tc, e, pt);
     }
 
-//  END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
-//  END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
+    // END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
+    // END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
 
-    
     // 20101031 improve the look when table does not take up all of viewport
     protected void configureEnclosingScrollPane() {
         super.configureEnclosingScrollPane();
@@ -2517,7 +2527,7 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
         if (p instanceof JViewport) {
             Container gp = p.getParent();
             if (gp instanceof JScrollPane) {
-                JScrollPane scrollPane = (JScrollPane)gp;
+                JScrollPane scrollPane = (JScrollPane) gp;
                 JViewport viewport = scrollPane.getViewport();
                 if (viewport == null || viewport.getView() != this) {
                     return;
@@ -2525,21 +2535,19 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
                 viewport.setBackground(getBackground());
 
                 /*
-                JPanel pan = new JPanel(new BorderLayout());                
-                pan.add(getTableHeader(), BorderLayout.WEST);
-    
-                JButton cmd = new JButton("");
-                pan.add(cmd, BorderLayout.CENTER);
-                
-                pan.setBackground(getBackground());
-                scrollPane.setColumnHeaderView(pan);
-                */
+                 * JPanel pan = new JPanel(new BorderLayout()); pan.add(getTableHeader(),
+                 * BorderLayout.WEST);
+                 * 
+                 * JButton cmd = new JButton(""); pan.add(cmd, BorderLayout.CENTER);
+                 * 
+                 * pan.setBackground(getBackground()); scrollPane.setColumnHeaderView(pan);
+                 */
             }
         }
     }
 
-    
     private boolean bIsProcessKeyBinding;
+
     // 20101229 add this to be able to left/right arrow between joined tables
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
@@ -2548,18 +2556,18 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
         final int rowBefore = (hub == null) ? 0 : hub.getPos();
         int code = e.getKeyCode();
         int colBefore = getSelectedColumn();
-        
+
         bIsProcessKeyBinding = true;
         boolean bWasUsed = super.processKeyBinding(ks, e, condition, pressed);
         bIsProcessKeyBinding = false;
-        
-        if (!bWasUsed) return false;  // only want to know when a key was actually used
+
+        if (!bWasUsed) return false; // only want to know when a key was actually used
         final int rowAfter = (hub == null) ? 0 : hub.getPos();
-        
+
         if (tableLeft == null && tableRight == null) {
         }
         else {
-            if (colBefore == getSelectedColumn()) {  // column change was not able to be made
+            if (colBefore == getSelectedColumn()) { // column change was not able to be made
                 if (code == KeyEvent.VK_LEFT) {
                     if (colBefore != 0 || tableLeft == null) return true;
                     // goto left table, last column
@@ -2573,20 +2581,20 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
                     if (tableRight == null) return true;
                     if (colBefore != this.getColumnCount() - 1) return true;
                     // goto first column in right table
-                    tableRight.setColumnSelectionInterval(0, 0); 
+                    tableRight.setColumnSelectionInterval(0, 0);
                     int row = this.getSelectedRow();
                     tableRight.setRowSelectionInterval(row, row);
                     tableRight.requestFocus();
                 }
             }
         }
-        
+
         // 20150512
         if (code == KeyEvent.VK_UP) {
             if (rowAfter == rowBefore && rowBefore != 0) {
                 if (hub != null) {
                     int pos = hub.getPos() - 1;
-                    //if (pos >= 0) hub.setPos(pos);
+                    // if (pos >= 0) hub.setPos(pos);
                 }
             }
         }
@@ -2594,19 +2602,19 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
             if (rowAfter == rowBefore) {
                 if (hub != null) {
                     int pos = hub.getPos() + 1;
-                    //if (pos < hub.getSize()) hub.setPos(pos);
+                    // if (pos < hub.getSize()) hub.setPos(pos);
                 }
             }
         }
         else if (code == KeyEvent.VK_HOME) {
-            if ( (e.getModifiers() & Event.CTRL_MASK) != 0) {
+            if ((e.getModifiers() & Event.CTRL_MASK) != 0) {
                 if (rowAfter == rowBefore) {
-                    //if (hub != null) hub.setPos(0);
+                    // if (hub != null) hub.setPos(0);
                 }
             }
             else {
                 if (tableLeft != null) {
-                    tableLeft.setColumnSelectionInterval(0,0);
+                    tableLeft.setColumnSelectionInterval(0, 0);
                     int row = this.getSelectedRow();
                     tableLeft.setRowSelectionInterval(row, row);
                     tableLeft.requestFocus();
@@ -2614,18 +2622,18 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
             }
         }
         else if (code == KeyEvent.VK_END) {
-            if ( (e.getModifiers() & Event.CTRL_MASK) != 0) {
+            if ((e.getModifiers() & Event.CTRL_MASK) != 0) {
                 if (rowAfter == rowBefore) {
                     if (hub != null) {
                         int pos = hub.getSize() - 1;
-                        //if (pos >= 0) hub.setPos(pos);
+                        // if (pos >= 0) hub.setPos(pos);
                     }
                 }
             }
             else {
                 if (tableRight != null) {
                     int col = tableRight.getColumnCount() - 1;
-                    tableRight.setColumnSelectionInterval(col,col);
+                    tableRight.setColumnSelectionInterval(col, col);
                     int row = this.getSelectedRow();
                     tableRight.setRowSelectionInterval(row, row);
                     tableRight.requestFocus();
@@ -2641,23 +2649,24 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
         return super.getCellEditor(row, column);
     }
 
-
     // 20150426 adding features from CustomTable
     private int tttCnt;
+
     @Override
     public void setToolTipText(String text) {
         if (text == null) text = "";
-        if (text.length()>0) text += ((tttCnt++)%2==0)?"":" ";  // make unique
+        if (text.length() > 0) text += ((tttCnt++) % 2 == 0) ? "" : " "; // make unique
         super.setToolTipText(text);
     }
 
-    protected int mouseOverRow=-1, mouseOverColumn;
+    protected int mouseOverRow = -1, mouseOverColumn;
     private Rectangle rectMouseOver;
+
     public void onMouseOver(int row, int column, MouseEvent evt) {
         super.setToolTipText("");
         mouseOverRow = row;
         mouseOverColumn = column;
-        
+
         if (rectMouseOver != null) repaint(rectMouseOver);
         if (row < 0) rectMouseOver = null;
         else {
@@ -2666,24 +2675,24 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
         }
     }
 
-
     public static final Color COLOR_Odd = UIManager.getColor("Table.background");
     public static final Color COLOR_Even = new Color(249, 255, 255);
     public static final Color COLOR_Focus = UIManager.getColor("Table.foreground");
-    public static final Color COLOR_MouseOver = new Color(0,0,110);
-    
-    public static final Color COLOR_Change_Foreground = Color.yellow;  
-    public static final Color COLOR_Change_Background = new Color(0,0,105);  
+    public static final Color COLOR_MouseOver = new Color(0, 0, 110);
+
+    public static final Color COLOR_Change_Foreground = Color.yellow;
+    public static final Color COLOR_Change_Background = new Color(0, 0, 105);
     public static final Border BORDER_Change = new LineBorder(COLOR_Change_Background, 1);
-    
-    public static final Color COLOR_Focus_Forground = UIManager.getColor("Table.background"); 
+
+    public static final Color COLOR_Focus_Forground = UIManager.getColor("Table.background");
     public static final Border BORDER_Focus = new LineBorder(Color.white, 1);
-    
+
     private JLabel lblDummy;
     private Border borderDummy;
 
-    /** qqqqqqq add more doc here qqqqqqqqq
-     * Called by getCellRender to customize the renderer.
+    /**
+     * qqqqqqq add more doc here qqqqqqqqq Called by getCellRender to customize the renderer.
+     * 
      * @param comp
      * @param table
      * @param value
@@ -2694,12 +2703,12 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
      * @param wasChanged
      * @param wasMouseOver
      * @return
-     * @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean, boolean) which is called by this 
-     * method after it sets the defaults. 
+     * @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean, boolean)
+     *      which is called by this method after it sets the defaults.
      */
-    public Component getRenderer(Component comp, JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column,boolean wasChanged, boolean wasMouseOver) {
+    public Component getRenderer(Component comp, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
         JLabel lbl = null;
-    
+
         // 1of3: set default settings
         if (!(comp instanceof JLabel)) {
             if (lblDummy == null) lblDummy = new JLabel();
@@ -2710,7 +2719,7 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
             lbl.setBorder(borderDummy);
         }
         else lbl = (JLabel) comp;
-        
+
         if (hub.getAt(row) != null) {
             if (!isSelected && !hasFocus) {
                 lbl.setForeground(Color.BLACK);
@@ -2724,7 +2733,7 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
             lbl.setBackground(COLOR_Change_Background);
             lbl.setBorder(BORDER_Change);
             if (isSelected) {
-                // lbl.setBorder(??);  // use selected background color
+                // lbl.setBorder(??); // use selected background color
             }
         }
         else {
@@ -2732,7 +2741,7 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
                 lbl.setForeground(Color.white);
                 lbl.setBackground(COLOR_Focus);
             }
-            
+
             if (wasMouseOver) {
                 lbl.setForeground(Color.white);
                 lbl.setBackground(COLOR_MouseOver);
@@ -2746,7 +2755,7 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
         if (tableLeft != null && column < tableLeft.columns.size()) {
             OATableColumn tc = (OATableColumn) tableLeft.columns.elementAt(column);
             oacomp = tc.getOATableComponent();
-            
+
         }
         else if (column >= 0 && column < columns.size()) {
             OATableColumn tc = (OATableColumn) columns.elementAt(column);
@@ -2755,50 +2764,47 @@ System.out.println("onHeadingMouseReleased ");//qqqqqqqq
 
         if (lbl == lblDummy && comp != null) {
             Color c = lblDummy.getBackground();
-            if (!Color.cyan.equals(c)) comp.setBackground(c); 
+            if (!Color.cyan.equals(c)) comp.setBackground(c);
             c = lblDummy.getForeground();
             if (!Color.cyan.equals(c)) comp.setForeground(c);
             if (lbl.getBorder() != borderDummy) {
                 if (comp instanceof JComponent) {
-                    ((JComponent)comp).setBorder(lbl.getBorder());
+                    ((JComponent) comp).setBorder(lbl.getBorder());
                 }
             }
         }
-        
-        
+
         // 1of3: is done, defaults are set
-        
+
         // 2of3: allow component to customize
         if (oacomp != null) {
             oacomp.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
         }
-        
+
         // 3of3: allow App to customize
         customizeRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
-        
-        
+
         return comp;
     }
 
     /**
      * This is called by getRenderer(..) after the default settings have been set.
      */
-    public void customizeRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {        
+    public void customizeRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
         // to be overwritten
     }
-    
 
 }
 
 /**
-    Class used to bind Table to a Hub.
-*/
+ * Class used to bind Table to a Hub.
+ */
 class MyHubAdapter extends JFCController implements ListSelectionListener {
     OATable table;
     Hub hubSelect;
     private HubListenerAdapter hlSelect;
 
-    boolean _bIgnoreValueChanged;  // used to ignore calls to valueChanged(...) 
+    boolean _bIgnoreValueChanged; // used to ignore calls to valueChanged(...)
     boolean _bRunningValueChanged; // flag set when valueChanged is running
 
     public MyHubAdapter(Hub hub, OATable table) {
@@ -2818,6 +2824,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
         return _bIgnoreValueChanged;
     }
+
     protected boolean getRunningValueChanged() {
         if (table.tableLeft != null) {
             if (table.tableLeft.hubAdapter._bRunningValueChanged) return true;
@@ -2827,17 +2834,17 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
         return _bRunningValueChanged;
     }
-    
+
     protected void setSelectHub(Hub hubSelect) {
         if (this.hubSelect == hubSelect) return;
-        
+
         if (this.hubSelect != null && hlSelect != null) {
             this.hubSelect.removeHubListener(hlSelect);
             hlSelect = null;
         }
         this.hubSelect = hubSelect;
         if (hubSelect == null) return;
-        
+
         hlSelect = new HubListenerAdapter() {
             public @Override void afterAdd(HubEvent e) {
                 Object obj = e.getObject();
@@ -2854,9 +2861,11 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                     _bIgnoreValueChanged = false;
                 }
             }
+
             public @Override void afterInsert(HubEvent e) {
                 afterAdd(e);
             }
+
             public @Override void afterRemove(HubEvent e) {
                 if (table.chkSelection != null) table.repaint();
                 if (getRunningValueChanged()) return;
@@ -2869,9 +2878,10 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                     _bIgnoreValueChanged = false;
                 }
             }
+
             public @Override void onNewList(HubEvent e) {
                 if (getRunningValueChanged()) return;
-                
+
                 table.myClearSelectionAndLeadAnchor();
                 rebuildListSelectionModel();
                 if (table.chkSelection != null) table.repaint();
@@ -2880,12 +2890,12 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         hubSelect.addHubListener(hlSelect);
         rebuildListSelectionModel();
     }
-    
+
     protected void rebuildListSelectionModel() {
         ListSelectionModel lsm = table.getSelectionModel();
         _bIgnoreValueChanged = true;
         lsm.clearSelection();
-        
+
         if (hubSelect == null) {
             int x = hub.getPos();
             if (x >= 0) lsm.addSelectionInterval(x, x);
@@ -2894,12 +2904,12 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
 
         // update hubSelect, to see if objects are in table.hub
-        for (int i=0;  ;i++) {
+        for (int i = 0;; i++) {
             Object obj = hubSelect.getAt(i);
             if (obj == null) {
                 break;
             }
-            int pos = hub.indexOf(obj);  // dont use hub.getPos(), since it will adjust "linkage"
+            int pos = hub.indexOf(obj); // dont use hub.getPos(), since it will adjust "linkage"
             if (pos < 0) {
                 hubSelect.removeAt(i);
                 i--;
@@ -2911,16 +2921,15 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         _bIgnoreValueChanged = false;
     }
 
-
-    public synchronized void valueChanged(ListSelectionEvent e)  {
-        if (e.getValueIsAdjusting()){
+    public synchronized void valueChanged(ListSelectionEvent e) {
+        if (e.getValueIsAdjusting()) {
             return;
         }
 
         if (_bRunningValueChanged) {
             return;
         }
-        
+
         if (getIgnoreValueChanged()) {
             return;
         }
@@ -2928,17 +2937,17 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         int row1 = e.getFirstIndex();
         int row2 = e.getLastIndex();
         if (row2 < 0) row2 = row1;
-        
+
         _bRunningValueChanged = true;
 
         if (hubSelect != null) {
             ListSelectionModel lsm = table.getSelectionModel();
 
             int newAoPos = -1;
-            
-            for (int i=row1; ; ) {
+
+            for (int i = row1;;) {
                 Object obj = table.hub.elementAt(i);
-                if (obj != null) { 
+                if (obj != null) {
                     if (lsm.isSelectedIndex(i)) {
                         if (!hubSelect.contains(obj)) {
                             hubSelect.add(obj);
@@ -2962,24 +2971,24 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                     hubSelect.remove(obj);
                 }
             }
-            
+
             if (newAoPos < 0) {
                 newAoPos = getHub().getPos(hubSelect.getAt(0));
             }
-            
-            //newAoPos = table.getEditingRow();
-            //if (newAoPos < 0) newAoPos = table.getSelectedRow();
+
+            // newAoPos = table.getEditingRow();
+            // if (newAoPos < 0) newAoPos = table.getSelectedRow();
             newAoPos = table.getSelectionModel().getLeadSelectionIndex();
-            
-            getHub().setAO(newAoPos);  
+
+            getHub().setAO(newAoPos);
         }
         else {
             int row = table.getSelectedRow();
             getHub().setPos(row);
             int pos = getHub().getPos();
-            if (pos != row) {  // if the hub.pos is not the same, set it back
+            if (pos != row) { // if the hub.pos is not the same, set it back
                 _bRunningValueChanged = false;
-                if (pos >= 0) table.setRowSelectionInterval(pos,pos);
+                if (pos >= 0) table.setRowSelectionInterval(pos, pos);
                 else table.clearSelection();
             }
         }
@@ -2992,31 +3001,30 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         int x = getHub().getPos();
         if (x >= 0) setSelectedRow(x);
         else {
-            Rectangle cellRect = new Rectangle(0,0,10,10);
+            Rectangle cellRect = new Rectangle(0, 0, 10, 10);
             table.scrollRectToVisible(cellRect);
             // table.repaint();
         }
 
         // 20101229 new list needs to be resorted
         table.performSort();
-        
+
         // update hubSelect, to see if objects are in table.hub
         rebuildListSelectionModel();
     }
 
-    
     public @Override void afterSort(HubEvent e) {
         table.oaTableModel.fireTableStructureChanged();
 
         int x = getHub().getPos();
         if (x >= 0) setSelectedRow(x);
         else {
-            Rectangle cellRect = new Rectangle(0,0,10,10);
+            Rectangle cellRect = new Rectangle(0, 0, 10, 10);
             table.scrollRectToVisible(cellRect);
             // table.repaint();
         }
         // table.repaint();
-        
+
         rebuildListSelectionModel();
     }
 
@@ -3031,30 +3039,29 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         afterChangeActiveObject(e);
         rebuildListSelectionModel();
 
-        
         final Rectangle cellRect = table.getCellRect(e.getToPos(), 0, true);
 
         if (SwingUtilities.isEventDispatchThread()) {
             table.scrollRectToVisible(cellRect);
         }
         else {
-            SwingUtilities.invokeLater( new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     table.scrollRectToVisible(cellRect);
                     rebuildListSelectionModel();
                 }
             });
         }
-        
+
     }
-    
+
     public @Override void afterChangeActiveObject(HubEvent e) {
-        if (getRunningValueChanged()) return;  // 20131113
+        if (getRunningValueChanged()) return; // 20131113
 
         int row = getHub().getPos();
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
 
-        // 20131113 
+        // 20131113
         if (table.hubSelect == null) {
             if (row < 0) {
                 table.myClearSelectionAndLeadAnchor();
@@ -3070,7 +3077,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             _setSelectRow(row);
         }
         else {
-            SwingUtilities.invokeLater( new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     _setSelectRow(row);
                 }
@@ -3090,17 +3097,18 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 // 20110408 need to allow for selecting multiple lines
                 ListSelectionModel lsm = table.getSelectionModel();
                 if (!lsm.getValueIsAdjusting() && !lsm.isSelectedIndex(row)) {
-                    table.setRowSelectionInterval(row,row);
+                    table.setRowSelectionInterval(row, row);
                 }
                 // was: table.setRowSelectionInterval(row,row);
             }
-            catch (Exception e) {  // IllegalArgument: row index out of range.  Happens when Hub is changed
+            catch (Exception e) { // IllegalArgument: row index out of range. Happens when Hub is
+                                  // changed
                 return;
             }
 
             // 20101029 this would scroll to leftmost AO
             Rectangle cellRect;
-            if (row < 0) cellRect = new Rectangle(0,0,10,10);
+            if (row < 0) cellRect = new Rectangle(0, 0, 10, 10);
             else {
                 Container cont = table.getParent();
                 cellRect = table.getCellRect(row, 0, true);
@@ -3109,19 +3117,18 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                     cellRect.width = 5;
                 }
             }
-            
-            
+
             if (cellRect != null) table.scrollRectToVisible(cellRect);
             table.repaint();
-            
+
         }
         _bIgnoreValueChanged = false;
     }
 
     public @Override void afterPropertyChange(HubEvent e) {
         if (!(e.getObject() instanceof OAObject)) return;
-        
-        //was: if ( ((OAObject)e.getObject()).isProperty(e.getPropertyName())) {
+
+        // was: if ( ((OAObject)e.getObject()).isProperty(e.getPropertyName())) {
         table.repaint();
     }
 
@@ -3135,26 +3142,26 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
         if (SwingUtilities.isEventDispatchThread()) {
             _bIgnoreValueChanged = true;
-            table.oaTableModel.fireTableRowsDeleted(pos,pos);
+            table.oaTableModel.fireTableRowsDeleted(pos, pos);
             _bIgnoreValueChanged = false;
             rebuildListSelectionModel();
         }
         else {
-            SwingUtilities.invokeLater( new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     _bIgnoreValueChanged = true;
-                    table.oaTableModel.fireTableRowsDeleted(pos,pos);
+                    table.oaTableModel.fireTableRowsDeleted(pos, pos);
                     _bIgnoreValueChanged = false;
                     rebuildListSelectionModel();
                 }
             });
         }
     }
-    /** 20090702, replaced with beforeRemove(), since activeObject is changed before afterRemove is called
-    public @Override void afterRemove(HubEvent e) {
-        removeInvoker(e.getPos());
-    }
-    */
+
+    /**
+     * 20090702, replaced with beforeRemove(), since activeObject is changed before afterRemove is
+     * called public @Override void afterRemove(HubEvent e) { removeInvoker(e.getPos()); }
+     */
     public @Override void beforeRemove(HubEvent e) {
         removeInvoker(e.getPos());
     }
@@ -3171,7 +3178,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
 
     protected void insertInvoker(final int pos) {
-    
+
         // 20110616
         if (table.tableRight != null) {
             // need to make sure that selectionModel is not changed
@@ -3179,20 +3186,20 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             rebuildListSelectionModel();
             return;
         }
-        
+
         if (SwingUtilities.isEventDispatchThread()) {
             _bIgnoreValueChanged = true;
-            table.oaTableModel.fireTableRowsInserted(pos,pos);
+            table.oaTableModel.fireTableRowsInserted(pos, pos);
             _bIgnoreValueChanged = false;
             rebuildListSelectionModel();
         }
         else {
             rebuildListSelectionModel();
-            SwingUtilities.invokeLater( new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
                         _bIgnoreValueChanged = true;
-                        table.oaTableModel.fireTableRowsInserted(pos,pos);
+                        table.oaTableModel.fireTableRowsInserted(pos, pos);
                         rebuildListSelectionModel();
                     }
                     finally {
@@ -3213,7 +3220,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             table.setChanged(e.getPos(), -1);
         }
     }
-    
+
     public @Override void afterFetchMore(HubEvent e) {
         onNewList(e);
     }
@@ -3225,23 +3232,40 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
     JButton button;
     JLabel label;
     int buttonHeight, labelHeight;
-    JTextField txt;
+
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension dim = super.getPreferredSize();
+        if (labelHeight > 0 & buttonHeight > 0) dim.height = labelHeight + buttonHeight;
+        else if (table != null && table.tableRight != null) {
+            if (table.tableRight.headerRenderer.labelHeight > 0 & table.tableRight.headerRenderer.buttonHeight > 0) {
+                dim.height = table.tableRight.headerRenderer.labelHeight + table.tableRight.headerRenderer.buttonHeight;
+            }
+        }
+        else if (table != null && table.tableLeft != null) {
+            if (table.tableLeft.headerRenderer.labelHeight > 0 & table.tableLeft.headerRenderer.buttonHeight > 0) {
+                dim.height = table.tableLeft.headerRenderer.labelHeight + table.tableLeft.headerRenderer.buttonHeight;
+            }
+        }
+dim.height = 88;//qqqqqqqqq        
+        return dim;
+    }
     
     public PanelHeaderRenderer(OATable t) {
         this.table = t;
         setBorder(null);
-        
+/*
         txt = new JTextField() {
             @Override
             public Dimension getPreferredSize() {
                 Dimension dim = super.getPreferredSize();
                 if (labelHeight != 0) {
-                    dim.height = labelHeight-2;
+                    dim.height = labelHeight - 2;
                 }
                 return dim;
             }
         };
-        
+qqqqqq need to add this??
         txt.addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -3255,10 +3279,12 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                     }
                 }
             }
+
             @Override
             public void focusGained(FocusEvent e) {
             }
         });
+*/        
         button = new JButton() {
             @Override
             public Dimension getPreferredSize() {
@@ -3270,11 +3296,11 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                 return dim;
             }
         };
-        button.setMargin(new Insets(0,0,0,0));
+        button.setMargin(new Insets(0, 0, 0, 0));
         button.setHorizontalTextPosition(SwingConstants.LEFT);
         setLayout(new BorderLayout());
         add(button, BorderLayout.NORTH);
-        
+
         label = new JLabel() {
             @Override
             public Dimension getPreferredSize() {
@@ -3288,43 +3314,43 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         };
         label.setBackground(Color.yellow);
         label.setOpaque(true);
-        label.setBorder(new CompoundBorder(new EmptyBorder(2,2,2,2), new LineBorder(Color.green)));
+        label.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new LineBorder(Color.green)));
         if (table.bEnableFilterRow) {
             add(label, BorderLayout.CENTER);
         }
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        button.setText((value ==null) ? "" : value.toString());
+        button.setText((value == null) ? "" : value.toString());
 
         if (table instanceof OATable) this.table = (OATable) table;
-        
-        TableColumn jtc = table.getTableHeader().getColumnModel().getColumn(column);
-        
-        OATableColumn tc = (OATableColumn) this.table.columns.elementAt(column);
-        
-        tc.updateFilter(label);
 
-        
+        TableColumn jtc = table.getTableHeader().getColumnModel().getColumn(column);
+
+        OATableColumn tc = (OATableColumn) this.table.columns.elementAt(column);
+
+        Component comp = tc.updateFilterRender(label);
+        add(comp, BorderLayout.CENTER);
+
         // 2006/11/28
         if (tc.tc != jtc) {
             int x = this.table.columns.size();
-            for (int i=0; i<x; i++) {
+            for (int i = 0; i < x; i++) {
                 tc = (OATableColumn) this.table.columns.elementAt(i);
                 if (tc.tc == jtc) break;
             }
         }
-        if (tc == null) {  // should not happen
+        if (tc == null) { // should not happen
             tc = (OATableColumn) this.table.columns.elementAt(column);
         }
-        
+
         Icon icon = null;
         if (tc.sortOrder > 0) {
             int pos = tc.sortOrder;
             if (tc.sortOrder == 1) {
                 pos = 0;
                 int x = this.table.columns.size();
-                for (int i=0; i<x;i++) {
+                for (int i = 0; i < x; i++) {
                     OATableColumn tcx = (OATableColumn) this.table.columns.elementAt(i);
                     if (tcx.sortOrder > 0 && tcx != tc) {
                         pos = 1;
@@ -3337,47 +3363,49 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
             else icon = this.table.iconAsc[pos];
         }
         button.setIcon(icon);
-        
+
         return this;
     }
-    
+
 }
 
 // 2006/10/13
 class ButtonHeaderRenderer_OLD extends JButton implements TableCellRenderer {
     OATable table;
+
     public ButtonHeaderRenderer_OLD(OATable t) {
         this.table = t;
-        setMargin(new Insets(0,0,0,0));
+        setMargin(new Insets(0, 0, 0, 0));
         this.setHorizontalTextPosition(SwingConstants.LEFT);
     }
+
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        setText((value ==null) ? "" : value.toString());
+        setText((value == null) ? "" : value.toString());
 
         if (table instanceof OATable) this.table = (OATable) table;
-        
+
         TableColumn jtc = table.getTableHeader().getColumnModel().getColumn(column);
-        
+
         OATableColumn tc = (OATableColumn) this.table.columns.elementAt(column);
         // 2006/11/28
         if (tc.tc != jtc) {
             int x = this.table.columns.size();
-            for (int i=0; i<x; i++) {
+            for (int i = 0; i < x; i++) {
                 tc = (OATableColumn) this.table.columns.elementAt(i);
                 if (tc.tc == jtc) break;
             }
         }
-        if (tc == null) {  // should not happen
+        if (tc == null) { // should not happen
             tc = (OATableColumn) this.table.columns.elementAt(column);
         }
-        
+
         Icon icon = null;
         if (tc.sortOrder > 0) {
             int pos = tc.sortOrder;
             if (tc.sortOrder == 1) {
                 pos = 0;
                 int x = this.table.columns.size();
-                for (int i=0; i<x;i++) {
+                for (int i = 0; i < x; i++) {
                     OATableColumn tcx = (OATableColumn) this.table.columns.elementAt(i);
                     if (tcx.sortOrder > 0 && tcx != tc) {
                         pos = 1;
@@ -3392,5 +3420,5 @@ class ButtonHeaderRenderer_OLD extends JButton implements TableCellRenderer {
         setIcon(icon);
         return this;
     }
-    
+
 }
