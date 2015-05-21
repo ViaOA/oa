@@ -32,6 +32,9 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public OATextField() {
         control = new OATextFieldController();
     }
+    public OATextField(TextFieldController control) {
+        this.control = control;
+    }
 
     /**
         Create TextField that is bound to a property path in a Hub.
@@ -167,6 +170,9 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public Component getTableRenderer(JLabel renderer, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (control != null) {
             control.getTableRenderer(renderer, table, value, isSelected, hasFocus, row, column);
+            if (row == -1 && renderer != null) { // header
+                renderer.setText(getText());
+            }
         }
         return renderer;
     }
@@ -289,6 +295,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     @Override
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
     }
+
 }
 
 

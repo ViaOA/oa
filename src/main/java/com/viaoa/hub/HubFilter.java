@@ -514,6 +514,8 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     }
     
     
+    private AtomicInteger aiCnt = new AtomicInteger();
+    
     /** HubListener interface method, used to update filter. */
     public void initialize() {
         if (bClosed) return;
@@ -521,6 +523,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
         }
         
+        final int cnt = aiCnt.incrementAndGet();
+
+        boolean bCompleted = false;
         HubData hd = null;
         try {
             if (hub != null) {
@@ -541,7 +546,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             
             try {
                 OAThreadLocalDelegate.setLoadingObject(true);
-                _initialize();
+                bCompleted = _initialize(cnt);
                 bNewListFlag = true;                   
                 if (hub != null) {
                     HubEventDelegate.fireOnNewListEvent(hub, true);
@@ -553,22 +558,23 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     	    }
     	}
     	finally {
-    		if (hd != null) hd.setInFetch(false);
+    		if (hd != null && bCompleted) hd.setInFetch(false);
             if (bServerSideOnly) {
                 OARemoteThreadDelegate.sendMessages(false);
             }
         }
-        afterInitialize();
+        if (bCompleted) afterInitialize();
     }    
     
-    private void _initialize() {
-        if (bClosed) return;
+    private boolean _initialize(final int cnt) {
+        if (bClosed) return false;
         for (int i=0; hubMaster!=null;i++) {
             TYPE obj = hubMaster.elementAt(i);
             if (obj == null) break;
+            if (aiCnt.get() != cnt) return false;
             update(obj);
         }
-        if (hub == null) return;
+        if (hub == null) return false;
         
         // get linkToHub.prop value
         if (hubLink != null) {
@@ -595,6 +601,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             }
             hub.setAO(obj);
         }
+        return true;
     }
 
     public Hub getHub() {

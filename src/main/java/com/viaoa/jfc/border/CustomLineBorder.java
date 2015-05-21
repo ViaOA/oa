@@ -37,8 +37,10 @@ public class CustomLineBorder extends AbstractBorder {
         this.b = b;
         this.r = r;
         //insets = new Insets(t, l, b, r);
-        if (c == null) c = UIManager.getColor("controlDkShadow");
-        if (c == null) c = Color.gray;
+        if (c == null) {
+            c = UIManager.getColor("controlDkShadow");
+            if (c == null) c = Color.gray;
+        }
         this.color = c;
     }
 
@@ -61,20 +63,21 @@ public class CustomLineBorder extends AbstractBorder {
         if (b > 0) {
             Stroke s = new BasicStroke(b);
             g.setStroke(s);
-            g.drawLine(x, y+h, x+w, y+h);
+            g.drawLine(x, y+(h-b), x+w, y+(h-b));
         }
 
         if (l > 0) {
             Stroke s = new BasicStroke(l);
             g.setStroke(s);
-            g.drawLine(x, y, x, y+h);
+            g.drawLine(x, y, x, y+(h-l));
         }
         
         if (r > 0) {
             Stroke s = new BasicStroke(r);
             g.setStroke(s);
-            g.drawLine(x+w, y, x+w, y+h);
+            g.drawLine(x+(w-r), y, x+(w-r), y+h);
         }
+        
     }
     
     
