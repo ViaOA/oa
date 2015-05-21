@@ -2468,6 +2468,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (bhr != null && bhr.buttonHeight > 0 && pt.y > bhr.buttonHeight) {
             // header editor
 
+            
+            // stop table editor
             TableCellEditor ed = getCellEditor();
             if (ed != null) ed.stopCellEditing();
             if (tableRight != null) {
@@ -2480,18 +2482,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
 
 //qqqqqqqqqq 20150520            
-            Component compFilter = tc.getFilterEditor();
-            if (compFilter != null) {
+            OATableComponent tcFilter = tc.getFilterComponent();
+            Component compFilter = null;
+            if (tcFilter != null) {
+                compFilter = tcFilter.getTableCellEditor().getTableCellEditorComponent(this, null, false, -1, column);
                 if (compFilter.getParent() != getTableHeader()) {
                     getTableHeader().add(compFilter);
                 }
-              
             }
-/*was            
-            if (bhr.txt.getParent() != getTableHeader()) {
-                getTableHeader().add(bhr.txt);
-            }
-*/            
             Rectangle rect = getTableHeader().getHeaderRect(column);
             rect.y += bhr.buttonHeight + 1;
             rect.height -= bhr.buttonHeight + 2;
@@ -2499,10 +2497,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             compFilter.setBounds(rect);
             compFilter.requestFocusInWindow();
 //qqqqqqqqq need to remove/addFocusListener            
-/*was            
-            bhr.txt.setBounds(rect);
-            bhr.txt.requestFocusInWindow();
-*/            
             return;
         }
         // qqqqqq end
@@ -3247,7 +3241,7 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                 dim.height = table.tableLeft.headerRenderer.labelHeight + table.tableLeft.headerRenderer.buttonHeight;
             }
         }
-dim.height = 88;//qqqqqqqqq        
+if (dim.height < 32) dim.height = 88;//qqqqqqqqq        
         return dim;
     }
     
@@ -3313,11 +3307,12 @@ qqqqqq need to add this??
             }
         };
         label.setBackground(Color.yellow);
+        label.setText(" ");
         label.setOpaque(true);
         label.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new LineBorder(Color.green)));
-        if (table.bEnableFilterRow) {
+//        if (table.bEnableFilterRow) {
             add(label, BorderLayout.CENTER);
-        }
+//        }
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -3328,9 +3323,6 @@ qqqqqq need to add this??
         TableColumn jtc = table.getTableHeader().getColumnModel().getColumn(column);
 
         OATableColumn tc = (OATableColumn) this.table.columns.elementAt(column);
-
-        Component comp = tc.updateFilterRender(label);
-        add(comp, BorderLayout.CENTER);
 
         // 2006/11/28
         if (tc.tc != jtc) {
@@ -3343,6 +3335,17 @@ qqqqqq need to add this??
         if (tc == null) { // should not happen
             tc = (OATableColumn) this.table.columns.elementAt(column);
         }
+
+        OATableComponent tcFilter = tc.getFilterComponent();
+                
+        Component comp = null;
+        if (tcFilter != null) {
+            comp = tcFilter.getTableRenderer(label, table, value, false, false, -1, column);
+        }
+        
+        if (comp == null) comp = label;
+        if (comp.getParent() != this) add(comp, BorderLayout.CENTER);
+
 
         Icon icon = null;
         if (tc.sortOrder > 0) {

@@ -56,11 +56,11 @@ public class OATableColumn {
     }
 
 //qqqqqqqqqqqqqqqqqq 20150520
-    private Component compFilter;
-    public void setFilterEditor(Component comp) {
+    private OATableComponent compFilter;
+    public void setFilterComponent(OATableComponent comp) {
         compFilter = comp;
     }
-    public Component getFilterEditor() {
+    public OATableComponent getFilterComponent() {
         return compFilter;
     }
     
