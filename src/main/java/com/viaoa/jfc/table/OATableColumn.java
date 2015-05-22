@@ -55,8 +55,11 @@ public class OATableColumn {
         allowSorting = b;
     }
 
+    public void setTable(OATable t) {
+        this.table = t;
+    }
 //qqqqqqqqqqqqqqqqqq 20150520
-    private OATableFilterComponent compFilter;
+    public OATableFilterComponent compFilter;
     public void setFilterComponent(OATableFilterComponent comp) {
         compFilter = comp;
     }
@@ -100,12 +103,9 @@ public class OATableColumn {
         return comp;
     }
 
-    public void setTable(OATable t) {
-        this.table = t;
-    }
 
     // 2006/10/12
-    TableCellRenderer headerRenderer;
+    public TableCellRenderer headerRenderer;
 
     public TableColumn getTableColumn() {
         return tc;

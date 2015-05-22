@@ -124,7 +124,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     protected HubFilter hubFilter;
     protected Hub hubSelect;
     protected OATableModel oaTableModel;
-    protected Vector columns = new Vector(5, 5);
+    protected Vector<OATableColumn> columns = new Vector<OATableColumn>(5, 5);
     protected MyHubAdapter hubAdapter;
     protected boolean includeScrollBar; // used by setPreferredSize
     protected boolean bAllowDrag = false;
@@ -286,6 +286,19 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return defaultValue;
     }
 
+    /**
+     * Clear all of the filter values.
+     */
+    public void resetFilters() {
+        for (OATableColumn tc :  getAllTableColumns()) {
+            if (tc.getFilterComponent() != null) {
+                tc.getFilterComponent().reset();
+            }
+        }
+        if (hubFilter != null) hubFilter.refresh();
+        else if (tableRight != null && tableRight.hubFilter != null) tableRight.hubFilter.refresh();
+    }
+    
     // 2006/12/29 called by superclass, this is overwritten from JTable
     protected JTableHeader createDefaultTableHeader() {
         headerRenderer = new PanelHeaderRenderer(this);
@@ -299,7 +312,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 String tt = null;
                 if (pos >= 0 && pos < columns.size()) {
                     OATableColumn tc = (OATableColumn) columns.elementAt(pos);
-                    tt = OATable.this.getColumnHeaderToolTipText(tc);
+                    tt = OATable.this.getColumnHeaderToolTipText(tc, p);
                 }
                 return tt;
             }
@@ -1107,11 +1120,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * @param heading
      * @param width
      */
-    public void addCounterColumn() {
-        addCounterColumn("#", 4);
+    public OATableColumn addCounterColumn() {
+        return addCounterColumn("#", 4);
     }
 
-    public void addCounterColumn(String heading, int width) {
+    public OATableColumn addCounterColumn(String heading, int width) {
         OALabel lbl = new OALabel(getHub(), "") {
             @Override
             public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
@@ -1129,10 +1142,12 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 return defaultValue;
             }
         };
-        OATableColumn tc = addColumn(heading, width, lbl);
-        tc.setAllowSorting(false);
+        tcCount = addColumn(heading, width, lbl);
+        tcCount.setAllowSorting(false);
+        return tcCount;
     }
-
+    protected OATableColumn tcCount; 
+    
     // 20150423
     /**
      * Add a column that will that will use checkboxes to show selected rows.
@@ -1524,10 +1539,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         tc.sizeWidthToFit(); // 2006/12/26
         getColumnModel().addColumn(tc);
 
+        column.headerRenderer = null;
         column.tc = tc; // 2006/10/12
-        if (headerRenderer != null) tc.setHeaderRenderer(headerRenderer); // 2006/10/13
-
-        tc.setHeaderRenderer(headerRenderer); // 2006/12/29
+        tc.setHeaderRenderer(headerRenderer); 
 
         calcPreferredSize();
         return column;
@@ -2169,7 +2183,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
 
         this.popupTableColumn = tc;
-        getPopupMenu().show(OATable.this, pt.x, pt.y);
+        getPopupMenu().show(OATable.this.getTableHeader(), pt.x, pt.y);
     }
 
     protected void saveColumnSetup(int pos) {
@@ -2326,8 +2340,28 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return tc.getWidth();
     }
 
-    protected String getColumnHeaderToolTipText(OATableColumn tc) {
+    protected String getColumnHeaderToolTipText(OATableColumn tc, Point pt) {
         String s = null;
+        
+        if (pt != null) {
+            if (tc.getOATableComponent() == chkSelection) {
+                return "selected rows";
+            }
+            if (tableRight!=null && tc.getOATableComponent() == tableRight.chkSelection) {
+                return "selected rows";
+            }
+            if (tc == tcCount) {
+                if (pt.y > headerRenderer.buttonHeight) {
+                    return "reset filters";
+                }
+            }
+            if (tableRight!=null && tc == tableRight.tcCount) {
+                if (pt.y > tableRight.headerRenderer.buttonHeight) {
+                    return "reset filters";
+                }
+            }
+        }
+        
         if (tc != null && tc.getOATableComponent() instanceof JComponent) {
             s = ((JComponent) tc.getOATableComponent()).getToolTipText();
             s = getColumnHeaderToolTipText(tc.getOATableComponent(), s);
@@ -2335,6 +2369,24 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 if (tc.tc.getHeaderValue() != null) s = tc.tc.getHeaderValue().toString();
             }
         }
+        
+        if (tc.compFilter != null) {
+            if (headerRenderer.buttonHeight > 0 && pt.y > headerRenderer.buttonHeight) {
+                s = "enter value to filter by "+s;
+            }
+            else if (tableRight != null && pt.y > tableRight.headerRenderer.buttonHeight) {
+                s = "enter value to filter by "+s;
+            }
+        }
+        else {
+            if (headerRenderer.buttonHeight > 0 && pt.y > headerRenderer.buttonHeight) {
+                s = "no filter for "+s;
+            }
+            else if (tableRight != null && pt.y > tableRight.headerRenderer.buttonHeight) {
+                s = "no filter for "+s;
+            }
+        }
+        
         return s;
     }
 
@@ -2483,7 +2535,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     protected void onHeadingMouseReleased(MouseEvent e, Point pt) {
-
         if (pt != null && !e.isPopupTrigger()) {
             Rectangle rec = new Rectangle(pt.x - 3, pt.y - 3, 6, 6);
             Point pt2 = e.getPoint();
@@ -2502,7 +2553,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         PanelHeaderRenderer bhr = headerRenderer;
         if (bhr == null || tableRight != null) bhr = tableRight.headerRenderer;
-        if (bhr != null && (bhr.buttonHeight > 0 || bhr.getPreferredSize() != null) && pt.y > bhr.buttonHeight) {
+        if ( (hubFilter != null || (tableRight!=null && tableRight.hubFilter != null)) && bhr != null && (bhr.buttonHeight > 0 || bhr.getPreferredSize() != null) && pt.y > bhr.buttonHeight) {
             // header editor
 
             // stop table editor
@@ -2517,7 +2568,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 if (ed != null) ed.stopCellEditing();
             }
 
-            if (headerRenderer != null) headerRenderer.setupEditor(column);
+            if (tc == tcCount || (tableRight!=null && tc == tableRight.tcCount)) {
+                resetFilters();
+                return;
+            }
+            if (headerRenderer != null) {
+                headerRenderer.setupEditor(column);
+            }
             return;
         }
 
@@ -2531,6 +2588,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (tc != null) onHeadingClick(tc, e, pt);
     }
 
+    
     // END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
 
     // 20101031 improve the look when table does not take up all of viewport
@@ -2703,8 +2761,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     private JLabel lblDummy;
     private Border borderDummy;
 
+    
+    
+    //qqqqqqq add more doc here qqqqqqqqq 
     /**
-     * qqqqqqq add more doc here qqqqqqqqq Called by getCellRender to customize the renderer.
+     * Called by getCellRender to customize the renderer.
      * 
      * @param comp
      * @param table
@@ -2775,17 +2836,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             oacomp = tc.getOATableComponent();
         }
 
-        if (lbl == lblDummy && comp != null) {
-            Color c = lblDummy.getBackground();
-            if (!Color.cyan.equals(c)) comp.setBackground(c);
-            c = lblDummy.getForeground();
-            if (!Color.cyan.equals(c)) comp.setForeground(c);
-            if (lbl.getBorder() != borderDummy) {
-                if (comp instanceof JComponent) {
-                    ((JComponent) comp).setBorder(lbl.getBorder());
-                }
-            }
-        }
 
         // 1of3: is done, defaults are set
 
@@ -2797,6 +2847,18 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         // 3of3: allow App to customize
         customizeRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
 
+        if (lbl == lblDummy && comp != null) {
+            Color c = lblDummy.getBackground();
+            if (!Color.cyan.equals(c)) comp.setBackground(c);
+            c = lblDummy.getForeground();
+            if (!Color.cyan.equals(c)) comp.setForeground(c);
+            if (lbl.getBorder() != borderDummy) {
+                if (comp instanceof JComponent) {
+                    ((JComponent) comp).setBorder(lbl.getBorder());
+                }
+            }
+        }
+        
         return comp;
     }
 
@@ -3268,7 +3330,7 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         button.setHorizontalTextPosition(SwingConstants.LEFT);
         add(button, BorderLayout.NORTH);
 
-        label = new JLabel() {
+        label = new JLabel(" ") {
             @Override
             public Dimension getPreferredSize() {
                 Dimension dim = super.getPreferredSize();
@@ -3310,13 +3372,12 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
     private Border border;
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         button.setText((value == null) ? "" : value.toString());
+        
+        //OATableColumn tc = (OATableColumn) this.table.columns.elementAt(column);
+        final OATableColumn tc = (OATableColumn) ((OATable)table).columns.elementAt(column);
 
-        if (table instanceof OATable) this.table = (OATable) table;
-
+        /*
         TableColumn jtc = table.getTableHeader().getColumnModel().getColumn(column);
-
-        OATableColumn tc = (OATableColumn) this.table.columns.elementAt(column);
-
         // 2006/11/28
         if (tc.tc != jtc) {
             int x = this.table.columns.size();
@@ -3328,35 +3389,51 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         if (tc == null) { // should not happen
             tc = (OATableColumn) this.table.columns.elementAt(column);
         }
-
-        OATableComponent tcFilter = tc.getFilterComponent();
-                
-        Component comp = null;
-        if (tcFilter != null) {
-            label.setBackground(Color.white);
-            comp = tcFilter.getTableRenderer(label, table, value, false, false, -1, column);
-        }
+        */
         
-        if (comp == null) {
-            comp = label;
-            label.setText(" ");
-            
-            if (bgColor == null) bgColor = UIManager.getColor("TableHeader.background");
-            Color color = bgColor;
-            if (color == null) color = Color.white;
-            label.setBackground(color);
-        }
-        if (comp instanceof JComponent) {
-            if (border == null) {
-                Color c = UIManager.getColor("Table.gridColor");
-                if (c == null) c = Color.black;
-                border = new CustomLineBorder(1, 1, 2, 1, c);
-                border = new CompoundBorder(border, new EmptyBorder(0,2,0,1));
+        if (this.table.hubFilter != null || (this.table.tableRight != null && this.table.tableRight.hubFilter != null)) {
+            OATableComponent tcFilter = tc.getFilterComponent();
+                    
+            Component comp = null;
+            if (tcFilter != null) {
+                label.setBackground(Color.white);
+                comp = tcFilter.getTableRenderer(label, table, value, false, false, -1, column);
             }
-            ((JComponent)comp).setBorder(border);
+            
+            if (comp == null) {
+                comp = label;
+                label.setText(" ");
+                if (bgColor == null) bgColor = new Color(230,230,230);//bgColor = UIManager.getColor("Table.gridColor");
+                Color color = bgColor;
+                if (color == null) color = Color.white;
+                label.setBackground(color);
+            }
+            if (comp instanceof JComponent) {
+                if (border == null) {
+                    Color c = UIManager.getColor("Table.gridColor");
+                    if (c == null) c = Color.black;
+                    border = new CustomLineBorder(1, 1, 2, 1, c);
+                    border = new CompoundBorder(border, new EmptyBorder(0,2,0,1));
+                }
+                ((JComponent)comp).setBorder(border);
+            }
+            String s = label.getText();
+            if (OAString.isEmpty(s)) label.setText(" ");
+            
+            if (tc == this.table.tcCount || (this.table.tableRight != null && tc == this.table.tableRight.tcCount)) {
+                if (iconResetFilter == null) {
+                    URL url = OAButton.class.getResource("icons/reset.gif");
+                    if (url == null) return null;
+                    iconResetFilter = new ImageIcon(url);
+                }
+                label.setText(" ");
+                label.setIcon(iconResetFilter);
+                label.setBackground(Color.white);
+                label.setHorizontalTextPosition(SwingConstants.LEFT);
+            }
+            else label.setIcon(null);
+            add(comp, BorderLayout.CENTER);
         }
-        add(comp, BorderLayout.CENTER);
-
 
         Icon icon = null;
         if (tc.sortOrder > 0) {
@@ -3381,7 +3458,7 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         return this;
     }
     
-    
+    private Icon iconResetFilter;
     private FocusListener focusListener;
     private Component compFilter;
     
@@ -3399,38 +3476,34 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         }
         
         JTableHeader th = table.getTableHeader();
-        if (comp == null) {
-            if (compFilter != null) {
-                compFilter.removeFocusListener(focusListener);
-                th.remove(compFilter);
-                compFilter = null; 
-                focusListener = null;
-            }
-            return;
+
+        if (compFilter != null) {
+            compFilter.removeFocusListener(focusListener);
+            th.remove(compFilter);
+            compFilter = null; 
+            focusListener = null;
         }
-        
-        
+        if (comp == null) return;
         compFilter = comp;
-        if (compFilter != null && focusListener == null) {
-            focusListener = (new FocusListener() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    Component comp = (Component) e.getSource();
-                    JTableHeader th = table.getTableHeader();
-                    compFilter.removeFocusListener(this);
-                    th.remove(comp);
-                    th.repaint();
-                    if (compFilter == comp) {
-                        compFilter = null;
-                        focusListener = null;
-                    }
+
+        focusListener = (new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                Component comp = (Component) e.getSource();
+                JTableHeader th = table.getTableHeader();
+                comp.removeFocusListener(this);
+                th.remove(comp);
+                th.repaint();
+                if (compFilter == comp) {
+                    compFilter = null;
+                    focusListener = null;
                 }
-                @Override
-                public void focusGained(FocusEvent e) {
-                }
-            });
-            compFilter.addFocusListener(focusListener);
-        }
+            }
+            @Override
+            public void focusGained(FocusEvent e) {
+            }
+        });
+        compFilter.addFocusListener(focusListener);
         
         
         

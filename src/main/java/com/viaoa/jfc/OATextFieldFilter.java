@@ -142,5 +142,10 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
         if (OAString.isEmpty(val)) return false;
         return (val.toLowerCase().indexOf(txt) >= 0);
     }
+    
+    @Override
+    public void reset() {
+        setText("");
+    }
 }
 

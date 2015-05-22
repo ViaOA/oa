@@ -93,11 +93,11 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
                 tc.getOATableComponent().setTable(fixedTable);
             }
 
-            TableColumnModel columnModel = mainTable.getColumnModel();
-            TableColumn column = columnModel.getColumn( 0 );
-            columnModel.removeColumn(column);
+            tc.headerRenderer = null;
+            tc.tc.setHeaderRenderer(fixedTable.headerRenderer);
             
-            fixedTable.getColumnModel().addColumn( column );
+            mainTable.getColumnModel().removeColumn(tc.tc);
+            fixedTable.getColumnModel().addColumn( tc.tc );
         }
 
         // renumber the column indexes
@@ -111,7 +111,7 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
         
         Color color = UIManager.getLookAndFeelDefaults().getColor("Table.gridColor");
         if (color == null) color = Color.lightGray;
-        Border b = new CustomLineBorder(0, 0, 0, 3, color);
+        Border b = new CustomLineBorder(0, 0, 0, 1, color);
         b = new CompoundBorder(new CustomLineBorder(0, 0, 0, 1, color.brighter()), b);
         b = new CompoundBorder(b, new EmptyBorder(0, 0, 0, 2));
 

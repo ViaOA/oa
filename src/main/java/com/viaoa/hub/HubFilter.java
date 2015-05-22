@@ -514,7 +514,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     }
     
     
-    private AtomicInteger aiCnt = new AtomicInteger();
+    private AtomicInteger aiInitializeCount = new AtomicInteger();
     
     /** HubListener interface method, used to update filter. */
     public void initialize() {
@@ -523,7 +523,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
         }
         
-        final int cnt = aiCnt.incrementAndGet();
+        final int cnt = aiInitializeCount.incrementAndGet();
 
         boolean bCompleted = false;
         HubData hd = null;
@@ -571,7 +571,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         for (int i=0; hubMaster!=null;i++) {
             TYPE obj = hubMaster.elementAt(i);
             if (obj == null) break;
-            if (aiCnt.get() != cnt) return false;
+            if (aiInitializeCount.get() != cnt) return false;
             update(obj);
         }
         if (hub == null) return false;
