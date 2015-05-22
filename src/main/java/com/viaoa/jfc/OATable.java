@@ -1893,7 +1893,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     public void refreshFilter() {
-        final HubFilter hf = hubFilter != null ? hubFilter : tableRight.hubFilter;
+        final HubFilter hf = (hubFilter != null || tableRight == null) ? hubFilter : tableRight.hubFilter;
         
         if (hf == null) return;
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
@@ -3280,7 +3280,7 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
             }
         };
         label.setOpaque(true);
-        if (table.hubFilter != null || table.tableRight.hubFilter != null) {
+        if (table.hubFilter != null || (table.tableRight != null && table.tableRight.hubFilter != null)) {
             add(label, BorderLayout.CENTER);
         }
     }
