@@ -80,17 +80,17 @@
 	<!-- ========== JavaDoc =========== -->
 	<target name="JavaDoc" description="run JavaDoc against source code.">
 		<deltree dir="javadoc"/>
-		<mkdir dir="javadoc"/>
+        <mkdir dir="javadoc"/>
 		<javadoc 
 			packagenames="com.viaoa.*"
 			destdir="javadoc" 
-			sourcepath="src/java" 
+			sourcepath="src/main/java" 
 			author="yes" 
 			protected="true" 
 			windowtitle="${FullName} Java Code Documentation"
 			header="${FullName} by ViaOA, Inc."
 			splitindex="true"
-			overview="src/com/viaoa/overview.html"
+			overview="src/main/java/com/viaoa/overview.html"
 			footer="&lt;small&gt;&amp;copy 1999-${YEAR} ViaOA, Inc. All rights reserved&lt;small&gt;"
 			excludepackagenames="com.viaoa.test.*, com.viaoa.html.*"
 		/>
@@ -103,7 +103,7 @@
     <!-- Misc -->	
 	
 	
-    <!-- this is used to sign the jh.jar file using viaos certificate 
+    <!-- this is used to sign the jh.jar file using viaoa certificate 
          The original jh.jar will need to be unzipped, since it is already signed.
          1: unzip to temp directory
          2: run JarHelp using the directory, to get dist/jh.jar
