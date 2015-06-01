@@ -747,8 +747,6 @@ public class QueryConverter {
                 if (xx > 1 && column != null && column.primaryKey) {
                     Linkinfo li = (Linkinfo) vecLink.elementAt(xx-1);
                     if (!li.bMany) {
-                        // use fkey from previous Linkinfo
-                        // 20120611 check to see if link table column should be used                        
                         if (li.parent.bMany) {
                             int pos = 0; //qqq only using one column, could be multipart id
                             for (int j=0; j<li.parent.links.length; j++) {
@@ -757,11 +755,9 @@ public class QueryConverter {
                                     break;
                                 }
                             }
-                            column = li.parent.table.getColumns()[pos];
+                            column = li.linkFromParent.fkeys[pos];
                         }
                         else column = li.linkFromParent.fkeys[0]; 
-
-                        li = (Linkinfo) vecLink.elementAt(xx-2);
                         xx--;
                         vecLink.removeElementAt(xx);
                     }
