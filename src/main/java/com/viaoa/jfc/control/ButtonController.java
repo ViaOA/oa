@@ -310,14 +310,6 @@ public class ButtonController extends JFCController implements ActionListener {
     */
     public @Override
     void onNewList(HubEvent e) {
-        //qqqqqqqqq        
-        if (button instanceof OAButton) {
-            if (((OAButton) button).XXX) {
-                int xxx = 4;
-                xxx++;
-            }
-        }
-
         update();
     }
 

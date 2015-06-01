@@ -12,18 +12,19 @@ package com.viaoa.jfc;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.net.*;
 
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.event.*;
+
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.OAButtonTableCellEditor;
 import com.viaoa.jfc.table.OATableComponent;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OANotNullObject;
 import com.viaoa.util.OAString;
-
 import com.viaoa.hub.*;
 
 
@@ -250,6 +251,10 @@ public boolean XXX;
             protected boolean isVisible(boolean bIsCurrentlyVisible) {
                 return OAButton.this.isVisible(bIsCurrentlyVisible);
             }
+            @Override
+            public String getCompletedMessage() {
+                return OAButton.this.getCompletedMessage();
+            }
         };
         if (text != null) setText(text);
         if (icon != null) setIcon(icon);
@@ -460,6 +465,22 @@ public boolean XXX;
         return control.getMethodName();
     }
 
+    private JFileChooser fileChooserOpen;
+    public void setOpenFileChooser(JFileChooser fc) {
+        this.fileChooserOpen = fc;
+    }
+    public JFileChooser getOpenFileChooser() {
+        return fileChooserOpen;
+    }
+
+    private JFileChooser fileChooserSave;
+    public void setSaveFileChooser(JFileChooser fc) {
+        this.fileChooserSave = fc;
+    }
+    public JFileChooser getSaveFileChooser() {
+        return fileChooserSave;
+    }
+    
     public void setConsoleProperty(String prop) {
         control.setConsoleProperty(prop);
     }
@@ -691,17 +712,15 @@ public boolean XXX;
         return control.getConfirmMessage();
     }
 
+    private String completedMessage;
     /**
         Popup message when command is completed
     */
     public void setCompletedMessage(String msg) {
-        control.setCompletedMessage(msg);
+        this.completedMessage = msg;
     }
-    /**
-        Popup message used to confirm button click before running code.
-    */
     public String getCompletedMessage() {
-        return control.getCompletedMessage();
+        return completedMessage;
     }
     
     /**
@@ -922,9 +941,35 @@ public boolean XXX;
             if (!OAButton.this.isEnabled()) {
                 return;
             }
+            
+            String fileName = null;
+            JFileChooser fc = getSaveFileChooser();
+            if (fc != null) {
+                int i = fc.showSaveDialog(SwingUtilities.getWindowAncestor(OAButton.this));
+                if (i != JFileChooser.APPROVE_OPTION) return;
+
+                File file = fc.getSelectedFile();
+                if (file == null) return;
+
+                fileName = file.getPath();
+            }
+            else {
+                fc = getOpenFileChooser();
+                if (fc != null) {
+                    int i = fc.showOpenDialog(SwingUtilities.getWindowAncestor(OAButton.this));
+                    if (i != JFileChooser.APPROVE_OPTION) return;
+    
+                    File file = fc.getSelectedFile();
+                    if (file == null) return;
+    
+                    fileName = file.getPath();
+                }
+            }
+            
             if (!OAButton.this.onConfirm(getConfirmMessage())) {
                 return;
             }
+            
             if (OAButton.this.onActionPerformed()) {  // default will then call this.onActionPerformed()
                 afterCompleted(getCompletedMessage());
             }

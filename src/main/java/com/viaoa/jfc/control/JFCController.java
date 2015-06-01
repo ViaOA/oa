@@ -1239,6 +1239,9 @@ public class JFCController extends HubListenerAdapter {
             if (s == null) s = "";
             comp.setToolTipText(s);
         }
+        
+        getEnabledController().update();
+        getVisibleController().update();
     }
 
     /**

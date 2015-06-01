@@ -92,6 +92,13 @@ public abstract class OATableCellEditor implements TableCellEditor, FocusListene
         Capture key released to know if key should be used by this component or sent to table.
     */
     public void keyReleased(KeyEvent e) {
+        try {
+            _keyReleased(e);
+        }
+        catch (Exception e2) {
+        }
+    }
+    private void _keyReleased(KeyEvent e) {
         int col = 0;
         int row = 0;
 
