@@ -83,7 +83,7 @@ public class OAObjectEventDelegate {
             }
         }     
         
-        if (linkInfo == null) {
+        if (linkInfo == null && !OARemoteThreadDelegate.isRemoteThread()) {
             OAPropertyInfo propInfo = OAObjectInfoDelegate.getPropertyInfo(oi, propertyU);
             if (propInfo != null) {
                 if (propInfo.getId()) {

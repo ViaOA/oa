@@ -670,7 +670,6 @@ if (v instanceof String) {
         	if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
     }
-static int xxx;//qqqqqqqq
     /**
         SAXParser callback method.
     */

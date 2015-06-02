@@ -84,7 +84,7 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
     }
     @Override
     public boolean supportsInitializeObject() {
-        return false;
+        return true;
     }
 
     protected boolean isOtherDataSource() {
