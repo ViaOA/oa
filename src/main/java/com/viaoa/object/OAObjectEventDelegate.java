@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
@@ -41,7 +42,9 @@ public class OAObjectEventDelegate {
 	    if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
 	    if (OAThreadLocalDelegate.isLoadingObject()) {
 	        if (!OAObjectHubDelegate.isInHub(oaObj)) {  // 20110719: could be in the OAObjectCache.SelectAllHubs
-	            return;
+	            if (OASyncDelegate.isServer()) {  // 20150604 if client, then it needs to send prop change to server
+	                return; 
+	            }
 	        }
 	    }
 	    

@@ -153,6 +153,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
         control.setHub(hub);
     }
     public Hub getHub() {
+        if (control == null) return null;
         return control.getHub();
     }
     public void setTable(OATable table) {
