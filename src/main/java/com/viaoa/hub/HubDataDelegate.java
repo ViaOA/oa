@@ -88,7 +88,7 @@ public class HubDataDelegate {
     }
 	
 	public static Object[] toArray(Hub thisHub) {
-	    thisHub.getSize(); // all before sync, in case it needs to load
+	    thisHub.getSize(); // call before sync, in case it needs to load
 	    synchronized (thisHub.data) {
 	        Object[] objs = new Object[thisHub.getSize()];
 	        for (;;) {

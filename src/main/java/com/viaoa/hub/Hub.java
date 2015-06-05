@@ -2044,6 +2044,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         return -1;
     }
 
+    /*
     public Iterator<TYPE> iterator() {
         Iterator<TYPE> iter = new Iterator<TYPE>() {
             int pos;
@@ -2076,6 +2077,37 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         };
         return iter;
     }
+    */
+    
+    // 20150605 make it thread/change safe
+    public Iterator<TYPE> iterator() {
+        final Object[] objs = toArray();
+        Iterator<TYPE> iter = new Iterator<TYPE>() {
+            int pos;
+
+            @Override
+            public boolean hasNext() {
+                return (pos < objs.length);
+            }
+
+            @Override
+            public void remove() {
+                if (pos < objs.length) {
+                    Hub.this.remove(objs[pos]);
+                }
+            }
+
+            @Override
+            public TYPE next() {
+                if (pos < objs.length) {
+                    return (TYPE) objs[pos++];
+                }
+                return null;
+            }
+        };
+        return iter;
+    }
+
 
     // public transient boolean DEBUG; // for debugging
 }
