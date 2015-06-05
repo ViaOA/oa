@@ -600,13 +600,15 @@ public class RemoteMultiplexerServer {
                 for (int i=0; ; i++) {
                     try {
                         if (waitForMethodInvoked(ri, 1)) break;  //wait for response back from client, which puts it in the queue                      
-                        if (maxSeconds > 0 && i >= maxSeconds) {
-                            ri.exceptionMessage = "timeout waiting for response";
-                            break;
-                        }
                         if (session.bDisconnected) {
                             ri.exceptionMessage = "disconnected from remote client";
                             break;
+                        }
+                        if (maxSeconds > 0 && i >= maxSeconds) {
+                            if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                                ri.exceptionMessage = "timeout waiting for response";
+                                break;
+                            }
                         }
                     }
                     catch (Exception e) {
@@ -1152,8 +1154,12 @@ public class RemoteMultiplexerServer {
             return;
         }
         
-        if (!waitForMethodInvoked(ri, maxSeconds)) {
-            ri.exceptionMessage = "timeout waiting for response";
+        for (;;) {
+            if (waitForMethodInvoked(ri, maxSeconds)) break;
+            if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                ri.exceptionMessage = "timeout waiting for response";
+                break;
+            }
         }
         
         long ms2 = System.currentTimeMillis();
@@ -1667,10 +1673,8 @@ public class RemoteMultiplexerServer {
                 try {
                     if (maxSeconds > 0) {
                         if (i >= maxSeconds) {
-                            if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
-                                bResult = false;
-                                break;
-                            }
+                            bResult = false;
+                            break;
                         }
                     }
                     ri.wait(1000);
