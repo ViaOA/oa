@@ -369,8 +369,15 @@ public class HubAddRemoveDelegate {
 
     
     protected static void sortMove(Hub thisHub, Object obj) {
-        int pos = thisHub.getPos(obj);
-        move(thisHub, pos, pos);
+        for (int i=0; i<5; i++) {
+            try {
+                int pos = thisHub.getPos(obj);
+                move(thisHub, pos, pos);
+                break;
+            }
+            catch (Exception e) {
+            }
+        }
     }
 
     /**

@@ -25,18 +25,19 @@ import javax.swing.border.*;
  */
 public class CustomLineBorder extends AbstractBorder {
     //private Insets insets;
-    private int t,l,b,r;
+    private int top, left, bottom, right;
     private Color color;
+    private Insets insets;
 
     public CustomLineBorder(int t, int l, int b, int r) {
         this(t,l,b,r,null);
     }
     public CustomLineBorder(int t, int l, int b, int r, Color c) {
-        this.t = t;
-        this.l = l;
-        this.b = b;
-        this.r = r;
-        //insets = new Insets(t, l, b, r);
+        this.top = t;
+        this.left = l;
+        this.bottom = b;
+        this.right = r;
+        insets = new Insets(t, l, b, r);
         if (c == null) {
             c = UIManager.getColor("controlDkShadow");
             if (c == null) c = Color.gray;
@@ -44,40 +45,77 @@ public class CustomLineBorder extends AbstractBorder {
         this.color = c;
     }
 
+    @Override
     public Insets getBorderInsets(Component c) {
-        return super.getBorderInsets(c);
-        //was: return insets; 
+        return insets; 
+    }
+    @Override
+    public boolean isBorderOpaque() {
+        return true;
+    }
+    @Override
+    public Insets getBorderInsets(Component c, Insets insets) {
+        if (insets != null) {
+            insets.top = this.insets.top;
+            insets.left = this.insets.left;
+            insets.bottom = this.insets.bottom;
+            insets.right = this.insets.right;
+        }
+        return insets;
     }
     
     public void paintBorder(Component comp, Graphics gr, int x, int y, int w, int h) {
         Graphics2D g = (Graphics2D) gr;
         
         g.setColor(color);
-        
-        if (t > 0) {
-            Stroke s = new BasicStroke(t);
+        Stroke strokeHold = g.getStroke();
+
+        if (top > 0) {
+            Stroke s = new BasicStroke(top);
             g.setStroke(s);
-            g.drawLine(x, y, x+w, y);
+            
+            int x1 = x + (top/2);
+            int x2 = x + (w - (top/2));
+            
+            int y1 = y + (top/2);
+            
+            g.drawLine(x1, y1, x2, y1);
         }
         
-        if (b > 0) {
-            Stroke s = new BasicStroke(b);
+        if (bottom > 0) {
+            Stroke s = new BasicStroke(bottom);
             g.setStroke(s);
-            g.drawLine(x, y+(h-b), x+w, y+(h-b));
+            
+            
+            int x1 = x + (bottom/2);
+            int x2 = x + (w - (bottom/2));
+            
+            int y1 = y + (h - (bottom/2));
+            
+            g.drawLine(x1, y1, x2, y1);
         }
 
-        if (l > 0) {
-            Stroke s = new BasicStroke(l);
+        if (left > 0) {
+            Stroke s = new BasicStroke(left);
             g.setStroke(s);
-            g.drawLine(x, y, x, y+(h-l));
+            
+             int x2 = x + (left/2);
+            
+            int y1 = y + (left/2);
+            int y2 = y + (h - (left/2));
+            
+            g.drawLine(x2, y1, x2, y2);
         }
         
-        if (r > 0) {
-            Stroke s = new BasicStroke(r);
+        if (right > 0) {
+            Stroke s = new BasicStroke(right);
             g.setStroke(s);
-            g.drawLine(x+(w-r), y, x+(w-r), y+h);
+            
+            int x2 = x + (w - (right/2));
+            g.drawLine(x2, y, x2, y+h);
         }
         
+        g.setStroke(strokeHold);
     }
     
     
