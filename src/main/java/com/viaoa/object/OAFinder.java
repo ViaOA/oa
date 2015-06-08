@@ -20,13 +20,14 @@ import com.viaoa.util.filter.*;
 
 // 20140124
 /**
- * This is used to find all values in a propertyPath. 
+ * This is used to find all values from one Object/Hub to another, using a propertyPath.
+ * Support is included to include Filters.
  *
  * @param <F> type of hub or OAObject to use as the root (from)
  * @param <T> type of hub for the to class (to).
  * 
  * example:
-    // UserLogin
+    // from Router, find all UserLogin for a userId
     OAFinder<Router, UserLogin> f = new OAFinder<Router, UserLogin>(Router.P_UserLogins);
     String cpp = OAString.cpp(UserLogin.P_User, User.P_UserId);
     f.addLikeFilter(cpp, userId);
@@ -207,6 +208,13 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     public void addNotEqualFilter(final String propPath, final Object value) {
         _addFilter(propPath, new OANotEqualFilter(value));
     }
+
+    public void addBetweenOrEqualFilter(final String propPath, final Object value1, final Object value2) {
+        _addFilter(propPath, new OABetweenOrEqualFilter(value1, value2));
+    }
+    public void addBetween(final String propPath, final Object value1, final Object value2) {
+        _addFilter(propPath, new OABetweenFilter(value1, value2));
+    }
     
     
     public void addNullFilter(final String propPath) {
@@ -235,7 +243,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             }
         });
     }
-    public void addNotEmptyFilter(final String propPath, final Object value) {
+    public void addNotEmptyFilter(final String propPath) {
         _addFilter(propPath, new OAFilter() {
             @Override
             public boolean isUsed(Object obj) {
