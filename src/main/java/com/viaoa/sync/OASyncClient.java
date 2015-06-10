@@ -341,13 +341,16 @@ public class OASyncClient {
                 if (pos < 0) pos = 0;
             }
             else {
-                Hub h = (Hub) liRev.getValue(obj);
-                obj = (OAObject) h.getAt(0);
-                if (obj != null && !OAObjectPropertyDelegate.isPropertyLoaded(obj, liRev.getName())) {
-                    pos -= 20;
-                    if (pos < 0) pos = 0;
+                Object objx = liRev.getValue(obj);
+                if (objx instanceof Hub) {
+                    Hub h = (Hub) objx;
+                    obj = (OAObject) h.getAt(0);
+                    if (obj != null && !OAObjectPropertyDelegate.isPropertyLoaded(obj, liRev.getName())) {
+                        pos -= 20;
+                        if (pos < 0) pos = 0;
+                    }
+                    else pos++;
                 }
-                else pos++;
             }
         }
         

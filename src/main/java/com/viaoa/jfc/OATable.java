@@ -843,7 +843,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                             if (tsNow == 0) {
                                 tsNow = System.currentTimeMillis();
                             }
-                            if (tsNow > entry.getValue().longValue() + 500) hmRowColumnChanged.remove(entry.getKey());
+                            if (tsNow > entry.getValue().longValue() + 500) {
+                                hmRowColumnChanged.remove(entry.getKey());
+                                if (hmRowColumnValue != null) hmRowColumnValue.remove(entry.getKey());
+                            }
                         }
                         if (tsNow > 0) {
                             OATable.this.repaint(250);
@@ -876,11 +879,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         // if (!OARemoteThreadDelegate.isRemoteThread()) return;
         synchronized (lockShowChanges) {
-            ConcurrentHashMap<String, Object> hm = hmRowColumnValue;
-            if (hm == null) {
-                hm = new ConcurrentHashMap<String, Object>();
-                hmRowColumnValue = hm;
-            }
             hmRowColumnChanged.put(row + "." + col, System.currentTimeMillis());
             if (!timerShowChanges.isRunning()) {
                 timerShowChanges.start();
@@ -888,7 +886,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
     }
 
-    protected ConcurrentHashMap<String, Object> hmRowColumnValue;
+    private ConcurrentHashMap<String, Object> hmRowColumnValue;
 
     public void setChanged(int row, int col, Object newValue) {
         OATable t = getRightTable();
@@ -898,17 +896,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
 
         if (!bShowChanges) return;
-        ConcurrentHashMap<String, Object> hm = hmRowColumnValue;
-        if (hm == null) {
-            hm = new ConcurrentHashMap<String, Object>();
-            hmRowColumnValue = hm;
+        if (hmRowColumnValue == null) {
+            hmRowColumnValue = new ConcurrentHashMap<String, Object>();
         }
         String k = row + "." + col;
         if (newValue == null) newValue = OANullObject.instance;
-        Object old = hm.get(k);
+        Object old = hmRowColumnValue.get(k);
         if (!OACompare.isEqual(old, newValue)) {
             if (old != null) setChanged(row, col);
-            hm.put(k, newValue);
+            hmRowColumnValue.put(k, newValue);
         }
     }
 

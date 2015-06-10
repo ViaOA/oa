@@ -465,7 +465,7 @@ public class OATableColumn {
                     
                     int col = table.getColumnIndex(oaComp);
                     int row = e.getHub().getPos(objx);
-                    table.setChanged(row, col, val);
+                    if (row >= 0) table.setChanged(row, col, val);
                 }
             };
             table.getHub().addHubListener(hubListener, propx, new String[] { path });
