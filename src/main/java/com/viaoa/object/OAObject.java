@@ -95,9 +95,8 @@ import com.viaoa.util.*;
     @see OASelect for datasource independent queries based on object and property paths.
 */
 public class OAObject implements java.io.Serializable, Comparable {
-    
-    private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
 
+    private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
     
     public static final int version = 150606;  
     static {
@@ -759,7 +758,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         return OAObjectDelegate.find(this, propertyPath, value, true);
     }
 
-//qqqqqqqq needs to work for all properties, not just primitives ??
+//todo: needs to work for all properties, not just primitives ??
     public boolean isNull(String prop) {
         return OAObjectReflectDelegate.getPrimitiveNull(this, prop);
     }

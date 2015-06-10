@@ -282,7 +282,6 @@ public class RemoteMultiplexerClient {
         // 1:CtoS_QueuedRequest start
         // 1:CtoS_QueuedRequestNoResponse
 
-        
         VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
         try {
             ri.msStart = System.currentTimeMillis();

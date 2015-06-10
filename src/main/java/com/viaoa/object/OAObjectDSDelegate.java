@@ -170,7 +170,7 @@ public class OAObjectDSDelegate {
 	
 	public static Object getObject(OAObject oaObj) {
         OADataSource ds = OADataSource.getDataSource(oaObj.getClass());
-        //qqqqqqq todo: check this out: if (ds == null || ds.isAssigningId(oaObj)) return null;  // datasource could be assigning the Id to a unique value
+        // todo: check this out: if (ds == null || ds.isAssigningId(oaObj)) return null;  // datasource could be assigning the Id to a unique value
         return ds.getObject(oaObj.getClass(), OAObjectKeyDelegate.getKey(oaObj));
 	}
 }

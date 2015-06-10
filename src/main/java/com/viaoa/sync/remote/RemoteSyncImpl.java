@@ -34,7 +34,15 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     @Override
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         OAObject obj = getObject(objectClass, origKey);
-        if (obj == null) return false;
+        if (obj == null) {
+/* TEST
+String s = objectClass.getSimpleName();            
+if ("application".equalsIgnoreCase(s)) {
+    System.out.println("property change not found, app.guid="+origKey.getGuid()+", prop="+propertyName);
+}
+*/            
+            return false;
+        }
         OAObjectReflectDelegate.setProperty((OAObject)obj, propertyName, newValue, null);
         
         // blob value does not get sent, so clear the property so that a getXxx will retrieve it from server

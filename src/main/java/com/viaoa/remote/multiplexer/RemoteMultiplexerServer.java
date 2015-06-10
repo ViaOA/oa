@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1324,7 +1325,9 @@ public class RemoteMultiplexerServer {
                         this.msLastUsed = System.currentTimeMillis();
                         synchronized (Lock) {
                             if (requestInfo != null) {
-                                if (!requestInfo.processedByServerQueue) notifyProcessedByServer(requestInfo);
+                                if (!requestInfo.processedByServerQueue) {
+                                    notifyProcessedByServer(requestInfo);
+                                }
                                 this.requestInfo = null;
                             }
                             Lock.notifyAll();
@@ -1341,7 +1344,9 @@ public class RemoteMultiplexerServer {
                 if (startedNextThread) return;
                 super.startNextThread();
                 if (requestInfo != null) {
-                    if (!requestInfo.processedByServerQueue) notifyProcessedByServer(requestInfo);
+                    if (!requestInfo.processedByServerQueue) {
+                        notifyProcessedByServer(requestInfo);
+                    }
                 }
             }
         };
@@ -1539,6 +1544,7 @@ public class RemoteMultiplexerServer {
         private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, VirtualSocket vsocket, long qpos)
                 throws Exception {
             int connectionId = vsocket.getConnectionId();
+            HashSet<Integer> hsQueuedRequest = new HashSet<Integer>(); 
             for (int i=0;;i++) {
                 if (vsocket.isClosed()) {
                     return;
@@ -1565,12 +1571,19 @@ public class RemoteMultiplexerServer {
                     }
   
                     if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
+                        if (ri.connectionId == connectionId) {
+                            hsQueuedRequest.add(ri.messageId);
+                        }
                         continue;
                     }
                     else if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
                         // 9:CtoS_QueuedRequest send back to client
                         if (ri.connectionId != connectionId) {
                             continue;
+                        }
+                        if (!hsQueuedRequest.remove(ri.messageId)) {
+                            hsQueuedRequest.add(ri.messageId);
+                            continue;  // wait for it to show up the second time
                         }
                     }
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {

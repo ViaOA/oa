@@ -178,11 +178,11 @@ public abstract class OACircularQueue<TYPE> {
     
     /**
      * Add a new message to the queue.
+     * @return position of message in the queue
      */
     public int addMessageToQueue(TYPE msg) {
         return addMessage(msg);
     }
-    
     
     
     public int addMessage(TYPE msg) {

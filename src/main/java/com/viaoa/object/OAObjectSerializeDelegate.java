@@ -39,9 +39,11 @@ public class OAObjectSerializeDelegate {
                 cntDup--;
                 return;
             }
+            else if (bx == 2) {
+            }
         }
 	    in.defaultReadObject();
-
+	    
 	    // read properties
         OAObjectInfo oi =  null;
         for ( ; ; ) {
@@ -59,13 +61,6 @@ public class OAObjectSerializeDelegate {
 	
 	protected static Object _readResolve(final OAObject oaObjOrig) throws ObjectStreamException {
 		OAObject oaObjNew;
-		
-if (oaObjOrig.getClass().getSimpleName().equalsIgnoreCase("ServerRoot")) {
-    //qqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
-		
 		boolean bDup;
         if (oaObjOrig.guid == 0) {
         	LOG.warning("received object with guid=0, obj="+oaObjOrig+", reassigning a new guid");
@@ -191,7 +186,7 @@ if (oaObjOrig.getClass().getSimpleName().equalsIgnoreCase("ServerRoot")) {
 		return true;
 	}	
 
-//TEST qqqqqqqwwwwwwwwwwwwwwwwwwwwwwbbbbbbbbbbbbbbbbbbbbbvvvvvvvvvvvvvvv
+//TEST 
 /*	
     static volatile int cntx;
     static volatile int indentx;
@@ -207,7 +202,6 @@ if (oaObjOrig.getClass().getSimpleName().equalsIgnoreCase("ServerRoot")) {
     }
 */	
 	protected static void _writeObject(OAObject oaObj, java.io.ObjectOutputStream stream) throws IOException {
-        //++xxx;//qqqqqqqqqqqqqqq
         //if (xxx % 1000 == 0) System.out.println((xxx)+") writeObject "+oaObj);
         
 	    OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();

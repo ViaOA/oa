@@ -342,8 +342,8 @@ public class OAObjectCSDelegate {
 	}
 	
     protected static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue) {
-      //qqqqqqqqqqqqqqqqqqqqqqq dont send, it is now using beforePropertyChange
-        if (true || false) return; //qqqqqqqqqqqqqqqqqqqqqq
+        // Important NOTE: dont send, it is now using beforePropertyChange
+        if (true || false) return;
 
         LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;

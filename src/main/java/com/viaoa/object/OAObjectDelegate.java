@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.*;
+
 import com.viaoa.hub.*;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
@@ -117,7 +118,7 @@ public class OAObjectDelegate {
 	            // must be before DS init, since it could add to local client cache
 	        	OAObjectCSDelegate.initialize(oaObj);
 	        }
-	        if (bInitializeWithDS) {  
+	        if (bInitializeWithDS) {
 	        	OAObjectDSDelegate.initialize(oaObj);
 	        }
 	    	if (bSetChangedToFalse) {

@@ -260,12 +260,13 @@ public class OAObjectEventDelegate {
                 objNew = OAObjectKeyDelegate.getKey((OAObject)objNew);
             }
             
+            /*
             Object oldx;
             if (objOld instanceof byte[]) {
                 oldx = "byte[" + ((byte[])objOld).length +"]";
             }
             else oldx = objOld;
-            
+            */
             /*
             Object newx;
             if (objNew instanceof byte[]) {
