@@ -10,19 +10,23 @@
 */
 package com.viaoa.object;
 
+import com.theice.tsactest.model.oa.RCInstalledVersionDetail;
 import com.viaoa.annotation.OAClass;
+import com.viaoa.annotation.OAMany;
+import com.viaoa.annotation.OAOne;
+import com.viaoa.hub.Hub;
 
 /**
- * Utility class, used by HubLeftJoin, as an object that creates a reference to two others objects.
+ * Utility class, used by HubLeftJoinDetail, as an object that creates a reference to two others objects.
  * This is used by HubCombined to combine two hubs, to create a hub of objects - similar
  * to a database "left join"
  * @author vvia
  *
  * @param <A> left side object
- * @param <B> right side object
+ * @param <B> detail hub from A
  */
 @OAClass(addToCache=false, initialize=false, useDataSource=false, localOnly=true)
-public class OALeftJoin<A extends OAObject, B extends OAObject> extends OAObject {
+public class OALeftJoinDetail<A extends OAObject, B extends OAObject> extends OAObject {
     static final long serialVersionUID = 1L;
     
     public static final String P_A = "A"; 
@@ -30,16 +34,16 @@ public class OALeftJoin<A extends OAObject, B extends OAObject> extends OAObject
     public static final String PROPERTY_A = "A"; 
     public static final String PROPERTY_B = "B"; 
     private A a;
-    private B b;
+    private Hub<B> hubB;
     
-    public OALeftJoin() {
+    public OALeftJoinDetail() {
     }
     
-    public OALeftJoin(A a, B b) {
+    public OALeftJoinDetail(A a) {
         setA(a);
-        setB(b);
     }
     
+    @OAOne
     public A getA() {
         return a;
     }
@@ -49,14 +53,19 @@ public class OALeftJoin<A extends OAObject, B extends OAObject> extends OAObject
         this.a = obj;
         firePropertyChange("A", hold, obj);
     }
-
-    public B getB() {
-        return b;
+    public Hub<B> getHubB() {
+        return getHub();
     }
-    public void setB(B obj) {
-        OAObject hold = this.b;
-        fireBeforePropertyChange("B", hold, obj);
-        this.b = obj;
-        firePropertyChange("B", hold, obj);
+    
+    @OAMany
+    public Hub<B> getB() {
+        return getHub();
+    }
+
+    public Hub<B> getHub() {
+        if (hubB == null) {
+            hubB = getHub(PROPERTY_B);
+        }
+        return hubB;
     }
 }

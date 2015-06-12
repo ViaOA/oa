@@ -18,15 +18,16 @@ import java.lang.reflect.*;
 import java.net.URL;
 import java.awt.event.*;
 import java.awt.*;
+
 import javax.swing.*;
 
 import com.viaoa.hub.*;
 import com.viaoa.jfc.image.*;
 import com.viaoa.object.OALinkInfo;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.util.*;
-
 import com.viaoa.jfc.tree.*;
 import com.viaoa.jfc.table.*;
 
@@ -912,7 +913,14 @@ public class OATreeNode implements Cloneable {
             
             // find method
             Method method = OAReflect.getMethod(clazz, name);
-            if (method == null) throw new RuntimeException("OATreeNode.getMethods() cant find method for \""+name+"\" in PropertyPath \""+fullPath+"\"");
+            if (method == null) {
+                if (OAObject.class.equals(clazz)) {
+                    // 20150612
+                    // caused by generics, will need to call getPropety(name)
+                    break;
+                }
+                else throw new RuntimeException("OATreeNode.getMethods() cant find method for \""+name+"\" in PropertyPath \""+fullPath+"\", from class="+clazz.getSimpleName());
+            }
             vec.addElement(method);
             clazz = method.getReturnType();
             if ( Hub.class.isAssignableFrom(clazz)) {
@@ -926,6 +934,11 @@ public class OATreeNode implements Cloneable {
             def.propertyPath = path.substring(pos+1);
             methodsToHub = new Method[vec.size()];
             vec.copyInto(methodsToHub);
+            def.methodsToProperty = null;
+        }
+        else if (OAObject.class.isAssignableFrom(clazz)) {
+            // 20150612
+            def.propertyPath = path;
         }
         else {
             def.propertyPath = path;
@@ -952,8 +965,18 @@ public class OATreeNode implements Cloneable {
             s = "";
         }
         else {
-            if (def.methodsToProperty == null) findMethods(tnd.object.getClass(), false);
-            Object obj = OAReflect.getPropertyValue(tnd.object, def.methodsToProperty);
+            if (def.methodsToProperty == null) {
+                findMethods(tnd.object.getClass(), false);
+            }
+            
+            Object obj;
+            if (def.methodsToProperty == null) {
+                obj = ((OAObject)tnd.object).getProperty(def.propertyPath);
+            }
+            else {
+                obj = OAReflect.getPropertyValue(tnd.object, def.methodsToProperty);
+            }
+            
             Class c = (obj == null) ? null : obj.getClass();
             s = OAConverter.toString(obj);
             if (s == null) s = "";

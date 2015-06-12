@@ -25,6 +25,10 @@ import com.viaoa.util.OAPropertyPath;
  * Similar to a database "group by".
  * @param <A> type of objects for the seed Hub that supplies the objects that need to be grouped.
  * @param <B> type of objects that will be in the group by Hub.
+ * 
+ * 
+ * @see HubLeftJoinDetail#
+ * @see HubLeftJoin#
  */
 public class HubGroupBy<A extends OAObject, B extends OAObject> {
     // 20141117 support for reverse propertyPaths that dont have methods
