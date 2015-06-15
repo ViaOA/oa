@@ -7,152 +7,279 @@
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-*/
+ */
 package com.viaoa.hub;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.viaoa.object.OALeftJoin;
+import com.viaoa.object.OAGroupBy;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAPropertyPath;
 
 /**
- * Takes a single Hub<A>, and a property path to create two new Hubs that are
- * are master/detail, where the master is the groupBy hub, and the detail is group of
- * objects in Hub<A> that are under the AO in the groupBy hub.
+ * Combines two hubs into a new  single hub to create the equivalent of a database groupBy, where all
+ * of the "left" side objects are in the list.
+ * 
+ * The combined Hub (see getCombinedHub) uses OAObject OALeftJoinDetail<A,B>, where A is the same class
+ * as the left Hub and B is a Hub of the the same as the right Hub.
  *
- * Example: from hubOrders, propPath: "employee.department"
- *    getGroupByHub: hub of Departments
- *    getDetailHub: hub of Orders for the groupByHub.AO 
- *  
- * Similar to a database "group by".
- * @param <A> type of objects for the seed Hub that supplies the objects that need to be grouped.
- * @param <B> type of objects that will be in the group by Hub.
  * 
+ * new HubGroupBy<Dept, Emp>(hubAllDept, hubEmp, "depts")
+ * new HubGroupBy<Dept, Emp>(hubEmp, "depts")
  * 
- * @see HubLeftJoinDetail#
  * @see HubLeftJoin#
+ * 
+ * @author vvia
  */
 public class HubGroupBy<A extends OAObject, B extends OAObject> {
-    // 20141117 support for reverse propertyPaths that dont have methods
-    
     private Hub<A> hubA;
     private Hub<B> hubB;
-    private Hub<A> hubDetail; // detail hub from hubB, using reverse propertyPath
-    private Hub<A> hubDetailFiltered;  // filtered using hubDetail as root, and filtering only objects that exist in hubA
+    private Hub<OAGroupBy<A, B>> hubCombined;
     private String propertyPath;
-    private HubFilter<A> hubFilter;
-    
-    private boolean bInitializedCalled;
+    private String listenPropertyName;
+    private Hub<A> hubMaster;
+    private Hub<B> hubDetail;
+    private boolean bIgnoreAOChange;
+
+    private final static AtomicInteger aiCnt = new AtomicInteger();
+
     
     /**
-     * @param hubA hub of objects that are to be grouped.
-     * @param propertyPath path to the property that is the groupBy
+     * Create a hub of objects that are based on hubB.
+     * @param hubB
+     * @param propertyPath
      */
-    public HubGroupBy(Hub<A> hubA, String propertyPath) {
+    public HubGroupBy(Hub<B> hubB, String propertyPath) {
+        this.hubA = null;
+        this.hubB = hubB;
+        this.propertyPath = propertyPath;
+        setup();
+    }
+    
+    
+    /**
+     * Create a hub on objects that are based on hubB, and are grouped by hubA.
+     * This allows a the combined hub to have a full list like a left-join.
+     * 
+     * @param hubA objects that are to be grouped.
+     * @param hubB optional list of objects to have as the master list.  This will act as a left-join
+     *            
+     * @param propertyPath
+     *            pp of the property from the right object to get left object. 
+     *            example: if hubDept, hubEmpOrders, then "Employee.Department"
+     *            HubGroupBy(hubEmpOrders, hubDept, "Employee.Department")
+     *            -or-
+     *            HubGroupBy(hubEmpOrders, "Employee.Department")
+     */
+    public HubGroupBy(Hub<A> hubA, Hub<B> hubB, String propertyPath) {
         this.hubA = hubA;
+        this.hubB = hubB;
         this.propertyPath = propertyPath;
         setup();
     }
 
-    public Hub<B> getGroupByHub() {
-        return hubB;
-    }
+    
     /**
-     * This is the detail from the hubGroupBy, with only the objects
-     * that are under hubGroupBy, and are also in the original Hub hubA
-     * @return
+     * @return Hub of combined objects using OAGroupBy
      */
-    public Hub<A> getDetailHub() {
-        return hubDetailFiltered; // from hubA
+    public Hub<OAGroupBy<A, B>> getCombinedHub() {
+        if (hubCombined != null) return hubCombined;
+        hubCombined = new Hub(OAGroupBy.class);
+        return hubCombined;
     }
 
-    void setup() throws RuntimeException {
-        
-        OAPropertyPath pp = new OAPropertyPath(hubA.getObjectClass(), propertyPath);
-        Class<?>[] cs = pp.getClasses();
-        if (cs == null || cs.length == 0) {
-            throw new RuntimeException("propertyPath is invalid, "+propertyPath);
+    /**
+     * @return Hub<A> of groupBy objects that are in sync (share AO) with combined Hub.
+     */
+    public Hub<A> getMasterHub() {
+        if (hubMaster == null) {
+            if (hubA != null) hubMaster = new Hub<A>(hubA.getObjectClass());
+            else hubMaster = new Hub<A>();
+            new HubMerger(getCombinedHub(), hubMaster, "A", true);
         }
-        
-        // create master/groupBy hub
-        hubB = new Hub<B>((Class<B>) cs[cs.length-1]);
-        HubMerger hm = new HubMerger(hubA, hubB, propertyPath, false, true);
-        
-        
-        OAPropertyPath ppRev;
-        try {
-            ppRev = pp.getReversePropertyPath();
+        return hubMaster;
+    }
+    
+    /**
+     * @return detail hub from masterHub
+     */
+    public Hub<B> getDetailHub() {
+        if (hubDetail == null) {
+            hubDetail = getCombinedHub().getDetailHub("B");
         }
-        catch (Exception e) {
-            ppRev = null;
-        }
-        
-        if (ppRev != null) {
-            hubDetail = hubB.getDetailHub(ppRev.getPropertyPath());
-            hubDetailFiltered = new Hub(hubA.getObjectClass());
-            
-            hubFilter = new HubFilter<A>(hubDetail, hubDetailFiltered) {
-                @Override
-                public boolean isUsed(A object) {
-                    return hubA.contains(object);
+        return hubDetail;
+    }
+
+    /**
+     * @deprecated use getDetailHub
+     * @return detail Hub of hub<a>
+     */
+    public Hub<B> getGroupByHub() {
+        return getDetailHub();
+    }
+    
+    
+    void setup() {
+        getCombinedHub().addHubListener(new HubListenerAdapter() {
+            @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                if (bIgnoreAOChange) return;
+                // set the active object in hub A&B when hubCombine.AO is changed
+                OAGroupBy obj = (OAGroupBy) e.getObject();
+                if (obj == null) {
+                    if (hubA != null) hubA.setAO(null);
+                    hubB.setAO(null);
                 }
-                
-                // custom: if the filtered groupBy hub has an add/remove, then add/remove from the HubA
-                
-                @Override
-                public void afterAdd(A obj) {
-                    hubA.add(obj);
+                else {
+                    if (hubA != null) hubA.setAO(obj.getA());
+                    hubB.setAO(null);
                 }
-                @Override
-                public void afterRemove(A obj) {
-                    hubA.remove(obj);
-                }
-            };
+            }
+        });
 
         
+        if (hubA != null) {
             hubA.addHubListener(new HubListenerAdapter() {
                 @Override
                 public void afterInsert(HubEvent e) {
-                    hubFilter.refresh();
+                    afterAdd(e);
                 }
+    
                 @Override
                 public void afterAdd(HubEvent e) {
-                    hubFilter.refresh();
+                    A a = (A) e.getObject();
+                    OAGroupBy<A, B> c = new OAGroupBy(a);
+                    hubCombined.add(c);
                 }
+    
                 @Override
                 public void afterRemove(HubEvent e) {
-                    hubFilter.refresh();
+                    A a = (A) e.getObject();
+                    for (;;) {
+                        OAGroupBy c = hubCombined.find(OALeftJoin.P_A, a);
+                        if (c == null) break;
+                        hubCombined.remove(c);
+                    }
                 }
+    
                 @Override
                 public void onNewList(HubEvent e) {
-                    hubFilter.refresh();
+                    hubCombined.clear();
+                    for (A a : hubA) {
+                        hubCombined.add(new OAGroupBy(a));
+                    }
+                    for (B b : hubB) {
+                        add(b);
+                    }
                 }
             });
+            for (A a : hubA) {
+                hubCombined.add(new OAGroupBy(a));
+            }
+        }
+        
+
+        HubListener hl = new HubListenerAdapter() {
+            @Override
+            public void afterInsert(HubEvent e) {
+                afterAdd(e);
+            }
+
+            @Override
+            public void afterAdd(HubEvent e) {
+                B b = (B) e.getObject();
+                add(b);
+            }
+
+            @Override
+            public void afterRemove(HubEvent e) {
+                B b = (B) e.getObject();
+                remove(b);
+            }
+
+            @Override
+            public void afterPropertyChange(HubEvent e) {
+                String s = e.getPropertyName();
+                if (!listenPropertyName.equalsIgnoreCase(s)) return;
+
+                remove((B) e.getObject());
+                add((B) e.getObject());
+            }
+
+            @Override
+            public void onNewList(HubEvent e) {
+                hubCombined.clear();
+                if (hubA != null) {
+                    for (A a : hubA) {
+                        hubCombined.add(new OAGroupBy(a));
+                    }
+                }
+                for (B b : hubB) {
+                    add(b);
+                }
+            }
+
+            @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                B b = (B) e.getObject();
+                if (b != null) {
+                    for (OAGroupBy lj : hubCombined) {
+                        Hub h = lj.getHubB();
+                        if (h.contains(b)) {
+                            try {
+                                bIgnoreAOChange = true;
+                                hubCombined.setAO(lj);
+                                h.setAO(b);
+                            }
+                            finally {
+                                bIgnoreAOChange = false;
+                            }
+                            return;
+                        }
+                    }
+                }
+                hubCombined.setAO(null);
+            }
+        };
+
+        
+        if (propertyPath == null || propertyPath.indexOf('.') < 0) {
+            listenPropertyName = propertyPath;
+            hubB.addHubListener(hl, propertyPath);
         }
         else {
-            hubDetail = null; // not used
-            hubDetailFiltered = new Hub(hubA.getObjectClass());
-            
-            hubFilter = new HubFilter<A>(hubA, hubDetailFiltered) {
-                @Override
-                public boolean isUsed(A object) {
-                    Object objx = object.getProperty(propertyPath);
-                    return (objx == hubB.getAO());
-                }
-                @Override
-                public void afterAdd(A obj) {
-                    hubA.add(obj);
-                }
-                @Override
-                public void afterRemove(A obj) {
-                    hubA.remove(obj);
-                }
-            };
-            
-            hubB.addHubListener(new HubListenerAdapter() {
-                @Override
-                public void afterChangeActiveObject(HubEvent e) {
-                    hubFilter.refresh();
-                }
-            });            
+            listenPropertyName = "hubCombinedDetail" + aiCnt.getAndIncrement();
+            hubB.addHubListener(hl, listenPropertyName, new String[] { propertyPath });
+        }
+
+        for (B b : hubB) {
+            add(b);
+        }
+    }
+
+    private void add(B b) {
+        if (b == null) return;
+        Object valueA = b.getProperty(propertyPath);
+        for (OAGroupBy gb : hubCombined) {
+            if (gb.getA() != valueA) continue;
+            gb.getHubB().add(b);
+            return;
+        }
+        if (hubA != null) {
+            // create new
+            OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
+            hubCombined.add(c);
+            c.getHubB().add(b);
+        }
+    }
+
+    private void remove(B b) {
+        for (OAGroupBy gb : hubCombined) {
+            Hub<B> h = gb.getHubB();
+            if (h.contains(b)) {
+                h.remove(b);
+                return;
+            }
         }
     }
 }

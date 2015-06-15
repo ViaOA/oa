@@ -197,7 +197,7 @@ public class HubLeftJoin<A extends OAObject, B extends OAObject> {
             if (bx == null) ljEmpty = lj;
         }
         if (!bFound) {
-            if (ljEmpty == null) ljEmpty.setB(b);
+            if (ljEmpty != null) ljEmpty.setB(b);
             else {
                 OALeftJoin ljx = new OALeftJoin();
                 ljx.setA((A) valueA);

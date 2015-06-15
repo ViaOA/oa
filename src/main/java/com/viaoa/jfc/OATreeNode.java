@@ -245,12 +245,41 @@ public class OATreeNode implements Cloneable {
         return def.tree;
     }
 
+    private HubListener hlSelected;
     /**
      * Hub that retains list of nodes that have been checked.
      * @param hub
      */
     public void setSelectedHub(Hub hub) {
+        if (hlSelected != null && this.def.hubSelected != null) {
+            this.def.hubSelected.removeHubListener(hlSelected);
+            hlSelected = null;
+        }
+        
         this.def.hubSelected = hub;
+        if (hub != null) {
+            
+            hlSelected = new HubListenerAdapter() {
+                @Override
+                public void afterAdd(HubEvent e) {
+                    def.tree.repaint();
+                }
+                @Override
+                public void afterRemove(HubEvent e) {
+                    def.tree.repaint();
+                }
+                @Override
+                public void afterRemoveAll(HubEvent e) {
+                    def.tree.repaint();
+                }
+                @Override
+                public void afterInsert(HubEvent e) {
+                    def.tree.repaint();
+                }
+            };
+            hub.addHubListener(hlSelected);
+        }
+
         OATreeNode tn = this;
     }
     public Hub getSelectedHub() {

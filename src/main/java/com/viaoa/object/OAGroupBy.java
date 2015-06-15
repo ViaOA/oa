@@ -17,16 +17,15 @@ import com.viaoa.annotation.OAOne;
 import com.viaoa.hub.Hub;
 
 /**
- * Utility class, used by HubLeftJoinDetail, as an object that creates a reference to two others objects.
- * This is used by HubCombined to combine two hubs, to create a hub of objects - similar
- * to a database "left join"
- * @author vvia
- *
+ * Utility class, used by HubGroupBy, as an object that creates a reference to two others objects.
+ * 
  * @param <A> left side object
  * @param <B> detail hub from A
+ * 
+ * @see HubGroupBy#
  */
 @OAClass(addToCache=false, initialize=false, useDataSource=false, localOnly=true)
-public class OALeftJoinDetail<A extends OAObject, B extends OAObject> extends OAObject {
+public class OAGroupBy<A extends OAObject, B extends OAObject> extends OAObject {
     static final long serialVersionUID = 1L;
     
     public static final String P_A = "A"; 
@@ -36,10 +35,10 @@ public class OALeftJoinDetail<A extends OAObject, B extends OAObject> extends OA
     private A a;
     private Hub<B> hubB;
     
-    public OALeftJoinDetail() {
+    public OAGroupBy() {
     }
     
-    public OALeftJoinDetail(A a) {
+    public OAGroupBy(A a) {
         setA(a);
     }
     

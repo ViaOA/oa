@@ -125,6 +125,7 @@ public class HubAddRemoveDelegate {
     
     public static void clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
         boolean b = false;
+        if (thisHub.getSize() == 0) return;
         try {
             OAThreadLocalDelegate.lock(thisHub);
             b = _clear(thisHub, bSetAOtoNull, bSendNewList);
