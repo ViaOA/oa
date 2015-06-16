@@ -45,6 +45,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.omg.CORBA.REBIND;
+
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubAODelegate;
 import com.viaoa.hub.HubDataDelegate;
@@ -411,10 +413,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
 
         if (hubSelect != null) {
+            hubAdapter.rebuildListSelectionModel();
+            /*qqqqqq
             hubSelect.clear();
             for (Object obj : objs) {
                 hubSelect.add(obj);
             }
+            */
         }
 
         // reset AO
@@ -1598,7 +1603,18 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
 
         public void fireTableStructureChanged() {
+            // need to retain the selected objects
+            final Object[] objs = new Object[hubSelect == null ? 0 : hubSelect.getSize()];
+            if (hubSelect != null) {
+                hubSelect.copyInto(objs);
+            }
             super.fireTableStructureChanged();
+            if (hubSelect != null) {
+                hubSelect.clear();
+                for (Object obj : objs) {
+                    hubSelect.add(obj);
+                }
+            }
         }
 
         public void fireTableRowsUpdated(int pos1, int pos2) {
@@ -1874,8 +1890,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public void setFilterMasterHub(Hub hubFilterMaster) {
         setMasterFilterHub(hubFilterMaster);
     }
-        
+    Hub hubFilterMaster;
     public void setMasterFilterHub(Hub hubFilterMaster) {
+        this.hubFilterMaster = hubFilterMaster;
         if (headerRenderer != null) {
             if (hubFilterMaster == null) headerRenderer.remove(headerRenderer.label);
             else headerRenderer.add(headerRenderer.label, BorderLayout.CENTER);
@@ -2979,12 +2996,22 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         for (int i = 0;; i++) {
             Object obj = hubSelect.getAt(i);
             if (obj == null) {
+if (i == 0) {
+    int xx = 4;
+    xx++;//qqqqqqqqqqqqqqqq
+}
                 break;
             }
             int pos = hub.indexOf(obj); // dont use hub.getPos(), since it will adjust "linkage"
             if (pos < 0) {
-                hubSelect.removeAt(i);
-                i--;
+                // only remove if it is not in the hubFilterMaster (if used)
+                Hub h = table.hubFilterMaster;
+                if (h == null && table.tableRight != null) h = table.tableRight.hubFilterMaster;
+                if (h != null) pos = h.indexOf(obj);
+                if (pos < 0) {
+                    hubSelect.removeAt(i);
+                    i--;
+                }
             }
             else {
                 lsm.addSelectionInterval(pos, pos);

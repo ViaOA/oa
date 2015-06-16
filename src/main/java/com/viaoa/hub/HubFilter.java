@@ -548,7 +548,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                 OAThreadLocalDelegate.setLoadingObject(true);
                 bCompleted = _initialize(cnt);
                 bNewListFlag = true;                   
-                if (hub != null) {
+                if (hub != null && bCompleted) {
                     HubEventDelegate.fireOnNewListEvent(hub, true);
                 }
             }

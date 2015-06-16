@@ -11,8 +11,6 @@
 package com.viaoa.hub;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.viaoa.object.OALeftJoin;
 import com.viaoa.object.OAGroupBy;
 import com.viaoa.object.OAObject;
 
@@ -20,7 +18,7 @@ import com.viaoa.object.OAObject;
  * Combines two hubs into a new  single hub to create the equivalent of a database groupBy, where all
  * of the "left" side objects are in the list.
  * 
- * The combined Hub (see getCombinedHub) uses OAObject OALeftJoinDetail<A,B>, where A is the same class
+ * The combined Hub (see getCombinedHub) uses OAObject OAGroupBy<A,B>, where A is the same class
  * as the left Hub and B is a Hub of the the same as the right Hub.
  *
  * 
@@ -156,7 +154,7 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
                 public void afterRemove(HubEvent e) {
                     A a = (A) e.getObject();
                     for (;;) {
-                        OAGroupBy c = hubCombined.find(OALeftJoin.P_A, a);
+                        OAGroupBy c = hubCombined.find(OAGroupBy.P_A, a);
                         if (c == null) break;
                         hubCombined.remove(c);
                     }

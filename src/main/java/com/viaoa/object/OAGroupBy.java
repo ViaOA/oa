@@ -10,7 +10,6 @@
 */
 package com.viaoa.object;
 
-import com.theice.tsactest.model.oa.RCInstalledVersionDetail;
 import com.viaoa.annotation.OAClass;
 import com.viaoa.annotation.OAMany;
 import com.viaoa.annotation.OAOne;

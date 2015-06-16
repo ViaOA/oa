@@ -55,7 +55,7 @@ import com.viaoa.jfc.undo.OAUndoableEdit;
     Trees can be customized by using renderer methods.
     <ol>
     <li>Uses OATreeNode icon, font, background, foreground.
-    <li>Calls the selecte OATreeNode getTreeCellRendererComponent(...)
+    <li>Calls the select OATreeNode getTreeCellRendererComponent(...)
     <li>Calls OATreeNode listeners getTreeCellRendererComponent(...)
     <li>Calls OATree getTreeCellRendererComponent(...)
     <li>Calls OATree listeners getTreeCellRendererComponent(...)
