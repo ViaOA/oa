@@ -258,16 +258,56 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
     private void add(B b) {
         if (b == null) return;
         Object valueA = b.getProperty(propertyPath);
-        for (OAGroupBy gb : hubCombined) {
-            if (gb.getA() != valueA) continue;
-            gb.getHubB().add(b);
-            return;
+        
+        if (valueA instanceof Hub) {
+            Hub h = (Hub) valueA;
+            for (int i=0; ;i++) {
+                valueA = h.getAt(i);
+                if (valueA == null) break;
+                
+                boolean bFound = false;
+                for (OAGroupBy gb : hubCombined) {
+                    if (gb.getA() != valueA) continue;
+                    gb.getHubB().add(b);
+                    bFound = true;
+                    break;
+                }
+                if (!bFound && hubA != null) {
+                    // create new
+                    OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
+                    hubCombined.add(c);
+                    c.getHubB().add(b);
+                }
+            }
+            
+            // add to empty hub
+            if (h.size() == 0) {
+                valueA = null;
+                for (OAGroupBy gb : hubCombined) {
+                    if (gb.getA() != valueA) continue;
+                    gb.getHubB().add(b);
+                    return;
+                }
+                if (hubA != null) {
+                    // create new
+                    OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
+                    hubCombined.add(c);
+                    c.getHubB().add(b);
+                }
+            }
         }
-        if (hubA != null) {
-            // create new
-            OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
-            hubCombined.add(c);
-            c.getHubB().add(b);
+        else {
+            for (OAGroupBy gb : hubCombined) {
+                if (gb.getA() != valueA) continue;
+                gb.getHubB().add(b);
+                return;
+            }
+            if (hubA != null) {
+                // create new
+                OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
+                hubCombined.add(c);
+                c.getHubB().add(b);
+            }
         }
     }
 

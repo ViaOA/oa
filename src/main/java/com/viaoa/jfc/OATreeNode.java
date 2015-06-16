@@ -1069,7 +1069,8 @@ public class OATreeNode implements Cloneable {
     public boolean getAllowDrop(Hub hubDrag, Object objectDrag, Hub hubDrop) {
         if (objectDrag == null) return false;
         if (hubDrop == null) return false;
-        if ( hubDrop.getObjectClass().isAssignableFrom(objectDrag.getClass()) ) return true;
+        Class c = hubDrop.getObjectClass();
+        if (c == null || objectDrag.getClass().isAssignableFrom(c) ) return true;
         return false;
     }
 

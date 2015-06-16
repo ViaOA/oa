@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.viaoa</groupId>
     <artifactId>oa</artifactId>
-    <version>3.5.14</version> 
+    <version>3.6.0-SNAPSHOT</version> 
 <!--  qqq current at ice     https://maven.intcx.net/content/repositories/public/com/viaoa/oa/
     <version>3.5.14</version>
     <version>3.6.0-SNAPSHOT</version> 
