@@ -461,7 +461,9 @@ public class HubListenerTree {
                                         }
                                     }
                                     else {
-                                        Object[] rootObjects = nodeThis.parent.getRootValues(e.getHub().getMasterObject());
+// 20150616                                         
+Object[] rootObjects = nodeThis.getRootValues(e.getHub().getMasterObject());
+//was:                                        Object[] rootObjects = nodeThis.parent.getRootValues(e.getHub().getMasterObject());
                                         if (rootObjects != null && rootObjects.length > 0) {
                                             for (Object obj : rootObjects) {
                                                 for (String s : newTreeNode.getCalcPropertyNames()) {

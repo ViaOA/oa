@@ -455,11 +455,13 @@ static int cntq;
         // verify that last property is same class as hubCombined
         if (hubCombined.getObjectClass() == null) HubDelegate.setObjectClass(hubCombined, clazz);
         if (!hubCombined.getObjectClass().equals(clazz)) {
-            // if (!OAObject.class.equals(clazz)) { // 20120809 could be using generic type reference
-            // (ex: OALeftJoin.A)
-            throw new IllegalArgumentException("Classes do not match.  Property path \"" + path + "\" is for objects of Class "
-                    + clazz.getName() + " and hubCombined is for objects of Class " + hubCombined.getObjectClass());
-            // }
+            if (!clazz.equals(Hub.class)) {
+                // if (!OAObject.class.equals(clazz)) { // 20120809 could be using generic type reference
+                // (ex: OALeftJoin.A)
+                throw new IllegalArgumentException("Classes do not match.  Property path \"" + path + "\" is for objects of Class "
+                        + clazz.getName() + " and hubCombined is for objects of Class " + hubCombined.getObjectClass());
+                // }
+            }
         }
         if (bIncludeRootHub) {
             if (!hubRoot.getObjectClass().equals(clazz)) {
@@ -527,13 +529,15 @@ static int cntq;
                 throw new RuntimeException("hub can not be null");
             }
             if (!node.clazz.equals(hubNew.getObjectClass())) {
-                // 20130709
-                if (!OAObject.class.isAssignableFrom(node.clazz)) {
-                    throw new RuntimeException("Hub class does not equal Node class");
+                if (!node.clazz.equals(Hub.class)) {
+                    // 20130709
+                    if (!OAObject.class.isAssignableFrom(node.clazz)) {
+                        throw new RuntimeException("Hub class does not equal Node class");
+                    }
+                    /* was if (!OAObject.class.equals(node.clazz)) { // 20120809 could be using generic type
+                     * reference (ex: OALeftJoin.A) throw new
+                     * RuntimeException("Hub class does not equal Node class"); } */
                 }
-                /* was if (!OAObject.class.equals(node.clazz)) { // 20120809 could be using generic type
-                 * reference (ex: OALeftJoin.A) throw new
-                 * RuntimeException("Hub class does not equal Node class"); } */
             }
             this.node = node;
             this.parentObject = parentObject;

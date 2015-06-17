@@ -10,9 +10,15 @@
  */
 package com.viaoa.hub;
 
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import com.viaoa.object.OAGroupBy;
+import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectInfo;
+import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.object.OAPropertyInfo;
 
 /**
  * Combines two hubs into a new  single hub to create the equivalent of a database groupBy, where all
@@ -199,9 +205,7 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             public void afterPropertyChange(HubEvent e) {
                 String s = e.getPropertyName();
                 if (!listenPropertyName.equalsIgnoreCase(s)) return;
-
-                remove((B) e.getObject());
-                add((B) e.getObject());
+                update((B) e.getObject());
             }
 
             @Override
@@ -240,24 +244,42 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             }
         };
 
+        boolean b = false;
+        if (propertyPath == null) {
+            b = true;
+        }
+        else if (propertyPath.indexOf('.') < 0) {
+            // propertyPath could be a hub
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hubB.getObjectClass());
+            OALinkInfo li = oi.getLinkInfo(propertyPath);
+            if (li == null || li.getType() == li.ONE) {
+                b = true;
+            }
+            // else it's a hub
+        }        
         
-        if (propertyPath == null || propertyPath.indexOf('.') < 0) {
+        if (b) {
             listenPropertyName = propertyPath;
             hubB.addHubListener(hl, propertyPath);
         }
         else {
-            listenPropertyName = "hubCombinedDetail" + aiCnt.getAndIncrement();
+            listenPropertyName = "hubGroupBy" + aiCnt.getAndIncrement();
             hubB.addHubListener(hl, listenPropertyName, new String[] { propertyPath });
         }
 
-        for (B b : hubB) {
-            add(b);
+        for (B bx : hubB) {
+            add(bx);
         }
     }
 
-    private void add(B b) {
-        if (b == null) return;
+    private ArrayList<OAGroupBy> add(B b) {
+        return add(b, false);
+    }
+    private ArrayList<OAGroupBy> add(B b, boolean bReturnList) {
+        if (b == null) return null;
         Object valueA = b.getProperty(propertyPath);
+        
+        ArrayList<OAGroupBy> al = null;
         
         if (valueA instanceof Hub) {
             Hub h = (Hub) valueA;
@@ -268,6 +290,10 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
                 boolean bFound = false;
                 for (OAGroupBy gb : hubCombined) {
                     if (gb.getA() != valueA) continue;
+                    if (bReturnList) {
+                        if (al == null) al = new ArrayList<OAGroupBy>();
+                        al.add(gb);
+                    }
                     gb.getHubB().add(b);
                     bFound = true;
                     break;
@@ -277,6 +303,10 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
                     OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
                     hubCombined.add(c);
                     c.getHubB().add(b);
+                    if (bReturnList) {
+                        if (al == null) al = new ArrayList<OAGroupBy>();
+                        al.add(c);
+                    }
                 }
             }
             
@@ -286,13 +316,21 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
                 for (OAGroupBy gb : hubCombined) {
                     if (gb.getA() != valueA) continue;
                     gb.getHubB().add(b);
-                    return;
+                    if (bReturnList) {
+                        if (al == null) al = new ArrayList<OAGroupBy>();
+                        al.add(gb);
+                    }
+                    return al;
                 }
                 if (hubA != null) {
                     // create new
                     OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
                     hubCombined.add(c);
                     c.getHubB().add(b);
+                    if (bReturnList) {
+                        if (al == null) al = new ArrayList<OAGroupBy>();
+                        al.add(c);
+                    }
                 }
             }
         }
@@ -300,19 +338,30 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             for (OAGroupBy gb : hubCombined) {
                 if (gb.getA() != valueA) continue;
                 gb.getHubB().add(b);
-                return;
+                if (bReturnList) {
+                    if (al == null) al = new ArrayList<OAGroupBy>();
+                    al.add(gb);
+                }
+                return al;
             }
             if (hubA != null) {
                 // create new
                 OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
                 hubCombined.add(c);
                 c.getHubB().add(b);
+                if (bReturnList) {
+                    if (al == null) al = new ArrayList<OAGroupBy>();
+                    al.add(c);
+                }
             }
         }
+        return al;
     }
 
-    private void remove(B b) {
+    private void remove(A a, B b) {
         for (OAGroupBy gb : hubCombined) {
+            A ax = (A) gb.getA();
+            if (ax != a) continue;
             Hub<B> h = gb.getHubB();
             if (h.contains(b)) {
                 h.remove(b);
@@ -320,4 +369,27 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             }
         }
     }
+    private void remove(B b) {
+        for (OAGroupBy gb : hubCombined) {
+            Hub<B> h = gb.getHubB();
+            if (h.contains(b)) {
+                h.remove(b);
+            }
+        }
+    }
+    
+    private void update(B b) {
+        ArrayList<OAGroupBy> al = add(b, true);
+        for (OAGroupBy gb : hubCombined) {
+            Hub<B> h = gb.getHubB();
+            if (al != null) {
+                if (al.contains(gb)) continue;
+            }
+            if (h.contains(b)) {
+                h.remove(b);
+            }
+        }
+    }
+    
+    
 }
