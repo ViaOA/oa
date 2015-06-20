@@ -184,7 +184,7 @@ public class HubDelegate {
 	    @param objClass Class for the object being stored
 	*/
 	public static void setObjectClass(Hub thisHub, Class objClass) {
-	    if (thisHub.data.objClass != null && !thisHub.data.objClass.equals(objClass)) {
+	    if (thisHub.data.objClass != null && !thisHub.data.objClass.equals(objClass) && !thisHub.data.objClass.equals(OAObject.class)) {
 	        if (HubDataDelegate.getCurrentSize(thisHub) > 0 || (thisHub.datau.getVecHubDetail() != null && thisHub.datau.getVecHubDetail().size() > 0) ) {
 	            throw new RuntimeException("cant change object class if objects are in hub");
 	        }

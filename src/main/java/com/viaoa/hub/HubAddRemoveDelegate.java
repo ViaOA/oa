@@ -299,9 +299,11 @@ public class HubAddRemoveDelegate {
             return internalAdd(thisHub, obj, bIsLoading, true);
         }
 
-        if (thisHub.data.objClass == null) {
+        if (thisHub.data.objClass == null || thisHub.data.objClass.equals(OAObject.class)) {
             Class c = obj.getClass();
-            HubDelegate.setObjectClass(thisHub, c);
+            if (thisHub.data.objClass == null || !c.equals(OAObject.class)) {
+                HubDelegate.setObjectClass(thisHub, c);
+            }
         }
 
         // need to check even if isLoading=true, since datasource could autoadd to a cache hub
@@ -481,10 +483,13 @@ public class HubAddRemoveDelegate {
             boolean b = internalAdd(thisHub, obj, bIsLoading, true);
             return b?pos:-1;
         }
-        if (thisHub.data.objClass == null) {
+        if (thisHub.data.objClass == null || thisHub.data.objClass.equals(OAObject.class)) {
             Class c = obj.getClass();
-            HubDelegate.setObjectClass(thisHub, c);
+            if (thisHub.data.objClass == null || !c.equals(OAObject.class)) {
+                HubDelegate.setObjectClass(thisHub, c);
+            }
         }
+        
 
         // 20140904
         if (thisHub.contains(obj)) return -1;

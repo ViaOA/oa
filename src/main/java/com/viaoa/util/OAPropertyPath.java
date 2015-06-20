@@ -70,14 +70,6 @@ public class OAPropertyPath<T> {
     private boolean bLastProperyLinkInfo;
     private OAPropertyPath revPropertyPath; 
 
-    public OAProperty getOAPropertyAnnotation() {
-        if (methods == null || methods.length == 0) return null;
-        return methods[methods.length -1].getAnnotation(OAProperty.class);
-    }
-    public OACalculatedProperty getOACalculatedPropertyAnnotation() {
-        if (methods == null || methods.length == 0) return null;
-        return methods[methods.length -1].getAnnotation(OACalculatedProperty.class);
-    }
     
     public OAPropertyPath(String propertyPath) {
         this.propertyPath = propertyPath;
@@ -120,7 +112,16 @@ public class OAPropertyPath<T> {
         revPropertyPath = new OAPropertyPath(c, pp); 
         return revPropertyPath;
     }
-   
+
+    public OAProperty getOAPropertyAnnotation() {
+        if (methods == null || methods.length == 0) return null;
+        return methods[methods.length -1].getAnnotation(OAProperty.class);
+    }
+    public OACalculatedProperty getOACalculatedPropertyAnnotation() {
+        if (methods == null || methods.length == 0) return null;
+        return methods[methods.length -1].getAnnotation(OACalculatedProperty.class);
+    }
+    
     public String[] getProperties() {
         return properties;
     }
@@ -203,6 +204,15 @@ public class OAPropertyPath<T> {
     }
     
     public void setup(Class clazz) throws Exception {
+        setup(clazz, false);
+    }
+
+    /**
+     * @param clazz
+     * @param bIgnorePrivateLink if true, then a link that does not have a get method will not throw an exception.  Used by HubGroupBy
+     * @throws Exception
+     */
+    public void setup(Class clazz, boolean bIgnorePrivateLink) throws Exception {
         if (clazz == null) return;
         this.fromClass = clazz;
         String propertyPath = this.propertyPath;
@@ -246,6 +256,7 @@ public class OAPropertyPath<T> {
         Class classLast = clazz;
         int posDot, prevPosDot;
         posDot = prevPosDot = 0;
+        
         if (OAString.isEmpty(propertyPathClean)) posDot = -1;
         for ( ; posDot >= 0; prevPosDot=posDot+1) {
             posDot = propertyPathClean.indexOf('.', prevPosDot);
@@ -371,13 +382,20 @@ public class OAPropertyPath<T> {
                     mname = "is"+propertyName;
                     method = OAReflect.getMethod(clazz, mname, 0);
                     if (method == null) {
-                        throw new Exception("OAReflect.setup() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+propertyName+" path="+propertyPath);
+                        if (bIgnorePrivateLink && li != null && li.getPrivateMethod()) {
+                            // wait to show error
+                        }
+                        else {
+                            throw new Exception("OAReflect.setup() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+propertyName+" path="+propertyPath);
+                        }
                     }
                 }
             }
             this.methods = (Method[]) OAArray.add(Method.class, this.methods, method);
     
-            clazz = method.getReturnType();
+            if (method == null) clazz = li.getToClass();
+            else clazz = method.getReturnType();
+            
             if (clazz.equals(Hub.class)) {
                 // try to find the ObjectClass for Hub
                 Class c = OAObjectInfoDelegate.getHubPropertyClass(classLast, propertyName);

@@ -10,6 +10,7 @@
  */
 package com.viaoa.hub;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,7 +19,8 @@ import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
-import com.viaoa.object.OAPropertyInfo;
+import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.OAString;
 
 /**
  * Combines two hubs into a new  single hub to create the equivalent of a database groupBy, where all
@@ -30,8 +32,18 @@ import com.viaoa.object.OAPropertyInfo;
  * 
  * new HubGroupBy<Dept, Emp>(hubAllDept, hubEmp, "depts")
  * new HubGroupBy<Dept, Emp>(hubEmp, "depts")
- * 
- * @see HubLeftJoin#
+ *
+ * Split property path - this is when all of the methods in a pp are not public (link that does not create method).
+ * HubGroupBy is able to group them by splitting the pp using HubA and HubB to get a combined group.
+ * ex:  MRADClient.Application.ApplicationType.ApplicationGroup, hubA=hubMRADClients, hubB=hubApplicationGroups
+ *    note:  the method for ApplicationType.getApplicationGroups() is not created (is private)
+ *
+ *    new HubGroupBy(hubApplicationGroups, hubMRADClients, "MRADClient.Application.ApplicationType.ApplicationGroup") 
+ *    
+ *  internally will create 2 HubGroupBys ... (hubMRADClients, "MRADClient.Application.ApplicationType") 
+ *                                           (hubApplicationGroups, "ApplicationTypes")
+ *                                    
+ * @see HubLeftJoin# to create a "flat" list.
  * 
  * @author vvia
  */
@@ -82,6 +94,17 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
         setup();
     }
 
+    /**
+     * @param hubCombined from another hubGroupBy that uses the same class for A & B, but a different PP.
+     */
+    public HubGroupBy(Hub<OAGroupBy<A, B>> hubCombined, Hub<A> hubA, Hub<B> hubB, String propertyPath) {
+        this.hubCombined = hubCombined;
+        this.hubA = hubA;
+        this.hubB = hubB;
+        this.propertyPath = propertyPath;
+        setup();
+    }
+    
     
     /**
      * @return Hub of combined objects using OAGroupBy
@@ -114,16 +137,371 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
         return hubDetail;
     }
 
+    void setup() {
+        OAPropertyPath opp = new OAPropertyPath(propertyPath);
+        
+        try {
+            opp.setup(hubB.getObjectClass(), (hubA != null));
+        }
+        catch (Exception e) {
+            throw new RuntimeException("PropertyPath setup failed", e);
+        }
+        
+        OALinkInfo[] lis = opp.getLinkInfos();
+        Method[] ms = opp.getMethods();
+
+        int posEmpty = 0;
+        for (Method m : ms) {
+            if (m == null) break;
+            posEmpty++;
+        }
+        if (posEmpty >= ms.length || hubA == null) {
+            setupMain();
+            return; // does not need to be split
+        }
+        
+        
+        // need to have a 2way propPath, one from rootHub, and another from topDown hub
+        String pp1 = OAString.field(propertyPath, ".", 1, posEmpty);
+        
+        String pp2 = "";
+        for (int i=ms.length-1; i>=posEmpty; i--) {
+            if (pp2.length() > 0) pp2 += ".";
+            pp2 += lis[i].getReverseName();
+        }
+
+        hgb1 = new HubGroupBy(hubB, pp1);
+        hubGB1 = hgb1.getCombinedHub();
+        
+        hgb2 = new HubGroupBy(hubA, pp2);
+        hubGB2 = hgb2.getCombinedHub();
+        
+        setupSplit(pp1);
+    }
+
+    // used by propertyPath that require a split
+    private HubGroupBy hgb1;
+    private Hub<OAGroupBy> hubGB1;
+
+    private HubGroupBy hgb2;
+    private Hub<OAGroupBy> hubGB2;
+
+    /*
+        GB1        GB2         GBNew
+        appType    appType     appGroup
+        mrads      appGroups   mrads
+    */
+    
+    
     /**
-     * @deprecated use getDetailHub
-     * @return detail Hub of hub<a>
+     * This will use 2 hgb to update a 3rd
      */
-    public Hub<B> getGroupByHub() {
-        return getDetailHub();
+    private void setupSplit(String pp) {
+        // listen to changes to hubGB1 B changes
+        Hub<OAObject> hubTemp = new Hub<OAObject>(OAObject.class);
+        HubMerger<OAGroupBy, OAObject> hm1 = new HubMerger<OAGroupBy, OAObject>(hubGB1, hubTemp, "b", true) {
+            protected void afterAddRealHub(HubEvent e) {
+                OAGroupBy gb = (OAGroupBy) ((Hub)e.getSource()).getMasterObject();
+                OAObject objMaster = gb.getA();
+                Object objAdd = e.getObject();
+                
+                boolean bFound = false;
+                for (OAGroupBy gb2 : hubGB2) {
+                    if (gb2.getA() != objMaster) continue;
+
+                    for (Object obj2x : gb2.getB()) {
+                        OAObject objGB2b = (OAObject) obj2x;
+                        boolean b = false;
+                        for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                            if (gbNew.getA() != objGB2b) continue;
+                            gbNew.getB().add(objAdd);
+                            b = true;
+                            bFound = true;
+                            break;
+                        }
+                        if (b) continue;
+                        OAGroupBy gbNew = new OAGroupBy();
+                        gbNew.setA(objGB2b);
+                        HubGroupBy.this.getCombinedHub().add(gbNew);
+                        gbNew.getB().add(objAdd);
+                        bFound = true;
+                    }
+                    break;
+                }
+                if (bFound) return;
+                
+                // add to empty list
+                for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                    if (gbNew.getA() != null) continue;
+                    gbNew.getB().add(objAdd);
+                    bFound = true;
+                    break;
+                }
+                if (bFound) return;
+                
+                // create and add to empty list
+                OAGroupBy gbNew = new OAGroupBy();
+                gbNew.getB().add(objAdd);
+                HubGroupBy.this.getCombinedHub().add(gbNew);
+            }
+            protected void afterInsertRealHub(HubEvent e) {
+                afterAddRealHub(e);
+            }
+            protected void afterRemoveRealHub(HubEvent e) {
+                OAGroupBy gb = (OAGroupBy) ((Hub)e.getSource()).getMasterObject();
+                OAObject objMaster = gb.getA();
+                
+                Object objRemove = e.getObject();
+
+                boolean bFound = false;
+                for (OAGroupBy gb2 : hubGB2) {
+                    if (gb2.getA() != objMaster) continue;
+
+                    for (Object obj2x : gb2.getB()) {
+                        OAObject objGB2b = (OAObject) obj2x;
+                        for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                            if (gbNew.getA() != objGB2b) continue;
+                            gbNew.getB().remove(objRemove);
+                            bFound = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                if (bFound) return;
+                // remove from empty list
+                for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                    if (gbNew.getA() != null) continue;
+                    gbNew.getB().remove(objRemove);
+                    break;
+                }
+            }
+        };
+    
+    
+        // initial load
+        for (OAGroupBy gb1 : hubGB1) {
+            OAObject gb1A = (OAObject) gb1.getA();
+            
+            boolean bFound = false;
+            for (OAGroupBy gb2 : hubGB2) {
+                if (gb2.getA() != gb1A) continue;
+
+                for (Object gb2B : gb2.getB()) {
+                    OAObject objGB2b = (OAObject) gb2B;
+                    boolean b = false;
+                    for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                        if (gbNew.getA() != objGB2b) continue;
+                        for (Object gb1B : gb1.getB()) {
+                            gbNew.getB().add(gb1B);
+                        }
+                        bFound = true;
+                        b = true;
+                        break;
+                    }
+                    if (b) continue;
+                    
+                    OAGroupBy gbNew = new OAGroupBy();
+                    gbNew.setA(objGB2b);
+                    HubGroupBy.this.getCombinedHub().add(gbNew);
+                    for (Object gb1B : gb1.getB()) {
+                        gbNew.getB().add(gb1B);
+                    }
+                    bFound = true;
+                }
+                break;
+            }
+            if (bFound) continue;
+            
+            for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                if (gbNew.getA() != null) continue;
+                for (Object gb1B : gb1.getB()) {
+                    gbNew.getB().add(gb1B);
+                }
+                bFound = true;
+                break;
+            }
+            if (bFound) continue;
+            
+            OAGroupBy gbNew = new OAGroupBy();
+            HubGroupBy.this.getCombinedHub().add(gbNew);
+            
+            for (Object gb1B : gb1.getB()) {
+                gbNew.getB().add(gb1B);
+            }
+        }
+
+
+        // listen to hubGB1
+        hubGB1.addHubListener(new HubListenerAdapter() {
+            @Override
+            public void afterInsert(HubEvent e) {
+                afterAdd(e);
+            }
+            @Override
+            public void afterAdd(HubEvent e) {
+                OAGroupBy gb1 = (OAGroupBy) e.getObject();
+                if (gb1.getB().size() == 0) return;
+                Object gb1A = gb1.getA();
+
+                boolean bFound = false;
+                for (OAGroupBy gb2 : hubGB2) {
+                    if (gb2.getA() != gb1A) continue;
+                    
+                    for (Object gb2B : gb2.getB()) {
+                        OAObject objGB2b = (OAObject) gb2B;
+                        boolean b = false;
+                        for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                            if (gbNew.getA() != objGB2b) continue;
+                            for (Object gb1B : gb1.getB()) {
+                                gbNew.getB().add(gb1B);
+                            }
+                            bFound = true;
+                            b = true;
+                            break;
+                        }
+                        if (b) continue;
+                        
+                        OAGroupBy gbNew = new OAGroupBy();
+                        gbNew.setA(objGB2b);
+                        HubGroupBy.this.getCombinedHub().add(gbNew);
+                        for (Object gb1B : gb1.getB()) {
+                            gbNew.getB().add(gb1B);
+                        }
+                        bFound = true;
+                    }
+                    if (bFound) return;
+                    
+                    // add to empty list
+                    for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                        if (gbNew.getA() != null) continue;
+                        for (Object gb1B : gb1.getB()) {
+                            gbNew.getB().add(gb1B);
+                        }
+                        bFound = true;
+                        break;
+                    }
+                    if (bFound) return;
+                    
+                    // create and add to empty list
+                    OAGroupBy gbNew = new OAGroupBy();
+                    HubGroupBy.this.getCombinedHub().add(gbNew);
+                    for (Object gb1B : gb1.getB()) {
+                        gbNew.getB().add(gb1B);
+                    }
+                }                
+            }
+            @Override
+            public void afterRemove(HubEvent e) {
+                OAGroupBy gb1 = (OAGroupBy) ((Hub)e.getSource()).getMasterObject();
+                OAObject gb1A = gb1.getA();
+                
+                boolean bFound = false;
+                for (OAGroupBy gb2 : hubGB2) {
+                    if (gb2.getA() != gb1A) continue;
+
+                    for (Object gb2B : gb2.getB()) {
+                        OAObject objGB2b = (OAObject) gb2B;
+                        for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                            if (gbNew.getA() != objGB2b) continue;
+                            
+                            for (Object gb1B : gb1.getB()) {
+                                gbNew.getB().remove(gb1B);
+                            }
+                            bFound = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                if (bFound) return;
+                // remove from empty list
+                for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                    if (gbNew.getA() != null) continue;
+                    for (Object gb1B : gb1.getB()) {
+                        gbNew.getB().remove(gb1B);
+                    }
+                    break;
+                }
+            }
+            
+        });
+        
+        
+//qqqqqqqqqqqqqqqqqqq
+        
+        Hub<OAObject> hubTemp2 = new Hub<OAObject>(OAObject.class);
+        HubMerger<OAGroupBy, OAObject> hm2 = new HubMerger<OAGroupBy, OAObject>(hubGB2, hubTemp2, "b", true) {
+            protected void afterInsertRealHub(HubEvent e) {
+                afterAddRealHub(e);
+            }
+            protected void afterAddRealHub(HubEvent e) {
+                OAGroupBy gb2 = (OAGroupBy) ((Hub)e.getSource()).getMasterObject();
+                Object gb2A = gb2.getA();
+                Object gb2B = e.getObject();
+                
+                OAGroupBy gb1Found = null;
+                for (OAGroupBy gb1 : hubGB1) {
+                    if (gb1.getA() == gb2A) {
+                        gb1Found = gb1;
+                        break;
+                    }
+                }
+
+                OAGroupBy gbNewFound = null;
+                for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                    if (gbNew.getA() == gb2B) {
+                        gbNewFound = gbNew;
+                        break;
+                    }
+                }
+                
+qqqqqqq                
+                if (gbNewFound)
+                
+                
+                    for (Object gb1B : gb1.getB()) {
+                        gbNew.getB().add(gb1B);
+                    }
+                }
+                
+                if (gb1Found != null) {
+                    
+                }
+                
+                
+                   
+                    
+                    
+                    
+                    
+                }
+        
+            }
+            protected void afterRemoveRealHub(HubEvent e) {
+                
+            }
+        };
+                
+        
+        // listen to GB2
+        hubGB2.addHubListener(new HubListenerAdapter() {
+            @Override
+            public void afterInsert(HubEvent e) {
+                afterAdd(e);
+            }
+            @Override
+            public void afterAdd(HubEvent e) {
+            }
+        });
+        
     }
     
     
-    void setup() {
+    
+    
+    // main setup
+    void setupMain() {
         getCombinedHub().addHubListener(new HubListenerAdapter() {
             @Override
             public void afterChangeActiveObject(HubEvent e) {
@@ -298,7 +676,7 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
                     bFound = true;
                     break;
                 }
-                if (!bFound && hubA != null) {
+                if (!bFound) {
                     // create new
                     OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
                     hubCombined.add(c);
@@ -344,15 +722,14 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
                 }
                 return al;
             }
-            if (hubA != null) {
-                // create new
-                OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
-                hubCombined.add(c);
-                c.getHubB().add(b);
-                if (bReturnList) {
-                    if (al == null) al = new ArrayList<OAGroupBy>();
-                    al.add(c);
-                }
+
+            // create new
+            OAGroupBy<A, B> c = new OAGroupBy((A) valueA);
+            hubCombined.add(c);
+            c.getHubB().add(b);
+            if (bReturnList) {
+                if (al == null) al = new ArrayList<OAGroupBy>();
+                al.add(c);
             }
         }
         return al;
@@ -374,7 +751,13 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             Hub<B> h = gb.getHubB();
             if (h.contains(b)) {
                 h.remove(b);
+                if (h.size() == 0) {
+                    if (hubA == null || !hubA.contains(gb.getA())) {
+                        hubCombined.remove(gb);
+                    }
+                }
             }
+            // todo:  if this does not have many, then it can break here
         }
     }
     
@@ -390,6 +773,4 @@ public class HubGroupBy<A extends OAObject, B extends OAObject> {
             }
         }
     }
-    
-    
 }
