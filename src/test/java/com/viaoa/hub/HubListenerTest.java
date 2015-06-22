@@ -8,7 +8,7 @@ import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.EnvironmentPP;
 import com.theice.tsactest.model.oa.propertypath.ServerPP;
 import com.theice.tsactest.model.oa.propertypath.SitePP;
-import com.viaoa.TsacDataGenerator;
+import com.viaoa.TsactestDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAFinder;
 
@@ -195,7 +195,7 @@ public class HubListenerTest extends OAUnitTest {
         };
         
 
-        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
         
         
@@ -312,7 +312,7 @@ public class HubListenerTest extends OAUnitTest {
         };
         
 
-        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
         
         Hub<Site> hub = modelTsac.getSites();

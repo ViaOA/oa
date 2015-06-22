@@ -18,52 +18,49 @@ import com.viaoa.hub.Hub;
 /**
  * Utility class, used by HubGroupBy, as an object that creates a reference to two others objects.
  * 
- * @param <A> left side object
- * @param <B> detail hub from A
+ * @param <G> group by object
+ * @param <F> detail hub / source.
  * 
  * @see HubGroupBy#
  */
 @OAClass(addToCache=false, initialize=false, useDataSource=false, localOnly=true)
-public class OAGroupBy<A extends OAObject, B extends OAObject> extends OAObject {
+public class OAGroupBy<G extends OAObject, F extends OAObject> extends OAObject {
     static final long serialVersionUID = 1L;
     
-    public static final String P_A = "A"; 
-    public static final String P_B = "B"; 
-    public static final String PROPERTY_A = "A"; 
-    public static final String PROPERTY_B = "B"; 
-    private A a;
-    private Hub<B> hubB;
+    public static final String P_GroupBy = "GroupBy"; 
+    public static final String P_Hub = "Hub"; 
+    public static final String PROPERTY_GroupBy = "GroupBy"; 
+    public static final String PROPERTY_Hub = "Hub"; 
+    private G groupBy;
+    private Hub<F> hub;
     
     public OAGroupBy() {
     }
     
-    public OAGroupBy(A a) {
-        setA(a);
+    public OAGroupBy(G groupBy) {
+        setGroupBy(groupBy);
     }
     
     @OAOne
-    public A getA() {
-        return a;
+    public G getGroupBy() {
+        return groupBy;
     }
-    public void setA(A obj) {
-        OAObject hold = this.a;
-        fireBeforePropertyChange("A", hold, obj);
-        this.a = obj;
-        firePropertyChange("A", hold, obj);
-    }
-    public Hub<B> getHubB() {
-        return getHub();
+    public void setGroupBy(G obj) {
+        OAObject hold = this.groupBy;
+        fireBeforePropertyChange(P_GroupBy, hold, obj);
+        this.groupBy = obj;
+        firePropertyChange(P_GroupBy, hold, obj);
     }
     
     @OAMany
-    public Hub<B> getB() {
+    public Hub<F> getB() {
         return getHub();
     }
 
-    public Hub<B> getHub() {
-        if (hubB == null) {
-            hubB = getHub(PROPERTY_B);
+    public Hub<F> getHub() {
+        if (hub == null) {
+            hub = getHub(PROPERTY_Hub);
         }
-        return hubB;
+        return hub;
     }
 }

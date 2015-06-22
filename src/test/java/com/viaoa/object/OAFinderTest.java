@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 
 import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
-import com.viaoa.TsacDataGenerator;
+import com.viaoa.TsactestDataGenerator;
 import com.viaoa.hub.Hub;
 import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
@@ -21,7 +21,7 @@ public class OAFinderTest extends OAUnitTest {
     @Test
     public void finderTest() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
 
         OAFinder<Site, Server> finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);

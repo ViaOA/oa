@@ -1,26 +1,17 @@
-package com.viaoa;
+package com.theice.tsac;
 
-import com.theice.tsactest.model.Model;
-import com.theice.tsactest.model.oa.Environment;
-import com.theice.tsactest.model.oa.Server;
-import com.theice.tsactest.model.oa.ServerInstall;
-import com.theice.tsactest.model.oa.ServerStatus;
-import com.theice.tsactest.model.oa.ServerType;
-import com.theice.tsactest.model.oa.Silo;
-import com.theice.tsactest.model.oa.SiloType;
-import com.theice.tsactest.model.oa.Site;
+import com.theice.tsac.model.Model;
+import com.theice.tsac.model.oa.*;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
 
 public class TsacDataGenerator {
-
-    
     public static final int MaxSiteLoop = 3;
     public static final int MaxEnviromentLoop = 3;
     public static final int MaxSiloLoop = 3;
     public static final int MaxServerLoop = 5;
-    public static final int MaxServerInstallLoop = 2;
+    public static final int MaxApplicationLoop = 1;
 
     protected Model model;
     
@@ -32,9 +23,9 @@ public class TsacDataGenerator {
         OAThreadLocalDelegate.setLoadingObject(true);
 
         for (int i=0; i<10; i++) {
-            ServerType st = new ServerType();
-            st.setName("ServerType."+i);
-            model.getServerTypes().add(st);
+            ApplicationType st = new ApplicationType();
+            st.setCode("type."+i);
+            model.getApplicationTypes().add(st);
         }
 
         for (int i=0; i<MaxSiloLoop; i++) {
@@ -42,15 +33,15 @@ public class TsacDataGenerator {
             siloType.setType(i);
             model.getSiloTypes().add(siloType);
             for (int ii=0; ii<5; ii++) {
-                siloType.getServerTypes().add(model.getServerTypes().getAt(ii));
+                siloType.getApplicationTypes().add(model.getApplicationTypes().getAt(ii));
             }
         }
         
-        for (int i=0; i<ServerStatus.hubType.getSize(); i++) {
-            ServerStatus st = new ServerStatus();
-            st.setName("ServerStatus."+i);
+        for (int i=0; i<ApplicationStatus.hubType.getSize(); i++) {
+            ApplicationStatus st = new ApplicationStatus();
+            st.setName("ApplicationStatus."+i);
             st.setType(i);
-            model.getServerStatuses().add(st);
+            model.getApplicationStatuses().add(st);
         }
         
         int cntServer = 0;
@@ -77,13 +68,14 @@ public class TsacDataGenerator {
                         Server server = new Server();
                         server.setId(++cntServer);
                         server.setName("Server." + i + "." + ii + "." + iii + "." + iiii);
-                        Hub<ServerType> h = model.getServerTypes();
-                        server.setServerType(h.getAt(iii));
                         silo.getServers().add(server);
-                        for (int i5 = 0; i5 < MaxServerInstallLoop; i5++) {
-                            ServerInstall si = new ServerInstall();
-                            server.getServerInstalls().add(si);
+                        for (int i5 = 0; i5 < MaxApplicationLoop; i5++) {
+                            Application si = new Application();
+                            Hub<ApplicationType> h = model.getApplicationTypes();
+                            si.setApplicationType(h.getAt(iii));
+                            server.getApplications().add(si);
                         }                        
+
                     }
                 }
                 env.save(OAObject.CASCADE_ALL_LINKS);

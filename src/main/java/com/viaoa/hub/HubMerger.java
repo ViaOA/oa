@@ -71,6 +71,9 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
 
     private boolean bServerSideOnly;
 
+    public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath) {
+        this(hubRoot, hubCombinedObjects, propertyPath, false, null, true, false);
+    }
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bUseAll) {
         this(hubRoot, hubCombinedObjects, propertyPath, false, null, bUseAll, false);
     }

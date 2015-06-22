@@ -3,7 +3,7 @@ package com.viaoa.ds;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import com.viaoa.OAUnitTest;
-import com.viaoa.TsacDataGenerator;
+import com.viaoa.TsactestDataGenerator;
 import com.viaoa.object.OAFinder;
 import com.viaoa.util.OAFilter;
 import com.theice.tsactest.model.Model;
@@ -32,7 +32,7 @@ public class OASelectTest extends OAUnitTest {
         
         // specific tests
         
-        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
 
         selSite = new OASelect<Site>(Site.class);

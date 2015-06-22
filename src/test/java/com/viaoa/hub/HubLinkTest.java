@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 
 import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
-import com.viaoa.TsacDataGenerator;
+import com.viaoa.TsactestDataGenerator;
 import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.SiloPP;
@@ -21,7 +21,7 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void linkTest() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
 
         Hub<ServerType> hubServerType = modelTsac.getServerTypes();
@@ -84,7 +84,7 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void autoCreateLinkTest() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
     
         
@@ -132,7 +132,7 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void autoCreateLinkTest2() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
     
         
@@ -214,7 +214,7 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void linkAOTest() {
         reset();
-        TsacDataGenerator data = new TsacDataGenerator(modelTsac);
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
 
         Hub<ServerType> hubServerType = modelTsac.getServerTypes();

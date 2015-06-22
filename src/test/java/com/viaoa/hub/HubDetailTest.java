@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 
 import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
-import com.viaoa.TsacDataGenerator;
+import com.viaoa.TsactestDataGenerator;
 import com.theice.tsactest.model.oa.*;
 import com.tmgsc.hifivetest.delegate.ModelDelegate;
 import com.tmgsc.hifivetest.model.oa.*;
