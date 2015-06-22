@@ -103,8 +103,8 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(appGroup, hubApplication.getAt(0).getApplicationGroups().getAt(0)); 
 
   //qqqqqqqqq
-//        hubApplication.getAt(0).getApplicationGroups().clear();
-        hubApplication.getAt(0).getApplicationGroups().removeAt(0);
+        hubApplication.getAt(0).getApplicationGroups().clear();
+//        hubApplication.getAt(0).getApplicationGroups().removeAt(0);
 
         assertEquals(0, hubApplication.getAt(0).getApplicationGroups().size()); 
         assertEquals(0, hubApplicationGroup.getAt(0).getApplications().size()); 
