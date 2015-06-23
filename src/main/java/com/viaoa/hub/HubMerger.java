@@ -311,6 +311,8 @@ static int cntq;
 
     protected void beforeRemoveAllRealHub(HubEvent e) {
     }
+    protected void afterRemoveAllRealHub(HubEvent e) {
+    }
 
     /**
      * This can be overwritten to get the move event from the parent, instead of getting the move event
@@ -1199,10 +1201,16 @@ static int cntq;
         }
 
         private void _beforeRemoveAll(HubEvent e) {
+            //20150622
+            if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
+                HubMerger.this.beforeRemoveAllRealHub(e);
+            }
+            /*was
             Hub h = e.getHub();
             if (h.getObjectClass().equals(hubCombined.getObjectClass())) {
                 HubMerger.this.beforeRemoveAllRealHub(e);
             }
+            */
 
             if (!bEnabled) return;
             
@@ -1223,6 +1231,20 @@ static int cntq;
             if (!hold) bIgnoreIsUsedFlag = false;
         }
 
+        @Override
+        public void afterRemoveAll(HubEvent e) {
+            //20150622
+            if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
+                HubMerger.this.afterRemoveAllRealHub(e);
+            }
+            /*
+            Hub h = e.getHub();
+            if (h.getObjectClass().equals(hubCombined.getObjectClass())) {
+                HubMerger.this.afterRemoveAllRealHub(e);
+            }
+            */
+        }
+        
         @Override
         public void onNewList(HubEvent e) {
             try {
@@ -1330,9 +1352,16 @@ static int cntq;
             try {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 if (obj != null) {
-                    if (obj.getClass().equals(hubCombined.getObjectClass())) {
+                    //20150622
+                    if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
                         HubMerger.this.beforeRemoveRealHub(e);
                     }
+                    /*was
+                    Class c = obj.getClass();
+                    if (c.equals(hubCombined.getObjectClass()) || OAObject.class.equals(hubCombined.getObjectClass())) {
+                        HubMerger.this.beforeRemoveRealHub(e);
+                    }
+                    */
                 }
             }
             finally {
@@ -1343,11 +1372,18 @@ static int cntq;
         @Override
         public void afterRemove(HubEvent e) {
             Object obj = e.getObject();
-            
+
             if (obj != null) {
-                if (obj.getClass().equals(hubCombined.getObjectClass())) {
+                //20150622
+                if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
                     HubMerger.this.afterRemoveRealHub(e);
                 }
+                /*was
+                Class c = obj.getClass();
+                if (c.equals(hubCombined.getObjectClass())) {
+                    HubMerger.this.afterRemoveRealHub(e);
+                }
+                */
             }
             if (!bEnabled) return;
             if (this == dataRoot && !bUseAll) {
@@ -1374,9 +1410,16 @@ static int cntq;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 Object obj = e.getObject();
                 if (obj != null) {
-                    if (obj.getClass().equals(hubCombined.getObjectClass())) {
+                    //20150622
+                    if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
                         HubMerger.this.beforeAddRealHub(e);
                     }
+                    /*was
+                    Class c = obj.getClass();
+                    if (c.equals(hubCombined.getObjectClass()) || OAObject.class.equals(hubCombined.getObjectClass())) {
+                        HubMerger.this.beforeAddRealHub(e);
+                    }
+                    */
                 }
             }
             finally {
@@ -1390,9 +1433,16 @@ static int cntq;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 Object obj = e.getObject();
                 if (obj != null) {
-                    if (obj.getClass().equals(hubCombined.getObjectClass())) {
+                    //20150622
+                    if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
                         HubMerger.this.afterAddRealHub(e);
                     }
+                    /*was
+                    Class c = obj.getClass();
+                    if (c.equals(hubCombined.getObjectClass()) || OAObject.class.equals(hubCombined.getObjectClass())) {
+                        HubMerger.this.afterAddRealHub(e);
+                    }
+                    */
                 }
                 afterAdd2(e);
             }
@@ -1418,9 +1468,16 @@ static int cntq;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 Object obj = e.getObject();
                 if (obj != null) {
-                    if (obj.getClass().equals(hubCombined.getObjectClass())) {
+                    //20150622
+                    if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
                         HubMerger.this.beforeInsertRealHub(e);
                     }
+                    /*was
+                    Class c = obj.getClass();
+                    if (c.equals(hubCombined.getObjectClass()) || OAObject.class.equals(hubCombined.getObjectClass())) {
+                        HubMerger.this.beforeInsertRealHub(e);
+                    }
+                    */
                 }
             }
             finally {
@@ -1434,9 +1491,16 @@ static int cntq;
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 Object obj = e.getObject();
                 if (obj != null) {
-                    if (obj.getClass().equals(hubCombined.getObjectClass())) {
+                    //20150622
+                    if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
                         HubMerger.this.afterInsertRealHub(e);
                     }
+                    /*was
+                    Class c = obj.getClass();
+                    if (c.equals(hubCombined.getObjectClass()) || OAObject.class.equals(hubCombined.getObjectClass())) {
+                        HubMerger.this.afterInsertRealHub(e);
+                    }
+                    */
                 }
                 afterAdd2(e);
             }
@@ -1447,10 +1511,16 @@ static int cntq;
 
         @Override
         public void afterMove(HubEvent e) {
+            //20150622
+            if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
+                HubMerger.this.afterMoveRealHub(e);
+            }
+            /*
             Hub h = e.getHub();
             if (h != null && h.getObjectClass().equals(hubCombined.getObjectClass())) {
                 HubMerger.this.afterMoveRealHub(e);
             }
+            */
         }
 
         public @Override

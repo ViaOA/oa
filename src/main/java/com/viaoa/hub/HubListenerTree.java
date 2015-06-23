@@ -454,6 +454,11 @@ public class HubListenerTree {
                                     super.afterRemoveRealHub(e);
                                     onEvent(e);
                                 }
+                                @Override
+                                protected void afterRemoveAllRealHub(HubEvent e) {
+                                    super.afterRemoveAllRealHub(e);
+                                    onEvent(e);
+                                }
                                 private void onEvent(HubEvent e) {
                                     if (nodeThis == root) {
                                         for (String s : newTreeNode.getCalcPropertyNames()) {

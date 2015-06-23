@@ -43,7 +43,10 @@ public class OAGroupBy<G extends OAObject, F extends OAObject> extends OAObject 
     
     @OAOne
     public G getGroupBy() {
-        return groupBy;
+        if (groupBy == null) {
+            groupBy = (G) getObject(PROPERTY_GroupBy);
+        }
+        return this.groupBy;
     }
     public void setGroupBy(G obj) {
         OAObject hold = this.groupBy;
@@ -53,10 +56,6 @@ public class OAGroupBy<G extends OAObject, F extends OAObject> extends OAObject 
     }
     
     @OAMany
-    public Hub<F> getB() {
-        return getHub();
-    }
-
     public Hub<F> getHub() {
         if (hub == null) {
             hub = getHub(PROPERTY_Hub);
