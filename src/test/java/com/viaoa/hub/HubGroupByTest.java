@@ -1,5 +1,6 @@
 package com.viaoa.hub;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import org.junit.Test;
@@ -246,18 +247,198 @@ public class HubGroupByTest extends OAUnitTest {
         Hub<OAGroupBy<ApplicationGroup, Application>> hubCombined = (Hub<OAGroupBy<ApplicationGroup, Application>>) hgb.getCombinedHub();
 
         assertEquals(1, hubCombined.size());
+        assertEquals(5, hubCombined.getAt(0).getHub().size());
+        assertNull(hubCombined.getAt(0).getGroupBy());
+
         
-        for (int i=0; i<3; i++) {
+        int max = 10;
+        for (int i=0; i<max; i++) {
             ApplicationGroup appGroup = new ApplicationGroup();
             silo.getApplicationGroups().add(appGroup);
             assertEquals(2+i, hubCombined.size());
-            
+        }
+        
+        for (int i=max; i>0; i--) {
+            hubApplicationGroup.removeAt(0);
+            assertEquals(i, hubCombined.size());
+        }
+        assertEquals(1, hubCombined.size());
+        assertEquals(5, hubCombined.getAt(0).getHub().size());
+        
+        for (int i=0; i<max; i++) {
+            ApplicationGroup appGroup = new ApplicationGroup();
+            silo.getApplicationGroups().add(appGroup);
+            assertEquals(2+i, hubCombined.size());
+        }
+        assertEquals(5, hubCombined.getAt(0).getHub().size());
+        hubApplicationGroup.clear();
+        assertEquals(0, silo.getApplicationGroups().size());
+        assertEquals(1, hubCombined.size());
+        assertEquals(5, hubCombined.getAt(0).getHub().size());
+
+        
+        hubApplication.clear();
+        for (OAGroupBy gb : hubCombined) {
+            int x  = gb.getHub().size();
+            assertEquals(0, x);
+        }
+        
+        hubApplicationGroup.clear();
+        assertEquals(1, hubCombined.size());
+        assertEquals(0, hubCombined.getAt(0).getHub().size());
+        //qqqqq have the null one removed if hub=0
+        
+//qqqqqqqqqq        
+        ApplicationGroup appGroup = new ApplicationGroup();
+        hubApplicationGroup.add(appGroup);
+        assertEquals(2, hubCombined.size());
+        assertEquals(0, hubCombined.getAt(0).getHub().size());
+        assertEquals(0, hubCombined.getAt(1).getHub().size());
+        
+        Application app = new Application();
+        hubApplication.add(app);
+        assertEquals(2, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        assertEquals(0, hubCombined.getAt(1).getHub().size());
+
+        ApplicationType appType = new ApplicationType();
+        appGroup.getApplicationTypes().add(appType);
+        assertEquals(2, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        assertEquals(0, hubCombined.getAt(1).getHub().size());
+
+        appGroup.getApplicationTypes().add(appType);
+        assertEquals(2, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        assertEquals(0, hubCombined.getAt(1).getHub().size());
+        
+        app.setApplicationType(appType);
+        assertEquals(2, hubCombined.size());
+        assertEquals(0, hubCombined.getAt(0).getHub().size());
+        assertEquals(1, hubCombined.getAt(1).getHub().size());
+        
+        app.setApplicationType(null);
+        assertEquals(2, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        assertEquals(0, hubCombined.getAt(1).getHub().size());
+        
+        hubApplication.removeAll();
+        //hubApplication.remove(0);
+        assertEquals(2, hubCombined.size());
+        assertEquals(0, hubCombined.getAt(0).getHub().size());
+        assertEquals(0, hubCombined.getAt(1).getHub().size());
+        
+        hubApplication.add(app);
+        assertEquals(2, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        assertEquals(0, hubCombined.getAt(1).getHub().size());
+        
+        app.setApplicationType(appType);
+        assertEquals(2, hubCombined.size());
+        assertEquals(0, hubCombined.getAt(0).getHub().size());
+        assertEquals(1, hubCombined.getAt(1).getHub().size());
+        
+        appGroup.getApplicationTypes().removeAt(0);
+        // appGroup.getApplicationTypes().clear();
+        assertEquals(1, hubApplicationGroup.size());
+        assertEquals(2, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        assertEquals(0, hubCombined.getAt(1).getHub().size());
+
+        hubApplicationGroup.clear();
+        assertEquals(0, hubApplicationGroup.size());
+        assertEquals(1, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        
+        hubApplication.clear();
+        assertEquals(1, hubCombined.size());
+        assertEquals(0, hubCombined.getAt(0).getHub().size());
+        
+        
+        for (int i=0; i<max; i++) {
+            appGroup = new ApplicationGroup();
+            hubApplicationGroup.add(appGroup);
+            assertEquals(i+1, hubApplicationGroup.size());
+            assertEquals(i+2, hubCombined.size());
         }        
-       
+
+        hubApplication.add(app);
+        assertEquals(max+1, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+
+        app.setApplicationType(appType);
+        assertEquals(max+1, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        for (OAGroupBy gb : hubCombined) {
+            if (gb.getGroupBy() == null) assertEquals(1, gb.getHub().size());
+            else assertEquals(0, gb.getHub().size());
+        }
+
+        app.setApplicationType(null);
+        assertEquals(max+1, hubCombined.size());
+        assertEquals(1, hubCombined.getAt(0).getHub().size());
+        for (OAGroupBy gb : hubCombined) {
+            if (gb.getGroupBy() == null) assertEquals(1, gb.getHub().size());
+            else assertEquals(0, gb.getHub().size());
+        }
+        
+        // clear all
+        hubApplication.clear();
+        hubApplicationGroup.clear();
+        assertEquals(1, hubCombined.size());
+        assertEquals(0, hubCombined.getAt(0).getHub().size());
+
+                
+        for (int i=0; i<max; i++) {
+            appGroup = new ApplicationGroup();
+            hubApplicationGroup.add(appGroup);
+            assertEquals(2+i, hubCombined.size());
+
+            appType = new ApplicationType();
+            appGroup.getApplicationTypes().add(appType);
+            assertEquals(2+i, hubCombined.size());
+            
+            app = new Application();
+            hubApplication.add(app);
+            assertEquals(1, hubCombined.getAt(0).getHub().size());
+            
+            app.setApplicationType(appType);
+            assertEquals(0, hubCombined.getAt(0).getHub().size());
+            
+            assertEquals(1, hubCombined.getAt(i+1).getHub().size());
+        }
+
+        assertEquals(max+1, hubCombined.size());
+        for (OAGroupBy gb : hubCombined) {
+            if (gb.getGroupBy() == null) assertEquals(0, gb.getHub().size());
+            else assertEquals(1, gb.getHub().size());
+        }
+        
+        hubApplication.clear();
+        assertEquals(max+1, hubCombined.size());
+        for (OAGroupBy gb : hubCombined) {
+            if (gb.getGroupBy() == null) assertEquals(0, gb.getHub().size());
+            else assertEquals(0, gb.getHub().size());
+        }
+        
+        
+        
+//qqqqqqqq        
+        hubApplication.clear();
+        assertEquals(max+1, hubCombined.size());
+
+        for (OAGroupBy gb : hubCombined) {
+            int x  = gb.getHub().size();
+            assertEquals(0, x);
+        }
+        
+        for (int i=silo.getApplicationGroups().size(); i>0; i--) {
+            silo.getApplicationGroups().remove(0);
+            assertEquals(i, hubCombined.size());
+        }
         
     }    
-    
-    
+
     
     @Test
     public void TestMultipleHgbInOne() {

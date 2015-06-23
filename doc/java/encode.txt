@@ -1,0 +1,17 @@
+
+
+https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
+
+
+UTF-8
+UTF-16
+
+
+
+
+
+    static final Charset USASCII_CharSet = Charset.forName("US-ASCII");
+
+    byte[] bs = "test value".toBytes(USASCII_CharSet)
+    
+    

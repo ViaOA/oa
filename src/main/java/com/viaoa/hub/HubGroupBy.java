@@ -184,7 +184,8 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
 
     private HubGroupBy hgb2;
     private Hub<OAGroupBy> hubGB2;
-    /* <pre><code>
+    /*  This is used to define the structure that is created for the split.
+     *  <pre><code>
         
         Original HubGroupBy  new HubGroupBy(hubApplicationGroup, hubMRADClient, "MRADClient.Application.ApplicationType.ApplicationGroup")
         
@@ -343,6 +344,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 // see if it needs to be added to gbNew.A=null hubB
                 OAGroupBy gbNewFound = null;
                 for (Object gb1B : gb1.getHub()) {
+                    if (!hubFrom.contains(gb1B)) continue; // no longer in from list
                     boolean bFound = false;
                     for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
                         if (gbNew.getGroupBy() == null) {
@@ -367,9 +369,11 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
         // A.2: listen to changes to hgb1.hubB changes by using a hubmerger to get add/remove events and update this.hubCombined
         Hub<OAObject> hubTemp = new Hub<OAObject>(OAObject.class);
         HubMerger<OAGroupBy, OAObject> hm1 = new HubMerger<OAGroupBy, OAObject>(hubGB1, hubTemp, OAGroupBy.P_Hub, true) {
+            @Override
             protected void afterInsertRealHub(HubEvent e) {
                 afterAddRealHub(e);
             }
+            @Override
             protected void afterAddRealHub(HubEvent e) {
                 OAGroupBy gb = (OAGroupBy) ((Hub) e.getSource()).getMasterObject();
                 final OAObject gb1A = gb.getGroupBy();
@@ -428,10 +432,29 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 }
             }
 
+            private Object[] removeAllObjects;
+            @Override
+            protected void beforeRemoveAllRealHub(HubEvent e) {
+                removeAllObjects = ((Hub) e.getSource()).toArray();
+            }
+            @Override
+            protected void afterRemoveAllRealHub(HubEvent e) {
+                if (removeAllObjects == null) return;
+                OAGroupBy gb1 = (OAGroupBy) ((Hub) e.getSource()).getMasterObject();
+                for (Object obj: removeAllObjects) {
+                    remove(gb1, (OAGroupBy) obj);
+                }
+                removeAllObjects = null;
+            }
+            
+            @Override
             protected void afterRemoveRealHub(HubEvent e) {
                 OAGroupBy gb1 = (OAGroupBy) ((Hub) e.getSource()).getMasterObject();
-                final OAObject gb1A = gb1.getGroupBy();
                 Object gb1B = e.getObject();
+                remove(gb1, gb1B);
+            }
+            void remove(final OAGroupBy gb1, final Object gb1B) {
+                final OAObject gb1A = gb1.getGroupBy();
 
                 OAGroupBy gb2Found = null;
                 if (gb1A != null) {
@@ -596,7 +619,19 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                 }
-                if (gb1Found == null || gb1Found.getHub().getSize() == 0) return;
+                if (gb1Found == null || gb1Found.getHub().getSize() == 0) {
+                    for (Object gb2B : gb2.getHub()) {
+                        if (hubGroupBy != null && hubGroupBy.contains(gb2B)) continue;
+                        for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                            if (gbNew.getGroupBy() == gb2B) {
+                                if (gbNew.getHub().size() == 0) HubGroupBy.this.getCombinedHub().remove(gbNew);
+                                break;
+                            }
+                        }
+                    }
+                    return;
+                }
+                
 
                 for (Object gb2B : gb2.getHub()) {
                     OAGroupBy gbNewFound = null;
@@ -622,7 +657,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     }
                     
                     if (gbNewFound.getHub().size() == 0) {
-                        if (hubGroupBy == null || !hubGroupBy.contains(gbNewFound)) {
+                        if (hubGroupBy == null || !hubGroupBy.contains(gbNewFound.getGroupBy())) {
                             HubGroupBy.this.getCombinedHub().remove(gbNewFound);
                         }
                     }
@@ -657,10 +692,6 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             @Override
             protected void afterAddRealHub(HubEvent e) {
                 OAGroupBy gb2 = (OAGroupBy) ((Hub) e.getSource()).getMasterObject();
-if (gb2 == null) {//qqqqqqqqqqqqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
                 final Object gb2A = gb2.getGroupBy();
                 Object gb2B = e.getObject(); // object added
 
@@ -718,19 +749,56 @@ if (gb2 == null) {//qqqqqqqqqqqqqqqqqqqqqqqqq
                 }
             }
 
+            private Object[] removeAllObjects;
+            @Override
+            protected void beforeRemoveAllRealHub(HubEvent e) {
+                removeAllObjects = ((Hub) e.getSource()).toArray();
+            }
+            @Override
+            protected void afterRemoveAllRealHub(HubEvent e) {
+                if (removeAllObjects == null) return;
+                OAGroupBy gb2 = (OAGroupBy) ((Hub) e.getSource()).getMasterObject();
+                for (Object obj: removeAllObjects) {
+                    remove(gb2, (OAGroupBy) obj);
+                }
+                removeAllObjects = null;
+            }
+            
             @Override
             protected void afterRemoveRealHub(HubEvent e) {
                 OAGroupBy gb2 = (OAGroupBy) ((Hub) e.getSource()).getMasterObject();
-                final Object gb2A = gb2.getGroupBy();
                 Object gb2B = e.getObject(); 
-
-                OAGroupBy gb1Found = null;
-                if (gb2A != null) {
-                    for (OAGroupBy gb1 : hubGB1) {
-                        if (gb1.getGroupBy() == gb2A) {
-                            gb1Found = gb1;
+                remove(gb2, gb2B);
+            }
+            void remove(OAGroupBy gb2, final Object gb2B) {
+                final Object gb2A = gb2.getGroupBy();
+                if (gb2A == null) {
+                    boolean bFound = false;
+                    for (OAGroupBy gb : hubGB2) {
+                        if (gb.getGroupBy() == null) continue;
+                        if (gb.getHub().contains(gb2B)) {
+                            bFound = true;
                             break;
                         }
+                    }
+                    if (!bFound) {
+                        for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
+                            if (gbNew.getGroupBy() == gb2B) {
+                                if (gbNew.getHub().size() == 0) {
+                                    HubGroupBy.this.getCombinedHub().remove(gbNew);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                OAGroupBy gb1Found = null;
+                for (OAGroupBy gb1 : hubGB1) {
+                    if (gb1.getGroupBy() == gb2A) {
+                        gb1Found = gb1;
+                        break;
                     }
                 }
                 if (gb1Found == null || gb1Found.getHub().getSize() == 0) return;
@@ -750,7 +818,7 @@ if (gb2 == null) {//qqqqqqqqqqqqqqqqqqqqqqqqq
                 }
 
                 if (gbNewFound.getHub().size() == 0) {
-                    if (hubGroupBy == null || !hubGroupBy.contains(gbNewFound)) {
+                    if (hubGroupBy == null || !hubGroupBy.contains(gbNewFound.getGroupBy())) {
                         HubGroupBy.this.getCombinedHub().remove(gbNewFound);
                     }
                 }
@@ -1113,7 +1181,6 @@ if (gb2 == null) {//qqqqqqqqqqqqqqqqqqqqqqqqq
                     }
                 }
             }
-            // todo:  if this does not have many, then it can break here
         }
     }
 
