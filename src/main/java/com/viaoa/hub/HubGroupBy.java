@@ -801,7 +801,9 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         break;
                     }
                 }
-                if (gb1Found == null || gb1Found.getHub().getSize() == 0) return;
+                if (gb1Found == null || gb1Found.getHub().getSize() == 0) {
+                    if (hubGroupBy.contains(gb2B)) return;
+                }
 
                 OAGroupBy gbNewFound = null;
                 for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
@@ -811,19 +813,21 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     }
                 }
                 if (gbNewFound == null) return;
-
-                for (Object gb1B : gb1Found.getHub()) {
-                    // ??? note: dont remove from hubB if it's still used for another path
-                    gbNewFound.getHub().remove(gb1B);
+                
+                if (gb1Found != null) {
+                    for (Object gb1B : gb1Found.getHub()) {
+                        // ??? note: dont remove from hubB if it's still used for another path
+                        gbNewFound.getHub().remove(gb1B);
+                    }
                 }
-
+                
                 if (gbNewFound.getHub().size() == 0) {
                     if (hubGroupBy == null || !hubGroupBy.contains(gbNewFound.getGroupBy())) {
                         HubGroupBy.this.getCombinedHub().remove(gbNewFound);
                     }
                 }
                 
-                if (gb2.getHub().size() == 0) {
+                if (gb1Found != null && gb2.getHub().size() == 0) {
                     // need to add to gbNew.a=null hubB
                     gbNewFound = null;
                     for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
