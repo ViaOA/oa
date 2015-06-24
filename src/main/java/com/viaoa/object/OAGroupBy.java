@@ -24,7 +24,7 @@ import com.viaoa.hub.Hub;
  * @see HubGroupBy#
  */
 @OAClass(addToCache=false, initialize=false, useDataSource=false, localOnly=true)
-public class OAGroupBy<G extends OAObject, F extends OAObject> extends OAObject {
+public class OAGroupBy<F extends OAObject, G extends OAObject> extends OAObject {
     static final long serialVersionUID = 1L;
     
     public static final String P_GroupBy = "GroupBy"; 

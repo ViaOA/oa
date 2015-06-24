@@ -38,7 +38,7 @@ public class HubGroupByTest extends OAUnitTest {
         pp = SiloPP.siloType().pp;
         HubGroupBy<Silo, SiloType> hgb = new HubGroupBy<Silo, SiloType>(hubSilo, model.getSiloTypes(), pp);
         
-        Hub<OAGroupBy<SiloType, Silo>> hubCombined = (Hub<OAGroupBy<SiloType, Silo>>) hgb.getCombinedHub();
+        Hub<OAGroupBy<Silo, SiloType>> hubCombined = (Hub<OAGroupBy<Silo, SiloType>>) hgb.getCombinedHub();
         
         Object[] objs = model.getSiloTypes().toArray();
         objs = hubCombined.toArray();
@@ -78,7 +78,7 @@ public class HubGroupByTest extends OAUnitTest {
         
         HubGroupBy<Application, ApplicationGroup> hgb = new HubGroupBy<Application, ApplicationGroup>(hubApplication, hubApplicationGroup, pp);
 
-        Hub<OAGroupBy<ApplicationGroup, Application>> hubCombined = (Hub<OAGroupBy<ApplicationGroup, Application>>) hgb.getCombinedHub();
+        Hub<OAGroupBy<Application, ApplicationGroup>> hubCombined = (Hub<OAGroupBy<Application, ApplicationGroup>>) hgb.getCombinedHub();
         
         assertEquals(1, hubCombined.size());
         assertEquals(hubCombined.getAt(0).getHub().size(), hubApplication.size());
@@ -189,7 +189,7 @@ public class HubGroupByTest extends OAUnitTest {
         
         HubGroupBy<Application, ApplicationGroup> hgb = new HubGroupBy<Application, ApplicationGroup>(hubApplication, hubApplicationGroup, pp);
 
-        Hub<OAGroupBy<ApplicationGroup, Application>> hubCombined = (Hub<OAGroupBy<ApplicationGroup, Application>>) hgb.getCombinedHub();
+        Hub<OAGroupBy<Application, ApplicationGroup>> hubCombined = (Hub<OAGroupBy<Application, ApplicationGroup>>) hgb.getCombinedHub();
 
         assertEquals(1, hubCombined.size());
         assertEquals(5, hubCombined.getAt(0).getHub().size());
@@ -245,7 +245,7 @@ public class HubGroupByTest extends OAUnitTest {
         
         HubGroupBy<Application, ApplicationGroup> hgb = new HubGroupBy<Application, ApplicationGroup>(hubApplication, hubApplicationGroup, pp);
 
-        Hub<OAGroupBy<ApplicationGroup, Application>> hubCombined = (Hub<OAGroupBy<ApplicationGroup, Application>>) hgb.getCombinedHub();
+        Hub<OAGroupBy<Application, ApplicationGroup>> hubCombined = (Hub<OAGroupBy<Application, ApplicationGroup>>) hgb.getCombinedHub();
 
         assertEquals(1, hubCombined.size());
         assertEquals(5, hubCombined.getAt(0).getHub().size());
@@ -449,7 +449,7 @@ public class HubGroupByTest extends OAUnitTest {
         pp = ApplicationPP.applicationType().applicationGroups().pp;
         HubGroupBy<Application, ApplicationGroup> hgb = new HubGroupBy<Application, ApplicationGroup>(hubApplication, hubApplicationGroup, pp);
 
-        Hub<OAGroupBy<ApplicationGroup, Application>> hubCombined = (Hub<OAGroupBy<ApplicationGroup, Application>>) hgb.getCombinedHub();
+        Hub<OAGroupBy<Application, ApplicationGroup>> hubCombined = (Hub<OAGroupBy<Application, ApplicationGroup>>) hgb.getCombinedHub();
         
         // 1: add GB objects should show in combined
         int max = 10;
@@ -651,7 +651,7 @@ public class HubGroupByTest extends OAUnitTest {
         String pp2 = ApplicationPP.applicationGroups().pp;
         HubGroupBy<Application, ApplicationGroup> hgb2 = new HubGroupBy<Application, ApplicationGroup>(hgb, pp2);
         
-        Hub<OAGroupBy<ApplicationGroup, Application>> hubCombined = (Hub<OAGroupBy<ApplicationGroup, Application>>) hgb2.getCombinedHub();
+        Hub<OAGroupBy<Application, ApplicationGroup>> hubCombined = (Hub<OAGroupBy<Application, ApplicationGroup>>) hgb2.getCombinedHub();
         
         // 1: add GB objects should show in combined
         int max = 10;
