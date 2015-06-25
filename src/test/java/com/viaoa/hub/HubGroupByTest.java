@@ -162,10 +162,6 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(0, hubApplicationGroup.getAt(0).getApplications().size()); 
         assertEquals(0, hubCombined.getAt(1).getHub().size());
         assertEquals(hubApplication.size(), hubCombined.getAt(0).getHub().size());
-        
-        
-        int xx = 0;
-        xx++;
     }    
 
     @Test
@@ -436,7 +432,6 @@ public class HubGroupByTest extends OAUnitTest {
         }
     }    
 
-    
     @Test
     public void TestSplit3() {
         reset();
@@ -636,6 +631,49 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(10, hubCombined.getAt(0).getHub().size());
     }    
     
+    @Test
+    public void TestSplit4() {
+        reset();
+        String pp;
+        
+        Hub<ApplicationGroup> hubApplicationGroup = new Hub<ApplicationGroup>(ApplicationGroup.class);
+        Hub<Application> hubApplication = new Hub<Application>(Application.class);
+        pp = ApplicationPP.applicationType().applicationGroups().pp;
+        HubGroupBy<Application, ApplicationGroup> hgb = new HubGroupBy<Application, ApplicationGroup>(hubApplication, hubApplicationGroup, pp);
+
+        int max = 10;
+        for (int i=0; i<max; i++) {
+            ApplicationGroup appGroup = new ApplicationGroup();
+            hubApplicationGroup.add(appGroup);
+        }
+        for (int i=0; i<max; i++) {
+            Application app = new Application();
+            hubApplication.add(app);
+        }
+        for (int i=0; i<max; i++) {
+            hubApplicationGroup.getAt(0).getApplications().add(hubApplication.getAt(i));
+        }
+
+        ApplicationType appType = new ApplicationType();
+        for (int i=0; i<max; i++) {
+            hubApplication.getAt(i).setApplicationType(appType);
+        }
+        hubApplicationGroup.getAt(0).getApplicationTypes().add(appType);
+        
+        Application application = hubApplication.getAt(0); 
+
+        Hub<OAGroupBy<Application, ApplicationGroup>> hubCombined = (Hub<OAGroupBy<Application, ApplicationGroup>>) hgb.getCombinedHub();
+
+        for (int i=0; i<max; i++) {
+            hubApplication.removeAt(0);  // ==> should not be put in combined null
+            assertEquals(11, hubCombined.getSize());
+            assertEquals(max-(i+1), hubCombined.getAt(0).getHub().getSize());
+            for (int j=1; j<11; j++) {
+                assertEquals(0, hubCombined.getAt(j).getHub().getSize());
+            }
+        }
+    
+    }
     
     @Test
     public void TestMultiple() {
@@ -668,7 +706,7 @@ public class HubGroupByTest extends OAUnitTest {
             assertEquals(i+1, hubCombined.getAt(max).getHub().size());
         }
         assertEquals(max, hubCombined.getAt(max).getHub().size());
-//qqqqqqqqq        
+        
         // 3: assign apps to one appGrp => combined null=0, appGrp.hub=10
         for (int i=0; i<max; i++) {
             hubApplicationGroup.getAt(0).getApplications().add(hubApplication.getAt(i));
@@ -699,6 +737,7 @@ public class HubGroupByTest extends OAUnitTest {
         }
         
         // 7: remove app => remove from combined[0,1]
+        Application application = hubApplication.getAt(0); 
         hubApplication.removeAt(0);
         assertEquals(max-1, hubCombined.getAt(0).getHub().size());
         assertEquals(max-1, hubCombined.getAt(1).getHub().size());
@@ -713,6 +752,15 @@ public class HubGroupByTest extends OAUnitTest {
         // 9: remove appType from appGrp[0] => will keep apps 
         hubApplicationGroup.getAt(0).getApplicationTypes().removeAll();
         assertEquals(max-1, hubCombined.getAt(0).getHub().size());
+        
+        // 10: remove all apps 
+        hubApplication.clear();
+        assertEquals(11, hubCombined.size());
+        for (OAGroupBy gb : hubCombined) {
+            assertEquals(0, gb.getHub().size());
+        }
+        
+        
     }
 }
 

@@ -361,7 +361,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 // see if it needs to be added to gbNew.A=null hubB
                 OAGroupBy gbNewFound = null;
                 for (Object gb1B : gb1.getHub()) {
-                    if (!hubFrom.contains(gb1B)) continue; // no longer in from list
+                    if (!hubFrom.contains(gb1B)) continue; // no longer in the From list
                     boolean bFound = false;
                     for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
                         if (gbNew.getGroupBy() == null) {
@@ -509,6 +509,10 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     }
                     if (gbNewFound == null) continue;
                     gbNewFound.getHub().remove(gb1B);
+                }
+                
+                if (!HubGroupBy.this.hubFrom.contains(gb1B)) {
+                    return;
                 }
                 
                 // see if it needs to be added to gbNew.A=null hubB
@@ -1233,9 +1237,16 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     }
 
 //qqqqqqqqqqqqqqqqqqqqq
+//    HubGroupBy hgb1x, hgb2x;;
+    
+    
     void setupCombined(HubGroupBy<F, G> hgb1, HubGroupBy<F, G> hgb2) {
         final Hub<OAGroupBy<F, G>> hub1 = hgb1.getCombinedHub();
         final Hub<OAGroupBy<F, G>> hub2 = hgb2.getCombinedHub();
+//qqqqqqqqqqqqqq
+//hgb1x = hgb1;
+//hgb2x = hgb2;
+        
         getCombinedHub();
         HubListener<OAGroupBy<F, G>> hl = new HubListenerAdapter<OAGroupBy<F, G>>() {
             Hub<OAGroupBy<F, G>> getOtherHub(HubEvent e) {

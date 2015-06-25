@@ -32,6 +32,7 @@ public class HubMergerTest extends OAUnitTest {
         HubMerger hm = new HubMerger(hubProgram, hubEmployees, ProgramPP.locations().employees().pp, true);
         
 
+
         int x = hubEmployees.getSize();
         
         cntFinder = 0;

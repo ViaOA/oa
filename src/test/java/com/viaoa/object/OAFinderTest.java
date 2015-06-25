@@ -3,6 +3,7 @@ package com.viaoa.object;
 import java.util.ArrayList;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import com.viaoa.HifiveDataGenerator;
