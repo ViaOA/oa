@@ -4,7 +4,8 @@
     <artifactId>oa</artifactId>
     <version>3.6.0-SNAPSHOT</version> 
 <!--  qqq current at ice     https://maven.intcx.net/content/repositories/public/com/viaoa/oa/
-    <version>3.5.14</version>
+
+next for maven will be:    <version>3.5.16</version>
     <version>3.6.0-SNAPSHOT</version> 
 qqq -->    
     <packaging>jar</packaging>
