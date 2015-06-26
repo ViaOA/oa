@@ -227,9 +227,9 @@ public abstract class HubPropController {
     /**
      * Called when a change is made to Hub/Property.
      */
-static int qqq;    
+//static int qqq;    
     public void update() {
-qqq++;
+//qqq++;
 //if (qqq % 50 == 0) System.out.printf("%,d%n", qqq);
        boolean b = isValid();
        bIsCallingUpdate = true;

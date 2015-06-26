@@ -24,18 +24,22 @@ public class VisibleController extends HubPropController {
     public VisibleController(JComponent comp) {
         super();
         this.component = comp;
+        update();
     }    
     public VisibleController(JComponent comp, Hub hub) {
         super(hub);
         this.component = comp;
+        update();
     }
     public VisibleController(JComponent comp, Hub hub, String propertyName) {
         super(hub, propertyName);
         this.component = comp;
+        update();
     }
     public VisibleController(JComponent comp, Hub hub, String propertyName, Object compareValue) {
         super(hub, propertyName, compareValue);
         this.component = comp;
+        update();
     }
     
     @Override

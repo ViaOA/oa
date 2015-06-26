@@ -29,18 +29,22 @@ public class EnabledController extends HubPropController {
     public EnabledController(JComponent comp) {
         super();
         this.component = comp;
+        update();
     }    
     public EnabledController(JComponent comp, Hub hub) {
         super(hub);
         this.component = comp;
+        update();
     }
     public EnabledController(JComponent comp, Hub hub, String propertyName) {
         super(hub, propertyName);
         this.component = comp;
+        update();
     }
     public EnabledController(JComponent comp, Hub hub, String propertyName, Object compareValue) {
         super(hub, propertyName, compareValue);
         this.component = comp;
+        update();
     }
 
     @Override
