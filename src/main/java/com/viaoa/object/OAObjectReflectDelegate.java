@@ -1186,7 +1186,7 @@ public class OAObjectReflectDelegate {
         if (!(obj instanceof OAObjectKey)) {
             if (obj != OANotExist.instance) {
                 if (obj != null) return obj;
-                if (!li.getAutoCreateNew() && !li.getCalculated()) {
+                if (!li.getAutoCreateNew() && !li.bCalculated) {
                     return obj; // found it
                 }
             }
@@ -1197,7 +1197,7 @@ public class OAObjectReflectDelegate {
                 if (!bIsServer && !bIsCalc) {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
-                else {
+                else if (!bIsCalc) {
                     OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
                     if (liReverse != null) {
                         OASelect sel = new OASelect(li.getToClass());
