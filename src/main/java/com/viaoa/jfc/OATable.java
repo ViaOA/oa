@@ -2795,7 +2795,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      */
     public Component getRenderer(Component comp, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
         JLabel lbl = null;
-
         // 1of3: set default settings
         if (!(comp instanceof JLabel)) {
             if (lblDummy == null) lblDummy = new JLabel();

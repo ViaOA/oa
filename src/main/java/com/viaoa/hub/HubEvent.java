@@ -31,7 +31,6 @@ public class HubEvent<T> extends java.beans.PropertyChangeEvent {
         if ( (cnt%10) == 0) System.out.println("Event =========> "+(++cnt)+" "+s);
     }
 
-    
     /** 
         Used for propertyChange events, when an objects property is changed.
     */

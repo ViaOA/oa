@@ -13,9 +13,13 @@ import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.theice.tsactest.model.oa.*;
 
 public class MultiplexerTest extends OAUnitTest {
-    private final static int[] Maxes = {8000000, 200000, 500, 250000, 10000, 5, 20};
+    private final static int[] Maxes = {
+        8000000, 200000, 500, 250000, 10000, 5, 20,
+        10500, 1, 20,
+        21234, 15, 20
+    };
     
-//    @Test
+    @Test
     public void test() throws Exception {
         
         MultiplexerServerTest stest = new MultiplexerServerTest();
@@ -23,7 +27,7 @@ public class MultiplexerTest extends OAUnitTest {
         
         MultiplexerClientTest ctest = new MultiplexerClientTest();
         ctest.test(Maxes);
-        
+/*        
         Thread.sleep(10000);
         ctest.stop();
 
@@ -32,6 +36,8 @@ public class MultiplexerTest extends OAUnitTest {
         
         int x = ctest.getCount();
         assertTrue(x > 10);
+*/        
+        for (;;)Thread.sleep(10000);
     }
     
 
