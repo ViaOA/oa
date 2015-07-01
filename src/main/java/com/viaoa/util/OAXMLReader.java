@@ -372,7 +372,7 @@ public class OAXMLReader extends DefaultHandler {
 
             /*
                 1: create OAObjectKey using propertyId values
-                2: call HubController to find object
+                2: call OAObjectCacheDelegate to find object
                 3: if not found, create new object
                 4: load/update property values
             */

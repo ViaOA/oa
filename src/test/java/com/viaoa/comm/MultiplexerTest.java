@@ -27,7 +27,7 @@ public class MultiplexerTest extends OAUnitTest {
         
         MultiplexerClientTest ctest = new MultiplexerClientTest();
         ctest.test(Maxes);
-/*        
+        
         Thread.sleep(10000);
         ctest.stop();
 
@@ -36,8 +36,8 @@ public class MultiplexerTest extends OAUnitTest {
         
         int x = ctest.getCount();
         assertTrue(x > 10);
-*/        
-        for (;;)Thread.sleep(10000);
+        
+        //for (;;)Thread.sleep(10000);
     }
     
 

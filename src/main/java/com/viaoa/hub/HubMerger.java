@@ -349,6 +349,13 @@ static int cntq;
     protected void afterAddRealHub(HubEvent e) {
     }
 
+    /**
+     * This can be overwritten to get the add event from the parent, instead of getting the add event
+     * from the combinedHub.
+     */
+    protected void onNewListRealHub(HubEvent e) {
+    }
+    
     /* //qqqqqq not sure if this is used // check to see if this, and Data.getChildrenCount() can be
      * removed public int getChildrenCount() { if (!bEnabled) return 0; int cnt = 0;
      * 
@@ -1254,6 +1261,10 @@ static int cntq;
             }
             finally {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
+            }
+            //20150630
+            if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
+                onNewListRealHub(e);
             }
         }
 
