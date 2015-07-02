@@ -49,6 +49,11 @@ public class OALogUtil {
         log = Logger.getLogger(name);
         log.setLevel(level);
         log.addHandler(ch);
+
+        // also include any warnings
+        log = Logger.getLogger("");
+        log.setLevel(Level.WARNING);
+        log.addHandler(ch);
     }
 
     
