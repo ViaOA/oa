@@ -203,10 +203,10 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             pp2 += lis[i].getReverseName();
         }
 
-        hgb1 = new HubGroupBy(hubFrom, pp1);
+        hgb1 = new HubGroupBy(hubFrom, pp1, bCreateNullList);
         hubGB1 = hgb1.getCombinedHub();
 
-        hgb2 = new HubGroupBy(hubGroupBy, pp2);
+        hgb2 = new HubGroupBy(hubGroupBy, pp2, bCreateNullList);
         hubGB2 = hgb2.getCombinedHub();
 
         setupSplit();
