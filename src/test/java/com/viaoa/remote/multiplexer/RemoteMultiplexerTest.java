@@ -340,9 +340,7 @@ public class RemoteMultiplexerTest extends OAUnitTest {
         multiplexerClient.close();
     }    
 
-//qqqqqqqqqqqqqqq    
-//    @Test(timeout=2000)
-    @Test
+    @Test(timeout=2000)
     public void testStoC_SocketRequest() throws Exception {
         RemoteClientInterface remoteClient;
         MultiplexerClient multiplexerClient;

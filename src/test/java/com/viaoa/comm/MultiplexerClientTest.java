@@ -1,5 +1,6 @@
 package com.viaoa.comm;
 
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
@@ -8,7 +9,9 @@ import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.theice.tsactest.model.oa.*;
@@ -39,6 +42,7 @@ public class MultiplexerClientTest extends OAUnitTest {
                     }
                 }
             };
+            t.setName("Thread."+i+".value."+msgSize);
             t.start();
         }
     }
@@ -58,19 +62,25 @@ public class MultiplexerClientTest extends OAUnitTest {
         DataInputStream dis = new DataInputStream(is);
         DataOutputStream dos = new DataOutputStream(os);
         
-        int tot = 0;
+        // BufferedOutputStream bos = new BufferedOutputStream(dos); 
+        
+        long tot = 0;
         byte[] bs = new byte[msgSize];
+        dos.writeInt(msgSize);
         
         for (int i=0; !bStopCalled ;i++) {
-            dos.writeInt(msgSize);
             dos.write(bs);
+
+//            int x = dis.readInt();
+//            dis.read(bs,0,1);
             
+/*qqq             
             int x = dis.readInt();
             dis.readFully(bs);
-
-            tot += x;
-            if (i % 1 == 0) {
-                System.out.println(id+":"+i+":"+tot);
+*/
+            tot += msgSize;
+            if (i % 1000 == 0) {
+                System.out.println("client, id="+id+", cnt="+i+", bs="+msgSize+", totBytes="+tot);
             }
             
             aiCount.incrementAndGet();

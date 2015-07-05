@@ -29,7 +29,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
     
     private RemoteBroadcastInterface remoteBroadcast;
     private RemoteBroadcastInterface remoteBroadcastProxy;
-    final TestClient[] testClients = new TestClient[50];
+    final TestClient[] testClients = new TestClient[25];
     final RemoteSessionInterface[] remoteSessions = new RemoteSessionInterface[testClients.length];
     private volatile boolean bServerStarted;
     private volatile boolean bServerClosed;

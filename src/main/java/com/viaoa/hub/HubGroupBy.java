@@ -1204,6 +1204,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             }
         }
         else {
+            if (!bCreateNullList && valueA == null) return al;
             for (OAGroupBy gb : HubGroupBy.this.getCombinedHub()) {
                 if (gb.getGroupBy() != valueA) continue;
                 gb.getHub().add(b);
@@ -1587,7 +1588,4 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             }
         }        
     }
-
-    
-
 }

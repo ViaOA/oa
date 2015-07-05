@@ -40,5 +40,32 @@ public class MultiplexerTest extends OAUnitTest {
         //for (;;)Thread.sleep(10000);
     }
     
+    
+    public static void main(String[] args) throws Exception {
+        MultiplexerServerTest stest = new MultiplexerServerTest();
+        stest.test(Maxes.length);
+        
+        MultiplexerClientTest ctest = new MultiplexerClientTest();
+        ctest.test(Maxes);
+        
+        for (;;)Thread.sleep(10000);
+    }
+    
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

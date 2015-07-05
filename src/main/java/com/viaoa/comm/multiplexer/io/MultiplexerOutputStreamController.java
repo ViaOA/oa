@@ -119,7 +119,6 @@ public class MultiplexerOutputStreamController {
                 len = getMaxWriteLength(vs, len);
             }
             _write(vs, bs, off + pos, len);
-
             pos += len;
         }
         while (pos < fullLength);
@@ -143,6 +142,8 @@ public class MultiplexerOutputStreamController {
         }
     }    
     private void _write(VirtualSocket vs, byte[] bs, int offset, int len, DataOutputStream outputStream) throws IOException {
+//qqq        
+//System.out.println("   mosc_write=>  vs.id="+vs._id+", offset="+offset+", len="+len+", waitingCount="+_writeLockWaitingCount+", thread="+Thread.currentThread().getName());//qqqqqqqqqqqq        
         outputStream.writeInt(vs._id); // header
         outputStream.writeInt(len); // header
         outputStream.write(bs, offset, len);
@@ -180,53 +181,86 @@ public class MultiplexerOutputStreamController {
      */
     protected int getMaxWriteLength(VirtualSocket vs, int requestSize) {
         int max;
-        if (_writeLockWaitingCount < 2) {
-            max = 65536;
+        if (_writeLockWaitingCount == 0) {
+            max = 32768;
         }
-        else if (_writeLockWaitingCount < 6) {
+        else if (_writeLockWaitingCount < 2) {
             max = 16384;
         }
-        else {
+        else if (_writeLockWaitingCount < 6) {
             max = 8192;
+        }
+        else {
+            max = 4096;
         }
         max = Math.min(requestSize, max);
         return max;
     }
 
-    // used to determine the next thread that can write
-    private Thread threadNextToWrite;
-    private ArrayList<Thread> alThreadWaitingToWrite = new ArrayList<Thread>(10);
-
+    // used to control thread fairness
+    private final int MaxWaitingThreads = 15;
+    private Thread[] waitingThreads = new Thread[MaxWaitingThreads];
+    private long headWaitingThreads;
+    private long tailWaitingThreads;
+    
     /**
      * Used to synchronized access the the real outputstream.
      */
     private DataOutputStream getOutputStream() throws IOException {
         // long tsBegin = System.nanoTime(); // measurement
+        boolean bIsInWaitingThreads = false;
         synchronized (WRITELOCK) {
-            for (int i=0;;i++) {
+            for (int i=0; ;i++) {
                 if (_bIsClosed) {
                     throw new IOException("real socket has been closed");
                 }
+/*                
+System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWritingLock="+_bWritingLock+", i="+
+                i+", _writeLockWaitingCount="+_writeLockWaitingCount+
+                ", headWaitingThreads="+headWaitingThreads +
+                ", tailWaitingThreads="+tailWaitingThreads
+                );//qqqqqq
+*/
+
                 if (!_bWritingLock) {
-                    if (threadNextToWrite == null || threadNextToWrite == Thread.currentThread()) {
-                        threadNextToWrite = null;
+                    int pos = (int) (tailWaitingThreads % MaxWaitingThreads);
+                    if (tailWaitingThreads == headWaitingThreads) {
+                        if (_writeLockWaitingCount == 0 || i>0) {
+                            _bWritingLock = true;
+//System.out.println("writing "+Thread.currentThread().getName());//qqqqqq                            
+                            return _dataOutputStream;
+                        }
+                    }
+                    else if (waitingThreads[pos] == Thread.currentThread()) {
                         _bWritingLock = true;
+                        tailWaitingThreads++;
+//System.out.println("writing after in queue"+Thread.currentThread().getName());//qqqqqq                            
                         return _dataOutputStream;
                     }
                 }
                 
                 try {
                     _writeLockWaitingCount++;
-
-                    if (i == 5) {
-                        if (threadNextToWrite == null && alThreadWaitingToWrite.size() == 0) threadNextToWrite = Thread.currentThread();  
-                        else alThreadWaitingToWrite.add(Thread.currentThread());
+                    if (!bIsInWaitingThreads && i > 5) {
+                        if (headWaitingThreads - tailWaitingThreads < MaxWaitingThreads) {
+                            bIsInWaitingThreads = true;
+                            int pos = (int) (headWaitingThreads++ % MaxWaitingThreads);
+                            waitingThreads[pos] = Thread.currentThread();
+//System.out.println("put in queue "+Thread.currentThread().getName());//qqqqqq                            
+                        }
                     }
-                    if (threadNextToWrite == null) {
-                        if (alThreadWaitingToWrite.size() > 0) threadNextToWrite = alThreadWaitingToWrite.remove(0);
-                    }
-                    
-                    WRITELOCK.wait(250);
+//long ms = System.currentTimeMillis();                    
+//System.out.println("waiting "+Thread.currentThread().getName());//qqqqqq                            
+                    WRITELOCK.wait(150);
+/*                    
+long ms2 = System.currentTimeMillis();
+if (ms2 - ms > 142) {
+  System.out.println("TOO long ms="+(ms2-ms)+", cnt="+(++xxq)+", thread="+Thread.currentThread().getName());//qqqqqq                            
+    int xx = 4;
+    xx++;
+}
+*/
+//System.out.println("woken up "+Thread.currentThread().getName());//qqqqqq                            
                 }
                 catch (InterruptedException e) {
                 }
@@ -236,7 +270,7 @@ public class MultiplexerOutputStreamController {
             }
         }
     }
-
+int xxq=0;
     /**
      * Releases the outputstream, and notifies other threads that it is available.
      * 
@@ -247,10 +281,12 @@ public class MultiplexerOutputStreamController {
      */
     private void releaseOutputStream(boolean bFlush) throws IOException {
         if (_bIsClosed) return;
+//System.out.println("releasing1 "+Thread.currentThread().getName());//qqqqqq                            
         synchronized (WRITELOCK) {
+//System.out.println("releasing2 "+Thread.currentThread().getName());//qqqqqq                            
             try {
                 if (bFlush || _needsFlush) {
-                    if (_writeLockWaitingCount == 0 || ((++_iWriteFlush % 5) == 0)) {
+                    if (_writeLockWaitingCount == 0 || ((++_iWriteFlush % 25) == 0)) {
                         _needsFlush = false;
                         _iWriteFlush = 0;
                         _dataOutputStream.flush();
@@ -259,11 +295,10 @@ public class MultiplexerOutputStreamController {
                 }
             }
             finally {
-                if (threadNextToWrite == null) {
-                    if (alThreadWaitingToWrite.size() > 0) threadNextToWrite = alThreadWaitingToWrite.remove(0);
-                }
                 _bWritingLock = false;
+//System.out.println("releasing notifyAll.calling "+Thread.currentThread().getName());//qqqqqq                            
                 WRITELOCK.notifyAll();
+//System.out.println("releasing notifyAll.done "+Thread.currentThread().getName());//qqqqqq                            
             }
         }
     }

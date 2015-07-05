@@ -249,7 +249,7 @@ public abstract class MultiplexerInputStreamController {
                 _nextReadId = -1; // this is used so that the real socket reader will "know" that the
                                   // vsocket is done reading.
                 if (_bRealReaderIsWaiting) {
-                    READLOCK.notify();
+                    READLOCK.notifyAll();
                 }
             }
             // else: will need to do another read for the rest of the data from real socket.

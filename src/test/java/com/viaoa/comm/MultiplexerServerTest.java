@@ -80,21 +80,23 @@ public class MultiplexerServerTest extends OAUnitTest {
         DataOutputStream dos = new DataOutputStream(os);
 
         
-        byte[] bs = null;
         
-        int tot = 0;
+        int x = dis.readInt();
+        byte[]bs = new byte[x];
+        long tot = 0;
+        
         for (int i=0; !bStopCalled; i++) {
             
-            int x = dis.readInt();
-            if (bs == null) bs = new byte[x];
             dis.readFully(bs);
-            
-            tot += bs.length;
-            System.out.println(i+":"+tot);
+            tot += x;
+            //System.out.println("server, cnt="+i+", totBytes="+tot);
 
+//dos.writeInt(1);
+//dos.write(new byte[1]);
+/*was            
             dos.writeInt(bs.length);
             dos.write(bs);
-            
+*/            
         }
     }
 

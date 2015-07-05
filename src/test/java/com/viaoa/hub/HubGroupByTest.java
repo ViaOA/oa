@@ -21,7 +21,7 @@ import com.theice.tsac.model.oa.*;
 
 public class HubGroupByTest extends OAUnitTest {
 
-    @Test
+    //@Test
     public void Test() {
         reset();
         Model model = new Model();
@@ -54,7 +54,7 @@ public class HubGroupByTest extends OAUnitTest {
     }
     
     
-    @Test
+    //@Test
     public void Test2() {
         reset();
         Model model = new Model();
@@ -164,7 +164,7 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(hubApplication.size(), hubCombined.getAt(0).getHub().size());
     }    
 
-    @Test
+    //@Test
     public void TestSplit() {
         reset();
         Model model = new Model();
@@ -220,7 +220,7 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(1, hubCombined.size());
     }    
 
-    @Test
+    //@Test
     public void TestSplit2() {
         reset();
         Model model = new Model();
@@ -432,7 +432,7 @@ public class HubGroupByTest extends OAUnitTest {
         }
     }    
 
-    @Test
+    //@Test
     public void TestSplit3() {
         reset();
         String pp;
@@ -631,7 +631,7 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(10, hubCombined.getAt(0).getHub().size());
     }    
     
-    @Test
+    //@Test
     public void TestSplit4() {
         reset();
         String pp;
@@ -675,7 +675,7 @@ public class HubGroupByTest extends OAUnitTest {
     
     }
     
-    @Test
+    //@Test
     public void TestMultiple() {
         reset();
         String pp;
@@ -761,7 +761,7 @@ public class HubGroupByTest extends OAUnitTest {
         }
     }
     
-    @Test
+    //@Test
     public void TestMultiple2() {
         reset();
         
@@ -868,27 +868,52 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(1, hubCombined.size());
         assertEquals(2, hubCombined.getAt(0).getHub().size());
         
+        // should not have a null gb
+        
         for (int i=0; i<5; i++) {
-            appType = new ApplicationType();
             appGroup = new ApplicationGroup();
             appType = new ApplicationType();
             appGroup.getApplicationTypes().add(appType);
             silo.getApplicationGroups().add(appGroup);
             
             assertEquals(i+2, hubCombined.size());
-            
-            for (int i2=0; i2<5; i2++) {
+            for (int i2=0; i2<3; i2++) {
                 mc = new MRADClient();
                 hubMRADClient.add(mc);
+                app.setApplicationType(appType);
+                app.getApplicationGroups().add(appGroup);
+                app = new Application();
+                mc.setApplication(app);
+            }
+            assertEquals(i+2, hubCombined.size());
+            for (int i2=0; i2<3; i2++) {
+                mc = new MRADClient();
+                app.setApplicationType(appType);
+                app.getApplicationGroups().add(appGroup);
+                app = new Application();
+                mc.setApplication(app);
+                hubMRADClient.add(mc);
+            }
+            assertEquals(i+2, hubCombined.size());
+            for (int i2=0; i2<3; i2++) {
+                mc = new MRADClient();
                 app = new Application();
                 mc.setApplication(app);
                 app.setApplicationType(appType);
                 app.getApplicationGroups().add(appGroup);
+                hubMRADClient.add(mc);
             }
+            assertEquals(i+2, hubCombined.size());
+            for (int i2=0; i2<3; i2++) {
+                mc = new MRADClient();
+                app = new Application();
+                mc.setApplication(app);
+                hubMRADClient.add(mc);
+            }
+            assertEquals(i+2, hubCombined.size());
         }
-        
     }
-    
+
 }
 
 
