@@ -142,7 +142,6 @@ public class MultiplexerOutputStreamController {
         }
     }    
     private void _write(VirtualSocket vs, byte[] bs, int offset, int len, DataOutputStream outputStream) throws IOException {
-//qqq        
 //System.out.println("   mosc_write=>  vs.id="+vs._id+", offset="+offset+", len="+len+", waitingCount="+_writeLockWaitingCount+", thread="+Thread.currentThread().getName());//qqqqqqqqqqqq        
         outputStream.writeInt(vs._id); // header
         outputStream.writeInt(len); // header
@@ -223,18 +222,15 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
 */
 
                 if (!_bWritingLock) {
-                    int pos = (int) (tailWaitingThreads % MaxWaitingThreads);
                     if (tailWaitingThreads == headWaitingThreads) {
                         if (_writeLockWaitingCount == 0 || i>0) {
                             _bWritingLock = true;
-//System.out.println("writing "+Thread.currentThread().getName());//qqqqqq                            
                             return _dataOutputStream;
                         }
                     }
-                    else if (waitingThreads[pos] == Thread.currentThread()) {
+                    else if (waitingThreads[(int) (tailWaitingThreads % MaxWaitingThreads)] == Thread.currentThread()) {
                         _bWritingLock = true;
                         tailWaitingThreads++;
-//System.out.println("writing after in queue"+Thread.currentThread().getName());//qqqqqq                            
                         return _dataOutputStream;
                     }
                 }
@@ -246,21 +242,9 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
                             bIsInWaitingThreads = true;
                             int pos = (int) (headWaitingThreads++ % MaxWaitingThreads);
                             waitingThreads[pos] = Thread.currentThread();
-//System.out.println("put in queue "+Thread.currentThread().getName());//qqqqqq                            
                         }
                     }
-//long ms = System.currentTimeMillis();                    
-//System.out.println("waiting "+Thread.currentThread().getName());//qqqqqq                            
                     WRITELOCK.wait(150);
-/*                    
-long ms2 = System.currentTimeMillis();
-if (ms2 - ms > 142) {
-  System.out.println("TOO long ms="+(ms2-ms)+", cnt="+(++xxq)+", thread="+Thread.currentThread().getName());//qqqqqq                            
-    int xx = 4;
-    xx++;
-}
-*/
-//System.out.println("woken up "+Thread.currentThread().getName());//qqqqqq                            
                 }
                 catch (InterruptedException e) {
                 }
@@ -270,7 +254,7 @@ if (ms2 - ms > 142) {
             }
         }
     }
-int xxq=0;
+
     /**
      * Releases the outputstream, and notifies other threads that it is available.
      * 
@@ -281,9 +265,7 @@ int xxq=0;
      */
     private void releaseOutputStream(boolean bFlush) throws IOException {
         if (_bIsClosed) return;
-//System.out.println("releasing1 "+Thread.currentThread().getName());//qqqqqq                            
         synchronized (WRITELOCK) {
-//System.out.println("releasing2 "+Thread.currentThread().getName());//qqqqqq                            
             try {
                 if (bFlush || _needsFlush) {
                     if (_writeLockWaitingCount == 0 || ((++_iWriteFlush % 25) == 0)) {
@@ -296,9 +278,7 @@ int xxq=0;
             }
             finally {
                 _bWritingLock = false;
-//System.out.println("releasing notifyAll.calling "+Thread.currentThread().getName());//qqqqqq                            
                 WRITELOCK.notifyAll();
-//System.out.println("releasing notifyAll.done "+Thread.currentThread().getName());//qqqqqq                            
             }
         }
     }
@@ -345,5 +325,4 @@ int xxq=0;
             releaseOutputStream(true);
         }
     }
-
 }
