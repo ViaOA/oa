@@ -22,7 +22,8 @@ public class MultiplexerServerTest extends OAUnitTest {
                     _test(maxConnections);
                 }
                 catch (Exception e) {
-                    // TODO: handle exception
+                    System.out.println("Error in MultiplexerServerTest serverSocket");
+                    e.printStackTrace();
                 }
             }
         };
@@ -30,7 +31,7 @@ public class MultiplexerServerTest extends OAUnitTest {
     }
     private void _test(int maxConnections) throws Exception {
 
-        multiplexerServer = new MultiplexerServer(null, 1099);
+        multiplexerServer = new MultiplexerServer(null, 1101);
         ServerSocket ss = multiplexerServer.createServerSocket("test");
         multiplexerServer.start();
 

@@ -20,7 +20,7 @@ public class MultiplexerClientTest extends OAUnitTest {
     private AtomicInteger aiCount = new AtomicInteger();
     
     public void test(int ... msgSizes) throws Exception {
-        final MultiplexerClient mc = new MultiplexerClient("localhost", 1099);
+        final MultiplexerClient mc = new MultiplexerClient("localhost", 1101);
         mc.start();
         
         mc.DEBUG = true;

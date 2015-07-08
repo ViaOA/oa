@@ -13,10 +13,16 @@ import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.theice.tsactest.model.oa.*;
 
 public class MultiplexerTest extends OAUnitTest {
+    /*
     private final static int[] Maxes = {
         8000000, 200000, 500, 250000, 10000, 5, 20,
         10500, 1, 20,
         21234, 15, 20
+    };
+    */
+    private final static int[] Maxes = {
+        50, 1, 20,
+        234, 15, 20, 2,3,4,5
     };
     
     @Test

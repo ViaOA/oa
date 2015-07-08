@@ -35,11 +35,6 @@ public class MultiplexerOutputStreamController {
      * Keeps track of how many vsockets are waiting to do a write on the real socket outputstream.
      */
     private volatile int _writeLockWaitingCount; // this is only changed within a synch block
-    /**
-     * used to track outputStream flushing, so that a flush is not done if there are waiting writers.
-     */
-    private int _iWriteFlush; // counter
-    private boolean _needsFlush;
 
     /**
      * Throttle to limit the number of MB per second, calculated 10 times per second.
@@ -138,7 +133,7 @@ public class MultiplexerOutputStreamController {
             _write(vs, bs, offset, len, outputStream);
         }
         finally {
-            releaseOutputStream(true); // this will flush
+            releaseOutputStream(); // this will flush
         }
     }    
     private void _write(VirtualSocket vs, byte[] bs, int offset, int len, DataOutputStream outputStream) throws IOException {
@@ -263,17 +258,12 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
      *            following: if there are no other vsockets waiting to do a write, or if this is the 5th
      *            write to be done.
      */
-    private void releaseOutputStream(boolean bFlush) throws IOException {
+    private void releaseOutputStream() throws IOException {
         if (_bIsClosed) return;
         synchronized (WRITELOCK) {
             try {
-                if (bFlush || _needsFlush) {
-                    if (_writeLockWaitingCount == 0 || ((++_iWriteFlush % 25) == 0)) {
-                        _needsFlush = false;
-                        _iWriteFlush = 0;
-                        _dataOutputStream.flush();
-                    }
-                    else _needsFlush = true;
+                if (_writeLockWaitingCount == 0) {
+                    _dataOutputStream.flush();
                 }
             }
             finally {
@@ -322,7 +312,7 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
             }
         }
         finally {
-            releaseOutputStream(true);
+            releaseOutputStream();
         }
     }
 }
