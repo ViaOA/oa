@@ -138,13 +138,11 @@
 	
 	
 	<!-- KeyStore used for Jar file signing 
-	
-	Dont use this.  Use the official one from thawte - see: keystore.txt
-	
+	  For oa jks, see the official one from thawte - read: keystore.txt
 	-->
-    <target name="KeyStore_CAREFUL">
-        <delete file="keystore/viaoa.jks" />
-        <genkey alias="viaoa" storepass="vince1" keyalg="RSA" keysize="2048" keystore="keystore/viaoa.jks" validity="720" verbose="true">
+    <target name="KeyStore_SSLServer">
+        <delete file="keystore/sslserver.jks" />
+        <genkey alias="sslserver" storepass="vince1" keyalg="RSA" keysize="2048" keystore="keystore/sslserver.jks" validity="1500" verbose="true">
             <dname>
                 <param name="cn" value="www.viaoa.com"/>
                 <param name="ou" value="ViaOA"/>
