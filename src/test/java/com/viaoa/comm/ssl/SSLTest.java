@@ -1,5 +1,7 @@
 package com.viaoa.comm.ssl;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.logging.*;
 
 import org.junit.After;
@@ -21,8 +23,34 @@ public class SSLTest extends OAUnitTest {
     SSLClient client;
     volatile boolean bStop;
     volatile int cntServer, cntClient;
+
+    @Before
+    public void setup() throws Exception {
+        server = new SSLServer("localhost", 1101) {
+            @Override
+            protected void sendOutput(byte[] bs, int offset, int len, boolean bHandshakeOnly) throws Exception {
+                client.input(bs, len, bHandshakeOnly);
+            }
+        };
+        server.initialize();
+        
+        client = new SSLClient("localhost", 1101) {
+            @Override
+            protected void sendOutput(byte[] bs, int offset, int len, boolean bHandshakeOnly) throws Exception {
+                server.input(bs, len, bHandshakeOnly);
+            }
+        };
+        client.initialize();
+        test();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        System.out.println("Stopping SSLTest");
+        bStop = true;
+    }
     
-    @Test
+    
     public void test() throws Exception {
         System.out.println("Starting SSLTest");
         Thread t = new Thread(new Runnable() {
@@ -63,7 +91,7 @@ public class SSLTest extends OAUnitTest {
             byte[] bs2 = server.input();
             new String(bs2);
             
-            if (i % 500 == 0) server.resetSSL();  // test that causes ssl to re-handshake
+            if (cntServer % 500 == 0) server.resetSSL();  // test that causes ssl to re-handshake
         }
     }
         
@@ -79,42 +107,19 @@ public class SSLTest extends OAUnitTest {
             byte[] bs = ("client."+cntClient).getBytes();
             client.output(bs, 0, bs.length);
             
-            if (i % 319 == 0) server.resetSSL();
+            if (cntClient % 319 == 0) server.resetSSL();
         }
     }
     
     @Test
     public void monitor() throws Exception {
         Thread.sleep(1000 * 10);
-        
-        cntClient        
+        bStop = false;
+        assertTrue(cntClient > 10);
+        assertTrue(cntServer > 10);
     }
 
     
-    @Before
-    public void setup() throws Exception {
-        server = new SSLServer("localhost", 1101) {
-            @Override
-            protected void sendOutput(byte[] bs, int offset, int len, boolean bHandshakeOnly) throws Exception {
-                client.input(bs, len, bHandshakeOnly);
-            }
-        };
-        server.initialize();
-        
-        client = new SSLClient("localhost", 1101) {
-            @Override
-            protected void sendOutput(byte[] bs, int offset, int len, boolean bHandshakeOnly) throws Exception {
-                server.input(bs, len, bHandshakeOnly);
-            }
-        };
-        client.initialize();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        System.out.println("Stopping SSLTest");
-        bStop = true;
-    }
     
     
     public static void main(String[] args) throws Exception {
