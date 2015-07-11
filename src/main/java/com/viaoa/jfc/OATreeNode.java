@@ -75,6 +75,7 @@ public class OATreeNode implements Cloneable {
         // only one of the next two can be set
         Method methodToObject; // method to get to object object.  ex: dept.name => dept
         public Method[] methodsToProperty;  // methods to get property value from object => name
+        public boolean  methodsToPropertyNotUsed;
         Hub updateHub; // hub to be notfied by OATree when selection is changed
         Hub hubSelected; // hub that has selected/checked tree node items
         // flag to create a hubMerger (if 2 or more hubs in path) - need to also garbage collect it when not used
@@ -906,7 +907,7 @@ public class OATreeNode implements Cloneable {
 
     public void findMethods(Class clazz, boolean allowHub) {
         if (titleFlag) return;
-
+        if (def.methodsToPropertyNotUsed) return; // 20150710
         
         // 20110802 recursive nodes
         if (methodsToHub == null && bRecursive) {
@@ -922,7 +923,6 @@ public class OATreeNode implements Cloneable {
             fullPath = li.getName() + "." + def.propertyPath; 
             methodsToHub = new Method[] {method};
         }
-        
         
         
         int pos,prev;
@@ -968,6 +968,7 @@ public class OATreeNode implements Cloneable {
         else if (OAObject.class.isAssignableFrom(clazz)) {
             // 20150612
             def.propertyPath = path;
+            def.methodsToPropertyNotUsed = true;
         }
         else {
             def.propertyPath = path;
