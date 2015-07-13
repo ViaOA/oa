@@ -1466,7 +1466,8 @@ static int cntq;
         private void afterAdd2(HubEvent e) {
             if (!bEnabled) return;
             if (this == dataRoot && !bUseAll) return;
-            if (hub.isLoading()) return;
+// 20150713 took this out, since hubFilter initialize sets isLoading=true            
+//            if (hub.isLoading()) return;
             
             // 20140312 verify that object is still in Hub
             if (e.getHub().contains(e.getObject())) {

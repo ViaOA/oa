@@ -911,7 +911,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             
             if (gb2Found == null || gb2Found.getHub().getSize() == 0) {
                 // add to empty list
-                if (!bCreateNullList) return;
+                if (!bCreateNullList) continue;
                 OAGroupBy gbNewFound = null;
                 for (OAGroupBy gbNew : HubGroupBy.this.getCombinedHub()) {
                     if (gbNew.getGroupBy() == null) {
@@ -926,7 +926,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 for (Object gb1B : gb1.getHub()) {
                     gbNewFound.getHub().add(gb1B);
                 }
-                return;
+                continue;
             }
             
             for (Object gb2B : gb2Found.getHub()) {
