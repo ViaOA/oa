@@ -11,8 +11,11 @@
 package com.viaoa.jfc.control;
 
 import java.awt.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.swing.*;
 import javax.swing.tree.TreePath;
+
 import com.viaoa.object.*;
 import com.viaoa.util.OAArray;
 import com.viaoa.hub.*;
@@ -29,11 +32,16 @@ public class Hub2TreeNode extends HubListenerAdapter {
     OATreeNodeData parent;
     Hub hub;
     HubFilter hubFilter;  // this is so that HubFilter.close() will be called when this.close() is called.  
-
+    private static AtomicInteger aiCnt = new AtomicInteger();
     public Hub2TreeNode(Hub hub, OATreeNode node, OATreeNodeData parent, HubFilter hf) {
         String pp = node.getPropertyPath(); 
     	if (pp != null) {
-    	    hub.addHubListener(this, pp);
+    	    if (pp.indexOf(".") < 0) {
+                hub.addHubListener(this, pp);
+    	    }
+    	    else {
+                hub.addHubListener(this, "hut2TreeNode"+aiCnt.getAndIncrement(), new String[] {pp});
+    	    }
     	}
     	else hub.addHubListener(this);
         

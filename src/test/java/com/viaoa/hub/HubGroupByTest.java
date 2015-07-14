@@ -815,7 +815,7 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(2, hubCombined.getAt(0).getHub().size());
     }
     
-    @Test
+    //@Test
     public void TestMultiple3() {
         reset();
         
@@ -914,6 +914,57 @@ public class HubGroupByTest extends OAUnitTest {
         }
     }
 
+    @Test
+    public void TestSplit5() {
+        reset();
+        
+        Hub<ApplicationType> hubApplicationType = new Hub<ApplicationType>(ApplicationType.class);
+        Hub<ApplicationGroup> hubApplicationGroup = new Hub<ApplicationGroup>(ApplicationGroup.class);
+        Hub<MRADClient> hubMRADClient = new Hub<MRADClient>(MRADClient.class);
+        
+        String pp1 = MRADClientPP.application().applicationType().applicationGroups().pp;
+
+        HubGroupBy<MRADClient, ApplicationGroup> hgb = new HubGroupBy<MRADClient, ApplicationGroup>(hubMRADClient, hubApplicationGroup, pp1, false);
+        
+        Hub<OAGroupBy<MRADClient, ApplicationGroup>> hubGroupByApplicationGroup;    
+        hubGroupByApplicationGroup = hgb.getCombinedHub();
+
+        Hub<ApplicationGroup> hubApplicationGroup2 = new Hub<ApplicationGroup>(ApplicationGroup.class);
+        Hub<MRADClient> hubMRADClient2 = new Hub<MRADClient>(MRADClient.class);
+        
+        
+        for (int i=0; i<10; i++) {
+            ApplicationType at = new ApplicationType();
+            hubApplicationType.add(at);
+        }
+        for (int i=0; i<2; i++) {
+            ApplicationGroup ag = new ApplicationGroup();
+            hubApplicationGroup2.add(ag);
+            ApplicationType at = hubApplicationType.getAt(i);
+            ag.getApplicationTypes().add(at);
+        }
+        assertEquals(hubApplicationGroup.getSize(), hubGroupByApplicationGroup.getSize());
+
+        for (int i=0; i<20; i++) {
+            MRADClient mc = new MRADClient();
+            hubMRADClient2.add(mc);
+            Application app = new Application();
+            mc.setApplication(app);
+            ApplicationType at;
+            if (i%2==0) at = hubApplicationType.getAt(0);
+            else at = hubApplicationType.getAt(1);
+            app.setApplicationType(at);
+        }
+        
+        hubMRADClient.setSharedHub(hubMRADClient2);
+        hubApplicationGroup.setSharedHub(hubApplicationGroup2);
+        
+        assertEquals(hubApplicationGroup.getSize(), hubGroupByApplicationGroup.getSize());
+        assertEquals(10, hubGroupByApplicationGroup.getAt(0).getHub().getSize());
+        assertEquals(10, hubGroupByApplicationGroup.getAt(1).getHub().getSize());
+    }
+    
+    
 }
 
 

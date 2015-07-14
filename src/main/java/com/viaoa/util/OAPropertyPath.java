@@ -21,6 +21,7 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.CustomHubFilter;
 import com.viaoa.hub.HubMerger;
 import com.viaoa.object.OALinkInfo;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 
@@ -203,6 +204,11 @@ public class OAPropertyPath<T> {
         return fromClass;
     }
     
+    public void setup(Hub hub) throws Exception {
+        if (hub == null) return;
+        setup(hub, hub.getObjectClass(), false);
+    }
+    
     public void setup(Class clazz) throws Exception {
         setup(clazz, false);
     }
@@ -213,6 +219,9 @@ public class OAPropertyPath<T> {
      * @throws Exception
      */
     public void setup(Class clazz, boolean bIgnorePrivateLink) throws Exception {
+        setup(null, clazz, bIgnorePrivateLink);
+    }
+    private void setup(final Hub hub, Class clazz, final boolean bIgnorePrivateLink) throws Exception {
         if (clazz == null) return;
         this.fromClass = clazz;
         String propertyPath = this.propertyPath;
@@ -227,15 +236,21 @@ public class OAPropertyPath<T> {
                 String fromClassName = propertyPath.substring(pos+1, pos2); 
                 propertyPath = propertyPath.substring(pos2+2);
                 
-                String packageName = fromClass.getName();
-                pos = packageName.lastIndexOf('.');
-                if (pos > 0) {
-                    packageName = packageName.substring(0, pos+1);
+                if (fromClassName.indexOf('.') >= 0) {
+                    Class c = Class.forName(fromClassName);
+                    this.fromClass = c;
                 }
-                else packageName = "";
+                else {
+                    String packageName = fromClass.getName();
+                    pos = packageName.lastIndexOf('.');
+                    if (pos > 0) {
+                        packageName = packageName.substring(0, pos+1);
+                    }
+                    else packageName = "";
+                    Class c = Class.forName(packageName + fromClassName);
+                    this.fromClass = c;
+                }
                 
-                Class c = Class.forName(packageName + fromClassName);
-                this.fromClass = c;
             }
         }
         clazz = this.fromClass;
@@ -258,7 +273,9 @@ public class OAPropertyPath<T> {
         posDot = prevPosDot = 0;
         
         if (OAString.isEmpty(propertyPathClean)) posDot = -1;
+        int cnter = 0;
         for ( ; posDot >= 0; prevPosDot=posDot+1) {
+            cnter++;
             posDot = propertyPathClean.indexOf('.', prevPosDot);
             int posCast = propertyPathClean.indexOf('(', prevPosDot);
             int posFilter = propertyPathClean.indexOf(':', prevPosDot);
@@ -420,6 +437,17 @@ public class OAPropertyPath<T> {
                         else cn = castName;
                     }
                     clazz = Class.forName(cn);
+                }
+                else if (cnter == 1 && clazz.equals(OAObject.class) && hub != null) {  // 20150712
+                    // see if there is an object to check with
+                    for (Object o : hub) {
+                        if (o instanceof OAObject) {
+                            Object x = ((OAObject)o).getProperty(propertyName);
+                            if (x != null) {
+                                clazz = x.getClass();
+                            }
+                        }
+                    }
                 }
             }
             this.classes = (Class[]) OAArray.add(Class.class, this.classes, clazz);

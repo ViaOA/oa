@@ -355,7 +355,7 @@ public class HubListenerTree {
             // 20120809  
             OAPropertyPath oaPropPath = new OAPropertyPath(dependentPropertyNames[i]);
             try {
-                oaPropPath.setup(hub.getObjectClass());
+                oaPropPath.setup(hub);
             }
             catch (Exception e) {
                 String s = ("cant find dependent prop, hub="+hub+", prop="+origPropertyName+", dependendProp="+dependentPropertyNames[i]);
