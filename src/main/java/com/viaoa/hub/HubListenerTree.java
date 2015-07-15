@@ -321,7 +321,7 @@ public class HubListenerTree {
             OAThreadLocalDelegate.setIgnoreTreeListenerProperty(null);
         }
     }    
-    private void addDependentListeners(final String origPropertyName, HubListener origHubListener, String[] dependentPropertyNames, boolean bActiveObjectOnly) {
+    private void addDependentListeners(final String origPropertyName, final HubListener origHubListener, final String[] dependentPropertyNames, final boolean bActiveObjectOnly) {
         //LOG.finer("Hub="+root.hub+", property="+origPropertyName);
 
         // 20120826 check for endless loops
@@ -352,14 +352,35 @@ public class HubListenerTree {
             HubListenerTreeNode node = root;
             Hub hub = root.hub;
 
-            OAPropertyPath oaPropPath = new OAPropertyPath(dependentPropertyNames[i]);
+            final String dependPropName = dependentPropertyNames[i];
+            final OAPropertyPath oaPropPath = new OAPropertyPath(dependPropName);
             try {
                 String error = oaPropPath.setup(hub, hub.getObjectClass(), false);
                 if (error != null) {
                     if (oaPropPath.getNeedsDataToVerify()) {
-                        // 20150715 proppath is using generics and will have to be retried once data is in it.
+                        // 20150715 propPath is using generics and will have to be retried once data is in it.
                         //    this will now set up a listener to try again
-//qqqqqqqqqqqqq TO DO ... finish this by listening for add/insert and retry  qqqqqqqq                        
+                        final HubListener hl = new HubListenerAdapter() {
+                            public void afterAdd(HubEvent e) {
+                                update();
+                            }
+                            public void afterInsert(HubEvent e) {
+                                update();
+                            }
+                            public void onNewList(HubEvent e) {
+                                update();
+                            }
+                            void update() {
+                                try {
+                                    removeListener(this);
+                                    addDependentListeners(origPropertyName, origHubListener, new String[] {dependPropName}, bActiveObjectOnly);
+                                }
+                                catch (Exception e) {
+                                    return;
+                                }
+                            }
+                        };
+                        this.addListener(hl);
                         continue;
                     }
                 }
@@ -675,8 +696,10 @@ public class HubListenerTree {
 
 
 
-
     public void removeListener(Hub thisHub, HubListener hl) {
+        removeListener(hl);
+    }
+    public void removeListener(HubListener hl) {
         // testing
         // hmAll.remove(hl);        
         
