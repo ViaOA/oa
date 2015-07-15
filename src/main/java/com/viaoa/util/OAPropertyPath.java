@@ -615,11 +615,8 @@ public class OAPropertyPath<T> {
                 clazz = obj.getClass();
                 break;
             }
-            
-            Object objValue = ((OAObject)obj).getProperty(propName);
-            if (objValue == null) continue;
-            
-            clazz = _findLastClass(objValue, pos+1);
+
+            clazz = _findLastClass(obj, pos+1);
             if (clazz != null) break;
         }
         return clazz;
