@@ -228,7 +228,7 @@ public class OAPropertyPath<T> {
     public boolean getNeedsDataToVerify() {
         return bNeedsDataToVerify;
     }
-    private String setup(final Hub hub, Class clazz, final boolean bIgnorePrivateLink) throws Exception {
+    public String setup(final Hub hub, Class clazz, final boolean bIgnorePrivateLink) throws Exception {
         bNeedsDataToVerify = false;
         if (clazz == null) return null;
         this.fromClass = clazz;
@@ -463,10 +463,11 @@ public class OAPropertyPath<T> {
             // 20150715 
             if (clazz.equals(OAObject.class) && hub != null) { 
                 // see if it can be found using data from hub
-                clazz = findLastClass(hub);
-                if (clazz == null) {
+                Class c = findLastClass(hub);
+                if (c == null || c.equals(OAObject.class)) {
                     bNeedsDataToVerify = true;
                 }
+                else clazz = c;
             }
             
             this.classes = (Class[]) OAArray.add(Class.class, this.classes, clazz);
@@ -604,40 +605,33 @@ public class OAPropertyPath<T> {
     }
     
     private Class _findLastClass(final Hub hubRoot, final int pos) {
-        if (this.properties == null || pos >= this.properties.length) return null;
-        final String propName = this.properties[pos];
+        if (hubRoot == null) return null;
+        
+        if (this.properties == null || pos >= this.properties.length) { 
+            // this is last prop
+            return hubRoot.getObjectClass();
+        }
         
         Class clazz = null;
         for (Object obj : hubRoot) {
             if (!(obj instanceof OAObject)) break;
-            
-            if (pos+1 == this.properties.length) {
-                clazz = obj.getClass();
-                break;
-            }
-
             clazz = _findLastClass(obj, pos+1);
             if (clazz != null) break;
         }
         return clazz;
     }
     private Class _findLastClass(final OAObject obj, final int pos) {
-        if (this.properties == null || pos >= this.properties.length) return null;
-        final String propName = this.properties[pos];
+        if (obj == null) return null;
         
+        if (this.properties == null || pos >= this.properties.length) { 
+            // this is last prop
+            return obj.getClass();
+        }
+
         Class clazz = null;
-        Object objValue = ((OAObject)obj).getProperty(propName);
+        Object objValue = ((OAObject)obj).getProperty(this.properties[pos]);
         if (objValue != null) {
-            if (pos+1 == this.properties.length) {
-                if (objValue instanceof Hub) {
-                    clazz = ((Hub) objValue).getObjectClass();
-                }
-                else clazz = objValue.getClass();
-                if (OAObject.class.equals(clazz)) clazz = null;
-            }
-            else {
-                clazz = _findLastClass(objValue, pos+1);
-            }
+            clazz = _findLastClass(objValue, pos+1);
         }
         return clazz;
     }
