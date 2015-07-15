@@ -56,7 +56,9 @@ public class OAPropertyPath<T> {
      *  note: if the method returns a Hub, then this will be the hub.objectClass
      */
     private Class[] classes = new Class[0]; 
-    
+
+    // flag that is used when data is needed to find the real classes, since generics are being used.
+    private boolean bNeedsDataToVerify;
     private String[] properties = new String[0]; // convert properties, without casting
     private String[] castNames = new String[0];
     private String[] filterNames = new String[0];
@@ -219,10 +221,16 @@ public class OAPropertyPath<T> {
      * @throws Exception
      */
     public void setup(Class clazz, boolean bIgnorePrivateLink) throws Exception {
-        setup(null, clazz, bIgnorePrivateLink);
+        String s = setup(null, clazz, bIgnorePrivateLink);
+        if (s != null) throw new Exception(s);
     }
-    private void setup(final Hub hub, Class clazz, final boolean bIgnorePrivateLink) throws Exception {
-        if (clazz == null) return;
+    
+    public boolean getNeedsDataToVerify() {
+        return bNeedsDataToVerify;
+    }
+    private String setup(final Hub hub, Class clazz, final boolean bIgnorePrivateLink) throws Exception {
+        bNeedsDataToVerify = false;
+        if (clazz == null) return null;
         this.fromClass = clazz;
         String propertyPath = this.propertyPath;
         if (propertyPath == null) propertyPath = "";
@@ -403,7 +411,7 @@ public class OAPropertyPath<T> {
                             // wait to show error
                         }
                         else {
-                            throw new Exception("OAReflect.setup() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+propertyName+" path="+propertyPath);
+                            return "OAReflect.setup() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+propertyName+" path="+propertyPath;
                         }
                     }
                 }
@@ -445,11 +453,22 @@ public class OAPropertyPath<T> {
                             Object x = ((OAObject)o).getProperty(propertyName);
                             if (x != null) {
                                 clazz = x.getClass();
+                                break;
                             }
                         }
                     }
                 }
             }
+            
+            // 20150715 
+            if (clazz.equals(OAObject.class) && hub != null) { 
+                // see if it can be found using data from hub
+                clazz = findLastClass(hub);
+                if (clazz == null) {
+                    bNeedsDataToVerify = true;
+                }
+            }
+            
             this.classes = (Class[]) OAArray.add(Class.class, this.classes, clazz);
             classLast = clazz;
             
@@ -499,7 +518,7 @@ public class OAPropertyPath<T> {
                     catch (Exception e) {}
                 }
                 if (filterClass != null && !CustomHubFilter.class.isAssignableFrom(filterClass)) {
-                    throw new RuntimeException("Filter must implement interface CustomHubFilter");
+                    return "Filter must implement interface CustomHubFilter";
                 }
             }
             this.filterClasses = (Class[]) OAArray.add(Class.class, this.filterClasses, filterClass);
@@ -566,9 +585,67 @@ public class OAPropertyPath<T> {
                 OALinkInfo lix = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.MANY);
                 recursiveLinkInfos[j-1] = lix;
             }
-        }        
+        }
+        return null;
     }
- 
+
+    
+    // 20150715 find the class by looking at the data    
+    private Class findLastClass(final Object obj) {
+        return _findLastClass(obj, 0);
+    }
+    private Class _findLastClass(final Object obj, final int pos) {
+        if (this.properties == null || pos >= this.properties.length) return null;
+        Class clazz;
+        if (obj instanceof Hub) clazz = _findLastClass((Hub)obj, pos);
+        else if (obj instanceof Object) clazz = _findLastClass((Hub)obj, pos);
+        else clazz = null;
+        return clazz;
+    }
+    
+    private Class _findLastClass(final Hub hubRoot, final int pos) {
+        if (this.properties == null || pos >= this.properties.length) return null;
+        final String propName = this.properties[pos];
+        
+        Class clazz = null;
+        for (Object obj : hubRoot) {
+            if (!(obj instanceof OAObject)) break;
+            
+            if (pos+1 == this.properties.length) {
+                clazz = obj.getClass();
+                break;
+            }
+            
+            Object objValue = ((OAObject)obj).getProperty(propName);
+            if (objValue == null) continue;
+            
+            clazz = _findLastClass(objValue, pos+1);
+            if (clazz != null) break;
+        }
+        return clazz;
+    }
+    private Class _findLastClass(final OAObject obj, final int pos) {
+        if (this.properties == null || pos >= this.properties.length) return null;
+        final String propName = this.properties[pos];
+        
+        Class clazz = null;
+        Object objValue = ((OAObject)obj).getProperty(propName);
+        if (objValue != null) {
+            if (pos+1 == this.properties.length) {
+                if (objValue instanceof Hub) {
+                    clazz = ((Hub) objValue).getObjectClass();
+                }
+                else clazz = objValue.getClass();
+                if (OAObject.class.equals(clazz)) clazz = null;
+            }
+            else {
+                clazz = _findLastClass(objValue, pos+1);
+            }
+        }
+        return clazz;
+    }
+    
+    
     private boolean bFormat;
     private String format;
     public String getFormat() {

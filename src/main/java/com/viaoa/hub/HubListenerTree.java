@@ -352,9 +352,15 @@ public class HubListenerTree {
             HubListenerTreeNode node = root;
             Hub hub = root.hub;
 
-            // 20120809  
+            // 20150715 proppath might be using generics and will have to be retried once data is in it.
+            //    this will now set up a listener for that
             OAPropertyPath oaPropPath = new OAPropertyPath(dependentPropertyNames[i]);
             try {
+qqqqqqqqqqq change to call the other setup and check to see if it needs data to find
+   qqqq if so, then need to listen for an add and then recheck
+   qqqq 
+   
+   
                 oaPropPath.setup(hub);
             }
             catch (Exception e) {
