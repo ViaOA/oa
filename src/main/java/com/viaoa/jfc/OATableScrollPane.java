@@ -83,6 +83,10 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
         fixedTable.setRightTable(mainTable);
         mainTable.setLeftTable(fixedTable);
         
+        boolean b = mainTable.getTableHeader().getReorderingAllowed();
+        fixedTable.getTableHeader().setReorderingAllowed(b);
+
+        
         for (int i = 0; i < fixedColumns; i++) {
             OATableColumn tc = (OATableColumn) mainTable.columns.get(0);
             mainTable.columns.remove(0);
@@ -111,14 +115,14 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
         
         Color color = UIManager.getLookAndFeelDefaults().getColor("Table.gridColor");
         if (color == null) color = Color.lightGray;
-        Border b = new CustomLineBorder(0, 0, 0, 1, color);
-        b = new CompoundBorder(new CustomLineBorder(0, 0, 0, 1, color.brighter()), b);
-        b = new CompoundBorder(b, new EmptyBorder(0, 0, 0, 2));
+        Border border = new CustomLineBorder(0, 0, 0, 1, color);
+        border = new CompoundBorder(new CustomLineBorder(0, 0, 0, 1, color.brighter()), border);
+        border = new CompoundBorder(border, new EmptyBorder(0, 0, 0, 2));
 
-        fixedTable.setBorder(b);        
+        fixedTable.setBorder(border);        
         fixedTable.setPreferredScrollableViewportSize(fixedTable.getPreferredSize());
 
-        fixedTable.getTableHeader().setBorder(b);
+        fixedTable.getTableHeader().setBorder(border);
         this.setRowHeaderView(fixedTable);
         
         this.setCorner(JScrollPane.UPPER_LEFT_CORNER, fixedTable.getTableHeader());
@@ -135,7 +139,7 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
         });
         
         JLabel lbl = new JLabel("");
-        lbl.setBorder(b);
+        lbl.setBorder(border);
         this.setCorner(JScrollPane.LOWER_LEFT_CORNER, lbl);
 
         this.getRowHeader().addChangeListener( this );

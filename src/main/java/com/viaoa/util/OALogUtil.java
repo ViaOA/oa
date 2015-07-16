@@ -49,13 +49,7 @@ public class OALogUtil {
         log = Logger.getLogger(name);
         log.setLevel(level);
         log.addHandler(ch);
-
-        // also include any warnings
-        log = Logger.getLogger("");
-        log.setLevel(Level.WARNING);
-        log.addHandler(ch);
     }
-
     
     public static String getThreadDump() {
         StringBuilder sb = new StringBuilder(1024 * 32);

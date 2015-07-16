@@ -113,6 +113,8 @@ import com.viaoa.util.OAString;
  * table.setPreferredSize(6, 3, true); // 6 rows, 3 columns, plus width of scrollbar
  * table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
  * panel.add(new JScrollPane(table));
+ * 
+ * table.getTableHeader().setReorderingAllowed(false);
  * </pre>
  * <p>
  * For more information about this package, see <a
