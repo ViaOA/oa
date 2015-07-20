@@ -114,7 +114,8 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             throw new IllegalArgumentException("Root hub can not be null");
         }
         if (hubCombinedObjects == null) {
-            throw new IllegalArgumentException("Combined hub can not be null");
+            // 20150720 allow combinedHub to be null
+            //throw new IllegalArgumentException("Combined hub can not be null");
         }
         init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
     }
@@ -193,7 +194,7 @@ static int cntq;
             if (bServerSideOnly) { // 20120505
                 OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
             }
-            if (!bShareEndHub) hubCombined.clear();
+            if (!bShareEndHub && hubCombined != null) hubCombined.clear();
             dataRoot.onNewList(null);
             dataRoot.afterChangeActiveObject(null);
         }
@@ -251,7 +252,7 @@ static int cntq;
         }
 
         // verify hubCombinued objects are used
-        if (!bShareEndHub) {
+        if (!bShareEndHub && hubCombined != null) {
             for (int i = 0;; i++) {
                 Object obj = hubCombined.getAt(i);
                 if (obj == null) break;
@@ -303,57 +304,57 @@ static int cntq;
      * 
      * @param e
      */
-    protected void beforeRemoveRealHub(HubEvent e) {
+    protected void beforeRemoveRealHub(HubEvent<T> e) {
     }
 
-    protected void afterRemoveRealHub(HubEvent e) {
+    protected void afterRemoveRealHub(HubEvent<T> e) {
     }
 
-    protected void beforeRemoveAllRealHub(HubEvent e) {
+    protected void beforeRemoveAllRealHub(HubEvent<T> e) {
     }
-    protected void afterRemoveAllRealHub(HubEvent e) {
+    protected void afterRemoveAllRealHub(HubEvent<T> e) {
     }
 
     /**
      * This can be overwritten to get the move event from the parent, instead of getting the move event
      * from the combinedHub.
      */
-    protected void afterMoveRealHub(HubEvent e) {
+    protected void afterMoveRealHub(HubEvent<T> e) {
     }
 
     /**
      * This can be overwritten to get the insert event from the parent, instead of getting the insert
      * event from the combinedHub.
      */
-    protected void beforeInsertRealHub(HubEvent e) {
+    protected void beforeInsertRealHub(HubEvent<T> e) {
     }
 
     /**
      * This can be overwritten to get the insert event from the parent, instead of getting the insert
      * event from the combinedHub.
      */
-    protected void afterInsertRealHub(HubEvent e) {
+    protected void afterInsertRealHub(HubEvent<T> e) {
     }
 
     /**
      * This can be overwritten to get the add event from the parent, instead of getting the add event
      * from the combinedHub.
      */
-    protected void beforeAddRealHub(HubEvent e) {
+    protected void beforeAddRealHub(HubEvent<T> e) {
     }
 
     /**
      * This can be overwritten to get the add event from the parent, instead of getting the add event
      * from the combinedHub.
      */
-    protected void afterAddRealHub(HubEvent e) {
+    protected void afterAddRealHub(HubEvent<T> e) {
     }
 
     /**
      * This can be overwritten to get the add event from the parent, instead of getting the add event
      * from the combinedHub.
      */
-    protected void onNewListRealHub(HubEvent e) {
+    protected void onNewListRealHub(HubEvent<T> e) {
     }
     
     /* //qqqqqq not sure if this is used // check to see if this, and Data.getChildrenCount() can be
@@ -465,8 +466,8 @@ static int cntq;
             }
         }
         // verify that last property is same class as hubCombined
-        if (hubCombined.getObjectClass() == null) HubDelegate.setObjectClass(hubCombined, clazz);
-        if (!hubCombined.getObjectClass().equals(clazz)) {
+        if (hubCombined != null && hubCombined.getObjectClass() == null) HubDelegate.setObjectClass(hubCombined, clazz);
+        if (hubCombined != null && !hubCombined.getObjectClass().equals(clazz)) {
             if (!clazz.equals(Hub.class)) {
                 // if (!OAObject.class.equals(clazz)) { // 20120809 could be using generic type reference
                 // (ex: OALeftJoin.A)
@@ -475,7 +476,7 @@ static int cntq;
                 // }
             }
         }
-        if (bIncludeRootHub) {
+        if (bIncludeRootHub && hubCombined != null) {
             if (!hubRoot.getObjectClass().equals(clazz)) {
                 throw new IllegalArgumentException("IncludeRootHub=true, and HubRoot class does not match.  Property path \"" + path
                         + "\" is for objects of Class " + clazz.getName() + " and hubCombined is for objects of Class "
@@ -687,7 +688,7 @@ static int cntq;
                 else {
                     if (node.data != null) LOG.warning("node.data != null for type=Many");
                 }
-                if (node.child == null && bShareEndHub && this.hub != hubCombined.getSharedHub()) {
+                if (node.child == null && bShareEndHub && hubCombined != null && this.hub != hubCombined.getSharedHub()) {
                     LOG.warning("node.hub != hubCombined.sharedHub");
                 }
                 if (node.child != null) {
@@ -726,7 +727,7 @@ static int cntq;
                     for (int i = 0; hub != null; i++) {
                         Object obj = hub.getAt(i);
                         if (obj == null) break;
-                        if (node.child == null && !hubCombined.contains(obj)) {
+                        if (node.child == null && hubCombined != null && !hubCombined.contains(obj)) {
                             LOG.warning("object not in hubCombined");
                         }
                     }
@@ -748,7 +749,7 @@ static int cntq;
                         for (int i = 0; hub != null; i++) {
                             Object obj = hub.getAt(i);
                             if (obj == null) break;
-                            if (!hubCombined.contains(obj)) LOG.warning("object not in hubCombined");
+                            if (hubCombined != null && !hubCombined.contains(obj)) LOG.warning("object not in hubCombined");
                         }
                     }
                 }
@@ -785,7 +786,7 @@ static int cntq;
 
             if (node.child == null) {
                 if (bShareEndHub) {
-                    hubCombined.setSharedHub(hub, bShareActiveObject);
+                    if (hubCombined != null) hubCombined.setSharedHub(hub, bShareActiveObject);
                 }
                 else {
                     for (int i = 0;; i++) {
@@ -897,7 +898,7 @@ static int cntq;
 
             // 20131209
             if (node == nodeRoot && bIncludeRootHub) {
-                if (!hubCombined.contains(parent)) {
+                if (hubCombined != null && !hubCombined.contains(parent)) {
                     if (bServerSideOnly) {
                         OARemoteThreadDelegate.sendMessages();
                     }
@@ -906,7 +907,7 @@ static int cntq;
             }
 
             if (node.child == null) {
-                if (!bShareEndHub && !hubCombined.contains(parent)) {
+                if (!bShareEndHub && hubCombined != null && !hubCombined.contains(parent)) {
                     if (bServerSideOnly) {
                         OARemoteThreadDelegate.sendMessages();
                     }
@@ -1040,7 +1041,7 @@ static int cntq;
                 }
                 else if (!bShareEndHub) {
                     if (this.hub == hubCombined) {
-                        if (!hubCombined.contains(obj)) {
+                        if (hubCombined == null || !hubCombined.contains(obj)) {
                             return; // might have already been removed
                         }
                     }
@@ -1055,7 +1056,7 @@ static int cntq;
                         // false, false);
                     }
                     else {
-                        hubCombined.remove(obj);
+                        if (hubCombined != null) hubCombined.remove(obj);
                     }
                 }
                 if (alChildren == null) {
@@ -1073,7 +1074,7 @@ static int cntq;
                         HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false, false);
                     }
                     else {
-                        hubCombined.remove(obj);
+                        if (hubCombined != null) hubCombined.remove(obj);
                     }
                 }
             }
@@ -1145,7 +1146,7 @@ static int cntq;
                 if (alChildren == null || node.child == null) {
                     if (bShareEndHub) {
                         // 20110809 might need to unset hubCombied.sharedHub
-                        hubCombined.setSharedHub(null);
+                        if (hubCombined != null) hubCombined.setSharedHub(null);
                         return;
                     }
                     if (hub != null) {
@@ -1271,7 +1272,7 @@ static int cntq;
         public void _onNewList(HubEvent e) {
             HubData hd = null;
             try {
-                if (this.hub != hubCombined) {
+                if (hubCombined != null && this.hub != hubCombined) {
                     if (!hubCombined.data.isInFetch()) {
                         hd = hubCombined.data;
                         hd.setInFetch(true);
@@ -1282,7 +1283,7 @@ static int cntq;
             finally {
                 if (hd != null) hd.setInFetch(false);
             }
-            if (this.hub != hubCombined) {
+            if (hubCombined != null && this.hub != hubCombined) {
                 if (hubCombined.getSharedHub() != this.hub) {
                     if (!bShareEndHub) { // 20110521
                         HubEventDelegate.fireOnNewListEvent(hubCombined, true);
@@ -1592,15 +1593,17 @@ static int cntq;
                 if (d.parentObject == evt.getObject()) return;
             }
 
-            HubData hd = hubCombined.data;
-            boolean b = hd.isInFetch();
-            try {
-                hd.setInFetch(true);
-                if (!bShareEndHub) hubCombined.clear();
-                _afterChangeActiveObject();
-            }
-            finally {
-                hd.setInFetch(b);
+            if (hubCombined != null) {
+                HubData hd = hubCombined.data;
+                boolean b = hd.isInFetch();
+                try {
+                    hd.setInFetch(true);
+                    if (!bShareEndHub) hubCombined.clear();
+                    _afterChangeActiveObject();
+                }
+                finally {
+                    hd.setInFetch(b);
+                }
             }
             // 20110419 param was true, but this should only send to other hubs that share this one
             HubEventDelegate.fireOnNewListEvent(hubCombined, false);
