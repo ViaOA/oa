@@ -704,4 +704,3 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     protected void afterRemoveFromFilteredHub(TYPE obj) {
     }
 }
-

@@ -478,6 +478,8 @@ public class OAObjectReflectDelegate {
         if (obj instanceof Hub) {
             // 20141215 could be server side, that deserialized the object+references without setting up.
             hub = (Hub) obj;
+            
+            // return if not server
             if (!OAObjectCSDelegate.isServer()) return hub;
 
             // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))

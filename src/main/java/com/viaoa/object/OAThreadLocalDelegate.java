@@ -528,7 +528,7 @@ public class OAThreadLocalDelegate {
     }
     public static void lock(Object object) {
         OAThreadLocal ti = OAThreadLocalDelegate.getThreadLocal(true);
-        lock(ti, object, 10);
+        lock(ti, object, 2);
     }
     public static boolean hasLock() {
         OAThreadLocal ti = OAThreadLocalDelegate.getThreadLocal(false);
@@ -689,9 +689,9 @@ static volatile int unlockCnt;
                 hmLock.put(thisLockObject, tls);
             }
             tlThis.bIsWaitingOnLock = false;
-            if (maxWaitTries > 2) {
-                String s = "thread "+Thread.currentThread().getName()+" max wait, is waiting on Object="+thisLockObject+", current has lock on object[0]="+tlThis.locks[0]+", and "+(tlThis.locks.length-1)+" other objects, will continue";
-                LOG.warning(s);
+            if (maxWaitTries > 2) { 
+                String s = "this.thread "+Thread.currentThread().getName()+", timedout waiting for:"+thisLockObject+", locked by:" + tls[0].threadName;
+                LOG.fine(s);
             }
             return true; // done trying
         }

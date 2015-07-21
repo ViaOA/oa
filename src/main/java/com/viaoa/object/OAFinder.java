@@ -237,6 +237,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             alFilters.remove(x-1);
             f = new OAOrFilter(filter, f);
             filter = f;
+            bOr = false;
         }
         else if (bAnd) {
             int x = alFilters.size();
@@ -245,6 +246,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             alFilters.remove(x-1);
             f = new OAAndFilter(filter, f);
             filter = f;
+            bAnd = false;
         }
         alFilters.add(filter);
     }
