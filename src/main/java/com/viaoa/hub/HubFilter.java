@@ -27,8 +27,8 @@ import com.viaoa.util.OAArray;
     <p>
     Example<br>
     <pre>
-    Hub hubFilter = new Hub(Employee.class)
-    new HubFilter(hubAllEmployees, hubFilter) {
+    Hub hubFiltered = new Hub(Employee.class)
+    new HubFilter(hubAllEmployees, hubFiltered) {
         public boolean isUsed(Object obj) {
             // .... code to check if object should be added to hubFilter
         }

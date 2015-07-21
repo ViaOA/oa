@@ -14,6 +14,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
+
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.util.filter.*;
@@ -194,12 +195,57 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return al;        
     }
 
+    
+    private boolean bOr, bAnd;
+    public void addOr() {
+        bOr = true;
+    }
+    public void addAnd() {
+        bAnd = true;
+    }
+    
+    private int iBlockPos = -1;
+    public void startBlock() {
+        iBlockPos = alFilters == null ? 0 : alFilters.size();
+    }
+    public void endBlock() {
+        if (iBlockPos >= 0 && alFilters != null) {
+            int x = alFilters.size();
+            if (x > iBlockPos) {
+                OAFilter[] filters = new OAFilter[x-iBlockPos];
+                for (int i=iBlockPos; i<x; i++) {
+                    filters[i-iBlockPos] = alFilters.remove(iBlockPos);
+                }
+                OAFilter f = new OABlockFilter(filters);
+                addFilter(f);
+            }
+        }
+        iBlockPos = -1;
+    }
+    
     public void clearFilters() {
         alFilters = null;
     }
 
     public void addFilter(OAFilter<T> filter) {
         if (alFilters == null) alFilters = new ArrayList<OAFilter>();
+        
+        if (bOr) {
+            int x = alFilters.size();
+            if (x == 0) return; 
+            OAFilter f = alFilters.get(x-1);
+            alFilters.remove(x-1);
+            f = new OAOrFilter(filter, f);
+            filter = f;
+        }
+        else if (bAnd) {
+            int x = alFilters.size();
+            if (x == 0) return; 
+            OAFilter f = alFilters.get(x-1);
+            alFilters.remove(x-1);
+            f = new OAAndFilter(filter, f);
+            filter = f;
+        }
         alFilters.add(filter);
     }
     public void addEqualFilter(final String propPath, final Object value) {
@@ -234,7 +280,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         });
     }
   
-    
     public void addEmptyFilter(final String propPath) {
         _addFilter(propPath, new OAFilter() {
             @Override
