@@ -11,6 +11,7 @@
 package com.viaoa.hub;
 
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,6 +19,20 @@ import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAArray;
+import com.viaoa.util.OAString;
+import com.viaoa.util.filter.OAAndFilter;
+import com.viaoa.util.filter.OABetweenFilter;
+import com.viaoa.util.filter.OABetweenOrEqualFilter;
+import com.viaoa.util.filter.OABlockFilter;
+import com.viaoa.util.filter.OAEqualFilter;
+import com.viaoa.util.filter.OAGreaterFilter;
+import com.viaoa.util.filter.OAGreaterOrEqualFilter;
+import com.viaoa.util.filter.OALessFilter;
+import com.viaoa.util.filter.OALessOrEqualFilter;
+import com.viaoa.util.filter.OALikeFilter;
+import com.viaoa.util.filter.OANotEqualFilter;
+import com.viaoa.util.filter.OANotLikeFilter;
+import com.viaoa.util.filter.OAOrFilter;
 
 /**
     HubFilter is used to create a Hub that has objects that are filtered from another Hub.
@@ -38,10 +53,10 @@ import com.viaoa.util.OAArray;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 
-public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implements java.io.Serializable, OAFilter<TYPE> {
+public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Serializable, OAFilter<T> {
     private static final long serialVersionUID = 1L;
 
-    protected Hub<TYPE> hubMaster, hub;
+    protected Hub<T> hubMaster, hub;
     private HashSet<String> hashProp;
     private boolean bShareAO;
     private boolean bClosed;
@@ -55,7 +70,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     
     public boolean DEBUG;
     private boolean bOAObjectCacheDelegateListener;
-    private HubListenerAdapter<TYPE> hlHubMaster;
+    private HubListenerAdapter<T> hlHubMaster;
     private boolean bNewListFlag;
     
     private final AtomicInteger aiClearing = new AtomicInteger();
@@ -66,25 +81,25 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         @param hubMaster hub with complete list of objects.
         @param hub that stores filtered objects. 
     */
-    public HubFilter(Hub<TYPE> hubMaster, Hub<TYPE> hub) {
+    public HubFilter(Hub<T> hubMaster, Hub<T> hub) {
         this(false, hubMaster, hub, false, false, null);
     }
 
-    public HubFilter(Hub<TYPE> hubMaster, Hub<TYPE> hub, boolean bShareAO) {
+    public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO) {
         this(false, hubMaster, hub, bShareAO, false, null);
     }
 
-    public HubFilter(Hub<TYPE> hubMaster, Hub<TYPE> hub, String... dependentPropertyPaths) {
+    public HubFilter(Hub<T> hubMaster, Hub<T> hub, String... dependentPropertyPaths) {
         this(false, hubMaster, hub, false, false, dependentPropertyPaths);
     }    
-    public HubFilter(Hub<TYPE> hubMaster, Hub<TYPE> hub, boolean bShareAO, String... dependentPropertyPaths) {
+    public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, String... dependentPropertyPaths) {
         this(false, hubMaster, hub, bShareAO, false, dependentPropertyPaths);
     }    
-    public HubFilter(Hub<TYPE> hubMaster, Hub<TYPE> hub, boolean bShareAO, boolean bRefreshOnLinkChange, String... dependentPropertyPaths) {
+    public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, boolean bRefreshOnLinkChange, String... dependentPropertyPaths) {
         this(false, hubMaster, hub, bShareAO, bRefreshOnLinkChange, dependentPropertyPaths);
     }
     
-    public HubFilter(boolean bObjectCache, Hub<TYPE> hubMaster, Hub<TYPE> hub, boolean bShareAO, boolean bRefreshOnLinkChange, String... dependentPropertyPaths) {
+    public HubFilter(boolean bObjectCache, Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, boolean bRefreshOnLinkChange, String... dependentPropertyPaths) {
         // note: bObjectCache will allow hubMaster to be null, which will then use the oaObjectCache
         if (!bObjectCache && hubMaster == null) {
             throw new IllegalArgumentException("hubMaster can not be null if bObjectCache=false");
@@ -108,7 +123,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         HubFilter that works with HubController so that all objects of class hub.getObjectClass() are filtered.
         @param hub that stores filtered objects. 
     */
-    public HubFilter(Hub<TYPE> hub) {
+    public HubFilter(Hub<T> hub) {
         this(true, null, hub, false, false, null);
     }
 
@@ -241,26 +256,33 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     /** 
         Method used to know if object should be in filtered hub.  HubFilter will automatically listen to
         Master hub and call this method when needed.
-        @return true to include object
+        @return true to include object (default)
         @return false to exclude object
     */
-    public abstract boolean isUsed(TYPE object);
+    public boolean isUsed(T object) {
+        boolean bIsUsed = true;
+        for (OAFilter f : alFilters) {
+            bIsUsed = f.isUsed(object);
+            if (!bIsUsed) break;
+        }
+        return bIsUsed;
+    }
 
     /** This is called when isUsed() is true, to get the object to use. <br>
         This can be overwritten to replace the object with another object.
         @returns object to insert into hub.  Default is to use object.
     */
-    public TYPE getObject(TYPE object) {
+    public T getObject(T object) {
         return object;
     }
     
     
-    protected HubListenerAdapter<TYPE> getMasterHubListener() {
+    protected HubListenerAdapter<T> getMasterHubListener() {
         if (hlHubMaster != null) return hlHubMaster;
         
-        hlHubMaster = new HubListenerAdapter<TYPE>() {
+        hlHubMaster = new HubListenerAdapter<T>() {
             /** HubListener interface method, used to update filter. */
-            public @Override void afterPropertyChange(HubEvent<TYPE> e) {
+            public @Override void afterPropertyChange(HubEvent<T> e) {
                 if (bClosed) return;
                 if (hashProp != null) {
                     String s = e.getPropertyName();
@@ -270,13 +292,13 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             }
 
             /** HubListener interface method, used to update filter. */
-            public @Override void afterInsert(HubEvent<TYPE> e) {
+            public @Override void afterInsert(HubEvent<T> e) {
                 if (bClosed) return;
                 afterAdd(e);
             }
 
             /** HubListener interface method, used to update filter. */
-            public @Override void afterAdd(HubEvent<TYPE> e) {
+            public @Override void afterAdd(HubEvent<T> e) {
                 if (bClosed) return;
                 if (hubMaster == null || !hubMaster.isLoading()) {
                     if (hub == null || !hub.contains(e.getObject())) {
@@ -294,7 +316,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             }
 
             /** HubListener interface method, used to update filter. */
-            public @Override void afterRemove(HubEvent<TYPE> e) {
+            public @Override void afterRemove(HubEvent<T> e) {
                 if (bClosed) return;
                 try {
                     if (bServerSideOnly) { 
@@ -312,18 +334,18 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             }
             
             /** HubListener interface method, used to update filter. */
-            public @Override void onNewList(HubEvent<TYPE> e) {
+            public @Override void onNewList(HubEvent<T> e) {
                 if (bClosed || bNewListFlag) return;
                 initialize();
             }
 
             /** HubListener interface method, used to update filter. */
-            public @Override void afterSort(HubEvent<TYPE> e) {
+            public @Override void afterSort(HubEvent<T> e) {
                 if (bClosed) return;
                 if (hubMaster != null) onNewList(e);
             }
             
-            public void afterChangeActiveObject(HubEvent<TYPE> e) {
+            public void afterChangeActiveObject(HubEvent<T> e) {
                 if (!bShareAO || hub == null || hubMaster == null) return;
                 
                 Object obj = HubFilter.this.hubMaster.getAO();
@@ -377,11 +399,11 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             public @Override void afterChangeActiveObject(HubEvent evt) {
                 if (bClosed) return;
                 if (objTemp != null) {
-                    if (!isUsed((TYPE) objTemp)) {
-                        objTemp = getObject((TYPE)objTemp);
+                    if (!isUsed((T) objTemp)) {
+                        objTemp = getObject((T)objTemp);
                         try {
                             aiUpdating.incrementAndGet();
-                            if (objTemp != null) removeObject((TYPE)objTemp);
+                            if (objTemp != null) removeObject((T)objTemp);
                         }
                         finally {
                             aiUpdating.decrementAndGet();
@@ -400,7 +422,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                             try {
                                 aiUpdating.incrementAndGet();
                                 objTemp = obj;
-                                addObject((TYPE)obj);
+                                addObject((T)obj);
                             }
                             finally {
                                 aiUpdating.decrementAndGet();
@@ -423,7 +445,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         bRefreshOnLinkChange = b;
     }
     
-    public void update(TYPE obj) {
+    public void update(T obj) {
         if (bClosed) return;
         if (aiClearing.get() != 0) return;
         try {
@@ -448,12 +470,12 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
                             Object objx = hubLink.getAO();
                             if (objx != null) {
                                 objx = HubLinkDelegate.getPropertyValueInLinkedToHub(hub, objx);
-                                objx = getObject((TYPE)objx);
+                                objx = getObject((T)objx);
                                 if (obj == objx) {
                                     if (obj != objTemp) {
                                         if (objTemp != null) {
-                                            if (!isUsed((TYPE)objTemp)) {
-                                                removeObject((TYPE)objTemp);
+                                            if (!isUsed((T)objTemp)) {
+                                                removeObject((T)objTemp);
                                             }
                                         }
                                         objTemp = obj;
@@ -490,7 +512,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         initialize();
     }
 
-    public void refresh(TYPE obj) {
+    public void refresh(T obj) {
         boolean b = isUsed(obj);
         if (hub == null) return;
         if (b) {
@@ -569,7 +591,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     private boolean _initialize(final int cnt) {
         if (bClosed) return false;
         for (int i=0; hubMaster!=null;i++) {
-            TYPE obj = hubMaster.elementAt(i);
+            T obj = hubMaster.elementAt(i);
             if (obj == null) break;
             if (aiInitializeCount.get() != cnt) return false;
             update(obj);
@@ -582,9 +604,9 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
             if (objx != null) {
                 objx = HubLinkDelegate.getPropertyValueInLinkedToHub(hub, objx);
                 if (objx != null) {
-                    objx = getObject((TYPE)objx);
+                    objx = getObject((T)objx);
                     if (objx != null && !hub.contains(objx)) {
-                        addObject((TYPE)objx);
+                        addObject((T)objx);
                     }
                 }
             }
@@ -595,7 +617,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         }
         
         if (bShareAO && hubLink == null && hubMaster != null) {
-            TYPE obj = hubMaster.getAO();
+            T obj = hubMaster.getAO();
             if (obj != null && !hub.contains(obj)) {
                 obj = null;
             }
@@ -616,7 +638,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         Called to add an object to the Hub.  This can be overwritten
         to handle a different way (ex: different thread) to handle adding to the hub.
     */
-    protected void addObject(TYPE obj) {
+    protected void addObject(T obj) {
         if (bClosed) return;
         try {
             if (hub != null) {
@@ -631,7 +653,7 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         Called to remove an object from the Hub.  This can be overwritten
         to handle a different way (ex: different thread) to handle removing from the hub.
     */
-    protected void removeObject(TYPE obj) {
+    protected void removeObject(T obj) {
         if (bClosed) return;
         try {
             if (hub != null) {
@@ -651,10 +673,10 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
     // Hub Listener code for filtered Hub
     //    note: this needs to be here so that HubShareDelegate can find HubFilter for a hub
     
-    public @Override void afterAdd(HubEvent<TYPE> e) {
+    public @Override void afterAdd(HubEvent<T> e) {
         afterAdd(e.getObject());
     }
-    public void afterAdd(TYPE obj) {
+    public void afterAdd(T obj) {
         if (aiUpdating.get() == 0) {
             if (hubMaster != null && !hubMaster.contains(obj)) {
                 hubMaster.add(obj);
@@ -662,30 +684,30 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
         }        
     }
     
-    public @Override void afterPropertyChange(HubEvent<TYPE> e) {
+    public @Override void afterPropertyChange(HubEvent<T> e) {
         if (e.getPropertyName().equalsIgnoreCase("Link")) {
             setupLinkHubListener();
         }
     }
     @Override
-    public void afterInsert(HubEvent<TYPE> e) {
+    public void afterInsert(HubEvent<T> e) {
         afterAdd(e);
     }
     
     @Override
-    public void afterRemove(HubEvent<TYPE> e) {
+    public void afterRemove(HubEvent<T> e) {
         if (aiUpdating.get() == 0 && aiClearing.get() == 0) {
             afterRemove(e.getObject());
         }
     }
-    public void afterRemove(TYPE obj) {
+    public void afterRemove(T obj) {
         if (hubMaster != null) {
             HubFilter.this.afterRemoveFromFilteredHub(obj);
         }
     }
     
     @Override
-    public void afterChangeActiveObject(HubEvent<TYPE> e) {
+    public void afterChangeActiveObject(HubEvent<T> e) {
         if (bShareAO && hub != null && hubMaster != null) {
             Object obj = HubFilter.this.hub.getAO();
             if (obj != null && !HubFilter.this.hubMaster.contains(obj)) obj = null;
@@ -701,6 +723,179 @@ public abstract class HubFilter<TYPE> extends HubListenerAdapter<TYPE> implement
      * By default, this does nothing (it does not remove from hubMaster)
      * @param obj
      */
-    protected void afterRemoveFromFilteredHub(TYPE obj) {
+    protected void afterRemoveFromFilteredHub(T obj) {
+    }
+
+
+    private ArrayList<OAFilter> alFilters;
+    private boolean bOr, bAnd;
+    private int iBlockPos = -1;
+
+    public void startBlock() {
+        iBlockPos = alFilters == null ? 0 : alFilters.size();
+    }
+    public void endBlock() {
+        if (iBlockPos >= 0 && alFilters != null) {
+            int x = alFilters.size();
+            if (x > iBlockPos) {
+                OAFilter[] filters = new OAFilter[x-iBlockPos];
+                for (int i=iBlockPos; i<x; i++) {
+                    filters[i-iBlockPos] = alFilters.remove(iBlockPos);
+                }
+                OAFilter f = new OABlockFilter(filters);
+                addFilter(f);
+            }
+        }
+        iBlockPos = -1;
+    }
+    public void clearFilters() {
+        alFilters = null;
+    }
+
+    public void addFilter(OAFilter<T> filter) {
+        if (alFilters == null) alFilters = new ArrayList<OAFilter>();
+        
+        if (bOr) {
+            int x = alFilters.size();
+            if (x == 0) return; 
+            OAFilter f = alFilters.get(x-1);
+            alFilters.remove(x-1);
+            f = new OAOrFilter(filter, f);
+            filter = f;
+            bOr = false;
+        }
+        else if (bAnd) {
+            int x = alFilters.size();
+            if (x == 0) return; 
+            OAFilter f = alFilters.get(x-1);
+            alFilters.remove(x-1);
+            f = new OAAndFilter(filter, f);
+            filter = f;
+            bAnd = false;
+        }
+        alFilters.add(filter);
+    }
+    public void addEqualFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OAEqualFilter(value));
+    }
+    public void addNotEqualFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OANotEqualFilter(value));
+    }
+
+    public void addBetweenOrEqualFilter(final String propPath, final Object value1, final Object value2) {
+        _addFilter(propPath, new OABetweenOrEqualFilter(value1, value2));
+    }
+    public void addBetween(final String propPath, final Object value1, final Object value2) {
+        _addFilter(propPath, new OABetweenFilter(value1, value2));
+    }
+    
+    
+    public void addNullFilter(final String propPath) {
+        _addFilter(propPath, new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                return obj == null;
+            }
+        });
+    }
+    public void addNotNullFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                return obj != null;
+            }
+        });
+    }
+  
+    public void addEmptyFilter(final String propPath) {
+        _addFilter(propPath, new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                return OAString.isEmpty(obj);
+            }
+        });
+    }
+    public void addNotEmptyFilter(final String propPath) {
+        _addFilter(propPath, new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                return !OAString.isEmpty(obj);
+            }
+        });
+    }
+    
+    
+    /**
+     * Create a filter that is used on every object for this finder.
+     * @param propPath property path from this Finder from object to the object that will be compared.
+     * @param value value to compare with using OACompare.isLike(..).
+     */
+    public void addLikeFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OALikeFilter(value));
+    }
+    public void addNotLikeFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OANotLikeFilter(value));
+    }
+    public void addGreaterFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OAGreaterFilter(value));
+    }
+    public void addGreaterOrEqualFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OAGreaterOrEqualFilter(value));
+    }
+    public void addLessFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OALessFilter(value));
+    }
+    public void addLessOrEqualFilter(final String propPath, final Object value) {
+        _addFilter(propPath, new OALessOrEqualFilter(value));
+    }
+    public void addBetweenFilter(final String propPath, final Object value1, final Object value2) {
+        _addFilter(propPath, new OABetweenFilter(value1, value2));
+    }
+    
+    /**
+     * Create a filter that is used on every object.
+     */
+    private void _addFilter(final String propPath, final OAFilter filter) {
+        if (filter == null) return;
+        addDependentProperty(propPath);
+        
+        OAFilter<T> f;
+        if (OAString.isEmpty(propPath)) {
+            f = filter;
+        }
+        else if (OAString.dcount(propPath, '.') == 1) {
+            f = new OAFilter<T>() {
+                @Override
+                public boolean isUsed(T obj) {
+                    if (obj == null) return false;
+                    Object objx = ((OAObject)obj).getProperty(propPath);
+                    return filter.isUsed(objx);
+                }
+            };
+        }
+        else {
+            int dcnt = OAString.dcount(propPath, '.');
+            String prop = OAString.field(propPath, '.', 1, dcnt-1);
+            final OAFinder find = new OAFinder(prop);
+            final String propLast = OAString.field(propPath, '.', dcnt);
+
+            f = new OAFilter() {
+                @Override
+                public boolean isUsed(Object obj) {
+                    if (obj == null) return false;
+                    Object objx = ((OAObject)obj).getProperty(propLast);
+                    return filter.isUsed(objx);
+                }
+            };
+            
+            find.addFilter(filter);
+            
+            f = new OAFilter() {
+                public boolean isUsed(Object obj) {
+                    return find.canFindFirst((OAObject)obj);
+                }
+            };
+        }
+        addFilter(f);
     }
 }

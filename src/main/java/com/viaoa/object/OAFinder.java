@@ -332,7 +332,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      * Create a filter that is used on every object for this finder.
      * @param propPath property path from this Finder from object to the object that will be compared.
      */
-    private void _addFilter(final String propPath, final OAFilter filter) {
+    protected void _addFilter(final String propPath, final OAFilter filter) {
         if (filter == null) return;
         OAFilter<T> f;
         if (OAString.isEmpty(propPath)) {
@@ -350,8 +350,9 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
         else {
             int dcnt = OAString.dcount(propPath, '.');
-            final OAFinder<T, OAObject> find = new OAFinder<T, OAObject>(OAString.field(propPath, '.', 1, dcnt-1));
-            String prop = OAString.field(propPath, '.', dcnt);
+            String prop = OAString.field(propPath, '.', 1, dcnt-1);
+            final OAFinder<T, OAObject> find = new OAFinder<T, OAObject>(prop);
+            prop = OAString.field(propPath, '.', dcnt);
             find._addFilter(prop, filter);
             
             f = new OAFilter<T>() {
