@@ -255,7 +255,12 @@ public class MultiplexerSocketController implements Serializable {
         if (_outputStreamController == null) {
             synchronized (_LockStreamController) {
                 if (_outputStreamController == null) {
-                    _outputStreamController = new MultiplexerOutputStreamController();
+                    _outputStreamController = new MultiplexerOutputStreamController() {
+                        @Override
+                        protected void onSocketException(Exception e) {
+                            MultiplexerSocketController.this.onSocketException(e);
+                        }
+                    };
                 }
             }
         }

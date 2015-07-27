@@ -1,9 +1,11 @@
 package com.viaoa.remote.multiplexer;
 
 import static org.junit.Assert.*;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
@@ -72,6 +74,11 @@ public class RemoteMultiplexerTest extends OAUnitTest {
             public void pingNoReturn(String msg) {
                 cntPingNoReturn++;
             }
+            @Override
+            public void registerTest(int id, RemoteClientInterface rci, RemoteBroadcastInterface rbi) {
+                remoteClientInterfaceOnServer = rci;
+                rbi.ping("hey");
+            }
         };
         // with queue
         remoteMultiplexerServer.createLookup("server", remoteServer, RemoteServerInterface.class, queueName, queueSize);
@@ -101,6 +108,11 @@ public class RemoteMultiplexerTest extends OAUnitTest {
             @Override
             public void registerNoResponse(int id, RemoteClientInterface rci) {
                 remoteClientInterfaceOnServerNoQ = rci;
+            }
+            @Override
+            public void registerTest(int id, RemoteClientInterface rci, RemoteBroadcastInterface rbi) {
+                remoteClientInterfaceOnServer = rci;
+                rbi.ping("hey");
             }
         };
         remoteMultiplexerServer.createLookup("serverNoQ", remoteServerNoQ, RemoteServerInterface.class);

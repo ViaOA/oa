@@ -3,9 +3,11 @@ package com.viaoa.remote.multiplexer;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
@@ -92,6 +94,9 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             public void registerNoResponse(int id, RemoteClientInterface rci) {
                 register(id, rci);
             }
+            @Override
+            public void registerTest(int id, RemoteClientInterface rci, RemoteBroadcastInterface rbi) {
+            }
         };
         // with queue
         remoteMultiplexerServer.createLookup("server", remoteServer, RemoteServerInterface.class, queueName, queueSize);
@@ -137,6 +142,9 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
             @OARemoteMethod(noReturnValue = true)
             public void registerNoResponse(int id, RemoteClientInterface rci) {
                 register(id, rci);
+            }
+            @Override
+            public void registerTest(int id, RemoteClientInterface rci, RemoteBroadcastInterface rbi) {
             }
         };
         remoteMultiplexerServer.createLookup("serverNoQ", remoteServerNoQ, RemoteServerInterface.class);

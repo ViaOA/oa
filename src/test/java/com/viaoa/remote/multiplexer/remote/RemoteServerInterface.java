@@ -19,4 +19,8 @@ public interface RemoteServerInterface {
     
     @OARemoteMethod(noReturnValue=true)
     void pingNoReturn(String msg);
+
+
+    void registerTest(int id, RemoteClientInterface rci, RemoteBroadcastInterface rbi);
+
 }

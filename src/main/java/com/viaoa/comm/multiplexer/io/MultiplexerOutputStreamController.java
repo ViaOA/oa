@@ -13,6 +13,7 @@ package com.viaoa.comm.multiplexer.io;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
@@ -266,6 +267,10 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
                     _dataOutputStream.flush();
                 }
             }
+            catch (SocketException e) {
+                onSocketException(e);
+                throw(e);
+            }
             finally {
                 _bWritingLock = false;
                 WRITELOCK.notifyAll();
@@ -276,6 +281,11 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
     public void sendPingCommand() throws IOException {
         sendCommand(MultiplexerSocketController.CMD_Ping, 0, null);
     }
+
+    protected void onSocketException(Exception e) {
+        
+    }
+    
     
     /**
      * Send a command to receiver. The command is then read by
