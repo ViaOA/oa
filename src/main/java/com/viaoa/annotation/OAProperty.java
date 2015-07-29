@@ -55,6 +55,7 @@ public @interface OAProperty {
     boolean isPassword() default false;
     boolean isReadOnly() default false;
     boolean isProcessed() default false;
+    boolean isImportMatch() default false;
     
     boolean isEmail() default false;
     boolean isUrl() default false;

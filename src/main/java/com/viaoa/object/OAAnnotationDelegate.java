@@ -138,6 +138,7 @@ public class OAAnnotationDelegate {
             pi.setBlob(b);
             pi.setNameValue(oaprop.isNameValue());
             pi.setUnicode(oaprop.isUnicode());
+            pi.setImportMatch(oaprop.isImportMatch());
         }
         
       

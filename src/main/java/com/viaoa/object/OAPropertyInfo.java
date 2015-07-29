@@ -29,6 +29,7 @@ public class OAPropertyInfo implements java.io.Serializable {
 	private String displayName;
 	private String columnName;
     private boolean isUnicode;
+    private boolean isImportMatch;
 	
 	public OAPropertyInfo() {
 	}
@@ -122,6 +123,13 @@ public class OAPropertyInfo implements java.io.Serializable {
     }
     public void setUnicode(boolean b) {
         this.isUnicode = b;
+    }
+
+    public boolean isImportMatch() {
+        return isImportMatch;
+    }
+    public void setImportMatch(boolean b) {
+        this.isImportMatch = b;
     }
 }
 

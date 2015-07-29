@@ -17,6 +17,7 @@ import java.net.*;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
+
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
 
@@ -53,6 +54,7 @@ public class OAXMLReader extends DefaultHandler {
     protected Class conversionClass;  // type of class that value needs to be converted to
     protected Vector vecIncomplete, vecRoot;
     protected HashMap hashGuid;
+    protected HashMap<Class, HashMap<OAObjectKey, OAObject>> hmMatch = new HashMap<Class, HashMap<OAObjectKey,OAObject>>(); 
 
     // objects that have been removed from a Hub and might not have been saved
     //   these objects will then be checked and saved at the end of the import
@@ -385,6 +387,7 @@ public class OAXMLReader extends DefaultHandler {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
             String[] ids = oi.getIdProperties();
             Object[] values = new Object[ ids == null ? 0 : ids.length ];
+            
             for (int i=0; i<ids.length; i++) {
                 String id = ids[i].toUpperCase();
                 Class c2 = OAObjectInfoDelegate.getPropertyClass(c, id);
@@ -393,49 +396,130 @@ public class OAXMLReader extends DefaultHandler {
                 hash.remove(id);
             }
             OAObjectKey key = new OAObjectKey(values);
-            OAObject object = null;
-            if (ids != null && ids.length > 0) {
-                object = OAObjectCacheDelegate.get(c, key);
+            
+            final String[] matchProps = oi.getImportMatchProperties();
+            final Object[] matchValues = new Object[ matchProps == null ? 0 : matchProps.length ];
+
+            if (matchProps != null && matchProps.length > 0) {
+                for (int i=0; i<matchProps.length; i++) {
+                    String id = matchProps[i].toUpperCase();
+                    Class c2 = OAObjectInfoDelegate.getPropertyClass(c, id);
+                    matchValues[i] = hash.get(id);
+                    if (matchValues[i] instanceof String) matchValues[i] = OAConverter.convert(c2, matchValues[i]);
+                }
             }
 
+            OAObject object = null;
+
+            
+            // 20150728
+            if (matchProps != null && matchProps.length > 0) {
+                if (bKeyOnly) {
+                    HashMap<OAObjectKey, OAObject> hm = hmMatch.get(c);
+                    if (hm != null) object = hm.get(key);
+                    if (object == null) {
+int xx = 4;
+xx++;
+//qqqqqqqqqqq
+                    }
+                }
+                else {
+                    OASelect sel = new OASelect(c);
+                    sel.setFilter(new OAFilter() {
+                        @Override
+                        public boolean isUsed(Object obj) {
+                            if (!(obj instanceof OAObject)) return false;
+                            for (int i=0; i<matchProps.length; i++) {
+                                Object val1 = ((OAObject)obj).getProperty(matchProps[i]);
+                                if (!OACompare.isEqual(val1, matchValues[i])) return false;
+                            }
+                            return true;
+                        }
+                    });
+                    sel.select();
+                    object = sel.next();
+                    sel.close();
+                    if (object != null) {
+                        HashMap<OAObjectKey, OAObject> hm = hmMatch.get(c);
+                        if (hm == null) {
+                            hm = new HashMap<OAObjectKey, OAObject>();
+                            hmMatch.put(c, hm);
+                        }
+                        hm.put(key, object);
+                    }
+                }
+            }
+            else {
+                if (ids != null && ids.length > 0) {
+                    object = OAObjectCacheDelegate.get(c, key);
+                }
+            }
             if (object == null && guid != null) {
                 object = (OAObject) hashGuid.get(guid);
             }
-
+            
             if (bKeyOnly) {
                 if (stack[indent-1] instanceof Vector) {
                     Vector vec = (Vector) stack[indent-1];
                     if (object != null) vec.addElement(object);
                     else if (guid != null) vec.addElement(XML_GUID+guid);
-                    else vec.addElement(key);
+                    if (matchProps == null || matchProps.length == 0) {
+                        vec.addElement(key);
+                    }
+                    else {
+//qqqqqqqqqq need to get the real object later qqqqqqqqqqqq
+int xx = 4;
+xx++;
+                    }
                 }
                 else if (stack[indent-1] instanceof Hub) {
                     Hub h = (Hub) stack[indent-1];
                     if (object != null) h.add(object);
-                    else h.add(key);
+                    else {
+                        if (matchProps == null || matchProps.length == 0) {
+                            h.add(key);
+                        }
+                        else {
+//qqqqqqqqqq need to get the real object later qqqqqqqqqqqq                            
+int xx = 4;
+xx++;
+                        }
+                    }
                 }
                 else if (indent > 3) {
                     // use this value when updating property
                     bUseRef = true;
                     if (object != null) refValue = object;
                     else if (guid != null) refValue = XML_GUID+guid;
-                    else refValue = key;
+                    if (matchProps == null || matchProps.length == 0) {
+                        refValue = key;
+                    }
+                    else {
+//qqqqqqqqqq need to get the real object later qqqqqqqqqqqq
+int xx = 4;
+xx++;
+                    }
+                    
                 }
             }
             else {
                 // create object, only load objectId properties
-                if (object == null && ids != null && ids.length > 0) {
-                    if (object == null) object = (OAObject) OADataSource.getObject(c, key);
+                if (matchProps == null || matchProps.length == 0) { 
+                    if (object == null && ids != null && ids.length > 0) {
+                        if (object == null) object = (OAObject) OADataSource.getObject(c, key);
+                    }
                 }
-
+                
                 if (object == null) {
                     try {
                         OAThreadLocalDelegate.setLoadingObject(true);
                     	object = createNewObject(c);
                         // set property ids
-                        for (int i=0; ids != null && i<ids.length; i++) {
-                            values[i] = getValue(object, ids[i], values[i]);  // hook method for subclass
-                            object.setProperty(ids[i], values[i]);
+                        if (matchProps == null || matchProps.length == 0) { 
+                            for (int i=0; ids != null && i<ids.length; i++) {
+                                values[i] = getValue(object, ids[i], values[i]);  // hook method for subclass
+                                object.setProperty(ids[i], values[i]);
+                            }
                         }
                     }
                     catch (Exception e) {

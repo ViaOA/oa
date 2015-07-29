@@ -16,6 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
+import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
 
 /** 
@@ -36,6 +37,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     protected ArrayList<OACalcInfo> alCalcInfo;
     protected HashSet<String> hsHubCalcInfoName = new HashSet<String>();
     protected String[] idProperties;
+    protected String[] importMatchProperties;
     protected ArrayList<OAPropertyInfo> alPropertyInfo;
     
     protected boolean bUseDataSource = true;
@@ -82,6 +84,18 @@ public class OAObjectInfo { //implements java.io.Serializable {
     	return this.idProperties;
     }
 
+    public String[] getImportMatchProperties() {
+        if (this.importMatchProperties == null) {
+            this.importMatchProperties = new String[0];
+            for (OAPropertyInfo pi : getPropertyInfos()) {
+                if (pi.isImportMatch()) {
+                    this.importMatchProperties = (String[]) OAArray.add(this.importMatchProperties, pi.getName());
+                }
+            }
+        }
+        return this.importMatchProperties;
+    }
+    
     public List<OALinkInfo> getLinkInfos() {
     	if (alLinkInfo == null) alLinkInfo = new CopyOnWriteArrayList<OALinkInfo>() {
     	    void reset() {
