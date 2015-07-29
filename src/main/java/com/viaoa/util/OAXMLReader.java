@@ -396,8 +396,9 @@ public class OAXMLReader extends DefaultHandler {
                 hash.remove(id);
             }
             final OAObjectKey key = new OAObjectKey(values);
-            
-            final String[] matchProps = oi.getImportMatchProperties();
+//qqqqqqqq            
+final String[] matchProps = null;
+//            final String[] matchProps = oi.getImportMatchProperties();
             final Object[] matchValues = new Object[ matchProps == null ? 0 : matchProps.length ];
 
             if (matchProps != null && matchProps.length > 0) {
