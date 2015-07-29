@@ -379,11 +379,11 @@ public class OAXMLReader extends DefaultHandler {
                 4: load/update property values
             */
 
-            Hashtable hash = (Hashtable) stackobj;
-            boolean bKeyOnly = hash.remove(XML_KEYONLY) != null;
-            String guid = (String) hash.remove(XML_GUID);
+            final Hashtable hash = (Hashtable) stackobj;
+            final boolean bKeyOnly = hash.remove(XML_KEYONLY) != null;
+            final String guid = (String) hash.remove(XML_GUID);
 
-            Class c = (Class) hash.get(XML_CLASS);
+            final Class c = (Class) hash.get(XML_CLASS);
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
             String[] ids = oi.getIdProperties();
             Object[] values = new Object[ ids == null ? 0 : ids.length ];
@@ -395,7 +395,7 @@ public class OAXMLReader extends DefaultHandler {
                 if (values[i] instanceof String) values[i] = OAConverter.convert(c2, values[i]);
                 hash.remove(id);
             }
-            OAObjectKey key = new OAObjectKey(values);
+            final OAObjectKey key = new OAObjectKey(values);
             
             final String[] matchProps = oi.getImportMatchProperties();
             final Object[] matchValues = new Object[ matchProps == null ? 0 : matchProps.length ];
@@ -411,13 +411,14 @@ public class OAXMLReader extends DefaultHandler {
 
             OAObject object = null;
 
-            
+            boolean bMatchNotReady = false;
             // 20150728
             if (matchProps != null && matchProps.length > 0) {
                 if (bKeyOnly) {
                     HashMap<OAObjectKey, OAObject> hm = hmMatch.get(c);
                     if (hm != null) object = hm.get(key);
                     if (object == null) {
+                        bMatchNotReady = true;
 int xx = 4;
 xx++;
 //qqqqqqqqqqq
@@ -467,6 +468,16 @@ xx++;
                         vec.addElement(key);
                     }
                     else {
+                        vec.add(new Runnable() {
+//VVVVVVVVVVVVVVVVVVV                            
+                            @Override
+                            public void run() {
+                                HashMap<OAObjectKey, OAObject> hm = hmMatch.get(c);
+                                if (hm != null) {
+                                    Object object = hm.get(key);
+                                }
+                            }
+                        });
 //qqqqqqqqqq need to get the real object later qqqqqqqqqqqq
 int xx = 4;
 xx++;
