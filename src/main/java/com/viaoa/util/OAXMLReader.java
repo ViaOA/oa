@@ -25,13 +25,15 @@ import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.ds.*;
 
-/*
-qqqqqqqqqqqqqq
-Double check this to see if it stores ObjectKeys in Hub and calls setProperty for them
-*/
-
 /**
     OAXMLReader using a SAXParser to parse and automatically create OAObjects from a XML file.
+    
+    This will do the following to find the existing object:
+    1: if OAProperty.importMatch, then it will search to find a matching object
+    2: if objectId props, then it will search to find a matching object
+    3: use guid
+    if not found, then a new object will be created.
+    
     @see OAXMLWriter
 */
 public class OAXMLReader extends DefaultHandler {
@@ -414,7 +416,7 @@ public class OAXMLReader extends DefaultHandler {
                 hash.remove(id);
             }
             final OAObjectKey key = new OAObjectKey(values);
-//qqqqqqqq
+            // 20150730
             final String[] matchProps = getImportMatching() ? oi.getImportMatchProperties() : null;
             final Object[] matchValues = new Object[ matchProps == null ? 0 : matchProps.length ];
             if (matchProps != null && matchProps.length > 0) {
@@ -478,7 +480,7 @@ public class OAXMLReader extends DefaultHandler {
                         vec.addElement(key);
                     }
                     else {
-//qqqqqqqqqqqqqqq                        
+                        // 20150730
                         vec.add(new Holder(c, key));
                     }
                 }
@@ -499,7 +501,7 @@ public class OAXMLReader extends DefaultHandler {
                         refValue = key;
                     }
                     else {
-//qqqqqqqqqqqq
+                        // 20150730
                         refValue = new Holder(c, key);
                     }
                 }
@@ -523,6 +525,15 @@ public class OAXMLReader extends DefaultHandler {
                                 object.setProperty(ids[i], values[i]);
                             }
                         }
+                        else {
+                            // 20150730
+                            HashMap<OAObjectKey, OAObject> hm = hmMatch.get(c);
+                            if (hm == null) {
+                                hm = new HashMap<OAObjectKey, OAObject>();
+                                hmMatch.put(c, hm);
+                            }
+                            hm.put(key, object);
+                        }
                     }
                     catch (Exception e) {
                         throw new SAXException("cant create object for class "+c.getName()+" Error:"+e, e);
@@ -539,18 +550,19 @@ public class OAXMLReader extends DefaultHandler {
                 boolean bIncomplete = true;
                 if (stack[indent-1] == null) bIncomplete = false;
                 else if (stack[indent-1] instanceof Hub) bIncomplete = false;
-
+                
                 if (bIncomplete) {
                     hash.put(XML_OBJECT, object);
                     vecIncomplete.addElement(hash);
                 }
                 else {
                     int x = vecIncomplete.size();
-                    for (int i=0; i<x; i++) {
+                    for (int i=x-1; i>=0; i--) {
                         Hashtable hashx = (Hashtable) vecIncomplete.elementAt(i);
                         OAObject oaobj = (OAObject) hashx.get(XML_OBJECT);
                         processProperties(oaobj, hashx);
                     }
+
                     processProperties(object, hash);
 
                     for (int i=0; i<x; i++) {
@@ -657,7 +669,7 @@ public class OAXMLReader extends DefaultHandler {
             
             k = getPropertyName(object, (String)k);
             if (k == null) continue;
-//qqqqqqqqqqq
+            // 20150730
             if (v instanceof Holder) {
                 Holder h = (Holder) v;
                 HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
@@ -681,7 +693,7 @@ public class OAXMLReader extends DefaultHandler {
                         else vec.set(ix, o);   // replace
                     }
                     else if (o instanceof Holder) {
-//qqqqqqqqqqqqqqqqqqqqqqq                        
+                        // 20150730
                         Holder h = (Holder) o;
                         HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
                         if (hm != null) {
@@ -713,6 +725,20 @@ public class OAXMLReader extends DefaultHandler {
                     x = vec.size();
                     for (int ix=0; ix < x; ix++) {
                         Object o = vec.elementAt(ix);
+                        
+                        if (o instanceof Holder) {
+                            Holder hx = (Holder) o;
+                            HashMap<OAObjectKey, OAObject> hm = hmMatch.get(hx.c);
+                            if (hm != null) {
+                                o = hm.get(hx.key);
+                            }
+                            else {
+                                // 20150730 should not happen, this can be removed later                                
+                                System.out.println("OAXMLReader error, value was not in hmMatch");
+                                continue; //qqq
+                            }
+                        }
+                        
                         if (h.getObject(o) == null) h.add(o);
                         // position objects in Hub to match order of objects in Vector
                         int pos = h.getPos(o);
