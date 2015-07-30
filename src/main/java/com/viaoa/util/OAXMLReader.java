@@ -55,7 +55,8 @@ public class OAXMLReader extends DefaultHandler {
     protected Vector vecIncomplete, vecRoot;
     protected HashMap hashGuid;
     protected HashMap<Class, HashMap<OAObjectKey, OAObject>> hmMatch = new HashMap<Class, HashMap<OAObjectKey,OAObject>>(); 
-
+    private boolean bImportMatching = true;
+    
     // objects that have been removed from a Hub and might not have been saved
     //   these objects will then be checked and saved at the end of the import
     protected Vector vecRemoved = new Vector();
@@ -74,6 +75,13 @@ public class OAXMLReader extends DefaultHandler {
     }
 
 
+    public void setImportMatching(boolean b) {
+        this.bImportMatching = b;
+    }
+    public boolean getImportMatching() {
+        return this.bImportMatching;
+    }
+    
     /**
         Used to parse and create OAObjects from an XML file.
         @return topmost object from XML file.
@@ -360,6 +368,7 @@ public class OAXMLReader extends DefaultHandler {
         }
     }
 
+    // 20150730
     class Holder {
         Class c;
         OAObjectKey key;
@@ -405,11 +414,9 @@ public class OAXMLReader extends DefaultHandler {
                 hash.remove(id);
             }
             final OAObjectKey key = new OAObjectKey(values);
-//qqqqqqqq            
-final String[] matchProps = null;
-//            final String[] matchProps = oi.getImportMatchProperties();
+//qqqqqqqq
+            final String[] matchProps = getImportMatching() ? oi.getImportMatchProperties() : null;
             final Object[] matchValues = new Object[ matchProps == null ? 0 : matchProps.length ];
-
             if (matchProps != null && matchProps.length > 0) {
                 for (int i=0; i<matchProps.length; i++) {
                     String id = matchProps[i].toUpperCase();
@@ -421,18 +428,11 @@ final String[] matchProps = null;
 
             OAObject object = null;
 
-            boolean bMatchNotReady = false;
             // 20150728
             if (matchProps != null && matchProps.length > 0) {
                 if (bKeyOnly) {
                     HashMap<OAObjectKey, OAObject> hm = hmMatch.get(c);
                     if (hm != null) object = hm.get(key);
-                    if (object == null) {
-                        bMatchNotReady = true;
-int xx = 4;
-xx++;
-//qqqqqqqqqqq
-                    }
                 }
                 else {
                     OASelect sel = new OASelect(c);
@@ -474,7 +474,7 @@ xx++;
                     Vector vec = (Vector) stack[indent-1];
                     if (object != null) vec.addElement(object);
                     else if (guid != null) vec.addElement(XML_GUID+guid);
-                    if (matchProps == null || matchProps.length == 0) {
+                    else if (matchProps == null || matchProps.length == 0) {
                         vec.addElement(key);
                     }
                     else {
@@ -495,7 +495,7 @@ xx++;
                     bUseRef = true;
                     if (object != null) refValue = object;
                     else if (guid != null) refValue = XML_GUID+guid;
-                    if (matchProps == null || matchProps.length == 0) {
+                    else if (matchProps == null || matchProps.length == 0) {
                         refValue = key;
                     }
                     else {
@@ -610,7 +610,7 @@ xx++;
         }
 
         indent--;
-        p("/"+eName);//qqqqqq
+        p("/"+eName);
     }
 
     protected void processProperty(String eName, String value, Class conversionClass, Hashtable hash) {
