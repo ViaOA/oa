@@ -360,6 +360,15 @@ public class OAXMLReader extends DefaultHandler {
         }
     }
 
+    class Holder {
+        Class c;
+        OAObjectKey key;
+        public Holder(Class c, OAObjectKey key) {
+            this.c = c;
+            this.key = key;
+        }
+    }
+    
     /**
         SAXParser callback method.
     */
@@ -469,33 +478,16 @@ xx++;
                         vec.addElement(key);
                     }
                     else {
-                        vec.add(new Runnable() {
-//VVVVVVVVVVVVVVVVVVV                            
-                            @Override
-                            public void run() {
-                                HashMap<OAObjectKey, OAObject> hm = hmMatch.get(c);
-                                if (hm != null) {
-                                    Object object = hm.get(key);
-                                }
-                            }
-                        });
-//qqqqqqqqqq need to get the real object later qqqqqqqqqqqq
-int xx = 4;
-xx++;
+//qqqqqqqqqqqqqqq                        
+                        vec.add(new Holder(c, key));
                     }
                 }
                 else if (stack[indent-1] instanceof Hub) {
                     Hub h = (Hub) stack[indent-1];
                     if (object != null) h.add(object);
                     else {
-                        if (matchProps == null || matchProps.length == 0) {
-                            h.add(key);
-                        }
-                        else {
-//qqqqqqqqqq need to get the real object later qqqqqqqqqqqq                            
-int xx = 4;
-xx++;
-                        }
+                        // note: should not ever need a Holder 
+                        h.add(key);
                     }
                 }
                 else if (indent > 3) {
@@ -507,11 +499,9 @@ xx++;
                         refValue = key;
                     }
                     else {
-//qqqqqqqqqq need to get the real object later qqqqqqqqqqqq
-int xx = 4;
-xx++;
+//qqqqqqqqqqqq
+                        refValue = new Holder(c, key);
                     }
-                    
                 }
             }
             else {
@@ -664,9 +654,18 @@ xx++;
             Object k = enumx.nextElement();
             Object v = hash.get(k);
             if (v == object) continue;
-
+            
             k = getPropertyName(object, (String)k);
             if (k == null) continue;
+//qqqqqqqqqqq
+            if (v instanceof Holder) {
+                Holder h = (Holder) v;
+                HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
+                if (hm != null) {
+                    v = hm.get(h.key);
+                }
+            }
+            
             
             if (v instanceof Vector) {
                 Vector vec = (Vector) v;
@@ -681,36 +680,45 @@ xx++;
                         if (o == null) System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
                         else vec.set(ix, o);   // replace
                     }
+                    else if (o instanceof Holder) {
+//qqqqqqqqqqqqqqqqqqqqqqq                        
+                        Holder h = (Holder) o;
+                        HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
+                        if (hm != null) {
+                            v = hm.get(h.key);
+                            vec.set(ix, v);   // replace
+                        }
+                    }
                 }
 
                 // 2006/05/22 was: Hub h = object.getHub((String)k);
                 Hub h = (Hub) object.getProperty((String) k); 
-if (h == null) {
-	if (vec.size() > 0) System.out.println("ERROR in OAXMLReader: Object:"+object+" Property:"+k+"  error:returned null value, should be a Hub");
-}
-else {
-				h.loadAllData();
-                // remove objects in Hub that are not in Vector
-                for (int i=0; ;i++) {
-                    Object obj = h.elementAt(i);
-                    if (obj == null) break;
-                    if (vec.indexOf(obj) < 0) {
-                        h.remove(obj);
-                        vecRemoved.addElement(obj);
-                        i--;
+                if (h == null) {
+                	if (vec.size() > 0) System.out.println("ERROR in OAXMLReader: Object:"+object+" Property:"+k+"  error:returned null value, should be a Hub");
+                }
+                else {
+    				h.loadAllData();
+                    // remove objects in Hub that are not in Vector
+                    for (int i=0; ;i++) {
+                        Object obj = h.elementAt(i);
+                        if (obj == null) break;
+                        if (vec.indexOf(obj) < 0) {
+                            h.remove(obj);
+                            vecRemoved.addElement(obj);
+                            i--;
+                        }
                     }
-                }
-
-                // add objects in Vector that are not in Hub
-                x = vec.size();
-                for (int ix=0; ix < x; ix++) {
-                    Object o = vec.elementAt(ix);
-                    if (h.getObject(o) == null) h.add(o);
-                    // position objects in Hub to match order of objects in Vector
-                    int pos = h.getPos(o);
-                    if (pos != ix) h.move(pos, ix);
-                }
-}                
+    
+                    // add objects in Vector that are not in Hub
+                    x = vec.size();
+                    for (int ix=0; ix < x; ix++) {
+                        Object o = vec.elementAt(ix);
+                        if (h.getObject(o) == null) h.add(o);
+                        // position objects in Hub to match order of objects in Vector
+                        int pos = h.getPos(o);
+                        if (pos != ix) h.move(pos, ix);
+                    }
+                }                
             }
             else if (OAObjectInfoDelegate.isHubProperty(oi, (String)k)) {
                 // empty hub, otherwise "v" would have been a Vector
