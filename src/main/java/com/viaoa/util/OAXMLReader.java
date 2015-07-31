@@ -415,7 +415,7 @@ public class OAXMLReader extends DefaultHandler {
                 if (values[i] instanceof String) values[i] = OAConverter.convert(c2, values[i]);
                 hash.remove(id);
             }
-            final OAObjectKey key = new OAObjectKey(values);
+            final OAObjectKey key = new OAObjectKey(values, OAConv.toInt(guid), false);
             // 20150730
             final String[] matchProps = getImportMatching() ? oi.getImportMatchProperties() : null;
             final Object[] matchValues = new Object[ matchProps == null ? 0 : matchProps.length ];
@@ -463,7 +463,9 @@ public class OAXMLReader extends DefaultHandler {
                 }
             }
             else {
-                if (ids != null && ids.length > 0) {
+                // 20150731
+                if (key != null) {
+                //was: if (ids != null && ids.length > 0) {
                     object = OAObjectCacheDelegate.get(c, key);
                 }
             }
@@ -517,7 +519,7 @@ public class OAXMLReader extends DefaultHandler {
                 if (object == null) {
                     try {
                         OAThreadLocalDelegate.setLoadingObject(true);
-                    	object = createNewObject(c);
+                        object = createNewObject(c);
                         // set property ids
                         if (matchProps == null || matchProps.length == 0) { 
                             for (int i=0; ids != null && i<ids.length; i++) {
@@ -556,15 +558,27 @@ public class OAXMLReader extends DefaultHandler {
                     vecIncomplete.addElement(hash);
                 }
                 else {
+//qqqqqqqvvvvvv                    
                     int x = vecIncomplete.size();
-                    for (int i=x-1; i>=0; i--) {
+                    Vector vec = new Vector();
+                    for (int i=0; i<x; i++) {
                         Hashtable hashx = (Hashtable) vecIncomplete.elementAt(i);
+                        OAObject oaobj = (OAObject) hashx.get(XML_OBJECT);
+                        if (!processProperties(oaobj, hashx)) {
+                            vec.add(hashx);
+                        }
+                    }
+                    // second pass
+                    x = vec.size();
+                    for (int i=0; i<x; i++) {
+                        Hashtable hashx = (Hashtable) vec.elementAt(i);
                         OAObject oaobj = (OAObject) hashx.get(XML_OBJECT);
                         processProperties(oaobj, hashx);
                     }
-
+                    
                     processProperties(object, hash);
 
+                    x = vecIncomplete.size();
                     for (int i=0; i<x; i++) {
                         Hashtable hashx = (Hashtable) vecIncomplete.elementAt(i);
                         OAObject oaobj = (OAObject) hashx.get(XML_OBJECT);
@@ -645,19 +659,32 @@ public class OAXMLReader extends DefaultHandler {
     protected String getPropertyName(OAObject obj, String propName) {
         return propName;
     }
-    
-    protected void processProperties(OAObject object, Hashtable hash) {
-    	boolean bLoadingObject = false;
-        if (object.getNew()) {
-        	bLoadingObject = true;
-        	OAThreadLocalDelegate.setLoadingObject(true);
-        	if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(true);
-        	// no, needs to have OAObjectEventDelegate.firePropertyChange() process property changes
-        	//   since it has already created the object w/o setLoading(true), which means that there are null primitive properties
-        	//     that would not be "unset" if firePropertyChange() was not ran.
-        }
+
+    protected boolean processProperties(OAObject object, Hashtable hash) {
         Class c = (Class) hash.get(XML_CLASS);
-        hash.remove(XML_CLASS);
+        Object objx = hash.remove(XML_OBJECT);
+        String guid = (String) hash.remove(XML_GUID);
+        
+        boolean b = _processProperties(object, hash);
+
+        hash.put(XML_CLASS, c);
+        if (objx != null) hash.put(XML_OBJECT, objx);
+        if (guid != null) hash.put(XML_GUID, guid);
+        return b;
+    }
+    
+    private boolean _processProperties(OAObject object, Hashtable hash) {
+        boolean bResult = true;
+        boolean bLoadingObject = false;
+        if (object.getNew()) {
+            bLoadingObject = true;
+            OAThreadLocalDelegate.setLoadingObject(true);
+            if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(true);
+            // no, needs to have OAObjectEventDelegate.firePropertyChange() process property changes
+            //   since it has already created the object w/o setLoading(true), which means that there are null primitive properties
+            //     that would not be "unset" if firePropertyChange() was not ran.
+        }
+        final Class c = (Class) hash.remove(XML_CLASS);
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
 
         Enumeration enumx = hash.keys();
@@ -680,6 +707,7 @@ public class OAXMLReader extends DefaultHandler {
             
             
             if (v instanceof Vector) {
+                if (!bResult) continue;
                 Vector vec = (Vector) v;
 
                 // change guid objects to real objects
@@ -689,7 +717,10 @@ public class OAXMLReader extends DefaultHandler {
                     if (o instanceof String && ((String)o).startsWith(XML_GUID)) {
                         String guid = ((String)o).substring(XML_GUID.length());
                         o = hashGuid.get(guid);
-                        if (o == null) System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
+                        if (o == null) {
+                            bResult = false;
+                            //System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
+                        }
                         else vec.set(ix, o);   // replace
                     }
                     else if (o instanceof Holder) {
@@ -697,8 +728,11 @@ public class OAXMLReader extends DefaultHandler {
                         Holder h = (Holder) o;
                         HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
                         if (hm != null) {
-                            v = hm.get(h.key);
-                            vec.set(ix, v);   // replace
+                            o = hm.get(h.key);
+                            if (o == null) {
+                                bResult = false;
+                            }
+                            else vec.set(ix, o);   // replace
                         }
                     }
                 }
@@ -706,10 +740,10 @@ public class OAXMLReader extends DefaultHandler {
                 // 2006/05/22 was: Hub h = object.getHub((String)k);
                 Hub h = (Hub) object.getProperty((String) k); 
                 if (h == null) {
-                	if (vec.size() > 0) System.out.println("ERROR in OAXMLReader: Object:"+object+" Property:"+k+"  error:returned null value, should be a Hub");
+                    if (vec.size() > 0) System.out.println("ERROR in OAXMLReader: Object:"+object+" Property:"+k+"  error:returned null value, should be a Hub");
                 }
                 else {
-    				h.loadAllData();
+                    h.loadAllData();
                     // remove objects in Hub that are not in Vector
                     for (int i=0; ;i++) {
                         Object obj = h.elementAt(i);
@@ -752,17 +786,26 @@ public class OAXMLReader extends DefaultHandler {
             else if (v != null && (v instanceof String) && ((String)v).startsWith(XML_GUID)) {
                 String guid = ((String)v).substring(XML_GUID.length());
                 v = hashGuid.get(guid);
-                if (v == null) System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
-                v = getValue(object, (String)k, v);  // hook method for subclass
-                object.setProperty((String)k, v);
+                if (v == null) {
+                    bResult = false;
+                    // System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
+                }
+                else {
+                    v = getValue(object, (String)k, v);  // hook method for subclass
+                    object.setProperty((String)k, v);
+                }
             }
             else if (v instanceof OAObjectKey) {
                 // try to find "real" object
                 Class cx = OAObjectInfoDelegate.getPropertyClass(c, (String) k);
-                Object o = OAObjectCacheDelegate.get(cx, (OAObjectKey) v);
-                if (o != null) v = o;
-                v = getValue(object, (String)k, v);  // hook method for subclass
-                object.setProperty((String)k, v);
+                v = OAObjectCacheDelegate.get(cx, (OAObjectKey) v);
+                if (v == null) {
+                    bResult = false;
+                }
+                else {
+                    v = getValue(object, (String)k, v);  // hook method for subclass
+                    object.setProperty((String)k, v);
+                }
             }
             else {
                 if (v instanceof String) {
@@ -771,34 +814,16 @@ public class OAXMLReader extends DefaultHandler {
                         v = convertToObject((String)k, (String) v, cx);
                     }
                 }
-                
-/*qqqqqqqqqqqqqq this fixes a problem where properties that were written had an extra \n prefixed on every write                
-if (v instanceof String) {
-    String sx = (String) v;
-    int xx = sx.length();
-    int i=0;
-    for ( ; i<xx; i++) {
-        char ch = sx.charAt(i);
-        if (ch == 10 || ch == 13) {
-            
-        }
-        else break;
-    }
-    if (i > 20) {
-        xxx+=i;
-        v = sx.substring(i);
-    }
-}
-*/                
                 v = getValue(object, (String)k, v);  // hook method for subclass
                 object.setProperty((String)k, v);
             }
         }
         if (bLoadingObject) {
             object.afterLoad();
-        	OAThreadLocalDelegate.setLoadingObject(false);
-        	if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(false);
+            OAThreadLocalDelegate.setLoadingObject(false);
+            if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
+        return bResult;
     }
     /**
         SAXParser callback method.
@@ -880,14 +905,14 @@ if (v instanceof String) {
 
     /** By default, this will check to see if object already exists 
         in OAObjectCache and return that object.  Otherwise this object is returned.
-	*/
+    */
     protected Object getRealObject(OAObject object) {
-		Object obj = OAObjectCacheDelegate.getObject(object.getClass(), OAObjectKeyDelegate.getKey(object));
-	    if (obj != null) return obj;
-	    return object;
-	}
+        Object obj = OAObjectCacheDelegate.getObject(object.getClass(), OAObjectKeyDelegate.getKey(object));
+        if (obj != null) return obj;
+        return object;
+    }
 
-	protected String resolveClassName(String className) {
-	    return className;
-	}
+    protected String resolveClassName(String className) {
+        return className;
+    }
 }
