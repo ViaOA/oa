@@ -558,7 +558,7 @@ public class OAXMLReader extends DefaultHandler {
                     vecIncomplete.addElement(hash);
                 }
                 else {
-//qqqqqqqvvvvvv                    
+                    // 20150730 use two passes
                     int x = vecIncomplete.size();
                     Vector vec = new Vector();
                     for (int i=0; i<x; i++) {
@@ -573,10 +573,14 @@ public class OAXMLReader extends DefaultHandler {
                     for (int i=0; i<x; i++) {
                         Hashtable hashx = (Hashtable) vec.elementAt(i);
                         OAObject oaobj = (OAObject) hashx.get(XML_OBJECT);
-                        processProperties(oaobj, hashx);
+                        if (!processProperties(oaobj, hashx)) {
+                            System.out.println("OAXMLReader read error: did not process all props");                            
+                        }
                     }
                     
-                    processProperties(object, hash);
+                    if (!processProperties(object, hash)) {
+                        System.out.println("OAXMLReader read error: did not process all props 2");                            
+                    }
 
                     x = vecIncomplete.size();
                     for (int i=0; i<x; i++) {
@@ -666,7 +670,6 @@ public class OAXMLReader extends DefaultHandler {
         String guid = (String) hash.remove(XML_GUID);
         
         boolean b = _processProperties(object, hash);
-
         hash.put(XML_CLASS, c);
         if (objx != null) hash.put(XML_OBJECT, objx);
         if (guid != null) hash.put(XML_GUID, guid);
@@ -819,7 +822,7 @@ public class OAXMLReader extends DefaultHandler {
             }
         }
         if (bLoadingObject) {
-            object.afterLoad();
+            if (bResult) object.afterLoad();
             OAThreadLocalDelegate.setLoadingObject(false);
             if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
