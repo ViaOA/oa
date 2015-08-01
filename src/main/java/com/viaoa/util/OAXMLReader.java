@@ -463,9 +463,7 @@ public class OAXMLReader extends DefaultHandler {
                 }
             }
             else {
-                // 20150731
-                if (key != null) {
-                //was: if (ids != null && ids.length > 0) {
+                if (ids != null && ids.length > 0) {
                     object = OAObjectCacheDelegate.get(c, key);
                 }
             }
