@@ -18,7 +18,6 @@ public class OAObjectModel extends OAObject {
     public static final String P_DisplayName = "DisplayName";
     public static final String P_DisplayNamePlural = "DisplayNamePlural";
     
-    protected int level;
     protected boolean bAllowGotoList;
     protected boolean bAllowGotoEdit;
     protected boolean bAllowSearch;
@@ -40,12 +39,7 @@ public class OAObjectModel extends OAObject {
     protected String displayNamePlural;
 
     public OAObjectModel() {
-        this(0);
-    }
-    
-    public OAObjectModel(int level) {
         if (isLoading()) return;
-        setLevel(level);
         setAllowGotoList(true);
         setAllowGotoEdit(true);
         setAllowSearch(true);
@@ -75,14 +69,6 @@ public class OAObjectModel extends OAObject {
         String old = displayNamePlural;
         this.displayNamePlural = newValue;
         firePropertyChange(P_DisplayNamePlural, old, this.displayNamePlural);
-    }
-    
-    
-    public int getLevel() {
-        return level;
-    }
-    public void setLevel(int level) {
-        this.level = level;
     }
     
     // methods to enable commands
