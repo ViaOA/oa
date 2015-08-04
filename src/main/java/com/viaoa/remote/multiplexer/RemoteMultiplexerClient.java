@@ -861,6 +861,7 @@ public class RemoteMultiplexerClient {
             ri.bind = getBindInfo(ri.bindName);
             if (ri.bind == null) {
                 ri.exceptionMessage = "could not find bind object";
+                return false;
             }
             ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
@@ -897,15 +898,12 @@ public class RemoteMultiplexerClient {
             
             ri.bind = getBindInfo(ri.bindName);
             if (ri.bind == null) {
-                ri.exceptionMessage = "could not find bind object";
+                // ri.exceptionMessage = "could not find bind object";
+                return false;
             }
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
-
             // one client sent the broadcast, this is where other clients will process it
-            ri.bind = getBindInfo(ri.bindName);
-
-            long t1 = System.currentTimeMillis();
             OARemoteThread t = getRemoteClientThread(ri);
             synchronized (t.Lock) {
                 t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(ri)
@@ -924,6 +922,7 @@ public class RemoteMultiplexerClient {
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
             ri.bind = getBindInfo(ri.bindName);
+            if (ri.bind == null) return false;
             ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
             long t1 = System.currentTimeMillis();
@@ -991,10 +990,12 @@ public class RemoteMultiplexerClient {
 
     private void _processMessageForStoC(RequestInfo ri) throws Exception {
 
-        ri.bind = getBindInfo(ri.bindName);
         if (ri.bind == null) {
-            ri.exceptionMessage = "bind Object not found";
-            return;
+            ri.bind = getBindInfo(ri.bindName);
+            if (ri.bind == null) {
+                ri.exceptionMessage = "bind Object not found";
+                return;
+            }
         }
         if (ri.methodInfo == null) ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
         if (ri.methodInfo != null) ri.method = ri.methodInfo.method;
