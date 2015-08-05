@@ -34,8 +34,7 @@ import com.viaoa.util.OAString;
  * hubGroupBy=hubApplicationGroups note: the method for ApplicationType.getApplicationGroups() is not created
  * (is private)
  *
- * new HubGroupBy(hubMRADClients, hubApplicationGroups
- * "MRADClient.Application.ApplicationType.ApplicationGroup")
+ * new HubGroupBy(hubMRADClients, hubApplicationGroups, "MRADClient.Application.ApplicationType.ApplicationGroup")
  * 
  * internally will create 2 HubGroupBys ... (hubMRADClients, "MRADClient.Application.ApplicationType")
  * (hubApplicationGroups, "ApplicationTypes")
