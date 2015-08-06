@@ -376,6 +376,9 @@ static int cntq;
             throw new IllegalArgumentException("Cant find property for PropertyPath=\"" + path + "\" starting with Class "
                     + hubRoot.getObjectClass().getName(), e);
         }
+        if (oaPropPath.hasPrivateLink()) {
+            throw new RuntimeException("property path has private link, pp="+oaPropPath.getPropertyPath());
+        }
         String[] pps = oaPropPath.getProperties();
         Method[] methods = oaPropPath.getMethods();
         Class[] classes = oaPropPath.getClasses();

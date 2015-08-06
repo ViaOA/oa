@@ -225,6 +225,15 @@ public class OAPropertyPath<T> {
         if (s != null) throw new Exception(s);
     }
     
+    public boolean hasPrivateLink() {
+        if (linkInfos == null) return false;
+        for (OALinkInfo li : linkInfos) {
+            if (li.getPrivateMethod()) return true;
+        }
+        return false;
+    }
+    
+    
     public boolean getNeedsDataToVerify() {
         return bNeedsDataToVerify;
     }
