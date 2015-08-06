@@ -550,10 +550,13 @@ public class OASyncClient {
     }
     /** Sets the stop flag */
     public void stop() throws Exception {
+        stop(true);
+    }
+    public void stop(boolean bCallClose) throws Exception {
         if (!isStarted()) return;
         LOG.fine("Client stop");
         getClientInfo().setStarted(false);
-        if (isConnected()) {
+        if (bCallClose && isConnected()) {
             getMultiplexerClient().close();
         }
         multiplexerClient = null;
@@ -618,7 +621,7 @@ public class OASyncClient {
         catch (Exception ex) {
         }
         try {
-            stop();
+            stop(false);
         }
         catch (Exception ex) {
         }
@@ -630,7 +633,7 @@ public class OASyncClient {
         catch (Exception ex) {
         }
         try {
-            stop();
+            stop(!bError);
         }
         catch (Exception ex) {
         }

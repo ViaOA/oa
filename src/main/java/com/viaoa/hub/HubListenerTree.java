@@ -390,6 +390,11 @@ public class HubListenerTree {
                 LOG.warning(s);
                 throw new RuntimeException(s);
             }
+            if (oaPropPath.hasPrivateLink()) {
+                String s = ("propPath has private method, hub="+hub+", prop="+origPropertyName+", dependendProp="+dependentPropertyNames[i]);
+                LOG.warning(s);
+                throw new RuntimeException(s);
+            }
             
             String[] pps = oaPropPath.getProperties();
             Method[] methods = oaPropPath.getMethods();

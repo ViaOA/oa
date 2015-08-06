@@ -557,7 +557,9 @@ public class MultiplexerSocketController implements Serializable {
             LOG.fine("closing real socket, connectionId="+_connectionId);
             if (!bError) {
                 try {
-                    getOutputStreamController().sendCommand(CMD_CloseRealSocket, 0);
+                    if (!_socket.isClosed()) {
+                        getOutputStreamController().sendCommand(CMD_CloseRealSocket, 0);
+                    }
                 }
                 catch (Exception e) {
                     // ignore

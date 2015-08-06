@@ -267,7 +267,7 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
                     _dataOutputStream.flush();
                 }
             }
-            catch (SocketException e) {
+            catch (IOException e) {
                 onSocketException(e);
                 throw(e);
             }
