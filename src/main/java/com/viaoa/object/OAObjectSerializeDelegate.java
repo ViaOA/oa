@@ -260,7 +260,7 @@ public class OAObjectSerializeDelegate {
             if (key == null) continue;
             OALinkInfo li = oi.getLinkInfo(key);
             if (li != null && li.bCalculated) {
-                if (!li.bServerSideCalc) {
+                if (!bIsServer || !li.bServerSideCalc) {
                     continue;
                 }
             }

@@ -44,7 +44,11 @@ public class HubCSDelegate {
         OALinkInfo li = thisHub.datam.liDetailToMaster;
         if (li != null) {
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (liRev != null && liRev.getCalculated()) return;
+            if (liRev != null && liRev.getCalculated()) {
+                if (!OASyncDelegate.isServer() || !liRev.getServerSideCalc()) {
+                    return;
+                }
+            }
         }
         
 
@@ -76,7 +80,9 @@ public class HubCSDelegate {
         if (li != null) {
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
             if (liRev != null && liRev.getCalculated()) {
-                return;
+                if (!OASyncDelegate.isServer() || !liRev.getServerSideCalc()) {
+                    return;
+                }
             }
         }
     	
@@ -108,7 +114,11 @@ public class HubCSDelegate {
         OALinkInfo li = thisHub.datam.liDetailToMaster;
         if (li != null) {
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (liRev != null && liRev.getCalculated()) return;
+            if (liRev != null && liRev.getCalculated()) {
+                if (!OASyncDelegate.isServer() || !liRev.getServerSideCalc()) {
+                    return;
+                }
+            }
         }
 
         if (!(thisHub.datam.masterObject instanceof OAObject)) return;
@@ -151,7 +161,11 @@ public class HubCSDelegate {
         OALinkInfo li = thisHub.datam.liDetailToMaster;
         if (li != null) {
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-            if (liRev != null && liRev.getCalculated()) return false;
+            if (liRev != null && liRev.getCalculated()) {
+                if (!OASyncDelegate.isServer() || !liRev.getServerSideCalc()) {
+                    return false;
+                }
+            }
         }
 
         if (!(thisHub.datam.masterObject instanceof OAObject)) return false;
