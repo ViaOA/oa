@@ -7,5 +7,5 @@ package com.theice.tsac.mrad.model;
  * @see Server#getSiloType() to set the silo that a server is running in.
  */
 public enum SiloType {
-    ICE, Endex, Life 
+    ICE, Endex, Liffe 
 }

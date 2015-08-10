@@ -115,6 +115,9 @@ import com.viaoa.util.OAString;
  * panel.add(new JScrollPane(table));
  * 
  * table.getTableHeader().setReorderingAllowed(false);
+ * 
+ * Note: use this to get the original column position
+ *  col = columnModel.getColumn(col).getModelIndex();
  * </pre>
  * <p>
  * For more information about this package, see <a
@@ -301,6 +304,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         if (hubFilter != null) hubFilter.refresh();
         else if (tableRight != null && tableRight.hubFilter != null) tableRight.hubFilter.refresh();
+        getParent().getParent().repaint();
     }
     
     // 2006/12/29 called by superclass, this is overwritten from JTable
@@ -1172,6 +1176,18 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 int pos = OATable.this.hubSelect.getPos(obj);
                 if (pos < 0) return OATable.this.hubSelect.getSize() + " selected";
                 return (pos + 1) + " of " + OATable.this.hubSelect.getSize() + " selected";
+            }
+            @Override
+            public Component getTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//qqqqqqqqqqqqqq 
+                Component comp = super.getTableRenderer(lbl, table, value, isSelected, hasFocus, row, column);
+                if (row == -1) {
+                    // heading
+                    //qqqqqqq need to set checked=true if all selected
+                    boolean b = this.table.getHub().getSize() == this.table.getSelectHub().getSize();
+                    chkRenderer.setSelected(b);
+                }
+                return comp;
             }
         };
         chkSelection.setToolTipText(" ");
@@ -2559,10 +2575,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         int column = columnModel.getColumnIndexAtX(e.getX());
         if (column < 0) return;
-        column = columnModel.getColumn(column).getModelIndex();
+        int myColumn = columnModel.getColumn(column).getModelIndex();
         OATableColumn tc = null;
-        if (column >= 0 && column < columns.size()) {
-            tc = (OATableColumn) columns.elementAt(column);
+        if (myColumn >= 0 && myColumn < columns.size()) {
+            tc = (OATableColumn) columns.elementAt(myColumn);
         }
         if (tc == null) return;
 
@@ -2850,7 +2866,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             oacomp = tc.getOATableComponent();
         }
 
-
         // 1of3: is done, defaults are set
 
         // 2of3: allow component to customize
@@ -3093,7 +3108,8 @@ if (i == 0) {
             }
         }
         _bRunningValueChanged = false;
-        table.repaint();
+        this.table.getParent().getParent().repaint();
+        //was: table.repaint();
     }
 
     public @Override void onNewList(HubEvent e) {
@@ -3397,34 +3413,25 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         button.setText((value == null) ? "" : value.toString());
         
+        int myColumn = table.getColumnModel().getColumn(column).getModelIndex();
         //OATableColumn tc = (OATableColumn) this.table.columns.elementAt(column);
-        final OATableColumn tc = (OATableColumn) ((OATable)table).columns.elementAt(column);
+        final OATableColumn tc = (OATableColumn) ((OATable)table).columns.elementAt(myColumn);
 
-        /*
-        TableColumn jtc = table.getTableHeader().getColumnModel().getColumn(column);
-        // 2006/11/28
-        if (tc.tc != jtc) {
-            int x = this.table.columns.size();
-            for (int i = 0; i < x; i++) {
-                tc = (OATableColumn) this.table.columns.elementAt(i);
-                if (tc.tc == jtc) break;
-            }
-        }
-        if (tc == null) { // should not happen
-            tc = (OATableColumn) this.table.columns.elementAt(column);
-        }
-        */
+        Component comp = null;
         
         if (this.table.hubFilter != null || (this.table.tableRight != null && this.table.tableRight.hubFilter != null)) {
             OATableComponent tcFilter = tc.getFilterComponent();
                     
-            Component comp = null;
             if (tcFilter != null) {
                 label.setBackground(Color.white);
                 comp = tcFilter.getTableRenderer(label, table, value, false, false, -1, column);
             }
-            
-            if (comp == null) {
+       
+//qqqqqqqqq            
+            if (tc.getOATableComponent() == this.table.chkSelection) {
+                comp = this.table.chkSelection.getTableRenderer(label, table, value, false, false, -1, column);
+            }
+            else if (comp == null) {
                 comp = label;
                 label.setText(" ");
                 if (bgColor == null) bgColor = new Color(230,230,230);//bgColor = UIManager.getColor("Table.gridColor");
@@ -3488,8 +3495,9 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
     
     public void setupEditor(int column) {
         OATableColumn tc = null;
+        int myColumn = table.getColumnModel().getColumn(column).getModelIndex();
         if (column >= 0 && column < table.columns.size()) {
-            tc = (OATableColumn) table.columns.elementAt(column);
+            tc = (OATableColumn) table.columns.elementAt(myColumn);
         }
         if (tc == null) return;
         

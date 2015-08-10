@@ -22,6 +22,8 @@ public class OAObjectModel extends OAObject {
     protected boolean bAllowGotoEdit;
     protected boolean bAllowSearch;
     protected boolean bAllowHubSearch;
+    protected boolean bAllowMultiSelect;
+    protected boolean bAllowTableFilter;
     
     protected boolean bAllowAdd;
     protected boolean bAllowNew;
@@ -51,6 +53,8 @@ public class OAObjectModel extends OAObject {
         setAllowCut(true);
         setAllowCopy(true);
         setAllowPaste(true);
+        setAllowMultiSelect(true);
+        setAllowTableFilter(true);
     }
 
     public String getDisplayName() {
@@ -153,5 +157,19 @@ public class OAObjectModel extends OAObject {
     }
     public void setViewOnly(boolean b) {
         bViewOnly = b;
+    }
+
+    public boolean getAllowMultiSelect() {
+        return bAllowMultiSelect;
+    }
+    public void setAllowMultiSelect(boolean b) {
+        bAllowMultiSelect = b;
+    }
+
+    public boolean getAllowTableFilter() {
+        return bAllowTableFilter;
+    }
+    public void setAllowTableFilter(boolean b) {
+        bAllowTableFilter = b;
     }
 }
