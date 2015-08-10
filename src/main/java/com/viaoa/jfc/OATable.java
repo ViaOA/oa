@@ -417,6 +417,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         else {
             hub.cancelSort();
         }
+// 20150810 dont keep sorted
+if (!getKeepSorted()) hub.cancelSort();
 
         if (hubSelect != null) {
             hubAdapter.rebuildListSelectionModel();
@@ -442,6 +444,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return hub;
     }
 
+    private boolean bKeepSorted;
+    public void setKeepSorted(boolean b) {
+        bKeepSorted = b;
+    }
+    public boolean getKeepSorted() {
+        return bKeepSorted;
+    }
+    
     /**
      * Sets Hub that is bound to Table.
      */
@@ -1179,13 +1189,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
             @Override
             public Component getTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-//qqqqqqqqqqqqqq 
                 Component comp = super.getTableRenderer(lbl, table, value, isSelected, hasFocus, row, column);
                 if (row == -1) {
                     // heading
-                    //qqqqqqq need to set checked=true if all selected
-                    boolean b = this.table.getHub().getSize() == this.table.getSelectHub().getSize();
-                    chkRenderer.setSelected(b);
+                    //need to set checked=true if all selected
+                    chkRenderer.setSelected(isAllSelected());
                 }
                 return comp;
             }
@@ -1195,6 +1203,17 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         OATableColumn tc = addColumn(heading, width, chkSelection);
     }
 
+    protected boolean isAllSelected() {
+        Hub h = getSelectHub();
+        if (h == null) return false;
+        if (h.getSize() == 0) return false;
+        if (getHub().getSize() == 0) return false;
+        for (Object obj : getHub()) {
+            if (!h.contains(obj)) return false;
+        }
+        return true;
+    }
+    
     protected OACheckBox chkSelection;
 
     // 20150511
@@ -2603,6 +2622,25 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 resetFilters();
                 return;
             }
+            
+            // 20150810
+            if (tc.getOATableComponent() == this.chkSelection) {
+                boolean b = isAllSelected();
+                if (b) {
+                    for (Object obj : getHub()) {
+                        getSelectHub().remove(obj);
+                    }
+                }
+                else {
+                    for (Object obj : getHub()) {
+                        getSelectHub().add(obj);
+                    }
+                }
+                repaint();
+                return;
+            }
+            
+            
             if (headerRenderer != null) {
                 headerRenderer.setupEditor(column);
             }
@@ -2897,8 +2935,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public void customizeRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
         // to be overwritten
     }
-
-
 }
 
 /**
@@ -2965,6 +3001,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                     lsm.addSelectionInterval(pos, pos);
                     _bIgnoreValueChanged = false;
                 }
+                table.getParent().getParent().repaint();
             }
 
             public @Override void afterInsert(HubEvent e) {
@@ -2982,6 +3019,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                     lsm.removeSelectionInterval(pos, pos);
                     _bIgnoreValueChanged = false;
                 }
+                table.getParent().getParent().repaint();
             }
 
             public @Override void onNewList(HubEvent e) {
@@ -3012,10 +3050,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         for (int i = 0;; i++) {
             Object obj = hubSelect.getAt(i);
             if (obj == null) {
-if (i == 0) {
-    int xx = 4;
-    xx++;//qqqqqqqqqqqqqqqq
-}
                 break;
             }
             int pos = hub.indexOf(obj); // dont use hub.getPos(), since it will adjust "linkage"
@@ -3353,8 +3387,12 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         this.table = t;
 
         setLayout(new BorderLayout());
-        setBorder(null);
 
+        Color c = UIManager.getColor("Table.gridColor");
+        if (c == null) c = Color.black;
+        Border border = new CustomLineBorder(0, 0, 3, 0, c);
+        setBorder(border);
+        
         button = new JButton() {
             @Override
             public Dimension getPreferredSize() {
@@ -3421,13 +3459,20 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         
         if (this.table.hubFilter != null || (this.table.tableRight != null && this.table.tableRight.hubFilter != null)) {
             OATableComponent tcFilter = tc.getFilterComponent();
-                    
+
+            if (border == null) {
+                Color c = UIManager.getColor("Table.gridColor");
+                if (c == null) c = Color.black;
+                //was:  border = new CustomLineBorder(1, 1, 3, 1, c);
+                border = new CustomLineBorder(1, 1, 0, 1, c);
+                border = new CompoundBorder(border, new EmptyBorder(0,2,0,1));
+            }
+            
             if (tcFilter != null) {
                 label.setBackground(Color.white);
                 comp = tcFilter.getTableRenderer(label, table, value, false, false, -1, column);
             }
        
-//qqqqqqqqq            
             if (tc.getOATableComponent() == this.table.chkSelection) {
                 comp = this.table.chkSelection.getTableRenderer(label, table, value, false, false, -1, column);
             }
@@ -3439,17 +3484,12 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                 if (color == null) color = Color.white;
                 label.setBackground(color);
             }
-            if (comp instanceof JComponent) {
-                if (border == null) {
-                    Color c = UIManager.getColor("Table.gridColor");
-                    if (c == null) c = Color.black;
-                    border = new CustomLineBorder(1, 1, 2, 1, c);
-                    border = new CompoundBorder(border, new EmptyBorder(0,2,0,1));
-                }
-                ((JComponent)comp).setBorder(border);
-            }
             String s = label.getText();
             if (OAString.isEmpty(s)) label.setText(" ");
+
+            if (comp instanceof JComponent) {
+                ((JComponent)comp).setBorder(border);
+            }
             
             if (tc == this.table.tcCount || (this.table.tableRight != null && tc == this.table.tableRight.tcCount)) {
                 if (iconResetFilter == null) {
@@ -3463,7 +3503,13 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                 label.setHorizontalTextPosition(SwingConstants.LEFT);
             }
             else label.setIcon(null);
-            add(comp, BorderLayout.CENTER);
+//qqqqq
+            PanelHeaderRenderer.this.removeAll();
+            PanelHeaderRenderer.this.setLayout(new BorderLayout());
+            PanelHeaderRenderer.this.add(button, BorderLayout.NORTH);
+            PanelHeaderRenderer.this.add(comp, BorderLayout.CENTER);
+            
+            
         }
 
         Icon icon = null;

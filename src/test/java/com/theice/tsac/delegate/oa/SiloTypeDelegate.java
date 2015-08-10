@@ -19,7 +19,7 @@ public class SiloTypeDelegate {
         int type = SiloType.TYPE_ICE;
         if (clientSiloType != null) {
             if (clientSiloType == com.theice.tsac.mrad.model.SiloType.Endex) type = SiloType.TYPE_Endex;
-            else if (clientSiloType == com.theice.tsac.mrad.model.SiloType.Life) type = SiloType.TYPE_Liffe;
+            else if (clientSiloType == com.theice.tsac.mrad.model.SiloType.Liffe) type = SiloType.TYPE_Liffe;
         }
         return getSiloType(type);
     }

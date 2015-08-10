@@ -157,6 +157,13 @@ public class OAPropertyPath<T> {
     public OALinkInfo[] getRecursiveLinkInfos() {
         return recursiveLinkInfos;
     }
+
+    public Object getValue(T fromObject) throws Exception {
+        return getValue(null, fromObject);
+    }
+    public String getValueAsString(T fromObject) throws Exception {
+        return getValueAsString(null, fromObject);
+    }
     
     /**
      * Returns the value of the propertyPath from a base object.

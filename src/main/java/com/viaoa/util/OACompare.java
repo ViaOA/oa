@@ -237,6 +237,20 @@ public class OACompare {
             return (Array.getLength(obj) == 0);
         }
 
+        Class c = obj.getClass();
+        if (OAReflect.isPrimitiveClassWrapper(c)) {
+            if (obj instanceof Number) {
+                return (((Number) obj).doubleValue() == 0.0);
+            }
+            if (obj instanceof Boolean) {
+                return (((Boolean) obj).booleanValue() == false);
+            }
+            if (obj instanceof Character) {
+                return (((Character) obj).charValue() == 0);
+            }
+            return false;
+        }
+        
         return OAString.isEmpty(obj, bTrim);
     }
     
@@ -244,7 +258,19 @@ public class OACompare {
         Object val1 = 222;
         Object val2 = "2*";
         
-        boolean b = isLess(val1, val2);
+        boolean b;
+        b = isEmpty(null);
+        b = isEmpty("");
+        b = isEmpty(new String[0]);
+        b = isEmpty(false);
+        b = isEmpty(true);
+        b = isEmpty(0);
+        b = isEmpty(0.0);
+        b = isEmpty(0.0000001);
+        b = isEmpty((char) 0);
+        b = isEmpty('a');
+        
+        b = isLess(val1, val2);
         b = isLike(val1, val2);
         b = isLess(val1, val2);
         b = isEqualOrLess(val1, val2);

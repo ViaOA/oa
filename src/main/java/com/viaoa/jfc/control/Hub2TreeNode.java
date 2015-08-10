@@ -312,6 +312,7 @@ public class Hub2TreeNode extends HubListenerAdapter {
         onNewList(e);
     }
     public @Override void onNewList(HubEvent e) {
+        if (parent == null) return;
         parent.closeChildren();
         ((OATreeModel)node.getTree().getModel()).fireTreeStructureChanged(parent);
     }

@@ -53,7 +53,7 @@ public class OAObjectModel extends OAObject {
         setAllowCut(true);
         setAllowCopy(true);
         setAllowPaste(true);
-        setAllowMultiSelect(true);
+        setAllowMultiSelect(false);
         setAllowTableFilter(true);
     }
 

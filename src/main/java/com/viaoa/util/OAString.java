@@ -1985,6 +1985,7 @@ public class OAString {
     /**
      * @return If null, then returns true; if String and length is 0, returns true; if array and length == 0, returns true.
      * all others return false.
+     * @see OACompare#isEmpty(Object)
      */
     public static boolean isEmpty(Object obj) {
         return isEmpty(obj, false);

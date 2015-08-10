@@ -143,6 +143,7 @@ public class HubSortDelegate {
 	    used in a select is not maintained within the Hub.  This method will keep the objects sorted
 	    using the same property paths used by select.
 	*/
+/**qqqqqqqqqqq  20150810 removed, sort will keepSorted by default	
 	public static void keepSorted(Hub thisHub) {
 	    // 20090801 cant have sorter if a AutoSequence is being used
 	    if (thisHub.data.getAutoSequence() != null) {
@@ -154,7 +155,7 @@ public class HubSortDelegate {
 	    if (s == null || s.length() == 0) return;
 	    sort(thisHub, s, true, null, true);
 	}
-
+*/
 	/**
 	 * used to determine if the Hub is currently kept sorted.
 	 * Otherwise, it might have been sorted when it was loaded, but not kept sorted.
