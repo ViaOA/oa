@@ -59,7 +59,7 @@ public class OAHierFinder<F> {
         
         Object value = null;;
         try {
-            value = findFirstValue(null, fromObject, 0, false);
+            value = findFirstValue(fromObject, 0, 0);
         }
         catch (Exception e) {
             throw new RuntimeException("error finding value", e);
@@ -68,74 +68,34 @@ public class OAHierFinder<F> {
         return value;
     }
 
-    protected Object findFirstValue(Object objPrev, Object obj, int pos, boolean bRecursed) throws Exception {
+    protected Object findFirstValue(final Object obj, final int pos, final int startPos) throws Exception {
         if (obj == null) return null;
         if (propertyPaths == null || propertyPaths.length <= pos) return null; 
 
-        Object value = null;
-        if (pos == 0) {
-            value = propertyPaths[pos].getValue(obj);
-            if (isUsed(obj, value)) return value;
-            
-            // recursive
-            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
-            OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
-            if (li != null) {
-                Object objx = li.getValue(obj);
-                if (objx != null) {
-                    value = findFirstValue(null, objx, pos, false);
-                    if (value != null) return value;
-                }
-            }
+        Method[] methods = propertyPaths[pos].getMethods();
+        Object value = obj;
+        for (int i=startPos; i<methods.length; i++) {
+            value = methods[i].invoke(value);
+            if (value == null) break;
+        }
+        if (isUsed(obj, value)) return value;
         
-            if (pos+1 == propertyPaths.length) return null;
-            
-            Object objNext = propertyPaths[pos+1].getMethods()[0].invoke(obj);
-            if (objNext == null) return null;
-            value = findFirstValue(obj, objNext, pos+1, false);
-        }        
-        else if (!bRecursed) {
-            value = propertyPaths[pos].getValue(objPrev);
-            if (isUsed(obj, value)) return value;
-            
-            // recursive
-            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
-            OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
-            if (li != null) {
-                Object objx = li.getValue(obj);
-                if (objx != null) {
-                    value = findFirstValue(objPrev, objx, pos, true);
-                    if (value != null) return value;
-                }
+        // recursive
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
+        OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
+        if (li != null) {
+            Object objParent = li.getValue(obj);
+            if (objParent != null) {
+                value = findFirstValue(objParent, pos, startPos);
+                if (value != null) return value;
             }
+        }
+        if (pos+1 == propertyPaths.length) return null;
 
-            if (pos+1 == propertyPaths.length) return null;
-            
-            Object objNext = propertyPaths[pos+1].getMethods()[0].invoke(obj);
-            if (objNext == null) return null;
-            value = findFirstValue(obj, objNext, pos+1, false);
-        }
-        else {
-            Method[] methods = propertyPaths[pos].getMethods();
-            value = obj;
-            for (int i=1; i<methods.length; i++) {
-                value = methods[i].invoke(value);
-                if (value == null) break;
-            }
-            if (isUsed(obj, value)) return value;
-            
-            // recursive
-            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
-            OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
-            if (li != null) {
-                Object objx = li.getValue(obj);
-                if (objx != null) {
-                    value = findFirstValue(objPrev, objx, pos, true);
-                    if (value != null) return value;
-                }
-            }
-            
-        }
+        Object objNext = propertyPaths[pos+1].getMethods()[0].invoke(obj);
+        if (objNext == null) return null;
+        value = findFirstValue(objNext, pos+1, 1);
+
         return value;
     }
     
