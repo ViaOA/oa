@@ -102,6 +102,8 @@ public abstract class OATableCellEditor implements TableCellEditor, FocusListene
         int col = 0;
         int row = 0;
 
+        if (table.getEditingRow() < 0) return; //20150811 table header column
+        
         int kc = e.getKeyCode();
 	    
 	    switch (kc) {
@@ -135,6 +137,7 @@ public abstract class OATableCellEditor implements TableCellEditor, FocusListene
 
         col += table.getEditingColumn();
         row += table.getEditingRow();
+        
         fireEditingStopped();
 
         

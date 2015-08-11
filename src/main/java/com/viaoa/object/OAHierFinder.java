@@ -9,10 +9,7 @@
     limitations under the License.
 */
 package com.viaoa.object;
-
 import java.lang.reflect.Method;
-
-import com.viaoa.hub.Hub;
 import com.viaoa.util.*;
 
 // 20150806

@@ -281,7 +281,18 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     @Override
     public Component getTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (chkRenderer == null) {
-            chkRenderer = new JCheckBox();
+            chkRenderer = new JCheckBox() {
+                @Override
+                public void paint(Graphics g) {
+                    super.paint(g);
+                    if (!bHalfChecked) return;
+                    g.setColor(Color.gray);
+                    Dimension d = getSize();
+                    int w = d.width/2;
+                    int h = d.height/2;
+                    g.fillRect(w-2, h-1, 5, 3);
+                }
+            };
             chkRenderer.setOpaque(true);
             chkRenderer.setHorizontalAlignment(JLabel.CENTER);
         }
@@ -316,13 +327,20 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
             chkRenderer.setForeground( UIManager.getColor("Table.selectionForeground") );
             chkRenderer.setBackground( UIManager.getColor("Table.selectionBackground") );
         }
-        
         return chkRenderer;
     }
     @Override
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
     }
 
+    private boolean bHalfChecked;
+    public void setHalfChecked(boolean b) {
+        bHalfChecked = b;
+    }
+    public boolean isHalfChecked() {
+        return bHalfChecked;
+    }
+    
     @Override
     public String getToolTipText(int row, int col, String defaultValue) {
         return defaultValue;

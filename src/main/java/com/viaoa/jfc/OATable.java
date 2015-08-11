@@ -19,6 +19,7 @@ import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -45,8 +46,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.omg.CORBA.REBIND;
-
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubAODelegate;
 import com.viaoa.hub.HubDataDelegate;
@@ -66,8 +65,6 @@ import com.viaoa.jfc.table.OATableListener;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.object.OAObject;
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.util.OAArray;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OANullObject;
@@ -304,7 +301,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         if (hubFilter != null) hubFilter.refresh();
         else if (tableRight != null && tableRight.hubFilter != null) tableRight.hubFilter.refresh();
-        getParent().getParent().repaint();
+        Container cont = getParent();
+        for (int i=0; i<3 && cont!=null; i++) {
+            cont.repaint();
+            cont = cont.getParent();
+        }
     }
     
     // 2006/12/29 called by superclass, this is overwritten from JTable
@@ -1100,12 +1101,16 @@ if (!getKeepSorted()) hub.cancelSort();
             tc.bIsAlreadyExpanded = true;
             tc.setMethods(null);
             if (oaTableModel != null) {
+                boolean b = false;
                 try {
-                    if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = true;
+                    if (hubAdapter != null) {
+                        b = true;
+                        hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                    }
                     oaTableModel.fireTableStructureChanged();
                 }
                 finally {
-                    if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = false;
+                    if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
                 }
             }
         }
@@ -1118,12 +1123,16 @@ if (!getKeepSorted()) hub.cancelSort();
             tc.path = comp.getPropertyPath();
             tc.setMethods(null);
             if (oaTableModel != null) {
+                boolean b = false;
                 try {
-                    if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = true;
+                    if (hubAdapter != null) {
+                        b = true;
+                        hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                    }
                     oaTableModel.fireTableStructureChanged();
                 }
                 finally {
-                    if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = false;
+                    if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
                 }
             }
         }
@@ -1193,8 +1202,11 @@ if (!getKeepSorted()) hub.cancelSort();
                 if (row == -1) {
                     // heading
                     //need to set checked=true if all selected
-                    chkRenderer.setSelected(isAllSelected());
+                    boolean b = isAllSelected();
+                    chkRenderer.setSelected(b);
+                    setHalfChecked(!b && isAnySelected());
                 }
+                else setHalfChecked(false);
                 return comp;
             }
         };
@@ -1212,6 +1224,16 @@ if (!getKeepSorted()) hub.cancelSort();
             if (!h.contains(obj)) return false;
         }
         return true;
+    }
+    protected boolean isAnySelected() {
+        Hub h = getSelectHub();
+        if (h == null) return false;
+        if (h.getSize() == 0) return false;
+        if (getHub().getSize() == 0) return false;
+        for (Object obj : h) {
+            if (getHub().contains(obj)) return true;
+        }
+        return false;
     }
     
     protected OACheckBox chkSelection;
@@ -1558,12 +1580,16 @@ if (!getKeepSorted()) hub.cancelSort();
 
         columns.insertElementAt(column, col);
         if (oaTableModel != null) {
+            boolean b = false;
             try {
-                if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = true;
+                if (hubAdapter != null) {
+                    b = true;
+                    hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                }
                 oaTableModel.fireTableStructureChanged();
             }
             finally {
-                if (hubAdapter != null) hubAdapter._bIgnoreValueChanged = false;
+                if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
             }
         }
 
@@ -1640,16 +1666,28 @@ if (!getKeepSorted()) hub.cancelSort();
         }
 
         public void fireTableStructureChanged() {
-            // need to retain the selected objects
-            final Object[] objs = new Object[hubSelect == null ? 0 : hubSelect.getSize()];
-            if (hubSelect != null) {
-                hubSelect.copyInto(objs);
+            boolean b = false;
+            try {
+                if (hubAdapter != null) {
+                    b  = true;
+                    hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                }
+                _fireTableStructureChanged();
             }
+            finally {
+                if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+            }
+        }
+        
+        private void _fireTableStructureChanged() {
+            // need to retain the selected objects
             super.fireTableStructureChanged();
+
+            getSelectionModel().clearSelection();
             if (hubSelect != null) {
-                hubSelect.clear();
-                for (Object obj : objs) {
-                    hubSelect.add(obj);
+                for (Object obj : hubSelect) {
+                    int x = hub.getPos(obj);
+                    addRowSelectionInterval(x, x);
                 }
             }
         }
@@ -1960,11 +1998,23 @@ if (!getKeepSorted()) hub.cancelSort();
         final HubFilter hf = (hubFilter != null || tableRight == null) ? hubFilter : tableRight.hubFilter;
         
         if (hf == null) return;
+        // final int cnt = aiRefreshFilter.incrementAndGet();
+        
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
             Dimension dim;
             @Override
             protected Void doInBackground() throws Exception {
-                hf.refresh();
+                boolean b = false;
+                try {
+                    if (hubAdapter != null) {
+                        b = true;
+                        hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                    }
+                    hf.refresh();
+                }
+                finally {
+                    if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                }
                 oaTableModel.fireTableStructureChanged();
                 return null;
             }
@@ -2625,8 +2675,7 @@ if (!getKeepSorted()) hub.cancelSort();
             
             // 20150810
             if (tc.getOATableComponent() == this.chkSelection) {
-                boolean b = isAllSelected();
-                if (b) {
+                if (isAnySelected()) {
                     for (Object obj : getHub()) {
                         getSelectHub().remove(obj);
                     }
@@ -2945,8 +2994,8 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     Hub hubSelect;
     private HubListenerAdapter hlSelect;
 
-    boolean _bIgnoreValueChanged; // used to ignore calls to valueChanged(...)
-    boolean _bRunningValueChanged; // flag set when valueChanged is running
+    AtomicInteger aiIgnoreValueChanged = new AtomicInteger();  // used to ignore calls to valueChanged(...)
+    volatile boolean _bRunningValueChanged; // flag set when valueChanged is running
 
     public MyHubAdapter(Hub hub, OATable table) {
         setHub(hub);
@@ -2958,12 +3007,12 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
     protected boolean getIgnoreValueChanged() {
         if (table.tableLeft != null) {
-            if (table.tableLeft.hubAdapter._bIgnoreValueChanged) return true;
+            if (table.tableLeft.hubAdapter.aiIgnoreValueChanged.get() > 0) return true;
         }
         else if (table.tableRight != null) {
-            if (table.tableRight.hubAdapter._bIgnoreValueChanged) return true;
+            if (table.tableRight.hubAdapter.aiIgnoreValueChanged.get() > 0) return true;
         }
-        return _bIgnoreValueChanged;
+        return aiIgnoreValueChanged.get() > 0;
     }
 
     protected boolean getRunningValueChanged() {
@@ -2996,12 +3045,20 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 int pos = hub.getPos(obj);
                 hub.setPos(pos);
                 if (pos >= 0) {
-                    _bIgnoreValueChanged = true;
-                    ListSelectionModel lsm = table.getSelectionModel();
-                    lsm.addSelectionInterval(pos, pos);
-                    _bIgnoreValueChanged = false;
+                    try {
+                        aiIgnoreValueChanged.incrementAndGet();
+                        ListSelectionModel lsm = table.getSelectionModel();
+                        lsm.addSelectionInterval(pos, pos);
+                    }
+                    finally {
+                        aiIgnoreValueChanged.decrementAndGet();
+                    }
                 }
-                table.getParent().getParent().repaint();
+                Container cont = table.getParent();
+                for (int i=0; i<3 && cont!=null; i++) {
+                    cont.repaint();
+                    cont = cont.getParent();
+                }
             }
 
             public @Override void afterInsert(HubEvent e) {
@@ -3014,12 +3071,20 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 int pos = HubDataDelegate.getPos(hub, e.getObject(), false, false);
                 // int pos = hub.getPos(e.getObject());
                 if (pos >= 0) {
-                    _bIgnoreValueChanged = true;
-                    ListSelectionModel lsm = table.getSelectionModel();
-                    lsm.removeSelectionInterval(pos, pos);
-                    _bIgnoreValueChanged = false;
+                    try {
+                        aiIgnoreValueChanged.incrementAndGet();
+                        ListSelectionModel lsm = table.getSelectionModel();
+                        lsm.removeSelectionInterval(pos, pos);
+                    }
+                    finally {
+                        aiIgnoreValueChanged.decrementAndGet();
+                    }
                 }
-                table.getParent().getParent().repaint();
+                Container cont = table.getParent();
+                for (int i=0; i<3 && cont!=null; i++) {
+                    cont.repaint();
+                    cont = cont.getParent();
+                }
             }
 
             public @Override void onNewList(HubEvent e) {
@@ -3035,14 +3100,21 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
 
     protected void rebuildListSelectionModel() {
+        try {
+            aiIgnoreValueChanged.incrementAndGet();
+            _rebuildListSelectionModel();
+        }
+        finally {
+            aiIgnoreValueChanged.decrementAndGet();
+        }
+    }
+    private void _rebuildListSelectionModel() {
         ListSelectionModel lsm = table.getSelectionModel();
-        _bIgnoreValueChanged = true;
         lsm.clearSelection();
 
         if (hubSelect == null) {
             int x = hub.getPos();
             if (x >= 0) lsm.addSelectionInterval(x, x);
-            _bIgnoreValueChanged = false;
             return;
         }
 
@@ -3067,7 +3139,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 lsm.addSelectionInterval(pos, pos);
             }
         }
-        _bIgnoreValueChanged = false;
     }
 
     public synchronized void valueChanged(ListSelectionEvent e) {
@@ -3142,12 +3213,27 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
         }
         _bRunningValueChanged = false;
-        this.table.getParent().getParent().repaint();
-        //was: table.repaint();
+        Container cont = table.getParent();
+        for (int i=0; i<3 && cont!=null; i++) {
+            cont.repaint();
+            cont = cont.getParent();
+        }
     }
 
     public @Override void onNewList(HubEvent e) {
-        table.oaTableModel.fireTableStructureChanged();
+
+        boolean b = false;
+        try {
+            if (table.hubAdapter != null) {
+                b = true;
+                table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+            }
+            table.oaTableModel.fireTableStructureChanged();
+        }
+        finally {
+            if (b && table.hubAdapter != null) table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+        }
+        
         int x = getHub().getPos();
         if (x >= 0) setSelectedRow(x);
         else {
@@ -3236,7 +3322,15 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
 
     private void _setSelectRow(int row) {
-        _bIgnoreValueChanged = true;
+        try {
+            aiIgnoreValueChanged.incrementAndGet();
+            _setSelectRow2(row);
+        }   
+        finally {
+            aiIgnoreValueChanged.decrementAndGet();
+        }
+    }
+    private void _setSelectRow2(int row) {
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
         if (row < 0) {
             table.getSelectionModel().clearSelection();
@@ -3272,7 +3366,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             table.repaint();
 
         }
-        _bIgnoreValueChanged = false;
     }
 
     public @Override void afterPropertyChange(HubEvent e) {
@@ -3291,17 +3384,25 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
 
         if (SwingUtilities.isEventDispatchThread()) {
-            _bIgnoreValueChanged = true;
-            table.oaTableModel.fireTableRowsDeleted(pos, pos);
-            _bIgnoreValueChanged = false;
+            try {
+                table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                table.oaTableModel.fireTableRowsDeleted(pos, pos);
+            }
+            finally {
+                table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+            }
             rebuildListSelectionModel();
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    _bIgnoreValueChanged = true;
-                    table.oaTableModel.fireTableRowsDeleted(pos, pos);
-                    _bIgnoreValueChanged = false;
+                    try {
+                        table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                        table.oaTableModel.fireTableRowsDeleted(pos, pos);
+                    }
+                    finally {
+                        table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                    }
                     rebuildListSelectionModel();
                 }
             });
@@ -3338,9 +3439,13 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
 
         if (SwingUtilities.isEventDispatchThread()) {
-            _bIgnoreValueChanged = true;
-            table.oaTableModel.fireTableRowsInserted(pos, pos);
-            _bIgnoreValueChanged = false;
+            try {
+                table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                table.oaTableModel.fireTableRowsInserted(pos, pos);
+            }
+            finally {
+                table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+            }
             rebuildListSelectionModel();
         }
         else {
@@ -3348,13 +3453,13 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        _bIgnoreValueChanged = true;
+                        table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
                         table.oaTableModel.fireTableRowsInserted(pos, pos);
-                        rebuildListSelectionModel();
                     }
                     finally {
-                        _bIgnoreValueChanged = false;
+                        table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
                     }
+                    rebuildListSelectionModel();
                 }
             });
         }

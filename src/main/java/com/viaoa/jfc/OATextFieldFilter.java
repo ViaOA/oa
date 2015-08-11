@@ -52,7 +52,7 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
     }
     @Override
     public String getPropertyPath() {
-        return null;
+        return this.propertyPath;
     }
 
     @Override
