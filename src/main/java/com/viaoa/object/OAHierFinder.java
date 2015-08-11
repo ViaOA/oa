@@ -59,8 +59,7 @@ public class OAHierFinder<F> {
         
         Object value = null;;
         try {
-            value = findFirstValue(fromObject, 0);
-            
+            value = findFirstValue(null, fromObject, 0, false);
         }
         catch (Exception e) {
             throw new RuntimeException("error finding value", e);
@@ -69,36 +68,74 @@ public class OAHierFinder<F> {
         return value;
     }
 
-    protected Object findFirstValue(Object objFrom, int pos) throws Exception {
-        if (objFrom == null) return null;
+    protected Object findFirstValue(Object objPrev, Object obj, int pos, boolean bRecursed) throws Exception {
+        if (obj == null) return null;
         if (propertyPaths == null || propertyPaths.length <= pos) return null; 
 
-        Object objRoot = objFrom;
-        if (pos > 0) {
-            objRoot = propertyPaths[pos].getMethods()[0].invoke(objFrom);
-            if (objRoot == null) return null;
-        }
-        
-        
-        Object value = propertyPaths[pos].getValue(objFrom);
-        
-        
-        if (isUsed(objRoot, value)) return value;
-        
-        // recursive
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objFrom.getClass());
-        OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
-        if (li != null) {
-            Object objx = li.getValue(objFrom);
-            if (objx != null) {
-                value = findFirstValue(objx, pos);
-                if (value != null) return value;
+        Object value = null;
+        if (pos == 0) {
+            value = propertyPaths[pos].getValue(obj);
+            if (isUsed(obj, value)) return value;
+            
+            // recursive
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
+            OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
+            if (li != null) {
+                Object objx = li.getValue(obj);
+                if (objx != null) {
+                    value = findFirstValue(null, objx, pos, false);
+                    if (value != null) return value;
+                }
             }
-        }
-
-        // getnext prop
-        value = findFirstValue(objRoot, pos+1);
         
+            if (pos+1 == propertyPaths.length) return null;
+            
+            Object objNext = propertyPaths[pos+1].getMethods()[0].invoke(obj);
+            if (objNext == null) return null;
+            value = findFirstValue(obj, objNext, pos+1, false);
+        }        
+        else if (!bRecursed) {
+            value = propertyPaths[pos].getValue(objPrev);
+            if (isUsed(obj, value)) return value;
+            
+            // recursive
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
+            OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
+            if (li != null) {
+                Object objx = li.getValue(obj);
+                if (objx != null) {
+                    value = findFirstValue(objPrev, objx, pos, true);
+                    if (value != null) return value;
+                }
+            }
+
+            if (pos+1 == propertyPaths.length) return null;
+            
+            Object objNext = propertyPaths[pos+1].getMethods()[0].invoke(obj);
+            if (objNext == null) return null;
+            value = findFirstValue(obj, objNext, pos+1, false);
+        }
+        else {
+            Method[] methods = propertyPaths[pos].getMethods();
+            value = obj;
+            for (int i=1; i<methods.length; i++) {
+                value = methods[i].invoke(value);
+                if (value == null) break;
+            }
+            if (isUsed(obj, value)) return value;
+            
+            // recursive
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
+            OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
+            if (li != null) {
+                Object objx = li.getValue(obj);
+                if (objx != null) {
+                    value = findFirstValue(objPrev, objx, pos, true);
+                    if (value != null) return value;
+                }
+            }
+            
+        }
         return value;
     }
     

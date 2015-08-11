@@ -72,6 +72,9 @@ public class OAHierFinderTest extends OAUnitTest {
         assertNotNull(loc2.getProgram());
         assertNotNull(loc3.getProgram());
         
+        assertEquals(prog, loc.getProgram());
+        assertEquals(prog, loc2.getProgram());
+        assertEquals(prog, loc3.getProgram());
         
         OAHierFinder<EmployeeAward> f = new OAHierFinder<EmployeeAward>(
                 EmployeeAwardPP.paidDate(),
@@ -85,11 +88,16 @@ public class OAHierFinderTest extends OAUnitTest {
         
         prog.setCode("code");
         obj = f.findFirstValue(ea);
-        assertEquals(obj, "code");
+        assertEquals("code", obj);
+
+        loc.setCode("loc");
+        obj = f.findFirstValue(ea);
+        assertEquals("loc", obj);
+        
         
         emp.setLastName("ln");
         obj = f.findFirstValue(ea);
-        assertEquals(obj, "ln");
+        assertEquals("ln", obj);
     }
     
     public static void main(String[] args) throws Exception {
