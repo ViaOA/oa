@@ -1687,7 +1687,7 @@ if (!getKeepSorted()) hub.cancelSort();
             if (hubSelect != null) {
                 for (Object obj : hubSelect) {
                     int x = hub.getPos(obj);
-                    addRowSelectionInterval(x, x);
+                    if (x >= 0) addRowSelectionInterval(x, x);
                 }
             }
         }
