@@ -34,10 +34,10 @@ public @interface OARemoteMethod {
     
     int timeoutSeconds() default 0;
     
-    // if true and this the return value is a remote object, then it will not use a queue when messaging (even if parent uses a msg queue)
+    // if true and the return value is a remote object, then it will not use a queue when messaging (even if parent uses a msg queue)
     boolean dontUseQueueForReturnValue() default false;
     
-    // do not use a queue (even if parent uses a msg queue)
+    // do not use queue (even if parent uses a msg queue)
     boolean dontUseQueue() default false;
 }
 

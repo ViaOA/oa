@@ -191,12 +191,15 @@ static int cntq;
         if (this.bEnabled == b) return;
         this.bEnabled = b;
         if (bEnabled) {
-            if (bServerSideOnly) { // 20120505
-                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
+            try {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
+                if (!bShareEndHub && hubCombined != null) hubCombined.clear();
+                dataRoot.onNewList(null);
+                dataRoot.afterChangeActiveObject(null);
             }
-            if (!bShareEndHub && hubCombined != null) hubCombined.clear();
-            dataRoot.onNewList(null);
-            dataRoot.afterChangeActiveObject(null);
+            finally {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false); 
+            }
         }
     }
 
@@ -830,7 +833,19 @@ static int cntq;
         // to have the merger get objects based on master. ex: OrderContacts propPath
         // "order.customer.contacts" for a
         // hub to link and autocreate the orderContact objects
+        
         void createChildUsingMaster() {
+            try {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
+                _createChildUsingMaster();
+            }
+            finally {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
+        
+        
+        void _createChildUsingMaster() {
             if (!bEnabled) return;
             // XOG.finer("createChild");
             if (node.child == null) {
@@ -855,12 +870,6 @@ static int cntq;
                 if (ref == null) return;
 
                 if (!node.child.data.hub.contains(ref)) {
-                    // 20140117
-                    if (node.child.data.hub == hubCombined) {
-                        if (bServerSideOnly) {
-                            OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
-                        }
-                    }
                     node.child.data.hub.add(ref); // this will send afterAdd(), which will create children
                 }
 
@@ -896,24 +905,28 @@ static int cntq;
         }
 
         void _createChild(OAObject parent) {
+            try {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
+                _createChild2(parent);
+            }
+            finally {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
+        
+        void _createChild2(OAObject parent) {
             if (!bEnabled) return;
             // XOG.finer("createChild");
 
             // 20131209
             if (node == nodeRoot && bIncludeRootHub) {
                 if (hubCombined != null && !hubCombined.contains(parent)) {
-                    if (bServerSideOnly) {
-                        OARemoteThreadDelegate.sendMessages();
-                    }
                     hubCombined.add(parent);
                 }
             }
 
             if (node.child == null) {
                 if (!bShareEndHub && hubCombined != null && !hubCombined.contains(parent)) {
-                    if (bServerSideOnly) {
-                        OARemoteThreadDelegate.sendMessages();
-                    }
                     hubCombined.add(parent);
                 }
             }
@@ -931,12 +944,6 @@ static int cntq;
 
                 if (ref != null) {
                     if (!node.child.data.hub.contains(ref)) {
-                        // 20140117
-                        if (node.child.data.hub == hubCombined) {
-                            if (bServerSideOnly) {
-                                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
-                            }
-                        }
                         node.child.data.hub.add(ref); // this will send afterAdd(), which will create children
                     }
                 }
@@ -1035,6 +1042,16 @@ static int cntq;
         }
 
         void remove(Object obj) {
+            try {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
+                _remove(obj);
+            }
+            finally {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
+        
+        void _remove(Object obj) {
             if (!bEnabled) return;
 
             if (alChildren == null || node.child == null) {
@@ -1047,9 +1064,6 @@ static int cntq;
                         if (hubCombined == null || !hubCombined.contains(obj)) {
                             return; // might have already been removed
                         }
-                    }
-                    if (bServerSideOnly) {
-                        OARemoteThreadDelegate.sendMessages();
                     }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
                         // 20120612 dont send event, unless there is a recursive prop, which needs to
@@ -1070,9 +1084,6 @@ static int cntq;
             // 20131209
             if (node == nodeRoot && bIncludeRootHub) {
                 if (!isUsed(obj)) {
-                    if (bServerSideOnly) {
-                        OARemoteThreadDelegate.sendMessages();
-                    }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) {
                         HubAddRemoveDelegate.remove(hubCombined, obj, false, bIsRecusive, false, false, false, false);
                     }
@@ -1296,6 +1307,16 @@ static int cntq;
         }
 
         private void _onNewList() {
+            try {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
+                _onNewList2();
+            }
+            finally {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
+        
+        private void _onNewList2() {
             if (!bEnabled) return;
             
             if (this != dataRoot) return;
@@ -1312,20 +1333,10 @@ static int cntq;
             bIgnoreIsUsedFlag = true;
             if (node.child != null && node.child.liFromParentToChild.getType() == OALinkInfo.ONE) {
                 // dont call close on Node.data. This will instead call remove()
-                boolean b = true;
                 for (; node.child.data != null && node.child.data.hub != null;) {
                     Object obj = node.child.data.hub.getAt(0);
                     if (obj == null) break;
 
-                    // 20140117
-                    if (b) {
-                        b = false;
-                        if (node.child.data.hub == hubCombined) {
-                            if (bServerSideOnly) {
-                                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
-                            }
-                        }
-                    }
                     if (OAThreadLocalDelegate.isHubMergerChanging()) { // 20120102
                         HubAddRemoveDelegate.remove(node.child.data.hub, obj, false, false, false, false, false, false);
                     }
@@ -1542,6 +1553,16 @@ static int cntq;
 
         public @Override
         void afterPropertyChange(HubEvent e) {
+            try {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
+                _afterPropertyChange(e);
+            }
+            finally {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
+        void _afterPropertyChange(HubEvent e) {
+        
             if (!bEnabled) return;
             if (node.child == null) return; // last nodes
             String prop = e.getPropertyName();
@@ -1561,12 +1582,6 @@ static int cntq;
             Object ref = e.getOldValue();
             if (ref != null) {
                 if (!isUsed(ref, node.child)) {
-                    // 20140117
-                    if (node.child.data.hub == hubCombined) {
-                        if (bServerSideOnly) {
-                            OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
-                        }
-                    }
                     node.child.data.hub.remove(ref);
                 }
             }
@@ -1574,12 +1589,6 @@ static int cntq;
             ref = e.getNewValue();
             if (ref != null) {
                 if (!node.child.data.hub.contains(ref)) {
-                    // 20140117
-                    if (node.child.data.hub == hubCombined) {
-                        if (bServerSideOnly) {
-                            OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
-                        }
-                    }
                     node.child.data.hub.add(ref);
                 }
             }
@@ -1614,18 +1623,21 @@ static int cntq;
 
         private void _afterChangeActiveObject() {
             try {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
+                _afterChangeActiveObject2();
+            }
+            finally {
+                if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
+        private void _afterChangeActiveObject2() {
+            try {
                 lock.writeLock().lock();
                 if (alChildren != null && alChildren.size() > 0) {
                     if (node.child.liFromParentToChild.getType() == OALinkInfo.ONE) {
                         alChildren.remove(0);
                         Object obj = node.child.data.hub.getAt(0);
                         if (obj != null) {
-                            // 20140117
-                            if (node.child.data.hub == hubCombined) {
-                                if (bServerSideOnly) {
-                                    OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
-                                }
-                            }
                             node.child.data.hub.remove(obj);
                         }
                     }

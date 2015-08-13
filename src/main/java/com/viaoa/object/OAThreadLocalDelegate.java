@@ -356,13 +356,15 @@ public class OAThreadLocalDelegate {
 	 *  Is any thread currently deleting an object.
 	 */
 	public static boolean isDeleting(Object obj) {
-		return vecDeleting.contains(obj);
+		if (obj == null) return false;
+	    return vecDeleting.contains(obj);
 	}
 
 	/**
      *  Is this thread currently deleting an object/hub.
      */
     public static boolean isThreadDeleting(Object obj) {
+        if (obj == null) return false;
         if (OAThreadLocalDelegate.TotalDelete.get() == 0) {
             // LOG.finest("fast");
             return false;
@@ -377,6 +379,7 @@ public class OAThreadLocalDelegate {
     }
 	
 	protected static boolean isDeleting(OAThreadLocal ti, Object obj) {
+        if (obj == null) return false;
 		if (ti == null || ti.deleting == null) return false;
 		int x = ti.deleting.length;
 		if (x == 0) return false;
@@ -385,6 +388,7 @@ public class OAThreadLocalDelegate {
 	}
 	public static void setDeleting(Object obj, boolean b) {
 		// LOG.finer(""+b);
+        if (obj == null) return;
 
 		if (b) {
 		    vecDeleting.add(obj);
@@ -396,6 +400,7 @@ public class OAThreadLocalDelegate {
 	}
 	protected static void setDeleting(OAThreadLocal ti, Object obj, boolean b) {
 		if (ti == null) return;
+        if (obj == null) return;
 		if (b) {
 			if (ti.deleting == null) ti.deleting = new Object[1];
 			int x = ti.deleting.length;

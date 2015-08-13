@@ -11,6 +11,7 @@
 package com.viaoa.hub;
 
 import com.viaoa.*;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.lang.reflect.*;
@@ -134,16 +135,21 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
     public void update() {
         if (!abUpdating.compareAndSet(false, true)) return; // already updating
         try {
-            if (bServerSideOnly) { // 20140508
-                OARemoteThreadDelegate.sendMessages(); // so that events will go out, even if OAClientThread
-            }
+            if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
             _update();
         }
         finally {
             abUpdating.set(false);
+            if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
         }
     }
     private void _update() {
+        if (hub != null) {
+            if (OAThreadLocalDelegate.isDeleting(hub.getMasterObject())) {
+                return;
+            }
+        }
+        
         // Step 1: verify that both hubs are using the correct hub 
         //         (in case AO of master hub has been changed, and one of these hubs has not yet been adjusted).
         Hub hubMasterx = HubDetailDelegate.getRealHub(hubMaster);
