@@ -72,15 +72,13 @@ public class HubSortListener extends HubListenerAdapter implements java.io.Seria
         this.propertyPaths = propertyPaths;
         this.bAscending = bAscending;
 
-        if (comparator != null) {
-            hub.addHubListener(this); 
-        }
-        else {
+        if (comparator == null) {
             setupPropertyPaths();
             if (this.comparator == null) {
                 this.comparator = new OAComparator(hub.getObjectClass(), propertyPaths, bAscending);
             }
         }
+        hub.addHubListener(this); 
     }
 
     protected void finalize() throws Throwable {

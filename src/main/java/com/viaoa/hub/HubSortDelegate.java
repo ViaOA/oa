@@ -14,6 +14,7 @@ import java.util.*;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.util.OAComparator;
 import com.viaoa.util.OAString;
 
 /**
@@ -39,42 +40,52 @@ public class HubSortDelegate {
     
     public static void sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
         // 20110204 added locking
+        boolean b = false;
         try {
             OAThreadLocalDelegate.lock(thisHub);
-            _sort(thisHub, propertyPaths, bAscending, comp, bAlreadySortedAndLocalOnly);
+            b = _sort(thisHub, propertyPaths, bAscending, comp, bAlreadySortedAndLocalOnly);
         }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
         }
-        afterPerformSort(thisHub); // outside of lock
+        if (b) afterPerformSort(thisHub); // outside of lock
     }
     
     public static HubSortListener getSortListener(Hub thisHub) {
         return thisHub.data.getSortListener();
     }
     
-    private static void _sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
+    private static boolean _sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+        
         boolean bSame = false;
         HubSortListener hsl = thisHub.data.getSortListener();
-        if (propertyPaths == thisHub.data.getSortProperty() || (propertyPaths != null && propertyPaths.equalsIgnoreCase(thisHub.data.getSortProperty()))) {
+        if (OAString.isEqual(propertyPaths, thisHub.data.getSortProperty(),true)) {
             if (bAscending == thisHub.data.isSortAsc()) {
-                if (comp == null) {
-                    if (hsl != null && comp == hsl.comparator) {
-                        bSame = true;
-                    }
-                }
+                bSame = true;
             }
         }
         
         if (hsl != null) {
-            if (bSame) return;
+            if (bSame) {
+                // make sure that comparator is same
+                if (hsl.comparator == null) return false;
+                if (hsl.comparator instanceof OAComparator) {
+                    OAComparator compx = (OAComparator) hsl.comparator;
+                    if (OAString.isEqual(propertyPaths, compx.getPropertyPaths(),true)) {
+                        if (bAscending == compx.getAsc()) {
+                            return false;
+                        }
+                    }
+                }
+                bSame = false;
+            }
             hsl.close();
             thisHub.data.setSortListener(null);
         }
         else {
             if (bSame) {
-                if (OAString.isEmpty(propertyPaths) && comp == null) return;
+                if (OAString.isEmpty(propertyPaths) && comp == null) return false;
             }
         }
         
@@ -94,6 +105,7 @@ public class HubSortDelegate {
                 HubCSDelegate.sort(thisHub, propertyPaths, bAscending, comp);
             }
         }
+        return true;
     }
     
     

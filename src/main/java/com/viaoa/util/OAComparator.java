@@ -39,6 +39,13 @@ public class OAComparator implements Comparator {
         this.bAscending = bAscending;
     }
 
+    public String getPropertyPaths() {
+        return propertyPaths;
+    }
+    public boolean getAsc() {
+        return bAscending;
+    }
+    
     public int compare(Object o1, Object o2) {
         int x = preCheck(o1, o2);
         if (x < 5) return x;

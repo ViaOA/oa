@@ -626,31 +626,64 @@ public class HubEventDelegate {
 	        for ( ; h.datau.getSharedHub() != null ; ) h = h.datau.getSharedHub();
 	    }
 	    if (type == 3) type = 1;
-	    ArrayList al = new ArrayList(10);
-	    getAllListenersRecursive(h, al, thisHub, type);
-	    HubListener[] hl = new HubListener[al.size()];
-	    al.toArray(hl);
+	    HubListener[] hl = getAllListenersRecursive(h, thisHub, type);
 	    return hl;
 	}
-	protected static void getAllListenersRecursive(Hub thisHub, ArrayList<HubListener> al, Hub hub, int type) {
+	
+    protected static HubListener[] getAllListenersRecursive(Hub thisHub, Hub hub, int type) {
+        ArrayList<HubListener> al = _getAllListenersRecursive(thisHub, null, hub, type, false, false);
+        
+        HubListener[] hl = new HubListener[al==null?0:al.size()];
+        if (al != null) al.toArray(hl);
+        return hl;
+    }
+	
+	private static ArrayList<HubListener> _getAllListenersRecursive(Hub thisHub, ArrayList<HubListener> al, Hub hub, int type, boolean bHasLastChecked, boolean bHasLast) {
 	    if (type == 0 || type == 2 || thisHub.dataa == hub.dataa) {
-	        HubListener[] hls = getHubListeners(thisHub);
-	        for (int i=0; hls != null && i<hls.length; i++) {
-	            HubListener.InsertLocation loc = hls[i].getLocation();
-	            int x = al.size();
-	            if (x == 0 || loc == HubListener.InsertLocation.LAST) al.add(hls[i]);
-	            else if (loc == HubListener.InsertLocation.FIRST) al.add(0, hls[i]);
-	            else {
-	                // insert before any listeners that have location=LAST
-	                for (int j=x-1; j>=0; j--) {
-	                    HubListener hl2 = (HubListener) al.get(j);
-	                    if (hl2.getLocation() != HubListener.InsertLocation.LAST) {
-	                        al.add((j+1), hls[i]);
-	                        break;
-	                    }
-	                }
-	            }
-	        }
+            HubListener[] hls = getHubListeners(thisHub);
+            if (hls != null && hls.length > 0) {
+                int x;
+                if (al == null) {
+                    al = new ArrayList<HubListener>( Math.max(hls.length*2, 10));
+                    x = 0;
+                }
+                else x = al.size();
+	        
+                for (int i=0; i<hls.length; i++) {
+    	            HubListener.InsertLocation loc = hls[i].getLocation();
+                    
+                    if (loc == HubListener.InsertLocation.LAST) {
+    	                bHasLastChecked = bHasLast = true;
+    	                al.add(hls[i]);
+    	            }
+                    else if (x == 0) {
+                        bHasLastChecked = true;
+                        bHasLast = false;
+                        al.add(hls[i]);
+                    }
+    	            else if (loc == HubListener.InsertLocation.FIRST) al.add(0, hls[i]);
+                    else if (bHasLastChecked && !bHasLast) al.add(hls[i]);
+    	            else {
+    	                // insert before any listeners that have location=LAST
+    	                boolean bDone=false;
+    	                for (int j=x-1; j>=0; j--) {
+    	                    HubListener hl2 = (HubListener) al.get(j);
+    	                    if (hl2.getLocation() == HubListener.InsertLocation.LAST) {
+    	                        bHasLast = true;
+    	                    }
+    	                    else {
+    	                        if (!bHasLast) al.add(hls[i]);
+    	                        else al.add(j, hls[i]);
+    	                        bDone=true;
+    	                        break;
+    	                    }
+    	                }
+                        if (!bDone) al.add(0, hls[i]); // all were last, need to add to front
+    	                bHasLastChecked = true;
+    	            }
+                    x++;
+    	        }
+            }
 	    }
 	    
         WeakReference<Hub>[] refs = HubShareDelegate.getSharedWeakHubs(thisHub);
@@ -659,8 +692,9 @@ public class HubEventDelegate {
             if (ref == null) continue;
             Hub h2 = ref.get();
             if (h2 == null)  continue;
-            getAllListenersRecursive(h2, al, hub, type);
+            al = _getAllListenersRecursive(h2, al, hub, type, bHasLastChecked, bHasLast);
         }
+        return al;
 	}
 
     public static void fireAfterLoadEvent(Hub thisHub, OAObject oaObj) {

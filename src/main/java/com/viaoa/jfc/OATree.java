@@ -1245,25 +1245,19 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 return null;
             }
             protected Void _doInBackground() throws Exception {
-//System.out.println("doInBackground, cnt="+cnt+", valueChangeCounter="+valueChangeCounter);                    
                 if (cnt != valueChangeCounter) return null;
 
                 TreePath tp = e.getNewLeadSelectionPath();
                 if (tp != null) {
                     Object[] objs = tp.getPath();
                     OATreeNodeData tnd = (OATreeNodeData) objs[objs.length-1];
-//System.out.println("sleep, cnt="+cnt+", valueChangeCounter="+valueChangeCounter);                    
                     tnd.node.beforeObjectSelected(tnd.object);
-//System.out.println("wakeup, cnt="+cnt+", valueChangeCounter="+valueChangeCounter);                    
                 }
                 return null;
             }
             @Override
             protected void done() {
-//System.out.println("done, cnt="+cnt+", valueChangeCounter="+valueChangeCounter);
-
                 if (cnt == valueChangeCounter) {  // this does not need to be sync, since AWT thread is used in both places that check counter
-//System.out.println("calling valeChanged, cnt="+cnt+", valueChangeCounter="+valueChangeCounter);                    
                     try {
                         _valueChanged(e);
                     }

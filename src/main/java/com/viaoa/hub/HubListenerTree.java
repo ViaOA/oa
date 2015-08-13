@@ -38,8 +38,8 @@ public class HubListenerTree {
     
     // this is used for large amounts of listeners for a single HubListenerTree, 
     //   so that the HubListener[] does not always grow by one on each add.
-    private static HubListenerTree hugeListener;
-    private static ArrayList<HubListener> alHuge;
+    private static volatile HubListenerTree hugeListener;
+    private static volatile ArrayList<HubListener> alHuge;
     
     private class HubListenerTreeNode {
         Hub hub;
