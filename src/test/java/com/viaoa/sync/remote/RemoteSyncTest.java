@@ -76,10 +76,6 @@ public class RemoteSyncTest extends OAUnitTest {
                 return false;
             }
             @Override
-            public boolean delete(Class objectClass, OAObjectKey objectKey) {
-                return false;
-            }
-            @Override
             public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj) {
                 return false;
             }
