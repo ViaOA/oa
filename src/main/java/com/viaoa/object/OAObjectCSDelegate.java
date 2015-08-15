@@ -12,6 +12,7 @@ package com.viaoa.object;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
+
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteSessionInterface;
@@ -195,27 +196,25 @@ public class OAObjectCSDelegate {
     }
 
     /**
-	    Same as delete, without first calling canDelete.
-	    @return true if delete was sent to server, false if it was not sent.
-	    @see #delete()
-	*/
+     * 20150815 returns true if this should be deleted on this computer, false if it is done on the server. 
+    */
     protected static boolean delete(OAObject obj) {
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
-        if (rs == null) return false;
+        LOG.fine("obj="+obj);
+        if (OASyncDelegate.isServer()) return true;  // invoke on the server
         
-        if (!OARemoteThreadDelegate.shouldSendMessages()) return false;
+        if (!OARemoteThreadDelegate.shouldSendMessages()) return true;
+        if (OAThreadLocalDelegate.isSuppressCSMessages()) return true;
         
-        if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return false;
-        if (OAThreadLocalDelegate.isSkipObjectInitialize()) return false;
-        if (OAThreadLocalDelegate.isSuppressCSMessages()) return false;
-
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
-        if (oi.getLocalOnly()) return false;
-
-        OAObjectKey key = obj.getObjectKey();
-        rs.delete(obj.getClass(), key);
-        return true;
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
+        if (oi.getLocalOnly()) return true; 
+        
+        RemoteClientInterface rs = OASyncDelegate.getRemoteClient();
+        if (rs == null) return true;
+        
+        rs.delete(obj.getClass(), obj.getObjectKey());
+        return false;
     }
+    
 
 	protected static OAObject getServerObject(Class clazz, OAObjectKey key) {
         RemoteServerInterface rs = OASyncDelegate.getRemoteServer();

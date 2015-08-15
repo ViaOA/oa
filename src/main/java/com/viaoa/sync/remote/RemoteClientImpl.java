@@ -149,6 +149,15 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         // loadCachedOwners will have been done by the call to getObject(masterObj)
         return (Hub) objx;
     }
+
+    @Override
+    public boolean delete(Class objectClass, OAObjectKey objectKey) {
+        OAObject obj = getObject(objectClass, objectKey);
+        if (obj == null) return false;
+        obj.delete();
+        return true;
+    }
+
 }
 
 

@@ -166,14 +166,6 @@ if ("application".equalsIgnoreCase(s)) {
     }
     */
 
-    @Override
-    public boolean delete(Class objectClass, OAObjectKey objectKey) {
-        OAObject obj = getObject(objectClass, objectKey);
-        if (obj == null) return false;
-        obj.delete();
-        return true;
-    }
-
     // on the server, if the object is not found in the cache, then it will be loaded by the datasource 
     private OAObject getObject(Class objectClass, OAObjectKey origKey) {
         OAObject obj = OAObjectCacheDelegate.get(objectClass, origKey);

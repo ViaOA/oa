@@ -31,8 +31,6 @@ public interface RemoteSyncInterface {
     boolean moveObjectInHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName,  int posFrom, int posTo);
     boolean sort(Class objectClass, OAObjectKey objectKey, String hubPropertyName, String propertyPaths, boolean bAscending, Comparator comp);
 
-    boolean delete(Class objectClass, OAObjectKey objectKey);
-    
     void clearHubChanges(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName);
     
     // moved to remoteClient so that it will be performed on the server

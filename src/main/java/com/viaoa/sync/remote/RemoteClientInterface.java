@@ -32,5 +32,7 @@ public interface RemoteClientInterface {
     
     Object datasource(int command, Object[] objects);
 
+    boolean delete(Class objectClass, OAObjectKey objectKey);
+    
     boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName);
 }

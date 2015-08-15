@@ -10,10 +10,8 @@
 */
 package com.viaoa.object;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -25,27 +23,18 @@ import com.viaoa.hub.HubAddRemoveDelegate;
 import com.viaoa.hub.HubDSDelegate;
 import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubDelegate;
-import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubEventDelegate;
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAArray;
-import com.viaoa.util.OAString;
 
 public class OAObjectDeleteDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectDeleteDelegate.class.getName());
 
     public static void delete(OAObject oaObj) {
-	    boolean b = OAObjectCSDelegate.delete(oaObj);  // this will send to other clients
-        try {
-            if (b) OAThreadLocalDelegate.setSuppressCSMessages(true); // dont send other events out to clients (make atomic)
-    		OACascade cascade = new OACascade();
-            delete(oaObj, cascade);
-        }
-        finally {
-            if (b) OAThreadLocalDelegate.setSuppressCSMessages(false);
-            OARemoteThreadDelegate.startNextThread(); 
-        }
+	    boolean b = OAObjectCSDelegate.delete(oaObj);
+	    if (!b) return; // done on server
+		OACascade cascade = new OACascade();
+        delete(oaObj, cascade);
 	}
 
 	/**
