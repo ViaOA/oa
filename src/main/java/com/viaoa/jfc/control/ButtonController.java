@@ -24,6 +24,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.*;
+
 import java.lang.reflect.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -47,17 +48,21 @@ import com.viaoa.jfc.table.*;
 public class ButtonController extends JFCController implements ActionListener {
     private static Logger LOG = Logger.getLogger(ButtonController.class.getName());
     private AbstractButton button;
-    private int command = -1;
+    
+    private OAButton.EnabledMode enabledMode;
+    private OAButton.Command command;
 
     private boolean bMasterControl = true;
-    private boolean bAnyTime, bManual;
     private String confirmMessage;
     private String completedMessage;
     private String consoleProperty;
     private JComponent focusComponent; // comp to get focus after click
     private String methodName;
-    private Object updateObject, updateValue;
-    private Method updateMethod;
+    
+    private String updateProperty;
+    private OAObject updateObject;
+    private Object updateValue;
+    
     private String undoDescription;
     private boolean bUseSwingWorker;
     public String processingTitle, processingMessage;
@@ -66,13 +71,9 @@ public class ButtonController extends JFCController implements ActionListener {
         Used to bind an AbstractButton to a Hub, with built in support for a command.
         <p>
     */
-    public ButtonController(Hub hub, AbstractButton button, int command) {
+    public ButtonController(Hub hub, AbstractButton button, OAButton.EnabledMode enabledMode, OAButton.Command command) {
         super(hub, button);
-        create(button, command);
-
-        if (command == OACommand.NEW || command == OACommand.SAVE || command == OACommand.ADD) {
-            setAnyTime(hub != null);
-        }
+        create(button, enabledMode, command);
     }
 
     /**
@@ -81,7 +82,7 @@ public class ButtonController extends JFCController implements ActionListener {
         Note: setAnyTime(false) is used.
     */
     public ButtonController(Hub hub, AbstractButton button) {
-        this(hub, button, -1);
+        this(hub, button, null, null);
     }
 
     /**
@@ -113,67 +114,21 @@ public class ButtonController extends JFCController implements ActionListener {
     }
 
     /**
-        If false (default) then command will be ran when button is pressed,
-        else if true then no code will run when button is pressed.  The button will be
-        enabled based on status of Hub and value of command.
-    */
-    public boolean getManual() {
-        return bManual;
-    }
-
-    /**
-        If false (default) then command will be ran when button is pressed,
-        else if true then no code will run when button is pressed.  The button will be
-        enabled based on status of Hub and value of command.
-    */
-    public void setManual(boolean b) {
-        bManual = b;
-    }
-
-    /**
-        If true and Hub is valid, then button will always be enabled, else button will be disabled
-        based on value of command.  If true and command is NEW, then button will be disabled if object
-        needs to be saved.
-        <p>
-        Note: default value is true.
-     */
-    public void setAnyTime(boolean b) {
-        bAnyTime = b;
-        update();
-    }
-
-    /**
-        If true and Hub is valid, then button will always be enabled, else button will be disabled
-        based on value of command.
-     */
-    public boolean getAnyTime() {
-        return bAnyTime;
-    }
-
-    /**
        Object to update whenever button is clicked.
     */
-    public void setUpdateObject(Object object, String property, Object newValue) {
-        if (object != null && property != null) {
-            updateMethod = OAReflect.getMethod(object.getClass(), "set" + property);
-            updateValue = newValue;
-        }
-        else updateMethod = null;
+    public void setUpdateObject(OAObject object, String property, Object newValue) {
+        this.updateObject = object;
+        this.updateProperty = property;
+        this.updateValue = newValue;
     }
 
     /**
         Update active object whenever button is clicked.
     */
     public void setUpdateObject(String property, Object newValue) {
-        if (property == null) {
-            updateMethod = null;
-            updateValue = null;
-        }
-        else {
-            if (getHub() == null) return;
-            updateMethod = OAReflect.getMethod(getHub().getObjectClass(), "set" + property);
-            updateValue = newValue;
-        }
+        this.updateObject = null;
+        this.updateProperty = property;
+        this.updateValue = newValue;
     }
 
     /**
@@ -204,9 +159,10 @@ public class ButtonController extends JFCController implements ActionListener {
     }
     
     
-    private void create(AbstractButton but, int command) {
+    private void create(AbstractButton but, OAButton.EnabledMode enabledMode, OAButton.Command command) {
         this.button = but;
         button.addActionListener(this);
+        setEnabledMode(enabledMode);
         setCommand(command); // this will call change()
         if (hub != null) {
             getEnabledController().add(hub, null, OAAnyValueObject.instance); // so that Hub.isValid will be the only check
@@ -225,23 +181,34 @@ public class ButtonController extends JFCController implements ActionListener {
         Return command value.
         @see OACommand
     */
-    public int getCommand() {
+    public OAButton.Command getCommand() {
         return command;
     }
-
     /**
         @see OAButton#setCommand
     */
-    public void setCommand(int command) {
+    public void setCommand(OAButton.Command command) {
+        if (command == null) command = OAButton.Command.Other;
         this.command = command;
         getEnabledController().update();
         getVisibleController().update();
         update();
     }
 
+    public OAButton.EnabledMode getEnabledMode() {
+        return enabledMode;
+    }
+    public void setEnabledMode(OAButton.EnabledMode enabledMode) {
+        if (enabledMode == null) enabledMode = OAButton.EnabledMode.UsesIsEnabled; 
+        this.enabledMode = enabledMode;
+        getEnabledController().update();
+        getVisibleController().update();
+        update();
+    }
+    
     protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
         super.resetHubOrProperty();
-        if (button != null) create(button, command);
+        if (button != null) create(button, enabledMode, command);
     }
 
     /**
@@ -377,7 +344,7 @@ public class ButtonController extends JFCController implements ActionListener {
     
     protected boolean onActionPerformed2() {
         Hub mhub = getMultiSelectHub();
-        if (command == OACommand.DELETE) {
+        if (command == OAButton.Command.Delete) {
             OAObject currentAO = (OAObject) hub.getAO();
             if (currentAO != null) {
                 OALinkInfo[] lis = OAObjectDeleteDelegate.getMustBeEmptyBeforeDelete(currentAO);
@@ -555,275 +522,260 @@ public class ButtonController extends JFCController implements ActionListener {
         Hub mhub = getMultiSelectHub();
 
         if (hub != null) {
-            if (!bManual) {
-                OAObject oaObj;
-                int pos = hub.getPos();
-                switch (command) {
-                case OACommand.NEXT:
-                    hub.setPos(pos + 1);
-                    if (currentAO != hub.getAO() && bEnableUndo) {
-                        OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("next"), hub, currentAO, hub.getAO()));
-                    }
-                    break;
-                case OACommand.PREVIOUS:
-                    hub.setPos(pos - 1);
-                    if (currentAO != hub.getAO() && bEnableUndo) {
-                        OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("previous"), hub, currentAO, hub.getAO()));
-                    }
-                    break;
-                case OACommand.FIRST:
-                    hub.setPos(0);
-                    if (currentAO != hub.getAO() && bEnableUndo) {
-                        OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("goto first"), hub, currentAO, hub.getAO()));
-                    }
-                    break;
-                case OACommand.LAST:
-                    if (hub.isMoreData()) hub.loadAllData();
-                    hub.setPos(hub.getSize() - 1);
-                    if (currentAO != hub.getAO() && bEnableUndo) {
-                        OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("goto last"), hub, currentAO, hub.getAO()));
-                    }
-                    break;
+            OAObject oaObj;
+            int pos = hub.getPos();
+            switch (command) {
+            case Other:
+                break;
+            case Next:
+                hub.setPos(pos + 1);
+                if (currentAO != hub.getAO() && bEnableUndo) {
+                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("next"), hub, currentAO, hub.getAO()));
+                }
+                break;
+            case Previous:
+                hub.setPos(pos - 1);
+                if (currentAO != hub.getAO() && bEnableUndo) {
+                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("previous"), hub, currentAO, hub.getAO()));
+                }
+                break;
+            case First:
+                hub.setPos(0);
+                if (currentAO != hub.getAO() && bEnableUndo) {
+                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("goto first"), hub, currentAO, hub.getAO()));
+                }
+                break;
+            case Last:
+                if (hub.isMoreData()) hub.loadAllData();
+                hub.setPos(hub.getSize() - 1);
+                if (currentAO != hub.getAO() && bEnableUndo) {
+                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("goto last"), hub, currentAO, hub.getAO()));
+                }
+                break;
 
-                case OACommand.SAVE:
-                    if (ho == null) break;
-                    if (ho instanceof OAObject) {
-                        /*was
-                        if (hub == null || (!hub.isMasterNew() && !hub.isOwned()) ) {
-                            String msg = ((OAObject)ho).getCantSaveMessage();
-                            if (msg != null) {
-                                JOptionPane.showMessageDialog(null, msg, "", JOptionPane.ERROR_MESSAGE,null);
-                                break;
-                            }
-                            ((OAObject)ho).save();
-                        }
-                        */
-                        String msg = null;
-                        try {
-                            ((OAObject) ho).save();
-                        }
-                        catch (Exception e) {
-                            msg = "Error while saving\n" + e;
-                        }
+            case Save:
+                if (ho == null) break;
+                if (ho instanceof OAObject) {
+                    /*was
+                    if (hub == null || (!hub.isMasterNew() && !hub.isOwned()) ) {
+                        String msg = ((OAObject)ho).getCantSaveMessage();
                         if (msg != null) {
-                            JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.ERROR_MESSAGE,null);
+                            JOptionPane.showMessageDialog(null, msg, "", JOptionPane.ERROR_MESSAGE,null);
                             break;
                         }
-                        
+                        ((OAObject)ho).save();
                     }
-                    if (mhub != null) {
+                    */
+                    String msg = null;
+                    try {
+                        ((OAObject) ho).save();
+                    }
+                    catch (Exception e) {
+                        msg = "Error while saving\n" + e;
+                    }
+                    if (msg != null) {
+                        JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.ERROR_MESSAGE,null);
+                        break;
+                    }
+                    
+                }
+                if (mhub != null) {
+                    Object[] objs = mhub.toArray();
+                    for (Object obj : objs) {
+                        if (obj instanceof OAObject) {
+                            String msg = null;
+                            try {
+                                ((OAObject) obj).save();
+                            }
+                            catch (Exception e) {
+                                msg = "Error while saving\n" + e;
+                            }
+                        }
+                    }
+                }
+                break;
+            case Delete:
+                if (ho == null && mhub == null) break;
+
+                if (bEnableUndo) {
+                    OAUndoManager.startCompoundEdit(getUndoText("delete"));
+                }
+                try {
+                    if (mhub != null && mhub.getSize() > 0) {
                         Object[] objs = mhub.toArray();
                         for (Object obj : objs) {
                             if (obj instanceof OAObject) {
-                                String msg = null;
-                                try {
-                                    ((OAObject) obj).save();
+                                int posx = hub.getPos(obj);
+                                if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
+                                    getHub().remove(obj); // keep "noise" down
                                 }
-                                catch (Exception e) {
-                                    msg = "Error while saving\n" + e;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case OACommand.SAVE_MANUAL:
-                    break;
-                case OACommand.DELETE:
-                    if (ho == null && mhub == null) break;
-
-                    if (bEnableUndo) {
-                        OAUndoManager.startCompoundEdit(getUndoText("delete"));
-                    }
-                    try {
-                        if (mhub != null && mhub.getSize() > 0) {
-                            Object[] objs = mhub.toArray();
-                            for (Object obj : objs) {
-                                if (obj instanceof OAObject) {
-                                    int posx = hub.getPos(obj);
-                                    if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
-                                        getHub().remove(obj); // keep "noise" down
-                                    }
-                                    if (bEnableUndo) {
-                                        OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, posx));
-                                    }
-                                    String msg = null;
-                                    try {
-                                        ((OAObject) obj).delete();
-                                    }
-                                    catch (Exception e) {
-                                        msg = "Error while deleting\n" + e;
-                                    }
-                                }
-                            }
-                            ho = null;
-                        }
-                        else {
-                            if (ho instanceof OAObject) {
-                                oaObj = (OAObject) ho;
-                            }
-                            else oaObj = null;
-
-                            // 20131220
-                            if (oaObj != null) {
-                            //was: if (oaObj != null && (hub == null || (!hub.isOwned() || OAObjectHubDelegate.getHubReferenceCount(oaObj) > 1))) {
                                 if (bEnableUndo) {
-                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, hub.getPos()));
+                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, posx));
                                 }
-                                if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) { // 20120720
-                                    getHub().remove(ho); // 20110215 remove first, so that cascading deletes are not so "noisy"
-                                }
-                                // else it can only be removed when delete is called (ex: a detail hub that is from a linkOne)
                                 String msg = null;
                                 try {
-                                    ((OAObject) ho).delete();
+                                    ((OAObject) obj).delete();
                                 }
                                 catch (Exception e) {
                                     msg = "Error while deleting\n" + e;
                                 }
                             }
-                            else {
-                                if (hub != null) {
-                                    if (bEnableUndo) {
-                                        OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, ho, hub.getPos()));
-                                    }
-                                    hub.remove(ho);
-                                }
-                            }
                         }
-                    }
-                    finally {
-                        if (bEnableUndo) {
-                            OAUndoManager.endCompoundEdit();
-                        }
-                    }
-                    break;
-                case OACommand.REMOVE:
-                    if (bEnableUndo) {
-                        OAUndoManager.startCompoundEdit(getUndoText("remove"));
-                    }
-                    try {
-                        if (mhub != null && mhub.getSize() > 0) {
-                            Object[] objs = mhub.toArray();
-                            for (Object obj : objs) {
-                                if (obj instanceof OAObject) {
-                                    if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
-                                        int posx = hub.getPos(obj);
-                                        OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, obj, posx));
-                                        getHub().remove(obj);
-                                    }
-                                }
-                            }
-                        }
-                        else if (ho != null) {
-                            if (bEnableUndo) {
-                                OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, ho, hub.getPos()));
-                            }
-                            hub.remove(ho);
-                        }
-                    }
-                    finally {
-                        if (bEnableUndo) {
-                            OAUndoManager.endCompoundEdit();
-                        }
-                    }
-                    break;
-                case OACommand.CANCEL:
-                    /* was
-                    if (ho != null && ho instanceof OAObject) {
-                        OAObject obj = (OAObject) ho;
-                        obj.cancel();
-                        if (obj.isNew()) obj.removeAll();
-                    }
-                    */
-                    break;
-
-                case OACommand.ADD:
-                case OACommand.NEW:
-                    createNew(false);
-                    break;
-                case OACommand.ADD_MANUAL:
-                case OACommand.NEW_MANUAL:
-                    break;// user must respond
-
-                case OACommand.INSERT:
-                    createNew(true);
-                    break;
-                case OACommand.INSERT_MANUAL:
-                    break; // user must respond
-
-                case OACommand.SELECT_MANUAL:
-                    break; // user must respond
-                case OACommand.SELECT:
-                    if (hub != null) hub.select();
-                    break;
-                case OACommand.UP:
-                    ho = hub.getActiveObject();
-                    pos = hub.getPos();
-                    if (ho != null && pos > 0) {
-                        hub.move(pos, pos - 1);
-                        if (bEnableUndo) {
-                            OAUndoManager.add(OAUndoableEdit.createUndoableMove(getUndoText("move up"), hub, pos, pos - 1));
-                        }
-                        HubAODelegate.setActiveObjectForce(hub, ho);
-                    }
-                    break;
-                case OACommand.DOWN:
-                    ho = hub.getActiveObject();
-                    pos = hub.getPos();
-                    if (ho != null && hub.elementAt(pos + 1) != null) {
-                        hub.move(pos, pos + 1);
-                        if (bEnableUndo) {
-                            OAUndoManager.add(OAUndoableEdit.createUndoableMove(getUndoText("move down"), hub, pos, pos + 1));
-                        }
-                        HubAODelegate.setActiveObjectForce(hub, ho);
-                    }
-                    break;
-                case OACommand.CLEARAO:
-                    ho = hub.getActiveObject();
-                    if (ho != null) {
-                        hub.setAO(null);
-                        if (bEnableUndo) {
-                            OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO("Set active object to null", hub, ho, null));
-                        }
-                    }
-                    break;
-                case OACommand.CUT:
-                    ho = hub.getActiveObject();
-                    if (ho instanceof OAObject) addToClipboard((OAObject) ho);
-                    break;
-                case OACommand.COPY:
-                    if (mhub != null && mhub.getSize() > 0) {
-                        addToClipboard(mhub);
+                        ho = null;
                     }
                     else {
-                        ho = hub.getActiveObject();
                         if (ho instanceof OAObject) {
-                            oaObj = createCopy((OAObject) ho);
-                            if (oaObj != null) addToClipboard(oaObj);
+                            oaObj = (OAObject) ho;
+                        }
+                        else oaObj = null;
+
+                        // 20131220
+                        if (oaObj != null) {
+                        //was: if (oaObj != null && (hub == null || (!hub.isOwned() || OAObjectHubDelegate.getHubReferenceCount(oaObj) > 1))) {
+                            if (bEnableUndo) {
+                                OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, hub.getPos()));
+                            }
+                            if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) { // 20120720
+                                getHub().remove(ho); // 20110215 remove first, so that cascading deletes are not so "noisy"
+                            }
+                            // else it can only be removed when delete is called (ex: a detail hub that is from a linkOne)
+                            String msg = null;
+                            try {
+                                ((OAObject) ho).delete();
+                            }
+                            catch (Exception e) {
+                                msg = "Error while deleting\n" + e;
+                            }
+                        }
+                        else {
+                            if (hub != null) {
+                                if (bEnableUndo) {
+                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, ho, hub.getPos()));
+                                }
+                                hub.remove(ho);
+                            }
                         }
                     }
-                    break;
-                case OACommand.PASTE:
-                    OAObject obj = getClipboardObject();
-                    if (obj != null) {
-                        if (!hub.contains(obj)) {
-                            hub.add(obj);
-                        }
-                        hub.setAO(obj);
+                }
+                finally {
+                    if (bEnableUndo) {
+                        OAUndoManager.endCompoundEdit();
                     }
-                    else {
-                        Hub hx = getClipboardHub();
-                        if (hx != null) {
-                            for (Object objx : hx) {
-                                if (!hub.contains(objx)) {
-                                    hub.add(objx);
+                }
+                break;
+            case Remove:
+                if (bEnableUndo) {
+                    OAUndoManager.startCompoundEdit(getUndoText("remove"));
+                }
+                try {
+                    if (mhub != null && mhub.getSize() > 0) {
+                        Object[] objs = mhub.toArray();
+                        for (Object obj : objs) {
+                            if (obj instanceof OAObject) {
+                                if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
+                                    int posx = hub.getPos(obj);
+                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, obj, posx));
+                                    getHub().remove(obj);
                                 }
                             }
                         }
                     }
-                    break;
+                    else if (ho != null) {
+                        if (bEnableUndo) {
+                            OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, ho, hub.getPos()));
+                        }
+                        hub.remove(ho);
+                    }
                 }
+                finally {
+                    if (bEnableUndo) {
+                        OAUndoManager.endCompoundEdit();
+                    }
+                }
+                break;
+            case Cancel:
+                /* was
+                if (ho != null && ho instanceof OAObject) {
+                    OAObject obj = (OAObject) ho;
+                    obj.cancel();
+                    if (obj.isNew()) obj.removeAll();
+                }
+                */
+                break;
+            case Add:
+                createNew(false);
+                break;
+            case Insert:
+                createNew(true);
+                break;
+            case Up:
+                ho = hub.getActiveObject();
+                pos = hub.getPos();
+                if (ho != null && pos > 0) {
+                    hub.move(pos, pos - 1);
+                    if (bEnableUndo) {
+                        OAUndoManager.add(OAUndoableEdit.createUndoableMove(getUndoText("move up"), hub, pos, pos - 1));
+                    }
+                    HubAODelegate.setActiveObjectForce(hub, ho);
+                }
+                break;
+            case Down:
+                ho = hub.getActiveObject();
+                pos = hub.getPos();
+                if (ho != null && hub.elementAt(pos + 1) != null) {
+                    hub.move(pos, pos + 1);
+                    if (bEnableUndo) {
+                        OAUndoManager.add(OAUndoableEdit.createUndoableMove(getUndoText("move down"), hub, pos, pos + 1));
+                    }
+                    HubAODelegate.setActiveObjectForce(hub, ho);
+                }
+                break;
+            case Clear:
+                ho = hub.getActiveObject();
+                if (ho != null) {
+                    hub.setAO(null);
+                    if (bEnableUndo) {
+                        OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO("Set active object to null", hub, ho, null));
+                    }
+                }
+                break;
+            case Cut:
+                ho = hub.getActiveObject();
+                if (ho instanceof OAObject) addToClipboard((OAObject) ho);
+                break;
+            case Copy:
+                if (mhub != null && mhub.getSize() > 0) {
+                    addToClipboard(mhub);
+                }
+                else {
+                    ho = hub.getActiveObject();
+                    if (ho instanceof OAObject) {
+                        oaObj = createCopy((OAObject) ho);
+                        if (oaObj != null) addToClipboard(oaObj);
+                    }
+                }
+                break;
+            case Paste:
+                OAObject obj = getClipboardObject();
+                if (obj != null) {
+                    if (!hub.contains(obj)) {
+                        hub.add(obj);
+                    }
+                    hub.setAO(obj);
+                }
+                else {
+                    Hub hx = getClipboardHub();
+                    if (hx != null) {
+                        for (Object objx : hx) {
+                            if (!hub.contains(objx)) {
+                                hub.add(objx);
+                            }
+                        }
+                    }
+                }
+                break;
             }
+            
             if (methodName != null) {
                 Method[] method = OAReflect.getMethods(hub.getObjectClass(), methodName);
 
@@ -854,6 +806,8 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
             }
         }
+        
+        
         if (focusComponent != null) {
             boolean bFlag = false;
             if (focusComponent instanceof OATableComponent && hub != null && (focusComponent.getParent() == null || focusComponent.getParent() instanceof OATable)) {
@@ -911,17 +865,29 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
             }
         }
-        if (updateMethod != null) {
+        if (updateProperty != null) {
             try {
-                if (updateObject != null) OAReflect.setPropertyValue(updateObject, updateMethod, updateValue);
+                if (updateObject != null) {
+                    updateObject.setProperty(updateProperty, updateValue);
+                }
                 else {
+                    if (hubMultiSelect != null) {
+                        for (Object obj : hubMultiSelect) {
+                            if (obj instanceof OAObject) {
+                                ((OAObject)obj).setProperty(updateProperty, updateValue);
+                            }
+                        }
+                    }
                     if (getHub() != null) {
-                        OAReflect.setPropertyValue(getHub().getAO(), updateMethod, updateValue);
+                        Object obj = getHub().getAO();
+                        if (obj instanceof OAObject) {
+                            ((OAObject)obj).setProperty(updateProperty, updateValue);
+                        }
                     }
                 }
             }
             catch (Exception ex) {
-                throw new RuntimeException("ButtonController update method exception invoking method=" + updateMethod.getName() + " " + ex);
+                throw new RuntimeException("ButtonController update property=" + updateProperty, ex);
             }
         }
         if (button instanceof OAButton) {
@@ -1019,79 +985,125 @@ public class ButtonController extends JFCController implements ActionListener {
         Object obj = null;
         Hub hub = getActualHub();
 
-        //qqqqqqqqq        
-        if (button instanceof OAButton) {
-            if (((OAButton) button).XXX) {
-                int xxx = 4;
-                xxx++;
-            }
-        }
         if (hub != null) obj = hub.getActiveObject();
         OAObject oaObj;
         if (obj instanceof OAObject) oaObj = (OAObject) obj;
         else oaObj = null;
 
-        // 20110420
-        boolean flag = bAnyTime || (hub == null);
-        // was: boolean flag = bAnyTime;
-
-        if (hub != null) {
+        boolean flag = (hub != null && hub.isValid());
+        boolean bAnyTime = false;
+        
+        switch (enabledMode) {
+        case UsesIsEnabled:
+            flag = true;
+            break;
+        case Always:
+            bAnyTime = true;
+            flag = true;
+            break;
+        case ActiveObjectNotNull:
+            if (hub != null) flag = hub.getAO() != null;
+            break;
+        case ActiveObjectNull:
+            if (hub != null) flag = hub.getAO() == null;
+            break;
+        case HubIsValid:
+            break;
+        case HubIsNotEmpty:
+            if (hub != null) flag = hub.getSize() > 0;
+            break;
+        case HubIsEmpty:
+            if (hub != null) flag = hub.getSize() == 0;
+            break;
+        case AOPropertyIsNotEmpty:
+            if (updateObject != null) {
+                if (updateObject instanceof OAObject) {
+                    obj = ((OAObject) updateObject).getProperty(updateProperty);
+                    flag = !OACompare.isEmpty(obj);
+                }
+            }
+            else if (oaObj != null) {
+                obj = oaObj.getProperty(updateProperty);
+                flag = !OACompare.isEmpty(obj);
+            }
+            break;
+        case AOPropertyIsEmpty:
+            if (updateObject != null) {
+                if (updateObject instanceof OAObject) {
+                    obj = ((OAObject) updateObject).getProperty(updateProperty);
+                    flag = OACompare.isEmpty(obj);
+                }
+            }
+            else if (oaObj != null) {
+                obj = oaObj.getProperty(updateProperty);
+                flag = OACompare.isEmpty(obj);
+            }
+            break;
+        case SelectHubIsNotEmpty:
+            flag = (hubMultiSelect != null && hubMultiSelect.getSize() > 0);
+            break;
+        case SelectHubIsEmpty:
+            flag = (hubMultiSelect != null && hubMultiSelect.getSize() == 0);
+            break;
+        }
+        
+        
+        if (flag) {
             switch (command) {
-            case OACommand.NEXT:
+            case Next:
+                if (hub == null) {
+                    flag = true; 
+                    break;
+                }
                 int pos = hub.getPos();
                 flag = hub.elementAt(pos + 1) != null;
                 if (flag) {
-                    if (oaObj != null && !bMasterControl && !bAnyTime && oaObj.getChanged()) flag = false;
+                    if (oaObj != null && !bMasterControl && !bAnyTime &&  oaObj.getChanged()) flag = false;
                 }
                 break;
-            case OACommand.PREVIOUS:
+            case Previous:
                 pos = hub.getPos();
                 flag = pos >= 0;
                 if (flag) {
                     if (oaObj != null && !bAnyTime && !bMasterControl && oaObj.getChanged()) flag = false;
                 }
                 break;
-            case OACommand.FIRST:
+            case First:
                 flag = hub.getPos() != 0 && hub.getCurrentSize() > 0;
                 if (oaObj != null && !bAnyTime && !bMasterControl && oaObj.getChanged()) flag = false;
                 break;
-            case OACommand.LAST:
+            case Last:
                 flag = hub.getSize() != 0;
                 if (flag) {
                     if (oaObj != null && !bAnyTime && !bMasterControl && oaObj.getChanged()) flag = false;
                     else flag = hub.getPos() != hub.getSize() - 1;
                 }
                 break;
-            case OACommand.SAVE:
-            case OACommand.SAVE_MANUAL:
+            case Save:
                 flag = (obj != null);
                 if (oaObj != null) {
                     flag = bAnyTime || oaObj.getChanged();
                 }
                 break;
-            case OACommand.CANCEL:
+            case Cancel:
                 if (obj == null) flag = false;
                 else if (oaObj != null && (bAnyTime || oaObj.getChanged() || oaObj.getNew())) flag = true;
                 break;
-            case OACommand.REMOVE:
+            case Remove:
                 flag = obj != null;
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
                     flag = false;
                 }
                 break;
-            case OACommand.CLEARAO:
+            case Clear:
                 flag = obj != null;
                 break;
-            case OACommand.DELETE:
+            case Delete:
                 //was: flag = (obj != null && hub.getAllowDelete());
                 flag = (obj != null);
                 break;
-            case OACommand.INSERT:
-            case OACommand.INSERT_MANUAL:
-            case OACommand.NEW:
-            case OACommand.NEW_MANUAL:
-            case OACommand.ADD:
-            case OACommand.ADD_MANUAL:
+            case Insert:
+            case Add:
                 //was: flag = hub.getAllowNew();
                 flag = true;
                 if (hub != null) flag = hub.isValid();
@@ -1101,24 +1113,17 @@ public class ButtonController extends JFCController implements ActionListener {
                     break;
                 }
                 break;
-            case OACommand.SELECT_MANUAL:
-            case OACommand.SELECT:
-                if (hub.getMasterHub() == null) {
-                    if (obj == null || !(obj instanceof OAObject) || bAnyTime || !((OAObject) obj).getChanged()) flag = true;
-                }
-                else flag = false;
-                break;
-            case OACommand.UP:
+            case Up:
                 if (obj != null && hub.getPos() > 0) flag = true;
                 break;
-            case OACommand.DOWN:
+            case Down:
                 if (obj != null && (hub.isMoreData() || hub.getPos() < (hub.getSize() - 1))) flag = true;
                 break;
-            case OACommand.CUT: // 20100111
-            case OACommand.COPY:
+            case Cut: // 20100111
+            case Copy:
                 flag = (obj != null);
                 break;
-            case OACommand.PASTE:
+            case Paste:
                 flag = false;
                 OAObject objx = getClipboardObject();
                 if (hub != null && objx != null && objx.getClass().equals(hub.getObjectClass())) {

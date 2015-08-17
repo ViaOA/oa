@@ -29,219 +29,41 @@ import com.viaoa.hub.*;
 
 
 public class OAButton extends JButton implements OATableComponent, OAJFCComponent {
-    private OAButtonController control;
     public boolean DEBUG;
-public boolean XXX;
-    /** Save the active object in the Hub. 
-        @see OAObject#save
-    */
-    public static final int SAVE = 0; 
-
-    /** Cancel the active object in Hub. 
-        @see OAObject#cancel
-    */
-    public static final int CANCEL = 1;
-
-    /** Set active object to first object in Hub.
-        @see Hub#setPos(int)
-    */
-    public static final int FIRST = 2;
+    private OAButtonController control;
     
-    /** Set active object to last object in Hub.
-        @see Hub#setPos(int)
-    */
-    public static final int LAST = 3;
 
-    /** Set active object to next object in Hub.
-        @see Hub#next
-    */
-    public static final int NEXT = 4;
-
-    /** Set active object to previous object in Hub.
-        @see Hub#previous
-    */
-    public static final int PREVIOUS = 5;
-
-    /** Delete the active object in Hub. 
-        @see OAObject#delete
-    */
-    public static final int DELETE = 6;
-
-
-    /** 
-        Creates a new object, adds it to the Hub, and makes it the active object.
-        Calls OAObject.createNewObject.
-        @see OAObject#createNewObject
-        @see Hub#add
-    */
-    public static final int NEW = 7;
-
-    /** 
-        Remove the active object from the Hub.
-        @see Hub#remove
-    */
-    public static final int REMOVE = 8;
-
-    /** 
-        Creates a new object, insert at current Hub position, and makes it the active object.
-        Calls OAObject.createNewObject.
-        @see OAObject#createNewObject
-        @see Hub#insert
-    */
-    public static final int INSERT = 9;
-
-    /** 
-        Calls select for Hub. 
-        @see Hub#select
-    */
-    public static final int SELECT = 10;
-
-    /** 
-        Same as SELECT, without a call to hub.select(). Must use an ActionEvent listener.
-    */
-    public static final int SELECT_MANUAL = 11;
-
-    /** 
-        Same as NEW, without creating new object.  Must use an ActionEvent listener.
-    */
-    public static final int NEW_MANUAL = 12;
-
-    /** 
-        Same as INSERT, without creating new object.  Must use an ActionEvent listener.
-    */
-    public static final int INSERT_MANUAL = 13;
-
-    /** 
-        Move the active object from the Hub up one position.
-        @see Hub#move
-    */
-    public static final int UP = 14;
-    /** 
-        Move the active object from the Hub down one position.
-        @see Hub#move
-    */
-    public static final int DOWN = 15;
-
-    /** 
-        Same as SAVE, without saving object.  Must use an ActionEvent listener.
-    */
-    public static final int SAVE_MANUAL = 16; 
-
-    /** 
-        Same as ADD, without creating new object.  Must use an ActionEvent listener.
-    */
-    public static final int ADD_MANUAL = 17;
-    /** 
-        Creates a new object, adds it to the Hub, and makes it the active object.
-        Calls OAObject.createNewObject.
-        @see OAObject#createNewObject
-        @see Hub#add
-    */
-    public static final int ADD = 18;
-
-    public static final int CUT = 19;
-    public static final int COPY = 20;
-    public static final int PASTE = 21;
-
-    public static final int CLEARAO = 22;  // set hub AO = null
-
-    static final int MAX = 23; //  <--------
-
-
-    public static final String[] commandNames = new String[] { "Save", "Cancel", "First", "Last", "Next", "Previous", "Delete", "New",
-        "Remove", "Insert", "Select", "Select", "New", "Insert", "Up", "Down", "Save", "Add ...", "Add ...",
-        "Cut", "Copy", "Paste", "Clear"
-    };
-
+    public enum Command {
+        Other, Up, Down, Save, Cancel, First, Last, 
+        Next, Previous, Delete, Remove, Insert, Add, Clear, Cut, Copy, Paste,
+    }
     
-    /**
-        Create a new OAButton that is not bound to a Hub, and is without a defined command.
-    */
-    public OAButton() {
-        this(null, -1, null, null);
+    public enum EnabledMode {
+        UsesIsEnabled,
+        Always,
+        ActiveObjectNotNull,
+        ActiveObjectNull,
+        HubIsValid,
+        HubIsNotEmpty,
+        HubIsEmpty,
+        AOPropertyIsNotEmpty,
+        AOPropertyIsEmpty,
+        SelectHubIsNotEmpty,
+        SelectHubIsEmpty,
     }
-
     
-    /**
-       Create an unbound Button.
-    */
-    public OAButton(String text) {
-        this(null, -1, text, null);
-    }
-    /**
-       Create an unbound Button.
-    */
-    public OAButton(String text, Icon icon) {
-        this(null, -1, text, icon);
-    }
-    /**
-       Create an unbound Button.
-    */
-    public OAButton(Icon icon) {
-        this(null, -1, null, icon);
-    }
-
-    /**
-        Create a new OAButton that is bound to a Hub.
-    */
-    public OAButton(Hub hub) {
-        this(hub, -1, null, null);
-        setup(false, true, true, true);
-    }
-    /**
-        Create a new OAButton that is bound to a Hub and command.
-    */
-    public OAButton(Hub hub, int command) {
-        this(hub, command, null, null);
-        setup(false, true, true, true);
-    }
-
-    /**
-        Create a new OAButton that is bound to a Hub and command.
-    */
-    public OAButton(Hub hub, int command, String text) {
-        this(hub, command, text, null);
-        setup(false, true, false, true);
-    }
-
-    /**
-        Create a new OAButton that is bound to a Hub and command.
-    */
-    public OAButton(Hub hub, int command, Icon icon) {
-        this(hub, command, null, icon);
-        setup(false, false, true, true);
-    }
-
-    
-    /**
-        Create a new OAButton that is bound to a Hub.
-    */
-    public OAButton(Hub hub, String text, Icon icon) {
-        this(hub, -1, text, icon);
-        setup(false, false, false, true);
-    }
-
-    /**
-        Create a new OAButton that is bound to a Hub.
-    */
-    public OAButton(Hub hub, String text) {
-        this(hub, -1, text, null);
-        setup(false, true, false, true);
-    }
-
-    /**
-        Create a new OAButton that is bound to a Hub.
-    */
-    public OAButton(Hub hub, Icon icon) {
-        this(hub, -1, null, icon);
-        setup(false, false, true, true);
-    }
     
     /**
         Create a new OAButton that is bound to a Hub and command.
     */
-    public OAButton(Hub hub, int command, String text, Icon icon) {
-        control = new OAButtonController(hub, command) {
+    public OAButton(Hub hub, String text, Icon icon, EnabledMode enabledMode, Command command) {
+        if (text != null) setText(text);
+        if (icon != null) setIcon(icon);
+        
+        if (enabledMode == null) enabledMode = EnabledMode.ActiveObjectNotNull;
+        if (command == null) command = Command.Other;
+        
+        control = new OAButtonController(hub, enabledMode, command) {
             @Override
             protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
                 bIsCurrentlyEnabled = super.isEnabled(bIsCurrentlyEnabled);
@@ -256,15 +78,75 @@ public boolean XXX;
                 return OAButton.this.getCompletedMessage();
             }
         };
-        if (text != null) setText(text);
-        if (icon != null) setIcon(icon);
-        setup(false, false, false, true);
+        
+        setup();
+    }
+    public OAButton() {
+        this(null, null, null, null, null);
+    }
+    public OAButton(String text) {
+        this(null, text, null, null, null);
+    }
+    public OAButton(String text, Icon icon) {
+        this(null, text, icon, null, null);
+    }
+    public OAButton(Icon icon) {
+        this(null, null, icon, null, null);
+    }
+    public OAButton(Hub hub) {
+        this(hub, null, null, null, null);
+    }
+    public OAButton(Hub hub, Command command) {
+        this(hub, null, null, null, command);
+    }
+    public OAButton(Hub hub, String text) {
+        this(hub, text, null, null, null);
+    }
+    public OAButton(Hub hub, String text, Command command) {
+        this(hub, text, null, null, command);
+    }
+    public OAButton(Hub hub, Icon icon) {
+        this(hub, null, icon, null, null);
+    }
+    public OAButton(Hub hub, Icon icon, Command command) {
+        this(hub, null, icon, null, command);
+    }
+    public OAButton(Hub hub, String text, Icon icon) {
+        this(hub, text, icon, null, null);
     }
 
     @Override
     public ButtonController getController() {
         return control;
     }
+    
+    
+    /**
+        Built in command.
+        Set command value and set button text, tooltip, and icon.
+    */
+    public void setCommand(Command command) {
+        control.setCommand(command);
+    }
+    /**
+        Built in command.
+    */
+    public Command getCommand() {
+        return control.getCommand();
+    }
+    
+    
+    public void setEnabledMode(EnabledMode mode) {
+        control.setEnabledMode(mode);
+    }
+    public EnabledMode getEnabledMode() {
+        return control.getEnabledMode();
+    }
+
+    
+    
+//qqqqqqqqqqq    
+
 
     /**
         Retrieve an Icon from the viaoa.gui.icons directory.
@@ -280,11 +162,10 @@ public boolean XXX;
         Retrieve an Icon from the viaoa.gui.icons directory.
         @param name name of file in icons directory.
     */
-    public static Icon getDefaultIcon(int x) {
-        if (x < 0 || x > commandNames.length) return null;
-        String s = commandNames[x];
-        s = OAString.convert(s,".", "");
-        s = OAString.convert(s," ", "");
+    public static Icon getDefaultIcon(Command cmd) {
+        if (cmd == null) return null;
+        int x = cmd.ordinal();
+        String s = cmd.name();
         s = Character.toLowerCase(s.charAt(0)) + s.substring(1);
         URL url = OAButton.class.getResource("icons/"+s+".gif");
         if (url == null) return null;
@@ -313,18 +194,20 @@ public boolean XXX;
     */
     public void setup(boolean bSetup, boolean bIcon, boolean bText, boolean bToolTip) {
         if (bSetup) this.setup(this);
-        int command = getCommand();
-        if (command < 0 || command > MAX) return;
-        if (bIcon) setIcon(getDefaultIcon(command));
-        if (bText) setText(commandNames[command]);
+        Command cmd = getCommand();
+        if (cmd == null) {
+            if (bIcon) setIcon(null);
+            if (bText) setText(null);
+            if (bToolTip) setToolTipText(null);
+            return;
+        }
+        if (bIcon) setIcon(getDefaultIcon(cmd));
+        
+        if (bText) setText(cmd.name());
         if (bToolTip) {
-            String s = commandNames[command];
-            s = OAString.convert(s,".", "");
-            s = OAString.convert(s," ", "");
+            String s = cmd.name();
             if (getHub() != null) {
-                String s2 = getHub().getObjectClass().getName();
-                int x = s2.lastIndexOf(".");
-                if (x > 0) s2 = s2.substring(x+1);
+                String s2 = getHub().getObjectClass().getSimpleName();
                 s2 = com.viaoa.util.OAString.convertHungarian(s2);
                 s += " "+s2;
             }
@@ -336,7 +219,7 @@ public boolean XXX;
     /**
         Bind menuItem to automatically work with a Hub and command.
     */
-    public void bind(Hub hub, int command) {
+    public void bind(Hub hub, Command command) {
         setHub(hub);
         setCommand(command);
     }
@@ -347,7 +230,7 @@ public boolean XXX;
     */
     public void bind(Hub hub) {
         setHub(hub);
-        setAnyTime(false);
+        setCommand(null);
     }
 
     /**
@@ -378,45 +261,10 @@ public boolean XXX;
         return control.getEnableUndo();
     }
 
-    
-    
     public void setText(String s) {
         super.setText( (s==null)?"":s );
     }
 
-    /** 
-        If true and Hub is valid, then button will always be enabled, else button will be disabled
-        based on value of command.
-     */
-    public void setAnytime(boolean b) {
-        setAnyTime(b);
-    }
-    /** 
-        If true and Hub is valid, then button will always be enabled, else button will be disabled
-        based on value of command.
-     */
-    public void setAnyTime(boolean b) {
-        control.setAnyTime(b);
-    }
-    /** 
-        If true and Hub is valid, then button will always be enabled, else button will be disabled
-        based on value of command.
-     */
-    public boolean getAnyTime() {
-        return control.getAnyTime();
-    }
-    /** 
-        If true and Hub is valid, then button will always be enabled, else button will be disabled
-        based on value of command.
-     */
-    public boolean getAnytime() {
-        return control.getAnyTime();
-    }
-    
-    
-    
-    //*******  BeanInfo Properties ************************************
-    // property "hub"
     public void setHub(Hub hub) {
         control.setHub(hub);        
     }
@@ -438,19 +286,6 @@ public boolean XXX;
         return control.getMultiSelectHub();
     }
     
-    /**
-        Built in command.
-        Set command value and set button text, tooltip, and icon.
-    */
-    public void setCommand(int command) {
-        control.setCommand(command);
-    }
-    /**
-        Built in command.
-    */
-    public int getCommand() {
-        return control.getCommand();
-    }
 
     /**
         Method in object to execute on active object in hub. 
@@ -499,29 +334,6 @@ public boolean XXX;
     public boolean getMasterControl() {
         return control.getMasterControl();
     }
-    
-    /****
-    private void checkSize(Dimension d) {
-        if (d.width > 24) d.width = 22;
-        if (d.height > 24) d.height = 22;
-    }
-    public Dimension getMaximumSize() {
-        Dimension d = super.getMaximumSize();
-        if (control.iconType >= NAVIGATION_ICON_ONLY) checkSize(d);
-        return d;
-    }
-
-    public Dimension getMinimumSize() {
-        Dimension d = super.getMinimumSize();
-        if (control.iconType >= NAVIGATION_ICON_ONLY) checkSize(d);
-        return d;
-    }
-    public Dimension getPreferredSize() {
-        Dimension d = super.getPreferredSize();
-        if (control.iconType >= NAVIGATION_ICON_ONLY) checkSize(d);
-        return d;
-    }
-    */
     
     /** 
         Returns the component that will receive focus when this button is clicked. 
@@ -631,14 +443,9 @@ public boolean XXX;
         };
         cmd1.addMouseListener(ma);
         cmd2.addMouseListener(ma);
-        
-        
     }    
-    
-    
-    
-    private static void _setupButton(final AbstractButton cmd) {
 
+    private static void _setupButton(final AbstractButton cmd) {
         cmd.setFocusPainted(false);
         // 2004/11/10 removed. If focus is not called, then previous focus component will not get focus lost event
         // cmd.setRequestFocusEnabled(false); // 2003/6/3
@@ -683,23 +490,6 @@ public boolean XXX;
     }
 
     /**
-        If true, then command is not executed when button is clicked, else default command action is 
-        executed.
-    */
-    public void setManual(boolean b) {
-        control.setManual(b);
-    }
-    /**
-        If true, then command is not executed when button is clicked, else default command action is 
-        executed.
-    */
-    public boolean getManual() {
-        return control.getManual();
-    }
-
-
-
-    /**
         Popup message used to confirm button click before running code.
     */
     public void setConfirmMessage(String msg) {
@@ -712,25 +502,25 @@ public boolean XXX;
         return control.getConfirmMessage();
     }
 
-    private String completedMessage;
     /**
         Popup message when command is completed
     */
     public void setCompletedMessage(String msg) {
-        this.completedMessage = msg;
+        control.setCompletedMessage(msg);
     }
     public String getCompletedMessage() {
-        return completedMessage;
+        return control.getCompletedMessage();
     }
     
     /**
        Object to update whenever button is clicked.
     */
-    public void setUpdateObject(Object object, String property, Object newValue) {
+    public void setUpdateObject(OAObject object, String property, Object newValue) {
         control.setUpdateObject(object, property, newValue);
     }
     /**
         Update active object whenever button is clicked.
+        If there is a multiSelectHub, then each object in it will also be updated.
     */
     public void setUpdateObject(String property, Object newValue) {
         control.setUpdateObject(property, newValue);
@@ -808,10 +598,10 @@ public boolean XXX;
     }
     public void setPropertyPath(String path) {
     }
-    public String getTableHeading() { //zzzzz
+    public String getTableHeading() { 
         return heading;
     }
-    public void setTableHeading(String heading) { //zzzzz
+    public void setTableHeading(String heading) { 
         this.heading = heading;
         if (table != null) table.setColumnHeading(table.getColumnIndex(this),heading);
     }
@@ -868,17 +658,6 @@ public boolean XXX;
         return bIsCurrentlyEnabled;
     }
     
-/** removed, to "not use" the enabledController, need to call it directly - since it has 2 params now, and will need 
- * to be turned on and off   
-    
-    @Override
-    public void setEnabled(boolean b) {
-        if (control != null) {
-            b = control.getEnabledController().directSetEnabledCalled(b);
-        }
-        super.setEnabled(b);
-    }
-*/
     /**
      * Other Hub/Property used to determine if component is visible.
      * @param hub 
@@ -926,8 +705,8 @@ public boolean XXX;
     
 
     class OAButtonController extends ButtonController {
-        public OAButtonController(Hub hub, int command) {
-            super(hub, OAButton.this, command);
+        public OAButtonController(Hub hub, EnabledMode enabledMode, Command command) {
+            super(hub, OAButton.this, enabledMode, command);
         }
         @Override
         protected String isValid(Object object, Object value) {
@@ -995,7 +774,3 @@ public boolean XXX;
    }
 
 }
-
-
-
-

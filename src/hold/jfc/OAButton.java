@@ -51,55 +51,62 @@ import com.viaoa.hub.*;
 public class OAButton_ extends JButton implements OATableComponent, OAJFCComponent {
     Hub2Command hubButton;
 
+
+    public static final int OTHER = 0;
+    
+    /** 
+        Move the active object from the Hub up one position.
+        @see Hub#move
+    */
+    public static final int UP = 1;
+    /** 
+        Move the active object from the Hub down one position.
+        @see Hub#move
+    */
+    public static final int DOWN = 2;
+    
     /** Save the active object in the Hub. 
         @see OAObject#save
     */
-    public static final int SAVE = 0; 
+    public static final int SAVE = 3; 
 
+    
     /** Cancel the active object in Hub. 
         @see OAObject#cancel
     */
-    public static final int CANCEL = 1;
+    public static final int CANCEL = 4;
 
     /** Set active object to first object in Hub.
         @see Hub#setPos(int)
     */
-    public static final int FIRST = 2;
+    public static final int FIRST = 5;
     
     /** Set active object to last object in Hub.
         @see Hub#setPos(int)
     */
-    public static final int LAST = 3;
+    public static final int LAST = 6;
 
     /** Set active object to next object in Hub.
         @see Hub#next
     */
-    public static final int NEXT = 4;
+    public static final int NEXT = 7;
 
     /** Set active object to previous object in Hub.
         @see Hub#previous
     */
-    public static final int PREVIOUS = 5;
+    public static final int PREVIOUS = 8;
 
     /** Delete the active object in Hub. 
         @see OAObject#delete
     */
-    public static final int DELETE = 6;
+    public static final int DELETE = 9;
 
-
-    /** 
-        Creates a new object, adds it to the Hub, and makes it the active object.
-        Calls OAObject.createNewObject.
-        @see OAObject#createNewObject
-        @see Hub#add
-    */
-    public static final int NEW = 7;
 
     /** 
         Remove the active object from the Hub.
         @see Hub#remove
     */
-    public static final int REMOVE = 8;
+    public static final int REMOVE = 10;
 
     /** 
         Creates a new object, insert at current Hub position, and makes it the active object.
@@ -107,162 +114,136 @@ public class OAButton_ extends JButton implements OATableComponent, OAJFCCompone
         @see OAObject#createNewObject
         @see Hub#insert
     */
-    public static final int INSERT = 9;
+    public static final int INSERT = 11;
 
-    /** 
-        Calls select for Hub. 
-        @see Hub#select
-    */
-    public static final int SELECT = 10;
 
-    /** 
-        Same as SELECT, without a call to hub.select(). Must use an ActionEvent listener.
-    */
-    public static final int SELECT_MANUAL = 11;
-
-    /** 
-        Same as NEW, without creating new object.  Must use an ActionEvent listener.
-    */
-    public static final int NEW_MANUAL = 12;
-
-    /** 
-        Same as INSERT, without creating new object.  Must use an ActionEvent listener.
-    */
-    public static final int INSERT_MANUAL = 13;
-
-    /** 
-        Move the active object from the Hub up one position.
-        @see Hub#move
-    */
-    public static final int UP = 14;
-    /** 
-        Move the active object from the Hub down one position.
-        @see Hub#move
-    */
-    public static final int DOWN = 15;
-
-    /** 
-        Same as SAVE, without saving object.  Must use an ActionEvent listener.
-    */
-    public static final int SAVE_MANUAL = 16; 
-
-    /** 
-        Same as ADD, without creating new object.  Must use an ActionEvent listener.
-    */
-    public static final int ADD_MANUAL = 17;
     /** 
         Creates a new object, adds it to the Hub, and makes it the active object.
         Calls OAObject.createNewObject.
         @see OAObject#createNewObject
         @see Hub#add
     */
-    public static final int ADD = 18;
+    public static final int ADD = 12;
 
-    static final int MAX = 19; //  <--------
+    static final int MAX = 12; //  <--------
 
+    static String[] commandNames = new String[] { 
+        "Other", "Up", "Down", "Save", "Cancel", "First", "Last", 
+        "Next", "Previous", "Delete", "Remove", "Insert", "Add" 
+    };
+    
 
-    static String[] commandNames = new String[] { "Save", "Cancel", "First", "Last", "Next", "Previous", "Delete", "New",
-        "Remove", "Insert", "Select", "Select", "New", "Insert", "Up", "Down", "Save", "Add", "Add" };
-
+    private int enabledMode;
+    /**
+     * used by EnabledMode to know how to enable the button.
+     * @see #setEnabled(Hub, String) 
+     */
+    public static final int ENABLED_UsesIsEnabled = 0;
+    public static final int ENABLED_Always = 1;
+    public static final int ENABLED_ActiveObjectNotNull = 2;
+    public static final int ENABLED_ActiveObjectNull = 3;
+    public static final int ENABLED_HubIsValid = 4;
+    public static final int ENABLED_HubIsNotEmpty = 5;
+    public static final int ENABLED_HubIsEmpty = 6;
+    public static final int ENABLED_AOPropertyIsNotEmpty = 7;
+    public static final int ENABLED_AOPropertyIsEmpty = 8;
+    
     
     /**
-        Create a new OAButton that is not bound to a Hub, and is without a defined command.
+        Create a new OAButton that is bound to a Hub and command.
     */
+    public OAButton(Hub hub, String text, Icon icon, int enabledMode, int command) {
+        if (text != null) setText(text);
+        if (icon != null) setIcon(icon);
+        setEnabledMode(enabledMode >=0 ? enabledMode : ENABLED_ActiveObjectNotNull);
+        setCommand(command >= 0 ? command : OTHER);
+        setHub(hub);
+        
+        hubButton = new Hub2Command(hub, this, command);
+        setup();
+    }
+
+    
+    
     public OAButton() {
-        this(null, -1, null, null);
+        this(null, null, null, -1, -1);
     }
 
-    
-    /**
-       Create an unbound Button.
-    */
     public OAButton(String text) {
-        this(null, -1, text, null);
+        this(null, text, null, -1, -1);
     }
-    /**
-       Create an unbound Button.
-    */
     public OAButton(String text, Icon icon) {
-        this(null, -1, text, icon);
+        this(null, text, icon, -1, -1);
     }
-    /**
-       Create an unbound Button.
-    */
     public OAButton(Icon icon) {
-        this(null, -1, null, icon);
+        this(null, null, icon, -1, -1);
     }
 
     /**
         Create a new OAButton that is bound to a Hub.
     */
     public OAButton(Hub hub) {
-        this(hub, -1, null, null);
-        setup(false, true, true, true);
+        this(hub, null, null, -1, -1);
     }
 
     /**
         Create a new OAButton that is bound to a Hub and command.
     */
     public OAButton(Hub hub, int command) {
-        this(hub, command, null, null);
-        setup(false, true, true, true);
+        this(hub, null, null, -1, command);
     }
 
     /**
         Create a new OAButton that is bound to a Hub and command.
     */
     public OAButton(Hub hub, int command, String text) {
-        this(hub, command, text, null);
-        setup(false, true, false, true);
+        this(hub, text, null, -1, command);
     }
 
     /**
         Create a new OAButton that is bound to a Hub and command.
     */
     public OAButton(Hub hub, int command, Icon icon) {
-        this(hub, command, null, icon);
-        setup(false, false, true, true);
+        this(hub, null, icon, -1, command);
     }
 
-    
     /**
         Create a new OAButton that is bound to a Hub.
     */
     public OAButton(Hub hub, String text, Icon icon) {
-        this(hub, -1, text, icon);
-        setup(false, false, false, true);
+        this(hub, text, icon, -1, -1);
     }
 
     /**
         Create a new OAButton that is bound to a Hub.
     */
     public OAButton(Hub hub, String text) {
-        this(hub, -1, text, null);
-        setup(false, true, false, true);
+        this(hub, text, null, -1, -1);
     }
 
     /**
         Create a new OAButton that is bound to a Hub.
     */
     public OAButton(Hub hub, Icon icon) {
-        this(hub, -1, null, icon);
-        setup(false, false, true, true);
+        this(hub, null, icon, -1, -1);
     }
     
-    /**
-        Create a new OAButton that is bound to a Hub and command.
-    */
-    public OAButton(Hub hub, int command, String text, Icon icon) {
-        hubButton = new Hub2Command(hub, this, command);
-        if (text != null) setText(text);
-        if (icon != null) setIcon(icon);
-        setup(false, false, false, true);
-    }
-
+    
+    
     public Hub2Command getHub2Command() {
     	return hubButton;
     }
 
+    
+    public void setEnabledMode(int mode) {
+        this.enabledMode = mode;
+        update();
+    }
+    public int getEnabledMode() {
+        return this.enabledMode;
+    }
+    
+    
     /**
         Retrieve an Icon from the viaoa.gui.icons directory.
         @param name name of file in icons directory.
@@ -278,7 +259,7 @@ public class OAButton_ extends JButton implements OATableComponent, OAJFCCompone
         @param name name of file in icons directory.
     */
     public static Icon getDefaultIcon(int x) {
-        if (x < 0 || x > commandNames.length) return null;
+        if (x < 1 || x > commandNames.length) return null;
         String s = commandNames[x];
         s = Character.toLowerCase(s.charAt(0)) + s.substring(1);
         URL url = OAButton.class.getResource("icons/"+s+".gif");
@@ -293,9 +274,8 @@ public class OAButton_ extends JButton implements OATableComponent, OAJFCCompone
     */
     public void setup() {
         boolean bIcon = (getIcon() == null);
-        boolean bText = false; // (getText() == null || getText().length() == 0);
-        boolean bTtt = (getToolTipText() == null || getToolTipText().length() == 0);
-
+        boolean bText = OAString.isEmpty(getText());
+        boolean bTtt = OAString.isEmpty(getToolTipText());
         setup(true, bIcon, bText, bTtt);
     }
     
