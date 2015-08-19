@@ -21,10 +21,6 @@ public class OACircularQueueTest extends OAUnitTest {
     void runReader(int id) {
         long pos = que.registerSession(id);
         
-        if (id == 0) {
-            que.setPaceSessionId(0);
-        }
-        
         System.out.println("start reader."+id+", que pos="+pos);
         for (int i=0; !bStopReader;i++) {
             try {
@@ -36,7 +32,7 @@ public class OACircularQueueTest extends OAUnitTest {
                     assertEquals(val.intValue(), pos++);
                 }
                 if (id == 0 && !bStopWriter) {
-                    Thread.sleep(25);  // so that writers will have to wait
+                    Thread.sleep(150);  // so that writers will have to wait
                 }
                 
                 //if ((i%20)==0) System.out.printf("[R"+id+"."+pos+"] ");

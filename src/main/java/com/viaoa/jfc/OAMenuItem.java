@@ -10,22 +10,28 @@
  */
 package com.viaoa.jfc;
 
-import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 import java.net.*;
 import javax.swing.*;
-import javax.swing.event.*;
 import com.viaoa.jfc.OAButton.Command;
 import com.viaoa.jfc.OAButton.EnabledMode;
 import com.viaoa.jfc.control.*;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 
 public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     private OAMenuItemController control;
 
+    public static Command REMOVE = Command.Remove;
+    public static Command NEW = Command.Add;
+    public static Command NEW_MANUAL = Command.NewManual;
+    public static Command ADD_MANUAL = Command.NewManual;
+    public static Command CUT = Command.Cut;
+    public static Command COPY = Command.Copy;
+    public static Command PASTE = Command.Paste;
+    public static Command DELETE = Command.Delete;
+    public static Command CLEARAO = Command.Clear;
+    
     /**
      * Create a new OAMenuItem that is bound to a Hub and command.
      */
@@ -33,25 +39,21 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         if (text != null) setText(text);
         if (icon != null) setIcon(icon);
 
-        if (enabledMode == null) enabledMode = EnabledMode.ActiveObjectNotNull;
         if (command == null) command = Command.Other;
 
+        if (enabledMode == null) {
+            // get default enabledMode
+            switch (command) {
+            case Other:
+                enabledMode = EnabledMode.UsesIsEnabled;
+                break;
+            default:
+                enabledMode = EnabledMode.HubIsValid;
+                break;
+            }
+        }
+
         control = new OAMenuItemController(hub, enabledMode, command) {
-            @Override
-            protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-                bIsCurrentlyEnabled = super.isEnabled(bIsCurrentlyEnabled);
-                return OAMenuItem.this.isEnabled(bIsCurrentlyEnabled);
-            }
-
-            @Override
-            protected boolean isVisible(boolean bIsCurrentlyVisible) {
-                return OAMenuItem.this.isVisible(bIsCurrentlyVisible);
-            }
-
-            @Override
-            public String getCompletedMessage() {
-                return OAMenuItem.this.getCompletedMessage();
-            }
         };
 
         setup();
@@ -81,12 +83,23 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         this(hub, null, null, null, command);
     }
 
+    public OAMenuItem(Hub hub, EnabledMode enabledMode) {
+        this(hub, null, null, enabledMode, null);
+    }
+
     public OAMenuItem(Hub hub, String text) {
         this(hub, text, null, null, null);
     }
 
     public OAMenuItem(Hub hub, String text, Command command) {
         this(hub, text, null, null, command);
+    }
+    public OAMenuItem(Hub hub, Command command, String text) {
+        this(hub, text, null, null, command);
+    }
+
+    public OAMenuItem(Hub hub, String text, EnabledMode enabledMode) {
+        this(hub, text, null, enabledMode, null);
     }
 
     public OAMenuItem(Hub hub, Icon icon) {
@@ -97,8 +110,20 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         this(hub, null, icon, null, command);
     }
 
+    public OAMenuItem(Hub hub, Icon icon, EnabledMode enabledMode) {
+        this(hub, null, icon, enabledMode, null);
+    }
+
     public OAMenuItem(Hub hub, String text, Icon icon) {
         this(hub, text, icon, null, null);
+    }
+
+    public OAMenuItem(Hub hub, String text, Icon icon, Command command) {
+        this(hub, text, icon, null, command);
+    }
+
+    public OAMenuItem(Hub hub, String text, Icon icon, EnabledMode enabledMode) {
+        this(hub, text, icon, enabledMode, null);
     }
 
     @Override
@@ -110,6 +135,10 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
      * Built in command. Set command value and set button text, tooltip, and icon.
      */
     public void setCommand(Command command) {
+        if (command == Command.NewManual) {
+            control.setCommand(Command.Add);
+            setManual(true);
+        }
         control.setCommand(command);
     }
 
@@ -124,11 +153,17 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         control.setEnabledMode(mode);
     }
 
+    
+    public void setManual(boolean b) {
+        control.setManual(b);
+    }
+    public boolean getManual() {
+        return control.getManual();
+    }
+    
     public EnabledMode getEnabledMode() {
         return control.getEnabledMode();
     }
-
-    // qqqqqqqqqqq
 
     /**
      * Retrieve an Icon from the viaoa.gui.icons directory.
@@ -169,7 +204,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         boolean bText = false; // (getText() == null || getText().length() == 0);
         boolean bTtt = (getToolTipText() == null || getToolTipText().length() == 0);
 
-        setup(true, bIcon, bText, bTtt);
+        setup(bIcon, bText, bTtt);
     }
 
     /**
@@ -183,8 +218,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
      *            if true, set to command name
      * @parma bToolTip if true, set to command name plus name of object in Hub
      */
-    public void setup(boolean bSetup, boolean bIcon, boolean bText, boolean bToolTip) {
-        if (bSetup) this.setup(this);
+    public void setup(boolean bIcon, boolean bText, boolean bToolTip) {
         Command cmd = getCommand();
         if (cmd == null) {
             if (bIcon) setIcon(null);
@@ -296,24 +330,20 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         return control.getMethodName();
     }
 
-    private JFileChooser fileChooserOpen;
-
     public void setOpenFileChooser(JFileChooser fc) {
-        this.fileChooserOpen = fc;
+        control.setOpenFileChooser(fc);
     }
 
     public JFileChooser getOpenFileChooser() {
-        return fileChooserOpen;
+        return control.getOpenFileChooser();
     }
 
-    private JFileChooser fileChooserSave;
-
     public void setSaveFileChooser(JFileChooser fc) {
-        this.fileChooserSave = fc;
+        control.setSaveFileChooser(fc);
     }
 
     public JFileChooser getSaveFileChooser() {
-        return fileChooserSave;
+        return control.getSaveFileChooser();
     }
 
     public void setConsoleProperty(String prop) {
@@ -351,151 +381,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         if (focusComponent != null) setFocusPainted(false);
     }
 
-    /**
-     * Same as setupButton.
-     * 
-     * @see #setupButton
-     */
-    public static void setup(AbstractButton cmd) {
-        setupButton(cmd);
-    }
-
-    public static void setup(OASplitButton cmd) {
-        setupButton(cmd);
-    }
-
-    /**
-     * Called automatically for all new OAMenuItems if AutoSetup is true (default).<br>
-     * Does the following:
-     * <ul>
-     * <li>setFocusPainted(false)
-     * <li>setBorderPainted(false)
-     * <li>setMargin(new Insets(1,1,1,1))
-     * <li>public void mouseEntered(MouseEvent e) { setBorderPainted(true) }
-     * <li>public void mouseExited(MouseEvent e) { setBorderPainted(false) }
-     * </ul>
-     * 
-     * @see #setAutoSetup
-     * @see JComponent#setRequestFocusEnabled
-     */
-    public static void setupButton(AbstractButton cmd) {
-        _setupButton(cmd);
-    }
-
-    public static void setupButton(final OASplitButton sb) {
-        final AbstractButton cmd1 = sb.getMainButton();
-        final AbstractButton cmd2 = sb.getDropDownButton();
-
-        cmd1.setBorderPainted(false);
-        cmd1.setContentAreaFilled(false);
-        // cmd1.setMargin(new Insets(1,1,1,1));
-
-        cmd2.setBorderPainted(false);
-        cmd2.setContentAreaFilled(false);
-        // cmd2.setMargin(new Insets(1,1,1,1));
-
-        JPopupMenu popup = null;
-        if (sb instanceof OAMultiButtonSplitButton) {
-            OAMultiButtonSplitButton msb = (OAMultiButtonSplitButton) sb;
-            popup = msb.getPopupMenu();
-        }
-        if (popup != null) {
-            popup.addPopupMenuListener(new PopupMenuListener() {
-                @Override
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-
-                }
-
-                @Override
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                    cmd1.setContentAreaFilled(false);
-                    cmd2.setContentAreaFilled(false);
-                    cmd1.setBorderPainted(false);
-                    cmd2.setBorderPainted(false);
-                }
-
-                @Override
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                }
-            });
-        }
-
-        final JPopupMenu pm = popup;
-
-        MouseAdapter ma = new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                if (sb.isEnabled()) {
-                    cmd1.setBorderPainted(true);
-                    if (cmd1.isEnabled()) {
-                        if (e.getComponent() == cmd1) {
-                            cmd1.setContentAreaFilled(true);
-                        }
-                    }
-                    cmd2.setBorderPainted(true);
-                    if (e.getComponent() == cmd2) {
-                        cmd2.setContentAreaFilled(true);
-                    }
-                }
-            }
-
-            public void mouseExited(MouseEvent e) {
-                cmd1.setContentAreaFilled(false);
-                if (pm == null || !pm.isVisible()) {
-                    cmd2.setContentAreaFilled(false);
-                    cmd1.setBorderPainted(false);
-                    cmd2.setBorderPainted(false);
-                }
-            }
-        };
-        cmd1.addMouseListener(ma);
-        cmd2.addMouseListener(ma);
-    }
-
-    private static void _setupButton(final AbstractButton cmd) {
-        cmd.setFocusPainted(false);
-        // 2004/11/10 removed. If focus is not called, then previous focus component will not get focus
-        // lost event
-        // cmd.setRequestFocusEnabled(false); // 2003/6/3
-        cmd.setBorderPainted(false);
-        cmd.setContentAreaFilled(false);
-        cmd.setMargin(new Insets(1, 1, 1, 1));
-
-        cmd.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                if (cmd.isEnabled()) {
-                    cmd.setContentAreaFilled(true);
-                    cmd.setBorderPainted(true);
-                }
-            }
-
-            public void mouseExited(MouseEvent e) {
-                boolean b = false;
-                if (cmd instanceof JToggleButton) {
-                    if (((JToggleButton) cmd).isSelected()) b = true;
-                }
-                cmd.setBorderPainted(b);
-                cmd.setContentAreaFilled(b);
-            }
-        });
-
-        if (cmd instanceof JToggleButton) {
-            cmd.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    if (cmd.isSelected()) {
-                        if (cmd.isEnabled()) {
-                            cmd.setContentAreaFilled(true);
-                            cmd.setBorderPainted(true);
-                        }
-                    }
-                    else {
-                        cmd.setBorderPainted(false);
-                        cmd.setContentAreaFilled(false);
-                    }
-                }
-            });
-        }
-
-    }
 
     /**
      * Popup message used to confirm button click before running code.
@@ -508,7 +393,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
      * Popup message used to confirm button click before running code.
      */
     public String getConfirmMessage() {
-        return control.getConfirmMessage();
+        return control.default_getConfirmMessage();
     }
 
     /**
@@ -519,7 +404,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     }
 
     public String getCompletedMessage() {
-        return control.getCompletedMessage();
+        return control.default_getCompletedMessage();
     }
 
     /**
@@ -535,30 +420,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
      */
     public void setUpdateObject(String property, Object newValue) {
         control.setUpdateObject(property, newValue);
-    }
-
-    /**
-     * This is a callback method that can be overwritten to replace the default action when button is
-     * clicked. By default, this will call the button controller, which will also call performAction().
-     * 
-     * @see #performAction to create a custom action.
-     */
-    public boolean onActionPerformed() {
-        if (control != null) return control.onActionPerformed();
-        return false;
-    }
-
-    /**
-     * Called to perform custom action event.
-     */
-    public void performAction() {
-    }
-
-    public boolean onConfirm(String message) {
-        if (control != null) {
-            return control.confirm(message);
-        }
-        return true;
     }
 
     /**
@@ -585,29 +446,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         });
     }
 
-    // ----- OATableComponent Interface methods -----------------------
-    private OATable table;
-    private String heading;
-
-    public void setTable(OATable table) {
-        this.table = table;
-    }
-
-    public OATable getTable() {
-        return table;
-    }
-
-    public String getPropertyPath() {
-        return null;
-    }
-
-    public void setPropertyPath(String path) {
-    }
-
-    public Dimension getMinimumSize() {
-        Dimension d = super.getPreferredSize();
-        return d;
-    }
 
     /**
      * Other Hub/Property used to determine if component is enabled.
@@ -685,6 +523,32 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         return control._createCopy(obj);
     }
 
+    // qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+    // ActionPerformed methods
+    public boolean beforeActionPerformed() {
+        if (control == null) return false;
+        return control.default_beforeActionPerformed();
+    }
+
+    public boolean confirmActionPerformed() {
+        return control.default_confirmActionPerformed();
+    }
+
+    /** This is where the "real" work is done when actionPerformed is called. */
+    protected boolean onActionPerformed() {
+        if (control == null) return false;
+        return control.default_onActionPerformed();
+    }
+
+    public void afterActionPerformedSuccessful() {
+        control.default_afterActionPerformedSuccessful();
+    }
+
+    public void afterActionPerformedFailure(String msg, Exception e) {
+        control.default_afterActionPerformedFailure(msg, e);
+    }
+
     class OAMenuItemController extends ButtonController {
         public OAMenuItemController(Hub hub, EnabledMode enabledMode, Command command) {
             super(hub, OAMenuItem.this, enabledMode, command);
@@ -698,54 +562,50 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            if (!OAMenuItem.this.isEnabled()) {
-                return;
-            }
+        protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+            bIsCurrentlyEnabled = super.isEnabled(bIsCurrentlyEnabled);
+            return OAMenuItem.this.isEnabled(bIsCurrentlyEnabled);
+        }
 
-            String fileName = null;
-            JFileChooser fc = getSaveFileChooser();
-            if (fc != null) {
-                int i = fc.showSaveDialog(SwingUtilities.getWindowAncestor(OAMenuItem.this));
-                if (i != JFileChooser.APPROVE_OPTION) return;
+        @Override
+        protected boolean isVisible(boolean bIsCurrentlyVisible) {
+            return OAMenuItem.this.isVisible(bIsCurrentlyVisible);
+        }
 
-                File file = fc.getSelectedFile();
-                if (file == null) return;
+        // ActionPerformed
 
-                fileName = file.getPath();
-            }
-            else {
-                fc = getOpenFileChooser();
-                if (fc != null) {
-                    int i = fc.showOpenDialog(SwingUtilities.getWindowAncestor(OAMenuItem.this));
-                    if (i != JFileChooser.APPROVE_OPTION) return;
+        @Override
+        public boolean beforeActionPerformed() {
+            return OAMenuItem.this.beforeActionPerformed();
+        }
+        @Override
+        public String getConfirmMessage() {
+            return OAMenuItem.this.getConfirmMessage();
+        }
 
-                    File file = fc.getSelectedFile();
-                    if (file == null) return;
-
-                    fileName = file.getPath();
-                }
-            }
-
-            if (!OAMenuItem.this.onConfirm(getConfirmMessage())) {
-                return;
-            }
-
-            if (OAMenuItem.this.onActionPerformed()) { // default will then call
-                                                       // this.onActionPerformed()
-                afterCompleted(getCompletedMessage());
-            }
-            else {
-                String s = getCompletedMessage();
-                if (!OAString.isEmpty(s)) {
-                    afterFailure("Command was not completed");
-                }
-            }
+        @Override
+        public boolean confirmActionPerformed() {
+            return OAMenuItem.this.confirmActionPerformed();
         }
 
         @Override
         protected boolean onActionPerformed() {
-            return super.onActionPerformed();
+            return OAMenuItem.this.onActionPerformed();
+        }
+
+        @Override
+        public void afterActionPerformedSuccessful() {
+            OAMenuItem.this.afterActionPerformedSuccessful();
+        }
+
+        @Override
+        public void afterActionPerformedFailure(String msg, Exception e) {
+            OAMenuItem.this.afterActionPerformedFailure(msg, e);
+        }
+
+        @Override
+        public String getCompletedMessage() {
+            return OAMenuItem.this.getCompletedMessage();
         }
 
         @Override
@@ -759,4 +619,10 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         }
     }
 
+    public void setAnytime(boolean b) {
+        control.setAnytime(b);
+    }
+    public void setAnyTime(boolean b) {
+        control.setAnytime(b);
+    }
 }

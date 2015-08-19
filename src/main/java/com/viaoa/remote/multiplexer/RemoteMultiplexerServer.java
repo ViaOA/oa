@@ -1001,7 +1001,6 @@ public class RemoteMultiplexerServer {
         }
 
         final long qPos = cq.registerSession(0);
-        cq.setPaceSessionId(0);  // this will make sure that the queue will not be overrun for session 0
 
         // set up thread that will get messages from queue and send to client
         final String threadName = "Broadcast.queue." + asyncQueueName;

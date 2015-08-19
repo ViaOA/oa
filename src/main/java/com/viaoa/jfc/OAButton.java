@@ -32,12 +32,29 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     public boolean DEBUG;
     private OAButtonController control;
     
-
+    public static Command REMOVE = Command.Remove;
+    public static Command NEW = Command.Add;
+    public static Command NEW_MANUAL = Command.NewManual;
+    public static Command ADD_MANUAL = Command.NewManual;
+    public static Command CUT = Command.Cut;
+    public static Command COPY = Command.Copy;
+    public static Command PASTE = Command.Paste;
+    public static Command DELETE = Command.Delete;
+    public static Command CLEARAO = Command.Clear;
+    public static Command UP = Command.Up;
+    public static Command DOWN = Command.Down;
+    public static Command NEXT = Command.Next;
+    public static Command PREVIOUS = Command.Previous;
+    
     public enum Command {
         Other, Up, Down, Save, Cancel, First, Last, 
         Next, Previous, Delete, Remove, Insert, Add, Clear, Cut, Copy, Paste,
+        NewManual
     }
     
+    
+    
+    public static EnabledMode ALWAYS = EnabledMode.Always;
     public enum EnabledMode {
         UsesIsEnabled,
         Always,
@@ -53,6 +70,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     }
     
     
+    
     /**
         Create a new OAButton that is bound to a Hub and command.
     */
@@ -60,27 +78,26 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         if (text != null) setText(text);
         if (icon != null) setIcon(icon);
         
-        if (enabledMode == null) enabledMode = EnabledMode.ActiveObjectNotNull;
         if (command == null) command = Command.Other;
         
+        if (enabledMode == null) {
+            // get default enabledMode
+            switch (command) {
+            case Other:
+                enabledMode = EnabledMode.UsesIsEnabled;
+                break;
+            default:
+                enabledMode = EnabledMode.HubIsValid;
+                break;
+            }
+        }
+        
         control = new OAButtonController(hub, enabledMode, command) {
-            @Override
-            protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-                bIsCurrentlyEnabled = super.isEnabled(bIsCurrentlyEnabled);
-                return OAButton.this.isEnabled(bIsCurrentlyEnabled);
-            }
-            @Override
-            protected boolean isVisible(boolean bIsCurrentlyVisible) {
-                return OAButton.this.isVisible(bIsCurrentlyVisible);
-            }
-            @Override
-            public String getCompletedMessage() {
-                return OAButton.this.getCompletedMessage();
-            }
         };
         
         setup();
     }
+    
     public OAButton() {
         this(null, null, null, null, null);
     }
@@ -99,22 +116,44 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     public OAButton(Hub hub, Command command) {
         this(hub, null, null, null, command);
     }
+    public OAButton(Hub hub, EnabledMode enabledMode) {
+        this(hub, null, null, enabledMode, null);
+    }
+    
     public OAButton(Hub hub, String text) {
         this(hub, text, null, null, null);
     }
     public OAButton(Hub hub, String text, Command command) {
         this(hub, text, null, null, command);
     }
+    public OAButton(Hub hub, Command command, String text) {
+        this(hub, text, null, null, command);
+    }
+    public OAButton(Hub hub, String text, EnabledMode enabledMode) {
+        this(hub, text, null, enabledMode, null);
+    }
+
     public OAButton(Hub hub, Icon icon) {
         this(hub, null, icon, null, null);
     }
     public OAButton(Hub hub, Icon icon, Command command) {
         this(hub, null, icon, null, command);
     }
+    public OAButton(Hub hub, Icon icon, EnabledMode enabledMode) {
+        this(hub, null, icon, enabledMode, null);
+    }
+    
     public OAButton(Hub hub, String text, Icon icon) {
         this(hub, text, icon, null, null);
     }
+    public OAButton(Hub hub, String text, Icon icon, Command command) {
+        this(hub, text, icon, null, command);
+    }
+    public OAButton(Hub hub, String text, Icon icon, EnabledMode enabledMode) {
+        this(hub, text, icon, enabledMode, null);
+    }
 
+    
     @Override
     public ButtonController getController() {
         return control;
@@ -126,6 +165,10 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         Set command value and set button text, tooltip, and icon.
     */
     public void setCommand(Command command) {
+        if (command == Command.NewManual) {
+            control.setCommand(Command.Add);
+            setManual(true);
+        }
         control.setCommand(command);
     }
     /**
@@ -133,6 +176,13 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     */
     public Command getCommand() {
         return control.getCommand();
+    }
+    
+    public void setManual(boolean b) {
+        control.setManual(b);
+    }
+    public boolean getManual() {
+        return control.getManual();
     }
     
     
@@ -300,20 +350,17 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         return control.getMethodName();
     }
 
-    private JFileChooser fileChooserOpen;
     public void setOpenFileChooser(JFileChooser fc) {
-        this.fileChooserOpen = fc;
+        control.setOpenFileChooser(fc);
     }
     public JFileChooser getOpenFileChooser() {
-        return fileChooserOpen;
+        return control.getOpenFileChooser();
     }
-
-    private JFileChooser fileChooserSave;
     public void setSaveFileChooser(JFileChooser fc) {
-        this.fileChooserSave = fc;
+        control.setSaveFileChooser(fc);
     }
     public JFileChooser getSaveFileChooser() {
-        return fileChooserSave;
+        return control.getSaveFileChooser();
     }
     
     public void setConsoleProperty(String prop) {
@@ -499,7 +546,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         Popup message used to confirm button click before running code.
     */
     public String getConfirmMessage() {
-        return control.getConfirmMessage();
+        return control.default_getConfirmMessage();
     }
 
     /**
@@ -509,7 +556,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         control.setCompletedMessage(msg);
     }
     public String getCompletedMessage() {
-        return control.getCompletedMessage();
+        return control.default_getCompletedMessage();
     }
     
     /**
@@ -526,29 +573,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         control.setUpdateObject(property, newValue);
     }
 
-    
-    /**
-     * This is a callback method that can be overwritten to replace the default action when button is clicked.
-     * By default, this will call the button controller, which will also call performAction().
-     * @see #performAction to create a custom action.
-     */
-    public boolean onActionPerformed() {
-        if (control != null) return control.onActionPerformed();
-        return false;
-    }
-
-    /**
-     * Called to perform custom action event.
-     */
-    public void performAction() {
-    }
-    
-    public boolean onConfirm(String message) {
-        if (control != null) {
-            return control.confirm(message);
-        }
-        return true;
-    }
     
     /**
      * 
@@ -704,6 +728,29 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     }
     
 
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+    // ActionPerformed methods
+    public boolean beforeActionPerformed() {
+        if (control == null) return false;
+        return control.default_beforeActionPerformed();
+    }    
+    public boolean confirmActionPerformed() {
+        return control.default_confirmActionPerformed();
+    }
+    /** This is where the "real" work is done when actionPerformed is called. */ 
+    protected boolean onActionPerformed() {
+        if (control == null) return false;
+        return control.default_onActionPerformed();
+    }
+    public void afterActionPerformedSuccessful() {
+        control.default_afterActionPerformedSuccessful();
+    }
+    public void afterActionPerformedFailure(String msg, Exception e) {
+        control.default_afterActionPerformedFailure(msg, e);
+    }
+    
+    
     class OAButtonController extends ButtonController {
         public OAButtonController(Hub hub, EnabledMode enabledMode, Command command) {
             super(hub, OAButton.this, enabledMode, command);
@@ -716,53 +763,48 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            if (!OAButton.this.isEnabled()) {
-                return;
-            }
-            
-            String fileName = null;
-            JFileChooser fc = getSaveFileChooser();
-            if (fc != null) {
-                int i = fc.showSaveDialog(SwingUtilities.getWindowAncestor(OAButton.this));
-                if (i != JFileChooser.APPROVE_OPTION) return;
-
-                File file = fc.getSelectedFile();
-                if (file == null) return;
-
-                fileName = file.getPath();
-            }
-            else {
-                fc = getOpenFileChooser();
-                if (fc != null) {
-                    int i = fc.showOpenDialog(SwingUtilities.getWindowAncestor(OAButton.this));
-                    if (i != JFileChooser.APPROVE_OPTION) return;
-    
-                    File file = fc.getSelectedFile();
-                    if (file == null) return;
-    
-                    fileName = file.getPath();
-                }
-            }
-            
-            if (!OAButton.this.onConfirm(getConfirmMessage())) {
-                return;
-            }
-            
-            if (OAButton.this.onActionPerformed()) {  // default will then call this.onActionPerformed()
-                afterCompleted(getCompletedMessage());
-            }
-            else {
-                String s = getCompletedMessage();
-                if (!OAString.isEmpty(s)) {
-                     afterFailure("Command was not completed");
-                }
-            }
+        protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+            bIsCurrentlyEnabled = super.isEnabled(bIsCurrentlyEnabled);
+            return OAButton.this.isEnabled(bIsCurrentlyEnabled);
+        }
+        @Override
+        protected boolean isVisible(boolean bIsCurrentlyVisible) {
+            return OAButton.this.isVisible(bIsCurrentlyVisible);
+        }
+        
+        
+        // ActionPerformed
+        @Override
+        public boolean beforeActionPerformed() {
+            return OAButton.this.beforeActionPerformed();
+        }
+        @Override
+        public String getConfirmMessage() {
+            return OAButton.this.getConfirmMessage();
+        }
+        @Override
+        public boolean confirmActionPerformed() {
+            return OAButton.this.confirmActionPerformed();
         }
         @Override
         protected boolean onActionPerformed() {
-            return super.onActionPerformed();
+            return OAButton.this.onActionPerformed();
         }
+        @Override
+        public void afterActionPerformedSuccessful() {
+            OAButton.this.afterActionPerformedSuccessful();
+        }
+        @Override
+        public void afterActionPerformedFailure(String msg, Exception e) {
+            OAButton.this.afterActionPerformedFailure(msg, e);
+        }
+        @Override
+        public String getCompletedMessage() {
+            return OAButton.this.getCompletedMessage();
+        }
+        
+        
+        
         @Override
         protected OAObject createCopy(OAObject obj) {
             obj = OAButton.this.createCopy(obj);
@@ -773,4 +815,20 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         }
    }
 
+    public void setAnytime(boolean b) {
+        control.setAnytime(b);
+    }
+    public void setAnyTime(boolean b) {
+        control.setAnytime(b);
+    }
+    
+//qqqqqqqqqqqqqqq add to OAMenuItem
+    public void setDisplayComponent(JComponent comp) {
+        control.setDisplayComponent(comp);
+    }
+    public JComponent getDisplayComponent() {
+        return control.getDisplayComponent();
+    }
+
+    
 }

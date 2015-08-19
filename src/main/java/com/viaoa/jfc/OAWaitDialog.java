@@ -160,11 +160,32 @@ public class OAWaitDialog extends JDialog implements ActionListener {
     public void setConsole(OAConsole con) {
         this.console = con;
         if (console != null) {
-            getContentPane().add(new JScrollPane(console), BorderLayout.CENTER);
+            if (compDisplay != null) {
+                JSplitPane sp = new JSplitPane(JSplitPane.VERTICAL_SPLIT, compDisplay, new JScrollPane(console));
+                getContentPane().add(sp, BorderLayout.CENTER);
+            }
+            else getContentPane().add(new JScrollPane(console), BorderLayout.CENTER);
             setResizable(true);
         }
     }
 
+    private JComponent compDisplay;
+    public void setDisplayComponent(JComponent pan) {
+        this.compDisplay = pan;
+        if (pan != null) {
+            if (console != null) {
+                JSplitPane sp = new JSplitPane(JSplitPane.VERTICAL_SPLIT, compDisplay, new JScrollPane(console));
+                getContentPane().add(sp, BorderLayout.CENTER);
+            }
+            else getContentPane().add(compDisplay, BorderLayout.CENTER);
+            setResizable(true);
+        }
+    }
+    public JComponent getDisplayComponent() {
+        return compDisplay;
+    }
+    
+    
     private boolean bDone;
     public void done() {
         bDone = true;

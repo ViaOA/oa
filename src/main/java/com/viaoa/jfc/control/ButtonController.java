@@ -25,9 +25,8 @@ import javax.swing.*;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.*;
 
+import java.io.File;
 import java.lang.reflect.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,11 +37,25 @@ import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.util.*;
 import com.viaoa.jfc.*;
+import com.viaoa.jfc.OAButton.EnabledMode;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.jfc.table.*;
 
 /**
  * Functionality for binding JButton to OA.
+ * 
+ * 
+    Note:  order of tasks for actionPerformed event:  
+    actionPerformed, 
+        beforeActionPerformed   -- pretask, or cancel
+        [confirmActionPerformed]  -- user confirm or cancel
+        [getFile Save/Open] 
+        {runActionPerformed}  -- sets up/uses swingWorker
+            > onActionPerformed  -- where actual event is handled
+        afterActionPerformedSuccessful  -- show completed message
+           or
+        afterActionPerformedFailure  - if error
+ * 
  * @author vvia
  */
 public class ButtonController extends JFCController implements ActionListener {
@@ -58,6 +71,9 @@ public class ButtonController extends JFCController implements ActionListener {
     private String consoleProperty;
     private JComponent focusComponent; // comp to get focus after click
     private String methodName;
+
+    private JFileChooser fileChooserOpen;
+    private JFileChooser fileChooserSave;
     
     private String updateProperty;
     private OAObject updateObject;
@@ -143,11 +159,17 @@ public class ButtonController extends JFCController implements ActionListener {
     public String getConfirmMessage() {
         return confirmMessage;
     }
+    public String default_getConfirmMessage() {
+        return confirmMessage;
+    }
 
     public void setCompletedMessage(String msg) {
         completedMessage = msg;
     }
     public String getCompletedMessage() {
+        return completedMessage;
+    }
+    public String default_getCompletedMessage() {
         return completedMessage;
     }
 
@@ -156,6 +178,20 @@ public class ButtonController extends JFCController implements ActionListener {
     }
     public String getConsoleProperty() {
         return consoleProperty;
+    }
+    
+    public void setOpenFileChooser(JFileChooser fc) {
+        this.fileChooserOpen = fc;
+    }
+    public JFileChooser getOpenFileChooser() {
+        return fileChooserOpen;
+    }
+
+    public void setSaveFileChooser(JFileChooser fc) {
+        this.fileChooserSave = fc;
+    }
+    public JFileChooser getSaveFileChooser() {
+        return fileChooserSave;
     }
     
     
@@ -287,22 +323,6 @@ public class ButtonController extends JFCController implements ActionListener {
         update();
     }
 
-    // Note:  order of action:  actionPerformed, confirm, onActionPerformed, _onActionPerformed
-    /**
-        Click event handler.  Shows confirm message dialog if confirmMessage is not null, then
-        processes command based on command value.
-    */
-    public void actionPerformed(ActionEvent e) {
-        if (button == null || !button.isEnabled()) return;
-        if (confirmMessage != null) {
-            if (!confirm(confirmMessage)) return;
-        }
-        onActionPerformed();
-        if (completedMessage != null) {
-            afterCompleted(completedMessage);
-        }
-    }
-
     private String getUndoText(String cmd) {
         if (undoDescription != null && undoDescription.length() > 0) return undoDescription;
         if (hub != null) {
@@ -324,15 +344,177 @@ public class ButtonController extends JFCController implements ActionListener {
         processingTitle = title;
         processingMessage = msg;
     }
+    
+    
+    
+    public boolean beforeActionPerformed() {
+        return true;
+    }
+    public boolean default_beforeActionPerformed() {
+        return true;
+    }
+    public boolean confirmActionPerformed() {
+        return default_confirmActionPerformed();
+    }
+    public boolean default_confirmActionPerformed() {
+        if (!OAString.isEmpty(confirmMessage)) {
+            int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(button), confirmMessage, "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+            return (x == 0);
+        }
+        else return true;
+    }
+    
+    
+    public void actionPerformed(ActionEvent e) {
+        default_actionPerformed(e);
+    }
+    public void default_actionPerformed(ActionEvent e) {
+        if (!beforeActionPerformed()) return;
+        if (button == null || !button.isEnabled()) return;
+        if (!confirmActionPerformed()) return;
+        
+        JFileChooser fc = getSaveFileChooser();
+        if (fc != null) {
+            int i = fc.showSaveDialog(SwingUtilities.getWindowAncestor(ButtonController.this.button));
+            if (i != JFileChooser.APPROVE_OPTION) return;
+            File file = fc.getSelectedFile();
+            if (file == null) return;
+            // fileName = file.getPath();
+        }
+        else {
+            fc = getOpenFileChooser();
+            if (fc != null) {
+                int i = fc.showOpenDialog(SwingUtilities.getWindowAncestor(ButtonController.this.button));
+                if (i != JFileChooser.APPROVE_OPTION) return;
+                File file = fc.getSelectedFile();
+                if (file == null) return;
+            }
+        }
 
-    protected boolean onActionPerformed() {
+        try {
+            boolean b = runActionPerformed();
+            if (!bUseSwingWorker) reportActionCompleted(b, null);
+        }
+        catch (Exception ex) {
+            reportActionCompleted(false, ex);
+        }
+    }
+    
+    public void reportActionCompleted(boolean b, Exception ex) {
+        if (ex != null) {
+            LOG.log(Level.WARNING, "error while performing command action", ex);
+            for (int i=0 ; i<10; i++) {
+                Throwable t = ex.getCause();
+                if (t == null || t == ex || !(t instanceof Exception)) { 
+                    break;
+                }
+                ex = (Exception) t;
+            }
+            afterActionPerformedFailure("Error: "+OAString.fmt(ex.getMessage(), "40L."), ex);
+        }
+        else {
+            if (b) afterActionPerformedSuccessful();
+            else {
+                afterActionPerformedFailure("Action was not completed", null);
+            }
+        }
+    }
+    
+    public void afterActionPerformedSuccessful() {
+        default_afterActionPerformedSuccessful();
+    }
+    public void default_afterActionPerformedSuccessful() {
+        String completedMessage = getCompletedMessage();
+        if (!OAString.isEmpty(completedMessage) && OAString.isEmpty(getConsoleProperty())) {
+            JOptionPane.showMessageDialog(
+                OAJFCUtil.getWindow(button), 
+                completedMessage, "Command completed", 
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+        
+        if (focusComponent == null) return;
+        
+        boolean bFlag = false;
+        if (focusComponent instanceof OATableComponent && hub != null && (focusComponent.getParent() == null || focusComponent.getParent() instanceof OATable)) {
+            OATableComponent oac = (OATableComponent) focusComponent;
+            if (oac.getTableCellEditor() != null) {
+                // this component is a tableCellEditor
+                OATable table = oac.getTable();
+                if (table != null) {
+                    table.requestFocus();
+                    TableColumnModel mod = table.getColumnModel();
+                    int x = mod.getColumnCount();
+                    int col = 0;
+                    for (int i = 0; i < x; i++) {
+                        TableColumn tcol = mod.getColumn(i);
+                        TableCellEditor editor = tcol.getCellEditor();
+                        if (oac.getTableCellEditor() == editor) {
+                            col = i;
+                            bFlag = true;
+                            break;
+                        }
+                    }
+                    if (bFlag) {
+                        final int irow = table.getHub().getPos();
+                        final int icol = col;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                ((OATableComponent) focusComponent).getTable().editCellAt(irow, icol);
+                            }
+                        });
+                        // table.editCellAt(hub.getPos(), col);
+                    }
+                    else bFlag = true;
+                }
+            }
+        }
+
+        if (!bFlag) focusComponent.requestFocus();
+
+        if (focusComponent instanceof JTable) {
+            JTable table = (JTable) focusComponent;
+            TableColumnModel mod = table.getColumnModel();
+            int x = mod.getColumnCount();
+            for (int i = 0; i < x; i++) {
+                if (mod.getColumn(i).getCellEditor() != null) {
+                    final int irow = hub.getPos();
+                    final int icol = i;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            ((JTable) focusComponent).editCellAt(irow, icol);
+                        }
+                    });
+                    // table.editCellAt(hub.getPos(), i);
+                    break;
+                }
+            }
+        }
+    }
+    public void afterActionPerformedFailure(String msg, Exception e) {
+        default_afterActionPerformedFailure(msg, e);
+    }
+    public void default_afterActionPerformedFailure(String msg, Exception e) {
+        if (!OAString.isEmpty(msg) || e != null) {
+            if (msg == null) msg = "";
+            System.out.println(msg+", exception="+e);
+            if (e != null) e.printStackTrace();
+
+            JOptionPane.showMessageDialog(
+                OAJFCUtil.getWindow(button), 
+                msg, "Command failed", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+
+    protected boolean runActionPerformed() throws Exception {
         Window window = OAJFCUtil.getWindow(button);
         boolean b = false;
         try {
             if (window != null) {
                 window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             }
-            b = onActionPerformed2();
+            b = runActionPerformed2();
         }
         finally {
             if (window != null) {
@@ -342,7 +524,7 @@ public class ButtonController extends JFCController implements ActionListener {
         return b;
     }
     
-    protected boolean onActionPerformed2() {
+    protected boolean runActionPerformed2() throws Exception {
         Hub mhub = getMultiSelectHub();
         if (command == OAButton.Command.Delete) {
             OAObject currentAO = (OAObject) hub.getAO();
@@ -373,8 +555,8 @@ public class ButtonController extends JFCController implements ActionListener {
         }
 
         boolean bResult = false;
-        if (!bUseSwingWorker) {
-            bResult = _onActionPerformed();
+        if (!bUseSwingWorker && compDisplay == null) {
+            bResult = onActionPerformed();
             return bResult;
         }
 
@@ -404,16 +586,23 @@ public class ButtonController extends JFCController implements ActionListener {
             dlg.setConsole(con);
         }
         
+//qqqqqqqqqqqqqqq        
+        if (compDisplay != null) {
+            dlg.setDisplayComponent(compDisplay);
+        }
+        
+        
         final AtomicInteger aiCompleted = new AtomicInteger(); 
         final OAConsole console = con;
         SwingWorker<Boolean, Void> sw = new SwingWorker<Boolean, Void>() {
-            boolean bHadException;
+            Exception exception;
             @Override
             protected Boolean doInBackground() throws Exception {
                 try {
-                    bHadException = true;
-                    _onActionPerformed();
-                    bHadException = false;
+                    onActionPerformed();
+                }
+                catch (Exception e) {
+                    this.exception = e;
                 }
                 finally {
                     aiCompleted.incrementAndGet();
@@ -424,7 +613,6 @@ public class ButtonController extends JFCController implements ActionListener {
             @Override
             protected void done() {
                 synchronized (Lock) {
-                    
                     if (!dlg.wasCancelled() && console == null) {
                         if (dlg.isVisible()) {
                             dlg.setVisible(false);
@@ -455,17 +643,17 @@ public class ButtonController extends JFCController implements ActionListener {
                         dlg.getProgressBar().setIndeterminate(false);
                         dlg.getProgressBar().setMaximum(100);
                         dlg.getProgressBar().setValue(100);
-                        
-                        String s = completedMessage;
-                        if (bHadException) s = "Command had an exception, close to see description"; 
-                        else if (OAString.isEmpty(s)) s = "Command has completed";
-                        
-                        dlg.setStatus(s);
-                        dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                        if (dlg.wasCancelled()) {
-                            dlg.setVisible(true, false);
-                        }
+                    }              
+                    String s = completedMessage;
+                    if (exception != null) s = "Command had an exception, close to see description"; 
+                    else if (OAString.isEmpty(s)) s = "Command has completed";
+                    
+                    dlg.setStatus(s);
+                    dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                    if (dlg.wasCancelled()) {
+                        dlg.setVisible(true, false);
                     }
+                    reportActionCompleted(true, exception);
                 }
             }
         };
@@ -477,41 +665,40 @@ public class ButtonController extends JFCController implements ActionListener {
             }
         }
 
-        try {
-            if (aiCompleted.get() == 0) {
-                // run in background
-                // sw.cancel(true);  //qqqq need to test to see how it affects the thread.isInterrupted flag
-            }
-            else {
-                sw.get(); // even though dlg.setVisible is modal, we need to check for an exception, if it was not cancelled
-            }
-            bResult = true;//aiCompleted.get() > 0;
+        if (aiCompleted.get() == 0) {
+            // run in background
+            // sw.cancel(true);  //qqqq need to test to see how it affects the thread.isInterrupted flag
         }
-        catch (Exception ex) {
-            LOG.log(Level.WARNING, "error while performing command action", ex);
-            for (int i=0 ; i<10; i++) {
-                Throwable t = ex.getCause();
-                if (t == null || t == ex || !(t instanceof Exception)) { 
-                    break;
-                }
-                ex = (Exception) t;
-            }
-            
-            JOptionPane.showMessageDialog(OAJFCUtil.getWindow(button), 
-                    "Error: "+OAString.fmt(ex.getMessage(), "40L."), 
-                    "Command Error", JOptionPane.ERROR_MESSAGE);
+        else {
+            sw.get(); // even though dlg.setVisible is modal, we need to check for an exception, if it was not cancelled
         }
+        bResult = true;//aiCompleted.get() > 0;
         return bResult;
     }
 
     private final Object Lock = new Object();
 
-    protected boolean _onActionPerformed() {
+    private boolean bManual;
+    public void setManual(boolean b) {
+        bManual = b;
+    }
+    public boolean getManual() {
+        return bManual;
+    }
+    
+    /**
+     * This is where the actual action is handled.
+     */
+    protected boolean onActionPerformed() {
+        return default_onActionPerformed();
+    }
+    public boolean default_onActionPerformed() {
         Object ho = null;
         Hub hub = getActualHub();
         if (hub == null) return false;
         if (hub != null) ho = hub.getActiveObject();
-
+        if (bManual) return true;
+        
         /*was:
         if (confirmMessage != null) {
             if (!confirm()) return;
@@ -890,12 +1077,6 @@ public class ButtonController extends JFCController implements ActionListener {
                 throw new RuntimeException("ButtonController update property=" + updateProperty, ex);
             }
         }
-        if (button instanceof OAButton) {
-            ((OAButton) button).performAction();
-        }
-        else if (button instanceof OAMenuItem) {
-            ((OAMenuItem) button).performAction();
-        }
         return true;
     }
 
@@ -925,31 +1106,6 @@ public class ButtonController extends JFCController implements ActionListener {
         hub.setActiveObject(obj);
     }
 
-    /** returns true if command is allowed */
-    public boolean confirm(String confirmMessage) {
-        if (!OAString.isEmpty(confirmMessage)) {
-            int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(button), confirmMessage, "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
-            return (x == 0);
-        }
-        else return true;
-    }
-
-    public void afterCompleted(String completedMessage) {
-        if (!OAString.isEmpty(completedMessage) && OAString.isEmpty(getConsoleProperty())) {
-            JOptionPane.showMessageDialog(
-                OAJFCUtil.getWindow(button), 
-                completedMessage, "Command completed", 
-                JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-    public void afterFailure(String msg) {
-        if (!OAString.isEmpty(msg)) {
-            JOptionPane.showMessageDialog(
-                OAJFCUtil.getWindow(button), 
-                msg, "Command failed", 
-                JOptionPane.ERROR_MESSAGE);
-        }
-    }
     
     /**
         Returns the component that will receive focus when this button is clicked.
@@ -979,6 +1135,15 @@ public class ButtonController extends JFCController implements ActionListener {
         return methodName;
     }
 
+    public void setAnytime(boolean b) {
+        if (b) setEnabledMode(EnabledMode.Always);
+        else setEnabledMode(EnabledMode.UsesIsEnabled);
+    }
+    public void setAnyTime(boolean b) {
+        if (b) setEnabledMode(EnabledMode.Always);
+        else setEnabledMode(EnabledMode.UsesIsEnabled);
+    }
+    
     protected boolean getDefaultEnabled() {
         if (button == null) return false;
 
@@ -993,62 +1158,63 @@ public class ButtonController extends JFCController implements ActionListener {
         boolean flag = (hub != null && hub.isValid());
         boolean bAnyTime = false;
         
-        switch (enabledMode) {
-        case UsesIsEnabled:
-            flag = true;
-            break;
-        case Always:
-            bAnyTime = true;
-            flag = true;
-            break;
-        case ActiveObjectNotNull:
-            if (hub != null) flag = hub.getAO() != null;
-            break;
-        case ActiveObjectNull:
-            if (hub != null) flag = hub.getAO() == null;
-            break;
-        case HubIsValid:
-            break;
-        case HubIsNotEmpty:
-            if (hub != null) flag = hub.getSize() > 0;
-            break;
-        case HubIsEmpty:
-            if (hub != null) flag = hub.getSize() == 0;
-            break;
-        case AOPropertyIsNotEmpty:
-            if (updateObject != null) {
-                if (updateObject instanceof OAObject) {
-                    obj = ((OAObject) updateObject).getProperty(updateProperty);
+        if (enabledMode != null) {
+            switch (enabledMode) {
+            case UsesIsEnabled:
+                flag = true;
+                break;
+            case Always:
+                bAnyTime = true;
+                flag = true;
+                break;
+            case ActiveObjectNotNull:
+                if (hub != null) flag = hub.getAO() != null;
+                break;
+            case ActiveObjectNull:
+                if (hub != null) flag = hub.getAO() == null;
+                break;
+            case HubIsValid:
+                break;
+            case HubIsNotEmpty:
+                if (hub != null) flag = hub.getSize() > 0;
+                break;
+            case HubIsEmpty:
+                if (hub != null) flag = hub.getSize() == 0;
+                break;
+            case AOPropertyIsNotEmpty:
+                if (updateObject != null) {
+                    if (updateObject instanceof OAObject) {
+                        obj = ((OAObject) updateObject).getProperty(updateProperty);
+                        flag = !OACompare.isEmpty(obj);
+                    }
+                }
+                else if (oaObj != null) {
+                    obj = oaObj.getProperty(updateProperty);
                     flag = !OACompare.isEmpty(obj);
                 }
-            }
-            else if (oaObj != null) {
-                obj = oaObj.getProperty(updateProperty);
-                flag = !OACompare.isEmpty(obj);
-            }
-            break;
-        case AOPropertyIsEmpty:
-            if (updateObject != null) {
-                if (updateObject instanceof OAObject) {
-                    obj = ((OAObject) updateObject).getProperty(updateProperty);
+                break;
+            case AOPropertyIsEmpty:
+                if (updateObject != null) {
+                    if (updateObject instanceof OAObject) {
+                        obj = ((OAObject) updateObject).getProperty(updateProperty);
+                        flag = OACompare.isEmpty(obj);
+                    }
+                }
+                else if (oaObj != null) {
+                    obj = oaObj.getProperty(updateProperty);
                     flag = OACompare.isEmpty(obj);
                 }
+                break;
+            case SelectHubIsNotEmpty:
+                flag = (hubMultiSelect != null && hubMultiSelect.getSize() > 0);
+                break;
+            case SelectHubIsEmpty:
+                flag = (hubMultiSelect != null && hubMultiSelect.getSize() == 0);
+                break;
             }
-            else if (oaObj != null) {
-                obj = oaObj.getProperty(updateProperty);
-                flag = OACompare.isEmpty(obj);
-            }
-            break;
-        case SelectHubIsNotEmpty:
-            flag = (hubMultiSelect != null && hubMultiSelect.getSize() > 0);
-            break;
-        case SelectHubIsEmpty:
-            flag = (hubMultiSelect != null && hubMultiSelect.getSize() == 0);
-            break;
-        }
+        }        
         
-        
-        if (flag) {
+        if (flag && command != null && hub != null) {
             switch (command) {
             case Next:
                 if (hub == null) {
@@ -1062,6 +1228,10 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 break;
             case Previous:
+                if (hub == null) {
+                    flag = false; 
+                    break;
+                }
                 pos = hub.getPos();
                 flag = pos >= 0;
                 if (flag) {
@@ -1087,7 +1257,9 @@ public class ButtonController extends JFCController implements ActionListener {
                 break;
             case Cancel:
                 if (obj == null) flag = false;
-                else if (oaObj != null && (bAnyTime || oaObj.getChanged() || oaObj.getNew())) flag = true;
+                else {
+                    flag = (oaObj != null && (bAnyTime || oaObj.getChanged() || oaObj.getNew()));
+                }
                 break;
             case Remove:
                 flag = obj != null;
@@ -1104,8 +1276,6 @@ public class ButtonController extends JFCController implements ActionListener {
                 break;
             case Insert:
             case Add:
-                //was: flag = hub.getAllowNew();
-                flag = true;
                 if (hub != null) flag = hub.isValid();
                 if (flag && !bAnyTime && !bMasterControl && oaObj.getChanged()) flag = false;
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
@@ -1114,10 +1284,10 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 break;
             case Up:
-                if (obj != null && hub.getPos() > 0) flag = true;
+                flag = (obj != null && hub.getPos() > 0);
                 break;
             case Down:
-                if (obj != null && (hub.isMoreData() || hub.getPos() < (hub.getSize() - 1))) flag = true;
+                flag = (obj != null && (hub.isMoreData() || hub.getPos() < (hub.getSize() - 1)));
                 break;
             case Cut: // 20100111
             case Copy:
@@ -1135,7 +1305,6 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 break;
             default:
-                if (hub.getPos() >= 0) flag = true;
             }
             if (!HubDelegate.isValid(hub)) flag = false;
         }
@@ -1221,4 +1390,14 @@ public class ButtonController extends JFCController implements ActionListener {
 
         super.update(button, obj);
     }
+    
+    private JComponent compDisplay;
+    public void setDisplayComponent(JComponent comp) {
+        this.compDisplay = comp;
+    }
+    public JComponent getDisplayComponent() {
+        return compDisplay;
+    }
+    
+    
 }
