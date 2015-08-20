@@ -31,8 +31,6 @@ public class OAButtonTest extends OAUnitTest {
     
 //qqqqqqqqqq Add option to enter a  OAButtonToolbar to
 //qqqqq create a test that shows all of the features that can be used
-
-
     
     Hub<Site> hubSite;
     Hub<Environment> hubEnvironment;

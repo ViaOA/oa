@@ -523,7 +523,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         return control._createCopy(obj);
     }
 
-    // qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
     // ActionPerformed methods
     public boolean beforeActionPerformed() {

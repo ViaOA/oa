@@ -586,7 +586,6 @@ public class ButtonController extends JFCController implements ActionListener {
             dlg.setConsole(con);
         }
         
-//qqqqqqqqqqqqqqq        
         if (compDisplay != null) {
             dlg.setDisplayComponent(compDisplay);
         }
