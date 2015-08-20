@@ -176,7 +176,7 @@ public abstract class OACircularQueue<TYPE> {
         return addMessage(msg);
     }
     
-    
+    private long tsLastLog;
     public int addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
             
@@ -203,6 +203,11 @@ public abstract class OACircularQueue<TYPE> {
                     waitingOnSessionId = sessionIdFound;
                     try {
                         LOCKQueue.wait(100);
+                        long tsNow = System.currentTimeMillis();
+                        if (tsNow > tsLastLog + 2500) {
+                            LOG.fine("avoiding queue overrun, queSize="+queueSize+", currentPos="+queueHeadPosition+", sessionSize="+hmSessionPosition.size());
+                            tsLastLog = tsNow;
+                        }
                     }
                     catch (Exception e) {
                     }

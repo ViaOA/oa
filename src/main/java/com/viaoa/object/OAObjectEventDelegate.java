@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
@@ -412,14 +413,26 @@ public class OAObjectEventDelegate {
 	            OAObjectInfo oiRev = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.toClass);
 	            Method m = OAObjectInfoDelegate.getMethod(oiRev, "get"+toLinkInfo.name, 0); // make sure that the method exists
 	        	if (m != null) {
+                    if (oldObj instanceof OAObjectKey) {
+                        oldObj = OAObjectReflectDelegate.getObject(linkInfo.toClass, (OAObjectKey)oldObj);
+                    }
 	                if (oldObj != null) {
-	            	    if (oldObj instanceof OAObjectKey) {
-	            	    	oldObj = OAObjectReflectDelegate.getObject(linkInfo.toClass, (OAObjectKey)oldObj);
-	            	    }
-	                	obj = OAObjectReflectDelegate.getProperty((OAObject)oldObj, toLinkInfo.name);
-	                    if (obj == oaObj) {
-	                    	OAObjectReflectDelegate.setProperty((OAObject)oldObj, toLinkInfo.name, null, null);
+	                    // 20150820 if one2one, then dont load if null and isClient
+	                    //   this was discovered when deleting an IDL and function/gsmrFunction (1to1) kept going to server for other value
+	                    boolean b = true;
+	                    if (OASync.isClient()) {
+	                        obj = OAObjectPropertyDelegate.getProperty((OAObject)oldObj, toLinkInfo.name);
+	                        if (obj == null) {
+	                            // dont get from server
+	                            b = false;
+	                        }
 	                    }
+	            	    if (b) {
+    	                	obj = OAObjectReflectDelegate.getProperty((OAObject)oldObj, toLinkInfo.name);
+    	                    if (obj == oaObj) {
+    	                    	OAObjectReflectDelegate.setProperty((OAObject)oldObj, toLinkInfo.name, null, null);
+    	                    }
+	            	    }
 	                }
 	                if (newObj != null) {
 	                    obj = OAObjectReflectDelegate.getProperty((OAObject)newObj, toLinkInfo.name);

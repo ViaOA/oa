@@ -12,13 +12,16 @@ package com.viaoa.jfc;
 
 import java.awt.event.*;
 import java.net.*;
+
 import javax.swing.*;
+
 import com.viaoa.jfc.OAButton.Command;
 import com.viaoa.jfc.OAButton.EnabledMode;
 import com.viaoa.jfc.control.*;
 import com.viaoa.object.OAObject;
 import com.viaoa.hub.*;
 
+// See OAButton - this is a copy of the same code
 public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     private OAMenuItemController control;
 
@@ -623,5 +626,12 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     }
     public void setAnyTime(boolean b) {
         control.setAnytime(b);
+    }
+
+    public void setDisplayComponent(JComponent comp) {
+        control.setDisplayComponent(comp);
+    }
+    public JComponent getDisplayComponent() {
+        return control.getDisplayComponent();
     }
 }

@@ -16,6 +16,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.WeakHashMap;
+
 import javax.swing.JTable;
 
 import com.viaoa.hub.Hub;
@@ -193,5 +194,14 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
     public void mouseExited(MouseEvent e) {
         bHasMouse = false;
     }
+
+//qqqqqqqqq toDo:    
+    public void setVisible(Hub hub) {
+    }    
+    public void setVisible(Hub hub, String prop) {
+    }    
+    public void setVisible(Hub hub, String prop, Object compareValue) {
+    }    
+
     
 }

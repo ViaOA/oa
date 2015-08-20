@@ -803,8 +803,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
             return OAButton.this.getCompletedMessage();
         }
         
-        
-        
         @Override
         protected OAObject createCopy(OAObject obj) {
             obj = OAButton.this.createCopy(obj);
@@ -822,7 +820,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         control.setAnytime(b);
     }
     
-//qqqqqqqqqqqqqqq add to OAMenuItem
     public void setDisplayComponent(JComponent comp) {
         control.setDisplayComponent(comp);
     }
