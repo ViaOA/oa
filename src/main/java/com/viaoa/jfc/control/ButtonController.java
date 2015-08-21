@@ -588,6 +588,7 @@ public class ButtonController extends JFCController implements ActionListener {
         
         if (compDisplay != null) {
             dlg.setDisplayComponent(compDisplay);
+            if (con != null) con.setPreferredSize(6, 1, true);
         }
         
         
@@ -644,7 +645,9 @@ public class ButtonController extends JFCController implements ActionListener {
                         dlg.getProgressBar().setValue(100);
                     }              
                     String s = completedMessage;
-                    if (exception != null) s = "Command had an exception, close to see description"; 
+                    if (exception != null) {
+                        s = "Command had an exception"; 
+                    }
                     else if (OAString.isEmpty(s)) s = "Command has completed";
                     
                     dlg.setStatus(s);

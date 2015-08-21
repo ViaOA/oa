@@ -6,7 +6,8 @@
  
 <!--  qqq current at ice     https://maven.intcx.net/content/repositories/public/com/viaoa/oa/
 
-next for maven will be:    <version>3.5.19</version>
+3.5.19 was done 20150821 fri
+next for maven will be:    <version>3.5.20</version>
 
     <version>3.6.0-SNAPSHOT</version> 
 
@@ -74,8 +75,6 @@ qqq -->
             <artifactId>jsp</artifactId>
             <version>2.1.0.v201004190952</version>
         </dependency>
-
-
 
         <dependency>
             <groupId>itext</groupId>
