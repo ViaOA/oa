@@ -2949,7 +2949,8 @@ if (!getKeepSorted()) hub.cancelSort();
 
         }
         else if (column >= 0 && column < columns.size()) {
-            OATableColumn tc = (OATableColumn) columns.elementAt(column);
+            int x = (tableLeft == null) ? 0 : tableLeft.columns.size();
+            OATableColumn tc = (OATableColumn) columns.elementAt(column-x);
             oacomp = tc.getOATableComponent();
         }
 
