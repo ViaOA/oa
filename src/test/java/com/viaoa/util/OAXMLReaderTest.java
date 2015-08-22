@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObject;
 
-public class OAXMLlReaderTest extends OAUnitTest {
+public class OAXMLReaderTest extends OAUnitTest {
 
     
     @Test
@@ -17,8 +17,8 @@ public class OAXMLlReaderTest extends OAUnitTest {
         
         String s;
         s = "<xml>"; // must wrap in outer tag
-        s += "<ssh><command>runcommand</command><output>output text here</output></ssh>";
-        s += "<ssh><command>runcommand2</command><output>output text here2</output></ssh>";
+        s += "<ssh><command>runcommand</command><output>output text here</output></ssh>\n";
+        s += "<ssh><command>runcommand2</command><output>output text here2</output></ssh>\n";
         s += "</xml>";
         
         OAXMLReader xr = new OAXMLReader() {
