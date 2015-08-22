@@ -891,6 +891,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 */
                 break;
+            case New:
             case Add:
                 createNew(false);
                 break;
@@ -919,7 +920,7 @@ public class ButtonController extends JFCController implements ActionListener {
                     HubAODelegate.setActiveObjectForce(hub, ho);
                 }
                 break;
-            case Clear:
+            case ClearAO:
                 ho = hub.getActiveObject();
                 if (ho != null) {
                     hub.setAO(null);
@@ -1269,13 +1270,14 @@ public class ButtonController extends JFCController implements ActionListener {
                     flag = false;
                 }
                 break;
-            case Clear:
+            case ClearAO:
                 flag = obj != null;
                 break;
             case Delete:
                 //was: flag = (obj != null && hub.getAllowDelete());
                 flag = (obj != null);
                 break;
+            case New:
             case Insert:
             case Add:
                 if (hub != null) flag = hub.isValid();

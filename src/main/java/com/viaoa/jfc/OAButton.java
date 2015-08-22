@@ -32,27 +32,32 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     public boolean DEBUG;
     private OAButtonController control;
     
+    public static Command OTHER = Command.Other;
+    public static Command UP = Command.Up;
+    public static Command DOWN = Command.Down;
+    public static Command SAVE = Command.Save;
+    public static Command CANCEL = Command.Cancel;
+    public static Command FIRST = Command.First;
+    public static Command LAST = Command.Last;
+    public static Command NEXT = Command.Next;
+    public static Command PREVIOUS = Command.Previous;
+    public static Command DELETE = Command.Delete;
     public static Command REMOVE = Command.Remove;
-    public static Command NEW = Command.Add;
-    public static Command NEW_MANUAL = Command.NewManual;
-    public static Command ADD_MANUAL = Command.NewManual;
+    public static Command NEW = Command.New;
+    public static Command INSERT = Command.Insert;
+    public static Command Add = Command.Add;
     public static Command CUT = Command.Cut;
     public static Command COPY = Command.Copy;
     public static Command PASTE = Command.Paste;
-    public static Command DELETE = Command.Delete;
-    public static Command CLEARAO = Command.Clear;
-    public static Command UP = Command.Up;
-    public static Command DOWN = Command.Down;
-    public static Command NEXT = Command.Next;
-    public static Command PREVIOUS = Command.Previous;
+    public static Command NEW_MANUAL = Command.NewManual;
+    public static Command ADD_MANUAL = Command.AddManual;
+    public static Command CLEARAO = Command.ClearAO;
     
     public enum Command {
         Other, Up, Down, Save, Cancel, First, Last, 
-        Next, Previous, Delete, Remove, Insert, Add, Clear, Cut, Copy, Paste,
-        NewManual
+        Next, Previous, Delete, Remove, New, Insert, Add, Cut, Copy, Paste,
+        NewManual, AddManual, ClearAO
     }
-    
-    
     
     public static EnabledMode ALWAYS = EnabledMode.Always;
     public enum EnabledMode {
@@ -68,8 +73,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         SelectHubIsNotEmpty,
         SelectHubIsEmpty,
     }
-    
-    
     
     /**
         Create a new OAButton that is bound to a Hub and command.
@@ -166,6 +169,10 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     */
     public void setCommand(Command command) {
         if (command == Command.NewManual) {
+            control.setCommand(Command.New);
+            setManual(true);
+        }
+        else if (command == Command.AddManual) {
             control.setCommand(Command.Add);
             setManual(true);
         }
@@ -217,6 +224,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         int x = cmd.ordinal();
         String s = cmd.name();
         s = Character.toLowerCase(s.charAt(0)) + s.substring(1);
+        if (s.endsWith("Manual")) s = s.substring(0, s.length()-6);
         URL url = OAButton.class.getResource("icons/"+s+".gif");
         if (url == null) return null;
         return new ImageIcon(url);

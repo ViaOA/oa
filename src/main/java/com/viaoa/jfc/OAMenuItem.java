@@ -25,15 +25,26 @@ import com.viaoa.hub.*;
 public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     private OAMenuItemController control;
 
+    public static Command OTHER = Command.Other;
+    public static Command UP = Command.Up;
+    public static Command DOWN = Command.Down;
+    public static Command SAVE = Command.Save;
+    public static Command CANCEL = Command.Cancel;
+    public static Command FIRST = Command.First;
+    public static Command LAST = Command.Last;
+    public static Command NEXT = Command.Next;
+    public static Command PREVIOUS = Command.Previous;
+    public static Command DELETE = Command.Delete;
     public static Command REMOVE = Command.Remove;
-    public static Command NEW = Command.Add;
-    public static Command NEW_MANUAL = Command.NewManual;
-    public static Command ADD_MANUAL = Command.NewManual;
+    public static Command NEW = Command.New;
+    public static Command INSERT = Command.Insert;
+    public static Command Add = Command.Add;
     public static Command CUT = Command.Cut;
     public static Command COPY = Command.Copy;
     public static Command PASTE = Command.Paste;
-    public static Command DELETE = Command.Delete;
-    public static Command CLEARAO = Command.Clear;
+    public static Command NEW_MANUAL = Command.NewManual;
+    public static Command ADD_MANUAL = Command.AddManual;
+    public static Command CLEARAO = Command.ClearAO;
     
     /**
      * Create a new OAMenuItem that is bound to a Hub and command.
@@ -191,7 +202,8 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         int x = cmd.ordinal();
         String s = cmd.name();
         s = Character.toLowerCase(s.charAt(0)) + s.substring(1);
-        URL url = OAMenuItem.class.getResource("icons/" + s + ".gif");
+        if (s.endsWith("Manual")) s = s.substring(0, s.length()-6);
+        URL url = OAButton.class.getResource("icons/"+s+".gif");
         if (url == null) return null;
         return new ImageIcon(url);
     }
