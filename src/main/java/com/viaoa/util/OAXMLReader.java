@@ -916,4 +916,20 @@ public class OAXMLReader extends DefaultHandler {
     protected String resolveClassName(String className) {
         return className;
     }
+    
+    public static void main(String[] args) throws Exception {
+        String s = "replace while debugging";
+        
+        OAXMLReader xr = new OAXMLReader() {
+            @Override
+            protected String resolveClassName(String className) {
+                return null;
+            }
+        };
+        Object objx = xr.parseString(s);
+        
+        int xx = 4;
+        xx++;
+        
+    }
 }
