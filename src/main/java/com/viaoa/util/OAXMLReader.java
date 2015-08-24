@@ -239,6 +239,7 @@ public class OAXMLReader extends DefaultHandler {
                     }
                 }
             }                
+//todo later:  if (versionOAXML == ??) throw new RuntimeException("OAXML ??? not supported");
             
             stack[0] = null; // place holder
             stack[1] = null; // place holder
