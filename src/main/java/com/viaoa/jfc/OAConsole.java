@@ -104,7 +104,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 if (obj == null) return;
                 
                 //qqqqqq there needs to be a flag to have it use AO or all objs
-                if (obj != hub.getAO()) return;
+                if (obj != hubListen.getAO()) return;
                 
                 if (!(obj instanceof OAObject)) return;
                 OAObject oaObj = (OAObject) obj;
