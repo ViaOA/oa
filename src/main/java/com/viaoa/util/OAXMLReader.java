@@ -59,6 +59,9 @@ public class OAXMLReader extends DefaultHandler {
     protected HashMap<Class, HashMap<OAObjectKey, OAObject>> hmMatch = new HashMap<Class, HashMap<OAObjectKey,OAObject>>(); 
     private boolean bImportMatching = true;
     
+    // flag to know if OAXMLWriter wrote the object, which adds an additonal tag for the start of each object.
+    private int versionOAXML;
+    
     // objects that have been removed from a Hub and might not have been saved
     //   these objects will then be checked and saved at the end of the import
     protected Vector vecRemoved = new Vector();
@@ -129,6 +132,7 @@ public class OAXMLReader extends DefaultHandler {
         vecIncomplete = new Vector();
         firstObject = null;
         hashGuid = new HashMap();
+        versionOAXML = 0;
     }
 
     /**
@@ -221,8 +225,21 @@ public class OAXMLReader extends DefaultHandler {
 
         
         if (indent == 1) {
-            //qqqq need to verify that this is a valid OAXML file
-            // ex:  <OAXML VERSION='1.0' DATETIME='08/12/2003 11:56AM'>
+            versionOAXML = "OAXML".equalsIgnoreCase(eName) ? 1 : 0;
+            if (versionOAXML > 0) {
+                // ex:  <OAXML VERSION='1.0' DATETIME='08/12/2003 11:56AM'>
+                if (attrs != null) {
+                    for (int i = 0; i < attrs.getLength(); i++) {
+                        String aName = attrs.getLocalName(i); 
+                        if (!"version".equalsIgnoreCase(aName)) continue;
+                        String s = attrs.getValue(i);
+//qqqqq todo:  have OAXMLWriter not write extra parent tag, and make it version 2.0                        
+                        if ("2.0".equals(s)) versionOAXML = 2; 
+                        break;
+                    }
+                }
+            }                
+            
             stack[0] = null; // place holder
             stack[1] = null; // place holder
             return;
