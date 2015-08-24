@@ -63,9 +63,9 @@ public class OAButtonTest extends OAUnitTest {
                 return true;                
             }
             @Override
-            public void afterActionPerformedSuccessful() {
-                System.out.println("afterActionPerformedSuccessful");
-                super.afterActionPerformedSuccessful();
+            public void afterActionPerformed() {
+                System.out.println("afterActionPerformed");
+                super.afterActionPerformed();
             }
         };
         pan.add(cmd);

@@ -17,6 +17,7 @@ import javax.swing.*;
 
 import com.viaoa.jfc.OAButton.Command;
 import com.viaoa.jfc.OAButton.EnabledMode;
+import com.viaoa.jfc.OAButton.OAButtonController;
 import com.viaoa.jfc.control.*;
 import com.viaoa.object.OAObject;
 import com.viaoa.hub.*;
@@ -52,24 +53,40 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     public OAMenuItem(Hub hub, String text, Icon icon, EnabledMode enabledMode, Command command) {
         if (text != null) setText(text);
         if (icon != null) setIcon(icon);
-
+        
         if (command == null) command = Command.Other;
-
+        
         if (enabledMode == null) {
+            
+            // first, last, new,insert,add,nwe_manual, add_manual            
+            
+            
             // get default enabledMode
             switch (command) {
             case Other:
-                enabledMode = EnabledMode.UsesIsEnabled;
+                if (hub != null) {
+                    enabledMode = EnabledMode.ActiveObjectNotNull;
+                }
+                else enabledMode = EnabledMode.UsesIsEnabled;
+                break;
+            case First:
+            case Last:
+            case New:
+            case Insert:
+            case Add:
+            case NewManual:
+            case AddManual:
+                enabledMode = EnabledMode.HubIsValid;
                 break;
             default:
-                enabledMode = EnabledMode.HubIsValid;
+                enabledMode = EnabledMode.ActiveObjectNotNull;
                 break;
             }
         }
-
+        
         control = new OAMenuItemController(hub, enabledMode, command) {
         };
-
+        
         setup();
     }
 
@@ -555,8 +572,8 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         return control.default_onActionPerformed();
     }
 
-    public void afterActionPerformedSuccessful() {
-        control.default_afterActionPerformedSuccessful();
+    public void afterActionPerformed() {
+        control.default_afterActionPerformed();
     }
 
     public void afterActionPerformedFailure(String msg, Exception e) {
@@ -608,8 +625,8 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         }
 
         @Override
-        public void afterActionPerformedSuccessful() {
-            OAMenuItem.this.afterActionPerformedSuccessful();
+        public void afterActionPerformed() {
+            OAMenuItem.this.afterActionPerformed();
         }
 
         @Override

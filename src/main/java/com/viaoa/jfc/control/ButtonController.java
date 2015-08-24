@@ -52,7 +52,7 @@ import com.viaoa.jfc.table.*;
         [getFile Save/Open] 
         {runActionPerformed}  -- sets up/uses swingWorker
             > onActionPerformed  -- where actual event is handled
-        afterActionPerformedSuccessful  -- show completed message
+        afterActionPerformed  -- show completed message
            or
         afterActionPerformedFailure  - if error
  * 
@@ -413,17 +413,17 @@ public class ButtonController extends JFCController implements ActionListener {
             afterActionPerformedFailure("Error: "+OAString.fmt(ex.getMessage(), "40L."), ex);
         }
         else {
-            if (b) afterActionPerformedSuccessful();
+            if (b) afterActionPerformed();
             else {
                 afterActionPerformedFailure("Action was not completed", null);
             }
         }
     }
     
-    public void afterActionPerformedSuccessful() {
-        default_afterActionPerformedSuccessful();
+    public void afterActionPerformed() {
+        default_afterActionPerformed();
     }
-    public void default_afterActionPerformedSuccessful() {
+    public void default_afterActionPerformed() {
         String completedMessage = getCompletedMessage();
         if (!OAString.isEmpty(completedMessage) && OAString.isEmpty(getConsoleProperty())) {
             JOptionPane.showMessageDialog(
@@ -1171,20 +1171,25 @@ public class ButtonController extends JFCController implements ActionListener {
                 flag = true;
                 break;
             case ActiveObjectNotNull:
+                if (!flag) break;
                 if (hub != null) flag = hub.getAO() != null;
                 break;
             case ActiveObjectNull:
+                if (!flag) break;
                 if (hub != null) flag = hub.getAO() == null;
                 break;
             case HubIsValid:
                 break;
             case HubIsNotEmpty:
+                if (!flag) break;
                 if (hub != null) flag = hub.getSize() > 0;
                 break;
             case HubIsEmpty:
+                if (!flag) break;
                 if (hub != null) flag = hub.getSize() == 0;
                 break;
             case AOPropertyIsNotEmpty:
+                if (!flag) break;
                 if (updateObject != null) {
                     if (updateObject instanceof OAObject) {
                         obj = ((OAObject) updateObject).getProperty(updateProperty);
@@ -1197,6 +1202,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 break;
             case AOPropertyIsEmpty:
+                if (!flag) break;
                 if (updateObject != null) {
                     if (updateObject instanceof OAObject) {
                         obj = ((OAObject) updateObject).getProperty(updateProperty);
@@ -1209,14 +1215,16 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 break;
             case SelectHubIsNotEmpty:
+                if (!flag) break;
                 flag = (hubMultiSelect != null && hubMultiSelect.getSize() > 0);
                 break;
             case SelectHubIsEmpty:
+                if (!flag) break;
                 flag = (hubMultiSelect != null && hubMultiSelect.getSize() == 0);
                 break;
             }
         }        
-        
+       
         if (flag && command != null && hub != null) {
             switch (command) {
             case Next:

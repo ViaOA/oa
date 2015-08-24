@@ -84,13 +84,29 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         if (command == null) command = Command.Other;
         
         if (enabledMode == null) {
+            
+            // first, last, new,insert,add,nwe_manual, add_manual            
+            
+            
             // get default enabledMode
             switch (command) {
             case Other:
-                enabledMode = EnabledMode.UsesIsEnabled;
+                if (hub != null) {
+                    enabledMode = EnabledMode.ActiveObjectNotNull;
+                }
+                else enabledMode = EnabledMode.UsesIsEnabled;
+                break;
+            case First:
+            case Last:
+            case New:
+            case Insert:
+            case Add:
+            case NewManual:
+            case AddManual:
+                enabledMode = EnabledMode.HubIsValid;
                 break;
             default:
-                enabledMode = EnabledMode.HubIsValid;
+                enabledMode = EnabledMode.ActiveObjectNotNull;
                 break;
             }
         }
@@ -237,7 +253,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     */
     public void setup() {
         boolean bIcon = (getIcon() == null);
-        boolean bText = false; // (getText() == null || getText().length() == 0);
+        boolean bText = (getText() == null || getText().length() == 0);
         boolean bTtt = (getToolTipText() == null || getToolTipText().length() == 0);
 
         setup(true, bIcon, bText, bTtt);
@@ -751,8 +767,8 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         if (control == null) return false;
         return control.default_onActionPerformed();
     }
-    public void afterActionPerformedSuccessful() {
-        control.default_afterActionPerformedSuccessful();
+    public void afterActionPerformed() {
+        control.default_afterActionPerformed();
     }
     public void afterActionPerformedFailure(String msg, Exception e) {
         control.default_afterActionPerformedFailure(msg, e);
@@ -799,8 +815,8 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
             return OAButton.this.onActionPerformed();
         }
         @Override
-        public void afterActionPerformedSuccessful() {
-            OAButton.this.afterActionPerformedSuccessful();
+        public void afterActionPerformed() {
+            OAButton.this.afterActionPerformed();
         }
         @Override
         public void afterActionPerformedFailure(String msg, Exception e) {
