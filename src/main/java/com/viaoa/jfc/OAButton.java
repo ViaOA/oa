@@ -277,9 +277,18 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         }
         if (bIcon) setIcon(getDefaultIcon(cmd));
         
-        if (bText) setText(cmd.name());
+        if (bText) {
+            String s = cmd.name();
+            if (s.indexOf("Manual") > 0) {
+                s = s.substring(0, s.length()-6);
+            }
+            setText(s);
+        }
         if (bToolTip) {
             String s = cmd.name();
+            if (s.indexOf("Manual") > 0) {
+                s = s.substring(0, s.length()-6);
+            }
             if (getHub() != null) {
                 String s2 = getHub().getObjectClass().getSimpleName();
                 s2 = com.viaoa.util.OAString.convertHungarian(s2);

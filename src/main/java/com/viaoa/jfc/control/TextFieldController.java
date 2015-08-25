@@ -120,6 +120,7 @@ public class TextFieldController extends JFCController implements FocusListener,
         document = new OAPlainDocument() {
             public void handleError(int errorType) {
             	super.handleError(errorType);
+            	if (!TextFieldController.this.textField.hasFocus()) return;
             	String msg = "";
             	switch (errorType) {
             	case OAPlainDocument.ERROR_MAX_LENGTH:
