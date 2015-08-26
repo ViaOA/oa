@@ -389,7 +389,7 @@ public class OAObjectPropertyDelegate {
         synchronized (lock) {
             if (lock.thread == Thread.currentThread()) return;
             for (int i=0; ;i++) {
-                if (i > 5) {
+                if (i > 6) {
                     LOG.warning("wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue");
                     return;  // bail out, ouch
                 }
@@ -397,7 +397,7 @@ public class OAObjectPropertyDelegate {
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-                    lock.wait(500);
+                    lock.wait(250);
                 }
                 catch (Exception e) {
                 }
