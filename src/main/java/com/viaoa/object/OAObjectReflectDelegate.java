@@ -566,7 +566,6 @@ public class OAObjectReflectDelegate {
             boolean bSequence, Hub hubMatch, final OAObjectInfo oi, final OALinkInfo linkInfo ) {
 
         Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
-        
         boolean bThisIsServer = OAObjectCSDelegate.isServer();
         // dont get calcs from server, calcs are maintained locally, events are not sent
         boolean bIsCalc = (linkInfo != null && linkInfo.bCalculated);

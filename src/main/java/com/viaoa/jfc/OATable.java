@@ -3101,12 +3101,18 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
 
     protected void rebuildListSelectionModel() {
-        try {
-            aiIgnoreValueChanged.incrementAndGet();
-            _rebuildListSelectionModel();
-        }
-        finally {
-            aiIgnoreValueChanged.decrementAndGet();
+        for (int i=0; i<5; i++) {
+            try {
+                aiIgnoreValueChanged.incrementAndGet();
+                _rebuildListSelectionModel();
+                break;
+            }
+            catch (Exception e) { 
+                // retry again 
+            }
+            finally {
+                aiIgnoreValueChanged.decrementAndGet();
+            }
         }
     }
     private void _rebuildListSelectionModel() {

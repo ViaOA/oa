@@ -14,7 +14,9 @@ import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+
 import com.viaoa.hub.Hub;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANotExist;
 
@@ -35,13 +37,13 @@ public class OAObjectPropertyDelegate {
      */
     public static boolean isPropertyLoaded(OAObject oaObj, String name) {
         if (oaObj == null || name == null) return false;
-        Object[] objs = oaObj.properties;
-        if (objs == null) return false;
+        Object[] props = oaObj.properties;
+        if (props == null) return false;
 
-        for (int i=0; i<objs.length; i+=2) {
-            if ( oaObj.properties[i] == null || !name.equalsIgnoreCase((String)oaObj.properties[i]) ) continue;
+        for (int i=0; i<props.length; i+=2) {
+            if ( props[i] == null || !name.equalsIgnoreCase((String)props[i]) ) continue;
             
-            Object objx = oaObj.properties[i+1];
+            Object objx = props[i+1];
             if (objx instanceof WeakReference) {
                 objx = ((WeakReference) objx).get();
                 if (objx == null) return false;
@@ -53,19 +55,19 @@ public class OAObjectPropertyDelegate {
     }
 
     public static String[] getPropertyNames(OAObject oaObj) {
-        Object[] objs = oaObj.properties;
-        if (objs == null) return null;
+        Object[] props = oaObj.properties;
+        if (props == null) return null;
         String[] ss;
 
         int cnt = 0;
-        for (int i=0; i<objs.length; i+=2) {
-            if (objs[i] != null) cnt++; 
+        for (int i=0; i<props.length; i+=2) {
+            if (props[i] != null) cnt++; 
         }
         ss = new String[cnt];
         int j = 0;
-        for (int i=0; i<objs.length; i+=2) {
-            if (objs[i] != null) {
-                ss[j++] = (String) objs[i];
+        for (int i=0; i<props.length; i+=2) {
+            if (props[i] != null) {
+                ss[j++] = (String) props[i];
             }
         }
         return ss;
@@ -165,7 +167,6 @@ public class OAObjectPropertyDelegate {
         oaObj.properties = objs;
     }
 
-    
     public static void setProperty(OAObject oaObj, String name, Object value) {
         if (oaObj == null || name == null) return;
 
@@ -198,6 +199,36 @@ public class OAObjectPropertyDelegate {
         if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
         if (objx instanceof Hub) {
             OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
+        }
+    }
+    
+    
+    // used by Hub when reading serialized object
+    public static void setPropertyHubIfNotSet(OAObject oaObj, String name, Object value) {
+        if (oaObj == null || name == null) return;
+
+        synchronized (oaObj) {
+            int pos;
+            if (oaObj.properties == null) {
+                oaObj.properties = new Object[2];
+                pos = 0;
+            }           
+            else {
+                pos = -1;
+                for (int i=0; i<oaObj.properties.length; i+=2) {
+                    if (pos == -1 && oaObj.properties[i] == null) pos = i; 
+                    else if (name.equalsIgnoreCase((String)oaObj.properties[i])) {
+                        pos = i;
+                        break;
+                    }
+                }
+                if (pos < 0) {
+                    pos = oaObj.properties.length;
+                    oaObj.properties = Arrays.copyOf(oaObj.properties, pos+2);
+                }
+            }
+            if (oaObj.properties[pos+1] == null) oaObj.properties[pos+1] = value;
+            oaObj.properties[pos] = name;
         }
     }
 
@@ -357,11 +388,16 @@ public class OAObjectPropertyDelegate {
         }
         synchronized (lock) {
             if (lock.thread == Thread.currentThread()) return;
-            for (;;) {
+            for (int i=0; ;i++) {
+                if (i > 5) {
+                    LOG.warning("waited 5 seconds for lock, obj="+oaObj+", prop="+name);
+                    return;  // bail out, ouch
+                }
+                OARemoteThreadDelegate.startNextThread();
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-                    lock.wait();
+                    lock.wait(1000);
                 }
                 catch (Exception e) {
                 }
@@ -396,9 +432,9 @@ public class OAObjectPropertyDelegate {
         if (name == null || oaObj == null || oaObj.properties == null) return false;
 
         boolean b = false;
-        for (int i=0; i<oaObj.properties.length; i+=2) {
-            if (!name.equalsIgnoreCase((String)oaObj.properties[i])) continue;
-            synchronized (oaObj) {
+        synchronized (oaObj) {
+            for (int i=0; i<oaObj.properties.length; i+=2) {
+                if (!name.equalsIgnoreCase((String)oaObj.properties[i])) continue;
                 Object val = oaObj.properties[i+1];
                 if (val == null) break; 
                 if (bToWeakRef) {
@@ -419,8 +455,8 @@ public class OAObjectPropertyDelegate {
                         }
                     }
                 }
+                break;
             }
-            break;
         }
         return b;
     }

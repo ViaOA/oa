@@ -325,6 +325,9 @@ public class OAObjectSerializeDelegate {
                                     b = true;
                                 }
                             }
+                            // 20150826 this was missing (not sure why), needs to send a null for empty hub
+                            obj = null;
+                            b = true;
                         }
                     }
                 }

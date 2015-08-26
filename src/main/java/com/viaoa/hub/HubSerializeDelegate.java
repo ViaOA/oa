@@ -56,7 +56,7 @@ public class HubSerializeDelegate {
         if (thisHub.datam.masterObject == objFrom) thisHub.datam.masterObject = objTo;
     }
     
-    /** qqqqqqqqqqq
+    /** 
      * Used by OAObjectSerializeDelegate, should only be needed to handle some temp "bad" files.
      */
     public static boolean isResolved(Hub thisHub) {
@@ -95,12 +95,7 @@ public class HubSerializeDelegate {
             if (liRev != null && OAObjectInfoDelegate.cacheHub(liRev, thisHub)) {
                 value = new WeakReference(value);
             }
-            OAObjectPropertyDelegate.setProperty(thisHub.datam.masterObject, liRev.getName(), value); 
-        }
-        else {
-//qqqqqqqqqqqqqqq
-int xx = 4;
-xx++;
+            OAObjectPropertyDelegate.setPropertyHubIfNotSet(thisHub.datam.masterObject, liRev.getName(), value);            
         }
         return thisHub;
     }

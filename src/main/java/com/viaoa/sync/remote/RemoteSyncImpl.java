@@ -59,7 +59,7 @@ if ("application".equalsIgnoreCase(s)) {
 
         Hub h = getHub(obj, hubPropertyName);
         if (h == null) {
-            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)obj, hubPropertyName, false); // if hub is null (empty), then need to get from server                
+            // OAObjectPropertyDelegate.removePropertyIfNull((OAObject)obj, hubPropertyName, false); // if hub is null (empty), then need to get from server                
             return false;
         }
         h.add(objAdd);
@@ -73,7 +73,7 @@ if ("application".equalsIgnoreCase(s)) {
         
         Hub h = getHub(obj, hubPropertyName);
         if (h == null) {
-            OAObjectPropertyDelegate.removePropertyIfNull((OAObject)obj, hubPropertyName, false);                
+            // OAObjectPropertyDelegate.removePropertyIfNull((OAObject)obj, hubPropertyName, false);                
             return false;
         }
         h.insert(objInsert, pos);
