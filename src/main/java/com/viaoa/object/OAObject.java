@@ -641,6 +641,12 @@ public class OAObject implements java.io.Serializable, Comparable {
     */
     protected Object getObject(String linkPropertyName) {
     	Object obj = OAObjectReflectDelegate.getReferenceObject(this, linkPropertyName);
+
+if (obj != null && !(obj instanceof OAObject)) {
+    int xx = 4;
+    xx++;
+}
+    	
     	return obj;
     }
 

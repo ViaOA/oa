@@ -13,6 +13,7 @@ package com.viaoa.object;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
@@ -372,9 +373,14 @@ public class OAObjectPropertyDelegate {
         boolean hasWait;
         Thread thread;
     }
-    
     public static void setPropertyLock(OAObject oaObj, String name) {
-        if (oaObj == null || name == null) return;
+        _setPropertyLock(oaObj, name, true);
+    }
+    public static boolean attemptPropertyLock(OAObject oaObj, String name) {
+        return _setPropertyLock(oaObj, name, false);
+    }
+    private static boolean _setPropertyLock(OAObject oaObj, String name, boolean bWaitIfNeeded) {
+        if (oaObj == null || name == null) return false;
         String key = OAObjectKeyDelegate.getKey(oaObj).getGuid() + "." + name.toUpperCase();
         PropertyLock lock;
         synchronized (oaObj) {
@@ -383,15 +389,16 @@ public class OAObjectPropertyDelegate {
                 lock = new PropertyLock();
                 lock.thread = Thread.currentThread();
                 hmLock.put(key, lock);
-                return;
+                return true;
             }
         }
         synchronized (lock) {
-            if (lock.thread == Thread.currentThread()) return;
+            if (lock.thread == Thread.currentThread()) return true;
+            if (!bWaitIfNeeded) return false;
             for (int i=0; ;i++) {
                 if (i > 6) {
-                    LOG.warning("wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue");
-                    return;  // bail out, ouch
+                    LOG.log(Level.WARNING, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue", new Exception("wait time exceeded"));
+                    return false;  // bail out, ouch
                 }
                 if (i == 0) OARemoteThreadDelegate.startNextThread();
                 if (lock.done) break;
@@ -403,7 +410,7 @@ public class OAObjectPropertyDelegate {
                 }
             }
         }
-        setPropertyLock(oaObj, name);  // create a new one
+        return _setPropertyLock(oaObj, name, bWaitIfNeeded);  // create a new one
     }
     public static void releasePropertyLock(OAObject oaObj, String name) {
         if (oaObj == null || name == null) return;

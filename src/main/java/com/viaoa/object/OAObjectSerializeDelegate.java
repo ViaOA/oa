@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
+
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubSerializeDelegate;
@@ -103,7 +104,21 @@ public class OAObjectSerializeDelegate {
                 // need to replace any references to oaObjOrig with oaObjNew
     			boolean b = replaceReferences(oaObjOrig, oaObjNew, linkInfo, value);
     			if (b) {
-                    OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, localValue);
+    			    if (value == null && localValue == null && linkInfo.getType() == linkInfo.MANY) {
+    			        // 20150826 skip if prop is locked by another
+    			        try {
+    		                b = OAObjectPropertyDelegate.attemptPropertyLock(oaObjNew, key);
+    		                if (b) {
+    		                    OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, localValue);
+    		                }
+    			        }
+    			        finally {
+                            if (b) OAObjectPropertyDelegate.releasePropertyLock(oaObjNew, linkInfo.getName());
+    			        }
+    			    }
+    			    else {
+    			        OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, localValue);
+    			    }
     			}
             }
             OAObjectDelegate.dontFinalize(oaObjOrig);
