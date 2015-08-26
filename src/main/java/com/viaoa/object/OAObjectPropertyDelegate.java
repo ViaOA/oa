@@ -390,14 +390,14 @@ public class OAObjectPropertyDelegate {
             if (lock.thread == Thread.currentThread()) return;
             for (int i=0; ;i++) {
                 if (i > 5) {
-                    LOG.warning("waited 5 seconds for lock, obj="+oaObj+", prop="+name);
+                    LOG.warning("wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue");
                     return;  // bail out, ouch
                 }
                 if (i == 0) OARemoteThreadDelegate.startNextThread();
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-                    lock.wait(1000);
+                    lock.wait(500);
                 }
                 catch (Exception e) {
                 }
