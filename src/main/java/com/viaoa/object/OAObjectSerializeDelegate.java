@@ -324,10 +324,13 @@ public class OAObjectSerializeDelegate {
                                     obj = null;
                                     b = true;
                                 }
+                                // otherwise, need to call oaObj.getHub(..), so that it's created with an autoMatch  
                             }
-                            // 20150826 this was missing (not sure why), needs to send a null for empty hub
-                            obj = null;
-                            b = true;
+                            else {
+                                // 20150826 this was missing (not sure why), needs to send a null for empty hub
+                                obj = null;
+                                b = true;
+                            }
                         }
                     }
                 }

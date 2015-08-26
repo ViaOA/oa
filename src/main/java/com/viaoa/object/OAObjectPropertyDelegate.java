@@ -393,7 +393,7 @@ public class OAObjectPropertyDelegate {
                     LOG.warning("waited 5 seconds for lock, obj="+oaObj+", prop="+name);
                     return;  // bail out, ouch
                 }
-                OARemoteThreadDelegate.startNextThread();
+                if (i == 0) OARemoteThreadDelegate.startNextThread();
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
