@@ -1,0 +1,8 @@
+
+
+
+    @SuppressWarnings("UnusedDeclaration")
+    @Deprecated
+    public <T> void bind(String bindName, T serviceObject, Class<T> interfaceClass) {
+        bind(bindName, interfaceClass, serviceObject);
+    }

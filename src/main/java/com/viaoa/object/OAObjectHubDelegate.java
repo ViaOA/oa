@@ -163,6 +163,9 @@ public class OAObjectHubDelegate {
                 oaObj.weakhubs = null;
             }
 
+            // 20150827
+            if (!OASyncDelegate.isClient()) return;
+            
             // 20130707 could be a hub from hubMerger, that populates with One references
             // which means that the one reference keeps it from gc
             if (!bIsOnHubFinalize && hub.getMasterObject() != null) {
@@ -172,7 +175,19 @@ public class OAObjectHubDelegate {
                     if (OARemoteThreadDelegate.shouldSendMessages() && !oaObj.isDeleted()) {
                         // CACHE_NOTE: if it was on the Server.cache, it was removed when it was added
                         // to a hub. Need to add to cache now that it is no longer in a hub.
-                        OAObjectCSDelegate.addToServerSideCache(oaObj);
+                        
+                        // 20150827 dont cache if one2one and owned, and it is assigned to owner
+                        // which means that the owner will "hold on to it"
+                        boolean b = true;
+                        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
+                        if (oi.isOwnedAndNoReverseMany()) {
+                            OALinkInfo li = oi.getOwnedByOne();
+                            if (li != null && OAObjectPropertyDelegate.getProperty(oaObj, li.getName()) != null) {
+                                b = false;
+                            }
+                        }
+                        
+                        if (b) OAObjectCSDelegate.addToServerSideCache(oaObj);
                     }
                 }
             }

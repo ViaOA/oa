@@ -1163,7 +1163,7 @@ public class OAObjectReflectDelegate {
         try {
             OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
             result = _getReferenceObject(oaObj, linkPropertyName, oi, li);
-            result = OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, result, objOriginal, bDidNotExist, false);
+            OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, result, objOriginal, bDidNotExist, false);
         }
         finally {
             OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);

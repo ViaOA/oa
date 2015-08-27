@@ -1,0 +1,44 @@
+
+
+
+public void javaLoggingAdapter() {
+    
+    // 1: turn off default logging
+    Logger log = Logger.getLogger("");
+    log.setLevel(Level.OFF);        
+    Handler[] hs = log.getHandlers();
+    for (int i=0; hs != null && i<hs.length; i++) {
+        hs[i].setLevel(Level.OFF);
+    }
+    
+    // 2: create log for a specific package 
+    log = Logger.getLogger("com.theice.gsmr");
+    log.setLevel(Level.FINE);
+    
+    // 3: create handler that gets called
+    handler = new Handler() {
+        @Override
+        public void publish(LogRecord record) {
+            if (!isLoggable(record)) return;
+
+            Level level = record.getLevel();
+            int x = level.intValue();
+            
+            if (x < Level.FINE.intValue()) return;
+            
+            Thrown thrown = record.getThrown();
+            String msg = record.getMessage();
+            
+            // 4: handle message
+            // todo: your code here
+        }
+        @Override
+        public void flush() {
+        }
+        @Override
+        public void close() throws SecurityException {
+        }
+    };
+    handler.setLevel(Level.FINE);
+    log.addHandler(handler);
+}

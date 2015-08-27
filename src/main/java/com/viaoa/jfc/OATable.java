@@ -3405,7 +3405,11 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 public void run() {
                     try {
                         table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
-                        table.oaTableModel.fireTableRowsDeleted(pos, pos);
+                        try {
+                            table.oaTableModel.fireTableRowsDeleted(pos, pos);
+                        }
+                        catch (Exception e) {
+                        }
                     }
                     finally {
                         table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();

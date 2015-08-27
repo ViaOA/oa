@@ -13,7 +13,8 @@ package com.viaoa.object;
 import com.viaoa.annotation.OAClass;
 
 @OAClass (addToCache=false, localOnly=true, useDataSource=false)
-public class OAObjectModel extends OAObject {
+public class OAObjectModel {
+//was: public class OAObjectModel extends OAObject {
 
     public static final String P_DisplayName = "DisplayName";
     public static final String P_DisplayNamePlural = "DisplayNamePlural";
@@ -41,7 +42,7 @@ public class OAObjectModel extends OAObject {
     protected String displayNamePlural;
 
     public OAObjectModel() {
-        if (isLoading()) return;
+//        if (isLoading()) return;
         setAllowGotoList(true);
         setAllowGotoEdit(true);
         setAllowSearch(true);
@@ -63,7 +64,7 @@ public class OAObjectModel extends OAObject {
     public void setDisplayName(String newValue) {
         String old = displayName;
         this.displayName = newValue;
-        firePropertyChange(P_DisplayName, old, this.displayName);
+//        firePropertyChange(P_DisplayName, old, this.displayName);
     }
     
     public String getDisplayNamePlural() {
@@ -72,7 +73,7 @@ public class OAObjectModel extends OAObject {
     public void setDisplayNamePlural(String newValue) {
         String old = displayNamePlural;
         this.displayNamePlural = newValue;
-        firePropertyChange(P_DisplayNamePlural, old, this.displayNamePlural);
+//        firePropertyChange(P_DisplayNamePlural, old, this.displayNamePlural);
     }
     
     // methods to enable commands

@@ -169,6 +169,41 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
         return ownedLinkInfos;
     }
+
+    private boolean bOwnedAndNoMany;
+    private boolean bOwnedAndNoManyCheck;
+    public boolean isOwnedAndNoReverseMany() {
+        if (bOwnedAndNoManyCheck) return bOwnedAndNoMany;
+        for (OALinkInfo li : getLinkInfos()) {
+            OALinkInfo liRev = li.getReverseLinkInfo();
+            if (liRev.type == OALinkInfo.MANY) {
+                bOwnedAndNoMany = false;
+                break;
+            }
+            if (li.type != OALinkInfo.ONE) continue;
+            if (liRev.bOwner) {
+                bOwnedAndNoMany = true;
+            }
+        }
+        bOwnedAndNoManyCheck = true;
+        return bOwnedAndNoMany;
+    }
+    
+    private boolean bOwnedByOne;
+    private OALinkInfo liOwnedByOne;
+    public OALinkInfo getOwnedByOne() {
+        if (bOwnedByOne) return liOwnedByOne;
+        for (OALinkInfo li : getLinkInfos()) {
+            if (li.type != OALinkInfo.ONE) continue;
+            OALinkInfo liRev = li.getReverseLinkInfo();
+            if (liRev.bOwner) {
+                liOwnedByOne = li;
+                break;
+            }
+        }
+        bOwnedByOne = true;
+        return liOwnedByOne;
+    }
     
     public ArrayList<OACalcInfo> getCalcInfos() {
     	if (alCalcInfo == null) alCalcInfo = new ArrayList<OACalcInfo>(5);

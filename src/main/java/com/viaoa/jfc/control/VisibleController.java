@@ -11,6 +11,8 @@
 package com.viaoa.jfc.control;
 
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+
 import com.viaoa.hub.*;
 
 /**
@@ -43,10 +45,21 @@ public class VisibleController extends HubPropController {
     }
     
     @Override
-    protected void onUpdate(boolean bValid) {
-        if (this.component != null) {
-            this.component.setVisible(bValid);
+    protected void onUpdate(final boolean bValid) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            if (this.component != null) {
+                this.component.setVisible(bValid);
+            }
+        }
+        else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (component != null) {
+                        component.setVisible(bValid);
+                    }
+                }
+            });
         }
     }
-
 }

@@ -54,8 +54,24 @@ public class EnabledController extends HubPropController {
         }
     }
 
+    
+    private void onUpdate(final Component comp, final boolean bEnabled) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            _onUpdate(comp, bEnabled);
+        }
+        else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    _onUpdate(comp, bEnabled);
+                }
+            });
+        }
+    }
+    
+    
     // note: recursive
-    private void onUpdate(Component comp, boolean bEnabled) {
+    private void _onUpdate(Component comp, boolean bEnabled) {
         if (comp == null) return;
         if (comp instanceof JTextComponent) {
             JTextComponent txt = (JTextComponent) comp;
@@ -84,11 +100,12 @@ public class EnabledController extends HubPropController {
                 for (int i=0; comps != null && i<comps.length; i++) {
                     Component compx = comps[i];
                     if (compx instanceof JComponent) {
-                        onUpdate(compx, bEnabled);
+                        _onUpdate(compx, bEnabled);
                     }
                 }
             }
-        }        
+        }
+        
         if (comp instanceof JTabbedPane) {
         }
         else if (comp instanceof JLabel) {

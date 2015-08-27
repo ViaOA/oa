@@ -113,7 +113,7 @@ public class OAObjectPropertyDelegate {
         oaObj.properties[pos] = name;
         oaObj.properties[pos+1] = value;
     }
-    
+
     public static void removeProperty(OAObject oaObj, String name, boolean bFirePropertyChange) {
         if (oaObj.properties == null || name == null) return;
         Object value = null;
@@ -208,6 +208,15 @@ public class OAObjectPropertyDelegate {
     public static void setPropertyHubIfNotSet(OAObject oaObj, String name, Object value) {
         if (oaObj == null || name == null) return;
 
+        Object[] props = oaObj.properties; 
+        if (props != null) {
+            for (int i=0; i<props.length; i+=2) {
+                if (name.equalsIgnoreCase((String)oaObj.properties[i])) {
+                    if (props[i+1] != null) return;
+                }
+            }
+        }
+        
         synchronized (oaObj) {
             int pos;
             if (oaObj.properties == null) {
@@ -228,8 +237,10 @@ public class OAObjectPropertyDelegate {
                     oaObj.properties = Arrays.copyOf(oaObj.properties, pos+2);
                 }
             }
-            if (oaObj.properties[pos+1] == null) oaObj.properties[pos+1] = value;
-            oaObj.properties[pos] = name;
+            if (oaObj.properties[pos+1] == null) {
+                oaObj.properties[pos+1] = value;
+                oaObj.properties[pos] = name;
+            }
         }
     }
 
@@ -284,7 +295,9 @@ public class OAObjectPropertyDelegate {
                         
                         if (matchValue == null) return oaObj.properties[i+1];
                         if (!matchValue.equals(oaObj.properties[i+1])) {
-                            if (!(matchValue instanceof OAObjectKey) || !(newValue instanceof OAObject)) return false;
+                            if (!(matchValue instanceof OAObjectKey) || !(newValue instanceof OAObject)) {
+                                return oaObj.properties[i+1];
+                            }
                             OAObjectKey k = OAObjectKeyDelegate.getKey((OAObject) newValue);
                             if (!matchValue.equals(k)) {
                                 return oaObj.properties[i+1];
