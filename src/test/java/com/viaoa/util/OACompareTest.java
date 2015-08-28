@@ -83,7 +83,7 @@ public class OACompareTest extends OAUnitTest {
         assertFalse(OACompare.isEmpty("a", true));
         assertTrue(OACompare.isEmpty("", true));
         assertTrue(OACompare.isEmpty(null, true));
-        assertFalse(OACompare.isEmpty(0));
+        assertTrue(OACompare.isEmpty(0));
         assertFalse(OACompare.isEmpty(-1));
         
         

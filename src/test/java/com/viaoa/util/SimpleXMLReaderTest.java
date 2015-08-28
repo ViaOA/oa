@@ -58,7 +58,7 @@ public class SimpleXMLReaderTest extends OAUnitTest {
         else System.out.println(sx+key);
         
         if (value instanceof ArrayList) {
-            ArrayList<HashMap> al = (ArrayList<HashMap>) value;
+            ArrayList al = (ArrayList) value;
             for (Object obj : al) {
                 if (obj instanceof HashMap) {
                     HashMap hm = (HashMap) obj;

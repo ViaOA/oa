@@ -15,9 +15,9 @@ public class OAFilterTest extends OAUnitTest {
         
         assertTrue(f.isUsed(null));
         assertTrue(f.isUsed(""));
-        assertTrue(f.isUsed(""));
+        assertTrue(f.isUsed(new String[0]));
         assertFalse(f.isUsed("X"));
-        assertFalse(f.isUsed(0));
+        assertTrue(f.isUsed(0));
         assertFalse(f.isUsed(1));
     }
 

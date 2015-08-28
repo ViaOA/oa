@@ -104,6 +104,7 @@ qqq -->
                     <include>**/*.sql/**</include>
                     <include>**/*.xml/**</include>
                     <include>**/help/**</include>
+                    <include>**/*.jks/**</include>
                 </includes>
             </resource>
         </resources>
