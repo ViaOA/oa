@@ -231,6 +231,11 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         return new ImageIcon(url);
     }
 
+    public void setDefaultIcon() {
+        Command cmd = getCommand();
+        if (cmd == null) setIcon(null);
+        else setIcon(getDefaultIcon(cmd));
+    }
     /**
         Retrieve an Icon from the viaoa.gui.icons directory.
         @param name name of file in icons directory.
@@ -253,10 +258,24 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     */
     public void setup() {
         boolean bIcon = (getIcon() == null);
-        boolean bText = (getText() == null || getText().length() == 0);
+        
+        // use setup(b,b,b,b) if it needs to be set, or setDefaultText
+        boolean bText = false;// (getText() == null || getText().length() == 0);  
         boolean bTtt = (getToolTipText() == null || getToolTipText().length() == 0);
 
         setup(true, bIcon, bText, bTtt);
+    }
+    public static String getDefaultText(Command cmd) {
+        if (cmd == null) return "";
+        String s = cmd.name();
+        if (s.indexOf("Manual") > 0) {
+            s = s.substring(0, s.length()-6);
+        }
+        return s;
+    }
+    public void setDefaultText() {
+        Command cmd = getCommand();
+        setText(getDefaultText(cmd));
     }
     
     /**
@@ -278,11 +297,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         if (bIcon) setIcon(getDefaultIcon(cmd));
         
         if (bText) {
-            String s = cmd.name();
-            if (s.indexOf("Manual") > 0) {
-                s = s.substring(0, s.length()-6);
-            }
-            setText(s);
+            setDefaultText();
         }
         if (bToolTip) {
             String s = cmd.name();

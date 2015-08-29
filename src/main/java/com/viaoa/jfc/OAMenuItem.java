@@ -208,6 +208,25 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         return new ImageIcon(url);
     }
 
+    public static String getDefaultText(Command cmd) {
+        if (cmd == null) return "";
+        String s = cmd.name();
+        if (s.indexOf("Manual") > 0) {
+            s = s.substring(0, s.length()-6);
+        }
+        return s;
+    }
+    public void setDefaultText() {
+        Command cmd = getCommand();
+        setText(getDefaultText(cmd));
+    }
+    
+
+    public void setDefaultIcon() {
+        Command cmd = getCommand();
+        if (cmd == null) setIcon(null);
+        else setIcon(getDefaultIcon(cmd));
+    }
     /**
      * Retrieve an Icon from the viaoa.gui.icons directory.
      * 
@@ -239,6 +258,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         setup(bIcon, bText, bTtt);
     }
 
+    
     /**
      * Sets the default icon, text, and tooltip based on the value of command.
      * 
