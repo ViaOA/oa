@@ -37,7 +37,7 @@ import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.util.*;
 import com.viaoa.jfc.*;
-import com.viaoa.jfc.OAButton.EnabledMode;
+import com.viaoa.jfc.OAButton.ButtonEnabledMode;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.jfc.table.*;
 
@@ -62,8 +62,8 @@ public class ButtonController extends JFCController implements ActionListener {
     private static Logger LOG = Logger.getLogger(ButtonController.class.getName());
     private AbstractButton button;
     
-    private OAButton.EnabledMode enabledMode;
-    private OAButton.Command command;
+    private OAButton.ButtonEnabledMode enabledMode;
+    private OAButton.ButtonCommand command;
 
     private boolean bMasterControl = true;
     private String confirmMessage;
@@ -87,7 +87,7 @@ public class ButtonController extends JFCController implements ActionListener {
         Used to bind an AbstractButton to a Hub, with built in support for a command.
         <p>
     */
-    public ButtonController(Hub hub, AbstractButton button, OAButton.EnabledMode enabledMode, OAButton.Command command) {
+    public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
         super(hub, button);
         create(button, enabledMode, command);
     }
@@ -195,7 +195,7 @@ public class ButtonController extends JFCController implements ActionListener {
     }
     
     
-    private void create(AbstractButton but, OAButton.EnabledMode enabledMode, OAButton.Command command) {
+    private void create(AbstractButton but, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
         this.button = but;
         button.addActionListener(this);
         setEnabledMode(enabledMode);
@@ -217,25 +217,25 @@ public class ButtonController extends JFCController implements ActionListener {
         Return command value.
         @see OACommand
     */
-    public OAButton.Command getCommand() {
+    public OAButton.ButtonCommand getCommand() {
         return command;
     }
     /**
         @see OAButton#setCommand
     */
-    public void setCommand(OAButton.Command command) {
-        if (command == null) command = OAButton.Command.Other;
+    public void setCommand(OAButton.ButtonCommand command) {
+        if (command == null) command = OAButton.ButtonCommand.Other;
         this.command = command;
         getEnabledController().update();
         getVisibleController().update();
         update();
     }
 
-    public OAButton.EnabledMode getEnabledMode() {
+    public OAButton.ButtonEnabledMode getEnabledMode() {
         return enabledMode;
     }
-    public void setEnabledMode(OAButton.EnabledMode enabledMode) {
-        if (enabledMode == null) enabledMode = OAButton.EnabledMode.UsesIsEnabled; 
+    public void setEnabledMode(OAButton.ButtonEnabledMode enabledMode) {
+        if (enabledMode == null) enabledMode = OAButton.ButtonEnabledMode.UsesIsEnabled; 
         this.enabledMode = enabledMode;
         getEnabledController().update();
         getVisibleController().update();
@@ -526,7 +526,7 @@ public class ButtonController extends JFCController implements ActionListener {
     
     protected boolean runActionPerformed2() throws Exception {
         Hub mhub = getMultiSelectHub();
-        if (command == OAButton.Command.Delete) {
+        if (command == OAButton.ButtonCommand.Delete) {
             OAObject currentAO = (OAObject) hub.getAO();
             if (currentAO != null) {
                 OALinkInfo[] lis = OAObjectDeleteDelegate.getMustBeEmptyBeforeDelete(currentAO);
@@ -1139,12 +1139,12 @@ public class ButtonController extends JFCController implements ActionListener {
     }
 
     public void setAnytime(boolean b) {
-        if (b) setEnabledMode(EnabledMode.Always);
-        else setEnabledMode(EnabledMode.UsesIsEnabled);
+        if (b) setEnabledMode(ButtonEnabledMode.Always);
+        else setEnabledMode(ButtonEnabledMode.UsesIsEnabled);
     }
     public void setAnyTime(boolean b) {
-        if (b) setEnabledMode(EnabledMode.Always);
-        else setEnabledMode(EnabledMode.UsesIsEnabled);
+        if (b) setEnabledMode(ButtonEnabledMode.Always);
+        else setEnabledMode(ButtonEnabledMode.UsesIsEnabled);
     }
     
     protected boolean getDefaultEnabled() {

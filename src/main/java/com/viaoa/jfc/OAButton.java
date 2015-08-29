@@ -32,35 +32,35 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     public boolean DEBUG;
     private OAButtonController control;
     
-    public static Command OTHER = Command.Other;
-    public static Command UP = Command.Up;
-    public static Command DOWN = Command.Down;
-    public static Command SAVE = Command.Save;
-    public static Command CANCEL = Command.Cancel;
-    public static Command FIRST = Command.First;
-    public static Command LAST = Command.Last;
-    public static Command NEXT = Command.Next;
-    public static Command PREVIOUS = Command.Previous;
-    public static Command DELETE = Command.Delete;
-    public static Command REMOVE = Command.Remove;
-    public static Command NEW = Command.New;
-    public static Command INSERT = Command.Insert;
-    public static Command Add = Command.Add;
-    public static Command CUT = Command.Cut;
-    public static Command COPY = Command.Copy;
-    public static Command PASTE = Command.Paste;
-    public static Command NEW_MANUAL = Command.NewManual;
-    public static Command ADD_MANUAL = Command.AddManual;
-    public static Command CLEARAO = Command.ClearAO;
+    public static ButtonCommand OTHER = ButtonCommand.Other;
+    public static ButtonCommand UP = ButtonCommand.Up;
+    public static ButtonCommand DOWN = ButtonCommand.Down;
+    public static ButtonCommand SAVE = ButtonCommand.Save;
+    public static ButtonCommand CANCEL = ButtonCommand.Cancel;
+    public static ButtonCommand FIRST = ButtonCommand.First;
+    public static ButtonCommand LAST = ButtonCommand.Last;
+    public static ButtonCommand NEXT = ButtonCommand.Next;
+    public static ButtonCommand PREVIOUS = ButtonCommand.Previous;
+    public static ButtonCommand DELETE = ButtonCommand.Delete;
+    public static ButtonCommand REMOVE = ButtonCommand.Remove;
+    public static ButtonCommand NEW = ButtonCommand.New;
+    public static ButtonCommand INSERT = ButtonCommand.Insert;
+    public static ButtonCommand Add = ButtonCommand.Add;
+    public static ButtonCommand CUT = ButtonCommand.Cut;
+    public static ButtonCommand COPY = ButtonCommand.Copy;
+    public static ButtonCommand PASTE = ButtonCommand.Paste;
+    public static ButtonCommand NEW_MANUAL = ButtonCommand.NewManual;
+    public static ButtonCommand ADD_MANUAL = ButtonCommand.AddManual;
+    public static ButtonCommand CLEARAO = ButtonCommand.ClearAO;
     
-    public enum Command {
+    public enum ButtonCommand {
         Other, Up, Down, Save, Cancel, First, Last, 
         Next, Previous, Delete, Remove, New, Insert, Add, Cut, Copy, Paste,
         NewManual, AddManual, ClearAO
     }
     
-    public static EnabledMode ALWAYS = EnabledMode.Always;
-    public enum EnabledMode {
+    public static ButtonEnabledMode ALWAYS = ButtonEnabledMode.Always;
+    public enum ButtonEnabledMode {
         UsesIsEnabled,
         Always,
         ActiveObjectNotNull,
@@ -73,15 +73,26 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         SelectHubIsNotEmpty,
         SelectHubIsEmpty,
     }
+    public static ButtonEnabledMode UsesIsEnabled = ButtonEnabledMode.UsesIsEnabled;
+    public static ButtonEnabledMode Always = ButtonEnabledMode.Always;
+    public static ButtonEnabledMode ActiveObjectNotNull = ButtonEnabledMode.ActiveObjectNotNull;
+    public static ButtonEnabledMode ActiveObjectNull = ButtonEnabledMode.ActiveObjectNull;
+    public static ButtonEnabledMode HubIsValid = ButtonEnabledMode.HubIsValid;
+    public static ButtonEnabledMode HubIsNotEmpty = ButtonEnabledMode.HubIsNotEmpty;
+    public static ButtonEnabledMode HubIsEmpty = ButtonEnabledMode.HubIsEmpty;
+    public static ButtonEnabledMode AOPropertyIsNotEmpty = ButtonEnabledMode.AOPropertyIsNotEmpty;
+    public static ButtonEnabledMode AOPropertyIsEmpty = ButtonEnabledMode.AOPropertyIsEmpty;
+    public static ButtonEnabledMode SelectHubIsNotEmpty = ButtonEnabledMode.SelectHubIsNotEmpty;
+    public static ButtonEnabledMode SelectHubIsEmpty = ButtonEnabledMode.SelectHubIsEmpty;
     
     /**
         Create a new OAButton that is bound to a Hub and command.
     */
-    public OAButton(Hub hub, String text, Icon icon, EnabledMode enabledMode, Command command) {
+    public OAButton(Hub hub, String text, Icon icon, ButtonEnabledMode enabledMode, ButtonCommand command) {
         if (text != null) setText(text);
         if (icon != null) setIcon(icon);
         
-        if (command == null) command = Command.Other;
+        if (command == null) command = ButtonCommand.Other;
         
         if (enabledMode == null) {
             
@@ -92,9 +103,9 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
             switch (command) {
             case Other:
                 if (hub != null) {
-                    enabledMode = EnabledMode.ActiveObjectNotNull;
+                    enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
                 }
-                else enabledMode = EnabledMode.UsesIsEnabled;
+                else enabledMode = ButtonEnabledMode.UsesIsEnabled;
                 break;
             case First:
             case Last:
@@ -103,10 +114,10 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
             case Add:
             case NewManual:
             case AddManual:
-                enabledMode = EnabledMode.HubIsValid;
+                enabledMode = ButtonEnabledMode.HubIsValid;
                 break;
             default:
-                enabledMode = EnabledMode.ActiveObjectNotNull;
+                enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
                 break;
             }
         }
@@ -132,43 +143,43 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     public OAButton(Hub hub) {
         this(hub, null, null, null, null);
     }
-    public OAButton(Hub hub, Command command) {
+    public OAButton(Hub hub, ButtonCommand command) {
         this(hub, null, null, null, command);
     }
-    public OAButton(Hub hub, EnabledMode enabledMode) {
+    public OAButton(Hub hub, ButtonEnabledMode enabledMode) {
         this(hub, null, null, enabledMode, null);
     }
     
     public OAButton(Hub hub, String text) {
         this(hub, text, null, null, null);
     }
-    public OAButton(Hub hub, String text, Command command) {
+    public OAButton(Hub hub, String text, ButtonCommand command) {
         this(hub, text, null, null, command);
     }
-    public OAButton(Hub hub, Command command, String text) {
+    public OAButton(Hub hub, ButtonCommand command, String text) {
         this(hub, text, null, null, command);
     }
-    public OAButton(Hub hub, String text, EnabledMode enabledMode) {
+    public OAButton(Hub hub, String text, ButtonEnabledMode enabledMode) {
         this(hub, text, null, enabledMode, null);
     }
 
     public OAButton(Hub hub, Icon icon) {
         this(hub, null, icon, null, null);
     }
-    public OAButton(Hub hub, Icon icon, Command command) {
+    public OAButton(Hub hub, Icon icon, ButtonCommand command) {
         this(hub, null, icon, null, command);
     }
-    public OAButton(Hub hub, Icon icon, EnabledMode enabledMode) {
+    public OAButton(Hub hub, Icon icon, ButtonEnabledMode enabledMode) {
         this(hub, null, icon, enabledMode, null);
     }
     
     public OAButton(Hub hub, String text, Icon icon) {
         this(hub, text, icon, null, null);
     }
-    public OAButton(Hub hub, String text, Icon icon, Command command) {
+    public OAButton(Hub hub, String text, Icon icon, ButtonCommand command) {
         this(hub, text, icon, null, command);
     }
-    public OAButton(Hub hub, String text, Icon icon, EnabledMode enabledMode) {
+    public OAButton(Hub hub, String text, Icon icon, ButtonEnabledMode enabledMode) {
         this(hub, text, icon, enabledMode, null);
     }
 
@@ -183,13 +194,13 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         Built in command.
         Set command value and set button text, tooltip, and icon.
     */
-    public void setCommand(Command command) {
-        if (command == Command.NewManual) {
-            control.setCommand(Command.New);
+    public void setCommand(ButtonCommand command) {
+        if (command == ButtonCommand.NewManual) {
+            control.setCommand(ButtonCommand.New);
             setManual(true);
         }
-        else if (command == Command.AddManual) {
-            control.setCommand(Command.Add);
+        else if (command == ButtonCommand.AddManual) {
+            control.setCommand(ButtonCommand.Add);
             setManual(true);
         }
         control.setCommand(command);
@@ -197,7 +208,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     /**
         Built in command.
     */
-    public Command getCommand() {
+    public ButtonCommand getCommand() {
         return control.getCommand();
     }
     
@@ -209,10 +220,10 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     }
     
     
-    public void setEnabledMode(EnabledMode mode) {
+    public void setEnabledMode(ButtonEnabledMode mode) {
         control.setEnabledMode(mode);
     }
-    public EnabledMode getEnabledMode() {
+    public ButtonEnabledMode getEnabledMode() {
         return control.getEnabledMode();
     }
 
@@ -232,7 +243,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     }
 
     public void setDefaultIcon() {
-        Command cmd = getCommand();
+        ButtonCommand cmd = getCommand();
         if (cmd == null) setIcon(null);
         else setIcon(getDefaultIcon(cmd));
     }
@@ -240,7 +251,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         Retrieve an Icon from the viaoa.gui.icons directory.
         @param name name of file in icons directory.
     */
-    public static Icon getDefaultIcon(Command cmd) {
+    public static Icon getDefaultIcon(ButtonCommand cmd) {
         if (cmd == null) return null;
         int x = cmd.ordinal();
         String s = cmd.name();
@@ -265,7 +276,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
 
         setup(true, bIcon, bText, bTtt);
     }
-    public static String getDefaultText(Command cmd) {
+    public static String getDefaultText(ButtonCommand cmd) {
         if (cmd == null) return "";
         String s = cmd.name();
         if (s.indexOf("Manual") > 0) {
@@ -274,7 +285,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         return s;
     }
     public void setDefaultText() {
-        Command cmd = getCommand();
+        ButtonCommand cmd = getCommand();
         setText(getDefaultText(cmd));
     }
     
@@ -287,7 +298,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     */
     public void setup(boolean bSetup, boolean bIcon, boolean bText, boolean bToolTip) {
         if (bSetup) this.setup(this);
-        Command cmd = getCommand();
+        ButtonCommand cmd = getCommand();
         if (cmd == null) {
             if (bIcon) setIcon(null);
             if (bText) setText(null);
@@ -317,7 +328,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     /**
         Bind menuItem to automatically work with a Hub and command.
     */
-    public void bind(Hub hub, Command command) {
+    public void bind(Hub hub, ButtonCommand command) {
         setHub(hub);
         setCommand(command);
     }
@@ -800,7 +811,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     
     
     class OAButtonController extends ButtonController {
-        public OAButtonController(Hub hub, EnabledMode enabledMode, Command command) {
+        public OAButtonController(Hub hub, ButtonEnabledMode enabledMode, ButtonCommand command) {
             super(hub, OAButton.this, enabledMode, command);
         }
         @Override

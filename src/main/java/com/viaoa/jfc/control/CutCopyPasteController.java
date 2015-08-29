@@ -24,7 +24,7 @@ import javax.swing.*;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.jfc.tree.*;
 import com.viaoa.jfc.*;
-import com.viaoa.jfc.OAButton.Command;
+import com.viaoa.jfc.OAButton.ButtonCommand;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
@@ -353,14 +353,14 @@ public class CutCopyPasteController {
         for (int i=0; i<x; i++) {
             Component c = pm.getComponent(i);
             if (c instanceof OAMenuItem) {
-                OAButton.Command cmd = ((OAMenuItem) c).getCommand();
-                if (cmd == Command.Cut) {
+                OAButton.ButtonCommand cmd = ((OAMenuItem) c).getCommand();
+                if (cmd == ButtonCommand.Cut) {
                     omiCut = (OAMenuItem) c;
                 }
-                else if (cmd == Command.Copy) {
+                else if (cmd == ButtonCommand.Copy) {
                     omiCopy = (OAMenuItem) c;
                 }
-                else if (cmd == Command.Paste) {
+                else if (cmd == ButtonCommand.Paste) {
                     omiPaste = (OAMenuItem) c;
                 }
             }
