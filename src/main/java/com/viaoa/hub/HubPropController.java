@@ -24,7 +24,7 @@ public abstract class HubPropController {
     protected HubProp[] hubProps = new HubProp[0];
     protected boolean bDirectlySet;  // used to override the isValid with another value
     protected boolean bDirectlySetValue;
-    protected boolean bIsCallingUpdate;  // used when updating value, so that direct setting valid can be ignored
+    protected volatile boolean bIsCallingUpdate;  // used when updating value, so that direct setting valid can be ignored
     public boolean debug;
     
     public static class HubProp {

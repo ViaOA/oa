@@ -60,10 +60,13 @@ public class EnabledController extends HubPropController {
             _onUpdate(comp, bEnabled);
         }
         else {
+            final boolean b = bIsCallingUpdate;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    if (b) bIsCallingUpdate = b;
                     _onUpdate(comp, bEnabled);
+                    if (b) bIsCallingUpdate = false;
                 }
             });
         }

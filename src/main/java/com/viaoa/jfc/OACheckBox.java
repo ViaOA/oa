@@ -409,7 +409,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     @Override
     public void setEnabled(boolean enabled) {
         if (control != null) {
-            control.getEnabledController().directlySet(true, enabled);
+           control.getEnabledController().directlySet(true, enabled);
         }
         super.setEnabled(enabled);
     }

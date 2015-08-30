@@ -52,11 +52,14 @@ public class VisibleController extends HubPropController {
             }
         }
         else {
+            final boolean b = bIsCallingUpdate;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     if (component != null) {
+                        if (b) bIsCallingUpdate = b;
                         component.setVisible(bValid);
+                        if (b) bIsCallingUpdate = false;
                     }
                 }
             });
