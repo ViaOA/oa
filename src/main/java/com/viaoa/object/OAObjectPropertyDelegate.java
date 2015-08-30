@@ -526,5 +526,9 @@ public class OAObjectPropertyDelegate {
             }
         }
     }
+
+    public static void clearProperties(OAObject oaObj) {
+        if (oaObj != null) oaObj.properties = null;
+    }
 }
 
