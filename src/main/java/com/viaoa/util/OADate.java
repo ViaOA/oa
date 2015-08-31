@@ -193,7 +193,7 @@ public class OADate extends OADateTime {
         return compareTo(obj);
     }
     public int compareTo(Object obj) {
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, false);
         if (d == null) return 2;
         d.clearTime();
 

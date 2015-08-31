@@ -22,7 +22,7 @@ import java.sql.Time;
 	'Hms', 'Mdy'
 
     yyyyMMdd_HHmmss.SSS
-
+             hhmmssa
     <p>
     Formatting Symbols used for output display.
     <pre>
@@ -436,11 +436,6 @@ public class OADateTime implements java.io.Serializable, Comparable {
         cal.clear(Calendar.YEAR);
         cal.clear(Calendar.MONTH);
         cal.clear(Calendar.DATE);
-        /* 2005/01/03 was:
-        setYear(0);
-        setMonth(0);
-        setDay(0);
-        */
     }
     /**
         Sets year, month, and day.
@@ -508,7 +503,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         calx.set(getYear(),getMonth(),getDay(),getHour(),getMinute(),getSecond());
         calx.set(Calendar.MILLISECOND, cal.get(Calendar.MILLISECOND));
         this.cal = calx;
-        cal.get(Calendar.DATE);
+        cal.get(Calendar.DATE);  // causes recalc
     }
     public TimeZone getTimeZone() {
         return cal.getTimeZone();
@@ -699,14 +694,19 @@ public class OADateTime implements java.io.Serializable, Comparable {
     */
     public int compareTo(Object obj) {
         if (obj == null) return 1;
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, false);
         if (d == null) return 2;
         if ( this.cal.equals(d.cal) ) return 0;
         if ( this.cal.before(d.cal) ) return -1;
         return 1;
     }
 
-// 20150831    
+    // 20150831    
+    /**
+     * Convert the current dt to a different tz, and adjusting it's values
+     * @param tz
+     * @return
+     */
     public OADateTime convertTo(TimeZone tz) {
         OADateTime dt;
         if (this instanceof OADate) {
@@ -719,7 +719,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
             dt = new OADateTime(this);
         }
         dt.cal.setTimeZone(tz);
-        dt.cal.get(Calendar.DATE);  // recalc
+        dt.cal.get(Calendar.DATE);  // recalcs values
         return dt;
     }
     
@@ -895,7 +895,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @param obj Date, OADateTime, Calendar, etc that can be converted to an OADateTime.
     */
     public int betweenYears(Object obj) {
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, false);
         return Math.abs(this.getYear() - d.getYear());
     }
 
@@ -905,7 +905,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @param obj Date, OADateTime, Calendar, etc that can be converted to an OADateTime.
     */
     public int betweenMonths(Object obj) {
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, false);
 
         int amt = this.getYear() - d.getYear();
         amt = Math.abs(amt) * 12;
@@ -925,15 +925,11 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @param obj Date, OADateTime, Calendar, etc that can be converted to an OADateTime.
     */
     public int betweenDays(Object obj) {
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, true);
         d.setTime(this.getHour(), this.getMinute(), this.getSecond(), this.getMilliSecond());
         double millis = Math.abs(this.cal.getTime().getTime() - d.cal.getTime().getTime());
         
-        // this accounts for DLS days where an hour is added or subtracted.
-        return (int) Math.floor(millis/(1000 * 60 * 60 * 24) + .5d);
-        
-        // 20091012 was: does not account for DLS
-        // return (int) Math.ceil( millis/(1000 * 60 * 60 * 24));
+        return (int) Math.floor(millis/(1000 * 60 * 60 * 24) + .5d);  // accounts for daylight savings (23hr day, or 25hr day)
      }
 
 
@@ -942,8 +938,8 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @param obj Date, OADateTime, Calendar, etc that can be converted to an OADateTime.
     */
     public int betweenHours(Object obj) {
-        //qqqqqqqqq make sure getTime() will account for leap years.  Might need to use between months, and then get days
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, true);
+        
         d.setTime(d.getHour(), this.getMinute(), this.getSecond(), this.getMilliSecond());
         double millis = Math.abs(this.cal.getTime().getTime() - d.cal.getTime().getTime());
         return (int) Math.ceil( millis/(1000 * 60 * 60));
@@ -954,9 +950,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @param obj Date, OADateTime, Calendar, etc that can be converted to an OADateTime.
     */
     public int betweenMinutes(Object obj) {
-        //qqqqqqqqq make sure getTime() will account for leap years.  Might need to use between months, and then get days
-        /// need to account for DST
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, true);
         d.setTime(d.getHour(), d.getMinute(), this.getSecond(), this.getMilliSecond());
         double millis = Math.abs(this.cal.getTime().getTime() - d.cal.getTime().getTime());
         return (int) Math.ceil(millis/(1000 * 60));
@@ -967,8 +961,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @param obj Date, OADateTime, Calendar, etc that can be converted to an OADateTime.
     */
     public int betweenSeconds(Object obj) {
-        //qqqqqqqqq make sure getTime() will account for leap years.  Might need to use between months, and then get days
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, true);
         d.setTime(d.getHour(), d.getMinute(), d.getSecond(), this.getMilliSecond());
 
         double millis = Math.abs(this.cal.getTime().getTime() - d.cal.getTime().getTime());
@@ -980,14 +973,13 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @param obj Date, OADateTime, Calendar, etc that can be converted to an OADateTime.
     */
     public long betweenMilliSeconds(Object obj) {
-        //qqqqqqqqq make sure getTime() will account for leap years.  Might need to use between months, and then get days
-        OADateTime d = convert(obj);
+        OADateTime d = convert(obj, false);
         long millis = Math.abs(this.cal.getTime().getTime() - d.cal.getTime().getTime());
         return millis;
     }
 
     /**
-     * Time as miliseconds, same as Date.getTime()
+     * Time as milliseconds, same as Date.getTime()
      */
     public long getTime() {
         return this.cal.getTime().getTime();
@@ -996,10 +988,13 @@ public class OADateTime implements java.io.Serializable, Comparable {
     /**
         Convert an Object to an OADateTime.
     */
-    protected OADateTime convert(Object obj) {
+    protected OADateTime convert(Object obj, boolean bAlways) {
         if (obj == null) return null;
 
-        if (obj instanceof OADateTime) return (OADateTime) obj;
+        if (obj instanceof OADateTime) {
+            if (bAlways) return new OADateTime((OADateTime) obj);
+            else return (OADateTime) obj;
+        }
         if (obj instanceof java.sql.Time) return new OADateTime((java.sql.Time)obj);
         if (obj instanceof java.sql.Timestamp) return new OADateTime((java.sql.Timestamp)obj);
         if (obj instanceof Date) return new OADateTime((Date)obj);
@@ -1236,98 +1231,4 @@ public class OADateTime implements java.io.Serializable, Comparable {
         }
         return null;
     }
-
-    
-    // this verifies that betweenDays works correctly with leap years and DLS (daylight savings) DLS will have a 23hr day and a 25hr day
-    public static void mainX(String[] args) {
-        OADate d1 = new OADate(1201, Calendar.SEPTEMBER, 27);
-        OADate d2 = new OADate(d1);
-        for (int i=0; i<500000; i++) {
-            int x = d1.betweenDays(d2);
-            if (i != x) {
-                x = d1.betweenDays(d2);
-                System.out.println("Error: "+d2);
-                break;
-            }
-            d2 = (OADate) d2.addDays(1);
-        }
-        System.out.println("Done => "+d2);
-    }
-
-    public static void mainZ(String[] args) {
-        OADateTime dt = new OADateTime(1965, Calendar.MAY, 4, 12, 0, 0);
-        int x = dt.getCalendar().get(Calendar.ZONE_OFFSET);
-        System.out.println("=>"+dt.toString("MMddyyy HH:mm:ss a"));
-        System.out.println("=>"+x);
-
-        dt.getCalendar().add(Calendar.HOUR, 3);
-        
-        dt.cal.add(Calendar.ZONE_OFFSET, 5);
-        x = dt.getCalendar().get(Calendar.ZONE_OFFSET);
-        
-        System.out.println("=>"+dt.toString("MMddyyy HH:mm:ss a"));
-        System.out.println("=>"+x);
-    }
-    
-    
-    public static void mainA(String[] args) {
-        OADateTime dt = new OADateTime(2015, 6, 1);
-        TimeZone tz = dt.getTimeZone();
-        long t1 = dt.getTime();
-        int h1 = dt.getHour();
-        int offset = tz.getOffset(dt.getTime());
-
-        System.out.println("=>"+dt.toString("MM/dd/yyyy HH:mm:ss a z")+", offset="+offset);
-        
-        String[] stzs = TimeZone.getAvailableIDs();
-        for (String stz : stzs) {
-            TimeZone tz2 = TimeZone.getTimeZone(stz);
-
-            OADateTime dt2 = new OADateTime(dt);
-            dt2.setTimeZone(tz2);
-            long t2 = dt2.getTime();
-            int h2 = dt2.getHour();
-            System.out.println("   => "+dt2.toString("MM/dd/yyyy HH:mm:ss a z")+"  "+tz2.getDisplayName());
-            
-            OADateTime dt3 = dt.convertTo(tz2);
-            long t3 = dt2.getTime();
-            int h3 = dt2.getHour();
-            
-            System.out.println("   => "+dt3.toString("MM/dd/yyyy HH:mm:ss a z"));
-            int xx = 4;
-            xx++;
-        }
-    }
-    
-    public static void main(String[] args) {
-        OADateTime dt = new OADateTime(2015, 6, 1);
-        TimeZone tz = dt.getTimeZone();
-        long t1 = dt.getTime();
-        int h1 = dt.getHour();
-        int offset = tz.getOffset(dt.getTime());
-
-        System.out.println("=>"+dt.toString("MM/dd/yyyy HH:mm:ss a z")+", offset="+offset);
-        
-        String[] stzs = TimeZone.getAvailableIDs();
-        for (String stz : stzs) {
-            TimeZone tz2 = TimeZone.getTimeZone(stz);
-            
-            OADateTime dt2 = new OADateTime(dt);
-            dt2.setTimeZone(tz2);
-            int offset2 = tz2.getOffset(dt.getTime());
-
-            System.out.println("2=>"+dt2.toString("MM/dd/yyyy HH:mm:ss a z")+", offset="+offset2);
-            
-            OADateTime dt3 = dt.convertTo(tz2);
-            
-            System.out.println("3=>"+dt3.toString("MM/dd/yyyy HH:mm:ss a z")+", offset="+offset2);
-            
-            int xx = 4;
-            xx++;
-        }
-    }
-    
-    
 }
-
-

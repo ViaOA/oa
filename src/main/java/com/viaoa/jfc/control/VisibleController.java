@@ -43,23 +43,37 @@ public class VisibleController extends HubPropController {
         this.component = comp;
         update();
     }
+
+    private boolean bIsCallingUpdate;
+    @Override
+    public void directlySet(boolean b, boolean bEnableValue) {
+        if (!bIsCallingUpdate) {
+            super.directlySet(b, bEnableValue);
+        }
+    }
     
     @Override
     protected void onUpdate(final boolean bValid) {
+        if (this.component == null) return;
         if (SwingUtilities.isEventDispatchThread()) {
-            if (this.component != null) {
+            try {
+                bIsCallingUpdate = true;
                 this.component.setVisible(bValid);
+            }
+            finally {
+                bIsCallingUpdate = false;
             }
         }
         else {
-            final boolean b = bIsCallingUpdate;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    if (component != null) {
-                        if (b) bIsCallingUpdate = b;
+                    try {
+                        bIsCallingUpdate = true;
                         component.setVisible(bValid);
-                        if (b) bIsCallingUpdate = false;
+                    }
+                    finally {
+                        bIsCallingUpdate = false;
                     }
                 }
             });

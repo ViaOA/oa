@@ -24,7 +24,7 @@ public abstract class HubPropController {
     protected HubProp[] hubProps = new HubProp[0];
     protected boolean bDirectlySet;  // used to override the isValid with another value
     protected boolean bDirectlySetValue;
-    protected volatile boolean bIsCallingUpdate;  // used when updating value, so that direct setting valid can be ignored
+    private boolean bIsCallingUpdate;  // used when updating value, so that direct setting valid can be ignored
     public boolean debug;
     
     public static class HubProp {
@@ -227,14 +227,15 @@ public abstract class HubPropController {
     /**
      * Called when a change is made to Hub/Property.
      */
-//static int qqq;    
     public void update() {
-//qqq++;
-//if (qqq % 50 == 0) System.out.printf("%,d%n", qqq);
        boolean b = isValid();
-       bIsCallingUpdate = true;
-       onUpdate(b);
-       bIsCallingUpdate = false;
+       try {
+           bIsCallingUpdate = true;
+           onUpdate(b);
+       }
+       finally {
+           bIsCallingUpdate = false;
+       }
     }
 
     /**
@@ -246,7 +247,6 @@ public abstract class HubPropController {
             bDirectlySetValue = bEnableValue;
         }
     }
-    
     
     protected abstract void onUpdate(boolean bValid);
 }
