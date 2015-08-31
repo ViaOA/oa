@@ -212,6 +212,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     */
     public OADateTime(OADateTime odt) {
         setCalendar(odt);
+        setTimeZone(odt.getTimeZone());
     }
 
     /**
@@ -253,8 +254,14 @@ public class OADateTime implements java.io.Serializable, Comparable {
             milsecs = t.getMilliSecond();
         }
         setCalendar(year,month,day,hrs,mins,secs,milsecs);
+        setTimeZone(d.getTimeZone());
     }
 
+    /**
+        @param year full year (not year minus 1900 like Date)
+        @param month 0-11
+        @param date day of the month
+     */
     public OADateTime(int year, int month, int day) {
         this(year,month,day,0,0,0,0);
     }
@@ -487,8 +494,21 @@ public class OADateTime implements java.io.Serializable, Comparable {
         cal.set(Calendar.DATE, d);
     }
 
+    //20150831
+    /**  
+     * Change the tz and keep the same other values (day,month,hour,etc). 
+     * 
+     * Use convertTo(tz) to have values adjusted.
+     */
     public void setTimeZone(TimeZone tz) {
-        cal.setTimeZone(tz);
+        if (tz != null && tz.equals(cal.getTimeZone())) return;
+        
+        // need to create a new cal, otherwise setting tz will adjust the other values (use convertTo(tz) instead)
+        GregorianCalendar calx = new GregorianCalendar(tz);
+        calx.set(getYear(),getMonth(),getDay(),getHour(),getMinute(),getSecond());
+        calx.set(Calendar.MILLISECOND, cal.get(Calendar.MILLISECOND));
+        this.cal = calx;
+        cal.get(Calendar.DATE);
     }
     public TimeZone getTimeZone() {
         return cal.getTimeZone();
@@ -686,6 +706,24 @@ public class OADateTime implements java.io.Serializable, Comparable {
         return 1;
     }
 
+// 20150831    
+    public OADateTime convertTo(TimeZone tz) {
+        OADateTime dt;
+        if (this instanceof OADate) {
+            dt = new OADate(this);
+        }
+        else if (this instanceof OATime) {
+            dt = new OATime(this);
+        }
+        else {
+            dt = new OADateTime(this);
+        }
+        dt.cal.setTimeZone(tz);
+        dt.cal.get(Calendar.DATE);  // recalc
+        return dt;
+    }
+    
+    
     /**
         Return an OADateTime where a specified amount of days is added.
         <p>
@@ -1101,6 +1139,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         SimpleDateFormat sdf = getFormatter();
         synchronized(sdf) {
             sdf.applyPattern(format);
+            sdf.setTimeZone(getTimeZone());
             s = sdf.format(getDate());
         }
         return s;
@@ -1199,8 +1238,8 @@ public class OADateTime implements java.io.Serializable, Comparable {
     }
 
     
-    // this verfies that betweenDays works correctly with leap years and DLS (daylight savings) DLS will have a 23hr day and a 25hr day
-    public static void main(String[] args) {
+    // this verifies that betweenDays works correctly with leap years and DLS (daylight savings) DLS will have a 23hr day and a 25hr day
+    public static void mainX(String[] args) {
         OADate d1 = new OADate(1201, Calendar.SEPTEMBER, 27);
         OADate d2 = new OADate(d1);
         for (int i=0; i<500000; i++) {
@@ -1215,7 +1254,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         System.out.println("Done => "+d2);
     }
 
-    public static void mainXX(String[] args) {
+    public static void mainZ(String[] args) {
         OADateTime dt = new OADateTime(1965, Calendar.MAY, 4, 12, 0, 0);
         int x = dt.getCalendar().get(Calendar.ZONE_OFFSET);
         System.out.println("=>"+dt.toString("MMddyyy HH:mm:ss a"));
@@ -1228,6 +1267,64 @@ public class OADateTime implements java.io.Serializable, Comparable {
         
         System.out.println("=>"+dt.toString("MMddyyy HH:mm:ss a"));
         System.out.println("=>"+x);
+    }
+    
+    
+    public static void mainA(String[] args) {
+        OADateTime dt = new OADateTime(2015, 6, 1);
+        TimeZone tz = dt.getTimeZone();
+        long t1 = dt.getTime();
+        int h1 = dt.getHour();
+        int offset = tz.getOffset(dt.getTime());
+
+        System.out.println("=>"+dt.toString("MM/dd/yyyy HH:mm:ss a z")+", offset="+offset);
+        
+        String[] stzs = TimeZone.getAvailableIDs();
+        for (String stz : stzs) {
+            TimeZone tz2 = TimeZone.getTimeZone(stz);
+
+            OADateTime dt2 = new OADateTime(dt);
+            dt2.setTimeZone(tz2);
+            long t2 = dt2.getTime();
+            int h2 = dt2.getHour();
+            System.out.println("   => "+dt2.toString("MM/dd/yyyy HH:mm:ss a z")+"  "+tz2.getDisplayName());
+            
+            OADateTime dt3 = dt.convertTo(tz2);
+            long t3 = dt2.getTime();
+            int h3 = dt2.getHour();
+            
+            System.out.println("   => "+dt3.toString("MM/dd/yyyy HH:mm:ss a z"));
+            int xx = 4;
+            xx++;
+        }
+    }
+    
+    public static void main(String[] args) {
+        OADateTime dt = new OADateTime(2015, 6, 1);
+        TimeZone tz = dt.getTimeZone();
+        long t1 = dt.getTime();
+        int h1 = dt.getHour();
+        int offset = tz.getOffset(dt.getTime());
+
+        System.out.println("=>"+dt.toString("MM/dd/yyyy HH:mm:ss a z")+", offset="+offset);
+        
+        String[] stzs = TimeZone.getAvailableIDs();
+        for (String stz : stzs) {
+            TimeZone tz2 = TimeZone.getTimeZone(stz);
+            
+            OADateTime dt2 = new OADateTime(dt);
+            dt2.setTimeZone(tz2);
+            int offset2 = tz2.getOffset(dt.getTime());
+
+            System.out.println("2=>"+dt2.toString("MM/dd/yyyy HH:mm:ss a z")+", offset="+offset2);
+            
+            OADateTime dt3 = dt.convertTo(tz2);
+            
+            System.out.println("3=>"+dt3.toString("MM/dd/yyyy HH:mm:ss a z")+", offset="+offset2);
+            
+            int xx = 4;
+            xx++;
+        }
     }
     
     
