@@ -15,6 +15,7 @@ import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
 
+import com.viaoa.comm.io.IODummy;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubSerializeDelegate;
@@ -281,6 +282,10 @@ public class OAObjectSerializeDelegate {
             }
             Object obj = objs[i+1];
 
+            if (obj instanceof IODummy) {
+                continue;
+            }
+            
             if (obj instanceof WeakReference) {
                 obj = ((WeakReference) obj).get();
                 if (obj == null) continue;
