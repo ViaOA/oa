@@ -260,6 +260,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         @return false to exclude object
     */
     public boolean isUsed(T object) {
+        if (alFilters == null) return true;
         boolean bIsUsed = true;
         for (OAFilter f : alFilters) {
             bIsUsed = f.isUsed(object);
@@ -774,22 +775,38 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             bAnd = false;
         }
         alFilters.add(filter);
+        refresh();
     }
+    
+    /**
+     * The filter will be true if there is a least one matching value in the property path;
+     */
     public void addEqualFilter(final String propPath, final Object value) {
         _addFilter(propPath, new OAEqualFilter(value));
     }
+    /**
+     * The filter will be true if there is a least one matching value in the property path;
+     */
     public void addNotEqualFilter(final String propPath, final Object value) {
         _addFilter(propPath, new OANotEqualFilter(value));
     }
 
+    /**
+     * The filter will be true if there is a least one matching value in the property path;
+     */
     public void addBetweenOrEqualFilter(final String propPath, final Object value1, final Object value2) {
         _addFilter(propPath, new OABetweenOrEqualFilter(value1, value2));
     }
+    /**
+     * The filter will be true if there is a least one matching value in the property path;
+     */
     public void addBetween(final String propPath, final Object value1, final Object value2) {
         _addFilter(propPath, new OABetweenFilter(value1, value2));
     }
     
-    
+    /**
+     * The filter will be true if there is a least one matching value in the property path;
+     */
     public void addNullFilter(final String propPath) {
         _addFilter(propPath, new OAFilter() {
             @Override
@@ -798,6 +815,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
         });
     }
+    /**
+     * The filter will be true if there is a least one matching value in the property path;
+     */
     public void addNotNullFilter(final String propPath, final Object value) {
         _addFilter(propPath, new OAFilter() {
             @Override
@@ -807,6 +827,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         });
     }
   
+    /**
+     * The filter will be true if there is a least one matching value in the property path;
+     */
     public void addEmptyFilter(final String propPath) {
         _addFilter(propPath, new OAFilter() {
             @Override
@@ -815,6 +838,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
         });
     }
+    /**
+     * The filter will be true if there is a least one matching value in the property path;
+     */
     public void addNotEmptyFilter(final String propPath) {
         _addFilter(propPath, new OAFilter() {
             @Override
@@ -827,6 +853,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     
     /**
      * Create a filter that is used on every object for this finder.
+     * The filter will be true if there is a least one matching value in the property path;
      * @param propPath property path from this Finder from object to the object that will be compared.
      * @param value value to compare with using OACompare.isLike(..).
      */
