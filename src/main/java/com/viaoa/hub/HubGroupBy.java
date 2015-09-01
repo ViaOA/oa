@@ -123,7 +123,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     }
 
     /**
-     * create a new hgb that is combined with another.
+     * create a new hgb that creates a combined groupBy with another.
      */
     public HubGroupBy(HubGroupBy<F, G> hgb, String pp, boolean bCreateNullList) {
         if (hgb == null) throw new IllegalArgumentException("hgb can not be null");
