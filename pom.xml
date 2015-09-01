@@ -2,11 +2,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.viaoa</groupId>
     <artifactId>oa</artifactId>
-    <version>3.6.0-SNAPSHOT</version>
+    <version>3.6.0-SNAPSHOT</version> 
  
 <!--  qqq current at ice     https://maven.intcx.net/content/repositories/public/com/viaoa/oa/
 
-3.5.20 was done 20150825 tue
+3.5.21 was done 20150901 tue
 next for maven will be:    <version>3.5.21</version>
 
     <version>3.6.0-SNAPSHOT</version> 

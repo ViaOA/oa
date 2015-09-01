@@ -37,6 +37,7 @@ public class OAObjectModel {
     protected boolean bAllowCopy;
     protected boolean bAllowPaste;
     protected boolean bViewOnly;
+    protected boolean bCreateUI;
     
     protected String displayName;
     protected String displayNamePlural;
@@ -56,6 +57,7 @@ public class OAObjectModel {
         setAllowPaste(true);
         setAllowMultiSelect(false);
         setAllowTableFilter(true);
+        setCreateUI(true);
     }
 
     public String getDisplayName() {
@@ -158,6 +160,13 @@ public class OAObjectModel {
     }
     public void setViewOnly(boolean b) {
         bViewOnly = b;
+    }
+
+    public boolean getCreateUI() {
+        return bCreateUI;
+    }
+    public void setCreateUI(boolean b) {
+        bCreateUI = b;
     }
 
     public boolean getAllowMultiSelect() {

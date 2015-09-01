@@ -27,6 +27,8 @@ import com.viaoa.util.OAPropertyPath;
  *  Used by Hub to manage listeners.
  *  Hub listeners are added to an array, and a tree is created for the dependent propertyPaths (if any are used, ex: calc props).
  *  If one of the dependent propertyPath is changed, then a afterPropertyChange is sent for the listener propery.
+ *  
+ *  NOTE: only the last prop is listened to in for a dependent propertyPath.
  * 
  */
 public class HubListenerTree {
@@ -307,6 +309,8 @@ public class HubListenerTree {
     /**
      * @param dependentPropertyPaths
      * @param bActiveObjectOnly if true, then dependent props only listen to the hub's AO
+     * 
+     *  NOTE: only the last prop is listened to in for a dependent propertyPath.
      */
     private void addListenerMain(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
         try {
