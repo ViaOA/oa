@@ -730,7 +730,7 @@ if (!getKeepSorted()) hub.cancelSort();
      * Number of columns that should be visible when determinng the preferred size of the Table.
      */
     public void setPreferredColumns(int cols) {
-        setPreferredSize(cols, prefRows);
+        setPreferredSize(prefRows, cols);
     }
 
     /**
@@ -744,7 +744,7 @@ if (!getKeepSorted()) hub.cancelSort();
      * Number of rows that should be visible when determinng the preferred size of the Table.
      */
     public void setPreferredRows(int rows) {
-        setPreferredSize(prefCols, rows);
+        setPreferredSize(rows, prefCols);
     }
 
     /**
