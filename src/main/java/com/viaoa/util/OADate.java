@@ -183,24 +183,6 @@ public class OADate extends OADateTime {
         vecDate.removeAllElements();
     }
 
-    /**
-        Compare this OADate with another date.
-        @returns "0" if equal, "-1" if this OADateTime is less than, "1" if this OADateTime is greater than,
-           "2" if objects can not be compared.
-        @param obj Date, OADate, Calendar
-    */
-    public int compare(Object obj) {
-        return compareTo(obj);
-    }
-    public int compareTo(Object obj) {
-        OADateTime d = convert(obj, false);
-        if (d == null) return 2;
-        d.clearTime();
-
-        if ( this.cal.equals(d.cal) ) return 0;
-        if ( this.cal.before(d.cal) ) return -1;
-        return 1;
-    }
 
     /**
         Compares this date with two dates to see if this date is between them.
@@ -209,9 +191,9 @@ public class OADate extends OADateTime {
         @param obj2 Date, OADate, Calendar
     */
     public boolean between(Object obj1, Object obj2) {
-        int i = compare(obj1);
+        int i = compareTo(obj1);
         if (i < 0) return false;
-        i = compare(obj2);
+        i = compareTo(obj2);
         return (i <= 0);
     }
 

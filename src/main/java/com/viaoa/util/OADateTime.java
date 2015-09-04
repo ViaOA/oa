@@ -696,8 +696,31 @@ public class OADateTime implements java.io.Serializable, Comparable {
         if (obj == null) return 1;
         OADateTime d = convert(obj, false);
         if (d == null) return 2;
-        if ( this.cal.equals(d.cal) ) return 0;
-        if ( this.cal.before(d.cal) ) return -1;
+
+        OADateTime dtThis, dtObj;
+        if (!this.getClass().equals(d.getClass())) {
+            if (this instanceof OADate || obj instanceof OADate) {
+                dtThis = new OADate(this);
+                dtObj = new OADate(d);
+            }
+            else if (this instanceof OATime || obj instanceof OATime) {
+                dtThis = new OATime(this);
+                dtObj = new OATime(d);
+            }
+            else {
+                dtThis = this;
+                dtObj = d;
+            }
+        }
+        else {
+            dtThis = this;
+            dtObj = d;
+        }
+        
+        
+        
+        if ( dtThis.cal.equals(dtObj.cal) ) return 0;
+        if ( dtThis.cal.before(dtObj.cal) ) return -1;
         return 1;
     }
 

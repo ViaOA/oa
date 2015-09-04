@@ -157,15 +157,6 @@ public class OATime extends OADateTime {
     public int compare(Object obj) {
         return this.compareTo(obj);
     }
-    public int compareTo(Object obj) {
-        OADateTime d = convert(obj, false);
-        if (d == null) return 2;
-        d.clearDate();
-
-        if ( this.cal.equals(d.cal) ) return 0;
-        if ( this.cal.before(d.cal) ) return -1;
-        return 1;
-    }
 
     /**
         Converts this time to a String value using default format.

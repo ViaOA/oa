@@ -23,6 +23,27 @@ public class OADateTimeTest extends OAUnitTest {
     }
 
     @Test
+    public void compareTest() {
+        OADateTime dt = new OADateTime();
+        OADate d = new OADate(dt);
+        OATime t = new OATime(dt);
+
+        assertEquals(dt, d);
+        assertEquals(dt, t);
+        assertNotEquals(t, d);
+        
+        assertTrue(dt.compareTo(d) == 0);
+        assertTrue(dt.compareTo(t) == 0);
+        
+        OADateTime dt2 = new OADateTime(dt);
+        dt2 = dt2.addMilliSeconds(1);
+        int x = dt2.compareTo(d);
+        assertTrue(x == 0);
+        x = dt2.compareTo(dt);
+        assertTrue(x > 0);
+    }
+    
+    @Test
     public void betweenTest() {
         OADateTime dt1 = new OADateTime(2015, 9, 1, 0, 0, 0);
         OADateTime dt2 = new OADateTime(2015, 9, 1, 6, 0, 0); // 6am
