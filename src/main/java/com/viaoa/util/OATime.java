@@ -45,6 +45,11 @@ public class OATime extends OADateTime {
         vecTimeFormat.addElement("HH:mm:ss.S");
         vecTimeFormat.addElement("HH:mm:ss");
         vecTimeFormat.addElement("HH:mm");
+
+    
+        vecTimeFormat.addElement("hha");
+        vecTimeFormat.addElement("hh a");
+        vecTimeFormat.addElement("HH");
     }
     
 
