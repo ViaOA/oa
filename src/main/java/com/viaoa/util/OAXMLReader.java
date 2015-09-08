@@ -48,7 +48,8 @@ public class OAXMLReader extends DefaultHandler {
     private String decodeMessage;
     private static final String XML_KEYONLY = "XML_KEYONLY";
     private static final String XML_GUID = "XML_GUID";
-    private static final String XML_VALUE = "$VALUE";
+    private static final String XML_VALUE = "XML_VALUE";
+    private static final String XML_CLASS = "XML_CLASS";
     protected Class conversionClass;  // type of class that value needs to be converted to
     
     protected HashMap<String, OAObject> hashGuid;
@@ -155,7 +156,7 @@ public class OAXMLReader extends DefaultHandler {
             3: if keyonly, find in hmGuid
         */
         for (int i=0; i<4; i++) {
-            if (i == 1 && hashGuid.isEmpty() && hashGuidAbstractClass.isEmpty()) break;
+            if (i > 0 && hashGuid.isEmpty() && hashGuidAbstractClass.isEmpty()) i = 3;
             
             for (Map.Entry<String, Object> e : hm.entrySet()) {
                 Object v = e.getValue();
@@ -177,6 +178,10 @@ public class OAXMLReader extends DefaultHandler {
         return alReturn;
     }
 
+    protected String resolveClassName(String className) {
+        return className;
+    }
+    
     protected OAObject _process(HashMap<String, Object> hm, Class<? extends OAObject> toClass, final int stage) throws Exception {
         OAObject objNew = null;
         
@@ -185,20 +190,44 @@ public class OAXMLReader extends DefaultHandler {
         
         String guid = (String) hm.get(XML_GUID);
         boolean bIsAbstract = Modifier.isAbstract(toClass.getModifiers());
+
+        String cname = (String) hm.get(XML_CLASS);
+        if (!OAString.isEmpty(cname)) {
+            cname = resolveClassName(cname);
+            toClass = (Class<? extends OAObject>) Class.forName(cname);
+            
+//qqqqqqqq            
+if (!cname.equals("com.viaoa.builder.model.Property")) {  
+    if (!cname.equals("com.viaoa.builder.model.LinkProperty")) {
+        if (!cname.equals("com.viaoa.builder.model.CalcProperty")) {
+        int xx = 4;
+        xx++;
+    }
+    }
+}
+        }
+        
         
         if (guid != null) {
             objNew = hashGuid.get(guid);
-            if (objNew != null) return objNew;
             
             boolean bKeyOnly = (hm.get(XML_KEYONLY) != null);
+
+if (guid.equals("318") && !bKeyOnly) {
+    int xx = 4;
+    xx++;
+}
+            
             
             if (bIsAbstract && !bKeyOnly) {
-                if (stage == 1) return objNew;  // bKeyOnly to update hahsGuidAbstractClass
+                if (stage == 1) return objNew;  // bKeyOnly to update hashGuidAbstractClass
                 // will need to find out the "real" class to use on the bSecondPass
                 
                 Class c = hashGuidAbstractClass.get(guid);
                 if (c == null) {
-                    if (stage == 0) hashGuidAbstractClass.put(guid, toClass);
+                    if (stage == 0) {
+                        hashGuidAbstractClass.put(guid, toClass);
+                    }
                 }
                 else {
                     toClass = c;
@@ -216,40 +245,36 @@ public class OAXMLReader extends DefaultHandler {
             }
 
             if (bKeyOnly) {
-if (objNew == null && stage > 0) {
-    int xx = 4;
-    xx++;
-}
                 return objNew;
             }
         }
-        
+
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(toClass);
-
-        // try to find using pkey props, AND remove pkey properties from hash
-        String[] ids = oi.getIdProperties();
-        Object[] values = new Object[ ids == null ? 0 : ids.length ];
-        for (int i=0; i<ids.length; i++) {
-            String id = ids[i].toUpperCase();
-            Class c2 = OAObjectInfoDelegate.getPropertyClass(toClass, id);
-            values[i] = hm.get(id);
-            if (values[i] instanceof String) values[i] = OAConverter.convert(c2, values[i]);
-            if (stage > 0 || !bIsAbstract) hm.remove(id);
-        }
-        final OAObjectKey key = new OAObjectKey(values, OAConv.toInt(guid), false);
-        
-        // try to find using matching props
-        final String[] matchProps = getImportMatching() ? oi.getImportMatchProperties() : null;
-        final Object[] matchValues = new Object[ matchProps == null ? 0 : matchProps.length ];
-        if (matchProps != null && matchProps.length > 0) {
-            for (int i=0; i<matchProps.length; i++) {
-                String id = matchProps[i].toUpperCase();
+        if (objNew == null && !bIsAbstract) {
+    
+            // try to find using pkey props, AND remove pkey properties from hash
+            String[] ids = oi.getIdProperties();
+            Object[] values = new Object[ ids == null ? 0 : ids.length ];
+            for (int i=0; i<ids.length; i++) {
+                String id = ids[i].toUpperCase();
                 Class c2 = OAObjectInfoDelegate.getPropertyClass(toClass, id);
-                matchValues[i] = hm.get(id);
-                if (matchValues[i] instanceof String) matchValues[i] = OAConverter.convert(c2, matchValues[i]);
+                values[i] = hm.get(id);
+                if (values[i] instanceof String) values[i] = OAConverter.convert(c2, values[i]);
+                if (stage > 0 || !bIsAbstract) hm.remove(id);
             }
-
-            if (!bIsAbstract) {
+            final OAObjectKey key = new OAObjectKey(values, OAConv.toInt(guid), false);
+            
+            // try to find using matching props
+            final String[] matchProps = getImportMatching() ? oi.getImportMatchProperties() : null;
+            final Object[] matchValues = new Object[ matchProps == null ? 0 : matchProps.length ];
+            if (matchProps != null && matchProps.length > 0) {
+                for (int i=0; i<matchProps.length; i++) {
+                    String id = matchProps[i].toUpperCase();
+                    Class c2 = OAObjectInfoDelegate.getPropertyClass(toClass, id);
+                    matchValues[i] = hm.get(id);
+                    if (matchValues[i] instanceof String) matchValues[i] = OAConverter.convert(c2, matchValues[i]);
+                }
+    
                 OASelect sel = new OASelect(toClass);
                 sel.setFilter(new OAFilter() {
                     @Override
@@ -266,20 +291,17 @@ if (objNew == null && stage > 0) {
                 objNew = sel.next();
                 sel.close();
             }
-        }
-        else {
-            if (ids != null && ids.length > 0) {
-                if (!bIsAbstract) objNew = OAObjectCacheDelegate.get(toClass, key);
+            else {
+                if (ids != null && ids.length > 0) {
+                    objNew = OAObjectCacheDelegate.get(toClass, key);
+                }
             }
-        }
-
-        if (objNew == null) {
-            if (!bIsAbstract || stage > 0) {
+    
+            if (objNew == null) {
                 objNew = createNewObject(toClass);
             }
+            if (guid != null && objNew != null) hashGuid.put(guid, objNew);
         }
-        if (guid != null && objNew != null) hashGuid.put(guid, objNew);
-        
         
         for (Map.Entry<String, Object> e : hm.entrySet()) {
             String k = e.getKey();
@@ -287,12 +309,13 @@ if (objNew == null && stage > 0) {
             if (XML_VALUE.equals(k)) continue;
             if (XML_KEYONLY.equals(k)) continue;
             if (XML_GUID.equals(k)) continue;
+            if (XML_CLASS.equals(k)) continue;
 
             Object v = e.getValue();
             
             if (v instanceof String) {
                 // set prop
-                if (objNew != null) objNew.setProperty(k, v);
+                if (objNew != null && stage == 3) objNew.setProperty(k, v);
                 continue;
             }
 
@@ -319,7 +342,7 @@ if (objNew == null && stage > 0) {
             if (v instanceof ArrayList) {
                 // load into Hub
                 Hub h;
-                if (objNew == null) h = null;
+                if (objNew == null || stage != 3) h = null;
                 else if (li == null) h = new Hub(OAObject.class);
                 else h = (Hub) li.getValue(objNew);
                 
@@ -328,7 +351,7 @@ if (objNew == null && stage > 0) {
                     if (h != null) h.add(objx);
                 }
                 if (li == null) {
-                    if (objNew != null) {
+                    if (objNew != null && stage == 3) {
                         objNew.setProperty(k, h);
                     }
                 }
@@ -338,7 +361,7 @@ if (objNew == null && stage > 0) {
                 HashMap<String, Object> hmx = (HashMap<String, Object>) v;
                 Class c = li == null ? OAObject.class : li.getToClass();
                 OAObject objx = _process(hmx, c, stage);
-                if (objNew != null) objNew.setProperty(k, objx);
+                if (objNew != null && stage == 3) objNew.setProperty(k, objx);
             }
         }
         return objNew;
@@ -397,6 +420,7 @@ if (objNew == null && stage > 0) {
                 String aValue = attrs.getValue(i);
                 if (aName.equalsIgnoreCase("keyonly")) hm.put(XML_KEYONLY, XML_KEYONLY);
                 else if (aName.equalsIgnoreCase("guid")) hm.put(XML_GUID, aValue);
+                else if (aName.equalsIgnoreCase("class")) hm.put(XML_CLASS, aValue);
                 else {
                     if (aValue == null || aValue.length() == 0) hm.put(aName, "true");
                     else hm.put(aName, aValue);

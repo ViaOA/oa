@@ -10,6 +10,7 @@
 */
 package com.viaoa.object;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.logging.*;
 
@@ -31,29 +32,37 @@ public class OAObjectXMLDelegate {
         Note: if a property's value is null, then it will not be included.
         @see #read
     */
-	public static void write(final OAObject oaObj, final OAXMLWriter ow, final String tagName, boolean bKeyOnly, final OACascade cascade) {
+    public static void write(final OAObject oaObj, final OAXMLWriter ow, final String tagName, boolean bKeyOnly, final OACascade cascade) {
+        write(oaObj, ow, tagName, bKeyOnly, cascade, false);
+    }
+	public static void write(final OAObject oaObj, final OAXMLWriter ow, String tagName, boolean bKeyOnly, final OACascade cascade, final boolean bWriteClassName) {
 	    if (oaObj == null || ow == null) return;
 	    Class c = oaObj.getClass();
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 
         if (!bKeyOnly && cascade.wasCascaded(oaObj, true)) bKeyOnly = true;
 	    
-	    String[] ids = oi.idProperties;
-	    String s = "";
-	    if (ids == null || ids.length == 0) {
-	        s = " guid=\""+OAObjectDelegate.getGuid(oaObj)+"\"";  // objects w/o ObjectId property
-	        if (bKeyOnly) s += "/";
-	    }
-	
-        ow.indent();
+        String attrib = " guid=\""+OAObjectDelegate.getGuid(oaObj)+"\"";  // objects w/o ObjectId property
+	    
+        if (bWriteClassName) {
+            attrib += " class=\""+ow.getClassName(oaObj.getClass())+"\"";
+        }
+
+        String[] ids = oi.idProperties;
+        if (bKeyOnly) {
+            attrib += " keyonly=\"true\"";
+            if (ids == null || ids.length == 0) attrib += "/";
+        }
+	    
 	    if (tagName == null) {
-	        ow.println("<"+ow.getClassName(c)+ (bKeyOnly?" keyonly=\"true\"":"") + s + ">");
-	    }
-	    else {
-	        ow.println("<"+tagName+ (bKeyOnly?" keyonly=\"true\"":"") + s + ">");
+	        tagName = ow.getClassName(c);
 	    }
 	    
-	    ow.writing(oaObj);  // hook to let oaxmlwriter subclass know when objects are being written
+        ow.indent();
+        ow.println("<"+tagName + attrib + ">");
+	    
+
+        ow.writing(oaObj);  // hook to let oaxmlwriter subclass know when objects are being written
 	    if (bKeyOnly && (ids == null || ids.length == 0)) return;
 	
 	    ow.indent++;
@@ -117,7 +126,8 @@ public class OAObjectXMLDelegate {
 	        int x = ow.shouldWriteProperty(oaObj, li.getName(), obj);
 	        if (x != ow.WRITE_NO) {
 	            if (obj instanceof OAObject) {
-	                write(((OAObject)obj), ow, li.getName(), (x == ow.WRITE_KEYONLY), cascade);
+	                boolean b = Modifier.isAbstract(li.getToClass().getModifiers());
+	                write(((OAObject)obj), ow, li.getName(), (x == ow.WRITE_KEYONLY), cascade, b);
 	            }
 	            else if (obj instanceof Hub) {
 	                Hub h = (Hub) obj;
@@ -159,16 +169,9 @@ public class OAObjectXMLDelegate {
 	        }
 	    }
 
-	    if (tagName == null) {
-	        ow.indent--;
-	        ow.indent();
-	        ow.println("</"+ow.getClassName(c)+">");
-	    }
-	    else {
-            ow.indent--;
-            ow.indent();
-	        ow.println("</"+tagName+">");
-	    }
+        ow.indent--;
+        ow.indent();
+        ow.println("</"+tagName+">");
 	}
 	
 
