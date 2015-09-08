@@ -24,14 +24,22 @@ public class HubXMLDelegate {
     /**
 	    Called by OAXMLWriter to store all objects in xml file.
 	*/
-	public static void write(Hub thisHub, OAXMLWriter ow, boolean bKeyOnly, OACascade cascade) {
-		write(thisHub, ow, bKeyOnly ? OAXMLWriter.WRITE_KEYONLY : OAXMLWriter.WRITE_YES, cascade);
+	public static void write(Hub thisHub, OAXMLWriter ow, final String tagName, boolean bKeyOnly, OACascade cascade) {
+		write(thisHub, ow, tagName, bKeyOnly ? OAXMLWriter.WRITE_KEYONLY : OAXMLWriter.WRITE_YES, cascade);
 	}
 	// 2006/09/26
-	public static void write(Hub thisHub, OAXMLWriter ow, int writeType, OACascade cascade) {
+	public static void write(Hub thisHub, OAXMLWriter ow, final String tagName, int writeType, OACascade cascade) {
 		boolean bKeyOnly = (writeType == OAXMLWriter.WRITE_KEYONLY || writeType == OAXMLWriter.WRITE_NONEW_KEYONLY);
 	    ow.indent();
-	    ow.println("<"+ow.getClassName(Hub.class)+" ObjectClass=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
+	    
+        if (tagName == null) {
+            ow.println("<"+ow.getClassName(Hub.class)+" ObjectClass=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
+        }
+        else {
+            ow.println("<"+tagName+" total=\""+thisHub.getSize()+"\">");
+        }
+	    
+	    
 	    ow.indent++;
 	    for (int i=0; ;i++) {
 	        Object obj = thisHub.elementAt(i);
@@ -39,11 +47,12 @@ public class HubXMLDelegate {
 	        if (writeType == OAXMLWriter.WRITE_NONEW_KEYONLY && obj instanceof OAObject) {
 	        	if (((OAObject) obj).getNew()) continue;
 	        }
-	        if (obj instanceof OAObject) OAObjectXMLDelegate.write((OAObject)obj, ow, bKeyOnly, cascade);
+	        if (obj instanceof OAObject) OAObjectXMLDelegate.write((OAObject)obj, ow, null, bKeyOnly, cascade);
 	    }
 	    ow.indent--;
 	    ow.indent();
-        ow.println("</"+ow.getClassName(Hub.class)+">");
+        if (tagName == null) ow.println("</"+ow.getClassName(Hub.class)+">");
+        else ow.println("</"+tagName+">");
     }
 	
 	

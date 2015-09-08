@@ -24,29 +24,35 @@ import com.viaoa.util.*;
 public class OAObjectXMLDelegate {
 
 	private static Logger LOG = Logger.getLogger(OAObjectXMLDelegate.class.getName());
-	
-    /**
-	    Called by OAXMLWriter to save object as xml.  All ONE, MANY2MANY, and MANY w/o reverse getMethod References
-	    will store reference Ids, using the name of reference property as the tag.<br>
-	    Note: if a property's value is null, then it will not be included.
-	    @see #read
-	*/
-	public static void write(OAObject oaObj, OAXMLWriter ow, boolean bKeyOnly, OACascade cascade) {
+
+	/**
+        Called by OAXMLWriter to save object as xml.  All ONE, MANY2MANY, and MANY w/o reverse getMethod References
+        will store reference Ids, using the name of reference property as the tag.<br>
+        Note: if a property's value is null, then it will not be included.
+        @see #read
+    */
+	public static void write(final OAObject oaObj, final OAXMLWriter ow, final String tagName, boolean bKeyOnly, final OACascade cascade) {
 	    if (oaObj == null || ow == null) return;
 	    Class c = oaObj.getClass();
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 
-        if (cascade.wasCascaded(oaObj, true)) bKeyOnly = true;
+        if (!bKeyOnly && cascade.wasCascaded(oaObj, true)) bKeyOnly = true;
 	    
 	    String[] ids = oi.idProperties;
-	    ow.indent();
 	    String s = "";
 	    if (ids == null || ids.length == 0) {
 	        s = " guid=\""+OAObjectDelegate.getGuid(oaObj)+"\"";  // objects w/o ObjectId property
 	        if (bKeyOnly) s += "/";
 	    }
 	
-        ow.println("<"+ow.getClassName(c)+ (bKeyOnly?" keyonly=\"true\"":"") + s + ">");
+        ow.indent();
+	    if (tagName == null) {
+	        ow.println("<"+ow.getClassName(c)+ (bKeyOnly?" keyonly=\"true\"":"") + s + ">");
+	    }
+	    else {
+	        ow.println("<"+tagName+ (bKeyOnly?" keyonly=\"true\"":"") + s + ">");
+	    }
+	    
 	    ow.writing(oaObj);  // hook to let oaxmlwriter subclass know when objects are being written
 	    if (bKeyOnly && (ids == null || ids.length == 0)) return;
 	
@@ -63,13 +69,7 @@ public class OAObjectXMLDelegate {
 	
 	        if (OAConverter.getConverter(value.getClass()) == null && !(value instanceof String)) {
 	            if (value instanceof OAObject) {
-	                ow.indent();
-	                ow.println("<" + propName + ">");
-	                ow.indent++;
-	                write(((OAObject)value), ow, false, cascade);
-	                ow.indent--;
-	                ow.indent();
-	                ow.println("</" + propName + ">");
+	                write(((OAObject)value), ow, propName, false, cascade);
 	                continue;
 	            }
 	            Class cval = value.getClass();
@@ -117,25 +117,12 @@ public class OAObjectXMLDelegate {
 	        int x = ow.shouldWriteProperty(oaObj, li.getName(), obj);
 	        if (x != ow.WRITE_NO) {
 	            if (obj instanceof OAObject) {
-	                ow.indent();
-	                ow.println("<"+li.getName()+">");
-	                ow.indent++;
-	                write(((OAObject)obj), ow, (x == ow.WRITE_KEYONLY), cascade);
-	                ow.indent--;
-	                ow.indent();
-	                ow.println("</"+li.getName()+">");
+	                write(((OAObject)obj), ow, li.getName(), (x == ow.WRITE_KEYONLY), cascade);
 	            }
 	            else if (obj instanceof Hub) {
 	                Hub h = (Hub) obj;
 	                if (h.getSize() > 0 || ow.getIncludeEmptyHubs()) {
-	                    ow.indent();
-	                    ow.println("<"+li.getName()+">");
-	                    ow.indent++;
-	                    HubXMLDelegate.write(h, ow, x, cascade); // 2006/09/26
-	                    // was: h.write(cascade, ow, (x == ow.WRITE_KEYONLY)); 
-	                    ow.indent--;
-	                    ow.indent();
-	                    ow.println("</"+li.getName()+">");
+	                    HubXMLDelegate.write(h, ow, li.getName(), x, cascade); // 2006/09/26
 	                }
 	            }
 	        }
@@ -171,12 +158,17 @@ public class OAObjectXMLDelegate {
 	            ow.println("</"+key+">");
 	        }
 	    }
-	
-	    //if (!bKeyOnly) {
+
+	    if (tagName == null) {
 	        ow.indent--;
 	        ow.indent();
 	        ow.println("</"+ow.getClassName(c)+">");
-	    //}
+	    }
+	    else {
+            ow.indent--;
+            ow.indent();
+	        ow.println("</"+tagName+">");
+	    }
 	}
 	
 

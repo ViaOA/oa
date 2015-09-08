@@ -12,9 +12,6 @@ package com.viaoa.util;
 
 import java.util.*;
 import java.io.*;
-import java.lang.reflect.*;
-
-import com.viaoa.*;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 
@@ -68,17 +65,18 @@ public class OAXMLWriter {
         }
     }
 
+    private OACascade cascade;
 
     
     /** saves OAObject as XML */
     public void write(OAObject obj) {
-        OACascade cascade = new OACascade();
-		OAObjectXMLDelegate.write(obj, this, false, cascade);
+        if (cascade == null) cascade = new OACascade();
+		OAObjectXMLDelegate.write(obj, this, null, false, cascade);
     }
     /** saves Hub as XML */
     public void write(Hub hub) {
-        OACascade cascade = new OACascade();
-        HubXMLDelegate.write(hub, this, false, cascade);
+        if (cascade == null) cascade = new OACascade();
+        HubXMLDelegate.write(hub, this, null, false, cascade);
     }
 
     /**
@@ -197,8 +195,7 @@ public class OAXMLWriter {
         // println("<?xml version='1.0'?>");
         println("<?xml version='1.0' encoding='utf-8'?>");
         //was:  println("<?xml version='1.0' encoding='windows-1252'?>");
-        println("<OAXML VERSION='1.0' DATETIME='"+(new OADateTime())+"'>");
-        indent++;
+        println("<OAXML VERSION='2.0' DATETIME='"+(new OADateTime())+"'>");
     }
 
     /** Method that can be overwritten to provide custom conversion to String.
