@@ -35,7 +35,6 @@ import com.viaoa.object.*;
     if not found, then a new object will be created.
 
     20150906 created to be correct xml, removing OA specific format and tags. old version renamed to OAXMLReader1
-    
     @see OAXMLWriter
 */
 public class OAXMLReader extends DefaultHandler {
@@ -154,22 +153,29 @@ public class OAXMLReader extends DefaultHandler {
             1: have all keyonly with guid update class in hmGuidAbstractClass
             2: create abstract class using correct class in hmGuidAbstractClass
             3: if keyonly, find in hmGuid
+            
+            steps 1 & 2 are only necessary if there are any elements that are for abstract classes that need to be 
+                resolved by looking for other places that it is used.
         */
         for (int i=0; i<4; i++) {
-            if (i > 0 && hashGuid.isEmpty() && hashGuidAbstractClass.isEmpty()) i = 3;
+            if (i > 0 && hashGuidAbstractClass.isEmpty()) i = 3;
             
             for (Map.Entry<String, Object> e : hm.entrySet()) {
                 Object v = e.getValue();
                 if (v instanceof HashMap) {
-                    OAObject objx = _process( (HashMap) v, rootClass, i);
-                    if (objx != null && alReturn.size() == 0) alReturn.add(objx);
+                    OAObject objx = _process( (HashMap) v, rootClass, i, 0);
+                    if (objx != null && alReturn.size() == 0) {
+                        alReturn.add(objx);
+                    }
                     break;
                 }
                 if (v instanceof ArrayList) {
                     boolean bWasEmpty = (alReturn.size() == 0);
                     for (HashMap<String, Object> hmx : (ArrayList<HashMap<String, Object>>) v) {
-                        OAObject objx = _process( (HashMap) v, rootClass, i);
-                        if (bWasEmpty && objx != null) alReturn.add(objx);
+                        OAObject objx = _process( (HashMap) v, rootClass, i, 0);
+                        if (bWasEmpty && objx != null) {
+                            alReturn.add(objx);
+                        }
                     }
                     break;
                 }
@@ -178,15 +184,15 @@ public class OAXMLReader extends DefaultHandler {
         return alReturn;
     }
 
+    /**
+     * This can be overwritten to change/expand a class name
+     */
     protected String resolveClassName(String className) {
         return className;
     }
     
-    protected OAObject _process(HashMap<String, Object> hm, Class<? extends OAObject> toClass, final int stage) throws Exception {
+    protected OAObject _process(HashMap<String, Object> hm, Class<? extends OAObject> toClass, final int stage, final int level) throws Exception {
         OAObject objNew = null;
-        
-//qqqqqq might not have guid.  Also, research xml standared for IDRef/etc
-//qqqqq if no guids used, then only need to have the first process
         
         String guid = (String) hm.get(XML_GUID);
         boolean bIsAbstract = Modifier.isAbstract(toClass.getModifiers());
@@ -195,30 +201,13 @@ public class OAXMLReader extends DefaultHandler {
         if (!OAString.isEmpty(cname)) {
             cname = resolveClassName(cname);
             toClass = (Class<? extends OAObject>) Class.forName(cname);
-            
-//qqqqqqqq            
-if (!cname.equals("com.viaoa.builder.model.Property")) {  
-    if (!cname.equals("com.viaoa.builder.model.LinkProperty")) {
-        if (!cname.equals("com.viaoa.builder.model.CalcProperty")) {
-        int xx = 4;
-        xx++;
-    }
-    }
-}
         }
-        
         
         if (guid != null) {
             objNew = hashGuid.get(guid);
             
             boolean bKeyOnly = (hm.get(XML_KEYONLY) != null);
 
-if (guid.equals("318") && !bKeyOnly) {
-    int xx = 4;
-    xx++;
-}
-            
-            
             if (bIsAbstract && !bKeyOnly) {
                 if (stage == 1) return objNew;  // bKeyOnly to update hashGuidAbstractClass
                 // will need to find out the "real" class to use on the bSecondPass
@@ -293,7 +282,7 @@ if (guid.equals("318") && !bKeyOnly) {
             }
             else {
                 if (ids != null && ids.length > 0) {
-                    objNew = OAObjectCacheDelegate.get(toClass, key);
+                    objNew = getRealObject(objNew);
                 }
             }
     
@@ -347,7 +336,7 @@ if (guid.equals("318") && !bKeyOnly) {
                 else h = (Hub) li.getValue(objNew);
                 
                 for (HashMap hmx : (ArrayList<HashMap>)v) {
-                    Object objx = _process(hmx, li==null?OAObject.class:li.getToClass(), stage);
+                    Object objx = _process(hmx, li==null?OAObject.class:li.getToClass(), stage, level+1);
                     if (h != null) h.add(objx);
                 }
                 if (li == null) {
@@ -360,18 +349,14 @@ if (guid.equals("318") && !bKeyOnly) {
                 // hashmap for another object
                 HashMap<String, Object> hmx = (HashMap<String, Object>) v;
                 Class c = li == null ? OAObject.class : li.getToClass();
-                OAObject objx = _process(hmx, c, stage);
+                OAObject objx = _process(hmx, c, stage, level+1);
                 if (objNew != null && stage == 3) objNew.setProperty(k, objx);
             }
         }
+        if (objNew != null) endObject(objNew, level>0);
         return objNew;
     } 
     
-  //qqqqqqqqqqqq check to use DecodeMessage
-// compare with oaxmlreader1    
-    
-
-
     // SAXParser callback method.
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) throws SAXException {
         value = "";
@@ -437,6 +422,11 @@ if (guid.equals("318") && !bKeyOnly) {
         
         HashMap hm = (HashMap) stack[indent];
 
+        
+        if (decodeMessage != null && value != null && value.startsWith(decodeMessage)) {
+            value = Base64.decode(value.substring(decodeMessage.length()));
+        }
+
         Object insertValue = value;
         if (!hm.isEmpty()) {
             hm.put(XML_VALUE, value);
@@ -495,27 +485,11 @@ if (guid.equals("318") && !bKeyOnly) {
         return value;
     }
 
-    /**
-        Method that can be overwritten by subclass to provide status of reader.
-    */
-    public void startHub(String className, int total) {
-    }
-
-    /**
-        Method that can be overwritten by subclass when an object is completed.
-    */
-    public void endObject(OAObject obj, boolean hasParent) {
-    }
-
-    /**
-        SAXParser callback method.
-    */
+    // SAXParser callback method.
     public void startDocument() throws SAXException {
     }
 
-    /**
-        SAXParser callback method.
-    */
+    // SAXParser callback method.
     public void endDocument() throws SAXException {
     }
 
@@ -523,16 +497,8 @@ if (guid.equals("318") && !bKeyOnly) {
         Method that can be overwritten by subclass to create a new Object for a specific Class.
     */
     public OAObject createNewObject(Class c) throws Exception {
-        try {
         OAObject obj = (OAObject) c.newInstance();
-        
         return obj;
-        }
-        catch (Exception e) {
-int xx = 4;//qqqq
-xx++;
-        }
-        return null;
     }
 
     /**
@@ -552,12 +518,19 @@ xx++;
     /** By default, this will check to see if object already exists 
         in OAObjectCache and return that object.  Otherwise this object is returned.
     */
-    protected Object getRealObject(OAObject object) {
-        Object obj = OAObjectCacheDelegate.getObject(object.getClass(), OAObjectKeyDelegate.getKey(object));
+    protected OAObject getRealObject(OAObject object) {
+        OAObject obj = OAObjectCacheDelegate.getObject(object.getClass(), OAObjectKeyDelegate.getKey(object));
         if (obj != null) return obj;
         return object;
     }
 
+    /**
+        Method that can be overwritten by subclass when an object is completed.
+    */
+    public void endObject(OAObject obj, boolean hasParent) {
+    }
+
+    
     public static void main(String[] args) throws Exception {
         OAXMLReader r = new OAXMLReader();
         r.parseFile("C:\\Projects\\java\\OABuilder_git\\models\\testxml2.obx");

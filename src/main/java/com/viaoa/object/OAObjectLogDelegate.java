@@ -76,7 +76,7 @@ public class OAObjectLogDelegate {
     public static void restoreXMLLogFile(String fname) throws Exception {
         if(fname == null) return;
         fname = OAString.convertFileName(fname);
-        OAXMLReader reader = new OAXMLReader(fname) {
+        OAXMLReader reader = new OAXMLReader() {
             public void endObject(OAObject obj, boolean bHasParent) {
                 if (!(obj instanceof OALogRecord)) return;
                 OALogRecord lr = (OALogRecord) obj;
@@ -88,7 +88,7 @@ public class OAObjectLogDelegate {
         };
         try {
             // OAObjectFlagDelegate.setThreadIgnoreEvents(true);
-            reader.parse();
+            reader.parseFile(fname);
         }
         finally {
             // OAObjectFlagDelegate.setThreadIgnoreEvents(false);
