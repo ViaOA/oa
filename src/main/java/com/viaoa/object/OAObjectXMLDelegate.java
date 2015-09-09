@@ -40,9 +40,19 @@ public class OAObjectXMLDelegate {
 	    Class c = oaObj.getClass();
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 
-        if (!bKeyOnly && cascade.wasCascaded(oaObj, true)) bKeyOnly = true;
+	    // 20150909
+	    if (!bKeyOnly) {
+	        if (ow.willBeIncludedLater(oaObj)) bKeyOnly = true;
+	        else if (cascade.wasCascaded(oaObj, true)) bKeyOnly = true;
+	    }
+	    String attrib = " ";
+	    if (bKeyOnly) {
+	        attrib += "idref=\"u"+OAObjectDelegate.getGuid(oaObj)+"\""; 
+	    }
+	    else {
+            attrib += "id=\"u"+OAObjectDelegate.getGuid(oaObj)+"\""; 
+	    }
 	    
-        String attrib = " guid=\""+OAObjectDelegate.getGuid(oaObj)+"\"";  // objects w/o ObjectId property
 	    
         if (bWriteClassName) {
             attrib += " class=\""+ow.getClassName(oaObj.getClass())+"\"";
@@ -50,7 +60,6 @@ public class OAObjectXMLDelegate {
 
         String[] ids = oi.idProperties;
         if (bKeyOnly) {
-            attrib += " keyonly=\"true\"";
             if (ids == null || ids.length == 0) attrib += "/";
         }
 	    

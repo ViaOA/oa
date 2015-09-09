@@ -354,6 +354,13 @@ public class TextAreaController extends JFCController implements FocusListener, 
 
     @Override
     public void update() {
+        try {
+            _update();
+        }
+        catch (Exception e) {
+        }
+    }    
+    public void _update() {
         if (textField == null) return;
         if (focusActiveObject == null) {
             if (getActualHub() != null) {

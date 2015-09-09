@@ -10,6 +10,8 @@
 */
 package com.viaoa.util;
 
+import java.util.ArrayList;
+
 import com.viaoa.object.OAObject;
 
 /**
@@ -63,7 +65,11 @@ public class OAJsonReader {
                 }
             };
             xmlReader.parseString(xml);
-            return xmlReader.getRootObjects();
+            ArrayList al = xmlReader.process(rootClass);
+            Object[] objs = new Object[al.size()];
+            al.toArray(objs);
+            
+            return objs;
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -101,7 +107,7 @@ public class OAJsonReader {
         sb = new StringBuilder(len*3);
 
         sb.append("<?xml version='1.0' encoding='utf-8'?>\n");
-        sb.append("<OAXML VERSION='1.0' DATETIME='5/18/12 10:42 AM'>\n");
+        sb.append("<OAXML VERSION='2.0' DATETIME='9/9/15 9:03 AM'>\n");
         //sb.append("<com.viaoa.hub.Hub ObjectClass=\""+rootClass.getName()+"\">\n");
         
         for (int i=0; ;i++) {

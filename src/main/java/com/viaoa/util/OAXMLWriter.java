@@ -96,6 +96,44 @@ public class OAXMLWriter {
     }
 
     /**
+     * returns true if this object will be included by another parent object.
+     */
+    public boolean willBeIncludedLater(OAObject oaObj) {
+        if (oaObj == null) return false;
+        if (cascade.wasCascaded(oaObj, false)) return false;  // already included
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        OALinkInfo li = oi.getOwnedByOne();
+        if (li == null) return false;
+        
+        Object objx = OAObjectPropertyDelegate.getProperty(oaObj, li.getName(), false, true);
+        if (objx == null) return false;
+        
+        if (cascade.wasCascaded((OAObject) objx, false)) return false;
+        
+        // parent has not yet been written
+        // now need to find if a parent is already include
+        if (isAnyOwnerAlreadyIncluded((OAObject) objx)) return true;
+        
+        return false;
+    }
+    private boolean isAnyOwnerAlreadyIncluded(OAObject oaObj) {
+        if (oaObj == null) return false;
+
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        OALinkInfo li = oi.getOwnedByOne();
+        if (li == null) return false;
+
+        Object objx = OAObjectPropertyDelegate.getProperty(oaObj, li.getName(), false, true);
+        if (objx == null) return false;
+        
+        if (cascade.wasCascaded((OAObject)objx, false)) return true;
+        
+        return isAnyOwnerAlreadyIncluded((OAObject)objx);
+    }
+    
+
+    /**
         hook used to know when an object is being saved.
     */
     public void writing(Object obj) {

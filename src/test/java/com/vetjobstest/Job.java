@@ -87,7 +87,7 @@ public class Job extends OAObject {
             OADate d2 = new OADate(); // today
             d2 = new OADate(d2.getYear(), d2.getMonth(), 1); // first day of this month
                 
-            if (d1.compare(d2) < 0) {
+            if (d1.compareTo(d2) < 0) {
                 searchCountMTD = 0;
                 viewCountMTD = 0;
                 clickCountMTD = 0;
@@ -112,7 +112,7 @@ public class Job extends OAObject {
             
             d2.addDays(-dayInWeek); // set to first day of this week
                 
-            if (d1.compare(d2) < 0) {
+            if (d1.compareTo(d2) < 0) {
                 searchCountWTD = 0;
                 viewCountWTD = 0;
                 clickCountWTD = 0;

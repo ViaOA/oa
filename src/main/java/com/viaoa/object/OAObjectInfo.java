@@ -196,7 +196,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         for (OALinkInfo li : getLinkInfos()) {
             if (li.type != OALinkInfo.ONE) continue;
             OALinkInfo liRev = li.getReverseLinkInfo();
-            if (liRev.bOwner) {
+            if (liRev != null && liRev.bOwner) {
                 liOwnedByOne = li;
                 break;
             }

@@ -45,17 +45,16 @@ public class OAXMLReader extends DefaultHandler {
     boolean bWithinTag;
     Object[] stack = new Object[10];
     private String decodeMessage;
-    private static final String XML_KEYONLY = "XML_KEYONLY";
-    private static final String XML_GUID = "XML_GUID";
+    private static final String XML_ID = "XML_ID";
+    private static final String XML_IDREF = "XML_IDREF";
     private static final String XML_VALUE = "XML_VALUE";
     private static final String XML_CLASS = "XML_CLASS";
+    private static final String XML_OBJECT = "XML_OBJECT";
     protected Class conversionClass;  // type of class that value needs to be converted to
     
     protected HashMap<String, OAObject> hashGuid;
     
-    
-    // used for classes that are abstract, so that the real class can be found when a keyonly is used.
-    protected HashMap<String, Class> hashGuidAbstractClass; 
+    private OAXMLReader1 xmlReader1;
     
     private boolean bImportMatching = true;
     
@@ -68,6 +67,7 @@ public class OAXMLReader extends DefaultHandler {
 
     public void setImportMatching(boolean b) {
         this.bImportMatching = b;
+        if (xmlReader1 != null) xmlReader1.setImportMatching(b);
     }
     public boolean getImportMatching() {
         return this.bImportMatching;
@@ -80,6 +80,7 @@ public class OAXMLReader extends DefaultHandler {
     public void setDecodeMessage(String msg) {
         if (msg != null && msg.length() == 0) throw new IllegalArgumentException("DecodeMessage cant be an empty string");
         decodeMessage = msg;
+        if (xmlReader1 != null) xmlReader1.setDecodeMessage(msg);
     }
     public String getDecodeMessage() {
         return decodeMessage;
@@ -90,8 +91,8 @@ public class OAXMLReader extends DefaultHandler {
         total = 0;
         bWithinTag = false;
         hashGuid = new HashMap();
-        hashGuidAbstractClass = new HashMap();
         versionOAXML = 0;
+        xmlReader1 = null;
     }
 
     /**
@@ -128,17 +129,16 @@ public class OAXMLReader extends DefaultHandler {
         saxParser.parse(new StringBufferInputStream(xmlData), this);
     }
     
-    
-    
     public ArrayList<? extends OAObject> process(final Class<? extends OAObject> rootClass) throws Exception {
-        ArrayList<OAObject> al = null;
-        try {
-            OAThreadLocalDelegate.setLoadingObject(true);
-            al = _process(rootClass);
+        if (xmlReader1 != null) {
+            ArrayList<OAObject> al = new ArrayList<OAObject>();
+            for (Object objx : xmlReader1.getRootObjects()) {
+                al.add((OAObject) objx);
+            }
+            return al;
         }
-        finally {
-            OAThreadLocalDelegate.setLoadingObject(false);
-        }
+        ArrayList<OAObject> al = _process(rootClass);
+        hashGuid = new HashMap();
         return al;
     }
     
@@ -146,24 +146,14 @@ public class OAXMLReader extends DefaultHandler {
     public ArrayList<OAObject> _process(final Class<? extends OAObject> rootClass) throws Exception {
         final ArrayList<OAObject> alReturn = new ArrayList();
         final HashMap<String, Object> hm = (HashMap) stack[1];
-        
-        /* the stages to loading
-            0: create when: not key only and not abstract class
-               if using guid and abstract, put in hmGuidAbstractClass
-            1: have all keyonly with guid update class in hmGuidAbstractClass
-            2: create abstract class using correct class in hmGuidAbstractClass
-            3: if keyonly, find in hmGuid
-            
-            steps 1 & 2 are only necessary if there are any elements that are for abstract classes that need to be 
-                resolved by looking for other places that it is used.
-        */
-        for (int i=0; i<4; i++) {
-            if (i > 0 && hashGuidAbstractClass.isEmpty()) i = 3;
+
+        // two stage load, the 2nd is to match the idrefs
+        for (int i=0; i<2; i++) {
             
             for (Map.Entry<String, Object> e : hm.entrySet()) {
                 Object v = e.getValue();
                 if (v instanceof HashMap) {
-                    OAObject objx = _process( (HashMap) v, rootClass, i, 0);
+                    OAObject objx = _process( (HashMap) v, rootClass, i==0, 0);
                     if (objx != null && alReturn.size() == 0) {
                         alReturn.add(objx);
                     }
@@ -172,14 +162,14 @@ public class OAXMLReader extends DefaultHandler {
                 if (v instanceof ArrayList) {
                     boolean bWasEmpty = (alReturn.size() == 0);
                     for (HashMap<String, Object> hmx : (ArrayList<HashMap<String, Object>>) v) {
-                        OAObject objx = _process( (HashMap) v, rootClass, i, 0);
+                        OAObject objx = _process( hmx, rootClass, i==0, 0);
                         if (bWasEmpty && objx != null) {
                             alReturn.add(objx);
                         }
                     }
                     break;
                 }
-            }        
+            }
         }
         return alReturn;
     }
@@ -191,55 +181,35 @@ public class OAXMLReader extends DefaultHandler {
         return className;
     }
     
-    protected OAObject _process(HashMap<String, Object> hm, Class<? extends OAObject> toClass, final int stage, final int level) throws Exception {
+    protected OAObject _process(HashMap<String, Object> hm, Class<? extends OAObject> toClass, final boolean bIsPreloading, final int level) throws Exception {
         OAObject objNew = null;
         
-        String guid = (String) hm.get(XML_GUID);
-        boolean bIsAbstract = Modifier.isAbstract(toClass.getModifiers());
-
-        String cname = (String) hm.get(XML_CLASS);
-        if (!OAString.isEmpty(cname)) {
-            cname = resolveClassName(cname);
-            toClass = (Class<? extends OAObject>) Class.forName(cname);
+        String guid = (String) hm.get(XML_ID);
+        boolean bKeyOnly = false;
+        if (guid == null) {
+            guid = (String) hm.get(XML_IDREF);
+            if (guid != null) bKeyOnly = true;
         }
         
-        if (guid != null) {
-            objNew = hashGuid.get(guid);
-            
-            boolean bKeyOnly = (hm.get(XML_KEYONLY) != null);
-
-            if (bIsAbstract && !bKeyOnly) {
-                if (stage == 1) return objNew;  // bKeyOnly to update hashGuidAbstractClass
-                // will need to find out the "real" class to use on the bSecondPass
-                
-                Class c = hashGuidAbstractClass.get(guid);
-                if (c == null) {
-                    if (stage == 0) {
-                        hashGuidAbstractClass.put(guid, toClass);
-                    }
-                }
-                else {
-                    toClass = c;
-                    bIsAbstract = Modifier.isAbstract(toClass.getModifiers());
-                    if (bIsAbstract) {
-                        // stage 2 needs to know the correct class
-                        throw new RuntimeException("cant determine class to use, the abstract class is "+c);
-                    }
-                }
-            }
-            else if (stage==1 && bKeyOnly && toClass != null && !bIsAbstract) {
-                if (hashGuidAbstractClass.containsKey(guid)) {
-                    hashGuidAbstractClass.put(guid, toClass);
-                }
-            }
-
-            if (bKeyOnly) {
-                return objNew;
+        if (bIsPreloading) {
+            if (bKeyOnly) return null;
+            String cname = (String) hm.get(XML_CLASS);
+            if (!OAString.isEmpty(cname)) {
+                cname = resolveClassName(cname);
+                toClass = (Class<? extends OAObject>) Class.forName(cname);
             }
         }
+        else {
+            if (bKeyOnly) {
+                objNew = hashGuid.get(guid);
+                return objNew;
+            }
+            objNew = (OAObject) hm.get(XML_OBJECT);
+        }
+        
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(toClass);
-        if (objNew == null && !bIsAbstract) {
+        if (objNew == null) {
     
             // try to find using pkey props, AND remove pkey properties from hash
             String[] ids = oi.getIdProperties();
@@ -249,9 +219,11 @@ public class OAXMLReader extends DefaultHandler {
                 Class c2 = OAObjectInfoDelegate.getPropertyClass(toClass, id);
                 values[i] = hm.get(id);
                 if (values[i] instanceof String) values[i] = OAConverter.convert(c2, values[i]);
-                if (stage > 0 || !bIsAbstract) hm.remove(id);
+                hm.remove(id);
             }
-            final OAObjectKey key = new OAObjectKey(values, OAConv.toInt(guid), false);
+            int iguid = 0;
+            if (guid != null && guid.length()>1) iguid = OAConv.toInt(guid.substring(1));
+            final OAObjectKey key = new OAObjectKey(values, iguid, false);
             
             // try to find using matching props
             final String[] matchProps = getImportMatching() ? oi.getImportMatchProperties() : null;
@@ -282,29 +254,48 @@ public class OAXMLReader extends DefaultHandler {
             }
             else {
                 if (ids != null && ids.length > 0) {
-                    objNew = getRealObject(objNew);
+                    objNew = OAObjectCacheDelegate.get(toClass, key);
                 }
             }
     
             if (objNew == null) {
-                objNew = createNewObject(toClass);
+                OAThreadLocalDelegate.setLoadingObject(true);
+                try {
+                    objNew = createNewObject(toClass);
+                    // set property ids
+                    if (matchProps == null || matchProps.length == 0) { 
+                        for (int i=0; ids != null && i<ids.length; i++) {
+                            values[i] = getValue(objNew, ids[i], values[i]);  // hook method for subclass
+                            objNew.setProperty(ids[i], values[i]);
+                        }
+                    }
+                }
+                finally {
+                    OAThreadLocalDelegate.setLoadingObject(false);
+                }
             }
             if (guid != null && objNew != null) hashGuid.put(guid, objNew);
+            hm.put(XML_OBJECT, objNew); 
         }
+        
+        
+        final boolean bLoadingNew = objNew.getNew() && !bIsPreloading; 
+        if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(true);
         
         for (Map.Entry<String, Object> e : hm.entrySet()) {
             String k = e.getKey();
 
             if (XML_VALUE.equals(k)) continue;
-            if (XML_KEYONLY.equals(k)) continue;
-            if (XML_GUID.equals(k)) continue;
+            if (XML_ID.equals(k)) continue;
+            if (XML_IDREF.equals(k)) continue;
             if (XML_CLASS.equals(k)) continue;
+            if (XML_OBJECT.equals(k)) continue;
 
             Object v = e.getValue();
             
             if (v instanceof String) {
                 // set prop
-                if (objNew != null && stage == 3) objNew.setProperty(k, v);
+                if (!bIsPreloading) objNew.setProperty(k, v);
                 continue;
             }
 
@@ -312,6 +303,7 @@ public class OAXMLReader extends DefaultHandler {
 
             if (v instanceof HashMap && (li == null || li.getType() == li.MANY)) {
                 // check to see if it has an arrayList or a Many property, making this a hub prop
+                //   and skip this tag (outer collection tag) to get the the objects in it.
                 HashMap<String, Object> hmx = (HashMap<String, Object>) v;
                 for (Map.Entry<String, Object> ex : hmx.entrySet()) {
                     Object vx = ex.getValue();
@@ -331,34 +323,48 @@ public class OAXMLReader extends DefaultHandler {
             if (v instanceof ArrayList) {
                 // load into Hub
                 Hub h;
-                if (objNew == null || stage != 3) h = null;
+                if (bIsPreloading) h = null;
                 else if (li == null) h = new Hub(OAObject.class);
                 else h = (Hub) li.getValue(objNew);
                 
                 for (HashMap hmx : (ArrayList<HashMap>)v) {
-                    Object objx = _process(hmx, li==null?OAObject.class:li.getToClass(), stage, level+1);
-                    if (h != null) h.add(objx);
-                }
-                if (li == null) {
-                    if (objNew != null && stage == 3) {
-                        objNew.setProperty(k, h);
+                    
+                    if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(false);
+                    Object objx = _process(hmx, li==null?OAObject.class:li.getToClass(), bIsPreloading, level+1);
+                    if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(true);
+                    
+                    if (!bIsPreloading) {
+                        h.add(objx);
                     }
+                }
+
+                if (li == null && !bIsPreloading) {
+                    objNew.setProperty(k, h);
                 }
             }
             else { 
                 // hashmap for another object
                 HashMap<String, Object> hmx = (HashMap<String, Object>) v;
                 Class c = li == null ? OAObject.class : li.getToClass();
-                OAObject objx = _process(hmx, c, stage, level+1);
-                if (objNew != null && stage == 3) objNew.setProperty(k, objx);
+                if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(false);
+                OAObject objx = _process(hmx, c, bIsPreloading, level+1);
+                if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(true);
+                if (!bIsPreloading) objNew.setProperty(k, objx);
             }
         }
-        if (objNew != null) endObject(objNew, level>0);
+        if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(false);
+        if (!bIsPreloading) {
+            endObject(objNew, level>0);
+        }
         return objNew;
     } 
     
     // SAXParser callback method.
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) throws SAXException {
+        if (xmlReader1 != null) {
+            xmlReader1.startElement(namespaceURI, sName, qName, attrs);
+            return;
+        }
         value = "";
         bWithinTag = true;
         String eName = sName; // element name
@@ -381,7 +387,43 @@ public class OAXMLReader extends DefaultHandler {
                         break;
                     }
                 }
-                if (versionOAXML != 2) throw new RuntimeException("version OAXML "+version+" not supported, current version is 2.0");
+                if (versionOAXML == 1) {
+                    xmlReader1 = new OAXMLReader1() {
+                        @Override
+                        protected String resolveClassName(String className) {
+                            return OAXMLReader.this.resolveClassName(className);
+                        }
+                        @Override
+                        public Object convertToObject(String propertyName, String value, Class propertyClass) {
+                            return OAXMLReader.this.convertToObject(propertyName, value, propertyClass);
+                        }
+                        @Override
+                        public OAObject createNewObject(Class c) throws Exception {
+                            return OAXMLReader.this.createNewObject(c);
+                        }
+                        @Override
+                        public void endObject(OAObject obj, boolean hasParent) {
+                            OAXMLReader.this.endObject(obj, hasParent);
+                        }
+                        @Override
+                        protected String getPropertyName(OAObject obj, String propName) {
+                            return OAXMLReader.this.getPropertyName(obj, propName);
+                        }
+                        @Override
+                        protected Object getRealObject(OAObject object) {
+                            return OAXMLReader.this.getRealObject(object);
+                        }
+                        @Override
+                        public Object getValue(OAObject obj, String name, Object value) {
+                            return OAXMLReader.this.getValue(obj, name, value);
+                        }
+                    };
+                    xmlReader1.reset();
+                    xmlReader1.setDecodeMessage(getDecodeMessage());
+                    xmlReader1.setImportMatching(getImportMatching());
+                    xmlReader1.startElement(namespaceURI, sName, qName, attrs);
+                }
+                else if (versionOAXML != 2) throw new RuntimeException("version OAXML "+version+" not supported, current version is 2.0");
             }
             HashMap hm = new HashMap();
             stack[indent] = hm;
@@ -399,23 +441,36 @@ public class OAXMLReader extends DefaultHandler {
         stack[indent] = hm;
 
         if (attrs != null) {
+            String guid = null;
+            boolean bKeyOnly = false;
             for (int i = 0; i < attrs.getLength(); i++) {
                 String aName = attrs.getLocalName(i); // Attr name
                 if ("".equals(aName)) aName = attrs.getQName(i);
                 String aValue = attrs.getValue(i);
-                if (aName.equalsIgnoreCase("keyonly")) hm.put(XML_KEYONLY, XML_KEYONLY);
-                else if (aName.equalsIgnoreCase("guid")) hm.put(XML_GUID, aValue);
+                
+                if (aName.equalsIgnoreCase("id")) hm.put(XML_ID, aValue);
+                else if (aName.equalsIgnoreCase("idref")) hm.put(XML_IDREF, aValue);
                 else if (aName.equalsIgnoreCase("class")) hm.put(XML_CLASS, aValue);
+                else if (aName.equalsIgnoreCase("keyonly")) bKeyOnly = true;
+                else if (aName.equalsIgnoreCase("guid")) guid = aValue;
                 else {
                     if (aValue == null || aValue.length() == 0) hm.put(aName, "true");
                     else hm.put(aName, aValue);
                 }
+            }
+            if (guid != null) {
+                if (!bKeyOnly) hm.put(XML_ID, guid);
+                else hm.put(XML_IDREF, guid);
             }
         }
     }
     
     // SAXParser callback method.
     public void endElement(String namespaceURI, String sName, String qName) throws SAXException {
+        if (xmlReader1 != null) {
+            xmlReader1.endElement(namespaceURI, sName, qName);
+            return;
+        }
         bWithinTag = false;
         String eName = sName; // element name
         if (eName == null || "".equals(eName)) eName = qName; // not namespaceAware
@@ -456,6 +511,10 @@ public class OAXMLReader extends DefaultHandler {
     
     // SAXParser callback method.
     public void characters(char buf[], int offset, int len) throws SAXException {
+        if (xmlReader1 != null) {
+            xmlReader1.characters(buf, offset, len);
+            return;
+        }
         if (bWithinTag && value != null) {
             String s = new String(buf, offset, len);
             value += OAString.decodeIllegalXML(s);
@@ -491,6 +550,10 @@ public class OAXMLReader extends DefaultHandler {
 
     // SAXParser callback method.
     public void endDocument() throws SAXException {
+        if (xmlReader1 != null) {
+            xmlReader1.endDocument();
+            return;
+        }
     }
 
     /**
@@ -519,6 +582,7 @@ public class OAXMLReader extends DefaultHandler {
         in OAObjectCache and return that object.  Otherwise this object is returned.
     */
     protected OAObject getRealObject(OAObject object) {
+        if (object == null) return object;
         OAObject obj = OAObjectCacheDelegate.getObject(object.getClass(), OAObjectKeyDelegate.getKey(object));
         if (obj != null) return obj;
         return object;
@@ -530,12 +594,15 @@ public class OAXMLReader extends DefaultHandler {
     public void endObject(OAObject obj, boolean hasParent) {
     }
 
+    // return null to ignore property
+    protected String getPropertyName(OAObject obj, String propName) {
+        return propName;
+    }
     
     public static void main(String[] args) throws Exception {
         OAXMLReader r = new OAXMLReader();
         r.parseFile("C:\\Projects\\java\\OABuilder_git\\models\\testxml2.obx");
         ArrayList al = r.process(OAObject.class);
-        
         int xx = 4;
         xx++;
     }

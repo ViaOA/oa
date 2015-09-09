@@ -233,9 +233,18 @@ public class HubEventDelegate {
 	    HubListener[] hl = getAllListeners(thisHub, bAllShared?1:3);
 	    int x = hl.length;
 	    if (x > 0) {
+	        Exception exception = null;
 	        HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].afterChangeActiveObject(hubEvent);
+	        for (int i=0; i<x; i++) {
+	            try {
+	                hl[i].afterChangeActiveObject(hubEvent);
+                }
+                catch (Exception e) {
+                    if (e != null) exception = e;
+                }
+	        }
+	        if (exception != null) {
+	            throw new RuntimeException("Exception while calling fireAfterChangeActiveObjectEvent", exception);
 	        }
 	    }
 	}

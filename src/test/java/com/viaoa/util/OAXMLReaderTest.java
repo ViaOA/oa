@@ -26,7 +26,7 @@ public class OAXMLReaderTest extends OAUnitTest {
 //        s += "<ssh><command>runcommand3</command><output>output text here3</output></ssh>\n";
         s += "</xml>";
         
-        OAXMLReader xr = new OAXMLReader() {
+        OAXMLReader1 xr = new OAXMLReader1() {
             @Override
             protected String resolveClassName(String className) {
                 return null;
@@ -62,7 +62,7 @@ public class OAXMLReaderTest extends OAUnitTest {
         xw.close();
         String xml = new String(baos.toString());
         
-        OAXMLReader xr = new OAXMLReader();
+        OAXMLReader1 xr = new OAXMLReader1();
         Object objx = xr.parseString(xml);
         Object[] objs = xr.getRootObjects();
         
