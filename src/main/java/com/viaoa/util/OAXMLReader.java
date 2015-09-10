@@ -12,7 +12,6 @@ package com.viaoa.util;
 
 import java.util.*;
 import java.io.*;
-import java.lang.reflect.Modifier;
 import java.net.*;
 
 import org.xml.sax.*;

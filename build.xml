@@ -51,6 +51,8 @@
                 <include name="*.htm*/**"/>
                 <include name="*.css*/**"/>
                 <exclude name="**/doc-files/**"/>
+                <exclude name="**/package.html/**"/>
+                <exclude name="**/overview.html/**"/>
 			</fileset>
 		</copy>
 	</target>
