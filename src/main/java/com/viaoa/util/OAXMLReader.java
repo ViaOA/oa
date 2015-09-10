@@ -94,11 +94,16 @@ public class OAXMLReader extends DefaultHandler {
         xmlReader1 = null;
     }
 
-    
+    /**
+     * Read the xml data from a file and load into objects.
+     */
     public ArrayList readFile(String fileName, final Class<? extends OAObject> rootClass) throws Exception {
         parseFile(fileName);
         return process(rootClass);
     }
+    /**
+     * Read the xml data and load into objects.
+     */
     public ArrayList readXML(String xmlText, final Class<? extends OAObject> rootClass) throws Exception {
         parseString(xmlText);
         return process(rootClass);
