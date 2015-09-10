@@ -47,10 +47,10 @@ public class OAObjectXMLDelegate {
 	    }
 	    String attrib = " ";
 	    if (bKeyOnly) {
-	        attrib += "idref=\"u"+OAObjectDelegate.getGuid(oaObj)+"\""; 
+	        attrib += "idref=\"g"+OAObjectDelegate.getGuid(oaObj)+"\""; 
 	    }
 	    else {
-            attrib += "id=\"u"+OAObjectDelegate.getGuid(oaObj)+"\""; 
+            attrib += "id=\"g"+OAObjectDelegate.getGuid(oaObj)+"\""; 
 	    }
 	    
 	    
@@ -60,7 +60,8 @@ public class OAObjectXMLDelegate {
 
         String[] ids = oi.idProperties;
         if (bKeyOnly) {
-            if (ids == null || ids.length == 0) attrib += "/";
+            attrib += "/";
+            //if (ids == null || ids.length == 0) attrib += "/";
         }
 	    
 	    if (tagName == null) {
@@ -72,7 +73,8 @@ public class OAObjectXMLDelegate {
 	    
 
         ow.writing(oaObj);  // hook to let oaxmlwriter subclass know when objects are being written
-	    if (bKeyOnly && (ids == null || ids.length == 0)) return;
+        if (bKeyOnly) return;
+	    //if (bKeyOnly && (ids == null || ids.length == 0)) return;
 	
 	    ow.indent++;
 	
