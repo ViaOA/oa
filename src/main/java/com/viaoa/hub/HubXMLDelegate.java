@@ -33,12 +33,13 @@ public class HubXMLDelegate {
 	    ow.indent();
 	    
         if (tagName == null) {
-            ow.println("<"+ow.getClassName(Hub.class)+" ObjectClass=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
+            // no tag for outer hub anymore
+            // ow.println("<Hub class=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
+            // ow.println("<"+ow.getClassName(Hub.class)+" ObjectClass=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
         }
         else {
             ow.println("<"+tagName+" total=\""+thisHub.getSize()+"\">");
         }
-	    
 	    
 	    ow.indent++;
 	    for (int i=0; ;i++) {
@@ -47,11 +48,15 @@ public class HubXMLDelegate {
 	        if (writeType == OAXMLWriter.WRITE_NONEW_KEYONLY && obj instanceof OAObject) {
 	        	if (((OAObject) obj).getNew()) continue;
 	        }
-	        if (obj instanceof OAObject) OAObjectXMLDelegate.write((OAObject)obj, ow, null, bKeyOnly, cascade);
+	        String name = thisHub.getObjectClass().getSimpleName();
+	        if (obj instanceof OAObject) OAObjectXMLDelegate.write((OAObject)obj, ow, name, bKeyOnly, cascade);
 	    }
 	    ow.indent--;
 	    ow.indent();
-        if (tagName == null) ow.println("</"+ow.getClassName(Hub.class)+">");
+        if (tagName == null) {
+            // ow.println("</Hub");
+            // ow.println("</"+ow.getClassName(Hub.class)+">");
+        }
         else ow.println("</"+tagName+">");
     }
 	

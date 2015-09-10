@@ -94,6 +94,16 @@ public class OAXMLReader extends DefaultHandler {
         xmlReader1 = null;
     }
 
+    
+    public ArrayList readFile(String fileName, final Class<? extends OAObject> rootClass) throws Exception {
+        parseFile(fileName);
+        return process(rootClass);
+    }
+    public ArrayList readXML(String xmlText, final Class<? extends OAObject> rootClass) throws Exception {
+        parseString(xmlText);
+        return process(rootClass);
+    }
+    
     /**
         Used to parse and create OAObjects from an XML file.
     */
@@ -128,7 +138,7 @@ public class OAXMLReader extends DefaultHandler {
         saxParser.parse(new StringBufferInputStream(xmlData), this);
     }
     
-    public ArrayList<? extends OAObject> process(final Class<? extends OAObject> rootClass) throws Exception {
+    public ArrayList process(final Class<? extends OAObject> rootClass) throws Exception {
         if (xmlReader1 != null) {
             ArrayList<OAObject> al = new ArrayList<OAObject>();
             for (Object objx : xmlReader1.getRootObjects()) {
@@ -136,13 +146,13 @@ public class OAXMLReader extends DefaultHandler {
             }
             return al;
         }
-        ArrayList<OAObject> al = _process(rootClass);
+        ArrayList<? extends OAObject> al = _process(rootClass);
         hashGuid = new HashMap();
         return al;
     }
     
     
-    public ArrayList<OAObject> _process(final Class<? extends OAObject> rootClass) throws Exception {
+    public ArrayList<? extends OAObject> _process(final Class<? extends OAObject> rootClass) throws Exception {
         final ArrayList<OAObject> alReturn = new ArrayList();
         final HashMap<String, Object> hm = (HashMap) stack[1];
 
@@ -445,6 +455,7 @@ public class OAXMLReader extends DefaultHandler {
             for (int i = 0; i < attrs.getLength(); i++) {
                 String aName = attrs.getLocalName(i); // Attr name
                 if ("".equals(aName)) aName = attrs.getQName(i);
+                aName = aName.toUpperCase();
                 String aValue = attrs.getValue(i);
                 
                 if (aName.equalsIgnoreCase("id")) hm.put(XML_ID, aValue);
@@ -473,6 +484,7 @@ public class OAXMLReader extends DefaultHandler {
         bWithinTag = false;
         String eName = sName; // element name
         if (eName == null || "".equals(eName)) eName = qName; // not namespaceAware
+        eName = eName.toUpperCase();
         
         HashMap hm = (HashMap) stack[indent];
 
