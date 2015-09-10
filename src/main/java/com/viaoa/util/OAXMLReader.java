@@ -192,11 +192,6 @@ public class OAXMLReader extends DefaultHandler {
         
         if (bIsPreloading) {
             if (bKeyOnly) return null;
-            String cname = (String) hm.get(XML_CLASS);
-            if (!OAString.isEmpty(cname)) {
-                cname = resolveClassName(cname);
-                toClass = (Class<? extends OAObject>) Class.forName(cname);
-            }
         }
         else {
             if (bKeyOnly) {
@@ -206,6 +201,11 @@ public class OAXMLReader extends DefaultHandler {
             objNew = (OAObject) hm.get(XML_OBJECT);
         }
         
+        String cname = (String) hm.get(XML_CLASS);
+        if (!OAString.isEmpty(cname)) {
+            cname = resolveClassName(cname);
+            toClass = (Class<? extends OAObject>) Class.forName(cname);
+        }
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(toClass);
         if (objNew == null) {
