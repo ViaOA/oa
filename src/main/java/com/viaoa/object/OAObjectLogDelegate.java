@@ -88,7 +88,7 @@ public class OAObjectLogDelegate {
         };
         try {
             // OAObjectFlagDelegate.setThreadIgnoreEvents(true);
-            reader.parseFile(fname);
+            reader.readFile(fname);
         }
         finally {
             // OAObjectFlagDelegate.setThreadIgnoreEvents(false);

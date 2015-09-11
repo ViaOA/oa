@@ -95,6 +95,32 @@ public class OAXMLWriter {
         return WRITE_YES;
     }
 
+    
+    private Stack<String> stack = new Stack<String>();
+    /**
+     * Shows the curret list of objects that are being saved.
+     */
+    public String getCurrentPropertyPath() {
+        int x = stack.size();
+        String s = "";
+        for (int i=0; i<x; i++) {
+            if (i > 0) s += ".";
+            s += stack.get(i); 
+        }
+        return s;
+    }
+    /**
+     * Used internally when writing objects to show the objets that are being written.
+     * @see #getCurrentPropertyPath()
+     */
+    public void push(String name) {
+        stack.push(name);
+    }
+    public void pop() {
+        if (!stack.isEmpty()) stack.pop();
+    }
+    
+    
     /**
      * returns true if this object will be included by another parent object.
      */

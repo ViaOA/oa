@@ -27,9 +27,21 @@ public class HubXMLDelegate {
 	public static void write(Hub thisHub, OAXMLWriter ow, final String tagName, boolean bKeyOnly, OACascade cascade) {
 		write(thisHub, ow, tagName, bKeyOnly ? OAXMLWriter.WRITE_KEYONLY : OAXMLWriter.WRITE_YES, cascade);
 	}
+
+    public static void write(Hub thisHub, OAXMLWriter ow, final String tagName, int writeType, OACascade cascade) {
+        if (thisHub == null || ow == null) return;
+        try {
+            if (tagName != null) ow.push(tagName);
+            _write(thisHub, ow, tagName, writeType, cascade);
+        }
+        finally {
+            if (tagName != null) ow.pop();
+        }
+    }
+	
 	// 2006/09/26
-	public static void write(Hub thisHub, OAXMLWriter ow, final String tagName, int writeType, OACascade cascade) {
-		boolean bKeyOnly = (writeType == OAXMLWriter.WRITE_KEYONLY || writeType == OAXMLWriter.WRITE_NONEW_KEYONLY);
+	private static void _write(Hub thisHub, OAXMLWriter ow, final String tagName, int writeType, OACascade cascade) {
+	    boolean bKeyOnly = (writeType == OAXMLWriter.WRITE_KEYONLY || writeType == OAXMLWriter.WRITE_NONEW_KEYONLY);
 	    ow.indent();
 	    
         if (tagName == null) {

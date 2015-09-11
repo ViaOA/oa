@@ -22,7 +22,11 @@ import javax.xml.parsers.SAXParser;
 
 import com.viaoa.ds.OASelect;
 import com.viaoa.hub.Hub;
+import com.viaoa.jfc.editor.image.OAImagePanel.MyUndoableEdit;
 import com.viaoa.object.*;
+
+
+// 20150906 created to be correct xml, removing OA specific format and tags. old version renamed to OAXMLReader1
 
 /**
     OAXMLReader using a SAXParser to parse and automatically create OAObjects from an XML file.
@@ -33,16 +37,15 @@ import com.viaoa.object.*;
     3: use guid
     if not found, then a new object will be created.
 
-    20150906 created to be correct xml, removing OA specific format and tags. old version renamed to OAXMLReader1
     @see OAXMLWriter
 */
-public class OAXMLReader extends DefaultHandler {
+public class OAXMLReader {
     private String fileName;
-    String value;
-    int indent;
-    int total;
-    boolean bWithinTag;
-    Object[] stack = new Object[10];
+    protected String value;
+    protected int indent;
+    protected int total;
+    protected boolean bWithinTag;
+    protected Object[] stack = new Object[10];
     private String decodeMessage;
     private static final String XML_ID = "XML_ID";
     private static final String XML_IDREF = "XML_IDREF";
@@ -58,12 +61,39 @@ public class OAXMLReader extends DefaultHandler {
     
     private boolean bImportMatching = true;
     
+    private MyDefaultHandler myDefaultHandler;
+    
     // flag to know if OAXMLWriter wrote the object, which adds an additonal tag for the start of each object.
     private int versionOAXML;
     
     public OAXMLReader() {
     }
-
+    
+    
+    /**
+     * Read the xml data from a file and load into objects.
+     */
+    public Object[] readFile(String fileName) throws Exception {
+        parseFile(fileName);
+        ArrayList al = process();
+        Object[] objs = new Object[al.size()];
+        al.toArray(objs);
+        return objs;
+    }
+    public Object[] read(File file) throws Exception {
+        return readFile(file.getPath());
+    }
+    /**
+     * Read the xml data and load into objects.
+     */
+    public Object[] readXML(String xmlText) throws Exception {
+        parseString(xmlText);
+        ArrayList al = process();
+        Object[] objs = new Object[al.size()];
+        al.toArray(objs);
+        return objs;
+    }
+    
 
     public void setImportMatching(boolean b) {
         this.bImportMatching = b;
@@ -95,34 +125,11 @@ public class OAXMLReader extends DefaultHandler {
         xmlReader1 = null;
     }
 
-    /**
-     * Read the xml data from a file and load into objects.
-     */
-    public Object[] readFile(String fileName) throws Exception {
-        parseFile(fileName);
-        ArrayList al = process();
-        Object[] objs = new Object[al.size()];
-        al.toArray(objs);
-        return objs;
-    }
-    public Object[] read(File file) throws Exception {
-        return readFile(file.getPath());
-    }
-    /**
-     * Read the xml data and load into objects.
-     */
-    public Object[] readXML(String xmlText) throws Exception {
-        parseString(xmlText);
-        ArrayList al = process();
-        Object[] objs = new Object[al.size()];
-        al.toArray(objs);
-        return objs;
-    }
     
-    /**
-        Used to parse and create OAObjects from an XML file.
-    */
-    public void parseFile(String fileName) throws Exception {
+    
+    
+    // Used to parse and create OAObjects from an XML file.
+    protected void parseFile(String fileName) throws Exception {
         if (fileName == null) throw new IllegalArgumentException("fileName is required");
         reset();
         
@@ -133,27 +140,25 @@ public class OAXMLReader extends DefaultHandler {
         
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = factory.newSAXParser();
-        saxParser.parse( uri.toString(), this );
+        saxParser.parse( uri.toString(), this.getDefaultHandler());
         
         Object[] objs = new Object[indent + 1];
         System.arraycopy(stack, 0, objs, 0, indent+1);
         stack = objs;
     }
 
-    /**
-        Used to parse and create OAObjects from an XML string.
-    */
-    public void parseString(String xmlData) throws Exception {
+    // Used to parse and create OAObjects from an XML string.
+    protected void parseString(String xmlData) throws Exception {
         if (xmlData == null) throw new IllegalArgumentException("xmlData is required");
         reset();
         
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = factory.newSAXParser();
     
-        saxParser.parse(new StringBufferInputStream(xmlData), this);
+        saxParser.parse(new StringBufferInputStream(xmlData), this.getDefaultHandler());
     }
     
-    public ArrayList process() throws Exception {
+    protected ArrayList process() throws Exception {
         if (xmlReader1 != null) {
             ArrayList<OAObject> al = new ArrayList<OAObject>();
             for (Object objx : xmlReader1.getRootObjects()) {
@@ -173,11 +178,11 @@ public class OAXMLReader extends DefaultHandler {
     }
     
     
-    public ArrayList<Object> _process() throws Exception {
+    protected ArrayList<Object> _process() throws Exception {
         final ArrayList alReturn = new ArrayList<Object>();
         HashMap<String, Object> hm = (HashMap) stack[1];
 
-        // two stage load, the 2nd is to match the idrefs
+        // uses a two pass, the 2nd is to match the idrefs and load the data
         for (int i=0; i<2; i++) {
             
             for (Map.Entry<String, Object> e : hm.entrySet()) {
@@ -432,7 +437,7 @@ public class OAXMLReader extends DefaultHandler {
     } 
     
     // SAXParser callback method.
-    public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) throws SAXException {
+    protected void startElement(String namespaceURI, String sName, String qName, Attributes attrs) throws SAXException {
         if (xmlReader1 != null) {
             xmlReader1.startElement(namespaceURI, sName, qName, attrs);
             return;
@@ -544,7 +549,7 @@ public class OAXMLReader extends DefaultHandler {
     }
     
     // SAXParser callback method.
-    public void endElement(String namespaceURI, String sName, String qName) throws SAXException {
+    protected void endElement(String namespaceURI, String sName, String qName) throws SAXException {
         if (xmlReader1 != null) {
             xmlReader1.endElement(namespaceURI, sName, qName);
             return;
@@ -589,7 +594,7 @@ public class OAXMLReader extends DefaultHandler {
     }
     
     // SAXParser callback method.
-    public void characters(char buf[], int offset, int len) throws SAXException {
+    protected void characters(char buf[], int offset, int len) throws SAXException {
         if (xmlReader1 != null) {
             xmlReader1.characters(buf, offset, len);
             return;
@@ -600,10 +605,11 @@ public class OAXMLReader extends DefaultHandler {
         }
     }
 
+    public boolean debug;
     private int holdIndent;
     private String sIndent="";
     void p(String s) {
-        if (true) return;
+        if (!debug) return;
         if (indent != holdIndent) {
             holdIndent = indent;
             sIndent = "";
@@ -624,11 +630,11 @@ public class OAXMLReader extends DefaultHandler {
     }
 
     // SAXParser callback method.
-    public void startDocument() throws SAXException {
+    protected void startDocument() throws SAXException {
     }
 
     // SAXParser callback method.
-    public void endDocument() throws SAXException {
+    protected void endDocument() throws SAXException {
         if (xmlReader1 != null) {
             xmlReader1.endDocument();
             return;
@@ -679,7 +685,7 @@ public class OAXMLReader extends DefaultHandler {
     /**
         Method that can be overwritten by subclass when an object is completed.
     */
-    public void endObject(OAObject obj, boolean hasParent) {
+    protected void endObject(OAObject obj, boolean hasParent) {
     }
 
     // return null to ignore property
@@ -694,11 +700,48 @@ public class OAXMLReader extends DefaultHandler {
         return className;
     }
     
+
+    protected DefaultHandler getDefaultHandler() {
+        if (myDefaultHandler == null) {
+            myDefaultHandler = new MyDefaultHandler();
+        }
+        return myDefaultHandler;
+    }
+    
+    
+    class MyDefaultHandler extends DefaultHandler {
+        @Override
+        public void endDocument() throws SAXException {
+            OAXMLReader.this.endDocument();
+        }
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            OAXMLReader.this.startElement(uri, localName, qName, attributes);
+        }
+        @Override
+        public void startDocument() throws SAXException {
+            OAXMLReader.this.startDocument();
+        }
+        @Override
+        public void characters(char buf[], int offset, int len) throws SAXException {
+            OAXMLReader.this.characters(buf, offset, len);
+        }
+        @Override
+        public void endElement(String namespaceURI, String sName, String qName) throws SAXException {
+            OAXMLReader.this.endElement(namespaceURI, sName, qName);;
+        }
+        
+    }
+    
+
+    
     public static void main(String[] args) throws Exception {
         OAXMLReader r = new OAXMLReader();
-        Object[] objs = r.readFile("C:\\Projects\\java\\OABuilder_git\\models\\testxml2.obx");
+        r.debug = true;
+        Object[] objs = r.readFile("C:\\Projects\\java\\OABuilder_git\\models\\tsac.obx");
         
         int xx = 4;
         xx++;
     }
+
 }

@@ -36,7 +36,17 @@ public class OAObjectXMLDelegate {
         write(oaObj, ow, tagName, bKeyOnly, cascade, false);
     }
 	public static void write(final OAObject oaObj, final OAXMLWriter ow, String tagName, boolean bKeyOnly, final OACascade cascade, final boolean bWriteClassName) {
-	    if (oaObj == null || ow == null) return;
+        if (oaObj == null || ow == null) return;
+        try {
+            if (tagName != null) ow.push(tagName);
+    	    _write(oaObj, ow, tagName, bKeyOnly, cascade, bWriteClassName);
+        }
+        finally {
+            if (tagName != null) ow.pop();
+        }
+	}
+	
+    private static void _write(final OAObject oaObj, final OAXMLWriter ow, String tagName, boolean bKeyOnly, final OACascade cascade, final boolean bWriteClassName) {
 	    Class c = oaObj.getClass();
 	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 
