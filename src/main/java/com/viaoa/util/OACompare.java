@@ -14,6 +14,7 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectReflectDelegate;
 
 // 20140124
@@ -110,6 +111,10 @@ public class OACompare {
         if (value == null || matchValue == null) return false;
         if (value.equals(matchValue)) return true;
 
+        if (value instanceof OAObject || matchValue instanceof OAObject) {
+            return false;
+        }
+        
         if (matchValue instanceof Hub) {
             Hub h = (Hub) matchValue;
             return (h.getSize() == 1 && h.getAt(0) == matchValue);

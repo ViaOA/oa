@@ -68,7 +68,9 @@ public @interface OAOne {
     boolean hasCustomCode() default false;
     
     /** true if this is a calculated reference. */
-    boolean isCalculated() default false; 
+    boolean isCalculated() default false;
+    
+    boolean isImportMatch() default false;
 }
 
 /*  OALinkInfo

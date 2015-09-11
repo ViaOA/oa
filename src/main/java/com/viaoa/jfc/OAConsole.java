@@ -50,7 +50,15 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
         this.hubListen = hub;
         this.property = property;
         this.columns = columns;
+
+        setSelectHub(new Hub(Console.class));
+
         setup();
+    }
+
+    @Override
+    public void setSelectHub(Hub hub) {
+        super.setSelectHub(hub);
     }
     
     public void close() {

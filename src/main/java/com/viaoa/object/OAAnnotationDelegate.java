@@ -186,6 +186,7 @@ public class OAAnnotationDelegate {
                 oi.addLinkInfo(li);
             }
           
+            li.setImportMatch(annotation.isImportMatch());
             li.setCascadeSave(annotation.cascadeSave());
             li.setCascadeDelete(annotation.cascadeDelete());
             li.setReverseName(annotation.reverseName());

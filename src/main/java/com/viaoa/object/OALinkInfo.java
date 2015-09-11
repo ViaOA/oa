@@ -47,6 +47,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     private String sortProperty;  // sort propetyPath
     private boolean sortAsc;  // sort ascending
     private String seqProperty;  // sequence propetyPath
+    private boolean isImportMatch;
     
     // runtime
     protected transient int cacheSize;
@@ -284,6 +285,13 @@ public class OALinkInfo { //implements java.io.Serializable {
             oi = OAObjectInfoDelegate.getOAObjectInfo(toClass);
         }
         return oi;
+    }
+
+    public boolean isImportMatch() {
+        return isImportMatch;
+    }
+    public void setImportMatch(boolean b) {
+        this.isImportMatch = b;
     }
 
 }

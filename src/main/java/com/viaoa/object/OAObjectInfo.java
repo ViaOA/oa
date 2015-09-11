@@ -92,6 +92,11 @@ public class OAObjectInfo { //implements java.io.Serializable {
                     this.importMatchProperties = (String[]) OAArray.add(this.importMatchProperties, pi.getName());
                 }
             }
+            for (OALinkInfo li : getLinkInfos()) {
+                if (li.getType() == li.ONE && li.isImportMatch()) {
+                    this.importMatchProperties = (String[]) OAArray.add(this.importMatchProperties, li.getName());
+                }
+            }
         }
         return this.importMatchProperties;
     }

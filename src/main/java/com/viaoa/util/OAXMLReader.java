@@ -101,6 +101,9 @@ public class OAXMLReader extends DefaultHandler {
         parseFile(fileName);
         return process(rootClass);
     }
+    public ArrayList read(File file, final Class<? extends OAObject> rootClass) throws Exception {
+        return readFile(file.getPath(), rootClass);
+    }
     /**
      * Read the xml data and load into objects.
      */
@@ -147,6 +150,12 @@ public class OAXMLReader extends DefaultHandler {
         if (xmlReader1 != null) {
             ArrayList<OAObject> al = new ArrayList<OAObject>();
             for (Object objx : xmlReader1.getRootObjects()) {
+                if (objx instanceof Hub) {
+                    for (Object obj : ((Hub)objx)) {
+                        al.add((OAObject) obj);
+                    }
+                    break;
+                }
                 al.add((OAObject) objx);
             }
             return al;
@@ -205,23 +214,21 @@ public class OAXMLReader extends DefaultHandler {
             if (guid != null) bKeyOnly = true;
         }
         
-        if (bIsPreloading) {
-            if (bKeyOnly) return null;
-        }
-        else {
-            if (bKeyOnly) {
-                objNew = hashGuid.get(guid);
-                return objNew;
-            }
+        objNew = hashGuid.get(guid);
+        if (bKeyOnly) return objNew;
+        
+        if (objNew == null && !bIsPreloading) {
             objNew = (OAObject) hm.get(XML_OBJECT);
         }
-        
-        String cname = (String) hm.get(XML_CLASS);
-        if (!OAString.isEmpty(cname)) {
-            cname = resolveClassName(cname);
-            toClass = (Class<? extends OAObject>) Class.forName(cname);
+        if (objNew != null) toClass = objNew.getClass();
+        else {
+            String cname = (String) hm.get(XML_CLASS);
+            if (!OAString.isEmpty(cname)) {
+                cname = resolveClassName(cname);
+                toClass = (Class<? extends OAObject>) Class.forName(cname);
+            }
         }
-
+        
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(toClass);
         if (objNew == null) {
     
@@ -247,7 +254,11 @@ public class OAXMLReader extends DefaultHandler {
                     String id = matchProps[i].toUpperCase();
                     Class c2 = OAObjectInfoDelegate.getPropertyClass(toClass, id);
                     matchValues[i] = hm.get(id);
-                    if (matchValues[i] instanceof String) matchValues[i] = OAConverter.convert(c2, matchValues[i]);
+                    
+                    if (matchValues[i] instanceof HashMap) {
+                        matchValues[i] = _process((HashMap) matchValues[i], c2, true, level+1);
+                    }
+                    else if (matchValues[i] instanceof String) matchValues[i] = OAConverter.convert(c2, matchValues[i]);
                 }
     
                 OASelect sel = new OASelect(toClass);
@@ -277,7 +288,7 @@ public class OAXMLReader extends DefaultHandler {
                 try {
                     objNew = createNewObject(toClass);
                     // set property ids
-                    if (matchProps == null || matchProps.length == 0) { 
+                    if (matchProps == null || matchProps.length == 0) {
                         for (int i=0; ids != null && i<ids.length; i++) {
                             values[i] = getValue(objNew, ids[i], values[i]);  // hook method for subclass
                             objNew.setProperty(ids[i], values[i]);
