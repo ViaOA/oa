@@ -62,9 +62,8 @@ public class OAXMLReaderTest extends OAUnitTest {
         xw.close();
         String xml = new String(baos.toString());
         
-        OAXMLReader1 xr = new OAXMLReader1();
-        Object objx = xr.parseString(xml);
-        Object[] objs = xr.getRootObjects();
+        OAXMLReader xr = new OAXMLReader();
+        Object[] objs = xr.readXML(xml);
         
         assertEquals(1, objs.length);
         

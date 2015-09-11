@@ -54,8 +54,8 @@ public class OAObjectXMLDelegate {
 	    }
 	    
 	    
-        if (bWriteClassName) {
-            attrib += " class=\""+ow.getClassName(oaObj.getClass())+"\"";
+        if (bWriteClassName || tagName == null) {
+            attrib += " class=\""+ow.getClassName(c)+"\"";
         }
 
         String[] ids = oi.idProperties;
@@ -65,7 +65,7 @@ public class OAObjectXMLDelegate {
         }
 	    
 	    if (tagName == null) {
-	        tagName = ow.getClassName(c);
+	        tagName = c.getSimpleName();
 	    }
 	    
         ow.indent();

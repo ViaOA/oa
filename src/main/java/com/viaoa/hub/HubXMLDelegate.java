@@ -33,9 +33,7 @@ public class HubXMLDelegate {
 	    ow.indent();
 	    
         if (tagName == null) {
-qqqqqqqqqqqqqqqqqq            
-            // no tag for outer hub anymore
-      // ow.println("<Hub class=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
+            ow.println("<Hub class=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
             // ow.println("<"+ow.getClassName(Hub.class)+" ObjectClass=\""+ow.getClassName(thisHub.getObjectClass())+"\" total=\""+thisHub.getSize()+"\">");
         }
         else {
@@ -49,13 +47,13 @@ qqqqqqqqqqqqqqqqqq
 	        if (writeType == OAXMLWriter.WRITE_NONEW_KEYONLY && obj instanceof OAObject) {
 	        	if (((OAObject) obj).getNew()) continue;
 	        }
-	        String name = thisHub.getObjectClass().getName();
+	        String name = thisHub.getObjectClass().getSimpleName();
 	        if (obj instanceof OAObject) OAObjectXMLDelegate.write((OAObject)obj, ow, name, bKeyOnly, cascade);
 	    }
 	    ow.indent--;
 	    ow.indent();
         if (tagName == null) {
-            // ow.println("</Hub");
+            ow.println("</Hub>");
             // ow.println("</"+ow.getClassName(Hub.class)+">");
         }
         else ow.println("</"+tagName+">");

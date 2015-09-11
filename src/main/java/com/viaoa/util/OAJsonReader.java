@@ -64,10 +64,7 @@ public class OAJsonReader {
                     OAJsonReader.this.endObject(obj, hasParent);
                 }
             };
-            xmlReader.parseString(xml);
-            ArrayList al = xmlReader.process(rootClass);
-            Object[] objs = new Object[al.size()];
-            al.toArray(objs);
+            Object[] objs = xmlReader.readXML(xml);
             
             return objs;
         }
