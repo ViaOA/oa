@@ -43,6 +43,8 @@ public class OAXMLWriter {
 
     private boolean bIncludeEmptyHubs;
     private boolean bIncludeNullProperties;
+    private boolean bIncludeOnlyImportMatcheProperties;
+    private OACascade cascade;
     
     public OAXMLWriter(String fname) {
         setFileName(fname);
@@ -65,13 +67,19 @@ public class OAXMLWriter {
         }
     }
 
-    private OACascade cascade;
+    
+    public void setIncludeOnlyImportMatchProperties(boolean b) {
+        bIncludeOnlyImportMatcheProperties = b;
+    }
+    public boolean getIncludeOnlyImportMatchProperties() {
+        return bIncludeOnlyImportMatcheProperties;
+    }
 
     
     /** saves OAObject as XML */
     public void write(OAObject obj) {
         if (cascade == null) cascade = new OACascade();
-		OAObjectXMLDelegate.write(obj, this, null, false, cascade);
+        OAObjectXMLDelegate.write(obj, this, null, false, cascade);
     }
     /** saves Hub as XML */
     public void write(Hub hub) {
@@ -89,38 +97,18 @@ public class OAXMLWriter {
     /** called by OAObject.write to know if object should
         be written for a property that references another OAObject.
         This can be overwritten to control which properties are saved.
+        default: if o
         default = WRITE_YES;
     */
     public int shouldWriteProperty(Object obj, String propertyName, Object value) {
+        if (bIncludeOnlyImportMatcheProperties && obj instanceof OAObject) {
+            OAObject oaObj = (OAObject) obj;
+            OAObjectInfo io = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+            if (!io.hasImportMatchProperties()) return WRITE_NO;
+        }
         return WRITE_YES;
     }
 
-    
-    private Stack<String> stack = new Stack<String>();
-    /**
-     * Shows the curret list of objects that are being saved.
-     */
-    public String getCurrentPropertyPath() {
-        int x = stack.size();
-        String s = "";
-        for (int i=0; i<x; i++) {
-            if (i > 0) s += ".";
-            s += stack.get(i); 
-        }
-        return s;
-    }
-    /**
-     * Used internally when writing objects to show the objets that are being written.
-     * @see #getCurrentPropertyPath()
-     */
-    public void push(String name) {
-        stack.push(name);
-    }
-    public void pop() {
-        if (!stack.isEmpty()) stack.pop();
-    }
-    
-    
     /**
      * returns true if this object will be included by another parent object.
      */
@@ -286,5 +274,29 @@ public class OAXMLWriter {
     }
     public boolean getIncludeNullProperties() {
         return bIncludeNullProperties;
+    }
+
+    private Stack<String> stack = new Stack<String>();
+    /**
+     * Shows the curret list of objects that are being saved.
+     */
+    public String getCurrentPropertyPath() {
+        int x = stack.size();
+        String s = "";
+        for (int i=0; i<x; i++) {
+            if (i > 0) s += ".";
+            s += stack.get(i); 
+        }
+        return s;
+    }
+    /**
+     * Used internally when writing objects to show the objets that are being written.
+     * @see #getCurrentPropertyPath()
+     */
+    public void push(String name) {
+        stack.push(name);
+    }
+    public void pop() {
+        if (!stack.isEmpty()) stack.pop();
     }
 }
