@@ -53,9 +53,17 @@ public class HubXMLDelegate {
         }
 	    
 	    ow.indent++;
+
+	    for (int i=0; ;i++) {
+            Object obj = thisHub.elementAt(i);
+            if (obj == null) break;
+            if (obj instanceof OAObject) ow.addWillBeWriting((OAObject) obj);
+	    }
+	    
 	    for (int i=0; ;i++) {
 	        Object obj = thisHub.elementAt(i);
 	        if (obj == null) break;
+            if (obj instanceof OAObject) ow.removeWillBeWriting((OAObject) obj);
 	        if (writeType == OAXMLWriter.WRITE_NONEW_KEYONLY && obj instanceof OAObject) {
 	        	if (((OAObject) obj).getNew()) continue;
 	        }

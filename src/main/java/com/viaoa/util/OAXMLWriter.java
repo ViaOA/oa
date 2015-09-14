@@ -43,7 +43,7 @@ public class OAXMLWriter {
 
     private boolean bIncludeEmptyHubs;
     private boolean bIncludeNullProperties;
-    private boolean bIncludeOnlyImportMatcheProperties;
+    private boolean bIncludeOnlyImportMatchProperties;
     private OACascade cascade;
     
     public OAXMLWriter(String fname) {
@@ -69,10 +69,10 @@ public class OAXMLWriter {
 
     
     public void setIncludeOnlyImportMatchProperties(boolean b) {
-        bIncludeOnlyImportMatcheProperties = b;
+        bIncludeOnlyImportMatchProperties = b;
     }
     public boolean getIncludeOnlyImportMatchProperties() {
-        return bIncludeOnlyImportMatcheProperties;
+        return bIncludeOnlyImportMatchProperties;
     }
 
     
@@ -101,7 +101,7 @@ public class OAXMLWriter {
         default = WRITE_YES;
     */
     public int shouldWriteProperty(Object obj, String propertyName, Object value) {
-        if (bIncludeOnlyImportMatcheProperties && obj instanceof OAObject) {
+        if (bIncludeOnlyImportMatchProperties && obj instanceof OAObject) {
             OAObject oaObj = (OAObject) obj;
             OAObjectInfo io = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
             if (!io.hasImportMatchProperties()) return WRITE_NO;
@@ -109,16 +109,30 @@ public class OAXMLWriter {
         return WRITE_YES;
     }
 
+    
+    private ArrayList<OAObject> alWillBeWriting = new ArrayList<OAObject>();;
+    public void addWillBeWriting(OAObject obj) {
+        alWillBeWriting.add(obj);
+    }
+    public void removeWillBeWriting(OAObject obj) {
+        alWillBeWriting.remove(obj);
+    }
+    
+    
     /**
      * returns true if this object will be included by another parent object.
      */
     public boolean willBeIncludedLater(OAObject oaObj) {
         if (oaObj == null) return false;
         if (cascade.wasCascaded(oaObj, false)) return false;  // already included
+
+        if (alWillBeWriting.contains(oaObj)) return true;
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         OALinkInfo li = oi.getOwnedByOne();
-        if (li == null) return false;
+        if (li == null) {
+            return false;
+        }
         
         Object objx = OAObjectPropertyDelegate.getProperty(oaObj, li.getName(), false, true);
         if (objx == null) return false;

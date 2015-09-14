@@ -777,6 +777,7 @@ public class OAObjectInfoDelegate {
             int x = propertyName.compareTo(ss[i]);
             if (x == 0) {
                 int pos = (i/8);
+                if (pos >= oaObj.nulls.length) return false;
                 byte b = oaObj.nulls[pos];
                 int bit = i % 8;
                 byte b2 = 1;
