@@ -683,6 +683,10 @@ public class OADateTime implements java.io.Serializable, Comparable {
         return (compareTo(obj) > 0);
     }
 
+    public int compare(Object obj) {
+        return compareTo(obj);
+    }
+    
     /**
         Compares this object with the specified object for order.<br>
         Returns a negative integer, zero, or a positive integer as this object is less than, equal to,

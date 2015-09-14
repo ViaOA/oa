@@ -502,6 +502,7 @@ public class OAXMLReader {
                     xmlReader1.setDecodeMessage(getDecodeMessage());
                     xmlReader1.setImportMatching(getImportMatching());
                     xmlReader1.startElement(namespaceURI, sName, qName, attrs);
+                    return;
                 }
                 else if (versionOAXML != 2) throw new RuntimeException("version OAXML "+version+" not supported, current version is 2.0");
             }
