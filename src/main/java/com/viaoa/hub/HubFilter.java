@@ -915,7 +915,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                 }
             };
             
-            find.addFilter(filter);
+            find.addFilter(f);
             
             f = new OAFilter() {
                 public boolean isUsed(Object obj) {
