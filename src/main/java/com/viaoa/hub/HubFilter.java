@@ -168,8 +168,11 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         @see #setRefreshOnLinkChange(boolean) to refresh list when linkTo Hub AO changes
     */
     public void addDependentProperty(String prop) {
+        _addDependentProperty(prop, true);
+    }
+    private void _addDependentProperty(String prop, boolean bRefesh) {
         if (bClosed) return;
-        addProperty(prop);
+        _addProperty(prop, false);
     }
 
     /** 
@@ -232,6 +235,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
      * @deprecated use addDependentProperty instead
      */
     public void addProperty(String prop) {
+        _addProperty(prop, true);
+    }
+    private void _addProperty(String prop, boolean bRefresh) {
         if (bClosed) return;
         if (prop == null || prop.length() == 0) return;
         
@@ -250,7 +256,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         // hashProp has list of property names that this.hubListener is listening to
         if (hashProp == null) hashProp = new HashSet(5, .75f);
         hashProp.add(uniqueName.toUpperCase());
-        refresh();
+        if (bRefresh) refresh();
     }
 
     /** 
@@ -884,7 +890,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
      */
     private void _addFilter(final String propPath, final OAFilter filter) {
         if (filter == null) return;
-        addDependentProperty(propPath);
+        _addDependentProperty(propPath, false);
         
         OAFilter<T> f;
         if (OAString.isEmpty(propPath)) {
