@@ -136,6 +136,7 @@ public class OAXMLWriter {
         
         Object objx = OAObjectPropertyDelegate.getProperty(oaObj, li.getName(), false, true);
         if (objx == null) return false;
+        if (!(objx instanceof OAObject)) return false;
         
         if (cascade.wasCascaded((OAObject) objx, false)) return false;
         
