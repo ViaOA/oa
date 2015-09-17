@@ -755,6 +755,24 @@ public class QueryConverter {
                                     break;
                                 }
                             }
+qqqqqqqqqqqqqqqqqqqqqqqq
+16:10:56.264 [Preload Data] WARN  c.v.object.OAObjectReflectDelegate - error calling com.tmgsc.hifive.model.oa.Program.getProperty("ImageStores")
+java.lang.ArrayIndexOutOfBoundsException: 1
+    at com.viaoa.ds.jdbc.query.QueryConverter.parseWhereUseJoin(QueryConverter.java:758) ~[oa.jar:na]
+    at com.viaoa.ds.jdbc.query.QueryConverter.convertToSql(QueryConverter.java:532) ~[oa.jar:na]
+    at com.viaoa.ds.jdbc.query.QueryConverter.convertToPreparedStatementSql(QueryConverter.java:273) ~[oa.jar:na]
+    at com.viaoa.ds.jdbc.delegate.SelectDelegate.select(SelectDelegate.java:215) ~[oa.jar:na]
+    at com.viaoa.ds.jdbc.OADataSourceJDBC.select(OADataSourceJDBC.java:212) ~[oa.jar:na]
+    at com.viaoa.ds.OADataSource.select(OADataSource.java:638) ~[oa.jar:na]
+    at com.viaoa.ds.OASelect.select(OASelect.java:535) ~[oa.jar:na]
+
+qqqqqqqqqqqqqq            
+21:18:29.462 [OARemoteThread.0] WARN  c.v.object.OAObjectReflectDelegate - error calling com.tmgsc.hifive.model.oa.AwardType.getProperty("AddOnItems")
+java.lang.ArrayIndexOutOfBoundsException: null
+21:18:29.839 [OARemoteThread.0] WARN  c.v.object.OAObjectReflectDelegate - error calling com.tmgsc.hifive.model.oa.EmployeeAward.getProperty("ShippedEmails")
+java.lang.ArrayIndexOutOfBoundsException: null            
+
+
                             column = li.linkFromParent.fkeys[pos];
                         }
                         else column = li.linkFromParent.fkeys[0]; 
