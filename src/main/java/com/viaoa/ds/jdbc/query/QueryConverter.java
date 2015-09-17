@@ -772,6 +772,14 @@ java.lang.ArrayIndexOutOfBoundsException: null
 21:18:29.839 [OARemoteThread.0] WARN  c.v.object.OAObjectReflectDelegate - error calling com.tmgsc.hifive.model.oa.EmployeeAward.getProperty("ShippedEmails")
 java.lang.ArrayIndexOutOfBoundsException: null            
 
+qqqqqqqqqq
+Search for Employee, ended up removing/clearing the parent employe when viewing the viewing the parent
+
+BUG >> OATablePager.java   has weird chars , method is in getHTml()
+
+does the detail hubs automatically set the hub.pos(0) ???
+
+
 
                             column = li.linkFromParent.fkeys[pos];
                         }
