@@ -748,39 +748,14 @@ public class QueryConverter {
                     Linkinfo li = (Linkinfo) vecLink.elementAt(xx-1);
                     if (!li.bMany) {
                         if (li.parent.bMany) {
-                            int pos = 0; //qqq only using one column, could be multipart id
-                            for (int j=0; j<li.parent.links.length; j++) {
+                            // many2many that uses a link table
+                            int pos = 0; // currently only using one column, could be multipart id
+                            for (int j=0; j<li.parent.links.length; j++) {  // parent should be link table qqqqqqqqqqqqqq
                                 if (li.parent.links[j] == li) {
                                     pos = j;
                                     break;
                                 }
                             }
-qqqqqqqqqqqqqqqqqqqqqqqq
-16:10:56.264 [Preload Data] WARN  c.v.object.OAObjectReflectDelegate - error calling com.tmgsc.hifive.model.oa.Program.getProperty("ImageStores")
-java.lang.ArrayIndexOutOfBoundsException: 1
-    at com.viaoa.ds.jdbc.query.QueryConverter.parseWhereUseJoin(QueryConverter.java:758) ~[oa.jar:na]
-    at com.viaoa.ds.jdbc.query.QueryConverter.convertToSql(QueryConverter.java:532) ~[oa.jar:na]
-    at com.viaoa.ds.jdbc.query.QueryConverter.convertToPreparedStatementSql(QueryConverter.java:273) ~[oa.jar:na]
-    at com.viaoa.ds.jdbc.delegate.SelectDelegate.select(SelectDelegate.java:215) ~[oa.jar:na]
-    at com.viaoa.ds.jdbc.OADataSourceJDBC.select(OADataSourceJDBC.java:212) ~[oa.jar:na]
-    at com.viaoa.ds.OADataSource.select(OADataSource.java:638) ~[oa.jar:na]
-    at com.viaoa.ds.OASelect.select(OASelect.java:535) ~[oa.jar:na]
-
-qqqqqqqqqqqqqq            
-21:18:29.462 [OARemoteThread.0] WARN  c.v.object.OAObjectReflectDelegate - error calling com.tmgsc.hifive.model.oa.AwardType.getProperty("AddOnItems")
-java.lang.ArrayIndexOutOfBoundsException: null
-21:18:29.839 [OARemoteThread.0] WARN  c.v.object.OAObjectReflectDelegate - error calling com.tmgsc.hifive.model.oa.EmployeeAward.getProperty("ShippedEmails")
-java.lang.ArrayIndexOutOfBoundsException: null            
-
-qqqqqqqqqq
-Search for Employee, ended up removing/clearing the parent employe when viewing the viewing the parent
-
-BUG >> OATablePager.java   has weird chars , method is in getHTml()
-
-does the detail hubs automatically set the hub.pos(0) ???
-
-
-
                             column = li.linkFromParent.fkeys[pos];
                         }
                         else column = li.linkFromParent.fkeys[0]; 
