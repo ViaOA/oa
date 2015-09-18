@@ -154,8 +154,12 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     }
 
     public void setText(String s) {
-        super.setText(s);
-        if (control != null) control.saveText();
+        try {
+            super.setText(s);
+            if (control != null) control.saveText();
+        }
+        catch (Exception e) {
+        }
     }
 
     public void setText(String s, boolean bSaveChanges) {

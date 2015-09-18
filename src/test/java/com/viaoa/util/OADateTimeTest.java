@@ -259,7 +259,7 @@ public class OADateTimeTest extends OAUnitTest {
     }
     
     // DST check2
-    public static void main(String[] args) {
+    public static void mainD(String[] args) {
         // before dst ends
         OADateTime dtHere = new OADateTime(2015, 10, 1, 0, 0, 0);
         System.out.println("  =>"+dtHere.toString("MM/dd/yyyy HH:mm:ss a z"));
@@ -277,6 +277,23 @@ public class OADateTimeTest extends OAUnitTest {
         int xx = 4;
         xx++;
     }
+    
+    public static void main(String[] args) {
+        OATime t = new OATime(8, 49, 0);
+        OADateTime dtNow = new OADateTime();
+        
+        OATime tNow = new OATime(dtNow);
+        
+        OADateTime dt1 = new OADateTime(t.getTime());
+        OADateTime dt2 = new OADateTime(tNow.getTime());
+        
+        
+        long diff = Math.abs(t.getTime() - tNow.getTime());
+        
+        int xx = 4;
+        xx++;
+    }
+    
 }
 
 

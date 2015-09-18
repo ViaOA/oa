@@ -396,6 +396,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         setSecond(0);
         setMilliSecond(0);
         cal.set(Calendar.AM_PM, Calendar.AM);
+        cal.get(Calendar.DATE);  // causes recalc
     }
     /**
         Sets time.
@@ -430,12 +431,19 @@ public class OADateTime implements java.io.Serializable, Comparable {
     
     
     /**
-        Sets year, month, day to zero.
+        sets date to 1/1/1970  (time 0)
     */
     public void clearDate() {
+        setYear(1970);
+        setMonth(0);
+        setDay(1);
+
+        /*was  // clear just makes it undefined, and getTime() will not be predictable (?)
         cal.clear(Calendar.YEAR);
         cal.clear(Calendar.MONTH);
         cal.clear(Calendar.DATE);
+        */
+        cal.get(Calendar.DATE);  // causes recalc
     }
     /**
         Sets year, month, and day.
