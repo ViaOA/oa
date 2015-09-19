@@ -111,9 +111,11 @@ public class ConnectionPool implements Runnable {
             }
 
             for (int i=cntAvailable; i<dbmd.minConnections && (alOAConnection.size() < dbmd.maxConnections) ; i++) {
+                boolean bLocked = false;
                 try {
                     OAConnection con = createNewOAConnection();
                     lock.lock();
+                    bLocked = true;
                     if (alOAConnection.size() >= dbmd.maxConnections) break;
                     con.bAvailable = true;
                     alOAConnection.add(con);
@@ -122,7 +124,7 @@ public class ConnectionPool implements Runnable {
                     LOG.log(Level.WARNING, "error trying to create a new JDBC connection", e);
                 }
                 finally {
-                    lock.unlock();
+                    if (bLocked) lock.unlock();
                 }
             }
             
