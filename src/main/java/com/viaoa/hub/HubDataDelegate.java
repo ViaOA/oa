@@ -12,7 +12,9 @@ package com.viaoa.hub;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 
@@ -89,19 +91,20 @@ public class HubDataDelegate {
 	
 	public static Object[] toArray(Hub thisHub) {
 	    thisHub.getSize(); // call before sync, in case it needs to load
-	    synchronized (thisHub.data) {
-	        Object[] objs = new Object[thisHub.getSize()];
-	        for (;;) {
-	            try {
-	                thisHub.data.vector.copyInto(objs);
-	                break;
+        Object[] objs;
+        for (int i=0;;i++) {
+            synchronized (thisHub.data) {
+                objs = new Object[thisHub.getSize()];
+                try {
+                    thisHub.data.vector.copyInto(objs);
+                    break;
                 }
                 catch (Exception e) {
                     // if exception, then try again
                 }
-	        }
-		    return objs;
-	    }
+            }
+        }
+	    return objs;
 	}
     
     public static int getCurrentSize(Hub thisHub) {
