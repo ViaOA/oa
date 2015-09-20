@@ -121,7 +121,9 @@ class HubDetail implements java.io.Serializable {
                 if (!(obj instanceof OAObject)) return;
 
                 Object parent = OAObjectReflectDelegate.getProperty((OAObject)obj, liDetailToMaster.getName());
-                if (parent != null && !(parent instanceof OAObject)) return;  // 20150920 should not happen since this is only if master is type=link.One
+                if (parent != null && !(parent instanceof OAObject)) {
+                    return;  // 20150920 should not happen since this is only if master is type=link.One
+                }
                 if (hubMaster.getAO() == parent) return;
 
                 try {
