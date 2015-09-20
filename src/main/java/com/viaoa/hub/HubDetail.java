@@ -110,6 +110,9 @@ class HubDetail implements java.io.Serializable {
         final OALinkInfo liDetailToMaster = liMasterToDetail.getReverseLinkInfo();
         if (liDetailToMaster == null) return;
         
+        // 20150920 only if master is a one, not many
+        if (liDetailToMaster.getType() != OALinkInfo.ONE) return;
+        
         hubDetail.addHubListener(new HubListenerAdapter() {
             @Override
             public void afterChangeActiveObject(HubEvent e) {
@@ -118,6 +121,7 @@ class HubDetail implements java.io.Serializable {
                 if (!(obj instanceof OAObject)) return;
 
                 Object parent = OAObjectReflectDelegate.getProperty((OAObject)obj, liDetailToMaster.getName());
+                if (parent != null && !(parent instanceof OAObject)) return;  // 20150920 should not happen since this is only if master is type=link.One
                 if (hubMaster.getAO() == parent) return;
 
                 try {
