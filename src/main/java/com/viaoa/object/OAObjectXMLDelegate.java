@@ -63,8 +63,7 @@ public class OAObjectXMLDelegate {
             attrib += "id=\"g"+OAObjectDelegate.getGuid(oaObj)+"\""; 
 	    }
 	    
-	    
-        if (bWriteClassName || tagName == null) {
+        if ((bWriteClassName && !bKeyOnly) || tagName == null) {
             attrib += " class=\""+ow.getClassName(c)+"\"";
         }
 
@@ -99,7 +98,7 @@ public class OAObjectXMLDelegate {
 	
 	        if (OAConverter.getConverter(value.getClass()) == null && !(value instanceof String)) {
 	            if (value instanceof OAObject) {
-	                write(((OAObject)value), ow, propName, false, cascade);
+	                write(((OAObject)value), ow, propName, false, cascade, true);
 	                continue;
 	            }
 	            Class cval = value.getClass();
