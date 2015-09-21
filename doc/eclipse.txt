@@ -29,6 +29,15 @@ Quickmarks plugin
 use file/import/maven/checkout from scm
     ex: ssh://git@stash.intcx.net:7999/mrtools/admin.git
 
+20150921
+file/import maven projects
+    location: C:\Users\vvia\git\tsam
+
+
+
+
+
+
 
 creating templates
     menu: window/preferences    
