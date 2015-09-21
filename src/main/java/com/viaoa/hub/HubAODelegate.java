@@ -12,6 +12,7 @@ package com.viaoa.hub;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
@@ -26,7 +27,7 @@ import com.viaoa.util.OAFilter;
  * @author vincevia
  */
 public class HubAODelegate {
-
+    private static Logger LOG = Logger.getLogger(HubAODelegate.class.getName());
     /**
 	    Navigational method that will set the position of the active object.
 	    GUI components use this to recognize which object that they are working with.
@@ -44,6 +45,12 @@ public class HubAODelegate {
 	 */
 	public static void setActiveObject(Hub thisHub, Object object) {
 	    if (object != null) {
+	        /* not needed, used for debugging 20150920
+	        if (object instanceof Hub) {
+	            LOG.warning("trying to set active object using a AO=hub, thisHub="+thisHub+", AO="+object);
+	            return;
+	        }
+	        */
 	        object = HubDelegate.getRealObject(thisHub, object);
 	    }
 	    setActiveObject(thisHub, object, true, true, false);
