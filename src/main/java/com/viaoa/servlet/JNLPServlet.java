@@ -97,6 +97,8 @@ public class JNLPServlet extends HttpServlet
                 
         String sURI = req.getRequestURI(); // "/jnlp/template.jnlp"
         String fname = (path + sURI);
+        
+        String query = req.getQueryString();
 
         String jnlpDir = sURI;
         int pos = jnlpDir.lastIndexOf('/');
@@ -148,7 +150,20 @@ public class JNLPServlet extends HttpServlet
                 // convert the jar files names to the name with version.
                 txt = updateJarFileNames(txt);
                 hmJnlp.put(fname, txt);
-            }            
+            }
+            
+            // 20150922
+            if (query != null && query.toUpperCase().indexOf("DESKTOP") >= 0) {
+                pos = txt.indexOf("<desktop/>");
+                if (pos < 0) {
+                    pos = txt.indexOf("<shortcut");
+                    if (pos > 0) {
+                        pos = txt.indexOf(">", pos) + 1;
+                        txt = txt.substring(0, pos) + "<desktop/>" + txt.substring(pos);
+                    }
+                }
+            }
+            
             resp.setContentType("application/x-java-jnlp-file");
         }
         catch (Exception e) {

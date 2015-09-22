@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.*;
 
+import com.viaoa.comm.io.IODummy;
 import com.viaoa.hub.Hub;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
@@ -545,8 +546,15 @@ indent--;//qqqqqqqqqqqqq
      * The object that is being wrapped.
      */
     public TYPE getObject() {
-        if (parentWrapper != null) return (TYPE) parentWrapper.getObject();
-        return (TYPE) object;
+        Object objx;
+        if (parentWrapper != null) objx = parentWrapper.getObject();
+        else objx = object;
+        
+        if (objx instanceof IODummy) {
+            throw new RuntimeException("Object was not able to be read, class not found");
+        }
+        
+        return (TYPE) objx;
     }
     public Object getExtraObject() {
         if (parentWrapper != null) return parentWrapper.getExtraObject();
@@ -601,6 +609,5 @@ indent--;//qqqqqqqqqqqqq
             
         }
         */
-        
     }
 }

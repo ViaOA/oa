@@ -1,4 +1,23 @@
-                With the new line item object I’ve been working on I wanted to add a sum method to the various displays. The hub only check box does this, but the code isn’t generated perfectly. Since I have a lot of these links, it’s going to become a pain to have to change them every time. Also, since I have a lot of objects I’m pulling from, most of them are null, so I hid them unless they have a value. Here’s what needs to be fixed:
+
+
+
+MainCardPanel     = AppManager
+
+qqqqqqqqq
+
+
+LinkOneCode.java
+
+JfcEditGenerator.java
+
+search for:   //vvvvvvvvvqqqqqqqqqqq
+
+
+
+qqqqqqqqqqqqq
+
+
+                With the new line item object Iï¿½ve been working on I wanted to add a sum method to the various displays. The hub only check box does this, but the code isnï¿½t generated perfectly. Since I have a lot of these links, itï¿½s going to become a pain to have to change them every time. Also, since I have a lot of objects Iï¿½m pulling from, most of them are null, so I hid them unless they have a value. Hereï¿½s what needs to be fixed:
 
 After each OALabel/Button/TreeComboBox some VisibleControllers are inserted. I have to delete these. 
                 public OALabel createInspireOrderCharityLabel() {
@@ -7,10 +26,10 @@ After each OALabel/Button/TreeComboBox some VisibleControllers are inserted. I h
         new VisibleController(lbl, getHub(), LineItemPP.inspireOrderCharity().pp, true);
         new VisibleController(lbl, getHub(), LineItemPP.inspireOrderCharity().pp, true); 
 
-Basically this line gets added in a lot and I don’t think it does anything.
+Basically this line gets added in a lot and I donï¿½t think it does anything.
                 new VisibleController(lbl, getHub(), LineItemPP.employee().pp, true);
 
-Inside some of the panels these lines are generated, I’m not sure if they do anything, but pan should be panel if it’s supposed to refer to an existing variable like lbl does. 
+Inside some of the panels these lines are generated, Iï¿½m not sure if they do anything, but pan should be panel if itï¿½s supposed to refer to an existing variable like lbl does. 
                 new VisibleController(lbl, model.getInspireOrderHub(), LineItemPP.inspireOrder().pp, true);
 new VisibleController(pan, model.getInspireOrderHub(), LineItemPP.inspireOrder().pp, true);
            
@@ -19,5 +38,5 @@ Because the code for the label is generated on the lineitemjfc and not the emplo
                 This should be
                 comp = getLineItemsJfc().createSumLabel();
 
-After these changes everything works as intended. Looking at an employee’s line items tab displays a sum which is calculated from the total values of all that employee’s line items. Same goes for programs, locations, inspire orders, and employee awards. Secondly, any line item only shows the links for objects that are set, none of null values show up. So a line item generated for an email, shows the email, program, location, employee, but not the null award card order, points record, inspire order charity, etc. 
+After these changes everything works as intended. Looking at an employeeï¿½s line items tab displays a sum which is calculated from the total values of all that employeeï¿½s line items. Same goes for programs, locations, inspire orders, and employee awards. Secondly, any line item only shows the links for objects that are set, none of null values show up. So a line item generated for an email, shows the email, program, location, employee, but not the null award card order, points record, inspire order charity, etc. 
 
