@@ -1,5 +1,30 @@
 
 
+        SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                return null;
+            }
+            @Override
+            protected void process(List<Void> chunks) {
+            }
+            @Override
+            protected void done() {
+        
+            }
+        };
+        sw.execute();
+        /*
+        try {
+            sw.get(); // to get/wait for returned object
+        }
+        catch (Exception e) {
+            obj[0] = false;
+            LOG.log(Level.WARNING, "error in after login", e);
+        }
+        */
+
+
 >> simple
         
         // Void is the return type, Point is the publish/process type

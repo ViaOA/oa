@@ -1,6 +1,19 @@
 
 
 
+
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        
+        Future future = executorService.submit(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                return null;
+            }
+        });
+        future.get();
+
+
+
 Simple, with as many threads as needed
 
     private ExecutorService executorService;

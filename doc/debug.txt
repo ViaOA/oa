@@ -1,11 +1,8 @@
 
-clicking on desktop does not set model.ao if in move mode
 
-code gen
-   have it prefetch all of the dir files
+
 
 oasyncclient or multiple servers
-
 
 qqqqqqqqqqqqq
 
@@ -16,14 +13,7 @@ values.properties
 
 qqqqqqqqq
 
-
-LinkOneCode.java
-
-JfcEditGenerator.java
-
-search for:   //vvvvvvvvvqqqqqqqqqqq
-
-
+code gen for hubCalcProps
 
 qqqqqqqqqqqqq
 
