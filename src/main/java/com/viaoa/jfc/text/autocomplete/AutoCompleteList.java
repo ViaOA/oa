@@ -48,10 +48,7 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
         list.setRequestFocusEnabled(false);
         Border border = list.getBorder();
         if (border == null) border = BorderFactory.createEmptyBorder(1, 5, 1, 16);
-        else border = new CompoundBorder(BorderFactory.createEmptyBorder(1, 5, 1, 16), border); // extra
-                                                                                                // space
-                                                                                                // is
-                                                                                                // needed
+        else border = new CompoundBorder(BorderFactory.createEmptyBorder(1, 5, 1, 16), border); // extra is needed
         list.setBorder(border);
 
         origListCellRenderer = list.getCellRenderer();
@@ -79,6 +76,7 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
                 String[] ss = getSearchData(s, s.length());
                 if (ss != null && ss.length == 1) {
                     onValueSelected(0, ss[0]);
+                    popup.setVisible(false);
                 }
             }
         });
@@ -121,10 +119,10 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
 
     // called when the popup isVisible and [enter]
     @Override
-    protected void onSelection() {
+    protected boolean onSelection() {
         // called when popup is visible and [Enter]
         Object obj = list.getSelectedValue();
-        if (obj == null) return; // nothing selected, only [enter]
+        if (obj == null) return false; // nothing selected, use hit [enter]
 
         int pos = list.getSelectedIndex();
         String s = getTextForSelectedValue(pos, (String) obj);
@@ -132,6 +130,7 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
 
         onValueSelected(pos, (String) obj);
         textComp.setText(s);
+        return true;
     }
 
     @Override

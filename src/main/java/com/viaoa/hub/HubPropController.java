@@ -176,7 +176,7 @@ public abstract class HubPropController {
     }
 
     /**
-     * Called after by update during a change that affects any of the hub/properties.
+     * Called  by update during a change that affects any of the hub/properties.
      * This can be overwritten to customize the value.
      * @return
      */

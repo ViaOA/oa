@@ -1546,6 +1546,9 @@ public class RemoteMultiplexerServer {
             HashSet<Integer> hsQueuedRequest = new HashSet<Integer>(); 
             for (int i=0;;i++) {
                 if (vsocket.isClosed()) {
+                    if (!realSocket.isClosed()) {
+                        throw new Exception("vsocket has been closed, but real socket is still open");
+                    }
                     return;
                 }
 

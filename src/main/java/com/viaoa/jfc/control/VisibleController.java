@@ -52,31 +52,24 @@ public class VisibleController extends HubPropController {
         }
     }
     
+    
+    @Override
+    public void update() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            super.update();
+            return;
+        }
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                VisibleController.this.update();
+            }
+        });
+    }
+    
     @Override
     protected void onUpdate(final boolean bValid) {
-        if (this.component == null) return;
-        if (SwingUtilities.isEventDispatchThread()) {
-            try {
-                bIsCallingUpdate = true;
-                this.component.setVisible(bValid);
-            }
-            finally {
-                bIsCallingUpdate = false;
-            }
-        }
-        else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        bIsCallingUpdate = true;
-                        component.setVisible(bValid);
-                    }
-                    finally {
-                        bIsCallingUpdate = false;
-                    }
-                }
-            });
-        }
+        this.component.setVisible(bValid);
     }
 }

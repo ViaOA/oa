@@ -92,8 +92,9 @@ public abstract class AutoCompleteBase {
                     case KeyEvent.VK_ENTER:
                         if (popup.isVisible()) {
                             bIgnorePopup = true;
-                            onSelection();
-                            popup.setVisible(false); 
+                            if (onSelection()) {
+                                popup.setVisible(false);
+                            }
                             bIgnorePopup = false;
                         }
                         break;
@@ -363,8 +364,9 @@ public abstract class AutoCompleteBase {
     /**
      * Called when user has pressed the "Enter" key, while the popup is visible.
      * The popup component needs to replace the textField text with the selected value from the popup component.
+     * @return true if something was selected and popup can be closed.
      */
-    protected abstract void onSelection();
+    protected abstract boolean onSelection();
 
 
     // 20140408 use swingworker for search and display

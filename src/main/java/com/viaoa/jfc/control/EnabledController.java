@@ -62,30 +62,23 @@ public class EnabledController extends HubPropController {
         }
     }
     
-    private void onUpdate(final Component comp, final boolean bEnabled) {
+    @Override
+    public void update() {
         if (SwingUtilities.isEventDispatchThread()) {
-            try {
-                bIsCallingUpdate = true;
-               _onUpdate(comp, bEnabled);
-            }
-            finally {
-                bIsCallingUpdate = false;
-            }
+            super.update();
+            return;
         }
-        else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        bIsCallingUpdate = true;
-                       _onUpdate(comp, bEnabled);
-                    }
-                    finally {
-                        bIsCallingUpdate = false;
-                    }
-                }
-            });
-        }
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                EnabledController.this.update();
+            }
+        });
+    }
+    
+    private void onUpdate(final Component comp, final boolean bEnabled) {
+        _onUpdate(comp, bEnabled);
     }
     
     
