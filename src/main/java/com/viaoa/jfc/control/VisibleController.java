@@ -70,6 +70,6 @@ public class VisibleController extends HubPropController {
     
     @Override
     protected void onUpdate(final boolean bValid) {
-        this.component.setVisible(bValid);
+        if (this.component != null) this.component.setVisible(bValid);
     }
 }

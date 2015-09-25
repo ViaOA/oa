@@ -834,6 +834,13 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
     }
     
     protected boolean findNode(ArrayList<OATreeNodeData> al, OATreeNodeData fromNodeData, OATreeNode nodeFind, Object objFind) {
+        return _findNode(al, fromNodeData, nodeFind, objFind, 0);
+    }
+    protected boolean _findNode(ArrayList<OATreeNodeData> al, OATreeNodeData fromNodeData, OATreeNode nodeFind, Object objFind, final int counter) {
+        if (counter > 20) {
+            LOG.warning("counter > 20, will return false");
+            return false;
+        }
         boolean bFound = false;
         for (int j=0; !bFound && j < fromNodeData.getChildCount(); j++) {
             OATreeNodeData tnd = fromNodeData.getChild(j);
@@ -850,7 +857,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
             OATreeNodeData tnd = fromNodeData.getChild(j);
             // try others - this is in case the select objects[] are not from the top of tree
             int pos = al.size();
-            bFound = findNode(al, tnd, nodeFind, objFind);
+            bFound = _findNode(al, tnd, nodeFind, objFind, counter+1);
             if (bFound) {
                 al.add(pos, tnd);
             }
