@@ -398,7 +398,10 @@ public class OAXMLReader {
                 Hub h;
                 if (bIsPreloading) h = null;
                 else if (li == null) h = new Hub(OAObject.class);
-                else h = (Hub) li.getValue(objNew);
+                else {
+                    h = (Hub) li.getValue(objNew);
+                    if (h == null) h = new Hub(OAObject.class);
+                }
                 
                 for (HashMap hmx : (ArrayList<HashMap>)v) {
                     
