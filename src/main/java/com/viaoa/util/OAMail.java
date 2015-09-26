@@ -75,6 +75,7 @@ public class OAMail implements java.io.Serializable {
      * @param subject
      * @param text
      * @param contentType if null or blank, then will default to "text/html; charset=UTF-8"
+     *              , others: "text/html", "text/plain", "text/richtext", "text/css", "image/gif"
      * @param fileNames
      * @throws Exception
      */
@@ -155,7 +156,9 @@ public class OAMail implements java.io.Serializable {
 
         MimeBodyPart mbp1 = new MimeBodyPart();
         //mbp1.setText(text);
-        mbp1.setContent( text, "text/html; charset=iso-8859-1" );
+        
+        mbp1.setContent( text, contentType);  // 20150925
+        // was: mbp1.setContent( text, "text/html; charset=iso-8859-1" );
         
         Multipart mp = new MimeMultipart();
         mp.addBodyPart(mbp1);
