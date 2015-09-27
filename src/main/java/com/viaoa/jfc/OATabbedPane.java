@@ -55,6 +55,18 @@ public class OATabbedPane extends JTabbedPane {
     }
     
     @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (getTabPlacement() == LEFT) {
+            int tabCount = getTabCount();
+            for (int i = 0; i < tabCount; i++) {
+                JComponent comp = (JComponent) getTabComponentAt(i);
+                if (comp != null) comp.setEnabled(enabled);
+            }        
+        }        
+    }
+    
+    @Override
     public void doLayout() {
         if (getTabPlacement() == LEFT && dimMaxSize == null) {
             int tabCount = getTabCount();

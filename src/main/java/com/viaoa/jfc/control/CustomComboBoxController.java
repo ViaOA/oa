@@ -58,7 +58,8 @@ public class CustomComboBoxController extends JFCController {
                 HubEvent e = new HubEvent(getHub(),getHub().getActiveObject());
                 this.afterChangeActiveObject(e);  // this will set selectedPos in JComboBox
             }
-            getEnabledController().add(h, null, OAAnyValueObject.instance); // so that Hub.isValid will be the only check
+            getEnabledController().add(h, null, OANotNullObject.instance);//OAAnyValueObject.instance); // so that Hub.isValid will be the only check
+//test: getEnabledController().add(h, null, OANotNullObject.instance);
         }
     }
 

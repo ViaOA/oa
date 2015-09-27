@@ -27,12 +27,14 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     OATable table;
     String heading;
 
+/* 20150927 removed, not sure why this was here    
     static {
         Color c = UIManager.getColor("RadioButton.foreground");
         if (c == null) c = Color.black;
+        
         UIManager.put("RadioButton.disabledText", c);
     }
-    
+*/    
     /**
         Create an OARadioButton that is not bound to a Hub.
     */  
@@ -227,6 +229,14 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
 		return control.getFormat();
 	}	
 
+    @Override
+    public void setEnabled(boolean enabled) {
+        if (control != null) {
+            control.getEnabledController().directlySet(true, enabled);
+        }
+        super.setEnabled(enabled);
+    }
+    
     /**
      * Other Hub/Property used to determine if component is enabled.
      * @param hub 

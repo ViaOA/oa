@@ -433,6 +433,14 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     public void customizeTableRenderer(JLabel renderer, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
     }
     
+    @Override
+    public void setEnabled(boolean enabled) {
+        if (control != null) {
+            control.getEnabledController().directlySet(true, enabled);
+        }
+        super.setEnabled(enabled);
+    }
+    
     
     /**
      * Other Hub/Property used to determine if component is enabled.

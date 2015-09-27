@@ -98,7 +98,7 @@ public class ButtonController extends JFCController implements ActionListener {
         Note: setAnyTime(false) is used.
     */
     public ButtonController(Hub hub, AbstractButton button) {
-        this(hub, button, null, null);
+        this(hub, button, hub==null?null:OAButton.ButtonEnabledMode.ActiveObjectNotNull, null);
     }
 
     /**

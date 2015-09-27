@@ -107,7 +107,7 @@ public class EnabledController extends HubPropController {
             }
         }
         else {
-            if (comp instanceof Container && !(comp instanceof OAJFCComponent)) {
+            if (comp instanceof Container && !(comp instanceof OAJFCComponent) && !(comp instanceof JTabbedPane)) {
                 Component[] comps = ((Container)comp).getComponents();
                 for (int i=0; comps != null && i<comps.length; i++) {
                     Component compx = comps[i];
@@ -117,12 +117,13 @@ public class EnabledController extends HubPropController {
                 }
             }
         }
-        
+        /*was
         if (comp instanceof JTabbedPane) {
         }
-        else if (comp instanceof JLabel) {
+        if (comp instanceof JLabel) {
         }
-        else if (comp.isEnabled() != bEnabled) {
+        */
+        if (comp.isEnabled() != bEnabled) {
             comp.setEnabled(bEnabled);
         }
     }

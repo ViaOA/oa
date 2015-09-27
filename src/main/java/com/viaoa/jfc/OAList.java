@@ -108,26 +108,26 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         // 20120116 need to set divider if in a splitpane, since JList.getPreferredSize returns 0,0 if no rows in model
         Dimension d = this.getPreferredSize();
         if (d == null) return;
-        
-        for (Container c = this.getParent(); c!=null ; c=c.getParent()) {
-            if (d == null || !(c instanceof JSplitPane)) continue;
-            JSplitPane split = (JSplitPane) c;
 
-            int loc = split.getDividerLocation();
-            if (split.getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
-                if (loc < d.width) {
-                    split.setDividerLocation(d.width);
-                }
-            }            
-            else {
-                if (split.getDividerLocation() < d.height) {
-                    split.setDividerLocation(d.height);
-                }
-            }
-            //split.resetToPreferredSizes();
-            break;
+        // 20150927 only if it's directly in a splitpane
+        Container c = this.getParent();
+        if (c == null) return;
+        if (!(c instanceof JSplitPane)) {
+            c = c.getParent();
+            if (!(c instanceof JSplitPane)) return;
         }
-        
+        JSplitPane split = (JSplitPane) c;
+        int loc = split.getDividerLocation();
+        if (split.getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
+            if (loc < d.width) {
+                split.setDividerLocation(d.width);
+            }
+        }            
+        else {
+            if (split.getDividerLocation() < d.height) {
+                split.setDividerLocation(d.height);
+            }
+        }
     }
     
     /* 2005/02/07 need to manually call close instead

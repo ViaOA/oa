@@ -103,6 +103,7 @@ public class OATreeComboBox extends OACustomComboBox {
         if (!bIsCurrentlyEnabled) {
             Hub h = getHub();
             if (h != null) {
+/* 20150926 removed, since enabledController handles this                
                 if (h.getLinkHub() != null) {
                     bIsCurrentlyEnabled = (h.getLinkHub().getAO() != null);
                 }
@@ -111,6 +112,7 @@ public class OATreeComboBox extends OACustomComboBox {
                         bIsCurrentlyEnabled = (h.getMasterHub().getAO() != null);
                     }
                 }
+*/                
             }
         }
         return super.isEnabled(bIsCurrentlyEnabled);

@@ -1016,7 +1016,9 @@ if (!getKeepSorted()) hub.cancelSort();
 
         OATableColumn[] tcs = getAllTableColumns();
 
+        int i=0;
         for (OATableColumn tc : getAllTableColumns()) {
+            if (i++ == cols) break;
             w += tc.tc.getWidth();
         }
 
@@ -1032,7 +1034,7 @@ if (!getKeepSorted()) hub.cancelSort();
         if (includeScrollBar) w += 18; // scrollbar
 
         setPreferredScrollableViewportSize(new Dimension(w, h));
-
+        
         // have table resized in layoutManager
         this.invalidate();
         Component c = this.getParent();
@@ -1488,7 +1490,7 @@ if (!getKeepSorted()) hub.cancelSort();
     static int lastFontSize = 0;
 
     /**
-     * Used to determine the pixel width based on the average width of a character.
+     * Used to determine the pixel width based on the average width of a character 'X'.
      */
     public static int getCharWidth(Component comp, Font font, int x) {
         if (averageCharWidth == 0 || (font != null && font.getSize() != lastFontSize)) {
@@ -1500,8 +1502,10 @@ if (!getKeepSorted()) hub.cancelSort();
             }
             lastFontSize = font.getSize();
             FontMetrics fm = comp.getFontMetrics(font);
-            averageCharWidth = (int) (fm.stringWidth("9XYZ") / 4);
+            //averageCharWidth = (int) (fm.stringWidth("9XYma") / 5);
+            averageCharWidth = fm.charWidth('X');
         }
+        
         return (averageCharWidth * x);
     }
 
@@ -1552,10 +1556,6 @@ if (!getKeepSorted()) hub.cancelSort();
                 comp = tce.getTableCellEditorComponent(this, null, false, -1, -1);
             }
         }
-        else {
-            int xx = 4;
-            xx++;
-        }
 
         if (comp != null) {
             font = comp.getFont();
@@ -1563,16 +1563,22 @@ if (!getKeepSorted()) hub.cancelSort();
         else font = getFont();
 
         if (width < 0 && comp != null) {
-            width = comp.getPreferredSize().width;
-            width /= getCharWidth(comp, font, 1);
+            
+            if (comp instanceof JTextField) {
+                width = ((JTextField) comp).getColumns();
+            }
+            else {
+                width = comp.getPreferredSize().width;
+                width /= getCharWidth(comp, font, 1);
+            }
         }
         int w = OATable.getCharWidth(this, font, width);
-        w += 8; // borders, etc.
+        w += 6; // borders, etc.
 
         TableCellRenderer rend = null;
 
         OATableColumn column = new OATableColumn(this, path, editComp, rend, oaComp, fmt);
-        column.defaultWidth = width;
+        column.defaultWidth = w;  // 20150927 was: width
         if (oaComp != null) oaComp.setTable(this);
 
         int col = index;
@@ -1600,7 +1606,8 @@ if (!getKeepSorted()) hub.cancelSort();
 
         tc.setCellRenderer(new OATableCellRenderer(column));
         tc.setHeaderValue(heading);
-        tc.sizeWidthToFit(); // 2006/12/26
+// 20150927 removed, not positive what this does, but it apprears to set the width based on component. I want it based on columns, so I'm removing it        
+//        tc.sizeWidthToFit(); // 2006/12/26
         getColumnModel().addColumn(tc);
 
         column.headerRenderer = null;

@@ -98,6 +98,14 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     	return control;
     }
 
+    @Override
+    public void setEnabled(boolean enabled) {
+        if (control != null) {
+            control.getEnabledController().directlySet(true, enabled);
+        }
+        super.setEnabled(enabled);
+    }
+    
     /**
      * Other Hub/Property used to determine if component is enabled.
      * @param hub 
