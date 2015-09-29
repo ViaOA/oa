@@ -171,7 +171,9 @@ public class MultiplexerSocketController implements Serializable {
                 }
                 catch (Exception e) {
                     // if (Log.DEBUG) Log.debug("MultiplexerSocketController: error reading real socket, " + e +", vsc.id="+MultiplexerSocketController.this._vscId);
-                    onSocketException(e);
+                    if (!wasCloseAlreadyCalled()) {
+                        onSocketException(e);
+                    }
                 }
             }
         }, _threadName + "." + _connectionId);
@@ -258,7 +260,9 @@ public class MultiplexerSocketController implements Serializable {
                     _outputStreamController = new MultiplexerOutputStreamController() {
                         @Override
                         protected void onSocketException(Exception e) {
-                            MultiplexerSocketController.this.onSocketException(e);
+                            if (!wasCloseAlreadyCalled()) {
+                                MultiplexerSocketController.this.onSocketException(e);
+                            }
                         }
                     };
                 }
@@ -282,6 +286,7 @@ public class MultiplexerSocketController implements Serializable {
 
                 @Override
                 protected void closeRealSocket() {
+                    if (wasCloseAlreadyCalled()) return;
                     try {
                         MultiplexerSocketController.this.close();
                         if (MultiplexerSocketController.this._bIsClient) _status = STATUS_DisconnetedByServer;

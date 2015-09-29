@@ -57,29 +57,28 @@ public class ScaledImageIcon implements Icon {
     }
         
     public int getIconHeight() {
-        return (int) ((double)((double)h)*scale);
+        int x = (int) ((double)((double)h)*scale);
+        return x;
     }
     public int getIconWidth() {
-        return (int) ((double)((double)w)*scale);
+        int x = (int) ((double)((double)w)*scale);
+        return x;
     }
     
     private BufferedImage bi;
     public Image getImage() {
     	if (bi == null) {
-    	    
     		int h = getIconHeight();
     		int w = getIconWidth();
-    		
-    		//bi = OAImageUtil.createScreenBufferedImage(w, h);
     		
     		bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
     	
 	        Graphics g2 = bi.getGraphics();
 	        g2.setColor(new Color(0,0,0,0));  // make sure transparency works
-	        g2.fillRect(0, 0, getIconWidth(), getIconHeight());
+	        g2.fillRect(0, 0, w, h);
 	        ((Graphics2D)g2).scale(scale, scale);
+	        
 	        if (icon != null) icon.paintIcon(null, g2, 0, 0);
-	        //was: g2.drawImage(icon.getImage(), 0, 0, null);
     	}
     	return bi;
     }
