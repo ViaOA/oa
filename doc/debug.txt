@@ -9,6 +9,9 @@ see ServerJfc.
         * might want to add text to all butons
             on toolbars, etc
 
+
+
+
 Admin/silo/servers group by 
     does not always show servers
     if servers are shown, then detail does not show Ao
