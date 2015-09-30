@@ -272,7 +272,11 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         
         // use setup(b,b,b,b) if it needs to be set, or setDefaultText
         boolean bText = false;// (getText() == null || getText().length() == 0);  
-        boolean bTtt = (getToolTipText() == null || getToolTipText().length() == 0);
+        boolean bTtt;
+        if (control != null) {
+            bTtt = (control.getCommand() != ButtonCommand.Other) && (getToolTipText() == null || getToolTipText().length() == 0);
+        }
+        else bTtt = false;
 
         setup(true, bIcon, bText, bTtt);
     }

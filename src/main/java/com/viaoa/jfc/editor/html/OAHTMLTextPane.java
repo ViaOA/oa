@@ -106,6 +106,9 @@ import com.viaoa.util.OAString;
  * <li>background-position
  * <li>background
  * 
+ * <img src='classpath://com.theice.tsam.view.image/icon.gif'>
+ * <img src='oaproperty:://classPath/propName?Id'>  ???? verify that this is correct qqqqqqqqqqq
+ * 
  * <li>width
  * <li>height
  * <li>text-decoration ex: underline, overline, not: overline,blink
