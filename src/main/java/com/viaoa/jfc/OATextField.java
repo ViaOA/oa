@@ -43,7 +43,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         }
         int maxCols = control.getDataSourceMax();
         if (maxCols < 1) {
-            maxCols = getColumns() * 5; 
+            maxCols = getColumns() * 2; 
             if (maxCols < 1) {
                 return super.getMaximumSize();
             }
