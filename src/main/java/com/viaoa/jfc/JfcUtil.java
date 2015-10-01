@@ -64,7 +64,8 @@ public class JfcUtil {
         gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;
         
         JLabel lbl = new JLabel("");
-        lbl.setBackground(Color.red);
+//lbl.setOpaque(true);        
+//        lbl.setBackground(Color.red);
         pan.add(lbl, gcx);
         return pan;
     }

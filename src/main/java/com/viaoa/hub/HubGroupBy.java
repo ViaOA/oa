@@ -19,7 +19,7 @@ import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
 /**
- * Combines two hubs into a new single hub to create the equivalent of a database groupBy.
+ * Combines a hub into a new single hub to create the equivalent of a database groupBy.
  * 
  * The combined Hub (see getCombinedHub) uses OAObject OAGroupBy<F, G>, where G is the same class as the
  * groupBy Hub and F is a hub of the from objects.
@@ -43,12 +43,11 @@ import com.viaoa.util.OAString;
  * @see OAGroupBy# type of object for combined  
  * @author vvia
  */
-
 public class HubGroupBy<F extends OAObject, G extends OAObject> {
     // from hub that are to be grouped
     private Hub<F> hubFrom;
     
-    // optional hub to use as groupBy list.  Required if the pp has a split
+    // optional hub to use as groupBy list.  Required if the propertyPath has a "split/gap" (method does not exist) 
     private Hub<G> hubGroupBy;
     
     // result hub
@@ -58,7 +57,6 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     // internal calc prop created (if needed)
     private String listenPropertyName;
     
-    //qqqqq  this can be removed, after oaBldr:gen stops using it
     private Hub<G> hubMaster;
     private Hub<F> hubDetail;
     
@@ -146,7 +144,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     }
 
     
-//qqqqq  this can be removed, after oaBldr:gen stops using it    
+    
     /**
      * @return Hub<G> of groupBy objects that are in sync (share AO) with combined Hub.
      */
@@ -155,17 +153,63 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             if (hubGroupBy != null) hubMaster = new Hub<G>(hubGroupBy.getObjectClass());
             else hubMaster = new Hub<G>();
             new HubMerger(getCombinedHub(), hubMaster, OAGroupBy.P_GroupBy, true);
+            
+            hubMaster.addHubListener(new HubListenerAdapter() {
+                @Override
+                public void afterChangeActiveObject(HubEvent e) {
+                    if (bIgnoreAOChange) return;
+                    try {
+                        bIgnoreAOChange = true;
+                        final Object ao = e.getObject();
+                        hubFrom.setAO(null);
+                        if (hubDetail != null) hubDetail.setAO(null);
+
+                        if (ao == null) {
+                            getCombinedHub().setAO(null);
+                        }
+                        else {
+                            boolean bFound = false;
+                            for (OAGroupBy<F, G> bg : getCombinedHub()) {
+                                if (bg.getGroupBy() == ao) {
+                                    getCombinedHub().setAO(bg);
+                                    bFound = true;
+                                    break;
+                                }
+                            }
+                            if (!bFound) {
+                                getCombinedHub().setAO(null);
+                            }
+                        }
+                    }
+                    finally {
+                        bIgnoreAOChange = false;
+                    }
+                }
+            });
         }
         return hubMaster;
     }
 
-//qqqqq  this can be removed, after oaBldr:gen stops using it    
     /**
-     * @return detail hub from masterHub
+     * @return detail hub from compoundHub.hub
      */
     public Hub<F> getDetailHub() {
         if (hubDetail == null) {
             hubDetail = getCombinedHub().getDetailHub(OAGroupBy.P_Hub);
+            hubDetail.addHubListener(new HubListenerAdapter() {
+                @Override
+                public void afterChangeActiveObject(HubEvent e) {
+                    if (bIgnoreAOChange) return;
+                    try {
+                        bIgnoreAOChange = true;
+                        hubFrom.setAO(e.getObject()); 
+                    }
+                    finally {
+                        bIgnoreAOChange = false;
+                    }
+                }
+            });
+            
         }
         return hubDetail;
     }
@@ -956,15 +1000,23 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             @Override
             public void afterChangeActiveObject(HubEvent e) {
                 if (bIgnoreAOChange) return;
-                // set the active object in hub A&B when hubCombine.AO is changed
-                OAGroupBy obj = (OAGroupBy) e.getObject();
-                if (obj == null) {
-                    if (hubGroupBy != null) hubGroupBy.setAO(null);
+                
+                try {
+                    // set the active object in hub A&B when hubCombine.AO is changed
+                    OAGroupBy obj = (OAGroupBy) e.getObject();
+                    if (obj == null) {
+                        if (hubGroupBy != null) hubGroupBy.setAO(null);
+                        if (hubMaster != null) hubMaster.setAO(null);
+                    }
+                    else {
+                        if (hubGroupBy != null) hubGroupBy.setAO(obj.getGroupBy());
+                        if (hubMaster != null) hubMaster.setAO(obj.getGroupBy());
+                    }
                     hubFrom.setAO(null);
+                    if (hubDetail != null) hubDetail.setAO(null);
                 }
-                else {
-                    if (hubGroupBy != null) hubGroupBy.setAO(obj.getGroupBy());
-                    hubFrom.setAO(null);
+                finally {
+                    bIgnoreAOChange = false;                    
                 }
             }
         });
@@ -1093,24 +1145,38 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
 
             @Override
             public void afterChangeActiveObject(HubEvent e) {
-                F b = (F) e.getObject();
-                if (b != null) {
-                    for (OAGroupBy lj : HubGroupBy.this.getCombinedHub()) {
-                        Hub h = lj.getHub();
-                        if (h.contains(b)) {
-                            try {
-                                bIgnoreAOChange = true;
-                                HubGroupBy.this.hubCombined.setAO(lj);
-                                h.setAO(b);
-                            }
-                            finally {
-                                bIgnoreAOChange = false;
-                            }
-                            return;
+                if (bIgnoreAOChange) return;
+                bIgnoreAOChange = true;
+                try {
+                    F ao = (F) e.getObject();
+                    if (ao == null) {
+                        HubGroupBy.this.hubCombined.setAO(null);
+                        if (hubMaster != null) hubMaster.setAO(null);
+                        if (hubDetail != null) hubDetail.setAO(null);
+                    }
+                    else {
+                        boolean bFound = false;
+                        for (OAGroupBy gb : HubGroupBy.this.getCombinedHub()) {
+                            Hub h = gb.getHub();
+                            if (!h.contains(ao)) continue;
+                            bFound = true;
+                            
+                            HubGroupBy.this.hubCombined.setAO(gb);
+                            h.setAO(ao);
+                            if (hubMaster != null) hubMaster.setAO(gb.getGroupBy());
+                            if (hubDetail != null) hubDetail.setAO(ao);
+                            break;
+                        }
+                        if (!bFound) {
+                            HubGroupBy.this.hubCombined.setAO(null);
+                            if (hubMaster != null) hubMaster.setAO(null);
+                            if (hubDetail != null) hubDetail.setAO(null);
                         }
                     }
                 }
-                HubGroupBy.this.hubCombined.setAO(null);
+                finally {
+                    bIgnoreAOChange = false;
+                }
             }
         };
 

@@ -1503,7 +1503,7 @@ if (!getKeepSorted()) hub.cancelSort();
             lastFontSize = font.getSize();
             FontMetrics fm = comp.getFontMetrics(font);
             //averageCharWidth = (int) (fm.stringWidth("9XYma") / 5);
-            averageCharWidth = fm.charWidth('X');
+            averageCharWidth = fm.charWidth('m');  // same used by JTextField.getColumnWidth
         }
         
         return (averageCharWidth * x);
