@@ -10,10 +10,12 @@
 */
 package com.viaoa.jfc;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -47,12 +49,23 @@ public class JfcUtil {
         if (bBoth) gcx.fill = gcx.BOTH;
         else gcx.fill = gcx.HORIZONTAL;
         
+        // 20150930
+        JPanel panComp = new JPanel();
+        BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
+        panComp.setLayout(box);
+        panComp.add(comp);
+        
         gcx.weightx = gcx.weighty = ((double)percentage)/100.0d;
         gcx.gridwidth = 1;
-        pan.add(comp, gcx);
+        pan.add(panComp, gcx);
+        
+        //was: pan.add(comp, gcx);
         gcx.gridwidth = GridBagConstraints.REMAINDER;
         gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;
-        pan.add(new JLabel(""), gcx);
+        
+        JLabel lbl = new JLabel("");
+        lbl.setBackground(Color.red);
+        pan.add(lbl, gcx);
         return pan;
     }
 

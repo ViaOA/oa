@@ -36,6 +36,23 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         this.control = control;
     }
 
+    @Override
+    public Dimension getMaximumSize() {
+        if (isMaximumSizeSet()) {
+            return super.getMaximumSize();
+        }
+        int maxCols = control.getDataSourceMax();
+        if (maxCols < 1) {
+            maxCols = getColumns() * 5; 
+            if (maxCols < 1) {
+                return super.getMaximumSize();
+            }
+        }
+        Dimension d = super.getMaximumSize();
+        d.width = getColumnWidth() * maxCols;
+        return d;
+    }
+    
     /**
         Create TextField that is bound to a property path in a Hub.
         @param propertyPath path from Hub, used to find bound property.
