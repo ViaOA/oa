@@ -1492,7 +1492,12 @@ if (!getKeepSorted()) hub.cancelSort();
     /**
      * Used to determine the pixel width based on the average width of a character 'X'.
      */
+    public static int getCharWidth(Component comp, int x) {
+        if (comp == null) return 0;
+        return getCharWidth(comp, comp.getFont(), x);
+    }
     public static int getCharWidth(Component comp, Font font, int x) {
+        if (comp == null) return 0;
         if (averageCharWidth == 0 || (font != null && font.getSize() != lastFontSize)) {
             if (font == null) {
                 System.out.println("OATable.getCharWidth=null, will use average=12 as default");

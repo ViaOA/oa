@@ -254,7 +254,11 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
             cols = control.getPropertyInfoDisplayColumns();
         }
         
-        if (cols > 0) d.width = OATable.getCharWidth(this,getFont(),cols+1);
+        if (cols > 0) {
+            Insets ins = getInsets();
+            int inx = ins == null ? 0 : ins.left + ins.right;
+            d.width = OATable.getCharWidth(this,getFont(),cols)+inx+2;
+        }
         return d;
     }
     

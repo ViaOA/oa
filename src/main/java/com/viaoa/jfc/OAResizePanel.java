@@ -29,6 +29,8 @@ import javax.swing.border.LineBorder;
  */
 public class OAResizePanel extends JPanel {
 
+    public static boolean DEBUG = false;
+    
     public OAResizePanel(JComponent comp) {
         setup(comp, 50, false);
     }
@@ -65,12 +67,12 @@ public class OAResizePanel extends JPanel {
         gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;
         
         JLabel lbl = new JLabel("");
-//qqqqqqqqq        
-lbl.setText("<<");        
-lbl.setOpaque(true);        
-lbl.setBackground(Color.red);
-setBorder(new LineBorder(Color.yellow, 3));
-
+        if (DEBUG) {        
+            lbl.setText("<<");        
+            lbl.setOpaque(true);        
+            lbl.setBackground(Color.lightGray);
+            setBorder(new LineBorder(Color.yellow, 3));
+        }
         add(lbl, gcx);
     }
     
