@@ -19,6 +19,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 public class JfcUtil {
 
@@ -64,8 +65,12 @@ public class JfcUtil {
         gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;
         
         JLabel lbl = new JLabel("");
-//lbl.setOpaque(true);        
-//        lbl.setBackground(Color.red);
+//qqqqqqqqq        
+lbl.setText("xxx");        
+lbl.setOpaque(true);        
+lbl.setBackground(Color.red);
+pan.setBorder(new LineBorder(Color.yellow, 3));
+
         pan.add(lbl, gcx);
         return pan;
     }
@@ -84,6 +89,16 @@ public class JfcUtil {
      * @return
      */
     public static JComponent createFilledPanel(JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
+        
+//qqqqqqqqqqqqq        
+        JPanel panComp = new JPanel();
+        BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
+        panComp.setLayout(box);
+        panComp.add(comp);
+        panComp.add(comp2);
+return createFilledPanel(panComp, percentage);        
+        
+/*was        
         GridBagLayout gb = new GridBagLayout();
         JPanel pan = new JPanel(gb);
         pan.setBorder(null);
@@ -105,8 +120,17 @@ public class JfcUtil {
         
         gcx.gridwidth = GridBagConstraints.REMAINDER;
         gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;
-        pan.add(new JLabel(""), gcx);
+        JLabel lbl = new JLabel("");
+//qqqqqqqqq        
+lbl.setText("xxx");        
+lbl.setOpaque(true);        
+lbl.setBackground(Color.red);
+pan.setBorder(new LineBorder(Color.yellow, 3));
+
+        pan.add(lbl, gcx);
+
         return pan;
+*/        
     }
 }
 

@@ -1,19 +1,19 @@
 
 
 
-table options
-    replace multi button with combo
-    also needs to show optional filter dialog
-        add button to popup
-        and popup when selecting it
-    dont include a group if it is the same as the master hub
-    
-
-
 combo
     set columns to use "w" as char size
     getRenderer
         have it call a new getRender(lbl...)
+
+
+table options
+    replace multi button with combo
+    also needs to show optional filter dialog
+        add button (if needed)
+        and popup when selecting it
+    dont include a group if it is the same as the master hub
+    
 
 combobox needs max columns
     same for lbl

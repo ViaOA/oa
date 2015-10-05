@@ -25,7 +25,6 @@ import com.viaoa.jfc.table.*;
 public abstract class OACustomComboBox extends JComboBox implements OATableComponent, OAJFCComponent {
     OACustomComboBoxController control;
     OATextField vtf;
-    int columns;
     OATable table;
     String heading = "";
     String format;
@@ -241,31 +240,74 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         of font.
     */
     public int getColumns() {
-        return columns;            
+        return control.getColumns();            
     }
     
     /**
     	Width of ComboBox, based on average width of the font's character.
 	*/
-	public void setColumns(int x) {
-		String str = "0";
-		for (int i=0; i<x; i++) {
-			str += "0"; 
-		}
-	    columns = x;
-	    if (table != null) { 
-	        int w = OATable.getCharWidth(this,getFont(),x);
-	        Border b = this.getBorder();
-	        if (b != null) {
-	        	Insets ins = b.getBorderInsets(this);
-	        	if (ins != null) w += ins.left + ins.right;
-	        }
-	    	table.setColumnWidth(table.getColumnIndex(this), w);
-	    }
-	    super.setPrototypeDisplayValue(str);
-	}
+    public void setColumns(int x) {
+        control.setColumns(x);
+
+        int w = OATable.getCharWidth(this, getFont(), x);
+        Border b = this.getBorder();
+        if (b != null) {
+            Insets ins = b.getBorderInsets(this);
+            if (ins != null) w += ins.left + ins.right;
+        }
+        if (table != null) { 
+            table.setColumnWidth(table.getColumnIndex(this), w);
+        }
+        String str = "w";
+        for (int i=1; i<x; i++) str += "w";
+        super.setPrototypeDisplayValue(str);
+        
+        if (vtf != null) {
+            int c = this.getColumns();
+            if (c > 0) vtf.setColumns(c);
+            else {
+                c = vtf.getColumns();
+                if (c > 0) this.setColumns(c);
+            }
+        }        
+    }
 	
-	    
+
+    public void setMaximumColumns(int x) {
+        control.setMaximumColumns(x);
+        if (vtf != null) {
+            int c = this.getMaximumColumns();
+            if (c > 0) vtf.setMaximumColumns(c);
+            else {
+                c = vtf.getMaximumColumns();
+                if (c > 0) this.setMaximumColumns(c);
+            }
+        }        
+        invalidate();
+    }
+    public int getMaxColumns() {
+        return control.getMaximumColumns();            
+    }
+    public int getMaximumColumns() {
+        return control.getMaximumColumns();            
+    }
+
+    public void setMinimumColumns(int x) {
+        control.setMinimumColumns(x);
+        if (vtf != null) {
+            int c = this.getMinimumColumns();
+            if (c > 0) vtf.setMinimumColumns(c);
+            else {
+                c = vtf.getMinimumColumns();
+                if (c > 0) this.setMinimumColumns(c);
+            }
+        }        
+        invalidate();
+    }
+    public int getMinimumColumns() {
+        return control.getMinimumColumns();            
+    }
+    
 	public CustomComboBoxController getController() {
 	    return control;
 	}
@@ -307,6 +349,19 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         this.vtf = vtf;
         if (vtf == null) super.setEditor(null);
         else {
+            int c = this.getColumns();
+            if (c > 0) vtf.setColumns(c);
+            else {
+                c = vtf.getColumns();
+                if (c > 0) this.setColumns(c);
+            }
+            
+            c = this.getMaximumColumns();
+            if (c > 0) vtf.setMaximumColumns(c);
+            
+            c = this.getMinimumColumns();
+            if (c > 0) vtf.setMinimumColumns(c);
+            
             OACustomComboBoxEditor ed = new OACustomComboBoxEditor(this, vtf);
             super.setEditor(ed);
             setEditable(true);
@@ -509,6 +564,37 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
             bIsCurrentlyVisible = super.isVisible(bIsCurrentlyVisible);
             return OACustomComboBox.this.isVisible(bIsCurrentlyVisible);
         }
+    }
+
+    
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
+        
+        int cols = getMaxColumns();
+        if (cols <= 0) {
+            cols = getColumns() * 2;
+            if (cols < 0) return d;
+        }
+        
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+
+        d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
+        
+        return d;
+    }
+
+    public Dimension getMinimumSize() {
+        Dimension d = super.getMinimumSize();
+        if (isMinimumSizeSet()) return d;
+        int cols = getMinimumColumns();
+        if (cols < 1) return d;
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+
+        d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
+        return d;
     }
     
 }

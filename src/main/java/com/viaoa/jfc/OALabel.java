@@ -11,6 +11,7 @@
 package com.viaoa.jfc;
 
 import java.awt.*;
+import java.lang.reflect.Method;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -23,8 +24,6 @@ import com.viaoa.jfc.table.*;
 
 public class OALabel extends JLabel implements OATableComponent, OAJFCComponent {
     private OALabelController control;
-    private int columns;
-    private int oaWidth;
     private OATable table;
     private String heading = "";
 
@@ -107,7 +106,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
             bRemoved = false;
         }
         else {
-            if (columns > 0) setColumns(columns);
+            if (getColumns() > 0) setColumns(getColumns());
         }
         super.addNotify();
     }
@@ -216,41 +215,87 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     }
 
     /**
-        Width of label, based on average width of the font's character.
+        Width of label, based on average width of the font's character 'w'.
     */
     public int getColumns() {
-        return columns;            
+        return control.getColumns();            
     }
-
     /**
         Width of label, based on average width of the font's character.
     */
     public void setColumns(int x) {
-        columns = x;
-        this.oaWidth = OATable.getCharWidth(this,getFont(),x+1);  // 2008/05/18 added 1 for border
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),oaWidth);
+        control.setColumns(x);
+        invalidate();
+        if (table != null) {
+            int w = OATable.getCharWidth(this,getFont(),x+1);
+            table.setColumnWidth(table.getColumnIndex(this),w);
+        }
+    }
+    public void setMaximumColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
+    public int getMaxColumns() {
+        return control.getMaximumColumns();
+    }
+    public void setMiniColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMiniColumns() {
+        return control.getMinimumColumns();
     }
 
-    /**
-    public Dimension getSize() {
-        Dimension d = super.getSize();
-        if (oaWidth > 0) d.width = this.oaWidth;
-        return d;
-    }
-    */
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
-        if (oaWidth > 0) d.width = this.oaWidth;
+        if (isPreferredSizeSet()) return d;
+        int cols = getColumns();
+        if (cols <= 0) {
+            cols = control.getPropertyInfoDisplayColumns();
+        }
+        
+        if (cols > 0) d.width = OATable.getCharWidth(this,getFont(),cols+1);
         return d;
     }
+    
     public Dimension getMaximumSize() {
         Dimension d = super.getMaximumSize();
-        if (d.width < oaWidth) d.width = this.oaWidth;
+        if (isMaximumSizeSet()) return d;
+        int cols = getMaxColumns();
+        if (cols < 1)  {
+            //maxCols = control.getDataSourceMaxColumns();
+            //if (maxCols < 1) {
+            cols = control.getPropertyInfoMaxColumns();
+            
+            if (cols < 1) {
+                cols = getColumns() * 2; 
+            }
+        }
+        if (cols > 0) d.width = OATable.getCharWidth(this, getFont(), cols);
+        
+        // also check size of text, so that label is not bigger then the text it needs to display
+        String s = getText();
+        if (s == null) s = " ";
+
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+        
+        FontMetrics fm = getFontMetrics(getFont());
+        d.width = Math.min(d.width, fm.stringWidth(s)+inx+2);
+        
+        // dont size under pref size
+        Dimension dx = getPreferredSize();
+        d.width = Math.max(d.width, dx.width);
+
         return d;
     }
+
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
-        if (oaWidth > 0) d.width = this.oaWidth;
+        if (isMinimumSizeSet()) return d;
+        int cols = getMiniColumns();
+        if (cols < 1) return d;
+        d.width = OATable.getCharWidth(this, getFont(), cols+1);
         return d;
     }
         
@@ -368,5 +413,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     }
     public void setEnabled(Hub hub, String prop, Object compareValue) {
     }
+
+
 }
 

@@ -20,6 +20,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 
+import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.jfc.image.*;
@@ -27,7 +28,10 @@ import com.viaoa.jfc.*;
 import com.viaoa.jfc.table.*;
 import com.viaoa.object.OAEditMessage;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectInfo;
+import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.object.OAPropertyInfo;
 
 
 /*
@@ -107,6 +111,18 @@ public class JFCController extends HubListenerAdapter {
     
     protected String nullDescription = "";
     public boolean bDebug;  // used for debugging a single component. ex: ((OALabel)lbl).setDebug(true)    
+
+    // display collumn width
+    private int columns;
+    private int propertyInfoDisplayColumns = -2;
+
+    // mini column/chars
+    private int miniColumns;
+    
+    // max column/chars
+    private int maxColumns;
+    private int propertyInfoMaxColumns = -2;
+    private int dataSourceMaxColumns = -2;
     
     /**
         Create a component that is not bound to a Hub.
@@ -1251,6 +1267,78 @@ public class JFCController extends HubListenerAdapter {
      */
     protected void update() {
     }
+
+
+    public void setColumns(int x) {
+        this.columns = x;
+    }
+    public int getColumns() {
+        return this.columns;
+    }
+    public void setMinimumColumns(int x) {
+        this.miniColumns = x;
+    }
+    public int getMinimumColumns() {
+        return this.miniColumns;
+    }
+
+    public void setMaximumColumns(int x) {
+        maxColumns = x;
+    }
+    public int getMaximumColumns() {
+        return maxColumns;
+    }
+
+    public int getPropertyInfoDisplayColumns() {
+        if (propertyInfoDisplayColumns == -2) {
+            getPropertyInfoMaxColumns();
+        }
+        return propertyInfoDisplayColumns;
+    }
+    
+    public int getPropertyInfoMaxColumns() {
+        if (propertyInfoMaxColumns == -2) {
+            Hub h = getActualHub();
+            if (h == null) return propertyInfoMaxColumns;
+            
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(h.getObjectClass());
+            OAPropertyInfo pi = oi.getPropertyInfo(getPropertyPathFromActualHub());
+            
+            propertyInfoMaxColumns = (pi == null) ? -1 : pi.getMaxLength();
+            propertyInfoDisplayColumns  = (pi == null) ? -1 : pi.getDisplayLength();
+
+            Method method = getLastMethod();
+            if (method != null) {
+                if (method.getReturnType().equals(String.class)) {
+                    if (propertyInfoMaxColumns > 254) propertyInfoMaxColumns = -1;
+                }
+                else propertyInfoMaxColumns = -1;
+            }
+        }
+        return propertyInfoMaxColumns;
+    }
+
+    
+    public int getDataSourceMaxColumns() {
+        if (dataSourceMaxColumns == -2) {
+            Hub h = getActualHub();
+            if (h == null) return dataSourceMaxColumns;
+            dataSourceMaxColumns = -1;
+            OADataSource ds = OADataSource.getDataSource(h.getObjectClass());
+            if (ds != null) {
+                dataSourceMaxColumns = ds.getMaxLength(h.getObjectClass(), getPropertyPathFromActualHub());
+                Method method = getLastMethod();
+                if (method != null) {
+                    if (method.getReturnType().equals(String.class)) {
+                        if (dataSourceMaxColumns > 254) dataSourceMaxColumns = -1;
+                    }
+                    else dataSourceMaxColumns = -1;
+                }
+            }
+        }
+        return dataSourceMaxColumns;
+    }
+    
 }
 
 

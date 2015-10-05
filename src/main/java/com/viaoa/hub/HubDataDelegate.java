@@ -420,7 +420,8 @@ public class HubDataDelegate {
                 	OALinkInfo liMany = OAObjectInfoDelegate.getReverseLinkInfo(liRecursiveOne);
                 	if (liMany != null) {
                         if (hashRecursiveHubDetail.get(thisHub) == null) {
-                            hashRecursiveHubDetail.put(thisHub, thisHub.datam.liDetailToMaster);
+                            HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
+                            if (dm.liDetailToMaster != null) hashRecursiveHubDetail.put(thisHub, dm.liDetailToMaster);
                         }
                     	Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, liMany.getName());
                     	HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
@@ -437,7 +438,8 @@ public class HubDataDelegate {
                         OALinkInfo li = OAObjectInfoDelegate.getReverseLinkInfo(thisHub.datam.liDetailToMaster);
                         if (li != null) {
                             if (hashRecursiveHubDetail.get(thisHub) == null) {
-                                hashRecursiveHubDetail.put(thisHub, thisHub.datam.liDetailToMaster);
+                                HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
+                                if (dm.liDetailToMaster != null) hashRecursiveHubDetail.put(thisHub, dm.liDetailToMaster);
                             }
                             Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, li.getName());
                             HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);

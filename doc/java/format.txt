@@ -1,4 +1,8 @@
 
+
+ p(String.format("    gc.weightx = %.2ff;", (float) (jc.fillPercent/100.0f)));
+
+
     Format String Symbol Meaning (same as DecimalFormat)
     <pre>
     0      a digit, if no digit exists, then '0' will be used. 

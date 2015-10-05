@@ -31,8 +31,6 @@ import com.viaoa.jfc.undo.OAUndoableEdit;
 public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComponent {
     private OAComboBoxController control;
     private OATextField vtf;
-    private int columns;
-    private int width;
     private OATable table;
     private String heading = "";
     public int iDebug;  // used to help with debugging a specific ComboBox
@@ -66,7 +64,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
         control = new OAComboBoxController(hub, propertyPath);
         Color c = UIManager.getColor("ComboBox.foreground");
         if (c == null) c = Color.black;
-        UIManager.put("ComboBox.disabledForeground", c);
+        //20151002 removed: UIManager.put("ComboBox.disabledForeground", c);
     }
 
     
@@ -422,7 +420,7 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
         Width of component, based on average width of the font's character.
     */
     public int getColumns() {
-        return columns;            
+        return control.getColumns();            
     }
 
     
@@ -430,24 +428,38 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
         Width of ComboBox, based on average width of the font's character.
     */
     public void setColumns(int x) {
-        columns = x;
-    	String str = null;
-    	for (int i=0; i<x; i++) {
-    		if (str == null) str = "0";
-    		else str += "0"; 
-    	}
+        control.setColumns(x);
+
+        int w = OATable.getCharWidth(this, getFont(), x);
+        Border b = this.getBorder();
+        if (b != null) {
+        	Insets ins = b.getBorderInsets(this);
+        	if (ins != null) w += ins.left + ins.right;
+        }
         if (table != null) { 
-            int w = OATable.getCharWidth(this,getFont(),x);
-            Border b = this.getBorder();
-            if (b != null) {
-            	Insets ins = b.getBorderInsets(this);
-            	if (ins != null) w += ins.left + ins.right;
-            }
         	table.setColumnWidth(table.getColumnIndex(this), w);
         }
+        String str = "w";
+        for (int i=1; i<x; i++) str += "w";
         super.setPrototypeDisplayValue(str);
     }
 
+    public void setMaximumColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
+    public int getMaxColumns() {
+        return control.getMaximumColumns();            
+    }
+
+    public void setMinimumColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinimumColumns() {
+        return control.getMinimumColumns();            
+    }
+    
     
     /**
         Property path used to retrieve/set value for this component.
@@ -705,7 +717,36 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
         }
     }
     
+    
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
+        
+        int cols = getMaxColumns();
+        if (cols <= 0) {
+            cols = getColumns() * 2;
+            if (cols <= 0) return d;
+        }
+        
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
 
+        d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
+        
+        return d;
+    }
+
+    public Dimension getMinimumSize() {
+        Dimension d = super.getMinimumSize();
+        if (isMinimumSizeSet()) return d;
+        int cols = getMinimumColumns();
+        if (cols < 1) return d;
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+
+        d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
+        return d;
+    }
 }
 
 

@@ -41,8 +41,8 @@ public class TextFieldController extends JFCController implements FocusListener,
     private boolean bSettingText;
     private Object activeObject;
     private Object focusActiveObject;
-    private int dataSourceMax=-2;
-    private int propertyInfoMax=-2;
+    //private int dataSourceMax=-2;
+    //20151002 moved to jfccontroller private int propertyInfoMax=-2;
     private int max=-1;
     private OAPlainDocument document;
     protected char conversion;  // 'U'pper, 'L'ower, 'T'itle, 'P'assword
@@ -124,7 +124,13 @@ public class TextFieldController extends JFCController implements FocusListener,
             	String msg = "";
             	switch (errorType) {
             	case OAPlainDocument.ERROR_MAX_LENGTH:
-            		msg = "Maximum input exceeded, currently set to " + getMax();
+            	    int max = getDataSourceMaxColumns();
+            	    if (max < 0) { 
+            	        max = getMaximumColumns();
+            	        if (max < 0) max = getPropertyInfoMaxColumns();
+            	    }
+            	    
+            		msg = "Maximum input exceeded, currently set to " + max;
 
             		if (textField instanceof OATextField) {
             		    msg += " for " + ((OATextField)textField).getPropertyPath();
@@ -152,7 +158,10 @@ public class TextFieldController extends JFCController implements FocusListener,
                 super.insertUpdate(chng, attr);
             }
         };
-        document.setMaxLength(getMax());
+        int max = getDataSourceMaxColumns();
+        if (max < 0) max = getPropertyInfoMaxColumns();
+        
+        if (max > 0) document.setMaxLength(max);
         textField.setDocument(document);
         
         c = OAReflect.getClass(getLastMethod());
@@ -201,6 +210,7 @@ public class TextFieldController extends JFCController implements FocusListener,
 
 
 
+    /**20151002 moved to jfccontroller
     public int getDataSourceMax() {
         if (dataSourceMax == -2) {
             if (hub != null) {
@@ -220,7 +230,7 @@ public class TextFieldController extends JFCController implements FocusListener,
         }
         return dataSourceMax;
     }
-    
+
     public int getPropertyInfoMax() {
         if (propertyInfoMax == -2) {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(actualHub.getObjectClass());
@@ -250,12 +260,16 @@ public class TextFieldController extends JFCController implements FocusListener,
         if (propertyInfoMax > 0 && max > propertyInfoMax) return propertyInfoMax; 
         return max;
     }
-    /** max length of text.  If -1 (default) then unlimited.  
     */
     public void setMax(int x) {
-        max = x;
-        max = getMax();  // verify with Datasource
-    	if (document != null) document.setMaxLength(getMax());
+        setMaximumColumns(x);
+    }
+    public void setMaximumColumns(int x) {
+        super.setMaximumColumns(x);
+        if (document != null) {
+            int x2 = getDataSourceMaxColumns();
+            if (x < x2) document.setMaxLength(x);
+        }
     }
     
     

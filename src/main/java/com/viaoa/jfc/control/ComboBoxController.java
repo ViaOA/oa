@@ -107,14 +107,7 @@ public class ComboBoxController extends JFCController implements FocusListener {
                                                     // listeners ?!?!?
 
                 if (getHub() != null) {
-                    getEnabledController().add(getHub(), null, OAAnyValueObject.instance); // so
-                                                                                           // that
-                                                                                           // Hub.isValid
-                                                                                           // will
-                                                                                           // be
-                                                                                           // the
-                                                                                           // only
-                                                                                           // check
+                    getEnabledController().add(getHub(), null, OAAnyValueObject.instance); // so that it will verify that hub is valid
                 }
             }
         }

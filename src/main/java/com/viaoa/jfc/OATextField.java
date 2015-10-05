@@ -36,22 +36,6 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         this.control = control;
     }
 
-    @Override
-    public Dimension getMaximumSize() {
-        if (isMaximumSizeSet()) {
-            return super.getMaximumSize();
-        }
-        int maxCols = control.getDataSourceMax();
-        if (maxCols < 1) {
-            maxCols = getColumns() * 2; 
-            if (maxCols < 1) {
-                return super.getMaximumSize();
-            }
-        }
-        Dimension d = super.getMaximumSize();
-        d.width = getColumnWidth() * maxCols;
-        return d;
-    }
     
     /**
         Create TextField that is bound to a property path in a Hub.
@@ -144,7 +128,10 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     }
     public void setColumns(int x) {
         super.setColumns(x);
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),super.getPreferredSize().width);
+        if (table != null) {
+            int w = OATable.getCharWidth(this,getFont(),x+1);
+            table.setColumnWidth(table.getColumnIndex(this),w);
+        }
     }
 
     public String getPropertyPath() {
@@ -164,16 +151,11 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         if (table != null) table.setColumnHeading(table.getColumnIndex(this),heading);
     }
 
-    public Dimension getMinimumSize() {
-        Dimension d = super.getPreferredSize();
-        //09/15/99   Dimension d = super.getMinimumSize();
-        return d;
-    }
-
     public void setText(String s) {
         try {
             super.setText(s);
             if (control != null) control.saveText();
+            invalidate();
         }
         catch (Exception e) {
         }
@@ -184,6 +166,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         if (control != null && bSaveChanges) {
             control.saveText();
         }
+        invalidate();
     }
 
 
@@ -317,6 +300,67 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
     }
 
+    
+    public void setMaximumColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
+    public int getMaximumColumns() {
+        return control.getMaximumColumns();
+    }
+    public void setMinimumColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinimumColumns() {
+        return control.getMinimumColumns();
+    }
+
+    
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
+        
+        int cols = getMaximumColumns();
+        if (cols < 1)  {
+            cols = control.getDataSourceMaxColumns();
+            if (cols < 1) {
+                cols = control.getPropertyInfoMaxColumns();
+                if (cols < 1) {
+                    cols = getColumns() * 2; 
+                }
+            }
+            
+        }
+        if (cols > 0) d.width = OATable.getCharWidth(this, getFont(), cols);
+        
+        // also check size of text
+        String s = getText();
+        if (s == null) s = " ";
+
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+        
+        FontMetrics fm = getFontMetrics(getFont());
+        d.width = Math.min(d.width, fm.stringWidth(s+"www")+inx+2);
+        
+        // dont size under pref size
+        Dimension dx = getPreferredSize();
+        d.width = Math.max(d.width, dx.width);
+
+        return d;
+    }
+
+    public Dimension getMinimumSize() {
+        Dimension d = super.getMinimumSize();
+        if (isMinimumSizeSet()) return d;
+        int cols = getMinimumColumns();
+        if (cols < 1) return d;
+        d.width = OATable.getCharWidth(this, getFont(), cols+1);
+        return d;
+    }
+    
+    
 }
 
 
