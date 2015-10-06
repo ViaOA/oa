@@ -150,6 +150,12 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     }
 
     /** 
+        Called by Hub2List when item is selected 
+    */
+    public void onItemSelected(int row) {
+    }
+    
+    /** 
     The "word(s)" to use for the empty row (null value).  Default=""  <br>
     Example: "none of the above".  
     <p>
@@ -649,6 +655,14 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         return renderer;
     }
 
+    /**
+     * This is called by getRenderer(..) after the default settings have been set.
+     */
+    public void customizeRenderer(JLabel label, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        // to be overwritten
+    }
+    
+    
     /** 
         Used to supply the renderer when this component is used in the column of an OATable.
         Can be overwritten to customize the rendering.
@@ -826,6 +840,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         public synchronized void valueChanged(ListSelectionEvent e) {
             super.valueChanged(e);
             OAList.this.valueChanged();
+            OAList.this.onItemSelected(e.getFirstIndex());
         }
         @Override
         public Component getRenderer(Component renderer, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -833,11 +848,12 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
             String tt = getToolTipText(value);
             tt = OAList.this.getToolTipText(value, tt);
             if (tt != null) ((JComponent)renderer).setToolTipText(tt);
-            return OAList.this.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
+            Component comp = OAList.this.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
+            if (renderer instanceof JLabel) {
+                OAList.this.customizeRenderer((JLabel)renderer, list, value, index, isSelected, cellHasFocus);
+            }
+            return comp;
         }
-    
     }
-
-
 }
 

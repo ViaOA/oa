@@ -39,7 +39,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
         Create an unbound ComboBox.
     */
     public OAComboBox() {
-        control = new OAComboBoxController();
+        this(null, null);
     }
 
     /**
@@ -61,7 +61,12 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
         Create ComboBox that is bound to a property for the active object in a Hub.
     */
     public OAComboBox(Hub hub, String propertyPath) {
-        control = new OAComboBoxController(hub, propertyPath);
+        control = new OAComboBoxController(hub, propertyPath) {
+            @Override
+            public void onItemSelected(int row) {
+                 OAComboBox.this.onItemSelected(row);
+            }
+        };
         Color c = UIManager.getColor("ComboBox.foreground");
         if (c == null) c = Color.black;
         //20151002 removed: UIManager.put("ComboBox.disabledForeground", c);
@@ -611,6 +616,13 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
 		return renderer;
     }
 
+    /**
+     * This is called by getRenderer(..) after the default settings have been set.
+     */
+    public void customizeRenderer(JLabel label, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        // to be overwritten
+    }
+    
     /** 
         Used to supply the renderer when this component is used in the column of an OATable.
         Can be overwritten to customize the rendering.
@@ -709,10 +721,17 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
         }
         
         
+        EmptyBorder emptyBorder = new EmptyBorder(0,2,0,0);
+
         @Override
         protected Component getRenderer(Component renderer, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             renderer = super.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
             renderer = OAComboBox.this.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
+
+            if (renderer instanceof JLabel) {
+                ((JLabel)renderer).setBorder(emptyBorder);
+                OAComboBox.this.customizeRenderer((JLabel)renderer, list, value, index, isSelected, cellHasFocus);
+            }
             return renderer;
         }
     }
@@ -747,6 +766,13 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
         d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
         return d;
     }
+    
+    /** 
+        Called when item is selected 
+    */
+    public void onItemSelected(int row) {
+    }
+    
 }
 
 

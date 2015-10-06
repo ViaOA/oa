@@ -66,6 +66,7 @@ public class OAPopupList extends OAList {
     /** called by Hub2List when item is selected */
     public void valueChanged() {
         super.valueChanged();
+        super.onItemSelected(getSelectedIndex());
         popup.setVisible(false);
     }
 }

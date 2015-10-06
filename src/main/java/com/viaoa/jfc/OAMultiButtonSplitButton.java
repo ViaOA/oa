@@ -20,6 +20,8 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import com.viaoa.util.OAArray;
+
 /**
  * Manages multiple buttons to be choosen from a dropdown, displaying an active button.
  * 
@@ -122,6 +124,17 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         addButton(cmd, false);
     }
   
+    
+    
+    public int getButtonCount() {
+        return buttons==null?0:buttons.length;
+    }
+    
+    private JButton[] buttons = new JButton[0];
+    public JButton[] getButtons() {
+        return buttons;
+    }
+    
     private PropertyChangeListener propertyChangeListener;
     
     private boolean bFirst=true;
@@ -129,6 +142,8 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         
         // cmd.setAlignmentX(LEFT_ALIGNMENT);
         cmd.setHorizontalAlignment(SwingConstants.LEFT);  // Sets the horizontal alignment of the icon and text.
+
+        buttons = (JButton[]) OAArray.add(JButton.class, buttons, cmd);
 
         boolean bAdd = true;
         if (bDefault || bFirst) {
@@ -166,6 +181,24 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         mainButton.setEnabled(cmdSelected.isEnabled());
         cmdSelected.addPropertyChangeListener(propertyChangeListener);
     }
+    
+    public Dimension getPreferredSize() {
+        if (mainButton == null) return super.getPreferredSize();
+        
+        Dimension d = mainButton.getPreferredSize();
+    
+        for (JButton b : buttons) {
+            Dimension d2 = b.getPreferredSize();
+            d.width = Math.max(d.width, d2.width);
+        }
+        
+        
+        Dimension d2 = dropDownButton.getPreferredSize();
+        d.width += d2.width + 5;
+        d.height = Math.max(d.height, d2.height);
+        return d;
+    }
+    
     
     public static void main(String[] args) {
         final JFrame frm = new JFrame();

@@ -40,7 +40,6 @@ public class OASplitButton extends JButton {
         setupMainButtonListener();
         
         this.dropDownButton  = new JButton(new ImageIcon(this.getClass().getResource("icons/downCombobox.gif")));
-                
         
         dropDownButton.setRequestFocusEnabled(false);
         dropDownButton.setFocusPainted(false);
@@ -66,8 +65,6 @@ public class OASplitButton extends JButton {
             }
         });
     }    
-    
-    
     
     //@Override
     protected void paintComponent(Graphics g) {

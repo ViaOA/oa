@@ -324,6 +324,7 @@ public class ComboBoxController extends JFCController implements FocusListener {
                 if (b) {
                     OAUndoManager.endCompoundEdit();
                 }
+                onItemSelected(getHub().getPos());
             }
         }
 
@@ -377,6 +378,9 @@ public class ComboBoxController extends JFCController implements FocusListener {
     }
 
     public void focusLost(FocusEvent e) {
+    }
+    
+    public void onItemSelected(int row) {
     }
 
 
