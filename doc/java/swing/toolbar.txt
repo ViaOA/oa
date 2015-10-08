@@ -5,6 +5,43 @@
         tb.setRollover(true);
 
         toolBar.add(Box.createHorizontalStrut(7));
+        toolBar.add(Box.createHorizontalGlue());
+
+>> adding combobox
+
+        cboModel = new OAComboBox();
+        cboModel.setColumns(12);
+        cboModel.setMaximumColumns(21);
+        cboModel.setPopupColumns(15);
+        cboModel.setFocusable(false);
+        cboModel.setEnableUndo(false);
+        cboModel.setNullDescription(null);
+
+
+
+>> adding multi button
+        cmdSplit = new OAMultiButtonSplitButton();
+        cmdSplit.setBorderPainted(true);
+        cmdSplit.setAllowChangeMasterButton(true);
+        cmdSplit.setShowTextInSelectedButton(false);
+        OAButton.setup(cmdSplit);
+        toolBar.add(cmdSplit);
+
+        cmd = new JButton(Resource.getJarIcon("alignVert.gif"));
+        cmd.setToolTipText("Evenly space selected objects Vertically");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SpaceVert);
+        OAButton.setup(cmd);
+        al.add(cmd);
+        cmdSplit.addButton(cmd, true);
+
+        cmd = new JButton(Resource.getJarIcon("alignHort.gif"));
+        cmd.setToolTipText("Evenly space selected objects Hortizontally");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SpaceHort);
+        OAButton.setup(cmd);
+        al.add(cmd);
+        cmdSplit.addButton(cmd);
+
+
 
 
 >> User

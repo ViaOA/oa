@@ -30,7 +30,7 @@ import com.viaoa.jfc.control.EnabledController;
  */
 public class OASplitButton extends JButton {
     private static final long serialVersionUID = 1L;
-    protected JButton mainButton;   // this is wrapped by splitButton
+    final protected JButton mainButton;   // this is wrapped by splitButton
     protected JButton dropDownButton;  // this is used to popup, etc.
     private boolean bIsInSuperPaint;
 
@@ -39,13 +39,12 @@ public class OASplitButton extends JButton {
         mainButton.setMargin(new Insets(0,0,0,-3));
         setupMainButtonListener();
         
-        this.dropDownButton  = new JButton(new ImageIcon(this.getClass().getResource("icons/downCombobox.gif")));
+        this.dropDownButton  = new JButton(new ImageIcon(OASplitButton.class.getResource("icons/downCombobox.gif")));
         
         dropDownButton.setRequestFocusEnabled(false);
         dropDownButton.setFocusPainted(false);
         dropDownButton.setMargin(new Insets(0,2,0,2));
 
-        
         this.setLayout(new BorderLayout(0, 0));
         this.setMargin(new Insets(-3, -3, -3, -3));
         

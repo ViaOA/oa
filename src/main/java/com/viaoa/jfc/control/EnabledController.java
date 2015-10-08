@@ -18,6 +18,7 @@ import javax.swing.text.*;
 
 import com.viaoa.hub.*;
 import com.viaoa.jfc.OAJFCComponent;
+import com.viaoa.jfc.OASplitButton;
 
 /**
  * Used to bind a components enabled/disabled value to a one or more Hub/Property value
@@ -107,12 +108,14 @@ public class EnabledController extends HubPropController {
             }
         }
         else {
-            if (comp instanceof Container && !(comp instanceof OAJFCComponent) && !(comp instanceof JTabbedPane)) {
-                Component[] comps = ((Container)comp).getComponents();
-                for (int i=0; comps != null && i<comps.length; i++) {
-                    Component compx = comps[i];
-                    if (compx instanceof JComponent) {
-                        _onUpdate(compx, bEnabled);
+            if (comp instanceof Container) {
+                if ( !(comp instanceof OAJFCComponent) && !(comp instanceof JTabbedPane) && !(comp instanceof OASplitButton)) {
+                    Component[] comps = ((Container)comp).getComponents();
+                    for (int i=0; comps != null && i<comps.length; i++) {
+                        Component compx = comps[i];
+                        if (compx instanceof JComponent) {
+                            _onUpdate(compx, bEnabled);
+                        }
                     }
                 }
             }

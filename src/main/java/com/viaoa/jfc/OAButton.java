@@ -89,6 +89,9 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         Create a new OAButton that is bound to a Hub and command.
     */
     public OAButton(Hub hub, String text, Icon icon, ButtonEnabledMode enabledMode, ButtonCommand command) {
+        this(hub, text, icon, enabledMode, command, true);
+    }
+    public OAButton(Hub hub, String text, Icon icon, ButtonEnabledMode enabledMode, ButtonCommand command, boolean bCallSetup) {
         if (text != null) setText(text);
         if (icon != null) setIcon(icon);
         
@@ -125,7 +128,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         control = new OAButtonController(hub, enabledMode, command) {
         };
         
-        setup();
+        if (bCallSetup) setup();
     }
     
     public OAButton() {
@@ -139,6 +142,9 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     }
     public OAButton(Icon icon) {
         this(null, null, icon, null, null);
+    }
+    public OAButton(Icon icon, boolean bCallSetup) {
+        this(null, null, icon, null, null, bCallSetup);
     }
     public OAButton(Hub hub) {
         this(hub, null, null, null, null);

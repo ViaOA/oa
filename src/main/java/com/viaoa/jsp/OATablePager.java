@@ -106,7 +106,7 @@ public class OATablePager implements java.io.Serializable {
 
         if (totalPages > 1) {
             String dis = (currentPage > 0) ? "" : " class='oatablePagerDisable'";
-            sb.append("<li oaValue='0'" + dis + ">"+((char)174)+"</li>");
+            sb.append("<li oaValue='0'" + dis + ">\u00ab</li>");
 
             int x = currentPage - 1;
             if (x < 0) x = 0;
@@ -127,7 +127,7 @@ public class OATablePager implements java.io.Serializable {
             sb.append("<li oaValue='" + x + "'" + dis + ">"+'>'+"</li>");
 
             dis = (currentPage + 1 != totalPages) ? "" : " class='oatablePagerDisable'";
-            sb.append("<li oaValue='" + (totalPages - 1) + "'" + dis + ">"+((char)175)+"</a></li>");
+            sb.append("<li oaValue='" + (totalPages - 1) + "'" + dis + ">\u00bb</a></li>");
         }
         if (totalPages > 0) {
             sb.append("</ul>");

@@ -39,16 +39,34 @@ public class OAMultiButtonSplitButton extends OASplitButton {
     private boolean bShowSelectedButton = true;
     private GridBagConstraints gc;
     private boolean bIsPopupVisible;
+
+    private JButton[] buttons = new JButton[0];
+    private PropertyChangeListener propertyChangeListener;
+    private boolean bFirst=true;
+    private JPanel panHidden; // so that each comp/button will have a parent 
     
     public JPopupMenu getPopupMenu() {
         return popup;
     }
     
     public OAMultiButtonSplitButton() {
-        popup = new JPopupMenu();
+        popup = new JPopupMenu() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension d = super.getPreferredSize();
+                d.width = Math.max(d.width, OAMultiButtonSplitButton.this.mainButton.getPreferredSize().width);
+                return d;
+            }
+        };
+        
+        panHidden = new JPanel();
+        Dimension d = new Dimension(0,0);
+        panHidden.setMaximumSize(d);
+        panHidden.setPreferredSize(d);
+        panHidden.setMinimumSize(d);
+        super.add(panHidden, BorderLayout.WEST);
         
         popup.setInvoker(this);
-        
         
 //        BoxLayout lay = new BoxLayout(popup, BoxLayout.Y_AXIS);
 //        popup.setLayout(lay);
@@ -77,12 +95,22 @@ public class OAMultiButtonSplitButton extends OASplitButton {
                 if ("enabled".equalsIgnoreCase(evt.getPropertyName())) {
                     Object val= evt.getNewValue();
                     boolean b = (val instanceof Boolean) && ((Boolean) val).booleanValue();
-                    mainButton.setEnabled(b);
+                    if (evt.getSource() == cmdSelected) {
+                        mainButton.setEnabled(b);
+                    }
                 }
             }
         };
-        
     }
+
+    @Override
+    public void setEnabled(boolean b) {
+        super.setEnabled(b);
+        if (b && cmdSelected != null) {
+            mainButton.setEnabled(cmdSelected.isEnabled());
+        }
+    }
+    
     
     public void setShowSelectedButton(boolean b) {
         bShowSelectedButton = b;
@@ -130,21 +158,19 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         return buttons==null?0:buttons.length;
     }
     
-    private JButton[] buttons = new JButton[0];
+
     public JButton[] getButtons() {
         return buttons;
     }
     
-    private PropertyChangeListener propertyChangeListener;
-    
-    private boolean bFirst=true;
     public void addButton(final JButton cmd, boolean bDefault) {
-        
         // cmd.setAlignmentX(LEFT_ALIGNMENT);
         cmd.setHorizontalAlignment(SwingConstants.LEFT);  // Sets the horizontal alignment of the icon and text.
 
         buttons = (JButton[]) OAArray.add(JButton.class, buttons, cmd);
 
+        panHidden.add(cmd);
+        
         boolean bAdd = true;
         if (bDefault || bFirst) {
             bFirst = false;

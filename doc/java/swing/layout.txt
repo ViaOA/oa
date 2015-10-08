@@ -1,5 +1,18 @@
 
 
+>> Panel w/ BoxLayout
+
+    JPanel p = new JPanel();
+    BoxLayout box = new BoxLayout(p, BoxLayout.X_AXIS);
+    p.setLayout(box);
+    cboModel.setBorder(new EmptyBorder(4, 0, 4, 0));
+    p.add(cboModel);
+    toolBar.add(p);
+
+
+see toolbar.txt
+
+
 >> BoxLayout        
         
         Box box = new Box(BoxLayout.X_AXIS);

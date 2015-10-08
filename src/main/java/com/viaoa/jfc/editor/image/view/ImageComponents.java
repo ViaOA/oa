@@ -129,7 +129,7 @@ public class ImageComponents {
     public JButton getBrighterButton() {
         if (cmdBrighter == null) {
             cmdBrighter = new JButton("Brighter");
-            // cmdRotateCCW.setIcon(new ImageIcon(this.getClass().getResource("image/rotateCCW.gif")));
+            // cmdRotateCCW.setIcon(new ImageIcon(ImageComponents.class.getResource("image/rotateCCW.gif")));
             cmdBrighter.setToolTipText("make image brighter");
             cmdBrighter.setRequestFocusEnabled(false);
             cmdBrighter.setFocusPainted(false);
@@ -141,7 +141,7 @@ public class ImageComponents {
     public JButton getDarkerButton() {
         if (cmdDarker == null) {
             cmdDarker = new JButton("Darker");
-            // cmdRotateCCW.setIcon(new ImageIcon(this.getClass().getResource("image/rotateCCW.gif")));
+            // cmdRotateCCW.setIcon(new ImageIcon(ImageComponents.class.getResource("image/rotateCCW.gif")));
             cmdDarker.setToolTipText("make image darker");
             cmdDarker.setRequestFocusEnabled(false);
             cmdDarker.setFocusPainted(false);
@@ -154,7 +154,7 @@ public class ImageComponents {
     public JButton getMoreContrastButton() {
         if (cmdMoreContrast == null) {
             cmdMoreContrast = new JButton("More Contrast");
-            // cmdRotateCCW.setIcon(new ImageIcon(this.getClass().getResource("image/rotateCCW.gif")));
+            // cmdRotateCCW.setIcon(new ImageIcon(ImageComponents.class.getResource("image/rotateCCW.gif")));
             cmdMoreContrast.setRequestFocusEnabled(false);
             cmdMoreContrast.setToolTipText("more contrast");
             cmdMoreContrast.setFocusPainted(false);
@@ -166,7 +166,7 @@ public class ImageComponents {
     public JButton getLessContrastButton() {
         if (cmdLessContrast == null) {
             cmdLessContrast = new JButton("Less Contrast");
-            // cmdRotateCCW.setIcon(new ImageIcon(this.getClass().getResource("image/rotateCCW.gif")));
+            // cmdRotateCCW.setIcon(new ImageIcon(ImageComponents.class.getResource("image/rotateCCW.gif")));
             cmdLessContrast.setToolTipText("less contrast");
             cmdLessContrast.setRequestFocusEnabled(false);
             cmdLessContrast.setFocusPainted(false);
@@ -180,7 +180,7 @@ public class ImageComponents {
         if (cmdSharpen == null) {
             cmdSharpen = new JButton("Sharpen");
             cmdSharpen.setToolTipText("sharpen the image");
-            // cmdRotateCCW.setIcon(new ImageIcon(this.getClass().getResource("image/rotateCCW.gif")));
+            // cmdRotateCCW.setIcon(new ImageIcon(ImageComponents.class.getResource("image/rotateCCW.gif")));
             cmdSharpen.setRequestFocusEnabled(false);
             cmdSharpen.setFocusPainted(false);
 //            cmdRotateCCW.setBorderPainted(false);
@@ -192,7 +192,7 @@ public class ImageComponents {
     public JButton getBlurButton() {
         if (cmdBlur == null) {
             cmdBlur = new JButton("Blur");
-            // cmdRotateCCW.setIcon(new ImageIcon(this.getClass().getResource("image/rotateCCW.gif")));
+            // cmdRotateCCW.setIcon(new ImageIcon(ImageComponents.class.getResource("image/rotateCCW.gif")));
             cmdBlur.setToolTipText("blur the image");
             cmdBlur.setRequestFocusEnabled(false);
             cmdBlur.setFocusPainted(false);
@@ -205,7 +205,7 @@ public class ImageComponents {
     public JButton getUndoButton() {
         if (cmdUndo == null) {
             cmdUndo = new JButton();
-            cmdUndo.setIcon(new ImageIcon(this.getClass().getResource("image/undo.png")));
+            cmdUndo.setIcon(new ImageIcon(ImageComponents.class.getResource("image/undo.png")));
             cmdUndo.setRequestFocusEnabled(false);
             cmdUndo.setToolTipText("undo the last change");
             cmdUndo.setFocusPainted(false);
@@ -218,7 +218,7 @@ public class ImageComponents {
     public JButton getOpenButton() {
         if (cmdOpen == null) {
             cmdOpen = new JButton();
-            cmdOpen.setIcon(new ImageIcon(this.getClass().getResource("image/open.gif")));
+            cmdOpen.setIcon(new ImageIcon(ImageComponents.class.getResource("image/open.gif")));
             cmdOpen.setToolTipText("open an image from file system.");
             cmdOpen.setRequestFocusEnabled(false);
             cmdOpen.setFocusPainted(false);
@@ -229,7 +229,7 @@ public class ImageComponents {
     public JButton getDeleteButton() {
         if (cmdDelete == null) {
             cmdDelete = new JButton();
-            cmdDelete.setIcon(new ImageIcon(this.getClass().getResource("image/delete.gif")));
+            cmdDelete.setIcon(new ImageIcon(ImageComponents.class.getResource("image/delete.gif")));
             cmdDelete.setRequestFocusEnabled(false);
             cmdDelete.setToolTipText("delete this image.");
             cmdDelete.setFocusPainted(false);
@@ -240,7 +240,7 @@ public class ImageComponents {
     public JButton getSaveButton() {
         if (cmdSave == null) {
             cmdSave = new JButton();
-            cmdSave.setIcon(new ImageIcon(this.getClass().getResource("image/save.gif")));
+            cmdSave.setIcon(new ImageIcon(ImageComponents.class.getResource("image/save.gif")));
             cmdSave.setToolTipText("save the image.");
             cmdSave.setRequestFocusEnabled(false);
             cmdSave.setFocusPainted(false);
@@ -251,7 +251,7 @@ public class ImageComponents {
     public JButton getSaveAsButton() {
         if (cmdSaveAs == null) {
             cmdSaveAs = new JButton();
-            cmdSaveAs.setIcon(new ImageIcon(this.getClass().getResource("image/saveAs.gif")));
+            cmdSaveAs.setIcon(new ImageIcon(ImageComponents.class.getResource("image/saveAs.gif")));
             cmdSaveAs.setToolTipText("save this image to another file.");
             cmdSaveAs.setRequestFocusEnabled(false);
             cmdSaveAs.setFocusPainted(false);
@@ -262,7 +262,7 @@ public class ImageComponents {
     public JButton getTwainButton() {
         if (cmdTwain == null) {
             cmdTwain = new JButton();
-            cmdTwain.setIcon(new ImageIcon(this.getClass().getResource("image/twain.gif")));
+            cmdTwain.setIcon(new ImageIcon(ImageComponents.class.getResource("image/twain.gif")));
             cmdTwain.setToolTipText("get an image from a camera or scanner.");
             cmdTwain.setRequestFocusEnabled(false);
             cmdTwain.setFocusPainted(false);
@@ -273,7 +273,7 @@ public class ImageComponents {
     public JButton getSignatureButton() {
         if (cmdSignature == null) {
             cmdSignature = new JButton();
-            cmdSignature.setIcon(new ImageIcon(this.getClass().getResource("image/signature.gif")));
+            cmdSignature.setIcon(new ImageIcon(ImageComponents.class.getResource("image/signature.gif")));
             cmdSignature.setToolTipText("get an image from signature pad");
             cmdSignature.setRequestFocusEnabled(false);
             cmdSignature.setFocusPainted(false);

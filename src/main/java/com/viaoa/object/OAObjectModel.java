@@ -32,6 +32,8 @@ public class OAObjectModel {
     
     protected boolean bAllowRemove;
     protected boolean bAllowDelete;
+    protected boolean bAllowClear;  // set to null / set AO to null
+    
 
     protected boolean bAllowCut;
     protected boolean bAllowCopy;
@@ -52,6 +54,7 @@ public class OAObjectModel {
         setAllowNew(true);
         setAllowRemove(true);
         setAllowDelete(true);
+        setAllowClear(true);
         setAllowCut(true);
         setAllowCopy(true);
         setAllowPaste(true);
@@ -136,6 +139,13 @@ public class OAObjectModel {
     public void setAllowDelete(boolean b) {
         bAllowDelete = b;
     }
+    public boolean getAllowClear() {
+        return bAllowClear;
+    }
+    public void setAllowClear(boolean b) {
+        bAllowClear = b;
+    }
+
     public boolean getAllowCut() {
         return bAllowCut;
     }

@@ -1,0 +1,34 @@
+
+
+        OAMultiButtonSplitButton cmdSplit = new OAMultiButtonSplitButton();
+        cmdSplit.setAllowChangeMasterButton(true);
+        cmdSplit.setShowTextInSelectedButton(false);
+        OAButton.setup(cmdSplit);
+        cmdSplit.setBorderPainted(true);
+        toolBar.add(cmdSplit);
+        
+        JButton cmd = new JButton(Resource.getJarIcon("alignVert.gif"));
+        cmd.setToolTipText("Resize selected objects to Largest Height");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SizeLargestHeight);
+        OAButton.setup(cmd);
+        cmdSplit.addButton(cmd, true);
+
+        cmd = new JButton(Resource.getJarIcon("alignHort.gif"));
+        cmd.setToolTipText("Resize selected objects to Largest Width");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SizeLargestWidth);
+        OAButton.setup(cmd);
+        cmdSplit.addButton(cmd);
+
+        cmd = new JButton(Resource.getJarIcon("alignBottom.gif"));
+        cmd.setToolTipText("Resize selected objects to Smallest Height");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SizeSmallestHeight);
+        OAButton.setup(cmd);
+        cmdSplit.addButton(cmd);
+
+        cmd = new JButton(Resource.getJarIcon("alignLeft.gif"));
+        cmd.setToolTipText("Resize selected objects to Smallest Width");
+        cmd.setActionCommand(DiagramLayeredPane.CMD_SizeSmallestWidth);
+        OAButton.setup(cmd);
+        cmdSplit.addButton(cmd);
+
+        toolBar.add(Box.createHorizontalStrut(12));         

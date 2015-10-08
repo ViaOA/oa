@@ -90,7 +90,7 @@ public abstract class OAHTMLEditorKit extends HTMLEditorKit {
         if (cssHtml == null) {
             cssHtml = new StyleSheet();
             try {
-                InputStream is = this.getClass().getResourceAsStream("css/html.css");
+                InputStream is = OAHTMLEditorKit.class.getResourceAsStream("css/html.css");
                 Reader r = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"));
                 cssHtml.loadRules(r, null);
                 r.close();

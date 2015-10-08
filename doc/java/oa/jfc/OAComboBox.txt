@@ -1,0 +1,13 @@
+
+
+OAComboBox cboModel = new OAComboBox();
+cboModel.setColumns(12);
+cboModel.setMaximumColumns(21);
+cboModel.setPopupColumns(15);
+cboModel.setFocusable(false);
+cboModel.setEnableUndo(false);
+cboModel.setNullDescription(null);
+
+        
+        
+        

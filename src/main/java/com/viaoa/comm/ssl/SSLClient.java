@@ -26,7 +26,7 @@ public abstract class SSLClient extends SSLBase {
         KeyStore keystore = KeyStore.getInstance("JKS");
 
         // see keystore.txt 
-        InputStream is = this.getClass().getResourceAsStream("sslclient.jks");
+        InputStream is = SSLClient.class.getResourceAsStream("sslclient.jks");
         if (is == null) throw new IOException("sslclient.jks not found");
         keystore.load(is, "vince1".toCharArray());
 

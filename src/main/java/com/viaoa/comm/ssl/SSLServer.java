@@ -29,7 +29,7 @@ public abstract class SSLServer extends SSLBase {
         KeyStore keystore = KeyStore.getInstance("JKS");
 
         // see keystore.txt 
-        InputStream is = this.getClass().getResourceAsStream("sslserver.jks");
+        InputStream is = SSLServer.class.getResourceAsStream("sslserver.jks");
         if (is == null) throw new IOException("sslserver.jks not found");
         keystore.load(is, "vince1".toCharArray());
 
