@@ -1,0 +1,15 @@
+
+
+        Timer timer = new Timer(0, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                balloon.closeBalloon();
+            }
+        });
+        timer.setRepeats(false);
+        timer.setInitialDelay(time);
+        timer.start();
+
+        
+        
+        
+        

@@ -145,6 +145,19 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     private boolean bEnableEditors = true;
     public boolean bDEBUG;
 
+    public static final Color COLOR_Odd = UIManager.getColor("Table.background");
+    public static final Color COLOR_Even = new Color(249, 255, 255);
+    public static final Color COLOR_Focus = UIManager.getColor("Table.foreground");
+    public static final Color COLOR_MouseOver = new Color(0, 0, 110);
+
+    public static final Color COLOR_Change_Foreground = Color.yellow;
+    public static final Color COLOR_Change_Background = new Color(0, 0, 105);
+    public static final Border BORDER_Change = new LineBorder(COLOR_Change_Background, 1);
+
+    public static final Color COLOR_Focus_Forground = UIManager.getColor("Table.background");
+    public static final Border BORDER_Focus = new LineBorder(Color.white, 1);
+    
+    
     static {
         iconAsc = new Icon[4];
         iconDesc = new Icon[4];
@@ -1492,18 +1505,18 @@ if (!getKeepSorted()) hub.cancelSort();
     /**
      * Used to determine the pixel width based on the average width of a character 'X'.
      */
-    public static int getCharWidth(Component comp, int x) {
+    public static int getCharWidth(Component comp, int columns) {
         if (comp == null) return 0;
-        return getCharWidth(comp, comp.getFont(), x);
+        return getCharWidth(comp, comp.getFont(), columns);
     }
-    public static int getCharWidth(Component comp, Font font, int x) {
+    public static int getCharWidth(Component comp, Font font, int columns) {
         if (comp == null) return 0;
         if (averageCharWidth == 0 || (font != null && font.getSize() != lastFontSize)) {
             if (font == null) {
                 System.out.println("OATable.getCharWidth=null, will use average=12 as default");
                 Exception e = new Exception("OATable.getCharWidth=null, will use average=12 as default");
                 e.printStackTrace();
-                return (12 * x);
+                return (11 * columns);
             }
             lastFontSize = font.getSize();
             FontMetrics fm = comp.getFontMetrics(font);
@@ -1511,7 +1524,7 @@ if (!getKeepSorted()) hub.cancelSort();
             averageCharWidth = fm.charWidth('m');  // same used by JTextField.getColumnWidth
         }
         
-        return (averageCharWidth * x);
+        return (averageCharWidth * columns);
     }
 
     public static int getCharHeight(Component comp, Font font) {
@@ -2876,17 +2889,6 @@ if (!getKeepSorted()) hub.cancelSort();
         }
     }
 
-    public static final Color COLOR_Odd = UIManager.getColor("Table.background");
-    public static final Color COLOR_Even = new Color(249, 255, 255);
-    public static final Color COLOR_Focus = UIManager.getColor("Table.foreground");
-    public static final Color COLOR_MouseOver = new Color(0, 0, 110);
-
-    public static final Color COLOR_Change_Foreground = Color.yellow;
-    public static final Color COLOR_Change_Background = new Color(0, 0, 105);
-    public static final Border BORDER_Change = new LineBorder(COLOR_Change_Background, 1);
-
-    public static final Color COLOR_Focus_Forground = UIManager.getColor("Table.background");
-    public static final Border BORDER_Focus = new LineBorder(Color.white, 1);
 
     private JLabel lblDummy;
     private Border borderDummy;

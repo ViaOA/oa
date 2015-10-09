@@ -19,6 +19,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
 import java.net.URL;
 import java.util.*;
@@ -115,8 +116,26 @@ public class OAWaitDialog extends JDialog implements ActionListener {
             pan2.add(getCancelButton());
             panel.add(pan2, BorderLayout.CENTER);
         }
-        panel.add(getProgressBar(), BorderLayout.SOUTH);
         
+        JPanel pan = new JPanel(new GridBagLayout());
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.insets = new Insets(1, 3, 1, 3);
+        gc.anchor = gc.CENTER;
+        
+        gc.fill = gc.NONE;
+        gc.weightx = .25f;
+        pan.add(new JLabel(""), gc);
+        
+        gc.fill = gc.HORIZONTAL;
+        gc.weightx = .50f;
+        pan.add(getProgressBar(), gc);
+        
+        gc.gridwidth = gc.REMAINDER;
+        gc.fill = gc.NONE;
+        gc.weightx = .25f;
+        pan.add(new JLabel(""), gc);
+
+        panel.add(pan, BorderLayout.SOUTH);
         return panel;
     }
     
@@ -159,12 +178,16 @@ public class OAWaitDialog extends JDialog implements ActionListener {
     }
     public void setConsole(OAConsole con) {
         this.console = con;
+        
+        JScrollPane scrollPane = new JScrollPane(con);
+        scrollPane.setBorder(new TitledBorder("Console"));
+        
         if (console != null) {
             if (compDisplay != null) {
-                JSplitPane sp = new JSplitPane(JSplitPane.VERTICAL_SPLIT, compDisplay, new JScrollPane(console));
-                getContentPane().add(sp, BorderLayout.CENTER);
+                JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, compDisplay, scrollPane);
+                getContentPane().add(splitPane, BorderLayout.CENTER);
             }
-            else getContentPane().add(new JScrollPane(console), BorderLayout.CENTER);
+            else getContentPane().add(scrollPane, BorderLayout.CENTER);
             setResizable(true);
         }
     }
@@ -205,6 +228,7 @@ public class OAWaitDialog extends JDialog implements ActionListener {
 
         Hub<Console> h = new Hub(Console.class);
         final Console updateObject = new Console();
+        
         updateObject.setText("");
         h.add(updateObject);
         h.setAO(updateObject);
@@ -216,9 +240,9 @@ public class OAWaitDialog extends JDialog implements ActionListener {
             @Override
             public void run() {
                 try {
-                    for (int i=0; i<20;i++) {
-                        updateObject.setText(i+" "+OAString.getRandomString(5, 55, true, true, true));
-                        Thread.sleep(300);
+                    for (int i=0; i<180;i++) {
+                        updateObject.setText(i+" "+OAString.getRandomString(5, 75, true, true, true));
+                        Thread.sleep(350);
                     }
 dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                }

@@ -651,10 +651,21 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Renderer used to display each row.  Can be overwritten to create custom rendering.
         Called by Hub2List.MyListCellRenderer.getListCellRendererComponent to get renderer. 
     */
-    public Component getRenderer(Component renderer, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        return renderer;
-    }
+    public Component getRenderer(Component comp, JList list,Object value, int index,boolean isSelected,boolean cellHasFocus) {
+        if (!(comp instanceof JLabel)) return comp;
+        
+        JLabel lbl = (JLabel) comp;
+        
+        if (index == mouseOverRow) {
+            lbl.setForeground(Color.white);
+            lbl.setBackground(OATable.COLOR_MouseOver);
+        }
 
+        return comp;
+    }
+    
+    
+    
     /**
      * This is called by getRenderer(..) after the default settings have been set.
      */
@@ -709,11 +720,36 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
 	    return cmdDoubleClick;
 	}
     
+	private boolean bAllowSelectNone = true;
+	
+	/**
+	 * Determines if the user can clear the selection, by
+	 * clicking at the bottom of the list, below the last row.
+	 */
+	public void setAllowSelectNone(boolean b) {
+	    bAllowSelectNone = b;
+	}
+    public boolean getAllowSelectNone() {
+        return bAllowSelectNone;
+    }
+	
     /**
     Capture double click and call double click button.
     @see #getDoubleClickButton
 	*/
 	protected void processMouseEvent(MouseEvent e) {
+	    if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+            int row = locationToIndex(e.getPoint());
+            if (row >= 0) {
+                Rectangle rect = getCellBounds(row, row);
+                int y = e.getPoint().y;
+                if (y > rect.y + rect.height) {
+                    if (getAllowSelectNone()) getSelectionModel().clearSelection();
+                    return;
+                }
+            }
+        }
+	    
 	    super.processMouseEvent(e);
 	    if (e.getID() == MouseEvent.MOUSE_PRESSED) {
 	        if (e.getClickCount() == 2) {
@@ -721,21 +757,37 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
 	            onDoubleClick();
 	        }
 	    }
+        else if (e.getID() == MouseEvent.MOUSE_EXITED) {
+            onMouseOver(-1, e);
+        }
 	}
 
     @Override
     protected void processMouseMotionEvent(MouseEvent e) {
         if (e.getID() == MouseEvent.MOUSE_MOVED) {
             int row = locationToIndex(e.getPoint());
+            if (row >= 0) {
+                Rectangle rect = getCellBounds(row, row);
+                int y = e.getPoint().y;
+                if (y > rect.y + rect.height) row = -1;
+            }
             onMouseOver(row, e);
         }
+        
         super.processMouseMotionEvent(e);
     }
 	
-	
-	protected void onMouseOver(int row, MouseEvent e) {
-	    
-	}
+
+    protected int mouseOverRow=-1;
+    private Rectangle rectMouseOver;
+
+    public void onMouseOver(int row, MouseEvent evt) {
+        mouseOverRow = row;
+        if (rectMouseOver != null) repaint(rectMouseOver);
+        if (row < 0) rectMouseOver = null;
+        else rectMouseOver = getCellBounds(row, row);
+    }
+    
 	
 	/**
 	    Method that is called whenever mouse click count = 2.

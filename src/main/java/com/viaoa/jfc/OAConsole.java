@@ -10,6 +10,7 @@
 */
 package com.viaoa.jfc;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -207,6 +208,12 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
         bHasMouse = false;
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        return d;
+    }
+    
 //qqqqqqqqq toDo:    
     public void setVisible(Hub hub) {
     }    

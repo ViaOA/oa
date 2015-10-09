@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.reflect.*;
 import java.io.IOException;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
@@ -1055,12 +1056,39 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         super.removeNotify();
     }
 
+    public int getMouseOverRow() {
+        return rowLastMouse2;
+    }
+    
+    private TreeCellRenderer oldTreeCellRenderer2;
+    protected void setupRenderer() {
+        this._setupRenderer();
+        oldTreeCellRenderer2 = getCellRenderer();
+        
+        setCellRenderer( new TreeCellRenderer() {
+            public Component getTreeCellRendererComponent(JTree tree,Object value,boolean selected,boolean expanded,boolean leaf,int row,boolean hasFocus) {
+                JComponent comp = (JComponent) oldTreeCellRenderer2.getTreeCellRendererComponent(tree,value,selected,expanded,leaf,row,hasFocus);
+                if (row == rowLastMouse2) {
+                    if (!selected) {
+                        comp.setBackground(OATable.COLOR_MouseOver);
+                        comp.setForeground(Color.white);
+                        comp.setOpaque(true);
+                        return comp;
+                    }
+                }
+                comp.setBackground(Color.white);
+                comp.setForeground(Color.black);
+                comp.setOpaque(false);
+                return comp;
+            }        
+        });
+    }
 
     
     /**
         Called by constructor that will render nodes based on node settings.
     */
-    protected void setupRenderer() {
+    protected void _setupRenderer() {
         oldRenderer = getCellRenderer();
         setCellRenderer( new TreeCellRenderer() {
             private int lastCntUpdateUI;
@@ -1407,14 +1435,62 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
 
     
     protected @Override void processMouseMotionEvent(MouseEvent e) {
+        this._processMouseMotionEvent(e);
+        
+        Point pt = e.getPoint();
+        int row = this.getRowForLocation(pt.x, pt.y);
+        
+        if (row == rowLastMouse2) return;
+        
+        rowLastMouse2 = row;
+        if (recLastMouse2 != null) this.repaint(recLastMouse2);
+
+        TreePath tp = getPathForRow(row);
+        if (tp != null) {
+            Object[] objs = tp.getPath();
+            OATreeNodeData tnd = (OATreeNodeData) objs[objs.length-1];
+            OATreeNode node = tnd.node;
+            
+            recLastMouse2 = getRowBounds(row);
+            rowLastMouse2 = row;
+            
+            if (recLastMouse2 != null) {
+                this.repaint(recLastMouse2);
+            }
+        }        
+        else {
+            recLastMouse2 = null;
+            row = -1;
+        }
+    }
+    
+    protected void _processMouseMotionEvent(MouseEvent e) {
         super.processMouseMotionEvent(e);
         downLastMouse = false;
         updateCheckBox(e.getPoint());        
     }
+    
+    
+    
+    private int rowLastMouse2 = -1;
+    private Rectangle recLastMouse2;
+    
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        this._processMouseEvent(e);
+        if (e.getID() == MouseEvent.MOUSE_EXITED) {
+            if (recLastMouse2 != null) {
+                rowLastMouse2 = -1;
+                this.repaint(recLastMouse2);
+                recLastMouse2 = null;
+            }
+        }
+    }
+    
     /**
         Handles popup menus for TreeNodes.
     */
-    protected @Override void processMouseEvent(MouseEvent mouseEvent) {
+    protected void _processMouseEvent(MouseEvent mouseEvent) {
         if (mouseEvent.getID() == MouseEvent.MOUSE_PRESSED) {
             bValueChangedCalled = false;  // this is used with valueChanged() to know if super.processMouse() calls valueChanged()
             downLastMouse = true;
