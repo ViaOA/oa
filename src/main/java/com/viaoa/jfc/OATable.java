@@ -254,6 +254,25 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return bAllowSorting;
     }
 
+    /**
+     * Columns will be resized to be at least the size of the heading text.
+     */
+    public void resizeColumnsToFitHeading() {
+    
+        FontMetrics fm = this.getFontMetrics(getFont());
+        
+        for (OATableColumn tc : getAllTableColumns()) {
+            int w = tc.tc.getWidth();
+            String s = (String) tc.tc.getHeaderValue();
+            int w2 = fm.stringWidth(s);
+            
+            if (w < w2+8) {
+                tc.tc.setWidth(w2+8);
+            }
+        }
+    }
+    
+    
     @Override
     public String getToolTipText(MouseEvent event) {
         String s = super.getToolTipText(event);
