@@ -1181,7 +1181,7 @@ if (!getKeepSorted()) hub.cancelSort();
      * @param width
      */
     public OATableColumn addCounterColumn() {
-        return addCounterColumn("#", 4);
+        return addCounterColumn("#", 3);
     }
 
     public OATableColumn addCounterColumn(String heading, int width) {
