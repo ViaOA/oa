@@ -64,7 +64,7 @@ public class CustomLineBorder extends AbstractBorder {
         return insets;
     }
     
-    public void paintBorder(Component comp, Graphics gr, int x, int y, int w, int h) {
+    public void XXXpaintBorder(Component comp, Graphics gr, int x, int y, int w, int h) {
         Graphics2D g = (Graphics2D) gr;
         
         g.setColor(color);
@@ -119,4 +119,59 @@ public class CustomLineBorder extends AbstractBorder {
     }
     
     
+
+    public void paintBorder(Component comp, Graphics gr, int x, int y, int w, int h) {
+        Graphics2D g = (Graphics2D) gr;
+        
+        g.setColor(color);
+        Stroke strokeHold = g.getStroke();
+
+        if (top > 0) {
+            Stroke s = new BasicStroke(top);
+            g.setStroke(s);
+            
+            int x1 = x + (top/2);
+            int x2 = x + (w - (top/2));
+            
+            int y1 = y + (top/2);
+            
+            g.drawLine(x1, y1, x2, y1);
+        }
+        
+        if (bottom > 0) {
+            Stroke s = new BasicStroke(bottom);
+            g.setStroke(s);
+            
+            
+            int x1 = x + (bottom/2);
+            int x2 = x + (w - (bottom/2));
+            
+            int y1 = y + (h - (bottom/2));
+            
+            g.drawLine(x1, y1, x2, y1);
+        }
+
+        if (left > 0) {
+            Stroke s = new BasicStroke(left);
+            g.setStroke(s);
+            
+             int x2 = x + (left/2);
+            
+            int y1 = y + (left/2);
+            int y2 = y + (h - (left/2));
+            
+            g.drawLine(x2, y1, x2, y2);
+        }
+        
+        if (right > 0) {
+            Stroke s = new BasicStroke(right);
+            g.setStroke(s);
+            
+            int x2 = x + w - (right/2) - 1;
+            g.drawLine(x2, y, x2, y+h);
+        }
+        
+        g.setStroke(strokeHold);
+    }
+
 }

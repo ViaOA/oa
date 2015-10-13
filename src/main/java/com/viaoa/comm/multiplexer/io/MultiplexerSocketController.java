@@ -125,7 +125,10 @@ public class MultiplexerSocketController implements Serializable {
         this._bIsClient = true;
         this._socket = socket;
 
+        
         // perform handshake/verification in this thread.
+        performHandshake();
+        /*was
         try {
             performHandshake();
         }
@@ -137,6 +140,7 @@ public class MultiplexerSocketController implements Serializable {
             onSocketException(e);
             return;
         }
+        */
 
         // start the real socket reader thread.
         startSocketReaderThread(false);

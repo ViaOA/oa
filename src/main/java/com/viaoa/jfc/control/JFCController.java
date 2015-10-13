@@ -1310,7 +1310,7 @@ public class JFCController extends HubListenerAdapter {
             Method method = getLastMethod();
             if (method != null) {
                 if (method.getReturnType().equals(String.class)) {
-                    if (propertyInfoMaxColumns > 254) propertyInfoMaxColumns = -1;
+                    if (propertyInfoMaxColumns > 254) propertyInfoMaxColumns = 254;
                 }
                 else propertyInfoMaxColumns = -1;
             }
@@ -1323,9 +1323,9 @@ public class JFCController extends HubListenerAdapter {
         if (dataSourceMaxColumns == -2) {
             Hub h = getActualHub();
             if (h == null) return dataSourceMaxColumns;
-            dataSourceMaxColumns = -1;
             OADataSource ds = OADataSource.getDataSource(h.getObjectClass());
             if (ds != null) {
+                dataSourceMaxColumns = -1;
                 dataSourceMaxColumns = ds.getMaxLength(h.getObjectClass(), getPropertyPathFromActualHub());
                 Method method = getLastMethod();
                 if (method != null) {

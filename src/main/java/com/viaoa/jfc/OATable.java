@@ -3539,7 +3539,7 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
 
         Color c = UIManager.getColor("Table.gridColor");
         if (c == null) c = Color.black;
-        Border border = new CustomLineBorder(0, 0, 3, 0, c);
+        Border border = new CustomLineBorder(0, 0, 2, 0, c);
         setBorder(border);
         
         button = new JButton() {

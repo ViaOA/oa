@@ -51,7 +51,7 @@ public class MultiplexerClient {
     /**
      * Internal flag that is set to true once the create method has been called.
      */
-    private boolean _bCreated;
+    private volatile boolean _bCreated;
 
     /**
      * Real socket to server.
@@ -66,7 +66,7 @@ public class MultiplexerClient {
     // used by multiplexerOutputStream
     private int mbThrottleLimit;
 
-    private Thread keepAliveThread;
+    private volatile Thread keepAliveThread;
     private int keepAliveSeconds;
     
     /**
@@ -104,7 +104,6 @@ public class MultiplexerClient {
 
         _socket = new Socket(_host, _port);
         _socket.setTcpNoDelay(true);
-        _bCreated = true;
 
         _controlSocket = new MultiplexerSocketController(_socket) {
             protected void onSocketException(Exception e) {
@@ -119,6 +118,7 @@ public class MultiplexerClient {
             };
             @Override
             protected void close(boolean bError) throws IOException {
+                _bCreated = false;
                 if (!_controlSocket.wasCloseAlreadyCalled()) {
                     super.close(bError);
                     MultiplexerClient.this.onClose(bError);
@@ -127,6 +127,8 @@ public class MultiplexerClient {
         };
         setThrottleLimit(this.mbThrottleLimit);
         runKeepAliveThread();        
+        if (_controlSocket.isClosed()) throw new Exception("socket is closed");
+        _bCreated = true;
     }
 
     /**
@@ -234,6 +236,7 @@ public class MultiplexerClient {
      */
     public void close() throws IOException {
         LOG.fine("closing real socket");
+        _bCreated = false;
         if (_controlSocket != null) {
             _controlSocket.close();
         }
