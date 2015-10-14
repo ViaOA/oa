@@ -296,8 +296,11 @@ public class RemoteMultiplexerClient {
             ri.method = method;
             ri.args = args;
             ri.methodInfo = ri.bind.getMethodInfo(ri.method);
-            if (ri.methodInfo != null) ri.methodNameSignature = ri.methodInfo.methodNameSignature;
-
+            if (ri.methodInfo != null) {
+                ri.methodNameSignature = ri.methodInfo.methodNameSignature;
+                ri.socket.setTimeoutSeconds(ri.methodInfo.timeoutSeconds);
+            }
+            
             ri.bSent = _onInvokeForCtoS(ri);
 
             // 4:CtoS_QueuedRequestNoResponse END
@@ -309,12 +312,12 @@ public class RemoteMultiplexerClient {
                 synchronized (ri) {
                     for (int i = 0; ; i++) {
                         if (ri.methodInvoked) break;
-                        ri.wait(1000); // request timeout
-                        if (ri.methodInfo.timeoutSeconds > 0 && i >= ri.methodInfo.timeoutSeconds) {
+                        if (i > 0 && ri.methodInfo.timeoutSeconds > 0 && i >= ri.methodInfo.timeoutSeconds) {
                             if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
                                 break;
                             }
                         }
+                        ri.wait(1000); // request timeout
                     }
                 }
                 // 7:CtoS_QueuedRequest END
@@ -569,6 +572,7 @@ public class RemoteMultiplexerClient {
 
     protected void releaseSocketForCtoS(VirtualSocket vs) throws Exception {
         if (vs == null) return;
+        vs.setTimeoutSeconds(0);
         if (vs.isClosed()) {
             getVirtualSocketCtoSPool().remove(vs);
         }

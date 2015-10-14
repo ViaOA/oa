@@ -51,6 +51,10 @@ public abstract class VirtualSocket extends Socket {
      */
     protected final Object _lockObject = new Object();
 
+    // timeout used when waiting to read
+    private int timeoutSeconds; 
+    
+    
     /**
      * Called by MultiplexerSocketController when creating a new socket or receiving a command to create
      * a new virtual socket.
@@ -181,4 +185,12 @@ public abstract class VirtualSocket extends Socket {
     public abstract void write(int b) throws IOException;
 
     public abstract void close(boolean bSendCommand) throws IOException;
+    
+    public void setTimeoutSeconds(int x) {
+        this.timeoutSeconds = x;
+    }
+    public int getTimeoutSeconds() {
+        return this.timeoutSeconds;
+    }
+    
 }

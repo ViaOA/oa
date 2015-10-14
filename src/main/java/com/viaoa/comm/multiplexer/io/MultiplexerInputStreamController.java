@@ -205,7 +205,8 @@ public abstract class MultiplexerInputStreamController {
     private int _read(VirtualSocket vs, byte[] bs, int off, int len) throws IOException {
         int readAmt = 0;
 
-        for (;;) {
+        int timeoutSeconds = vs.getTimeoutSeconds();
+        for (int i=0; ;i++) {
             synchronized (vs._lockObject) {
                 if (vs._id == _nextReadId) {
                     readAmt = _dataInputStream.read(bs, off, Math.min(len, (_nextReadLen - _nextReadOffset)));
@@ -215,6 +216,9 @@ public abstract class MultiplexerInputStreamController {
                 try {
                     if (this._bIsClosed || vs.isClosed()) {
                         throw new IOException("socket has been closed");
+                    }
+                    if (i > 0 && timeoutSeconds > 0 && i > timeoutSeconds) {
+                        throw new IOException("timeout wating to read, timeout="+timeoutSeconds);
                     }
                     vs._lockObject.wait(1000);
                 }
