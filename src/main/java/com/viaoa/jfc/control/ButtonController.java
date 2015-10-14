@@ -27,6 +27,7 @@ import javax.swing.table.*;
 
 import java.io.File;
 import java.lang.reflect.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -594,24 +595,31 @@ public class ButtonController extends JFCController implements ActionListener {
         
         final AtomicInteger aiCompleted = new AtomicInteger(); 
         final OAConsole console = con;
-        SwingWorker<Boolean, Void> sw = new SwingWorker<Boolean, Void>() {
+        SwingWorker<Boolean, String> sw = new SwingWorker<Boolean, String>() {
             Exception exception;
             @Override
             protected Boolean doInBackground() throws Exception {
+                publish("");
+                boolean b;
                 try {
-                    onActionPerformed();
+                    b = onActionPerformed();
                 }
                 catch (Exception e) {
+                    b = false;
                     this.exception = e;
                 }
                 finally {
                     aiCompleted.incrementAndGet();
                 }
-                return true;
+                return b;
+            }
+            @Override
+            protected void process(List<String> chunks) {
             }
 
             @Override
             protected void done() {
+                
                 synchronized (Lock) {
                     if (!dlg.wasCancelled() && console == null) {
                         if (dlg.isVisible()) {
@@ -643,7 +651,14 @@ public class ButtonController extends JFCController implements ActionListener {
                         dlg.getProgressBar().setIndeterminate(false);
                         dlg.getProgressBar().setMaximum(100);
                         dlg.getProgressBar().setValue(100);
-                    }              
+                    }   
+                    
+                    try {
+                        if (!get()) return;
+                    }
+                    catch (Exception e) {
+                    }
+                    
                     String s = completedMessage;
                     if (exception != null) {
                         s = "Command had an exception"; 
