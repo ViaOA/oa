@@ -17,6 +17,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Event;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -3597,6 +3598,8 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
     
     private Color bgColor;
     private Border border;
+    private ImageIcon iconFilter;
+    
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         button.setText((value == null) ? "" : value.toString());
         
@@ -3616,9 +3619,19 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                 border = new CustomLineBorder(1, 1, 0, 1, c);
                 border = new CompoundBorder(border, new EmptyBorder(0,2,0,1));
             }
+
+            label.setHorizontalTextPosition(SwingConstants.RIGHT);
             
+            Icon icon = null;
             if (tcFilter != null) {
                 label.setBackground(Color.white);
+
+                if (iconFilter == null) {
+                    URL url = OAButton.class.getResource("icons/filter16.png");
+                    iconFilter = new ImageIcon(url);
+                }
+                icon = iconFilter;
+                
                 comp = tcFilter.getTableRenderer(label, table, value, false, false, -1, column);
             }
        
@@ -3646,19 +3659,23 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                     if (url == null) return null;
                     iconResetFilter = new ImageIcon(url);
                 }
-                label.setText(" ");
-                label.setIcon(iconResetFilter);
+                label.setText("");
+                label.setBorder(null);
+                icon = iconResetFilter;
                 label.setBackground(Color.white);
-                label.setHorizontalTextPosition(SwingConstants.LEFT);
+                JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+                p.setBorder(null);
+                p.setOpaque(true);
+                p.setBackground(Color.white);
+                p.add(comp);
+                comp = p;
             }
-            else label.setIcon(null);
-//qqqqq
+            label.setIcon(icon);
+
             PanelHeaderRenderer.this.removeAll();
             PanelHeaderRenderer.this.setLayout(new BorderLayout());
             PanelHeaderRenderer.this.add(button, BorderLayout.NORTH);
             PanelHeaderRenderer.this.add(comp, BorderLayout.CENTER);
-            
-            
         }
 
         Icon icon = null;
@@ -3720,19 +3737,19 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                 JTableHeader th = table.getTableHeader();
                 comp.removeFocusListener(this);
                 th.remove(comp);
-                th.repaint();
                 if (compFilter == comp) {
                     compFilter = null;
                     focusListener = null;
                 }
+                table.getTableHeader().repaint();
+                if (table.getLeftTable() != null) table.getLeftTable().getTableHeader().repaint();
+                if (table.getRightTable() != null) table.getRightTable().getTableHeader().repaint();
             }
             @Override
             public void focusGained(FocusEvent e) {
             }
         });
         compFilter.addFocusListener(focusListener);
-        
-        
         
         if (comp.getParent() != table.getTableHeader()) {
             table.getTableHeader().add(comp);
@@ -3747,5 +3764,9 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
             
         compFilter.setBounds(rect);
         compFilter.requestFocusInWindow();
+        this.table.repaint();
+        table.getTableHeader().repaint();
+        if (table.getLeftTable() != null) table.getLeftTable().getTableHeader().repaint();
+        if (table.getRightTable() != null) table.getRightTable().getTableHeader().repaint();
     }
 }

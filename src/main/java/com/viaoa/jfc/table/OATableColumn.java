@@ -58,7 +58,7 @@ public class OATableColumn {
     public void setTable(OATable t) {
         this.table = t;
     }
-//qqqqqqqqqqqqqqqqqq 20150520
+
     public OATableFilterComponent compFilter;
     public void setFilterComponent(OATableFilterComponent comp) {
         compFilter = comp;

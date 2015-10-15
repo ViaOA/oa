@@ -7,6 +7,9 @@
         toolBar.add(Box.createHorizontalStrut(7));
         toolBar.add(Box.createHorizontalGlue());
 
+        
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT); // WRAP_TAB_LAYOUT
+
 >> adding combobox
 
         cboModel = new OAComboBox();
