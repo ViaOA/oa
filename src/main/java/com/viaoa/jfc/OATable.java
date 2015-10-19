@@ -268,7 +268,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             int w2 = fm.stringWidth(s);
             
             if (w < w2+8) {
+                tc.tc.setPreferredWidth(w2 + 8);
                 tc.tc.setWidth(w2+8);
+                tc.defaultWidth = w2 + 8;
             }
         }
     }
