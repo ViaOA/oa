@@ -216,7 +216,6 @@ public class OAPopup extends JPopupMenu {
         // make sure that comp is on window 20140826
         Component c = comp;
         for ( ; c != null; ) {
-            c = c.getParent();
             if (c instanceof OAPopup) { 
                 OAPopup pop = (OAPopup) c;
                 comp = c = pop.getOpenCommand();
@@ -225,6 +224,7 @@ public class OAPopup extends JPopupMenu {
                 JPopupMenu pop = (JPopupMenu) c;
                 comp = c = pop.getInvoker();
             }
+            c = c.getParent();
         }
         
         
@@ -239,7 +239,6 @@ public class OAPopup extends JPopupMenu {
             show(comp, 0,0);
             dPopup = this.getSize();
         }
-        
         
         boolean bUp = false;
         // see if it should pop UP or DOWN

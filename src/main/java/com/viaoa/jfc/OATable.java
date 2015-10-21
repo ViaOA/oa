@@ -1067,7 +1067,6 @@ if (!getKeepSorted()) hub.cancelSort();
         if (h < 20) h = 20;
 
         if (includeScrollBar) w += 18; // scrollbar
-
         setPreferredScrollableViewportSize(new Dimension(w, h));
         
         // have table resized in layoutManager
@@ -3594,7 +3593,6 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
             }
         }
         dim.height = labelHeight + buttonHeight;
-        
         return dim;
     }
     
