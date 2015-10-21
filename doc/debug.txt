@@ -23,6 +23,7 @@ import com.viaoa.jfc.table.*;
 import com.viaoa.jfc.text.*;
 import com.viaoa.jfc.text.autocomplete.*;
 import com.viaoa.jfc.image.*;
+import com.viaoa.jfc.editor.html.OAHTMLTextPane;
 import com.viaoa.util.*;
 
 import com.tmgsc.hifive.model.*;
@@ -37,18 +38,18 @@ import com.tmgsc.hifive.delegate.oa.*;
 import com.tmgsc.hifive.resource.Resource;
 import com.tmgsc.hifive.view.*;
 
-public class LineItemJfc implements OAModelJfcInterface {
-    private static Logger LOG = Logger.getLogger(LineItemJfc.class.getName());
+public class EcardJfc implements OAModelJfcInterface {
+    private static Logger LOG = Logger.getLogger(EcardJfc.class.getName());
     
-    public static final String PP_Display    = OAString.cpp(LineItem.P_Description);
+    public static final String PP_Display    = OAString.cpp(Ecard.P_Name);
     public static final String PP_Icon       = null;
     public static final String PP_Image      = null;
     public static final String PP_ForeColor  = null;
     public static final String PP_BackColor  = null;
     public static final String PP_Font       = null;
     // Hub
-    protected Hub<LineItem> hub;   // This is the Hub used for binding.
-    protected LineItemModel model;
+    protected Hub<Ecard> hub;   // This is the Hub used for binding.
+    protected EcardModel model;
     
     // Tree
     protected OATreeNode lastTreeNode;  // used by getTreeUsed()
@@ -70,70 +71,39 @@ public class LineItemJfc implements OAModelJfcInterface {
     public static final String CARD_Edit = "edit";
     protected JPanel cardPanel;
     protected CardLayout cardLayout;
+    protected JTabbedPane tabbedPane;
     protected HashMap<Integer, JDialog> hmReportDialog;
     
     
     // Search
-    protected LineItemSearchJfc searchJfc;
+    protected EcardSearchJfc searchJfc;
     // Inner Search
-    protected LineItemSearchJfc hubSearchJfc;
+    protected EcardSearchJfc searchHubJfc;
     
     // Filters
     
     // focus components
-    protected OATextArea txtaDescription;
-    protected OATextArea tableTxtaDescription;
-    // commands for methods
+    protected OADateComboBox dcboCreated;
+    protected OADateComboBox tableDcboCreated;
+    protected EcardCategoryJfc jfcEcardCategory;
+    protected ImageStoreJfc jfcImageStore;
     
-    protected AwardCardOrderJfc jfcAwardCardOrder;
-    protected EmailJfc jfcEmail;
-    protected EmployeeJfc jfcEmployee;
-    protected EmployeeAwardJfc jfcEmployeeAward;
-    protected EmployeeAwardJfc jfcEmployeeAwardCash;
-    protected EmployeeAwardCharityJfc jfcEmployeeAwardCharity;
-    protected EmployeeAwardJfc jfcEmployeeAwardIntlVisa;
-    protected EmployeeEcardToJfc jfcEmployeeEcardTo;
-    protected InspireOrderJfc jfcInspireOrder;
-    protected InspireOrderJfc jfcInspireOrderCash;
-    protected InspireOrderCharityJfc jfcInspireOrderCharity;
-    protected InspireOrderJfc jfcInspireOrderIntlVisa;
-    protected InspireOrderItemJfc jfcInspireOrderItem;
-    protected InspireRecipientJfc jfcInspireRecipient;
-    protected LocationJfc jfcLocation;
-    protected PointsRecordJfc jfcPointsRecord;
-    protected PointsRequestJfc jfcPointsRequest;
-    protected ProgramJfc jfcProgram;
-    protected AwardCardOrderJfc jfcGroupByAwardCardOrder;
-    protected LineItemJfc jfcLineItemsGroupByAwardCardOrder;
-    protected EmployeeJfc jfcGroupByEmployee;
-    protected LineItemJfc jfcLineItemsGroupByEmployee;
-    protected EmployeeAwardJfc jfcGroupByEmployeeAward;
-    protected LineItemJfc jfcLineItemsGroupByEmployeeAward;
-    protected InspireOrderJfc jfcGroupByInspireOrder;
-    protected LineItemJfc jfcLineItemsGroupByInspireOrder;
-    protected LocationJfc jfcGroupByLocation;
-    protected LineItemJfc jfcLineItemsGroupByLocation;
-    protected PointsRecordJfc jfcGroupByPointsRecord;
-    protected LineItemJfc jfcLineItemsGroupByPointsRecord;
-    protected ProgramJfc jfcGroupByProgram;
-    protected LineItemJfc jfcLineItemsGroupByProgram;
-    
-    public LineItemJfc() {
-        this.model = new LineItemModel();
+    public EcardJfc() {
+        this.model = new EcardModel();
         OAModelJfcUtil.register(this);
     }
     
-    public LineItemJfc(Hub<LineItem> hubLineItem) {
-        this.model = new LineItemModel(hubLineItem);
+    public EcardJfc(Hub<Ecard> hubEcard) {
+        this.model = new EcardModel(hubEcard);
         OAModelJfcUtil.register(this);
     }
-    public LineItemJfc(LineItemModel modelLineItem) {
-        this.model = modelLineItem;
+    public EcardJfc(EcardModel modelEcard) {
+        this.model = modelEcard;
         OAModelJfcUtil.register(this);
     }
     
     // Hub
-    public Hub<LineItem> getHub() {
+    public Hub<Ecard> getHub() {
         if (hub == null) {
             hub = model.getHub();
         }
@@ -150,9 +120,9 @@ public class LineItemJfc implements OAModelJfcInterface {
     
     
     // Model
-    public LineItemModel getModel() {
+    public EcardModel getModel() {
         if (model == null) {
-            model = new LineItemModel(getHub());
+            model = new EcardModel(getHub());
             model.setAllowHubSearch(true);
         }
         return model;
@@ -162,10 +132,10 @@ public class LineItemJfc implements OAModelJfcInterface {
     
     // Images
     public static Icon getIcon() {
-        return Resource.getJarIcon("lineItem.gif");
+        return Resource.getJarIcon("ecard.gif");
     }
     public static Icon getTitleIcon() {
-        return Resource.getJarIcon("lineItems.gif");
+        return Resource.getJarIcon("ecards.gif");
     }
     
     // Tree
@@ -240,7 +210,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         OAMenuItem mi = new OAMenuItem(getHub(), OAButton.ADD_MANUAL) {
             @Override
             public boolean onActionPerformed() {
-                LineItemJfc.this.onAdd();
+                EcardJfc.this.onAdd();
                 return true;
             }
         };
@@ -252,20 +222,20 @@ public class LineItemJfc implements OAModelJfcInterface {
     public OAMenuItem createNewMenuItem() {
         return createNewMenuItem(getHub());
     }
-    public OAMenuItem createNewMenuItem(Hub<LineItem> hub) {
+    public OAMenuItem createNewMenuItem(Hub<Ecard> hub) {
         if (!getModel().getAllowNew()) return null;
         OAMenuItem mi = new OAMenuItem(hub, OAMenuItem.NEW) {
             @Override
             public void afterActionPerformed() {
-                // LineItemJfc.this.getEditDialog(this).setVisible(true);
-                LineItemJfc.this.onNewLineItemCreated();
+                // EcardJfc.this.getEditDialog(this).setVisible(true);
+                EcardJfc.this.onNewEcardCreated();
                 super.afterActionPerformed();
             }
         };
         mi.setMnemonic(KeyEvent.VK_N);
         mi.setText("Create a new "+getModel().getDisplayName());
         mi.setToolTipText("Create a new "+getModel().getDisplayName());
-        mi.setFocusComponent(txtaDescription);
+        mi.setFocusComponent(dcboCreated);
         return mi;
     }
     
@@ -292,17 +262,17 @@ public class LineItemJfc implements OAModelJfcInterface {
         }
         return node;
     }
-    public OATreeNode createTreeNode(String leadingPropertyPath, Hub<LineItem> hubRoot, boolean bIncludeChildren, OATreeNode ... parentNodes) {
+    public OATreeNode createTreeNode(String leadingPropertyPath, Hub<Ecard> hubRoot, boolean bIncludeChildren, OATreeNode ... parentNodes) {
         if (hubRoot == null && OAString.isEmpty(leadingPropertyPath)) hubRoot = getHub();
-        OATreeNode node = new OATreeNode(OAString.cpp(leadingPropertyPath, LineItem.P_Description), hubRoot, getHub()) {
+        OATreeNode node = new OATreeNode(OAString.cpp(leadingPropertyPath, Ecard.P_Name), hubRoot, getHub()) {
             @Override
             public void objectSelected(Object obj) {
                 super.objectSelected(obj);
-                LineItemJfc.this.onShowEditPanel();
+                EcardJfc.this.onShowEditPanel();
             }
             @Override
             public void onDoubleClick(Object obj, MouseEvent e) {
-                LineItemJfc.this.onDoubleClickTreeNode();
+                EcardJfc.this.onDoubleClickTreeNode();
             }
             @Override
             public JPopupMenu getPopupMenu() {
@@ -385,19 +355,19 @@ public class LineItemJfc implements OAModelJfcInterface {
         mi.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LineItemJfc.this.onSearch();
+                EcardJfc.this.onSearch();
            }
         });
         return mi;
     }
     public JMenuItem createHubSearchMenuItem() {
         if (!getModel().getAllowHubSearch()) return null;
-        JMenuItem mi = new JMenuItem(getModel().getDisplayName() + " inner search ...", Resource.getJarIcon("search.gif"));
+        JMenuItem mi = new JMenuItem(getModel().getDisplayName() + " table search ...", Resource.getJarIcon("hubsearch16.png"));
         mi.setMnemonic(KeyEvent.VK_I);
         mi.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LineItemJfc.this.onHubSearch();
+                EcardJfc.this.onHubSearch();
            }
         });
         return mi;
@@ -405,6 +375,7 @@ public class LineItemJfc implements OAModelJfcInterface {
     public OAMenuItem createCutMenuItem() {
         if (!getModel().getAllowCut()) return null;
         OAMenuItem mi = new OAMenuItem(getHub(), OAMenuItem.CUT);
+        mi.setText("Cut "+getModel().getDisplayName());
         return mi;
     }
     public OAMenuItem createCopyMenuItem() {
@@ -443,14 +414,14 @@ public class LineItemJfc implements OAModelJfcInterface {
     
     // Label
     public OALabel createLabel() {
-        OALabel lbl = new OALabel(getHub(), OAString.cpp(LineItem.P_Description), 100) {
+        OALabel lbl = new OALabel(getHub(), OAString.cpp(Ecard.P_Name), 20) {
             @Override
             public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
-                LineItemJfc.this.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+                EcardJfc.this.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
             }
             @Override
             public String getToolTipText(int row, int col, String defaultValue) {
-                return LineItemJfc.this.getToolTipText(row, col, defaultValue);
+                return EcardJfc.this.getToolTipText(row, col, defaultValue);
             }
         };
         lbl.setIconColorProperty(PP_BackColor);
@@ -476,18 +447,18 @@ public class LineItemJfc implements OAModelJfcInterface {
     }
     
     public OAComboBox createComboBox() {
-        OAComboBox cbo = new OAComboBox(getHub(), OAString.cpp(LineItem.P_Description), 100) {
+        OAComboBox cbo = new OAComboBox(getHub(), OAString.cpp(Ecard.P_Name), 20) {
             @Override
             public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
-                LineItemJfc.this.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver );
+                EcardJfc.this.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver );
             }
             @Override
             public String getToolTipText(int row, int col, String defaultValue) {
-                return LineItemJfc.this.getToolTipText(row, col, defaultValue);
+                return EcardJfc.this.getToolTipText(row, col, defaultValue);
             }
         };
     
-        cbo.setPopupColumns(106);
+        cbo.setPopupColumns(31);
         cbo.setMaximumRowCount(15);
         cbo.setIconColorProperty(PP_BackColor);
         cbo.setImageProperty(PP_Icon);
@@ -520,7 +491,7 @@ public class LineItemJfc implements OAModelJfcInterface {
             }
         };
         cboTable.allowClearButton(true);
-        cboTable.setColumns(100);
+        cboTable.setColumns(25);
         return cboTable;
     }
     
@@ -533,7 +504,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         return lst;
     }
     public OAList createList() {
-        OAList lst = new OAList(getHub(), OAString.cpp(LineItem.P_Description), 12, 108);
+        OAList lst = new OAList(getHub(), OAString.cpp(Ecard.P_Name), 12, 33);
         lst.setAllowDnD(true);
         lst.setAllowRemove(true);
         lst.setAllowDelete(false);
@@ -554,94 +525,91 @@ public class LineItemJfc implements OAModelJfcInterface {
     // comboBoxTree
     public OATreeComboBox createSearchTreeComboBox() {
         OATreeComboBox cbo = new OATreeComboBox(createSearchTree(), getHub(), PP_Display);
-        cbo.setColumns(32);
+        cbo.setColumns(25);
         return cbo;
     }
     public OATree createSearchTree() {
         OATree tree = new OATree();
-        tree.setPreferredSize(10, 36);
+        tree.setPreferredSize(10, 29);
         OATreeTitleNode tnode;
         OATreeNode node, node2;
     
         tnode = new OATreeTitleNode(getModel().getDisplayNamePlural());
-        tnode.setIcon(LineItemJfc.getTitleIcon());
+        tnode.setIcon(EcardJfc.getTitleIcon());
         tree.add(tnode);
-        node = new OATreeNode(LineItemJfc.PP_Display, getHub()) {
+        node = new OATreeNode(EcardJfc.PP_Display, ModelDelegate.getEcards().createSharedHub(), getHub()) {
             @Override
             public void onDoubleClick(Object obj, MouseEvent e) {
-                LineItemJfc.this.onDoubleClickTreeNode();
+                EcardJfc.this.onDoubleClickTreeNode();
             }
         };
-        node.setIcon(LineItemJfc.getIcon());
-        node.setForegroundColorProperty(LineItemJfc.PP_ForeColor);
-        node.setBackgroundColorProperty(LineItemJfc.PP_BackColor);
-        node.setImageProperty(LineItemJfc.PP_Icon);
-        node.setFontProperty(LineItemJfc.PP_Font);
+        node.setIcon(EcardJfc.getIcon());
+        node.setForegroundColorProperty(EcardJfc.PP_ForeColor);
+        node.setBackgroundColorProperty(EcardJfc.PP_BackColor);
+        node.setImageProperty(EcardJfc.PP_Icon);
+        node.setFontProperty(EcardJfc.PP_Font);
         node.setMaxImageHeight(20);
         node.setMaxImageWidth(32);
         tnode.add(node);
+        // Company.programs.ecards
+        tnode = new OATreeTitleNode("Companies");
+        tnode.setIcon(CompanyJfc.getTitleIcon());
+        tree.add(tnode);
+        node = new OATreeNode(CompanyJfc.PP_Display, ModelDelegate.getCompanies().createSharedHub());
+        node.setIcon(CompanyJfc.getIcon());
+        node.setForegroundColorProperty(CompanyJfc.PP_ForeColor);
+        node.setBackgroundColorProperty(CompanyJfc.PP_BackColor);
+        node.setImageProperty(CompanyJfc.PP_Icon);
+        node.setFontProperty(CompanyJfc.PP_Font);
+        node.setMaxImageHeight(20);
+        node.setMaxImageWidth(32);
+        tnode.add(node);
+        node2 = new OATreeNode(OAString.cpp(Company.P_Programs, ProgramJfc.PP_Display));
+        node2.setIcon(ProgramJfc.getIcon());
+        node2.setForegroundColorProperty(ProgramJfc.PP_ForeColor);
+        node2.setBackgroundColorProperty(ProgramJfc.PP_BackColor);
+        node2.setImageProperty(ProgramJfc.PP_Icon);
+        node2.setFontProperty(ProgramJfc.PP_Font);
+        node2.setMaxImageHeight(20);
+        node2.setMaxImageWidth(32);
+        node.add(node2);
+        node = node2;
+        node2 = new OATreeNode(OAString.cpp(Program.P_Ecards, PP_Display), getHub());
+        node2.setIcon(getIcon());
+        node2.setForegroundColorProperty(PP_ForeColor);
+        node2.setBackgroundColorProperty(PP_BackColor);
+        node2.setImageProperty(PP_Icon);
+        node2.setFontProperty(PP_Font);
+        node2.setMaxImageHeight(20);
+        node2.setMaxImageWidth(32);
+        node.add(node2);
+        // EcardCategory.ecards
+        tnode = new OATreeTitleNode("Ecard Categories");
+        tnode.setIcon(EcardCategoryJfc.getTitleIcon());
+        tree.add(tnode);
+        node = new OATreeNode(EcardCategoryJfc.PP_Display, ModelDelegate.getEcardCategories().createSharedHub());
+        node.setIcon(EcardCategoryJfc.getIcon());
+        node.setForegroundColorProperty(EcardCategoryJfc.PP_ForeColor);
+        node.setBackgroundColorProperty(EcardCategoryJfc.PP_BackColor);
+        node.setImageProperty(EcardCategoryJfc.PP_Icon);
+        node.setFontProperty(EcardCategoryJfc.PP_Font);
+        node.setMaxImageHeight(20);
+        node.setMaxImageWidth(32);
+        tnode.add(node);
+        node2 = new OATreeNode(OAString.cpp(EcardCategory.P_Ecards, PP_Display), getHub());
+        node2.setIcon(getIcon());
+        node2.setForegroundColorProperty(PP_ForeColor);
+        node2.setBackgroundColorProperty(PP_BackColor);
+        node2.setImageProperty(PP_Icon);
+        node2.setFontProperty(PP_Font);
+        node2.setMaxImageHeight(20);
+        node2.setMaxImageWidth(32);
+        node.add(node2);
         return tree;
     }
     
     
     // Table
-    // this is to show multiple tables
-    protected JPanel cardPanelTable;
-    protected CardLayout cardLayoutTable;
-    public JPanel getTableCardPanel() {
-        JPanel pan = new JPanel(new BorderLayout());
-        pan.add(getTableCardPanel(false));
-        pan.add(createNorthTableToolBar(), BorderLayout.NORTH);
-        return pan;
-    }
-    public JPanel getTableCardPanel(boolean bIncludeToolbar) {
-        if (cardPanelTable != null) return cardPanelTable;
-        cardLayoutTable = new CardLayout(5,5);
-        cardPanelTable = new JPanel(cardLayoutTable);
-        
-        cardPanelTable.add(createTablePanel(bIncludeToolbar, false), "Default");
-        JSplitPane splitPane;
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-            getGroupByAwardCardOrderJfc().createReadOnlyTablePanel(),
-            getLineItemsGroupedByAwardCardOrderJfc().createTablePanel(false, false)
-        );
-        cardPanelTable.add(splitPane, "GroupByAwardCardOrder");
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-            getGroupByEmployeeJfc().createReadOnlyTablePanel(),
-            getLineItemsGroupedByEmployeeJfc().createTablePanel(false, false)
-        );
-        cardPanelTable.add(splitPane, "GroupByEmployee");
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-            getGroupByEmployeeAwardJfc().createReadOnlyTablePanel(),
-            getLineItemsGroupedByEmployeeAwardJfc().createTablePanel(false, false)
-        );
-        cardPanelTable.add(splitPane, "GroupByEmployeeAward");
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-            getGroupByInspireOrderJfc().createReadOnlyTablePanel(),
-            getLineItemsGroupedByInspireOrderJfc().createTablePanel(false, false)
-        );
-        cardPanelTable.add(splitPane, "GroupByInspireOrder");
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-            getGroupByLocationJfc().createReadOnlyTablePanel(),
-            getLineItemsGroupedByLocationJfc().createTablePanel(false, false)
-        );
-        cardPanelTable.add(splitPane, "GroupByLocation");
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-            getGroupByPointsRecordJfc().createReadOnlyTablePanel(),
-            getLineItemsGroupedByPointsRecordJfc().createTablePanel(false, false)
-        );
-        cardPanelTable.add(splitPane, "GroupByPointsRecord");
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-            getGroupByProgramJfc().createReadOnlyTablePanel(),
-            getLineItemsGroupedByProgramJfc().createTablePanel(false, false)
-        );
-        cardPanelTable.add(splitPane, "GroupByProgram");
-        
-        cardLayoutTable.show(cardPanelTable, "Default");
-        cardPanelTable.setMinimumSize(new Dimension(5,5));
-        return cardPanelTable;
-    }
-    
     public JPanel createTablePanel() {
         return createTablePanel(true, true);
     }
@@ -684,11 +652,16 @@ public class LineItemJfc implements OAModelJfcInterface {
         return createCombinedPanel(false); 
     }
     public JPanel createCombinedPanel(final boolean bUseList) {
-        final JComponent comp = new JScrollPane(createEditPanel(false));
+        JTabbedPane tp;
         Dimension d = new Dimension(5,5);
+        if (this.tabbedPane == null) tp = getTabbedPane();
+        else tp = createTabbedPane();
+        tp.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        if (this.tabbedPane == null) tp = getTabbedPane();
+        final JComponent comp = createEditPanel(tp, false);
         comp.setMinimumSize(d);
         JSplitPane splitPane = new JSplitPane(bUseList ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT,
-                bUseList ? new JScrollPane(createList()) : getTableCardPanel(false), 
+                bUseList ? new JScrollPane(createList()) : createTableScrollPane(createTable()), 
                 comp
         ) {
             @Override
@@ -720,7 +693,7 @@ public class LineItemJfc implements OAModelJfcInterface {
     
         mi = createTableNewMenuItem();
         if (mi != null) {
-            mi.setFocusComponent(tableTxtaDescription);
+            mi.setFocusComponent(tableDcboCreated);
             pmenu.add(mi);
         }
     
@@ -745,10 +718,10 @@ public class LineItemJfc implements OAModelJfcInterface {
     
     public OAMenuItem createGotoEditMenuItem() {
         if (!getModel().getAllowGotoEdit()) return null;
-        OAMenuItem mi = new OAMenuItem(getHub(), "Goto") {
+        OAMenuItem mi = new OAMenuItem(getHub(), "Details ...", Resource.getJarIcon(Resource.IMG_Goto)) {
             @Override
             public boolean onActionPerformed() {
-                LineItemJfc.this.getEditDialog(this).setVisible(true);
+                EcardJfc.this.getEditDialog(this).setVisible(true);
                 return true;
             }
         };
@@ -761,7 +734,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         OAMenuItem mi = new OAMenuItem(getHub(), OAMenuItem.NEW);
         mi.setMnemonic(KeyEvent.VK_N);
         mi.setText("Create a new "+getModel().getDisplayName());
-        mi.setFocusComponent(tableTxtaDescription);
+        mi.setFocusComponent(tableDcboCreated);
         return mi;
     }
     
@@ -770,13 +743,13 @@ public class LineItemJfc implements OAModelJfcInterface {
         return spTable;
     }
     protected String getToolTipText(OATable table, int row, int col, String defaultValue) {
-        // LineItem client = getHub().getAt(row);
-        // defaultValue = LineItemDelegate.getToolTipText(client, true);
+        // Ecard client = getHub().getAt(row);
+        // defaultValue = EcardDelegate.getToolTipText(client, true);
         return defaultValue;
     }
     public OATable createTable() {
-        Hub<LineItem> hubTable;
-        if (getModel().getAllowTableFilter()) hubTable = new Hub<LineItem>(LineItem.class);
+        Hub<Ecard> hubTable;
+        if (getModel().getAllowTableFilter()) hubTable = new Hub<Ecard>(Ecard.class);
         else hubTable = getModel().getTableHub();
      
         OATable table = new OATable(hubTable) {
@@ -790,8 +763,8 @@ public class LineItemJfc implements OAModelJfcInterface {
             }
             @Override
             public void onDoubleClick() {
-                if (LineItemJfc.this.getModel().getAllowGotoEdit()) {
-                    LineItemJfc.this.getEditDialog(this).setVisible(true);
+                if (EcardJfc.this.getModel().getAllowGotoEdit()) {
+                    EcardJfc.this.getEditDialog(this).setVisible(true);
                 }
             }
         };
@@ -802,7 +775,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         }
         table.setAllowDnD(false);
         table.setAllowSorting(true);
-        table.setColumnProperties(ModelDelegate.getProperties(), "LineItem");
+        table.setColumnProperties(ModelDelegate.getProperties(), "Ecard");
     
         table.addCounterColumn();
         if (getModel().getAllowMultiSelect()) {
@@ -819,14 +792,20 @@ public class LineItemJfc implements OAModelJfcInterface {
     public void createTableColumns(OATable table) {
         OALabel lbl;
         OATableColumn tc;
-        tc = table.addColumn("Description", 100, new OALabel(getHub(), OAString.cpp(LineItem.P_Description)));
+        tableDcboCreated = createCreatedDateComboBox();
+        tc = table.addColumn("Created", 8, tableDcboCreated);
+        tc = table.addColumn("Name", 20, createNameTextField());
         if (getModel().getAllowTableFilter()) {
-            tc.setFilterComponent(new OATextFieldFilter(LineItem.P_Description));
+            tc.setFilterComponent(new OATextFieldFilter(Ecard.P_Name));
+        }
+        String detailPropertyName = HubDetailDelegate.getPropertyFromDetailToMaster(getHub());
+        if (detailPropertyName == null || !detailPropertyName.equalsIgnoreCase(Ecard.P_EcardCategory)) {
+            tc = table.addColumn("Ecard Category", 15, createEcardCategoryComboBox());
         }
     }
     
     public OATable createReadOnlyTable() {
-        Hub<LineItem> h = new Hub<LineItem>(LineItem.class);
+        Hub<Ecard> h = new Hub<Ecard>(Ecard.class);
         OATable table = new OATable(h) {
             @Override
             public void customizeRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
@@ -838,8 +817,8 @@ public class LineItemJfc implements OAModelJfcInterface {
             }
             @Override
             public void onDoubleClick() {
-                if (LineItemJfc.this.getModel().getAllowGotoEdit()) {
-                    LineItemJfc.this.getEditDialog(this).setVisible(true);
+                if (EcardJfc.this.getModel().getAllowGotoEdit()) {
+                    EcardJfc.this.getEditDialog(this).setVisible(true);
                 }
             }
         };
@@ -848,7 +827,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         table.setAllowDnD(false);
         table.setAllowSorting(true);
         table.setMasterFilterHub(getModel().getTableHub());
-        table.setColumnProperties(ModelDelegate.getProperties(), "LineItem");
+        table.setColumnProperties(ModelDelegate.getProperties(), "Ecard");
     
         table.addCounterColumn();
         if (getModel().getAllowMultiSelect()) {
@@ -864,28 +843,27 @@ public class LineItemJfc implements OAModelJfcInterface {
     protected void createReadOnlyTableColumns(OATable table) {
         OALabel lbl;
         OATableColumn tc;
-        tc = table.addColumn("Description", 100, new OALabel(getHub(), LineItem.P_Description, 100));
+        tc = table.addColumn("Created", 8, new OALabel(getHub(), Ecard.P_Created, 8));
+        tc = table.addColumn("Name", 20, new OALabel(getHub(), Ecard.P_Name, 25));
         if (getModel().getAllowTableFilter()) {
-            tc.setFilterComponent(new OATextFieldFilter(LineItem.P_Description));
+            tc.setFilterComponent(new OATextFieldFilter(Ecard.P_Name));
         }
+        lbl = new OALabel(getHub(), OAString.cpp(Ecard.P_EcardCategory, EcardCategory.P_Name));
+        if (EcardCategoryJfc.PP_BackColor != null) {
+            lbl.setIconColorProperty(OAString.cpp(Ecard.P_EcardCategory) + "." + EcardCategoryJfc.PP_BackColor);
+        }
+        if (EcardCategoryJfc.PP_Icon != null) {
+            lbl.setImageProperty(OAString.cpp(Ecard.P_EcardCategory) + "." + EcardCategoryJfc.PP_Icon);
+        }
+        tc = table.addColumn("Ecard Category Name", 15, lbl);
     }
     
-    public void addCalculatedProperties(JToolBar toolBar) {
-        OALabel lbl;
-        lbl = createSumLabel();
-        if (lbl != null) {
-            toolBar.add(new JLabel("Sum:"));
-            new EnabledController(lbl, getHub());
-            toolBar.add(lbl);
-            toolBar.add(Box.createHorizontalStrut(6));
-        }
-    }
     public OAButton createGotoEditButton() {
         if (!getModel().getAllowGotoEdit()) return null;
         OAButton cmd = new OAButton(getHub(), "Details ...", Resource.getJarIcon(Resource.IMG_Goto)) {
             @Override
             public void afterActionPerformed() {
-                LineItemJfc.this.getEditDialog(this).setVisible(true);
+                EcardJfc.this.getEditDialog(this).setVisible(true);
                 super.afterActionPerformed();
             }
         };
@@ -899,7 +877,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         OAButton cmd = new OAButton(getHub(), OAButton.ADD_MANUAL) {
             @Override
             public boolean onActionPerformed() {
-                LineItemJfc.this.onAdd();
+                EcardJfc.this.onAdd();
                 return true;
             }
         };
@@ -911,7 +889,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         if (!getModel().getAllowNew()) return null;
         OAButton cmd = new OAButton(getHub(), OAButton.NEW) {
             public void afterActionPerformed() {
-                LineItemJfc.this.onNewLineItemCreated();
+                EcardJfc.this.onNewEcardCreated();
                 super.afterActionPerformed();
             }
         };
@@ -1063,7 +1041,7 @@ public class LineItemJfc implements OAModelJfcInterface {
             toolBar.add(Box.createHorizontalStrut(10));
         }
         if (bLabel) {
-            OALabel lbl = new OALabel(getHub(), OAString.cpp(LineItem.P_Description));
+            OALabel lbl = new OALabel(getHub(), OAString.cpp(Ecard.P_Name));
             lbl.setFont(lbl.getFont().deriveFont(Font.ITALIC));
             lbl.setBorder(new EmptyBorder(0,0,0,0));
             toolBar.add(lbl);
@@ -1082,7 +1060,7 @@ public class LineItemJfc implements OAModelJfcInterface {
             
             cmd = createNewButton();
             if (cmd != null) {
-                cmd.setFocusComponent(tableTxtaDescription);
+                cmd.setFocusComponent(tableDcboCreated);
                 toolBar.add(cmd);
             }
             cmd = createRemoveButton();
@@ -1132,32 +1110,9 @@ public class LineItemJfc implements OAModelJfcInterface {
                 toolBar.add(Box.createHorizontalStrut(10));
             }
         }
-        if (bCustom) {
-            toolBar.addSeparator();
-            addCustomCommands(toolBar);
-            toolBar.add(Box.createHorizontalStrut(10));
-        }
-        if (bHubCalc) {
-            addCalculatedProperties(toolBar);
-            toolBar.add(Box.createHorizontalStrut(10));
-        }
         
-        if (bTable) {
-            jcmd = createTableButton();
-            if (jcmd != null) {
-                toolBar.add(Box.createHorizontalStrut(5));
-                JLabel lbl = new JLabel(Resource.getJarIcon("table16.png"));
-                lbl.setText("Table Options:");
-                toolBar.add(lbl);
-                toolBar.add(Box.createHorizontalStrut(5));
-                toolBar.add(jcmd);
-                toolBar.add(Box.createHorizontalStrut(10));
-            }
-        }
     }
     public void addCustomCommands(JToolBar toolBar) {
-        toolBar.add(Box.createHorizontalStrut(8));
-        toolBar.add(createLineItemUpdateMethodButton());
     }
     public JButton createGoBackButton() {
         return null;
@@ -1170,7 +1125,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         cmd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LineItemJfc.this.showCardPanel(LineItemJfc.this.CARD_List);
+                EcardJfc.this.showCardPanel(EcardJfc.this.CARD_List);
             }
         });
         OAButton.setup(cmd);
@@ -1185,7 +1140,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         cmd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LineItemJfc.this.onSearch();
+                EcardJfc.this.onSearch();
             }
         });
         OAButton.setup(cmd);
@@ -1195,15 +1150,20 @@ public class LineItemJfc implements OAModelJfcInterface {
     public JButton createHubSearchButton() {
         if (!getModel().getAllowHubSearch()) return null;
         JButton cmd = new JButton("Search ...");
-        cmd.setIcon(Resource.getJarIcon("hubSearch.gif"));
-        cmd.setToolTipText("advanced search for current list.");
+        cmd.setIcon(Resource.getJarIcon("hubsearch16.png"));
+        cmd.setToolTipText("table search");
         cmd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LineItemJfc.this.onHubSearch();
+                EcardJfc.this.onHubSearch();
             }
         });
         OAButton.setup(cmd);
+        new EnabledController(cmd, getHub()) {
+            public boolean isValid() {
+                return getHub().getSize() > 0;
+            }
+        };
         return cmd;
     }
     // Card Panel
@@ -1213,14 +1173,13 @@ public class LineItemJfc implements OAModelJfcInterface {
         JToolBar toolBar;
         if (getModel().getAllowSearch()) toolBar = createNorthTableSearchToolBar();
         else toolBar = createNorthTableToolBar();
-        JPanel pan = new JPanel(new BorderLayout());
+        JPanel pan = createTablePanel();
         pan.add(new OAScroller(toolBar), BorderLayout.NORTH);
-        pan.add(getTableCardPanel(false), BorderLayout.CENTER);
         cardPanel.add(pan, CARD_List);
     
         pan = new JPanel(new BorderLayout());
         pan.add(new OAScroller(createEditPanelToolBar()), BorderLayout.NORTH);
-        pan.add(new JScrollPane(createEditPanel(true)), BorderLayout.CENTER);
+        pan.add(createEditPanel(getTabbedPane(), true), BorderLayout.CENTER);
         cardPanel.add(pan, CARD_Edit);
     
         getCardLayout().show(cardPanel, CARD_List);
@@ -1235,32 +1194,34 @@ public class LineItemJfc implements OAModelJfcInterface {
     
     // Edit Panel
     public JPanel createEditPanel() {
-        return createEditPanel(true);
+        return createEditPanel(null, true);
     }
-    public JPanel createEditPanel(boolean bUseCombinedDetail) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(createMainTabPanel(bUseCombinedDetail));
-        return panel;
-    }
-    public JPanel createDefaultEditPanel(final boolean bUseCombinedDetail) {
+    public JPanel createEditPanel(JTabbedPane tabbedPane, final boolean bUseCombinedDetail) {
+        if (tabbedPane == null) {
+            if (this.tabbedPane == null) tabbedPane = getTabbedPane();
+            else tabbedPane = createTabbedPane();;
+        }
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(1, 3, 1, 3);
         gc.anchor = gc.WEST;
         JPanel panel;
         JLabel lbl;
+        EnabledController enabledController;
+        VisibleController visibleController;
         JButton cmd;
+        JComponent comp;
         OALabel olbl;
-        OATextArea txta;
-        OATextField txt;
-        OACheckBox chk;
         OADateComboBox dcbo;
-        OATreeComboBox tcbo;
+        OATextField txt;
+        JPanel panHtml;
+        OAComboBox cbo;
         JPanel pan;
+        JPanel panMain = new JPanel(new BorderLayout());
         panel = new JPanel(new GridBagLayout());
         panel.setBorder(new EmptyBorder(5,5, 3,3));
     
         lbl = new JLabel("Id:");
-        new EnabledController(lbl, getHub());
+        enabledController = new EnabledController(lbl, getHub());
         olbl = createIdLabel();
         lbl.setLabelFor(olbl);
         gc.anchor = gc.WEST;
@@ -1270,805 +1231,82 @@ public class LineItemJfc implements OAModelJfcInterface {
         panel.add(olbl, gc);
         gc.gridwidth = 1;
     
-        lbl = new JLabel("Description:");
-        new EnabledController(lbl, getHub());
-        txta = createDescriptionTextArea();
-        lbl.setLabelFor(txta);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        txtaDescription = txta;
-        gc.insets = new Insets(0, 10, 0, 0);
-        gc.weightx = 0.75f;
-        gc.weighty = 0.75f;
-        gc.fill = gc.BOTH;
-        panel.add(new OAResizePanel(new JScrollPane(txta), 90, true), gc);
-        gc.fill = gc.NONE;
-        gc.weightx = 0.0f;
-        gc.weighty = 0.0f;
-        gc.insets = new Insets(0, 0, 0, 0);
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Billed Amount:");
-        new EnabledController(lbl, getHub());
-        txt = createBilledAmountTextField();
-        lbl.setLabelFor(txt);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(txt, gc);
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Paid Amount:");
-        new EnabledController(lbl, getHub());
-        txt = createPaidAmountTextField();
-        lbl.setLabelFor(txt);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(txt, gc);
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Billed:");
-        new EnabledController(lbl, getHub());
-        chk = createBilledCheckBox();
-        lbl.setLabelFor(chk);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(chk, gc);
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Paid:");
-        new EnabledController(lbl, getHub());
-        chk = createPaidCheckBox();
-        lbl.setLabelFor(chk);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(chk, gc);
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Invoice Number:");
-        new EnabledController(lbl, getHub());
-        txt = createInvoiceNumberTextField();
-        lbl.setLabelFor(txt);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(txt, gc);
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Invoicedate:");
-        new EnabledController(lbl, getHub());
-        dcbo = createInvoicedateDateComboBox();
-        lbl.setLabelFor(dcbo);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        gc.fill = gc.HORIZONTAL;
-        panel.add(new OAResizePanel(dcbo, 20), gc);
-        gc.fill = gc.NONE;
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Billable:");
-        new EnabledController(lbl, getHub());
-        chk = createBillableCheckBox();
-        lbl.setLabelFor(chk);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(chk, gc);
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Needs Update:");
-        new EnabledController(lbl, getHub());
-        olbl = createNeedsUpdateLabel();
-        lbl.setLabelFor(olbl);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        gc.fill = gc.HORIZONTAL;
-        panel.add(new OAResizePanel(olbl, 10), gc);
-        gc.fill = gc.NONE;
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Balance:");
-        new EnabledController(lbl, getHub());
-        olbl = createBalanceLabel();
-        lbl.setLabelFor(olbl);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(olbl, gc);
-        gc.gridwidth = 1;
-    
-        lbl = new JLabel("Value:");
-        new EnabledController(lbl, getHub());
-        olbl = createValueLabel();
-        lbl.setLabelFor(olbl);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        panel.add(olbl, gc);
-        gc.gridwidth = 1;
-        if (getModel().getInspireOrderModel().getViewOnly()) {
-            lbl = new JLabel("Inspire Order:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createInspireOrderCommand();
-            if (getModel().getInspireOrderModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getInspireOrderJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Inspire Order:");
-            new EnabledController(lbl, getHub());
-            olbl = createInspireOrderLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getInspireOrderModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getInspireOrderHub(), LineItemPP.inspireOrder().pp, true);
-            cmd = createInspireOrderCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getInspireOrderModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getPointsRecordModel().getViewOnly()) {
-            lbl = new JLabel("Points Record:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createPointsRecordCommand();
-            if (getModel().getPointsRecordModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getPointsRecordJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Points Record:");
-            new EnabledController(lbl, getHub());
-            olbl = createPointsRecordLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getPointsRecordModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getPointsRecordHub(), LineItemPP.pointsRecord().pp, true);
-            cmd = createPointsRecordCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getPointsRecordModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getEmailModel().getViewOnly()) {
-            lbl = new JLabel("Email:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createEmailCommand();
-            if (getModel().getEmailModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getEmailJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Email:");
-            new EnabledController(lbl, getHub());
-            olbl = createEmailLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getEmailModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-//qqqqqqqqqqqqqqqqqqqq correct            
-            new VisibleController(lbl, model.getEmailHub(), LineItemPP.email().pp, true);
-            cmd = createEmailCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getEmailModel().getCreateUI()) {
-//qqqqqqqqqq resizePanel should have visibleControlle                
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getAwardCardOrderModel().getViewOnly()) {
-            lbl = new JLabel("Award Card Order:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createAwardCardOrderCommand();
-            if (getModel().getAwardCardOrderModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getAwardCardOrderJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Award Card Order:");
-            new EnabledController(lbl, getHub());
-            olbl = createAwardCardOrderLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getAwardCardOrderModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getAwardCardOrderHub(), LineItemPP.awardCardOrder().pp, true);
-            cmd = createAwardCardOrderCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getAwardCardOrderModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getEmployeeAwardModel().getViewOnly()) {
-            lbl = new JLabel("Employee Award:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createEmployeeAwardCommand();
-            if (getModel().getEmployeeAwardModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getEmployeeAwardJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Employee Award:");
-            new EnabledController(lbl, getHub());
-            olbl = createEmployeeAwardLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getEmployeeAwardModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getEmployeeAwardHub(), LineItemPP.employeeAward().pp, true);
-            cmd = createEmployeeAwardCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getEmployeeAwardModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getEmployeeModel().getViewOnly()) {
-            lbl = new JLabel("Employee:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createEmployeeCommand();
-            if (getModel().getEmployeeModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getEmployeeJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Employee:");
-            new EnabledController(lbl, getHub());
-            tcbo = createEmployeeTreeComboBox();
-            lbl.setLabelFor(tcbo);
-            if (getModel().getEmployeeModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getEmployeeHub(), LineItemPP.employee().pp, true);
-            cmd = createEmployeeCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getEmployeeModel().getCreateUI()) {
-                panel.add(new OAResizePanel(tcbo, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getLocationModel().getViewOnly()) {
-            lbl = new JLabel("Location:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createLocationCommand();
-            if (getModel().getLocationModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getLocationJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Location:");
-            new EnabledController(lbl, getHub());
-            tcbo = createLocationTreeComboBox();
-            lbl.setLabelFor(tcbo);
-            if (getModel().getLocationModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getLocationHub(), LineItemPP.location().pp, true);
-            cmd = createLocationCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getLocationModel().getCreateUI()) {
-                panel.add(new OAResizePanel(tcbo, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getProgramModel().getViewOnly()) {
-            lbl = new JLabel("Program:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createProgramCommand();
-            if (getModel().getProgramModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getProgramJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Program:");
-            new EnabledController(lbl, getHub());
-            tcbo = createProgramTreeComboBox();
-            lbl.setLabelFor(tcbo);
-            if (getModel().getProgramModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getProgramHub(), LineItemPP.program().pp, true);
-            cmd = createProgramCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getProgramModel().getCreateUI()) {
-                panel.add(new OAResizePanel(tcbo, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-    
         lbl = new JLabel("Created:");
-        new EnabledController(lbl, getHub());
+        enabledController = new EnabledController(lbl, getHub());
         dcbo = createCreatedDateComboBox();
         lbl.setLabelFor(dcbo);
         gc.anchor = gc.WEST;
         panel.add(lbl, gc);
         gc.anchor = gc.NORTHWEST;
+        dcboCreated = dcbo;
         gc.gridwidth = gc.REMAINDER;
         gc.fill = gc.HORIZONTAL;
-        panel.add(new OAResizePanel(dcbo, 20), gc);
+        comp = new OAResizePanel(dcbo, 20);
+        panel.add(comp, gc);
         gc.fill = gc.NONE;
         gc.gridwidth = 1;
     
-        lbl = new JLabel("Current Value:");
-        new EnabledController(lbl, getHub());
-        txt = createCurrentValueTextField();
+        lbl = new JLabel("Name:");
+        enabledController = new EnabledController(lbl, getHub());
+        txt = createNameTextField();
         lbl.setLabelFor(txt);
         gc.anchor = gc.WEST;
         panel.add(lbl, gc);
         gc.anchor = gc.NORTHWEST;
         gc.gridwidth = gc.REMAINDER;
         gc.fill = gc.HORIZONTAL;
-        panel.add(new OAResizePanel(txt, 75), gc);
+        comp = new OAResizePanel(txt, 75);
+        panel.add(comp, gc);
         gc.fill = gc.NONE;
         gc.gridwidth = 1;
-    
-        lbl = new JLabel("Base Creation Date:");
-        new EnabledController(lbl, getHub());
-        dcbo = createBaseCreationDateDateComboBox();
-        lbl.setLabelFor(dcbo);
-        gc.anchor = gc.WEST;
-        panel.add(lbl, gc);
-        gc.anchor = gc.NORTHWEST;
-        gc.gridwidth = gc.REMAINDER;
-        gc.fill = gc.HORIZONTAL;
-        panel.add(new OAResizePanel(dcbo, 20), gc);
-        gc.fill = gc.NONE;
-        gc.gridwidth = 1;
-        if (getModel().getInspireRecipientModel().getViewOnly()) {
-            lbl = new JLabel("Inspire Recipient:");
-            new EnabledController(lbl, getHub());
+        if (getModel().getImageStoreModel().getCreateUI()) {
+            lbl = new JLabel("Image:");
+            enabledController = new EnabledController(lbl, getHub());
             gc.anchor = gc.WEST;
             panel.add(lbl, gc);
             gc.anchor = gc.NORTHWEST;
             gc.gridwidth = gc.REMAINDER;
             gc.fill = gc.HORIZONTAL;
-            cmd = createInspireRecipientCommand();
-            if (getModel().getInspireRecipientModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getInspireRecipientJfc().createLabel(), cmd, 75), gc);
+            if (getModel().getImageStoreModel().getViewOnly()) {
+                cmd = createImageStoreCommand();
+                comp = new OAResizePanel(getImageStoreJfc().createLabel(), cmd, 75);
+                enabledController = new EnabledController(comp, getHub());
+                panel.add(comp, gc);
+            }
+            else {
+                olbl = createImageStoreLabel();
+                lbl.setLabelFor(olbl);
+                cmd = createImageStoreCommand();
+                comp = olbl;
+                comp = new OAResizePanel(comp, cmd, 75);
+                enabledController = new EnabledController(comp, getHub());
+                panel.add(comp, gc);
             }
             gc.gridwidth = 1;
             gc.fill = gc.NONE;
         }
-        else {
-            lbl = new JLabel("Inspire Recipient:");
-            new EnabledController(lbl, getHub());
-            olbl = createInspireRecipientLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getInspireRecipientModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getInspireRecipientHub(), LineItemPP.inspireRecipient().pp, true);
-            cmd = createInspireRecipientCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getInspireRecipientModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getInspireOrderItemModel().getViewOnly()) {
-            lbl = new JLabel("Inspire Order Item:");
-            new EnabledController(lbl, getHub());
+        if (getModel().getEcardCategoryModel().getCreateUI()) {
+            lbl = new JLabel("Ecard Category:");
+            enabledController = new EnabledController(lbl, getHub());
             gc.anchor = gc.WEST;
             panel.add(lbl, gc);
             gc.anchor = gc.NORTHWEST;
             gc.gridwidth = gc.REMAINDER;
             gc.fill = gc.HORIZONTAL;
-            cmd = createInspireOrderItemCommand();
-            if (getModel().getInspireOrderItemModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getInspireOrderItemJfc().createLabel(), cmd, 75), gc);
+            if (getModel().getEcardCategoryModel().getViewOnly()) {
+                cmd = createEcardCategoryCommand();
+                comp = new OAResizePanel(getEcardCategoryJfc().createLabel(), cmd, 75);
+                enabledController = new EnabledController(comp, getHub());
+                panel.add(comp, gc);
             }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Inspire Order Item:");
-            new EnabledController(lbl, getHub());
-            olbl = createInspireOrderItemLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getInspireOrderItemModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getInspireOrderItemHub(), LineItemPP.inspireOrderItem().pp, true);
-            cmd = createInspireOrderItemCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getInspireOrderItemModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getInspireOrderIntlVisaModel().getViewOnly()) {
-            lbl = new JLabel("Inspire Order:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createInspireOrderIntlVisaCommand();
-            if (getModel().getInspireOrderIntlVisaModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getInspireOrderIntlVisaJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Inspire Order:");
-            new EnabledController(lbl, getHub());
-            olbl = createInspireOrderIntlVisaLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getInspireOrderIntlVisaModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getInspireOrderIntlVisaHub(), LineItemPP.inspireOrderIntlVisa().pp, true);
-            cmd = createInspireOrderIntlVisaCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getInspireOrderIntlVisaModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getInspireOrderCharityModel().getViewOnly()) {
-            lbl = new JLabel("Inspire Order Charity:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createInspireOrderCharityCommand();
-            if (getModel().getInspireOrderCharityModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getInspireOrderCharityJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Inspire Order Charity:");
-            new EnabledController(lbl, getHub());
-            olbl = createInspireOrderCharityLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getInspireOrderCharityModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getInspireOrderCharityHub(), LineItemPP.inspireOrderCharity().pp, true);
-            cmd = createInspireOrderCharityCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getInspireOrderCharityModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getInspireOrderCashModel().getViewOnly()) {
-            lbl = new JLabel("Inspire Order:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createInspireOrderCashCommand();
-            if (getModel().getInspireOrderCashModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getInspireOrderCashJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Inspire Order:");
-            new EnabledController(lbl, getHub());
-            olbl = createInspireOrderCashLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getInspireOrderCashModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getInspireOrderCashHub(), LineItemPP.inspireOrderCash().pp, true);
-            cmd = createInspireOrderCashCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getInspireOrderCashModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getEmployeeEcardToModel().getViewOnly()) {
-            lbl = new JLabel("Ecard Recipient:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createEmployeeEcardToCommand();
-            if (getModel().getEmployeeEcardToModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getEmployeeEcardToJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Ecard Recipient:");
-            new EnabledController(lbl, getHub());
-            olbl = createEmployeeEcardToLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getEmployeeEcardToModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getEmployeeEcardToHub(), LineItemPP.employeeEcardTo().pp, true);
-            cmd = createEmployeeEcardToCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getEmployeeEcardToModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getEmployeeAwardIntlVisaModel().getViewOnly()) {
-            lbl = new JLabel("Employee Award:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createEmployeeAwardIntlVisaCommand();
-            if (getModel().getEmployeeAwardIntlVisaModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getEmployeeAwardIntlVisaJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Employee Award:");
-            new EnabledController(lbl, getHub());
-            olbl = createEmployeeAwardIntlVisaLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getEmployeeAwardIntlVisaModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getEmployeeAwardIntlVisaHub(), LineItemPP.employeeAwardIntlVisa().pp, true);
-            cmd = createEmployeeAwardIntlVisaCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getEmployeeAwardIntlVisaModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getEmployeeAwardCharityModel().getViewOnly()) {
-            lbl = new JLabel("Employee Award Charity:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createEmployeeAwardCharityCommand();
-            if (getModel().getEmployeeAwardCharityModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getEmployeeAwardCharityJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Employee Award Charity:");
-            new EnabledController(lbl, getHub());
-            olbl = createEmployeeAwardCharityLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getEmployeeAwardCharityModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getEmployeeAwardCharityHub(), LineItemPP.employeeAwardCharity().pp, true);
-            cmd = createEmployeeAwardCharityCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getEmployeeAwardCharityModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getEmployeeAwardCashModel().getViewOnly()) {
-            lbl = new JLabel("Employee Award:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createEmployeeAwardCashCommand();
-            if (getModel().getEmployeeAwardCashModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getEmployeeAwardCashJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Employee Award:");
-            new EnabledController(lbl, getHub());
-            olbl = createEmployeeAwardCashLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getEmployeeAwardCashModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            new VisibleController(lbl, model.getEmployeeAwardCashHub(), LineItemPP.employeeAwardCash().pp, true);
-            cmd = createEmployeeAwardCashCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getEmployeeAwardCashModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        if (getModel().getPointsRequestModel().getViewOnly()) {
-            lbl = new JLabel("Points Request:");
-            new EnabledController(lbl, getHub());
-            gc.anchor = gc.WEST;
-            panel.add(lbl, gc);
-            gc.anchor = gc.NORTHWEST;
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            cmd = createPointsRequestCommand();
-            if (getModel().getPointsRequestModel().getCreateUI()) {
-                panel.add(new OAResizePanel(getPointsRequestJfc().createLabel(), cmd, 75), gc);
-            }
-            gc.gridwidth = 1;
-            gc.fill = gc.NONE;
-        }
-        else {
-            lbl = new JLabel("Points Request:");
-            new EnabledController(lbl, getHub());
-            olbl = createPointsRequestLabel();
-            lbl.setLabelFor(olbl);
-            if (getModel().getPointsRequestModel().getCreateUI()) {
-                gc.anchor = gc.WEST;
-                panel.add(lbl, gc);
-                gc.anchor = gc.NORTHWEST;
-            }
-            cmd = createPointsRequestCommand();
-            gc.gridwidth = gc.REMAINDER;
-            gc.fill = gc.HORIZONTAL;
-            if (getModel().getPointsRequestModel().getCreateUI()) {
-                panel.add(new OAResizePanel(olbl, cmd, 75), gc);
+            else {
+                cbo = createEcardCategoryComboBox();
+                lbl.setLabelFor(cbo);
+                cmd = createEcardCategoryCommand();
+                comp = cbo;
+                comp = new OAResizePanel(comp, cmd, 75);
+                enabledController = new EnabledController(comp, getHub());
+                panel.add(comp, gc);
             }
             gc.gridwidth = 1;
             gc.fill = gc.NONE;
@@ -2077,22 +1315,40 @@ public class LineItemJfc implements OAModelJfcInterface {
         // take up remaining space
         lbl = new JLabel("");
         panel.add(lbl, gc);
-        lbl = new JLabel("");
-        panel.add(lbl, gc);
-        lbl = new JLabel("");
         gc.gridwidth = gc.REMAINDER;
-        gc.weightx = 0.25f;
-        gc.weighty = 0.25f;
+        gc.weightx = gc.weighty = 1.0f;
         gc.fill = gc.BOTH;
         panel.add(lbl, gc);
         gc.gridwidth = 1;
         gc.weightx = gc.weighty = 0.0f;
         gc.fill = gc.NONE;
     
+        tabbedPane.addTab(getModel().getDisplayName(), getIcon(), new JScrollPane(panel), null);
+        panMain.add(tabbedPane, BorderLayout.CENTER);
+    
+        Icon icon;
+        icon = Resource.getJarIcon("note.jpg");
+        icon = new ScaledImageIcon(icon, 32, 20);
+//qqqqqqqqqqqqqqqqqqqqqq        createTextHTMLTextPanel() ==> createTextHTMLTextPane()
+        tabbedPane.addTab("Text", icon, createTextHTMLTextPanel(), null);
+        panel = panMain;
     
         return panel;
     }
     
+    public JTabbedPane getTabbedPane() {
+        if (tabbedPane == null) {
+            tabbedPane = createTabbedPane();
+        }
+        return tabbedPane;
+    }
+    public JTabbedPane createTabbedPane() {
+        JTabbedPane tabbedPane = new JTabbedPane();
+        new TabbedPaneController(getHub(), tabbedPane);
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT); // WRAP_TAB_LAYOUT
+        tabbedPane.setFocusable(true);
+        return tabbedPane;
+    }
     
     // edit dialog
     public JDialog getEditDialog(Component comp) {
@@ -2111,7 +1367,7 @@ public class LineItemJfc implements OAModelJfcInterface {
             dlgEdit.add(new OAScroller(tb), BorderLayout.NORTH);
         }
         JPanel panEdit = createEditPanel();
-        dlgEdit.add(new JScrollPane(panEdit), BorderLayout.CENTER);
+        dlgEdit.add(panEdit, BorderLayout.CENTER);
         
         panEdit.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false), "esc");
         panEdit.getActionMap().put("esc", new AbstractAction() {
@@ -2137,1209 +1393,85 @@ public class LineItemJfc implements OAModelJfcInterface {
         return dlgEdit;
     }
     
-    protected JPanel createMainTabPanel(final boolean bUseCombinedDetail) { // label=Main Tab, type=One Column
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(1, 3, 1, 3);
-        gc.anchor = gc.NORTHWEST;
-        JLabel lbl;
-        JComponent comp;
-        JPanel pan;
-        JButton cmd;
-        JPanel panel = new JPanel(new GridBagLayout());
-        Border border;
-        border = new EmptyBorder(5, 5, 3, 3);
-        panel.setBorder(border);
-        lbl = new JLabel("Id:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        comp = createIdLabel();
-        panel.add(comp, gc);
-        lbl = new JLabel("Description:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        gc.weightx = 0.75f;
-        gc.fill = gc.BOTH;
-        comp = new OAResizePanel(new JScrollPane(createDescriptionTextArea()), 90);
-        panel.add(comp, gc);
-        gc.fill = gc.NONE;
-        gc.weightx = 0.0f;
-        lbl = new JLabel("Billed Amount:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        comp = createBilledAmountTextField();
-        panel.add(comp, gc);
-        lbl = new JLabel("Paid Amount:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        comp = createPaidAmountTextField();
-        panel.add(comp, gc);
-        lbl = new JLabel("Billed:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        comp = createBilledCheckBox();
-        panel.add(comp, gc);
-        lbl = new JLabel("Paid:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        comp = createPaidCheckBox();
-        panel.add(comp, gc);
-        lbl = new JLabel("Invoice Number:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        comp = createInvoiceNumberTextField();
-        panel.add(comp, gc);
-        lbl = new JLabel("Invoicedate:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        gc.fill = gc.HORIZONTAL;
-        comp = new OAResizePanel(createInvoicedateDateComboBox(), 20);
-        panel.add(comp, gc);
-        gc.fill = gc.NONE;
-        lbl = new JLabel("Billable:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        comp = createBillableCheckBox();
-        panel.add(comp, gc);
-        lbl = new JLabel("Needs Update:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.fill = gc.HORIZONTAL;
-        comp = new OAResizePanel(createNeedsUpdateLabel(), 10);
-        panel.add(comp, gc);
-        gc.fill = gc.NONE;
-        lbl = new JLabel("Balance:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        comp = createBalanceLabel();
-        panel.add(comp, gc);
-        lbl = new JLabel("Value:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        comp = createValueLabel();
-        panel.add(comp, gc);
-        lbl = new JLabel("Inspire Order:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.inspireOrder().pp, true);
-        panel.add(lbl, gc);
-        cmd = createInspireOrderCommand();
-        comp = new OAResizePanel(createInspireOrderLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Points Record:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.pointsRecord().pp, true);
-        panel.add(lbl, gc);
-        cmd = createPointsRecordCommand();
-        comp = new OAResizePanel(createPointsRecordLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Email:");
-//correct        
-        new EnabledController(lbl, getHub());
-//correct        
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.email().pp, true);
-        panel.add(lbl, gc);
-        cmd = createEmailCommand();
-        comp = new OAResizePanel(createEmailLabel(), cmd, 20);
-//qqqqqqqqqq needs to have visibleController for resizePanel        
-        
-        
-        panel.add(comp, gc);
-        lbl = new JLabel("Award Card Order:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.awardCardOrder().pp, true);
-        panel.add(lbl, gc);
-        cmd = createAwardCardOrderCommand();
-        comp = new OAResizePanel(createAwardCardOrderLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Employee Award:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.employeeAward().pp, true);
-        panel.add(lbl, gc);
-        cmd = createEmployeeAwardCommand();
-        comp = new OAResizePanel(createEmployeeAwardLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Employee:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.employee().pp, true);
-        panel.add(lbl, gc);
-        cmd = createEmployeeCommand();
-        comp = new OAResizePanel(createEmployeeTreeComboBox(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Location:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.location().pp, true);
-        panel.add(lbl, gc);
-        cmd = createLocationCommand();
-        comp = new OAResizePanel(createLocationTreeComboBox(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Program:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.program().pp, true);
-        panel.add(lbl, gc);
-        cmd = createProgramCommand();
-        comp = new OAResizePanel(createProgramTreeComboBox(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Created:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        gc.fill = gc.HORIZONTAL;
-        comp = new OAResizePanel(createCreatedDateComboBox(), 20);
-        panel.add(comp, gc);
-        gc.fill = gc.NONE;
-        lbl = new JLabel("Current Value:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        gc.fill = gc.HORIZONTAL;
-        comp = new OAResizePanel(createCurrentValueTextField(), 75);
-        panel.add(comp, gc);
-        gc.fill = gc.NONE;
-        lbl = new JLabel("Base Creation Date:");
-        new EnabledController(lbl, getHub());
-        panel.add(lbl, gc);
-        gc.gridwidth = gc.REMAINDER;
-        gc.fill = gc.HORIZONTAL;
-        comp = new OAResizePanel(createBaseCreationDateDateComboBox(), 20);
-        panel.add(comp, gc);
-        gc.fill = gc.NONE;
-        lbl = new JLabel("Inspire Recipient:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.inspireRecipient().pp, true);
-        panel.add(lbl, gc);
-        cmd = createInspireRecipientCommand();
-        comp = new OAResizePanel(createInspireRecipientLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Inspire Order Item:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.inspireOrderItem().pp, true);
-        panel.add(lbl, gc);
-        cmd = createInspireOrderItemCommand();
-        comp = new OAResizePanel(createInspireOrderItemLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Inspire Order Intl Visa:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.inspireOrderIntlVisa().pp, true);
-        panel.add(lbl, gc);
-        cmd = createInspireOrderIntlVisaCommand();
-        comp = new OAResizePanel(createInspireOrderIntlVisaLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Inspire Order Charity:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.inspireOrderCharity().pp, true);
-        panel.add(lbl, gc);
-        cmd = createInspireOrderCharityCommand();
-        comp = new OAResizePanel(createInspireOrderCharityLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Inspire Order Cash:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.inspireOrderCash().pp, true);
-        panel.add(lbl, gc);
-        cmd = createInspireOrderCashCommand();
-        comp = new OAResizePanel(createInspireOrderCashLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Employee Ecard To:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.employeeEcardTo().pp, true);
-        panel.add(lbl, gc);
-        cmd = createEmployeeEcardToCommand();
-        comp = new OAResizePanel(createEmployeeEcardToLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Employee Award Intl Visa:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.employeeAwardIntlVisa().pp, true);
-        panel.add(lbl, gc);
-        cmd = createEmployeeAwardIntlVisaCommand();
-        comp = new OAResizePanel(createEmployeeAwardIntlVisaLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Employee Award Charity:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.employeeAwardCharity().pp, true);
-        panel.add(lbl, gc);
-        cmd = createEmployeeAwardCharityCommand();
-        comp = new OAResizePanel(createEmployeeAwardCharityLabel(), cmd, 20);
-        panel.add(comp, gc);
-        lbl = new JLabel("Employee Award Cash:");
-        new EnabledController(lbl, getHub());
-        new VisibleController(lbl, LineItemJfc.this.getHub(), LineItemPP.employeeAwardCash().pp, true);
-        panel.add(lbl, gc);
-        cmd = createEmployeeAwardCashCommand();
-        comp = new OAResizePanel(createEmployeeAwardCashLabel(), cmd, 20);
-        panel.add(comp, gc);
-        // take up remaining space
-        lbl = new JLabel("");
-        gc.gridwidth = gc.REMAINDER;
-        gc.weightx = 1.0f;
-        gc.weighty = 1.0f;
-        panel.add(lbl, gc);
-        gc.gridwidth = 1;
-        gc.weightx = gc.weighty = 0.0f;
-        return panel;
-    }
     // Filters
     
     public OALabel createIdLabel() {
-        OALabel lbl = new OALabel(getHub(), LineItem.P_Id, 7);
+        OALabel lbl = new OALabel(getHub(), Ecard.P_Id, 7);
         return lbl;
-    }
-    
-    public OATextArea createDescriptionTextArea() {
-        OATextArea txta = new OATextArea(getHub(), LineItem.P_Description, 2, 100);
-        txta.setWrapStyleWord(true);
-        txta.setLineWrap(true);
-        setup(txta);
-        return txta;
-    }
-    public OALabel createDescriptionLabel() {
-        OALabel lbl = new OALabel(getHub(), LineItem.P_Description, 100);
-        return lbl;
-    }
-    
-    public OATextField createBilledAmountTextField() {
-        OATextField txt = new OATextField(getHub(), LineItem.P_BilledAmount, 10);
-        // setup(txt);
-        return txt;
-    }
-    
-    public OATextField createPaidAmountTextField() {
-        OATextField txt = new OATextField(getHub(), LineItem.P_PaidAmount, 10);
-        // setup(txt);
-        return txt;
-    }
-    
-    public OACheckBox createBilledCheckBox() {
-        OACheckBox chk = new OACheckBox(getHub(), LineItem.P_Billed);
-        // chk.setText("Billed")
-        chk.setToolTipText("");
-        return chk;
-    }
-    
-    public OACheckBox createPaidCheckBox() {
-        OACheckBox chk = new OACheckBox(getHub(), LineItem.P_Paid);
-        // chk.setText("Paid")
-        chk.setToolTipText("");
-        return chk;
-    }
-    
-    public OATextField createInvoiceNumberTextField() {
-        OATextField txt = new OATextField(getHub(), LineItem.P_InvoiceNumber, 5);
-        // setup(txt);
-        return txt;
-    }
-    
-    public OADateComboBox createInvoicedateDateComboBox() {
-        OADateComboBox dcbo = new OADateComboBox(getHub(), LineItem.P_Invoicedate, 5);
-        dcbo.setMaximumColumns(9);
-        OATextField txt = new OATextField(getHub(), LineItem.P_Invoicedate, 10);
-        dcbo.setEditor(txt);
-        return dcbo;
-    }
-    
-    public OACheckBox createBillableCheckBox() {
-        OACheckBox chk = new OACheckBox(getHub(), LineItem.P_Billable);
-        // chk.setText("Billable")
-        chk.setToolTipText("");
-        return chk;
     }
     
     public OADateComboBox createCreatedDateComboBox() {
-        OADateComboBox dcbo = new OADateComboBox(getHub(), LineItem.P_Created, 5);
+        OADateComboBox dcbo = new OADateComboBox(getHub(), Ecard.P_Created, 5);
         dcbo.setMaximumColumns(9);
-        OATextField txt = new OATextField(getHub(), LineItem.P_Created, 10);
-        dcbo.setEnabled(ModelDelegate.getLoginUserHub(), User.P_EditProcessed, true);
-        txt.setEnabled(ModelDelegate.getLoginUserHub(), User.P_EditProcessed, true);
-        dcbo.setEditor(txt);
+        OATextField txt = new OATextField(getHub(), Ecard.P_Created, 10);
+        txt.setEnabled(ModelDelegate.getLoginUserHub(), User.P_EditProcessed, true);    dcbo.setEnabled(ModelDelegate.getLoginUserHub(), User.P_EditProcessed, true);    dcbo.setEditor(txt);
         return dcbo;
     }
     
-    public OATextField createCurrentValueTextField() {
-        OATextField txt = new OATextField(getHub(), LineItem.P_CurrentValue, 7);
-        txt.setEnabled(ModelDelegate.getLoginUserHub(), User.P_EditProcessed, true);
+    public OATextField createNameTextField() {
+        OATextField txt = new OATextField(getHub(), Ecard.P_Name, 25);
         // setup(txt);
         return txt;
     }
+//qqqqqqqqqqq ????? missing / formatting    
+        JPanel pan = new JPanel(new BorderLayout());
+            pan.add(new OAScroller(txthtml.getToolBar()), BorderLayout.NORTH);
+            pan.add(new JScrollPane(txthtml), BorderLayout.CENTER);
+            return pan;
+        }
+        public OAHTMLTextPane createTextHTMLTextPane() {
+            OAHTMLTextPane html = new OAHTMLTextPane(getHub(), Ecard.P_Text);
+            html.setSpellChecker(Resource.getSpellChecker());
+            html.setPreferredSize(10,  55);
+            // need to create a place to have the images stored
+            html.createImageHandler(ImageStore.class, ImageStore.P_Bytes, ImageStore.P_OrigFileName, ImageStore.P_Id);
+            return html;
+        }
+        public OALabel createTextLabel() {
+            OALabel lbl = new OALabel(getHub(), Ecard.P_Text, 40);
+            return lbl;
+        }
     
-    public OADateComboBox createBaseCreationDateDateComboBox() {
-        OADateComboBox dcbo = new OADateComboBox(getHub(), LineItem.P_BaseCreationDate, 5);
-        dcbo.setMaximumColumns(9);
-        OATextField txt = new OATextField(getHub(), LineItem.P_BaseCreationDate, 10);
-        dcbo.setEnabled(ModelDelegate.getLoginUserHub(), User.P_EditProcessed, true);
-        txt.setEnabled(ModelDelegate.getLoginUserHub(), User.P_EditProcessed, true);
-        dcbo.setEditor(txt);
-        return dcbo;
+    public OAComboBox createEcardCategoryComboBox() {
+        OAComboBox cbo = getEcardCategoryJfc().createComboBox();
+        return cbo;
     }
-    
-    public OALabel createNeedsUpdateLabel() {
-        OALabel lbl = new OALabel(getHub(), LineItem.P_NeedsUpdate, 7);
-        return lbl;
-    }
-    
-    public OALabel createBalanceLabel() {
-        OALabel lbl = new OALabel(getHub(), LineItem.P_Balance, 9);
-        return lbl;
-    }
-    
-    public OALabel createValueLabel() {
-        OALabel lbl = new OALabel(getHub(), LineItem.P_Value, 9);
-        return lbl;
-    }
-    
-    public OALabel createSumLabel() {
-        OALabel lbl = new OALabel(getHub(), LineItem.P_Sum, 17);
-        return lbl;
-    }
-    
-    public OAButton createLineItemUpdateMethodButton() {
-        OAButton cmd = new OAButton(getHub(), "Update ...");
-        cmd.setMultiSelectHub(getModel().getMultiSelectHub());
-        cmd.setIcon(Resource.getJarIcon("dot.gif"));
-        cmd.setUseSwingWorker(true);
-        cmd.setProcessingText("Update", "null");
-        cmd.setMethodName("update");
-        cmd.setup();
-        return cmd;
-    }
-    
-    public OALabel createAwardCardOrderLabel() {
-        OALabel lbl = getAwardCardOrderJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.awardCardOrder().pp, true);
-        return lbl;
-    }
-    public JButton createAwardCardOrderCommand() {
+    public JButton createEcardCategoryCommand() {
+        EnabledController enabledController;
+        VisibleController visibleController;
         OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
+        enabledController = new EnabledController(mscmd, getHub());
         mscmd.setShowTextInSelectedButton(true);
         mscmd.setAllowChangeMasterButton(false);
         mscmd.setRequestFocusEnabled(false);
         mscmd.setFocusPainted(false);
         OAButton.setup(mscmd);
         JButton cmd = null;
-        cmd = getAwardCardOrderJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getAwardCardOrderJfc().createAddButton();
+        cmd = getEcardCategoryJfc().createGotoEditButton();
+        if (cmd != null) {
+            enabledController = new EnabledController(cmd, getHub());
+            mscmd.addButton(cmd);
+        }
+        cmd = getEcardCategoryJfc().createAddButton();
         if (cmd != null) {
             cmd.setText("Select ...");
             cmd.setToolTipText(null);
+            enabledController = new EnabledController(cmd, getHub());
             mscmd.addButton(cmd);
         }
-        cmd = getAwardCardOrderJfc().createNewButton();
+        cmd = getEcardCategoryJfc().createNewButton();
         if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.awardCardOrder().pp, true);
-        }
-        cmd = getAwardCardOrderJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
+            enabledController = new EnabledController(cmd, getHub());
             mscmd.addButton(cmd);
         }
         boolean b = true;
         Hub h;
         if (b) {
             cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_AwardCardOrder, null);
+            enabledController = new EnabledController(cmd, getHub());
+            ((OAButton) cmd).setUpdateObject(Ecard.P_EcardCategory, null);
             cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getAwardCardOrderHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.awardCardOrder().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createEmailLabel() {
-        OALabel lbl = getEmailJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.email().pp, true);
-        return lbl;
-    }
-    public JButton createEmailCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getEmailJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getEmailJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getEmailJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.email().pp, true);
-        }
-        cmd = getEmailJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_Email, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getEmailHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.email().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OATreeComboBox createEmployeeTreeComboBox() {
-        OATreeComboBox tcbo = getEmployeeJfc().createSearchTreeComboBox();
-        tcbo.setVisible(getHub(), LineItemPP.employee().pp, true);
-        return tcbo;
-    }
-    public JButton createEmployeeCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getEmployeeJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getEmployeeJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getEmployeeJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.employee().pp, true);
-        }
-        cmd = getEmployeeJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_Employee, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getEmployeeHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.employee().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createEmployeeAwardLabel() {
-        OALabel lbl = getEmployeeAwardJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.employeeAward().pp, true);
-        return lbl;
-    }
-    public JButton createEmployeeAwardCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getEmployeeAwardJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getEmployeeAwardJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getEmployeeAwardJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeAward().pp, true);
-        }
-        cmd = getEmployeeAwardJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_EmployeeAward, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getEmployeeAwardHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeAward().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createEmployeeAwardCashLabel() {
-        OALabel lbl = getEmployeeAwardCashJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.employeeAwardCash().pp, true);
-        return lbl;
-    }
-    public JButton createEmployeeAwardCashCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getEmployeeAwardCashJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getEmployeeAwardCashJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getEmployeeAwardCashJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeAwardCash().pp, true);
-        }
-        cmd = getEmployeeAwardCashJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_EmployeeAwardCash, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getEmployeeAwardCashHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeAwardCash().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createEmployeeAwardCharityLabel() {
-        OALabel lbl = getEmployeeAwardCharityJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.employeeAwardCharity().pp, true);
-        return lbl;
-    }
-    public JButton createEmployeeAwardCharityCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getEmployeeAwardCharityJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getEmployeeAwardCharityJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getEmployeeAwardCharityJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeAwardCharity().pp, true);
-        }
-        cmd = getEmployeeAwardCharityJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_EmployeeAwardCharity, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getEmployeeAwardCharityHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeAwardCharity().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createEmployeeAwardIntlVisaLabel() {
-        OALabel lbl = getEmployeeAwardIntlVisaJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.employeeAwardIntlVisa().pp, true);
-        return lbl;
-    }
-    public JButton createEmployeeAwardIntlVisaCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getEmployeeAwardIntlVisaJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getEmployeeAwardIntlVisaJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getEmployeeAwardIntlVisaJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeAwardIntlVisa().pp, true);
-        }
-        cmd = getEmployeeAwardIntlVisaJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_EmployeeAwardIntlVisa, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getEmployeeAwardIntlVisaHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeAwardIntlVisa().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createEmployeeEcardToLabel() {
-        OALabel lbl = getEmployeeEcardToJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.employeeEcardTo().pp, true);
-        return lbl;
-    }
-    public JButton createEmployeeEcardToCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getEmployeeEcardToJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getEmployeeEcardToJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getEmployeeEcardToJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeEcardTo().pp, true);
-        }
-        cmd = getEmployeeEcardToJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_EmployeeEcardTo, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getEmployeeEcardToHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.employeeEcardTo().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createInspireOrderLabel() {
-        OALabel lbl = getInspireOrderJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.inspireOrder().pp, true);
-        return lbl;
-    }
-    public JButton createInspireOrderCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getInspireOrderJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getInspireOrderJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getInspireOrderJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrder().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrder, InspireOrder.P_CompletedDate), false);
-        }
-        cmd = getInspireOrderJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_InspireOrder, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getInspireOrderHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrder().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrder, InspireOrder.P_CompletedDate), false);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createInspireOrderCashLabel() {
-        OALabel lbl = getInspireOrderCashJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.inspireOrderCash().pp, true);
-        return lbl;
-    }
-    public JButton createInspireOrderCashCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getInspireOrderCashJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getInspireOrderCashJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getInspireOrderCashJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrderCash().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrderCash, InspireOrder.P_CompletedDate), false);
-        }
-        cmd = getInspireOrderCashJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_InspireOrderCash, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getInspireOrderCashHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrderCash().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrderCash, InspireOrder.P_CompletedDate), false);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createInspireOrderCharityLabel() {
-        OALabel lbl = getInspireOrderCharityJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.inspireOrderCharity().pp, true);
-        return lbl;
-    }
-    public JButton createInspireOrderCharityCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getInspireOrderCharityJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getInspireOrderCharityJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getInspireOrderCharityJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrderCharity().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrderCharity, InspireOrderCharity.P_InspireOrder, InspireOrder.P_CompletedDate), false);
-        }
-        cmd = getInspireOrderCharityJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_InspireOrderCharity, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getInspireOrderCharityHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrderCharity().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrderCharity, InspireOrderCharity.P_InspireOrder, InspireOrder.P_CompletedDate), false);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createInspireOrderIntlVisaLabel() {
-        OALabel lbl = getInspireOrderIntlVisaJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.inspireOrderIntlVisa().pp, true);
-        return lbl;
-    }
-    public JButton createInspireOrderIntlVisaCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getInspireOrderIntlVisaJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getInspireOrderIntlVisaJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getInspireOrderIntlVisaJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrderIntlVisa().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrderIntlVisa, InspireOrder.P_CompletedDate), false);
-        }
-        cmd = getInspireOrderIntlVisaJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_InspireOrderIntlVisa, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getInspireOrderIntlVisaHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrderIntlVisa().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrderIntlVisa, InspireOrder.P_CompletedDate), false);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createInspireOrderItemLabel() {
-        OALabel lbl = getInspireOrderItemJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.inspireOrderItem().pp, true);
-        return lbl;
-    }
-    public JButton createInspireOrderItemCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getInspireOrderItemJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getInspireOrderItemJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getInspireOrderItemJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrderItem().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrderItem, InspireOrderItem.P_InspireOrder, InspireOrder.P_CompletedDate), false);
-        }
-        cmd = getInspireOrderItemJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_InspireOrderItem, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getInspireOrderItemHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireOrderItem().pp, true);
-        ((OAButton)cmd).setEnabled(getHub(), OAString.cpp(LineItem.P_InspireOrderItem, InspireOrderItem.P_InspireOrder, InspireOrder.P_CompletedDate), false);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createInspireRecipientLabel() {
-        OALabel lbl = getInspireRecipientJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.inspireRecipient().pp, true);
-        return lbl;
-    }
-    public JButton createInspireRecipientCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getInspireRecipientJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getInspireRecipientJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getInspireRecipientJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireRecipient().pp, true);
-        }
-        cmd = getInspireRecipientJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_InspireRecipient, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getInspireRecipientHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.inspireRecipient().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OATreeComboBox createLocationTreeComboBox() {
-        OATreeComboBox tcbo = getLocationJfc().createSearchTreeComboBox();
-        tcbo.setVisible(getHub(), LineItemPP.location().pp, true);
-        return tcbo;
-    }
-    public JButton createLocationCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getLocationJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getLocationJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getLocationJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.location().pp, true);
-        }
-        cmd = getLocationJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_Location, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getLocationHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.location().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createPointsRecordLabel() {
-        OALabel lbl = getPointsRecordJfc().createLabel();
-        new VisibleController(lbl, getHub(), LineItemPP.pointsRecord().pp, true);
-        return lbl;
-    }
-    public JButton createPointsRecordCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getPointsRecordJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getPointsRecordJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getPointsRecordJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.pointsRecord().pp, true);
-        }
-        cmd = getPointsRecordJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_PointsRecord, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getPointsRecordHub());
-            cmd.setText("Clear");
-            OAButton.setup(cmd);
-            mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.pointsRecord().pp, true);
-    
-        }
-        return mscmd;
-    }
-    
-    public OALabel createPointsRequestLabel() {
-        OALabel lbl = getPointsRequestJfc().createLabel();
-        return lbl;
-    }
-    public JButton createPointsRequestCommand() {
-        OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
-        mscmd.setShowTextInSelectedButton(true);
-        mscmd.setAllowChangeMasterButton(false);
-        mscmd.setRequestFocusEnabled(false);
-        mscmd.setFocusPainted(false);
-        OAButton.setup(mscmd);
-        JButton cmd = null;
-        cmd = getPointsRequestJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getPointsRequestJfc().createAddButton();
-        if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
-            mscmd.addButton(cmd);
-        }
-        cmd = getPointsRequestJfc().createNewButton();
-        if (cmd != null) {
-            mscmd.addButton(cmd);
-        }
-        cmd = getPointsRequestJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
-            mscmd.addButton(cmd);
-        }
-        boolean b = true;
-        Hub h;
-        if (b) {
-            cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_PointsRequest, null);
-            cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getPointsRequestHub());
+            ((OAButton) cmd).setEnabled(model.getEcardCategoryHub());
             cmd.setText("Clear");
             OAButton.setup(cmd);
             mscmd.addButton(cmd);
@@ -3347,51 +1479,49 @@ public class LineItemJfc implements OAModelJfcInterface {
         return mscmd;
     }
     
-    public OATreeComboBox createProgramTreeComboBox() {
-        OATreeComboBox tcbo = getProgramJfc().createSearchTreeComboBox();
-        tcbo.setVisible(getHub(), LineItemPP.program().pp, true);
-        return tcbo;
+    public OALabel createImageStoreLabel() {
+        OALabel lbl = getImageStoreJfc().createLabel();
+        return lbl;
     }
-    public JButton createProgramCommand() {
+    public JButton createImageStoreCommand() {
+        EnabledController enabledController;
+        VisibleController visibleController;
         OAMultiButtonSplitButton mscmd = new OAMultiButtonSplitButton();
-        new EnabledController(mscmd, getHub());
+        enabledController = new EnabledController(mscmd, getHub());
         mscmd.setShowTextInSelectedButton(true);
         mscmd.setAllowChangeMasterButton(false);
         mscmd.setRequestFocusEnabled(false);
         mscmd.setFocusPainted(false);
         OAButton.setup(mscmd);
         JButton cmd = null;
-        cmd = getProgramJfc().createGotoEditButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = getProgramJfc().createAddButton();
+        cmd = getImageStoreJfc().createGotoEditButton();
         if (cmd != null) {
-            cmd.setText("Select ...");
-            cmd.setToolTipText(null);
+            enabledController = new EnabledController(cmd, getHub());
             mscmd.addButton(cmd);
         }
-        cmd = getProgramJfc().createNewButton();
+        cmd = getImageStoreJfc().createNewButton();
         if (cmd != null) {
-            mscmd.addButton(cmd);
-        ((OAButton)cmd).setVisible(getHub(), LineItemPP.program().pp, true);
-        }
-        cmd = getProgramJfc().createSearchButton();
-        if (cmd != null) {
-            new EnabledController(cmd, getHub());
-            cmd.setText("Search ...");
+            enabledController = new EnabledController(cmd, getHub());
             mscmd.addButton(cmd);
         }
         boolean b = true;
         Hub h;
         if (b) {
             cmd = new OAButton(getHub());
-            ((OAButton) cmd).setUpdateObject(LineItem.P_Program, null);
+            enabledController = new EnabledController(cmd, getHub());
+            ((OAButton) cmd).setUpdateObject(Ecard.P_ImageStore, null);
             cmd.setIcon(OAButton.getDefaultIcon(OAButton.CLEARAO));
-            ((OAButton) cmd).setEnabled(model.getProgramHub());
+            ((OAButton) cmd).setEnabled(model.getImageStoreHub());
             cmd.setText("Clear");
             OAButton.setup(cmd);
             mscmd.addButton(cmd);
-                ((OAButton)cmd).setVisible(getHub(), LineItemPP.program().pp, true);
-    
+        }
+        cmd = getImageStoreJfc().createDeleteButton();
+        if (cmd != null) {
+            cmd.setText("Delete");
+            enabledController = new EnabledController(cmd, getHub());
+            mscmd.addButton(cmd);
+            OAButton.setup(cmd);
         }
         return mscmd;
     }
@@ -3424,7 +1554,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         createAutoCompleteTextField(txtAutoComplete, PP_Display);
     }
     public void createAutoCompleteTextField(JTextField txtAutoComplete, final String properyPath) {
-        txtAutoComplete.setColumns(100);
+        txtAutoComplete.setColumns(20);
         txtAutoComplete.setToolTipText("Search for " + getModel().getDisplayName());
         
         JList jlist = new JList();
@@ -3434,12 +1564,12 @@ public class LineItemJfc implements OAModelJfcInterface {
             
             // data structure used for search data
             class TreeSearchItem implements Comparable {
-                LineItem obj;
+                Ecard obj;
                 String sortValue;
                 int pos; // start pos
                 String display;
                 String text;
-                public TreeSearchItem(String sortValue, String display, LineItem obj) {
+                public TreeSearchItem(String sortValue, String display, Ecard obj) {
                     this.sortValue = sortValue;
                     this.display = display;
                     this.obj = obj;
@@ -3455,8 +1585,8 @@ public class LineItemJfc implements OAModelJfcInterface {
             }
             
             private AtomicInteger aiCnt = new AtomicInteger();
-            private void _search(Hub<LineItem> h, String text, final int cnt) {
-                for (LineItem obj : h) {
+            private void _search(Hub<Ecard> h, String text, final int cnt) {
+                for (Ecard obj : h) {
                     String s = obj.getPropertyAsString(properyPath);
                     if (s == null || s.length() == 0) continue;
                     int pos = s.toUpperCase().indexOf(text);
@@ -3526,7 +1656,7 @@ public class LineItemJfc implements OAModelJfcInterface {
                     // show tree node
                     TreeSearchItem tsi = alList.get(pos);
                     getHub().setAO(tsi.obj);
-                    // LineItemJfc.this.onShowEditPanel();
+                    // EcardJfc.this.onShowEditPanel();
                     super.onValueSelected(pos, tsi.text);
                 }
             }
@@ -3545,470 +1675,29 @@ public class LineItemJfc implements OAModelJfcInterface {
         new EnabledController(txtAutoComplete, getHub(), null, OAAnyValueObject.instance);
     }
     
-    public AwardCardOrderJfc getAwardCardOrderJfc() {
-        if (jfcAwardCardOrder != null) return jfcAwardCardOrder;
-        jfcAwardCardOrder = new AwardCardOrderJfc(getModel().getAwardCardOrderModel()) {
+    public EcardCategoryJfc getEcardCategoryJfc() {
+        if (jfcEcardCategory != null) return jfcEcardCategory;
+        jfcEcardCategory = new EcardCategoryJfc(getModel().getEcardCategoryModel()) {
             @Override
-            protected void onNewAwardCardOrderCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                AwardCardOrder value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setAwardCardOrder(value);
+            protected void onNewEcardCategoryCreated() {
+                getEditDialog(EcardJfc.this.getCardPanel()).setVisible(true);
             }
         };
-        jfcAwardCardOrder.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcAwardCardOrder, this);
-        return jfcAwardCardOrder;
+        jfcEcardCategory.setLevel(getLevel()+1);
+        OAModelJfcUtil.setParent(jfcEcardCategory, this);
+        return jfcEcardCategory;
     }
-    public EmailJfc getEmailJfc() {
-        if (jfcEmail != null) return jfcEmail;
-        jfcEmail = new EmailJfc(getModel().getEmailModel()) {
+    public ImageStoreJfc getImageStoreJfc() {
+        if (jfcImageStore != null) return jfcImageStore;
+        jfcImageStore = new ImageStoreJfc(getModel().getImageStoreModel()) {
             @Override
-            protected void onNewEmailCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                Email value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setEmail(value);
+            protected void onNewImageStoreCreated() {
+                getEditDialog(EcardJfc.this.getCardPanel()).setVisible(true);
             }
         };
-        jfcEmail.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcEmail, this);
-        return jfcEmail;
-    }
-    public EmployeeJfc getEmployeeJfc() {
-        if (jfcEmployee != null) return jfcEmployee;
-        jfcEmployee = new EmployeeJfc(getModel().getEmployeeModel()) {
-            @Override
-            protected void onNewEmployeeCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                Employee value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setEmployee(value);
-            }
-        };
-        jfcEmployee.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcEmployee, this);
-        return jfcEmployee;
-    }
-    public EmployeeAwardJfc getEmployeeAwardJfc() {
-        if (jfcEmployeeAward != null) return jfcEmployeeAward;
-        jfcEmployeeAward = new EmployeeAwardJfc(getModel().getEmployeeAwardModel()) {
-            @Override
-            protected void onNewEmployeeAwardCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                EmployeeAward value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setEmployeeAward(value);
-            }
-        };
-        jfcEmployeeAward.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcEmployeeAward, this);
-        return jfcEmployeeAward;
-    }
-    public EmployeeAwardJfc getEmployeeAwardCashJfc() {
-        if (jfcEmployeeAwardCash != null) return jfcEmployeeAwardCash;
-        jfcEmployeeAwardCash = new EmployeeAwardJfc(getModel().getEmployeeAwardCashModel()) {
-            @Override
-            protected void onNewEmployeeAwardCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                EmployeeAward value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setEmployeeAwardCash(value);
-            }
-        };
-        jfcEmployeeAwardCash.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcEmployeeAwardCash, this);
-        return jfcEmployeeAwardCash;
-    }
-    public EmployeeAwardCharityJfc getEmployeeAwardCharityJfc() {
-        if (jfcEmployeeAwardCharity != null) return jfcEmployeeAwardCharity;
-        jfcEmployeeAwardCharity = new EmployeeAwardCharityJfc(getModel().getEmployeeAwardCharityModel()) {
-            @Override
-            protected void onNewEmployeeAwardCharityCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                EmployeeAwardCharity value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setEmployeeAwardCharity(value);
-            }
-        };
-        jfcEmployeeAwardCharity.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcEmployeeAwardCharity, this);
-        return jfcEmployeeAwardCharity;
-    }
-    public EmployeeAwardJfc getEmployeeAwardIntlVisaJfc() {
-        if (jfcEmployeeAwardIntlVisa != null) return jfcEmployeeAwardIntlVisa;
-        jfcEmployeeAwardIntlVisa = new EmployeeAwardJfc(getModel().getEmployeeAwardIntlVisaModel()) {
-            @Override
-            protected void onNewEmployeeAwardCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                EmployeeAward value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setEmployeeAwardIntlVisa(value);
-            }
-        };
-        jfcEmployeeAwardIntlVisa.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcEmployeeAwardIntlVisa, this);
-        return jfcEmployeeAwardIntlVisa;
-    }
-    public EmployeeEcardToJfc getEmployeeEcardToJfc() {
-        if (jfcEmployeeEcardTo != null) return jfcEmployeeEcardTo;
-        jfcEmployeeEcardTo = new EmployeeEcardToJfc(getModel().getEmployeeEcardToModel()) {
-            @Override
-            protected void onNewEmployeeEcardToCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                EmployeeEcardTo value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setEmployeeEcardTo(value);
-            }
-        };
-        jfcEmployeeEcardTo.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcEmployeeEcardTo, this);
-        return jfcEmployeeEcardTo;
-    }
-    public InspireOrderJfc getInspireOrderJfc() {
-        if (jfcInspireOrder != null) return jfcInspireOrder;
-        jfcInspireOrder = new InspireOrderJfc(getModel().getInspireOrderModel()) {
-            @Override
-            protected void onNewInspireOrderCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                InspireOrder value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setInspireOrder(value);
-            }
-        };
-        jfcInspireOrder.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcInspireOrder, this);
-        return jfcInspireOrder;
-    }
-    public InspireOrderJfc getInspireOrderCashJfc() {
-        if (jfcInspireOrderCash != null) return jfcInspireOrderCash;
-        jfcInspireOrderCash = new InspireOrderJfc(getModel().getInspireOrderCashModel()) {
-            @Override
-            protected void onNewInspireOrderCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                InspireOrder value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setInspireOrderCash(value);
-            }
-        };
-        jfcInspireOrderCash.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcInspireOrderCash, this);
-        return jfcInspireOrderCash;
-    }
-    public InspireOrderCharityJfc getInspireOrderCharityJfc() {
-        if (jfcInspireOrderCharity != null) return jfcInspireOrderCharity;
-        jfcInspireOrderCharity = new InspireOrderCharityJfc(getModel().getInspireOrderCharityModel()) {
-            @Override
-            protected void onNewInspireOrderCharityCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                InspireOrderCharity value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setInspireOrderCharity(value);
-            }
-        };
-        jfcInspireOrderCharity.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcInspireOrderCharity, this);
-        return jfcInspireOrderCharity;
-    }
-    public InspireOrderJfc getInspireOrderIntlVisaJfc() {
-        if (jfcInspireOrderIntlVisa != null) return jfcInspireOrderIntlVisa;
-        jfcInspireOrderIntlVisa = new InspireOrderJfc(getModel().getInspireOrderIntlVisaModel()) {
-            @Override
-            protected void onNewInspireOrderCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                InspireOrder value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setInspireOrderIntlVisa(value);
-            }
-        };
-        jfcInspireOrderIntlVisa.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcInspireOrderIntlVisa, this);
-        return jfcInspireOrderIntlVisa;
-    }
-    public InspireOrderItemJfc getInspireOrderItemJfc() {
-        if (jfcInspireOrderItem != null) return jfcInspireOrderItem;
-        jfcInspireOrderItem = new InspireOrderItemJfc(getModel().getInspireOrderItemModel()) {
-            @Override
-            protected void onNewInspireOrderItemCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                InspireOrderItem value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setInspireOrderItem(value);
-            }
-        };
-        jfcInspireOrderItem.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcInspireOrderItem, this);
-        return jfcInspireOrderItem;
-    }
-    public InspireRecipientJfc getInspireRecipientJfc() {
-        if (jfcInspireRecipient != null) return jfcInspireRecipient;
-        jfcInspireRecipient = new InspireRecipientJfc(getModel().getInspireRecipientModel()) {
-            @Override
-            protected void onNewInspireRecipientCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                InspireRecipient value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setInspireRecipient(value);
-            }
-        };
-        jfcInspireRecipient.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcInspireRecipient, this);
-        return jfcInspireRecipient;
-    }
-    public LocationJfc getLocationJfc() {
-        if (jfcLocation != null) return jfcLocation;
-        jfcLocation = new LocationJfc(getModel().getLocationModel()) {
-            @Override
-            protected void onNewLocationCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                Location value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setLocation(value);
-            }
-        };
-        jfcLocation.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcLocation, this);
-        return jfcLocation;
-    }
-    public PointsRecordJfc getPointsRecordJfc() {
-        if (jfcPointsRecord != null) return jfcPointsRecord;
-        jfcPointsRecord = new PointsRecordJfc(getModel().getPointsRecordModel()) {
-            @Override
-            protected void onNewPointsRecordCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                PointsRecord value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setPointsRecord(value);
-            }
-        };
-        jfcPointsRecord.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcPointsRecord, this);
-        return jfcPointsRecord;
-    }
-    public PointsRequestJfc getPointsRequestJfc() {
-        if (jfcPointsRequest != null) return jfcPointsRequest;
-        jfcPointsRequest = new PointsRequestJfc(getModel().getPointsRequestModel()) {
-            @Override
-            protected void onNewPointsRequestCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                PointsRequest value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setPointsRequest(value);
-            }
-        };
-        jfcPointsRequest.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcPointsRequest, this);
-        return jfcPointsRequest;
-    }
-    public ProgramJfc getProgramJfc() {
-        if (jfcProgram != null) return jfcProgram;
-        jfcProgram = new ProgramJfc(getModel().getProgramModel()) {
-            @Override
-            protected void onNewProgramCreated() {
-                getEditDialog(LineItemJfc.this.getCardPanel()).setVisible(true);
-            }
-            @Override
-            protected void onSearch() {
-                getSearchJfc().getDialog(getCardPanel()).setVisible(true);
-                if (!getSearchJfc().wasSelected()) return;
-                Program value = getSearchJfc().getSelected();
-                LineItem obj = LineItemJfc.this.getHub().getAO();
-                obj.setProgram(value);
-            }
-        };
-        jfcProgram.setLevel(getLevel()+1);
-        OAModelJfcUtil.setParent(jfcProgram, this);
-        return jfcProgram;
-    }
-    public AwardCardOrderJfc getGroupByAwardCardOrderJfc() {
-        if (jfcGroupByAwardCardOrder != null) return jfcGroupByAwardCardOrder;
-        jfcGroupByAwardCardOrder = new AwardCardOrderJfc(getModel().getGroupedByAwardCardOrderModel()) {
-            @Override
-            public JToolBar createSouthTableToolBar() {
-                return null;
-            }
-        };
-        return jfcGroupByAwardCardOrder;
-    }
-    public LineItemJfc getLineItemsGroupedByAwardCardOrderJfc() {
-        if (jfcLineItemsGroupByAwardCardOrder != null) return jfcLineItemsGroupByAwardCardOrder;
-        jfcLineItemsGroupByAwardCardOrder = new LineItemJfc(getModel().getLineItemsGroupedByAwardCardOrderModel());
-        return jfcLineItemsGroupByAwardCardOrder;
-    }
-    public EmployeeJfc getGroupByEmployeeJfc() {
-        if (jfcGroupByEmployee != null) return jfcGroupByEmployee;
-        jfcGroupByEmployee = new EmployeeJfc(getModel().getGroupedByEmployeeModel()) {
-            @Override
-            public JToolBar createSouthTableToolBar() {
-                return null;
-            }
-        };
-        return jfcGroupByEmployee;
-    }
-    public LineItemJfc getLineItemsGroupedByEmployeeJfc() {
-        if (jfcLineItemsGroupByEmployee != null) return jfcLineItemsGroupByEmployee;
-        jfcLineItemsGroupByEmployee = new LineItemJfc(getModel().getLineItemsGroupedByEmployeeModel());
-        return jfcLineItemsGroupByEmployee;
-    }
-    public EmployeeAwardJfc getGroupByEmployeeAwardJfc() {
-        if (jfcGroupByEmployeeAward != null) return jfcGroupByEmployeeAward;
-        jfcGroupByEmployeeAward = new EmployeeAwardJfc(getModel().getGroupedByEmployeeAwardModel()) {
-            @Override
-            public JToolBar createSouthTableToolBar() {
-                return null;
-            }
-        };
-        return jfcGroupByEmployeeAward;
-    }
-    public LineItemJfc getLineItemsGroupedByEmployeeAwardJfc() {
-        if (jfcLineItemsGroupByEmployeeAward != null) return jfcLineItemsGroupByEmployeeAward;
-        jfcLineItemsGroupByEmployeeAward = new LineItemJfc(getModel().getLineItemsGroupedByEmployeeAwardModel());
-        return jfcLineItemsGroupByEmployeeAward;
-    }
-    public InspireOrderJfc getGroupByInspireOrderJfc() {
-        if (jfcGroupByInspireOrder != null) return jfcGroupByInspireOrder;
-        jfcGroupByInspireOrder = new InspireOrderJfc(getModel().getGroupedByInspireOrderModel()) {
-            @Override
-            public JToolBar createSouthTableToolBar() {
-                return null;
-            }
-        };
-        return jfcGroupByInspireOrder;
-    }
-    public LineItemJfc getLineItemsGroupedByInspireOrderJfc() {
-        if (jfcLineItemsGroupByInspireOrder != null) return jfcLineItemsGroupByInspireOrder;
-        jfcLineItemsGroupByInspireOrder = new LineItemJfc(getModel().getLineItemsGroupedByInspireOrderModel());
-        return jfcLineItemsGroupByInspireOrder;
-    }
-    public LocationJfc getGroupByLocationJfc() {
-        if (jfcGroupByLocation != null) return jfcGroupByLocation;
-        jfcGroupByLocation = new LocationJfc(getModel().getGroupedByLocationModel()) {
-            @Override
-            public JToolBar createSouthTableToolBar() {
-                return null;
-            }
-        };
-        return jfcGroupByLocation;
-    }
-    public LineItemJfc getLineItemsGroupedByLocationJfc() {
-        if (jfcLineItemsGroupByLocation != null) return jfcLineItemsGroupByLocation;
-        jfcLineItemsGroupByLocation = new LineItemJfc(getModel().getLineItemsGroupedByLocationModel());
-        return jfcLineItemsGroupByLocation;
-    }
-    public PointsRecordJfc getGroupByPointsRecordJfc() {
-        if (jfcGroupByPointsRecord != null) return jfcGroupByPointsRecord;
-        jfcGroupByPointsRecord = new PointsRecordJfc(getModel().getGroupedByPointsRecordModel()) {
-            @Override
-            public JToolBar createSouthTableToolBar() {
-                return null;
-            }
-        };
-        return jfcGroupByPointsRecord;
-    }
-    public LineItemJfc getLineItemsGroupedByPointsRecordJfc() {
-        if (jfcLineItemsGroupByPointsRecord != null) return jfcLineItemsGroupByPointsRecord;
-        jfcLineItemsGroupByPointsRecord = new LineItemJfc(getModel().getLineItemsGroupedByPointsRecordModel());
-        return jfcLineItemsGroupByPointsRecord;
-    }
-    public ProgramJfc getGroupByProgramJfc() {
-        if (jfcGroupByProgram != null) return jfcGroupByProgram;
-        jfcGroupByProgram = new ProgramJfc(getModel().getGroupedByProgramModel()) {
-            @Override
-            public JToolBar createSouthTableToolBar() {
-                return null;
-            }
-        };
-        return jfcGroupByProgram;
-    }
-    public LineItemJfc getLineItemsGroupedByProgramJfc() {
-        if (jfcLineItemsGroupByProgram != null) return jfcLineItemsGroupByProgram;
-        jfcLineItemsGroupByProgram = new LineItemJfc(getModel().getLineItemsGroupedByProgramModel());
-        return jfcLineItemsGroupByProgram;
+        jfcImageStore.setLevel(getLevel()+1);
+        OAModelJfcUtil.setParent(jfcImageStore, this);
+        return jfcImageStore;
     }
     // OnShowCommands
     public void showCardPanel(String name) {
@@ -4022,8 +1711,11 @@ public class LineItemJfc implements OAModelJfcInterface {
     protected void onShowEditPanel() {
         showCardPanel(CARD_Edit);
     }
-    protected void onNewLineItemCreated() {
+    protected void onNewEcardCreated() {
         onShowEditPanel();
+        if (getTabbedPane().getTabCount() > 0) {
+            getTabbedPane().setSelectedIndex(0);
+        }
         getModel().resetTableHub(); // in case filter was being used
     }
     protected void onDoubleClickTreeNode() {
@@ -4033,39 +1725,40 @@ public class LineItemJfc implements OAModelJfcInterface {
     }
     
     // Inner Search
-    public LineItemSearchJfc getHubSearchJfc() {
-        if (hubSearchJfc == null) {
-            hubSearchJfc = new LineItemSearchJfc();
-            hubSearchJfc.getModel().setSearchHub(getHub());
+    public EcardSearchJfc getSearchHubJfc() {
+        if (searchHubJfc == null) {
+            searchHubJfc = new EcardSearchJfc(true, false);
+            searchHubJfc.getModel().setSearchFromHub(getHub());
         }
-        return hubSearchJfc;
+        return searchHubJfc;
     }
     protected void onHubSearch() {
-        getHubSearchJfc().getDialog(getCardPanel()).setVisible(true);
-        if (!getHubSearchJfc().wasSelected()) return;
-        LineItem lineItem = getHubSearchJfc().getSelected();
-        if (lineItem == null) return;
-        getHub().setAO(lineItem);
+        getSearchHubJfc().getDialog(getCardPanel()).setVisible(true);
+        if (!getSearchHubJfc().wasSelected()) return;
+        Ecard ecard = getSearchHubJfc().getSelected();
+        if (ecard == null) return;
+        if (!getHub().contains(ecard)) ecard = null;
+        getHub().setAO(ecard);
     }
     // Search
-    protected LineItemSearchJfc getSearchJfc() {
+    protected EcardSearchJfc getSearchJfc() {
         if (searchJfc == null) {
-            searchJfc = new LineItemSearchJfc();
+            searchJfc = new EcardSearchJfc();
         }
         return searchJfc;
     }
     protected void onSearch() {
         getSearchJfc().getDialog(getCardPanel()).setVisible(true);
         if (!getSearchJfc().wasSelected()) return;
-        LineItem lineItem = getSearchJfc().getSelected();
+        Ecard ecard = getSearchJfc().getSelected();
     
-        if (lineItem == null) return;
+        if (ecard == null) return;
     
-        getHub().setAO(lineItem);
+        getHub().setAO(ecard);
         
         OATree tree = getTreeUsed();
         if (tree != null) {
-            tree.setSelectedNode(lineItem);
+            tree.setSelectedNode(ecard);
         }
         
         onShowEditPanel();
@@ -4073,14 +1766,14 @@ public class LineItemJfc implements OAModelJfcInterface {
     protected void onAdd() {
         getSearchJfc().getDialog(getCardPanel()).setVisible(true);
         if (!getSearchJfc().wasSelected()) return;
-        LineItem lineItem = getSearchJfc().getSelected();
+        Ecard ecard = getSearchJfc().getSelected();
         
-        if (lineItem == null) return;
+        if (ecard == null) return;
         
-        if (!getHub().contains(lineItem)) {
-            getHub().add(lineItem);
+        if (!getHub().contains(ecard)) {
+            getHub().add(ecard);
         }
-        getHub().setAO(lineItem);
+        getHub().setAO(ecard);
     }
     
     
@@ -4094,24 +1787,6 @@ public class LineItemJfc implements OAModelJfcInterface {
         
         JButton cmd = createUnFilterButton();
         if (cmd != null) mscmd.addButton(cmd);
-        cmd = createIsBillableFilterButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = createIsMoreThanZeroFilterButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = createGroupByAwardCardOrderButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = createGroupByEmployeeButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = createGroupByEmployeeAwardButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = createGroupByInspireOrderButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = createGroupByLocationButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = createGroupByPointsRecordButton();
-        if (cmd != null) mscmd.addButton(cmd);
-        cmd = createGroupByProgramButton();
-        if (cmd != null) mscmd.addButton(cmd);
         if (mscmd.getButtonCount() < 2) return null;
         mscmd.setBorderPainted(true);
         return mscmd;
@@ -4123,133 +1798,7 @@ public class LineItemJfc implements OAModelJfcInterface {
         cmd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LineItemJfc.this.getModel().resetTableHub();
-                if (cardLayoutTable != null) {
-                    cardLayoutTable.show(cardPanelTable, "Default");
-                }
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createIsBillableFilterButton() {
-        final JButton cmd = new JButton("Is Billable");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_Filter)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Hub h = getModel().getIsBillableLineItemsModel().getHub();
-                getModel().getTableHub().setSharedHub(h, true);
-                if (cardLayoutTable != null) {
-                    cardLayoutTable.show(cardPanelTable, "Flat");
-                }
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createIsMoreThanZeroFilterButton() {
-        final JButton cmd = new JButton("Is More Than Zero");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_Filter)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Hub h = getModel().getIsMoreThanZeroLineItemsModel().getHub();
-                getModel().getTableHub().setSharedHub(h, true);
-                if (cardLayoutTable != null) {
-                    cardLayoutTable.show(cardPanelTable, "Flat");
-                }
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createGroupByAwardCardOrderButton() {
-        if (AwardCardOrder.class.equals(getHub().getMasterClass())) return null;
-        JButton cmd = new JButton("Grouped by Award Card Order");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_GroupBy)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayoutTable.show(cardPanelTable, "GroupByAwardCardOrder");
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createGroupByEmployeeButton() {
-        if (Employee.class.equals(getHub().getMasterClass())) return null;
-        JButton cmd = new JButton("Grouped by Employee");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_GroupBy)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayoutTable.show(cardPanelTable, "GroupByEmployee");
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createGroupByEmployeeAwardButton() {
-        if (EmployeeAward.class.equals(getHub().getMasterClass())) return null;
-        JButton cmd = new JButton("Grouped by Employee Award");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_GroupBy)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayoutTable.show(cardPanelTable, "GroupByEmployeeAward");
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createGroupByInspireOrderButton() {
-        if (InspireOrder.class.equals(getHub().getMasterClass())) return null;
-        JButton cmd = new JButton("Grouped by Inspire Order");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_GroupBy)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayoutTable.show(cardPanelTable, "GroupByInspireOrder");
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createGroupByLocationButton() {
-        if (Location.class.equals(getHub().getMasterClass())) return null;
-        JButton cmd = new JButton("Grouped by Location");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_GroupBy)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayoutTable.show(cardPanelTable, "GroupByLocation");
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createGroupByPointsRecordButton() {
-        if (PointsRecord.class.equals(getHub().getMasterClass())) return null;
-        JButton cmd = new JButton("Grouped by Points Record");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_GroupBy)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayoutTable.show(cardPanelTable, "GroupByPointsRecord");
-            }
-        });
-        OAButton.setup(cmd);
-        return cmd;
-    }
-    public JButton createGroupByProgramButton() {
-        if (Program.class.equals(getHub().getMasterClass())) return null;
-        JButton cmd = new JButton("Grouped by Program");
-        cmd.setIcon(Resource.getJarIcon(Resource.getValue(Resource.IMG_GroupBy)));
-        cmd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayoutTable.show(cardPanelTable, "GroupByProgram");
+                EcardJfc.this.getModel().resetTableHub();
             }
         });
         OAButton.setup(cmd);
@@ -4263,11 +1812,11 @@ public class LineItemJfc implements OAModelJfcInterface {
         TestDelegate td = new TestDelegate();
         td.createSampleData(null);
         
-        LineItemJfc ui = new LineItemJfc() {
+        EcardJfc ui = new EcardJfc(ModelDelegate.getEcards().createSharedHub()) {
             @Override
-            protected LineItemSearchJfc getSearchJfc() {
+            protected EcardSearchJfc getSearchJfc() {
                 if (this.searchJfc == null) {
-                    this.searchJfc = new LineItemSearchJfc(false) {
+                    this.searchJfc = new EcardSearchJfc(false, true) {
                         protected void onSearch() {
                             super.onSearch();
                             afterSearchCustom();
