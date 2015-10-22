@@ -1,5 +1,17 @@
 
 
+
+
+
+
+
+java option:  https://dzone.com/articles/javaswing-2013-it-worth-it
+–Dfile.encoding=UTF-8
+
+
+
+
+
 https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
 
 

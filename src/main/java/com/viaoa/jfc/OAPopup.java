@@ -10,15 +10,11 @@
 */
 package com.viaoa.jfc;
 
+
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-import com.viaoa.hub.*;
-import com.viaoa.util.*;
 
+import javax.swing.*;
 
 /**
     PopupMenu that will bind button(s) to control open and close of a component that is within the popup.
@@ -132,6 +128,12 @@ public class OAPopup extends JPopupMenu {
         });
     }
 
+    @Override
+    public void setPreferredSize(Dimension preferredSize) {
+        // TODO Auto-generated method stub
+        super.setPreferredSize(preferredSize);
+    }
+    
     /**
         Overwritten to add widthAdd to the preferred width of popup.
         @see #setAddWidth
@@ -211,6 +213,8 @@ public class OAPopup extends JPopupMenu {
 
     protected void showPopup(Component comp) {
 
+        if (GraphicsEnvironment.isHeadless()) return;
+        
         if (cmdDisplayFrom != null) comp = cmdDisplayFrom;
         
         // make sure that comp is on window 20140826
@@ -226,15 +230,32 @@ public class OAPopup extends JPopupMenu {
             }
             c = c.getParent();
         }
-        
-        
-        Dimension dScreen = Toolkit.getDefaultToolkit().getScreenSize();
-        //qqqq  needs to use multi monitor screen size qqq 
-        Dimension dComp = comp.getSize();
+
         Point ptComp = new Point(0,0);
         SwingUtilities.convertPointToScreen(ptComp, comp);
+        
+        Rectangle rectScreen = null;
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gd = ge.getScreenDevices();
+        for (int i = 0; i < gd.length; i++) {
+            if (gd[i].getType() == GraphicsDevice.TYPE_RASTER_SCREEN) {
+                GraphicsConfiguration dgc = gd[i].getDefaultConfiguration();
+                if (dgc.getBounds().contains(ptComp)) {
+                    rectScreen = dgc.getBounds();
+                    break;
+                }
+            }
+        }
+        if (rectScreen == null) {
+            rectScreen = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+        }
 
+        Dimension dScreen = new Dimension(rectScreen.x + rectScreen.width, rectScreen.height);
+        Dimension dComp = comp.getSize();
+        
+        
         Dimension dPopup = this.getSize();
+        
         if (dPopup.width < 5) {
             show(comp, 0,0);
             dPopup = this.getSize();

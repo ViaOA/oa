@@ -41,6 +41,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -2755,6 +2756,12 @@ if (!getKeepSorted()) hub.cancelSort();
     
     // END END END END END END ===== 2006/12/29 CONSTRUCTION ZONE :) ===== END END END END END END
 
+    @Override
+    public void setBackground(Color bg) {
+        super.setBackground(bg);
+        configureEnclosingScrollPane();
+    }
+    
     // 20101031 improve the look when table does not take up all of viewport
     protected void configureEnclosingScrollPane() {
         super.configureEnclosingScrollPane();
@@ -2763,6 +2770,10 @@ if (!getKeepSorted()) hub.cancelSort();
             Container gp = p.getParent();
             if (gp instanceof JScrollPane) {
                 JScrollPane scrollPane = (JScrollPane) gp;
+                scrollPane.setBackground(getBackground());
+                JTableHeader th = getTableHeader();
+                if (th != null) th.setBackground(getBackground());                
+                
                 JViewport viewport = scrollPane.getViewport();
                 if (viewport == null || viewport.getView() != this) {
                     return;
@@ -2777,6 +2788,35 @@ if (!getKeepSorted()) hub.cancelSort();
                  * 
                  * pan.setBackground(getBackground()); scrollPane.setColumnHeaderView(pan);
                  */
+            }
+        }
+    }
+    // 20151022 called by removeNotify. Fixed problem when using table in popup, and it calls calls removeNotity
+    //   which removes the columnHeaderView, and it's not used for getting the preferred size
+    //   this is copied from JTable
+    protected void unconfigureEnclosingScrollPane() {
+        // this replaces 
+        Container p = getParent();
+        if (p instanceof JViewport) {
+            Container gp = p.getParent();
+            if (gp instanceof JScrollPane) {
+                JScrollPane scrollPane = (JScrollPane)gp;
+                // Make certain we are the viewPort's view and not, for
+                // example, the rowHeaderView of the scrollPane -
+                // an implementor of fixed columns might do this.
+                JViewport viewport = scrollPane.getViewport();
+                if (viewport == null || viewport.getView() != this) {
+                    return;
+                }
+                // 20151022 removed this line
+                // scrollPane.setColumnHeaderView(null);
+                // remove ScrollPane corner if one was added by the LAF
+                Component corner =
+                        scrollPane.getCorner(JScrollPane.UPPER_TRAILING_CORNER);
+                if (corner instanceof UIResource){
+                    scrollPane.setCorner(JScrollPane.UPPER_TRAILING_CORNER, 
+                            null);
+                }
             }
         }
     }
