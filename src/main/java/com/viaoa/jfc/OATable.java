@@ -2771,8 +2771,9 @@ if (!getKeepSorted()) hub.cancelSort();
             if (gp instanceof JScrollPane) {
                 JScrollPane scrollPane = (JScrollPane) gp;
                 scrollPane.setBackground(getBackground());
+
                 JTableHeader th = getTableHeader();
-                if (th != null) th.setBackground(getBackground());                
+                if (th != null) th.setBackground(getBackground());
                 
                 JViewport viewport = scrollPane.getViewport();
                 if (viewport == null || viewport.getView() != this) {
