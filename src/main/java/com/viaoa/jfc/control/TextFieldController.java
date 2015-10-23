@@ -125,9 +125,9 @@ public class TextFieldController extends JFCController implements FocusListener,
             	switch (errorType) {
             	case OAPlainDocument.ERROR_MAX_LENGTH:
             	    int max = getDataSourceMaxColumns();
-            	    if (max < 0) { 
+            	    if (max <= 0) { 
             	        max = getMaximumColumns();
-            	        if (max < 0) max = getPropertyInfoMaxColumns();
+            	        if (max <= 0) max = getPropertyInfoMaxColumns();
             	    }
             	    
             		msg = "Maximum input exceeded, currently set to " + max;
@@ -158,8 +158,10 @@ public class TextFieldController extends JFCController implements FocusListener,
                 super.insertUpdate(chng, attr);
             }
         };
-        int max = getDataSourceMaxColumns();
-        if (max < 0) max = getPropertyInfoMaxColumns();
+        
+//qqqqqqqqqq get OAColumn max instead qqqqqqqqqqqqqqqqqqqqq        
+        int max = getPropertyInfoMaxColumns();
+        if (max <= 0) max = getDataSourceMaxColumns();  //qqqqqqqqqqqqq use getOAColumn max instead 
         
         if (max > 0) document.setMaxLength(max);
         textField.setDocument(document);

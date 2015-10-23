@@ -136,7 +136,7 @@ public class OADataSourceClient extends OADataSource {
 
     protected void verifyConnection() {
         if (getRemoteClient() == null) {
-            throw new RuntimeException("connection remote client datasoruce is not set");
+            throw new RuntimeException("OADataSourceClient connection is not set");
         }
     }
 
