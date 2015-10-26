@@ -107,25 +107,6 @@ public class EnabledController extends HubPropController {
                 if (!txt.isEditable()) txt.setEditable(true);
             }
         }
-        else {
-            if (comp instanceof Container) {
-                if ( !(comp instanceof OAJFCComponent) && !(comp instanceof JTabbedPane) && !(comp instanceof OASplitButton)) {
-                    Component[] comps = ((Container)comp).getComponents();
-                    for (int i=0; comps != null && i<comps.length; i++) {
-                        Component compx = comps[i];
-                        if (compx instanceof JComponent) {
-                            _onUpdate(compx, bEnabled);
-                        }
-                    }
-                }
-            }
-        }
-        /*was
-        if (comp instanceof JTabbedPane) {
-        }
-        if (comp instanceof JLabel) {
-        }
-        */
         if (comp.isEnabled() != bEnabled) {
             comp.setEnabled(bEnabled);
         }

@@ -323,14 +323,13 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         
         int cols = getMaximumColumns();
         if (cols < 1)  {
-            cols = control.getDataSourceMaxColumns();
-            if (cols < 1) {
+            //cols = control.getDataSourceMaxColumns();
+            //if (cols < 1) {
                 cols = control.getPropertyInfoMaxColumns();
                 if (cols < 1) {
                     cols = getColumns() * 2; 
                 }
-            }
-            
+            //}
         }
         if (cols > 0) d.width = OATable.getCharWidth(this, getFont(), cols);
         

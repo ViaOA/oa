@@ -10,8 +10,6 @@
 */
 package com.viaoa.jfc.scroller;
 
-
-
 //http://www.javadocexamples.com/java_source/frost/gui/ScrollableBarUI.java.html
 
 
@@ -239,12 +237,13 @@ PropertyChangeListener {
                         }
                     }
                     // ...
-                    scroll.setViewPosition(p);
                     try {
+                        scroll.setViewPosition(p);
                         Thread.sleep(accl);
                         if (accl <= 10) accl = 10;
                         else accl /= 2;
-                    } catch (InterruptedException ie) {}
+                    } 
+                    catch (Exception ie) {}
                 }
             }
         });

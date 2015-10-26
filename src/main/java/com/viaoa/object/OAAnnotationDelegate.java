@@ -125,6 +125,12 @@ public class OAAnnotationDelegate {
             pi.setId(m.getAnnotation(OAId.class) != null);
             pi.setUnique(oaprop.isUnique());
             pi.setClassType(m.getReturnType());
+
+            OAColumn oacol = (OAColumn) m.getAnnotation(OAColumn.class);
+            if (oacol != null) {
+                int x = oacol.maxLength();
+                if (x > 0) pi.setMaxLength(x);
+            }
             
             boolean b = oaprop.isBlob();
             if (b) {

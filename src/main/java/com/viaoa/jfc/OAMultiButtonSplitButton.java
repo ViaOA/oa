@@ -213,11 +213,12 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         
         Dimension d = mainButton.getPreferredSize();
     
-        for (JButton b : buttons) {
-            Dimension d2 = b.getPreferredSize();
-            d.width = Math.max(d.width, d2.width);
+        if (bShowTextInSelectedButton) {
+            for (JButton b : buttons) {
+                Dimension d2 = b.getPreferredSize();
+                d.width = Math.max(d.width, d2.width);
+            }
         }
-        
         
         Dimension d2 = dropDownButton.getPreferredSize();
         d.width += d2.width + 5;

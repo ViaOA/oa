@@ -1321,6 +1321,15 @@ public class JFCController extends HubListenerAdapter {
     
     public int getDataSourceMaxColumns() {
         if (dataSourceMaxColumns == -2) {
+            
+            // 20151023
+            // annotation OAColumn has ds max length
+            int x = getPropertyInfoMaxColumns();
+            if (x > 0) {
+                dataSourceMaxColumns = x;
+                return x;
+            }
+            
             Hub h = getActualHub();
             if (h == null) return dataSourceMaxColumns;
             OADataSource ds = OADataSource.getDataSource(h.getObjectClass());

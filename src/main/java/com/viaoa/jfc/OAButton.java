@@ -100,8 +100,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         if (enabledMode == null) {
             
             // first, last, new,insert,add,nwe_manual, add_manual            
-            
-            
             // get default enabledMode
             switch (command) {
             case Other:

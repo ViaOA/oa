@@ -1068,6 +1068,10 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         setCellRenderer( new TreeCellRenderer() {
             public Component getTreeCellRendererComponent(JTree tree,Object value,boolean selected,boolean expanded,boolean leaf,int row,boolean hasFocus) {
                 JComponent comp = (JComponent) oldTreeCellRenderer2.getTreeCellRendererComponent(tree,value,selected,expanded,leaf,row,hasFocus);
+
+//qqqqqqqqqqqqq 20151025               
+if (comp != null) return comp; //qqqqqqqqqqqqqqqqq
+                
                 if (row == rowLastMouse2) {
                     if (!selected) {
                         comp.setBackground(OATable.COLOR_MouseOver);
@@ -1076,9 +1080,11 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                         return comp;
                     }
                 }
+                
                 comp.setBackground(Color.white);
                 comp.setForeground(Color.black);
                 comp.setOpaque(false);
+                
                 return comp;
             }        
         });
@@ -1102,6 +1108,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 }
 
                 JLabel lbl = (JLabel)oldRenderer.getTreeCellRendererComponent(tree,value,selected,expanded,leaf,row, hasFocus);
+
                 if (OATree.this.cntUpdateUI != lastCntUpdateUI) {
                     lbl.updateUI();
                     lastCntUpdateUI = OATree.this.cntUpdateUI; 
@@ -1125,6 +1132,14 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                        if (f == null || !f.equals(fontDefault)) lbl.setFont(fontDefault);
                    }
                 }
+                
+//qqqqqqqqqq start
+  //              comp.setBackground(Color.white);
+//                comp.setForeground(Color.black);
+                    lbl.setOpaque(false);
+                
+//qqqqqqqqqq end
+                
                 if (tn.def.colorBackground != null) lbl.setBackground(tn.def.colorBackground);
                 if (tn.def.colorForeground != null) lbl.setForeground(tn.def.colorForeground);
 
@@ -1146,6 +1161,17 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                     }
                 }
 
+//qqqqqqqqqqqqqq                
+                if (row == rowLastMouse2) {
+                    if (!selected) {
+                        lbl.setBackground(OATable.COLOR_MouseOver);
+                        lbl.setForeground(Color.white);
+                        lbl.setOpaque(true);
+//                        return comp;
+                    }
+                }
+                
+                
                 return comp;
             }
         });
