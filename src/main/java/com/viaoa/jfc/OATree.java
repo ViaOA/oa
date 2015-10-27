@@ -1060,41 +1060,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         return rowLastMouse2;
     }
     
-    private TreeCellRenderer oldTreeCellRenderer2;
     protected void setupRenderer() {
-        this._setupRenderer();
-        oldTreeCellRenderer2 = getCellRenderer();
-        
-        setCellRenderer( new TreeCellRenderer() {
-            public Component getTreeCellRendererComponent(JTree tree,Object value,boolean selected,boolean expanded,boolean leaf,int row,boolean hasFocus) {
-                JComponent comp = (JComponent) oldTreeCellRenderer2.getTreeCellRendererComponent(tree,value,selected,expanded,leaf,row,hasFocus);
-
-//qqqqqqqqqqqqq 20151025               
-if (comp != null) return comp; //qqqqqqqqqqqqqqqqq
-                
-                if (row == rowLastMouse2) {
-                    if (!selected) {
-                        comp.setBackground(OATable.COLOR_MouseOver);
-                        comp.setForeground(Color.white);
-                        comp.setOpaque(true);
-                        return comp;
-                    }
-                }
-                
-                comp.setBackground(Color.white);
-                comp.setForeground(Color.black);
-                comp.setOpaque(false);
-                
-                return comp;
-            }        
-        });
-    }
-
-    
-    /**
-        Called by constructor that will render nodes based on node settings.
-    */
-    protected void _setupRenderer() {
         oldRenderer = getCellRenderer();
         setCellRenderer( new TreeCellRenderer() {
             private int lastCntUpdateUI;
@@ -1114,7 +1080,7 @@ if (comp != null) return comp; //qqqqqqqqqqqqqqqqq
                     lastCntUpdateUI = OATree.this.cntUpdateUI; 
                 }
                 lbl.setHorizontalTextPosition(JLabel.RIGHT);
-                
+                lbl.setOpaque(false);
                 
                 if (value == null) return lbl;
                 OATreeNode tn = ((OATreeNodeData)value).node;
@@ -1132,13 +1098,6 @@ if (comp != null) return comp; //qqqqqqqqqqqqqqqqq
                        if (f == null || !f.equals(fontDefault)) lbl.setFont(fontDefault);
                    }
                 }
-                
-//qqqqqqqqqq start
-  //              comp.setBackground(Color.white);
-//                comp.setForeground(Color.black);
-                    lbl.setOpaque(false);
-                
-//qqqqqqqqqq end
                 
                 if (tn.def.colorBackground != null) lbl.setBackground(tn.def.colorBackground);
                 if (tn.def.colorForeground != null) lbl.setForeground(tn.def.colorForeground);
@@ -1161,16 +1120,14 @@ if (comp != null) return comp; //qqqqqqqqqqqqqqqqq
                     }
                 }
 
-//qqqqqqqqqqqqqq                
+                // mouseover effect                
                 if (row == rowLastMouse2) {
                     if (!selected) {
                         lbl.setBackground(OATable.COLOR_MouseOver);
                         lbl.setForeground(Color.white);
                         lbl.setOpaque(true);
-//                        return comp;
                     }
                 }
-                
                 
                 return comp;
             }

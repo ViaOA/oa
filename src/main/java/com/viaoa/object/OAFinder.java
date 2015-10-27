@@ -494,7 +494,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     }
 
     private void find(Object obj, int pos) {
-        if (bStop) return;
+        if (obj==null || bStop) return;
         try {
             if (bEnableStack) push(obj, pos);
             _find(obj, pos);
@@ -547,7 +547,15 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         if (cascade != null && cascade.wasCascaded((OAObject) obj, true)) return;
 
         // check if recursive
-        if (pos > 0 && recursiveLinkInfos != null && pos <= recursiveLinkInfos.length) {
+        if (pos == 0) {
+            // 20151026 see if root object is recursive
+            if (liRecursiveRoot != null) {
+                Object objx = liRecursiveRoot.getValue(obj);
+                find(objx, pos); // go up a level to then go through hub
+                if (bStop) return;
+            }
+        }
+        else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length) {
             if (recursiveLinkInfos[pos - 1] != null) {
                 Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
                 find(objx, pos); // go up a level to then go through hub
