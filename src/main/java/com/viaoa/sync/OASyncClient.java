@@ -325,6 +325,7 @@ public class OASyncClient {
              
         OALinkInfo liRev = li.getReverseLinkInfo();
         if (liRev == null) return;
+        if (liRev.getType() != OALinkInfo.MANY) return;
         
         Hub parentSiblingHub = findBestSiblingHub(parentMasterObject);
         if (parentSiblingHub == null) return;
