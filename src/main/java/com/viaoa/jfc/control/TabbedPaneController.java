@@ -99,7 +99,8 @@ public class TabbedPaneController {
                         : JTabbedPane.WRAP_TAB_LAYOUT);
             }
         });
-        tabbedPane.setToolTipText("right click or [ctrl]+[down] to change tab layout");
+        // shows up on pane, instead of just the tabs
+        //tabbedPane.setToolTipText("right click or [ctrl]+[down] to change tab layout");
 
         ButtonGroup bg = new ButtonGroup();
         JRadioButton rad = new JRadioButton();
