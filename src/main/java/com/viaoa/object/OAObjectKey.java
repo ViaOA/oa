@@ -130,13 +130,23 @@ public class OAObjectKey implements Serializable, Comparable {
         	OAObjectKey ok = (OAObjectKey) obj;
         	
         	if (this.bEmpty) {
-                if (ok.bEmpty && ((ok.guid == 0 || this.guid == 0) || (ok.guid == this.guid))) {
-                	return true;
+                if (ok.bEmpty) {
+                    if ((ok.guid == 0 || this.guid == 0) || (ok.guid == this.guid)) {
+                        return true;
+                    }
+                }
+                else {
+                    if (this.bNew && !ok.bNew) {
+                        return this.guid == ok.guid; 
+                    }
                 }
                 return false;
             }
             else {
-                if (ok.bEmpty) return false;
+                if (ok.bEmpty) {
+                    if (ok.bNew && !this.bNew) return this.guid == ok.guid;
+                    return false;
+                }
             }
 
             int x = objectIds.length;
@@ -169,14 +179,20 @@ public class OAObjectKey implements Serializable, Comparable {
         if (obj instanceof OAObjectKey) {
             OAObjectKey ok = (OAObjectKey) obj;
             if (this.bEmpty) {
-                if (!ok.bEmpty) return -1;
+                if (!ok.bEmpty) {
+                    if (this.bNew && !ok.bNew && this.guid == ok.guid) return 0;
+                    return -1;
+                }
                 if (this.guid == 0 || ok.guid == 0) return 0;
                 if (this.guid == ok.guid) return 0;
                 if (this.guid > ok.guid) return 1;
                 return -1;
             }
             else {
-                if (ok.bEmpty) return 1;
+                if (ok.bEmpty) {
+                    if (ok.bNew && !this.bNew && this.guid == ok.guid) return 0;
+                    return 1;
+                }
             }
 
             int x = this.objectIds.length;
