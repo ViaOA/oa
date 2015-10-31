@@ -19,6 +19,7 @@ import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
+import com.viaoa.sync.OASyncClient;
 import com.viaoa.hub.Hub;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.transaction.OATransaction;
@@ -1161,6 +1162,10 @@ static volatile int unlockCnt;
         if (rmc != null) x = TotalRemoteMultiplexerClient.incrementAndGet();
         else x = TotalRemoteMultiplexerClient.decrementAndGet();
         //if (x > 25 || x < 0) LOG.warning("TotalRemoteMultiplexerClient="+x);
+    }
+    protected static void setSyncClient(OASyncClient sc) {
+        if (sc != null) setRemoteMultiplexerClient(sc.getRemoteMultiplexerClient());
+        else setRemoteMultiplexerClient(null);
     }
     
     

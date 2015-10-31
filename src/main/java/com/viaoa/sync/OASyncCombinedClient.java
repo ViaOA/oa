@@ -9,13 +9,9 @@ import com.viaoa.ds.OADataSource;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
-import com.viaoa.object.OAObjectInfo;
-import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
-import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.*;
-import com.viaoa.sync.remote.RemoteSyncImpl;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 
 /**
@@ -36,7 +32,7 @@ public class OASyncCombinedClient {
     private ConcurrentHashMap<RemoteMultiplexerClient, ClientSession> hmClientSession = new ConcurrentHashMap<RemoteMultiplexerClient, ClientSession>();
     
     private class ClientSession {
-        RemoteMultiplexerClient rmClient;
+        OASyncClient syncClient;
         ConcurrentHashMap<Class, Mapper> hmClassToMapper = new ConcurrentHashMap<Class, OASyncCombinedClient.Mapper>();
     }
     private class Mapper {
@@ -152,10 +148,27 @@ public class OASyncCombinedClient {
                 return remoteSync;
             }
         };
+
+        RemoteMultiplexerClient rmc = sc.getRemoteMultiplexerClient();
+        ClientSession session = new ClientSession();
+        session.syncClient = sc;
+        hmClientSession.put(rmc, session);
+        
         return sc;
     }
     
     
+    public OASyncClient getCurrentThreadSyncClient() {
+        RemoteMultiplexerClient rmc = OAThreadLocalDelegate.getRemoteMultiplexerClient();
+        if (rmc == null) {
+            return null;
+        }
+        ClientSession session = hmClientSession.get(rmc);
+        if (session == null) {
+            return null;
+        }
+        return session.syncClient;
+    }
     
     
     /**
@@ -175,14 +188,7 @@ public class OASyncCombinedClient {
 
         ClientSession session = hmClientSession.get(rmc);
         if (session == null) {
-            synchronized (hmClientSession) {
-                session = hmClientSession.get(objClient.getClass());
-                if (session == null) {
-                    session = new ClientSession();
-                    session.rmClient = rmc;
-                    hmClientSession.put(rmc, session);
-                }                
-            }
+            return null;
         }
 
         // from Client to Server
@@ -237,14 +243,7 @@ public class OASyncCombinedClient {
         
         ClientSession session = hmClientSession.get(rmc);
         if (session == null) {
-            synchronized (hmClientSession) {
-                session = hmClientSession.get(rmc);
-                if (session == null) {
-                    session = new ClientSession();
-                    session.rmClient = rmc;
-                    hmClientSession.put(rmc, session);
-                }                
-            }
+            return null;
         }
         
         Mapper mapper = session.hmClassToMapper.get(c);

@@ -12,6 +12,7 @@ package com.viaoa.sync;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -64,9 +65,11 @@ public class OASyncDelegate {
 
     private static OASyncCombinedClient syncCombinedClient;
     
-    
-    
     public static OASyncClient getSyncClient() {
+        if (syncCombinedClient != null) {
+            OASyncClient sc = syncCombinedClient.getCurrentThreadSyncClient();
+            if (sc != null) return sc;
+        }
         return syncClient;
     }
     public static void setSyncClient(OASyncClient sc) {
@@ -100,6 +103,15 @@ public class OASyncDelegate {
         remoteServer = rsi;
     }
     public static RemoteServerInterface getRemoteServer() {
+        if (syncCombinedClient != null) {
+            OASyncClient sc = syncCombinedClient.getCurrentThreadSyncClient();
+            if (sc != null) {
+                try {
+                    return sc.getRemoteServer();
+                }
+                catch (Exception e)  {}
+            }
+        }
         return remoteServer;
     }
     
@@ -110,6 +122,15 @@ public class OASyncDelegate {
         remoteSession = rci;
     }
     public static RemoteSessionInterface getRemoteSession() {
+        if (syncCombinedClient != null) {
+            OASyncClient sc = syncCombinedClient.getCurrentThreadSyncClient();
+            if (sc != null) {
+                try {
+                    return sc.getRemoteSession();
+                }
+                catch (Exception e)  {}
+            }
+        }
         return remoteSession;
     }
     /**
@@ -120,6 +141,15 @@ public class OASyncDelegate {
         remoteClient = rci;
     }
     public static RemoteClientInterface getRemoteClient() {
+        if (syncCombinedClient != null) {
+            OASyncClient sc = syncCombinedClient.getCurrentThreadSyncClient();
+            if (sc != null) {
+                try {
+                    return sc.getRemoteClient();
+                }
+                catch (Exception e)  {}
+            }
+        }
         return remoteClient;
     }
 
@@ -130,6 +160,15 @@ public class OASyncDelegate {
         remoteSync = rsi;
     }
     public static RemoteSyncInterface getRemoteSync() {
+        if (syncCombinedClient != null) {
+            OASyncClient sc = syncCombinedClient.getCurrentThreadSyncClient();
+            if (sc != null) {
+                try {
+                    return sc.getRemoteSync();
+                }
+                catch (Exception e)  {}
+            }
+        }
         return remoteSync;
     }
 
