@@ -14,6 +14,7 @@ package com.viaoa.object;
 import java.util.ArrayList;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.Tuple;
@@ -113,6 +114,9 @@ public class OAThreadLocal {
     // these are from RemoteThread evetns, will be queue up and executed 
     protected ArrayList<Runnable> alRunnable;
 */    
+
+    protected RemoteMultiplexerClient remoteMultiplexerClient;
+
 }
 
 

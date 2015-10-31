@@ -182,6 +182,34 @@ public class OAObjectDelegate {
         }
     }
 
+    // 20151029 remove the Id props, set new=true, reassign guid    
+    public static void setAsNew(final OAObject oaObj) {
+        if (oaObj == null) return;
+        oaObj.newFlag = true;
+        oaObj.objectKey = null;
+        oaObj.guid = OAObjectCSDelegate.getServerGuid();
+        if (oaObj.guid == 0) oaObj.guid = getNextGuid();
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
+        String[] ids = oi.getIdProperties();
+        if (ids == null) return;
+        
+        OAThreadLocalDelegate.setSkipFirePropertyChange(true);
+        try {
+            for (String id : ids) {
+                OAObjectReflectDelegate.setProperty(oaObj, id, null, null);
+            }
+        }
+        finally {
+            OAThreadLocalDelegate.setSkipFirePropertyChange(false);
+        }
+
+        //OAObjectCSDelegate.initialize(oaObj);
+        OAObjectDSDelegate.initialize(oaObj);
+        
+        oaObj.getObjectKey();
+    }
+    
     /**
      * This is used by RemoteSyncImpl on the server, when it has to reload a GCd object from DS.
      * This happens when a client makes a change and the server does not have the object in memory.

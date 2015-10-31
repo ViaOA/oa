@@ -52,7 +52,7 @@ public class OASyncDelegate {
      * used to get data from the server.
      */
     private static RemoteClientInterface remoteClient;
-    
+
     /**
      * Sync client that connects to the server and allows OAModels (OAObjects, Hub) to be automatically in sync.
      */
@@ -61,6 +61,10 @@ public class OASyncDelegate {
      * Sync server that allows client connections, so that OAModels (OAObjects, Hub) are automatically in sync.
      */
     private static OASyncServer syncServer;
+
+    private static OASyncCombinedClient syncCombinedClient;
+    
+    
     
     public static OASyncClient getSyncClient() {
         return syncClient;
@@ -69,6 +73,7 @@ public class OASyncDelegate {
         syncClient = sc;
     }
 
+    
     /**
      * The connectionId (multiplexer)
      */
@@ -261,6 +266,12 @@ public class OASyncDelegate {
     public static void endServerOnly() {
         sendMessages(false);
     }
-    
-    
+
+    public static OASyncCombinedClient getSyncCombinedClient() {
+        return syncCombinedClient;
+    }
+    public static void setSyncCombinedClient(OASyncCombinedClient cc) {
+        syncCombinedClient = cc;
+    }
+
 }

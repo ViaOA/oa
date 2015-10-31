@@ -14,8 +14,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
+
 import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.hub.Hub;
 import com.viaoa.jfc.undo.OAUndoManager;
@@ -53,6 +55,7 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
     private static AtomicInteger TotalGetDetailHub = new AtomicInteger();
 //qqq    private static AtomicInteger TotalRunnable = new AtomicInteger();
+    private static AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
 
     public static final HashMap<Object, OAThreadLocal[]> hmLock = new HashMap<Object, OAThreadLocal[]>(53, .75f);
     
@@ -1145,6 +1148,33 @@ static volatile int unlockCnt;
      */
     public static boolean setSendMessages(boolean b) {
         return OARemoteThreadDelegate.sendMessages(b);
+    }
+
+    
+    
+    public static void setRemoteMultiplexerClient(RemoteMultiplexerClient rmc) {
+        setRemoteMultiplexerClient(OAThreadLocalDelegate.getThreadLocal(true), rmc);
+    }
+    protected static void setRemoteMultiplexerClient(OAThreadLocal ti, RemoteMultiplexerClient rmc) {
+        ti.remoteMultiplexerClient = rmc;
+        int x;
+        if (rmc != null) x = TotalRemoteMultiplexerClient.incrementAndGet();
+        else x = TotalRemoteMultiplexerClient.decrementAndGet();
+        //if (x > 25 || x < 0) LOG.warning("TotalRemoteMultiplexerClient="+x);
+    }
+    
+    
+    public static RemoteMultiplexerClient getRemoteMultiplexerClient() {
+        RemoteMultiplexerClient mc;
+        if (OAThreadLocalDelegate.TotalRemoteMultiplexerClient.get() == 0) {
+            mc = null;
+        }
+        else {
+            OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(false);
+            if (tl == null) mc = null;
+            else mc = tl.remoteMultiplexerClient;
+        }
+        return mc;
     }
 }
 

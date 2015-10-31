@@ -73,9 +73,10 @@ public class OASyncClient {
     private RemoteSessionInterface remoteClientInterface;
     private RemoteClientInterface remoteClientSyncInterface;
     private RemoteSyncInterface remoteSyncInterface;
-    private RemoteSyncImpl remoteSyncImpl;
+    private RemoteSyncInterface remoteSyncImpl;
     private String serverHostName;
     private int serverHostPort;
+    private final boolean bUpdateSyncDelegate;
 
     // used by getDetail
     private OAObject[] lastMasterObjects = new OAObject[10];
@@ -84,11 +85,17 @@ public class OASyncClient {
     private OADataSourceClient dataSourceClient;
     
     public OASyncClient(String serverHostName, int serverHostPort) {
-        this.serverHostName = serverHostName;
-        this.serverHostPort = serverHostPort;
-        OASyncDelegate.setSyncClient(this);
+        this(serverHostName, serverHostPort, true);
     }
 
+    protected OASyncClient(String serverHostName, int serverHostPort, boolean bUpdateSyncDelegate) {
+        this.serverHostName = serverHostName;
+        this.serverHostPort = serverHostPort;
+        this.bUpdateSyncDelegate = bUpdateSyncDelegate;
+        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(this);
+    }
+    
+    
     public void startClientUpdateThread(final int seconds) {
         Thread t = new Thread(new Runnable() {
             @Override
@@ -437,12 +444,12 @@ public class OASyncClient {
     public RemoteServerInterface getRemoteServer() throws Exception {
         if (remoteServerInterface == null) {
             remoteServerInterface = (RemoteServerInterface) getRemoteMultiplexerClient().lookup(ServerLookupName);
-            OASyncDelegate.setRemoteServer(remoteServerInterface);
+            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteServer(remoteServerInterface);
         }
         return remoteServerInterface;
     }
     // used for oasync callback (messages from other computers)
-    public RemoteSyncImpl getRemoteSyncImpl() throws Exception {
+    public RemoteSyncInterface getRemoteSyncImpl() throws Exception {
         if (remoteSyncImpl == null) {
             remoteSyncImpl = new RemoteSyncImpl();
         }
@@ -451,14 +458,14 @@ public class OASyncClient {
     public RemoteSyncInterface getRemoteSync() throws Exception {
         if (remoteSyncInterface == null) {
             remoteSyncInterface = (RemoteSyncInterface) getRemoteMultiplexerClient().lookupBroadcast(SyncLookupName, getRemoteSyncImpl());
-            OASyncDelegate.setRemoteSync(remoteSyncInterface);
+            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteSync(remoteSyncInterface);
         }
         return remoteSyncInterface;
     }
     public RemoteSessionInterface getRemoteSession() throws Exception {
         if (remoteClientInterface == null) {
             remoteClientInterface = getRemoteServer().getRemoteSession(getClientInfo(), getRemoteClientCallback());
-            OASyncDelegate.setRemoteSession(remoteClientInterface);
+            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteSession(remoteClientInterface);
         }
         return remoteClientInterface;
     }
@@ -482,7 +489,7 @@ public class OASyncClient {
     public RemoteClientInterface getRemoteClient() throws Exception {
         if (remoteClientSyncInterface == null) {
             remoteClientSyncInterface = getRemoteServer().getRemoteClient(getClientInfo());
-            OASyncDelegate.setRemoteClient(remoteClientSyncInterface);
+            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteClient(remoteClientSyncInterface);
         }
         return remoteClientSyncInterface;
     }
@@ -530,10 +537,12 @@ public class OASyncClient {
         getRemoteSync();
         getRemoteSession();
         getRemoteClient();
-        startQueueGuidThread();
+        if (bUpdateSyncDelegate) startQueueGuidThread();
 
-        LOG.fine("creating OADataSourceClient for remote database access");
-        getOADataSourceClient();
+        if (bUpdateSyncDelegate) {
+            LOG.fine("creating OADataSourceClient for remote database access");
+            getOADataSourceClient();
+        }
         
         clientInfo.setStarted(true);
         LOG.config("startup completed successful");
@@ -681,7 +690,7 @@ public class OASyncClient {
     public void objectRemoved(int guid) {
         try {
             if (guid > 0) {
-                queRemoveGuid.add(guid);
+                if (bUpdateSyncDelegate) queRemoveGuid.add(guid);
             }
         }
         catch (Exception e) {
@@ -706,8 +715,7 @@ public class OASyncClient {
                         guids[guidPos++ % 50] = guid;
                         if (guidPos % 50 == 0) {
                             if (rsi == null) {
-                                OASyncClient sc = OASyncDelegate.getSyncClient();
-                                if (sc != null) rsi = sc.getRemoteSession();
+                                rsi = OASyncClient.this.getRemoteSession();
                             }
                             if (rsi != null) {
                                 rsi.removeGuids(guids);

@@ -23,6 +23,7 @@ import com.viaoa.hub.HubSortDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
+import com.viaoa.sync.OASyncCombinedClient;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANullObject;
 
@@ -63,12 +64,21 @@ public class OAObjectSerializeDelegate {
 	
 	protected static Object _readResolve(final OAObject oaObjOrig) throws ObjectStreamException {
 		OAObject oaObjNew;
+
+        // 20151029
+        OASyncCombinedClient cc = OASyncDelegate.getSyncCombinedClient();
+        if (cc != null) {
+            oaObjNew = cc.resolveObject(oaObjOrig);
+            if (oaObjNew != null) return oaObjNew;
+        }
+		
 		boolean bDup;
         if (oaObjOrig.guid == 0) {
         	LOG.warning("received object with guid=0, obj="+oaObjOrig+", reassigning a new guid");
         	OAObjectDelegate.assignGuid(oaObjOrig);
         	oaObjOrig.objectKey.guid = oaObjOrig.guid;
         }
+        
 		OAObjectInfo oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObjOrig);
 		if (oi.bAddToCache) {
 			oaObjNew = OAObjectCacheDelegate.add(oaObjOrig, false, false);
