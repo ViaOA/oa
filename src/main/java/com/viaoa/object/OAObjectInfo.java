@@ -84,6 +84,14 @@ public class OAObjectInfo { //implements java.io.Serializable {
     	return this.idProperties;
     }
 
+    public boolean isIdProperty(String prop) {
+        if (prop == null) return false;
+        for (String s : getIdProperties()) {
+            if (prop.equalsIgnoreCase(s)) return true;
+        }
+        return false;
+    }
+    
     public boolean hasImportMatchProperties() {
         return getImportMatchProperties().length > 0;
     }

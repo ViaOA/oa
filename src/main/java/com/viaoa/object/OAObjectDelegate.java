@@ -183,12 +183,17 @@ public class OAObjectDelegate {
     }
 
     // 20151029 remove the Id props, set new=true, reassign guid    
-    public static void setAsNew(final OAObject oaObj) {
+    public static void setAsNewObject(final OAObject oaObj) {
+        if (oaObj == null) return;
+        int guid = OAObjectCSDelegate.getServerGuid();
+        if (oaObj.guid == 0) oaObj.guid = getNextGuid();
+        setAsNewObject(oaObj, guid);
+    }
+    public static void setAsNewObject(final OAObject oaObj, int guid) {
         if (oaObj == null) return;
         oaObj.newFlag = true;
         oaObj.objectKey = null;
-        oaObj.guid = OAObjectCSDelegate.getServerGuid();
-        if (oaObj.guid == 0) oaObj.guid = getNextGuid();
+        oaObj.guid = guid;
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
         String[] ids = oi.getIdProperties();

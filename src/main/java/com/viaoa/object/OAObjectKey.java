@@ -97,6 +97,10 @@ public class OAObjectKey implements Serializable, Comparable {
         this(new Object[] {value});
     }
 
+    public boolean isNew() {
+        return bNew;
+    }
+    
     public int hashCode() {
         if (hc == -1) {
             if (bEmpty) {
