@@ -1749,6 +1749,8 @@ public class OAHTMLTextPaneController extends OATextController {
     
             cboFontName.setRenderer(new FontNameComboBoxCellRenderer(getGenericFontNames().length, maxWidth));
             
+            cboFontName.setPrototypeDisplayValue("12345ABCDE FGhijklmnOOOxyz");
+            
             Dimension d = cboFontName.getMinimumSize();
             d.width = maxWidth + 12 + 6;
             

@@ -189,13 +189,18 @@ public abstract class OACircularQueue<TYPE> {
                         Object obj = hmSessionPosition.get(id);
                         if (obj == null) continue;
                         long x = ((Long) obj).longValue();
-                        if ( (x + queueSize) > queueHeadPosition) continue;
+                        if ( (x + queueSize) > (queueHeadPosition+50)) continue;
                         
                         obj = hmSessionLastTime.get(id);
                         if (obj == null) continue;
                         long ts = ((Long) obj).longValue();
                         long tsNow = System.currentTimeMillis();
-                        if (ts + 1000 < tsNow) continue;
+                        if (ts + 1500 < tsNow) {
+                            LOG.fine("session over 1.5 seconds getting last msg, queSize="+queueSize+
+                                    ", currentHeadPos="+queueHeadPosition+", session="+id+", sessionPos="+x);
+                            tsLastLog = tsNow;
+                            continue;  // too slow, dont wait for this one
+                        }
                         sessionIdFound = id;
                         break;
                     }
