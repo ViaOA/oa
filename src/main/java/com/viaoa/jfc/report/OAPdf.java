@@ -22,7 +22,11 @@ import java.util.logging.Logger;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.Image;
+import com.lowagie.text.pdf.DefaultFontMapper;
+import com.lowagie.text.pdf.FontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfGraphics2D;
+import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import com.viaoa.jfc.image.OAImageUtil;
 import com.viaoa.jfc.print.OAPrintable;
@@ -145,7 +149,14 @@ public class OAPdf {
                 if (x == Printable.NO_SUCH_PAGE) break;
                 document.newPage();
             }
-            Graphics2D g2 = contentByte.createGraphics(width, height);//, mapper, true, .95f);
+            
+            // 20151101 pdf was not using correct fonts
+            // http://stackoverflow.com/questions/5290269/how-to-create-a-pdf-with-multiple-pages-from-a-graphics-object-with-java-and-ite
+
+            // http://itextpdf.com/examples/iia.php?id=254            
+            
+            FontMapper fm = new DefaultFontMapper();
+            Graphics2D g2 = contentByte.createGraphics(width, height, fm);//, mapper, true, .95f);
             
             int x = printable.print(g2, pageFormat, p);
             g2.dispose();

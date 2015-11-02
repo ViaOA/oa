@@ -11,9 +11,7 @@
 package com.viaoa.jfc;
 
 import java.awt.*;
-
 import javax.swing.*;
-import javax.swing.border.*;
 import javax.swing.event.*;
 
 /**
@@ -44,6 +42,7 @@ public class ComboBoxPopupMenuListener implements PopupMenuListener {
 
 	public @Override void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 		JPopupMenu pop = null;
+		
 		int x = cbo.getUI().getAccessibleChildrenCount(cbo);
 		for (int i=0; i<x; i++) {
 			Object obj = cbo.getUI().getAccessibleChild(cbo, i);
@@ -64,6 +63,7 @@ public class ComboBoxPopupMenuListener implements PopupMenuListener {
 
 		Dimension d = pop.getPreferredSize();
 		d.width = width;
+		if (cbo != null) d.height = 24 * (OATable.getCharHeight(cbo, cbo.getFont()) + 6);
 		pop.setPreferredSize(d);
 	}
 	
