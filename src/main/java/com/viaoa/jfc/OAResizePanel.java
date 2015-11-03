@@ -81,7 +81,7 @@ public class OAResizePanel extends JPanel {
         BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
         panComp.setLayout(box);
         panComp.add(comp);
-        panComp.add(comp2);
+        if (comp2 != null) panComp.add(comp2);
         setup(panComp, percentage, bBoth);        
     }
     public OAResizePanel(JComponent comp, JComponent comp2, int percentage) {
