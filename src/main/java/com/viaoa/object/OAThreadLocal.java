@@ -115,8 +115,6 @@ public class OAThreadLocal {
     protected ArrayList<Runnable> alRunnable;
 */    
 
-    protected RemoteMultiplexerClient remoteMultiplexerClient;
-
 }
 
 

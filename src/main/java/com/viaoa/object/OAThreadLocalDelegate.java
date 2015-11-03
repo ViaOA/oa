@@ -1152,7 +1152,7 @@ static volatile int unlockCnt;
     }
 
     
-    
+    /* 20151103 on hold for OAsyncCombinedClient work
     public static void setRemoteMultiplexerClient(RemoteMultiplexerClient rmc) {
         setRemoteMultiplexerClient(OAThreadLocalDelegate.getThreadLocal(true), rmc);
     }
@@ -1181,5 +1181,6 @@ static volatile int unlockCnt;
         }
         return mc;
     }
+    */
 }
 

@@ -19,6 +19,8 @@ import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.*;
 import com.viaoa.sync.remote.RemoteSyncInterface;
 
+
+// 20151103 not completed, on hold
 /**
  * This is used to have multiple servers all combined into a single combined instance.
  * This needs to run as a separate java instance, that has a oasyncclient connection for each of
@@ -92,7 +94,7 @@ public class OASyncCombinedClient {
      * @param syncClient client to the combined server.
      */
     public OASyncCombinedClient() {
-        OASyncDelegate.setSyncCombinedClient(this);
+//        OASyncDelegate.setSyncCombinedClient(this);
     }
 
     /**
@@ -432,7 +434,7 @@ public class OASyncCombinedClient {
     
     
     public OASyncClient getCurrentThreadSyncClient() {
-        RemoteMultiplexerClient rmc = OAThreadLocalDelegate.getRemoteMultiplexerClient();
+        RemoteMultiplexerClient rmc = null;//OAThreadLocalDelegate.getRemoteMultiplexerClient();
         if (rmc == null) {
             return null;
         }
@@ -467,7 +469,7 @@ public class OASyncCombinedClient {
      */
     public OAObject resolveObject(final OAObject objClient) {
 
-        RemoteMultiplexerClient rmc = OAThreadLocalDelegate.getRemoteMultiplexerClient();
+        RemoteMultiplexerClient rmc = null;//OAThreadLocalDelegate.getRemoteMultiplexerClient();
         
         if (rmc == null || rmc == syncClient.getRemoteMultiplexerClient()) {
             //qqqqqqqqqqq from Server to Client(s)  - there might not be any clients
@@ -538,7 +540,7 @@ public class OASyncCombinedClient {
     // get the key that was created for the combined server
     public OAObjectKey getClientToServerKey(final Class c, final OAObjectKey keyClient) {
         
-        RemoteMultiplexerClient rmc = OAThreadLocalDelegate.getRemoteMultiplexerClient();
+        RemoteMultiplexerClient rmc = null;//OAThreadLocalDelegate.getRemoteMultiplexerClient();
         
         if (rmc == null || rmc == syncClient.getRemoteMultiplexerClient()) {
             //qqqqqqqqqqq from Server to Client(s)  - there might not be any clients

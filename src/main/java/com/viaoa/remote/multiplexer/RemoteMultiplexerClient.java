@@ -601,7 +601,9 @@ public class RemoteMultiplexerClient {
             public void run() {
                 int errorCnt = 0;
                 long msLastError = 0;
+                /* 20151103 on hold for OAsyncCombinedClient work
                 OAThreadLocalDelegate.setRemoteMultiplexerClient(RemoteMultiplexerClient.this);
+                */
                 for (;;) {
                     try {
                         if (socket.isClosed()) {
@@ -662,7 +664,9 @@ public class RemoteMultiplexerClient {
         OARemoteThread t = new OARemoteThread(true) {
             @Override
             public void run() {
+                /* 20151103 on hold for OAsyncCombinedClient work
                 OAThreadLocalDelegate.setRemoteMultiplexerClient(RemoteMultiplexerClient.this);
+                */
                 for (; ;) {
                     try {
                         synchronized (Lock) {

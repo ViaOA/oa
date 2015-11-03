@@ -65,12 +65,13 @@ public class OAObjectSerializeDelegate {
 	protected static Object _readResolve(final OAObject oaObjOrig) throws ObjectStreamException {
 		OAObject oaObjNew;
 
-        // 20151029
+		/* 20151029 on hold
         OASyncCombinedClient cc = OASyncDelegate.getSyncCombinedClient();
         if (cc != null) {
             oaObjNew = cc.resolveObject(oaObjOrig);
             if (oaObjNew != null) return oaObjNew;
         }
+		*/
 		
 		boolean bDup;
         if (oaObjOrig.guid == 0) {
