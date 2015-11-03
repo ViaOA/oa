@@ -146,7 +146,7 @@ public class OAPdf {
     }
 
     
-    public static DefaultFontMapper getMapper() {
+    public static DefaultFontMapper getFontMapper() {
         if (mapper != null) return mapper;
         mapper = new DefaultFontMapper() {
             @Override
@@ -179,7 +179,7 @@ public class OAPdf {
                 document.newPage();
             }
 
-            Graphics2D g2 = contentByte.createGraphics(width, height, getMapper());
+            Graphics2D g2 = contentByte.createGraphics(width, height, getFontMapper());
 
             int x = printable.print(g2, pageFormat, p);
             g2.dispose();
