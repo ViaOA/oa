@@ -250,7 +250,7 @@ public class OADataSourceClient extends OADataSource {
             queryWhere, params, queryOrder, 
             whereClass, whereKey,
             propertyFromMaster, extraWhere,
-            max, bDirty
+            max, bDirty, (filter!=null)
         };
         
         Object obj = getRemoteClient().datasource(SELECT, objs);

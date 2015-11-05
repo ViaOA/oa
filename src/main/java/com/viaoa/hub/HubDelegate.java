@@ -469,7 +469,7 @@ public class HubDelegate {
             	}
             }
             int x = HubSelectDelegate.getCount(thisHub);
-            if (x >= 0) return x;
+            if (x > 0) return x;
         }
        	return HubDataDelegate.getCurrentSize(thisHub);
     }

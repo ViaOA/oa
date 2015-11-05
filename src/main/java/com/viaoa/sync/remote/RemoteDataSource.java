@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.object.OAObject;
@@ -24,6 +25,7 @@ import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectKeyDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.util.OAFilter;
 
 /**
  * Used by OADataSourceClient to have a client DS methods to be executed on server.
@@ -197,16 +199,27 @@ public abstract class RemoteDataSource {
                 String extraWhere = (String) objects[7];
                 int max = (Integer) objects[8];
                 boolean bDirty = (Boolean) objects[9];
+                boolean bHasFilter = (Boolean) objects[10];
                 
                 whereObject = null;
                 if (whereClass != null && whereKey != null) {
                     whereObject = getObject(whereClass, whereKey);
                 }
+
                 
+                OAFilter filter = null;
+                if (bHasFilter) {
+                    // if client has a filter, then create a dummy one here
+                    filter = new OAFilter() {
+                        public boolean isUsed(Object obj) {
+                            return true;
+                        };
+                    };
+                }                
                 iterator = ds.select(clazz, 
                     queryWhere, params, queryOrder,
                     (OAObject) whereObject, propFromMaster, extraWhere,
-                    max, null, bDirty);
+                    max, filter, bDirty);
                         
                 selectId = "select" + aiSelectCount.incrementAndGet();
                 if (iterator != null) {
