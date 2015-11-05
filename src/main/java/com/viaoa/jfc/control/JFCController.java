@@ -124,6 +124,8 @@ public class JFCController extends HubListenerAdapter {
     private int propertyInfoMaxColumns = -2;
     private int dataSourceMaxColumns = -2;
     
+    private JLabel label;
+    
     /**
         Create a component that is not bound to a Hub.
     */  
@@ -152,6 +154,15 @@ public class JFCController extends HubListenerAdapter {
         setHub(hub);
     }
 
+    public void setLabel(JLabel lbl) {
+        this.label = lbl;
+        lbl.setLabelFor(component);
+    }
+    public JLabel getLabel() {
+        return this.label;
+    }
+    
+    
     /**
         Bind a component to an Object.
     */  

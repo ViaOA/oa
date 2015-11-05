@@ -256,6 +256,13 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     @Override
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
     }
+
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
 }
 
 class OATextAreaTableCellEditor extends OATableCellEditor {
@@ -272,5 +279,6 @@ class OATextAreaTableCellEditor extends OATableCellEditor {
     public Object getCellEditorValue() {
         return vtf.getText();
 	}
+
 }
 

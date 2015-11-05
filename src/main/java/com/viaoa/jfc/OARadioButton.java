@@ -338,6 +338,15 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
         }
     }
 
+
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    /*
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
+    */
 }
 
 

@@ -493,6 +493,14 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     }
     
     
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    /*
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
+    */
     
     
 }

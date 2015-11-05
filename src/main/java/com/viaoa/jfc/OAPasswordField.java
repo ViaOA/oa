@@ -256,6 +256,13 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
         }
     }
 
+
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
 }
 
 

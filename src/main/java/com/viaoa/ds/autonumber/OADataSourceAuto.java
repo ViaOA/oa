@@ -233,12 +233,12 @@ public class OADataSourceAuto extends OADataSource {
 
     @Override
     public int count(Class selectClass, String queryWhere, Object[] params, OAObject whereObject, String propertyFromMaster, String extraWhere, int max) {
-        return 0;
+        return -1;
     }
 
     @Override
     public int countPassthru(Class selectClass, String queryWhere, int max) {
-        return 0;
+        return -1;
     }
 
     @Override

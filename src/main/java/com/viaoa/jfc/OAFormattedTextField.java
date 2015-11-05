@@ -190,6 +190,12 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
         return null;
     }
     
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
 }
 
 

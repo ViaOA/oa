@@ -110,5 +110,13 @@ public class EnabledController extends HubPropController {
         if (comp.isEnabled() != bEnabled) {
             comp.setEnabled(bEnabled);
         }
+        
+        if (comp instanceof OAJFCComponent) {
+            JFCController jc = ((OAJFCComponent) comp).getController();
+            if (jc != null) {
+                JLabel lbl = jc.getLabel();
+                if (lbl != null) lbl.setEnabled(bEnabled);
+            }
+        }
     }
 }

@@ -596,6 +596,14 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
         return d;
     }
+
+    
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
     
 }
 

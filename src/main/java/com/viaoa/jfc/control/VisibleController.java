@@ -11,9 +11,11 @@
 package com.viaoa.jfc.control;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import com.viaoa.hub.*;
+import com.viaoa.jfc.OAJFCComponent;
 
 /**
  * Used to bind a components visible value to a one or more Hub/Property value
@@ -52,7 +54,6 @@ public class VisibleController extends HubPropController {
         }
     }
     
-    
     @Override
     public void update() {
         if (SwingUtilities.isEventDispatchThread()) {
@@ -70,6 +71,15 @@ public class VisibleController extends HubPropController {
     
     @Override
     protected void onUpdate(final boolean bValid) {
-        if (this.component != null) this.component.setVisible(bValid);
+        if (component == null) return;
+        component.setVisible(bValid);
+        
+        if (component instanceof OAJFCComponent) {
+            JFCController jc = ((OAJFCComponent) component).getController();
+            if (jc != null) {
+                JLabel lbl = jc.getLabel();
+                if (lbl != null) lbl.setEnabled(bValid);
+            }
+        }
     }
 }

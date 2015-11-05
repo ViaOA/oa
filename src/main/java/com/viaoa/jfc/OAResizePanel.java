@@ -91,6 +91,4 @@ public class OAResizePanel extends JPanel {
         this(comp, comp2, 50, false);
     }
 
-    
-    
 }

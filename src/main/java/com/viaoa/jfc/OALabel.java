@@ -418,6 +418,12 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     public void setEnabled(Hub hub, String prop, Object compareValue) {
     }
 
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
 
 }
 

@@ -773,6 +773,12 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
     public void onItemSelected(int row) {
     }
     
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
 }
 
 

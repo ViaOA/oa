@@ -36,7 +36,6 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         this.control = control;
     }
 
-    
     /**
         Create TextField that is bound to a property path in a Hub.
         @param propertyPath path from Hub, used to find bound property.
@@ -77,6 +76,14 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         return control;
     }
 
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
+    
+    
     /**
         Format used to display this property.  Used to format Date, Times and Numbers.
         @see OADate#OADate

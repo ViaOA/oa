@@ -12,11 +12,14 @@ package com.viaoa.jfc;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
+
 import java.util.*;
 import java.beans.*;
 import java.text.*;
+
 import com.viaoa.util.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
@@ -459,6 +462,12 @@ public class OADateChooser extends JPanel implements OAJFCComponent {
         }
     }
 
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        return getController().getLabel();
+    }
     
     
     
