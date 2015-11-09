@@ -5,4 +5,13 @@ setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
 
+RootPaneContainer root = 
+      (RootPaneContainer)component.getTopLevelAncestor();
+    root.getGlassPane().setCursor(WAIT_CURSOR);
+    root.getGlassPane().setVisible(true);
+
+ RootPaneContainer root = 
+      (RootPaneContainer)component.getTopLevelAncestor();
+    root.getGlassPane().setCursor(DEFAULT_CURSOR);
+    root.getGlassPane().setVisible(false);
         
