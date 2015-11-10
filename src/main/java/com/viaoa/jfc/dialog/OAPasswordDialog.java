@@ -196,5 +196,6 @@ public abstract class OAPasswordDialog extends JDialog {
         dlg.setVisible(true);
         System.exit(0);
     }
+
     
 }

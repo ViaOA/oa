@@ -372,9 +372,17 @@ public class ButtonController extends JFCController implements ActionListener {
         default_actionPerformed(e);
     }
     public void default_actionPerformed(ActionEvent e) {
-        if (getPasswordDialog() != null) {
-            getPasswordDialog().setVisible(true);
-            if (getPasswordDialog().wasCancelled()) return;
+        
+        OAPasswordDialog dlgPw; 
+        if (button instanceof OAButton) {
+            dlgPw = ((OAButton) button).getPasswordDialog();
+        }
+        else {
+            dlgPw = getPasswordDialog();
+        }
+        if (dlgPw != null) {
+            dlgPw.setVisible(true);
+            if (dlgPw.wasCancelled()) return;
         }
         
         if (!beforeActionPerformed()) return;
@@ -1440,36 +1448,81 @@ public class ButtonController extends JFCController implements ActionListener {
      */
     public void setPasswordDialog(OAPasswordDialog dlg) {
         this.dlgPassword = dlg;
+        bCreatedPasswordDialog = false;
+        if (dlgPassword != null) {
+            if (button instanceof OAButton) {
+                ((OAButton) button).setPasswordProtected(true);
+            }
+            else setPasswordProtected(true);
+        }
     }
     public OAPasswordDialog getPasswordDialog() {
-        if (this.dlgPassword == null) return this.dlgPassword;; 
-        if (this.password == null) return null;
+        if (this.dlgPassword != null) return this.dlgPassword;; 
+
+        if (button instanceof OAButton) {
+            OAButton ob = (OAButton) button;
+            if (!ob.getPasswordProtected()) return null;
+        }
+        else {
+            if (!getPasswordProtected()) return null;
+        }
             
-        bPasswordWasSetToCreateDlg = true;
-        
-//qqqqqqqqqqqqqqqqqqqqqq        
-//        dlgPassword = new OAPasswordDialog(
+
+        bCreatedPasswordDialog = true;
+        dlgPassword = new OAPasswordDialog(SwingUtilities.getWindowAncestor(this.button), "Enter Password") {
+            @Override
+            protected boolean isValidPassword(String pw) {
+                if (pw == null) return false;
+                
+                String s;
+                if (button instanceof OAButton) {
+                    s = ((OAButton) button).getSHAHashPassword();
+                }
+                else {
+                    s = getSHAHashPassword();
+                }
+                return pw.equals(s);
+            }
+        };
         
         return this.dlgPassword;
     }
-    
 
+    private boolean bPasswordProtected;
     private String password;
-    private boolean bPasswordWasSetToCreateDlg;
+    private boolean bCreatedPasswordDialog;
+    
     /**
-     * 
-     * @param pw SHAHash encryted password
+     * @param pw encrypted password use SHAHash
      * @see OAString#getSHAHash(String) 
      */
     public void setSHAHashPassword(String pw) {
         this.password = pw;
-        if (bPasswordWasSetToCreateDlg) {
+        if (pw == null && bCreatedPasswordDialog) {
             this.dlgPassword = null;
-            bPasswordWasSetToCreateDlg = false;
+            bCreatedPasswordDialog = false;
+        }
+
+        if (pw != null) {
+            if (button instanceof OAButton) {
+                ((OAButton) button).setPasswordProtected(true);
+            }
+            else setPasswordProtected(true);
         }
     }
     public String getSHAHashPassword() {
         return password;
+    }
+
+    public void setPasswordProtected(boolean b) {
+        bPasswordProtected = b;
+        if (!bPasswordProtected && bCreatedPasswordDialog) {
+            this.dlgPassword = null;
+            bCreatedPasswordDialog = false;
+        }
+    }
+    public boolean getPasswordProtected() {
+        return bPasswordProtected;
     }
     
 }

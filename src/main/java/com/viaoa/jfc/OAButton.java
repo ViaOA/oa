@@ -905,4 +905,27 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         return control.getPasswordDialog();
     }
 
+    /**
+     * Used to password protect the command. 
+     * Note: this can be overwritten, to be called when the user input pw needs to be verified.  
+     * To do this, then call setPasswordProtected(true)
+     * 
+     * @param pw SHAHash encryted password
+     * @see OAString#getSHAHash(String)
+     * @see #setPasswordProtected
+     */
+    public void setSHAHashPassword(String pw) {
+        control.setSHAHashPassword(pw);
+    }
+    public String getSHAHashPassword() {
+        return control.getSHAHashPassword();
+    }
+
+    public void setPasswordProtected(boolean b) {
+        control.setPasswordProtected(b);
+    }
+    public boolean getPasswordProtected() {
+        return control.getPasswordProtected();
+    }
+    
 }
