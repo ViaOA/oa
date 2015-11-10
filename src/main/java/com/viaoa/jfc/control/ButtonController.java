@@ -1434,15 +1434,42 @@ public class ButtonController extends JFCController implements ActionListener {
     }
     
 
+    private OAPasswordDialog dlgPassword;
     /**
      * Used to set the password that enables the user to run the command.
      */
-    private OAPasswordDialog dlgPassword;
     public void setPasswordDialog(OAPasswordDialog dlg) {
         this.dlgPassword = dlg;
     }
     public OAPasswordDialog getPasswordDialog() {
+        if (this.dlgPassword == null) return this.dlgPassword;; 
+        if (this.password == null) return null;
+            
+        bPasswordWasSetToCreateDlg = true;
+        
+//qqqqqqqqqqqqqqqqqqqqqq        
+//        dlgPassword = new OAPasswordDialog(
+        
         return this.dlgPassword;
+    }
+    
+
+    private String password;
+    private boolean bPasswordWasSetToCreateDlg;
+    /**
+     * 
+     * @param pw SHAHash encryted password
+     * @see OAString#getSHAHash(String) 
+     */
+    public void setSHAHashPassword(String pw) {
+        this.password = pw;
+        if (bPasswordWasSetToCreateDlg) {
+            this.dlgPassword = null;
+            bPasswordWasSetToCreateDlg = false;
+        }
+    }
+    public String getSHAHashPassword() {
+        return password;
     }
     
 }

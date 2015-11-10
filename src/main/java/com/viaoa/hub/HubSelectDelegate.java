@@ -489,12 +489,12 @@ public class HubSelectDelegate {
         Object objAO = thisHub.getAO();
         OASelect sel = getSelect(thisHub);
 
+        final Object master = thisHub.getMasterObject();
         if (sel != null) {
             cancelSelect(thisHub, false);  // dont remove select from hub
             sel.reset();
         }
         else {
-            Object master = thisHub.getMasterObject();
             if (master == null) return false;
             OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
             if (li == null) return false;
@@ -517,15 +517,18 @@ public class HubSelectDelegate {
             hs.add(objx);
             thisHub.add(objx);
         }
+        sel.setDirty(false);
+
         // check to see if any objects need to be removed from the original list
-        for (Object obj : thisHub) {
-            if (!hs.contains(obj)) {
-                thisHub.remove(obj);
+        if (master == null) {
+            for (Object obj : thisHub) {
+                if (!hs.contains(obj)) {
+                    thisHub.remove(obj);
+                }
             }
         }
         
         thisHub.setAO(objAO);
-        sel.setDirty(false);
         return true;
 	}
 }
