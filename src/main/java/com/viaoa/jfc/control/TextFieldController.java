@@ -438,7 +438,6 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
         
         if (activeObject == null) return;
         String text = textField.getText();
-        if (text.equals(prevText)) return;
         
         if (text != null && conversion != 0) {
             String hold = text;
@@ -458,6 +457,7 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
             }
             if (hold != text) textField.setText(text);
         }
+        if (text.equals(prevText)) return;
         
         try {
             Object convertedValue = getConvertedValue(text, null); // dont include format - it is for display only

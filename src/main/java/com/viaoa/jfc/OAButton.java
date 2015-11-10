@@ -20,6 +20,7 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 
 import com.viaoa.jfc.control.*;
+import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.table.OAButtonTableCellEditor;
 import com.viaoa.jfc.table.OATableComponent;
 import com.viaoa.object.OAObject;
@@ -887,6 +888,9 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         control.setAnytime(b);
     }
     
+    /**
+     * Component to display in the processing window 
+     */
     public void setDisplayComponent(JComponent comp) {
         control.setDisplayComponent(comp);
     }
@@ -894,5 +898,11 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         return control.getDisplayComponent();
     }
 
-    
+    public void setPasswordDialog(OAPasswordDialog dlg) {
+        control.setPasswordDialog(dlg);
+    }
+    public OAPasswordDialog getPasswordDialog() {
+        return control.getPasswordDialog();
+    }
+
 }

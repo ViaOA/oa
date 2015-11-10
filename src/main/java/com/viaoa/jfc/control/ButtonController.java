@@ -39,6 +39,7 @@ import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.util.*;
 import com.viaoa.jfc.*;
 import com.viaoa.jfc.OAButton.ButtonEnabledMode;
+import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.jfc.table.*;
 
@@ -47,7 +48,8 @@ import com.viaoa.jfc.table.*;
  * 
  * 
     Note:  order of tasks for actionPerformed event:  
-    actionPerformed, 
+    actionPerformed,
+        [password dialog]
         beforeActionPerformed   -- pretask, or cancel
         [confirmActionPerformed]  -- user confirm or cancel
         [getFile Save/Open] 
@@ -370,6 +372,11 @@ public class ButtonController extends JFCController implements ActionListener {
         default_actionPerformed(e);
     }
     public void default_actionPerformed(ActionEvent e) {
+        if (getPasswordDialog() != null) {
+            getPasswordDialog().setVisible(true);
+            if (getPasswordDialog().wasCancelled()) return;
+        }
+        
         if (!beforeActionPerformed()) return;
         if (button == null || !button.isEnabled()) return;
         if (!confirmActionPerformed()) return;
@@ -1426,5 +1433,16 @@ public class ButtonController extends JFCController implements ActionListener {
         return compDisplay;
     }
     
+
+    /**
+     * Used to set the password that enables the user to run the command.
+     */
+    private OAPasswordDialog dlgPassword;
+    public void setPasswordDialog(OAPasswordDialog dlg) {
+        this.dlgPassword = dlg;
+    }
+    public OAPasswordDialog getPasswordDialog() {
+        return this.dlgPassword;
+    }
     
 }
