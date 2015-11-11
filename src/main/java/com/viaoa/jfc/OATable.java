@@ -1737,6 +1737,22 @@ if (!getKeepSorted()) hub.cancelSort();
                     if (x >= 0) addRowSelectionInterval(x, x);
                 }
             }
+            OATable t = OATable.this;
+            if (t != null) {
+                t.repaint();
+                JTableHeader th = t.getTableHeader();
+                if (th != null) th.repaint();
+                OATable tx = t.getLeftTable();
+                if (tx != null) {
+                    th = tx.getTableHeader();
+                    if (th != null) th.repaint();
+                }
+                tx = t.getRightTable();
+                if (tx != null) {
+                    th = tx.getTableHeader();
+                    if (th != null) th.repaint();
+                }
+            }
         }
 
         public void fireTableRowsUpdated(int pos1, int pos2) {

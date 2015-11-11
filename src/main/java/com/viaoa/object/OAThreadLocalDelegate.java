@@ -73,6 +73,7 @@ public class OAThreadLocalDelegate {
 	}
 	
 	// Transaction -------------------
+    private static long msTransaction;
 	/**
 	 * Called by OATransaction.start() 
 	 * Used internally by classes that work with the transaction.
@@ -88,8 +89,14 @@ public class OAThreadLocalDelegate {
 	    else {
 	        x = TotalTransaction.decrementAndGet();
 	    }
-        if (x > 7 || x < 0) LOG.warning("TotalTransaction ="+x);
+        if (x > 7 || x < 0) {
+            msTransaction = throttleLOG("TotalTransaction ="+x, msTransaction);
+        }
 	}
+	
+
+	
+	
 	public static OATransaction getTransaction() {
 	    if (TotalTransaction.get() == 0) return null; 
         OAThreadLocal ti = getThreadLocal(false);
@@ -118,6 +125,7 @@ public class OAThreadLocalDelegate {
 		// LOG.finer(""+b);
 		setLoadingObject(OAThreadLocalDelegate.getThreadLocal(b), b);
 	}
+    private static long msLoadingObject;
 	protected static void setLoadingObject(OAThreadLocal ti, boolean b) {
 		if (ti == null) return;
 		int x,x2;
@@ -130,7 +138,7 @@ public class OAThreadLocalDelegate {
     		x2 = OAThreadLocalDelegate.TotalIsLoadingObject.decrementAndGet();
 		}
         if (x > 20 || x < 0 || x2 > 20 || x2 < 0) {
-            LOG.warning("TotalIsLoadingObject="+x2+", ti="+x);
+            msLoadingObject = throttleLOG("TotalIsLoadingObject="+x2+", ti="+x, msLoadingObject);
         }
 	}
 	
@@ -148,6 +156,7 @@ public class OAThreadLocalDelegate {
 		}
 		return mode;
 	}
+    private static long msObjectCacheAddMode;
 	public static void setObjectCacheAddMode(int mode) {
 		// LOG.finer("mode="+mode);
 		if (mode == OAObjectCacheDelegate.DefaultAddMode) mode = 0;
@@ -164,7 +173,9 @@ public class OAThreadLocalDelegate {
 			}
 			else {
 			    int x = OAThreadLocalDelegate.TotalObjectCacheAddMode.incrementAndGet();
-	            if (x > 15) LOG.warning("TotalObjectCacheAddMode ="+x);
+	            if (x > 15) {
+	                msObjectCacheAddMode = throttleLOG("TotalObjectCacheAddMode ="+x, msObjectCacheAddMode);
+	            }
 			}
 		} 
 	}
@@ -199,6 +210,7 @@ public class OAThreadLocalDelegate {
 		// LOG.finer("OAObjectSerializer="+(si != null));
 		setObjectSerializer(OAThreadLocalDelegate.getThreadLocal(si != null), si);
 	}
+    private static long msObjectSerializer;
 	protected static void setObjectSerializer(OAThreadLocal ti, OAObjectSerializer si) {
 	    if (ti == null) return;
 		if (ti.objectSerializer == si) return;
@@ -214,7 +226,9 @@ public class OAThreadLocalDelegate {
 			else {
 			    x = OAThreadLocalDelegate.TotalObjectSerializer.decrementAndGet();
 			}
-            if (x > 15 || x < 0) LOG.warning("TotalObjectSerializeInterface ="+x);
+            if (x > 15 || x < 0) {
+                msObjectSerializer = throttleLOG("TotalObjectSerializeInterface ="+x, msObjectSerializer);
+            }
 		}
 	}
 	
@@ -252,6 +266,7 @@ public class OAThreadLocalDelegate {
         // LOG.finer(""+b);
         setSkipObjectInitialize(OAThreadLocalDelegate.getThreadLocal(b), b);
     }
+    private static long msSkipObjectInitialize;
 	public static void setSkipObjectInitialize(OAThreadLocal ti, boolean b) {
 		if (ti == null) return;
 		int x, x2;
@@ -263,7 +278,9 @@ public class OAThreadLocalDelegate {
             x = --ti.skipObjectInitialize;
 			x2 = OAThreadLocalDelegate.TotalSkipObjectInitialize.decrementAndGet();
 		}
-        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) LOG.warning("TotalSkipInitialize ="+x2+", ti="+x);
+        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) {
+            msSkipObjectInitialize = throttleLOG("TotalSkipInitialize ="+x2+", ti="+x, msSkipObjectInitialize);
+        }
 	}
 	
 
@@ -289,6 +306,7 @@ public class OAThreadLocalDelegate {
 		// LOG.finest(""+b);
 		setSuppressCSMessages(OAThreadLocalDelegate.getThreadLocal(b), b);
 	}
+    private static long msSuppressCSMessages;
 	public static void setSuppressCSMessages(OAThreadLocal ti, boolean b) {
 		if (ti == null) return;
 		int x, x2;
@@ -301,7 +319,7 @@ public class OAThreadLocalDelegate {
 			x2 = OAThreadLocalDelegate.TotalSuppressCSMessages.decrementAndGet();
 		}
         if (x > 30 || x < 0 || x2 > 50 || x2 < 0) {
-            LOG.warning("TotalSuppressCSMessages ="+x2+", ti="+x);
+            msSuppressCSMessages = throttleLOG("TotalSuppressCSMessages ="+x2+", ti="+x, msSuppressCSMessages);
         }
 	}
 	
@@ -326,6 +344,7 @@ public class OAThreadLocalDelegate {
 		// LOG.finer(""+b);
 		setSkipFirePropertyChange(OAThreadLocalDelegate.getThreadLocal(b), b);
 	}
+    private static long msSkipFirePropertyChange;
 	public static void setSkipFirePropertyChange(OAThreadLocal ti, boolean b) {
 		if (ti == null) return;
 		int x, x2;
@@ -337,7 +356,9 @@ public class OAThreadLocalDelegate {
 			x = --ti.skipFirePropertyChange;
 			x2 = OAThreadLocalDelegate.TotalSkipFirePropertyChange.decrementAndGet();
 		}
-        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) LOG.warning("SkipFirePropertyChange ="+x2+", ti="+x);
+        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) {
+            msSkipFirePropertyChange = throttleLOG("SkipFirePropertyChange ="+x2+", ti="+x, msSkipFirePropertyChange);
+        }
 	}
 
 	
@@ -390,13 +411,16 @@ public class OAThreadLocalDelegate {
 		for (int i=0; i<x; i++) if (ti.deleting[i] == obj) return true;
 		return false;
 	}
+    private static long msDeleting;
 	public static void setDeleting(Object obj, boolean b) {
 		// LOG.finer(""+b);
         if (obj == null) return;
 
 		if (b) {
 		    vecDeleting.add(obj);
-	        if (vecDeleting.size() > 25) LOG.warning("TotalDeleting ="+vecDeleting.size());
+	        if (vecDeleting.size() > 25) {
+	            msDeleting = throttleLOG("TotalDeleting ="+vecDeleting.size(), msDeleting);
+	        }
 		}
         else vecDeleting.remove(obj);
 
@@ -423,7 +447,9 @@ public class OAThreadLocalDelegate {
 				}
 			}
 			x = OAThreadLocalDelegate.TotalDelete.incrementAndGet();
-	        if (x > 100) LOG.warning("TotalDelete ="+x);
+	        if (x > 100) {
+	            msDeleting = throttleLOG("TotalDelete ="+x, msDeleting);
+	        }
 		}
 		else {
 			if (ti.deleting == null) return;
@@ -466,6 +492,7 @@ public class OAThreadLocalDelegate {
         // LOG.finer(""+b);
         setAssigningObjectKey(OAThreadLocalDelegate.getThreadLocal(b), b);
     }
+    private static long msAssigningObjectKey;
     protected static void setAssigningObjectKey(OAThreadLocal ti, boolean b) {
         if (ti == null) return;
         int x,x2;
@@ -477,7 +504,9 @@ public class OAThreadLocalDelegate {
             x = --ti.assigningObjectKey;
             x2 = OAThreadLocalDelegate.TotalIsAssigningObjectKey.decrementAndGet();
         }
-        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) LOG.warning("TotalIsAssigningObjectKey ="+x2+", ti="+x);
+        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) {
+            msAssigningObjectKey = throttleLOG("TotalIsAssigningObjectKey ="+x2+", ti="+x, msAssigningObjectKey);
+        }
     }
 	
     
@@ -492,6 +521,7 @@ public class OAThreadLocalDelegate {
         return OAArray.contains(ti.flags, obj);
     }
     
+    private static long msFlag;
     public static void setFlag(Object obj) {
         setFlag(OAThreadLocalDelegate.getThreadLocal(true), obj);
     }
@@ -499,7 +529,7 @@ public class OAThreadLocalDelegate {
         if (ti == null) return;
         ti.flags = OAArray.add(Object.class, ti.flags, obj);
         if (ti.flags != null && ti.flags.length > 20) {
-            LOG.warning("OAThreadLocal.tiFlags.length ="+ti.flags.length);
+            msFlag = throttleLOG("OAThreadLocal.tiFlags.length ="+ti.flags.length, msFlag);
         }
     }
     
@@ -828,6 +858,7 @@ static volatile int unlockCnt;
         // LOG.finer(""+b);
         setHubMergerIsChanging(OAThreadLocalDelegate.getThreadLocal(b), b);
     }
+    private static long msHubMergerIsChanging;
     protected static void setHubMergerIsChanging(OAThreadLocal ti, boolean b) {
         if (ti == null) return;
         int x;
@@ -841,7 +872,7 @@ static volatile int unlockCnt;
             x = OAThreadLocalDelegate.TotalHubMergerChanging.decrementAndGet();
         }
         if (x > 200 || x < 0) {
-            LOG.warning("TotalHubMergerChanging="+x);
+            msHubMergerIsChanging = throttleLOG("TotalHubMergerChanging="+x, msHubMergerIsChanging);
         }
     }
 
@@ -871,6 +902,7 @@ static volatile int unlockCnt;
     public static void startUndoable(String compoundName) {
         startUndoable(OAThreadLocalDelegate.getThreadLocal(true), compoundName);
     }
+    private static long msUndoable;
     protected static void startUndoable(OAThreadLocal ti, String compoundName) {
         if (ti == null) return;
         if (compoundName == null) compoundName = "changes";
@@ -880,7 +912,7 @@ static volatile int unlockCnt;
 
         int x = OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.getAndIncrement();
         if (x > 50 || x < 0) {
-            LOG.warning("TotalCaptureUndoablePropertyChanges="+x+", ti.createUndoablePropertyChanges="+ti.createUndoablePropertyChanges);
+            msUndoable = throttleLOG("TotalCaptureUndoablePropertyChanges="+x+", ti.createUndoablePropertyChanges="+ti.createUndoablePropertyChanges, msUndoable);
         }
     }
     public static void endUndoable() {
@@ -901,6 +933,7 @@ static volatile int unlockCnt;
         // LOG.finer(""+b);
         setCreateUndoablePropertyChanges(OAThreadLocalDelegate.getThreadLocal(b), b);
     }
+    private static long msCreateUndoablePropertyChanges;
     protected static void setCreateUndoablePropertyChanges(OAThreadLocal ti, boolean b) {
         if (ti == null) return;
         if (ti.compoundUndoableName != null) return;
@@ -913,10 +946,9 @@ static volatile int unlockCnt;
             x = OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.decrementAndGet();
         }
         if (x > 50 || x < 0) {
-            LOG.warning("TotalCaptureUndoablePropertyChanges="+x+", ti.createUndoablePropertyChanges="+ti.createUndoablePropertyChanges);
+            msCreateUndoablePropertyChanges = throttleLOG("TotalCaptureUndoablePropertyChanges="+x+", ti.createUndoablePropertyChanges="+ti.createUndoablePropertyChanges, msCreateUndoablePropertyChanges);
         }
     }
-/*qqqqqqqqqqqqqqq*/
     
     
     
@@ -939,6 +971,7 @@ static volatile int unlockCnt;
         setSendingEvent(OAThreadLocalDelegate.getThreadLocal(b), b);
     }
     private static boolean bSendingEventReset = false;
+    private static long msSendingEvent;
     protected static void setSendingEvent(OAThreadLocal ti, boolean b) {
         if (ti == null) return;
         int x;
@@ -954,7 +987,7 @@ static volatile int unlockCnt;
             x = OAThreadLocalDelegate.TotalIsSendingEvent.decrementAndGet();
         }
         if (x > 100 || x < 0 || bSendingEventReset) {
-            LOG.warning("TotalIsSendingEvent="+x);
+            msSendingEvent = throttleLOG("TotalIsSendingEvent="+x, msSendingEvent);
             if (x == 0) bSendingEventReset = false;
             else bSendingEventReset = true;
         }
@@ -1002,6 +1035,7 @@ static volatile int unlockCnt;
     public static void setHubListenerTree(boolean b) {
         setHubListenerTree(OAThreadLocalDelegate.getThreadLocal(b), b);
     }
+    private static long msHubListenerTree;
     protected static void setHubListenerTree(OAThreadLocal ti, boolean b) {
         if (ti == null) return;
         int x;
@@ -1015,7 +1049,7 @@ static volatile int unlockCnt;
             x = OAThreadLocalDelegate.TotalHubListenerTreeCount.decrementAndGet();
         }
         if (x > 20 || x < 0) {
-            LOG.warning("TotalHubListenerTreeCount="+x);
+            msHubListenerTree = throttleLOG("TotalHubListenerTreeCount="+x, msHubListenerTree);
         }
     }
 
@@ -1048,13 +1082,14 @@ static volatile int unlockCnt;
     public static void resetGetDetailHub(Hub h) {
         resetGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h);
     }
+    private static long msGetDetailHub;
     protected static Hub setGetDetailHub(OAThreadLocal ti, Hub hub) {
         if (ti == null) return null;
         Hub hubx = ti.getDetailHub;
         ti.getDetailHub = hub;
         int x = OAThreadLocalDelegate.TotalGetDetailHub.getAndIncrement();
         if (x > 50 || x < 0) {
-            LOG.warning("TotalGetDetailHub="+x);
+            msGetDetailHub = throttleLOG("TotalGetDetailHub="+x, msGetDetailHub);
         }
         return hubx;
     }
@@ -1062,9 +1097,29 @@ static volatile int unlockCnt;
         if (ti == null) return;
         ti.getDetailHub = hub;
         int x = OAThreadLocalDelegate.TotalGetDetailHub.decrementAndGet();
-        if (x > 25 || x < 0) LOG.warning("TotalGetDetailHub="+x);
+        if (x > 25 || x < 0) {
+            msGetDetailHub = throttleLOG("TotalGetDetailHub="+x, msGetDetailHub);
+        }
     }
 
+    
+    // 20151111
+    private static long msThrottleStackTrace;
+    public static long throttleLOG(String msg, long msLast) {
+        long ms = System.currentTimeMillis();
+        if (ms > msLast + 5000) {
+            LOG.warning(msg);
+            
+            if (ms > msThrottleStackTrace + 30000) {
+                LOG.warning("ThreadLocalDelegate.stackTraces\n"+getAllStackTraces());
+                msThrottleStackTrace = ms;
+            }
+        }
+        else ms = msLast;
+        return ms;
+    }
+    
+    
     public static String getAllStackTraces() {
         String result = "";
         String s = "DumpAllStackTraces "+(new OADateTime());

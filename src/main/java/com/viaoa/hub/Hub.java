@@ -336,6 +336,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
             s += "->Shared:" + datau.getSharedHub()._toString(cnt+1, alHub);
         }
         else {
+            /* 20151111 dont call select methods, since this could cause a deadlock
+             *  ** alling toString should not have any side effects
             OASelect sel = data.getSelect();
             if (sel != null) {
                 boolean b = sel.isCounted();
@@ -354,8 +356,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
                 }
             }
             else {
-                s += ",size:" + getSize();
-            }
+            */
+                s += ",csize:" + getCurrentSize();
+            //}
 
             HubDataMaster dm = HubDetailDelegate.getDataMaster(this);
             if (dm.masterHub != null) {

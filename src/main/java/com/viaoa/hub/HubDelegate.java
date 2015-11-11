@@ -456,8 +456,6 @@ public class HubDelegate {
         return thisHub.data.getAutoMatch();
     }
 
-	
-	
     public static int getSize(Hub thisHub) {
         if (HubSelectDelegate.isMoreData(thisHub)) {
             if (!HubSelectDelegate.isCounted(thisHub)) {

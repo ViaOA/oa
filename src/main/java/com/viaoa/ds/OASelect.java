@@ -556,7 +556,7 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
     /**
         Returns next object loaded from select, else null if no other objects are available.
     */
-    public synchronized TYPE next()  {
+    public TYPE next()  {
         // 20120617 added hubFilter
         TYPE obj;
         for (;;) {
@@ -567,7 +567,7 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
         }
         return obj;
     }
-    public TYPE _next()  {
+    public synchronized TYPE _next()  {
         if (!bHasBeenStarted) {
             select();
         }
