@@ -1111,7 +1111,7 @@ static volatile int unlockCnt;
             LOG.warning(msg);
             
             if (ms > msThrottleStackTrace + 30000) {
-                LOG.warning("ThreadLocalDelegate.stackTraces\n"+getAllStackTraces());
+                if (msThrottleStackTrace != 0) LOG.warning("ThreadLocalDelegate.stackTraces\n"+getAllStackTraces());
                 msThrottleStackTrace = ms;
             }
         }
