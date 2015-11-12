@@ -11,7 +11,10 @@
 package com.viaoa.servlet;
 
 import java.io.*;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -126,14 +129,32 @@ public class JNLPServlet extends HttpServlet
                 //   find:  <argument>JWSCLIENT</argument>            
                 pos = txt.indexOf("JWSCLIENT");
                 String appTitle = null;
+                
                 if (pos >= 0) {
                     s = "";
+
+                    HashSet<String> hs = null;
+                    Enumeration enumx = req.getAttributeNames();
+                    for ( ; enumx.hasMoreElements(); ) {
+                        String n = (String) enumx.nextElement();
+                        if (n == null) continue;
+                        String v = (String) req.getAttribute(n);
+                        s += n+"="+v+"</argument><argument>";
+                        if (hs == null) hs = new HashSet<String>();
+                        hs.add(n.toUpperCase());
+                    }
+                    
                     for (Entry<String, String> entry : hmNameValue.entrySet()) {
                         if ("jnlp.title".equalsIgnoreCase(entry.getKey())) {
                             appTitle = entry.getValue();
                         }
-                        s += entry.getKey()+"="+entry.getValue()+"</argument><argument>";
+                        String n = entry.getKey();
+                        if (n == null) continue;
+                        if (hs != null && hs.contains(n.toUpperCase())) continue; // overwritten from query string 
+                        
+                        s += n+"="+entry.getValue()+"</argument><argument>";
                     }
+                    
                     txt = txt.substring(0, pos) + s + txt.substring(pos);
                 }      
                 
