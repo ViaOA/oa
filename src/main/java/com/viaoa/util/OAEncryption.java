@@ -11,6 +11,7 @@
 package com.viaoa.util;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.*;
 
 import javax.crypto.*;
@@ -181,9 +182,40 @@ public class OAEncryption {
         
     }
 
+    // same that is used for "FileZilla Server.xml"
+    public static String getMD5Hash(String input){
+        MessageDigest md = null;
+        
+        try {
+            md = MessageDigest.getInstance("MD5");
+        }
+        catch(NoSuchAlgorithmException e){
+            System.out.println("No MD5");
+        }
+        try {
+          md.update(input.getBytes(), 0, input.length());
+        }
+        catch(Exception e)
+        {
+            System.out.println("Encoding error.");
+        }
+        
+        byte raw[] = md.digest();
+        
+        String hash = new BigInteger(1, raw).toString(16);
+   
+        if (hash.length() == 31) hash = "0" + hash;
+        return hash;
+    }
+    
     
     public static void main(String[] args) throws Exception {
         String s = "";
+        
+        String smd = getMD5Hash("emp3364");
+        
+        smd = getMD5Hash("vince1");
+       
         
         for (int i=0; args != null && i < args.length; i++) {
             s += args[i];
