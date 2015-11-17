@@ -1,5 +1,4 @@
 
-
 20151115
 
 on godaddy viaoa website
@@ -7,13 +6,12 @@ on vjftp 63.243.14.115
 
 Download filezilla-project.org/
 version 0.9.53
-install direcory
-C:\Program Files (x86)\FileZilla Server
+install directory:
+    C:\Program Files (x86)\FileZilla Server
 
 installed as webservice
    start: "C:\Program Files (x86)\FileZilla Server\FileZilla Server.exe" /start  
    stop:  "C:\Program Files (x86)\FileZilla Server\FileZilla Server.exe" /stop  
-
 
 on vj, added desktop icons to reload config file
    "C:\Program Files (x86)\FileZilla Server\FileZilla Server.exe" /reload-config  
