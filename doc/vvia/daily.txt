@@ -1,0 +1,6465 @@
+
+
+
+======vvvvvvvvvvvvvvvvvvvvv===============
+index: ======== HOME/HISTORY/SHOPPING/DRIVE/THINK ========
+
+
+======== HISTORY ========
+======== HISTORY ========
+======== HISTORY ========
+======== HISTORY ========
+
+ICE
+5660 New Northside Drive
+13th Floor
+Atlanta, GA 30328
+
+
+Meeting ID: 80011
+Passcode: 11111
+Atlanta 1-770-618-8888
+Chicago 1-312-596-4412
+
+tracie work
+    770-736-2285
+
+
+================================
+
+sudo su - tsacadmin  
+
+20130516 Thur
+installer
+    postinstallHook.sh did not get deleted
+    dont need idl.jar
+    dont need icemessage.jar ?
+
+
+20130517 Friday
+
+create gsmr-common
+
+gsmrtest project
+    get from orig
+
+code checkin
+
+remote multiplex, 
+    run tests
+    use short instead of name? No
+    merge 06 into main
+    test broadcast functionality
+    
+admin client
+    remote interface
+    oa model
+        use gsmr model
+    gsmr serve bind
+        admin remote interface
+    create remote GSMR interface
+        used to populate oa model        
+
+
+20130520 Monday    
+met with Qian on testing with SDS, ORM and Shane
+got GSMR installed on Dev4
+can access dv4 operator, sent email
+
+
+20130521 Tuesay
+Truck
+    I'll pay for tires and install
+    half can come from savings
+    K can have the money from selling orig wheels (on Craigs list or ebay)
+    no lift that replaces springs or shocks
+    he can have the truck when he starts his Junior semster.
+    restrictions
+        must get permission, and let us know where he is going, etc
+        no off road
+    if he wants to buy his own
+        he can use half of his savings
+        buy his own insurance
+
+update icespace about GSMR client
+    12.720
+    LT install
+        ll-lt-gsmr-01
+    test app
+    ORMR
+        cpe.properties
+        dormant mode
+    SDS
+        uses ormr
+
+running GSMRTest
+    StartupController
+        creates GSMRClient, MSClient
+            needs to have IOR registered
+    
+email about log files for GSMR Test
+
+gsmrtest install
+    pom, etc
+    separate module
+
+DNS    
+    Name: gss.dv4.rv.intcx.net
+    Address: 10.3.53.48
+
+need a way to remove StoC vsockets
+    server has an Array per Session
+        will keep 2 in list, others will be closed
+    client will only only create when server requests a new StoC vsocket
+    
+20130522 Wednesday
+test remotemultiplexer
+    multiple threads
+
+deadlock in remotemultiplexer
+    s2c arraylist lock and write lock
+        fixed
+            
+20130523 Thursday
+logger to start new file on date change
+
+multiplexer throttle
+    add throttle to multiplexer
+        on real outputstream
+            in mb/sec
+                ex: 100  => max to be 100mb per second
+                    divide into 100ms 100mb/10 => 10mb per 100ms
+
+
+20130524 Friday
+    UDP server/client discovery
+
+20130528 Tues
+GSMR
+    version 12.700.05 release
+    
+20130530 Thur
+    
+GSMR Admin
+   added GSMRController
+   
+20130604 Tuesday
+
+
+GSMR GCI connection staggering
+
+Debugging SDS in platts env
+server: 10.4.148.80
+logs; /var/opt/ice_sds/logs/fix/router
+
+  
+sdsServer.sh
+
+envSetup.sh
+    DEBUG="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+    JAVA="${JAVA_HOME}/bin/java ${DEBUG} ${GC_FLAGS}"
+
+Night call:
+pdk-pl2-sdmr-01        
+
+
+/var/opt/router/sdsServer.sh start keepior
+/var/opt/ice_sds/logs/fix/router
+
+pdk-pl2-sdmr-01
+4353
+Platts T2 Ethanol Barges
+SDS server in platts
+10.4.148.80
+"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
+
+
+20130605 Wednesday
+
+MR cpe.props for GSMR
+    gsmr.requests.enabled=true 
+    gsmr.server=ll-lt-gsmr-01
+    gsmr.port=9000
+
+ll-lt-gsmr-01 10.7.146.24
+gss.lt.ll.intcx.net: 10.7.146.101
+
+DNS
+    short name: gss.am.intcx.net
+    dns ==> gss.am.rv.intcx.net
+    resolver: enter "gss"
+
+check solaris memory/cpu for gsmr server
+process 15779
+prstat -mL -p15779 5 (once every 5 seconds)    
+top
+
+
+20120606 Thur
+
+GSMR server throttle limit
+
+GSMR RequestInfo
+    add acutual gsmr server hostname
+
+
+20120607 Fri
+get AT and ORD env files setup
+Move crontrab from postinstall into the POm
+
+20120611
+gsmr 12.700.06
+deploy to dev2
+staging: https://pdk-np-mind-01/view/Staging/
+bounce tool:  PW cpex5!!
+
+
+2120613
+CR for prod
+    Verify with Bob Tucker
+        GSMR ini data for GS
+            EnvironmentName = ord
+            ShortEnvironmentName = pr
+            gemstone.Host = 10.6.200.72
+            gemstone.Name = ICE
+
+
+20120618 Tuesday
+
+GSMR request log
+Date|Time|fromId|fromHost|msgId|iflId|nsQueue|nsGsTime|nsTotalTime|message[|exception][|error]
+06/18|09:42:17.852|987654777|rv-wk-vvia-10|2120972483476586496|0|129471|657642111|657890757|requestAllMarketTypes, functionId=322,
+06/18|09:42:19.228|987654777|rv-wk-vvia-10|2120972483476586497|1|134759|15089469|15254149|requestAllMarketTypes, functionId=322,
+06/18|09:42:19.749|987654777|rv-wk-vvia-10|2120972483476586498|2|125720|12908753|13063876|requestAllMarketTypes, functionId=322,
+06/18|09:42:20.268|987654777|rv-wk-vvia-10|2120972483476586499|3|85298|12907707|13023851|requestAllMarketTypes, functionId=322,
+06/18|09:42:20.787|987654777|rv-wk-vvia-10|2120972483476586500|4|133991|13029658|13193228|requestAllMarketTypes, functionId=322,
+06/18|09:42:21.306|987654777|rv-wk-vvia-10|2120972483476586501|5|139291|15307034|15477872|requestAllMarketTypes, functionId=322,
+06/18|09:42:21.827|987654777|rv-wk-vvia-10|2120972483476586502|6|134250|12625542|12791435|requestAllMarketTypes, functionId=322,
+06/18|09:42:22.345|987654777|rv-wk-vvia-10|2120972483476586503|7|142334|12489402|12662187|requestAllMarketTypes, functionId=322,
+06/18|09:42:22.863|987654777|rv-wk-vvia-10|2120972483476586504|8|145605|12800355|12975289|requestAllMarketTypes, functionId=322,
+
+
+MS request log
+Received (EDT),Router,User,Request,Arguments,Error,Retries,Batch,Performer ID,Session ID,Txn depth,Queue depth,Queue (ms),Total Processing (ms),Before Commit Processing (ms),Commit Processing (ms),Notify Processing (ms),Reply Size,Msg ID
+06/07/2013 04:57:14.709,Router_ST_OR01_RALL_01-48023,sjhaveri2,#requestIsUserLoggedIntoRouter:routerName:loginType:,UserID: sjhaveri2; routerName: Router_ST_OR01_RALL_01; type: webice,,0,724,2,131,1,0,0,15,0,-1,-1,26,724
+06/07/2013 04:57:18.968,Router_ST_PO02_OALL_01-41562,tskirrow,#requestIsUserLoggedIntoRouter:routerName:loginType:,UserID: tskirrow; routerName: Router_ST_PO02_OALL_01; type: webice,,0,725,2,131,1,0,0,6,0,-1,-1,26,725
+06/07/2013 04:57:59.181,Router_ST_PD02_FALL_01-46840,sjhaveri2,#requestIsUserLoggedIntoRouter:routerName:loginType:,UserID: sjhaveri2; routerName: Router_ST_PD02_FALL_01; type: webice,,0,726,2,131,1,0,0,6,0,-1,-1,26,726
+06/07/2013 04:58:03.858,Router_ST_PO01_OALL_01-41580,sjhaveri2,#requestIsUserLoggedIntoRouter:routerName:loginType:,UserID: sjhaveri2; routerName: Router_ST_PO01_OALL_01; type: webice,,0,727,2,131,1,0,0,3,0,-1,-1,26,727
+06/07/2013 06:12:49.407,Router_ST_PD02_FALL_01-46840,lrand1,#requestIsUserLoggedIntoRouter:routerName:loginType:,UserID: lrand1; routerName: Router_ST_PD02_FALL_01; type: webice,,0,728,2,131,1,0,0,15,0,-1,-1,26,728
+
+
+Received (EDT):  06/07/2013 04:57:14.709,
+Router:          Router_ST_OR01_RALL_01-48023,
+User:            sjhaveri2,
+Request:         #requestIsUserLoggedIntoRouter:routerName:loginType:
+Arguments:       UserID: sjhaveri2; routerName: Router_ST_OR01_RALL_01; type: webice
+Error:           
+Retries:         0
+Batch:           724
+Performer ID:    2
+Session Id:      131
+Txn depth:       1
+Queue depth:     0
+Queue (ms):      0
+Total Processing (ms): 15
+Before Commit Processing (ms):  0
+Commit Processing (ms): -1
+Notify Processing (ms): -1
+Reply Size,:     26
+Msg ID:          724
+
+
+sds.staging.intcx.net port 80
+dhs.staging.intcx.net port 80
+ocs.staging.intcx.net port 80
+gss.staging.intcx.net port 80
+ibs.staging.intcx.net port 80
+
+telnet gss.st.pdk.intcx.net 80
+bounce: cpex5!!
+
+20130620
+
+helpdesk/h0td0gstand
+$nowBlind11
+N0npr@d
+gemdba
+
+send email to rakesh, jay, chris l about setting up GSMR in bounce tool
+
+
+20130621
+ServerFromId util
+
+remove getting serve number from gsmr.sh
+    put in serverFromIdUtil
+
+Rashmi
+    send sample client app
+    dependencies
+
+20130624 Monday
+    telnet gss.ps.pdk.intcx.net 80
+
+IServerId
+    redid - distinquished between ServerId (concat version), with a method to get FromId
+    
+check stagger times
+    INFO: gci id=39, staggered start, waiting 9750ms, before connecting to GS
+    >> 150ms increments
+
+Test / comparisions
+    option to ignore known mismatches
+    >> TestController.loadIgnorePropertyPaths()
+        loads file "ignoreList.txt"
+    
+20130625
+    increase timeout for reqeustPublicData
+        to 90 seconds
+    testing in Dev4, all MRs using GSMR
+
+20130626
+    ORD.pr
+        cron to Stop at 6:32
+        * dont start
+
+    Jenkins 
+        /usr/local/bin/sudo /var/opt/router/gsmr.sh start
+          should be:
+            /usr/local/bin/sudo /var/opt/gsmr/gsmr.sh start
+
+    verify ORD
+        EnvironmentName = ord
+        ShortEnvironmentName = pr
+        gemstone.Host = 10.6.200.72
+        gemstone.Name = ICE
+
+    Logs mover
+        find out where they are in Dev2
+        Logs are being moved to pdk-st-ixrp-02:/var/opt/logsrepo/logs/staging/GSMR/pdk-st-gsmr-01/
+
+    test bounce tool
+        dev2, staging
+        http://icespace/docs/DOC-43877
+        might need to open up F5 for ssh access
+
+    Monday night GSMR
+        telnet gss.ps.pdk.intcx.net 80
+        ord-pr-gsmr-01    
+        gss.ord.intcx.net ?
+
+20130701 Monday
+    
+log-clanup.sh
+    
+Chai email about stacktrace, exception
+Chai gsmrClient to wait on connection
+    
+ord-mg-ixrp-01
+/var/opt/logsrepo/logs/prod/GSMR/${hostname}
+
+20130705
+    GSMRClient
+        MR needs to send IOR name instead of hostname
+    requestStaticData changed to make multiple GS requests
+ 
+logs are on ord-mg-ixrp-02
+
+changed GSMRCLient to have the requestStaticData broken into 3 requests and then combined
+
+20130708 Monday
+  Dev4 Operator 10.3.60.17
+
+  GSReqeustInfo toMSLogString
+        // dt format: 06/07/2013 04:57:14.709
+        String msg = String.format("%1$tm/%1$td/%l$tY %1$tH:%1$tM:%1$tS.%1$tL", new Date(msStart));
+
+20130709 Tuesday
+    create 12.700.12 release
+        get chanags to Chai, Rashmi
+    deployed to AM
+    
+20130711 Thursday
+
+DNS for gsmr
+gsmr clients: 
+    gsmr.server=gss
+    gsmr.port=80
+
+if you are running local you will need to use the full DNS, ex:
+    example: gss.am.rv.intcx.net
+
+track gs logout
+    does not use callback
+
+Vinod/Ram
+    nil error message
+        send gs error msg
+
+20130712 Friday
+    Fixed: Bugs in MS-like Log file
+
+    Fixed: error reporting for GS error from GCI
+        For every GCI request - GS returns the result in an array. 
+
+        resultArray[0] ? actual result bytes if api was successful.
+        resultArray[1] ? the exception string if result could not be returned. 
+
+        So for failure case GS will return the exception string in resultArray[1] and IFL will copy that back as IFLMessage.arguments.
+
+
+20130715 Monday
+
+POM distributionManagement/repository
+https://maven.intcx.net/content/repositories/releases/com/theice/gsmr/ICEgsmr/
+
+what was used: 
+https://maven.intcx.net/content/groups/public/com/theice/gsmr/ICEgsmr/ 
+
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-dependency-plugin:2.1:copy (copy) on project deployer: 
+Unable to find artifact. Failure to find com.theice.gsmr:ICEgsmr:solaris:12.700.13 in 
+https://maven.intcx.net/content/groups/public was cached in the local repository, resolution will not be 
+reattempted until the update interval of public has elapsed or updates are forced
+
+
+20130716 Tuesday
+    Open CM ticket for GSMRCommon 12.700.14 build failure
+        https://coin.intcx.net/view/GSMR/job/gsmr-common/27/console
+
+GSMR Common pom changes from Darian
+    old version of the release plugin 
+    yeah.. i made the update in the pom
+       1.9 was incorrect... 1.43 is the latest version for the maven release plugin
+
+dependency changes
+    iutil 1.0.2
+    icemessage 1.0.1
+    multiplexer 1.0.1
+    remotemultiplexer 1.0.1
+    gsmrcommon   12.700.16
+    gsmrclient   12.700.16
+    gsmrserver   12.700.16
+    gsmrinstall  12.700.16
+
+20130719 Fri
+created gsmr admin UI using oaBldr
+    sent out email for others to use
+
+
+20130722 Monday
+
+Operator in Dev4
+    Use IP address, 10.3.60.17
+
+gsmr admin
+    use formats
+    use HtmlDebug
+        added to ApplicationReport.java
+        
+20130725 Thursday
+
+    Rashmi, MS client for callbacks only
+        CorbaServerController    
+        test in Dev2
+            register IOR
+            ping from Operator, and have MSs register
+        checked into MSClient project, git
+        
+    gsmrServerJfc
+        report changes
+        toolbar combo if more then one report
+        each rpt needs a AppRpt obj
+   
+images on report
+    default rpt header, footers
+ 
+oaBldr add list of new reports
+    name:
+    type: list or detail
+    add buttons to UI
+
+html rpt gen - add comment date/time, etc
+    add to all generated files
+        generated by OABuilder on Jan 8, 2013 at 10:32am
+copy rpt *.html files to html.oa directory
+    only if they dont exist
+        otherwise, put in oaTemp
+        ??? is there a good way to know if it can be overwrittenn
+            ?? add customized comment
+
+button to create default reports
+    GSMRServer                  detail
+    GSMRServerList   GSMRServer listing
+
+
+20130802 Fri
+    Melisa Hubbard p404 579 2227
+    
+    
+    Dennis Yarborough
+    mobile: 404.483.8029
+    email: dyarbor@gmail.com
+
+XML files for IDL classes    
+\\at-bp-iffs-05\Technology\Trading System\dmiller1
+copied to c:\temp\dmiller
+
+Muru heap dump for icesocket memory leak
+
+rv-dv2-pkmr-01
+/var/opt/router/logs-jvm
+
+20130805 Monday
+
+kill -3 [pid]
+
+loadtest ormr has 3,126 instances of com.sun.net.ssl.internal.ssl.SSLSessionImpl
+ll-lt-ixmr-01
+
+JDK1.6 bug in Sun ssl, mem leak
+    fixed in 1.7
+
+ObjectInputStreamTest - in RemoteMultiplexer/src/test
+    Shane reported that thread spins instead of blocks
+    
+20130808 Thur
+
+Muru:
+    jvisualvm for sslEngineImpl
+
+Jeremy: logs do not have User naem
+    might need log flag in annotation ?
+        08/08/2013 08:45:31.932,pdk-st-ormr-03,,#requestSystemLogin,functionId=139:12.710.26-WebICE_INT:weblogic:12.53.191.4:12.53.191.4:ORMR WI,,0,0,5,5,0,0,0,4,0,0,0,131,1707696773759238214
+
+20130809 Friday
+Khom
+    LT had core dump
+        I sent email to Vinod, Ram
+    LL-TC-GSMR-01
+
+Dev3 has GSMR Server 12.700.17-SNAPSHOT
+    other MRs do not have this version
+        but they should be compatible
+        if not, then restore 12.700.16 on GSMR server
+        
+Send Gary the user mismatches from dev3
+    check compare app to make sure it is correct
+
+ituil 1.0.3
+icemessage 1.0.1
+multiplexer 1.0.2
+remotemultiplexer 1.0.2
+gsmrcommon 12.700.17-SNAPSHOT
+gsmrclient 12.700.17-SNAPSHOT
+gsmrserver 12.700.17-SNAPSHOT
+gsmrinstall 12.700.17-SNAPSHOT
+
+
+20130812 Monday
+gsmr 
+    MS logs now has UserId
+    request/reply
+        IFL/GCI psconfig needs to have larger output buffer
+    snapshot build
+
+20130813 Tuesday
+new versions
+    iceMessage NEW: 1.0.2
+        sets extendedFlag
+    remoteMultiplexer NEW: 1.0.3
+        fixed problem with invocationException 
+        GSMR server is returning null on GS exception
+
+20130814 Wed
+MR types
+    http://icespace.cpex.com/docs/DOC-24614#comment-16552
+
+GS Request/Reply
+    http://icespace.cpex.com/docs/DOC-46149
+
+20130815 Thur
+    8/13  350.00
+    8/06  400.00  chk 1194
+    7/18  450.00  chk 1182
+    7/2   350.00
+    6/11 1000.00
+
+
+20130817 Friday
+check in code?
+create release 12.700.17
+
+install 17 in Dev3
+
+Jira
+    TTS-6681
+    12.700.17 GSMR release
+
+12.700.17 support for request/reply
+    manually add new function # and name to map
+        see:  TRLBMReceiverHelper.addNonFirmFunctionNames
+            example:
+            SocketMessageDelegate.addFunctionName((short) 240,
+                    NOTIFY_NON_FIRM_ACK);
+    create new commands and add to helper class
+    
+    add new request methods to TRWLRouterMessenger
+        need to send ICEMessage as a param
+            convert SocketMessages to byte[] using SocketMessageDelegage
+            convert byte[] to ICEMessage using ICEMessageDelegate
+        call new reply methods defined in Gemstone interface
+
+Gemstone.java
+    change for LL MR
+        overload the login/logout methods to be able to override the MR name
+
+20130819 Monday
+GS Request/Reply
+    Why don't we use the numbers that appear in idlconstants.xml?
+    Function ID changes is going to be for the following request only
+        requestUserLoggedIntoRouter 392
+        replyUserLoggedIntoRouter 393
+
+        <constant name="requestUserLoggedIntoRouter" id="387"/> 
+        <constant name="replyUserLoggedIntoRouter" id="388"/> 
+        
+        <constant name="requestGetAllFuturesMarketRoutingMaps" id="389"/> 
+        <constant name="replyGetAllFuturesMarketRoutingMaps" id="390"/>
+        
+        <constant name="requestGetAllOptionsMarketRoutingMaps" id="391"/> 
+        <constant name="replyGetAllOptionsMarketRoutingMaps" id="392"/> 
+        
+        <constant name="requestTest" id="393"/>
+        <constant name="replyTest" id="394"/>
+
+Khom: my env its ll-tc-gsmr-01
+
+20130820 Tuesday
+    Prod ticket to have server 01-05 using 12.700.16, add 02-5 to pool, and bounce tool
+        original was: 57029
+    57188 gsmr 01 and 02 tonight
+    57191 gsmr 03 wednesday
+    57192 gsmr 04 thursday
+    57193 gsmr 05 friday
+    
+ProdSupport 02 deployed 12.700.11
+
+GSMR doc
+    IDL requests that were not implemented for GSMR
+        http://icespace.cpex.com/docs/DOC-46080#comment-17374
+    GS request/reply to replace Corba
+        http://icespace.cpex.com/docs/DOC-46149
+    Bounce Tool changes for GSMR.docx
+        http://icespace.cpex.com/docs/DOC-43877
+        
+        
+20130822 Thursday
+Parisa 770 884 6341
+appt: Tues 4:30
+
+Tommy White 678 898 8551 - roofer
+    call on Monday, to meet on Tuesday morning
+Comcast - reduced to $120, faster internet, sho+hbo+starz
+
+CM
+    ticket to get GSMR-02 logs moved in ORD 
+    Darren handled this
+
+TechTest Khom
+    10.7.146.34
+    /var/opt/playback/gsmrTest
+clean log files
+    find /var/opt/gsmr/logs/ -mtime +5 -type f -name '*.log' -exec rm {} ";"
+    needs to be space between rm & {}
+    rm{} won't work
+    rm {} does
+
+tested req/reply in Dev3 with Gary and Chai
+    using Operator, getRoutingMaps
+    
+20130828 Wednesday
+
+update GSMR version for 12.800 IDL    
+    http://icespace.cpex.com/docs/DOC-46421
+
+GSMRClient 12.800.01  TTS-6840
+Gary: TTS-6484 
+
+requestDataConnectionLogin (remove clientType)
+requestSystemLogin (remove clientType)
+requestSystemLogout (remove clientType)
+requestDataConnectionRFL (remove loginType)
+requestIsUserLoggedIntoRouter (remove loginType)
+requestRouterForceSystemLogout (remove loginType)
+
+create 12.800.01 release 
+
+TTS-6848 - gsmr client to use verify class for methods
+
+TTS-6848
+    GSMR Client to recognize IDL changes, version: 12.800.02
+
+20130829 Thursday
+telnet gss.pl.pdk.intcx.net 80
+
+20130903
+
+APITest settings
+TC testing
+    GSMR server Queue causing heap issues
+    dont keep req/response bs[]
+    log warn when all GCI connections are busy
+
+30130904 Wed
+verify how JNI errors are reported
+    warn log, etc
+
+have GSMR Client use IDL to verify methods
+    same as MS Client
+    get IDL
+    VerifyTRIMarketMonitorRequestInterface
+
+OABldr on git
+
+Khom
+    multiple threaded test
+
+Khom
+    JNI detected an exception in (jni_handle_msg:973): java.lang.NullPointerException
+
+TechTest
+    10.7.146.34
+    /var/opt/playback/gsmrTest
+
+take cron out of gsmr installer
+    check with JB first
+
+ICE.DEV3.TRADING.ADMINMGR.NOTIFICATION
+    gs broadcast topic for request/reply
+
+GSMR TESTING
+    make sure 12.700.17-SNAPSHOT is compatible with earlier releases
+    Test gemstone request/reply.
+    exception reporting in logs
+        was not showing for a failded request
+    large data response failed on WebICE
+        PriceAssessCompanyDetails 
+            get userId to use
+    added userId to logs
+    GCI connection failure
+        needs to retry after 15 sec wait
+    gsmr startup
+        needs to wait on GS
+    mismatches in Dev3
+    AM/2 testing    
+    isDatabaseAvailabe
+        process by GSMR, dont send to GS
+    
+SNMP
+    current discussion
+        http://icespace.cpex.com/community/technology/enterprisesoftwaresystems/application_monitoring/blog/2013/02/07/application-monitoring#comment-15099
+
+
+20130909 - gsmr heavy connections
+TC 
+    set ini 
+        gemstone.HeavyConnections = 1
+    testing
+        test for large requests
+        test retry
+    client 10.7.146.34
+        /var/opt/playback/gsmrTest
+
+12.725.02 build
+    TTS-6944 Support for large requests using "heavy" GCI connections
+    GSMR server
+        common
+        server
+        installer
+
+Heavy connections
+    gemstone.Connections = 10
+    gemstone.HeavyConnections = 1
+
+    GS Session 
+        'gsmr_gemnetobject� - used for regular (350mb max heap)
+        �gsmr_heavy_gemnetobject - used for heavy (1gb max heap)
+
+    3 methods to use heavy
+        requestWebCPLogin
+        requestPriceAssessCompanyDetails
+        requestParticipantDetailedClearingAccounts
+    1 method to retry on heavy if it fails on regular
+        requestUserExecutionReport
+
+
+ICEMessage
+    JIRA TTS-6988
+        
+    error if any args is null
+    WARNING: requestMarketStatistics exception Exception: java.lang.NullPointerException
+    java.lang.NullPointerException
+    at com.theice.msg.icemessage.io.ICEMessageObjectOutputStream.callTRIExternalizable(ICEMessageObjectOutputStream.java:312)
+    at com.theice.msg.icemessage.io.ICEMessageObjectOutputStream.writeObjectArray(ICEMessageObjectOutputStream.java:286)
+    at com.theice.msg.icemessage.io.ICEMessageObjectOutputStream.writeObject(ICEMessageObjectOutputStream.java:230)
+    at com.theice.msg.icemessage.ICEMessageDelegate.convertToBytes(ICEMessageDelegate.java:142)
+    at com.theice.msg.icemessage.ICEMessageDelegate.convertToBytes(ICEMessageDelegate.java:108)
+    at com.theice.gsmr.client.GSMRClient._onInvoke2(GSMRClient.java:561)
+    at com.theice.gsmr.client.GSMRClient._onInvoke(GSMRClient.java:448)
+    at com.theice.gsmr.client.GSMRClient.onInvoke(GSMRClient.java:359)
+    at com.theice.gsmr.client.GSMRClient.onInvoke(GSMRClient.java:343)
+
+>> this was caused by an arg that was an array, and it had a null element in it
+    added check to setArguments for the array elements
+    
+    
+gsmr gci output buffer 200mb
+
+
+20130910
+install 12.725.02 in Dev4
+check TC
+
+20130911 Wednesday
+MarketServer logs  (MS logs)
+    ord-mg-ixrp-01 
+    /var/opt/logsrepo/logs/prod/MarketServer
+
+GSMR graceful shutdown, using file
+
+
+20130918
+CM new gsmr-client 12.725 link in jenkins
+GSMR Client
+    git compare 725 and 800
+    12.800 make backward compatible
+        method overload change methods
+
+MarketServer logs  (MS logs)
+    ord-mg-ixrp-01 
+    /var/opt/logsrepo/logs/prod/MarketServer
+orderId|orderType|marketId|companyId|price|quantity|
+reserveQuantity|status|sequenceNumber|typeOfOrder|linkType|memo|optionType|
+strikePrice|clearingAccount|duration|originalOrderId|cancelReplaceOrderId
+
+OAHtmlViewFactory
+htmlSourceDialog
+htmlDebug.
+oaHtmlEditorKit
+
+20130925
+
+gsmrclient 12.725.02-SNAPSHOT
+gsmrserver 12.725.04-SNAPSHOT
+gsmrcommon 12.725.03-SNAPSHOT
+
+iutil 1.0.3
+icemessage 1.0.2
+multip 
+remotemulti 1.0.3
+
+20131001 Tues
+
+GIT issue with GSMR Client 12.725
+
+Damian Monogue 3:19 PM
+hey Vince... just had another thought on what might have happened to that branch. 
+you made the branch, 
+it looks like, so if it was pushed using 'git push' and not 'git push -u' then it 
+may not have set the upstream to pull from initially 
+could be that setting has been absent since the branch was made and pushed. 
+Damian Monogue 3:22 PM
+upshot being, if you make another branch to push to the remote, check the 'git remote show origin' output 
+to see if it sets up the 'pull' portion and not just the 'push' portion 
+or ping me and I'll help. heh 
+
+git branch >>> 
+
+add this to file:
+C:\projects\java\GSMR\Installer\.git\config
+
+example:
+    [branch "12.725"]
+        remote = origin
+        merge = refs/heads/12.725
+
+
+
+
+AT GSMR servers
+10.1.146.68/72
+
+20131002 Wed
+AT GSMR servers
+10.1.146.68/72
+at-pr-gsmr-01,05
+
+20131007 Mon
+
+Alt DNS
+http://icespace.cpex.com/docs/DOC-2002
+
+20131009 Wed
+
+GSMR OPS doc
+http://icespace.cpex.com/docs/DOC-48115
+
+20131010
+udpate RT's 725 list
+    GS pw
+    GS 40, 5
+    verify 5 gsmr servers
+    verify sds, webICE MRs
+1.  Support Schedule (needs to be filled up): http://icespace.cpex.com/docs/DOC-18901
+2.  Components & Versions: http://icespace.cpex.com/thread/14110
+3.  Special Instructions: http://icespace.cpex.com/docs/DOC-47880
+
+
+20131014 Monday
+
+Operations Conference Bridge (877.647.3411 PassCode: 891298#)
+
+20131017 Thur
+LogsLoader ord-mg-ixrp-02
+
+
+Bob Walker 3:18 PM
+Ping me when you have a sec
+Vincent Via 3:18 PM
+hey
+Bob Walker 3:19 PM
+hi, I was following up on our chat earlier today by refreshing my memory on the GS stats and found some convenience methods that might be useful:
+Vincent Via 3:19 PM
+nice
+Bob Walker 3:20 PM
+The following Class methods in class System are available to help you keep track of the load on temporary object memory:
+
+            _tempObjSpaceUsedReturns the approximate number of bytes of temporary object memory being used to store objects. 
+            _tempObjSpaceMaxReturns the approximate maximum number of bytes of temporary object memory which is usable for storing objects.
+
+            _tempObjSpacePercentUsedReturns the approximate percentage of temporary object memory that is being used to store temporary objects. This is equivalent to the expression:
+
+            (System _tempObjSpaceUsed * 100) // System _tempObjSpaceMax. 
+            It is possible for the result to be slightly greater than 100%; this indicates that temporary memory is almost completely fu
+
+Logs Loader, has null char in data
+ord-mg-ixrp-02
+
+/var/opt/logsrepo/logs/prod/GSMR/ord-pr-gsmr-03/2013-10-15-Router_PR_GS_03_1.Request.csv, position 26559
+/var/opt/logsrepo/logs/prod/GSMR/ord-pr-gsmr-03/2013-10-16-Router_PR_GS_03_1.Request.csv, position 57350
+
+20131018 Friday
+wait for CM to create gsmr-common 12.725 for Jenkins
+    create 12.725.05 release
+    pull gsmr-common to get updated pom
+
+
+create GSMR server 12.725.08 release    
+    TTS-7394 reconnect GCI connection if validate returns false
+    TTS-7462 verify log text
+    TTS-7371 GSMR start/stop not logging to command.log
+    
+GSMR Installer 12.725.08 relase
+    update pom with gsmr server 08 release
+
+
+GSMR client 12.725
+    TTS-7391 notify clients of a shutdown
+    TTS-7373 have start thread connect gsmr
+    TTS-7429 change timeout for submittIndexPriceUpdate GS function
+
+    POM
+        <dependency>
+            <groupId>com.theice.gsmr</groupId>
+            <artifactId>gsmrcommon</artifactId>
+            <version>12.725.05</version>
+            <type>jar</type>
+        </dependency>
+
+GSMR client 12.800
+    GSMRClient
+        public void runStart() {
+            try {
+                start();
+                return;
+            }
+            catch (Exception e) {
+                LOG.warning("connection to GSMR server failed, will start another thread to keep trying.");
+            }
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    GSMRClient.this.start(true);
+                }
+            }, "GSMR.startConnection");
+            t.start();
+        }
+
+Pasword
+if you need to reset it 
+https://aaa.intcx.net
+syseng system 
+
+
+Deploy  GSMR Server 12.725.08
+    where Dev4, FT2
+    staging
+
+Deploy  GSMR Server 12.725.08
+    done: where Dev4, FT2
+    staging
+
+20131021
+OA
+   need to load annotations so they "act as if" inherited
+
+Template, etc.
+RemoteClientController line 133
+   dont create a jdbc datasource
+   have use Datasource.database directory
+
+20131028 Monday
+Prod ticket for 1,2,3 => 12.725.08
+
+
+20131029 Tuesday
+please add it to 12.800.07 idl tracker and it will be picked up with other idl changes. 
+    
+http://icespace.cpex.com/docs/DOC-38892
+
+add to IDL.xml
+   requestRegisterServer(TRIMarketRouter mr)
+
+struct TRIMarketRouter 
+{ 
+     string hostName, 
+     long serverId, // unqiue MR identifier , ex: "027144121" 
+     long serverFromId, // Trading System unique ID, used by in the ICEMessage as the (4byte) Inteteger "FromId". 
+     string serverVersion , // ex: "12.800.21" 
+     string idlVersion, // ex: "12.800.03" 
+     TRIDateTime dtStarted, // time MR was started 
+     TRIDateTime dtRegister, // time MR last registered, started 
+     TRIDateTime dtLastPing, // last dt that GS "heard" from MR 
+} 
+
+original plan:
+    TRIMarketRouter {
+         String hostName,
+         int instanceNumber,
+         int serverId,                   // unqiue MR identifier , ex: "027144121"
+         int serverFromId,        // Trading System unique ID, used by in the ICEMessage (SocketMessage) as the (4byte) Inteteger "FromId".
+         enumServerType,       // type of MR,  for list see:   http://icespace.cpex.com/docs/DOC-24614#comment-16552
+         String serverVersion,  //  ex: "12.800.21"
+         String idlVersion,         // ex: "12.800.03"
+         DateTime dtStarted,   // time MR was started
+         DateTime dtRegister,   // time MR last registered, started
+         DateTime dtLastPing,   // last dt that GS "heard" from MR
+         enumStatus,                     // started, running, stopping, stopped, paused
+         DateTime lastStatusChange
+         ... more as needed
+    }
+
+created GSMR server and installer 12.800.01
+created 12.725 branch
+
+20131106 Wed
+
+
+get IDL 08
+create new gsmr client
+    use new TRIMarketRouter, and new function
+
+GS request results have TRIGsmrGsStats 
+
+20131111 Monday
+
+prod tickets:
+    last Thur: 62353, Deploy GSMR Server 12.725.09 to 2 of the servers 4&5
+    today: 62619 on 1,2,3
+
+
+20131112 Tuesday
+
+employee table
+    getting cleared when autocomplete input
+    multi select issues
+        editing
+        setting AO
+    fix -> HubRoot bug
+    
+20131114 Thur
+
+IDL "tracker": https://icespace.cpex.com/docs/DOC-38892
+Jira:  https://jira.intcx.net/browse/TTS-7803
+
+{code}
+enum TRIMarketRouterType {   // // see: https://icespace.cpex.com/docs/DOC-24614#comment-16552
+    UNKNOWN      // 0
+    ORMR,        // 01, Webice Order Router.
+    PDMRFutures, // 02 Webice Public Data Market Router - Futures
+    PDMROptions, // 03 Webice Public Data Market Router - Options
+    MMMR.        // 04 Market Monitor Router (Sales GUI and ATLAS/Website).
+    Legacy,      // 05 Legacy Webice Router
+    WAMR,        // 06 Web App Market Router
+    AVAIL7,      // 07 available
+    AVAIL8,      // 08 available
+    AVAIL9,      // 09 available
+    AVAIL10,     // 10 available
+    FIXOS,       // 11 FIX Order Router
+    SDMR,        // 12 Static Data Server
+    DHMR,        // 13 Deal History Server
+    TCMR,        // 14 Trade Capture Server
+    YJMR,        // 15 Yellow Jacket Router
+    OFMR,        // 16 Private Order Feed
+    AVAIL17,     // 17 available
+    AVAIL18,     // 18 available
+    AVAIL19,     // 19 available
+    AVAIL20,     // 20 available
+    OCMR,        // 21 Order Cache MR
+    OHMR,        // 22 Order History MR
+    AVAIL23,     // 23 available
+    AVAIL24,     // 24 available
+    AVAIL25,     // 25 available
+    AVAIL26,     // 26 available
+    AVAIL27,     // 27 available
+    AVAIL28,     // 28 available
+    AVAIL29,     // 29 available
+    AVAIL30,     // 30 available
+    PFMR,        // 31 Price Feed Market Router
+    MCMR,        // 32 Multicast Market Router
+    RPMR,        // 33 Replay Marker Router
+    UPSMR,       // 34 User Private Strategy Router
+    FPMR,        // 35 FPML Router.
+    GSMR,        // 36 Gemstone Router
+    SDSWebMR     // 37 SDS web router
+    HDMR,        // 38 Hex Data Feed
+    PKMR,        // 39 Position Keeper Market Router
+    LLMR,        // 40 Login/Logout Market Router
+};     
+    
+    
+Add new Attribute for enumType:    
+
+struct TRIMarketRouter
+{
+ string routerName;
+ TRIMarketRouterType enumType;  <<****** new
+ string hostName;
+ long serverId; // unqiue MR identifier , ex: "027144121"
+ long serverFromId; // Trading System unique ID, used by in the ICEMessage as the (4byte) Inteteger "FromId".
+ string serverVersion ; // ex: "12.800.21"
+ string idlVersion; // ex: "12.800.03"
+ TRIDateTime dtStarted; // time MR was started
+ TRIDateTime dtRegister; // time MR last registered, started
+ TRIDateTime dtLastPing; // last dt that GS "heard" from MR
+}; 
+{code}
+
+20131118 Monday
+gsmr client
+    fill out TRIMarketRouter missing data
+        fromId
+
+starteam 12.800.10 idl
+
+update IDL gsmr on icespace
+    https://icespace.cpex.com/docs/DOC-46421
+
+20131119 Tuesday
+
+HubShareAO
+    allow this to work like hubCopy ?
+
+track 12.800.10 update issues
+    https://icespace.cpex.com/docs/DOC-49559
+
+dont always use hubCopy for ui jfc
+    if it has a seq
+
+20131120 Wed
+    $$ bday
+
+adding new recursive features
+model
+    if recursive 
+        create merged
+        creaste root
+    
+20131121 Thur
+
+idl funtions loader
+    using java "long"
+        Can i change TRIDateTime to TRITimestamp for login***NoResult functions? Vivek wants it as long
+        typedef long long TRITimestamp; // nanos since midnight, Jan 1, 1970 UTC
+        Vincent Via 7:51 AM
+        that sounds good ... I'll check to make sure that it creates it as a Java long
+    ==> IDL type TRITimestamp => java long
+
+20131125 Monday
+
+have HubCopy as subclass of HubFilter
+    if add to Hub, then add to master
+
+replace HubFilterInterface with OAFilter
+
+hubFilter
+    add OAFilter
+
+chnage code that looks for HubCopy.shared
+    to use HubFilter
+
+search tree needs a way to select
+    double click and select button >> not done
+
+filters need to include recursive, merged Hub
+    call table card layout
+
+onNew
+    if tabs, then set first tab
+    setFocus component
+
+detail might need to not use recursive
+
+filter buttons
+toggle between hubRoot table and hubMerged table
+
+if merged table
+    need to share with filters
+tableCardPanel
+
+20131126 Tuesday
+add Filter propertyPaths to UI, etc
+   can get code 
+
+20131129 Fri
+
+add triggers to any/all hubs
+    links
+    root objects
+
+triggers
+    object gen
+    object controller 
+        for all triggers?
+
+20131202 Monday
+
+
+multiplexer bug:  multiplexer write thread interrupt 
+    >> new version 
+    Jira TTS-7857
+    
+MRAD
+http://rv-dv2-mrad-01:9002/admin/
+icehelpdesk / starts
+
+TTS-7939, TTS-7940
+GSRM retry  Jeremy and I will be working on some solutions for the new GSMR update that will give us more data on the impact of retries and timeouts.
+    client needs to report number of retries, and amt of time
+        >> add new remote method
+        >> add retryCount to requestInfo
+    client needs to send retry count in request to gsmrserver
+    gsmr server should not log warnings for all
+        ex: 281k on Thursday night - only show that retries are happening, and when it stops
+    *** I'm looking at just sending one warning/alert when the GSMR gets into a all connections busy state, and then report again when it ends. 
+    verify that retry wait time if correct for login request retries
+
+TTS-7941
+GSMR client, server
+    clean up code for passing log reqeust
+   
+TTS-7950
+    GSMR Server support for MR Admin Server
+
+TTS-7948
+GSMR client
+    new constructor 
+      *** send email to MR team
+            public GSMRClient(String envName, String routerName, TRIMarketRouterType triMarketRouterType, 
+                String gsmrServerHostName, int gsmrServerHostPort) {
+        * this will create the TRIMarketRouter, and all of its props      
+      
+    fill in TRIMarketRouter
+       must have type
+       must have serverID or fromID
+    dtStarted' 'dtRegister' <<<< not set 
+    ** need to check and set all props
+        throw exception if required info not there
+
+gsmr server, response data
+    yes, the next GSMR release includes the info about GS memory used for each request
+
+
+20131203 Tuesday
+
+git@gitorious.intcx.net:loginlogoutadmin/loginlogoutadmin.git
+
+GSMR and MRAD
+    yes, helpdesk key is installed on rv-dv2-gsmr-02
+    i think it just needs the full path
+    >> changed command:  /var/opt/gsmr/gsmr.sh start
+
+MRAD
+http://rv-dv2-mrad-01:9002/admin/
+icehelpdesk / starts
+
+
+20131204 Wed
+new IDL 12.800.11
+
+update functions from IDLconstants.xml
+get IDL
+new GSMR client build
+new GMSR server/installer build
+    changes to start/stop commands
+send out MR update with links for the versions to use
+
+new OPMR server #7
+
+=== GSMR versions
+12.800.02 installer
+12.800.02 server
+12.800.10 client
+12.800.05 common
+12.800.02 icemessage
+1.0.3  multiplexer
+1.0.5  remote multiplexer
+1.0.3  iutil
+
+oaBldr
+    if no search table then use table
+    if no table then use display value
+    
+
+Trading release management meeting
+Conference Call-In - Internal extension: 8888 x2454 - Password: 12454# External Call-In: 770-618-8888, Password: 12454#    
+
+oaBldr, object.merged
+    add to main ui bar/tree
+        TemplateGenerator
+
+add hubMergers to UI client app
+    cant add or remove
+    server side controlled
+
+20131209 Monday
+
+
+Last worked on Friday 5:47 with Sarath
+    LLOperatorController.
+        //qqqqqqqqqq update all properties
+    >> this conencts to my OAServer, gets model, then connects LL Client to LLAD Server         
+
+for LLAD server    
+    GSMR admin client
+        needs to know when GCI connections are available or lost
+
+oabldr edit menu
+    creazte new link
+        chnage icon
+    add calc link
+        only if objecDef is selected
+
+oapropertypathdialog
+    option to not show currectSelected
+
+flag to know if filter is to be included in table dropdown list
+
+20131210 Tuesday
+    check to see if calc Hubs are sent messages
+
+create link with Filter only
+    code gen for calc needs to recognize this
+
+new filtering for oaBldr, ocde gen
+test filter geneated code    
+linkProp.filter 
+    cant have inputs
+
+
+20131212 Thurs
+
+groupBy
+    code gen
+        model 
+            will need hub,model,jfc to groupBy
+        ui table
+            add to split button filters
+
+
+=== GSMR versions
+12.800.03 installer       **NEW
+12.800.03 server          **NEW
+12.800.12 client          **NEW
+12.800.06 common          **NEW
+12.800.02 icemessage
+1.0.4  multiplexer        **NEW  add server stop methods, so that new serverSocket.accept stops
+1.0.6  remotemultiplexer  **NEW  
+1.0.3  iutil
+
+
+20140103 Friday
+
+20140106 Monday
+interview with John Thomas
+boolean bVoidReturn = (void.class.equals(methodInfo.returnClass));
+
+This looks to be a GSMR Client bug.   Since the "requestSystemLogout(..)" does not return a value (it's set as "void"), the GSMR Client should  not expect a result.  
+    TTS-8230 The Gemstone methods no longer support/require the corba like (from Marketservers) method signatures that have IN and OUT params. Gary has made the GS changes to always return a value that includes all of the previous Out params.    
+
+20140107 Tuesday
+
+Previous: 
+    12.725 update to fix gcicontroller issue
+
+    put GCIController fix in 12.725
+        move to prod tomorrow night
+
+    GCIController
+        ** this could set to null 
+        synchronized (lock) {
+            this.gsRequest = null; // ready for next message
+        }
+
+    gsmr client
+        trimarketrouter
+            fill out missing data if not set
+        multiplexer write interrupted exception        
+    gsmr server
+       timeout, no avail gci connection
+
+    GSMR Client release 12.800
+        server release
+            admin server
+                finish commands, etc
+            fail over
+                create remote broadcast method to tell clients to connect to another gsmr
+
+6:30pm  VJ dinner
+The Diner at North Point
+2355 Mansell Road
+Alpharetta, GA  30022
+
+20140113 Monday
+
+Hip pain:
+    appt: Monday 2:30
+    Dr. Keith Lamberson
+    Pinnacle Orthopedics
+    5205 Stilesboro Rd NW, Kennesaw, GA 30152
+      bld 2 , suite 200
+    (770) 218-8800
+
+20140118 Saturday (ICE)
+
+oaProperfyPath 
+    support [Class]. as prefix
+    add recursive method
+
+
+20140120 Monday
+Khom
+    see if you can login to Dev2 w/ "pfroats_prod"
+        request deals for user
+            webICE runs out of memory
+
+20140121 Tuesday
+
+LLAd stopping server did not disconnect client
+
+uiContainer
+    adding using autoMatch for propPaths is removing dups
+        see if AutoMath has allowDups
+        >> set OAPropertyPathTreeConfig.setAllowDups(true)
+
+20140123
+    Lute Lewis
+        spectrum system
+
+20140129 Wed at home (snow day)
+    netldi gsmr operations 10078
+    https://icespace.cpex.com/docs/DOC-48157
+
+gsmrclient 12.800.17
+gsmrcommon 12.800.07
+remotemultiplexer 1.0.7
+multiplexer 1.0.5
+iutil 1.0.3
+icemessage 12.800.02    
+
+email about MR startup failing when multiplexer handshake fails
+
+GSMR client
+    after connect, then disconnect and wait 5 seconds before reconnect
+    changes from Shaun
+        suspend option volatile with getter/setter
+                
+            I can add a getter/setter to GSMR Client
+            get/setSuspend(boolean)
+
+            If true, then any GemstoneInterface method will throw a RuntimeException that "GSMR has been suspended".
+
+20140130 Thr snow day
+
+GSMR client build, 17 did not have the changes
+gsmrclient 12.800.18
+gsmrcommon 12.800.07
+remotemultiplexer 1.0.7
+multiplexer 1.0.5
+iutil 1.0.3
+icemessage 12.800.02    
+
+20140202 Sun
+It is in the git under the webice project
+https://gitorious.intcx.net/webice/webice/trees/12.700/signing
+keystore: icestore. 
+pw: password
+If you take a look at the WI buildfile  you can get details on alias etc. 
+<keystore>keystore/icestore.jks</keystore>
+<alias>icecert</alias>
+<storepass>password</storepass>
+<keypass>password</keypass>
+
+2040205 Wed
+
+David Thieme, chicago
+    (312) 951-2768 
+    icesocket
+        where's code
+    remoting over icesocket
+    icesocket demo
+Lawyer 
+    Amy Wed 9:am
+
+20140206 Thur
+
+Dr Appt
+    Dr Duffield 770 944 3303
+    ** thurs 8:00am
+
+https://maven.intcx.net/content/repositories/releases/com/cpex/starteam/icesocketserver/
+12.700.04
+https://maven.intcx.net/content/repositories/releases/com/cpex/starteam/icesocketclient/
+12.700.04
+
+created DemoServer and Client in local icesocket project
+
+20140210 Monday
+
+admin-server
+    SNMPTrapProcessor
+    started by: AdminServer.start()
+    log4j.xml
+code gen needs src path
+
+20140211 Tues
+http://www.viaoa.com/com/viaoa/v3.5.02/oa-3.5.02.jar
+
+20140213 Thur (snowed in)
+Dev2 mrad        
+    sudo su - mradmin
+
+
+20140217 Monday
+http://rv-dv2-mrad-01:9002/admin/
+
+20140218 Tuesday
+
+4 endex env = dv2, ft3, ap, st
+   and also ord & at (dr)
+
+Admin Server
+    deploy to dev3 - 
+        12.700.47-SNAPSHOT
+    current 12.700.46
+
+admin server release
+    deploy to dev3
+    send email JB, JD, Qian, Lute
+        12.700.47
+        added snmp traps
+        need to make sure spectrum is setup for Prod
+            get MRAS IPs
+        deploy in Prod on Friday
+            ticket
+
+admin-server project
+    git: https://gitorious.intcx.net/marketrouter/admin-server
+    jenkins coin: https://coin.intcx.net/job/admin-server/?
+    jenkins deploy: https://rv-mg-mind-02.intcx.net/job/ICEMRadmin/
+    maven repo: https://maven.intcx.net/content/repositories/snapshots/com/cpex/admin/admin-server/12.700.47-SNAPSHOT/
+    dev2:  rv-dv2-mrad-01,  /var/opt/admin
+
+GSMR server changes
+    12.800.04 release
+    send email
+        RT, Qian, JB
+    npe fixed
+        have startup create multiplexer first?
+            to be able to broadcast errors
+            dont allow client connetions
+                dont call mulitiplxer.start until gci connections are ready
+
+20140219 Wed
+Ticket for AT
+    https://footprints.cpex.com
+        change control - Production
+        
+http://rv-dv2-mrad-01:9002/admin
+   user: rcotton, pw: starts
+   
+GSMR Server
+    make sure that MRAS has it as started
+    gsmr.sh now removes old bin files from Logs, by calling log-cleanup.sh
+    mras client logging
+        changed debug to finest
+    Jira GSMR-18        
+    deploy to dev2 12.800.06-SNAPSHOT
+    verify with MRAS as green
+   
+GSMR Server
+    LL needs request to be heavy
+    GSMR-19 add requestWebCPLoginInfo as a heavy connection request
+    12.800.06-SNAPSHOT
+    ** create new release when tested in Dev2 by Sarath
+
+MRAD
+    needs thread to watch for stop file
+    needs to start LLclient script
+    cleanup logs
+AT ticket
+    GSMR Server 12.800.06
+    at-pr-gsmr-01,2,3,4,5
+    4:30pm
+
+20140220 Thursday
+https://rv-mg-mind-02.intcx.net/job/MRAdmin/
+
+InfoSec Ticket for AT
+1: Please open port 9000 for GSMR servers at-pr-gsmr-01,2,3,4,5 in AT, from my desktop 10.3.106.212
+2: Please open port 9000 for GSMR servers at-pr-gsmr-01,2,3,4,5  in AT, from at-mg-xput-01,02 server.
+3: Please open port 80 for 10.1.152.65 (F5) in AT, from my desktop 10.3.106.212
+4: Please open port 80 for 10.1.152.65 (F5) in AT, from at-mg-xput-01,02 server
+
+Ticket for ORD mrad access to LLAD and GSMRs
+1: Please open port 9000 for GSMR servers ord-pr-gsmr-01,2,3,4,5 in ORD, from my desktop 10.3.106.212
+2: Please open port 9000 for GSMR servers ord-pr-gsmr-01,2,3,4,5  in ORD, from ord-mg-xput-01,02 server.
+3: Please open port 80 for 10.6.152.65 (F5) in ORD, from my desktop 10.3.106.212
+4: Please open port 80 for 10.6.152.65 (F5) in ORD, from ord-mg-xput-01,02 server
+
+GSMR 12.800.07 release
+    1) This has the change to allow for setting the GCI connection stagger time.  This is the config setting
+    in the server.ini file:
+         msStagger = 500
+
+    2) creates 60 copies of the IFL/GCI library during installation. 
+    3) At startup, if any GCI connection is "stale", then a new lib (up to max 60) will be used to establish the connection.
+
+    I have tested in Dev2, debugged, and created failure conditions, and everything worked/responded as expected.
+    No GSMR Client changes.
+
+Jira GSMR-20
+add GSMR stagger time as config setting, GCI reconnect using new lib
+    create 60 copies of libs
+
+
+
+20140221 Fri
+http://rv-dv2-mrad-01:9002/admin/
+rcotton / starts
+
+BRIDGE:
+https://icespace.cpex.com/docs/DOC-47425
+866-692-4538 
+internal: 4444 0377#
+
+admin-server Release Notes - admin-server 12.700.47 - 12.700.48 Release Notes
+    Improvement (1)
+    MRADM-3 bug in listener list | Major | Open | Vince Via 
+
+    Warnings (1)
+    The following push messages failed to identify an issue key.
+    1.  8ef6029f | John Davis | 2014-02-20:07:56:50 | make status sortable
+    Created on Fri Feb 21 15:44:03 EST 2014 with ARN v1.43 
+
+20140222 Sat
+tcpip
+    dont print payload bytes to console
+    MRADM-4
+    mrutils tcpip needs to be able to accept messages from server that dont have a client request
+
+20140223 Sun
+
+new releases
+    multiplexer 1.0.7
+    remotemultiplexer 1.0.9
+    tcpremoting  1.0.0-SNAPSHOT
+    icesocketremoting 0.0.1-SNAPSHOT
+
+deploy MR AS to dev2
+    12.700.49-SNAPSHO
+
+jira MRADM-5 
+    client admin interface to MRAD
+    test in dev2
+    >> https://coin.intcx.net/job/admin-server/
+    >> https://rv-mg-mind-02.intcx.net/job/ICEMRadmin/
+    12.700.49-SNAPSHOT
+
+20140225 Tues
+    Dial in number: 4444, then 4866#
+    at-mg-xput-01
+
+    Script used when installing to an environment:
+        https://gitorious.intcx.net/sdlc/pkg/blobs/master/svr4/lightweight/resources/src/main/resources/postinstall
+        
+
++ copyDirContents /var/opt/gsmr/environments/exft3/01/root / 
++ [ -d /var/opt/gsmr/environments/exft3/01/root ] 
++ copyDirContents /var/opt/gsmr/environments/exft3/01 /var/opt/gsmr 
++ [ -d /var/opt/gsmr/environments/exft3/01 ] 
++ copyDirContents /var/opt/gsmr/environments/exft3/pdk-ft3-exgsmr-01/root / 
++ [ -d /var/opt/gsmr/environments/exft3/pdk-ft3-exgsmr-01/root ] 
++ copyDirContents /var/opt/gsmr/environments/exft3/pdk-ft3-exgsmr-01/ /var/opt/gsmr 
++ [ -d /var/opt/gsmr/environments/exft3/pdk-ft3-exgsmr-01/ ] 
++ copyDirContents /var/opt/gsmr/environments/exft3/root / 
++ [ -d /var/opt/gsmr/environments/exft3/root ]
+
+
+20140226 Wed
+
+ICE Browser Chrome
+https://gitorious.intcx.net/marketrouter/admin-server
+https://coin.intcx.net/job/gsmr-installer/
+https://maven.intcx.net/content/repositories/releases/com/cpex/admin/iceadminclient_util/12.700.44/iceadminclient_util-12.700.44.pom
+https://rv-mg-mind-02.intcx.net/job/ICEMRadmin/
+https://jira.intcx.net/secure/Dashboard.jspa
+http://rv-dv2-mrad-01:9002/admin/
+http://10.3.106.212:8080/installer.html
+
+
+logs mover for admin server
+[helpdesk@at-mg-ixrp-04 router\>pwd
+/var/opt/logsrepo/logs/prod/mradmin/at-mg-xput-01/admin/router
+
+[helpdesk@ord-mg-ixrp-04 router\>pwd
+/var/opt/logsrepo/logs/prod/mradmin/ord-mg-xput-01/admin/router
+
+Install MRAdmin 12.800.03 in ** PROD Support
+    find out current version in case we need to rollback
+        server-12.700.46.jar
+        tcpip-server-0.54.jar
+
+
+MR Admin: 12.800.03
+DLMR: 12.800.8
+DHS: 12.800.34
+OBMR: 12.800.16
+OCMR/OHMR: 12.800.35
+Fixos 12.800.14 on all fixos,hex,im modes
+Pof 12.800.8
+Hdf 12.800.8
+LLS � 12.800.21
+LLAD � 12.800.18
+ICEMCPriceFeed : 12.800.22
+ICERPPriceFeed : 12.800.22
+ICEPriceFeed : 12.800.4
+ICEtbmr : 12.800.6
+GS � 12.800.108
+ICE-SSO � 12.800.1.17
+ICE CMA � 12.8001.2
+GSMR � 12.800.7
+MR � 12.800.37
+UPSMR � 12.800.11
+Ibmr/mpmr � 12.800.22
+FIX TC � 12.800.20
+webICE 12.800.29
+
+20140227 Thursday
+
+
+
+private hub
+    see if oaObj.weakrefs has the hub
+    ** if so, then change Hub.contins()    
+hub.add
+    calls contains multiple times
+    
+hub.bIsFetching flag 
+    if running on a client, then it needs to send events
+        
+
+Admin Server logs
+    ord-mg-ixrp-04
+        /var/opt/logsrepo/logs/prod/mradmin
+
+ORD ticket
+    12.800.03 MR Admin Server
+        previous version server-12.700.46
+
+
+MRAD release
+    https://coin.intcx.net/job/mradmin%20server/
+    https://coin.intcx.net/job/mradmin_installer/
+    https://rv-mg-mind-02.intcx.net/job/Mrad%20(NOT%20MRADMIN)/
+
+admin-server release 12.800.01
+    https://coin.intcx.net/job/admin-server/
+    https://rv-mg-mind-02.intcx.net/job/ICEMRadmin/
+
+wifi password
+ ICE Office Wi-Fi FAQ for more information:  https://icespace.cpex.com/docs/DOC-54525 
+
+20140307 Friday
+
+Jeremy Bradshaw
+Router status can be checked in the new MRAdmin tool. H
+ere are the links for each environment:  
+https://icespace.cpex.com/docs/DOC-48322
+
+20140313 Thurs
+LLAD ServerName    = ads.dv2.rv.intcx.net 
+
+have client use ServerDisplayName
+
+loadAllUsers 56890
+
+make sure privates are not added
+is M2M added to oaObj.weakhub
+
+jnlp servlet
+    did not find correct oa & mrad jar
+
+performance tests
+  9:00am - tot 56136, Dev2,  start=9:03:21, end: 9:08:28 => 5 min 7 sec => 307 seconds, avg: 183/sec
+  4:10pm - tot 56137, Dev2,  start=4:11:46  end: 4:13:27 => 1 min 41 sec => 101 seconcs, avg: 555/sec
+  5:15   -                         5:15:33  end: 5:17:15 => 1 min 42 sec
+
+
+20140317 Monday
+
+GSMR Client 12.800.19
+    GSMR-24 added GS function getUserSubscriptions
+
+GSMR Server
+    timeout error msg
+        GSMR-23
+    12.800.11        
+
+
+20140318 Tuesday
+
+CM Ticket 30694 to update OA in maven
+Please unzip the attached files to this location in the Maven repo:
+https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.04/
+
+        
+20140321 Friday
+
+GSMR-26 
+    iceviewer needs to know the router that a user is logging in from
+
+    gsmrserver Release Notes - gsmrserver 12.800.11 - 12.800.12 Release Notes
+    Improvement (1)
+    GSMR-26 iceviewer needs to know the router that a user is logging in from | Major | Open | Vince Via 
+    There are no warnings for this release.
+
+20140324 Monday
+
+
+at-mg-exmrad-01 
+
+GSMR
+    exord & exat only needs 10 connections
+
+20140325 Tuesday
+
+GSMR-27 GSMR ex servers to only use 10 GCI connectsions, 2 that are heavy
+
+20140326 Wednesday
+
+GSMR-28 GSMR in prod EX silo should use regular admin-server
+    12.800.14 release
+
+fixos    
+    git clone git@gitorious.intcx.net:fix/fixos.git
+
+mrad
+    MRADM-5 Client stays "yellow" in UI client
+
+POSTINSTALL script
+https://stash.intcx.net/projects/SDLC/repos/pkg/browse/svr4/lightweight/resources/src/main/resources/postinstall     
+was: https://gitorious.intcx.net/sdlc/pkg/blobs/master/svr4/lightweight/resources/src/main/resources/postinstall
+     
+        #!/bin/sh
+
+        set -x
+        PATH="/usr/xpg4/bin:$PATH"
+        LANG=""
+        SITE=`hostname | cut -d "-" -f 1`
+        ENV1=`hostname | cut -d "-" -f 2`
+        APP=`hostname | cut -d "-" -f 3`
+        NODE=`hostname | cut -d "-" -f 4`
+        CRONFILE="${pkg.cron}"
+        USER="${pkg.user}"
+        SCRIPTS="${pkg.scripts}"
+        POSTINSTALLHOOK="${pkg.postinstallhook}"
+        APPDIR="${pkg.appdir}"
+        HOSTNAME=`hostname`
+        ALLCONF="all"
+        PACKAGENAME=${project.artifactId}
+        PACKAGEUPPER=`echo $PACKAGENAME | sed s/-/_/g | tr [:lower:] [:upper:]`
+
+        export APPDIR
+
+        if [ "$SITE" = "pdk" ]
+        then
+          ENV="$SITE"-"$ENV1"
+        else
+          ENV="$ENV1"
+        fi
+
+        if [ "$ENV" = "pr" ]
+        then
+          ENV="$SITE"
+        fi
+
+        if [ "$ENV" = "mg" ]
+        then
+          ENV="$SITE"-"$ENV"
+        fi
+
+        case "$APP" in
+          ex*)
+            ALLCONF="exall"
+            ENV="ex$ENV"
+          ;;
+          lx*)
+            ALLCONF="lxall"
+            ENV="lx$ENV"
+          ;;
+          du*)
+            ENV="$ENV1-icc"
+            echo "Env is $ENV"
+            if [ "$SITE" = "ord" ] || [ "$SITE" = "at" ]
+            then
+              ENV="$SITE"-icc
+            fi
+          ;;
+          de*)
+            ENV="$ENV1-icc"
+            echo "Env is $ENV"
+            if [ "$SITE" = "ord" ] || [ "$SITE" = "at" ]
+            then
+              ENV="$SITE"-icc
+            fi
+          ;;
+          *)
+          ;;
+        esac
+        #Source setenv to translate environments from legacy to new naming convention
+
+        if [ -f ${APPDIR}/environments/$ALLCONF/conf/setenv.sh ]
+        then
+          . ${APPDIR}/environments/$ALLCONF/conf/setenv.sh
+        fi
+
+        ###################### FUNCTIONS GO HERE #############################
+
+        copyDirContents()
+        {
+          if [ -d "$1" ]
+          then
+            cp -rp $1/* $2
+            rm -rf $1
+          fi
+        }
+
+        installCrontab()
+        {
+          if [ "$USER" != "root" ]
+          then
+            if [ ! -z "$CRONFILE" ]
+            then
+              su - $USER -c "crontab $CRONFILE"
+            else
+              echo "CRONFILE not set."
+            fi
+          fi
+        }
+
+        cleanUp()
+        {
+          rm -rf ${pkg.appdir}/environments
+        }
+
+        setPermissions()
+        {
+          find ${pkg.appdir} -type f -exec chmod 0744 {} ";"
+          find ${pkg.appdir} -type d -follow -exec chmod 0775 {} ";"
+          chown -R ${pkg.user}:${pkg.group} /var/opt/logs/`basename ${pkg.appdir}`
+          chown -R root:${pkg.group} /var/spool/cron/crontabs/${pkg.user}
+        }
+
+        hupcron()
+        {
+          echo "restarting cron"
+          svcadm disable cron
+          svcadm enable cron
+        }
+
+        #Hook for custom commands provided by application
+        runHook()
+        {
+          if [ -f ${pkg.appdir}/${pkg.postinstallhook} ]
+          then
+            . ${pkg.appdir}/${pkg.postinstallhook}
+          fi
+        }
+
+        sudoPerms ()
+        {
+
+
+          #Get some variables declared
+          SUDOLINES="/usr/local/etc/sudoers.d/${pkg.user}"
+          export SUDOLINES
+
+          rm $SUDOLINES
+          touch $SUDOLINES
+          chmod 0440 $SUDOLINES
+          chown root:root $SUDOLINES
+
+          if [ ${pkg.sudogrps}X != X ]
+          then
+            GROUPLIST=`echo ${pkg.sudogrps} | sed s/,/,%/g | sed s/\^/%/g`
+            if [ ${pkg.user}X != X ]
+            then
+              echo "Setting up Sudo SU groups"
+              echo "User_Alias ${PACKAGEUPPER}GRP=${GROUPLIST}" >> $SUDOLINES
+            else
+              echo "No ${pkg.user} specified"
+            fi
+          fi
+
+          if [ ${pkg.opsgrps}X != X ]
+          then
+            OPGROUPLIST=`echo ${pkg.opsgrps} | sed s/,/,%/g | sed s/\^/%/g`
+            if [ ${pkg.user}X != X ]
+            then
+              echo "Setting up Sudo SU groups"
+              echo "User_Alias ${PACKAGEUPPER}OPGRP=${OPGROUPLIST}" >> $SUDOLINES
+            else
+              echo "No ${pkg.user} specified"
+            fi
+          fi
+
+          #if pkg.user is set build su - user sudo perms
+          if [ ${pkg.user}X != X ]
+          then
+
+            echo "Setting up Sudo SU perms ${pkg.user}"
+
+            USERSU=${PACKAGEUPPER}SU
+            export USERSU
+            echo ${USERSU}
+
+            echo "Cmnd_Alias ${USERSU}=/usr/bin/su - ${pkg.user}" >> $SUDOLINES
+
+            case ${SITE} in
+              rv|ll|pdk)
+                if [ -f "$SUDOLINES" ]
+                then
+                  echo "Setting up Dev Environment sudo"
+                  echo "%qa ALL=(root)NOPASSWD:${USERSU}" >> $SUDOLINES
+
+                  if [ ${GROUPLIST}X != X ]
+                  then
+                    echo "${PACKAGEUPPER}GRP ALL=(root)NOPASSWD:${USERSU}" >> $SUDOLINES
+                  fi
+                fi
+              ;;
+              *)
+                echo "Not a Dev Environment, no change"
+              ;;
+            esac
+
+            echo "%cm ALL=(root)NOPASSWD:${USERSU}" >>  $SUDOLINES
+            if [ ${OPGROUPLIST}X != X ]
+            then
+              echo "${PACKAGEUPPER}OPGRP ALL=(root)NOPASSWD:${USERSU}" >>  $SUDOLINES
+            fi
+
+          else
+            echo "No ${pkg.user} specified"
+          fi
+
+          #if pkg.scripts is set build pkg script sudo perms
+          if [ ! -z "$SCRIPTS" ]
+          then
+
+            echo "Cmnd_Alias ${PACKAGEUPPER}PKGSCRIPTS=${pkg.scripts}" >> $SUDOLINES
+            case ${SITE} in
+              rv|ll|pdk)
+                if [ -f "$SUDOLINES" ]
+                then
+                  echo "Setting up Dev Environment sudo"
+                  echo "%qa ALL=(root)NOPASSWD:${PACKAGEUPPER}PKGSCRIPTS" >> $SUDOLINES
+                  if [ ${GROUPLIST}X != X ]
+                  then
+                    echo "${PACKAGEUPPER}GRP ALL=(root)NOPASSWD:${PACKAGEUPPER}PKGSCRIPTS" >> $SUDOLINES
+                  fi
+                fi
+              ;;
+              *)
+                echo "Not a Dev Environment, no change"
+              ;;
+            esac
+
+            echo "%cm ALL=(root)NOPASSWD:${PACKAGEUPPER}PKGSCRIPTS" >>  $SUDOLINES
+            echo "%bounce ALL=(root)NOPASSWD:${PACKAGEUPPER}PKGSCRIPTS" >>  $SUDOLINES
+            if [ ${OPGROUPLIST}X != X ]
+            then
+              echo "${PACKAGEUPPER}OPGRP ALL=(root)NOPASSWD:${PACKAGEUPPER}PKGSCRIPTS" >>  $SUDOLINES
+            fi
+          else
+            echo "No Scripts"
+          fi
+
+
+        }
+        ###################### FUNCTIONS GO HERE #############################
+
+        case "$APP" in
+          ex* | lx*)
+            copyDirContents ${pkg.appdir}/environments/all/root /
+            copyDirContents ${pkg.appdir}/environments/all ${pkg.appdir}
+            copyDirContents ${pkg.appdir}/environments/$ALLCONF/root /
+            copyDirContents ${pkg.appdir}/environments/$ALLCONF ${pkg.appdir}
+            copyDirContents ${pkg.appdir}/$NODE/root /
+            copyDirContents ${pkg.appdir}/$NODE ${pkg.appdir}
+          ;;
+          *)
+            copyDirContents ${pkg.appdir}/environments/$ALLCONF/root /
+            copyDirContents ${pkg.appdir}/environments/$ALLCONF ${pkg.appdir}
+            copyDirContents ${pkg.appdir}/$NODE/root /
+            copyDirContents ${pkg.appdir}/$NODE ${pkg.appdir}
+          ;;
+        esac
+
+        copyDirContents ${pkg.appdir}/environments/$ENV/root /
+        copyDirContents ${pkg.appdir}/environments/$ENV ${pkg.appdir}
+        copyDirContents ${pkg.appdir}/$APP/root /
+        copyDirContents ${pkg.appdir}/$APP/ ${pkg.appdir}
+        copyDirContents ${pkg.appdir}/$NODE/root /
+        copyDirContents ${pkg.appdir}/$NODE ${pkg.appdir}
+        copyDirContents ${pkg.appdir}/$HOSTNAME/root /
+        copyDirContents ${pkg.appdir}/$HOSTNAME ${pkg.appdir}
+
+        symlink="${pkg.symlink}"
+        if [ ! -z "$symlink" ]
+        then
+          if [ ! -d "$symlink" ]
+          then
+            rm "$symlink"
+            ln -s ${pkg.appdir} "$symlink"
+          fi
+        fi
+
+        mkdir -p /var/opt/logs/`basename ${pkg.appdir}`
+        if [ ! -d ${pkg.appdir}/logs ]
+        then
+          ln -s /var/opt/logs/`basename ${pkg.appdir}` ${pkg.appdir}/logs
+        fi
+
+        mkdir -p ${pkg.appdir}/logs/engine
+        mkdir -p ${pkg.appdir}/logs/adapter
+        mkdir -p ${pkg.appdir}/logs/router
+        mkdir -p ${pkg.appdir}/logs/session
+
+        sudoPerms
+        installCrontab
+        setPermissions
+        hupcron
+
+        # Moved the postinstallhook to the last spot because the permission changes
+        # I was making in a postinstall hook script were being clobbered by the
+        # setPermissions function in this script.
+
+        if [ -n "${POSTINSTALLHOOK}" ]; then
+          runHook
+        fi
+        cleanUp
+
+
+qqqqqqq END        
+        
+        
+MRADM-13 add postinstall to create data directory, update config files        
+        
+
+20140327 Thurs
+
+GSMR-29 Expand unique name from "GS" to "GSMR" or "EXGSMR"
+
+MRAD release
+    12.800.01-SNAPSHOT
+    https://coin.intcx.net/job/mradmin%20server/
+    https://coin.intcx.net/job/mradmin_installer/
+    https://rv-mg-mind-02.intcx.net/job/Mrad%20(NOT%20MRADMIN)/
+
+admin server in AT
+    http://at-mg-xput-vip:9002/admin/
+
+20140328 Friday
+
+RUNAS=mradmin
+    tsacadmin
+
+IDM
+    https://aaa.intcx.net
+    
+Service Now ServiceNow
+    https://xseadprod.service-now.com
+
+GSMR-30 GSMR client event on disconnect to server
+
+20140331 Monday
+
+gsmr client
+    onConnectionStatus change event
+tsac
+    update remoteClient status
+        on server side, when client registers remote object
+
+20140401 Tuesday
+
+GSMR-31 ICEMessage needs a basicWriter for Byte
+
+20140402 Wed
+
+Later, interface with SSO
+
+SSO, security
+    https://icespace.cpex.com/docs/DOC-41996
+        list of environments
+
+https://gitorious.intcx.net/webtech/sso/blobs/master/client/src/main/java/com/cpex/web/auth/client/SsoAdminClient.java
+    public AuthenticationResponse authenticate(String user, String password, String appKey)  
+    {  
+       Util.validateParams(new String[] { "username", "password", "appKey" }, new String[] { user, password, appKey });  
+       String urlpath = Util.createURL(urlPrefix, "authenticate", new String[] { user, password, appKey });  
+       return new AuthenticationResponse(sso.httpGet(urlpath));  
+    }  
+
+https://gitorious.intcx.net/webtech/sso/blobs/master/client/src/main/java/com/cpex/web/auth/client/util/Util.java
+    Util
+
+public AuthenticationResponse authenticate(String user, String password, String appKey) 
+    appKey = "ICE" 
+
+
+20140407 Monday
+
+GSMR-31 ICEMessage needs a basicWriter for Byte
+
+gsmrcommon Release Notes - gsmrcommon 12.800.11 - 12.800.12 Release Notes
+GSMR-31 ICEMessage needs a basicWriter for Byte | Major | Open | Vince Via 
+
+gsmrclient Release Notes - gsmrclient 12.800.22 - 12.800.23 Release Notes
+GSMR-31 ICEMessage needs a basicWriter for Byte | Major | Open | Vince Via 
+
+
+http://at-mg-exmrad-01/
+  user: vvia
+  sudo su - tsacadmin  
+  
+
+admin-server 9002 web, 8081 client
+tsac 8080 web, 9000 client
+
+http://at-mg-exmrad-vip:8080/
+       
+ixmrad = at-mg-xput-01
+
+
+tsac firewall
+from outside:  8080 website, 9000 swing client
+vvia 10.3.106.212, helpdesk users
+
+from tsac server:
+to LLAD: port 80
+to AdminServer: port 8081
+to GSMRs: port 9000
+
+TTS-9658 - UI changes for tsac
+
+tsac Release Notes - tsac 12.800.01 - 12.800.02 Release Notes
+Improvement (1)
+TTS-9658 UI changes for tsac | Major | Open | Vince Via 
+
+https://pdk-np-mind-01/job/TSAC/
+
+20140411 Friday
+    deploy endex to prod
+should we be able to ssh ord-mg-exmrad-01? 
+
+conference number
+4444 4866
+
+ALT DNS (from IE): https://icespace.cpex.com/docs/DOC-2002
+
+
+20140415 Tuesday
+SSH: ord-mg-ixrp-02
+cd /var/opt/logsrepo/logs/prod/GSMR
+find ./ord-pr-gsmr-*/2014-04-10*.log -print -exec grep -i '541241481' {} \;
+
+20140416 Wednesday
+
+gsmr 12.800.16 - 12.800.17 Release Notes
+There were no issues nor warnings found for this release.
+Created on Wed Apr 16 09:25:43 EDT 2014 with ARN v1.43 
+installer with no new changesets.
+
+
+Kyle's phone 770 316 2717
+    888 881 2622
+    phoneclaim.com/verizon
+        Claim ID:408555191
+
+20140417 Thursday
+
+pkginfo -l ICEgsmr
+
+
+20140418 Friday
+
+gsmr Release Notes - gsmr 12.800.17 - 12.800.18 Release Notes
+Improvement (1)
+GSMR-32 Config changes for MRAS server | Major | Open | Vince Via 
+
+20140423 Wed
+
+https://maven.intcx.net/content/repositories/releases/com/theice/idl/
+
+is the *.java available ?
+  Vinod Kumar 9:28 AM
+    that should be in idl_src
+    or idl_bundle
+
+
+20140424 Thur
+gsmr Release Notes - gsmr 12.800.18 - 12.900.01 Release Notes
+    GSMR-33 Create 12.900
+
+Jira GSMR-33 12.900 release
+    ICEMessage
+        POM => IDL 12.900.3.2    
+        
+    GSMR common, client, etc... installer        
+
+
+20140428 Monday
+
+Source  Dest    Port    Temp/Perm   Notes   
+TradeOps, SysOps    ord-mg-exmrad-01/02 8080/9000   Perm    For user access to TSAC 
+ord-mg-exmrad-01/02 exllad.ord.intcx.net    80  Perm    For MRAD access to LLAD VIP 
+TradeOps, SysOps    at-mg-exmrad-01/02  8080/9000   Perm    For user access to TSAC 
+at-mg-exmrad-01/02  exllad.at.intcx.net 80  Perm    For MRAD access to LLAD VIP 
+
+20140429 Tuesday
+
+tsac Release Notes - tsac 12.800.02 - 12.800.03 Release Notes
+    New Feature (1)
+    TTS-8982 Post 12.800 - Add view only user to MRadmin | Minor | Open | Vince Via 
+    Improvement (3)
+    MRADM-14 12.800 release for TSAC project | Major | Open | Vince Via 
+    MRADM-5 client admin interface to MRAD | Medium | Open | Vince Via 
+    TTS-9658 UI changes for tsac | Major | Open | Vince Via 
+
+
+ORD ticket for TSAC
+    #72661
+
+
+VV ICE Tea project 
+    added LoadRunnerClient.java
+    to use with LoadRunner product
+        \\cpex\software\QualityCenter\Loadrunner12
+
+
+LoadRunner
+    for Eclipse
+
+'\\cpex\software\QualityCenter\Loadrunner12\hp.lr.vugeneclipse42addin.jar' ( Eclipse Plug In for Loadrunner 
+
+"\\cpex\software\QualityCenter\Loadrunner12\LREclipseIDEAddInDevSetup.exe"
+
+"HP_LoadRunner_12_Community_Edition_T7177-15045.exe" - this is the installer if you want to Play., i can walk you thru the components. 
+
+
+20140430 Wed
+
+Jira GSMR-34 support for IDL 12.900.3.5
+
+20140501 Thur
+
+    TSAC in prod
+        at-mg-xput-01
+        ord-mg-xput-01
+    
+
+i'm booked until the 7th getting out a deliverable, then london for 10 days. 
+can you build something around the existing schema?
+#iba/libor
+IBADV =
+(DESCRIPTION =
+(ADDRESS= (PROTOCOL = TCP)(HOST= 10.3.67.104 ) (PORT = 1521))
+(CONNECT_DATA =
+(SERVICE_NAME = ibadv)
+)
+)
+Tianhua Wu Tianhua.Wu@theice.com is the dba
+    
+
+Kyle's phone 770 316 2717
+    888 881 2622
+    phoneclaim.com/verizon
+        Claim ID:408555191
+
+20140509 Friday
+
+GSMR-35 IDL 12.900.4.1
+
+20140513 Tuesday
+
+idlconstants.xml
+https://maven.intcx.net/content/repositories/releases/com/theice/idl/idl-src/12.900.4.2/
+
+
+20140515 Thur
+
+I'm Blessed, changed for ever
+
+Spirt: do you trust me?
+
+I must gain her trust and love through the Lord
+    no longer just words or belief
+    Can not not ...
+
+I'm ruined, spent, one step from being lost forever, and falling ... all at once
+
+reading glasses, poses, hair, voice, singing, dance (ouch), way she moves,
+simple, "boring", prius, independent, quiet, hiking (walks fast),
+fun to message, as a mom, no drama :):):)
+    Spirit matched us
+        she gets me, I get her - meant to be
+
+mistake w/ profile divorced. 
+    Spirit's lession: shows eqo getting in the way, not trusting
+    ego: jealous
+
+I want to sign up for this
+    risk of heart break
+    usually what you hear that a woman experiences?
+        makes them guarded, insecure
+    
+I dont deserve this, not worthy
+    work, OA, home, $$, passions, silver, love, kids
+        Spirit: do you trust me
+
+Zen - definition: something difficult and worthy that is made to look easy
+    knowing, purpose, cant not do it
+
+honor her
+    love, best friend, supportive, fan, pamper, gentleness, kindness,
+    quiet place, open heart, offer my best (red carpet/silver platter)
+    know her heart
+    give her space, to grow, expand into her fullest potential
+        watch her move, and be
+
+
+20140517 Saturday
+
+change 401k to 5k
+check ice stock to sell
+
+1900 house
+500 utils
+350 cell
+1200 cars
+320 payments loan, insurance
+200 gas
+140 cable
+800 food
+----
+5000
+
+2100
+1200
+1600
+???? Cobra
+----
+4900
+
+Tracie Johnson
+1421 Bluff Creek Trail  Monroe, GA 30656.  Alcovy Bluffs subdivision
+
+
+20140519 Monday
+ord-mg-xput-01
+/var/opt/tsac
+
+Sat May 10 Blue Ridge, cabin - first sight, lunch, shopping
+Wed May 14, Alons, park, lots of rain
+Fri May 16, Rays, river, microcenter, work parking lot
+Sat May 17, her house, park, turkey/ham
+Sun May 18, long talk on ph in rain (pavilion), to her house, first ILU
+
+20140520 Tues
+$5k Herrin
+she sees something in me that I need to see
+    like H
+        I wont let T go    
+I love the way she is
+    being-ness
+when she said I could come there and work for a couple of hours if needed
+does not want me to get burned out from the drive
+I want her to know that I'm not going there to escape
+    I could stay with a friend or hotel
+    I want to see her
+
+Tue May 20 T house, dog walk, salmon and lasagna, home at 11:00, workout
+
+20140521 Wed
+CEM for Pradnya
+    create demo
+    1:00 meeting
+
+Wed May 21 Alons, mall
+
+20140522 Thur
+home, dinner with Rachel at Long Horns
+
+20140523 Fri
+
+insecure
+    feeling hers?
+        need to reassure her.
+            committed to her, not interested in any other ("I'm ruined")
+    need to be honest and lots of communication
+        we both have natural tendency to be inner, etc
+Fri night, T, bonefish, stay over in basement        
+20140524 Sat
+    canoe with T on lake
+    home late
+20140525 Sun
+    C found recipt and note from T
+    went to Ken mtn, cancelled and went home
+    worked outside, poured rain, moved C out of master
+    HotWok, called T, all good
+20140526 Mon
+    T at 1, canoe, caugth in rain under bridge
+    fruits of Spirit bible study
+
+20140528 Wed
+
+IDL 12.900.5.2
+https://maven.intcx.net/content/repositories/releases/com/theice/idl/idl-src/12.900.5.2/
+
+20140529 Thur
+c signed papers
+T
+    I give you back to Spirit
+    her Heart
+left for cabin
+Fri
+    blood mtn
+Sat
+    gun
+Sun
+    vogue, 4mile trail
+    shooting
+    tree down
+    home
+    
+20140602 Mon    
+John Stone
+    he will call me on Monday to get house for sell
+costco
+kroger, home depot
+Rachel for dinner
+cleaned up tree in front yard
+washer/dryer hookup
+
+20140603 Tues
+bills
+C check $2950
+T house for dinner and night
+
+20140604 Wed
+commute from T 2hrs on 85
+./orderrouter.sh start R ALL 01 keepior
+./orderrouter.sh stop R ALL 01
+
+Dev3 test
+    users
+        dveras
+        snorman-oi
+    Platts FO        
+
+12.800 GSMR changes for Prod
+    new ******
+        gsmrclient 12.800.24
+            gsmrcommon 12.800.12
+        ** need to have ORMR pick this up
+        
+
+    GSMRClient/MarketserverLogMessage.java
+        requestsendChatMessage 
+            get changes from 12.900
+                Document4
+    GSMRserver/serverController.java
+    ORMR 12.800 prod will need to pick this up 
+
+Client 12.800.24 link in coin
+    https://coin.intcx.net/job/gsmr-client-12.800.24/m2release/?
+
+ex: 
+    snorman-oi,requestSendChatMessage,receiverUserID:  Text:Fourth message....,214910113|Bid|5028717|24|100.0|5.0|0.0|active|1|limit|N||none|0.0|00625556|-1||
+
+MR cem.responseTimepoutMs
+    
+TREE
+    Ace tree service 7 943 2383
+        talked to them at 9:00am
+        they will stop by an call with quote
+    Tree monster
+        404 200 2706
+
+20140605 Thur
+Thur 4:00 Parisa
+T night
+
+20140606 Fri
+5am wake up at T
+7:00am at work
+Qian's doc on Basildon
+    https://icespace.cpex.com/docs/DOC-59726
+LOGS: b5p-mg-ixrp-02
+
+CMA requests from Ryan
+https://gitorious.intcx.net/webtech/cma/blobs/master/cma-java-backend/src/main/java/com/theice/cma/appjavabackend/service/secure/cem/CemRequest.java
+
+20140606 Friday
+T cabin
+
+20140607 Sat
+T uti
+vogal, kayak
+
+20140608 Sun
+T walk, Cherokee lake, Bible study, hike
+home, lots of packed boxes, boys stopped by
+
+20140609 Mon
+cabin sign changes to Eric
+
+20140610 Tues
+tsac in API test
+    12.800.04
+Divorce is final
+B5P branch for GSMR
+    https://gitorious.intcx.net/gsmr/installer/commits/12.825.01-B5PAV
+    see: https://icespace.cpex.com/docs/DOC-59805
+T sleepover    
+    
+201406012 Thur
+ORD/AT ticket for TSAC 12.800.04
+    https://footprints.cpex.com
+        change control - Production
+    75581, 75582
+    
+    ord-mg-xput-01  ord-mg-xput-02
+    use vip:   http://ord-mg-xput-vip:8080    
+    
+    
+submit ticket for ORD and AT
+    12.800.04
+    need to get icespace documentation
+tsac icespace documentation
+    https://icespace.cpex.com/community/productsandprojects/tradingsystem/components/tsac--(trading-system-admin-console)
+
+new GSMR server/install release
+    deploy lxgsmr in dv2
+        create env for LX for all EX environments
+
+Trading Release CAB Meeting
+    Conference Call-In - Internal extension: 8888, 2454# - Password: 12454#   External Call-In: 770-618-8888, 2454# - Password: 12454#
+
+http://at-mg-exmrad-01/
+  user: vvia
+  sudo su - tsacadmin  
+http://at-mg-exmrad-vip:8080/
+
+20140613 Fri
+bank (silver, hi5 chk), best buy
+
+tsac server in prod
+    ord-mg-xput-01
+T house
+
+20140614 Sat
+T house
+    clean air conditioners
+    trim yard
+    new chain saw
+    back home
+    costco
+    dinner with R and friend Taylor at west cobb diner
+    issue with C on restraining order
+20140615 Sun f-day
+    clean garage
+    T came over
+    avenues shopping for T
+    belk, trunks
+   
+20140616 Monday    
+    tsac llad interface
+        found disconnect issue in OA, where m2m updateMasterObject should not be called if it is a client and hub was not loaded
+
+    idl in mavan
+        https://maven.intcx.net/content/repositories/releases/com/theice/idl/idl-src/12.900.6.2/
+
+    icemessasge, gsmr client
+        idl 12.900.6.2
+
+    gsmr server
+        support idl 12.900.6.2
+        read response from GS and log exception
+        
+20140617 Tuesday
+
+IDL 12.900.6.3
+    icemessage
+        idl 12.900.6.3
+        release: 12.900.08
+    gsmrcommon        
+        icemessage: 12.900.08
+        release:12.900.09
+    gsmrclient
+        gsmrcommon: 12.900.09
+        generate GS Java API
+            get from maven
+                https://maven.intcx.net/content/repositories/releases/com/theice/idl/idl-src/12.900.6.3/idl-src-12.900.6.3.zip
+                copy idlconstants.xml to clipboard
+            IDLFunctions Client App
+                create new IDL, version=12.900.6.3
+                paste into XML textarea
+                click "Load XML"
+                click "Create Gemstone API"
+                    edit: GemstoneInterface.java
+                        and pasted "Gemstone API" textarea
+                    make any necessary changes to (fix compiler errors); MarketServerLogMessage.java
+        release: 12.900.09
+    gsmrserver
+        gsmrcommon: 12.900.09
+        release: 12.900.04
+    gsmrinstall
+        gsmrserver: 12.900.04
+        release: 12.900.04
+
+20140618/19/20
+    vacation
+        packing
+        moving
+20140620 fri
+    borrow K truck
+    get washer/dryer for T cabin
+    T cabin
+20140621 Sat
+    T cabin
+20140622 Sun
+    T cabin, T house
+    
+20140623 Mon
+    ICE
+    
+call Jay baker @ wells fargo home mortage
+    770 497 6031
+
+workday
+    new 12.900 work
+
+CEM MM
+    got jars from Dv ORMR server
+    CemCleintController.java
+        changed to have multiple CemClients
+
+
+20140624 Tues
+    painters at the house
+        $1500
+    TTS-10678 MR core, CemClientController.java support for multiple MMMRs
+    my place with Tracie xoxoxoxox
+
+Painter - Randy 770 656 0495
+    8:00am
+    attic window
+        from inside
+    outside paint
+        not sure that I have it
+    stucco
+        cracks?
+        stained around door and front windows
+    inside main paint
+        make sure paint is correct color
+    inside trim paint
+        for doors
+        touch up
+    nail gun for garage baseboard and steps        
+    remove stickers from Aarons ceiling
+
+
+20140625 Wed 
+    Eva check $250
+    SchedulerController.java
+        timezone
+      
+Homedepot
+    returned range cord
+    house key
+Autozone
+    tire gauge
+    2008 prius
+        windshield wipers
+        running light
+            driver rear
+Rachel and friend for dinner
+    steak, steak fries, spinach, edimomi, asparagus
+push wo
+pack furnance rooms
+
+C email
+    verify that she received Verizon text
+    401k transfer, qdro
+    Cobra status
+    I'll have her child support & alimony last friday of every month
+    date for next move
+    status of basement packing
+    boxes on back porch
+    items under back porch
+    horse trailer
+        I'll get a new title
+        I have docs
+
+
+
+20140626 Thur 
+    walk, work at 9:30
+
+    OADataSourceDelegate
+        get/release statment
+        get/release connection
+
+pay bills
+    C checks
+        + K rent
+John Stone
+    house for sale, sign in front, $375k
+
+    C check
+        child support + alimony - pathfinder
+        K $300 rent
+ GA parks pass for Kyles truck
+
+Home depot
+    string, stakes for T dog fence
+
+
+20140627 Fri
+    painter finishing
+    
+T went to KSu with Cori        
+GSMR chat msg logging from Dan M.   
+    created gsmr server 12.800.17 branch
+    created gsmr installer 12.800.19 branch
+
+    jira ticket    
+    CM ticket to create jenkins access
+    GSMR-37 log record change for request chat message
+    
+    need to find out where to test
+        PS
+        APItest
+CM ticket to create jenkins access
+T for lunch
+
+GSMR chat msg logging from Dan M.   
+    created gsmr server 12.800.17 branch
+    created gsmr installer 12.800.19 branch
+
+    jira ticket    
+    CM ticket to create jenkins access
+    GSMR-37 log record change for request chat message
+
+
+20140628 Sat
+    tire gauge for T
+    T house
+        by 9:00
+    dog pen        
+        tools
+            carrier, pick, generator, chainsaw
+            plastic tie straps
+            square, level
+        take string, stakes
+        take extra clothes            
+            swim trunks
+            sun screen
+            poisin ivy wash
+    16x16 
+        256+256=512, sq=22.62ft
+    > it was 18x18
+    T prius
+        wipers
+        tail light
+        tire pressure, fluids
+    Roku
+        
+    Kyle
+        pressure wash garage floor and play house
+            take back attachment to HD
+        tire gauge
+
+20140629 Sun
+    meet T father (cancelled0
+    Kyle
+        $150 for presure washing
+        club house, back porch and grill area
+
+
+
+20140630 Mon
+workday timesheet, and request for friday July 11 off for St simons trip
+
+went to bofa for new visa card to be sent out
+called verizon to allow C to transfer her cell 770 876 3898
+    888 832 4540
+
+kids echo mill address
+    1208 Anchor Terrace
+    Powder Springs, GA  30127
+
+check 401k make sure it is at new rate
+    check paycheck in workday
+    QDRO
+    https://qdro.fidelity.com/
+        user: vvia
+        pw: C* full pw
+
+R. Stacy Hylton
+36 Trammell Street S.W.
+Suite 201
+Marietta, Georgia 30064
+Telephone: (770) 422-3200
+
+Herrin Law Firm, P.C.
+30 Trammell Street, SW
+Marietta, GA 30064
+Telephone: 770-884-6341
+
+I emailed pdf of 401k qdro to C
+
+check 401k make sure it is at new rate
+    check paycheck in workday
+    QDRO
+    https://qdro.fidelity.com/
+        user: vvia
+            C* long/full pw
+    see: c:\temp\qdro_20140902.pdf
+
+    rafting trip with JB
+        check with T
+        Considering changing rivers this year... Are you ok with the Pigeon River? 
+        http://raftinginthesmokies.com/pigeon-river-rafting-trips/
+      me> my vote would be 7/26 .. second would be 7/19
+        https://www.google.com/maps/place/Hartford+Rd/@35.8414405,-83.1789199,16z/data=!4m2!3m1!1s0x885bdc7896f6c7ab:0x51a8214c809d6fda <https://www.google.com/maps/place/Hartford+Rd/%4035.8414405%2c-83.1789199%2c16z/data=%214m2%213m1%211s0x885bdc7896f6c7ab:0x51a8214c809d6fda>  
+        near Hartford TN
+Divorce record COBB county
+    http://www.cobbsuperiorcourtclerk.org/scripts/courtscv.dll/CivilDetail?caseno=13108585
+
+TSAC
+    update correct SOMR and TBMR 
+    see: .  https://icespace.cpex.com/docs/DOC-24614
+    update oaBldr model
+
+
+20140701 Tues
+
+ticket for GSMR 12.800.19 in Prod
+
+deploy gsmr server 12.800.19
+    gmsr client.jar 12.800.24
+    jira ticket    
+        GSMR-37 log record change for request chat message
+        ** make it for 6:30pm for ORD/AT ticket
+
+pdk-st-mrad-01/02   ixllad.st.pdk.intcx.net     80  Perm    For MRAD access to IXLLAD VIP   
+pdk-st-mrad-01/02   gss.st.pdk.intcx.net    80  Perm    For MRAD access to GSS VIP  
+pdk-st-mrad-01/02   ads.st.pdk.intcx.net    80  Perm    For MRAD access to ADS VIP  
+pdk-st-mrad-01/02   exllad.st.pdk.intcx.net     80  Perm    For MRAD access to EXLLAD VIP   
+pdk-st-mrad-01/02   exgss.st.pdk.intcx.net  80  Perm    For MRAD access to EXGSMR VIP   
+pdk-st-mrad-01/02   exads.st.pdk.intcx.net  80  Perm    For MRAD access to EXADS VIP    
+pdk-st-mrad-01/02   lxllad.st.pdk.intcx.net     80  Perm    For MRAD access to LXLLAD VIP   
+pdk-st-mrad-01/02   lxgss.st.pdk.intcx.net  80  Perm    For MRAD access to LXGSMR VIP   
+pdk-st-mrad-01/02   lxads.st.pdk.intcx.net  80  Perm    For MRAD access to LXADS VIP    
+
+solaris solution for script that needs to run under a different user
+    IEUID=`id|cut -d " " -f 1 | cut -d "=" -f 2 | cut -d "(" -f 1`
+    echo $IEUID
+    if [ $IEUID -eq 0 ]
+    then
+    echo $IEUID "Before setting hdf as user " $0 $1 $2
+    /usr/local/bin/sudo -u hdf $0 $1 $2
+    exit
+    fi
+
+3:00pm
+    Trading Release CAB Meeting
+        Conference Call-In - Internal extension: 8888, 2454# - Password: 12454#   External Call-In: 770-618-8888, 2454# - Password: 12454#
+
+GSMR server 12.800.19 to Prod 1,2,3
+    Thrusday will need 4,5
+
+T sleep over :)
+salad from chick-fil-a
+boys came and got the pathfinder carrier
+
+20140702 Wed
+    Jeff - carpet cleaning
+        8:00am leave a key
+        left check and cash tip
+        
+        770 713 1761 Billy (not Jeff)        
+
+    screen shot of C beneficiary
+        c:\temp\workdayBenefits.png
+
+
+8-10:00am carpet cleaners
+    http://jscarpetcleanersga.com/
+    770 872 0511
+
+Randy @ 6;00pm
+    crown molding
+    about 170ft
+    > he will stop by on Mon with carpenter
+
+mowed
+    
+    
+20140703 Thur
+Drop off check to Parisa
+    $2k
+    
+3:00pm
+    Trading Release CAB Meeting
+        Conference Call-In - Internal extension: 8888, 2454# - Password: 12454#   External Call-In: 770-618-8888, 2454# - Password: 12454#
+
+    GSMR server 12.800.19 to Prod 4,5
+
+deploy gsmr server 12.800.19 in Prod
+    ord-pr-gsmr-04,05
+    at-pr-gsmr-04,05
+    jira ticket    
+        GSMR-37 log record change for request chat message
+    6:30
+
+
+
+
+
+20140707 Monday
+
+T booked delta flight to TUS
+I booked hotel for st simons
+    Embassy Suites Brunswick 
+        500 Mall Blvd
+        Brunswick, GA 31525
+        912 264 6100
+        866 763 1883 
+        Thurs, Fri, Sat, chkout on Sun
+
+
+20140708 Tuesday
+cancelled Saint Simon hotel
+
+
+20140715 Tuesday
+gsmr server changes
+    check idl version during register MR request
+
+    new log file naming
+        https://icespace.cpex.com/docs/DOC-5967
+        ex: GSMR, host: ord-pr-gsmr-01 =>  ord-pr-gsmr-01_GSMR
+        example:    
+            Current: 
+            2014-07-03-RouterFXOS_PDKPS_FXMR_01-Adapter-19-15.log
+            Proposed new name:
+            2014-07-03-pkd-ps-fxmr-01_FX-Adapter-19-15.log
+
+    ICE Viewer issues 
+        ?? Dan's email
+            there does not seem to be a GSMR change needed for this
+                check with Raja
+
+    Configs
+        LX needs to connect to LXMRAD
+            mras.hostName = lxads
+
+    send JB version number for APItest
+
+T house, long walk, bb
+
+20140716 Wed
+    left early
+    Krogers
+    removing junk under back porch
+    K and Nathan for dinner
+        hamb, steak fries, corn cobb
+    OA bug, where filter.refresh only added 20
+        isOAObj was false
+    email from Netflix        
+
+20140717 thur
+    work at 9:00a
+    oa.delete, capture exception and report, dont stop flow of other saves/deletes,etc
+    
+oaBldr
+    fixed print preview
+        using invokeAndWait
+            much faster
+
+T sleepover    
+
+AT&T � cellnumber@txt.att.net
+
+Verizon � cellnumber@vtext.com (limit TXT messages to 150 characters).
+Verizon � cellnumber@vzwpix.com (supports pictures)
+
+T-Mobile � cellnumber@tmomail.net
+Sprint PCS - cellnumber@messaging.sprintpcs.com
+Virgin Mobile � cellnumber@vmobl.com
+US Cellular � cellnumber@email.uscc.net
+Nextel - cellnumber@messaging.nextel.com
+Boost - cellnumber@myboostmobile.com
+Alltel � cellnumber@message.alltel.com
+
+
+20140721 Monday
+
+MarketserverLogMessage.requestSendChatMessage
+    Ramakrishna Gandra
+        test in prodSupport
+
+
+send new CSV file name to Raja
+    new: 
+        2014-07-18-pdk-ap-gsmr-01_GSMR_1_request.csv
+    old: 
+        2014-07-16-Router_AP_GSMR_01_1.Request.csv
+        2014-07-17-Router_AP_GSMR_01_1.Request.csv
+gsmr client
+    needs to set TRIMarketRouter.enumSilo 
+        use host name
+    have GSMR Server do this?
+        since it has IDL, and can use TRIMarketRouter.hostName 
+
+
+GSMR 12.900.07
+    csv log file name
+
+    RFL csv formatting
+        see email
+
+    on GS available callback to gsmr client
+        ? never resolved
+
+    RegisterMR
+        TRIMarketRouter.silo
+            use host name to determine
+    
+    Testing ***
+    check log file names: log,csv,bin
+    make sure silo is set correctly
+
+
+20140722 Tuesday
+    MMMR cem client - fixed bug for Ryan and John
+    
+
+pkginfo -l ICEgsmr 
+
+20140723 Wed
+
+August    
+ 2900 c
+ 1600 c hi5
+  200 kyle
+ 3000 house
+ 1400 loans 
+ 1000 visa
+  670 cobra monthly
+-----
+10770
+ > overage
+  980 cobra catchup
+ 3600 visa overage
+ 1400 painter
+-----
+ 5980
+=====
+16750
+ + k tuition (amt?)
+ + kids back to school allowance
+
+
+ 6400 Hi5
+ 8000 ICE
+ > extra
+ 2600 CDI
+ 2500 VJ
+===== 
+19500
+
+20140725 Friday
+
+12.800 gsmr chat message logging
+pdk-ps-gsmr-01
+    2014-07-22-Router_PS_GSMR_01_1.Request.csv
+
+07/22/2014 16:39:18.109,pdk-ps-ormr-01,jmayse1,#requestSendChatMessage:,receiverUserID:  Text:hello,50000102|Bid|12729|-1|45.0|25.0|0.0|active|13|limit|N||none|0.0||-1||,,0,0,5,5,0,0,0,5,0,0,0,72,-3744320325790203023
+07/22/2014 16:39:27.425,pdk-ps-ormr-01,nking,#requestSendChatMessage:,receiverUserID: jmayse1 Text:hello to you. Who is this?,721677756|Bid|12729|-1|45.0|25.0|0.0|active|13|limit|N||none|0.0||-1||,,0,0,2,2,0,0,0,8,0,0,0,72,-3744320325790203022
+
+
+07/22/2014 16:39:18.109,pdk-ps-ormr-01,jmayse1,#requestSendChatMessage:,receiverUserID:  Text:hello,
+50000102|Bid|12729|-1|45.0|25.0|0.0|active|13|limit|N||none|0.0||-1||,,0,0,5,5,0,0,0,5,0,0,0,72,-3744320325790203023
+
+
+
+"Text:" + txtMsg + "," + [pipe delimited order info] + ","
+
+        [0] order.id
+        [1] orderType - "Offer" or "Bid"
+        [2] order.marketID
+        [3] company Id
+        [4] price
+        [5] order.quantity
+        [6] order.hiddenQuantity
+        [7] order.enumState - ex: "active", "inactive", "withdrawn", "pending", "consummated", "preOpen"
+        [8] order.sequenceID
+        [9] order.enumClass - ex: "market", "limit", "stop", "size" ...
+        [10] if (order.agentLinked) "Y", else "N"
+        [11] order.memo
+        [12] order.enumOptionType - ex:"call", "put", "callspread", etc.
+        [13] order.strike
+        [14] order.clearingAccountID
+        [15] order.duration - integer, (current state of the order)
+        [16] originalOrderId
+        [17] cancelReplaceOrderId
+
+
+Home
+    Trash pickup tomorrow
+    bills
+        write checks for 3k+ to C
+            $200 K rent
+            $2027.00 child support
+            $1200 alimony
+            -300 car payment
+        pay monthly bills
+            basket
+            HOA
+        other
+            visa $4680.58 8/17
+            shaneco $850 8/15
+    get plane ticket from CDI            
+
+
+
+
+20140812 Tuesday
+
+GSMR pdk-pt-pfmr-01 
+
+create new 12.900.08 version of GSMR for Jeremy
+
+jdbc:sqlserver://localhost;port=1433;database=gohi5;sendStringParametersAsUnicode=false;SelectMethod=cursor;ConnectionRetryCount=2;ConnectionRetryDelay=2
+
+
+3:00 meeting
+    ticket to install gsmr server in prod
+        CHG255946 in snow
+    Internal extension: 8888, 2454# - Password: 12454#   
+
+
+201408013 Wednesday
+
+property.unicode
+annotation
+datasource needs to use N prefix for insert/update/select/delete and string values that are unicode
+    insert, update
+    
+generate sql script
+generate change sql script
+
+check gsmrs in prod
+
+hi5 - unicode nvarchar research
+    nvarchar, ntext
+
+using N'textstr' in insert/update
+http://www.coderanch.com/t/305245/JDBC/databases/Unicode-MSSQL
+
+>>> solution?
+    http://lists.apple.com/archives/webobjects-dev/2006/Jul/msg00743.html
+
+from oracle:
+    http://docs.oracle.com/cd/B19306_01/server.102/b14225/ch7progrunicode.htm#i1006315
+
+ "INSERT INTO x VALUES(N'<unicode_here>')
+ same with select params
+
+In my INSERT statment I did the following :
+    INSERT INTO <table> (text) values (N'<text here>)
+    Notice the "N" prefix... It seems that only at Install time, we can change the default charset. But using the N prefix seems to "force it" in unicode.
+
+jdbc:sqlserver://localhost;port=1433;database=gohi5;sendStringParametersAsUnicode=true;SelectMethod=cursor;ConnectionRetryCount=2;ConnectionRetryDelay=2  
+    sendStringParametersAsUnicode  (default=true)
+    http://technet.microsoft.com/en-us/library/ms378988(v=sql.110).aspx
+
+http://social.msdn.microsoft.com/Forums/sqlserver/en-US/850036d3-32f4-4663-8ddb-1a7c10364a62/problem-savingretrieving-unicode-characters-nvarchar-with-unicode-collation-java-jdbc?forum=sqldataaccess
+    found the solution. When updating a SQL Server 2005 NVARCHAR column, you have to use the following syntax:
+    UPDATE <table> SET <column> = N'<value>'
+    
+    
+stmt.executeUpdate("INSERT INTO unifun
+VALUES(1,N'\u20AC\u20AC\u20AC the wrong way')");
+PreparedStatement pstmt = con.prepareStatement("INSERT INTO
+unifun VALUES(?,?)");
+pstmt.setInt(1, 2);
+pstmt.setString(2, "\u20AC\u20AC\u20AC the correct way");
+pstmt.executeUpdate();
+ResultSet rs = stmt.executeQuery("SELECT id,data FROM unifun");
+while(rs.next()) {
+System.out.println(rs.getInt(1) + " : " + rs.getString(2));
+}
+
+Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        connection = DriverManager.getConnection("jdbc:sqlserver://190.128.4.195/unicodedemo?user=ab&password=ab@Admin&useUnicode=true&characterEncoding=UTF-8");
+
+call verizon and remove family locator
+
+at-mg-xput-01
+
+
+20140814 Thursday
+
+We have verified the reformatting of the log record for the request chat message layout to include pipe delimited values for the order, receiver userId, and chat text.
+
+20140815 fri
+    bills
+        visa $4680.58 8/17
+        shaneco $850 8/15
+    ippilitos with T
+        ring mounted
+    T sleepover
+    
+20140816 sat
+    cleaned house, yard
+    T went home
+    I picked up T for date at her longhorns
+    movie: walk the line
+    stayed at T
+20140817 sun
+    @T
+    cori bday lunch at olive garden
+    working in T baseement, oa, hi5
+    long walk
+    sleepover at T
+20140818 mon
+    1h15m commute, smooth
+    Nico gdad paid K paypal 2067
+    ordered new checks, delivered on wed
+
+20140820 ed
+
+GSMR-39 log message improvements
+gsmrserver Release Notes - gsmrserver 12.900.07 - 12.900.08 Release Notes
+Improvement (1)
+GSMR-39 log message improvements | Major | Open | Vince Via 
+
+Warnings (2)
+The following push messages failed to identify an issue key.
+1.  b7a9e338 | Vince Via | 2014-08-20:11:25:15 | remove commas from log message
+2.  0bfbe18c | Vince Via | 2014-08-20:08:54:50 | added startup times to the logging
+ 
+20140820 wed
+    checks should be in mailbox
+    worked from home
+
+20140821 thur    
+    paid cobra for Sept 14
+    Parental Alienation
+        https://www.firstwivesworld.com/index.php/experts/item/3313--steps-to-combat-parental-alienation 
+        https://www.firstwivesworld.com/index.php/experts/item/3315-signs-your-ex-is-turning-your-child-against-you
+        
+
+dialin is : 
+4444 then 0377#
+
+
+20140822 fri
+Lance work by Friday
+    meet at new office, 13th floor
+    proxy to combine multiple MM remote objects
+
+20140823 sat-sun
+    cabin with T
+        sat
+            
+        sun 
+            blue ridge
+                olive oil store
+                lunch
+            lunch at pappys
+            dinner on george
+            checked Shelbi's computer
+    oabldr searches
+    
+20140825 Mon
+oabldr
+    set AO for filter,trigger
+    add to modelDelegate
+    create listener to goto correct tab to show ao
+    update generated filter/trigger search UI
+
+MarketRouter (MR) mavan location
+    https://maven.intcx.net/content/repositories/releases/com/theice/marketrouter/marketrouter-mr/
+
+tsac
+    put new oa.jar in repo
+
+20140827 Wed
+tsac
+    put new oa.jar in repo
+    https://maven.intcx.net/content/repositories/public/com/viaoa/oa/3.5.05/
+
+
+20140902 Tuesday
+Ring
+http://www.shaneco.com/Jewelry-Catalog/Product-Detail.aspx?O=SB&X=41066643&SZ=5.50
+
+    QDRO
+    https://qdro.fidelity.com/
+        user: vvia
+            C* long/full pw
+    see: c:\temp\qdro_20140902.pdf
+
+Warning: On August 23rd at 4:30PM EDT the URL for ICE ServiceNow will change to https://ice.service-now.com
+
+
+20140903 Wed
+tsac in stash
+    https://stash.intcx.net/projects/TSAC/repos/tsac/browse
+
+20140904 Thur
+
+jason email
+    PPx have 2 methods for "value()"
+    >> added public pp that is set in constructor
+
+Hub
+    HubAddRemoveDelegate
+    insert/add 
+        why it cant add hub to oaObj.weakHub before updating master property
+
+
+20140906 Sat
+    12.900 release
+    * 877.647.3411 PassCode: 891298#
+
+
+20140908 Mon
+
+Conference Number: 866.692.4538
+Pass Code: 1389865
+
+Conference Number:
+4444 then 0377#
+
+20140909 Tuesday
+    card anniversary
+    T antenna            
+    write down "selling house" plan
+
+
+
+20140910 Wednesday
+
+    BofA
+        verified that cobra check cleared
+            
+
+https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.06/
+
+will then get copied to:
+https://maven.intcx.net/content/repositories/public/com/viaoa/oa/3.5.06/
+
+
+GSMR Installer increase ORD and AT Endex GCI connections from 10 to 25.
+
+    lunch with Lavan
+
+=============================++++==========================++++=========================++++==================
+SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET 
+SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET 
+SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET 
+SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET SNOW TICKET 
+
+http://ice.service-now.com
+
+1: click "create new" (on left side. under "change")
+    change class: Normal or Emergency
+    Business: "ICE Trading System"
+    Category: "Software"
+    Environment: "Prod"
+    Short Description:  "deploy TSAC 12.800.05 to b5p-mg-lxmrad-01&02"
+    purpose of the change: 
+    work description:
+    test plan:
+    backout plan:
+    QA test summary:
+    > save
+
+2: click tab "Related Items" (in the middle of the page)
+    under "Change Tasks" tab, click add new change task 
+    Assignment group: CM (** RM - Derivitives)
+    Implementation start date;  date + 18:00;00
+    mplementation Start Date: today 18:30
+    mplementation End Date: today 19:00
+    > submit
+
+
+3: Add/Edit CI to add servers
+    click "Add/Edit CIs' button at bottom of page
+    <select servers>
+    > save and exit
+
+
+4: click the "submit for assignment" at the top toolbar
+
+
+
+
+
+hey Chris L
+we have an Emergency ticket for GMSR in Endex tonight ... config change only - to increase GCI connections from 10 to 25 on both GSMR servers ...
+ticket is CHG259762
+
+20140911 Thursday
+    4:45 Vision One eye doctor
+    Rachel dinner
+    hi5 check arrived
+
+
+20140912 Friday
+
+20140913 Saturday
+    movers
+    cleanup
+    T at night
+    bought tv
+
+20140914 Sunday
+    Shaneco
+    home
+    basement cleanup
+    setup tv
+
+20140915 Monday
+    cleanup basement
+    pay bills
+    cleaned up basedment
+    dropped off qdro at Stacys
+    dmv to get trailer title
+        will be in mail 5-7 days
+    cancelled cable        
+
+
+20140916 Tuesday
+    Please submit a ticket for this to be done in AT as well.
+    CHG259762   ICE Trading System  Vincent Via 10-Sep-2014 17:45:00 EDT    install GSMR 12.900.12 on Endex servers
+
+
+
+20140917 Wed
+    vacation until Monday, 21st
+    http://www.oceaninnsuites.com/index.html
+
+    call junk pickup 10-12
+        leave checks on back porch
+
+20140922 Monday
+gsmr in b5p did not get all GCI connections
+    b5p-pr-lxgsmr-01
+
+Chattanooga Marriott Downtown, 2 Carter Plaza, Chattanooga, TN 37402
+
+
+
+20140922 Tuesday
+
+
+
+tsac
+    test LL startup
+
+
+powersferrypsychology
+    Gerald S. Drose
+    770-953-4744 ext. 12
+
+    email to C
+        1: Aarons Birthday
+        2: Challenger
+        3: Truck
+        4: your email about purchasing the truck
+        5: getting the remaining items sent to you, and a list of those items.
+        6: insurance on the pathfinder
+        7: trailer title and documents
+        8: Cobra
+        9: two more Hi5 payments
+        10: kids next vacation plans
+        11: Kyle's rent and expenses, and tuition payments
+
+    walmart
+        Winegard FL5500A FlatWave Amplified Razor Thin
+        >> ordered from Walmart using paypal $56, delivery next monday
+        
+20140923 Tuesday
+    9:30 tsac demo with Qian
+        OC him to come to my cube
+
+
+4 Wednesday
+
+    TSAC in LoadTest
+        contact Shane to have it deployed
+
+
+GSMR to stash
+    Swatee Rizal 2:02 PM
+    Repos moved, updating COIN jobs now
+    https://stash.intcx.net/projects/GSMR
+
+    C:\projects\java\GSMR\Installer\.git\config
+        was: url = git@gitorious.intcx.net:gsmr/installer.git
+        now: url = ssh://git@stash.intcx.net:7999/gsmr/installer.git
+
+Neil green emails about IDP
+    D3js, C3js
+
+20140925 Thursday
+    leave C check
+
+20140926 friday
+    QDRO
+        sign copy at Stacy's office
+            ** 9:00am
+        call to schedule appt
+            770 422 3200
+    car insurance payment
+        should be about 1500
+
+
+SNOW CHG261859
+Change Title: deploy TSAC 12.800.05 to b5p-mg-lxmrad-01
+Purpose of the Change: config file settings for b5p.
+Work Description: deploy TSAC 12.800.05 to b5p-mg-lxmrad-01
+
+    proposal to T ... yes!
+
+
+20140929 Monday
+    realtor at 6:00
+
+20140930 Tuesday
+
+version of GSMR  in AT
+    GSMR 12.900.12
+    at-pr-lxgsmr-01
+    config file is lxat/env.ini
+    Jeremy doc 
+        https://icespace.cpex.com/docs/DOC-65224
+
+update 
+    https://icespace.cpex.com/docs/DOC-64353
+    will use tsac 12.800.05 for b5p launch
+
+
+Meeting with Andrew Hutchings (works with Neil Green)
+IDP repo:  https://stash.intcx.net/users/ahutchin/repos/kiwi
+demo:
+https://stash.intcx.net/users/ahutchin/repos/kiwi-contact-list
+
+
+tsac 12.800.05 in ORD 
+    ticket for tonight
+    b5p-mg-lxmrad-01/02
+
+tsac 12.800.05 in AT
+    at-mg-lxmrad-01,02
+    Jeremy will put in ticket
+    config:
+        lxat-mg
+            EnvironmentName = at
+            ShortEnvironmentName = lxpr
+            llad.servers = lxllad
+            mras.hostName = lxads
+    T house            
+    ord-pr-exgsmr-02 crash
+
+20141001 Wednesday
+    ord-pr-exgsmr-02 crash
+
+
+report on prod jvm crash
+    ord-pr-exgsmr-02
+    core dump
+        9/30 5:54:40PM
+        
+    2014-09-30 17:52:32 start
+    2014-09-30 17:54:08 stop
+        core dump at 5:54:40
+    2014-09-30 17:54:45 stop
+    2014-09-30 17:55:06 start
+    2014-09-30 18:10:45 stop
+        gsrm is running, but is yellow in mradmin
+    2014-09-30 18:11:05 start
+    2014-09-30 18:32:00 stop
+    2014-09-30 18:59:21 start
+
+20141002 Thursday
+
+check b5p tsac
+    
+    
+salesforce.com
+    vincent.via@theice.com
+    vince1
+    https://na12.salesforce.com/home/home.jsp
+
+Walmart
+    I responded online:
+        Your reference number for this contact is #141002-003269.
+    
+    walmart.com
+    pw: v**1
+
+    send to T house    
+    1421 Bluff Creek Trail
+    Monroe, GA 30656
+    
+    
+    Your order was delivered on Wednesday, 09/24/2014.
+    
+    ordered: Sep 22  $56.65
+    delivered:  Sep 24 10:38am  fedex
+    
+    Invoice ID: 
+    2677037962641
+    Date:   
+    Sep 22, 2014
+    Time:   
+    11:07:53 EDT
+    Status: 
+    Completed  
+    Shipping Address:   
+    via, vince 
+    623 Russetwood Lane
+    Powder Springs, GA 30127
+    United States    
+    
+    Customer Service URL:       http://walmart.com
+    Customer Service Email: 
+    help@walmart.com
+    Customer Service Phone: 
+    800-966-6546    
+
+20141003 Friday
+    T house
+20141004 Sat
+    home in morning
+    pond, dirt, HomeDepot, seed, straw, etc
+    6:30pm date with T at Bonefish, sleepover
+20141005 Sun
+    9:30 chruch 
+    trim bushes, etc
+    park with T,C & S
+
+
+20141006 Monday 
+    from T, left 5:30am, got gas, went East on  285 (oops), arrived about 7
+    8:00am "stager" at the house 
+        ** cancelled
+        Sandy
+        770 422 0309
+
+
+20141007 Tuesday
+    
+
+20141008 Wednesday
+12:00 meet with Edwin on ice2sf
+1:30pm Mark Horton 6th floor  python deployer
+2:00 Russ on 7th floor ice2sf
+
+    I will plan to telephone you on Wednesday, 10/8, 8:00 p.m.!
+        Rev. Bob Myers
+        The Wedding Chaplain
+        407/370-2068
+
+20141009 Thursday
+
+
+20141010 Friday
+    to cabin
+    
+    
+20141013 Monday
+    C:\Users\jbradshaw>nslookup lxads.b5p.intcx.net
+    Server:  at-bp-odns-01.cpex.com
+    Address:  10.1.108.88
+    
+    Non-authoritative answer:
+    Name:    lxads.b5p.intcx.net
+    Address:  10.2.106.71
+
+
+20141014 Tuesday
+    Sandy
+        8:00am staging house
+
+
+SNOW Ticket for ICE2SF  CHG271882
+    Install ICE2SF on ord/at-mg-wfwa-01 and set to run nightly at 1:00am
+
+purpose of the change: move app from Edwin's office desktop to Prod server that already has an App that accesses Sales Force    
+work description: Mo Ataeleed is already involved, and this ticket was requested by him.  see test plan below.
+Test Plan:
+    Install zip file: T:\Temp\Salesforce\ICE2SF\ICE2SF.zip on server ord/at-mg-wtwa-01
+    set up to run automatically ice2sf.bat at 1:00am 
+    verify that this server has access to production Oracle on server 10.6.200.75 and port 1450
+    Give me remote access to this server from my desktop 10.3.106.212  (rv-wk-vvia-10) for a week.
+backout plan:
+    remove installed software (from zip file) and remove the scheduler task.
+
+
+20141015 Wednesday
+    gave challenger to Aaron
+    let C hi5 check and bday card for Aa
+    T spent the night
+
+20141016 Thur
+    TKT660476, ICE2SF server, the new ip will be 10.8.104.149
+
+    5:00p flight to baudville
+    
+20141017-19 Fri-Sun
+    baudville
+        too much memory, gc issues
+        
+20141020 Mon
+    Aaron's bday
+
+20141021 Tues
+
+add cache size for Many links
+added serverSide to calc links
+
+oaBldr
+    link prop search
+        add isCached to search radio buttons
+        add isServerSideCalc to search radio buttons
+        add cache amt, calc, serverSideCalc to table columns
+
+calc links and Mergers on server side only
+
+
+20141022 Wed
+    carpet measurment appt
+        Vince 770 562 2024
+  
+OA jfc
+    UIcontainer tabs need to use same logic for default edit pan
+        test to see how many are created
+oabldr
+    move mode
+        double click desktop to toggle
+        right click menu
+
+
+20141023 Thur
+
+
+20141024 Friday
+    move office to HQ
+        10:00-12:00
+        13th floor desk 1354-03
+    cabin with T
+        staining
+        
+20141026 Sunday
+    Shelbi told T about talkint with K
+
+20141027 Monday
+
+20141028 Tuesday
+ICE2SF
+    previous: SNOW Ticket for ICE2SF  CHG271882
+        Install ICE2SF on ord/at-mg-wtwa-01 and set to run nightly at 1:00am
+    new SNOW TKT676389
+        ICESupprt / New Support Ticket
+            HQ-DT-VVIA-01
+    at-mg-wtwa-01
+    
+    
+gsmr installer 12.900.13
+    TTS-12334 GSMR-40 GSMR-41 GSMR-42
+    gsmrcommon -> 12.900.12
+    gsmrclient -> 12.900.11
+    gsmrserver -> 12.900.11
+
+
+20141029 Wednesday
+    TKT677742
+        for info sec to create user/pw for CPEX/vvia on server at-mg-wtwa-01
+        
+oaObj.change, new
+    needs to cange oaObj.hubs to weak or Not
+
+figured out how to know that oaobject finalize should save the obj
+    instead, changed oaObject.hubs to be Object[], that is either Hub (only on server) or WeakRef<Hub> (default)
+        if an obj is changed on the server, then it changes from WeakRef to Hubs, so that it does not get GCd
+
+20141030 Thur
+T at my house
+    pay for the wedding, and order the wine letter box.  
+
+http://www.mightyleaf.com/tea-pouches_top-rated/green-tea-tropical-tea-pouches/?HPTropR
+
+weekend at cabin
+    internet hookup
+    
+20141102 Mon
+
+PAS - from tracie
+http://www.drreenasommer.com/PAS_effects.html
+http://www.womansdivorce.com/alienated-parent.html
+http://www.womansdivorce.com/parental-alienation.html
+http://www.smartstepfamilies.com/view/80
+http://www.drreenasommer.com/PAS_effects.html
+
+cabin camera
+http://66.119.110.56/
+
+20141103 Tue
+    T house
+    
+20141104 Wed    
+
+http://rap.eclipsesource.com/demo/release/rapdemo/#gmaps
+    web/mobile toolkip from eclipse
+    
+Bryan Barnard 1:32 PM  SalesForce conf call
+    bridge opened
+    8888
+    id: 6521#
+    pw: 10101#
+
+20141107 Fri-Sun
+change Verizon order to use T home address
+    1421 Bluff Creek Trail, Monroe, 30656
+verizon network extender sent to cabin
+    T, cabin, T bday
+    
+
+20141110 Mon
+    6month anniversary, 800flowers
+    ICE2SF
+        createorigWebserviceBin
+            for class files for SF wsdl, generated by Edwin using Axis
+        found notes for uwing wsimport: C:\projects\java\ICE2SF\src_wsimport_20141007
+selected PPO for benefits 
+        
+
+20141112 Wed
+carpet at the house
+Bryan Barnard
+    from Chi, works with ServiceNOW software crm
+
+
+20141113 Thur
+
+ICE2SF ran successfully
+JDK 1.7
+-Xmx3000m -Xms256m
+at-mg-wtwa-01
+    svc_ice2sf  <<==
+    temp123!
+
+RDC at-mg-wtwa-01
+    user vvia (no domain), pw O**1!  (use svc_ice2sf instead)
+    sr. admin: Barend Havenga
+
+previous notes:
+tuesday morning
+    ICE2SF
+        John Barnes
+            12th floor
+            contact about ICE2SF
+                make sure info is showing in SF
+        need to set up to run automatically
+        need to have Edwin's server turned off
+    aaron.groff@theice.com 12:23 PM
+        Vincent Via 2:16 PM  10/27/2014
+        ok, let's plan to do it about mid-morning ...
+        I will be meeting with Sales Force Admin in the morning to verify that everything looks good.
+
+    Mo Ataelseed 
+        We are planning to run this again tonight, and I will be working with John Barnes (Sales Force admin) in the morning.
+        I will send out an update in the morning.  Thanks
+        Sent: Monday, October 27, 2014 2:38 PM
+        To: Vincent Via; Russ Cotton; John Barnes
+        Cc: Chris Loonam; **SO - Derivatives
+        Subject: RE: ICE to Salesforce Integration
+previous notes:
+tab listener to build panel
+weakref for dialogs
+oaObj hubs - dont create all properties
+    use getXxxHub() method
+    oabldr flag which ones to not cache
+    make sure that finalizer does not go to DB
+        put in queue somehow, etc
+oaObj are still selected even if deleted
+    does delete go automatically to DB (yes)
+        must be selecting from cache
+
+previous notes:
+tsac requirement
+    manage installs/upgrades
+        list of all servers that have new version
+            option to stage the install
+                download to local repo
+                check dependencies
+                    from pom files
+                                    
+                
+        set new version for serverType
+            trigger; 
+
+20141114 Friday
+
+jar oa for tsac install
+    oa-3.5.07.jar
+        Please replace oa.jar in mavan with a new version.
+
+TKT696523        
+Please replace the following jar in Mavan:
+oa-3.5.07.jar
+https://maven.intcx.net/content/repositories/public/com/viaoa/oa/3.5.07/
+Please OC me, and let me know who I can email the new version of oa-3.5.07.jar to.
+
+create rexclient.sh, etc for execute remote client
+
+make RemoteExecute to run RC commands, etc
+    create Remote interface
+        create impl on client and give/register to server
+
+hi5 check
+Kyle
+    $79 visa charge for luminus
+        > I received the credit on Visa
+
+20141115-16 Sat-Sun
+    letf at 3, T house
+    date night Italian, Loganville, PROVINOS
+    work in T yard, fence
+
+20141117 Monday
+    from T, rainy, 1:45 commute
+    
+remote command for dos
+    cmd /c command [args]
+    bash -c [args]
+
+
+20141118 Tuesday
+
+20141119 Wed
+  ICE self evaluation
+
+carpet installation
+    leave key in back porch drawer?
+
+OAObjectSerrialize
+    set max
+    method for oaObject.writeObject to not check references if max is met
+    ? why hi5 > 33k
+
+20141120 Thur
+    hospital with T
+    T house
+    
+20141121 Fri
+    5:30 85->285 1 hr
+    improvements for OAObjectSerializer
+    
+    
+20141124-28 Thanksgiving week
+    worked mon,tues,wed, 
+    thur work at home, T at 3 for dinner
+    fri work at T, left for St Simon at 3:30
+    weekend at Methodist hotel
+    sunday 5:00, met K in millageville Long Horn, 1:45 hr dinner
+    
+20141201 Monday
+    oa caching changes
+    
+Client's server side cache
+    adding/removing
+        during gc
+            in blocks (guid[])
+    make sure that it is getting cleared on close
+    
+
+review oa changes
+    referencable
+        OAObjectInfoDelegate.isWeakReferenceable
+        HubDelegate.setWeakReference
+            see where it is called
+        Test
+    
+test referenceable
+    make site.enviroment.cacheSize=3
+
+verified; disconnected client needs to remove/close/cleanup session, tree, etc
+
+
+20141202 Tuesday
+    carpet installed on the stairs
+    
+OA: test caching
+    client
+        when it gets GCd, etc
+        remove from server cache
+    server
+>>        reloading if client changes it
+>>        reloading parents, owner (recursive)
+
+ICE2SF ran successfully
+JDK 1.7
+-Xmx3000m -Xms256m
+at-mg-wtwa-01
+    svc_ice2sf  <<==
+    temp123!
+test.bat
+
+
+20141203 Wednesday
+    emailed status on ICE2SF in prod
+
+
+20141205 Friday
+TSAC testing with Mark Horton in LT
+    Get Versions - from Maven repo poms
+    LANG=en_US.UTF-8 PATH=$HOME/.local/bin:$PATH rc-version --json repo-list
+    ------------------
+    Get Package Info - from each server using Solaris package info
+    LANG=en_US.UTF-8 PATH=$HOME/.local/bin:$PATH rc-version --json  list -e loadtest
+    ------------------
+    Download from Maven to mrad server /repo/temp directory
+    LANG=en_US.UTF-8 PATH=$HOME/.local/bin:$PATH rc-deploy --json download /tmp/loadtest_deployment.yaml
+    ------
+    Propagate - from local repo/temp directory to temp directory on each deploy server
+    LANG=en_US.UTF-8 PATH=$HOME/.local/bin:$PATH rc-deploy --json stage /tmp/loadtest_deployment.yaml
+    ------
+    Install 
+    LANG=en_US.UTF-8 PATH=$HOME/.local/bin:$PATH rc-deploy --json install /tmp/loadtest_deployment.yaml
+
+RC commands: https://icespace.cpex.com/docs/DOC-66670
+ll-lt-mrad-01
+install:  /home/tsacadmin/remote_control
+
+
+20141206 Sat,Sun
+    rented Enterprise truck, 78 location
+        2889 MAIN STREET WEST
+        SNELLVILLE, GA 30078-3154
+        Tel.: (770) 972-8814
+            reserved Ram truck, 9:00am Saturday
+            one day rental, not open on Sun, drop off on Sun with key dropoff
+            $56.14  confirmation: 9121PB
+    
+    Sat 9:00am to Sun 9:00am (one day rate), $56 + 20 for insurance
+        we dropped it off Sunday about 6pm
+    moved biodyne to T house, T stuff to Goodwill
+    gravel for dog gates, pinestraw, ceiling tile, gate latch screw
+    Linda's house for tayloring
+
+20141208
+
+    ICE2SF
+        email to Bryan Barnard about queries he can use for SNOW
+
+    scrolling textarea
+        add flag to OA
+        OATextArea.setAutoScrollToBottom
+        add to oabldr, property, jfcPropGenerator
+        added flag to oaBldr.props.console
+
+20141210 Wed
+    4:00p appt with Lawayer in Loginvilee
+        wills, living will
+    T info on colon
+    7th month anniversary :)
+
+IDP conference call
+    online demo and call
+    Scott Besner
+    Thomas Bertling
+
+20141211 Thur        
+new oa.jar
+    nextNumber did not have @OAProp
+    getParentSib was calling li.getValue
+        which caused it to getDetail
+test tsac with new oa.jar
+
+notes from car
+    OASyncClient.getDetail
+        getSibling
+        verify using previous objects to pick best hub
+    ClientGetDetail
+        verify time checks
+testing oa oasync with tsac
+
+Amar's falcons project
+    server did not allow adding new users
+    * not working in tsac server UI
+       details is not enabled
+    > autocreate a default admin user
+    > server needs to be "logged in" as this user
+shaneco 
+    payment
+Costco
+    joint juice
+    yogurt
+    clothes
+        pants, pull over shirts, underwear, etc
+
+Lowes
+    humidifier filter
+
+emailed kids
+    Christmas dinner with kids
+        where? Chilis?
+    only R responded with msg "where?"        
+
+
+20141212 Fri
+    vacation at home
+    Linda's for alterations
+    did not go to ICE Christmas party
+20141213 Sat
+    Cabin
+    Blue Ridge, bought B Paw
+    Love T
+20141214 Sun
+    Helen, coat for T for Christmas
+
+20141215 Monday
+    finished ICE code of conduct on ICESpace
+    Cooper @ 5:00pm
+
+20141216 Tuesday
+    oa dirty and refresh support
+
+    ICE2SF
+        at-mg-wtwa-01
+            svc_ice2sf  <<==
+            temp123!
+        test.bat
+
+IDP
+    Thomas Bertling
+        6th floor on the east side
+        discussed security for apps running in IDP
+            I suggested that we use 3rd party API to create IDP app
+
+
+single OARefresh object
+    refresh(class);
+    remote to run on server
+        add to one of the remote interfaces
+
+OADataSourceJDBC dirty
+
+Hub.refresh
+OAObject.refresh
+
+
+
+20141222 Monday
+
+IDP
+    requested demo of super derivatives
+    from Scott Besner
+        > he will be back after Jan 5th
+
+
+20150105 Monday
+
+20150106 Tuesday
+    oa.jar at ice maven
+    I have a new update to add to:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.08
+    Please contact me so that I can email you the jar file.
+
+20150108 Thur
+    went to house
+
+20150109 Friday
+
+
+20150114 Wed
+
+Daily unit test
+    HubDetail, HubListener
+
+20150115
+Daisy a day florest ==> Bloom with Jenna
+http://www.bloomwithjenna.net/
+2149 Scenic Highway South, Snellville, GA 30078
+(770) 972-3030
+
+20150119
+GSMR release
+    12.900.14 
+    Jira GSMR-44
+        config setting for LX in AT (b5p site)
+
+        gsmr Release Notes - gsmr 12.900.13 - 12.900.14 Release Notes
+        Improvement (1)
+        GSMR-44 config setting for LX | Medium | Resolved | Vince Via 
+        There are no warnings for this release.
+        
+        b5p-pr-lxgsmr-XX
+    lxat    
+        gemstone.Host = ixgs-vip        
+
+rv/trs1
+    gsmr 12.900.13
+    rv-tr1-gsmr-01
+
+20150121
+    ICESocket
+        added ICEClient.getId();
+        added ICEServer onConnect(id) & onDisconnect(id)
+        updated DemoServer DemoClient
+
+20150123 Friday
+VJ dinner
+    2355 Mansell Rd,
+    Alpharetta, GA 30022
+    Phone: (770) 650-6400
+
+
+20150124 Saturday
+    home at T
+    
+20150126 Monday    
+    OrthoAtlanta    
+       email, pw C*1
+       https://327-1.portal.athenahealth.com/?section=messages
+    bldr bug
+        requiredProperty pp needs to be removed if a link is deleted
+        >> ModelUIContoller.java
+            afterRemove sets to null
+    T will be staying in Chat       
+       
+
+20150127 Tuesday
+    4:00 with Gina
+        create timeline, notes, etc
+        plan for outcome
+        one hour limit
+
+    new OA release
+        add to ICE maven
+        send to hi5
+
+    email NOW folder
+
+
+20150206
+    etrade vincent.via C*1
+        Order # 28401950
+        112 @ $227.86  $25,501.09
+
+20150207 Saturday
+    put together bike
+    graft for dinner
+
+20150208 Sunday
+    party at neighbors Alex & Leslie
+
+20150209 Monday
+oa.jar at ice maven
+    add new version of third party jar to ICE maven
+    I have a new update to add to:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.09
+    Please contact me so that I can email you the jar file.
+    <version>3.6.0-SNAPSHOT</version>
+    <version>3.5.09</version>
+register OrthoAtlanta
+   store in vv.xls
+   email, pw C*1
+   https://327-1.portal.athenahealth.com/?section=messages
+
+tsac
+    12.900.01-SNAPSHOT
+    get LT info
+        ll-lt-mrad-01
+            user: vvia O*7&, sudo su - tsacadmin
+            /home/helpdesk/remote_control/config/rc
+    need to comment out classes that wont compile
+    make sure that tsac.sh is starting correct instances
+    deployed to Dev2 rv-dv2-mrad-01  /var/opt/tsac  vvia,  sudo su - tsacadmin    
+    
+20150211 Wed
+Your proceeds have been deposited in E*TRADE Securities account 69215280
+    25,520.64 (USD)  
+
+
+
+20150212 Thursday
+    pack for Dr.
+        crutches, knee brace
+        sweet pants
+        
+
+20150213 Friday 
+    6:30 check in
+    7:30 surgery
+
+20150223 Monday
+    2:30 dr appt OrthoAtl
+
+
+update OA javadoc on website    
+hi5
+    update
+    thank you card
+leave phone number, key, alarm code with Alan
+
+etrade
+    use quick transfer
+    
+401k ss, C*1
+    verify that bonus was added
+        ~3750 + ice match ~1500
+        current is at 1547.698 shares $40,580.64, 26.22 each 
+
+20150302 Monday
+Greda Farmer (cleaning)
+    678 232 6911
+    $250, 200, 150
+    call by end of week
+
+12.950 versions
+    https://icespace.cpex.com/thread/21525
+
+http://www.capterra.com/application-development-software/
+
+
+20150304 Tuesday
+Kyle, ebay, etc
+    http://www.ebay.com/itm/NWOT-Ralph-Lauren-RRL-Beige-Genuine-Deerskin-Leather-Goose-Down-Vest-size-Small-/231477198708?pt=LH_DefaultDomain_0&hash=item35e51dbf74
+
+    paypal/kyle $600
+    NWOT Ralph Lauren RRL Beige Genuine Deerskin Leather Goose Down Vest size Small
+    Item # 231477198708
+
+    Michael Heim
+    211 Dock Street
+    Middletown, PA 17057
+    United States
+
+    Ebay:  seller:  oomomo5
+    kylevia@outlook.com
+
+    http://www.ebay.com/sch/oomomo5/m.html?item=231477198708&hash=item35e51dbf74&pt=LH_DefaultDomain_0&rt=nc&_trksid=p2047675.l2562
+
+
+    BRAND NEW LEGO BOBA FETT STAR WARS 10123 CLOUD CITY MINIFIGURE
+    $1,700
+
+    ceese paypal?
+    TLC Selling
+
+20150310 Tue
+meet with Joe and Gary 
+    respond to email chain
+
+jenkins new link for pdk
+    https://pdk.mind.intcx.net
+
+Belk
+    http://www.belk.com/products/geoffrey-beene-Cb36754.jsp
+    fitted, no iron
+
+20150316 Mon
+HD, wasp spray
+house
+    toilet seat, door knob, cleanup, etc
+
+
+20150317 Tues
+metlife phys exam
+tsac deployment table
+
+
+^^^^^^^^^^^^^^^ NOW ^^^^^^^^^^^^^^^vvvvvvvvv
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+HOME
+    viaoa taxes
+    oa 
+        custom table
+        tooltips and rendering
+            ?? ideas
+                generate custom tables
+    oabldr
+        generate custom modules like the tsac deploy
+            toolbar togglebuttons
+    email Nathan
+    get pictures for T to put on Craig's list
+    movers    
+        Move on Wed march 25th, delivered at 2:30
+    cooler in car    
+
+
+20150318 Wed
+    Home Depot
+        return laundry hose container
+    storage unit
+    call Rick
+        10x8, no windows, solid door, one plug, light outside, light inside, 
+            matching porch, roof, siding
+        stone fire pit and patio area
+        stone bench and small patio by creek
+
+20150402 Thur
+    working on tsac and mrad interface
+    
+MRAdmin OLD
+    Name: com.cpex.admin
+    iceadminclient_util
+    iceadminmodel_util
+    ICEMRAdmin (server)
+    ICEMRApp
+    maven repo
+        https://maven.intcx.net/content/repositories/releases/com/cpex/admin/iceadminclient_util/
+    package: com.cpex.*
+    * releases are out of order
+        latest is 1.0.20
+    Dual client:
+        AdminClient
+            newClient = MRAdminTcpClientImpl.createInstance(mrAdminServerConfig, mrRouterInfo, newClientCallback);
+    
+
+TCP Lib
+    get access to hostname
+        add method TCPServerSession.getClientHostName()
+    mrutils/tcpip
+        https://stash.intcx.net/projects/MRUTILS
+    new version 0.67     
+
+tsac
+    create default 
+        Env and Silo
+
+T home from hospital :)
+
+
+
+20150410 Friday
+*** Stay Strong ***
+OA reduces the distance 
+   ... between the code and the application
+   ... between the software and your business
+
+
+20150414 Tuesday
+added MRSA to Java logging classes
+    com.theice.logger.example/...
+MRUtils/mrserviceapi/logging
+    https://stash.intcx.net/projects/MRUTILS/repos/mrserviceapi/browse/logging
+    ssh://git@stash.intcx.net:7999/mrutils/mrserviceapi.git
+    created version 0.0.11
+
+ICESocket "3.0.01-SNAPSHOT"
+    maven
+        https://maven.intcx.net/content/repositories/snapshots/com/theice/icesocket/icesocketclient/3.0.01-SNAPSHOT/
+    have MR get new jar:
+        was: com.cpex.starteam:icesocketserver:jar:12.700.01
+        new: com.theice.icesocket:icesocketserver:jar:3.0.01-SNAPSHOT
+
+20150415 Wednesday
+ICESocket release
+    3.0.01
+    let Shawn know for MRs
+
+    from Jason Jones
+        this is a buildr job not Maven
+        with buildr jobs its a separate job that does the release
+        you won't get a "perform maven release"
+        If you want to do a release you need to use this job:
+        https://coin.intcx.net/job/ICEsocket-release
+        > need to run this to get the release using bldr
+
+
+oa.jar release
+    <version>3.5.10</version>
+
+    put new oa.jar in repo
+    https://maven.intcx.net/content/repositories/public/com/viaoa/oa/3.5.10/
+
+
+
+tsac release
+    12.900.01-SNAPSHOT
+    add new oa version
+        put oa.jar in resource jar
+    tsac-mrad-client
+        update pom with new oa.jar version
+
+admin-sever release
+    https://coin.intcx.net/job/MRAdmin/
+    1.0.21-SNAPSHOT
+    iceadminclient_util
+        pom 
+            tsac-mrad-client version 12.900.01-SNAPSHOT
+
+
+GSMR release
+    installer 12.900.17-SNAPSHOT 
+    server 12.900.14
+        support for methods nameed *OnHeavy
+        new iceadminclient_util 1.0.21
+            * need to update pom
+     gsmr server pom
+        ** iceadminmodel_util 1.0.21-SNAPSHOT
+
+20150416 Thur
+GSMR SErver
+    gs excpetions text in log message
+    new 12.975.01-SNAPSHOT for all gsmr projets
+
+20150422 Wed
+call Rick Beavers
+Scott mowing
+
+
+20150423 Thur
+7:00 denist
+9:00 court dont need to go, plea barginned
+call for comcast installation
+    monday at 8-10am
+
+20150427 Mon
+8-10am carpet cleaners
+8-10am call for comcast installation
+
+20150428 Tues
+ice2sf
+    daily args
+        -deleteTradingInfo true -updateTradingInfo true -loginDaysBack 14 -createdDays 14 -daysSinceMadeInactive 14
+    cleanup only
+        -deleteOldTradingInfoOnly 2015-04-01
+            * this will delete the old records in SF and then exit - it will not run the daily update
+            
+eclipse control key not working
+    Go to Window -> Preferences -> General -> Keys
+       click on "apply"
+
+20150429 Wed
+ordered shirts 
+    amazon
+    belk
+
+oa.jar release
+    <version>3.5.11
+    put new oa.jar in repo
+    https://maven.intcx.net/content/repositories/public/com/viaoa/oa/3.5.11/
+
+
+TE commands
+    ssh gemdba@[XX]te-inta ". /var/opt/impact/setEnv.te dev1;check-status.sh -s ZZZZ"
+        XX= ix, lx, ex
+      ZZZZ= main, endex, liffe
+
+    ssh gemdba@ixte-inta ". /var/opt/impact/setEnv.te dev1;check-status.sh -s main"
+    ssh gemdba@ixte-inta ". /var/opt/impact/setEnv.te dev1;stop-TEMgr.sh WceMgr"
+    ssh gemdba@ixte-inta ". /var/opt/impact/setEnv.te dev1;start-TEMgr.sh WceMgr"
+
+    see: https://icespace.cpex.com/docs/DOC-76217     
+    
+20150430 Thur
+
+    ICESocket 3.0.04 release
+        https://coin.intcx.net/job/ICEsocket-release
+        add fairness to threads waiting to get outputstream
+
+Adam Athimuthu 4:55 PM
+<StatusReport environment="DEV1" gemstone="ixgs-vip.dv1.rv.intcx.net" gsvip="ixgs-vip" teConfigVersion="xxx">
+<Instance status="Stopped" version="12.950.6" name="LiffeUK2Mgr" silo="liffe" host="lxte-intb" teConfigVersion="xxx"/>
+<Instance status="Stopped" version="12.950.6" name="LiffeUK2OptionsMgr" silo="liffe" host="lxte-intb" teConfigVersion="xxx"/>
+<Instance status="Stopped" version="12.950.6" name="LiffeUK3Mgr" silo="liffe" host="lxte-intb" teConfigVersion="xxx"/>
+<Instance status="Stopped" version="12.950.6" name="LiffeUK3OptionsMgr" silo="liffe" host="lxte-intb" teConfigVersion="xxx"/>
+</StatusReport>
+<StatusReport environment="DEV2" gemstone="ixgs-vip.dv2.rv.intcx.net" gsvip="ixgs-vip">
+<Instance status="Running" time="21:59:38" date="04/29/2015" version="12.975.2" name="LiffeUK2Mgr" silo="liffe" host="lxte-intb" pid="29596"/>
+<Instance status="Running" time="22:02:25" date="04/29/2015" version="12.975.2" name="LiffeUK2OptionsMgr" silo="liffe" host="lxte-intb" pid="681"/>
+<Instance status="Running" time="21:54:04" date="04/29/2015" version="12.975.2" name="LiffeUK3Mgr" silo="liffe" host="lxte-intb" pid="27239"/>
+<Instance status="Running" time="21:53:48" date="04/29/2015" version="12.975.2" name="LiffeUK3OptionsMgr" silo="liffe" host="lxte-intb" pid="26498"/>
+</StatusReport>
+    
+20150504 Monday
+
+Eclipse returns error message �Java was started but returned exit code = 1�
+    eclipse.ini
+        -vm 
+        C:/Program Files/Java/jdk1.7.0_55/jre/bin/server/jvm.dll
+    
+chrome tabs
+SDLC
+    https://coin.intcx.net/job/tsac/
+    https://rv-mg-mind-02.intcx.net/job/ICEtsac/
+MR types
+    https://icespace.cpex.com/docs/DOC-24614
+TE docs
+    https://icespace.cpex.com/docs/DOC-76217
+
+
+
+20150505 Tuesday
+Autotrader
+   vincez12345@gmail.com
+   vincent1
+
+   Challenger ad: 103515738
+      $20,900
+   Truck   ad: 103515770
+      $18,900
+
+
+Gmail
+   vincez12345@gmail.com
+   vincent1!
+
+2013 Dodge Challenger SXT
+Ad ID: 103515738
+AT Car ID: AT-17d2577d
+    
+
+Rick Foster
+    770 773 5891
+
+oaobject.delete()
+    does not set oaObj.deleteFlag
+        send propertyChange "deleted=true"
+
+20150506 Wednesday
+
+tsac version 12.900.02 created
+admin-server 1.0.21 created
+gsmr 12.975.01 created
+
+
+fill out docs for Amy
+call BofA about title
+call Rick Foster
+    770 773 5891
+11:45 Lawyers
+    Stacy sign title
+    Amy drop off doc
+
+20150507 Friday
+
+new releases
+    tsac 12.900.03
+    iceadminclient_util 1.0.22
+    gsmr-common  12.975.02
+    gsmr-client  12.975.02
+    gsmr-server  12.975.02
+    gsmr-install 12.975.02
+
+phones
+    t-mobile
+    http://www.cnet.com/products/samsung-galaxy-s6/
+    http://www.t-mobile.com/cell-phones/samsung-galaxy-s-6.html
+
+iceadminclient_util 
+    1.0.22
+gsmr-client
+    12.975.02
+gsmr-client
+    12.975.02
+
+20150508 Saturday
+Shelbi grad party at pool
+cabin
+godaddy
+    setup viaoa.com
+
+
+20150511 Monday
+tsac client UI
+    directory, start/stop command
+        needs to be used for starting
+    change select to normal
+        plus allow for checkbox column
+    AO and multiselect not working right
+        always show last row, even if it was unselected
+    popup menu instead of multiselect button
+        or have multiselect not show active command
+    cant right click if on a Mac
+    the splash screen doesn�t go away when the login window appears on my machine
+        >> not done
+    The search box doesn�t seem to be working
+        create MRADClient.autoComplete
+port 9001 
+    hardcoded    
+    >> verified with JB
+
+oa.jar release
+    <version>3.5.12
+    put new oa.jar in repo
+    https://maven.intcx.net/content/repositories/public/com/viaoa/oa/3.5.12/
+    ** IMPORTANT
+        Shawn will need to add the new version to MR bldr configs
+
+
+20150512 Tuesday 
+5:30 work, wreck on 285
+
+Dev2
+    install other gsmrs 
+    12.975.02
+
+finder needs to make sure AO is showing in table
+    have the row flash
+    after select, have focus go to table
+
+issue in AM
+    http://rv-am-mrad-01:9002/admin/
+    
+
+20150514 Thur
+nslookup tsac
+    Name:   tsac.dv2.rv.intcx.net
+    Address: 10.3.50.162
+
+
+AdminClient changes
+    constructor
+        removed serverId argument
+        added tsacHost (could be different then mradminHost)
+    added method getApplication
+    added method updateTsacServer()
+    added method updateTsacServer(ApplicationStatus)
+    tsac dns and port
+        "tsac, extsac, lxtsac", 9001
+
+
+releases
+    iceadminclient_util 1.0.26
+    tsac-mrad-client 12.900.05
+        com.theice.remote  remotemultiplexer 1.0.11
+        com.theice.comm  multiplexer 1.0.9
+        com.theice  iutil 1.0.3
+    gsmr 12.975.03
+
+
+
+GET new releases
+    new oa.jar in maven
+
+    oa.jar release
+        <version>3.5.12</version>
+        put new oa.jar in repo
+        https://maven.intcx.net/content/repositories/public/com/viaoa/oa/3.5.12
+    tsac
+        https://coin.intcx.net/job/TSAC/
+        maven repo
+            https://maven.intcx.net/content/repositories/releases/com/cpex/admin/
+
+    admin-sever release
+        https://coin.intcx.net/job/MRAdmin/
+        iceadminclient_util
+            pom 
+                tsac-mrad-clien
+
+    GSMR 12.975.01 release
+        https://coin.intcx.net/job/gsmr-common/
+        https://coin.intcx.net/job/gsmr-client/
+        https://coin.intcx.net/job/gsmr-server/
+        https://coin.intcx.net/job/gsmr-installer/
+        
+Name: tsac.dv2.rv.intcx.net
+
+SF login
+    https://login.salesforce.com/
+    User name: ice2sf@theice.com
+    password: Object1!
+       
+    SF Login URL:   
+        https://na12.salesforce.com/home/home.jsp
+    used reJ.java (on desktop) to change user/pw in class file
+        C:\projects\java\ICE2SF\RUN\ICE2SF\classes\com\ice\salesforce\SFManager.class
+
+ICE2SF user change
+SFManager.java
+    String _sfUserID = "edwin@intcx.com";
+    String _sfPassword = "ice2sf721!Di9QSiJp9gBHbQlxO3YFWg2cz";
+  > check with Dana on how to override this in the oompiled code
+  >>> NEW:  ice2sf@theice.com 
+       password is the same
+
+https://login.salesforce.com/?ec=302&startURL=%2Fhome%2Fhome.jsp
+
+SSH util
+    http://www.ganymed.ethz.ch/ssh2/FAQ.html
+
+New ICESocket build
+    Darren Thiessen 
+    https://icespace.cpex.com/docs/DOC-24480
+        you can install buildr on your local machine to run builds the same as you would do with maven. 
+    ssh://git@stash.intcx.net:7999/marketrouter/icesocket.git
+    needs a way to get a new build from Jenkins
+
+SFManager.java
+    String _sfUserID = "edwin@intcx.com";
+    String _sfPassword = "ice2sf721!Di9QSiJp9gBHbQlxO3YFWg2cz";
+  > check with Dana on how to override this in the oompiled code
+
+
+Purchased vespa
+    Rick  Dotty 404 277 3028
+    13082 Betheny Rd, Alph 30009
+    
+
+Here are the IPs Syseng will use for the new TSAC VIPs in Prod:
+    tsac.ord.intcx.net = 10.6.106.187   
+    extsac.ord.intcx.net = 10.6.106.188 
+    lxtsac.b5p.intcx.net = 10.2.106.189 
+
+    tsac.at.intcx.net = 10.1.106.187 
+    extsac.at.intcx.net = 10.1.106.188 
+    lxtsac.at.intcx.net = 10.1.106.189
+
+20150515 Friday
+
+The address that needs to be on file for them now is:
+5200 Dallas Hwy. Ste. 200 PMB 167
+Powder Springs, GA
+30127
+
+oatxt
+    max len error is clearing the data
+    > OAPlainDocument
+
+javaws -uninstall
+
+
+20150519 Tuesday
+    Garage door 
+        lift master
+        new weather strip
+    Loginville Garage door
+        404 935 6231
+        between 12:00-2:00 today
+
+test SSH from tsac-mrad
+/usr/jdk/instances/jdk1.6.0/bin/java -server -d64 -Xms512m -Xmx2048m -cp jar/\* -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5000 com.theice.tsac.delegate.oa.SSHExecuteDelegate
+        
+https://github.com/ViaOA/website.git
+
+
+20150526 Tue
+Please replace the following jar in Mavan:
+oa-3.5.13.jar
+https://maven.intcx.net/content/repositories/public/com/viaoa/oa/3.5.13/
+Please OC me, and let me know who I can email the new version of oa-3.5.13.jar to.
+
+20150527 Wed
+    Ocean Inn & Suites
+        599 Beachview Drive, St. Simons Island, GA 31522
+        912-634-2122
+        4 nights Check-Out Date: Sunday, May 31, 2015
+        7 day advance notice for cancel
+        Premium Room W/ 1 King Bed + 1 Sofa Bed. Sit-Down Balcony.Balcony Lighthouse View
+        $839.16
+        Credit Card on File is Charged for One Night Room Rate "NON-REFUNDABLE" SEVEN (7) DAYS PRIOR TO ARRIVAL
+
+20150601 Monday
+Dental
+    MetLife PDP Network
+    www.Metlife.com/mybenefits
+    800 942 0854
+    emp # 11396
+    Group Name: Intercontinental Exchange, Inc
+    Group # 313024
+
+new cert for tsac, the old one expired ,,, also copy to OA for signing oa.jar for ICE
+copied from:
+    https://stash.intcx.net/projects/WEBICE/repos/webice/browse/signing?at=refs%2Fheads%2F12.975
+C:\projects\workspace\tsac\tsac-core\keystore>"C:\Program Files\Java\jdk1.7.0_55\bin\keytool" -list -v -keystore icestore -storepass password
+        
+
+20150602 Tuesday
+
+Geico
+windshield
+    5660 NEW NORTHSIDE DRIVE NW
+    ATLANTA, GA 30328
+    claim number is 0100061920101186.
+  >> Thursday June 4  12:00 to 5:00
+    $392.67
+    Safelite work order number is: 01812-959639 
+
+Rougue VIN: JN8AS58T79WO427
+
+cancelled Geico home policy
+    refund for $320
+    
+check maintainence needed for Rogue 90k
+    timing belt on Rogue?
+    > http://www.vadennissanservicecontracts.com/maintenance/nissan/maintenance-schedule-90000-miles-72-months.html
+    oil and filter
+    air filter
+    engine coolant
+    in cabin microfilter
+    Replace limited-slip differential oil
+    Replace manual transmission oil
+    Engine drive belts?
+        No, it has a drive chain, which does not need to be replaced
+    Front suspension ball joints
+    Steering gear and linkage
+    Steering linkage ball joints
+    
+took comcast modem to ups store
+
+
+20150604 Wednesday
+
+Costa Permits
+    386 274 4000
+geico
+    update new changes
+comcast payments
+    payments were made to old account
+
+call doctors for appts
+    
+motivated movers
+    404 643 1705
+        Gary
+    paid $150 on visa
+    remainder in $$cash
+    June 11, Thursday 10:30
+
+Gwennette Derm
+    Dr Shavin 770 972 4845
+    Wed 6/17 2:40
+    register at gwenettdermotology.com
+        patient info
+        patient form
+        option #2 - new patient
+Dr Sabin
+    July 8 3:15
+    770 979 8022
+    appt w/ Shawdeg Middleton PA
+    www.ersabin.com
+        create user/pw
+        create custom form
+
+    find doctors - put in vv.xls
+        Internal Medicine: Dr. Bruce Sabin
+           1790 Presidential Circle Suite C
+           Snellville   7-979-8022
+        Dermatologist: Dr. Shavin from Gwinnett Dermatology
+          2383 Pate St
+          Snellville  7-972-4845
+            behind Snellville "big" church
+        GI doctor: Dr. Mark Kukler  from Southern Gastroenterology
+           678-985-2000   right by hospital where I work
+
+Kaufman oil change
+Dicks sporting goods
+    helmet, bike rack
+
+
+20150604 Thursday
+  >> Thursday June 4  12:00 to 5:00
+    $392.67
+    Safelite work order number is: 01812-959639 
+
+tsac
+    waiting status, use yellow background
+    add IP column
+    change "pause" to "suspend"
+    dont start already started server
+    sshExecuteDelegate  ssh userId to use
+        operationSystem.userId (* not yet used)
+        server.userId
+        appType.userId
+        application.userId
+
+       
+       
+comcast userId
+VINCEVIA6278@comcast.net
+       
+
+20150608 Monday
+IDL changes for deals
+    Alan Mobley 1:22 PM
+    https://icespace.cpex.com/docs/DOC-78012
+
+
+
+20150609 Tuesday
+    John Barnes
+        11:00am his office on 9th
+
+
+
+
+HOME =========
+gas, gas can
+car wash
+Kroger
+    bananas, yoguart, raisins
+    windshield wiper fluid
+T card
+backup notebook
+
+
+20150610 Wed
+
+Geico
+    claim: 0100061920101194
+    date: 6/9
+    vin: JN8AS58T79W042707
+    Holly Winebargar
+    2005 NISSAN ALTIMA
+    doraville police    
+        citation 233699
+        my driver# 056333641
+        www.ticketfastpay.com
+        court date July 14
+
+
+http://www.extendedstayamerica.com/hotels/ga/atlanta
+    2010 Powers Ferry Road,Atlanta, GA 30339
+        by Boston market
+
+
+20150611 Thursday
+    motivated movers
+        404 643 1705
+            Gary
+        10:30 at extra storage
+        paid $150 on visa
+        balance in Ca$$h
+    www.waltonmagcourt.com
+        case # 15-1475CS  5/12/2015
+        Claim is not accurate.  There was never a final agreement, but different options about Aaron someday receiving the car.
+        The title was in my name.
+        I tried for months to contact Aaron about the car.
+        I was never notified that the car required new tires.
+        The type of usage was not permitted.
+        $20 Receipt Number:
+            3334473b-d2c0-4284-8a36-942760c9a270
+
+
+20150615 Monday
+20150616 Tuesday
+
+dont have table.filter.refresh (column 0:0) clear the selected list
+    will need to reset the selection indexes
+dont have filter change the selected items
+    >> dont remove from selectHub if it is not in the Hub
+    >>   reset the selection indexes to the selected objs
+
+
+oa-3.5.14.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.14
+    Please contact me so that I can email you the jar file.
+    Thanks
+
+
+20150617 Wed
+    Dr Shavin (derm)
+        2:40
+
+
+20150622 Monday
+    Tracie Via, MBA, RD, LD, CNSC
+    Clinical Nutrition Manager 
+    Office: 770-736-2285
+    Cell: 678-414-5495
+
+
+20150623 Tuesday
+    desktop
+    HQ-DT-VVIA-01
+    10.23.103.214
+
+20150625 Thur
+
+oa-3.5.15.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.15
+    Please contact me so that I can email you the jar file.
+    Thanks
+
+new oa.jar
+Linux setting
+    svc_trad
+
+tsac IP address for Prod
+    ORD/B5P
+    tsac 10.6.106.187      (SE accidently used:  10.6.104.130)
+    extsac 10.6.106.188
+    lxtsac 10.2.106.189
+
+    AT
+    tsac 10.1.106.187
+    extsac 10.1.106.188
+    lxtsac 10.1.106.189
+
+20160629 Monday
+
+    site/env/silo = match what is used by hostname format
+        name/codeName
+
+Extra Space Storage
+    Richard Cox
+    678-290-6792 
+
+    merger remove improvements
+    OABuilder change prop takes a long time
+        could be hubmerger.remove issue
+    >> did not seem related to hubMerger, will check more later
+
+
+pay ticket
+    
+Court Data with Aaron Wed 7/8 @ 9:30am
+
+
+tsac
+    on disconnect,set mradClient.Ready=null 
+        MRADController.onClientDisconnect
+        
+
+20160701 Wed
+
+oa.jar 3.5.17
+    hubGroupBy changes
+    
+    
+20150706 Monday
+
+Ok�I am working July 18 and 19 so we will need to be home this weekend.  
+I will be off Fri the 24th so plan on taking this day off so we can have a long weekend at the cabin.
+I will be working Aug 8th and will take Monday Aug 3rd off for working this day so plan on taking that day 
+off as well if you can so we can have a long weekend Aug 1-3.
+Thanks!
+Love you!
+
+
+20150708 Wed
+register online with derm, and Dr
+    see notes for web address
+
+    770 979 8022
+    appt w/ Shawdeg Middleton PA
+    www.ersabin.com
+        create user/pw
+        create custom form
+
+20150710 Friday
+icesocket release 3.0.08
+    https://coin.intcx.net/job/ICEsocket-release
+    fixed read() -> readFully in inputStreamController
+
+    from Jason Jones
+        this is a buildr job not Maven
+        with buildr jobs its a separate job that does the release
+        you won't get a "perform maven release"
+        If you want to do a release you need to use this job:
+        https://coin.intcx.net/job/ICEsocket-release
+        > need to run this to get the release using bldr
+
+New releases
+    new tsac client 
+        12.975.04
+        added volatile
+
+    new iceadminclient_util  1.0.43
+        https://stash.intcx.net/projects/MARKETROUTER/repos/mradmin/browse
+
+        https://rv-mg-mind-02.intcx.net/job/MRAdmin/
+
+    new gsmr 13.000.02
+
+    multiplexer 1.0.10
+    remotemul  1.0.12
+    iutil 1.0.4
+    iceadminclient_util
+        1.0.33
+
+Fabian Cruz 1:29 PM
+Hey was wondering if you had chance to look into what we should be searching for in the GSMR logs
+    Here's the log info that can be used to find GCI connection errors.  btw: this will be added to TSAC in 13.000
+
+    Log file name:
+                    2015-07-10-rv-dv3-uxgsmr-01_GSMR_1_console-092209.log
+
+    This is in every log at startup:
+                    CONFIG: all GCI verified=true, valid gci connection count=10
+
+    Look for this:
+    This will only show up if there is an issue getting GCI connections
+                All GCI connections could not be established, valid gci connection count=9, total requested=10
+
+    the numbers will vary, so you can grep for the first part.
+
+
+gsmr packaging - 
+    Darian email
+        <pkg.sudogrps>ops</pkg.sudogrps>
+        You need to have Vince fix up the package to include �dev� group
+        <pkg.sudogrps>ops,dev</pkg.sudogrps>
+>> gsmr/ICEgsm-rpm/pom.xml
+
+rv-dv3-uxgsmr-01  13.000.02 gsmr, linux
+
+
+20150711 Saturday
+    purchased guns
+    shot at panther top montain
+
+20150713 Monday
+fix groupBy tree issue
+    >> HubMerger  afterAdd2(HubEvent e)
+    Line 1469
+
+http://www.fs.usda.gov/recarea/nfsnc/null/recarea/?recid=81027&actid=106
+    Fees are $3/day or an annual pass can be purchased for $25.   
+    Purchasing the $25 annual permit will allow shooters to use all three 
+    ranges on the Nantahala National Forest.   
+    Tusquitee Ranger District Office located at 123 Woodland Drive, Murphy, N.C.
+
+silver  $15.56,  10oz Sunshine 165.50, NTR 166.50
+    Larry Jackson Numismatics, Inc
+        http://www.goldatlanta.com/
+        Larry 404 256 3667
+            4920 Roswell Rd. NE, Suite 23B
+            Atlanta, GA 30342
+            (404) 256-3667    
+    JMBullion.com            
+        800-276-6508    
+
+safe
+cleaning kit
+bday cards, gift cards
+    Jimi, Mom
+
+20150714 Tues
+    walton county drivers license
+    lawyer's office
+        check for $4600 (ouch)
+    Dr Sapin office
+        8:00am blood test
+            need to fast
+dental insurance cards
+    c:\temp\Via,_Vince_(11396).pdf
+
+20150715 Wed
+
+dlank@ll-lt-ixibmr-01 $ grep CMS gc-ll-lt-ixibmr-01_IB-2015.07.15.log 
+    CommandLine flags: 
+        -XX:CMSInitiatingOccupancyFraction=60 -XX:+DisableExplicitGC -XX:+HeapDumpOnOutOfMemoryError 
+        -XX:InitialHeapSize=2147483648 -XX:MaxHeapSize=2147483648 -XX:MaxNewSize=87244800 -XX:MaxTenuringThreshold=6 
+        -XX:NewSize=87244800 -XX:OldPLABSize=16 -XX:OldSize=174489600 -XX:+PrintGC -XX:+PrintGCDateStamps 
+        -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops 
+        -XX:+UseConcMarkSweepGC -XX:+UseLargePages -XX:+UseParNewGC 
+
+20150716 Thur
+# Linux only:  VERSION=`ls ${ROOTDIR}/jar/tsac-core*|rev|cut -d/ -f1|rev|cut -d- -f3-4|cut -d. -f1-3`
+
+bash help:
+    http://mywiki.wooledge.org/BashFAQ/100
+
+
+Dev3 RT 13.000 linux
+    gsmr rv-dv3-uxgsmr-01  13.000.03-SNAPSHOT
+    tsac rv-dv3-uxmrad-01  12.975.05-SNAPSHOT
+
+LT  12.980 linux
+    ll-lt-ixgsmr-02 GSMR 12.980.2 SNAPSHOT 
+
+FT2  12.980 linux
+    tsac rv-ft2-mrad-02  12.975.05-SNAPSHOT
+    gsnr 13.000.03-SNAPSHOT
+
+20150719 Sunday
+    motivated movers
+        10:30am meet at storage
+        404 643 1705
+            Gary
+        paid $150 visa on 6/4 wed
+        remainder in $$cash
+        originally for thur 6/11 @10:30
+
+20150719 Monday
+
+
+Enterprise
+    Confirmation Number:    T2FPC7
+    Renter's Name:  vicent
+    via
+    Vehicle Class:  Pickup
+    (Ram 1500 Quad Cab or similar model)
+    Pick Up Date & Time:    Wednesday, Jul 22, 2015 @ 4:00 pm
+    Return Date & Time: Sunday, Jul 26, 2015 @ Noon
+    Pick Up Location:   2607 MAIN ST W
+    SNELLVILLE, GA 30078-3162 
+    (678) 781-5000
+
+ssh cewausr@ixcemr-01 -i ~/.ssh/id_rsa_gemdba /var/opt/cem/current/bin/gs-check-status
+
+
+done
+    Call George, thanks for moving
+        motivated movers
+    Call vespa for Thursday appt
+        770 420 8787
+        thus 7/23
+    Call Dr Sabin office
+        7 979 8022
+    cancel Extra Space Storage
+        Richard Cox
+        678-290-6792 
+        unit 3115
+    boxes for Scott
+
+    
+
+20150721 Tuesday 
+not done
+    License plates
+        cancel Challenger plates
+        new license
+        tag office: 303 South Hammond Dr    Monroe, Ga  M-F 8:30-5:00
+        770-267-1301
+        call>> 770 266 1736
+        Need to have VIN:
+
+20150722 Wed
+    enterprise rent truck
+        4:00pm
+
+20150723 Thur
+    9:00 vespa
+        mariettasportscar
+        770 420 8787
+
+20150728 Tuesday
+
+jenkins deploy for MRAdmin
+    John Davis 9:22 AM
+    RM changed things around, use this url
+    https://pdk.mind.intcx.net/job/PDK-ICEMRAdmin/build?delay=0sec
+    I just kicked off 45
+
+https://maven.intcx.net/content/repositories/releases/com/theice/idl/
+https://maven.intcx.net/content/repositories/releases/com/theice/idl/idl-src/13.000.2/
+
+MRAdmin link
+http://pdk-ft3-mrad-01:9002/admin
+
+IDL update 13.000.2
+    gsmrcommon 13.000.04
+        https://coin.intcx.net/job/gsmr-common
+    gsmrclient 13.000.04
+    gsmrserver 13.000.04
+    gsmr 13.000.04
+-----
+    IDL 13.000.2
+    icemessage 13.000.2
+    iutil 1.0.4
+    multiplexer 1.0.11
+    remotemultiplexer 1.0.15
+----
+    iceadminmodel_util 1.0.45
+    iceadminclient_util 1.0.45
+
+
+20150730 Thurs
+
+oa-3.5.17.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.17
+    If there is not an attached file "oa-3.5.17.jar", then please contact me so that I can email it to you.
+    Thanks
+
+CHG299418 deploy GMSR linux to prod
+SNOW change request
+    >> create new
+        Thursday 6:30pm
+
+        Affected CIs
+            add server name in txt autocomplete
+
+        Task Groups
+            **RM - derivatives
+            **SO - derivatives  <- not always
+            **?? GemDBA if this changes the amount of GCI connections/etc
+
+        Work Description:    
+            Please install the 12.980.05 GSMR on the linux server b5p-pr-lxgsmr-04.
+            This is a new server.
+            This is a Linux server and will need the RPM package when deploying.
+            This is a first time install and will need to be manually started.
+            to start:
+            cd  /var/opt/gsmr
+            ./gsmr.sh start
+            ** make sure to do under user svc_trad
+
+
+        Backout Plan
+            Stop the App by following this:
+            cd  /var/opt/gsmr
+            ./gsmr.sh stop
+
+
+    >> Submit and then add the following changes:
+
+    Go down to Change Task tab
+        click on RM task
+            edit the description for only their stuff
+        click on sysops
+            change description, etc
+
+    >> Submit for assesment button on top right
+
+3:00pm call 
+    WHEN:   Occurs every Tuesday, Wednesday, and Thursday from 3:00 PM to 3:30 PM EST
+    WHERE:  Conference Call-In - Internal extension: 8888, 80048# - Password: 11111#   External Call-In: 770-618-8888, 80048# - Password: 11111#
+
+GSMR Linux 15 + 5 heavy
+    GSMR 12.980.05
+    Qian OC
+        B5P b5p-pr-lxgsmr-04    GSMR    10.2.146    TKT987318, Ready for code deploy    Pending discussion with GS Vince Via 
+        Please follow this process to create your ticket:
+        https://icespace.cpex.com/docs/DOC-80894
+
+
+moved env->mradServer to silo->mradServer
+    this will recover when reading the data.bin
+    Silo.java
+    public MRADServer getMRADServer() {
+        if (mradServer == null) {
+            
+            //qqqqqqqqq    
+            //GET data.bin from FT3 qqqqqqqqqqqqqqq            
+            mradServer = (MRADServer) OAObjectPropertyDelegate.getProperty(getEnvironment(), PROPERTY_MRADServer);
+            if (mradServer != null) {
+                OAObjectPropertyDelegate.setProperty(this, PROPERTY_MRADServer, mradServer);
+                OAObjectPropertyDelegate.removeProperty(getEnvironment(), PROPERTY_MRADServer, false);
+                OAObjectPropertyDelegate.removeProperty(mradServer, PROPERTY_Environment, false);
+            }
+            else {
+                mradServer = (MRADServer)  getObject(P_Environment);
+                
+            }
+            
+            mradServer = (MRADServer) getObject(P_MRADServer);
+        }
+        return mradServer;
+    }
+
+20150803 Monday
+test with ft3 data.bin
+    make sure data is loaded correctly
+        * change to Env.mradServer -> silo.mradServer
+
+    moved env->mradServer to silo->mradServer
+    this will recover when reading the data.bin
+    Silo.java
+    public MRADServer getMRADServer() {
+        if (mradServer == null) {
+            //qqqqqqqqq    
+            //GET data.bin from FT3 qqqqqqqqqqqqqqq            
+            mradServer = (MRADServer) OAObjectPropertyDelegate.getProperty(getEnvironment(), PROPERTY_MRADServer);
+            if (mradServer != null) {
+                OAObjectPropertyDelegate.setProperty(this, PROPERTY_MRADServer, mradServer);
+                OAObjectPropertyDelegate.removeProperty(getEnvironment(), PROPERTY_MRADServer, false);
+                OAObjectPropertyDelegate.removeProperty(mradServer, PROPERTY_Environment, false);
+            }
+            else {
+                mradServer = (MRADServer)  getObject(P_MRADServer);
+                
+            }
+            mradServer = (MRADServer) getObject(P_MRADServer);
+        }
+        return mradServer;
+    }
+
+20150804 Tuesday
+
+MRAdmin => 1.0.47         (John, Vince)
+TSAC    => 12.975.06      (Vince)
+
+Atlas24x7:  x=> 12.865.6       (Alex)
+DHS:    *=> 12.975.7-SNAPSHOT       (Alan)
+DLMR:   *=> 12.975.8-SNAPSHOT       (Alan)
+EXAS:   *=> 12.975.17.8    (Fei)
+FIXOS:  *=> 12.975.22.6-SNAPSHOT    (Yingxin)
+FIXTC:  *=> 12.975.3.4-SNAPSHOT     (Pradnya)
+GSMR:   *=> 12.975.04      (Vince)
+IBMR:   *=> 12.975.58-SNAPSHOT       (Dana)
+IBMR-FIXML x=> 12.900.58.6 (Pradyna) 
+LLS:    *=> 12.975.7.2-SNAPSHOT     (Sarath)
+LLAD:   *=> 12.975.3.2-SNAPSHOT     (Sarath)
+MCMR:   *=> 12.975.12.6-SNAPSHOT    (Shawn, Dong)
+MMMR:   *=> 12.975.15.4-SNAPSHOT    (Shawn, Chaithanya)
+MPMR:   *=>  ????          (uses IBMR 12.900.58.6 Pradyna)
+MTS:    *=> 1.40.4-SNAPSHOT (Yingxin)
+OBMR:   *=> 12.975.9-SNAPSHOT       (Ganliang)
+OCMR:   *=> 12.975.10-SNAPSHOT       (Ganliang)
+OFMR:   *=> 12.975.13-SNAPSHOT      (Yingxin)
+OHMR:   *=>  12.975.10-SNAPSHOT      (Ganliang)
+ORMR:   *=> 12.975.15.4-SNAPSHOT    (Shawn, Chaithanya)
+PDMR:   *=> 12.975.15.4-SNAPSHOT    (Shawn, Chaithanya)
+PFMR:   *=> 12.980.2.3-SNAPSHOT     (Barry)
+PKMR:   *=> 12.975.28      (Sanjay)
+POMR:   *=> 12.975.15.4-SNAPSHOT    (Shawn, Chaithanya)
+POS:    x=> 12.975.9       (Ganliang)
+RMMR:   x=> 12.900.14.4    (Pradyna)
+RPMR:   *=> 12.975.12.6-SNAPSHOT    (Dong)   replay
+SDMR:   *=> 12.975.19-SNAPSHOT      (Alan) 
+SOMR:   *=> 12.975.5       (Chaithanya)   smart order
+TCMR:   *=> 12.975.3.4-SNAPSHOT     (Pradyna)
+UPSMR:  *=> 12.975.27      (Chaithanya)
+
+    Necessary for all Linux MRs in Prod, version 12.980
+    Necessary for MRs in Prod to work with TSAC, version 12.975
+    Necessary for 13.000
+        iceadminclient_util  1.0.47
+        iceadminmodel_util 1.0.47
+        tsac-mrad-client 12.975.06
+
+    Current version for other dependencies, these are not necessary for 12.975 or 12.980
+        remotemultiplexer 1.0.15
+        multiplexer 1.0.11
+        iutil 1.0.4
+
+
+20150805 Wednesday
+
+removed RC from tsac model/project
+    saved to temp/backup/20150805/tsac
+    removed most RC objects
+
+20150806 Thur
+    iceadminclient_util 1.0.49
+
+MRAdmin     John, Vince    1.0.49
+TSAC        Vince          12.975.06
+
+Atlas24x7:  Alex           12.975.7   (not in ft2) 
+DHS:        Alan           12.975.7 12.980.9
+DLMR:       Alan           19.975.8, 12980.7
+EXAS:       Fei            ?????, ?????
+FIXOS:      Yingxin        12.975.22.6, 12.980.14
+FIXRM       Pradyna        12.900.14.5, 12.980.8
+FIXTC:      Pradnya        12.975.3.4, 12.980.7
+GSMR:       Vince          12.975.06, 12.980.06
+IBMR:       Dana           12.975.58,  12.980.13
+IBMR-FIXML  Pradnya        12.900.58.7, 12.980.4
+LLS:        Sarath         12.975.7.2, 12.980.7
+LLAD:       Sarath         12.975.3.2, 12.980.7
+MCMR:       Shawn, Dong  12.975.12.6, 12.980.23 
+MMMR:       Shawn, Chaithanya  12.975.15.4, 12.980.10
+MPMR:       Pradyna
+MTS:        Yingxin        1.40.4
+OBMR:       Ganliang       12.975.9, 12.980.5
+OCMR:       Ganliang       12.975.11, 12.980.7
+OFMR:       Yingxin        ?????, ?????
+OHMR:       Ganliang       12.975.11, 12.980.7
+ORMR:       Shawn, Chaithanya  12.975.15.4, 12.980.10
+PDMR:       Shawn, Chaithanya  12.975.15.4, 12.980.10
+PFMR:       Barry    12.980.2.3   (975 not needed)
+PKMR:       Sanjay         12.975.29, ?????
+POMR:       Shawn, Chaithanya  12.975.15.4, 12.980.10
+POS:        Ganliang
+RMMR:       Pradyna
+RPMR:       Dong   12.975.12.6 
+SDMR:       Alan   12.975.19, 12.980.5 
+SOMR:       Chaithanya  12.975.6, 12.980.7
+TCMR:       Pradyna     ?????, ?????
+UPSMR:      Chaithanya  12.975.28, 12.980.5
+
+
+30150707 Friday
+    IDL 13.000.3
+        icemessage 13.000.3
+        https://maven.intcx.net/content/repositories/releases/com/theice/idl/idl-src/13.000.3
+            unzip and get idlconstants.xml
+        gsmr client 13.000.05
+        deployed to Dev3
+        
+
+30150812 Wed
+oa-3.5.18.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.18
+    If there is not an attached file "oa-3.5.18.jar", then please contact me so that I can email it to you.
+    Thanks
+
+
+
+HOME:
+    call about ticket
+        ticket 233699
+        July 14
+        770 455 1001
+        >> $315 money order or cashier check
+        Municipal Court of the City of Doraville, GA
+        3765 Park Ave
+        Doraville, GA 30340
+    silver delivery today?
+    vespa headsets        
+    discuss T stock options
+        $1k/month?
+        or 500 stock/ 500 401k
+  
+20150814 Friday
+    7:00am Denist
+
+add secondary jnlp link to start tsac
+    staight to tsac.jnlp
+
+Deploy
+    rv-dv2-mrad  solaris
+    rv-dv3-uxmrad   => all are linux
+    rv-ft2-mrad solaris
+    pdk-ft3-mrad solaris
+
+
+silver
+Tracking Number: 1Z4469544210094108 
+MONROE, GA, US 30656
+Special Instructions: SIGNATURE REQUIRED 
+Customer Pickup Location: THE UPS STORE
+4132 ATLANTA HWY
+ACROSS HOME DEPOT/FRNT OF USPS
+LOGANVILLE, GA, US 30052
+Tel:770-466-3433
+
+
+20150817 Monday
+GSMR and IDL 13.000.4
+    IDL 13.000.4
+        https://maven.intcx.net/content/repositories/releases/com/theice/idl/idl-src/13.000.4
+    ICEMessage 13.000.4
+        https://coin.intcx.net/job/ICEmessage/
+    GSMR common 13.000.06
+        https://coin.intcx.net/job/gsmr-common/
+    GSMR client 13.000.06
+    GSMR server 13.000.06
+    GSMR installer 13.000.06
+
+    Email to MR Group
+        The GSMR client that supports IDL 13.000.4  is 13.000.06
+        Other dependencies needs if your project uses Buildr  (otherwise, it's inherited automatically)
+        icemessage 13.000.4
+    deploy:
+        IDL integration progress can be found here: https://icespace.cpex.com/docs/DOC-77411
+
+20150819 Wed
+Command Dialog wizard
+   Panels:
+    confirm
+    before
+    inputs (allow multiple)
+    processing
+    completed
+        sucess
+        failure
+            exception stack trace
+  south toolbar
+     cancel/next/prev/finished
+moved delete from sync to remote client 
+    delete, deleteAll
+       are they in sync?
+
+
+20150820 Thrus
+    8:00am Dr Mark Duffield
+    circQue.add now checks and wait for overflows
+
+20150821 Fri
+oa-3.5.19.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.19
+    If there is not an attached file "oa-3.5.19.jar", then please contact me so that I can email it to you.
+    Thanks
+
+
+20150825 Tue
+oa-3.5.20.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.20
+    If there is not an attached file "oa-3.5.20.jar", then please contact me so that I can email it to you.
+    Thanks
+
+20150827 Thur
+
+ice remotemultiplexer release 1.0.16
+icesocket new cipher SSL_RSA_WITH_RC4_128_MD5 to TLS_RSA_WITH_AES_128_CBC_SHA
+
+remote multiplexer changes
+    log adapater
+        added to IUtils
+    allow setting que size when registering remote object
+    disconnect the socket on que overruun
+    add afterBroadcast(ri)
+    
+    show example:
+        afterInvokeForStoC
+        afterInvokeForBroadcast
+        afterInvokeForCtoS
+       
+ 
+
+20150828 Fri        
+    I have to work Sunday the 23rd of August.  I will be off Fri the 28th so we could have a long weekend that weekend!
+    working from cabin
+    
+20150901 Tues
+Aaron Georf?
+    updated my desktop
+
+oa-3.5.21.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.21
+    If there is not an attached file "oa-3.5.21.jar", then please contact me so that I can email it to you.
+    Thanks
+
+20150902 Wed
+    Jekyl Island
+    
+https://icespace.cpex.com/docs/DOC-83017
+
+ICESocket webICE to MR connection
+3.0.0 com.theice.icesocket
+
+
+ICEMessage 13.000.4
+com.theice.msg/icemesssage
+
+multiplexer 1.0.11
+com.theice.comm/multiplexer
+
+remotemultiplexer 1.0.16
+com.theice.remote/remotemultiplexer
+
+iutil 1.0.4
+com.theice/iutil
+
+gsmrclient
+com.theice.gsmr/gsmrclient
+12.980.01
+
+iceadminclient_util 1.0.49
+com.cpex.admin/iceadminclient_util
+
+iceadminmodel_util 1.0.49
+com.cpex.admin/iceadminmodel_util
+
+tsac client 12.975.07
+com.theice.tsac/tsac-mrad-client
+
+20150909 Wed
+
+GSMR Client test
+    public static void main(String[] args) throws Exception {
+        ILogUtil.consoleOnly(Level.FINE);
+        TRIMarketRouter router = new TRIMarketRouter();
+        router.routerName = "GSMRClient";
+        router.hostName = "ord-pr-gsmr-01";
+        router.enumType = TRIMarketRouterType.GSMR;
+        router.serverId = 123456789;
+        router.serverFromId = 1234567890;
+        router.serverVersion = "1.0";
+        router.idlVersion = "12.900.6.3";
+        // router.dtStarted = new TRIDateTime((short)27, (short)8, (short)2015, (short)15, (short)39, (short)0, (short)0);
+        // router.dtRegister = new TRIDateTime((short)27, (short)8, (short)2015, (short)15, (short)39, (short)0, (short)0);
+        
+        
+        GSMRClient gc = new GSMRClient("pr", router, "ord-pr-gsmr-01", 9000);
+        gc.start();
+        GemstoneInterface gi = gc.getGemstoneProxy();
+        
+        TRIUserLite user = new TRIUserLite();
+        user.userID = "bverheye";
+        user.userID = "dvermeiren";
+        user.userID = "";
+        
+        TRIRequestSystemLoginOut lo = gi.requestSystemLoginInfo("bverheye", TRIClientApplicationType.webice);
+    }
+
+new OAXMLReader working
+OAXMLWriter willBeIncludedLater added
+    so that indent does not get so large
+changed keyonly and guid xml attribs to
+    id, idref
+
+20150910 Thur
+oa-3.5.22.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.22
+    If there is not an attached file "oa-3.5.22.jar", then please contact me so that I can email it to you.
+    Thanks
+
+CHG303322 deploy GMSR linux to prod
+    12.980.07
+    b5p-pr-lxgsmr-01
+
+    3:00pm call 
+        WHEN:   Occurs every Tuesday, Wednesday, and Thursday from 3:00 PM to 3:30 PM EST
+        WHERE:  Conference Call-In - Internal extension: 8888, 80048# - Password: 11111#   External Call-In: 770-618-8888, 80048# - Password: 11111#
+
+20150911 Fri
+    IDL 13.000.4.2
+        icemessage 13.000.4.2
+        gsmr client 13.000.07
+        gsmr common 13.000.07
+
+20150914 Monday
+
+oa-3.5.23.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.23
+    If there is not an attached file "oa-3.5.23.jar", then please contact me so that I can email it to you.
+    Thanks
+
+rv-dv3-uxmpmr-01
+    rpm -qi ICEfixrm
+
+sudo su - svc_trad
+
+add to deploy/config files from Dev3
+    apptype.xml
+    developer.xml
+    user.xml
+
+20150917 Thur
+oa-3.5.24.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.24
+    If there is not an attached file "oa-3.5.24.jar", then please contact me so that I can email it to you.
+    Thanks
+
+    DO
+        R school, not sure where 
+            last sememster grades and missed days (absence rpt)
+        Not paying Stacy
+            rumor about the two of them
+        rumor that she is going to screw me
+            make me pay all of this money
+        * child support needs to be retro
+        * she needs to pay portion of my lawyer fees
+        her father did not die
+        she prob did not go to Ohio
+        she still has not turned in all docs
+        very late on turning in docs
+        me of making 25/month
+        she lied on affidavid when she turned in docs
+        still harrasing my past customers
+        she is getting paid under the table
+            need to know who (contact info) she has been working for
+        401k
+        silver
+        She asked to have the kids address changed for insurance
+            to avoid me seeing the ambulance and hospital
+        did not mention ViaDA credit card
+        other bank accounts and credit cards
+        ------
+        of of things that she stole from me
+        dead dogs in freezer
+        painting small bath
+        viada credit card
+        credit cards
+        God card
+        brainwashing kids
+
+
+20150919 Sat
+    cabin fuel delivery
+    1.95/gallon
+        at 55, to 85
+        
+20150921 Monday
+    new tsam project
+20150924 Thur
+
+check on MMMR queuepos for ce messages
+    ord-mg-ixrp-02
+    cd /var/opt/logsrepo/logs/prod/ 
+    # MMMR ord-pr-ixmmmr-01
+    find ./ord-pr-ixmmmr-*/marketmonitor/2015-09-23*error*.log -print -exec grep -i 'queuepos' {} \;
+    
+Cem
+    large queue pos
+Dong
+    read real socket timeout of vsocket
+    check broadcast to see if it waits on the client to ask for more
+
+        
+rv-dv2-exmrad-01 solaris        
+        
+
+NEW IDL 13.000.5
+GSMR Client
+    <groupId>com.theice.gsmr</groupId>
+    <artifactId>gsmrclient</artifactId>
+    <version>13.000.08</version>
+
+GSMR Common
+    <groupId>com.theice.gsmr</groupId>
+    <artifactId>gsmrcommon</artifactId>
+    <version>13.000.08</version>
+
+ICEMessage (new SocketMessage)    
+    <groupId>com.theice.msg</groupId>
+    <artifactId>icemessage</artifactId>
+    <version>13.000.5</version>
+
+RemoteMultiplexer - remoting
+    <groupId>com.theice.remote</groupId>
+    <artifactId>remotemultiplexer</artifactId>
+    <version>1.0.17</version>
+
+Multiplexer - socket
+    <groupId>com.theice.comm</groupId>
+    <artifactId>multiplexer</artifactId>
+    <version>1.0.11</version>
+
+       
+20151006 Tuesday
+
+total linux file handles
+    https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/5/html/Tuning_and_Optimizing_Red_Hat_Enterprise_Linux_for_Oracle_9i_and_10g_Databases/chap-Oracle_9i_and_10g_Tuning_Guide-Setting_File_Handles.html
+
+
+20151009 Fri
+oa-3.5.25.jar
+    Please add new version of third party jar to ICE maven
+    I have a new update to add to the Maven repo at:
+    https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.25
+    If there is not an attached file "oa-3.5.25.jar", then please contact me so that I can email it to you.
+    Thanks
+
+
+201501014 Wed
+Please add new version of third party jar to ICE maven
+I have a new update to add to the Maven repo at:
+https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.26
+If there is not an attached file "oa-3.5.26.jar", then please contact me so that I can email it to you.
+Thanks
+
+20151015 Thur
+
+showerdoorsbytj.com
+    770-505-2631
+        678-608-0984  678-641-1463
+
+    measurement hours: 6am to 1  M-F
+    installation house: 6am to 7pm M-F
+    
+    Andrew@showerdoorsbytj.com   cell 678-641-1463 
+    Meagan@showerdoorsbytj.com   office 770-505-2631
+
+http://www.crlaurence.com/apps/contentloader/default.aspx?content=www.crlaurence.com:80/adv/finishes/us/shower.html
+    brushed brushed pewter hardware color
+
+admin client 1.0.50
+
+send Jim a text
+    678 467 9606
+
+
+201501020 Tues
+Please add new version of third party jar to ICE maven
+I have a new update to add to the Maven repo at:
+https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.27
+If there is not an attached file "oa-3.5.27.jar", then please contact me so that I can email it to you.
+Thanks
+
+
+20151105 Thur
+Michael Hartman, M.D.: 
+    Atlanta Neurosurgical Associates Snellville
+    Medical Group
+    1600 Medical Way # 140, Snellville, GA 30078
+    (770) 979-8080
+Dr. Bruce Sabin   Internal Medicine
+   1790 Presidential Circle Suite C
+   Snellville   7-979-8022
+      
+lower lumbar
+disc compression at L4 & L5
+
+
+
+20151109 Monday
+Please add new version of third party jar to ICE maven
+I have a new update to add to the Maven repo at:
+https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.28
+If there is not an attached file "oa-3.5.28.jar", then please contact me so that I can email it to you.
+Thanks
+
+T bday xoxox
+    800flowers Thank you for your Order #W00885408860877
+
+20151110 tuesday
+denist 7am
+
+Please add new version of third party jar to ICE maven
+I have a new update to add to the Maven repo at:
+https://maven.intcx.net/content/repositories/thirdparty/com/viaoa/oa/3.5.29
+If there is not an attached file "oa-3.5.29.jar", then please contact me so that I can email it to you.
+Thanks
+
+20151111 wed
+meeting with GL,JB and OPs for tsam
+hi5 deadlock
+    hub.toString()
+hi5 large log files
+    get a stack dump
+    > created throttleLOG
+    
+20151112 thur
+
+TSAM testing in AT today
+    ICEtsam 1.0.3 to at-mg-xput-01/02
+    ICEtsam 1.0.3 to at-mg-exmrad-01/02
+    ICEtsam 1.0.3 to at-mg-lxmrad-01/02
+
+    at-mg-xput-02
+    at-mg-exmrad-02
+    at-mg-lxmrad-02
+
+
+    C:\Users\jbradsha>nslookup tsac.at.intcx.net
+    Server: at-bp-odns-01.cpex.com
+    Address: 10.1.108.88
+
+    Non-authoritative answer:
+    Name: tsac.at.intcx.net
+    Address: 10.1.106.187
+
+
+    C:\Users\jbradsha>nslookup extsac.at.intcx.net
+    Server: at-bp-odns-01.cpex.com
+    Address: 10.1.108.88
+
+    Non-authoritative answer:
+    Name: extsac.at.intcx.net
+    Address: 10.1.106.188
+
+
+    C:\Users\jbradsha>nslookup lxtsac.at.intcx.net
+    Server: at-bp-odns-01.cpex.com
+    Address: 10.1.108.88
+
+    Non-authoritative answer:
+    Name: lxtsac.at.intcx.net
+    Address: 10.1.106.189
+
+
+call about mri & report from Dr Sabin
+    call dr hartman's office
+        no mri disk
+    Eastside MR 
+        888 843 8133
+        south entrance
+
+20151116 Monday
+
+work from home
+outside water issue fixed
+
+US: 770-618-8888 
+Conference ID: 80011#
+Passcode: 11111#
+
+setup ftp filezilla on godaddy for cameras
+
+
+
+======== TODAY =======
+20151117 Tuesday
+at ICE
+
+GSMR config settings for mradmin and tsac/tsam
+ORD nslookup
+    IXGSMR
+        ads = ads.ord.intcx.net = 10.6.104.140
+        tsac = tsac.ord.intcx.net = 10.6.106.187
+        mras.hostName = 10.6.104.140
+        tsac.host = 10.6.106.187
+    EXGSMR
+        exads = exads.ord.intcx.net = 10.6.106.52
+        extsac = extsac.ord.intcx.net = 10.6.106.188
+        mras.hostName = 10.6.104.140  (points to ice silo)
+        tsac.host = 10.6.106.187 (points to ice silo)
+    LXGSMR b5p-pr-lxgsmr-01
+        lxads = lxads.b5p.intcx.net = 10.2.106.71
+        lxtsac = lxtsac.b5p.intcx.net = 10.2.106.189
+        mras.hostName = 10.2.106.71
+        tsac.host = 10.2.106.189
+        
+AT nslookup
+    IXGSMR
+        ads = ads.at.intcx.net = 10.1.106.19
+        tsac = tsac.at.intcx.net = 10.1.106.187
+        mras.hostName = 10.1.106.19
+        tsac.host = 10.1.106.187
+    EXGSMR
+        exads = exads.at.intcx.net = 10.1.106.52
+        extsac = extsac.at.intcx.net = 10.1.106.188
+        mras.hostName = 10.1.106.19 (points to ice silo)
+        tsac.host = 10.1.106.187 (points to ice silo)
+    LXGSMR at-pr-lxgsmr-01
+        lxads = lxads.at.intcx.net = 10.1.106.71
+        lxtsac = lxtsac.at.intcx.net = 10.1.106.189
+        mras.hostName = 10.1.106.71
+        tsac.host = 10.1.106.189
+
+
+PROD svc_trad   see: ssh.txt
+-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQDW12Q/ubiubtbR6J0LaNSDH8ODRnKVOEjOajra4c6vMDCGTy+N
+760GvemmGOk1EcVCD/bLNxc2TJWzZ3JBTNIGw6wduBYoWqmJNWDwEbS9R8s0SutL
+A0bscUVSd3Fmul/LHPu+2aAx8cfno5YhYzHLZhQmzsjPQbd1UKTthxPHWQIDAQAB
+AoGAFz+vxYWfiqDL9mMpu3ZYqOfjDG2vMJ6qoku0msMczrB0T9R53O421yfuBN9l
+PSzzH7cCifMoO+QFvyhOoOpjP81NztnWaJoPaVx6ZimrKqP+TLA+Nwiu7YoYtobU
+840EjqFCFSosG5LtTAdRrP7LyV+Y6M7FBuGneFwixjrb0JECQQD4VKdkMmHZfxVj
+H5u7e0Loagdx59RC3eVFevy8wZjsmBR7xkavXkU8z8Cs4QPUM30lC2YYj90nEQi6
+yH040fyvAkEA3Xn3InaspGViNb9I7X7F6vgJPIlWcs2WFAeIbQZZygWrKFSR22Au
+3xlmLvURabaJ6JYYFAIpvblEK8Rih6ZOdwJAX68eoHjZQxi4gO0Y8HBaI3tXSwhs
+vScKxG7TG1ftOJyQp/CKI+BLBVd3giVheE4uliuCN0yXhgoGNxIxTcd7eQJBANzz
+AVbTd/Zl4m1mULYGRCLeojBPfvv3F6MRxMuni0odD5yjigOGWBxgNW3hNSb2YWy0
+2H6VjdjljBnxyK41fo8CQQCGSKxZF/hwOd9+LMospYfYmD1fDyjUV6dX/wZg5I1i
+SNHQkG5fUK7eEynLL/Ls3Vg8c/tF8mkrx2zA504P0jJU
+-----END RSA PRIVATE KEY-----
+
+
+TSAM DONE from AT testing
+    CEM is only logging that it was a timeout ...
+
+    MRAppManagerPanel
+        add counts per status
+
+    tsam UI 
+        creating new AppGroup
+        the Add button was disabled for include types
+
+    change jnlp links on icespace
+
+    ORD needs to use orange border instead of red
+
+    get ssh keys used in prod
+        only needed for ICE silo
+        *!!* svc_trad is different for prod then non prod
+        
+    SSH key for svc_trad was different for ICE silo, but not Endex or Liffe
+        all others were good
+        fyi ... on the RSA key for SSH ...
+        the non prod keys worked for svc_trad in Endex and Liffe silos ...
+        I only had to change out for the ICE silo
+        ... it's on the list :)
+
+    had to restart tsam to get packages loaded from xml file    
+
+    jnlp needs to support argument tags to take highest preference
+        ex: <a href="http://tsac.at.intcx.net:8080/jnlp/tsam.jnlp?server=tsac.at.intcx.net"><b>AT</b> <small>ICE Silo</small></a>
+
+    startAll.sh > changed name to manual.sh
+
+    EXGsmr needs to be in main tsam Silo        
+        done GSMR 13.000.09
+        
+    remove ssh rsa keys 
+        > AT (?ORD) silos did not all use the same svc_trad key
+        use installed ones
+        need to point to correct one for now on
+        change command to use option for correct user
+        change data for startAll.sh
+        > partial fix to use the installed ones, with two for svc_trad
+
+    create tsam cron
+        # Sunday at 12:01 am
+        1 0 * * 0 /var/opt/tsam/tsam.sh stop
+        8 0 * * 0 /var/opt/tsam/tsam.sh start
+
+Update tsam status from Greg L's page
+    https://icespace.cpex.com/docs/DOC-86626
+
+
+ICESocket with TLS support
+    Ignoring disabled cipher suite: SSL_RSA_WITH_RC4_128_MD5 for TLSv1
+    No available cipher suite for TLSv1
+
+    ICESocket change to cipher names, from SSL to TLS
+        Currently, the ICESocket is using:
+        SSL_RSA_WITH_RC4_128_MD5
+
+    icesocket new cipher SSL_RSA_WITH_RC4_128_MD5 to TLS_RSA_WITH_AES_128_CBC_SHA
+    
+    > add cipher name to ICEServer.java PREFERRED_CIPHER_NAMES
+    >    running under JDK 1.8
+
+
+
+======vvvvvvvvvvvvvvvvvvvvv===============
+HOME
+
+fix magnet in new cabinet
+fix dresser
+    wood in Rogue for dresser
+    bike rack for T
+
+
+
+
+
+20151118 Wed
+    vespa rack
+    curtains
+    3:00 PT appt
+    ? injection appt
+    Dr Sabin
+        call about MRI/kidney
+    Self review for Qian
+        in Now
+    online security test
+        in Now
+    create new GSMR 13.000.09 release
+        config changes for tsam in SR1 and AT/ORD
+        ticket to install in ORD and AT
+    new 13.100.2 ICEMessage, GSMR releases
+    13.100 Maven - only build for Linux, remove solaris
+    followup on email to Darrin
+        check for response on ssh keys to use
+
+
+
+20151119 Thur
+    weeds
+    basket
+
+
+20151120 Fri
+
+20151121 Sat
+    cygwin
+    java nio and linux
+        http://www.google.com/patents/EP2506147A2?cl=en
+
+    document
+        add to xls and safe
+        wallet
+        ss card
+        birth cert
+        marriage cert
+        living will
+
+
+20151122 Sun
+    basket
+
+
+20151123 Mon
+    call Dave Bradberry
+        shower corner floor
+        fireplace floor
+
+
+========== DRIVE ========
+
+========== THINK ========
+
+========== SHOPPING ========
+HD
+    screen for garage
+    return 
+        shower rod
+        tile
+        grout
+    shower grout
+        ? get color
+    light bulbs 100w
+    weeds
+    pine bark
+Kroger
+
+
+
+

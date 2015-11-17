@@ -2565,6 +2565,14 @@ public class OAString {
     public static String getJavaIndentifier(String txt) {
         return makeJavaIndentifier(txt);
     }
+
+    public static String removeEndingChars(String s, int amt) {
+        if (s == null) return null;
+        int x = s.length();
+        if (amt >= x) return "";
+        s = s.substring(0, x-amt);
+        return s;
+    }
     
     public static void main(String[] args) {
         String s = "abCDe_ 1.2-34.59:5";
