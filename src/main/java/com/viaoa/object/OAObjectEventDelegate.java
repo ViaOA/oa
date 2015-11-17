@@ -403,41 +403,46 @@ public class OAObjectEventDelegate {
         // taken out, since it will set OAClientThread.status = STATUS_FinishingAsServer 		
         //		if (!OAClientDelegate.processIfServer()) return; // only process on server, and send events to clients (even if this is OAThreadClient)
 	    
-	    OALinkInfo toLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
-	    if (toLinkInfo == null) return;
+	    OALinkInfo revLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
+	    if (revLinkInfo == null) return;
 	
 	    Object obj;
 	
-	    if (toLinkInfo.type == OALinkInfo.ONE) {
+	    if (revLinkInfo.type == OALinkInfo.ONE) {
 	        try {
 	            OAObjectInfo oiRev = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.toClass);
-	            Method m = OAObjectInfoDelegate.getMethod(oiRev, "get"+toLinkInfo.name, 0); // make sure that the method exists
+	            Method m = OAObjectInfoDelegate.getMethod(oiRev, "get"+revLinkInfo.name, 0); // make sure that the method exists
 	        	if (m != null) {
                     if (oldObj instanceof OAObjectKey) {
-                        oldObj = OAObjectReflectDelegate.getObject(linkInfo.toClass, (OAObjectKey)oldObj);
+                        if (OASync.isClient()) { // 20151117 dont get from server if this is client
+                            oldObj = OAObjectCacheDelegate.get(linkInfo.toClass, (OAObjectKey)oldObj);
+                        }
+                        else {
+                            oldObj = OAObjectReflectDelegate.getObject(linkInfo.toClass, (OAObjectKey)oldObj);
+                        }
                     }
 	                if (oldObj != null) {
 	                    // 20150820 if one2one, then dont load if null and isClient
 	                    //   this was discovered when deleting an IDL and function/gsmrFunction (1to1) kept going to server for other value
 	                    boolean b = true;
 	                    if (OASync.isClient()) {
-	                        obj = OAObjectPropertyDelegate.getProperty((OAObject)oldObj, toLinkInfo.name);
+	                        obj = OAObjectPropertyDelegate.getProperty((OAObject)oldObj, revLinkInfo.name);
 	                        if (obj == null) {
 	                            // dont get from server
 	                            b = false;
 	                        }
 	                    }
 	            	    if (b) {
-    	                	obj = OAObjectReflectDelegate.getProperty((OAObject)oldObj, toLinkInfo.name);
+    	                	obj = OAObjectReflectDelegate.getProperty((OAObject)oldObj, revLinkInfo.name);
     	                    if (obj == oaObj) {
-    	                    	OAObjectReflectDelegate.setProperty((OAObject)oldObj, toLinkInfo.name, null, null);
+    	                    	OAObjectReflectDelegate.setProperty((OAObject)oldObj, revLinkInfo.name, null, null);
     	                    }
 	            	    }
 	                }
 	                if (newObj != null) {
-	                    obj = OAObjectReflectDelegate.getProperty((OAObject)newObj, toLinkInfo.name);
+	                    obj = OAObjectReflectDelegate.getProperty((OAObject)newObj, revLinkInfo.name);
 	                    if (obj != oaObj) {
-	                    	OAObjectReflectDelegate.setProperty((OAObject)newObj, toLinkInfo.name, oaObj, null);
+	                    	OAObjectReflectDelegate.setProperty((OAObject)newObj, revLinkInfo.name, oaObj, null);
 	                    }
 	                }
 	            }
@@ -447,14 +452,14 @@ public class OAObjectEventDelegate {
 	        return;
 	    }
 	
-	    if (toLinkInfo.type != OALinkInfo.MANY) return;
+	    if (revLinkInfo.type != OALinkInfo.MANY) return;
 	
 	    Hub hub;
 	    boolean bUpdateHub = false;
 
 	    // 20131009 each link now has its own recursive flag
 	    OALinkInfo liRecursive;
-	    if (toLinkInfo.bRecursive) {
+	    if (revLinkInfo.bRecursive) {
 	        liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
 	    }
 	    else liRecursive = null;
@@ -508,7 +513,7 @@ public class OAObjectEventDelegate {
 	            To find all root (top level) sections for a catalog, select sections without a parentSection assigned
 	    */
 	    if (liRecursive != null) {  // if recursive
-	        if (toLinkInfo.getOwner() && linkInfo != liRecursive) {
+	        if (revLinkInfo.getOwner() && linkInfo != liRecursive) {
 	            // owner property changed.  ex: "Catalog"
 	            // need to update all recursive objects under this one.  ex: "hubSections.section.catalog = catalog"
 	        	
@@ -575,8 +580,8 @@ public class OAObjectEventDelegate {
 	                        // if it was removed from old hub, then dont add to root hub
 	                        boolean bAdd = !OAThreadLocalDelegate.isDeleting(oaObj);
 
-	                        if (bAdd && !bOldIsKeyOnly && OAObjectReflectDelegate.isReferenceHubLoadedAndNotEmpty((OAObject)oldObj, toLinkInfo.getName())) {
-	                            hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)oldObj, toLinkInfo.getName()); // Catalog.sections (original hub that this objects belonged to)
+	                        if (bAdd && !bOldIsKeyOnly && OAObjectReflectDelegate.isReferenceHubLoadedAndNotEmpty((OAObject)oldObj, revLinkInfo.getName())) {
+	                            hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)oldObj, revLinkInfo.getName()); // Catalog.sections (original hub that this objects belonged to)
 	                            bAdd = hub.contains(oaObj);
 	                        }
 	
@@ -626,8 +631,8 @@ public class OAObjectEventDelegate {
 	                            // add to unowned root hubs
 	                            // if it was removed from old hub, then dont add to root hub
 	                            boolean bAdd = true;
-	                            if (oldObj != null && !bOldIsKeyOnly && OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)oldObj,toLinkInfo.getName())) {
-	                            	hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)oldObj, toLinkInfo.getName()); // Catalog.sections (original hub that this objects belonged to)
+	                            if (oldObj != null && !bOldIsKeyOnly && OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)oldObj,revLinkInfo.getName())) {
+	                            	hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)oldObj, revLinkInfo.getName()); // Catalog.sections (original hub that this objects belonged to)
 	                                bAdd = hub.contains(oaObj);
 	                            }
 	                            if (bAdd && h.getObject(oaObj) == null) {
@@ -643,8 +648,8 @@ public class OAObjectEventDelegate {
 	
 	    if (oldObj != null && !bOldIsKeyOnly) {
 	        try {
-	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)oldObj, toLinkInfo.getName())) { 
-	            	obj = OAObjectReflectDelegate.getProperty((OAObject)oldObj, toLinkInfo.getName()); 
+	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)oldObj, revLinkInfo.getName())) { 
+	            	obj = OAObjectReflectDelegate.getProperty((OAObject)oldObj, revLinkInfo.getName()); 
 	    	        if (obj instanceof Hub) {
 	    	            Hub h = (Hub) obj;
 	    	            if (h.contains(oaObj)) h.remove(oaObj);
@@ -657,8 +662,8 @@ public class OAObjectEventDelegate {
 	
 	    if (newObj != null) {
 	        try {
-	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)newObj, toLinkInfo.getName())) { 
-	        	    hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)newObj, toLinkInfo.getName());
+	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)newObj, revLinkInfo.getName())) { 
+	        	    hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)newObj, revLinkInfo.getName());
 	            	
 	            	// 20130630 added autoAttach check
                     boolean b = OAObjectDelegate.getAutoAdd(oaObj);
