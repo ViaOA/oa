@@ -1,5 +1,6 @@
 
 
+
 ICE Socket
     test icesocket when client has SSL cipher only
         respond to email
@@ -3142,7 +3143,7 @@ Change ICE2SF.bat to use correct path for JDK
 John Barnes
     ICE2SF and BRIX
         I had a quick question regarding the ICE2SF code/app.  By chance can you check to see if there is something 
-        in the code that “flags” a new Account as BRIX?  Primarily, checking the BRIX Account checkbox field.  
+        in the code that ï¿½flagsï¿½ a new Account as BRIX?  Primarily, checking the BRIX Account checkbox field.  
     
 ICE2SF
     Bryan Barnard 
@@ -3150,7 +3151,7 @@ ICE2SF
         next week:
         >  I dont have a way to get this right now, but I will plan to get an XML output of the data.  I can do this at the beginning of next week, if that timeframe is ok.
     Chase
-        Chase and I had a discussion on this.. and based on everyone’s availability we can do the handover from Chase to Vince either this or next week or early next year. 
+        Chase and I had a discussion on this.. and based on everyoneï¿½s availability we can do the handover from Chase to Vince either this or next week or early next year. 
         One interesting thing that also came out was that Chase writes all the SF updates into oracle too. So, that is something we can discuss further when we meet to take over the code. 
         >  I'll meet up with Chase soon to discuss, and get started on a requirements doc for this.
 

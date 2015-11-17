@@ -6381,11 +6381,17 @@ ICESocket with TLS support
 ======vvvvvvvvvvvvvvvvvvvvv===============
 HOME
 
+home notes
 fix magnet in new cabinet
 fix dresser
     wood in Rogue for dresser
     bike rack for T
-
+Textpad 5.4.2
+    www.textpad.com
+    see Preferences
+CDI
+VJ
+Dr Tinso
 
 
 
