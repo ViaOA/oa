@@ -1186,9 +1186,15 @@ public class OAObjectReflectDelegate {
 
         if (!(obj instanceof OAObjectKey)) {
             if (obj != OANotExist.instance) {
-                if (obj != null) return obj;
-                if (!li.getAutoCreateNew() && !li.bCalculated) {
-                    return obj; // found it
+                // 20151117
+                if (obj != null) {
+                    return obj;
+                }
+                else if (li.getAutoCreateNew()) {
+                    if (OAObjectInfoDelegate.isOne2One(li)) return null; // will only be null if it was set to null on purpose. (ex: cascade delete)
+                }
+                else {
+                    if (!li.bCalculated) return null;
                 }
             }
 
@@ -1196,6 +1202,9 @@ public class OAObjectReflectDelegate {
             if (li == null) return null;
             if (OAObjectInfoDelegate.isOne2One(li) && !oaObj.isNew()) {
                 if (!bIsServer && !bIsCalc) {
+                    if (oaObj.isDeleted()) { // 20151117
+                        return null;
+                    }
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else if (!bIsCalc) {
@@ -1246,9 +1255,15 @@ public class OAObjectReflectDelegate {
             }
         }
 
-        if (ref == null && li.getAutoCreateNew()) {
-            ref = OAObjectReflectDelegate.createNewObject(li.getToClass());
-            setProperty(oaObj, linkPropertyName, ref, null); // need to do this so oaObj.changed=true, etc.
+        if (ref == null && li.getAutoCreateNew() && !bIsCalc) {
+            boolean b = OAObjectInfoDelegate.isOne2One(li);
+            if (b && oaObj.isDeleted() && !bIsServer) {
+                // 20151117 dont autocreate new if this is deleted
+            }
+            else {
+                ref = OAObjectReflectDelegate.createNewObject(li.getToClass());
+                setProperty(oaObj, linkPropertyName, ref, null); // need to do this so oaObj.changed=true, etc.
+            }
         }
         return ref;
     }

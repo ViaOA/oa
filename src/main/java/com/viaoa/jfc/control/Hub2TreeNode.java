@@ -100,7 +100,7 @@ public class Hub2TreeNode extends HubListenerAdapter {
     }
 
     public @Override void afterAdd(final HubEvent e) {
-        if (node.getShowAll() && !HubSelectDelegate.isFetching(hub)) {
+        if (node != null && node.getShowAll() && !HubSelectDelegate.isFetching(hub)) {
         	try {
         		if (parent.getChild(node, e.getObject()) == null) {
         			OATreeNodeData tnd = new OATreeNodeData(node, e.getObject(),parent);

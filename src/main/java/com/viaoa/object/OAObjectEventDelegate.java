@@ -311,6 +311,16 @@ public class OAObjectEventDelegate {
                 }
             }
         }
+   
+        // if one2one, and new value is null, then set prop to null in link prop
+        if (linkInfo != null){
+            OALinkInfo revLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
+            if (revLinkInfo != null) {
+                if (revLinkInfo.type == OALinkInfo.ONE) {
+                    OAObjectPropertyDelegate.setPropertyCAS((OAObject)oldObj, revLinkInfo.getName(), null, oaObj);
+                }                
+            }
+        }
         
     	// Note: this needs to be ran even if isSuppressingEvents(), it wont send messages but it might need to update detail hubs
     	if (!bIsLoading || OAObjectHubDelegate.isInHub(oaObj)) {  // 20110719 needs to send if obj is in a Hub - in case other clients need the change
