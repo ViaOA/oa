@@ -276,12 +276,19 @@ public class RemoteMultiplexerClient {
         return proxy;
     }
 
+volatile static int threadCheck;    
     protected Object onInvokeForCtoS(BindInfo bind, Object proxy, Method method, Object[] args) throws Throwable {
         //LOG.fine(method.getName());
         RequestInfo ri = new RequestInfo();
         // 1:CtoS_QueuedRequest start
         // 1:CtoS_QueuedRequestNoResponse
 
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+        if (Thread.currentThread() instanceof OARemoteThread) {
+if (threadCheck++ < 50) LOG.log(Level.WARNING, "Info only: bind="+bind.name+", method="+method.getName(), new Exception("RemoteThread used for CtoS method call"));            
+        }
+        
+        
         VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
         try {
             ri.msStart = System.currentTimeMillis();

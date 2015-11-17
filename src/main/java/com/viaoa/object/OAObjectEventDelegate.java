@@ -312,12 +312,17 @@ public class OAObjectEventDelegate {
             }
         }
    
-        // if one2one, and new value is null, then set prop to null in link prop
+        // 20151117 if one2one, and new value is null, then set prop to null in link prop
         if (linkInfo != null){
             OALinkInfo revLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
             if (revLinkInfo != null) {
                 if (revLinkInfo.type == OALinkInfo.ONE) {
-                    OAObjectPropertyDelegate.setPropertyCAS((OAObject)oldObj, revLinkInfo.getName(), null, oaObj);
+                    if (oldObj instanceof OAObjectKey) {
+                        if (OASync.isClient()) { // 20151117 dont get from server if this is client
+                            Object objx = OAObjectCacheDelegate.get(linkInfo.toClass, (OAObjectKey)oldObj);
+                            if (objx instanceof OAObject) OAObjectPropertyDelegate.setPropertyCAS((OAObject)objx, revLinkInfo.getName(), null, oaObj);
+                        }
+                    }
                 }                
             }
         }
