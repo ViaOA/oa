@@ -504,77 +504,76 @@ public class OAObjectCacheDelegate {
     }
     
 
-    private static OAObject _add(OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
+    private static OAObject _add(final OAObject obj, final boolean bErrorIfExists, boolean bAddToSelectAll) {
         if (bDisableCache) return obj;
         // LOG.finer("obj="+obj);
         if (obj == null) return null;
+
+        OAObject result = null;
+        Object removeObj = null;
+        final OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
         
-        TreeMapHolder tmh = getTreeMapHolder(obj.getClass(), true);
+        final TreeMapHolder tmh = getTreeMapHolder(obj.getClass(), true);
         try {
             tmh.rwl.writeLock().lock();
-            OAObject objx = _add(tmh.treeMap, obj, bErrorIfExists, bAddToSelectAll);
-            return objx;
+            final TreeMap tm = tmh.treeMap;
+
+            WeakReference ref = (WeakReference) tm.get(ok);
+
+            if (ref != null) {
+                result = (OAObject) ref.get();
+                if (result == obj) {
+                    return obj;
+                }
+            }
+            
+            int mode = OAThreadLocalDelegate.getObjectCacheAddMode();
+            if (result == null) {
+                if (ref != null) tm.remove(ok);  // previous value was gc'd
+                if (mode != IGNORE_ALL) {
+                    ref = new WeakReference(obj);
+                    tm.put(ok, ref);
+                }
+                result = obj;
+            }
+            else {  // already in treemap
+                if (mode == NO_DUPS) {
+                    if (bErrorIfExists) {
+                        throw new RuntimeException("OAObjectCacheDelegate.add() object already exists "+obj);
+                    }
+                    bAddToSelectAll = false;
+                }
+                else if (mode == OVERWRITE_DUPS) {
+                    if (ref != null) tm.remove(ok);  // previous value was gc'd
+                    ref = new WeakReference(obj);
+                    tm.put(ok, ref);
+                    removeObj = result;
+                    result = obj;
+                    // LOG.fine("overwrite object="+obj);
+                }
+                else {
+                    // Ignore duplicate - automatically set as the default mode when using OA RMI
+                    bAddToSelectAll = false;
+                }
+            }
         }
         finally {
             tmh.rwl.writeLock().unlock();
         }
-    }        
 
-    // thread safe
-    private static OAObject _add(TreeMap tm, OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
-        OAObject result = null;
-        Object removeObj = null;
-        final OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
-
-        WeakReference ref = (WeakReference) tm.get(ok);
-
-        if (ref != null) {
-        	result = (OAObject) ref.get();
-        	if (result == obj) {
-        	    return obj;
-        	}
+        // outside of lock
+        if (bAddToSelectAll && (result==obj)) {
+            Hub[] hs = getSelectAllHubs(obj.getClass());
+            for (int i=0; hs != null && i<hs.length; i++) {
+                LOG.finer("adding to selectAll Hub="+hs[i]);
+                if (removeObj != null) hs[i].remove(removeObj);
+                hs[i].add(obj);
+            }
         }
         
-        int mode = OAThreadLocalDelegate.getObjectCacheAddMode();
-        if (result == null) {
-            if (ref != null) tm.remove(ok);  // previous value was gc'd
-            if (mode != IGNORE_ALL) {
-                ref = new WeakReference(obj);
-            	tm.put(ok, ref);
-            }
-            result = obj;
-        }
-        else {  // already in treemap
-            if (mode == NO_DUPS) {
-            	if (bErrorIfExists) {
-            	    throw new RuntimeException("OAObjectCacheDelegate.add() object already exists "+obj);
-            	}
-            	bAddToSelectAll = false;
-            }
-            else if (mode == OVERWRITE_DUPS) {
-                if (ref != null) tm.remove(ok);  // previous value was gc'd
-                ref = new WeakReference(obj);
-            	tm.put(ok, ref);
-            	removeObj = result;
-            	result = obj;
-                // LOG.fine("overwrite object="+obj);
-            }
-            else {
-            	// Ignore duplicate - automatically set as the default mode when using OA RMI
-            	bAddToSelectAll = false;
-            }
-        }
-
-        if (bAddToSelectAll && (result==obj)) {
-			Hub[] hs = getSelectAllHubs(obj.getClass());
-			for (int i=0; hs != null && i<hs.length; i++) {
-	        	LOG.finer("adding to selectAll Hub="+hs[i]);
-	        	if (removeObj != null) hs[i].remove(removeObj);
-				hs[i].add(obj);
-			}
-        }
         return result;
-    }
+    }        
+
     
     public static void addToSelectAllHubs(OAObject obj) {
         Hub[] hs = getSelectAllHubs(obj.getClass());
