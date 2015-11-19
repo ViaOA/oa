@@ -2091,7 +2091,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
             @Override
             public boolean hasNext() {
-                return (pos < objs.length);
+                return (pos < objs.length && objs[pos] != null);
             }
 
             @Override

@@ -3168,6 +3168,9 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                         ListSelectionModel lsm = table.getSelectionModel();
                         lsm.removeSelectionInterval(pos, pos);
                     }
+                    catch (Exception ex) {
+                        // no-op
+                    }
                     finally {
                         aiIgnoreValueChanged.decrementAndGet();
                     }

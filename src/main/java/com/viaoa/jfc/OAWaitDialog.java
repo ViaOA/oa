@@ -157,7 +157,12 @@ public class OAWaitDialog extends JDialog implements ActionListener {
         }
         setCursor(Cursor.getPredefinedCursor(bShowProcessing?Cursor.WAIT_CURSOR:Cursor.DEFAULT_CURSOR));
         getProgressBar().setIndeterminate(bShowProcessing);
-        super.setVisible(b);  // this will put it in blocking mode
+        try {
+            super.setVisible(b);  // this will put it in blocking mode
+        }
+        catch (Exception e) {
+            // no-op
+        }
     }
     
     public void actionPerformed(ActionEvent e) {
