@@ -15,6 +15,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FlowLayout;
@@ -30,6 +31,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1255,8 +1257,9 @@ if (!getKeepSorted()) hub.cancelSort();
     protected boolean isAllSelected() {
         Hub h = getSelectHub();
         if (h == null) return false;
-        if (h.getSize() == 0) return false;
-        if (getHub().getSize() == 0) return false;
+        int x = h.getSize();
+        if (x == 0) return false;
+        if (getHub().getSize() != x) return false;
         for (Object obj : getHub()) {
             if (!h.contains(obj)) return false;
         }
@@ -2739,19 +2742,15 @@ if (!getKeepSorted()) hub.cancelSort();
             // 20150810
             if (tc.getOATableComponent() == this.chkSelection) {
                 if (isAnySelected()) {
-                    for (Object obj : getHub()) {
-                        getSelectHub().remove(obj);
-                    }
+                    getSelectHub().removeAll();
+                    getSelectionModel().clearSelection();
                 }
                 else {
-                    for (Object obj : getHub()) {
-                        getSelectHub().add(obj);
-                    }
+                    Hub h = getHub();
+                    getSelectionModel().setSelectionInterval(0, h.getSize()-1);
                 }
-                repaint();
                 return;
             }
-            
             
             if (headerRenderer != null) {
                 headerRenderer.setupEditor(column);

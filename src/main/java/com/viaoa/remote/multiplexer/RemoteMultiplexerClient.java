@@ -285,7 +285,7 @@ volatile static int threadCheck;
 
 //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
         if (Thread.currentThread() instanceof OARemoteThread) {
-if (threadCheck++ < 50) LOG.log(Level.WARNING, "Info only: bind="+bind.name+", method="+method.getName(), new Exception("RemoteThread used for CtoS method call"));            
+//if (threadCheck++ < 50) LOG.log(Level.WARNING, "Info only: bind="+bind.name+", method="+method.getName(), new Exception("RemoteThread used for CtoS method call"));            
         }
         
         

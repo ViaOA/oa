@@ -112,6 +112,11 @@ public class JNLPServlet extends HttpServlet
             txt = hmJnlp.get(fname);
             if (txt == null) { 
                 txt = OAFile.readTextFile(fname, 2048);
+
+                // convert the jar files names to the name with version.
+                txt = updateJarFileNames(txt);
+                hmJnlp.put(fname, txt);
+                
             
                 // codebase="http://localhost:8081/jnlp"  <== replace server:port with actual server
                 pos = txt.indexOf("codebase");
@@ -124,53 +129,55 @@ public class JNLPServlet extends HttpServlet
                         }
                     }
                 }
+                hmJnlp.put(fname, txt);
+            }
                 
-                // set client arguments[]
-                //   find:  <argument>JWSCLIENT</argument>            
-                pos = txt.indexOf("JWSCLIENT");
-                String appTitle = null;
-                
-                if (pos >= 0) {
-                    s = "";
+            // set client arguments[]
+            //   find:  <argument>JWSCLIENT</argument>            
+            pos = txt.indexOf("JWSCLIENT");
+            String appTitle = null;
+            
+            if (pos >= 0) {
+                s = "";
 
-                    HashSet<String> hs = null;
-                    Enumeration enumx = req.getAttributeNames();
-                    for ( ; enumx.hasMoreElements(); ) {
-                        String n = (String) enumx.nextElement();
-                        if (n == null) continue;
-                        String v = (String) req.getAttribute(n);
-                        s += n+"="+v+"</argument><argument>";
-                        if (hs == null) hs = new HashSet<String>();
-                        hs.add(n.toUpperCase());
-                    }
-                    
-                    for (Entry<String, String> entry : hmNameValue.entrySet()) {
-                        if ("jnlp.title".equalsIgnoreCase(entry.getKey())) {
-                            appTitle = entry.getValue();
-                        }
-                        String n = entry.getKey();
-                        if (n == null) continue;
-                        if (hs != null && hs.contains(n.toUpperCase())) continue; // overwritten from query string 
-                        
-                        s += n+"="+entry.getValue()+"</argument><argument>";
-                    }
-                    
-                    txt = txt.substring(0, pos) + s + txt.substring(pos);
-                }      
+                HashSet<String> hs = null;
+                Enumeration enumx = req.getParameterNames();//AttributeNames();
+                for ( ; enumx.hasMoreElements(); ) {
+                    String n = (String) enumx.nextElement();
+                    if (n == null) continue;
+                    String[] vs = (String[]) req.getParameterValues(n);//Attribute(n);
+                    String v;
+                    if (vs == null || vs.length == 0 || vs[0] == null) v = "";
+                    else v = vs[0];
+                    s += n+"="+v+"</argument><argument>";
+                    if (hs == null) hs = new HashSet<String>();
+                    hs.add(n.toUpperCase());
+                }
                 
-                // <title>OABuilder</title>
-                if (!OAString.isEmpty(appTitle)) {
-                    pos = txt.indexOf("<title>");
-                    if (pos >= 0) {
-                        int epos = txt.indexOf("</title>", pos+1);;
-                        if (epos >= 0 ) {
-                            txt = txt.substring(0, pos) + "<title>"+ appTitle + txt.substring(epos);
-                        }
+                for (Entry<String, String> entry : hmNameValue.entrySet()) {
+                    if ("jnlp.title".equalsIgnoreCase(entry.getKey())) {
+                        appTitle = entry.getValue();
+                    }
+                    String n = entry.getKey();
+                    if (n == null) continue;
+                    if (hs != null && hs.contains(n.toUpperCase())) continue; // overwritten from query string 
+                    String v = entry.getValue();
+                    if (v == null) v = "";
+                    s += n+"="+v+"</argument><argument>";
+                }
+                
+                txt = txt.substring(0, pos) + s + txt.substring(pos);
+            }      
+
+            // <title>OABuilder</title>
+            if (!OAString.isEmpty(appTitle)) {
+                pos = txt.indexOf("<title>");
+                if (pos >= 0) {
+                    int epos = txt.indexOf("</title>", pos+1);;
+                    if (epos >= 0 ) {
+                        txt = txt.substring(0, pos) + "<title>"+ appTitle + txt.substring(epos);
                     }
                 }
-                // convert the jar files names to the name with version.
-                txt = updateJarFileNames(txt);
-                hmJnlp.put(fname, txt);
             }
             
             // 20150922

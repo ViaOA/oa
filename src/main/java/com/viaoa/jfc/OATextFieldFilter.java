@@ -136,11 +136,23 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
 
         String txt = getText();
         if (txt == null || txt.length() == 0) return true;
+
+        
+        boolean bNot = txt.charAt(0) == '!';
+        if (bNot) {
+            txt = txt.substring(1);
+            if (txt.length() == 0) return true;
+        }
+        
         txt = txt.toLowerCase();
 
         String val = ((OAObject)obj).getPropertyAsString(propertyPath);
         if (OAString.isEmpty(val)) return false;
-        return (val.toLowerCase().indexOf(txt) >= 0);
+        
+        
+        boolean b = (val.toLowerCase().indexOf(txt) >= 0);
+        if (bNot) b = !b;
+        return b;
     }
     
     @Override
