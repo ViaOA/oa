@@ -65,12 +65,12 @@ public class JfcUtil {
         gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;
         
         JLabel lbl = new JLabel("");
-//qqqqqqqqq        
+/*qqqqqqqqq        
 lbl.setText("xxx");        
 lbl.setOpaque(true);        
 lbl.setBackground(Color.red);
 pan.setBorder(new LineBorder(Color.yellow, 3));
-
+*/
         pan.add(lbl, gcx);
         return pan;
     }
@@ -95,7 +95,7 @@ pan.setBorder(new LineBorder(Color.yellow, 3));
         BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
         panComp.setLayout(box);
         panComp.add(comp);
-        panComp.add(comp2);
+        if (comp2 != null) panComp.add(comp2);
 return createFilledPanel(panComp, percentage);        
         
 /*was        
