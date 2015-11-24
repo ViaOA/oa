@@ -222,6 +222,7 @@ public class OAQueryTokenManager {
             else if (s.equals("OR")) token.type = OAQueryTokenType.OR;
             else if (s.equals("NULL")) token.type = OAQueryTokenType.NULL;
             else if (s.equals("LIKE")) token.type = OAQueryTokenType.LIKE;
+            else if (s.equals("NOTLIKE")) token.type = OAQueryTokenType.NOTLIKE;
         }
         return token;
     }

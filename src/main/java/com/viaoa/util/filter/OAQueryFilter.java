@@ -10,6 +10,7 @@
 */
 package com.viaoa.util.filter;
 
+import java.util.Stack;
 import java.util.Vector;
 
 import com.viaoa.ds.query.OAQueryToken;
@@ -35,102 +36,270 @@ public class OAQueryFilter<T> implements OAFilter {
     private String query; 
     private Object[] args;
     private Object[] newArgs;
-    
+
+//remove these qqqqqqqqq    
     private OAPropertyPath propertyPath;
     private Object value;
     
     // root filter for query
-    private OAFilter filter;    
-    
-    public OAQueryFilter(Class<T> clazz, String query, Object[] args) {
-        this.clazz = clazz;
-        this.query = query;
-        this.args = args;
-        setup();
-        newArgs = new Object[0];
-        
-        this.filter = setupA();
-    }
+    private FilterInfo filterInfo;    
 
+    private Stack<FilterInfo> stack = new Stack<FilterInfo>();
     private Vector vecToken;
     private int posToken;
     
-    private OAQueryToken nextToken() {
-        if (vecToken == null || posToken >= vecToken.size()) return null;
-        OAQueryToken t = (OAQueryToken) vecToken.elementAt(posToken++);
-        return t;
+    public OAQueryFilter(Class<T> clazz, String query, Object[] args) throws Exception {
+        this.clazz = clazz;
+        this.query = query;
+        this.args = args;
+        newArgs = new Object[0];
+        
+        this.filterInfo = parse();
+        if (stack.size() != 0) throw new Exception("parse failed, filters not all used, remainder="+stack.size());
+    }
+
+    
+    private class FilterInfo {
+        public FilterInfo(OAFilter f, String pp) {
+            this.filter = f;
+            this.propertyPath = pp;
+        }
+        OAFilter filter;
+        String propertyPath;
     }
     
-    
-    // descendant parser to create filters
-    private void setup() {
+    private FilterInfo parse() throws Exception {
         OAQueryTokenizer qa = new OAQueryTokenizer();
         vecToken = qa.convertToTokens(query);
-        setupB();
+        FilterInfo f = parseBlock();
+        return f;
     }
-//qqqqqqqqqqqq use OAFinder, since it has AddXxxFilters already
     
-    // ()
-    private OAQueryToken setupB() {
-        OAQueryToken token = setupC();
-        boolean b;
-        if (b = (token.type == OAQueryTokenType.SEPERATORBEGIN)) {
-            nextToken();
-        }
-        OAFilter f = setupC();
-        if (b) {
-            if (token.type != OAQueryTokenType.SEPERATOREND) {
-                //qqqqq error
-            }
 
-            //qq OAFilter f = new OABlockFilter()
-        }
-        
+    private FilterInfo parseBlock() throws Exception {
+        OAQueryToken token = nextToken();
+        if (token == null) throw new Exception("token is null");
+        parseForConjuction(token);
+
+        if (stack.size() == 0) throw new Exception("Block failed, no filter in stack");
+        FilterInfo fi = stack.pop();
+        return fi;
+    }
+
+
+    private OAQueryToken parseForConjuction(OAQueryToken token) throws Exception {
+        if (token == null) return null;
+        return parseForAnd(token);
     }
     
     // AND
-    private OAQueryToken setupC() {
+    private OAQueryToken parseForAnd(OAQueryToken token) throws Exception {
+        if (token == null || token.type != OAQueryTokenType.AND) {
+            token = parseForOr(token);
+        }
+        if (token != null && token.type == OAQueryTokenType.AND) {
+            if (stack.size() == 0) throw new Exception("AND failed, no filter in stack");
+            FilterInfo f1 = stack.pop();
+            
+            token = nextToken();
+            token = parseForBracket(token);
+            if (stack.size() == 0) throw new Exception("AND failed, no filter in stack");
+            FilterInfo f2 = stack.pop();
+            
+            OAFilter f = new OAAndFilter(f1.filter, f2.filter);
+            FilterInfo fi = new FilterInfo(f, null);
+            stack.push(fi);
+            
+            token = parseForConjuction(token);
+        }
+        return token;
     }
+
     // OR
-    private OAQueryToken setupD() {
-    }
-    // >
-    private OAQueryToken setupE() {
-    }
-    // >=
-    private OAQueryToken setupF() {
-    }
-    // <
-    private OAQueryToken setupG() {
-    }
-    // <=
-    private OAQueryToken setupH() {
-    }
-    // == 
-    private OAQueryToken setupI() {
-    }
-    // !=
-    private OAQueryToken setupJ() {
-    }
-    // LIKE 
-    private OAQueryToken setupK() {
-    }
-    // NOTLIKE
-    private OAQueryToken setupL() {
-    }
-    // bottom
-    private OAQueryToken setupM() {
-        nextToken();
+    private OAQueryToken parseForOr(OAQueryToken token) throws Exception {
+        if (token == null || token.type != OAQueryTokenType.OR) {
+            token = parseForBracket(token);
+        }
+        if (token != null && token.type == OAQueryTokenType.OR) {
+            if (stack.size() == 0) throw new Exception("OR failed, no filter in stack");
+            FilterInfo f1 = stack.pop();
+            
+            token = nextToken();
+            token = parseForBracket(token);
+            if (stack.size() == 0) throw new Exception("OR failed, no filter in stack");
+            FilterInfo f2 = stack.pop();
+            
+            OAFilter f = new OAOrFilter(f1.filter, f2.filter);
+            
+            FilterInfo fi = new FilterInfo(f, null);
+            stack.push(fi);
+            
+            token = parseForConjuction(token);
+        }
+        return token;
     }
 
     
     
     
+    // ()
+    private OAQueryToken parseForBracket(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken;
+        if (token.type != OAQueryTokenType.SEPERATORBEGIN) {
+            nextToken = parseForEndBracket(token);
+            return nextToken;
+        }
+
+        FilterInfo fi = parseBlock();
+        stack.push(fi);
+        nextToken = nextToken();
+        return nextToken;
+    }
+    private OAQueryToken parseForEndBracket(OAQueryToken token) throws Exception {
+        if (token.type == OAQueryTokenType.SEPERATOREND) {
+            return token;
+        }
+        OAQueryToken nextToken = parseForEqual(token);
+        return nextToken;
+    }
+    
+
+    // Operators begin
+    
+    // == 
+    private OAQueryToken parseForEqual(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseForNotEqual(token);
+        if (nextToken.type == OAQueryTokenType.EQUAL) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for =");
+            OAFilter f = new OAEqualFilter(nextToken.value, true);
+            FilterInfo fi = new FilterInfo(f, token.value);
+            stack.push(fi);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+
+    // != 
+    private OAQueryToken parseForNotEqual(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseForGreater(token);
+        if (nextToken.type == OAQueryTokenType.NOTEQUAL) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for !=");
+            OAFilter f = new OANotEqualFilter(nextToken.value, true);
+            FilterInfo fi = new FilterInfo(f, token.value);
+            stack.push(fi);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+    
+    // >
+    private OAQueryToken parseForGreater(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseForGreaterOrEqual(token);
+        if (nextToken.type == OAQueryTokenType.GT) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for !=");
+            OAFilter f = new OAGreaterFilter(nextToken.value);
+            FilterInfo fi = new FilterInfo(f, token.value);
+            stack.push(fi);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+    
+    // >=
+    private OAQueryToken parseForGreaterOrEqual(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseForLess(token);
+        if (nextToken.type == OAQueryTokenType.GE) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for !=");
+            OAFilter f = new OAGreaterOrEqualFilter(nextToken.value);
+            FilterInfo fi = new FilterInfo(f, token.value);
+            stack.push(fi);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+
+    // <
+    private OAQueryToken parseForLess(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseForLessOrEqual(token);
+        if (nextToken.type == OAQueryTokenType.LT) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for !=");
+            OAFilter f = new OALessFilter(nextToken.value);
+            FilterInfo fi = new FilterInfo(f, token.value);
+            stack.push(fi);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+
+    // <=
+    private OAQueryToken parseForLessOrEqual(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseForLike(token);
+        if (nextToken.type == OAQueryTokenType.LE) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for !=");
+            OAFilter f = new OALessOrEqualFilter(nextToken.value);
+            FilterInfo fi = new FilterInfo(f, token.value);
+            stack.push(fi);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+
+    // LIKE 
+    private OAQueryToken parseForLike(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseForNotLike(token);
+        if (nextToken.type == OAQueryTokenType.LIKE) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for !=");
+            OAFilter f = new OALikeFilter(nextToken.value);
+            FilterInfo fi = new FilterInfo(f, token.value);
+            stack.push(fi);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+
+    // NOTLIKE
+    private OAQueryToken parseForNotLike(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseBottom(token);
+        if (nextToken.type == OAQueryTokenType.NOTLIKE) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for !=");
+            OAFilter f = new OANotLikeFilter(nextToken.value);
+            FilterInfo fi = new FilterInfo(f, token.value);
+            stack.push(fi);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+    
+    private OAQueryToken parseBottom(OAQueryToken token) throws Exception {
+        return nextToken();
+    }
+
+    private OAQueryToken nextToken() {
+        if (vecToken == null || posToken >= vecToken.size()) return null;
+        OAQueryToken t = (OAQueryToken) vecToken.elementAt(posToken++);
+        
+        if (t == null) return t;
+        
+        return t;
+    }
+
+    
+    
+
+/**qqqqqq    
     private void setupOLD() {
         OAQueryTokenizer qa = new OAQueryTokenizer();
         Vector vecToken = qa.convertToTokens(query);
 
-//qqqqqqqqqq this only handles format "propertyPath = ?"        
+        //qqqqq this only handles format "propertyPath = ?"        
         int paramPos = 0;
         boolean bNextIsValue = false;
         int operatorType = 0;
@@ -156,10 +325,7 @@ public class OAQueryFilter<T> implements OAFilter {
                     newArgs = OAArray.add(Object.class, newArgs, token.value);
                 }
 
-//qqqqqqqqq                
                 filter = new OAEqualFilter(token.value, true);
-                
-                
             }
             else if (token.type == OAQueryTokenType.VARIABLE) {
                 propertyPath = new OAPropertyPath(clazz, token.value);
@@ -180,7 +346,6 @@ public class OAQueryFilter<T> implements OAFilter {
                 operatorType = token.type;
                 bNextIsValue = true;
             }
-//qqqqqqq support (), AND, OR, ETC            
         }        
     }
     
@@ -201,15 +366,57 @@ if (filter != null) return filter.isUsed(objx); //qqqqqqqqqqqqqqqqqqqqq
         }
         return false;
     }
-
     
-    
-    
-    public static void main(String[] args) {
+    public static void mainOLD(String[] args) {
         OAQueryTokenizer qt = new OAQueryTokenizer();
         String query = "Code = 'CT13''6\"X16HALF-COL'";
         query = "test.this.Code = ?";
         Vector vec = qt.convertToTokens(query);
         int x = vec.size();
     }
+
+*/
+
+    
+    
+    @Override
+    public boolean isUsed(Object obj) {
+        try {
+            Object objx = propertyPath.getValue(null, obj);
+            
+            if (filterInfo != null) return filterInfo.filter.isUsed(objx); //qqqqqqqqqqqqqqqqqqqqq
+        }
+        catch (Exception e) {
+            System.out.println(e);
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    
+    
+    
+    public static void main(String[] args) throws Exception {
+        String query = "A = 1";
+        query = "A == 1 && B = 2";
+        query = "(A == 1) && B = 2";
+        query = "A == 1 || B = 2 && C == 3";
+        query = "A == 1 && B = 2 && C == 3";
+        query = "A == 1 && (B = 2 && C == 3)";
+
+        query = "(A == '1' && (B = 2 && (C == 3))) || X = 5 && Z = 9";
+        
+        
+        OAQueryFilter qf = new OAQueryFilter(Object.class, query, null);
+        int xx = 4;
+        xx++;
+    }
 }
+
+
+
+
+
+
+
+

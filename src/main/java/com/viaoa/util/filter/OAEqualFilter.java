@@ -29,5 +29,6 @@ public class OAEqualFilter implements OAFilter {
     public boolean isUsed(Object obj) {
         return OACompare.isEqual(obj, value, bIgnoreCase);
     }
+    
 }
 

@@ -47,7 +47,12 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
     {
         if (filter == null) {
             if (!OAString.isEmpty(queryWhere)) {
-                filter = new OAQueryFilter(selectClass, queryWhere, params);
+                try {
+                    filter = new OAQueryFilter(selectClass, queryWhere, params);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("query parsing failed", e);
+                }
             }
             else if (whereObject != null || propertyFromMaster != null || extraWhere != null) {
                 filter = new OAFilter() {

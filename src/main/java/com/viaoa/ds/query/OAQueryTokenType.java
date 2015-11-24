@@ -33,15 +33,16 @@ public interface OAQueryTokenType {
     public static final int AND = 14;
     public static final int OR = 15;
     public static final int LIKE = 17;
-    public static final int NULL = 18;
-    public static final int STRINGSQ = 19; // single quote
-    public static final int STRINGDQ = 20; // double quote
-    public static final int STRINGESC = 21; // escape bracket "{"
-    public static final int TRUE = 22;
-    public static final int FALSE = 23;
-    public static final int PASSTHRU = 24;  // PASS[xxx]THRU
-    public static final int QUESTION = 25;  // question mark "?"
-    public static final int FUNCTIONBEGIN = 26;  // the '(' for a sql function, ex: lower(lastName)
-    public static final int FUNCTIONEND = 27;    // the ')' for a sql function, ex: lower(lastName)
+    public static final int NOTLIKE = 18;
+    public static final int NULL = 19;
+    public static final int STRINGSQ = 20; // single quote
+    public static final int STRINGDQ = 21; // double quote
+    public static final int STRINGESC = 22; // escape bracket "{"
+    public static final int TRUE = 23;
+    public static final int FALSE = 24;
+    public static final int PASSTHRU = 25;  // PASS[xxx]THRU
+    public static final int QUESTION = 26;  // question mark "?"
+    public static final int FUNCTIONBEGIN = 27;  // the '(' for a sql function, ex: lower(lastName)
+    public static final int FUNCTIONEND = 28;    // the ')' for a sql function, ex: lower(lastName)
 
 }
