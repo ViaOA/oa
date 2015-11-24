@@ -13,7 +13,7 @@ package com.viaoa.ds.query;
 import java.util.*;
 
 /**
-    Descendent parser internally used to parse object queries into a Vector of OAQueryToken Objects.
+    Descendant parser internally used to parse object queries into a Vector of OAQueryToken Objects.
     Uses a OAQueryTokenManager to parse into tokens.
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.

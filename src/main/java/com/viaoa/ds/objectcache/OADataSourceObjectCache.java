@@ -11,9 +11,11 @@
 package com.viaoa.ds.objectcache;
 
 import java.util.*;
+
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 
@@ -44,7 +46,10 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
     )
     {
         if (filter == null) {
-            if (!OAString.isEmpty(queryWhere) || whereObject != null || propertyFromMaster != null || extraWhere != null) {
+            if (!OAString.isEmpty(queryWhere)) {
+                filter = new OAQueryFilter(selectClass, queryWhere, params);
+            }
+            else if (whereObject != null || propertyFromMaster != null || extraWhere != null) {
                 filter = new OAFilter() {
                     @Override
                     public boolean isUsed(Object obj) {

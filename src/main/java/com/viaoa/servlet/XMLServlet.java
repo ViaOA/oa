@@ -43,6 +43,47 @@ public class XMLServlet extends HttpServlet {
         else packageName = "";
     }
 
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // TODO Auto-generated method stub
+        super.doPut(req, resp);
+    }
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // TODO Auto-generated method stub
+        super.doDelete(req, resp);
+    }
+    @Override
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // TODO Auto-generated method stub
+        super.doHead(req, resp);
+    }
+    @Override
+    protected void doOptions(HttpServletRequest arg0, HttpServletResponse arg1) throws ServletException, IOException {
+        // TODO Auto-generated method stub
+        super.doOptions(arg0, arg1);
+    }
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // TODO Auto-generated method stub
+        super.doPost(req, resp);
+    }
+    @Override
+    protected void doTrace(HttpServletRequest arg0, HttpServletResponse arg1) throws ServletException, IOException {
+        // TODO Auto-generated method stub
+        super.doTrace(arg0, arg1);
+    }
+    @Override
+    public String getServletName() {
+        // TODO Auto-generated method stub
+        return super.getServletName();
+    }
+    @Override
+    public String getServletInfo() {
+        // TODO Auto-generated method stub
+        return super.getServletInfo();
+    }
+    
     // class, id, [prop]
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         // Get the absolute path of the image

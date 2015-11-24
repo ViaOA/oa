@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
@@ -61,11 +62,12 @@ public class JsonServlet extends HttpServlet {
             if (propName == null) propName = req.getParameter("property");
         }
 
-        LOG.fine(String.format("class=%s, id=%s, property=%s", className, id, propName));
+        String query = req.getParameter("query");
+        
+        LOG.fine(String.format("class=%s, id=%s, property=%s, query=%s", className, id, propName, query));
 
         // Set content type
         resp.setContentType("application/json");  // more generic:  "text/html"
-        //resp.setContentType("text/html");
 
         if (className == null || className.length() == 0) {
             LOG.fine("className is required");
@@ -73,11 +75,13 @@ public class JsonServlet extends HttpServlet {
             return;
         }
 
+        /*
         if (id == null || id.length() == 0) {
             LOG.fine("id is required");
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
+        */
 
         Class c;
         try {
@@ -89,45 +93,71 @@ public class JsonServlet extends HttpServlet {
             return;
         }
 
-        OAObject obj;
-        obj = OAObjectCacheDelegate.get(c, id);
-        if (obj == null) {
-            OASelect sel = new OASelect(c);
-            sel.select("ID = ?", new Object[] { id });
-            obj = (OAObject) sel.next();
-            sel.cancel();
-        }
-        if (obj == null) {
-            LOG.fine("object not found, class=" + (packageName + className) + ", id=" + id);
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
 
-        Object newObject = obj;
-        if (!OAString.isEmpty(propName)) {
-            newObject = obj.getProperty(propName);
-            if (newObject == null || ( !(newObject instanceof OAObject) && !(newObject instanceof Hub) ) ) {
-                LOG.fine("object found, property is not an OAObject" + (packageName + className) + ", id=" + id+", property="+propName);
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                return;
+        Object newObject;
+
+        if (query != null && query.length() > 0) {
+            if (query != null && query.length() > 1) {
+                char ch = query.charAt(0);
+                if ( (ch == '\'' || ch == '\"') && query.charAt(query.length()-1) == ch) {
+                    query = query.substring(1, query.length()-1);
+                }
+            }
+            Hub hub = new Hub(c);
+            hub.select(query);
+            newObject = hub;
+        }
+        else if (id == null || id.length() == 0) {
+            ArrayList al = new ArrayList();
+            OAObjectCacheDelegate.fetch(c, null, 500, al);
+            newObject = new Hub();
+            for (Object objx : al) {
+                ((Hub) newObject).add(objx);
+            }
+        }
+        else {
+            newObject = OAObjectCacheDelegate.get(c, id);
+            if (newObject == null) {
+                OASelect sel = new OASelect(c);
+                sel.select("ID = ?", new Object[] { id });
+                newObject = sel.next();
+                sel.cancel();
+                
+                if (newObject == null) {
+                    LOG.fine("object not found, class=" + (packageName + className) + ", id=" + id);
+                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
+            }
+            if (!OAString.isEmpty(propName)) {
+                newObject = ((OAObject)newObject).getProperty(propName);
+                if (newObject == null || ( !(newObject instanceof OAObject) && !(newObject instanceof Hub) ) ) {
+                    LOG.fine("object found, property is not an OAObject" + (packageName + className) + ", id=" + id+", property="+propName);
+                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
             }
         }
 
-        StringWriter sw = new StringWriter(256);
-        // PrintWriter pw = new PrintWriter(sw);
+
+        String result;
+        final boolean bOnlySendId = !(newObject instanceof OAObject);
 
         OAJsonWriter json = new OAJsonWriter() {
             @Override
             public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OALinkInfo li) {
-                boolean b = (li != null && li.getOwner());
-                return b; 
+                String sx = getCurrentPath();                
+                if (!bOnlySendId && (sx == null || sx.length() == 0)) return true;  // send all for root object
+ 
+                if (bOnlySendId || li == null) {  // only send "Id"
+                    return ("id".equalsIgnoreCase(propertyName));
+                }
+                return false;
             }
         };
-        if (newObject instanceof Hub) json.write( (Hub) newObject);
-        else json.write( (OAObject) newObject);
-        //json.close();
         
-        String result = sw.getBuffer().toString();
+        if (newObject instanceof Hub) result = json.write( (Hub) newObject);
+        else result = json.write( (OAObject) newObject);
         
 
         // Set to expire far in the past.

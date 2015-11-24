@@ -21,6 +21,8 @@ public class OAQueryToken implements OAQueryTokenType {
     public String value;
 
     public boolean isOperator() {
-        return (type == OAQueryToken.OPERATOR || type == OAQueryToken.GT || type == OAQueryToken.GE || type == OAQueryToken.LT || type == OAQueryToken.LE || type == OAQueryToken.EQUAL || type == OAQueryToken.NOTEQUAL || type == OAQueryToken.LIKE);
+        return (type == OAQueryToken.OPERATOR || type == OAQueryToken.GT || type == OAQueryToken.GE || 
+                type == OAQueryToken.LT || type == OAQueryToken.LE || type == OAQueryToken.EQUAL || 
+                type == OAQueryToken.NOTEQUAL || type == OAQueryToken.LIKE);
     }
 }

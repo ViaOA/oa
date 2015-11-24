@@ -21,8 +21,8 @@ public interface OAQueryTokenType {
 	public static final int EOF = 1;
     public static final int NUMBER = 2;
     public static final int OPERATOR = 3;
-    public static final int SEPERATORBEGIN = 4;
-    public static final int SEPERATOREND = 5;
+    public static final int SEPERATORBEGIN = 4;  // "("  block
+    public static final int SEPERATOREND = 5;    // ")"  block
     public static final int VARIABLE = 7;
     public static final int GT = 8;
     public static final int GE = 9;
