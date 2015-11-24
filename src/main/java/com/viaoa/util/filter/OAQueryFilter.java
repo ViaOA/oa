@@ -54,7 +54,6 @@ public class OAQueryFilter<T> implements OAFilter {
 
     private Vector vecToken;
     private int posToken;
-    private OAQueryToken nextToken;
     
     private OAQueryToken nextToken() {
         if (vecToken == null || posToken >= vecToken.size()) return null;
@@ -62,29 +61,25 @@ public class OAQueryFilter<T> implements OAFilter {
         return t;
     }
     
+    
     // descendant parser to create filters
-    private OAFilter setupA() {
+    private void setup() {
         OAQueryTokenizer qa = new OAQueryTokenizer();
         vecToken = qa.convertToTokens(query);
-        nextToken();
-        if (nextToken == null) return new OAFilter() {
-            @Override
-            public boolean isUsed(Object obj) {
-                return false;
-            }
-        };
-        return setupB();
+        setupB();
     }
-
+//qqqqqqqqqqqq use OAFinder, since it has AddXxxFilters already
+    
     // ()
-    private OAFilter setupB() {
+    private OAQueryToken setupB() {
+        OAQueryToken token = setupC();
         boolean b;
-        if (b = (nextToken.type == OAQueryTokenType.SEPERATORBEGIN)) {
+        if (b = (token.type == OAQueryTokenType.SEPERATORBEGIN)) {
             nextToken();
         }
         OAFilter f = setupC();
         if (b) {
-            if (nextToken.type != OAQueryTokenType.SEPERATOREND) {
+            if (token.type != OAQueryTokenType.SEPERATOREND) {
                 //qqqqq error
             }
 
@@ -94,44 +89,44 @@ public class OAQueryFilter<T> implements OAFilter {
     }
     
     // AND
-    private OAFilter setupC() {
+    private OAQueryToken setupC() {
     }
     // OR
-    private OAFilter setupD() {
+    private OAQueryToken setupD() {
     }
     // >
-    private OAFilter setupE() {
+    private OAQueryToken setupE() {
     }
     // >=
-    private OAFilter setupF() {
+    private OAQueryToken setupF() {
     }
     // <
-    private OAFilter setupG() {
+    private OAQueryToken setupG() {
     }
     // <=
-    private OAFilter setupH() {
+    private OAQueryToken setupH() {
     }
     // == 
-    private OAFilter setupI() {
+    private OAQueryToken setupI() {
     }
     // !=
-    private OAFilter setupJ() {
+    private OAQueryToken setupJ() {
     }
     // LIKE 
-    private OAFilter setupK() {
+    private OAQueryToken setupK() {
     }
     // NOTLIKE
-    private OAFilter setupL() {
+    private OAQueryToken setupL() {
     }
     // bottom
-    private OAFilter setupM() {
+    private OAQueryToken setupM() {
         nextToken();
     }
 
     
     
     
-    private void setup() {
+    private void setupOLD() {
         OAQueryTokenizer qa = new OAQueryTokenizer();
         Vector vecToken = qa.convertToTokens(query);
 
