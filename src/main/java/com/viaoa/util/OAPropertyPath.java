@@ -20,6 +20,7 @@ import com.viaoa.annotation.OAProperty;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.CustomHubFilter;
 import com.viaoa.hub.HubMerger;
+import com.viaoa.object.OAFinder;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
@@ -42,6 +43,7 @@ import com.viaoa.object.OAObjectInfoDelegate;
  * created 20120809
  * @param <T> type of object that the property path is based on.
  * @see HubMerger which uses propertyPaths to create a Hub of all lastNode objects, and keeps it updated.
+ * @see OAPropertyPathDelegate
  */
 public class OAPropertyPath<T> {
 
@@ -124,7 +126,7 @@ public class OAPropertyPath<T> {
         if (methods == null || methods.length == 0) return null;
         return methods[methods.length -1].getAnnotation(OACalculatedProperty.class);
     }
-    
+
     public String[] getProperties() {
         return properties;
     }
@@ -759,4 +761,11 @@ public class OAPropertyPath<T> {
         }
         return format;
     }
+    
+    
 }
+
+
+
+
+

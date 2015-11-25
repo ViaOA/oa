@@ -23,9 +23,9 @@ import com.viaoa.util.OAPropertyPath;
 /**
  * Convert an Object Query to an OAFilter.
  * This can be used for Hub selects, etc.
- * It is used by OADataSourceObjectCache.
+ * It is used by OADataSourceObjectCache.selects
  * 
- * created 20140127 
+ * created 20140127, expanded 201511125 
  * @author vvia
  */
 public class OAQueryFilter<T> implements OAFilter {
@@ -41,13 +41,18 @@ public class OAQueryFilter<T> implements OAFilter {
     private Vector vecToken;
     private int posToken;
     
-    public OAQueryFilter(Class<T> clazz, String query, Object[] args) throws Exception {
+    public OAQueryFilter(Class<T> clazz, String query, Object[] args) {
         this.clazz = clazz;
         this.query = query;
         this.args = args;
         
-        this.filter = parse();
-        if (stack.size() != 0) throw new Exception("parse failed, filters not all used, remainder="+stack.size());
+        try {
+            this.filter = parse();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("invalid query filter, query="+query, e);
+        }
+        if (stack.size() != 0) throw new RuntimeException("parse failed, filters not all used, remainder="+stack.size());
     }
 
     
@@ -150,7 +155,7 @@ public class OAQueryFilter<T> implements OAFilter {
     // == 
     private OAQueryToken parseForEqual(OAQueryToken token) throws Exception {
         OAQueryToken nextToken = parseForNotEqual(token);
-        if (nextToken.type == OAQueryTokenType.EQUAL) {
+        if (nextToken != null && nextToken.type == OAQueryTokenType.EQUAL) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for =");
 
@@ -178,7 +183,7 @@ public class OAQueryFilter<T> implements OAFilter {
     // != 
     private OAQueryToken parseForNotEqual(OAQueryToken token) throws Exception {
         OAQueryToken nextToken = parseForGreater(token);
-        if (nextToken.type == OAQueryTokenType.NOTEQUAL) {
+        if (nextToken != null && nextToken.type == OAQueryTokenType.NOTEQUAL) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
             OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
@@ -192,7 +197,7 @@ public class OAQueryFilter<T> implements OAFilter {
     // >
     private OAQueryToken parseForGreater(OAQueryToken token) throws Exception {
         OAQueryToken nextToken = parseForGreaterOrEqual(token);
-        if (nextToken.type == OAQueryTokenType.GT) {
+        if (nextToken != null && nextToken.type == OAQueryTokenType.GT) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
             OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
@@ -206,7 +211,7 @@ public class OAQueryFilter<T> implements OAFilter {
     // >=
     private OAQueryToken parseForGreaterOrEqual(OAQueryToken token) throws Exception {
         OAQueryToken nextToken = parseForLess(token);
-        if (nextToken.type == OAQueryTokenType.GE) {
+        if (nextToken != null && nextToken.type == OAQueryTokenType.GE) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
             OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
@@ -220,7 +225,7 @@ public class OAQueryFilter<T> implements OAFilter {
     // <
     private OAQueryToken parseForLess(OAQueryToken token) throws Exception {
         OAQueryToken nextToken = parseForLessOrEqual(token);
-        if (nextToken.type == OAQueryTokenType.LT) {
+        if (nextToken != null && nextToken.type == OAQueryTokenType.LT) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
             OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
@@ -234,7 +239,7 @@ public class OAQueryFilter<T> implements OAFilter {
     // <=
     private OAQueryToken parseForLessOrEqual(OAQueryToken token) throws Exception {
         OAQueryToken nextToken = parseForLike(token);
-        if (nextToken.type == OAQueryTokenType.LE) {
+        if (nextToken != null && nextToken.type == OAQueryTokenType.LE) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
 
@@ -249,7 +254,7 @@ public class OAQueryFilter<T> implements OAFilter {
     // LIKE 
     private OAQueryToken parseForLike(OAQueryToken token) throws Exception {
         OAQueryToken nextToken = parseForNotLike(token);
-        if (nextToken.type == OAQueryTokenType.LIKE) {
+        if (nextToken != null && nextToken.type == OAQueryTokenType.LIKE) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
             
@@ -294,10 +299,14 @@ public class OAQueryFilter<T> implements OAFilter {
         try {
             if (filter != null) return filter.isUsed(obj);
         }
+        catch (RuntimeException re) {
+            throw re;
+        }
         catch (Exception e) {
             System.out.println(e);
             e.printStackTrace();
         }
+        
         return false;
     }
     

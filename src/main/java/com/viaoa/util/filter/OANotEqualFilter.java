@@ -10,12 +10,17 @@
 */
 package com.viaoa.util.filter;
 
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.hub.Hub;
+import com.viaoa.object.OAFinder;
+import com.viaoa.object.OAObject;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
 public class OANotEqualFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OANotEqualFilter.class.getName());
@@ -23,28 +28,59 @@ public class OANotEqualFilter implements OAFilter {
     private Object value;
     private boolean bIgnoreCase;
     private OAPropertyPath pp;
+    private OAFinder finder;
 
     public OANotEqualFilter(Object value) {
         this.value = value;
+        check();
     }
     public OANotEqualFilter(Object value, boolean bIgnoreCase) {
         this.value = value;
         this.bIgnoreCase = bIgnoreCase;
+        check();
     }
 
     public OANotEqualFilter(OAPropertyPath pp, Object value) {
         this.pp = pp;
         this.value = value;
+        check();
     }
+    public OANotEqualFilter(String pp, Object value) {
+        this(pp==null?null:new OAPropertyPath(pp), value);
+    }
+
     public OANotEqualFilter(OAPropertyPath pp, Object value, boolean bIgnoreCase) {
         this.pp = pp;
         this.value = value;
         this.bIgnoreCase = bIgnoreCase;
+        check();
     }
-    
-    
+    public OANotEqualFilter(String pp, Object value, boolean bIgnoreCase) {
+        this(pp==null?null:new OAPropertyPath(pp), value, bIgnoreCase);
+    }
+
+    // see if an oaFinder is needed
+    private void check() {
+        FinderInfo fi = OAFilterDelegate.createFinder(pp);
+        if (fi != null) {
+            this.finder = fi.finder;
+            OAFilter f = new OANotEqualFilter(fi.pp, value, bIgnoreCase);
+            finder.addFilter(f);
+        }
+    }
+
     @Override
     public boolean isUsed(Object obj) {
+        if (finder != null) {
+            if (obj instanceof OAObject) {
+                obj = finder.findFirst((OAObject)obj);
+                return obj != null;
+            }
+            else if (obj instanceof Hub) {
+                obj = finder.findFirst((Hub)obj);
+                return obj != null;
+            }
+        }
         if (pp != null) {
             try {
                 obj = pp.getValue(obj);

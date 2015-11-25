@@ -34,6 +34,18 @@ import com.viaoa.util.OAString;
 
 /**
  * Get JSON data.
+ * 
+ * Example:
+ * //localhost:8080/servlet/json?c=Site&query="environments.silos.servers.applications.applicationType.code like 'fix*'"
+ * 
+ * /json = context
+ * c|class = name of class for search
+ * query = object query
+ * [ALL] = show all data, else hubs will only show id
+ *
+ * //localhost:8080/servlet/json?c=Site&id=2
+ * id = pkey Id
+ * 
  * @author vincevia
  */
 public class JsonServlet extends HttpServlet {
@@ -63,18 +75,23 @@ public class JsonServlet extends HttpServlet {
         }
 
         String query = req.getParameter("query");
+
+        boolean bSendAllData = req.getParameterMap().containsKey("all");
         
         LOG.fine(String.format("class=%s, id=%s, property=%s, query=%s", className, id, propName, query));
 
-        // Set content type
-        resp.setContentType("application/json");  // more generic:  "text/html"
 
         if (className == null || className.length() == 0) {
             LOG.fine("className is required");
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.sendRedirect("/jsonHelp.html");
+            //was: resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
+        
+        // Set content type
+        resp.setContentType("application/json");  // more generic:  "text/html"
+        
         /*
         if (id == null || id.length() == 0) {
             LOG.fine("id is required");
@@ -141,7 +158,7 @@ public class JsonServlet extends HttpServlet {
 
 
         String result;
-        final boolean bOnlySendId = !(newObject instanceof OAObject);
+        final boolean bOnlySendId = !bSendAllData && !(newObject instanceof OAObject);
 
         OAJsonWriter json = new OAJsonWriter() {
             @Override

@@ -36,6 +36,7 @@ import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
+import com.viaoa.util.filter.OAEqualFilter;
 
 /**
  * 
@@ -808,7 +809,7 @@ public class OAObjectCacheDelegate {
         Method[] methods = null;
         if (!OAString.isEmpty(propertyPath)) {
             finder = new OAFinder();
-            finder.addEqualFilter(propertyPath, findValue);
+            finder.addFilter(new OAEqualFilter(propertyPath, findValue));
             
             //methods = OAReflect.getMethods(clazz, propertyPath, bThrowException);
             //if (methods == null || methods.length == 0) return null;

@@ -21,5 +21,7 @@ public class OAPropertyPathDelegate {
         OAPropertyPath pp = new OAPropertyPath(packageClass, sPropPath);
         return pp;
     }
+
+    
     
 }

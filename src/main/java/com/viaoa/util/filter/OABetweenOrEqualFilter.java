@@ -10,31 +10,63 @@
 */
 package com.viaoa.util.filter;
 
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.hub.Hub;
+import com.viaoa.object.OAFinder;
+import com.viaoa.object.OAObject;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
 public class OABetweenOrEqualFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OABetweenOrEqualFilter.class.getName());
 
     private Object value1, value2;
     private OAPropertyPath pp;
+    private OAFinder finder;
 
     public OABetweenOrEqualFilter(Object val1, Object val2) {
         this.value1 = val1;
         this.value2 = val2;
+        check();
     }
     public OABetweenOrEqualFilter(OAPropertyPath pp, Object val1, Object val2) {
         this.pp = pp;
         this.value1 = val1;
         this.value2 = val2;
+        check();
+    }
+    public OABetweenOrEqualFilter(String pp, Object val1, Object val2) {
+        this(pp==null?null:new OAPropertyPath(pp), val1, val2);
     }
 
+    // see if an oaFinder is needed
+    private void check() {
+        FinderInfo fi = OAFilterDelegate.createFinder(pp);
+        if (fi != null) {
+            this.finder = fi.finder;
+            OAFilter f = new OABetweenOrEqualFilter(fi.pp, value1, value2);
+            finder.addFilter(f);
+        }
+    }
+    
+    
     @Override
     public boolean isUsed(Object obj) {
+        if (finder != null) {
+            if (obj instanceof OAObject) {
+                obj = finder.findFirst((OAObject)obj);
+                return obj != null;
+            }
+            else if (obj instanceof Hub) {
+                obj = finder.findFirst((Hub)obj);
+                return obj != null;
+            }
+        }
         if (pp != null) {
             try {
                 obj = pp.getValue(obj);

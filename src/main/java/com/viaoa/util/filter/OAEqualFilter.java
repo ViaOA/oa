@@ -10,6 +10,7 @@
 */
 package com.viaoa.util.filter;
 
+
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +21,9 @@ import com.viaoa.object.OAObject;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.OAPropertyPathDelegate;
+import com.viaoa.util.OAString;
+import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
 public class OAEqualFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OAEqualFilter.class.getName());
@@ -30,6 +34,7 @@ public class OAEqualFilter implements OAFilter {
 
     public OAEqualFilter(Object value) {
         this.value = value;
+        check();
     }
 
     public OAEqualFilter(OAPropertyPath pp, Object value) {
@@ -37,10 +42,14 @@ public class OAEqualFilter implements OAFilter {
         this.value = value;
         check();
     }
-qqqqqqqqq
+    public OAEqualFilter(String pp, Object value) {
+        this(pp==null?null:new OAPropertyPath(pp), value);
+    }
+
     public OAEqualFilter(Object value, boolean bIgnoreCase) {
         this.value = value;
         this.bIgnoreCase = bIgnoreCase;
+        check();
     }
     
     public OAEqualFilter(OAPropertyPath pp, Object value, boolean bIgnoreCase) {
@@ -49,23 +58,17 @@ qqqqqqqqq
         this.bIgnoreCase = bIgnoreCase;
         check();
     }
+    public OAEqualFilter(String pp, Object value, boolean bIgnoreCase) {
+        this(pp==null?null:new OAPropertyPath(pp), value, bIgnoreCase);
+    }
     
-
-    // see if an oaFinder should be used instead of PropertyPath
+    // see if an oaFinder is needed
     private void check() {
-        if (pp == null) return;
-        Method[] ms = pp.getMethods();
-        if (ms == null) return;
-        for (Method m : ms) {
-             if (!m.getReturnType().equals(Hub.class)) continue;
-             final OAEqualFilter f = new OAEqualFilter(value, bIgnoreCase);
-             finder = new OAFinder(pp.getPropertyPath()) {
-                 @Override
-                 protected boolean isUsed(OAObject obj) {
-                     return f.isUsed(obj);
-                 }                         
-             };
-             break;
+        FinderInfo fi = OAFilterDelegate.createFinder(pp);
+        if (fi != null) {
+            this.finder = fi.finder;
+            OAFilter f = new OAEqualFilter(fi.pp, value, bIgnoreCase);
+            finder.addFilter(f);
         }
     }
     
@@ -74,13 +77,14 @@ qqqqqqqqq
         if (finder != null) {
             if (obj instanceof OAObject) {
                 obj = finder.findFirst((OAObject)obj);
+                return obj != null;
             }
             else if (obj instanceof Hub) {
                 obj = finder.findFirst((Hub)obj);
+                return obj != null;
             }
-            return obj != null;
         }
-        else if (pp != null) {
+        if (pp != null) {
             try {
                 obj = pp.getValue(obj);
             }

@@ -10,9 +10,8 @@
 */
 package com.viaoa.util.filter;
 
-import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
- 
+
 public class OAAndFilter implements OAFilter {
 
     private OAFilter filter1, filter2;
@@ -23,10 +22,9 @@ public class OAAndFilter implements OAFilter {
     }
     @Override
     public boolean isUsed(Object obj) {
-        if (filter1 == null) return false;
+        if (filter1 == null || filter2 == null) return false;
         if (!filter1.isUsed(obj)) return false;
-        if (filter2 == null) return false;
-        return filter1.isUsed(obj);
+        return filter2.isUsed(obj);
     }
 }
 

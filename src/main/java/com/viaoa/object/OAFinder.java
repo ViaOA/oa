@@ -21,7 +21,7 @@ import com.viaoa.util.filter.*;
 
 // 20140124
 /**
- * This is used to find all values from one Object/Hub to another, using a propertyPath.
+ * This is used to find all values from one OAObject/Hub to another OAObject/Hub, using a propertyPath.
  * Support is included to include Filters.
  *
  * @param <F> type of hub or OAObject to use as the root (from)
@@ -30,7 +30,7 @@ import com.viaoa.util.filter.*;
  * example:
     // from Router, find all UserLogin for a userId
     OAFinder<Router, UserLogin> f = new OAFinder<Router, UserLogin>(Router.P_UserLogins);
-    String cpp = OAString.cpp(UserLogin.P_User, User.P_UserId);
+    String cpp = UserLoginPP.user().userId().pp;
     f.addLikeFilter(cpp, userId);
     UserLogin userLogin = f.findFirst(router);
  * 
@@ -196,172 +196,13 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     }
 
     
-    private boolean bOr, bAnd;
-    public void addOr() {
-        bOr = true;
-    }
-    public void addAnd() {
-        bAnd = true;
-    }
-    
-    private int iBlockPos = -1;
-    public void startBlock() {
-        iBlockPos = alFilters == null ? 0 : alFilters.size();
-    }
-    public void endBlock() {
-        if (iBlockPos >= 0 && alFilters != null) {
-            int x = alFilters.size();
-            if (x > iBlockPos) {
-                OAFilter[] filters = new OAFilter[x-iBlockPos];
-                for (int i=iBlockPos; i<x; i++) {
-                    filters[i-iBlockPos] = alFilters.remove(iBlockPos);
-                }
-                OAFilter f = new OABlockFilter(filters);
-                addFilter(f);
-            }
-        }
-        iBlockPos = -1;
-    }
-    
     public void clearFilters() {
         alFilters = null;
     }
 
     public void addFilter(OAFilter<T> filter) {
         if (alFilters == null) alFilters = new ArrayList<OAFilter>();
-        
-        if (bOr) {
-            int x = alFilters.size();
-            if (x == 0) return; 
-            OAFilter f = alFilters.get(x-1);
-            alFilters.remove(x-1);
-            f = new OAOrFilter(filter, f);
-            filter = f;
-            bOr = false;
-        }
-        else if (bAnd) {
-            int x = alFilters.size();
-            if (x == 0) return; 
-            OAFilter f = alFilters.get(x-1);
-            alFilters.remove(x-1);
-            f = new OAAndFilter(filter, f);
-            filter = f;
-            bAnd = false;
-        }
         alFilters.add(filter);
-    }
-    public void addEqualFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OAEqualFilter(value));
-    }
-    public void addNotEqualFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OANotEqualFilter(value));
-    }
-
-    public void addBetweenOrEqualFilter(final String propPath, final Object value1, final Object value2) {
-        _addFilter(propPath, new OABetweenOrEqualFilter(value1, value2));
-    }
-    public void addBetween(final String propPath, final Object value1, final Object value2) {
-        _addFilter(propPath, new OABetweenFilter(value1, value2));
-    }
-    
-    
-    public void addNullFilter(final String propPath) {
-        _addFilter(propPath, new OAFilter() {
-            @Override
-            public boolean isUsed(Object obj) {
-                return obj == null;
-            }
-        });
-    }
-    public void addNotNullFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OAFilter() {
-            @Override
-            public boolean isUsed(Object obj) {
-                return obj != null;
-            }
-        });
-    }
-  
-    public void addEmptyFilter(final String propPath) {
-        _addFilter(propPath, new OAFilter() {
-            @Override
-            public boolean isUsed(Object obj) {
-                return OAString.isEmpty(obj);
-            }
-        });
-    }
-    public void addNotEmptyFilter(final String propPath) {
-        _addFilter(propPath, new OAFilter() {
-            @Override
-            public boolean isUsed(Object obj) {
-                return !OAString.isEmpty(obj);
-            }
-        });
-    }
-    
-    
-    /**
-     * Create a filter that is used on every object for this finder.
-     * @param propPath property path from this Finder from object to the object that will be compared.
-     * @param value value to compare with using OACompare.isLike(..).
-     */
-    public void addLikeFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OALikeFilter(value));
-    }
-    public void addNotLikeFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OANotLikeFilter(value));
-    }
-    public void addGreaterFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OAGreaterFilter(value));
-    }
-    public void addGreaterOrEqualFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OAGreaterOrEqualFilter(value));
-    }
-    public void addLessFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OALessFilter(value));
-    }
-    public void addLessOrEqualFilter(final String propPath, final Object value) {
-        _addFilter(propPath, new OALessOrEqualFilter(value));
-    }
-    public void addBetweenFilter(final String propPath, final Object value1, final Object value2) {
-        _addFilter(propPath, new OABetweenFilter(value1, value2));
-    }
-    
-    
-    /**
-     * Create a filter that is used on every object for this finder.
-     * @param propPath property path from this Finder from object to the object that will be compared.
-     */
-    protected void _addFilter(final String propPath, final OAFilter filter) {
-        if (filter == null) return;
-        OAFilter<T> f;
-        if (OAString.isEmpty(propPath)) {
-            f = filter;
-        }
-        else if (OAString.dcount(propPath, '.') == 1) {
-            f = new OAFilter<T>() {
-                @Override
-                public boolean isUsed(T obj) {
-                    if (obj == null) return false;
-                    Object objx = obj.getProperty(propPath);
-                    return filter.isUsed(objx);
-                }
-            };
-        }
-        else {
-            int dcnt = OAString.dcount(propPath, '.');
-            String prop = OAString.field(propPath, '.', 1, dcnt-1);
-            final OAFinder<T, OAObject> find = new OAFinder<T, OAObject>(prop);
-            prop = OAString.field(propPath, '.', dcnt);
-            find._addFilter(prop, filter);
-            
-            f = new OAFilter<T>() {
-                public boolean isUsed(T obj) {
-                    return find.canFindFirst(obj);
-                }
-            };
-        }
-        addFilter(f);
     }
     
     /**
@@ -445,6 +286,12 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         linkInfos = propertyPath.getLinkInfos();
         recursiveLinkInfos = propertyPath.getRecursiveLinkInfos();
         methods = propertyPath.getMethods();
+        
+        if (linkInfos.length != methods.length) {
+            // oafinder is to get from one OAObj/Hub to another, not a property/etc
+            throw new RuntimeException("propertyPath "+strPropertyPath+" must end in an OAObject/Hub");
+        }
+        
 
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(c);
         liRecursiveRoot = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
@@ -656,28 +503,4 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return ss;
     }
     
-    public void setEqualValue(T val) {
-        addEqualFilter(null, val);
-    }
-    public void setNotEqualValue(T val) {
-        addNotEqualFilter(null, val);
-    }
-    public void setLikeValue(T val) {
-        addLikeFilter(null, val);
-    }
-    public void setNotLikeValue(T val) {
-        addNotLikeFilter(null, val);
-    }
-    public void setGreaterValue(T val) {
-        addGreaterFilter(null, val);
-    }
-    public void setGreaterOrEqualValue(T val) {
-        addGreaterOrEqualFilter(null, val);
-    }
-    public void setLessValue(T val) {
-        addLessFilter(null, val);
-    }
-    public void setLessOrEqualValue(T val) {
-        addLessOrEqualFilter(null, val);
-    }
 }

@@ -26,8 +26,10 @@ public class OAOrFilter implements OAFilter {
         if (filter1 != null) { 
             if (filter1.isUsed(obj)) return true;
         }
-        if (filter2 == null) return false;
-        return filter1.isUsed(obj);
+        if (filter2 != null) {
+            if (filter2.isUsed(obj)) return true;
+        }
+        return false;
     }
 }
 
