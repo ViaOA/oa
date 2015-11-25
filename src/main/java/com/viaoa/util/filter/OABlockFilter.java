@@ -14,7 +14,7 @@ import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 
 public class OABlockFilter implements OAFilter {
-
+ 
     private OAFilter[] filters;
     
     public OABlockFilter(OAFilter ... filters) {

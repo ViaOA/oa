@@ -16,13 +16,10 @@ import java.util.Vector;
 import com.viaoa.ds.query.OAQueryToken;
 import com.viaoa.ds.query.OAQueryTokenType;
 import com.viaoa.ds.query.OAQueryTokenizer;
-import com.viaoa.util.OAArray;
-import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
 
 // expanded to support all of the oa filters
-
 /**
  * Convert an Object Query to an OAFilter.
  * This can be used for Hub selects, etc.
@@ -35,16 +32,12 @@ public class OAQueryFilter<T> implements OAFilter {
     private Class<T> clazz;
     private String query; 
     private Object[] args;
-    private Object[] newArgs;
+    private int posArgs;
 
-//remove these qqqqqqqqq    
-    private OAPropertyPath propertyPath;
-    private Object value;
-    
     // root filter for query
-    private FilterInfo filterInfo;    
+    private OAFilter filter;    
 
-    private Stack<FilterInfo> stack = new Stack<FilterInfo>();
+    private Stack<OAFilter> stack = new Stack<OAFilter>();
     private Vector vecToken;
     private int posToken;
     
@@ -52,37 +45,27 @@ public class OAQueryFilter<T> implements OAFilter {
         this.clazz = clazz;
         this.query = query;
         this.args = args;
-        newArgs = new Object[0];
         
-        this.filterInfo = parse();
+        this.filter = parse();
         if (stack.size() != 0) throw new Exception("parse failed, filters not all used, remainder="+stack.size());
     }
 
     
-    private class FilterInfo {
-        public FilterInfo(OAFilter f, String pp) {
-            this.filter = f;
-            this.propertyPath = pp;
-        }
-        OAFilter filter;
-        String propertyPath;
-    }
-    
-    private FilterInfo parse() throws Exception {
+    private OAFilter parse() throws Exception {
         OAQueryTokenizer qa = new OAQueryTokenizer();
         vecToken = qa.convertToTokens(query);
-        FilterInfo f = parseBlock();
+        OAFilter f = parseBlock();
         return f;
     }
     
 
-    private FilterInfo parseBlock() throws Exception {
+    private OAFilter parseBlock() throws Exception {
         OAQueryToken token = nextToken();
         if (token == null) throw new Exception("token is null");
         parseForConjuction(token);
 
         if (stack.size() == 0) throw new Exception("Block failed, no filter in stack");
-        FilterInfo fi = stack.pop();
+        OAFilter fi = stack.pop();
         return fi;
     }
 
@@ -99,16 +82,15 @@ public class OAQueryFilter<T> implements OAFilter {
         }
         if (token != null && token.type == OAQueryTokenType.AND) {
             if (stack.size() == 0) throw new Exception("AND failed, no filter in stack");
-            FilterInfo f1 = stack.pop();
+            OAFilter f1 = stack.pop();
             
             token = nextToken();
             token = parseForBracket(token);
             if (stack.size() == 0) throw new Exception("AND failed, no filter in stack");
-            FilterInfo f2 = stack.pop();
+            OAFilter f2 = stack.pop();
             
-            OAFilter f = new OAAndFilter(f1.filter, f2.filter);
-            FilterInfo fi = new FilterInfo(f, null);
-            stack.push(fi);
+            OAFilter f = new OAAndFilter(f1, f2);
+            stack.push(f);
             
             token = parseForConjuction(token);
         }
@@ -122,17 +104,16 @@ public class OAQueryFilter<T> implements OAFilter {
         }
         if (token != null && token.type == OAQueryTokenType.OR) {
             if (stack.size() == 0) throw new Exception("OR failed, no filter in stack");
-            FilterInfo f1 = stack.pop();
+            OAFilter f1 = stack.pop();
             
             token = nextToken();
             token = parseForBracket(token);
             if (stack.size() == 0) throw new Exception("OR failed, no filter in stack");
-            FilterInfo f2 = stack.pop();
+            OAFilter f2 = stack.pop();
             
-            OAFilter f = new OAOrFilter(f1.filter, f2.filter);
+            OAFilter f = new OAOrFilter(f1, f2);
             
-            FilterInfo fi = new FilterInfo(f, null);
-            stack.push(fi);
+            stack.push(f);
             
             token = parseForConjuction(token);
         }
@@ -150,7 +131,7 @@ public class OAQueryFilter<T> implements OAFilter {
             return nextToken;
         }
 
-        FilterInfo fi = parseBlock();
+        OAFilter fi = parseBlock();
         stack.push(fi);
         nextToken = nextToken();
         return nextToken;
@@ -172,23 +153,37 @@ public class OAQueryFilter<T> implements OAFilter {
         if (nextToken.type == OAQueryTokenType.EQUAL) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for =");
-            OAFilter f = new OAEqualFilter(nextToken.value, true);
-            FilterInfo fi = new FilterInfo(f, token.value);
-            stack.push(fi);
+
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            
+            OAFilter f = new OAEqualFilter(pp, getValueToUse(nextToken), true);
+            stack.push(f);
             nextToken = nextToken();
         }
         return nextToken;
     }
 
+    // get correct value
+    private Object getValueToUse(OAQueryToken token) {
+        if (token == null) return null;
+        Object val = token.value;
+        if ("?".equals(val)) {
+            if (args != null && posArgs < args.length) {
+                val = args[posArgs++];
+            }
+        }
+        return val;
+    }
+    
     // != 
     private OAQueryToken parseForNotEqual(OAQueryToken token) throws Exception {
         OAQueryToken nextToken = parseForGreater(token);
         if (nextToken.type == OAQueryTokenType.NOTEQUAL) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
-            OAFilter f = new OANotEqualFilter(nextToken.value, true);
-            FilterInfo fi = new FilterInfo(f, token.value);
-            stack.push(fi);
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            OAFilter f = new OANotEqualFilter(pp, getValueToUse(nextToken), true);
+            stack.push(f);
             nextToken = nextToken();
         }
         return nextToken;
@@ -200,9 +195,9 @@ public class OAQueryFilter<T> implements OAFilter {
         if (nextToken.type == OAQueryTokenType.GT) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
-            OAFilter f = new OAGreaterFilter(nextToken.value);
-            FilterInfo fi = new FilterInfo(f, token.value);
-            stack.push(fi);
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            OAFilter f = new OAGreaterFilter(pp, getValueToUse(nextToken));
+            stack.push(f);
             nextToken = nextToken();
         }
         return nextToken;
@@ -214,9 +209,9 @@ public class OAQueryFilter<T> implements OAFilter {
         if (nextToken.type == OAQueryTokenType.GE) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
-            OAFilter f = new OAGreaterOrEqualFilter(nextToken.value);
-            FilterInfo fi = new FilterInfo(f, token.value);
-            stack.push(fi);
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            OAFilter f = new OAGreaterOrEqualFilter(pp, getValueToUse(nextToken));
+            stack.push(f);
             nextToken = nextToken();
         }
         return nextToken;
@@ -228,9 +223,9 @@ public class OAQueryFilter<T> implements OAFilter {
         if (nextToken.type == OAQueryTokenType.LT) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
-            OAFilter f = new OALessFilter(nextToken.value);
-            FilterInfo fi = new FilterInfo(f, token.value);
-            stack.push(fi);
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            OAFilter f = new OALessFilter(pp, getValueToUse(nextToken));
+            stack.push(f);
             nextToken = nextToken();
         }
         return nextToken;
@@ -242,9 +237,10 @@ public class OAQueryFilter<T> implements OAFilter {
         if (nextToken.type == OAQueryTokenType.LE) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
-            OAFilter f = new OALessOrEqualFilter(nextToken.value);
-            FilterInfo fi = new FilterInfo(f, token.value);
-            stack.push(fi);
+
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            OAFilter f = new OALessOrEqualFilter(pp, getValueToUse(nextToken));
+            stack.push(f);
             nextToken = nextToken();
         }
         return nextToken;
@@ -256,9 +252,10 @@ public class OAQueryFilter<T> implements OAFilter {
         if (nextToken.type == OAQueryTokenType.LIKE) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
-            OAFilter f = new OALikeFilter(nextToken.value);
-            FilterInfo fi = new FilterInfo(f, token.value);
-            stack.push(fi);
+            
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            OAFilter f = new OALikeFilter(pp, getValueToUse(nextToken));
+            stack.push(f);
             nextToken = nextToken();
         }
         return nextToken;
@@ -270,9 +267,9 @@ public class OAQueryFilter<T> implements OAFilter {
         if (nextToken.type == OAQueryTokenType.NOTLIKE) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
-            OAFilter f = new OANotLikeFilter(nextToken.value);
-            FilterInfo fi = new FilterInfo(f, token.value);
-            stack.push(fi);
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            OAFilter f = new OANotLikeFilter(pp, getValueToUse(nextToken));
+            stack.push(f);
             nextToken = nextToken();
         }
         return nextToken;
@@ -292,99 +289,10 @@ public class OAQueryFilter<T> implements OAFilter {
     }
 
     
-    
-
-/**qqqqqq    
-    private void setupOLD() {
-        OAQueryTokenizer qa = new OAQueryTokenizer();
-        Vector vecToken = qa.convertToTokens(query);
-
-        //qqqqq this only handles format "propertyPath = ?"        
-        int paramPos = 0;
-        boolean bNextIsValue = false;
-        int operatorType = 0;
-        
-        int x = vecToken.size();
-        for (int i=0; i<x; i++) {
-            OAQueryToken token = (OAQueryToken) vecToken.elementAt(i);
-        
-            if (bNextIsValue) {
-                bNextIsValue = false;
-
-                if (token.type == OAQueryTokenType.QUESTION && args != null && args.length >= paramPos) {
-                    newArgs = OAArray.add(Object.class, newArgs, args[paramPos++]);
-                }
-                else {
-                    String s = token.value;
-                    if (s != null && s.length() > 1) {
-                        char c = s.charAt(0);
-                        if ( (c == '\'' || c == '\"') && s.charAt(s.length()-1) == c) {
-                            s = s.substring(1, s.length()-2);
-                        }
-                    }
-                    newArgs = OAArray.add(Object.class, newArgs, token.value);
-                }
-
-                filter = new OAEqualFilter(token.value, true);
-            }
-            else if (token.type == OAQueryTokenType.VARIABLE) {
-                propertyPath = new OAPropertyPath(clazz, token.value);
-            }
-            else if (token.type == OAQueryTokenType.AND) {
-                // filter = new OAAndFilter()
-            }
-            else if (token.type == OAQueryTokenType.OR) {
-                // filter = new OAOrFilter()
-            }
-            else if (token.type == OAQueryTokenType.SEPERATORBEGIN) {
-                // filter = new OAOrFilter()
-            }
-            else if (token.type == OAQueryTokenType.SEPERATOREND) {
-                // filter = new OAOrFilter()
-            }
-            else if (token.isOperator()) {
-                operatorType = token.type;
-                bNextIsValue = true;
-            }
-        }        
-    }
-    
-    
-    
     @Override
     public boolean isUsed(Object obj) {
         try {
-            Object objx = propertyPath.getValue(null, obj);
-            
-if (filter != null) return filter.isUsed(objx); //qqqqqqqqqqqqqqqqqqqqq
-
-            return OACompare.isEqual(objx, args != null &&  args.length > 0 ? args[0] : null);
-        }
-        catch (Exception e) {
-            System.out.println(e);
-            e.printStackTrace();
-        }
-        return false;
-    }
-    
-    public static void mainOLD(String[] args) {
-        OAQueryTokenizer qt = new OAQueryTokenizer();
-        String query = "Code = 'CT13''6\"X16HALF-COL'";
-        query = "test.this.Code = ?";
-        Vector vec = qt.convertToTokens(query);
-        int x = vec.size();
-    }
-
-*/
-
-    
-    
-    @Override
-    public boolean isUsed(Object obj) {
-        try {
-            Object objx = propertyPath.getValue(null, obj);
-            
-            if (filterInfo != null) return filterInfo.filter.isUsed(objx); //qqqqqqqqqqqqqqqqqqqqq
+            if (filter != null) return filter.isUsed(obj);
         }
         catch (Exception e) {
             System.out.println(e);

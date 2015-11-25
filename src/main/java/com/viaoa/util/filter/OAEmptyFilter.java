@@ -10,15 +10,33 @@
 */
 package com.viaoa.util.filter;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
+import com.viaoa.util.OAPropertyPath;
 
 public class OAEmptyFilter implements OAFilter {
+    private static Logger LOG = Logger.getLogger(OAEmptyFilter.class.getName());
+    private OAPropertyPath pp;
 
     public OAEmptyFilter() {
     }
+    public OAEmptyFilter(OAPropertyPath pp) {
+        this.pp = pp;
+    }
+
     @Override
     public boolean isUsed(Object obj) {
+        if (pp != null) {
+            try {
+                obj = pp.getValue(obj);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error getting value for property path", e);
+            }
+        }
         return OACompare.isEmpty(obj, true);
     }
 }

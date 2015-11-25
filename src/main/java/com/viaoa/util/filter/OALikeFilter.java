@@ -10,17 +10,36 @@
 */
 package com.viaoa.util.filter;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
+import com.viaoa.util.OAPropertyPath;
 
 public class OALikeFilter implements OAFilter {
-
+    private static Logger LOG = Logger.getLogger(OALikeFilter.class.getName());
+    private OAPropertyPath pp;
     private Object value;
+
     public OALikeFilter(Object value) {
         this.value = value;
     }
+    public OALikeFilter(OAPropertyPath pp, Object value) {
+        this. pp = pp;
+        this.value = value;
+    }
+    
     @Override
     public boolean isUsed(Object obj) {
+        if (pp != null) {
+            try {
+                obj = pp.getValue(obj);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error getting value for property path", e);
+            }
+        }
         return OACompare.isLike(obj, value);
     }
 }

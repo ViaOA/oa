@@ -10,18 +10,38 @@
 */
 package com.viaoa.util.filter;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
+import com.viaoa.util.OAPropertyPath;
 
 public class OABetweenFilter implements OAFilter {
+    private static Logger LOG = Logger.getLogger(OABetweenFilter.class.getName());
+    private OAPropertyPath pp;
 
     private Object value1, value2;
     public OABetweenFilter(Object val1, Object val2) {
         this.value1 = val1;
         this.value2 = val2;
     }
+    public OABetweenFilter(OAPropertyPath pp, Object val1, Object val2) {
+        this.pp = pp;
+        this.value1 = val1;
+        this.value2 = val2;
+    }
+    
     @Override
     public boolean isUsed(Object obj) {
+        if (pp != null) {
+            try {
+                obj = pp.getValue(obj);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error getting value for property path", e);
+            }
+        }
         return OACompare.isBetween(obj, value1, value2);
     }
 }

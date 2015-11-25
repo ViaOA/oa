@@ -10,13 +10,19 @@
 */
 package com.viaoa.util.filter;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
+import com.viaoa.util.OAPropertyPath;
 
 public class OANotEqualFilter implements OAFilter {
+    private static Logger LOG = Logger.getLogger(OANotEqualFilter.class.getName());
 
     private Object value;
     private boolean bIgnoreCase;
+    private OAPropertyPath pp;
 
     public OANotEqualFilter(Object value) {
         this.value = value;
@@ -25,8 +31,28 @@ public class OANotEqualFilter implements OAFilter {
         this.value = value;
         this.bIgnoreCase = bIgnoreCase;
     }
+
+    public OANotEqualFilter(OAPropertyPath pp, Object value) {
+        this.pp = pp;
+        this.value = value;
+    }
+    public OANotEqualFilter(OAPropertyPath pp, Object value, boolean bIgnoreCase) {
+        this.pp = pp;
+        this.value = value;
+        this.bIgnoreCase = bIgnoreCase;
+    }
+    
+    
     @Override
     public boolean isUsed(Object obj) {
+        if (pp != null) {
+            try {
+                obj = pp.getValue(obj);
+            }
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "error getting value for property path", e);
+            }
+        }
         return !OACompare.isEqual(obj, value, bIgnoreCase);
     }
 }
