@@ -10,9 +10,13 @@
 */
 package com.viaoa.util.filter;
 
-import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 
+/**
+ * Used to add more then one filter into a block.
+ * @author vvia
+ *
+ */
 public class OABlockFilter implements OAFilter {
  
     private OAFilter[] filters;

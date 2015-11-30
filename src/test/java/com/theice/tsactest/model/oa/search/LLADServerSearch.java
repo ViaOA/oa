@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 
@@ -30,7 +31,7 @@ public class LLADServerSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<LLADServer> f = new OASelectFilter<LLADServer>(LLADServer.class, s, args);
+            OAFilter<LLADServer> f = new OAQueryFilter<LLADServer>(LLADServer.class, s, args);
             setExtraWhereFilter(f);
         }
     }

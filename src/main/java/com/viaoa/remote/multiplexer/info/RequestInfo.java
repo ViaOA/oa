@@ -38,6 +38,8 @@ public class RequestInfo {
         CtoS_SocketRequest(false, true),
         CtoS_SocketRequestNoResponse(false, false),
         
+        CtoS_ReturnOnQueueSocket(true, true, true),
+        
         CtoS_QueuedRequest(true, true),
         CtoS_QueuedRequestNoResponse(true, false),
         CtoS_QueuedResponse(true, false), // client returning result from stoc_queuedRequest
@@ -57,9 +59,16 @@ public class RequestInfo {
         Type(boolean usesQueue, boolean hasReturnValue) {
             this.usesQueue = usesQueue;
             this.hasReturnValue = hasReturnValue;
+            this.bReturnOnQueueThread = false;
+        }
+        Type(boolean usesQueue, boolean hasReturnValue, boolean bReturnOnQueueThread) {
+            this.usesQueue = usesQueue;
+            this.hasReturnValue = hasReturnValue;
+            this.bReturnOnQueueThread = bReturnOnQueueThread;
         }
         private final boolean usesQueue;
         private final boolean hasReturnValue;
+        private final boolean bReturnOnQueueThread;
         
         public boolean usesQueue() {
             return this.usesQueue;

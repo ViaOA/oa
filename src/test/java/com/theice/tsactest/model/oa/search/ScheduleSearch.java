@@ -6,7 +6,9 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
+
 import java.util.Calendar;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -30,7 +32,7 @@ public class ScheduleSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<Schedule> f = new OASelectFilter<Schedule>(Schedule.class, s, args);
+            OAFilter<Schedule> f = new OAQueryFilter<Schedule>(Schedule.class, s, args);
             setExtraWhereFilter(f);
         }
     }

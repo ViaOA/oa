@@ -22,6 +22,12 @@ import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
+/**
+ * Creates a filter to see if the value from the propertyPath is empty.
+ * 
+ * @author vvia
+ * @see OACompare#isEmpty(Object)
+ */
 public class OAEmptyFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OAEmptyFilter.class.getName());
     private OAPropertyPath pp;

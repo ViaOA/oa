@@ -10,6 +10,8 @@
 */
 package com.viaoa.object;
 
+import com.viaoa.annotation.OAProperty;
+
 public class OAPropertyInfo implements java.io.Serializable {
     static final long serialVersionUID = 1L;    
 
@@ -30,6 +32,7 @@ public class OAPropertyInfo implements java.io.Serializable {
 	private String columnName;
     private boolean isUnicode;
     private boolean isImportMatch;
+    private boolean isPassword;
 	
 	public OAPropertyInfo() {
 	}
@@ -130,6 +133,19 @@ public class OAPropertyInfo implements java.io.Serializable {
     }
     public void setImportMatch(boolean b) {
         this.isImportMatch = b;
+    }
+    public boolean isPassword() {
+        return isPassword;
+    }
+    public void setPassword(boolean b) {
+        this.isPassword = b;
+    }
+    private OAProperty oaProperty;    
+    public void setOAProperty(OAProperty p) {
+        oaProperty = p;
+    }
+    public OAProperty getOAProperty() {
+        return oaProperty;
     }
 }
 

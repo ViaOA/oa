@@ -10,7 +10,6 @@
 */
 package com.viaoa.util.filter;
 
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +21,11 @@ import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
+/**
+ * Creates a filter to see if the value from the propertyPath is less than (but not equal) the filter value.
+ * @author vvia
+ * @see OACompare#isLess(Object, Object)
+ */
 public class OALessFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OALessFilter.class.getName());
     private OAPropertyPath pp;

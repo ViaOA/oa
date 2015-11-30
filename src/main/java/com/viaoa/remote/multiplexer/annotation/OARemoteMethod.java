@@ -39,5 +39,8 @@ public @interface OARemoteMethod {
     
     // do not use queue (even if parent uses a msg queue)
     boolean dontUseQueue() default false;
+    
+    // return value using socket from queued messages
+    boolean returnOnQueueSocket() default false;
 }
 

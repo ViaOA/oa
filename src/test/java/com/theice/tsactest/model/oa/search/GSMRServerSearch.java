@@ -6,7 +6,9 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
+
 import java.io.File;
 import java.util.*;
 
@@ -31,7 +33,7 @@ public class GSMRServerSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<GSMRServer> f = new OASelectFilter<GSMRServer>(GSMRServer.class, s, args);
+            OAFilter<GSMRServer> f = new OAQueryFilter<GSMRServer>(GSMRServer.class, s, args);
             setExtraWhereFilter(f);
         }
     }

@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -29,7 +30,7 @@ public class GSMRWarningSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<GSMRWarning> f = new OASelectFilter<GSMRWarning>(GSMRWarning.class, s, args);
+            OAFilter<GSMRWarning> f = new OAQueryFilter<GSMRWarning>(GSMRWarning.class, s, args);
             setExtraWhereFilter(f);
         }
     }

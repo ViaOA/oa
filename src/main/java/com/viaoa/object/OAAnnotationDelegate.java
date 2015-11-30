@@ -145,6 +145,8 @@ public class OAAnnotationDelegate {
             pi.setNameValue(oaprop.isNameValue());
             pi.setUnicode(oaprop.isUnicode());
             pi.setImportMatch(oaprop.isImportMatch());
+            pi.setPassword(oaprop.isPassword());
+            pi.setOAProperty(oaprop);
         }
         
       
@@ -172,6 +174,7 @@ public class OAAnnotationDelegate {
             else {
                 ci.setPropeties(annotation.properties());
             }
+            ci.setOACalculatedProperty(annotation);
         }
 
         // linkInfos
@@ -201,6 +204,7 @@ public class OAAnnotationDelegate {
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());
             //li.setRecursive(annotation.recursive());
+            li.setOAOne(annotation);
         }
         // Manys
         for (Method m : methods) {
@@ -264,6 +268,7 @@ public class OAAnnotationDelegate {
             if (cs != null) {
                 li.setTriggerClasses(cs);
             }
+            li.setOAMany(annotation);
         }
     }
 

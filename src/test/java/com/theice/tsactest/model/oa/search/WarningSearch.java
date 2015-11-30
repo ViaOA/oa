@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -29,7 +30,7 @@ public class WarningSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<Warning> f = new OASelectFilter<Warning>(Warning.class, s, args);
+            OAFilter<Warning> f = new OAQueryFilter<Warning>(Warning.class, s, args);
             setExtraWhereFilter(f);
         }
     }

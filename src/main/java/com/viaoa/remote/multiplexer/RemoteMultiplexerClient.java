@@ -445,7 +445,10 @@ volatile static int threadCheck;
 
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
 
-        if (ri.bind.usesQueue && !ri.methodInfo.dontUseQueue) {
+        if (ri.methodInfo.returnOnQueueSocket) {
+            ri.type = RequestInfo.Type.CtoS_ReturnOnQueueSocket;
+        }
+        else if (ri.bind.usesQueue && !ri.methodInfo.dontUseQueue) {
             if (ri.bind.isBroadcast) {
                 ri.type = RequestInfo.Type.CtoS_QueuedBroadcast;
             }
@@ -804,7 +807,7 @@ volatile static int threadCheck;
     }
     private boolean _processSocket(final RequestInfo ri, final RemoteObjectInputStream ois) throws Exception {
 
-        if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
+        if (ri.type == RequestInfo.Type.StoC_QueuedResponse || ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
             // 5:CtoS_QueuedRequest get back from server
             // response for CtoS_QueuedRequest
             int x = ois.readByte();

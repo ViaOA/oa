@@ -42,6 +42,8 @@ public class MethodInfo {
 
     public boolean dontUseQueueForReturnValue;
     
+    public boolean returnOnQueueSocket;
+    
     public boolean dontUseQueue;
     
     public int timeoutSeconds = 0;

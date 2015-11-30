@@ -10,9 +10,12 @@
 */
 package com.viaoa.util.filter;
  
-import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 
+/**
+ * Joins two filters together to create an OR filter between them.
+ * @author vvia
+ */
 public class OAOrFilter implements OAFilter {
 
     private OAFilter filter1, filter2;

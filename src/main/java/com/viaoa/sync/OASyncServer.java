@@ -413,11 +413,11 @@ public class OASyncServer {
         return getRemoteMultiplexerServer().createBroadcast(bindName, callback, interfaceClass, SyncQueueName, QueueSize);
     }
     
-/*qqq removed  args/result that are remote objects will use same queue as parent object    
+    /* this was removed - args/result that are remote objects will use same queue as parent object    
     public void registerClassWithQueue(Class clazz) {
         getRemoteMultiplexerServer().registerClassWithQueue(clazz, SyncQueueName, QueueSize);
     }
-*/    
+    */    
 
     protected void afterInvokeRemoteMethod(RequestInfo ri) {
         if (ri == null) return;

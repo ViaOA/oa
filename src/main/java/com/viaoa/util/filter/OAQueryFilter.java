@@ -19,11 +19,11 @@ import com.viaoa.ds.query.OAQueryTokenizer;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
 
-// expanded to support all of the oa filters
 /**
- * Convert an Object Query to an OAFilter.
+ * Convert an Object query to an OAFilter.
  * This can be used for Hub selects, etc.
  * It is used by OADataSourceObjectCache.selects
+ *
  * 
  * created 20140127, expanded 201511125 
  * @author vvia

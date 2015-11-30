@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -29,7 +30,7 @@ public class RCExecuteSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<RCExecute> f = new OASelectFilter<RCExecute>(RCExecute.class, s, args);
+            OAFilter<RCExecute> f = new OAQueryFilter<RCExecute>(RCExecute.class, s, args);
             setExtraWhereFilter(f);
         }
     }

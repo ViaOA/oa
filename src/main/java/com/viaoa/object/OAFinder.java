@@ -44,7 +44,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private OALinkInfo[] linkInfos;
     private OALinkInfo[] recursiveLinkInfos;
     private Method[] methods;
-    private OAFilter[] filters;
+
+    private boolean bAddOrFilter;
+    private boolean bAddAndFilter;
+    private OAFilter filter;
     private boolean bRequiresCasade;
     private OACascade cascade;
 
@@ -62,8 +65,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private Hub<F> fromHub;
     private boolean bUseAll;
 
-    private ArrayList<OAFilter> alFilters;
-    
     public OAFinder() {
     }
     public OAFinder(String propPath) {
@@ -197,12 +198,16 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
 
     
     public void clearFilters() {
-        alFilters = null;
+        filter = null;
     }
 
     public void addFilter(OAFilter<T> filter) {
-        if (alFilters == null) alFilters = new ArrayList<OAFilter>();
-        alFilters.add(filter);
+        if (this.filter == null) this.filter = filter;
+        else {
+            if (bAddOrFilter) this.filter = new OAOrFilter(this.filter, filter);
+            else this.filter = new OAAndFilter(this.filter, filter);
+        }
+        bAddAndFilter = bAddOrFilter = false;
     }
     
     /**
@@ -314,13 +319,14 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         Constructor[] constructors = propertyPath.getFilterConstructors();
 
         int x = names.length;
-        filters = new OAFilter[x];
+
         for (int i = 0; i < x; i++) {
             if (constructors[i] == null) continue;
             try {
                 HubFilter hubFilter = createHubFilter(names[i]);
                 if (hubFilter == null) hubFilter = ((CustomHubFilter) constructors[i].newInstance(values[i])).getHubFilter();
-                filters[i] = hubFilter;
+                if (filter == null) filter = hubFilter;
+                else filter = new OAAndFilter(filter, hubFilter);
             }
             catch (Exception e) {
                 throw new IllegalArgumentException("Filter " + names[i] + " can not be created", e);
@@ -361,10 +367,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             return;
         }
 
-        if (pos > 0 && filters != null && filters[pos - 1] != null) {
-            if (!filters[pos - 1].isUsed(obj)) return;
-        }
-
+        if (filter != null && !filter.isUsed(obj)) return;
+        
         if (linkInfos == null || pos >= linkInfos.length) {
             // see if last property in propertyPath is not link
             if (methods != null && (methods.length > (linkInfos == null ? 0 : linkInfos.length))) {
@@ -378,12 +382,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             }
             
             boolean bIsUsed = isUsed((T) obj);
-            if (bIsUsed && alFilters != null) {
-                for (OAFilter f : alFilters) {
-                    bIsUsed = f.isUsed((T) obj);
-                    if (!bIsUsed) break;
-                }
-            }
+            if (bIsUsed && filter != null) bIsUsed = filter.isUsed(obj);;
+
             if (bIsUsed) {
                 onFound((T) obj);
             }
@@ -502,5 +502,59 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
         return ss;
     }
+
+    public void addBetweenFilter(String pp, Object val1, Object val2) {
+        addFilter(new OABetweenFilter(pp, val1, val2));
+    }
+    public void addBetweenOrEqualFilter(String pp, Object val1, Object val2) {
+        addFilter(new OABetweenOrEqualFilter(pp, val1, val2));
+    }
+    public void addEmptyFilter(String pp) {
+        addFilter(new OAEmptyFilter(pp));
+    }
+    public void addNotEmptyFilter(String pp) {
+        addFilter(new OANotEmptyFilter(pp));
+    }
+    public void addEqualFilter(String pp, Object val) {
+        addFilter(new OAEqualFilter(pp, val));
+    }
+    public void addEqualFilter(String pp, Object val, boolean bIgnoreCase) {
+        addFilter(new OAEqualFilter(pp, val, bIgnoreCase));
+    }
+    public void addGreaterFilter(String pp, Object val) {
+        addFilter(new OAGreaterFilter(pp, val));
+    }
+    public void addGreaterOrEqualFilter(String pp, Object val) {
+        addFilter(new OAGreaterOrEqualFilter(pp, val));
+    }
+    public void addLessFilter(String pp, Object val) {
+        addFilter(new OALessFilter(pp, val));
+    }
+    public void addLessOrEqualFilter(String pp, Object val) {
+        addFilter(new OALessOrEqualFilter(pp, val));
+    }
+    public void addLikeFilter(String pp, Object val) {
+        addFilter(new OALikeFilter(pp, val));
+    }
+    public void addNotLikeFilter(String pp, Object val) {
+        addFilter(new OANotLikeFilter(pp, val));
+    }
+  
+    
+    /**
+     * This will create an Or with the existing filter and the next filter that is added.
+     */
+    public void addOrFilter() {
+        bAddOrFilter = true;
+        bAddAndFilter = false;
+    }
+    /**
+     * This will create an And with the existing filter and the next filter that is added.
+     */
+    public void addAndFilter() {
+        bAddAndFilter = true;
+        bAddOrFilter = false;
+    }
+    
     
 }

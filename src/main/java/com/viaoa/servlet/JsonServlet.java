@@ -12,8 +12,6 @@ package com.viaoa.servlet;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
@@ -26,9 +24,13 @@ import javax.servlet.http.HttpSession;
 
 import com.viaoa.ds.OASelect;
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OACalcInfo;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
+import com.viaoa.object.OAObjectInfo;
+import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.object.OAPropertyInfo;
 import com.viaoa.util.OAJsonWriter;
 import com.viaoa.util.OAString;
 
@@ -80,6 +82,7 @@ public class JsonServlet extends HttpServlet {
         
         LOG.fine(String.format("class=%s, id=%s, property=%s, query=%s", className, id, propName, query));
 
+        boolean bDescribe = req.getParameterMap().containsKey("describe");
 
         if (className == null || className.length() == 0) {
             LOG.fine("className is required");
@@ -99,6 +102,7 @@ public class JsonServlet extends HttpServlet {
             return;
         }
         */
+        
 
         Class c;
         try {
@@ -111,7 +115,7 @@ public class JsonServlet extends HttpServlet {
         }
 
 
-        Object newObject;
+        Object newObject = null;
 
         if (query != null && query.length() > 0) {
             if (query != null && query.length() > 1) {
@@ -125,11 +129,13 @@ public class JsonServlet extends HttpServlet {
             newObject = hub;
         }
         else if (id == null || id.length() == 0) {
-            ArrayList al = new ArrayList();
-            OAObjectCacheDelegate.fetch(c, null, 500, al);
-            newObject = new Hub();
-            for (Object objx : al) {
-                ((Hub) newObject).add(objx);
+            if (!bDescribe) {
+                ArrayList al = new ArrayList();
+                OAObjectCacheDelegate.fetch(c, null, 500, al);
+                newObject = new Hub();
+                for (Object objx : al) {
+                    ((Hub) newObject).add(objx);
+                }
             }
         }
         else {
@@ -157,25 +163,68 @@ public class JsonServlet extends HttpServlet {
         }
 
 
-        String result;
+        String result = "";
         final boolean bOnlySendId = !bSendAllData && !(newObject instanceof OAObject);
 
-        OAJsonWriter json = new OAJsonWriter() {
-            @Override
-            public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OALinkInfo li) {
-                String sx = getCurrentPath();                
-                if (!bOnlySendId && (sx == null || sx.length() == 0)) return true;  // send all for root object
- 
-                if (bOnlySendId || li == null) {  // only send "Id"
-                    return ("id".equalsIgnoreCase(propertyName));
+        if (newObject != null) {
+            OAJsonWriter json = new OAJsonWriter() {
+                @Override
+                public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OALinkInfo li) {
+                    String sx = getCurrentPath();                
+                    if (!bOnlySendId && (sx == null || sx.length() == 0)) return true;  // send all for root object
+     
+                    if (bOnlySendId || li == null) {  // only send "Id"
+                        return ("id".equalsIgnoreCase(propertyName));
+                    }
+                    return false;
                 }
-                return false;
+            };
+            if (newObject instanceof Hub) result = json.write( (Hub) newObject);
+            else result = json.write( (OAObject) newObject);
+        }
+        
+        if (bDescribe) {
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
+            result += "{ \"class\": {\n";
+            result += "  \"name\": "+oi.getForClass().getSimpleName()+",\n";
+            result += "  \"displayName\":\""+oi.getDisplayName()+"\",\n";
+            
+            result += "  \"properties\": [\n";
+            int cnt = 0;
+            for (OAPropertyInfo pp : oi.getPropertyInfos()) {
+                if (cnt++ > 0) result += ",\n";
+                result += "    {\"name\": \""+pp.getName()+"\", ";
+                result += "\"type\": \""+pp.getClassType().getSimpleName()+"\", ";
+                result += "\"max\": \""+pp.getMaxLength()+"\", ";
+                result += "\"displayName\": \""+OAString.toString(pp.getDisplayName())+"\", ";
+                result += "\"displayLength\": \""+pp.getDisplayLength()+"\"}";
             }
-        };
-        
-        if (newObject instanceof Hub) result = json.write( (Hub) newObject);
-        else result = json.write( (OAObject) newObject);
-        
+            result += "\n  ],\n";
+
+            result += "  \"calcProperties\": [\n";
+            cnt = 0;
+            for (OACalcInfo cp : oi.getCalcInfos()) {
+                if (cnt++ > 0) result += ",\n";
+                result += "    {\"name\": \""+cp.getName()+"\"}";
+            }
+            result += "\n  ],\n";
+            
+            cnt = 0;
+            result += "  \"references\": [\n";
+            for (OALinkInfo li : oi.getLinkInfos()) {
+                if (cnt++ > 0) result += ",\n";
+                result += "    {\"name\": \""+li.getName()+"\", ";
+                result += "\"type\": \""+li.getToClass().getSimpleName()+"\", ";
+                result += "\"referenceType\": \""+(li.getType()==li.MANY?"many":"one")+"\", ";
+                result += "\"owned\": \""+li.getOwner()+"\", ";
+                result += "\"recursive\": \""+li.getRecursive()+"\", ";
+                result += "\"reverseName\": \""+li.getReverseName()+"\", ";
+                result += "\"calculated\": \""+li.getCalculated()+"\"}";
+            }
+            result += "\n  ]\n";
+            
+            result += "}\n";
+        }
 
         // Set to expire far in the past.
         resp.setHeader("Expires", "Sat, 6 May 1995 12:00:00 GMT");

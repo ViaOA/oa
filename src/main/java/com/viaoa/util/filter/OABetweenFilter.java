@@ -10,7 +10,6 @@
 */
 package com.viaoa.util.filter;
 
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +21,11 @@ import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
+/**
+ * Creates a filter to see if the value from the propertyPath is between (but not equal) two values.
+ * @author vvia
+ * @see OACompare#isBetween(Object, Object, Object)
+ */
 public class OABetweenFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OABetweenFilter.class.getName());
     private OAPropertyPath pp;

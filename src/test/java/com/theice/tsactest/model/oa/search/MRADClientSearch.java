@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -46,7 +47,7 @@ public class MRADClientSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<MRADClient> f = new OASelectFilter<MRADClient>(MRADClient.class, s, args);
+            OAFilter<MRADClient> f = new OAQueryFilter<MRADClient>(MRADClient.class, s, args);
             setExtraWhereFilter(f);
         }
     }

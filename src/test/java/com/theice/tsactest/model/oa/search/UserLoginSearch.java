@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -127,7 +128,7 @@ public class UserLoginSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<UserLogin> f = new OASelectFilter<UserLogin>(UserLogin.class, s, args);
+            OAFilter<UserLogin> f = new OAQueryFilter<UserLogin>(UserLogin.class, s, args);
             setExtraWhereFilter(f);
         }
     }

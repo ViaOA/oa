@@ -10,8 +10,6 @@
 */
 package com.viaoa.util.filter;
 
-
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,10 +19,14 @@ import com.viaoa.object.OAObject;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAPropertyPathDelegate;
-import com.viaoa.util.OAString;
 import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
+/**
+ * Creates a filter to see if the value from the propertyPath is equals the filter value.
+ * 
+ * @author vvia
+ * @see OACompare#isEqual(Object, Object)
+ */
 public class OAEqualFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OAEqualFilter.class.getName());
     private Object value;

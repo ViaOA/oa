@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -292,6 +293,12 @@ public class RemoteMultiplexerServer {
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
         }
+        else if (ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
+            ri.bindName = ois.readAsciiString();
+            ri.methodNameSignature = ois.readAsciiString();
+            ri.args = (Object[]) ois.readObject();
+            ri.messageId = ois.readInt();
+        }
         else if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
             // 2:CtoS_QueuedRequest read from client
             ri.bindName = ois.readAsciiString();
@@ -379,6 +386,24 @@ public class RemoteMultiplexerServer {
             return false;            
         }
 
+        // 20151129 invoke now, return result using the queue thread
+        if (ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
+            if (ri.exceptionMessage == null) {
+                invokeUsingRemoteThread(ri, false);
+            }
+            if (ri.exceptionMessage != null) {
+                ri.methodInvoked = true;
+            }
+            session.setupAsyncQueueSender(ri.bind.asyncQueueName);
+            try {
+                session.writeOnQueueSocket(ri);
+            }
+            catch (Exception e) {
+                ri.exception = e;
+            }
+            return false;            
+        }
+        
         if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
             // 3:CtoS_QueuedRequest put in queue
             // unless there is an error, then this will be invoked by the queue thread on the server
@@ -1492,6 +1517,44 @@ public class RemoteMultiplexerServer {
             return bind;
         }
 
+        // 20151129
+        public void writeOnQueueSocket(final RequestInfo ri) throws Exception {
+            String qname = ri.bind.asyncQueueName;
+
+            VirtualSocket vsocket = hmAsyncQueueSocket.get(qname);
+            if (vsocket == null) {
+                ri.exceptionMessage = "message queue does not have a virtualSocket, qname="+qname;
+                return;
+            }
+
+//qqqqqqqqqq get lock
+            synchronized (vsocket) {
+                RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
+                oos.writeByte(ri.type.ordinal());
+                
+                if (ri.exception != null) {
+                    oos.writeByte(0);
+                    oos.writeObject(ri.exception);
+                }
+                else if (ri.exceptionMessage != null) {
+                    oos.writeByte(1);
+                    oos.writeObject(ri.exceptionMessage);
+                }
+                else if (ri.responseBindName != null) {
+                    oos.writeByte(2);
+                    oos.writeObject(new Object[] {ri.responseBindName, ri.responseBindUsesQueue} );
+                }
+                else {
+                    oos.writeByte(3);
+                    oos.writeObject(ri.response);
+                }
+                oos.writeInt(ri.messageId);
+                oos.flush();
+            }
+        }
+        
+        private HashMap<String, VirtualSocket> hmAsyncQueueSocket = new HashMap<String, VirtualSocket>();  
+        
         // start thread that will send async return values back to client
         public void setupAsyncQueueSender(final String asyncQueueName) {
             if (hmAsyncQueue.get(asyncQueueName) != null) return;
@@ -1508,7 +1571,7 @@ public class RemoteMultiplexerServer {
                     @Override
                     public void run() {
                         try {
-                            writeQueueMessages(cq, qPos);
+                            writeQueueMessages(asyncQueueName, cq, qPos);
                         }
                         catch (Exception e) {
                             if (realSocket != null && !realSocket.isClosed()) {
@@ -1525,10 +1588,10 @@ public class RemoteMultiplexerServer {
             }
         }
 
-        private void writeQueueMessages(final OACircularQueue<RequestInfo> cque, final long startQuePos)
-                throws Exception {
-            // have all messages sent using single vsocket
-            VirtualSocket vsocket = getSocketForStoC();
+        private void writeQueueMessages(final String asyncQueueName,  final OACircularQueue<RequestInfo> cque, final long startQuePos) throws Exception {
+            final VirtualSocket vsocket = getSocketForStoC();
+            hmAsyncQueueSocket.put(asyncQueueName, vsocket);
+            
             try {
                 _writeQueueMessages(cque, vsocket, startQuePos);
             }
@@ -1537,7 +1600,7 @@ public class RemoteMultiplexerServer {
                 releaseSocketForStoC(vsocket);
             }
         }
-
+        
         
         // used to send broadcast messages to client
         private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, VirtualSocket vsocket, long qpos)
@@ -1613,57 +1676,59 @@ public class RemoteMultiplexerServer {
 
                     waitForProcessedByServer(ri);
                     
-                    RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
-                    oos.writeByte(ri.type.ordinal());
-
-                    if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
-                        // 10:CtoS_QueuedRequest write to client END 
-                        if (ri.exception != null) {
-                            oos.writeByte(0);
-                            oos.writeObject(ri.exception);
+                    synchronized (vsocket) {
+                        RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
+                        oos.writeByte(ri.type.ordinal());
+    
+                        if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
+                            // 10:CtoS_QueuedRequest write to client END 
+                            if (ri.exception != null) {
+                                oos.writeByte(0);
+                                oos.writeObject(ri.exception);
+                            }
+                            else if (ri.exceptionMessage != null) {
+                                oos.writeByte(1);
+                                oos.writeObject(ri.exceptionMessage);
+                            }
+                            else if (ri.responseBindName != null) {
+                                oos.writeByte(2);
+                                oos.writeObject(new Object[] {ri.responseBindName, ri.responseBindUsesQueue} );
+                            }
+                            else {
+                                oos.writeByte(3);
+                                oos.writeObject(ri.response);
+                            }
+                            oos.writeInt(ri.messageId);
                         }
-                        else if (ri.exceptionMessage != null) {
-                            oos.writeByte(1);
-                            oos.writeObject(ri.exceptionMessage);
+                        else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
+                            oos.writeInt(ri.connectionId);
+                            oos.writeInt(ri.messageId);
+                            if (ri.connectionId != connectionId) {
+                                oos.writeAsciiString(ri.bindName);
+                                oos.writeAsciiString(ri.methodInfo.methodNameSignature);
+                                oos.writeObject(ri.args);
+                            }
                         }
-                        else if (ri.responseBindName != null) {
-                            oos.writeByte(2);
-                            oos.writeObject(new Object[] {ri.responseBindName, ri.responseBindUsesQueue} );
-                        }
-                        else {
-                            oos.writeByte(3);
-                            oos.writeObject(ri.response);
-                        }
-                        oos.writeInt(ri.messageId);
-                    }
-                    else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
-                        oos.writeInt(ri.connectionId);
-                        oos.writeInt(ri.messageId);
-                        if (ri.connectionId != connectionId) {
+                        else if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
                             oos.writeAsciiString(ri.bindName);
                             oos.writeAsciiString(ri.methodInfo.methodNameSignature);
+                            processStoCArguments(ri, Session.this);  // this is only done once, right before it's sent
+                            oos.writeObject(ri.args);
+                            oos.writeInt(ri.messageId);
+                        }
+                        else if (ri.type == RequestInfo.Type.StoC_QueuedRequestNoResponse) {
+                            oos.writeAsciiString(ri.bindName);
+                            oos.writeAsciiString(ri.methodInfo.methodNameSignature);
+                            processStoCArguments(ri, Session.this);  // this is only done once, right before it's sent
                             oos.writeObject(ri.args);
                         }
+                        else if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
+                            oos.writeAsciiString(ri.bindName);
+                            oos.writeAsciiString(ri.methodInfo.methodNameSignature);
+                            oos.writeObject(ri.args);  // args are already be processed (processStoCArguments)
+                        }
+                        oos.flush();
                     }
-                    else if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
-                        oos.writeAsciiString(ri.bindName);
-                        oos.writeAsciiString(ri.methodInfo.methodNameSignature);
-                        processStoCArguments(ri, Session.this);  // this is only done once, right before it's sent
-                        oos.writeObject(ri.args);
-                        oos.writeInt(ri.messageId);
-                    }
-                    else if (ri.type == RequestInfo.Type.StoC_QueuedRequestNoResponse) {
-                        oos.writeAsciiString(ri.bindName);
-                        oos.writeAsciiString(ri.methodInfo.methodNameSignature);
-                        processStoCArguments(ri, Session.this);  // this is only done once, right before it's sent
-                        oos.writeObject(ri.args);
-                    }
-                    else if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
-                        oos.writeAsciiString(ri.bindName);
-                        oos.writeAsciiString(ri.methodInfo.methodNameSignature);
-                        oos.writeObject(ri.args);  // args are already be processed (processStoCArguments)
-                    }
-                    oos.flush();
                 }
             }
         }

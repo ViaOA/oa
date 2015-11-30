@@ -22,6 +22,12 @@ import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
+/**
+ * Creates a filter to see if the value from the propertyPath is not equal to the filter value.
+ * 
+ * @author vvia
+ * @see OACompare#isEqual(Object, Object)
+ */
 public class OANotEqualFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OANotEqualFilter.class.getName());
 

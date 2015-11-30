@@ -36,6 +36,7 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializeDelegate;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientCallbackInterface;
@@ -165,11 +166,18 @@ public class OASyncClient {
                 siblingKeys = getDetailSiblings(masterObject, li, propertyName);
             }
   
-//result == null qqqqqqqqqqqqqqqqqqqqq            
+            
             additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
             try {
-                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                        additionalMasterProperties, siblingKeys);
+                if (OARemoteThreadDelegate.isRemoteThread()) {
+                    // use annotated version that does not use the msg queue
+                    result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                            additionalMasterProperties, siblingKeys);
+                }
+                else {
+                    result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                            additionalMasterProperties, siblingKeys);
+                }
             }
             catch (Exception e) {
                 LOG.log(Level.WARNING, "getDetail error", e);

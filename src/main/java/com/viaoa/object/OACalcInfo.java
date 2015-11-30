@@ -12,6 +12,8 @@ package com.viaoa.object;
 
 import java.util.logging.Logger;
 
+import com.viaoa.annotation.OACalculatedProperty;
+
 /** Used to define calculated properties for OAObject.  A Calculated property is a read only property that
     depends on other properties for its value. 
     <br>
@@ -53,6 +55,7 @@ public class OACalcInfo implements java.io.Serializable {
     
     String name;
     String[] properties;  // dependent properties
+    private OACalculatedProperty oaCalculatedProperty;
 
     /** 20131027
      *  true if this calcProp is for the whole Hub, and the method has a static method with a Hub param
@@ -94,6 +97,13 @@ public class OACalcInfo implements java.io.Serializable {
         return bIsForHub;
     }
 
+    public OACalculatedProperty getOACalculatedProperty() {
+        return oaCalculatedProperty;
+    }
+    public void setOACalculatedProperty(OACalculatedProperty c) {
+        oaCalculatedProperty = c;
+    }
+    
 /* 20101218 replaced by HubListenerTree
     
     // set by HubEventDelegate.addHubListener(..., property) when a calc property is being used and prop changes need to be checked (here).    

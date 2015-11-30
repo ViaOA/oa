@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -79,7 +80,7 @@ public class CompanySearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<Company> f = new OASelectFilter<Company>(Company.class, s, args);
+            OAFilter<Company> f = new OAQueryFilter<Company>(Company.class, s, args);
             setExtraWhereFilter(f);
         }
     }

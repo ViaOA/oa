@@ -55,6 +55,14 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         return obj;
     }
 
+    // 20151129 does not put in the msg queue, but will write the return value using the same vsocket that the msg queue thread uses.
+    @Override
+    public Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
+        LOG.fine("masterClass="+masterClass+", prop="+property);
+        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys);
+        return obj;
+    }
+    
     @Override
     public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property) {
         Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, null, null);

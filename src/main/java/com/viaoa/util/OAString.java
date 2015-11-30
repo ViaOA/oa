@@ -2449,20 +2449,35 @@ public class OAString {
         return x;
     }
     
+    /**
+     * Convert to a string, if null then it returns ""
+     */
     public static String toString(String str) {
         return defaultString(str, "");
     }
+    /**
+     * Convert to a string, if null then it returns ""
+     */
     public static String toString(String str, String strIfNull) {
         return defaultString(str, strIfNull);
     }
+    /**
+     * Convert to a string, if null then it returns ""
+     */
     public static String defaultString(String str) {
         return defaultString(str, "");
     }
+    /**
+     * Convert to a string, if null then return strIfNull
+     */
     public static String defaultString(String str, String strIfNull) {
         if (str == null) return strIfNull;
         return str;
     }
     
+    /**
+     * Convert to a string, if null then it returns ""
+     */
     public static String notNull(String s) {
         if (s == null) s = "";
         return s;

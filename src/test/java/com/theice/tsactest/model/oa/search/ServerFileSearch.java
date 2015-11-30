@@ -6,7 +6,9 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
+
 import java.io.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -30,7 +32,7 @@ public class ServerFileSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<ServerFile> f = new OASelectFilter<ServerFile>(ServerFile.class, s, args);
+            OAFilter<ServerFile> f = new OAQueryFilter<ServerFile>(ServerFile.class, s, args);
             setExtraWhereFilter(f);
         }
     }

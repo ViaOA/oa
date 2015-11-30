@@ -235,6 +235,13 @@ public class OACompare {
     public static boolean isEmpty(Object obj) {
         return isEmpty(obj, false);
     }
+    /**
+     * Checks to see if the value of an object can be considered empty.
+     * 
+     * example:  null, an empty array, an collection with no elements, a primitive set to 0, a string will only spaces (if using bTrim)
+     * @param obj
+     * @param bTrim if true and object is a string, then spaces will be ignored.
+     */
     public static boolean isEmpty(Object obj, boolean bTrim) {
         if (obj == null) return true;
         

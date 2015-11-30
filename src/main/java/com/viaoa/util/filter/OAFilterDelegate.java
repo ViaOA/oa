@@ -8,6 +8,11 @@ import com.viaoa.object.OAObject;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
+/**
+ * Helper to used for OAFilters.
+ * @author vvia
+ *
+ */
 public class OAFilterDelegate {
 
     static public class FinderInfo {
@@ -21,7 +26,9 @@ public class OAFilterDelegate {
     
     /**
      * Create a finder that should be used by a filter, since there
-     * are Hub links in the property path. 
+     * are Hub links in the property path.
+     * This will return the OAFinder to use, and the remaining property that should be filtered.
+     * see the OAxxxFilters for examples. 
      */
     public static FinderInfo createFinder(OAPropertyPath pp) {
         if (pp == null) return null;

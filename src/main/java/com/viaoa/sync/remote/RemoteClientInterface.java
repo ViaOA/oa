@@ -13,6 +13,7 @@ package com.viaoa.sync.remote;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 
 /**
  * Client remote methods that will use the same named msg queue as RemoteSync, when set up (bind) on the server.
@@ -29,6 +30,13 @@ public interface RemoteClientInterface {
     
     Object getDetail(Class masterClass, OAObjectKey masterObjectKey, 
             String property, String[] masterProps, OAObjectKey[] siblingKeys);
+
+    // dont put in queue, but have it returned on vsocket for queued messages  
+    //     All of the other methods are put in queue to be processed and have the return value set.
+    @OARemoteMethod(returnOnQueueSocket=true)
+    Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, 
+            String property, String[] masterProps, OAObjectKey[] siblingKeys);
+
     
     Object datasource(int command, Object[] objects);
 

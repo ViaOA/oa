@@ -14,6 +14,8 @@ import java.lang.reflect.*;
 import java.util.HashSet;
 import java.util.List;
 
+import com.viaoa.annotation.OAMany;
+import com.viaoa.annotation.OAOne;
 import com.viaoa.ds.OADataSource;
 
 /** 
@@ -56,7 +58,8 @@ public class OALinkInfo { //implements java.io.Serializable {
     protected boolean bServerSideCalc;
     protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
     private transient Method uniquePropertyGetMethod;
-    
+    private OAOne oaOne;
+    private OAMany oaMany;
     
     public OALinkInfo(String name, Class toClass, int type) {
         this(name, toClass, type, false, false, null, false);
@@ -294,5 +297,18 @@ public class OALinkInfo { //implements java.io.Serializable {
         this.isImportMatch = b;
     }
 
+    public void setOAOne(OAOne o) {
+        this.oaOne = o;
+    }
+    public OAOne getOAOne() {
+        return this.oaOne;
+    }
+
+    public void setOAMany(OAMany m) {
+        this.oaMany = m;
+    }
+    public OAMany getOAMany() {
+        return this.oaMany;
+    }
 }
 

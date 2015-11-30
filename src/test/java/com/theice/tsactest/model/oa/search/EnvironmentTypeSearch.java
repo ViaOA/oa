@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -29,7 +30,7 @@ public class EnvironmentTypeSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<EnvironmentType> f = new OASelectFilter<EnvironmentType>(EnvironmentType.class, s, args);
+            OAFilter<EnvironmentType> f = new OAQueryFilter<EnvironmentType>(EnvironmentType.class, s, args);
             setExtraWhereFilter(f);
         }
     }

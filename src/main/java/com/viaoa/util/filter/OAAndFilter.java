@@ -12,6 +12,10 @@ package com.viaoa.util.filter;
 
 import com.viaoa.util.OAFilter;
 
+/**
+ * Joins two filters together to create an AND filter between them.
+ * @author vvia
+ */
 public class OAAndFilter implements OAFilter {
 
     private OAFilter filter1, filter2;

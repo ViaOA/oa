@@ -134,6 +134,7 @@ public class BindInfo {
                 mi.timeoutSeconds = Math.max(0, remoteMethod.timeoutSeconds());
                 mi.dontUseQueue = remoteMethod.dontUseQueue();
                 mi.dontUseQueueForReturnValue = remoteMethod.dontUseQueueForReturnValue();
+                mi.returnOnQueueSocket = remoteMethod.returnOnQueueSocket();
             }
 
             // check to see if any of the params are remote

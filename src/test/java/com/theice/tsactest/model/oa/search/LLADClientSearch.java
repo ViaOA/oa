@@ -6,6 +6,7 @@ import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
+import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -128,7 +129,7 @@ public class LLADClientSearch extends OAObject {
         this.extraWhere = s;
         this.extraWhereParams = args;
         if (!OAString.isEmpty(s) && getExtraWhereFilter() == null) {
-            OAFilter<LLADClient> f = new OASelectFilter<LLADClient>(LLADClient.class, s, args);
+            OAFilter<LLADClient> f = new OAQueryFilter<LLADClient>(LLADClient.class, s, args);
             setExtraWhereFilter(f);
         }
     }
@@ -263,7 +264,7 @@ public class LLADClientSearch extends OAObject {
             String cpp = OAString.cpp(LLADClient.P_UserLogins, UserLogin.P_User);
             OAFinder<LLADClient, User> finder = new OAFinder<LLADClient, User>(cpp);
              if (userLoginUser != null) {
-                finder.setEqualValue(getUserLoginUser());
+                finder.addEqualFilter(null, getUserLoginUser());
             }
             if (finder.findFirst(lladClient) == null) return false;
         }
