@@ -366,8 +366,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             }
             return;
         }
-
-        if (filter != null && !filter.isUsed(obj)) return;
         
         if (linkInfos == null || pos >= linkInfos.length) {
             // see if last property in propertyPath is not link
@@ -380,9 +378,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
                     // TODO: handle exception
                 }
             }
-            
-            boolean bIsUsed = isUsed((T) obj);
-            if (bIsUsed && filter != null) bIsUsed = filter.isUsed(obj);;
+
+            boolean bIsUsed;
+            if (filter != null) bIsUsed = filter.isUsed(obj);
+            else bIsUsed = true;
+            bIsUsed = bIsUsed && isUsed((T) obj);
 
             if (bIsUsed) {
                 onFound((T) obj);
