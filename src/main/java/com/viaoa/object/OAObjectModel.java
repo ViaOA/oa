@@ -11,6 +11,7 @@
 package com.viaoa.object;
 
 import com.viaoa.annotation.OAClass;
+import com.viaoa.hub.Hub;
 
 @OAClass (addToCache=false, localOnly=true, useDataSource=false)
 public class OAObjectModel {
@@ -192,4 +193,5 @@ public class OAObjectModel {
     public void setAllowTableFilter(boolean b) {
         bAllowTableFilter = b;
     }
+    
 }

@@ -448,18 +448,19 @@ public class ApplicationType extends OAObject {
         this.connectsToMRAD = newValue;
         firePropertyChange(P_ConnectsToMRAD, old, this.connectsToMRAD);
     }
+
     @OAProperty(displayName = "Show In MRAD", defaultValue = "true", displayLength = 5)
     @OAColumn(sqlType = java.sql.Types.BOOLEAN)
     public boolean getShowInMRAD() {
         return showInMRAD;
     }
-    
     public void setShowInMRAD(boolean newValue) {
         fireBeforePropertyChange(P_ShowInMRAD, this.showInMRAD, newValue);
         boolean old = showInMRAD;
         this.showInMRAD = newValue;
         firePropertyChange(P_ShowInMRAD, old, this.showInMRAD);
     }
+    
     @OAProperty(displayName = "Show In Deploy", defaultValue = "true", displayLength = 5)
     @OAColumn(sqlType = java.sql.Types.BOOLEAN)
     public boolean getShowInDeploy() {

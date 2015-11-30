@@ -64,26 +64,46 @@ public class JsonServlet extends HttpServlet {
         // Get the absolute path of the image
         ServletContext sc = getServletContext();
 
-        String className = req.getParameter("c");
-        if (className == null) className = req.getParameter("class");
-        
-        String id = req.getParameter("id");
-        if (id == null) id = req.getParameter("id");
-
-        String propName = req.getParameter("p");
-        if (propName == null) {
-            propName = req.getParameter("prop");
-            if (propName == null) propName = req.getParameter("property");
-        }
-
-        String query = req.getParameter("query");
-
-        boolean bSendAllData = req.getParameterMap().containsKey("all");
+        String className = null;
+        String id = null;
+        String propName = null;
+        String query = null;
+        boolean bSendAllData = false;
         
         LOG.fine(String.format("class=%s, id=%s, property=%s, query=%s", className, id, propName, query));
 
         boolean bDescribe = req.getParameterMap().containsKey("describe");
+        String badParams = null;
+        
+        
+        for (Object n : req.getParameterMap().keySet()) {
+            String s = (String) n;
+            if (s.equalsIgnoreCase("c")) className = req.getParameter(s);
+            else if (s.equalsIgnoreCase("class")) className = req.getParameter(s);
+            else if (s.equalsIgnoreCase("id")) id = req.getParameter(s);
+            else if (s.equalsIgnoreCase("i")) id = req.getParameter(s);
+            else if (s.equalsIgnoreCase("property")) propName = req.getParameter(s);
+            else if (s.equalsIgnoreCase("property")) propName = req.getParameter(s);
+            else if (s.equalsIgnoreCase("p")) propName = req.getParameter(s);
+            else if (s.equalsIgnoreCase("all")) bSendAllData = true;
+            else if (s.equalsIgnoreCase("query")) query = req.getParameter(s);
+            else if (s.equalsIgnoreCase("q")) query = req.getParameter(s);
+            else if (s.equalsIgnoreCase("describe")) bDescribe = true;
+            else if (s.equalsIgnoreCase("desc")) bDescribe = true;
+            else if (s.equalsIgnoreCase("d")) bDescribe = true;
+            else {
+                if (badParams == null) badParams = s;
+                else badParams += ", "+s;
+            }
+        }
 
+        if (badParams != null) {
+            LOG.fine("badParams="+badParams);
+            resp.getOutputStream().write(("bad params="+badParams).getBytes());
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        
         if (className == null || className.length() == 0) {
             LOG.fine("className is required");
             resp.sendRedirect("/jsonHelp.html");

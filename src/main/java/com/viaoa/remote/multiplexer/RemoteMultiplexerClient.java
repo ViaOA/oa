@@ -445,7 +445,7 @@ volatile static int threadCheck;
 
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
 
-        if (ri.methodInfo.returnOnQueueSocket) {
+        if (ri.bind.usesQueue && ri.methodInfo.returnOnQueueSocket) {
             ri.type = RequestInfo.Type.CtoS_ReturnOnQueueSocket;
         }
         else if (ri.bind.usesQueue && !ri.methodInfo.dontUseQueue) {

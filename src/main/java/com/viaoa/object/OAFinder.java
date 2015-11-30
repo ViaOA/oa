@@ -368,17 +368,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
         
         if (linkInfos == null || pos >= linkInfos.length) {
-            // see if last property in propertyPath is not link
-            if (methods != null && (methods.length > (linkInfos == null ? 0 : linkInfos.length))) {
-                try {
-                    Object objx = methods[methods.length - 1].invoke(obj);
-                    obj = objx;
-                }
-                catch (Exception e) {
-                    // TODO: handle exception
-                }
-            }
-
             boolean bIsUsed;
             if (filter != null) bIsUsed = filter.isUsed(obj);
             else bIsUsed = true;
