@@ -152,7 +152,7 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
             filter = new OAFilter() {
                 @Override
                 public boolean isUsed(Object obj) {
-                    return false;
+                    return true;
                 }
             };
             return filter;
