@@ -15,6 +15,7 @@ import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JLabel;
@@ -23,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.table.TableCellEditor;
 
+import com.viaoa.ds.query.OAQueryTokenizer;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.table.OATableCellEditor;
 import com.viaoa.jfc.table.OATableComponent;
@@ -31,6 +33,9 @@ import com.viaoa.jfc.table.OATextFieldTableCellEditor;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
+import com.viaoa.util.filter.OALikeFilter;
+import com.viaoa.util.filter.OANotLikeFilter;
+import com.viaoa.util.filter.OAQueryFilter;
 
 /** 
 */
@@ -130,10 +135,55 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
         }
     }
 
+    
+    private String prevText;
+    private OAFilter filter;
+    
+    // fix* && !gsmr || 
+    protected OAFilter getFilter() {
+        String text = getText();
+        if (filter != null && prevText != null) {
+            if (prevText.equals(text)) return filter;
+        }
+        prevText = text;
+
+        
+        if (text.length() == 0) {
+            filter = new OAFilter() {
+                @Override
+                public boolean isUsed(Object obj) {
+                    return false;
+                }
+            };
+            return filter;
+        };
+        
+        final boolean bNot = text.charAt(0) == '!';
+        if (bNot) {
+            text = text.substring(1);
+            filter = new OANotLikeFilter(text);
+        }
+        else {
+            filter = new OALikeFilter(text);
+        }
+        
+        return filter;
+    }
+
+    
+    
+    
     @Override
     public boolean isUsed(Object obj) {
         if (!(obj instanceof OAObject)) return false;
 
+        OAFilter f = getFilter();
+        if (f != null) {
+            return f.isUsed(obj);
+        }
+        
+        
+        
         String txt = getText();
         if (txt == null || txt.length() == 0) return true;
 

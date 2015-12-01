@@ -40,6 +40,10 @@ public class OAQueryFilter<T> implements OAFilter {
     private Stack<OAFilter> stack = new Stack<OAFilter>();
     private Vector vecToken;
     private int posToken;
+
+    public OAQueryFilter(Class<T> clazz, String query) {
+        this(clazz, query, null);
+    }
     
     public OAQueryFilter(Class<T> clazz, String query, Object[] args) {
         this.clazz = clazz;
