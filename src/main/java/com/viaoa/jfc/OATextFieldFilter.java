@@ -161,10 +161,10 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
         final boolean bNot = text.charAt(0) == '!';
         if (bNot) {
             text = text.substring(1);
-            filter = new OANotLikeFilter(text);
+            filter = new OANotLikeFilter(propertyPath, "*"+text+"*");
         }
         else {
-            filter = new OALikeFilter(text);
+            filter = new OALikeFilter(propertyPath, "*"+text+"*");
         }
         
         return filter;

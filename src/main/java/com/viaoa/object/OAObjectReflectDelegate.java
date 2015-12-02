@@ -471,8 +471,8 @@ public class OAObjectReflectDelegate {
         if (linkPropertyName == null) return null;
 
         Hub hub = null;
-        OAObjectInfo oi;
-        OALinkInfo linkInfo;
+        OAObjectInfo oi = null;
+        OALinkInfo linkInfo = null;
 
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, true);
         if (obj instanceof Hub) {
@@ -485,10 +485,11 @@ public class OAObjectReflectDelegate {
             // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))
             if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
 
+            oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+            linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
+            
             // check to see if there needs to be an autoMatch set up
             if (HubDelegate.getAutoMatch(hub) == null) {
-                oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-                linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
                 if (linkInfo != null) {
                     String matchProperty = linkInfo.getMatchProperty();
                     if (matchProperty != null && matchProperty.length() > 0) {
@@ -523,43 +524,44 @@ public class OAObjectReflectDelegate {
                     HubSortDelegate.sort(hub, sortOrder, true, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
                 }
             }
-            return hub;
         }
-
-        oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-        linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
-        
-        try {
-            OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
-
-            obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, true);
-            if (obj instanceof Hub) {
-                return (Hub) obj;
-            }
+        else {
+            oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+            linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
             
-            hub = _getReferenceHub(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch, oi, linkInfo);
-            // 20131129 triggers
-            if (hub != null && OAObjectCSDelegate.isServer()) {
-                Class[] cs = linkInfo.getTriggerClasses();
-                if (cs != null) {
-                    for (Class c : cs) {
-                        try {
-                            Constructor con = c.getConstructor(Hub.class);
-                            con.newInstance(hub);
-                        }
-                        catch (Exception e) {
-                            LOG.log(Level.WARNING, "error while creating trigger", e);
-                        }
+            try {
+                OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
+    
+                obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, true);
+                if (obj instanceof Hub) {
+                    return (Hub) obj;
+                }
+                
+                hub = _getReferenceHub(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch, oi, linkInfo);
+                if (hub != null && HubDelegate.getMasterObject(hub) == null) {
+                    OAObjectHubDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
+                }            
+            }
+            finally {
+                OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
+            }
+        }
+        
+        // 20131129 triggers
+        if (hub != null && OAObjectCSDelegate.isServer() && linkInfo != null) {
+            Class[] cs = linkInfo.getTriggerClasses();
+            if (cs != null) {
+                for (Class c : cs) {
+                    try {
+                        Constructor con = c.getConstructor(Hub.class);
+                        con.newInstance(hub);
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "error while creating trigger", e);
                     }
                 }
-            }            
-            if (hub != null && HubDelegate.getMasterObject(hub) == null) {
-                OAObjectHubDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
-            }            
-        }
-        finally {
-            OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
-        }
+            }
+        }            
         return hub;
     }
     private static Hub _getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, 
@@ -766,7 +768,7 @@ public class OAObjectReflectDelegate {
                 select.cancel();
                 HubDataDelegate.resizeToFit(hub);
             }
-            if (sortOrder != null && sortOrder.length() > 0) {
+            if (bThisIsServer && sortOrder != null && sortOrder.length() > 0) {
                 if (bSequence) {
                     hub.setAutoSequence(sortOrder); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
                 }
