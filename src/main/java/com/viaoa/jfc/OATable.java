@@ -10,6 +10,7 @@
  */
 package com.viaoa.jfc;
 
+
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -36,6 +37,8 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -127,6 +130,8 @@ import com.viaoa.util.OAString;
  * @see OATableComponent
  */
 public class OATable extends JTable implements DragGestureListener, DropTargetListener {
+    private static Logger LOG = Logger.getLogger(OATable.class.getName());
+    
     protected int prefCols = 1, prefRows = 5;
     protected Hub hub;
     protected HubFilter hubFilter;
@@ -818,7 +823,21 @@ if (!getKeepSorted()) hub.cancelSort();
             this.table = t;
         }
 
+        private int cntError;
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component comp = null;
+            try {
+                comp = _getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+            catch (Exception e) {
+                if (cntError++ < 25 || (cntError % 250) == 0) {
+                    LOG.log(Level.WARNING, "error with column="+column, e);
+                }
+            }
+            return comp;
+        }
+        private Component _getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        
             if (rend == null) return null;
 
             column = convertColumnIndexToModel(column);
@@ -1259,7 +1278,8 @@ if (!getKeepSorted()) hub.cancelSort();
         if (h == null) return false;
         int x = h.getSize();
         if (x == 0) return false;
-        if (getHub().getSize() != x) return false;
+        if (getHub().getSize() > x) return false;
+        
         for (Object obj : getHub()) {
             if (!h.contains(obj)) return false;
         }
@@ -2742,7 +2762,6 @@ if (!getKeepSorted()) hub.cancelSort();
             // 20150810
             if (tc.getOATableComponent() == this.chkSelection) {
                 if (isAnySelected()) {
-                    getSelectHub().removeAll();
                     getSelectionModel().clearSelection();
                 }
                 else {
