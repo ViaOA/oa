@@ -2762,6 +2762,7 @@ if (!getKeepSorted()) hub.cancelSort();
             // 20150810
             if (tc.getOATableComponent() == this.chkSelection) {
                 if (isAnySelected()) {
+                    getSelectHub().clear();
                     getSelectionModel().clearSelection();
                 }
                 else {
