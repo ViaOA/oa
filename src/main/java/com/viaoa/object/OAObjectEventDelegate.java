@@ -13,6 +13,7 @@ package com.viaoa.object;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -86,6 +87,15 @@ public class OAObjectEventDelegate {
                 }
             }
         }     
+        
+        // 20151205 check to see if owner is being reassigned
+        if (linkInfo != null && oldObj != null && linkInfo.getType() == OALinkInfo.ONE) {
+            OALinkInfo revLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
+            if (revLinkInfo != null && revLinkInfo.getOwner()) {
+                Exception e = new Exception("owner is being reassigned, will continue");
+                LOG.log(Level.WARNING, "class="+oaObj.getClass().getSimpleName()+", property="+propertyName, e);
+            }
+        }
         
         if (linkInfo == null && !OARemoteThreadDelegate.isRemoteThread()) {
             OAPropertyInfo propInfo = OAObjectInfoDelegate.getPropertyInfo(oi, propertyU);

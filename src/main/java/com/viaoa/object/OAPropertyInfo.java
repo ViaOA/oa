@@ -33,6 +33,7 @@ public class OAPropertyInfo implements java.io.Serializable {
     private boolean isUnicode;
     private boolean isImportMatch;
     private boolean isPassword;
+
 	
 	public OAPropertyInfo() {
 	}

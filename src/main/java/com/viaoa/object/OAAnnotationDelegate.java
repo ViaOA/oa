@@ -337,7 +337,11 @@ public class OAAnnotationDelegate {
                 column.assignNextNumber = oaid.autoAssign();
                 // c.assignedByDatabase = qqq
             }
-            if (oaprop != null) column.unicode = oaprop.isUnicode();
+            if (oaprop != null) {
+                column.unicode = oaprop.isUnicode();
+            }
+            column.fullTextIndex = dbcol.isFullTextIndex();             
+            
             table.addColumn(column);
         }
     }
