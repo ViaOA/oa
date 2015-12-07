@@ -154,7 +154,7 @@ public class HubDetailDelegate {
             if (thisHub.data.isInFetch()) return;  // otherwise, a recursive loop could happen
             
             // 20140616 if hub is not loaded and isClient, then dont need to load
-            if (!OASyncDelegate.isServer()) {
+            if (!OASyncDelegate.isServer(thisHub)) {
                if (!OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)detailObject, dm.liDetailToMaster.getName())) {
                    return;
                }

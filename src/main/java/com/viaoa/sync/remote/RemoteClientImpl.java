@@ -123,7 +123,7 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         Hub h = getHub(obj, hubPropertyName);
         if (h == null) {
             // store null so that it can be an empty hub if needed (and wont have to get from server)
-            if (!OASyncDelegate.isServer()) {
+            if (!OASyncDelegate.isServer(objectClass)) {
                 OAObjectPropertyDelegate.setPropertyCAS(obj, hubPropertyName, null, null, true, false);                
             }
             return false;
@@ -135,7 +135,7 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     // on the server, if the object is not found in the cache, then it will be loaded by the datasource 
     private OAObject getObject(Class objectClass, OAObjectKey origKey) {
         OAObject obj = OAObjectCacheDelegate.get(objectClass, origKey);
-        if (obj == null && OASyncDelegate.isServer()) {
+        if (obj == null && OASyncDelegate.isServer(objectClass)) {
             obj = (OAObject) OADataSource.getObject(objectClass, origKey);
             if (obj != null) {
                 // object must have been GCd, use the original guid
@@ -147,8 +147,9 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     
     // on the server, if the Hub is not found in the cache, then it will be loaded by the datasource
     private Hub getHub(OAObject obj, String hubPropertyName) {
+        if (obj == null) return null;
         boolean bWasLoaded = OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName);
-        if (!bWasLoaded && !OASyncDelegate.isServer()) {
+        if (!bWasLoaded && !OASyncDelegate.isServer(obj.getClass())) {
             return null;
         }
         Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);

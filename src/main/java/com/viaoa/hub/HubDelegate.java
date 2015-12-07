@@ -425,7 +425,7 @@ public class HubDelegate {
 	    // 20091030 only set for server for detail hubs
 	    boolean bServerOnly = false;
 	    if (thisHub.getMasterObject() != null) {	    
-	        if (!HubCSDelegate.isServer()) return; // only set up for server
+	        if (!HubCSDelegate.isServer(thisHub)) return; // only set up for server
 	        bServerOnly = true;
 	    }
         if (thisHub.data.getAutoSequence() != null) thisHub.data.getAutoSequence().close();
@@ -496,7 +496,7 @@ public class HubDelegate {
     // 20141030
     public static void setReferenceable(Hub hub, boolean bReferenceable) {
         if (hub == null) return;
-        if (!OASyncDelegate.isServer()) return;
+        if (!OASyncDelegate.isServer(hub)) return;
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hub.getObjectClass());
         if (!OAObjectInfoDelegate.isWeakReferenceable(oi)) return;

@@ -82,15 +82,18 @@ public class OADataSourceClient extends OADataSource {
 
     public static final int GET_PROPERTY = 26;
     
+    private final Package packagex;
+    
     /**
         Create new OADataSourceClient that uses OAClient to communicate with OADataSource on OAServer.
     */
-    public OADataSourceClient() {
+    public OADataSourceClient(Package packagex) {
+        this.packagex = packagex;
     }
 
     public RemoteClientInterface getRemoteClient() {
         if (remoteClientSync == null) {
-            remoteClientSync = OASyncDelegate.getRemoteClient();
+            remoteClientSync = OASyncDelegate.getRemoteClient(packagex);
         }
         return remoteClientSync;
     }
@@ -360,7 +363,7 @@ public class OADataSourceClient extends OADataSource {
                 obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) {
                     // not on this system, need to get from server
-                    OASyncDelegate.getRemoteServer().getObject(clazz, key);
+                    OASyncDelegate.getRemoteServer(packagex).getObject(clazz, key);
                 }
                 bKey = false;
                 return obj;

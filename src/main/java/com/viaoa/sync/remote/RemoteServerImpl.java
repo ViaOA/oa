@@ -58,7 +58,7 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
     public OAObject getObject(Class objectClass, OAObjectKey objectKey) {
         OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
         if (obj == null) {
-            if (OASyncDelegate.isServer()) {
+            if (OASyncDelegate.isServer(objectClass)) {
                 obj = (OAObject) OADataSource.getObject(objectClass, objectKey);
             }
         }

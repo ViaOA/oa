@@ -122,7 +122,7 @@ if ("application".equalsIgnoreCase(s)) {
         
         Hub h = getHub(obj, hubPropertyName);
         if (h == null) {
-            if (!OASyncDelegate.isServer()) {
+            if (!OASyncDelegate.isServer(objectClass)) {
                 OAObjectPropertyDelegate.setProperty(obj, hubPropertyName, null);
             }
             return false;
@@ -169,7 +169,7 @@ if ("application".equalsIgnoreCase(s)) {
     // on the server, if the object is not found in the cache, then it will be loaded by the datasource 
     private OAObject getObject(Class objectClass, OAObjectKey origKey) {
         OAObject obj = OAObjectCacheDelegate.get(objectClass, origKey);
-        if (obj == null && OASyncDelegate.isServer()) {
+        if (obj == null && OASyncDelegate.isServer(objectClass)) {
             obj = (OAObject) OADataSource.getObject(objectClass, origKey);
             if (obj != null) {
                 // object must have been GCd, use the original guid
@@ -181,8 +181,9 @@ if ("application".equalsIgnoreCase(s)) {
     
     // on the server, if the Hub is not found in the cache, then it will be loaded by the datasource
     private Hub getHub(OAObject obj, String hubPropertyName) {
+        if (obj == null) return null;
         boolean bWasLoaded = OAObjectReflectDelegate.isReferenceHubLoaded(obj, hubPropertyName);
-        if (!bWasLoaded && !OASyncDelegate.isServer()) {
+        if (!bWasLoaded && !OASyncDelegate.isServer(obj.getClass())) {
             return null;
         }
         Object objx =  OAObjectReflectDelegate.getProperty(obj, hubPropertyName);

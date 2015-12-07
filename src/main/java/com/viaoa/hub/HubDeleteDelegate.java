@@ -32,7 +32,7 @@ public class HubDeleteDelegate {
             return;  // Done on server.
         }
 
-        boolean b = OASyncDelegate.isServer();
+        boolean b = OASyncDelegate.isServer(thisHub);
         
         try {
             if (b) {

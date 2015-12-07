@@ -115,9 +115,9 @@ public class OASyncCombinedClient {
      * @param hostName
      * @param port
      */
-    public OASyncClient getCombinedSyncClient(String hostName, int port) {
+    public OASyncClient getCombinedSyncClient(Package packagex, String hostName, int port) {
         if (syncClient != null) return syncClient;
-        syncClient = new OASyncClient(hostName, port, true) {
+        syncClient = new OASyncClient(packagex, hostName, port, true) {
             RemoteSyncInterface remoteSync;
 
             // redirect changes from combined server to the correct server
@@ -324,8 +324,8 @@ public class OASyncCombinedClient {
     
     
     
-    public OASyncClient createSyncClient(String hostName, int port) {
-        OASyncClient sc = new OASyncClient(hostName, port, false) {
+    public OASyncClient createSyncClient(Package packagex, String hostName, int port) {
+        OASyncClient sc = new OASyncClient(packagex, hostName, port, false) {
             RemoteSyncInterface remoteSync;
             
             // redirect changes from one server to the combined server

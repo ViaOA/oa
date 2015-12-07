@@ -64,10 +64,12 @@ public class OASyncServer {
     private ClientInfo clientInfo;
     private RemoteSessionInterface remoteSessionServer;
     private RemoteClientInterface remoteClientForServer;
+    private final Package packagex;
     
-    public OASyncServer(int port) {
+    public OASyncServer(Package packagex, int port) {
+        this.packagex = packagex;
         this.port = port;
-        OASyncDelegate.setSyncServer(this);
+        OASyncDelegate.setSyncServer(packagex, this);
     }
 
     public RemoteSyncImpl getRemoteSync() {
@@ -99,7 +101,7 @@ public class OASyncServer {
                     OAObjectCacheDelegate.refresh(clazz);
                 }
             };
-            OASyncDelegate.setRemoteServer(remoteServer);
+            OASyncDelegate.setRemoteServer(packagex, remoteServer);
             getRemoteSessionForServer();
         }
         return remoteServer;
@@ -116,14 +118,14 @@ public class OASyncServer {
     protected RemoteSessionInterface getRemoteSessionForServer() {
         if (remoteSessionServer == null) {
             remoteSessionServer = getRemoteSession(getClientInfo(), null);
-            OASyncDelegate.setRemoteSession(remoteSessionServer);
+            OASyncDelegate.setRemoteSession(packagex, remoteSessionServer);
         }
         return remoteSessionServer;
     }
     protected RemoteClientInterface getRemoteClientForServer() {
         if (remoteClientForServer == null) {
             remoteClientForServer = getRemoteClient(getClientInfo());
-            OASyncDelegate.setRemoteClient(remoteClientForServer);
+            OASyncDelegate.setRemoteClient(packagex, remoteClientForServer);
         }
         return remoteClientForServer;
     }
@@ -380,7 +382,7 @@ public class OASyncServer {
             remoteMultiplexerServer.createLookup(ServerLookupName, getRemoteServer(), RemoteServerInterface.class, SyncQueueName, QueueSize); 
 
             RemoteSyncInterface rsi = (RemoteSyncInterface) remoteMultiplexerServer.createBroadcast(SyncLookupName, getRemoteSync(), RemoteSyncInterface.class, SyncQueueName, QueueSize);
-            OASyncDelegate.setRemoteSync(rsi);
+            OASyncDelegate.setRemoteSync(packagex, rsi);
             
             // have RemoteClient objects use sync queue
             // remoteMultiplexerServer.registerClassWithQueue(RemoteClientInterface.class, SyncQueueName, QueueSize);            

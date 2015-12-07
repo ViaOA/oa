@@ -884,8 +884,8 @@ public class OAObjectCacheDelegate {
         if (clazz == null) return;
         LOG.fine("refreshing "+clazz.getSimpleName());
         
-        if (!OASyncDelegate.isServer()) {
-            OASyncDelegate.getRemoteServer().refresh(clazz);
+        if (!OASyncDelegate.isServer(clazz)) {
+            OASyncDelegate.getRemoteServer(clazz).refresh(clazz);
             LOG.fine("refreshing "+clazz.getSimpleName()+" will be ran on the server");
             return;
         }

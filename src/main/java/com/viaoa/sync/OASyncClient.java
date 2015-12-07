@@ -82,18 +82,21 @@ public class OASyncClient {
     // used by getDetail
     private OAObject[] lastMasterObjects = new OAObject[10];
     private int lastMasterCnter;
-
+    private final Package packagex;
+    
+    
     private OADataSourceClient dataSourceClient;
     
-    public OASyncClient(String serverHostName, int serverHostPort) {
-        this(serverHostName, serverHostPort, true);
+    public OASyncClient(Package packagex, String serverHostName, int serverHostPort) {
+        this(packagex, serverHostName, serverHostPort, true);
     }
 
-    protected OASyncClient(String serverHostName, int serverHostPort, boolean bUpdateSyncDelegate) {
+    protected OASyncClient(Package packagex, String serverHostName, int serverHostPort, boolean bUpdateSyncDelegate) {
+        this.packagex = packagex;
         this.serverHostName = serverHostName;
         this.serverHostPort = serverHostPort;
         this.bUpdateSyncDelegate = bUpdateSyncDelegate;
-        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(this);
+        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
     }
     
     
@@ -452,7 +455,7 @@ public class OASyncClient {
     public RemoteServerInterface getRemoteServer() throws Exception {
         if (remoteServerInterface == null) {
             remoteServerInterface = (RemoteServerInterface) getRemoteMultiplexerClient().lookup(ServerLookupName);
-            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteServer(remoteServerInterface);
+            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteServer(packagex, remoteServerInterface);
         }
         return remoteServerInterface;
     }
@@ -466,14 +469,14 @@ public class OASyncClient {
     public RemoteSyncInterface getRemoteSync() throws Exception {
         if (remoteSyncInterface == null) {
             remoteSyncInterface = (RemoteSyncInterface) getRemoteMultiplexerClient().lookupBroadcast(SyncLookupName, getRemoteSyncImpl());
-            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteSync(remoteSyncInterface);
+            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteSync(packagex, remoteSyncInterface);
         }
         return remoteSyncInterface;
     }
     public RemoteSessionInterface getRemoteSession() throws Exception {
         if (remoteClientInterface == null) {
             remoteClientInterface = getRemoteServer().getRemoteSession(getClientInfo(), getRemoteClientCallback());
-            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteSession(remoteClientInterface);
+            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteSession(packagex, remoteClientInterface);
         }
         return remoteClientInterface;
     }
@@ -497,7 +500,7 @@ public class OASyncClient {
     public RemoteClientInterface getRemoteClient() throws Exception {
         if (remoteClientSyncInterface == null) {
             remoteClientSyncInterface = getRemoteServer().getRemoteClient(getClientInfo());
-            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteClient(remoteClientSyncInterface);
+            if (bUpdateSyncDelegate) OASyncDelegate.setRemoteClient(packagex, remoteClientSyncInterface);
         }
         return remoteClientSyncInterface;
     }
@@ -558,7 +561,7 @@ public class OASyncClient {
     
     public OADataSourceClient getOADataSourceClient() {
         if (dataSourceClient == null) {
-            dataSourceClient = new OADataSourceClient();
+            dataSourceClient = new OADataSourceClient(packagex);
         }
         return dataSourceClient;
     }

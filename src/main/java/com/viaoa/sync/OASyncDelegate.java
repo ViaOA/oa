@@ -10,9 +10,11 @@
 */
 package com.viaoa.sync;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -38,123 +40,247 @@ import com.viaoa.sync.remote.*;
  */
 public class OASyncDelegate {
     private static Logger LOG = Logger.getLogger(OASyncDelegate.class.getName());
-    
-    private static RemoteServerInterface remoteServer;
+
+    /**
+     * Used client to communicate with server.
+     */
+    private static final ConcurrentHashMap<Package, RemoteServerInterface> hmRemoteServer = new ConcurrentHashMap<Package, RemoteServerInterface>();
     
     /**
      * Used by OAObject/Hub CS methods to keep the model objects in sync across servers.
      */
-    private static RemoteSyncInterface remoteSync;
+    private static final ConcurrentHashMap<Package, RemoteSyncInterface> hmRemoteSync = new ConcurrentHashMap<Package, RemoteSyncInterface>();
+    
     /**
      * Client side session methods.
      */
-    private static RemoteSessionInterface remoteSession;
+    private static final ConcurrentHashMap<Package, RemoteSessionInterface> hmRemoteSession = new ConcurrentHashMap<Package, RemoteSessionInterface>();
+
     /**
      * used to get data from the server.
      */
-    private static RemoteClientInterface remoteClient;
+    private static final ConcurrentHashMap<Package, RemoteClientInterface> hmRemoteClient = new ConcurrentHashMap<Package, RemoteClientInterface>();
 
     /**
      * Sync client that connects to the server and allows OAModels (OAObjects, Hub) to be automatically in sync.
      */
-    private static OASyncClient syncClient;
+    private static final ConcurrentHashMap<Package, OASyncClient> hmSyncClient = new ConcurrentHashMap<Package, OASyncClient>();
+    
+    
     /**
      * Sync server that allows client connections, so that OAModels (OAObjects, Hub) are automatically in sync.
      */
-    private static OASyncServer syncServer;
+    private static final ConcurrentHashMap<Package, OASyncServer> hmSyncServer = new ConcurrentHashMap<Package, OASyncServer>();
 
-    public static OASyncClient getSyncClient() {
-        return syncClient;
+    
+    public static OASyncServer getSyncServer(Class c) {
+        if (c == null) c = Object.class;
+        return getSyncServer(c.getPackage());
     }
-    public static void setSyncClient(OASyncClient sc) {
-        syncClient = sc;
+    public static OASyncServer getSyncServer(Hub h) {
+        Class c;
+        if (h == null) c = Object.class;
+        else c = h.getObjectClass();
+        return getSyncServer(c.getPackage());
+    }
+    public static OASyncServer getSyncServer(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        return hmSyncServer.get(p);
+    }
+    public static void setSyncServer(Package p, OASyncServer ss) {
+        if (p == null) p = Object.class.getPackage();
+        if (ss != null)  hmSyncServer.put(p, ss);
+    }
+    
+
+    public static OASyncClient getSyncClient(Class c) {
+        if (c == null) c = Object.class;
+        return getSyncClient(c.getPackage());
+    }
+    public static OASyncClient getSyncClient(Hub h) {
+        Class c;
+        if (h == null) c = Object.class;
+        else c = h.getObjectClass();
+        return getSyncClient(c.getPackage());
+    }
+    public static OASyncClient getSyncClient(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        return hmSyncClient.get(p);
+    }
+    public static void setSyncClient(Package p, OASyncClient sc) {
+        if (p == null) p = Object.class.getPackage();
+        if (sc != null) hmSyncClient.put(p, sc);
     }
 
     
-    /**
-     * The connectionId (multiplexer)
-     */
-    public static int getConnectionId() {
-        if (syncClient == null) return 0;
-        return syncClient.getConnectionId();
-    }
 
-    public static OASyncServer getSyncServer() {
-        return syncServer;
+    public static RemoteServerInterface getRemoteServer(Class c) {
+        if (c == null) c = Object.class;
+        return getRemoteServer(c.getPackage());
     }
-    /**
-     * Set by OASyncServer.
-     */
-    public static void setSyncServer(OASyncServer ss) {
-        syncServer = ss;
+    public static RemoteServerInterface getRemoteServer(Hub h) {
+        Class c;
+        if (h == null) c = Object.class;
+        else c = h.getObjectClass();
+        return getRemoteServer(c.getPackage());
     }
-
-    
     /**
      * Created by OASyncServer, and used by OASyncClient to then create a remote session on the server. 
      */
-    public static void setRemoteServer(RemoteServerInterface rsi) {
-        remoteServer = rsi;
+    public static RemoteServerInterface getRemoteServer(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        return hmRemoteServer.get(p);
     }
-    public static RemoteServerInterface getRemoteServer() {
-        return remoteServer;
+    public static void setRemoteServer(Package p, RemoteServerInterface ss) {
+        if (p == null) p = Object.class.getPackage();
+        if (ss != null) hmRemoteServer.put(p, ss);
+    }
+
+    
+    public static RemoteSessionInterface getRemoteSession(Class c) {
+        if (c == null) c = Object.class;
+        return getRemoteSession(c.getPackage());
+    }
+    public static RemoteSessionInterface getRemoteSession(Hub h) {
+        Class c;
+        if (h == null) c = Object.class;
+        else c = h.getObjectClass();
+        return getRemoteSession(c.getPackage());
     }
     
     /**
      * Set by OASyncClient after getting the remote session on the server.
      */
-    public static void setRemoteSession(RemoteSessionInterface rci) {
-        remoteSession = rci;
+    public static RemoteSessionInterface getRemoteSession(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        return hmRemoteSession.get(p);
     }
-    public static RemoteSessionInterface getRemoteSession() {
-        return remoteSession;
+    public static void setRemoteSession(Package p, RemoteSessionInterface rs) {
+        if (p == null) p = Object.class.getPackage();
+        if (rs != null) hmRemoteSession.put(p, rs);
+    }
+
+    public static RemoteClientInterface getRemoteClient(Class c) {
+        if (c == null) c = Object.class;
+        return getRemoteClient(c.getPackage());
+    }
+    public static RemoteClientInterface getRemoteClient(Hub h) {
+        Class c;
+        if (h == null) c = Object.class;
+        else c = h.getObjectClass();
+        return getRemoteClient(c.getPackage());
     }
     /**
      * remote object from OASyncServer by calling/using RemoteSession. Set by OASyncClient, to get data from server.
      * This is internally used by OA to keep apps synchronized.
      */
-    public static void setRemoteClient(RemoteClientInterface rci) {
-        remoteClient = rci;
+    public static RemoteClientInterface getRemoteClient(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        return hmRemoteClient.get(p);
     }
-    public static RemoteClientInterface getRemoteClient() {
-        return remoteClient;
+    public static void setRemoteClient(Package p, RemoteClientInterface rc) {
+        if (p == null) p = Object.class.getPackage();
+        if (rc != null) hmRemoteClient.put(p, rc);
     }
+    
 
+    public static RemoteSyncInterface getRemoteSync(Class c) {
+        if (c == null) c = Object.class;
+        return getRemoteSync(c.getPackage());
+    }
+    public static RemoteSyncInterface getRemoteSync(Hub h) {
+        Class c;
+        if (h == null) c = Object.class;
+        else c = h.getObjectClass();
+        return getRemoteSync(c.getPackage());
+    }
     /**
      * Created by OASyncServer and used remotely by OASyncClient to keep OAObjects and Hubs in sync.
      */
-    public static void setRemoteSync(RemoteSyncInterface rsi) {
-        remoteSync = rsi;
+    public static RemoteSyncInterface getRemoteSync(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        return hmRemoteSync.get(p);
     }
-    public static RemoteSyncInterface getRemoteSync() {
-        return remoteSync;
+    public static void setRemoteSync(Package p, RemoteSyncInterface rs) {
+        if (p == null) p = Object.class.getPackage();
+        if (rs != null) hmRemoteSync.put(p, rs);
     }
 
+
+    /**
+     * The connectionId (multiplexer)
+     */
+    public static int getConnectionId(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        OASyncClient sc = getSyncClient(p);
+        if (sc == null) return -1;
+        return sc.getConnectionId();
+    }
+    
+    
     /**
      * @return if OASyncServer has been created.
      */
-    public static boolean isServer() {
-        return (syncServer != null) || (syncClient == null);
+    public static boolean isServer(Class c) {
+        if (c == null) c = Object.class;
+        return isServer(c.getPackage());
     }
+    public static boolean isServer(Hub h) {
+        Class c;
+        if (h == null) c = Object.class;
+        else c = h.getObjectClass();
+        return isServer(c);
+    }
+    public static boolean isServer(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        OASyncServer ss = getSyncServer(p);
+        OASyncClient sc = getSyncClient(p);
+        return (ss != null) || (sc == null);
+    }
+    
     /**
      * @return if OASyncClient has been created.
      */
-    public static boolean isClient() {
-        return (syncServer == null && syncClient != null);
+    public static boolean isClient(Class c) {
+        if (c == null) c = Object.class;
+        return isClient(c.getPackage());
+    }
+    public static boolean isClient(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        OASyncServer ss = getSyncServer(p);
+        OASyncClient sc = getSyncClient(p);
+        return (ss == null && sc != null);
     }
     
-    public static boolean isSingleUser() {
-        return syncServer == null && syncClient == null;
+    public static boolean isSingleUser(Class c) {
+        if (c == null) c = Object.class;
+        return isSingleUser(c.getPackage());
+    }
+    public static boolean isSingleUser(Hub h) {
+        Class c;
+        if (h == null) c = Object.class;
+        else c = h.getObjectClass();
+        return isSingleUser(c.getPackage());
+    }
+    public static boolean isSingleUser(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        OASyncServer ss = getSyncServer(p);
+        OASyncClient sc = getSyncClient(p);
+        return (ss == null && sc == null);
     }
 
     /**
      * @return true if OASyncClient has been created and is connected to the server.
      */
-    public static boolean isConnected() {
-        if (syncClient == null) {
-            return (syncServer != null);
+    public static boolean isConnected(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        OASyncClient sc = getSyncClient(p);
+
+        if (sc == null) {
+            OASyncServer ss = getSyncServer(p);
+            return (ss != null);
         }
-        return syncClient.isConnected();
+        return sc.isConnected();
     }
 
 
@@ -164,15 +290,20 @@ public class OASyncDelegate {
     /**
         Used by OAObject so that object guid is created/managed on the server.
     */
-    public static int getObjectGuid() {
-        if (isServer()) {
+    public static int getObjectGuid(Class c) {
+        if (c == null) c = Object.class;
+        return getObjectGuid(c.getPackage());
+    }
+    public static int getObjectGuid(Package p) {
+        if (p == null) p = Object.class.getPackage();
+        if (isServer(p)) {
             return OAObjectDelegate.getNextGuid();
         }
         int x;
         synchronized (NextGuidLock) {
             if (nextGuid == maxNextGuid) {
                 try {
-                    nextGuid = getRemoteServer().getNextFiftyObjectGuids();
+                    nextGuid = getRemoteServer(p).getNextFiftyObjectGuids();
                     maxNextGuid = nextGuid + 50; 
                 }
                 catch (Exception ex) {
@@ -252,8 +383,8 @@ public class OASyncDelegate {
      * @return true if this is the server, else false.
      * @see #endServerOnly()
      */
-    public static boolean beginServerOnly() {
-        if (!isServer()) return false;
+    public static boolean beginServerOnly(Package p) {
+        if (!isServer(p)) return false;
         sendMessages();
         return true;
     }
