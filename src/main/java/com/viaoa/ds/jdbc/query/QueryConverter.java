@@ -694,6 +694,7 @@ public class QueryConverter {
         Table table = null;
         Column column = null;
         Column origColumn = null;
+        String fullTextIndex = null;
         boolean bLastColumnWasInFunction = false;  // 20121120
         int paramPos = 0;
         x = vecToken.size();
@@ -781,9 +782,17 @@ public class QueryConverter {
                 }
                 Linkinfo li = (Linkinfo) vecLink.elementAt(xx-1);
 
-            	// 2006/09/22 check for using case sensitve searches.
+            	// 2006/09/22 check for using case sensitive searches.
             	String colName;
-            	if (dbmd.caseSensitive && column.type == java.sql.Types.VARCHAR && !column.primaryKey) {
+
+            	// 20151206 check for fulltextindex
+            	if (column.fullTextIndex && (dbmd.getDatabaseType() == DBMetaData.SQLSERVER)) {
+                    colName = column.columnLowerName;
+                    colName = LB+li.table.name.toUpperCase()+(li.number>0?li.number+"":"")+RB+"."+LB + colName + RB;
+                    fullTextIndex = colName;
+                    colName = null;
+            	}
+            	else if (dbmd.caseSensitive && column.type == java.sql.Types.VARCHAR && !column.primaryKey) {
 	            	colName = column.columnLowerName;
 	            	if (colName != null && colName.trim().length() > 0 && !colName.equalsIgnoreCase(column.columnName)) {
 	                	colName = colName.toUpperCase();
@@ -830,7 +839,7 @@ public class QueryConverter {
                 }
 
                 // 20121013
-                if (bUsingPreparedStatement) s = "?";
+                if (fullTextIndex == null && bUsingPreparedStatement) s = "?";
                 else {
                     if (bLastColumnWasInFunction) {
                         bLastColumnWasInFunction = false;
@@ -839,14 +848,27 @@ public class QueryConverter {
                     }
                     else s = ConverterDelegate.convert(dbmd, origColumn, param);
                 }
+
+                if (fullTextIndex != null) {
+                    s = "CONTAINS(" + fullTextIndex + ", '" + s + "')";
+                    fullTextIndex = null;
+                }
             }
             else if (token.type == OAQueryTokenType.STRINGSQ || token.type == OAQueryTokenType.STRINGDQ) {
             	if (column == null) throw new RuntimeException("column not found for parameter");
             	s = ConverterDelegate.convert(dbmd, column, token.value);
+                if (fullTextIndex != null) {
+                    s = "CONTAINS(" + fullTextIndex + ", '" + s + "')";
+                    fullTextIndex = null;
+                }
             }
             else if (token.type == OAQueryTokenType.NUMBER) {
             	if (column == null) throw new RuntimeException("column not found for parameter");
             	s = ConverterDelegate.convert(dbmd, column, token.value);
+                if (fullTextIndex != null) {
+                    s = "CONTAINS(" + fullTextIndex + ", '" + s + "')";
+                    fullTextIndex = null;
+                }
             }
             else if (token.type == OAQueryTokenType.FUNCTIONBEGIN) {
                 bLastColumnWasInFunction = true;
@@ -854,6 +876,7 @@ public class QueryConverter {
             }
             else {
                 s = token.value;
+                if (fullTextIndex != null) s = null;
             }
             
             if (s != null && s.length() > 0) {

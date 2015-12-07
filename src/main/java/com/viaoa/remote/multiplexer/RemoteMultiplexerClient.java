@@ -727,16 +727,20 @@ volatile static int threadCheck;
     }
 
     protected void onRemoteThreadCreated(int threadCount) {
-        if (threadCount > 75) {
-            LOG.warning("alRemoteClientThread.size() = " + threadCount);
-        }
-        if (threadCount > 25) {
+        if (threadCount > 15) {
             int ms;
-            if (threadCount < 30) ms = 1;
-            else if (threadCount < 38) ms = 2;
-            else if (threadCount < 50) ms = 3;
-            else ms = 4;
-            
+            if (threadCount < 20) ms = 1;
+            else if (threadCount < 30) ms = 2;
+            else if (threadCount < 40) ms = 3;
+            else if (threadCount < 50) ms = 5;
+            else if (threadCount < 55) ms = 6;
+            else if (threadCount < 63) ms = 10;
+            else {
+                if (threadCount > 75) {
+                    LOG.warning("alRemoteClientThread.size() = " + threadCount);
+                }
+                ms = 20;
+            }
             try {
                 Thread.currentThread().sleep(ms);
             }
