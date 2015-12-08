@@ -64,7 +64,7 @@ public class OAObjectReflectDelegate {
         Object obj = null;
 
         if (!oi.getLocalOnly()) {
-            RemoteSessionInterface rc = OASyncDelegate.getRemoteSession();
+            RemoteSessionInterface rc = OASyncDelegate.getRemoteSession(clazz);
             if (rc != null) {
                 obj = rc.createNewObject(clazz);
                 return obj;
@@ -437,7 +437,7 @@ public class OAObjectReflectDelegate {
 
         OAObject oaObj = OAObjectCacheDelegate.get(clazz, (OAObjectKey) key);
         if (oaObj == null) {
-            if (OAObjectCSDelegate.isWorkstation() && (oi == null || !oi.getLocalOnly())) {
+            if (OASync.isClient(clazz) && (oi == null || !oi.getLocalOnly())) {
                 oaObj = (OAObject) OAObjectCSDelegate.getServerObject(clazz, (OAObjectKey) key);
             }
             else {
@@ -480,7 +480,7 @@ public class OAObjectReflectDelegate {
             hub = (Hub) obj;
             
             // return if not server
-            if (!OAObjectCSDelegate.isServer()) return hub;
+            if (!OAObjectCSDelegate.isServer(oaObj)) return hub;
 
             // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))
             if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
@@ -548,7 +548,7 @@ public class OAObjectReflectDelegate {
         }
         
         // 20131129 triggers
-        if (hub != null && OAObjectCSDelegate.isServer() && linkInfo != null) {
+        if (hub != null && OAObjectCSDelegate.isServer(oaObj) && linkInfo != null) {
             Class[] cs = linkInfo.getTriggerClasses();
             if (cs != null) {
                 for (Class c : cs) {
@@ -568,7 +568,7 @@ public class OAObjectReflectDelegate {
             boolean bSequence, Hub hubMatch, final OAObjectInfo oi, final OALinkInfo linkInfo ) {
 
         Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
-        boolean bThisIsServer = OAObjectCSDelegate.isServer();
+        boolean bThisIsServer = OAObjectCSDelegate.isServer(oaObj);
         // dont get calcs from server, calcs are maintained locally, events are not sent
         boolean bIsCalc = (linkInfo != null && linkInfo.bCalculated);
         boolean bIsServerSideCalc = (linkInfo != null && linkInfo.bServerSideCalc);
@@ -939,7 +939,7 @@ public class OAObjectReflectDelegate {
         if (obj == null) return false;
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
         List<OALinkInfo> al = io.getLinkInfos();
-        boolean bIsServer = OASyncDelegate.isServer();
+        boolean bIsServer = OASyncDelegate.isServer(obj);
         for (OALinkInfo li : al) {
             if (al == null) continue;
             if (!bIncludeCalc && li.bCalculated) continue;
@@ -1114,7 +1114,7 @@ public class OAObjectReflectDelegate {
             if (val instanceof byte[]) return (byte[]) val;
             if (val != OANotExist.instance) return null;
             
-            if (!OASyncDelegate.isServer()) {
+            if (!OASyncDelegate.isServer(oaObj)) {
                 val = OAObjectCSDelegate.getServerReferenceBlob(oaObj, propertyName);
             }
             else {
@@ -1180,7 +1180,7 @@ public class OAObjectReflectDelegate {
     private static Object _getReferenceObject(OAObject oaObj, String linkPropertyName, OAObjectInfo oi, OALinkInfo li) {
         if (linkPropertyName == null) return null;
 
-        boolean bIsServer = OASyncDelegate.isServer();
+        boolean bIsServer = OASyncDelegate.isServer(oaObj);
         boolean bIsCalc = li != null && li.bCalculated;
 
         Object ref = null;
@@ -1550,7 +1550,7 @@ public class OAObjectReflectDelegate {
         // run on server only - otherwise objects can not be updated, since setLoadingObject is true
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
         if (!oi.getLocalOnly()) {
-            if (!OASyncDelegate.isServer()) {
+            if (!OASyncDelegate.isServer(oaObj)) {
                 // 20130505 needs to be put in msg queue
                 newObject = OAObjectCSDelegate.createCopy(oaObj, excludeProperties);
                 return newObject;

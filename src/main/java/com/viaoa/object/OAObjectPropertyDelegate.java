@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANotExist;
 
@@ -495,7 +496,7 @@ public class OAObjectPropertyDelegate {
    
     private static void setReferenceable(OAObject obj, boolean bReferenceable, OACascade cascade) {
         if (obj == null) return;
-        if (!OASyncDelegate.isServer()) return;
+        if (!OASync.isServer(obj.getClass())) return;
         if (cascade != null && cascade.wasCascaded(obj, true)) return;
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);

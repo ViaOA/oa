@@ -17,6 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.viaoa.annotation.OAClass;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
+import com.viaoa.sync.OASync;
 import com.viaoa.util.*;
 
 public class OAObjectInfoDelegate {
@@ -500,7 +501,7 @@ public class OAObjectInfoDelegate {
         Used by OAObject.getHub() to cache hubs for links that have
         a weakreference only.  
     */
-    public static boolean cacheHub(OALinkInfo li, Hub hub) {
+    public static boolean cacheHub(OALinkInfo li, final Hub hub) {
         if (li == null || hub == null || li.cacheSize < 1) return false;
         
         ReentrantReadWriteLock rwLock = OAObjectHashDelegate.hashLinkInfoCacheLock.get(li);
@@ -514,7 +515,7 @@ public class OAObjectInfoDelegate {
                     rwLock = new ReentrantReadWriteLock();
                     OAObjectHashDelegate.hashLinkInfoCacheLock.put(li, rwLock);
 
-                    boolean bIsServer = OAObjectCSDelegate.isServer();
+                    boolean bIsServer = OASync.isServer(hub);
                     
                     alCache = new ArrayList(li.cacheSize * (bIsServer?10:1));
                     OAObjectHashDelegate.hashLinkInfoCacheArrayList.put(li, alCache);
@@ -540,7 +541,7 @@ public class OAObjectInfoDelegate {
     private static boolean _cacheHub(OALinkInfo li, Hub hub, ArrayList alCache, HashSet hsCache) {
         if (hsCache.contains(hub)) return false; 
         
-        boolean bIsServer = OAObjectCSDelegate.isServer();
+        boolean bIsServer = OASync.isServer(hub);
         if (bIsServer) {
             // dont cache on server if there is not storage
             //   by returning false, it will not be stored as a weakRef

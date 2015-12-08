@@ -117,7 +117,7 @@ public class OAObjectHubDelegate {
     /**
      * Called by Hub when an OAObject is removed from a Hub.
      */
-    public static void removeHub(OAObject oaObj, Hub hub, boolean bIsOnHubFinalize) {
+    public static void removeHub(final OAObject oaObj, Hub hub, boolean bIsOnHubFinalize) {
         if (oaObj == null || oaObj.weakhubs == null) return;
         hub = hub.getRealHub();
 
@@ -164,7 +164,7 @@ public class OAObjectHubDelegate {
             }
 
             // 20150827
-            if (!OASyncDelegate.isClient()) return;
+            if (!OASyncDelegate.isClient(oaObj)) return;
             
             // 20130707 could be a hub from hubMerger, that populates with One references
             // which means that the one reference keeps it from gc

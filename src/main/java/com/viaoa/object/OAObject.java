@@ -768,6 +768,9 @@ public class OAObject implements java.io.Serializable, Comparable {
      * This is used so that code will only be ran on the server.
      * If the current thread is an OAClientThread, it will still send messages to other clients.
      */
+    public static boolean isServer() {
+        return isServer(null);
+    }
     public static boolean isServer(OAObject obj) {
         Class c;
         if (obj != null) c = obj.getClass();

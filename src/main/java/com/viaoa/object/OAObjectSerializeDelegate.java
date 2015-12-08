@@ -230,7 +230,7 @@ public class OAObjectSerializeDelegate {
 */	
 	protected static void _writeObject(OAObject oaObj, java.io.ObjectOutputStream stream) throws IOException {
         //if (xxx % 1000 == 0) System.out.println((xxx)+") writeObject "+oaObj);
-        
+        if (oaObj == null) return;
 	    OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();
         if (serializer != null) {
             serializer.beforeSerialize(oaObj);
@@ -239,7 +239,7 @@ public class OAObjectSerializeDelegate {
         boolean bClientSideCache = OAObjectCSDelegate.isInClientSideCache(oaObj);
         
         if (stream instanceof RemoteObjectOutputStream) {
-            if (!bClientSideCache && !OASyncDelegate.isServer()) {
+            if (!bClientSideCache && !OASyncDelegate.isServer(oaObj.getClass())) {
                // only need to send key to the server
                stream.writeByte((byte) 1); 
                stream.writeObject(oaObj.getObjectKey());
@@ -275,12 +275,12 @@ public class OAObjectSerializeDelegate {
         // this method can not support synchronized blocks, since multiple threads could be calling it and then cause deadlock
         // default way for OAServer to send objects.  Clients always send objectKeys.
         //   this way, only the object properties are sent, no reference objects or Hubs
-
+        if (oaObj == null) return;
         Object[] objs = oaObj.properties;
         if (objs == null) return;
         
         OAObjectInfo oi = OAObjectHashDelegate.hashObjectInfo.get(oaObj.getClass());
-        boolean bIsServer = OASyncDelegate.isServer();
+        boolean bIsServer = OASyncDelegate.isServer(oaObj.getClass());
         
         for (int i=0; i<objs.length; i+=2) {
             String key = (String) objs[i];

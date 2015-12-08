@@ -84,14 +84,18 @@ public class OASyncClient {
     private int lastMasterCnter;
     private final Package packagex;
     
-    
     private OADataSourceClient dataSourceClient;
+
+    public OASyncClient(String serverHostName, int serverHostPort) {
+        this(null, serverHostName, serverHostPort);
+    }
     
     public OASyncClient(Package packagex, String serverHostName, int serverHostPort) {
         this(packagex, serverHostName, serverHostPort, true);
     }
 
     protected OASyncClient(Package packagex, String serverHostName, int serverHostPort, boolean bUpdateSyncDelegate) {
+        if (packagex == null) packagex = Object.class.getPackage();
         this.packagex = packagex;
         this.serverHostName = serverHostName;
         this.serverHostPort = serverHostPort;

@@ -129,7 +129,7 @@ public class OAObjectKeyDelegate {
         
         Object o = OAObjectCacheDelegate.get(oaObj.getClass(), oaObj.objectKey);
         if ((o == null || o == oaObj)) {
-            if (OAObjectCSDelegate.isWorkstation()) {
+            if (OAObjectCSDelegate.isWorkstation(oaObj)) {
                 // check on server.  If server has same object as this, resolve() will return this object
                 o = OAObjectCSDelegate.getServerObject(oaObj.getClass(), oaObj.objectKey);
             }

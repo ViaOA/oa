@@ -311,7 +311,7 @@ public class OAObjectDeleteDelegate {
 	*/
 	private static void onDelete(OAObject oaObj) {
 		if (oaObj == null) return;
-		if (OASyncDelegate.isServer()) {
+		if (OASyncDelegate.isServer(oaObj)) {
     	    OAObjectLogDelegate.logToXmlFile(oaObj, false);
     	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
     	    if (oi.getUseDataSource()) {

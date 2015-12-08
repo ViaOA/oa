@@ -167,13 +167,14 @@ public class OAObjectDelegate {
 	}
 	
     protected static void assignGuid(OAObject obj) {
+        if (obj == null) return;
         if (obj.guid != 0) return;
         if (OAObjectInfoDelegate.getOAObjectInfo(obj).getLocalOnly()) { 
         	obj.guid = localGuidCounter.decrementAndGet();
         }
         else {
-            if (!OASyncDelegate.isServer()) {
-                obj.guid = OAObjectCSDelegate.getServerGuid();
+            if (!OASyncDelegate.isServer(obj)) {
+                obj.guid = OAObjectCSDelegate.getServerGuid(obj);
                 if (obj.guid == 0) obj.guid = getNextGuid();
             }
             else {
@@ -185,7 +186,7 @@ public class OAObjectDelegate {
     // 20151029 remove the Id props, set new=true, reassign guid    
     public static void setAsNewObject(final OAObject oaObj) {
         if (oaObj == null) return;
-        int guid = OAObjectCSDelegate.getServerGuid();
+        int guid = OAObjectCSDelegate.getServerGuid(oaObj);
         if (oaObj.guid == 0) oaObj.guid = getNextGuid();
         setAsNewObject(oaObj, guid);
     }
@@ -265,7 +266,7 @@ public class OAObjectDelegate {
 //System.out.println((++qq)+" finalizeObject: "+oaObj);	    
 		if (oaObj.guid == 0) return; // set to 0 by readResolve or ObjectCacheDelegate.add() to ignore finalization
 	    if (oaObj.guid > 0 && !oaObj.deletedFlag) {  // set to 0 by readResolve or ObjectCacheDelegate.add() to ignore finalization
-            if ((oaObj.changedFlag || oaObj.newFlag) && !OAObjectCSDelegate.isWorkstation()) {
+            if ((oaObj.changedFlag || oaObj.newFlag) && !OAObjectCSDelegate.isWorkstation(oaObj)) {
 
                 // 20131128 added autoAttach check
                 if (OAObjectDelegate.getAutoAdd(oaObj)) {

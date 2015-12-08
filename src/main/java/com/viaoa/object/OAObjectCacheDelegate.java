@@ -638,7 +638,7 @@ public class OAObjectCacheDelegate {
                 // allow object to be removed from CS
                 int guid = obj.getObjectKey().getGuid();
                 if (guid > 0) {
-                    OAObjectCSDelegate.objectRemovedFromCache(guid);
+                    OAObjectCSDelegate.objectRemovedFromCache(obj, guid);
                 }
             }
         }        

@@ -28,7 +28,7 @@ public class OAObjectSaveDelegate {
     protected static void save(OAObject oaObj, int iCascadeRule) {
     	if (oaObj == null) return;
 
-        if (OAObjectCSDelegate.isWorkstation()) {
+        if (OAObjectCSDelegate.isWorkstation(oaObj)) {
             OAObjectCSDelegate.save(oaObj, iCascadeRule);
         	return;
         }

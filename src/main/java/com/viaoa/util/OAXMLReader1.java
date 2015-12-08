@@ -690,13 +690,14 @@ public class OAXMLReader1 extends DefaultHandler {
         return b;
     }
     
-    private boolean _processProperties(OAObject object, Hashtable hash) {
+    private boolean _processProperties(final OAObject object, Hashtable hash) {
+        if (object == null) return false;
         boolean bResult = true;
         boolean bLoadingObject = false;
         if (object.getNew()) {
             bLoadingObject = true;
             OAThreadLocalDelegate.setLoadingObject(true);
-            if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(true);
+            if (OAObjectCSDelegate.isServer(object)) OAThreadLocalDelegate.setSuppressCSMessages(true);
             // no, needs to have OAObjectEventDelegate.firePropertyChange() process property changes
             //   since it has already created the object w/o setLoading(true), which means that there are null primitive properties
             //     that would not be "unset" if firePropertyChange() was not ran.
@@ -838,7 +839,7 @@ public class OAXMLReader1 extends DefaultHandler {
         if (bLoadingObject) {
             if (bResult) object.afterLoad();
             OAThreadLocalDelegate.setLoadingObject(false);
-            if (OAObjectCSDelegate.isServer()) OAThreadLocalDelegate.setSuppressCSMessages(false);
+            if (OAObjectCSDelegate.isServer(object)) OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
         return bResult;
     }

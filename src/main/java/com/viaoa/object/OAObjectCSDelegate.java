@@ -202,6 +202,12 @@ public class OAObjectCSDelegate {
          return null;
      }
 	
+     protected static int getServerGuid(OAObject obj) {
+         Class c;
+         if (obj == null) c = Object.class;
+         else c = obj.getClass();
+         return getServerGuid(c);
+     }
      protected static int getServerGuid(Class clazz) {
          if (clazz == null) clazz = Object.class;
          int guid = OASyncDelegate.getObjectGuid(clazz);
@@ -403,7 +409,7 @@ public class OAObjectCSDelegate {
             }
         }
         
-        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync();
+        RemoteSyncInterface rs = OASyncDelegate.getRemoteSync(obj.getClass());
         if (rs != null) {
             rs.propertyChange(obj.getClass(), origKey, propertyName, newValue, bIsBlob);
         }

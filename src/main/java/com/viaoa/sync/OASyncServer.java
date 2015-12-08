@@ -65,8 +65,13 @@ public class OASyncServer {
     private RemoteSessionInterface remoteSessionServer;
     private RemoteClientInterface remoteClientForServer;
     private final Package packagex;
+
+    public OASyncServer(int port) {
+        this(null, port);
+    }
     
     public OASyncServer(Package packagex, int port) {
+        if (packagex == null) packagex = Object.class.getPackage();
         this.packagex = packagex;
         this.port = port;
         OASyncDelegate.setSyncServer(packagex, this);

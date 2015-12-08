@@ -14,6 +14,7 @@ package com.viaoa.object;
 import java.util.*;
 import java.lang.ref.*;  // java1.2
 
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.sync.remote.RemoteSessionInterface;
 
@@ -38,7 +39,7 @@ public class OAObjectLockDelegate {
 	public static void lock(OAObject object) {
 	    if (object == null) throw new IllegalArgumentException("object can not be null");
 	
-	    RemoteSessionInterface rc = OASyncDelegate.getRemoteSession();
+	    RemoteSessionInterface rc = OASync.getRemoteSession(object.getClass());
 	    if (rc != null) {
 	        rc.setLock(object.getClass(), object.getObjectKey(), true);
 	    	return;
@@ -67,7 +68,7 @@ public class OAObjectLockDelegate {
 	public static void unlock(OAObject object) {
 	    if (object == null) return;
 
-        RemoteSessionInterface rc = OASyncDelegate.getRemoteSession();
+        RemoteSessionInterface rc = OASync.getRemoteSession(object.getClass());
         if (rc != null) {
             rc.setLock(object.getClass(), object.getObjectKey(), false);
             return;
@@ -85,7 +86,7 @@ public class OAObjectLockDelegate {
 	public static boolean isLocked(OAObject object) {
 	    if (object == null) return false;
 
-        RemoteSessionInterface rc = OASyncDelegate.getRemoteSession();
+        RemoteSessionInterface rc = OASyncDelegate.getRemoteSession(object.getClass());
         if (rc != null) {
             return rc.isLocked(object.getClass(), object.getObjectKey());
         }

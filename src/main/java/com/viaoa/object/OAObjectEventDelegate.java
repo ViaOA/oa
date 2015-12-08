@@ -44,7 +44,7 @@ public class OAObjectEventDelegate {
 	    if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
 	    if (OAThreadLocalDelegate.isLoadingObject()) {
 	        if (!OAObjectHubDelegate.isInHub(oaObj)) {  // 20110719: could be in the OAObjectCache.SelectAllHubs
-	            if (OASyncDelegate.isServer()) {  // 20150604 if client, then it needs to send prop change to server
+	            if (OASyncDelegate.isServer(oaObj)) {  // 20150604 if client, then it needs to send prop change to server
 	                return; 
 	            }
 	        }
@@ -168,7 +168,7 @@ public class OAObjectEventDelegate {
 	    5: Send event to Server.
 	    @see OAThreadLocalDelegate#setSuppressFirePropertyChange(boolean) to suppress this method from running by the current thread.
 	*/
-	protected static void firePropertyChange(OAObject oaObj, String propertyName, Object oldObj, Object newObj, boolean bLocalOnly, boolean bSetChanged) {
+	protected static void firePropertyChange(final OAObject oaObj, String propertyName, Object oldObj, Object newObj, boolean bLocalOnly, boolean bSetChanged) {
 	    if (oaObj == null || propertyName == null) return;
 	    if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
 	    
@@ -328,7 +328,7 @@ public class OAObjectEventDelegate {
             if (revLinkInfo != null) {
                 if (revLinkInfo.type == OALinkInfo.ONE) {
                     if (oldObj instanceof OAObjectKey) {
-                        if (OASync.isClient()) { // 20151117 dont get from server if this is client
+                        if (OASync.isClient(oaObj)) { // 20151117 dont get from server if this is client
                             Object objx = OAObjectCacheDelegate.get(linkInfo.toClass, (OAObjectKey)oldObj);
                             if (objx instanceof OAObject) OAObjectPropertyDelegate.setPropertyCAS((OAObject)objx, revLinkInfo.getName(), null, oaObj);
                         }
@@ -439,7 +439,7 @@ public class OAObjectEventDelegate {
 	            Method m = OAObjectInfoDelegate.getMethod(oiRev, "get"+revLinkInfo.name, 0); // make sure that the method exists
 	        	if (m != null) {
                     if (oldObj instanceof OAObjectKey) {
-                        if (OASync.isClient()) { // 20151117 dont get from server if this is client
+                        if (OASync.isClient(oaObj)) { // 20151117 dont get from server if this is client
                             oldObj = OAObjectCacheDelegate.get(linkInfo.toClass, (OAObjectKey)oldObj);
                         }
                         else {
@@ -450,7 +450,7 @@ public class OAObjectEventDelegate {
 	                    // 20150820 if one2one, then dont load if null and isClient
 	                    //   this was discovered when deleting an IDL and function/gsmrFunction (1to1) kept going to server for other value
 	                    boolean b = true;
-	                    if (OASync.isClient()) {
+	                    if (OASync.isClient(oaObj)) {
 	                        obj = OAObjectPropertyDelegate.getProperty((OAObject)oldObj, revLinkInfo.name);
 	                        if (obj == null) {
 	                            // dont get from server
@@ -673,7 +673,7 @@ public class OAObjectEventDelegate {
 	
 	    if (oldObj != null && !bOldIsKeyOnly) {
 	        try {
-	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)oldObj, revLinkInfo.getName())) { 
+	        	if (OAObjectCSDelegate.isServer(oaObj) || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)oldObj, revLinkInfo.getName())) { 
 	            	obj = OAObjectReflectDelegate.getProperty((OAObject)oldObj, revLinkInfo.getName()); 
 	    	        if (obj instanceof Hub) {
 	    	            Hub h = (Hub) obj;
@@ -687,7 +687,7 @@ public class OAObjectEventDelegate {
 	
 	    if (newObj != null) {
 	        try {
-	        	if (OAObjectCSDelegate.isServer() || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)newObj, revLinkInfo.getName())) { 
+	        	if (OAObjectCSDelegate.isServer(oaObj) || OAObjectReflectDelegate.isReferenceHubLoaded((OAObject)newObj, revLinkInfo.getName())) { 
 	        	    hub = (Hub) OAObjectReflectDelegate.getProperty((OAObject)newObj, revLinkInfo.getName());
 	            	
 	            	// 20130630 added autoAttach check
