@@ -281,6 +281,9 @@ public class OASyncDelegate {
         return isClient(c.getPackage());
     }
     
+    public static boolean isSingleUser() {
+        return isSingleUser((Class) null);
+    }
     public static boolean isSingleUser(Class c) {
         if (c == null) c = Object.class;
         return isSingleUser(c.getPackage());
