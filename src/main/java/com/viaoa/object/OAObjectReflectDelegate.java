@@ -1228,7 +1228,27 @@ public class OAObjectReflectDelegate {
                     // 20120907 might not have a method created, and uses a linkTable
                     Method method = OAObjectInfoDelegate.getMethod(li);
                     if (method == null || ((method.getModifiers() & Modifier.PRIVATE) != 0)) {
-                        return null;
+                        
+// 20151208 need to get from ds                        
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+                        if (!bIsServer && !bIsCalc) {
+                            if (oaObj.isDeleted()) { // 20151117
+                                return null;
+                            }
+                            ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
+                        }
+                        else {
+                            OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                            if (liReverse != null) {
+                                OASelect sel = new OASelect(li.getToClass());
+                                sel.setWhere(liReverse.getName()+" = ?");
+                                sel.setParams(new Object[] {oaObj});
+                                sel.select();
+                                ref = sel.next();
+                                sel.close();
+                            }
+                        }                        
+                        return ref;
                     }
 
                     // first check if it is already available, using weakHub & masterObject

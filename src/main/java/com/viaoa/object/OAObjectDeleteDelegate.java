@@ -248,6 +248,7 @@ public class OAObjectDeleteDelegate {
                     masterObj = HubDelegate.getMasterObject(hubx);
                 }
                 else {
+//qqqqqqqqqqqqqqqqqqqq this does not work if private method                    
                     Object objx = OAObjectReflectDelegate.getReferenceObject(oaObj, li.getName());
                     if (objx instanceof OAObject) {
                         masterObj = (OAObject) objx;
