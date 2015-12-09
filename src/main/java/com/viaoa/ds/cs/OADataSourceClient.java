@@ -88,7 +88,11 @@ public class OADataSourceClient extends OADataSource {
         Create new OADataSourceClient that uses OAClient to communicate with OADataSource on OAServer.
     */
     public OADataSourceClient(Package packagex) {
+        if (packagex == null) packagex = OASync.ObjectPackage;        
         this.packagex = packagex;
+    }
+    public OADataSourceClient() {
+        this(null);
     }
 
     public RemoteClientInterface getRemoteClient() {

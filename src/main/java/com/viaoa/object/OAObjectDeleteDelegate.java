@@ -192,9 +192,11 @@ public class OAObjectDeleteDelegate {
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getCalculated()) continue;
+            /*was 20151208 removed, since we might need to update DS linkTable
             if (li.getPrivateMethod()) {
                 continue;
             }
+            */
 			
 	    	String prop = li.name;
 		    if (prop == null || prop.length() < 1) continue;
@@ -232,7 +234,9 @@ public class OAObjectDeleteDelegate {
 		        	continue;
 		        }
 
-	            // 20120907 if method is not created, then it uses a LinkTable; need to remove from liRev Hub and remove from link table 
+	            // 20120907 if method is not created, then it uses a LinkTable; 
+		        //      need to remove from liRev Hub and remove from link table
+		        
                 Method method = OAObjectInfoDelegate.getMethod(li);
                 if (method != null && ((method.getModifiers() & Modifier.PRIVATE) == 0) ) {
                     continue;

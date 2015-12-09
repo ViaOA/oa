@@ -1136,6 +1136,7 @@ public class OAObjectReflectDelegate {
      * DataSource independent method to retrieve a reference property.
      * <p>
      * If reference object is not already loaded, then OADataSource will be used to retrieve object.
+     * @param bForce, if false and there is not 
      */
     public static Object getReferenceObject(OAObject oaObj, String linkPropertyName) {
         Object objOriginal = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
@@ -1143,7 +1144,8 @@ public class OAObjectReflectDelegate {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
 
-        if (objOriginal == null) {
+        if (objOriginal == null) {  // else !null or notExist
+            // it is stored as null value
             if (!li.getAutoCreateNew() && !li.getCalculated()) return null;
         }
 
@@ -1225,7 +1227,9 @@ public class OAObjectReflectDelegate {
                 if (!li.getAutoCreateNew()) {
                     // 20120907 might not have a method created, and uses a linkTable
                     Method method = OAObjectInfoDelegate.getMethod(li);
-                    if (method == null || ((method.getModifiers() & Modifier.PRIVATE) != 0)) return null;
+                    if (method == null || ((method.getModifiers() & Modifier.PRIVATE) != 0)) {
+                        return null;
+                    }
 
                     // first check if it is already available, using weakHub & masterObject
                     // 20130729 need to check that this is not after a hub.add/setMasterProperty
