@@ -58,6 +58,8 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
         OAObjectCacheDelegate.removeSelectAllHub(h);
         hubs = OAObjectCacheDelegate.getSelectAllHubs(Server.class);
         assertNull(hubs);
+        
+        reset();
     }
 
     private int cnt1;
@@ -205,7 +207,9 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
         };
         
         OAObjectCacheDelegate.refresh(Server.class);
-        assertEquals(server.getHostName(), "worked");
+        assertEquals("worked", server.getHostName());
+        
+        dsAuto.close();
     }
 
 

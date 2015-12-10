@@ -10,7 +10,6 @@ import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsactestDataGenerator;
 import com.viaoa.hub.Hub;
-import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.*;
 import com.tmgsc.hifivetest.delegate.ModelDelegate;
@@ -19,9 +18,59 @@ import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
 
 public class OAFinderTest extends OAUnitTest {
     
+    
+    @Test
+    public void finderSimpleTest() {
+        init();
+        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
+        data.createSampleData1();
+
+        // a finder without a filter should return all objects
+        OAFinder f = new OAFinder();
+        ArrayList al = f.find(modelTsac.getSites());
+        assertEquals(modelTsac.getSites().size(), al.size());
+
+        f = new OAFinder() {
+            int cnt;
+            @Override
+            protected boolean isUsed(OAObject obj) {
+                assertEquals(true, super.isUsed(obj));
+                return (cnt++ == 0);
+            }
+        };
+        al = f.find(modelTsac.getSites());
+        assertEquals(1, al.size());
+        
+        f = new OAFinder() {
+            @Override
+            protected boolean isUsed(OAObject obj) {
+                assertEquals(true, super.isUsed(obj));
+                return false;
+            }
+        };
+        al = f.find(modelTsac.getSites());
+        assertEquals(0, al.size());
+
+        f = new OAFinder();
+        f.addEqualFilter(null, modelTsac.getSites().getAt(0));
+        al = f.find(modelTsac.getSites());
+        assertEquals(1, al.size());
+        
+        int id = modelTsac.getSites().getAt(0).getId();
+        f.addEqualFilter("id", id+"");
+        al = f.find(modelTsac.getSites());
+        assertEquals(1, al.size());
+        
+        f.addEqualFilter("id", id);
+        al = f.find(modelTsac.getSites());
+        assertEquals(1, al.size());
+        
+        reset();
+    }
+    
     @Test
     public void finderTest() {
-        reset();
+        init();
         TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
 
@@ -78,7 +127,7 @@ public class OAFinderTest extends OAUnitTest {
     
     @Test
     public void recursiveFinderTest() {
-        reset();
+        init();
         HifiveDataGenerator data = new HifiveDataGenerator();
         data.createSampleData1();
         
@@ -100,7 +149,7 @@ public class OAFinderTest extends OAUnitTest {
 
     @Test
     public void equalsTest() {
-        reset();
+        init();
 
         OAFinder<Site, Site> finder = new OAFinder<Site, Site>();
         String pp = SitePP.environments().silos().servers().hostName();
@@ -114,6 +163,4 @@ public class OAFinderTest extends OAUnitTest {
 
         assertNull(site);
     }
-   
-    
 }

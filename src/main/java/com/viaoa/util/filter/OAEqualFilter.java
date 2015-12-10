@@ -33,54 +33,58 @@ public class OAEqualFilter implements OAFilter {
     private boolean bIgnoreCase;
     private OAPropertyPath pp;
     private OAFinder finder;
+    private boolean bSetup;
+    private int cntError;
 
     public OAEqualFilter(Object value) {
         this.value = value;
-        check();
+        bSetup = true;
     }
 
     public OAEqualFilter(OAPropertyPath pp, Object value) {
         this.pp = pp;
         this.value = value;
-        check();
     }
     public OAEqualFilter(String pp, Object value) {
-qqqqqqqqqqqqqq pp needs to know root class        
         this(pp==null?null:new OAPropertyPath(pp), value);
     }
-    qqqqqqqqqqqqqq pp needs to know root class        
-    qqqqqqqqqqqqqq pp needs to know root class        
-    qqqqqqqqqqqqqq pp needs to know root class        
-    qqqqqqqqqqqqqq pp needs to know root class        
 
     public OAEqualFilter(Object value, boolean bIgnoreCase) {
         this.value = value;
         this.bIgnoreCase = bIgnoreCase;
-        check();
+        bSetup = true;
     }
     
     public OAEqualFilter(OAPropertyPath pp, Object value, boolean bIgnoreCase) {
         this.pp = pp;
         this.value = value;
         this.bIgnoreCase = bIgnoreCase;
-        check();
     }
     public OAEqualFilter(String pp, Object value, boolean bIgnoreCase) {
         this(pp==null?null:new OAPropertyPath(pp), value, bIgnoreCase);
     }
     
-    // see if an oaFinder is needed
-    private void check() {
-        FinderInfo fi = OAFilterDelegate.createFinder(pp);
-        if (fi != null) {
-            this.finder = fi.finder;
-            OAFilter f = new OAEqualFilter(fi.pp, value, bIgnoreCase);
-            finder.addFilter(f);
-        }
-    }
     
     @Override
     public boolean isUsed(Object obj) {
+        if (!bSetup && pp != null && obj != null) {
+            // see if an oaFinder is needed
+            FinderInfo fi;
+            try {
+                fi = OAFilterDelegate.createFinder(obj.getClass(), pp);
+                bSetup = true;
+            }
+            catch (Exception e) {
+                if (++cntError < 5) LOG.log(Level.WARNING, "propertyPath error", e);
+                return false;
+            }
+            if (fi != null) {
+                this.finder = fi.finder;
+                OAFilter f = new OAEqualFilter(fi.pp, value, bIgnoreCase);
+                finder.addFilter(f);
+            }
+        }
+        
         if (finder != null) {
             if (obj instanceof OAObject) {
                 obj = finder.findFirst((OAObject)obj);

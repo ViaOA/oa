@@ -30,10 +30,20 @@ public class OAFilterDelegate {
      * This will return the OAFinder to use, and the remaining property that should be filtered.
      * see the OAxxxFilters for examples. 
      */
-    public static FinderInfo createFinder(OAPropertyPath pp) {
+    public static FinderInfo createFinder(Class clazz, OAPropertyPath pp) throws Exception {
         if (pp == null) return null;
+        
+        String s = pp.getPropertyPath();
+        if (s == null || s.indexOf('.') < 0) return null;
+
+        if (pp.getFromClass() == null) {
+            pp.setup(clazz);
+        }
         Method[] ms = pp.getMethods();
-        if (ms == null || ms.length < 2) return null;
+
+        if (ms == null || ms.length < 2) {
+            return null;
+        }
         
         boolean b = false;
         for (Method m : ms) {
@@ -51,7 +61,7 @@ public class OAFilterDelegate {
         }
 
         int dcnt = OAString.dcount(pp.getPropertyPath(), '.');
-        String s = OAString.field(pp.getPropertyPath(), '.', 1, dcnt-1);
+        s = OAString.field(pp.getPropertyPath(), '.', 1, dcnt-1);
         OAFinder f = new OAFinder(s);
         s = OAString.field(pp.getPropertyPath(), '.', dcnt);
         

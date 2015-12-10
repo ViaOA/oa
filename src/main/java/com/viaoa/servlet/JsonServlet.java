@@ -151,7 +151,7 @@ public class JsonServlet extends HttpServlet {
         else if (id == null || id.length() == 0) {
             if (!bDescribe) {
                 ArrayList al = new ArrayList();
-                OAObjectCacheDelegate.fetch(c, null, 500, al);
+                OAObjectCacheDelegate.find(null, c, 500, al);
                 newObject = new Hub();
                 for (Object objx : al) {
                     ((Hub) newObject).add(objx);

@@ -31,7 +31,9 @@ public class OAUnitTest {
         return dsCache;
     }
     
-    
+    protected void init() {
+        reset();
+    }
     protected void reset() {
         modelTsac = new com.theice.tsactest.model.Model();
         if (dsCache != null) {

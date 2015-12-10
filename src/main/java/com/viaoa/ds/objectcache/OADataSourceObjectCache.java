@@ -75,7 +75,6 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
                 }
             }
             else if (whereObject != null || propertyFromWhereObject != null) {
-                
                 OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(whereObject.getClass());
                 OALinkInfo li = oi.getLinkInfo(propertyFromWhereObject);
                 if (li != null) li = li.getReverseLinkInfo();
@@ -90,6 +89,14 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
                         }
                     };
                 }
+            }
+            else {
+                filter = new OAFilter() {
+                    @Override
+                    public boolean isUsed(Object obj) {
+                        return true;
+                    }
+                };
             }
         }
         return new ObjectCacheIterator(selectClass, filter);

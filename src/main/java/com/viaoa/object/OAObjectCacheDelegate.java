@@ -783,7 +783,6 @@ public class OAObjectCacheDelegate {
     public static Object find(Class clazz, String propertyPath, Object findObject) {
         return _find(null, clazz, propertyPath, findObject, false, true);
     }
-
     
     public static Object find(Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
     	return _find(null, clazz, propertyPath, findObject, bSkipNew, bThrowException);
@@ -793,17 +792,24 @@ public class OAObjectCacheDelegate {
     }
 
     
-    public static Object fetch(Class clazz, Object fromObject, int fetchAmount, ArrayList<Object> alResults) {
-        return _find(fromObject, clazz, null, null, false, false, fetchAmount, alResults);
-    }
-    
     protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
         return _find(fromObject, clazz, propertyPath, findObject, bSkipNew, bThrowException, 1, null);
     }
     protected static Object _find(Object fromObject, Class clazz, OAFinder finder, boolean bSkipNew, boolean bThrowException) {
         return _find(fromObject, clazz, finder, bSkipNew, bThrowException, 1, null);
     }
-
+    
+    public static Object find(Object fromObject, Class clazz, OAFinder finder, boolean bSkipNew, boolean bThrowException, int fetchAmount, ArrayList<Object> alResults) {
+        return _find(fromObject, clazz, finder, bSkipNew, bThrowException, fetchAmount, alResults);
+    }
+    public static Object find(Object fromObject, Class clazz, OAFilter filter, boolean bSkipNew, boolean bThrowException, int fetchAmount, ArrayList<Object> alResults) {
+        OAFinder finder = new OAFinder();
+        if (filter != null) finder.addFilter(filter);
+        return _find(fromObject, clazz, finder, bSkipNew, bThrowException, fetchAmount, alResults);
+    }
+    public static Object find(Object fromObject, Class clazz, int fetchAmount, ArrayList<Object> alResults) {
+        return _find(fromObject, clazz, null, false, false, fetchAmount, alResults);
+    }
     
     // 20140125 get objects from cache
     /**
@@ -824,8 +830,8 @@ public class OAObjectCacheDelegate {
         if (clazz == null) throw new IllegalArgumentException("HubController.find() class cant be null");
 
         // 20140201 replace methods with finder
-        OAFinder finder = null;
-        OAFilter filter;
+        OAFinder finder;
+        OAFilter filter = null;
         if (!OAString.isEmpty(propertyPath)) {
             OAPropertyPath pp = new OAPropertyPath(clazz, propertyPath);
             FinderInfo fi = OAFilterDelegate.createFinder(pp);
@@ -840,9 +846,9 @@ public class OAObjectCacheDelegate {
         }
         else {
             finder = new OAFinder();
-            filter = new OAEqualFilter(findValue, true);
+            if (findValue != null) filter = new OAEqualFilter(findValue, true);
         }
-        finder.addFilter(filter);
+        if (filter != null) finder.addFilter(filter);
         return _find(fromObject, clazz, finder, bSkipNew, bThrowException, fetchAmount, alResults);
     }
 

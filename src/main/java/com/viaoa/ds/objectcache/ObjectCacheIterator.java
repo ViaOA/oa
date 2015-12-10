@@ -11,6 +11,7 @@
 package com.viaoa.ds.objectcache;
 
 import java.util.*;
+
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.util.OAFilter;
 
@@ -64,7 +65,7 @@ public class ObjectCacheIterator<T> implements Iterator {
             posFetchObjects = 0;
             alFetchObjects.clear();
             if (bFetchIsDone) return null;
-            lastFetchObject = (T) OAObjectCacheDelegate.fetch(clazz, lastFetchObject, 50, (ArrayList) alFetchObjects);
+            lastFetchObject = (T) OAObjectCacheDelegate.find(lastFetchObject, clazz, filter, false, false, 50, (ArrayList) alFetchObjects);
             if (lastFetchObject == null) {
                 bFetchIsDone = true;
                 if (alFetchObjects.size() == 0) return null;
