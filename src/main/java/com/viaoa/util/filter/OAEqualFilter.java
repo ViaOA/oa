@@ -48,6 +48,10 @@ public class OAEqualFilter implements OAFilter {
 qqqqqqqqqqqqqq pp needs to know root class        
         this(pp==null?null:new OAPropertyPath(pp), value);
     }
+    qqqqqqqqqqqqqq pp needs to know root class        
+    qqqqqqqqqqqqqq pp needs to know root class        
+    qqqqqqqqqqqqqq pp needs to know root class        
+    qqqqqqqqqqqqqq pp needs to know root class        
 
     public OAEqualFilter(Object value, boolean bIgnoreCase) {
         this.value = value;
