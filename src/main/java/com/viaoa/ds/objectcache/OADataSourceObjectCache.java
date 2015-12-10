@@ -15,6 +15,7 @@ import java.util.*;
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
+import com.viaoa.util.filter.OAEqualFilter;
 import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
@@ -41,26 +42,54 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
     @Override
     public Iterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 
-        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, 
         int max, OAFilter filter, boolean bDirty
     )
     {
         if (filter == null) {
-            if (!OAString.isEmpty(queryWhere)) {
+            
+            if (extraWhere != null) {
                 try {
-                    filter = new OAQueryFilter(selectClass, queryWhere, params);
+                    filter = new OAQueryFilter(selectClass, extraWhere, null);
                 }
                 catch (Exception e) {
                     throw new RuntimeException("query parsing failed", e);
                 }
             }
-            else if (whereObject != null || propertyFromMaster != null || extraWhere != null) {
-                filter = new OAFilter() {
-                    @Override
-                    public boolean isUsed(Object obj) {
-                        return false;
-                    }
-                };
+            final OAFilter extraFilter = filter;
+            
+            if (!OAString.isEmpty(queryWhere)) {
+                try {
+                    filter = new OAQueryFilter(selectClass, queryWhere, params) {
+                        public boolean isUsed(Object obj) {
+                            boolean b = super.isUsed(obj);
+                            if (b && extraFilter != null) {
+                                b = extraFilter.isUsed(obj);
+                            }
+                            return b;
+                        }
+                    };  
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("query parsing failed", e);
+                }
+            }
+            else if (whereObject != null || propertyFromWhereObject != null) {
+                
+                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(whereObject.getClass());
+                OALinkInfo li = oi.getLinkInfo(propertyFromWhereObject);
+                if (li != null) li = li.getReverseLinkInfo();
+                if (li != null) {
+                    filter = new OAEqualFilter(li.getName(), whereObject) {
+                        public boolean isUsed(Object obj) {
+                            boolean b = super.isUsed(obj);
+                            if (b && extraFilter != null) {
+                                b = extraFilter.isUsed(obj);
+                            }
+                            return b;
+                        }
+                    };
+                }
             }
         }
         return new ObjectCacheIterator(selectClass, filter);

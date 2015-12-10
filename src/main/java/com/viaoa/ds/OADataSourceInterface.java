@@ -53,7 +53,7 @@ public interface OADataSourceInterface {
      * @param params  param values for "?" in the queryWhere.
      * @param queryOrder sort order
      * @param whereObject  master object to select from.
-     * @param propertyFromMaster
+     * @param propertyFromWhereObject
      * @param extraWhere added to the query.
      * @param max 
      * @param filter this can be used if the datasource does not support a way to query for the results.
@@ -62,7 +62,7 @@ public interface OADataSourceInterface {
      */
     Iterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 
-        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, 
         int max, OAFilter filter, boolean bDirty
     );
     
@@ -77,7 +77,7 @@ public interface OADataSourceInterface {
     
     int count(Class selectClass, 
         String queryWhere, Object[] params,   
-        OAObject whereObject, String propertyFromMaster, String extraWhere, int max
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, int max
     );
 
     int countPassthru(Class selectClass, 

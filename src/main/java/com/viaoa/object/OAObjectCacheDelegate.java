@@ -34,9 +34,13 @@ import com.viaoa.hub.HubSelectDelegate;
 import com.viaoa.hub.HubTemp;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
+import com.viaoa.util.OAFilter;
+import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 import com.viaoa.util.filter.OAEqualFilter;
+import com.viaoa.util.filter.OAFilterDelegate;
+import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
 /**
  * 
@@ -806,13 +810,19 @@ public class OAObjectCacheDelegate {
 
         // 20140201 replace methods with finder
         OAFinder finder = null;
-        Method[] methods = null;
         if (!OAString.isEmpty(propertyPath)) {
-            finder = new OAFinder();
-            finder.addFilter(new OAEqualFilter(propertyPath, findValue));
-            
-            //methods = OAReflect.getMethods(clazz, propertyPath, bThrowException);
-            //if (methods == null || methods.length == 0) return null;
+            OAPropertyPath pp = new OAPropertyPath(clazz, propertyPath);
+            FinderInfo fi = OAFilterDelegate.createFinder(pp);
+            OAFilter filter;
+            if (fi != null) {
+                finder = fi.finder;
+                filter = new OAEqualFilter(fi.pp, findValue, true);
+            }
+            else {
+                finder = new OAFinder();
+                filter = new OAEqualFilter(pp, findValue, true);
+            }
+            finder.addFilter(filter);
         }
 
         TreeMapHolder tmh = getTreeMapHolder(clazz, false);
@@ -834,7 +844,7 @@ public class OAObjectCacheDelegate {
             if (me == null) me = tmh.treeMap.firstEntry();
             
             boolean b = OAObject.class.isAssignableFrom(clazz);
-
+qqqqqqqqqqqqq
             while (me != null) {
                 WeakReference ref = (WeakReference) me.getValue();
                 Object object = ref.get();

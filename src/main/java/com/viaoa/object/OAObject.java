@@ -268,7 +268,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
 
     /**
-	    Generic way for getting any property or value from a name/value pair.
+	    Generic way for getting any property or value.
 	    This will first look for get"PropName" method in this object (including superclass OAObject)
 	    Note: this supports property paths.   For example: "dept.manager.lastname" from an Employee.class
 	    Note: if the property is of a primitive type, it can return null.

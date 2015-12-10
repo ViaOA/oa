@@ -462,7 +462,7 @@ public abstract class OADataSource implements OADataSourceInterface {
     @Override
     public abstract int count(Class selectClass, 
         String queryWhere, Object[] params,   
-        OAObject whereObject, String propertyFromMaster, String extraWhere, int max
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, int max
     );
     public int count(Class selectClass, String queryWhere, int max) {
         int x = count(selectClass,
@@ -498,25 +498,25 @@ public abstract class OADataSource implements OADataSourceInterface {
             queryWhere, param==null?null:(new Object[] {param}),
             null, null, null, 0);
 	}
-    public int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster, int max) {
+    public int count(Class selectClass, OAObject whereObject, String propertyNameFromWhereObject, int max) {
         int x = count(selectClass,
                 null, null,
-                whereObject, propertyNameFromMaster, null, max);
+                whereObject, propertyNameFromWhereObject, null, max);
             if (max < 1) return x;
             return Math.min(x, max);
     }
-    public int count(Class selectClass, OAObject whereObject, String propertyNameFromMaster) {
-        return count(selectClass, whereObject, propertyNameFromMaster, 0);
+    public int count(Class selectClass, OAObject whereObject, String propertyNameFromWhereObject) {
+        return count(selectClass, whereObject, propertyNameFromWhereObject, 0);
     }
-    public int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] params, String propertyNameFromMaster, int max) {
+    public int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] params, String propertyNameFromWhereObject, int max) {
         int x = count(selectClass,
             null, params,
-            whereObject, propertyNameFromMaster, extraWhere, max);
+            whereObject, propertyNameFromWhereObject, extraWhere, max);
         if (max < 1) return x;
         return Math.min(x, max);
     }
-    public int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] params, String propertyNameFromMaster) {
-        return count(selectClass, whereObject, extraWhere, params, propertyNameFromMaster, 0);
+    public int count(Class selectClass, OAObject whereObject, String extraWhere, Object[] params, String propertyNameFromWhereObject) {
+        return count(selectClass, whereObject, extraWhere, params, propertyNameFromWhereObject, 0);
     }
 
     
@@ -561,7 +561,7 @@ public abstract class OADataSource implements OADataSourceInterface {
     @Override
     public abstract Iterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 
-        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, 
         int max, OAFilter filter, boolean bDirty
     );
 
@@ -633,30 +633,30 @@ public abstract class OADataSource implements OADataSourceInterface {
 	}
     public Iterator select(Class selectClass, 
             OAObject whereObject, String extraWhere, Object[] args, 
-            String propertyNameFromMaster, String queryOrder, 
+            String propertyNameFromWhereObject, String queryOrder, 
             int max, OAFilter filter, boolean bDirty) {
         return select(selectClass, 
             null, args, queryOrder,
-            whereObject, propertyNameFromMaster, extraWhere,
+            whereObject, propertyNameFromWhereObject, extraWhere,
             max, filter, bDirty);
     }
-    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, int max, boolean bDirty) {
-        return select(selectClass, whereObject, extraWhere, args, propertyNameFromMaster, queryOrder, max, null, bDirty);
+    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromWhereObject, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, whereObject, extraWhere, args, propertyNameFromWhereObject, queryOrder, max, null, bDirty);
     }
-    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromMaster, String queryOrder, boolean bDirty) {
-        return select(selectClass, whereObject, extraWhere, args, propertyNameFromMaster, queryOrder, 0, null, bDirty);
+    public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromWhereObject, String queryOrder, boolean bDirty) {
+        return select(selectClass, whereObject, extraWhere, args, propertyNameFromWhereObject, queryOrder, 0, null, bDirty);
     }
-    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromWhereObject, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return select(selectClass, 
             null, null, queryOrder,
-            whereObject, propertyNameFromMaster, null,
+            whereObject, propertyNameFromWhereObject, null,
             max, filter, bDirty);
     }
-    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, int max, boolean bDirty) {
-        return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, max, null, bDirty);
+    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromWhereObject, String queryOrder, int max, boolean bDirty) {
+        return select(selectClass, whereObject, propertyNameFromWhereObject, queryOrder, max, null, bDirty);
     }
-    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromMaster, String queryOrder, boolean bDirty) {
-        return select(selectClass, whereObject, propertyNameFromMaster, queryOrder, 0, null, bDirty);
+    public Iterator select(Class selectClass, OAObject whereObject, String propertyNameFromWhereObject, String queryOrder, boolean bDirty) {
+        return select(selectClass, whereObject, propertyNameFromWhereObject, queryOrder, 0, null, bDirty);
     }
     
     

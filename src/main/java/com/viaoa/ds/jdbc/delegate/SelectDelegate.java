@@ -146,11 +146,11 @@ public class SelectDelegate {
     private static class WhereObjectSelect {
         private Class clazz;
         private Class whereClazz;
-        private String propertyFromMaster;
-        public WhereObjectSelect(Class clazz, Class whereClazz, String propertyFromMaster) {
+        private String propertyFromWhereObject;
+        public WhereObjectSelect(Class clazz, Class whereClazz, String propertyFromWhereObject) {
             this.clazz = clazz;
             this.whereClazz = whereClazz;
-            this.propertyFromMaster = propertyFromMaster;
+            this.propertyFromWhereObject = propertyFromWhereObject;
         }
         @Override
         public boolean equals(Object obj) {
@@ -165,9 +165,9 @@ public class SelectDelegate {
                 if (whereClazz == null || x.whereClazz == null) return false;
                 if (!whereClazz.equals(x.whereClazz)) return false;
             }
-            if (propertyFromMaster != x.propertyFromMaster) {
-                if (propertyFromMaster == null || x.propertyFromMaster == null) return false;
-                if (!propertyFromMaster.equals(x.propertyFromMaster)) return false;
+            if (propertyFromWhereObject != x.propertyFromWhereObject) {
+                if (propertyFromWhereObject == null || x.propertyFromWhereObject == null) return false;
+                if (!propertyFromWhereObject.equals(x.propertyFromWhereObject)) return false;
             }
             return true;
         }
@@ -176,13 +176,13 @@ public class SelectDelegate {
             int x = 0;
             if (clazz != null) x += clazz.hashCode();
             if (whereClazz != null) x += whereClazz.hashCode();
-            if (propertyFromMaster != null) x += propertyFromMaster.hashCode();
+            if (propertyFromWhereObject != null) x += propertyFromWhereObject.hashCode();
             return x;
         } 
     }
     
     // 20121013 changes to use PreparedStatements for Selecting Many link
-    public static Iterator select(OADataSourceJDBC ds, Class clazz, OAObject whereObject, String extraWhere, Object[] params, String propertyFromMaster, String queryOrder, int max, boolean bDirty) {
+    public static Iterator select(OADataSourceJDBC ds, Class clazz, OAObject whereObject, String extraWhere, Object[] params, String propertyFromWhereObject, String queryOrder, int max, boolean bDirty) {
         // dont need to select if master object (whereObject) is new
         if (whereObject.getNew()) return null;
 
@@ -190,9 +190,9 @@ public class SelectDelegate {
         if (table == null) return null;
         DataAccessObject dao = table.getDataAccessObject();
     
-        if (dao == null || whereObject == null || OAString.isEmpty(propertyFromMaster) || (params != null && params.length > 0) || max > 0) {
+        if (dao == null || whereObject == null || OAString.isEmpty(propertyFromWhereObject) || (params != null && params.length > 0) || max > 0) {
             QueryConverter qc = new QueryConverter(ds);
-            String query = getSelectSQL(ds, qc, clazz, whereObject, extraWhere, params, propertyFromMaster, queryOrder, max, bDirty);
+            String query = getSelectSQL(ds, qc, clazz, whereObject, extraWhere, params, propertyFromWhereObject, queryOrder, max, bDirty);
             
             ResultSetIterator rsi;
             if (!bDirty && dao != null) {
@@ -206,13 +206,13 @@ public class SelectDelegate {
             return rsi;
         }
 
-        WhereObjectSelect wos = new WhereObjectSelect(clazz, whereObject==null?null:whereObject.getClass(), propertyFromMaster);
+        WhereObjectSelect wos = new WhereObjectSelect(clazz, whereObject==null?null:whereObject.getClass(), propertyFromWhereObject);
         String query = bDirty ? null : hmPreparedStatementSql.get(wos);
         
         if (query == null) {
             QueryConverter qc = new QueryConverter(ds);
             query = "SELECT " + qc.getSelectColumns(clazz, bDirty);
-            query  += " " + qc.convertToPreparedStatementSql(clazz, whereObject, extraWhere, params, propertyFromMaster, queryOrder);
+            query  += " " + qc.convertToPreparedStatementSql(clazz, whereObject, extraWhere, params, propertyFromWhereObject, queryOrder);
 
             params = qc.getArguments();
             if (params == null || params.length == 0) return null; // null reference
@@ -295,10 +295,10 @@ public class SelectDelegate {
     }
     
     
-    public static String getSelectSQL(OADataSourceJDBC ds, QueryConverter qc, Class clazz, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, boolean bDirty) {
-        if (propertyFromMaster == null) propertyFromMaster = "";
+    public static String getSelectSQL(OADataSourceJDBC ds, QueryConverter qc, Class clazz, OAObject whereObject, String extraWhere, Object[] args, String propertyFromWhereObject, String queryOrder, int max, boolean bDirty) {
+        if (propertyFromWhereObject == null) propertyFromWhereObject = "";
         String query = "SELECT " + getMax(ds,max) + qc.getSelectColumns(clazz, bDirty);
-        query  += " " + qc.convertToSql(clazz, whereObject, extraWhere, args, propertyFromMaster, queryOrder);
+        query  += " " + qc.convertToSql(clazz, whereObject, extraWhere, args, propertyFromWhereObject, queryOrder);
     	return query;
     }
     
@@ -402,20 +402,20 @@ public class SelectDelegate {
         }
 
     }
-    public static int count(OADataSourceJDBC ds, Class selectClass, Object whereObject, String propertyFromMaster, int max) {
-        return count(ds, selectClass, whereObject, null, null, propertyFromMaster, max);
+    public static int count(OADataSourceJDBC ds, Class selectClass, Object whereObject, String propertyFromWhereObject, int max) {
+        return count(ds, selectClass, whereObject, null, null, propertyFromWhereObject, max);
     }
-    public static int count(OADataSourceJDBC ds, Class selectClass, Object whereObject, String extraWhere, Object[] args, String propertyFromMaster, int max) {
+    public static int count(OADataSourceJDBC ds, Class selectClass, Object whereObject, String extraWhere, Object[] args, String propertyFromWhereObject, int max) {
         if ( whereObject instanceof OAObject ) {
             if ( ((OAObject) whereObject).getNew() ) return 0;
         }
 
-        if (propertyFromMaster == null) propertyFromMaster = "";
+        if (propertyFromWhereObject == null) propertyFromWhereObject = "";
         QueryConverter qc = new QueryConverter(ds);
-        String s = qc.convertToSql(selectClass, whereObject, extraWhere, args, propertyFromMaster, "");
+        String s = qc.convertToSql(selectClass, whereObject, extraWhere, args, propertyFromWhereObject, "");
 
         s = "SELECT "+getMax(ds, max)+"COUNT(*) " + s;
-        // LOG.fine("selectClass="+selectClass.getName()+", whereObject="+whereObject+", extraWhere="+extraWhere+", propertyFromMaster="+propertyFromMaster+", sql="+s);
+        // LOG.fine("selectClass="+selectClass.getName()+", whereObject="+whereObject+", extraWhere="+extraWhere+", propertyFromWhereObject="+propertyFromWhereObject+", sql="+s);
 
         Statement st = null;
         try {

@@ -232,7 +232,7 @@ public class OADataSourceAuto extends OADataSource {
     }
 
     @Override
-    public int count(Class selectClass, String queryWhere, Object[] params, OAObject whereObject, String propertyFromMaster, String extraWhere, int max) {
+    public int count(Class selectClass, String queryWhere, Object[] params, OAObject whereObject, String propertyFromWhereObject, String extraWhere, int max) {
         return -1;
     }
 
@@ -242,7 +242,7 @@ public class OADataSourceAuto extends OADataSource {
     }
 
     @Override
-    public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, OAObject whereObject, String propertyFromMaster, String extraWhere, int max, OAFilter filter, boolean bDirty) {
+    public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, OAObject whereObject, String propertyFromWhereObject, String extraWhere, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
 

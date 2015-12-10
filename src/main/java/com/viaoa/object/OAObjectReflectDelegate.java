@@ -122,6 +122,7 @@ public class OAObjectReflectDelegate {
         return null;
     }
 
+    
     private static Object _getProperty(Hub hubLast, OAObject oaObj, String propName) {
         OAObjectInfo oi;
         if (hubLast != null) {
@@ -133,7 +134,6 @@ public class OAObjectReflectDelegate {
         if (oi.isHubCalcInfo(propName)) {
             if (hubLast == null) return null;
             m = OAObjectInfoDelegate.getMethod(oi, "get" + propName, 1);
-            if (m == null) return null;
             try {
                 return m.invoke(oaObj, hubLast);
             }
@@ -149,7 +149,11 @@ public class OAObjectReflectDelegate {
         else {
             if (oaObj == null) return null;
             m = OAObjectInfoDelegate.getMethod(oi, "get" + propName, 0);
-            if (m != null) {
+            if (m == null) {
+                m = OAObjectInfoDelegate.getMethod(oi, "is" + propName, 0);
+                if (m == null) return null;
+            }
+            if (m != null && (m.getModifiers() & Modifier.PRIVATE) == 0) {            
                 if (getPrimitiveNull(oaObj, propName)) return null;
                 try {
                     return m.invoke(oaObj, null);
@@ -1202,7 +1206,7 @@ public class OAObjectReflectDelegate {
                 }
             }
 
-            // =null.  check to see if it is One2One, and if a select must be used to get the object.
+            // == null.  check to see if it is One2One, and if a select must be used to get the object.
             if (li == null) return null;
             if (OAObjectInfoDelegate.isOne2One(li) && !oaObj.isNew()) {
                 if (!bIsServer && !bIsCalc) {
@@ -1216,7 +1220,7 @@ public class OAObjectReflectDelegate {
                     if (liReverse != null) {
                         OASelect sel = new OASelect(li.getToClass());
                         sel.setWhereObject(oaObj);
-                        sel.setPropertyFromWhereObject(li.name);
+                        sel.setPropertyFromWhereObject(liReverse.name);
                         sel.select();
                         ref = sel.next();
                         sel.close();
@@ -1224,43 +1228,34 @@ public class OAObjectReflectDelegate {
                 }
             }
             else {
-                if (!li.getAutoCreateNew()) {
+                // first check to see if it is in the hub for the link
+                if (li.getPrivateMethod() || !isReferenceObjectNullOrEmpty(oaObj, linkPropertyName)) {
+                    Hub hubx = OAObjectHubDelegate.getHub(oaObj, li);
+                    if (hubx != null) {
+                        ref = HubDelegate.getMasterObject(hubx);
+                    }
+                }
+                
+                if (ref == null && li.getPrivateMethod()) {
                     // 20120907 might not have a method created, and uses a linkTable
-                    Method method = OAObjectInfoDelegate.getMethod(li);
-                    if (method == null || ((method.getModifiers() & Modifier.PRIVATE) != 0)) {
-                        
-// 20151208 need to get from ds                        
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-                        if (!bIsServer && !bIsCalc) {
-                            if (oaObj.isDeleted()) { // 20151117
-                                return null;
-                            }
-                            ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
+                    // 20151208 need to get from ds                        
+                    if (!bIsServer && !bIsCalc) {
+                        if (oaObj.isDeleted()) { // 20151117
+                            return null;
                         }
-                        else {
-                            OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                            if (liReverse != null) {
-                                OASelect sel = new OASelect(li.getToClass());
-                                sel.setWhere(liReverse.getName()+" = ?");
-                                sel.setParams(new Object[] {oaObj});
-                                sel.select();
-                                ref = sel.next();
-                                sel.close();
-                            }
-                        }                        
-                        return ref;
+                        ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                     }
-
-                    // first check if it is already available, using weakHub & masterObject
-                    // 20130729 need to check that this is not after a hub.add/setMasterProperty
-                    //   where the hub has been added to weakHub, but oaObj.properties is not set
-                    if (!isReferenceObjectNullOrEmpty(oaObj, linkPropertyName)) {
-                        // only try this if there is a objKey in props
-                        Hub hubx = OAObjectHubDelegate.getHub(oaObj, li);
-                        if (hubx != null) {
-                            ref = HubDelegate.getMasterObject(hubx);
+                    else {
+                        OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                        if (liReverse != null) {
+                            OASelect sel = new OASelect(li.getToClass());
+                            sel.setWhere(liReverse.getName()+" = ?");
+                            sel.setParams(new Object[] {oaObj});
+                            sel.select();
+                            ref = sel.next();
+                            sel.close();
                         }
-                    }
+                    }                        
                 }
             }
         }

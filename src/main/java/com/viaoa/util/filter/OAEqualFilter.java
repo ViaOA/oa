@@ -45,6 +45,7 @@ public class OAEqualFilter implements OAFilter {
         check();
     }
     public OAEqualFilter(String pp, Object value) {
+qqqqqqqqqqqqqq pp needs to know root class        
         this(pp==null?null:new OAPropertyPath(pp), value);
     }
 

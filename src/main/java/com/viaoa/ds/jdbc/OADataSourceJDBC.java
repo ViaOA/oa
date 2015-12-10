@@ -204,13 +204,13 @@ public class OADataSourceJDBC extends OADataSource {
     @Override
     public Iterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 
-        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, 
         int max, OAFilter filter, boolean bDirty
     )
     {
         if (whereObject != null) {
             return SelectDelegate.select(this, selectClass, 
-                    whereObject, extraWhere, params, propertyFromMaster,
+                    whereObject, extraWhere, params, propertyFromWhereObject,
                     queryOrder, max,  bDirty);
             
         }
@@ -237,10 +237,10 @@ public class OADataSourceJDBC extends OADataSource {
     @Override
     public int count(Class selectClass, 
         String queryWhere, Object[] params,   
-        OAObject whereObject, String propertyFromMaster, String extraWhere, int max)
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, int max)
     {
         if (whereObject != null) {
-            return SelectDelegate.count(this, selectClass, whereObject, extraWhere, params, propertyFromMaster, max);
+            return SelectDelegate.count(this, selectClass, whereObject, extraWhere, params, propertyFromWhereObject, max);
         }
         return SelectDelegate.count(this, selectClass, queryWhere, params, max);
     }

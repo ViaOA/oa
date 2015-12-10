@@ -174,9 +174,9 @@ public class OAObjectDeleteDelegate {
 	/**
 	    Internal method used by delete(oaObj) when deleting an objects cascade delete references.
 	    <p>
-	    Checks to see if all Links with TYPE=MANY and CASCADE and be deleted.<br>
+	    Checks to see if all Links with TYPE=MANY and CASCADE can be deleted.<br>
 	    If reference object is not set up to be deleted (cascade delete is false), then it will
-	    have its reference to this object set to null.
+	    have the reference to this object set to null.
 	    <p>
 	    Steps:
 	    <ol>
@@ -192,67 +192,53 @@ public class OAObjectDeleteDelegate {
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getCalculated()) continue;
-            /*was 20151208 removed, since we might need to update DS linkTable
-            if (li.getPrivateMethod()) {
-                continue;
-            }
-            */
 			
 	    	String prop = li.name;
 		    if (prop == null || prop.length() < 1) continue;
 	    	
 	        if (li.getType() == OALinkInfo.ONE) {
-	            if (li.getOwner() || li.cascadeDelete) {
+	            if ((li.getOwner() || li.cascadeDelete) && !li.getPrivateMethod()) {
         	    	Object obj = OAObjectReflectDelegate.getProperty(oaObj, prop);
-        	    	if (obj == null) continue;
                     if (obj instanceof OAObject) delete((OAObject) obj, cascade);
                     continue;
                 }
 	            
 		    	OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
 		    	if (liRev == null) continue;
+		    	
 		        if (liRev.getType() == OALinkInfo.ONE) {
-			    	Object obj = OAObjectReflectDelegate.getProperty(oaObj, prop);
-			    	if (obj == null) {
-		                Method method = OAObjectInfoDelegate.getMethod(li);
-		                if (method != null && ((method.getModifiers() & Modifier.PRIVATE) == 0) ) {
-		                    continue;
-		                }
-
-		                // 20121011 no method for reference - need to find/select it and remove the reference
-		                OADataSource ds = OADataSource.getDataSource(li.getToClass());
-		                if (ds == null) return;
-		                Iterator itx = ds.select(li.getToClass(), liRev.getName() + " = ?", oaObj, "", false);
-		                if (itx != null && itx.hasNext()) obj = itx.next();
-			    	}
+		            Object obj;
+	                if (li.getPrivateMethod()) {
+	                    obj = OAObjectReflectDelegate.getReferenceObject(oaObj, li.getName());
+	                }
+	                else {
+	                    obj = OAObjectReflectDelegate.getProperty(oaObj, prop);
+	                }
+			    	if (obj == null) continue;
 
 			    	// this object is being deleted, remove its reference from reference object
 		        	if (obj instanceof OAObject) {
 	                    OAObjectReflectDelegate.setProperty((OAObject)obj, liRev.name, null, null);
                         OAObjectDSDelegate.removeReference((OAObject)obj, liRev);
+                        oaObj.removeProperty(li.getName());
 		        	}
 		        	continue;
 		        }
+		        // else Many ..
+		        if (!li.getPrivateMethod()) continue;
 
-	            // 20120907 if method is not created, then it uses a LinkTable; 
-		        //      need to remove from liRev Hub and remove from link table
+                //  it uses a LinkTable. Need to remove from liRev Hub and remove from link table
 		        
-                Method method = OAObjectInfoDelegate.getMethod(li);
-                if (method != null && ((method.getModifiers() & Modifier.PRIVATE) == 0) ) {
-                    continue;
-                }
-                
                 OAObject masterObj;
                 Hub hubx = OAObjectHubDelegate.getHub(oaObj, li);
                 if (hubx != null) {
                     masterObj = HubDelegate.getMasterObject(hubx);
                 }
                 else {
-//qqqqqqqqqqqqqqqqqqqq this does not work if private method                    
                     Object objx = OAObjectReflectDelegate.getReferenceObject(oaObj, li.getName());
                     if (objx instanceof OAObject) {
                         masterObj = (OAObject) objx;
-                        objx = masterObj.getHub(liRev.getName());
+                        objx = OAObjectPropertyDelegate.getProperty(masterObj, liRev.getName());
                         if (objx instanceof Hub) {
                             hubx = (Hub) objx;
                         }
@@ -275,6 +261,7 @@ public class OAObjectDeleteDelegate {
 	            continue;
 	        }
 	        
+	        // Many
 	        // Hub
 	    	Object obj = OAObjectReflectDelegate.getProperty(oaObj, prop);
 	    	if (!(obj instanceof Hub)) {  // no method assigned, need to get Hub directly.  Ex: a one2many where the one is used as a lookup.
@@ -283,7 +270,7 @@ public class OAObjectDeleteDelegate {
 	    	Hub hub = (Hub) obj;
 	        hub.loadAllData();
 	
-        	OAObjectHubDelegate.setMasterObject(hub, oaObj,OAObjectInfoDelegate.getReverseLinkInfo(li)); // make sure that master object is set.
+        	OAObjectHubDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(li)); // make sure that master object is set.
 
             // 20120612 need to remove link table records
             boolean bIsM2m = OAObjectInfoDelegate.isMany2Many(li);

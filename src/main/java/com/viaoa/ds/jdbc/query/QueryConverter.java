@@ -215,11 +215,11 @@ public class QueryConverter {
     
 
     // 20121013
-    public String convertForPreparedStatmentSql(Class selectClass, Object whereObject, String propertyFromMaster, String orderBy)  {
+    public String convertForPreparedStatmentSql(Class selectClass, Object whereObject, String propertyFromWhereObject, String orderBy)  {
 
         reset();
         Vector vecParam = new Vector(3,3);
-        String where = convertToWhere(selectClass, whereObject, propertyFromMaster, vecParam);
+        String where = convertToWhere(selectClass, whereObject, propertyFromWhereObject, vecParam);
     
         Object[] params = new Object[vecParam.size()];
         vecParam.copyInto(params);
@@ -230,12 +230,12 @@ public class QueryConverter {
     }
 
     /**
-        propertyFromMaster name of link to use, from whereObject from Table(clazz).getLinks()[].propertyName = propertyFromMaster
+        propertyFromWhereObject name of link to use, from whereObject from Table(clazz).getLinks()[].propertyName = propertyFromWhereObject
     */
-    public String convertToSql(Class selectClass, Object whereObject, String extraWhere, Object[] args, String propertyFromMaster, String orderBy)  {
+    public String convertToSql(Class selectClass, Object whereObject, String extraWhere, Object[] args, String propertyFromWhereObject, String orderBy)  {
         reset();
     	Vector vecParam = new Vector(3,3);
-    	String s = convertToWhere(selectClass, whereObject, propertyFromMaster, vecParam);
+    	String s = convertToWhere(selectClass, whereObject, propertyFromWhereObject, vecParam);
         if (selectObject != null || bEmpty) return "";
     
         if (!OAString.isEmpty(extraWhere)) {
@@ -253,10 +253,10 @@ public class QueryConverter {
     }
 
     // 20121013 
-    public String convertToPreparedStatementSql(Class selectClass, Object whereObject, String extraWhere, Object[] args, String propertyFromMaster, String orderBy)  {
+    public String convertToPreparedStatementSql(Class selectClass, Object whereObject, String extraWhere, Object[] args, String propertyFromWhereObject, String orderBy)  {
         reset();
         Vector vecParam = new Vector(3,3);
-        String s = convertToWhere(selectClass, whereObject, propertyFromMaster, vecParam);
+        String s = convertToWhere(selectClass, whereObject, propertyFromWhereObject, vecParam);
         if (selectObject != null || bEmpty) return "";
     
         if (!OAString.isEmpty(extraWhere)) {
@@ -279,7 +279,7 @@ public class QueryConverter {
         return arguments;
     }
     
-    private String convertToWhere(Class selectClass, Object whereObject, String propertyFromMaster, Vector vecParam) {
+    private String convertToWhere(Class selectClass, Object whereObject, String propertyFromWhereObject, Vector vecParam) {
         String s = null;
 
         Table toTable;
@@ -295,7 +295,7 @@ public class QueryConverter {
                 Table fromTable = database.getTable(c);
                 if (fromTable == null) throw new RuntimeException("QueryConverter.convertToWhere() cant find link");
                 Link[] links = fromTable.getLinks();
-                s = getWhere(links, fromTable, toTable, whereObject, propertyFromMaster, vecParam);
+                s = getWhere(links, fromTable, toTable, whereObject, propertyFromWhereObject, vecParam);
             }
         }
          
@@ -311,20 +311,20 @@ public class QueryConverter {
                 Link[] links = fromTable.getLinks();
                 for (int i=0; s==null && links!=null && i < links.length; i++) {
                     if (links[i].toTable.bLink) {
-                        s = getWhere(links[i].toTable.getLinks(), links[i].toTable, toTable, whereObject, propertyFromMaster, vecParam);
+                        s = getWhere(links[i].toTable.getLinks(), links[i].toTable, toTable, whereObject, propertyFromWhereObject, vecParam);
                         bUseExists = false; // dont use EXISTS, use JOIN instead
                     }
                 }
             }
         }
         if (s == null) {
-            String test = "selectClass="+selectClass.getName()+" whereObject="+whereObject+" propertyFromMaster="+propertyFromMaster;
+            String test = "selectClass="+selectClass.getName()+" whereObject="+whereObject+" propertyFromWhereObject="+propertyFromWhereObject;
             throw new RuntimeException("QueryConverter.convertToWhere() Can not find links between objects/database: "+test);
         }
         return s;
     }
 
-    private String getWhere(Link[] links, Table fromTable, Table toTable, Object whereObject, String propertyFromMaster, Vector vecParams) {
+    private String getWhere(Link[] links, Table fromTable, Table toTable, Object whereObject, String propertyFromWhereObject, Vector vecParams) {
         // these are used to see if the object can be found without using select
         bEmpty = false;
         selectObject = null;
@@ -335,8 +335,8 @@ public class QueryConverter {
             if (link.toTable != toTable) {
                 if (!link.toTable.bLink) continue;
 
-                if (propertyFromMaster == null) continue;
-                if (!propertyFromMaster.equalsIgnoreCase(link.reversePropertyName)) continue;
+                if (propertyFromWhereObject == null) continue;
+                if (!propertyFromWhereObject.equalsIgnoreCase(link.reversePropertyName)) continue;
                 
                 
                 // check link table links
@@ -344,19 +344,19 @@ public class QueryConverter {
                 if (linx == null || linx.length != 2) continue;
                 
                 newFromTable = link.toTable; // will need to be changed if it is using link table
-                if (linx[0].toTable == toTable && propertyFromMaster.equalsIgnoreCase(linx[0].reversePropertyName)) {
+                if (linx[0].toTable == toTable && propertyFromWhereObject.equalsIgnoreCase(linx[0].reversePropertyName)) {
                     link = linx[0];
                 }
                 else {
-                    if (linx[1].toTable == toTable && propertyFromMaster.equalsIgnoreCase(linx[1].reversePropertyName)) {
+                    if (linx[1].toTable == toTable && propertyFromWhereObject.equalsIgnoreCase(linx[1].reversePropertyName)) {
                         link = linx[1];
                     }
                     else continue;
                 }
             }
             
-            if (propertyFromMaster != null && propertyFromMaster.length() > 0) {
-                if (!propertyFromMaster.equalsIgnoreCase(link.reversePropertyName)) continue;
+            if (propertyFromWhereObject != null && propertyFromWhereObject.length() > 0) {
+                if (!propertyFromWhereObject.equalsIgnoreCase(link.reversePropertyName)) continue;
             }
             
             if (newFromTable != null) fromTable = newFromTable;
@@ -376,7 +376,7 @@ public class QueryConverter {
             }
             else {
             	// 20090621
-                Object obj = OAObjectReflectDelegate.getRawReference((OAObject)whereObject, propertyFromMaster);
+                Object obj = OAObjectReflectDelegate.getRawReference((OAObject)whereObject, propertyFromWhereObject);
                 if (obj instanceof OAObjectKey) key = (OAObjectKey) obj;
                 else {
                     if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject) obj);
@@ -384,7 +384,7 @@ public class QueryConverter {
                 }
                 
                 /* was:  bug: this could cause a inf loop for one2one links
-                Object obj = ((OAObject)whereObject).getProperty(propertyFromMaster);
+                Object obj = ((OAObject)whereObject).getProperty(propertyFromWhereObject);
             	key = OAObjectKeyDelegate.getKey((OAObject) obj);
             	*/
             }
@@ -422,7 +422,7 @@ public class QueryConverter {
     }
 
     
-    private String getWhere_ORIG(Link[] links, Table fromTable, Table toTable, Object whereObject, String propertyFromMaster, Vector vecParams) {
+    private String getWhere_ORIG(Link[] links, Table fromTable, Table toTable, Object whereObject, String propertyFromWhereObject, Vector vecParams) {
         // these are used to see if the object can be found without using select
         bEmpty = false;
         selectObject = null;
@@ -430,8 +430,8 @@ public class QueryConverter {
         for (int i=0; links!=null && i < links.length; i++) {
             if (links[i].toTable != toTable) continue;
             
-            if (propertyFromMaster != null && propertyFromMaster.length() > 0) {
-                if (!propertyFromMaster.equalsIgnoreCase(links[i].reversePropertyName)) continue;
+            if (propertyFromWhereObject != null && propertyFromWhereObject.length() > 0) {
+                if (!propertyFromWhereObject.equalsIgnoreCase(links[i].reversePropertyName)) continue;
             }
             Column[] fkeys = links[i].fkeys;
                 
@@ -445,7 +445,7 @@ public class QueryConverter {
             if (toFkeys[0].primaryKey) key = OAObjectKeyDelegate.getKey((OAObject)whereObject);
             else {
                 // 20090621
-                Object obj = OAObjectReflectDelegate.getRawReference((OAObject)whereObject, propertyFromMaster);
+                Object obj = OAObjectReflectDelegate.getRawReference((OAObject)whereObject, propertyFromWhereObject);
                 if (obj instanceof OAObjectKey) key = (OAObjectKey) obj;
                 else {
                     if (obj instanceof OAObject) key = OAObjectKeyDelegate.getKey((OAObject) obj);
@@ -453,7 +453,7 @@ public class QueryConverter {
                 }
                 
                 /* was:  bug: this could cause a inf loop for one2one links
-                Object obj = ((OAObject)whereObject).getProperty(propertyFromMaster);
+                Object obj = ((OAObject)whereObject).getProperty(propertyFromWhereObject);
                 key = OAObjectKeyDelegate.getKey((OAObject) obj);
                 */
             }

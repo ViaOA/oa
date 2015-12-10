@@ -197,7 +197,7 @@ public class OADataSourceClient extends OADataSource {
     @Override
     public int count(Class selectClass, 
         String queryWhere, Object[] params,   
-        OAObject whereObject, String propertyFromMaster, String extraWhere, int max
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, int max
     ) 
     {
         Class whereClass = null;
@@ -207,7 +207,7 @@ public class OADataSourceClient extends OADataSource {
             whereKey = OAObjectKeyDelegate.getKey(whereObject);
         }
         
-        Object[] objs = new Object[] {selectClass, queryWhere, params, whereClass, whereKey, propertyFromMaster, extraWhere, max};
+        Object[] objs = new Object[] {selectClass, queryWhere, params, whereClass, whereKey, propertyFromWhereObject, extraWhere, max};
         
         Object obj = getRemoteClient().datasource(COUNT, objs);
         if (obj instanceof Integer) return ((Integer)obj).intValue();
@@ -233,7 +233,7 @@ public class OADataSourceClient extends OADataSource {
     @Override
     public Iterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 
-        OAObject whereObject, String propertyFromMaster, String extraWhere, 
+        OAObject whereObject, String propertyFromWhereObject, String extraWhere, 
         int max, OAFilter filter, boolean bDirty
     )
     {
@@ -256,7 +256,7 @@ public class OADataSourceClient extends OADataSource {
             selectClass, 
             queryWhere, params, queryOrder, 
             whereClass, whereKey,
-            propertyFromMaster, extraWhere,
+            propertyFromWhereObject, extraWhere,
             max, bDirty, (filter!=null)
         };
         
