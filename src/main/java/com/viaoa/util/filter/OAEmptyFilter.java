@@ -34,29 +34,30 @@ public class OAEmptyFilter implements OAFilter {
     private OAFinder finder;
 
     public OAEmptyFilter() {
-        check();
     }
     public OAEmptyFilter(OAPropertyPath pp) {
         this.pp = pp;
-        check();
     }
     public OAEmptyFilter(String pp) {
         this(pp==null?null:new OAPropertyPath(pp));
     }
     
-    // see if an oaFinder is needed
-    private void check() {
-        FinderInfo fi = OAFilterDelegate.createFinder(pp);
-        if (fi != null) {
-            this.finder = fi.finder;
-            OAFilter f = new OAEmptyFilter(fi.pp);
-            finder.addFilter(f);
-        }
-    }
-    
+    private boolean bSetup;
+    private int cntError;
     
     @Override
     public boolean isUsed(Object obj) {
+        if (!bSetup && pp != null && obj != null) {
+            // see if an oaFinder is needed
+            bSetup = true;
+            FinderInfo fi = OAFilterDelegate.createFinder(obj.getClass(), pp);
+            if (fi != null) {
+                this.finder = fi.finder;
+                OAFilter f = new OAEmptyFilter(fi.pp);
+                finder.addFilter(f);
+            }
+        }
+
         if (finder != null) {
             if (obj instanceof OAObject) {
                 obj = finder.findFirst((OAObject)obj);

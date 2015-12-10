@@ -36,31 +36,33 @@ public class OABetweenOrEqualFilter implements OAFilter {
     public OABetweenOrEqualFilter(Object val1, Object val2) {
         this.value1 = val1;
         this.value2 = val2;
-        check();
     }
     public OABetweenOrEqualFilter(OAPropertyPath pp, Object val1, Object val2) {
         this.pp = pp;
         this.value1 = val1;
         this.value2 = val2;
-        check();
     }
     public OABetweenOrEqualFilter(String pp, Object val1, Object val2) {
         this(pp==null?null:new OAPropertyPath(pp), val1, val2);
     }
 
-    // see if an oaFinder is needed
-    private void check() {
-        FinderInfo fi = OAFilterDelegate.createFinder(pp);
-        if (fi != null) {
-            this.finder = fi.finder;
-            OAFilter f = new OABetweenOrEqualFilter(fi.pp, value1, value2);
-            finder.addFilter(f);
-        }
-    }
-    
+
+    private boolean bSetup;
+    private int cntError;
     
     @Override
     public boolean isUsed(Object obj) {
+        if (!bSetup && pp != null && obj != null) {
+            // see if an oaFinder is needed
+            bSetup = true;
+            FinderInfo fi = OAFilterDelegate.createFinder(obj.getClass(), pp);
+            if (fi != null) {
+                this.finder = fi.finder;
+                OAFilter f = new OABetweenOrEqualFilter(fi.pp, value1, value2);
+                finder.addFilter(f);
+            }
+        }
+    
         if (finder != null) {
             if (obj instanceof OAObject) {
                 obj = finder.findFirst((OAObject)obj);

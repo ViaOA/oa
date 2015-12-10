@@ -35,31 +35,31 @@ public class OANotLikeFilter implements OAFilter {
     
     public OANotLikeFilter(Object value) {
         this.value = value;
-        check();
     }
 
     public OANotLikeFilter(OAPropertyPath pp, Object value) {
         this.pp = pp;
         this.value = value;
-        check();
     }
     public OANotLikeFilter(String pp, Object value) {
         this(pp==null?null:new OAPropertyPath(pp), value);
     }
 
-    // see if an oaFinder is needed
-    private void check() {
-        FinderInfo fi = OAFilterDelegate.createFinder(pp);
-        if (fi != null) {
-            this.finder = fi.finder;
-            OAFilter f = new OANotLikeFilter(fi.pp, value);
-            finder.addFilter(f);
-        }
-    }
-    
+    private boolean bSetup;
+    private int cntError;
     
     @Override
     public boolean isUsed(Object obj) {
+        if (!bSetup && pp != null && obj != null) {
+            // see if an oaFinder is needed
+            bSetup = true;
+            FinderInfo fi = OAFilterDelegate.createFinder(obj.getClass(), pp);
+            if (fi != null) {
+                this.finder = fi.finder;
+                OAFilter f = new OANotLikeFilter(fi.pp, value);
+                finder.addFilter(f);
+            }
+        }
         if (finder != null) {
             if (obj instanceof OAObject) {
                 obj = finder.findFirst((OAObject)obj);

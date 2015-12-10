@@ -15,7 +15,7 @@ import com.viaoa.util.*;
 // 20150806
 /**
  * This is used to find the first value in an object hierarchy (include recursive) that 
- * has a matching (or not matching) value in the first object, or one of the objects in it's hierarch,
+ * has a matching (or not matching) value in the first object, or one of the objects in it's hierarchy,
  * as defined by propertyPaths.
  *
  * example:
@@ -29,6 +29,9 @@ import com.viaoa.util.*;
  *  f.findFirstValue(employee);  // find the first non-empty (ex: true)
  *  f.findFirstValue(employee, true); // find first with special prop = true
  *  
+ *  NOTE:*** use OAFinder instead ***
+ *  
+ *  @deprecated use OAFinder instead
  */
 public class OAHierFinder<F> {
     private String[] strPropPath;

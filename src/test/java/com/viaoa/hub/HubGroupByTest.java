@@ -21,9 +21,9 @@ import com.theice.tsac.model.oa.*;
 
 public class HubGroupByTest extends OAUnitTest {
 
-    //@Test
+    @Test
     public void Test() {
-        reset();
+        init();
         Model model = new Model();
         TsacDataGenerator data = new TsacDataGenerator(model);
         data.createSampleData1();
@@ -54,9 +54,9 @@ public class HubGroupByTest extends OAUnitTest {
     }
     
     
-    //@Test
+    @Test
     public void Test2() {
-        reset();
+        init();
         Model model = new Model();
         TsacDataGenerator data = new TsacDataGenerator(model);
         data.createSampleData1();
@@ -164,9 +164,9 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(hubApplication.size(), hubCombined.getAt(0).getHub().size());
     }    
 
-    //@Test
+    @Test
     public void TestSplit() {
-        reset();
+        init();
         Model model = new Model();
         TsacDataGenerator data = new TsacDataGenerator(model);
         data.createSampleData1();
@@ -220,9 +220,9 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(1, hubCombined.size());
     }    
 
-    //@Test
+    @Test
     public void TestSplit2() {
-        reset();
+        init();
         Model model = new Model();
         TsacDataGenerator data = new TsacDataGenerator(model);
         data.createSampleData1();
@@ -432,9 +432,9 @@ public class HubGroupByTest extends OAUnitTest {
         }
     }    
 
-    //@Test
+    @Test
     public void TestSplit3() {
-        reset();
+        init();
         String pp;
         
         Hub<ApplicationType> hubApplicationType = new Hub<ApplicationType>(ApplicationType.class);
@@ -631,9 +631,9 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(10, hubCombined.getAt(0).getHub().size());
     }    
     
-    //@Test
+    @Test
     public void TestSplit4() {
-        reset();
+        init();
         String pp;
         
         Hub<ApplicationGroup> hubApplicationGroup = new Hub<ApplicationGroup>(ApplicationGroup.class);
@@ -675,9 +675,9 @@ public class HubGroupByTest extends OAUnitTest {
     
     }
     
-    //@Test
+    @Test
     public void TestMultiple() {
-        reset();
+        init();
         String pp;
         
         Hub<Application> hubApplication = new Hub<Application>(Application.class);
@@ -761,7 +761,7 @@ public class HubGroupByTest extends OAUnitTest {
         }
     }
     
-    //@Test
+    @Test
     public void TestMultiple2() {
         reset();
         
@@ -815,7 +815,7 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(2, hubCombined.getAt(0).getHub().size());
     }
     
-    //@Test
+    @Test
     public void TestMultiple3() {
         reset();
         
@@ -963,8 +963,6 @@ public class HubGroupByTest extends OAUnitTest {
         assertEquals(10, hubGroupByApplicationGroup.getAt(0).getHub().getSize());
         assertEquals(10, hubGroupByApplicationGroup.getAt(1).getHub().getSize());
     }
-    
-    
 }
 
 

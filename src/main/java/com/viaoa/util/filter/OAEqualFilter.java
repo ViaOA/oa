@@ -33,8 +33,6 @@ public class OAEqualFilter implements OAFilter {
     private boolean bIgnoreCase;
     private OAPropertyPath pp;
     private OAFinder finder;
-    private boolean bSetup;
-    private int cntError;
 
     public OAEqualFilter(Object value) {
         this.value = value;
@@ -64,20 +62,16 @@ public class OAEqualFilter implements OAFilter {
         this(pp==null?null:new OAPropertyPath(pp), value, bIgnoreCase);
     }
     
+
+    private boolean bSetup;
+    private int cntError;
     
     @Override
     public boolean isUsed(Object obj) {
         if (!bSetup && pp != null && obj != null) {
             // see if an oaFinder is needed
-            FinderInfo fi;
-            try {
-                fi = OAFilterDelegate.createFinder(obj.getClass(), pp);
-                bSetup = true;
-            }
-            catch (Exception e) {
-                if (++cntError < 5) LOG.log(Level.WARNING, "propertyPath error", e);
-                return false;
-            }
+            bSetup = true;
+            FinderInfo fi = OAFilterDelegate.createFinder(obj.getClass(), pp);
             if (fi != null) {
                 this.finder = fi.finder;
                 OAFilter f = new OAEqualFilter(fi.pp, value, bIgnoreCase);

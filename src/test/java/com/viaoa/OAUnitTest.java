@@ -1,6 +1,8 @@
 package com.viaoa;
 
 import com.theice.tsactest.model.Model;
+import com.tmgsc.hifivetest.delegate.ModelDelegate;
+import com.tmgsc.hifivetest.model.oa.cs.ServerRoot;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.autonumber.NextNumber;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
@@ -36,6 +38,10 @@ public class OAUnitTest {
     }
     protected void reset() {
         modelTsac = new com.theice.tsactest.model.Model();
+        ModelDelegate.getPrograms().clear();
+        ServerRoot sr = new ServerRoot();
+        ModelDelegate.initialize(sr);
+        
         if (dsCache != null) {
             dsCache.close();
             dsCache.setGlobalNextNumber(null);

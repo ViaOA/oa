@@ -264,7 +264,7 @@ public class HubLinkTest extends OAUnitTest {
 
     @Test
     public void recursiveLinkTest() {
-        reset();
+        init();
         
         HifiveDataGenerator data = new HifiveDataGenerator();
         data.createSampleData1();

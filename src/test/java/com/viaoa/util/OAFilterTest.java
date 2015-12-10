@@ -1,21 +1,15 @@
 package com.viaoa.util;
 
-
-import java.util.ArrayList;
-
 import org.junit.Test;
-
 import static org.junit.Assert.*;
-
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsactestDataGenerator;
-import com.viaoa.object.OAFinder;
 import com.viaoa.util.filter.*;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.SitePP;
 
 public class OAFilterTest extends OAUnitTest {
-
+    
     @Test
     public void emptyFilterTest() {
         OAEmptyFilter f = new OAEmptyFilter();
@@ -285,33 +279,19 @@ public class OAFilterTest extends OAUnitTest {
     }    
 
     @Test
-    public void ppEqualFilterTest() {
+    public void ppTest() {
         init();
         TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
         data.createSampleData1();
-
+        
         // test with pp that has class
         OAEqualFilter f = new OAEqualFilter(new OAPropertyPath(Site.class, SitePP.environments().silos().servers().id()), 1);
         
-        OAFinder finder = new OAFinder();
-        finder.addFilter(f);
+        boolean b = f.isUsed(modelTsac.getSites().getAt(0));
+        assertEquals(true, b);
         
-        ArrayList al = finder.find(modelTsac.getSites());
-        
-        assertEquals(1, al.size());
-        
-        
-        // should also be able to work without creating a pp with class
-        f = new OAEqualFilter(SitePP.environments().silos().servers().id(), 1);
-        
-        finder = new OAFinder();
-        finder.addFilter(f);
-        
-        al = finder.find(modelTsac.getSites());
-        
-        assertEquals(1, al.size());
-        
-        
+        b = f.isUsed(modelTsac.getSites().getAt(1));
+        assertEquals(false, b);
     }
 
 }

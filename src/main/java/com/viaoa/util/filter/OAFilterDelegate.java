@@ -30,8 +30,8 @@ public class OAFilterDelegate {
      * This will return the OAFinder to use, and the remaining property that should be filtered.
      * see the OAxxxFilters for examples. 
      */
-    public static FinderInfo createFinder(Class clazz, OAPropertyPath pp) throws Exception {
-        if (pp == null) return null;
+    public static FinderInfo createFinder(Class clazz, OAPropertyPath pp) {
+        if (clazz == null || pp == null) return null;
         
         String s = pp.getPropertyPath();
         if (s == null || s.indexOf('.') < 0) return null;

@@ -83,8 +83,13 @@ public class OASyncDelegate {
         return getSyncServer(c.getPackage());
     }
     public static OASyncServer getSyncServer(Hub h) {
-        if (h == null) return getSyncServer((Package) null);
-        return getSyncServer(h.getObjectClass().getPackage());
+        if (h != null) {
+            Class c = h.getObjectClass();
+            if (c != null) {
+                return getSyncServer(c.getPackage());
+            }
+        }
+        return getSyncServer((Package) null);
     }
     public static OASyncServer getSyncServer(Package p) {
         if (p == null) p = ObjectPackage;
@@ -94,7 +99,8 @@ public class OASyncDelegate {
     }
     public static void setSyncServer(Package p, OASyncServer ss) {
         if (p == null) p = ObjectPackage;
-        if (ss != null)  hmSyncServer.put(p, ss);
+        if (ss != null) hmSyncServer.put(p, ss);
+        else hmSyncServer.remove(p);
     }
     
     public static OASyncClient getSyncClient() {
@@ -105,8 +111,13 @@ public class OASyncDelegate {
         return getSyncClient(c.getPackage());
     }
     public static OASyncClient getSyncClient(Hub h) {
-        if (h == null) return getSyncClient((Package) null);
-        return getSyncClient(h.getObjectClass().getPackage());
+        if (h != null) {
+            Class c = h.getObjectClass();
+            if (c != null) {
+                return getSyncClient(c.getPackage());
+            }
+        }
+        return getSyncClient((Package) null);
     }
     public static OASyncClient getSyncClient(Package p) {
         if (p == null) p = ObjectPackage;
@@ -117,6 +128,7 @@ public class OASyncDelegate {
     public static void setSyncClient(Package p, OASyncClient sc) {
         if (p == null) p = ObjectPackage;
         if (sc != null) hmSyncClient.put(p, sc);
+        else hmSyncClient.remove(p);
     }
 
     
@@ -125,8 +137,13 @@ public class OASyncDelegate {
         return getRemoteServer(c.getPackage());
     }
     public static RemoteServerInterface getRemoteServer(Hub h) {
-        if (h == null) return getRemoteServer((Package) null);
-        return getRemoteServer(h.getObjectClass().getPackage());
+        if (h != null) {
+            Class c = h.getObjectClass();
+            if (c != null) {
+                return getRemoteServer(c.getPackage());
+            }
+        }
+        return getRemoteServer((Package) null);
     }
     /**
      * Created by OASyncServer, and used by OASyncClient to then create a remote session on the server. 
@@ -140,6 +157,7 @@ public class OASyncDelegate {
     public static void setRemoteServer(Package p, RemoteServerInterface ss) {
         if (p == null) p = ObjectPackage;
         if (ss != null) hmRemoteServer.put(p, ss);
+        else hmRemoteServer.remove(p);
     }
 
     
@@ -151,8 +169,13 @@ public class OASyncDelegate {
         return getRemoteSession(c.getPackage());
     }
     public static RemoteSessionInterface getRemoteSession(Hub h) {
-        if (h == null) return getRemoteSession((Package) null);
-        return getRemoteSession(h.getObjectClass().getPackage());
+        if (h != null) {
+            Class c = h.getObjectClass();
+            if (c != null) {
+                return getRemoteSession(c.getPackage());
+            }
+        }
+        return getRemoteSession((Package) null);
     }
     /**
      * Set by OASyncClient after getting the remote session on the server.
@@ -166,6 +189,7 @@ public class OASyncDelegate {
     public static void setRemoteSession(Package p, RemoteSessionInterface rs) {
         if (p == null) p = ObjectPackage;
         if (rs != null) hmRemoteSession.put(p, rs);
+        else hmRemoteSession.remove(p);
     }
 
     public static RemoteClientInterface getRemoteClient(Class c) {
@@ -173,8 +197,13 @@ public class OASyncDelegate {
         return getRemoteClient(c.getPackage());
     }
     public static RemoteClientInterface getRemoteClient(Hub h) {
-        if (h == null) getRemoteClient((Package) null);
-        return getRemoteClient(h.getObjectClass().getPackage());
+        if (h != null) {
+            Class c = h.getObjectClass();
+            if (c != null) {
+                return getRemoteClient(c.getPackage());
+            }
+        }
+        return getRemoteClient((Package) null);
     }
     /**
      * remote object from OASyncServer by calling/using RemoteSession. Set by OASyncClient, to get data from server.
@@ -189,6 +218,7 @@ public class OASyncDelegate {
     public static void setRemoteClient(Package p, RemoteClientInterface rc) {
         if (p == null) p = ObjectPackage;
         if (rc != null) hmRemoteClient.put(p, rc);
+        else hmRemoteClient.remove(p);
     }
     
 
@@ -197,8 +227,13 @@ public class OASyncDelegate {
         return getRemoteSync(c.getPackage());
     }
     public static RemoteSyncInterface getRemoteSync(Hub h) {
-        if (h == null) return getRemoteSync((Package) null);
-        return getRemoteSync(h.getObjectClass().getPackage());
+        if (h != null) {
+            Class c = h.getObjectClass();
+            if (c != null) {
+                return getRemoteSync(c.getPackage());
+            }
+        }
+        return getRemoteSync((Package) null);
     }
     /**
      * Created by OASyncServer and used remotely by OASyncClient to keep OAObjects and Hubs in sync.
@@ -212,6 +247,7 @@ public class OASyncDelegate {
     public static void setRemoteSync(Package p, RemoteSyncInterface rs) {
         if (p == null) p = ObjectPackage;
         if (rs != null) hmRemoteSync.put(p, rs);
+        else hmRemoteSync.remove(p);
     }
     public static void setRemoteSync(RemoteSyncInterface rs) {
         setRemoteSync((Package)null, rs);
@@ -247,8 +283,13 @@ public class OASyncDelegate {
         return isServer(obj.getClass().getPackage());
     }
     public static boolean isServer(Hub h) {
-        if (h == null) return isServer((Package) null);
-        return isServer(h.getObjectClass().getPackage());
+        if (h != null) {
+            Class c = h.getObjectClass();
+            if (c != null) {
+                return isServer(c.getPackage());
+            }
+        }
+        return isServer((Package) null);
     }
     public static boolean isServer(Package p) {
         if (p == null) p = ObjectPackage;
@@ -283,8 +324,13 @@ public class OASyncDelegate {
         return isSingleUser(c.getPackage());
     }
     public static boolean isSingleUser(Hub h) {
-        if (h == null) return isSingleUser((Package) null);
-        return isSingleUser(h.getObjectClass().getPackage());
+        if (h != null) {
+            Class c = h.getObjectClass();
+            if (c != null) {
+                return isSingleUser(c.getPackage());
+            }
+        }
+        return isSingleUser((Package) null);
     }
     public static boolean isSingleUser(Package p) {
         if (p == null) p = ObjectPackage;

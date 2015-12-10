@@ -834,7 +834,15 @@ public class OAObjectCacheDelegate {
         OAFilter filter = null;
         if (!OAString.isEmpty(propertyPath)) {
             OAPropertyPath pp = new OAPropertyPath(clazz, propertyPath);
-            FinderInfo fi = OAFilterDelegate.createFinder(pp);
+            FinderInfo fi;
+            try {
+                fi = OAFilterDelegate.createFinder(clazz, pp);
+            }
+            catch (Exception e) {
+                throw new RuntimeException("find error with propertyPath", e);
+            }
+            
+            
             if (fi != null) {
                 finder = fi.finder;
                 filter = new OAEqualFilter(fi.pp, findValue, true);
@@ -852,7 +860,7 @@ public class OAObjectCacheDelegate {
         return _find(fromObject, clazz, finder, bSkipNew, bThrowException, fetchAmount, alResults);
     }
 
-    protected static Object _find(Object fromObject, Class clazz, OAFinder finder, boolean bSkipNew, boolean bThrowException, int fetchAmount, ArrayList<Object> alResults) {
+    protected static Object _find(final Object fromObject, final Class clazz, final OAFinder finder, final boolean bSkipNew, final boolean bThrowException, int fetchAmount, final ArrayList<Object> alResults) {
         if (bDisableCache) return null;
 
         TreeMapHolder tmh = getTreeMapHolder(clazz, false);

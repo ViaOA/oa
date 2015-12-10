@@ -2,12 +2,12 @@ package com.viaoa.ds;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-
 import com.theice.tsactest.model.oa.*;
+import com.tmgsc.hifivetest.DataSource;
 import com.viaoa.OAUnitTest;
+import com.viaoa.ds.jdbc.OADataSourceJDBC;
 import com.viaoa.hub.Hub;
 import com.viaoa.util.OAFilter;
-
 
 public class OADataSourceTest extends OAUnitTest {
     
@@ -17,7 +17,7 @@ public class OADataSourceTest extends OAUnitTest {
      */
     @Test
     public void registerTest() {
-        reset();
+        init();
         OADataSource[] dss = OADataSource.getDataSources();
         assertTrue(dss==null || dss.length == 0);
 
@@ -59,10 +59,15 @@ public class OADataSourceTest extends OAUnitTest {
     }
     
     @Test
-    public void Test() {
+    public void Test() throws Exception {
+        init();
+        // hi5 datasource
+        DataSource ds = new DataSource();
+        ds.open();
+        OADataSourceJDBC oads = ds.getOADataSource();
         
+        ds.close();
+        reset();
     }
-    
-    
     
 }

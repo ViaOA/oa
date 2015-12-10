@@ -160,10 +160,10 @@ public class OAPropertyPath<T> {
         return recursiveLinkInfos;
     }
 
-    public Object getValue(T fromObject) throws Exception {
+    public Object getValue(T fromObject) {
         return getValue(null, fromObject);
     }
-    public String getValueAsString(T fromObject) throws Exception {
+    public String getValueAsString(T fromObject) {
         return getValueAsString(null, fromObject);
     }
     
@@ -172,7 +172,7 @@ public class OAPropertyPath<T> {
      * Notes: if any of the property's is null, then null is returned.
      * If any of the non-last properties is a Hub, then the AO will be used.
      */
-    public Object getValue(Hub<T> hub, T fromObject) throws Exception {
+    public Object getValue(Hub<T> hub, T fromObject) {
         if (fromObject == null) return null;
         if (this.fromClass == null) {
             setup( (Class<T>)fromObject.getClass());
@@ -183,10 +183,20 @@ public class OAPropertyPath<T> {
         for (int i=0; i < methods.length; i++) {
             
             if (bLastMethodHasHubParam && i+1 == methods.length) {
-                result = methods[i].invoke(result, hub);
+                try {
+                    result = methods[i].invoke(result, hub);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("error invoking method="+methods[i], e);
+                }
             }
             else {
-                result = methods[i].invoke(result);
+                try {
+                    result = methods[i].invoke(result);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("error invoking method="+methods[i], e);
+                }
             }
             
             if (result == null) break;
@@ -200,12 +210,12 @@ public class OAPropertyPath<T> {
     /**
      * This will call getValue, and then call OAConv.toString using getFormat. 
      */
-    public String getValueAsString(Hub<T> hub, T fromObject) throws Exception {
+    public String getValueAsString(Hub<T> hub, T fromObject) {
         Object obj = getValue(hub, fromObject);
         String s = OAConv.toString(obj, getFormat());
         return s;
     }
-    public String getValueAsString(Hub<T> hub, T fromObject, String format) throws Exception {
+    public String getValueAsString(Hub<T> hub, T fromObject, String format) {
         Object obj = getValue(hub, fromObject);
         String s = OAConv.toString(obj, format);
         return s;
@@ -215,23 +225,22 @@ public class OAPropertyPath<T> {
         return fromClass;
     }
     
-    public void setup(Hub hub) throws Exception {
+    public void setup(Hub hub) {
         if (hub == null) return;
         setup(hub, hub.getObjectClass(), false);
     }
     
-    public void setup(Class clazz) throws Exception {
+    public void setup(Class clazz) {
         setup(clazz, false);
     }
 
     /**
      * @param clazz
      * @param bIgnorePrivateLink if true, then a link that does not have a get method will not throw an exception.  Used by HubGroupBy
-     * @throws Exception
      */
-    public void setup(Class clazz, boolean bIgnorePrivateLink) throws Exception {
+    public void setup(Class clazz, boolean bIgnorePrivateLink) {
         String s = setup(null, clazz, bIgnorePrivateLink);
-        if (s != null) throw new Exception(s);
+        if (s != null) throw new RuntimeException(s);
     }
     
     public boolean hasPrivateLink() {
@@ -246,7 +255,7 @@ public class OAPropertyPath<T> {
     public boolean getNeedsDataToVerify() {
         return bNeedsDataToVerify;
     }
-    public String setup(final Hub hub, Class clazz, final boolean bIgnorePrivateLink) throws Exception {
+    public String setup(final Hub hub, Class clazz, final boolean bIgnorePrivateLink) {
         bNeedsDataToVerify = false;
         if (clazz == null) return null;
         this.fromClass = clazz;
@@ -263,7 +272,13 @@ public class OAPropertyPath<T> {
                 propertyPath = propertyPath.substring(pos2+2);
                 
                 if (fromClassName.indexOf('.') >= 0) {
-                    Class c = Class.forName(fromClassName);
+                    Class c;
+                    try {
+                        c = Class.forName(fromClassName);
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException("error getting class="+fromClassName, e);
+                    }
                     this.fromClass = c;
                 }
                 else {
@@ -273,7 +288,13 @@ public class OAPropertyPath<T> {
                         packageName = packageName.substring(0, pos+1);
                     }
                     else packageName = "";
-                    Class c = Class.forName(packageName + fromClassName);
+                    Class c;
+                    try {
+                        c = Class.forName(packageName + fromClassName);
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException("error getting class="+packageName+fromClassName, e);
+                    }
                     this.fromClass = c;
                 }
                 
@@ -462,7 +483,14 @@ public class OAPropertyPath<T> {
                         }
                         else cn = castName;
                     }
-                    clazz = Class.forName(cn);
+                    
+                    try {
+                        clazz = Class.forName(cn);
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException("error getting castName class="+cn, e);
+                    }
+                    
                 }
                 else if (cnter == 1 && clazz.equals(OAObject.class) && hub != null) {  // 20150712
                     // see if there is an object to check with
@@ -576,7 +604,12 @@ public class OAPropertyPath<T> {
             }
             else {
                 if (filterClass != null) {
-                    filterConstructor = filterClass.getConstructor(new Class[] {Hub.class, Hub.class});
+                    try {
+                        filterConstructor = filterClass.getConstructor(new Class[] {Hub.class, Hub.class});
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException("error getting filter constructor", e);
+                    }
                 }
             }
             if (filterClass != null && filterConstructor == null) {

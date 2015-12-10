@@ -586,6 +586,12 @@ public class OASyncClient {
         }
         multiplexerClient = null;
         remoteMultiplexerClient = null;
+        
+        OASyncDelegate.setSyncClient(packagex, null);
+        OASyncDelegate.setRemoteServer(packagex, null);
+        OASyncDelegate.setRemoteSync(packagex, null);
+        OASyncDelegate.setRemoteSession(packagex, null);
+        OASyncDelegate.setRemoteClient(packagex, null);
     }
 
     public void onStopCalled(String title, String msg) {
