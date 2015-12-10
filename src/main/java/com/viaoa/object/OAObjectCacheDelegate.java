@@ -776,13 +776,35 @@ public class OAObjectCacheDelegate {
     public static Object find(Class clazz) {
         return _find(null, clazz, null, null, false, true);
     }
+    public static Object find(Class clazz, OAFinder finder) {
+        return _find(null, clazz, finder, false, true);
+    }
+
     public static Object find(Class clazz, String propertyPath, Object findObject) {
         return _find(null, clazz, propertyPath, findObject, false, true);
     }
+
+    
     public static Object find(Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
     	return _find(null, clazz, propertyPath, findObject, bSkipNew, bThrowException);
     }    
+    public static Object find(Class clazz, OAFinder finder, boolean bSkipNew, boolean bThrowException) {
+        return _find(null, clazz, finder, false, true);
+    }
 
+    
+    public static Object fetch(Class clazz, Object fromObject, int fetchAmount, ArrayList<Object> alResults) {
+        return _find(fromObject, clazz, null, null, false, false, fetchAmount, alResults);
+    }
+    
+    protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
+        return _find(fromObject, clazz, propertyPath, findObject, bSkipNew, bThrowException, 1, null);
+    }
+    protected static Object _find(Object fromObject, Class clazz, OAFinder finder, boolean bSkipNew, boolean bThrowException) {
+        return _find(fromObject, clazz, finder, bSkipNew, bThrowException, 1, null);
+    }
+
+    
     // 20140125 get objects from cache
     /**
      * Returns objects from the objectCache.
@@ -792,16 +814,9 @@ public class OAObjectCacheDelegate {
      * @param alResults list of objects, after the fromObject
      * @return last object in alResults, that can be used as the fromObject on the next call to fetch
      */
-    public static Object fetch(Class clazz, Object fromObject, int fetchAmount, ArrayList<Object> alResults) {
-        return _find(fromObject, clazz, null, null, false, false, fetchAmount, alResults);
-    }
-    
-    protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findObject, boolean bSkipNew, boolean bThrowException) {
-        return _find(fromObject, clazz, propertyPath, findObject, bSkipNew, bThrowException, 1, null);
-    }
     protected static Object _find(Object fromObject, Class clazz, String propertyPath, Object findValue, boolean bSkipNew, boolean bThrowException, int fetchAmount, ArrayList<Object> alResults) {
         if (bDisableCache) return null;
-    	// LOG.fine("class="+clazz+", propertyPath="+propertyPath+" findObject="+findObject+", bSkipNew="+bSkipNew);
+        // LOG.fine("class="+clazz+", propertyPath="+propertyPath+" findObject="+findObject+", bSkipNew="+bSkipNew);
         if (propertyPath == null || propertyPath.length() == 0) {
             propertyPath = null;
             // throw new IllegalArgumentException("HubController.find() property cant be null");
@@ -810,10 +825,10 @@ public class OAObjectCacheDelegate {
 
         // 20140201 replace methods with finder
         OAFinder finder = null;
+        OAFilter filter;
         if (!OAString.isEmpty(propertyPath)) {
             OAPropertyPath pp = new OAPropertyPath(clazz, propertyPath);
             FinderInfo fi = OAFilterDelegate.createFinder(pp);
-            OAFilter filter;
             if (fi != null) {
                 finder = fi.finder;
                 filter = new OAEqualFilter(fi.pp, findValue, true);
@@ -822,8 +837,17 @@ public class OAObjectCacheDelegate {
                 finder = new OAFinder();
                 filter = new OAEqualFilter(pp, findValue, true);
             }
-            finder.addFilter(filter);
         }
+        else {
+            finder = new OAFinder();
+            filter = new OAEqualFilter(findValue, true);
+        }
+        finder.addFilter(filter);
+        return _find(fromObject, clazz, finder, bSkipNew, bThrowException, fetchAmount, alResults);
+    }
+
+    protected static Object _find(Object fromObject, Class clazz, OAFinder finder, boolean bSkipNew, boolean bThrowException, int fetchAmount, ArrayList<Object> alResults) {
+        if (bDisableCache) return null;
 
         TreeMapHolder tmh = getTreeMapHolder(clazz, false);
         if (tmh == null) return null;
@@ -844,7 +868,6 @@ public class OAObjectCacheDelegate {
             if (me == null) me = tmh.treeMap.firstEntry();
             
             boolean b = OAObject.class.isAssignableFrom(clazz);
-qqqqqqqqqqqqq
             while (me != null) {
                 WeakReference ref = (WeakReference) me.getValue();
                 Object object = ref.get();
@@ -855,22 +878,6 @@ qqqqqqqqqqqqq
                                 if (alResults == null) return object;
                                 alResults.add(object);
                                 if (alResults.size() >= fetchAmount) return object;
-                            }
-                        }
-                        else if (methods == null) {
-                            if (alResults == null) return object;
-                            alResults.add(object);
-                            if (alResults.size() >= fetchAmount) return object;
-                        }
-                        else {
-                            Object value = OAReflect.getPropertyValue(object, methods);
-                            if (value == null && findValue == null) return object;
-                            if (value != null && findValue != null) {
-                                if (value == findValue || value.equals(findValue)) {
-                                    if (alResults == null) return object;
-                                    alResults.add(object);
-                                    if (alResults.size() >= fetchAmount) return object;
-                                }
                             }
                         }
                     }
