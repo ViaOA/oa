@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
 
+import com.viaoa.ds.OADataSourceIterator;
 import com.viaoa.ds.jdbc.*;
 import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.ds.jdbc.query.*;
@@ -59,7 +60,7 @@ public class SelectDelegate {
     }
     */
 
-    public static Iterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, Object[] params, String queryOrder, int max, boolean bDirty) {
+    public static OADataSourceIterator select(OADataSourceJDBC ds, Class clazz, String queryWhere, Object[] params, String queryOrder, int max, boolean bDirty) {
         if (ds == null) return null;
         if (clazz == null) return null;
         Table table = ds.getDatabase().getTable(clazz);
@@ -182,7 +183,7 @@ public class SelectDelegate {
     }
     
     // 20121013 changes to use PreparedStatements for Selecting Many link
-    public static Iterator select(OADataSourceJDBC ds, Class clazz, OAObject whereObject, String extraWhere, Object[] params, String propertyFromWhereObject, String queryOrder, int max, boolean bDirty) {
+    public static OADataSourceIterator select(OADataSourceJDBC ds, Class clazz, OAObject whereObject, String extraWhere, Object[] params, String propertyFromWhereObject, String queryOrder, int max, boolean bDirty) {
         // dont need to select if master object (whereObject) is new
         if (whereObject.getNew()) return null;
 
@@ -237,7 +238,7 @@ public class SelectDelegate {
     }
     
     // 20121013
-    public static Iterator selectObject(OADataSourceJDBC ds, Class clazz, OAObjectKey key, boolean bDirty) throws Exception {
+    public static OADataSourceIterator selectObject(OADataSourceJDBC ds, Class clazz, OAObjectKey key, boolean bDirty) throws Exception {
         if (ds == null) return null;
         if (clazz == null) return null;
 
@@ -339,7 +340,7 @@ public class SelectDelegate {
      * Note: queryWhere needs to begin with "FROM TABLENAME WHERE ..."
      * queryOrder will be prefixed with "ORDER BY "
      */
-    public static Iterator selectPassthru(OADataSourceJDBC ds, Class clazz, String queryWhere, String queryOrder, int max, boolean bDirty) {
+    public static OADataSourceIterator selectPassthru(OADataSourceJDBC ds, Class clazz, String queryWhere, String queryOrder, int max, boolean bDirty) {
         Table table = ds.getDatabase().getTable(clazz);
         if (table == null) return null;
         

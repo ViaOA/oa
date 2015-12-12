@@ -77,7 +77,7 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
     protected int amountRead=-1;
     protected int amountCount=-1;
     protected Object[] params;
-    public transient Iterator query;
+    public transient OADataSourceIterator query;
 
     public static final int defalutFetchAmount = 45;
     protected int fetchAmount=defalutFetchAmount;  // used by Hub to know how many to read at a time
@@ -553,6 +553,15 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
         closeQuery();
     }
    
+    public String getDataSourceQuery() {
+        if (query == null) return null;
+        return query.getQuery();
+    }
+    public String getDataSourceQuery2() {
+        if (query == null) return null;
+        return query.getQuery2();
+    }
+    
     /**
         Returns next object loaded from select, else null if no other objects are available.
     */

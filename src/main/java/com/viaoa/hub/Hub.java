@@ -14,6 +14,7 @@ import java.util.*;
 import java.io.*;
 import java.lang.reflect.*;
 
+import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
 import com.viaoa.ds.*;
 import com.viaoa.object.*;
@@ -2112,6 +2113,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         return iter;
     }
 
+    public boolean isServer() {
+        return OASyncDelegate.isServer(getObjectClass());
+    }
+    
 
     // public transient boolean DEBUG; // for debugging
 }

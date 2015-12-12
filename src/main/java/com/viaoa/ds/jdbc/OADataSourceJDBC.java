@@ -202,7 +202,7 @@ public class OADataSourceJDBC extends OADataSource {
      * @param filter not used, since the jdbc ds supports queries.
      */
     @Override
-    public Iterator select(Class selectClass, 
+    public OADataSourceIterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 
         OAObject whereObject, String propertyFromWhereObject, String extraWhere, 
         int max, OAFilter filter, boolean bDirty
@@ -220,7 +220,7 @@ public class OADataSourceJDBC extends OADataSource {
     }
 
     
-    public Iterator selectPassthru(Class selectClass, 
+    public OADataSourceIterator selectPassthru(Class selectClass, 
         String queryWhere, String queryOrder, 
         int max, OAFilter filter, boolean bDirty
     )

@@ -456,19 +456,22 @@ public class OASyncDelegate {
      * 
      * @return true if this is the server, else false.
      * @see #endServerOnly()
-     */
+     
     public static boolean beginServerOnly(Package p) {
         if (!isServer(p)) return false;
-        sendMessages();
+        sendMessages(true);
         return true;
     }
-    /**
+    / **
      * @see #beginServerOnly()
-     */
-    public static void endServerOnly() {
+     * /
+    public static boolean endServerOnly(Package p) {
+        if (!isServer(p)) return false;
         sendMessages(false);
+        return true;
     }
-
+    */
+    
     /* later
     private static OASyncCombinedClient syncCombinedClient;
     public static OASyncClient getSyncClient() {

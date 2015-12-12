@@ -11,6 +11,7 @@
 package com.viaoa.ds.cs;
 
 import java.util.*;
+
 import com.viaoa.object.*;
 import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteClientInterface;
@@ -231,7 +232,7 @@ public class OADataSourceClient extends OADataSource {
 
 
     @Override
-    public Iterator select(Class selectClass, 
+    public OADataSourceIterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 
         OAObject whereObject, String propertyFromWhereObject, String extraWhere, 
         int max, OAFilter filter, boolean bDirty
@@ -268,7 +269,7 @@ public class OADataSourceClient extends OADataSource {
 
 
     @Override
-    public Iterator selectPassthru(Class selectClass, 
+    public OADataSourceIterator selectPassthru(Class selectClass, 
         String queryWhere, String queryOrder, 
         int max, OAFilter filter, boolean bDirty
     )
@@ -311,7 +312,7 @@ public class OADataSourceClient extends OADataSource {
     /**
         Iterator Class that is used by select methods, works directly with OADataSource on OAServer.
     */
-    class MyIterator implements Iterator {
+    class MyIterator implements OADataSourceIterator {
         Object id;
         Class clazz;
         OAObjectKey key; // object to return
@@ -379,6 +380,16 @@ public class OADataSourceClient extends OADataSource {
 
         public void remove() {
             getRemoteClient().datasource(IT_REMOVE, new Object[] {id} );
+        }
+        @Override
+        public String getQuery() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+        @Override
+        public String getQuery2() {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
 

@@ -18,6 +18,20 @@ import com.viaoa.object.OAThreadLocalDelegate;
 
 /**
  * Creates a transaction for a Thread.
+ * 
+     example:
+ <code>
+ 
+    OATransaction trans = new OATransaction(java.sql.Connection.TRANSACTION_SERIALIZABLE);
+    trans.start();
+    ..
+    trans.commit();
+    ||
+    trans.rollback();
+      
+ </code>
+  
+ * 
  * @author vincevia
  *
  */

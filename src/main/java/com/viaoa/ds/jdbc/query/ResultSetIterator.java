@@ -30,10 +30,11 @@ import com.viaoa.util.OAConverter;
 import com.viaoa.util.OADate;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.OATime;
+import com.viaoa.ds.OADataSourceIterator;
 import com.viaoa.ds.jdbc.*;
 import com.viaoa.ds.jdbc.db.*;
 
-public class ResultSetIterator implements Iterator {
+public class ResultSetIterator implements OADataSourceIterator {
     private static Logger LOG = Logger.getLogger(ResultSetIterator.class.getName());
     
     OADataSourceJDBC ds;
@@ -68,6 +69,13 @@ public class ResultSetIterator implements Iterator {
     Object[] arguments; // when using preparedStatement
     private boolean bUsePreparedStatement;
 
+    public String getQuery() {
+        return query;
+    }
+    public String getQuery2() {
+        return query2;
+    }
+    
     class ColumnInfo {
         Column column;
         int pkeyPos=-1;

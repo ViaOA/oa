@@ -242,12 +242,12 @@ public class OADataSourceAuto extends OADataSource {
     }
 
     @Override
-    public Iterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, OAObject whereObject, String propertyFromWhereObject, String extraWhere, int max, OAFilter filter, boolean bDirty) {
+    public OADataSourceIterator select(Class selectClass, String queryWhere, Object[] params, String queryOrder, OAObject whereObject, String propertyFromWhereObject, String extraWhere, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
 
     @Override
-    public Iterator selectPassthru(Class selectClass, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
+    public OADataSourceIterator selectPassthru(Class selectClass, String queryWhere, String queryOrder, int max, OAFilter filter, boolean bDirty) {
         return null;
     }
 }

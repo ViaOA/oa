@@ -17,6 +17,7 @@ import java.lang.ref.*;  // java1.2
 
 import com.viaoa.hub.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
 
@@ -98,7 +99,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
     
-    public static final int version = 151209;  
+    public static final int version = 151212;  
     static {
         /*
         Properties props = System.getProperties();
@@ -766,30 +767,33 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     /**
      * This is used so that code will only be ran on the server.
-     * If the current thread is an OAClientThread, it will still send messages to other clients.
+     * If the current thread is an OAClientThread, then it will still send messages to other clients.
      */
-    public static boolean isServer() {
-        return isServer(null);
+    public boolean isServer() {
+        return OASyncDelegate.isServer(getClass());
     }
-    public static boolean isServer(OAObject obj) {
-        Class c;
-        if (obj != null) c = obj.getClass();
-        else c = Object.class;
-        return OASyncDelegate.isServer(c);
+    /*
+    public boolean beginServerOnly() {
+        return OASync.beginServerOnly(getClass().getPackage());
     }
+    public boolean endServerOnly() {
+        return OASync.endServerOnly(getClass().getPackage());
+    }
+    */
+    
     /**
      * All OASync messages will be processed by an OARemoteThread.
      */
-    public static boolean isRemoteThread() {
+    public boolean isRemoteThread() {
         return OARemoteThreadDelegate.isRemoteThread();
     }
     /**
      * This is used to send out OASync messages, even if the currentThread is a OARemoteThread.
      */
-    public static boolean sendMessages(boolean b) {
+    public boolean sendMessages(boolean b) {
         return OARemoteThreadDelegate.sendMessages(b);
     }
-    public static boolean sendMessages() {
+    public boolean sendMessages() {
         return OARemoteThreadDelegate.sendMessages(true);
     }
     
@@ -844,9 +848,6 @@ public class OAObject implements java.io.Serializable, Comparable {
     public void loadReferences(int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc) {
         OAObjectReflectDelegate.loadAllReferences(this, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc);
     }
-
-    
-    
 }
 
 

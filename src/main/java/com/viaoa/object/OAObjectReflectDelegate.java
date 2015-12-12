@@ -1220,7 +1220,7 @@ public class OAObjectReflectDelegate {
                     if (liReverse != null) {
                         OASelect sel = new OASelect(li.getToClass());
                         sel.setWhereObject(oaObj);
-                        sel.setPropertyFromWhereObject(liReverse.name);
+                        sel.setPropertyFromWhereObject(li.name);
                         sel.select();
                         ref = sel.next();
                         sel.close();

@@ -18,6 +18,7 @@ import com.viaoa.util.OAString;
 import com.viaoa.util.filter.OAEqualFilter;
 import com.viaoa.util.filter.OAQueryFilter;
 import com.viaoa.ds.OADataSource;
+import com.viaoa.ds.OADataSourceIterator;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 
 // 20140124 
@@ -40,7 +41,7 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
     }
 
     @Override
-    public Iterator select(Class selectClass, 
+    public OADataSourceIterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 
         OAObject whereObject, String propertyFromWhereObject, String extraWhere, 
         int max, OAFilter filter, boolean bDirty
@@ -104,7 +105,7 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
     
 
     @Override
-    public Iterator selectPassthru(Class selectClass, 
+    public OADataSourceIterator selectPassthru(Class selectClass, 
         String queryWhere, String queryOrder, 
         int max, OAFilter filter, boolean bDirty
     )

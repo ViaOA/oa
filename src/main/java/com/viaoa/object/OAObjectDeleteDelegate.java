@@ -10,9 +10,6 @@
 */
 package com.viaoa.object;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -206,7 +203,7 @@ public class OAObjectDeleteDelegate {
 		    	OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
 		    	if (liRev == null) continue;
 		    	
-		        if (liRev.getType() == OALinkInfo.ONE) {
+		        if (liRev.getType() == OALinkInfo.ONE) {  // 1to1
 		            Object obj;
 	                if (li.getPrivateMethod()) {
 	                    obj = OAObjectReflectDelegate.getReferenceObject(oaObj, li.getName());

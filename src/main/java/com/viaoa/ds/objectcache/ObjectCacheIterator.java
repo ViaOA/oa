@@ -12,6 +12,7 @@ package com.viaoa.ds.objectcache;
 
 import java.util.*;
 
+import com.viaoa.ds.OADataSourceIterator;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.util.OAFilter;
 
@@ -21,7 +22,7 @@ import com.viaoa.util.OAFilter;
  * no results will be returned.
  * @author vvia
  */
-public class ObjectCacheIterator<T> implements Iterator {
+public class ObjectCacheIterator<T> implements OADataSourceIterator {
     protected Class<T> clazz;
     protected OAFilter<T> filter;
     protected T nextObject, lastFetchObject;
@@ -83,5 +84,13 @@ public class ObjectCacheIterator<T> implements Iterator {
     }
     
     public void remove() {
+    }
+    @Override
+    public String getQuery() {
+        return null;
+    }
+    @Override
+    public String getQuery2() {
+        return null;
     }
 }

@@ -89,7 +89,7 @@ public class OARemoteThreadDelegate {
     }
     /**
      * This allows messages from an OARemoteThread to be sent out to clients.
-     * By default, any messaages generated from an OARemoteThread are not sent.
+     * By default, any messages generated from an OARemoteThread are not sent.
      */
     public static boolean sendMessages(boolean b) {
         Thread t = Thread.currentThread();
