@@ -9,7 +9,8 @@ use this to debug
 Quickmarks plugin installation
     2012/08/14
     Download from:
-        http://sourceforge.net/projects/eclipse-tools/files/quickmarks/v.3.0.2
+        http://sourceforge.net/projects/eclipse-tools/files/quickmarks
+        select: v.3.0.2
     
     **!!! The quickmarks is an old 2.0 plugin and is not supported by eclipse regular install
         > need to install the eclipse 2.0 plugin support
