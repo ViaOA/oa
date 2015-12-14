@@ -13,7 +13,8 @@ package com.viaoa.util;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
-import com.sun.image.codec.jpeg.*;
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  * Resizes image and saves as a scaled jpeg image files on your file system.

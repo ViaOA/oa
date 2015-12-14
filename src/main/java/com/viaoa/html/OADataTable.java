@@ -176,11 +176,11 @@ public class OADataTable extends OAHtmlComponent {
        
        if (totalPages > 1) {
 	       String dis = (currentPage > 0) ? "" : " disablelink";
-		   sb.append("<li><a oaValue='p0' href='#' class='prevnext" +dis+"'>««</a></li>");
+		   sb.append("<li><a oaValue='p0' href='#' class='prevnext" +dis+"'>\u00ab</a></li>");
 	   
 		   int x = currentPage - 1;
 		   if (x < 0) x = 0;
-		   sb.append("<li><a oaValue='p"+x+"' href='#' class='prevnext"+dis+"'>«</a></li>");
+		   sb.append("<li><a oaValue='p"+x+"' href='#' class='prevnext"+dis+"'>\u00bb</a></li>");
        
 	       for (int i = beginPage; i <= endPage; i++) {
 	    	   String s = (i == currentPage) ? " class='oaTableNavCurrentPage'" : "";
@@ -190,10 +190,10 @@ public class OADataTable extends OAHtmlComponent {
 		   x = currentPage + 1;
 		   if (x >= totalPages) x = currentPage;
 		   dis = (currentPage < (totalPages-1)) ? "" : " disablelink";
-		   sb.append("<li><a oaValue='p"+x+"' href='#' class='prevnext"+dis+"'>»</a></li>");
+		   sb.append("<li><a oaValue='p"+x+"' href='#' class='prevnext"+dis+"'>\u00bb</a></li>");
 
 		   dis = (currentPage+1 != totalPages) ? "" : " disablelink";
-		   sb.append("<li><a oaValue='p"+(totalPages-1)+"' href='#' class='prevnext"+dis+"'>»»</a></li>");
+		   sb.append("<li><a oaValue='p"+(totalPages-1)+"' href='#' class='prevnext"+dis+"'>\u00bb\u00bb</a></li>");
        }	   
        sb.append("</ul>");
 	   return new String(sb);
