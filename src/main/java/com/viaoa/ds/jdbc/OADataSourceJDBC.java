@@ -346,8 +346,8 @@ public class OADataSourceJDBC extends OADataSource {
         if (connection != null) connectionPool.releaseConnection(connection);
     }
     
-    public void verify() throws Exception {
-        VerifyDelegate.verify(this);
+    public boolean verify() throws Exception {
+        return VerifyDelegate.verify(this);
     }
 
     @Override

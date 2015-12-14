@@ -287,11 +287,11 @@ public class Resource {
     }
     
     public static String getValue(String name) {
-        return getValue(name, name+" not in Resource Bundle file \"values.properties\"");
+        return getValue(name, (String) null);
     }
 
     public static String getValue(String name, Object[] args) {
-        return getValue(name, args, name+" not in Resource Bundle file \"values.properties\"");
+        return getValue(name, args, null);
     }
 
     /**
@@ -548,15 +548,15 @@ public class Resource {
         // need to resource file reloaded
         resourceBundle = null; 
         
-        String s = Resource.getValue(Resource.APP_DateTimeFormat);
+        String s = Resource.getValue(Resource.APP_DateTimeFormat, "");
         if (s == null || s.length() == 0) OADateTime.setLocale(locale);
         else OADateTime.setGlobalOutputFormat(s);
 
-        s = Resource.getValue(Resource.APP_DateFormat);
+        s = Resource.getValue(Resource.APP_DateFormat, "");
         if (s == null || s.length() == 0) OADate.setLocale(locale);
         else OADate.setGlobalOutputFormat(s);
         
-        s = Resource.getValue(Resource.APP_TimeFormat);
+        s = Resource.getValue(Resource.APP_TimeFormat, "");
         if (s == null || s.length() == 0) OADate.setLocale(locale);
         else OATime.setGlobalOutputFormat(s);
         
@@ -565,17 +565,17 @@ public class Resource {
 
         
         // OAConverter setup
-        s = Resource.getValue(Resource.APP_IntegerFormat);
+        s = Resource.getValue(Resource.APP_IntegerFormat, "");
         if (s == null || s.length() == 0) s = ("#,###");
         OAConv.setIntegerFormat(s);
 
-        s = Resource.getValue(Resource.APP_DecimalFormat);
+        s = Resource.getValue(Resource.APP_DecimalFormat, "");
         if (s == null || s.length() == 0) s = ("#,##0.00");
         OAConv.setDecimalFormat(s);
         OAConv.setBigDecimalFormat(s);
 
         // ¤ = $symbol, see javadoc DecimalFormat.  OAConverterNumber will allow for '$' and will substitute '¤' when converting
-        s = Resource.getValue(Resource.APP_MoneyFormat);
+        s = Resource.getValue(Resource.APP_MoneyFormat, "");
         if (s == null || s.length() == 0) s = ("¤#,##0.00");
         OAConv.setMoneyFormat(s);
         

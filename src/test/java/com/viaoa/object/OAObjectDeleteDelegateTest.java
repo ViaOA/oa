@@ -127,7 +127,7 @@ public class OAObjectDeleteDelegateTest extends OAUnitTest {
     private DataSource dsSqlServer;
     
     @Test
-    public void testWithJDBC() {
+    public void testWithJDBC() throws Exception {
         init();
         
         Resource.setValue(Resource.TYPE_Server, Resource.DB_JDBC_Driver, "com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -143,15 +143,13 @@ public class OAObjectDeleteDelegateTest extends OAUnitTest {
         Resource.setValue(Resource.TYPE_Server, Resource.DB_MaxConnections, "20");
         
         dsSqlServer = new DataSource();
-        try {
-            dsSqlServer.open();
-            dsSqlServer.getOADataSource().setAssignNumberOnCreate(true);
-        }
-        catch (Exception e) {
+ 
+        dsSqlServer.open();
+        if (!dsSqlServer.getOADataSource().verify()) {
             System.out.println("SQL Server test will not be done");
-            e.printStackTrace();
             return;
         }
+        dsSqlServer.getOADataSource().setAssignNumberOnCreate(true);
 
         OATransaction trans = new OATransaction(java.sql.Connection.TRANSACTION_SERIALIZABLE);
         trans.start();

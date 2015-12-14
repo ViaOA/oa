@@ -14,7 +14,7 @@ public class OADataSourceJDBCTest extends OAUnitTest {
     private DataSource dsSqlServer;
     
     @Test
-    public void testWithJDBC() {
+    public void testWithJDBC() throws Exception {
         // test using the Hi5 sqlserver db
         init();
         
@@ -31,13 +31,10 @@ public class OADataSourceJDBCTest extends OAUnitTest {
         Resource.setValue(Resource.TYPE_Server, Resource.DB_MaxConnections, "20");
         
         dsSqlServer = new DataSource();
-        try {
-            dsSqlServer.open();
-            dsSqlServer.getOADataSource().setAssignNumberOnCreate(true);
-        }
-        catch (Exception e) {
+        dsSqlServer.open();
+        dsSqlServer.getOADataSource().setAssignNumberOnCreate(true);
+        if (!dsSqlServer.getOADataSource().verify()) {
             System.out.println("SQL Server test will not be done");
-            e.printStackTrace();
             return;
         }
 
