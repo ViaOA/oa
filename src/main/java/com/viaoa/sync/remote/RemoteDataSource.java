@@ -44,7 +44,7 @@ public abstract class RemoteDataSource {
         boolean b;
         int x;
         Object whereObject;
-        String propFromMaster;
+        String propFromWhereObject;
 
         switch (command) {
         case OADataSourceClient.IT_NEXT:
@@ -136,7 +136,7 @@ public abstract class RemoteDataSource {
                 Object[] params = (Object[]) objects[2];
                 Class whereClass = (Class) objects[3];
                 OAObjectKey whereKey = (OAObjectKey) objects[4];
-                propFromMaster = (String) objects[5];
+                propFromWhereObject = (String) objects[5];
                 String extraWhere = (String) objects[6];
                 int max = (Integer) objects[7];
                 
@@ -145,7 +145,7 @@ public abstract class RemoteDataSource {
                     whereObject = getObject(whereClass, whereKey);
                 }
                 
-                x = ds.count(clazz, queryWhere, params, (OAObject) whereObject, propFromMaster, extraWhere, max);
+                x = ds.count(clazz, queryWhere, params, (OAObject) whereObject, propFromWhereObject, extraWhere, max);
                 obj = new Integer(x);
             }
             else obj = new Integer(-1);
@@ -195,7 +195,7 @@ public abstract class RemoteDataSource {
                 String queryOrder = (String) objects[3];
                 Class whereClass = (Class) objects[4];
                 OAObjectKey whereKey = (OAObjectKey) objects[5];
-                propFromMaster = (String) objects[6];
+                propFromWhereObject = (String) objects[6];
                 String extraWhere = (String) objects[7];
                 int max = (Integer) objects[8];
                 boolean bDirty = (Boolean) objects[9];
@@ -218,7 +218,7 @@ public abstract class RemoteDataSource {
                 }                
                 iterator = ds.select(clazz, 
                     queryWhere, params, queryOrder,
-                    (OAObject) whereObject, propFromMaster, extraWhere,
+                    (OAObject) whereObject, propFromWhereObject, extraWhere,
                     max, filter, bDirty);
                         
                 selectId = "select" + aiSelectCount.incrementAndGet();

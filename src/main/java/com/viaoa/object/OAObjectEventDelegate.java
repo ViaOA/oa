@@ -89,13 +89,13 @@ public class OAObjectEventDelegate {
         }     
         
         // 20151205 check to see if owner is being reassigned
-        if (linkInfo != null && oldObj != null && newObj != null && linkInfo.getType() == OALinkInfo.ONE && !linkInfo.getCalculated()) {
+        if (linkInfo != null && oldObj != null && newObj != null && !oaObj.isNew() && linkInfo.getType() == OALinkInfo.ONE && !linkInfo.getCalculated()) {
             OALinkInfo revLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
             if (revLinkInfo != null && revLinkInfo.getOwner()) {
-                if (!oaObj.isNew()) {
-                    Exception e = new Exception("fyi: owner is being reassigned, will continue");
-                    LOG.log(Level.WARNING, "class="+oaObj.getClass().getSimpleName()+", property="+propertyName+", key="+oaObj.getObjectKey(), e);
-                }
+                String s = "owner is being reassigned, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj;
+                RuntimeException e = new RuntimeException(s);
+                LOG.log(Level.WARNING, s, e);
+                throw e;
             }
         }
         

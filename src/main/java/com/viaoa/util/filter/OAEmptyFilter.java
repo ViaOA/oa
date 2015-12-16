@@ -69,12 +69,7 @@ public class OAEmptyFilter implements OAFilter {
             }
         }
         if (pp != null) {
-            try {
-                obj = pp.getValue(obj);
-            }
-            catch (Exception e) {
-                LOG.log(Level.WARNING, "error getting value for property path", e);
-            }
+            obj = pp.getValue(obj);
         }
         return OACompare.isEmpty(obj, true);
     }

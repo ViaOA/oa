@@ -593,6 +593,8 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
         }
         else {
             if (query == null) return null;
+            obj = (TYPE) query.next();
+            /*was
             try {
                 obj = (TYPE) query.next();
             }
@@ -602,6 +604,7 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
                     LOG.log(Level.WARNING, "", e);
                 }
             }
+            */
         }
         if (obj == null) closeQuery();
         else {

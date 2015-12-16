@@ -10,10 +10,8 @@
 */
 package com.viaoa.object;
 
-import com.viaoa.annotation.OAClass;
-import com.viaoa.hub.Hub;
 
-@OAClass (addToCache=false, localOnly=true, useDataSource=false)
+//@OAClass (addToCache=false, localOnly=true, useDataSource=false)
 public class OAObjectModel {
 //was: public class OAObjectModel extends OAObject {
 

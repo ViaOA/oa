@@ -1217,7 +1217,7 @@ public class OAObjectReflectDelegate {
                 }
                 else if (!bIsCalc) {
                     OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                    if (liReverse != null) {
+                    if (liReverse != null && !liReverse.bPrivateMethod) {
                         OASelect sel = new OASelect(li.getToClass());
                         sel.setWhereObject(oaObj);
                         sel.setPropertyFromWhereObject(li.name);

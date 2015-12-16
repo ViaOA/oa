@@ -300,6 +300,8 @@ public class OAQueryFilter<T> implements OAFilter {
     
     @Override
     public boolean isUsed(Object obj) {
+        if (filter != null) return filter.isUsed(obj);
+        /*was
         try {
             if (filter != null) return filter.isUsed(obj);
         }
@@ -310,7 +312,7 @@ public class OAQueryFilter<T> implements OAFilter {
             System.out.println(e);
             e.printStackTrace();
         }
-        
+        */
         return false;
     }
     
