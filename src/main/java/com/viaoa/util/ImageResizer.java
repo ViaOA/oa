@@ -13,8 +13,13 @@ package com.viaoa.util;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
+
+import javax.imageio.ImageIO;
+
+/*was:
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
+*/
 
 /**
  * Resizes image and saves as a scaled jpeg image files on your file system.
@@ -52,6 +57,9 @@ public class ImageResizer extends Panel {
         // Use JPEGImageEncoder to write the BufferedImage to a file
         try{
             OutputStream os = new FileOutputStream(newImage);
+            // 20151215
+            ImageIO.write(bi, "jpeg", os);
+            /*was:
             JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(os);
             encoder.encode(bi);
             os.flush();
@@ -59,6 +67,7 @@ public class ImageResizer extends Panel {
             img.flush();
             i2.flush();
             bi.flush();
+            */
         }
         catch(IOException ioe) {
             ioe.printStackTrace();

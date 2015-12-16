@@ -11,10 +11,13 @@
 package com.viaoa.jfc.image;
 
 import java.io.*;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.*;
-import com.sun.image.codec.jpeg.*;
-import com.viaoa.util.OAFile;
+//was: import com.sun.image.codec.jpeg.*;
+
+import com.viaoa.util.*;
 
 // save as PNG file
 // import javax.imageio.*;
@@ -77,11 +80,15 @@ public class OAImageCreator implements java.io.Serializable {
     public void createJpeg(String fileName) throws Exception {
         verify(fileName);
         File f = new File(fileName);
-        FileOutputStream fos = new FileOutputStream(f); 
+        FileOutputStream fos = new FileOutputStream(f);
+        // 20151215
+        ImageIO.write(image, "jpeg", fos);
+        /*was:
         JPEGImageEncoder je = JPEGCodec.createJPEGEncoder(fos);
         je.encode(image); 
         fos.flush(); 
         fos.close();
+        */
     }
 
 }

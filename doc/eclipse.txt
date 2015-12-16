@@ -1,6 +1,10 @@
 
 
 
+Compiling with JDK 1.6 using Eclipse Mars
+    set project properties, java compiler, compliance 1.6
+
+
 20151213 Mars installation
     
 use this to debug
