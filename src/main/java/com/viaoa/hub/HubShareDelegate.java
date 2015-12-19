@@ -434,7 +434,7 @@ public class HubShareDelegate {
 
 
 	    
-	    // make sure both hubs are compatable
+	    // make sure both hubs are compatible
 	    if (sharedMasterHub != null) {
 	        if (thisHub.getObjectClass() == null) {
 	            HubDelegate.setObjectClass(thisHub, sharedMasterHub.getObjectClass());

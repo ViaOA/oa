@@ -329,9 +329,9 @@ public class HubListenerTree {
         //LOG.finer("Hub="+root.hub+", property="+origPropertyName);
 
         // 20120826 check for endless loops
-        if (OAThreadLocalDelegate.getHubListenerTreeCount() > 50) {
-            // need to bail out, before stackoveflow
-            LOG.warning("OAThreadLocalDelegate.getHubListenerTreeCount() > 50, will not continue to add listeners");
+        if (OAThreadLocalDelegate.getHubListenerTreeCount() > 25) {
+            // need to bail out, before stackoverflow
+            LOG.warning("OAThreadLocalDelegate.getHubListenerTreeCount() > 25, will not continue to add listeners. PropertyName="+origPropertyName);
             return;
         }
         

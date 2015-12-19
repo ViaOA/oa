@@ -11,28 +11,16 @@
 package com.viaoa.hub;
 
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.object.*;
-import com.viaoa.util.OAFilter;
-import com.viaoa.util.OAArray;
-import com.viaoa.util.OAString;
-import com.viaoa.util.filter.OAAndFilter;
-import com.viaoa.util.filter.OABetweenFilter;
-import com.viaoa.util.filter.OABetweenOrEqualFilter;
-import com.viaoa.util.filter.OABlockFilter;
-import com.viaoa.util.filter.OAEqualFilter;
-import com.viaoa.util.filter.OAGreaterFilter;
-import com.viaoa.util.filter.OAGreaterOrEqualFilter;
-import com.viaoa.util.filter.OALessFilter;
-import com.viaoa.util.filter.OALessOrEqualFilter;
-import com.viaoa.util.filter.OALikeFilter;
-import com.viaoa.util.filter.OANotEqualFilter;
-import com.viaoa.util.filter.OANotLikeFilter;
-import com.viaoa.util.filter.OAOrFilter;
+import com.viaoa.util.*;
+import com.viaoa.util.filter.*;
 
 /**
     HubFilter is used to create a Hub that has objects that are filtered from another Hub.
@@ -54,12 +42,14 @@ import com.viaoa.util.filter.OAOrFilter;
 */
 
 public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Serializable, OAFilter<T> {
+    private static Logger LOG = Logger.getLogger(HubFilter.class.getName());
     private static final long serialVersionUID = 1L;
 
-    protected Hub<T> hubMaster, hub;
+    protected Hub<T> hubMaster;
+    protected WeakReference<Hub<T>> weakHub;
     private HashSet<String> hashProp;
     private boolean bShareAO;
-    private boolean bClosed;
+    private volatile boolean bClosed;
     private boolean bServerSideOnly;
 
     // listener setup for dependent properties
@@ -82,24 +72,31 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         @param hub that stores filtered objects. 
     */
     public HubFilter(Hub<T> hubMaster, Hub<T> hub) {
-        this(false, hubMaster, hub, false, false, null);
+        this(false, hubMaster, hub, false, false, null, null);
     }
 
+    public HubFilter(Hub<T> hubMaster, Hub<T> hub, OAFilter filter) {
+        this(false, hubMaster, hub, false, false, filter, null);
+    }
+    
     public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO) {
-        this(false, hubMaster, hub, bShareAO, false, null);
+        this(false, hubMaster, hub, bShareAO, false, null, null);
+    }
+    public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, OAFilter filter) {
+        this(false, hubMaster, hub, bShareAO, false, filter, null);
     }
 
     public HubFilter(Hub<T> hubMaster, Hub<T> hub, String... dependentPropertyPaths) {
-        this(false, hubMaster, hub, false, false, dependentPropertyPaths);
+        this(false, hubMaster, hub, false, false, null, dependentPropertyPaths);
     }    
     public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, String... dependentPropertyPaths) {
-        this(false, hubMaster, hub, bShareAO, false, dependentPropertyPaths);
+        this(false, hubMaster, hub, bShareAO, false, null, dependentPropertyPaths);
     }    
     public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, boolean bRefreshOnLinkChange, String... dependentPropertyPaths) {
-        this(false, hubMaster, hub, bShareAO, bRefreshOnLinkChange, dependentPropertyPaths);
+        this(false, hubMaster, hub, bShareAO, bRefreshOnLinkChange, null, dependentPropertyPaths);
     }
     
-    public HubFilter(boolean bObjectCache, Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, boolean bRefreshOnLinkChange, String... dependentPropertyPaths) {
+    public HubFilter(boolean bObjectCache, Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, boolean bRefreshOnLinkChange, OAFilter filter, String... dependentPropertyPaths) {
         // note: bObjectCache will allow hubMaster to be null, which will then use the oaObjectCache
         if (!bObjectCache && hubMaster == null) {
             throw new IllegalArgumentException("hubMaster can not be null if bObjectCache=false");
@@ -108,9 +105,13 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             // throw new IllegalArgumentException("hub can not be null");
         }
         this.hubMaster = hubMaster;
-        this.hub = hub;
+        this.weakHub = new WeakReference(hub);
         this.bShareAO = bShareAO;
         this.bRefreshOnLinkChange = bRefreshOnLinkChange;
+        if (filter != null) {
+            alFilters = new ArrayList<OAFilter>();
+            alFilters.add(filter);
+        }
         setup();
         if (dependentPropertyPaths != null) {
             for (String s : dependentPropertyPaths) {
@@ -127,6 +128,14 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         this(true, null, hub, false, false, null);
     }
 
+    public Hub<T> getHub() {
+        Hub<T> h = weakHub.get();
+        if (h == null) {
+            close();
+        }
+        return h;
+    }
+    
     /**
      * This needs to be set to true if it is only created on the server, but
      * client applications will be using the same Hub that is filtered.
@@ -138,7 +147,10 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     
     public void close() {
         // need to make sure that no more events get processed
+        if (bClosed) return;
         this.bClosed = true;
+        
+        Hub<T> hub = getHub();
         if (bOAObjectCacheDelegateListener) {
             Class c = (hub != null) ? hub.getObjectClass() : hubMaster.getObjectClass();
             OAObjectCacheDelegate.removeListener(c, getMasterHubListener());
@@ -308,7 +320,8 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             public @Override void afterAdd(HubEvent<T> e) {
                 if (bClosed) return;
                 if (hubMaster == null || !hubMaster.isLoading()) {
-                    if (hub == null || !hub.contains(e.getObject())) {
+                    Hub<T> hub = getHub();
+                    if (hub != null && !hub.contains(e.getObject())) {
                         if (hubMaster == null || hubMaster.contains(e.getObject())) {
                             try {
                                 aiUpdating.incrementAndGet();
@@ -353,14 +366,15 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
             
             public void afterChangeActiveObject(HubEvent<T> e) {
+                Hub<T> hub = getHub();
                 if (!bShareAO || hub == null || hubMaster == null) return;
                 
                 Object obj = HubFilter.this.hubMaster.getAO();
-                if (obj != null && !HubFilter.this.hub.contains(obj)) {
+                if (obj != null && !hub.contains(obj)) {
                     obj = null;
                 }
                 bIgnoreSettingAO = true;
-                HubFilter.this.hub.setAO(obj);
+                hub.setAO(obj);
                 bIgnoreSettingAO = false;
             }
         };
@@ -371,6 +385,8 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     
     protected void setup() {
         if (bClosed) return;
+        Hub<T> hub = getHub();
+        if (hub == null) return;
         if (hubMaster == null) {
             if (hub != null) hub.loadAllData(); // required.  Otherwise HubController would be calling this.add as it was loading the objects
             bOAObjectCacheDelegateListener = true;
@@ -397,14 +413,16 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     private Object objTemp;  // temp object that is the current linkHub object value
 
     protected void setupLinkHubListener() {
-        if (hubLink != null) hubLink.removeHubListener(linkHubListener);
+        Hub<T> hub = getHub();
         if (hub == null) return;
+        if (hubLink != null) hubLink.removeHubListener(linkHubListener);
         hubLink = hub.getLinkHub();
         if (hubLink == null) return;
         
         linkHubListener = new HubListenerAdapter() {
             public @Override void afterChangeActiveObject(HubEvent evt) {
-                if (bClosed) return;
+                Hub<T> hub = getHub();
+                if (hub == null || bClosed) return;
                 if (objTemp != null) {
                     if (!isUsed((T) objTemp)) {
                         objTemp = getObject((T)objTemp);
@@ -453,7 +471,8 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     }
     
     public void update(T obj) {
-        if (bClosed) return;
+        Hub<T> hub = getHub();
+        if (hub == null || bClosed) return;
         if (aiClearing.get() != 0) return;
         try {
             if (bServerSideOnly) { // 20120425
@@ -520,8 +539,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     }
 
     public void refresh(T obj) {
-        boolean b = isUsed(obj);
+        Hub<T> hub = getHub();
         if (hub == null) return;
+        boolean b = isUsed(obj);
         if (b) {
             obj = getObject(obj);
             if (obj != null && !hub.contains(obj)) {
@@ -547,7 +567,8 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     
     /** HubListener interface method, used to update filter. */
     public void initialize() {
-        if (bClosed) return;
+        Hub<T> hub = getHub();
+        if (hub == null || bClosed) return;
         if (bServerSideOnly) { 
             OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
         }
@@ -596,6 +617,8 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     }    
     
     private boolean _initialize(final int cnt) {
+        Hub<T> hub = getHub();
+        if (hub == null) return false;
         if (bClosed) return false;
         for (int i=0; hubMaster!=null;i++) {
             T obj = hubMaster.elementAt(i);
@@ -603,7 +626,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             if (aiInitializeCount.get() != cnt) return false;
             update(obj);
         }
-        if (hub == null) return false;
         
         // get linkToHub.prop value
         if (hubLink != null) {
@@ -633,9 +655,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         return true;
     }
 
-    public Hub getHub() {
-        return this.hub;
-    }
     
     public Hub getMasterHub() {
         return this.hubMaster;
@@ -643,34 +662,22 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
 
     /**
         Called to add an object to the Hub.  This can be overwritten
-        to handle a different way (ex: different thread) to handle adding to the hub.
+        to handle a different way (ex: use different thread) to handle adding to the hub.
     */
     protected void addObject(T obj) {
-        if (bClosed) return;
-        try {
-            if (hub != null) {
-                hub.add(obj);
-            }
-        }
-        catch (Exception e) {
-        }
+        Hub<T> hub = getHub();
+        if (hub == null || bClosed) return;
+        hub.add(obj);
     }
     
     /**
         Called to remove an object from the Hub.  This can be overwritten
-        to handle a different way (ex: different thread) to handle removing from the hub.
+        to handle a different way (ex: use different thread) to handle removing from the hub.
     */
     protected void removeObject(T obj) {
-        if (bClosed) return;
-        try {
-            if (hub != null) {
-                hub.remove(obj);
-            }
-        }
-        catch (Exception e) {
-            System.out.println("HubFilter exception="+e);
-            e.printStackTrace();
-        }
+        Hub<T> hub = getHub();
+        if (hub == null || bClosed) return;
+        hub.remove(obj);
     }
     
     public boolean isSharingAO() {
@@ -715,8 +722,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     
     @Override
     public void afterChangeActiveObject(HubEvent<T> e) {
+        Hub<T> hub = getHub();
         if (bShareAO && hub != null && hubMaster != null) {
-            Object obj = HubFilter.this.hub.getAO();
+            Object obj = hub.getAO();
             if (obj != null && !HubFilter.this.hubMaster.contains(obj)) obj = null;
             if (!bIgnoreSettingAO) {
                 HubFilter.this.hubMaster.setAO(obj);
@@ -735,7 +743,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
 
 
     private ArrayList<OAFilter> alFilters;
-    private boolean bOr, bAnd;
     private int iBlockPos = -1;
 
     public void startBlock() {
@@ -761,25 +768,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
 
     public void addFilter(OAFilter<T> filter) {
         if (alFilters == null) alFilters = new ArrayList<OAFilter>();
-        
-        if (bOr) {
-            int x = alFilters.size();
-            if (x == 0) return; 
-            OAFilter f = alFilters.get(x-1);
-            alFilters.remove(x-1);
-            f = new OAOrFilter(filter, f);
-            filter = f;
-            bOr = false;
-        }
-        else if (bAnd) {
-            int x = alFilters.size();
-            if (x == 0) return; 
-            OAFilter f = alFilters.get(x-1);
-            alFilters.remove(x-1);
-            f = new OAAndFilter(filter, f);
-            filter = f;
-            bAnd = false;
-        }
         alFilters.add(filter);
         refresh();
     }
