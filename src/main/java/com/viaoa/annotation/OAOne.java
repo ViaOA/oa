@@ -27,7 +27,7 @@ public @interface OAOne {
     String displayName() default "";
     String description() default "";
 
-    /** true if this object is the owner */
+    /** true if this object is the owner of linked to object */
     boolean owner() default false;
 
     /** true if this is a recursive relationship. */

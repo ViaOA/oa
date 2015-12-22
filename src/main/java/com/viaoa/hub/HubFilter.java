@@ -53,7 +53,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     private boolean bServerSideOnly;
 
     // listener setup for dependent properties
-    private static int UniqueNameCnt;
+    private static AtomicInteger aiUniqueNameCnt = new AtomicInteger();
     private String uniqueName;
     private String[] dependentProperties;
     private HubListener hlDependentProperties;
@@ -61,7 +61,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     public boolean DEBUG;
     private boolean bOAObjectCacheDelegateListener;
     private HubListenerAdapter<T> hlHubMaster;
-    private boolean bNewListFlag;
+    private volatile boolean bNewListFlag;
     
     private final AtomicInteger aiClearing = new AtomicInteger();
     private final AtomicInteger aiUpdating = new AtomicInteger();
@@ -205,7 +205,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         if (bClosed) return;
         if (hub == null) return;
         
-        if (uniqueName == null) uniqueName = "HubFilter" + (UniqueNameCnt++);
+        if (uniqueName == null) uniqueName = "HubFilter" + (aiUniqueNameCnt.incrementAndGet());
         final String propName = uniqueName;
         
         hub.addHubListener(new HubListenerAdapter() {
@@ -224,7 +224,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         if (prop == null || prop.length() == 0) return;
         if (hub == null) return;
         
-        if (uniqueName == null) uniqueName = "HubFilter" + (UniqueNameCnt++);
+        if (uniqueName == null) uniqueName = "HubFilter" + (aiUniqueNameCnt.incrementAndGet());
         final String propName = prop.indexOf('.') < 0 ? prop : uniqueName;
         
         hub.addHubListener(new HubListenerAdapter() {
@@ -262,7 +262,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         dependentProperties = (String[]) OAArray.add(String.class, dependentProperties, prop);
 
         hlDependentProperties = new HubListenerAdapter();
-        if (uniqueName == null) uniqueName = "HubFilter" + (UniqueNameCnt++);
+        if (uniqueName == null) uniqueName = "HubFilter" + (aiUniqueNameCnt.incrementAndGet());
         if (hubMaster != null) hubMaster.addHubListener(hlDependentProperties, uniqueName, dependentProperties);
 
         // hashProp has list of property names that this.hubListener is listening to
