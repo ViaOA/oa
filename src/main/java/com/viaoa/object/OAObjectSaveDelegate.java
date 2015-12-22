@@ -52,10 +52,11 @@ public class OAObjectSaveDelegate {
         if (cascade.wasCascaded(oaObj, true)) return;
         cascade.depthAdd();
         
+        boolean b = (oaObj.newFlag || oaObj.changedFlag || bIsFirst);
         OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
 
         // cascadeSave() will check hash to see if object has already been checked
-        if (oaObj.newFlag || oaObj.changedFlag || bIsFirst) {
+        if (b) {
             Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
             if (hubs != null) {
                 for (Hub h : hubs) {
@@ -154,6 +155,7 @@ public class OAObjectSaveDelegate {
 			    			    OAObjectDSDelegate.saveWithoutReferences(oaRef);
 			    		    }
 			    		    OAObjectDelegate.setNew(oaRef, false);
+			    		    if (!oaRef.changedFlag) oaRef.changedFlag = true;  // so that it will be save/updated
 		                }
 		                else {
 		                	if (bValidCascade) save(oaRef, iCascadeRule, cascade);
@@ -227,7 +229,7 @@ public class OAObjectSaveDelegate {
         */
 	    
 	    try {
-            // 20130504 moved before actually save, in case another thread makes a change
+            // 20130504 moved before actual save, in case another thread makes a change
             oaObj.setDeleted(false);  // in case it was deleted, and then re-saved
             oaObj.setChanged(false);
 	        

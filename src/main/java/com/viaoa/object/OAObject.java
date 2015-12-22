@@ -99,7 +99,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
     
-    public static final int version = 151217;  
+    public static final int version = 151221;  
     static {
         /*
         Properties props = System.getProperties();
@@ -120,7 +120,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     
     protected int         guid;          // global identifier for this object
     protected OAObjectKey objectKey;     // Object identifier, used by Hub/HubController for hashing, etc.
-    protected boolean 	  changedFlag;   // flag to know if this object has been changed
+    protected boolean 	  changedFlag=true;   // flag to know if this object has been changed
     protected volatile boolean newFlag=true;  // flag to know if this object is new (not yet saved).  The object key properties can be changed as long as isNew is true.
     protected byte[]      nulls;         // keeps track of which primitive type properties that are NULL. Uses bit position, based on OAObjectInfo getPrimitiveProperties() position
     protected boolean     deletedFlag; 

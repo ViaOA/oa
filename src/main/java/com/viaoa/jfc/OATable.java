@@ -1736,16 +1736,22 @@ if (!getKeepSorted()) hub.cancelSort();
         }
 
         public void fireTableStructureChanged() {
-            boolean b = false;
-            try {
-                if (hubAdapter != null) {
-                    b  = true;
-                    hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+            for (int i=0; i<3; i++) {
+                boolean b = false;
+                try {
+                    if (hubAdapter != null) {
+                        b  = true;
+                        hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                    }
+                    _fireTableStructureChanged();
+                    break;
                 }
-                _fireTableStructureChanged();
-            }
-            finally {
-                if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                catch (Exception e) {
+                    // ignore
+                }
+                finally {
+                    if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                }
             }
         }
         
@@ -1934,18 +1940,30 @@ if (!getKeepSorted()) hub.cancelSort();
 
     // similar to private in jtable
     protected void myClearSelectionAndLeadAnchor() {
-        selectionModel.setValueIsAdjusting(true);
-        columnModel.getSelectionModel().setValueIsAdjusting(true);
+        for (int i=0; i<3; i++) {
+            try {
+                selectionModel.setValueIsAdjusting(true);
+                columnModel.getSelectionModel().setValueIsAdjusting(true);
 
+                _myClearSelectionAndLeadAnchor();
+                break;
+            }
+            catch (Exception e) {
+                // no-op
+            }
+            finally {
+                selectionModel.setValueIsAdjusting(false);
+                columnModel.getSelectionModel().setValueIsAdjusting(false);
+            }
+        }
+    }
+    protected void _myClearSelectionAndLeadAnchor() {
         clearSelection();
 
         selectionModel.setAnchorSelectionIndex(-1);
         selectionModel.setLeadSelectionIndex(-1);
         columnModel.getSelectionModel().setAnchorSelectionIndex(-1);
         columnModel.getSelectionModel().setLeadSelectionIndex(-1);
-
-        selectionModel.setValueIsAdjusting(false);
-        columnModel.getSelectionModel().setValueIsAdjusting(false);
     }
 
     // 20150424
