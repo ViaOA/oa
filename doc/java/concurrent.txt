@@ -135,6 +135,38 @@
     
     barrier.await();  // increments counter and waits
     
+    public void test() {
+        final int max = 50;
+        final CyclicBarrier barrier = new CyclicBarrier(max);
+        final CountDownLatch countDownLatch = new CountDownLatch(max);
+        for (int i=0; i<max; i++) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        barrier.await();
+                        // .. do something
+                    }
+                    catch (Exception e) {
+                        System.out.println("HubFilterTest error: "+e);
+                    }
+                    finally {
+                        countDownLatch.countDown();
+                    }
+                }
+            });
+            t.start();
+        }
+        try {
+            countDownLatch.await();  // calling thread waits
+        }
+        catch (Exception e) {
+        }
+    }    
+    
+    
+    
+    
     
 >> DelayQueue<E extends Delayed>
 

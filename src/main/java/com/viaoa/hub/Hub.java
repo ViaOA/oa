@@ -114,13 +114,13 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     static final long serialVersionUID = 1L; // used for object serialization
 
     /** Internal object used to store objects in Vector and Hashtable. */
-    protected HubData data;
+    protected volatile HubData data;
 
     /** Internal object used unique information about this Hub. */
     protected HubDataUnique datau;
 
     /** Internal object used store active object, bof flag, eof flag. */
-    protected HubDataActive dataa;
+    protected volatile HubDataActive dataa;
 
     /** Internal object used store master object and Hub. */
     protected HubDataMaster datam;

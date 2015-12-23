@@ -29,7 +29,7 @@ public class HubData implements java.io.Serializable {
     private static Logger LOG = Logger.getLogger(HubData.class.getName());
 
     /** Class of objects in this Hub */
-    protected Class objClass;
+    protected volatile Class objClass;
     
     // Used to store objects so that the order of the objects is known.
     protected transient Vector vector;
@@ -44,9 +44,9 @@ public class HubData implements java.io.Serializable {
     protected transient int changeCount;
     
     // used by setChanged
-    protected boolean changed;
+    protected volatile boolean changed;
     
-    private transient HubDatax hubDatax; // extension
+    private transient volatile HubDatax hubDatax; // extension
     
 	/**
 	    Constructor that supplies params for sizing Vector.
@@ -216,7 +216,6 @@ public class HubData implements java.io.Serializable {
             getHubDatax().disabled = disabled;
         }
     }
-//qqqqqqqqqqqqqqqqqqqqqqqq
 
     public Hashtable getHashProperty() {
         if (hubDatax == null) return null;

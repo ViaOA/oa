@@ -23,7 +23,7 @@ class HubDataActive implements java.io.Serializable {
 	    @see Hub#setActiveObject
 	    @see Hub#getActiveObject
 	*/
-	protected transient Object activeObject;
+	protected transient volatile Object activeObject;
 	
 	/**
 	    Used by Hub.updateDetail() when calling setSharedHub, for Hubs that

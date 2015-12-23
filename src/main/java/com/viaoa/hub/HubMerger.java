@@ -13,6 +13,7 @@ package com.viaoa.hub;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
@@ -67,7 +68,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
 
     public int TotalHubListeners; // for testing only
 
-    public static int HubListenerCount; // number of HubListeners used by all HubMerger
+    public static AtomicInteger aiHubListenerCount = new AtomicInteger(); // number of HubListeners used by all HubMerger
 
     private boolean bServerSideOnly;
 
@@ -498,7 +499,7 @@ static int cntq;
         dataRoot.close();
         Node node = nodeRoot;
         while (node != null) {
-            node.close();
+            if (dataRoot != node.data) node.close();
             node = node.child;
         }
         bIgnoreIsUsedFlag = false;
@@ -541,7 +542,7 @@ static int cntq;
         Hub hubFilterMaster; // if using filter, then this is the master/orig that is then filtered into "hub"
         HubFilter hubFilter;
         volatile ArrayList<Data> alChildren;
-        boolean bHubListener;
+        volatile boolean bHubListener;
 
         Data(Node node, OAObject parentObject, Hub hubNew) {
             if (hubNew == null) {
@@ -582,7 +583,7 @@ static int cntq;
 
             this.hub.addHubListener(this);
             bHubListener = true;
-            HubListenerCount++;
+            aiHubListenerCount.incrementAndGet();
             TotalHubListeners++;
             createChildren();
         }
@@ -1144,9 +1145,9 @@ static int cntq;
 
         void close() {
             // XOG.finer("close");
-            if (hub != null) {
+            if (hub != null && bHubListener) {
                 hub.removeHubListener(this);
-                if (bHubListener) HubListenerCount--;
+                aiHubListenerCount.decrementAndGet();
                 bHubListener = false;
                 TotalHubListeners--;
             }

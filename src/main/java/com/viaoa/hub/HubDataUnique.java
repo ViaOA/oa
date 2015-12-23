@@ -25,7 +25,7 @@ import com.viaoa.object.*;
 class HubDataUnique implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 	private static Logger LOG = Logger.getLogger(HubDataUnique.class.getName());
-	private transient HubDataUniquex hubDataUniquex;  // extended settings
+	private transient volatile HubDataUniquex hubDataUniquex;  // extended settings
 
 static int qq;    
     private HubDataUniquex getHubDataUniquex() {

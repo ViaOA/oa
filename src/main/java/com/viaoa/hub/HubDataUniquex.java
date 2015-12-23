@@ -49,7 +49,7 @@ class HubDataUniquex implements java.io.Serializable {
 	// protected transient Vector vecListener;
 	
 	// 20101218 replaces vetListener
-	protected transient HubListenerTree listenerTree;
+	protected transient volatile HubListenerTree listenerTree;
 	
     
 	
@@ -57,7 +57,7 @@ class HubDataUniquex implements java.io.Serializable {
 	    Detail Hubs that this Hub has.
 	    @see Hub#getDetail
 	*/
-	protected transient Vector<HubDetail> vecHubDetail;
+	protected transient volatile Vector<HubDetail> vecHubDetail;
 	
 	/**
 	    List of listeners for calculated properties.
@@ -152,7 +152,7 @@ class HubDataUniquex implements java.io.Serializable {
 //	transient Vector vecSharedHub;
 
 	// 20120715 replaces vecSharedHubs
-	protected transient WeakReference<Hub>[] weakSharedHubs;	
+	protected transient volatile WeakReference<Hub>[] weakSharedHubs;	
 	
 	
 	/**

@@ -118,12 +118,12 @@ public class OAObject implements java.io.Serializable, Comparable {
     
 	private static final Logger LOG = OALogger.getLogger(OAObject.class);
     
-    protected int         guid;          // global identifier for this object
-    protected OAObjectKey objectKey;     // Object identifier, used by Hub/HubController for hashing, etc.
-    protected boolean 	  changedFlag=true;   // flag to know if this object has been changed
+    protected int guid;                          // global identifier for this object
+    protected volatile OAObjectKey objectKey;    // Object identifier, used by Hub/HubController for hashing, etc.
+    protected volatile boolean changedFlag=true; // flag to know if this object has been changed
     protected volatile boolean newFlag=true;  // flag to know if this object is new (not yet saved).  The object key properties can be changed as long as isNew is true.
-    protected byte[]      nulls;         // keeps track of which primitive type properties that are NULL. Uses bit position, based on OAObjectInfo getPrimitiveProperties() position
-    protected boolean     deletedFlag; 
+    protected byte[] nulls;                   // keeps track of which primitive type properties that are NULL. Uses bit position, based on OAObjectInfo getPrimitiveProperties() position
+    protected volatile boolean deletedFlag; 
     
     // list of Hub Collections that this object is a member of.  
     // OAObject uses these Hubs for sending events.  See: OAObjectHubDelegate
@@ -131,7 +131,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     //   Hub - if a reference to object needs to be maintained, so that it wont be GCd and can be saved
     //   null - empty slot
     //   WeakReference<Hub> (default) - so that it does not hold the Hub from being GCd
-    protected transient WeakReference<Hub<?>>[] weakhubs;   
+    protected transient volatile WeakReference<Hub<?>>[] weakhubs;   
     
     
     /** 

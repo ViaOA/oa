@@ -29,13 +29,13 @@ class HubDataMaster implements java.io.Serializable {
     static final long serialVersionUID = 2L;  // used for object serialization
     
     /** Only used for a Detail Hub, created by Hub.getDetail() */
-    protected transient Hub masterHub;
+    protected transient volatile Hub masterHub;
     
     /** The object that Hub "belongs" to. */
-    protected transient OAObject masterObject;
+    protected transient volatile OAObject masterObject;
     
     /** LinkInfo from Detail (MANY) to Master (ONE).  */
-    protected transient OALinkInfo liDetailToMaster;  // Note: Dont make transient: it will get replaced in resolveObject, but needs the old one to find the match
+    protected transient volatile OALinkInfo liDetailToMaster;  // Note: Dont make transient: it will get replaced in resolveObject, but needs the old one to find the match
 
     
     public String getUniqueProperty() {

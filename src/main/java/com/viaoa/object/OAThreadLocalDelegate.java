@@ -137,7 +137,7 @@ public class OAThreadLocalDelegate {
     		x = --ti.loadingObject;
     		x2 = OAThreadLocalDelegate.TotalIsLoadingObject.decrementAndGet();
 		}
-        if (x > 20 || x < 0 || x2 > 20 || x2 < 0) {
+        if (x > 50 || x < 0 || x2 > 50 || x2 < 0) {
             msLoadingObject = throttleLOG("TotalIsLoadingObject="+x2+", ti="+x, msLoadingObject);
         }
 	}
@@ -1110,10 +1110,12 @@ static volatile int unlockCnt;
         if (ms > msLast + 5000) {
             LOG.warning(msg);
             
+/*qqqqqqq            
             if (ms > msThrottleStackTrace + 30000) {
                 if (msThrottleStackTrace != 0) LOG.warning("ThreadLocalDelegate.stackTraces\n"+getAllStackTraces());
                 msThrottleStackTrace = ms;
             }
+*/            
         }
         else ms = msLast;
         return ms;

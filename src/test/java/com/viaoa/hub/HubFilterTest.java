@@ -3,6 +3,12 @@ package com.viaoa.hub;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.tmgsc.hifivetest.model.oa.*;
 import com.viaoa.OAUnitTest;
 
@@ -17,8 +23,77 @@ public class HubFilterTest extends OAUnitTest {
             PointsAwardLevel pal = new PointsAwardLevel();
             hubMaster.add(pal);
         }
+        hubMaster.saveAll();
         
-        for (int i=0; i<100; i++) {
+        _test(hubMaster);
+        
+        for (int i=0; i<10; i++) System.gc();
+
+        PointsAwardLevel pal = new PointsAwardLevel();
+        hubMaster.add(pal);
+        // should have cause hubFilters to be closed
+    }
+    
+    
+    @Test
+    public void test2() {
+        final int max = 5;
+        
+        final Hub<PointsAwardLevel> hubMaster1 = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
+        for (int i=0; i<20; i++) {
+            PointsAwardLevel pal = new PointsAwardLevel();
+            hubMaster1.add(pal);
+        }
+        final Hub<PointsAwardLevel> hubMaster2 = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
+        for (int i=0; i<20; i++) {
+            PointsAwardLevel pal = new PointsAwardLevel();
+            hubMaster2.add(pal);
+        }
+
+        
+        final CyclicBarrier barrier = new CyclicBarrier(max);
+        final CountDownLatch countDownLatch = new CountDownLatch(max);
+        final AtomicInteger aiDone = new AtomicInteger(); 
+        
+        for (int i=0; i<max; i++) {
+            final int id = i;
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        barrier.await();
+                        Hub<PointsAwardLevel> hub = (id %2 == 0) ? hubMaster1 : hubMaster2;
+                        _test(hub);
+                    }
+                    catch (Exception e) {
+                        System.out.println("HubFilterTest error: "+e);
+                        e.printStackTrace();
+                    }
+                    finally {
+                        aiDone.getAndIncrement();
+                        countDownLatch.countDown();
+                    }
+                }
+            });
+            t.start();
+        }
+        
+        for (int i=0;;i++) {
+            try {
+                countDownLatch.await(1, TimeUnit.SECONDS);
+                if (aiDone.get() == max) break;
+                hubMaster1.setPos(i%hubMaster1.getSize());
+                hubMaster2.setPos(i%hubMaster2.getSize());
+            }
+            catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
+    }    
+    
+    public void _test(final Hub<PointsAwardLevel> hubMaster) {
+        System.out.println("HubFilterTest, thread="+Thread.currentThread().getName());
+        for (int i=0; i<500; i++) {
             Hub<PointsAwardLevel> hubFiltered = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
             hubMaster.copyInto(hubFiltered);
 
@@ -27,18 +102,14 @@ public class HubFilterTest extends OAUnitTest {
                     return true;
                 }
             }; 
-
+if (20 != hubFiltered.getSize()) {
+System.out.println("***************** FOUND ONE **********");    
+    int xx = 4;
+    xx++;
+}
             assertEquals(20, hubFiltered.getSize());
 //            hf.close();
         }
-
-        for (int i=0; i<100; i++) System.gc();
-
-        PointsAwardLevel pal = new PointsAwardLevel();
-        hubMaster.add(pal);
-        
-        int xx = 0;
-        xx++;
     }
 
     

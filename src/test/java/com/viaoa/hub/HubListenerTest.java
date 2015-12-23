@@ -3,11 +3,17 @@ package com.viaoa.hub;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.EnvironmentPP;
 import com.theice.tsactest.model.oa.propertypath.ServerPP;
 import com.theice.tsactest.model.oa.propertypath.SitePP;
+import com.tmgsc.hifivetest.model.oa.PointsAwardLevel;
 import com.viaoa.TsactestDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAFinder;
@@ -25,8 +31,7 @@ public class HubListenerTest extends OAUnitTest {
         cntAdd = cntRemove = cntChange = cntChange2 = cntNewList = cntChangeActiveObject = 0;
     }
 
-//qqqqqqqqqqqqqqqqqqqqqqq    
-//    @Test
+    @Test
     public void listenerTest() {
         reset();
         
@@ -359,16 +364,109 @@ public class HubListenerTest extends OAUnitTest {
         
         reset();
     }
+
+    @Test
+    public void listener4Test() {
+        reset();
+        
+        final Hub hub1 = new Hub();
+        final Hub hub2 = new Hub();
+        final Hub hub3 = new Hub();
+        final Hub hub4 = new Hub();
+        
+        final int maxThreads = 7;
+        final int maxIterations = 500;
+        final CyclicBarrier barrier = new CyclicBarrier(maxThreads);
+        final CountDownLatch countDownLatch = new CountDownLatch(maxThreads);
+        final AtomicInteger aiDone = new AtomicInteger();
+        
+        final HubListener hl = new HubListenerAdapter();
+        
+        final AtomicInteger aiListnerCount = new AtomicInteger();
+        
+        for (int i=0; i<maxThreads; i++) {
+            final int id = i;
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        barrier.await();
+                        for (int i=0; i<maxIterations; i++) {
+                            hub1.addHubListener(hl);
+                            hub2.addHubListener(hl);
+                            hub3.addHubListener(hl);
+                            hub4.addHubListener(hl);
+                            
+                            aiListnerCount.addAndGet(4);
+                            
+                            if (i%6==0) HubEventDelegate.getListenerCount(hub1);
+                            if (i%7==0) HubEventDelegate.getListenerCount(hub2);
+                            if (i%3==0) HubEventDelegate.getListenerCount(hub3);
+                            if (i%4==0) HubEventDelegate.getListenerCount(hub4);
+                            if (i%5 == 0) {
+                                try {
+                                    Thread.sleep( (int) (Math.random() * 3));
+                                }
+                                catch (Exception e) {
+                                    System.out.println("Exception in HutListenerTest, ex="+e);
+                                }
+                            }
+                            
+                            if ( Math.random() < .40) {
+                                hub1.removeHubListener(hl);
+                                hub2.removeHubListener(hl);
+                                hub3.removeHubListener(hl);
+                                hub4.removeHubListener(hl);
+                                aiListnerCount.addAndGet(-4);
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("HubFilterTest error: "+e);
+                        e.printStackTrace();
+                    }
+                    finally {
+                        aiDone.getAndIncrement();
+                        countDownLatch.countDown();
+                    }
+                }
+            });
+            t.start();
+        }
+        
+        for (int i=0;;i++) {
+            try {
+                countDownLatch.await();
+
+                if (aiDone.get() == maxThreads) break;
+            }
+            catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
+        
+        int x = aiListnerCount.get();
+        x = (int) (x / 4);
+        assertEquals(x, HubEventDelegate.getAllListeners(hub1).length);
+        assertEquals(x, HubEventDelegate.getAllListeners(hub2).length);
+        assertEquals(x, HubEventDelegate.getAllListeners(hub3).length);
+        assertEquals(x, HubEventDelegate.getAllListeners(hub4).length);
+    
+        for (int i=0; i<x; i++) {
+            hub1.removeHubListener(hl);
+            hub2.removeHubListener(hl);
+            hub3.removeHubListener(hl);
+            hub4.removeHubListener(hl);
+        }
+
+        assertEquals(0, HubEventDelegate.getAllListeners(hub1).length);
+        assertEquals(0, HubEventDelegate.getAllListeners(hub2).length);
+        assertEquals(0, HubEventDelegate.getAllListeners(hub3).length);
+        assertEquals(0, HubEventDelegate.getAllListeners(hub4).length);
+    
+    }
+    
     
 }
-
-
-
-
-
-
-
-
-
 
 

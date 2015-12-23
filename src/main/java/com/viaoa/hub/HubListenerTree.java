@@ -12,16 +12,13 @@ package com.viaoa.hub;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import com.viaoa.annotation.OAMany;
 import com.viaoa.object.*;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
-
 
 /**
  *  Used by Hub to manage listeners.
@@ -34,15 +31,9 @@ import com.viaoa.util.OAPropertyPath;
 public class HubListenerTree {
     private static Logger LOG = Logger.getLogger(HubListenerTree.class.getName());
     
-    private HubListener[] listeners; 
-    private HubListenerTreeNode root;
+    private volatile HubListener[] listeners; 
+    private final HubListenerTreeNode root;
 
-    
-    // this is used for large amounts of listeners for a single HubListenerTree, 
-    //   so that the HubListener[] does not always grow by one on each add.
-    private static volatile HubListenerTree hugeListener;
-    private static volatile ArrayList<HubListener> alHuge;
-    
     private class HubListenerTreeNode {
         Hub hub;
         String property;
@@ -181,76 +172,40 @@ public class HubListenerTree {
         root.hub = hub;
     }
     
-    private void removeHugeListener() {
-        if (hugeListener == this) {
-            synchronized (root) {
-                if (hugeListener == this) {
-                    listeners = alHuge.toArray(new HubListener[0]);
-                    hugeListener = null;
-                    alHuge = null;
-                    //LOG.fine("removed hugeListener array, size="+listeners.length);
-                }
-            }
-        }
-    }
-    
     public HubListener[] getHubListeners() {
-        removeHugeListener();
         return this.listeners;
     }
 
     // testing
     // public static HashMap<HubListener, StackTraceElement[]> hmAll = new HashMap<HubListener, StackTraceElement[]>();    
-    public static int ListenerCount;
+    public static volatile int ListenerCount;
     
-    private int lastCount; // number of listeners that are set as Last.
+    private volatile int lastCount; // number of listeners that are set as Last.
     public void addListener(HubListener hl) {
+        if (hl == null) return;
+
         // testing
         ListenerCount++;    
-
-//if (ListenerCount%100==0)
-//        System.out.println("HubListenerTree.addListener, ListenerCount="+ListenerCount+", hl="+hl);
-//System.out.println("HubListenerTree.addListener, ListenerCount="+ListenerCount+", AutoSequenceHubListenerCount="+HubAutoSequence.AutoSequenceHubListenerCount+" ==>"+hl);
-//System.out.println("HubListenerTree.addListener, ListenerCount="+ListenerCount+" ==>"+hl+", hm.hl.cnt="+HubMerger.HubMergerHubListenerCount);
-        
-        if (listeners != null && listeners.length > 70) {
-            if (listeners.length % 70 == 0) {
-                //LOG.fine("HubListenerTree.listeners.size()=" +listeners.length+", hub="+(root==null?"null":root.hub));
-            }
-        }
+        //if (ListenerCount%100==0)
+        //        System.out.println("HubListenerTree.addListener, ListenerCount="+ListenerCount+", hl="+hl);
+        //System.out.println("HubListenerTree.addListener, ListenerCount="+ListenerCount+", AutoSequenceHubListenerCount="+HubAutoSequence.AutoSequenceHubListenerCount+" ==>"+hl);
+        //System.out.println("HubListenerTree.addListener, ListenerCount="+ListenerCount+" ==>"+hl+", hm.hl.cnt="+HubMerger.HubMergerHubListenerCount);
         // System.out.println("HubListenerTree.addListener() ListenerCount="+(ListenerCount));        
         // StackTraceElement[] stes = Thread.currentThread().getStackTrace();
         // hmAll.put(hl, stes);        
 
         synchronized (root) {
             HubListener.InsertLocation loc = hl.getLocation();
-
             if (listeners == null || listeners.length==0 || loc == HubListener.InsertLocation.LAST || (loc == null && lastCount==0)) {
-                if (listeners != null && hugeListener == null && listeners.length > 70) {
-                    hugeListener = this;
-                    alHuge = new ArrayList<HubListener>(250);
-                    alHuge.addAll(Arrays.asList(listeners));
-                    listeners = null;
-                    //LOG.fine("Using hugeListener, size="+alHuge.size());
-                }
-
                 if (loc == HubListener.InsertLocation.LAST) lastCount++;
-                if (hugeListener == this) {
-                    alHuge.add(hl);
-                }
-                else {
-                    listeners = (HubListener []) OAArray.add(HubListener.class, listeners, hl);
-                }
+                listeners = (HubListener []) OAArray.add(HubListener.class, listeners, hl);
             }
             else if (loc == HubListener.InsertLocation.FIRST) {
-                removeHugeListener();
                 listeners = (HubListener []) OAArray.insert(HubListener.class, listeners, hl, 0);
             }
             else {
                 // insert before first last
-                removeHugeListener();
                 boolean b = false;
-                
                 for (int i=listeners.length-1; i<=0; i--) {
                     if (listeners[i].getLocation() != HubListener.InsertLocation.LAST) {
                         listeners = (HubListener []) OAArray.insert(HubListener.class, listeners, hl, i+1);
@@ -258,10 +213,12 @@ public class HubListenerTree {
                         break;
                     }
                 }
-                
                 if (!b) {
                     listeners = (HubListener []) OAArray.add(HubListener.class, listeners, hl);
                 }
+            }
+            if (listeners.length % 50 == 0) {
+                LOG.fine("HubListenerTree.listeners.size()=" +listeners.length+", hub="+(root==null?"null":root.hub));
             }
         }
     }   
@@ -271,9 +228,11 @@ public class HubListenerTree {
      * Used by Hub to store HubListers and dependent calcProperties
      */
     public void addListener(HubListener hl, String property) {
+        if (hl == null) return;
         this.addListener(hl, property, false);
     }
     public void addListener(HubListener hl, String property, boolean bActiveObjectOnly) {
+        if (hl == null) return;
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(root.hub.getObjectClass());
         String[] calcProps = null;
         for (OACalcInfo ci : oi.getCalcInfos()) {
@@ -288,10 +247,12 @@ public class HubListenerTree {
     }
 
     public void addListener(HubListener hl, final String property, String[] dependentPropertyPaths) {
+        if (hl == null) return;
         addListener(hl, property, dependentPropertyPaths, false);
     }    
 
     public void addListener(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+        if (hl == null) return;
         try {
             OAThreadLocalDelegate.setHubListenerTree(true);
             addListener(hl, property); // this will check for dependent calcProps
@@ -372,7 +333,8 @@ public class HubListenerTree {
                                 update();
                             }
                             public void onNewList(HubEvent e) {
-                                update();
+                                Hub h = e.getHub();
+                                if (h != null && h.size() > 0) update();
                             }
                             void update() {
                                 try {
@@ -709,16 +671,18 @@ public class HubListenerTree {
         removeListener(hl);
     }
     public void removeListener(HubListener hl) {
+        if (hl == null) return;
         // testing
         // hmAll.remove(hl);        
-        
         //LOG.finer("Hub="+thisHub);
-        removeHugeListener();
         synchronized (root) {
             HubListener[] hold = listeners; 
             listeners = (HubListener[]) OAArray.removeValue(HubListener.class, listeners, hl);
-            if (hold == listeners) return;
+            if (hold == listeners) {
+                return;
+            }
             --ListenerCount;
+            if (hl.getLocation() == HubListener.InsertLocation.LAST) lastCount--;
 //qqqqqqqqqqqqqqq            
 //System.out.println("HubListenerTree.removeListener, ListenerCount="+ListenerCount+", hl="+hl);
             
