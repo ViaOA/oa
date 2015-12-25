@@ -157,5 +157,21 @@
         </genkey>       
     </target>
 
+    <target name="KeyStore_ViaOA">
+        <delete file="keystore/viaoa.jks" />
+        <genkey alias="viaoa" storepass="vince1" keyalg="RSA" keysize="2048" keystore="keystore/viaoa.jks" validity="1500" verbose="true">
+            <dname>
+                <param name="cn" value="www.viaoa.com"/>
+                <param name="ou" value="ViaOA"/>
+                <param name="o" value="ViaOA"/>
+                <param name="l" value="Powder Springs"/>
+                <param name="s" value="Georgia"/>
+                <param name="c" value="US"/>
+            </dname>
+        </genkey>       
+    </target>
+
+    
+    
 </project> 
 

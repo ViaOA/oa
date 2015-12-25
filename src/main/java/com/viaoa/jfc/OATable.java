@@ -16,23 +16,40 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.dnd.*;
-import java.awt.event.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceEvent;
+import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,12 +57,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -2141,17 +2182,38 @@ if (!getKeepSorted()) hub.cancelSort();
         // false.
 
         if (hub.getPos() != row) {
-            hubAdapter._bRunningValueChanged = true; // 20131113
-            hub.setPos(row);
-            hubAdapter._bRunningValueChanged = false;
+            try {
+                hubAdapter._bIsRunningValueChanged = true; // 20131113
+                hub.setPos(row);
+            }
+            finally {
+                hubAdapter._bIsRunningValueChanged = false;
+            }
         }
 
+        // 20151225 checkbox selection column does not need to have cellEdit, so that drag many can work
+        if (chkSelection == null && tableRight != null) {
+            chkSelection = tableRight.chkSelection;
+        }
+        if (chkSelection != null) {
+            int addColumns = 0;
+            if (tableLeft != null) {
+                addColumns = tableLeft.getColumnCount();
+            }
+            if ((column + addColumns) == getColumnIndex(chkSelection)) {
+                return false;
+            }
+        }        
+        
+        
         if (hubSelect != null) {
+            /* 20151225
             int x = hubSelect.getSize();
             if (x > 0) {
                 if (x > 1) return false;
                 if (hubSelect.getAt(0) != hub.getAO()) return false;
             }
+            */
         }
         else {
             try {
@@ -3125,7 +3187,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     private HubListenerAdapter hlSelect;
 
     AtomicInteger aiIgnoreValueChanged = new AtomicInteger();  // used to ignore calls to valueChanged(...)
-    volatile boolean _bRunningValueChanged; // flag set when valueChanged is running
+    volatile boolean _bIsRunningValueChanged; // flag set when valueChanged is running
 
     public MyHubAdapter(Hub hub, OATable table) {
         setHub(hub);
@@ -3147,12 +3209,12 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
     protected boolean getRunningValueChanged() {
         if (table.tableLeft != null) {
-            if (table.tableLeft.hubAdapter._bRunningValueChanged) return true;
+            if (table.tableLeft.hubAdapter._bIsRunningValueChanged) return true;
         }
         else if (table.tableRight != null) {
-            if (table.tableRight.hubAdapter._bRunningValueChanged) return true;
+            if (table.tableRight.hubAdapter._bIsRunningValueChanged) return true;
         }
-        return _bRunningValueChanged;
+        return _bIsRunningValueChanged;
     }
 
     protected void setSelectHub(Hub hubSelect) {
@@ -3285,7 +3347,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             return;
         }
 
-        if (_bRunningValueChanged) {
+        if (_bIsRunningValueChanged) {
             return;
         }
 
@@ -3297,7 +3359,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         int row2 = e.getLastIndex();
         if (row2 < 0) row2 = row1;
 
-        _bRunningValueChanged = true;
+        _bIsRunningValueChanged = true;
 
         if (hubSelect != null) {
             ListSelectionModel lsm = table.getSelectionModel();
@@ -3346,12 +3408,12 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             getHub().setPos(row);
             int pos = getHub().getPos();
             if (pos != row) { // if the hub.pos is not the same, set it back
-                _bRunningValueChanged = false;
+                _bIsRunningValueChanged = false;
                 if (pos >= 0) table.setRowSelectionInterval(pos, pos);
                 else table.clearSelection();
             }
         }
-        _bRunningValueChanged = false;
+        _bIsRunningValueChanged = false;
         Container cont = table.getParent();
         for (int i=0; i<3 && cont!=null; i++) {
             cont.repaint();
@@ -3442,6 +3504,14 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 table.myClearSelectionAndLeadAnchor();
             }
             setSelectedRow(row);
+            rebuildListSelectionModel();
+        }
+        else {
+            // 20151225
+            table.hubSelect.add(getHub().getAO());
+            for (Object obj : table.hubSelect) {
+                if (obj != getHub().getAO()) table.hubSelect.remove(obj);
+            }
             rebuildListSelectionModel();
         }
     }
