@@ -1649,7 +1649,7 @@ if (!getKeepSorted()) hub.cancelSort();
     /**
      * Main method for adding a new Table Column.
      */
-    protected OATableColumn addColumnMain(String heading, int width, String path, OATableComponent oaComp, TableCellEditor editComp, int index, String fmt) {
+    protected OATableColumn addColumnMain(String heading, int width, String path, OATableComponent oaComp, final TableCellEditor editComp, int index, String fmt) {
         Font font;
 
         Component comp = null;
@@ -1665,11 +1665,27 @@ if (!getKeepSorted()) hub.cancelSort();
 
         if (comp != null) {
             font = comp.getFont();
+
+            // 20151226 stop table editor on focuslost 
+            FocusListener fl = (new FocusListener() {
+                int focusRow;
+                @Override
+                public void focusLost(FocusEvent e) {
+                    TableCellEditor ed = getCellEditor();
+                    if (ed != editComp) return;
+                    if (focusRow != getHub().getPos()) return;
+                    ed.stopCellEditing();
+                }
+                @Override
+                public void focusGained(FocusEvent e) {
+                    focusRow = getHub().getPos();
+                }
+            });
+            comp.addFocusListener(fl);
         }
         else font = getFont();
 
         if (width < 0 && comp != null) {
-            
             if (comp instanceof JTextField) {
                 width = ((JTextField) comp).getColumns();
             }

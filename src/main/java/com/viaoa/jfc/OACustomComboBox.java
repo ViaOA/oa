@@ -366,6 +366,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
             super.setEditor(ed);
             setEditable(true);
         }
+        focusComp = null;
     }
     public OATextField getTextEditor() {
         return vtf;
@@ -392,11 +393,9 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
 
     // hack: JComboBox could be container, so set focus to first good component
     JComponent focusComp;
+    protected JComponent getFocusComponent() {
+        if (focusComp != null) return focusComp;
 
-    /**
-        Overwritten, to setup editor component.
-    */
-    public void requestFocus() {
         if (getEditor() != null) {
             focusComp = (JComponent) getEditor().getEditorComponent();
             if ( !(focusComp instanceof OATextField) ) focusComp = null; // dont use default editor
@@ -412,13 +411,30 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
             }
             if (focusComp == null) focusComp = this;
         }
+        return focusComp;
+    }
+
+    /**
+        Overwritten, to setup editor component.
+    */
+    public void requestFocus() {
+        getFocusComponent();
         if (focusComp != this) {
             focusComp.requestFocus();
             if (focusComp instanceof OATextField) ((OATextField)focusComp).selectAll();
         }
         else super.requestFocus();
     }
-
+    @Override
+    public synchronized void addFocusListener(FocusListener l) {
+        getFocusComponent();
+        if (focusComp != this) {
+            focusComp.addFocusListener(l);
+        }
+    }
+    
+    
+    
     /**
         Overwritten, to add key handlers that will drop down the list.
     */
