@@ -868,6 +868,8 @@ if (!getKeepSorted()) hub.cancelSort();
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component comp = null;
             try {
+                // 201512225
+                hasFocus = hasFocus && row >= 0 && hub.getPos() == row;
                 comp = _getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
             catch (Exception e) {
@@ -3119,7 +3121,7 @@ if (!getKeepSorted()) hub.cancelSort();
             }
         }
         else {
-            if (hasFocus) {
+            if (hasFocus && row >= 0 && hub.getPos() == row) {
                 lbl.setForeground(Color.white);
                 lbl.setBackground(COLOR_Focus);
             }
