@@ -1,7 +1,9 @@
 
-Issued 2014/01/29 from Thawte
-Order:  USVIAOX1 
-Validity: 29-Jan-2014 - 29-Jan-2015
+Issued 2015/12/29 from Thawte
+Company: ViaOA
+Certificate type: Code Signing Certificate for Java™
+Status: valid
+Validity: 27-Dec-2015 - 28-Jan-2017
 
 Generate new viaoa.jks
     use build.xml to generate viaoa.jks

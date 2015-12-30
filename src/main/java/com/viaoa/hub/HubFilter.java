@@ -355,7 +355,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             
             /** HubListener interface method, used to update filter. */
             public @Override void onNewList(HubEvent<T> e) {
-                if (bClosed || bNewListFlag) return;
+                if (bClosed || bNewListFlag) {
+                    return;
+                }
                 initialize();
             }
 
@@ -386,9 +388,11 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     protected void setup() {
         if (bClosed) return;
         Hub<T> hub = getHub();
-        if (hub == null) return;
+        if (hub == null) {
+            return;
+        }
         if (hubMaster == null) {
-            if (hub != null) hub.loadAllData(); // required.  Otherwise HubController would be calling this.add as it was loading the objects
+            hub.loadAllData(); // required.  Otherwise HubController would be calling this.add as it was loading the objects
             bOAObjectCacheDelegateListener = true;
             Class c = (hub != null) ? hub.getObjectClass() : hubMaster.getObjectClass();
             OAObjectCacheDelegate.addListener(c, getMasterHubListener());

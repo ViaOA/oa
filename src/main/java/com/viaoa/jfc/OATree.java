@@ -1001,10 +1001,18 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         Dimension d = this.getPreferredSize();
         if (d == null) return;
         
+        Container containerLast = null;
         for (Container c = this.getParent(); c!=null ; c=c.getParent()) {
-            if (d == null || !(c instanceof JSplitPane)) continue;
+            if (d == null || !(c instanceof JSplitPane)) {
+                containerLast = c;
+                continue;
+            }
             JSplitPane split = (JSplitPane) c;
-
+            
+            if (split.getLeftComponent() != containerLast) {
+                break;
+            }
+            
             int loc = split.getDividerLocation();
             if (split.getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
                 if (loc < d.width) {
@@ -1857,6 +1865,12 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         if (d.height == 0) {
             d.height = 10;
         }
+        return d;
+    }
+    
+    @Override
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
         return d;
     }
 

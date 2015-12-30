@@ -119,7 +119,13 @@ public class OAObjectHubDelegate {
      */
     public static void removeHub(final OAObject oaObj, Hub hub, boolean bIsOnHubFinalize) {
         if (oaObj == null || oaObj.weakhubs == null) return;
-        hub = hub.getRealHub();
+        
+        // 20151230
+        Hub hubx = hub.getRealHub();
+        if (hubx != hub) {
+            if (bIsOnHubFinalize) return; // the sharedHub is being finalized
+            hub = hubx;
+        }
 
         boolean bFound = false;
         synchronized (oaObj) {
@@ -147,7 +153,7 @@ public class OAObjectHubDelegate {
                     oaObj.weakhubs[lastEndPos] = null;
                     break;
                 }
-                if (currentSize > 10 && ((currentSize - lastEndPos) > currentSize / 3)) {
+                if (currentSize > 10 && ((currentSize - lastEndPos) < (currentSize * .75))) {
                     // resize array
                     int newSize = lastEndPos + (lastEndPos / 10) + 1;
                     newSize = Math.min(lastEndPos + 20, newSize);
@@ -286,8 +292,8 @@ public class OAObjectHubDelegate {
                     }
 
                     // need to expand
-                    int newSize = currentSize + 1 + (currentSize / 3);
-                    newSize = Math.min(newSize, currentSize + 50);
+                    int newSize = currentSize + (currentSize / 10) + 1;
+                    newSize = Math.min(newSize, currentSize + 20);
                     WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
 
                     System.arraycopy(oaObj.weakhubs, 0, refs, 0, currentSize);

@@ -53,7 +53,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
     private Hub hub;
 
     /**
-     * @param hub Hub that will be popuplated with all of the objects that are visible in the tree.
+     * @param hub Hub that will be populated with all of the objects that are visible in the tree.
      */
     public OATreeTableController(Hub hub) {
         super(8, 14, false);
@@ -185,7 +185,10 @@ public class OATreeTableController extends OATree implements OATableComponent {
         if (hub == null) {
             return;
         }
+        
+        
         OATreeModel model = (OATreeModel) this.getModel();
+
         model.addTreeModelListener(new TreeModelListener() {
             @Override
             public void treeStructureChanged(TreeModelEvent e) {
@@ -243,6 +246,8 @@ public class OATreeTableController extends OATree implements OATableComponent {
             }
         });
 
+        
+        
         OATreeTableController.this.addTreeExpansionListener(new TreeExpansionListener() {
             @Override
             public void treeCollapsed(TreeExpansionEvent event) {

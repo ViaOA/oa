@@ -19,10 +19,12 @@ public class HubFilterTest extends OAUnitTest {
         init();
 
         Hub<PointsAwardLevel> hubMaster = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
+        
         for (int i=0; i<20; i++) {
             PointsAwardLevel pal = new PointsAwardLevel();
             hubMaster.add(pal);
         }
+        
         hubMaster.saveAll();
         
         _test(hubMaster);
@@ -33,7 +35,34 @@ public class HubFilterTest extends OAUnitTest {
         hubMaster.add(pal);
         // should have cause hubFilters to be closed
     }
-    
+
+    public void _test(final Hub<PointsAwardLevel> hubMasterMain) {
+        System.out.println("HubFilterTest, thread="+Thread.currentThread().getName());
+        for (int i=0; i<5000; i++) {
+            final Hub<PointsAwardLevel> hubMaster = hubMasterMain.createSharedHub();
+            Hub<PointsAwardLevel> hubFiltered = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
+            //hubMaster.copyInto(hubFiltered);
+
+            HubFilter<PointsAwardLevel> hf = new HubFilter<PointsAwardLevel>(hubMaster, hubFiltered) {
+                public boolean isUsed(PointsAwardLevel level) {
+                    return true;
+                }
+            }; 
+            
+            int x = hubFiltered.getSize();
+            
+
+            if (i % 50 == 0) {
+                for (int j=0; j<10; j++) System.gc();
+            }
+            
+            //System.out.println("i="+i+", hubFiltered.getSize="+hubFiltered.getSize());
+            assertEquals(20, hubFiltered.getSize());
+            // hf.close();
+
+            x = HubEventDelegate.getListenerCount(hubMaster);
+        }
+    }
     
     @Test
     public void test2() {
@@ -91,26 +120,6 @@ public class HubFilterTest extends OAUnitTest {
         }
     }    
     
-    public void _test(final Hub<PointsAwardLevel> hubMaster) {
-        System.out.println("HubFilterTest, thread="+Thread.currentThread().getName());
-        for (int i=0; i<500; i++) {
-            Hub<PointsAwardLevel> hubFiltered = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
-            hubMaster.copyInto(hubFiltered);
-
-            HubFilter<PointsAwardLevel> hf = new HubFilter<PointsAwardLevel>(hubMaster, hubFiltered) {
-                public boolean isUsed(PointsAwardLevel level) {
-                    return true;
-                }
-            }; 
-if (20 != hubFiltered.getSize()) {
-System.out.println("***************** FOUND ONE **********");    
-    int xx = 4;
-    xx++;
-}
-            assertEquals(20, hubFiltered.getSize());
-//            hf.close();
-        }
-    }
 
     
 }
