@@ -129,7 +129,7 @@ public class OAObjectCacheDelegate {
      public static void setSelectAllHub(Hub hub) {
     	if (hub == null) return;
     	Class clazz = hub.getObjectClass();
-    	LOG.finest("Hub.objectClass = "+clazz);
+    	LOG.fine("Hub.objectClass = "+clazz);
     	
     	synchronized (OAObjectHashDelegate.hashCacheSelectAllHub) {
 	        WeakReference[] refs = (WeakReference[]) OAObjectHashDelegate.hashCacheSelectAllHub.get(clazz);

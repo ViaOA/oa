@@ -25,8 +25,8 @@ import com.viaoa.sync.OASyncDelegate;
 
 public abstract class RemoteClientImpl implements RemoteClientInterface {
     private static Logger LOG = Logger.getLogger(RemoteClientImpl.class.getName());
-    protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
-    protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
+    // protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
+    // protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
     private ClientGetDetail clientGetDetail = new ClientGetDetail(); 
     private RemoteDataSource remoteDataSource;
     private int sessionId;
@@ -35,12 +35,20 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         this.sessionId = sessionId;
     }
     
+    // 20160101
+    public void close() {
+        clientGetDetail.close();
+        clientGetDetail = null;
+        remoteDataSource = null;
+    }
+    
     /**
      * this is called when objects are removed on the client,
      * so that the guid can be removed from the clientGetDetail cache of object.guids that have been sent to client. 
      */
     public void removeGuids(int[] guids) {
         if (guids == null) return;
+        if (clientGetDetail == null) return;
         int x = guids.length;
         for (int i=0; i<x; i++) {
             clientGetDetail.removeGuid(guids[i]);

@@ -299,6 +299,7 @@ public class OAObjectHubDelegate {
                     System.arraycopy(oaObj.weakhubs, 0, refs, 0, currentSize);
                     oaObj.weakhubs = refs;
                     pos = currentSize;
+                    
                     break;
                 }
                 if (pos < 0) pos = 0;
@@ -318,6 +319,9 @@ public class OAObjectHubDelegate {
                 }
             }
             oaObj.weakhubs[pos] = new WeakReference(hub);
+            if (pos>0 && pos%50==0) {
+                LOG.warning("object="+oaObj+", weakhubs="+pos);
+            }
         }
         if (bRemoveFromServerCache && OARemoteThreadDelegate.shouldSendMessages()) {
             OAObjectCSDelegate.removeFromServerSideCache(oaObj);

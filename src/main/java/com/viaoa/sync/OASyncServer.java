@@ -186,7 +186,9 @@ public class OASyncServer {
                 for (int i=0; i<x; i++) {
                     removeFromCache(guids[i]);
                 }
-                cx.remoteClient.removeGuids(guids);  // remove from getDetail cache/tree
+                if (cx.remoteClient != null) {
+                    cx.remoteClient.removeGuids(guids);  // remove from getDetail cache/tree
+                }
             }
             
         };
@@ -323,6 +325,12 @@ public class OASyncServer {
             cx.ci.setDisconnected(new OADateTime());
             cx.remoteSession.clearLocks();
             cx.remoteSession.clearCache();
+            // 20160101 need to release so that it can be gc'd
+            if (cx.remoteClient != null) {
+                cx.remoteClient.close();
+            }
+            cx.remoteClient = null;
+            cx.remoteClientCallback = null;
         }
     }
     public Socket getSocket(int connectionId) {

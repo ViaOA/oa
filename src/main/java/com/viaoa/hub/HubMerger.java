@@ -535,7 +535,7 @@ static int cntq;
         }
     }
 
-    class Data extends HubListenerAdapter {
+    final class Data extends HubListenerAdapter {
         Node node;
         OAObject parentObject; // parent object of hub
         Hub hub;

@@ -48,6 +48,10 @@ public class ClientGetDetail {
         rwLockTreeSerialized.writeLock().unlock();
     }
     
+    public void close() {
+        treeSerialized.clear();
+    }
+    
     private int cntx;
     private int errorCnt;
     /**

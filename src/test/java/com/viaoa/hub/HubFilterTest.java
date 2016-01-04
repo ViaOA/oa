@@ -20,7 +20,7 @@ public class HubFilterTest extends OAUnitTest {
 
         Hub<PointsAwardLevel> hubMaster = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
         
-        for (int i=0; i<20; i++) {
+        for (int i=0; i<200; i++) {
             PointsAwardLevel pal = new PointsAwardLevel();
             hubMaster.add(pal);
         }
@@ -57,7 +57,7 @@ public class HubFilterTest extends OAUnitTest {
             }
             
             //System.out.println("i="+i+", hubFiltered.getSize="+hubFiltered.getSize());
-            assertEquals(20, hubFiltered.getSize());
+            assertEquals(200, hubFiltered.getSize());
             // hf.close();
 
             x = HubEventDelegate.getListenerCount(hubMaster);
@@ -121,6 +121,35 @@ public class HubFilterTest extends OAUnitTest {
     }    
     
 
+    public static void main(String[] args) throws Exception {
+        /*
+        System.out.println("first of two 30 second count down");
+        for (int i=0; i<120; i++) {
+            if (i%4==0) System.out.println("countdown "+((120-i)/4));
+            Thread.sleep(250);
+        }
+
+        ArrayList<PointsAwardLevel> al = new ArrayList<PointsAwardLevel>();
+        for (int i=0; i<100000; i++) {
+            PointsAwardLevel pal = new PointsAwardLevel();
+            al.add(pal);
+        }
+        
+        System.out.println("second of two 30 second count down");
+        for (int i=0; i<120; i++) {
+            if (i%4==0) System.out.println("countdown "+((120-i)/4));
+            Thread.sleep(250);
+        }
+        */
+        HubFilterTest test = new HubFilterTest();
+        test.test();
+        System.out.println("test is done");
+        /*
+        for (;;) {
+            Thread.sleep(30 * 1000);
+        }
+        */
+    }
     
 }
 
