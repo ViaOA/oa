@@ -9,18 +9,12 @@
     limitations under the License.
 */
 package com.viaoa.hub;
-
-
-import com.viaoa.hub.*;
-import java.util.*;
-import java.lang.reflect.*;
-import com.viaoa.util.*;
 import com.viaoa.object.*;
 
 /** 
     Filter that is used to listen to all objects added to OAObjectCacheDelegate and then add to a specific Hub.
 */
-public class HubCacheAdder extends HubListenerAdapter implements java.io.Serializable {
+public class HubObjectCacheAdder<T extends OAObject> implements OAObjectCacheListener<T>, java.io.Serializable {
     static final long serialVersionUID = 1L;
 
     protected Hub hub;
@@ -28,7 +22,7 @@ public class HubCacheAdder extends HubListenerAdapter implements java.io.Seriali
     /**
         Used to create a new HubControllerAdder that will add objects to the supplied Hub.
     */
-    public HubCacheAdder(Hub hub) {
+    public HubObjectCacheAdder(Hub<T> hub) {
         if (hub == null) throw new IllegalArgumentException("hub can not be null");
         this.hub = hub;
         
@@ -39,7 +33,7 @@ public class HubCacheAdder extends HubListenerAdapter implements java.io.Seriali
         OAObjectCacheDelegate.callback(c, new OACallback() {
             @Override
             public boolean updateObject(Object obj) {
-                if (!HubCacheAdder.this.hub.contains(obj)) HubCacheAdder.this.hub.add((OAObject) obj);
+                if (!HubObjectCacheAdder.this.hub.contains(obj)) HubObjectCacheAdder.this.hub.add((OAObject) obj);
                 return true;
             }
         });
@@ -54,20 +48,17 @@ public class HubCacheAdder extends HubListenerAdapter implements java.io.Seriali
         super.finalize();
     }
     
-    /** HubListener interface method. */
-    public @Override void afterInsert(HubEvent e) {
-        update(e);
-    }
-    /** HubListener interface method. */
-    public @Override void afterAdd(HubEvent e) {
-        update(e);
+
+    @Override
+    public void afterPropertyChange(T obj, String propertyName, Object oldValue, Object newValue) {
     }
 
-    protected void update(HubEvent e) {
-        Object obj = e.getObject();
+    @Override
+    public void afterAdd(T obj) {
         if (obj != null) {
             if (!hub.contains(obj)) hub.add(obj);
         }
     }
+    
 }
 

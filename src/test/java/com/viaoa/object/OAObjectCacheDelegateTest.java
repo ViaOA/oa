@@ -69,19 +69,19 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
         reset();
         cnt1 = 0;
         cnt2 = 0;
-        HubListener hl = new HubListenerAdapter() {
+        OAObjectCacheListener hl = new OAObjectCacheListener() {
             @Override
-            public void afterAdd(HubEvent e) {
-                cnt1++;
+            public void afterPropertyChange(Object obj, String propertyName, Object oldValue, Object newValue) {
+                cnt2++;
             }
             @Override
-            public void afterPropertyChange(HubEvent e) {
-                cnt2++;
+            public void afterAdd(Object obj) {
+                cnt1++;
             }
         };
         OAObjectCacheDelegate.addListener(Server.class, hl);
         
-        HubListener[] hls = OAObjectCacheDelegate.getListeners(Server.class);
+        OAObjectCacheListener[] hls = OAObjectCacheDelegate.getListeners(Server.class);
         assertTrue(hls != null && hls.length == 1 && hls[0] == hl);
         
         Hub<Server> hub = new Hub<Server>(Server.class);

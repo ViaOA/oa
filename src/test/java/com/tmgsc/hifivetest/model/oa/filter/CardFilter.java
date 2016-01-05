@@ -109,7 +109,7 @@ public class CardFilter extends OAObject {
         if (!bAllHubs) return filter;
         filter.setServerSideOnly(true); 
         // need to listen to all Card
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 

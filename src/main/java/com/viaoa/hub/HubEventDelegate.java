@@ -79,7 +79,7 @@ public class HubEventDelegate {
     	        }
 //            }
 	    }
-	    OAObjectCacheDelegate.fireAfterRemoveEvent(thisHub, obj, pos);
+	    //OAObjectCacheDelegate.fireAfterRemoveEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
 	}
 
@@ -171,7 +171,7 @@ public class HubEventDelegate {
     	        }
 //            }
 	    }
-	    OAObjectCacheDelegate.fireAfterAddEvent(thisHub, obj, pos);
+	    //OAObjectCacheDelegate.fireAfterAddEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
 	}
 	public static void fireBeforeInsertEvent(Hub thisHub, Object obj, int pos) {
@@ -226,7 +226,7 @@ public class HubEventDelegate {
                 }
 //            }
 	    }
-	    OAObjectCacheDelegate.fireAfterInsertEvent(thisHub, obj, pos);
+	    //OAObjectCacheDelegate.fireAfterInsertEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
 	}
 	public static void fireAfterChangeActiveObjectEvent(Hub thisHub, Object obj, int pos, boolean bAllShared) {

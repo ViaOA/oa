@@ -63,7 +63,7 @@ public class ProductActiveFilter extends OAObject implements CustomHubFilter {
  
         if (!bAllHubs) return filter;
         // need to listen to all Product
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 

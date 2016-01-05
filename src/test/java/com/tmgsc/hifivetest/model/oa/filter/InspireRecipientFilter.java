@@ -32,7 +32,7 @@ public class InspireRecipientFilter extends OAObject {
         if (!bAllHubs) return filter;
         filter.setServerSideOnly(true); 
         // need to listen to all InspireRecipient
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 
@@ -63,7 +63,7 @@ public class InspireRecipientFilter extends OAObject {
         if (!bAllHubs) return filter;
         filter.setServerSideOnly(true); 
         // need to listen to all InspireRecipient
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 
@@ -90,7 +90,7 @@ public class InspireRecipientFilter extends OAObject {
         if (!bAllHubs) return filter;
         filter.setServerSideOnly(true); 
         // need to listen to all InspireRecipient
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 

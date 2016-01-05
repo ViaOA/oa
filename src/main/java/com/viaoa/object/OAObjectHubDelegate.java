@@ -28,6 +28,7 @@ import com.viaoa.util.OANullObject;
 public class OAObjectHubDelegate {
 
     private static Logger LOG = Logger.getLogger(OAObjectHubDelegate.class.getName());
+    public static boolean ShowWarnings=true; // if weakHubs.len % 50
 
     /*
      * // 20120827 public static int getHubFlags(OAObject oaObj) { if (oaObj == null) return 0; return
@@ -319,7 +320,7 @@ public class OAObjectHubDelegate {
                 }
             }
             oaObj.weakhubs[pos] = new WeakReference(hub);
-            if (pos>0 && pos%50==0) {
+            if (pos>0 && pos%50==0 && ShowWarnings) {
                 LOG.warning("object="+oaObj+", weakhubs="+pos);
             }
         }

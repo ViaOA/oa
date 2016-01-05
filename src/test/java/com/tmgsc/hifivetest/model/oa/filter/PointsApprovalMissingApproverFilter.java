@@ -63,7 +63,7 @@ public class PointsApprovalMissingApproverFilter extends OAObject implements Cus
  
         if (!bAllHubs) return filter;
         // need to listen to all PointsApproval
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 

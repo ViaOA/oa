@@ -64,7 +64,7 @@ public class EmployeeNextBirthdaysFilter extends OAObject implements CustomHubFi
  
         if (!bAllHubs) return filter;
         // need to listen to all Employee
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 

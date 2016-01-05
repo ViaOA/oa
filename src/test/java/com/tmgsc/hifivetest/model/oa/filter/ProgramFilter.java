@@ -30,7 +30,7 @@ public class ProgramFilter extends OAObject {
         if (!bAllHubs) return filter;
         filter.setServerSideOnly(true); 
         // need to listen to all Program
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 

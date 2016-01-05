@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tmgsc.hifivetest.model.oa.*;
+import com.tmgsc.hifivetest.model.oa.propertypath.EmployeePP;
 import com.viaoa.OAUnitTest;
 
 public class HubFilterTest extends OAUnitTest {
@@ -38,7 +39,7 @@ public class HubFilterTest extends OAUnitTest {
 
     public void _test(final Hub<PointsAwardLevel> hubMasterMain) {
         System.out.println("HubFilterTest, thread="+Thread.currentThread().getName());
-        for (int i=0; i<5000; i++) {
+        for (int i=0; i<25; i++) {
             final Hub<PointsAwardLevel> hubMaster = hubMasterMain.createSharedHub();
             Hub<PointsAwardLevel> hubFiltered = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
             //hubMaster.copyInto(hubFiltered);
@@ -48,12 +49,13 @@ public class HubFilterTest extends OAUnitTest {
                     return true;
                 }
             }; 
+            hf.addDependentProperty("id");
             
             int x = hubFiltered.getSize();
             
 
             if (i % 50 == 0) {
-                for (int j=0; j<10; j++) System.gc();
+                for (int j=0; j<5; j++) System.gc();
             }
             
             //System.out.println("i="+i+", hubFiltered.getSize="+hubFiltered.getSize());
@@ -67,14 +69,14 @@ public class HubFilterTest extends OAUnitTest {
     @Test
     public void test2() {
         final int max = 5;
-        
+
         final Hub<PointsAwardLevel> hubMaster1 = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
-        for (int i=0; i<20; i++) {
+        for (int i=0; i<200; i++) {
             PointsAwardLevel pal = new PointsAwardLevel();
             hubMaster1.add(pal);
         }
         final Hub<PointsAwardLevel> hubMaster2 = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
-        for (int i=0; i<20; i++) {
+        for (int i=0; i<200; i++) {
             PointsAwardLevel pal = new PointsAwardLevel();
             hubMaster2.add(pal);
         }
@@ -121,6 +123,113 @@ public class HubFilterTest extends OAUnitTest {
     }    
     
 
+    @Test
+    public void test3() {
+        Hub<Employee> hub = new Hub<Employee>(Employee.class);
+        for (int i=0; i< 20; i++) {
+            Employee emp = new Employee();
+            emp.setId(i);
+            hub.add(emp);
+        }
+        Hub<Employee> hubFiltered = new Hub<Employee>(Employee.class);
+        
+        HubFilter<Employee> hf = new HubFilter<Employee>(hub, hubFiltered) {
+            @Override
+            public boolean isUsed(Employee emp) {
+                return emp.getId() % 5 == 0;
+            }
+        };
+        hf.addDependentProperty("id");
+        
+        assertEquals(4, hubFiltered.size());
+
+        Employee emp = hub.getAt(0);
+        emp.setId(99);
+        assertEquals(3, hubFiltered.size());
+        emp.setId(0);
+        assertEquals(4, hubFiltered.size());
+        hub.remove(emp);
+        assertEquals(3, hubFiltered.size());
+        hub.add(emp);
+        assertEquals(4, hubFiltered.size());
+    }
+
+    @Test
+    public void test4() {
+        reset();
+
+        Location location = new Location();
+        location.setId(0);
+        
+        Hub<Employee> hub = new Hub<Employee>(Employee.class);
+        for (int i=0; i< 20; i++) {
+            Employee emp = new Employee();
+            emp.setId(i);
+            emp.setFirstName("fn"+i);
+            emp.setLastName("ln"+i);
+            emp.setLocation(location);
+            hub.add(emp);
+        }
+        Hub<Employee> hubFiltered = new Hub<Employee>(Employee.class);
+        
+        HubFilter<Employee> hf = new HubFilter<Employee>(hub, hubFiltered) {
+            @Override
+            public boolean isUsed(Employee emp) {
+                if (emp.getId() % 5 != 0) return false;
+                Location loc = emp.getLocation();
+                if (loc == null || loc.getId() != 0) return false;
+                
+                String s = "fn" + emp.getId() + " ln" + emp.getId();
+                return s.equals(emp.getFullName());
+            }
+        };
+        hf.addDependentProperty(Employee.P_FullName);
+        hf.addDependentProperty(Employee.P_Id);
+
+        assertEquals(4, hubFiltered.size());
+
+        Employee emp = hub.getAt(0);
+        emp.setId(99);
+        assertEquals(3, hubFiltered.size());
+        emp.setId(0);
+        assertEquals(4, hubFiltered.size());
+        hub.remove(emp);
+        assertEquals(3, hubFiltered.size());
+        hub.add(emp);
+        assertEquals(4, hubFiltered.size());
+        
+        location.setId(1);
+        assertEquals(4, hubFiltered.size());
+        location.setId(0);
+        assertEquals(4, hubFiltered.size());
+        
+        
+        hf.addDependentProperty(EmployeePP.location().id());
+        
+        assertEquals(4, hubFiltered.size());
+
+        emp.setId(99);
+        assertEquals(3, hubFiltered.size());
+        emp.setId(0);
+        assertEquals(4, hubFiltered.size());
+        hub.remove(emp);
+        assertEquals(3, hubFiltered.size());
+        hub.add(emp);
+        assertEquals(4, hubFiltered.size());
+        
+        location.setId(1);
+        assertEquals(0, hubFiltered.size());
+        location.setId(0);
+        assertEquals(4, hubFiltered.size());
+        
+        
+        emp.setFirstName("");
+        assertEquals(3, hubFiltered.size());
+        emp.setFirstName("fn0");
+        assertEquals(4, hubFiltered.size());
+    }
+    
+    
     public static void main(String[] args) throws Exception {
         /*
         System.out.println("first of two 30 second count down");

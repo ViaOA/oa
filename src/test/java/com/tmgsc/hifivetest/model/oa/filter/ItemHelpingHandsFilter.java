@@ -63,7 +63,7 @@ public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter 
  
         if (!bAllHubs) return filter;
         // need to listen to all Item
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 

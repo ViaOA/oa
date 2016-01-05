@@ -30,7 +30,7 @@ public class EmployeeFilter extends OAObject {
         if (!bAllHubs) return filter;
         filter.setServerSideOnly(true); 
         // need to listen to all Employee
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 
@@ -67,7 +67,7 @@ public class EmployeeFilter extends OAObject {
         if (!bAllHubs) return filter;
         filter.setServerSideOnly(true); 
         // need to listen to all Employee
-        HubCacheAdder hubCacheAdder = new HubCacheAdder(hubMaster);
+        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
         return filter;
     }
 

@@ -85,7 +85,7 @@ public class OAObjectHashDelegate {
      * Key   = Class
      * Value = Vector of listeners 
      */
-	protected static final Hashtable hashCacheListener = new Hashtable(51, .75F); // stores vector per class
+	protected static final ConcurrentHashMap hashCacheListener = new ConcurrentHashMap(); // stores vector per class
     
 	
     /** 

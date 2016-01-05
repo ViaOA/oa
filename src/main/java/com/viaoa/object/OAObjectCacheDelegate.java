@@ -221,7 +221,7 @@ public class OAObjectCacheDelegate {
         Events from Hubs: afterAdd, afterRemove<br>
         Events from OAObjects: afterPropertyChange
     */
-    public static void addListener(Class clazz, HubListener l) {
+    public static void addListener(Class clazz, OAObjectCacheListener l) {
     	LOG.fine("class="+clazz);
         Vector vecListener = (Vector) OAObjectHashDelegate.hashCacheListener.get(clazz);
         if (vecListener == null) {
@@ -236,7 +236,7 @@ public class OAObjectCacheDelegate {
     }
 
     /** @see addListener(Class, HubListener) */
-    public static void removeListener(Class clazz, HubListener l) {
+    public static void removeListener(Class clazz, OAObjectCacheListener l) {
     	LOG.fine("class="+clazz);
         Vector vecListener = (Vector) OAObjectHashDelegate.hashCacheListener.get(clazz);
         if (vecListener != null) {
@@ -253,80 +253,51 @@ public class OAObjectCacheDelegate {
         Returns array of HubListeners for a given class.
         @see addListener(Class, HubListener) 
     */
-    public static HubListener[] getListeners(Class c) {
+    public static OAObjectCacheListener[] getListeners(Class c) {
         if (listenerCount == 0) return null;
         // LOG.finest("class="+c);
     	Vector vecListener = (Vector) OAObjectHashDelegate.hashCacheListener.get(c);
         if (vecListener == null) return null;
-        int x = vecListener.size();
-        HubListener[] hubListeners = new HubListener[x];
-        for (int i=0; i<x; i++) {
-        	hubListeners[i] = (HubListener) vecListener.elementAt(i);
+        
+        OAObjectCacheListener[] listeners = null;
+        synchronized(vecListener) {
+            int x = vecListener.size();
+            listeners = new OAObjectCacheListener[x];
+            for (int i=0; i<x; i++) {
+            	listeners[i] = (OAObjectCacheListener) vecListener.elementAt(i);
+            }
         }
         // LOG.finest("total size="+x);
-        return hubListeners;
+        return listeners;
     }
 
     /** called by OAObject to send a HubEvent. */
-    public static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue, boolean bLocalOnly, boolean bSendEvent) {
+    protected static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue, boolean bLocalOnly, boolean bSendEvent) {
         // Note: oldValue could be OAObjectKey, but will be resolved when HubEvent.getOldValue() is called
     	if (listenerCount == 0) return;
         if (obj == null || propertyName == null) return;
         if (bSendEvent) {
             // LOG.finest("object="+obj+", propertyName="+propertyName+", key="+origKey);
-            HubListener[] hl = getListeners(obj.getClass());
+            OAObjectCacheListener[] hl = getListeners(obj.getClass());
             if (hl != null && hl.length > 0) {
-                final HubEvent e = new HubEvent(obj,propertyName,oldValue,newValue);
-                
                 for (int i=0; i<hl.length; i++) {
-                    hl[i].afterPropertyChange(e);
+                    hl[i].afterPropertyChange(obj, propertyName, oldValue, newValue);
                 }
             }
         }
     }
 
-	public static void fireAfterRemoveEvent(Hub thisHub, Object obj, int pos) {
+	protected static void fireAfterAddEvent(Object obj) {
         if (listenerCount == 0) return;
         if (obj == null) return;
-        final HubListener[] hl = getListeners(obj.getClass());
+        final OAObjectCacheListener[] hl = getListeners(obj.getClass());
         if (hl == null) return; 
 	    final int x = hl.length;
 	    if (x > 0) {
-            HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
             // LOG.finest("Hub="+thisHub+", object="+obj);
 	        for (int i=0; i<x; i++) { 
-	        	hl[i].afterRemove(hubEvent);
+	        	hl[i].afterAdd((OAObject) obj);
 	        }
-	    }
-	}
-    
-	public static void fireAfterAddEvent(Hub thisHub, Object obj, int pos) {
-        if (listenerCount == 0) return;
-        if (obj == null) return;
-        final HubListener[] hl = getListeners(obj.getClass());
-        if (hl == null) return; 
-	    final int x = hl.length;
-	    if (x > 0) {
-            // LOG.finest("Hub="+thisHub+", object="+obj);
-	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].afterAdd(hubEvent);
-	        }
-	    }
-	}
-    
-	public static void fireAfterInsertEvent(Hub thisHub, Object obj, int pos) {
-        if (listenerCount == 0) return;
-        if (obj == null) return;
-        final HubListener[] hl = getListeners(obj.getClass());
-        if (hl == null) return; 
-	    final int x = hl.length;
-	    if (x > 0) {
-            // LOG.finest("Hub="+thisHub+", object="+obj);
-	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-            for (int i=0; i<x; i++) { 
-                hl[i].afterInsert(hubEvent);
-            }
 	    }
 	}
     
@@ -337,6 +308,7 @@ public class OAObjectCacheDelegate {
         LOG.warning("removing all Objects was called (fyi only)");
         OAObjectHashDelegate.hashCacheClass.clear();
     }
+
     
 
 	/**
@@ -484,7 +456,7 @@ public class OAObjectCacheDelegate {
     public static void clearCache(Class clazz) {
         synchronized (OAObjectHashDelegate.hashCacheClass) {
             OAObjectHashDelegate.hashCacheClass.remove(clazz);
-        }        
+        }
     }
 
     
@@ -517,6 +489,7 @@ public class OAObjectCacheDelegate {
         OAObject result = null;
         Object removeObj = null;
         final OAObjectKey ok = OAObjectKeyDelegate.getKey(obj);
+        boolean bSendAddEvent = false;
         
         final TreeMapHolder tmh = getTreeMapHolder(obj.getClass(), true);
         try {
@@ -538,6 +511,7 @@ public class OAObjectCacheDelegate {
                 if (mode != IGNORE_ALL) {
                     ref = new WeakReference(obj);
                     tm.put(ok, ref);
+                    bSendAddEvent = true;
                 }
                 result = obj;
             }
@@ -554,6 +528,7 @@ public class OAObjectCacheDelegate {
                     tm.put(ok, ref);
                     removeObj = result;
                     result = obj;
+                    bSendAddEvent = true;
                     // LOG.fine("overwrite object="+obj);
                 }
                 else {
@@ -575,7 +550,10 @@ public class OAObjectCacheDelegate {
                 hs[i].add(obj);
             }
         }
-        
+
+        if (bSendAddEvent) {
+            fireAfterAddEvent(obj);
+        }
         return result;
     }        
 

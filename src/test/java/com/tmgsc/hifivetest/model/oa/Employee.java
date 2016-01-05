@@ -683,7 +683,15 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
     }
     @OACalculatedProperty(displayName = "Full Name", displayLength = 30, columnLength = 25, properties = {P_FirstName, P_LastName, P_MiddleName, P_SuffixName, P_PrefixName})
     public String getFullName() {
-        return "";//EmployeeDelegate.getFullName(this);
+        String fn = "";
+        String s = getFirstName();
+        if (s != null) fn = s;
+        s = getLastName();
+        if (s != null) {
+            if (fn.length() > 0) fn += " ";
+            fn += s;
+        }
+        return fn;
     }
      
     @OACalculatedProperty(displayName = "Full Name", displayLength = 30, columnLength = 25, properties = {P_FirstName, P_LastName, P_MiddleName})

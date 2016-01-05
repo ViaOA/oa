@@ -4,8 +4,6 @@ package com.tmgsc.hifivetest.model.oa.filter;
 import com.viaoa.annotation.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
-import com.viaoa.util.*;
-import java.util.*;
 import com.tmgsc.hifivetest.model.oa.*;
 
 @OAClass(useDataSource=false, localOnly=true)
@@ -13,12 +11,11 @@ import com.tmgsc.hifivetest.model.oa.*;
 public class EmailOpenFilter extends OAObject implements CustomHubFilter {
     private static final long serialVersionUID = 1L;
 
-
     public static final String PPCode = ":Open()";
     private Hub<Email> hubMaster;
     private Hub<Email> hub;
     private HubFilter<Email> filter;
-    private boolean bAllHubs;
+    private boolean bUseObjectCache;
 
     public EmailOpenFilter(Hub<Email> hub) {
         this(true, null, hub);
@@ -26,14 +23,13 @@ public class EmailOpenFilter extends OAObject implements CustomHubFilter {
     public EmailOpenFilter(Hub<Email> hubMaster, Hub<Email> hub) {
         this(false, hubMaster, hub);
     }
-    public EmailOpenFilter(boolean bAllHubs, Hub<Email> hubMaster, Hub<Email> hubFiltered) {
+    public EmailOpenFilter(boolean bUseObjectCache, Hub<Email> hubMaster, Hub<Email> hubFiltered) {
         this.hubMaster = hubMaster;
         this.hub = hubFiltered;
         if (hubMaster == null) this.hubMaster = new Hub<Email>(Email.class);
-        this.bAllHubs = bAllHubs;
+        this.bUseObjectCache = bUseObjectCache;
         getHubFilter(); // create filter
     }
-
 
     public void reset() {
     }
@@ -48,7 +44,7 @@ public class EmailOpenFilter extends OAObject implements CustomHubFilter {
     @Override
     public HubFilter<Email> getHubFilter() {
         if (filter == null) {
-            filter = createHubFilter(hubMaster, hub, bAllHubs);
+            filter = createHubFilter(hubMaster, hub, bUseObjectCache);
         }
         return filter;
     }
@@ -64,62 +60,25 @@ public class EmailOpenFilter extends OAObject implements CustomHubFilter {
         filter.addDependentProperty(Email.P_FromEmail);
         filter.addDependentProperty(Email.P_ToEmail);
  
-        if (!bAllHubs) return filter;
-        final ArrayList<Hub> alHub = new ArrayList<Hub>();
-        alHub.add(hub);
-        alHub.add(hubMaster);
- 
-        OAObjectCacheDelegate.addListener(Email.class, new HubListenerAdapter() {
-            @Override
-            public void afterAdd(HubEvent e) {
-                Hub h = e.getHub();
-                if (h == null || alHub.contains(h)) return;
-                alHub.add(h);
-                Hub<Email> h2 = new Hub<Email>(Email.class);
-                alHub.add(h2);
-                createHubFilter(h, h2, false);
-                h2.addHubListener(new HubListenerAdapter() {
-                    @Override
-                    public void afterAdd(HubEvent e) {
-                        hubMaster.add((Email)e.getObject());
-                    }
-                    @Override
-                    public void afterRemove(HubEvent e) {
-                        Email obj = (Email) e.getObject();
-                        if (!OAObjectHubDelegate.isInHub(obj)) {
-                            hubMaster.remove(obj);
-                        }
-                    }
-                });
-            }
- 
-            @Override
-            public void afterPropertyChange(HubEvent e) {
-                String prop = e.getPropertyName();
-                if (prop == null) return;
-                if (prop.equalsIgnoreCase(Email.P_SentDateTime)) {
-                    if (!hubMaster.contains(e.getObject())) hubMaster.add((Email) e.getObject());
-                    return;
+        if (bAllHubs) { 
+            new OAObjectCacheFilter<Email>(filter) {
+                @Override
+                public boolean isUsed(Email email) {
+                    if (!super.isUsed(email)) return false;
+                    // wants to be added to master, check to see if custom code wants to use it.
+                    return isUsedFromObjectCache(email);
                 }
-                if (prop.equalsIgnoreCase(Email.P_CancelDate)) {
-                    if (!hubMaster.contains(e.getObject())) hubMaster.add((Email) e.getObject());
-                    return;
-                }
-                if (prop.equalsIgnoreCase(Email.P_FromEmail)) {
-                    if (!hubMaster.contains(e.getObject())) hubMaster.add((Email) e.getObject());
-                    return;
-                }
-                if (prop.equalsIgnoreCase(Email.P_ToEmail)) {
-                    if (!hubMaster.contains(e.getObject())) hubMaster.add((Email) e.getObject());
-                    return;
-                }
-            }
-        });
+            };
+        }
         return filter;
     }
 
     public boolean isUsed(Email email) {
         return email.isOpen();
+    }
+//qqqqqqqqq needs to have customized from oabuilder object.filter
+    public boolean isUsedFromObjectCache(Email email) {
+        return true;
     }
     
 }
