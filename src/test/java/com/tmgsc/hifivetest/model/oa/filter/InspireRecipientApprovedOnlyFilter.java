@@ -63,7 +63,7 @@ public class InspireRecipientApprovedOnlyFilter extends OAObject implements Cust
  
         if (!bAllHubs) return filter;
         // need to listen to all InspireRecipient
-        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
+        OAObjectCacheHubAdder hubCacheAdder = new OAObjectCacheHubAdder(hubMaster);
         return filter;
     }
 

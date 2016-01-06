@@ -80,7 +80,7 @@ public class ItemFilter extends OAObject {
         if (!bAllHubs) return filter;
         filter.setServerSideOnly(true); 
         // need to listen to all Item
-        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
+        OAObjectCacheHubAdder hubCacheAdder = new OAObjectCacheHubAdder(hubMaster);
         return filter;
     }
 

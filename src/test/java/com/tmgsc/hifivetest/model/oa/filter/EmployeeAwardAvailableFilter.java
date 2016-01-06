@@ -63,7 +63,7 @@ public class EmployeeAwardAvailableFilter extends OAObject implements CustomHubF
  
         if (!bAllHubs) return filter;
         // need to listen to all EmployeeAward
-        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
+        OAObjectCacheHubAdder hubCacheAdder = new OAObjectCacheHubAdder(hubMaster);
         return filter;
     }
 

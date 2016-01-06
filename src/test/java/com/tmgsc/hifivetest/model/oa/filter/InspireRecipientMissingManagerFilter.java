@@ -65,7 +65,7 @@ public class InspireRecipientMissingManagerFilter extends OAObject implements Cu
  
         if (!bAllHubs) return filter;
         // need to listen to all InspireRecipient
-        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
+        OAObjectCacheHubAdder hubCacheAdder = new OAObjectCacheHubAdder(hubMaster);
         return filter;
     }
 

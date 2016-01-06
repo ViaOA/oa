@@ -60,7 +60,7 @@ public class EmailOpenFilter extends OAObject implements CustomHubFilter {
         filter.addDependentProperty(Email.P_FromEmail);
         filter.addDependentProperty(Email.P_ToEmail);
  
-        if (bAllHubs) { 
+        if (!bAllHubs) { 
             new OAObjectCacheFilter<Email>(filter) {
                 @Override
                 public boolean isUsed(Email email) {

@@ -68,7 +68,7 @@ public class InspireRecipientOpenFilter extends OAObject implements CustomHubFil
  
         if (!bAllHubs) return filter;
         // need to listen to all InspireRecipient
-        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
+        OAObjectCacheHubAdder hubCacheAdder = new OAObjectCacheHubAdder(hubMaster);
         return filter;
     }
 

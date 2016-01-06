@@ -8,39 +8,50 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-package com.viaoa.hub;
+package com.viaoa.object;
+import java.lang.ref.WeakReference;
+
+import com.viaoa.hub.Hub;
 import com.viaoa.object.*;
 
 /** 
     Filter that is used to listen to all objects added to OAObjectCacheDelegate and then add to a specific Hub.
 */
-public class HubObjectCacheAdder<T extends OAObject> implements OAObjectCacheListener<T>, java.io.Serializable {
+public class OAObjectCacheHubAdder<T extends OAObject> implements OAObjectCacheListener<T>, java.io.Serializable {
     static final long serialVersionUID = 1L;
 
-    protected Hub hub;
+    protected WeakReference<Hub<T>> wfHub;
+    private Class clazz;
 
     /**
         Used to create a new HubControllerAdder that will add objects to the supplied Hub.
     */
-    public HubObjectCacheAdder(Hub<T> hub) {
+    public OAObjectCacheHubAdder(Hub<T> hub) {
         if (hub == null) throw new IllegalArgumentException("hub can not be null");
-        this.hub = hub;
+        clazz = hub.getObjectClass();
+        wfHub = new WeakReference(hub);
         
-        Class c = hub.getObjectClass();
-        OAObjectCacheDelegate.addListener(c, this);
+        OAObjectCacheDelegate.addListener(clazz, this);
         
-        // need to get objects that already loaded 
-        OAObjectCacheDelegate.callback(c, new OACallback() {
+        // need to get objects that are already loaded 
+        OAObjectCacheDelegate.callback(clazz, new OACallback() {
             @Override
             public boolean updateObject(Object obj) {
-                if (!HubObjectCacheAdder.this.hub.contains(obj)) HubObjectCacheAdder.this.hub.add((OAObject) obj);
+                Hub<T> h = wfHub.get();
+                if (h != null) {
+                    if (!h.contains(obj)) {
+                        if (isUsed((T) obj)) {
+                            h.add((T) obj);
+                        }
+                    }
+                }
                 return true;
             }
         });
     }
 
     public void close() {
-    	OAObjectCacheDelegate.removeListener(hub.getObjectClass(), this);
+    	OAObjectCacheDelegate.removeListener(clazz, this);
     }
 
     protected void finalize() throws Throwable {
@@ -56,8 +67,19 @@ public class HubObjectCacheAdder<T extends OAObject> implements OAObjectCacheLis
     @Override
     public void afterAdd(T obj) {
         if (obj != null) {
-            hub.add(obj);
+            if (isUsed(obj)) {
+                Hub<T> h = wfHub.get();
+                if (h != null) h.add(obj);
+            }
         }
+    }
+    
+    
+    /**
+     * determine if a new object will be used.
+     */
+    public boolean isUsed(T obj) {
+        return true;
     }
     
 }

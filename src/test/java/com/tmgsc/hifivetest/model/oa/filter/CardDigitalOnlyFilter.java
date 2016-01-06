@@ -63,7 +63,7 @@ public class CardDigitalOnlyFilter extends OAObject implements CustomHubFilter {
  
         if (!bAllHubs) return filter;
         // need to listen to all Card
-        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
+        OAObjectCacheHubAdder hubCacheAdder = new OAObjectCacheHubAdder(hubMaster);
         return filter;
     }
 

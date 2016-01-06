@@ -238,8 +238,10 @@ public class OAObjectCacheDelegate {
     /**
      * @deprecated replaced with addListener(..) 
      */
+    /*
     public static void addListener(Class c, HubListener hl) {
     }
+    */
     
     /** @see addListener(Class, HubListener) */
     public static void removeListener(Class clazz, OAObjectCacheListener l) {

@@ -64,7 +64,7 @@ public class EmployeeNextAnniverseriesFilter extends OAObject implements CustomH
  
         if (!bAllHubs) return filter;
         // need to listen to all Employee
-        HubObjectCacheAdder hubCacheAdder = new HubObjectCacheAdder(hubMaster);
+        OAObjectCacheHubAdder hubCacheAdder = new OAObjectCacheHubAdder(hubMaster);
         return filter;
     }
 
