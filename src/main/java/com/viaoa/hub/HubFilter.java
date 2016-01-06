@@ -319,17 +319,18 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             /** HubListener interface method, used to update filter. */
             public @Override void afterAdd(HubEvent<T> e) {
                 if (bClosed) return;
-                if (hubMaster == null || !hubMaster.isLoading()) {
-                    Hub<T> hub = getHub();
-                    if (hub != null && !hub.contains(e.getObject())) {
-                        if (hubMaster == null || hubMaster.contains(e.getObject())) {
-                            try {
-                                aiUpdating.incrementAndGet();
-                                update(e.getObject());
-                            }
-                            finally {
-                                aiUpdating.decrementAndGet();
-                            }
+                
+                // 20160105 removed isLoading check since OAObjectCacheFilter would work when a new object is created.
+                // if (hubMaster == null || !hubMaster.isLoading()) {
+                Hub<T> hub = getHub();
+                if (hub != null && !hub.contains(e.getObject())) {
+                    if (hubMaster == null || hubMaster.contains(e.getObject())) {
+                        try {
+                            aiUpdating.incrementAndGet();
+                            update(e.getObject());
+                        }
+                        finally {
+                            aiUpdating.decrementAndGet();
                         }
                     }
                 }

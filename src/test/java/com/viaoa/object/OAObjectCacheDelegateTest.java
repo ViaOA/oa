@@ -71,11 +71,11 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
         cnt2 = 0;
         OAObjectCacheListener hl = new OAObjectCacheListener() {
             @Override
-            public void afterPropertyChange(Object obj, String propertyName, Object oldValue, Object newValue) {
+            public void afterPropertyChange(OAObject obj, String propertyName, Object oldValue, Object newValue) {
                 cnt2++;
             }
             @Override
-            public void afterAdd(Object obj) {
+            public void afterAdd(OAObject obj) {
                 cnt1++;
             }
         };

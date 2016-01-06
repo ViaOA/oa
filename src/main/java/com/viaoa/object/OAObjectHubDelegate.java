@@ -13,11 +13,13 @@ package com.viaoa.object;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
+import com.viaoa.util.OAArray;
 import com.viaoa.util.OANullObject;
 
 /**
@@ -30,45 +32,6 @@ public class OAObjectHubDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectHubDelegate.class.getName());
     public static boolean ShowWarnings=true; // if weakHubs.len % 50
 
-    /*
-     * // 20120827 public static int getHubFlags(OAObject oaObj) { if (oaObj == null) return 0; return
-     * oaObj.hubEmptyFlags; } // set empty hub flags to 0, so that they can be updated as needed. //
-     * since the flag is for performance only, this has no harm. public static void
-     * resetEmptyHubFlags(OAObject oaObj) { if (oaObj == null) return; if (oaObj.hubEmptyFlags != 0) {
-     * oaObj.hubEmptyFlags = 0; //qqqqqqqqqq this will need to be true if DS needs to know, //
-     * oaObj.changedFlag = true; } } public static void resetEmptyHubFlag(OAObject objMaster, String
-     * hubPropName) { if (objMaster == null) return; if (objMaster.hubEmptyFlags == 0) return;
-     * 
-     * OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objMaster); if (oi == null) return;
-     * 
-     * String[] ss = oi.getHubProperties(); int pos = Arrays.binarySearch(ss,
-     * hubPropName.toUpperCase()); synchronized (objMaster) { int x = 1; x <<= pos; x = ~x;
-     * objMaster.hubEmptyFlags = objMaster.hubEmptyFlags & x; } } // returns true if the Hub.size is
-     * known to be 0 - so that the DS does not need to select it. public static boolean
-     * getEmptyHubFlag(OAObject objMaster, String hubPropName) { if (objMaster == null || hubPropName ==
-     * null) return false; OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objMaster); if (oi ==
-     * null) return false; String[] ss = oi.getHubProperties(); int pos = Arrays.binarySearch(ss,
-     * hubPropName.toUpperCase()); if (pos >= 0 && pos < 32) { int x = 1; x <<= pos; return (x &
-     * objMaster.hubEmptyFlags) > 0; } return false; }
-     * 
-     * // 20120827 // called by datasource to update hub flag in masterObject public static void
-     * updateMasterObjectEmptyHubFlag(Hub thisHub, boolean bSetChangeFlag) { if (thisHub == null)
-     * return; Object obj = HubDelegate.getMasterObject(thisHub); if (!(obj instanceof OAObject))
-     * return; String prop = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-     * updateMasterObjectEmptyHubFlag(thisHub, prop, (OAObject) obj, bSetChangeFlag); } public static
-     * void updateMasterObjectEmptyHubFlag(Hub thisHub, String prop, OAObject objMaster, boolean
-     * bSetChangeFlag) { if (thisHub == null || prop == null || objMaster == null) return; OAObjectInfo
-     * oi = OAObjectInfoDelegate.getOAObjectInfo(objMaster); if (oi == null) return; String[] ss =
-     * oi.getHubProperties(); int pos = Arrays.binarySearch(ss, prop.toUpperCase()); if (pos >= 0 && pos
-     * < 32) { boolean b = thisHub.getSize() == 0; synchronized (objMaster) { int hold =
-     * objMaster.hubEmptyFlags;
-     * 
-     * int x = 1; x <<= pos; if (b) { objMaster.hubEmptyFlags = objMaster.hubEmptyFlags | x; } else { x
-     * = ~x; objMaster.hubEmptyFlags = objMaster.hubEmptyFlags & x; } if (bSetChangeFlag &&
-     * !objMaster.changedFlag && objMaster.hubEmptyFlags != hold) { //qqqqqqqqqq this will need to be
-     * true if DS needs to know, // for now, we're only using the hubEmptyFlags to know if the client
-     * needs to get it from the server // objMaster.changedFlag = true; } } } }
-     */
 
     // 20120827 might be used later
     // send event to master object when a change is made to one of its reference hubs
@@ -115,6 +78,7 @@ public class OAObjectHubDelegate {
     }
 
 
+    // 20150105 the obj.weakhubs can be shared, so it can not be nulled out
     /**
      * Called by Hub when an OAObject is removed from a Hub.
      */
@@ -128,6 +92,7 @@ public class OAObjectHubDelegate {
             hub = hubx;
         }
 
+        
         boolean bFound = false;
         synchronized (oaObj) {
             if (oaObj.weakhubs == null) return;
@@ -141,33 +106,46 @@ public class OAObjectHubDelegate {
 
                 if (hx != null && hx != hub) continue;
                 bFound = (hx == hub);
-                oaObj.weakhubs[pos] = null;
-
-                // compress: get last one, move it back to this slot
-                for (; lastEndPos > pos; lastEndPos--) {
-                    if (oaObj.weakhubs[lastEndPos] == null) continue;
-                    if (oaObj.weakhubs[lastEndPos] instanceof WeakReference && ((WeakReference) oaObj.weakhubs[lastEndPos]).get() == null) {
-                        oaObj.weakhubs[lastEndPos] = null;
-                        continue;
-                    }
-                    oaObj.weakhubs[pos] = oaObj.weakhubs[lastEndPos];
-                    oaObj.weakhubs[lastEndPos] = null;
+                
+                if (currentSize < 4) {
+                    // 20160105 weakhubs[] size <4 can be shared by other objs - need to create a new weakref[]
+                    if (!bFound) continue;
+                    if (currentSize == 1) oaObj.weakhubs = null;
+                    else oaObj.weakhubs = (WeakReference<Hub<?>>[]) OAArray.removeAt(WeakReference.class, oaObj.weakhubs, pos);
                     break;
                 }
-                if (currentSize > 10 && ((currentSize - lastEndPos) < (currentSize * .75))) {
-                    // resize array
-                    int newSize = lastEndPos + (lastEndPos / 10) + 1;
-                    newSize = Math.min(lastEndPos + 20, newSize);
-                    WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
-
-                    System.arraycopy(oaObj.weakhubs, 0, refs, 0, lastEndPos);
-                    oaObj.weakhubs = refs;
-                    currentSize = newSize;
+                else {
+                    oaObj.weakhubs[pos] = null;
+    
+                    // compress: get last one, move it back to this slot
+                    for (; lastEndPos > pos; lastEndPos--) {
+                        if (oaObj.weakhubs[lastEndPos] == null) continue;
+                        if (oaObj.weakhubs[lastEndPos] instanceof WeakReference && ((WeakReference) oaObj.weakhubs[lastEndPos]).get() == null) {
+                            oaObj.weakhubs[lastEndPos] = null;
+                            continue;
+                        }
+                        oaObj.weakhubs[pos] = oaObj.weakhubs[lastEndPos];
+                        oaObj.weakhubs[lastEndPos] = null;
+                        break;
+                    }
+                    if (currentSize > 10 && ((currentSize - lastEndPos) < (currentSize * .75))) {
+                        // resize array
+                        int newSize = lastEndPos + (lastEndPos / 10) + 1;
+                        newSize = Math.min(lastEndPos + 20, newSize);
+                        WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
+    
+                        System.arraycopy(oaObj.weakhubs, 0, refs, 0, lastEndPos);
+                        oaObj.weakhubs = refs;
+                        currentSize = newSize;
+                    }
+                    if (oaObj.weakhubs[0] == null) {
+                        oaObj.weakhubs = null;
+                        break;
+                    }
+                    if (bFound) {
+                        break;
+                    }
                 }
-            }
-
-            if (oaObj.weakhubs[0] == null) {
-                oaObj.weakhubs = null;
             }
 
             // 20150827
@@ -243,9 +221,9 @@ public class OAObjectHubDelegate {
     /**
      * Called by Hub when an OAObject is added to a Hub.
      */
-    public static boolean addHub(OAObject oaObj, Hub hub, boolean bAlwaysAddIfM2M) {
-        if (oaObj == null || hub == null) return false;
-        hub = hub.getRealHub();
+    public static boolean addHub(final OAObject oaObj, final Hub hubOrig, final boolean bAlwaysAddIfM2M) {
+        if (oaObj == null || hubOrig == null) return false;
+        final Hub hub = hubOrig.getRealHub();
 
         // 20120702 dont store hub if M2M&Private: reverse linkInfo does not have a method.
         // since this could have a lot of references (ex: VetJobs JobCategory has m2m Jobs)
@@ -258,10 +236,26 @@ public class OAObjectHubDelegate {
             }
         }
         boolean bRemoveFromServerCache = false;
+        boolean bReused = false;
         synchronized (oaObj) {
             int pos;
             if (oaObj.weakhubs == null) {
-                oaObj.weakhubs = new WeakReference[1];
+                
+                // 20160105 check to use same as another object in hub
+                for (int i=0; i<4; i++) {
+                    OAObject objx = (OAObject) hub.getAt(i);
+                    if (objx == null) break;
+                    if (objx == oaObj) continue;
+                    WeakReference[] wrs = objx.weakhubs;
+                    if (wrs != null && wrs.length == 1 && wrs[0].get() == hub) {
+                        oaObj.weakhubs = wrs;
+                        bReused = true;
+                        break;
+                    }
+                }
+                if (!bReused) {
+                    oaObj.weakhubs = new WeakReference[1];
+                }
                 pos = 0;
                 // CACHE_NOTE: if it was on the Server.cache, it can be removed when it is added to a
                 // hub. Need to add to cache if/when it is no longer in a hub.
@@ -270,7 +264,7 @@ public class OAObjectHubDelegate {
                 }
             }
             else {
-                int currentSize = oaObj.weakhubs.length;
+                final int currentSize = oaObj.weakhubs.length;
 
                 // check for empty slot at the end
                 for (pos = currentSize - 1; pos >= 0; pos--) {
@@ -292,22 +286,50 @@ public class OAObjectHubDelegate {
                         break;
                     }
 
-                    // need to expand
-                    int newSize = currentSize + (currentSize / 10) + 1;
-                    newSize = Math.min(newSize, currentSize + 20);
-                    WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
-
-                    System.arraycopy(oaObj.weakhubs, 0, refs, 0, currentSize);
-                    oaObj.weakhubs = refs;
-                    pos = currentSize;
+                    // no room
                     
+                    // 20160105 if currentSize<3, check to see if it can use the same as another obj in hub
+                    for (int i=0; currentSize<3 && i<4; i++) {
+                        OAObject objx = (OAObject) hub.getAt(i);
+                        if (objx == null) break;
+                        if (objx == oaObj) continue;
+                        WeakReference[] wrs = objx.weakhubs;
+                        if (wrs == null) continue;
+                        if (wrs.length != currentSize+1) continue;
+                        
+                        bReused = true;
+                        for (int j=0; j<currentSize; j++) {
+                            if (wrs[j] != oaObj.weakhubs[j]) {
+                                bReused = false;
+                                break;
+                            }
+                        }
+                        if (bReused) {
+                            if (wrs[currentSize].get() != hub) bReused = false;
+                            else {
+                                oaObj.weakhubs = wrs;
+                                pos = currentSize;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!bReused) {
+                        // need to expand
+                        int newSize = currentSize + (currentSize / 10) + 1;
+                        newSize = Math.min(newSize, currentSize + 20);
+                        WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
+    
+                        System.arraycopy(oaObj.weakhubs, 0, refs, 0, currentSize);
+                        oaObj.weakhubs = refs;
+                        pos = currentSize;
+                    }                    
                     break;
                 }
                 if (pos < 0) pos = 0;
 
                 if (hub.getMasterObject() != null) {
                     bRemoveFromServerCache = true;
-                    boolean b = false;
                     for (int i = 0; i < pos; i++) {
                         WeakReference<Hub<?>> ref = oaObj.weakhubs[i];
                         if (ref == null) continue;
@@ -319,17 +341,43 @@ public class OAObjectHubDelegate {
                     }
                 }
             }
-            oaObj.weakhubs[pos] = new WeakReference(hub);
-            if (pos>0 && pos%50==0 && ShowWarnings) {
-                LOG.warning("object="+oaObj+", weakhubs="+pos);
+            if (!bReused) {
+                // 20160105 see if weakRef can be reused
+                boolean b = false;
+                for (int i=0; !b && i<4; i++) {
+                    OAObject objx = (OAObject) hub.getAt(i);
+                    if (objx == null) break;
+                    if (objx == oaObj) continue;
+                    WeakReference<Hub<?>>[] wrs = objx.weakhubs;
+                    if (wrs == null) continue;
+                    for (WeakReference wr : wrs) {
+                        if (wr == null) break;
+                        if (wr.get() == hub) {
+                            oaObj.weakhubs[pos] = wr;
+                            b = true;
+                            break;
+                        }
+                    }
+                }
+                if (!b) {
+                    oaObj.weakhubs[pos] = new WeakReference(hub);
+                }
+                else aiReuseWeakRef.incrementAndGet();
+                if (pos>0 && pos%50==0 && ShowWarnings) {
+                    LOG.warning("object="+oaObj+", weakhubs="+pos);
+                }
             }
         }
+        if (bReused) aiReuseWeakRefArray.incrementAndGet();
+
         if (bRemoveFromServerCache && OARemoteThreadDelegate.shouldSendMessages()) {
             OAObjectCSDelegate.removeFromServerSideCache(oaObj);
         }
         return true;
     }
 
+    public static final AtomicInteger aiReuseWeakRefArray = new AtomicInteger();
+    public static final AtomicInteger aiReuseWeakRef = new AtomicInteger();
     /**
      * Used by Hub to read serialized objects. Check to see if this object is already loaded in a hub
      * with same LinkInfo.

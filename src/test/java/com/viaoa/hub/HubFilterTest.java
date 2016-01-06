@@ -12,8 +12,32 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.tmgsc.hifivetest.model.oa.*;
 import com.tmgsc.hifivetest.model.oa.propertypath.EmployeePP;
 import com.viaoa.OAUnitTest;
+import com.viaoa.object.OAObjectCacheFilter;
 
 public class HubFilterTest extends OAUnitTest {
+
+    @Test
+    public void testA() {
+        // dependents with and w/o "."        
+        
+        Hub<Employee> hubMaster = new Hub<Employee>(Employee.class);
+        Hub<Employee> hubFiltered = new Hub<Employee>(Employee.class);
+        
+        HubFilter<Employee> hf = new HubFilter<Employee>(hubMaster, hubFiltered);
+        hf.addDependentProperty(Employee.P_LastName);
+        hf.addDependentProperty(Employee.P_FirstName);
+
+        // make sure that a hubMerger is not created
+        HubListener[] hls = HubEventDelegate.getAllListeners(hubMaster);
+        assertNotNull(hls);
+        assertEquals(1, hls.length);
+        
+        hf.addDependentProperty(Employee.P_Location+"."+Location.P_Name);
+        HubListener[] hls2 = HubEventDelegate.getAllListeners(hubMaster);
+        assertNotNull(hls2);
+        assertTrue(hls2.length > 1);
+        assertEquals(hls[0], hls2[0]);
+    }
 
     @Test
     public void test() {
@@ -222,15 +246,13 @@ public class HubFilterTest extends OAUnitTest {
         location.setId(0);
         assertEquals(4, hubFiltered.size());
         
-        
         emp.setFirstName("");
         assertEquals(3, hubFiltered.size());
         emp.setFirstName("fn0");
         assertEquals(4, hubFiltered.size());
     }
     
-    
-    public static void main(String[] args) throws Exception {
+    public static void XXmain(String[] args) throws Exception {
         /*
         System.out.println("first of two 30 second count down");
         for (int i=0; i<120; i++) {
@@ -251,7 +273,7 @@ public class HubFilterTest extends OAUnitTest {
         }
         */
         HubFilterTest test = new HubFilterTest();
-        test.test();
+//        test.test();
         System.out.println("test is done");
         /*
         for (;;) {
@@ -259,9 +281,5 @@ public class HubFilterTest extends OAUnitTest {
         }
         */
     }
-    
 }
-
-
-
 
