@@ -16,15 +16,27 @@ import com.viaoa.util.OAFilter;
  */
 public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilter<T> {
     // Note: this code very similar to OAObjectCacheFilter
+
+    
     private Class<T> clazz;
+    
+    // list of propPaths to listen for
     private String[] dependentPropertyNames;
+
+    // this will be set when a calc property is needed for the dependent propertyPath(s)
     private String calcDependentPropertyName;
+    
+    // used to create a unique calc propName
     private static AtomicInteger aiUnique = new AtomicInteger();
 
+    // object cache listener
     private OAObjectCacheListener<T> hlObjectCache;
-    private HubListener<T> hlTemp;
-    private Hub<T> hubTemp;  // if cache needs to be listened to
 
+    // if a calc prop is used, then objects will be put into a temp hub, so that they can be listened to.
+    private Hub<T> hubTemp; 
+    private HubListener<T> hlTemp;
+
+    // list of filters that must return true for the isUsed to return true.
     private ArrayList<OAFilter<T>> alFilter;
 
     /**
@@ -34,11 +46,29 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
         this(clazz, null);
     }
     
+    /**
+     * Create new cache trigger.  Cached objects that are true for isUsedFromObjectCache & isUsed will then call onTrigger.
+     */
     public OAObjectCacheTrigger(Class clazz, OAFilter<T> filter) {
         if (clazz == null) throw new RuntimeException("class can not be null");
         this.clazz = clazz;
  
         if (filter != null) addFilter(filter);
+        setupCacheListener();
+    }
+    
+    public OAObjectCacheTrigger(Class clazz, OAFilter<T> filter, String ... dependentPropPaths) {
+        if (clazz == null) throw new RuntimeException("class can not be null");
+        this.clazz = clazz;
+ 
+        if (filter != null) addFilter(filter);
+        
+        if (dependentPropPaths != null) {
+            for (String pp : dependentPropPaths) {
+                addDependentProperty(pp);
+            }
+        }
+        
         setupCacheListener();
     }
     
@@ -49,6 +79,14 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
         if (f == null) return;
         if (alFilter == null) alFilter = new ArrayList<OAFilter<T>>();
         alFilter.add(f);
+    }
+    
+    public void addFilter(OAFilter<T> f, String ... dependentPropPaths) {
+        addFilter(f);
+        if (dependentPropPaths == null) return;
+        for (String pp : dependentPropPaths) {
+            addDependentProperty(pp);
+        }
     }
 
     /**
@@ -85,7 +123,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
     }
     
     
-    private void setupCacheListener() {
+    protected void setupCacheListener() {
         if (hlObjectCache != null) return;
         hlObjectCache = new OAObjectCacheListener<T>() {
             @Override 
@@ -130,7 +168,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
         };
         OAObjectCacheDelegate.addListener(clazz, hlObjectCache);
     }
-    private void setupTempHubListener() {
+    protected void setupTempHubListener() {
         if (hlTemp != null) return;
         if (hubTemp == null) return;
         if (calcDependentPropertyName == null) return;
@@ -150,7 +188,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
                         
                 b = b && isUsed(obj);
 
-                onTrigger(obj);
+                if (b) onTrigger(obj);
             }
         };
         hubTemp.addHubListener(hlTemp, calcDependentPropertyName, dependentPropertyNames);

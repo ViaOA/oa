@@ -10,24 +10,26 @@
 */
 package com.viaoa.hub;
 
+import com.viaoa.object.OAObject;
+
 /**
  * Used to have two hubs use the same objects, so that the ordering can be different.
  */
-public class HubCopy<TYPE> extends HubFilter {
+public class HubCopy<T extends OAObject> extends HubFilter<T> {
 
-	public HubCopy(Hub<TYPE> hubMaster, Hub<TYPE> hubCopy, boolean bShareAO) {
+	public HubCopy(Hub<T> hubMaster, Hub<T> hubCopy, boolean bShareAO) {
 	    super(hubMaster, hubCopy, bShareAO);
 	}
 	// if object is directly removed from filtered hub, then remove from hubMaster
 	@Override
-	protected void afterRemoveFromFilteredHub(Object obj) {
+	protected void afterRemoveFromFilteredHub(T obj) {
 	    if (hubMaster != null && hubMaster.contains(obj)) {
 	        hubMaster.remove(obj);
 	    }
 	}
 	
 	@Override
-	public boolean isUsed(Object object) {
+	public boolean isUsed(T object) {
 	    return true;
 	}
 }

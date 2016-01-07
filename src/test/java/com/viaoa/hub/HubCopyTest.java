@@ -4,6 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
+import com.viaoa.object.OAObject;
 import com.vetjobstest.VetUser;
 
 public class HubCopyTest extends OAUnitTest {
@@ -20,7 +21,7 @@ public class HubCopyTest extends OAUnitTest {
         Hub hubFiltered = new Hub(VetUser.class);
         HubFilter hf = new HubFilter(hub2, hubFiltered) {
             @Override
-            public boolean isUsed(Object object) {
+            public boolean isUsed(OAObject object) {
                 return true;
             }
         };

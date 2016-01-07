@@ -10,35 +10,35 @@
 */
 package com.viaoa.hub;
 
-import java.util.Hashtable;
-
 import com.viaoa.object.OAObject;
-
 
 /**
  * A Hub that combines with a HubFilter.
 */
-public abstract class FilteredHub<TYPE> extends Hub<TYPE> {
+public abstract class FilteredHub<T extends OAObject> extends Hub<T> {
     
-    private HubFilter filter;
+    private HubFilter<T> filter;
 
-    public FilteredHub(Hub<TYPE> hubMaster) {
+    public FilteredHub(Hub<T> hubMaster) {
         super(hubMaster.getObjectClass());
     
-        filter = new HubFilter(hubMaster, this) {
+        filter = new HubFilter<T>(hubMaster, this) {
             @Override
-            public boolean isUsed(Object object) {
-                return FilteredHub.this.isUsed((TYPE) object);
+            public boolean isUsed(T object) {
+                return FilteredHub.this.isUsed(object);
             }
         };
     }
 
-    public HubFilter getFilter() {
+    public HubFilter<T> getFilter() {
         return filter;
     }
     
     public void addProperty(String prop) {
-        filter.addProperty(prop);
+        filter.addDependentProperty(prop);
+    }
+    public void addDependentProperty(String prop) {
+        filter.addDependentProperty(prop);
     }
     public void addDependentProperty(OAObject obj, String prop) {
         filter.addDependentProperty(obj, prop);
@@ -51,7 +51,7 @@ public abstract class FilteredHub<TYPE> extends Hub<TYPE> {
         getFilter().refresh();
     }
     
-    protected abstract boolean isUsed(TYPE obj);
+    protected abstract boolean isUsed(T obj);
     
     
 }

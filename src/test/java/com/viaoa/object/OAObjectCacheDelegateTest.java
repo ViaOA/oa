@@ -97,7 +97,7 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
         
         OAObjectCacheDelegate.removeListener(Server.class, hl);
         hls = OAObjectCacheDelegate.getListeners(Server.class);
-        assertNull(hls);
+        assertTrue(hls == null || hls.length == 0);
 
         server = new Server();
         hub.add(server);

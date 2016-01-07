@@ -123,7 +123,7 @@ public class ObjectDef extends OAObject {
             hubOneLinkPropertyDefs = (Hub<LinkPropertyDef>) getHub(P_OneLinkPropertyDefs);
             HubFilter hf = new HubFilter(getLinkPropertyDefs(), hubOneLinkPropertyDefs, LinkPropertyDef.P_Type) {
                 @Override
-                public boolean isUsed(Object object) {
+                public boolean isUsed(OAObject object) {
                     LinkPropertyDef lp = (LinkPropertyDef) object;
                     return lp.getType() == LinkPropertyDef.TYPE_One;
                 }
@@ -141,7 +141,7 @@ public class ObjectDef extends OAObject {
             hubManyLinkPropertyDefs = (Hub<LinkPropertyDef>) getHub(P_ManyLinkPropertyDefs);
             HubFilter hf = new HubFilter(getLinkPropertyDefs(), hubManyLinkPropertyDefs, LinkPropertyDef.P_Type) {
                 @Override
-                public boolean isUsed(Object object) {
+                public boolean isUsed(OAObject object) {
                     LinkPropertyDef lp = (LinkPropertyDef) object;
                     return lp.getType() == LinkPropertyDef.TYPE_Many;
                 }

@@ -11,31 +11,46 @@ import com.viaoa.util.OAArray;
 import com.viaoa.util.OAFilter;
 
 /**
- * This is used to listen to the OAObjectCache for objects that match filter criteria add new objects to a Hub.
+ * Listen to the OAObjectCache for objects that match filter criteria, and add to a Hub.
  * 
  * @author vvia
  */
 public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
+
     private Class<T> clazz;
     private WeakReference<Hub<T>> wrHub;
+
+    // list of propPaths to listen for
     private String[] dependentPropertyNames;
+    
+    // this will be set when a calc property is needed for the dependent propertyPath(s)
     private String calcDependentPropertyName;
-    private static AtomicInteger aiUnique = new AtomicInteger();
 
+    // used to create a unique calc propName
+    private static AtomicInteger aiUnique = new AtomicInteger();  
+
+    // object cache listener
     private OAObjectCacheListener<T> hlObjectCache;
+    
+    // if a calc prop is used, then objects will be put into a temp hub, so that they can be listened to.
+    private Hub<T> hubTemp;  
     private HubListener<T> hlTemp;
-    private Hub<T> hubTemp;  // if cache needs to be listened to
 
+    // list of filters that must return true for the isUsed to return true.
     private ArrayList<OAFilter<T>> alFilter;
 
+    
+    /**
+     * create a object cache filter, and have hub updated with all objects that match filter(s) and isUsed methods return true.
+     */
     public OAObjectCacheFilter(Hub<T> hub) {
         this(hub, null);
     }
     
     /**
      * Create new cache filter.  Cached objects that are true for isUsedFromObjectCache & isUsed will be added to hub.
-     * @param hub is size is equal to 0, then refresh will be called.  Otherwise refresh will not be called.
-     * @param filter
+     * @param hub is size is equal to 0, then refresh will be called.  Otherwise refresh will not be called, since it's
+     * assumed that the objects were preselected.
      */
     public OAObjectCacheFilter(Hub<T> hub, OAFilter<T> filter) {
         if (hub == null) throw new RuntimeException("hub can not be null");
@@ -48,21 +63,47 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             refresh();
         }  // else the hub must have been preselected
     }
+
+    public OAObjectCacheFilter(Hub<T> hub, OAFilter<T> filter, String ... dependentPropPaths) {
+        if (hub == null) throw new RuntimeException("hub can not be null");
+        clazz = hub.getObjectClass();
+        wrHub = new WeakReference<Hub<T>>(hub);
+ 
+        if (dependentPropPaths != null) {
+            for (String pp : dependentPropPaths) {
+                addDependentProperty(pp, false);
+            }
+        }
+        
+        setupCacheListener();
+        if (filter != null) addFilter(filter, false);
+        if (hub.getSize() == 0) {
+            refresh();
+        }  // else the hub must have been preselected
+    }
     
     /**
      * Add a filter that is used to determine if an object from the cache will be added to hub.
      * This will clear and refresh hub.  
      * @param f filter to add.  By default isUsed() will return false if any of the filters.isUsed() returns false.
-     * @see #addFilter(OAFilter, boolean) to use option to refresh hub or not.
+     * @see #addFilter(OAFilter, boolean) that has an option for refreshing.
      */
     public void addFilter(OAFilter<T> f) {
         addFilter(f, true); // filter changes what objs are selected, need to refresh
+    }
+
+    public void addFilter(OAFilter<T> f, String ... dependentPropPaths) {
+        addFilter(f, true);
+        if (dependentPropPaths == null) return;
+        for (String pp : dependentPropPaths) {
+            addDependentProperty(pp);
+        }
     }
     
     /**
      * Add a filter that is used to determine if an object from the cache will be added to hub.
      * @param f filter to add.  By default isUsed() will return false if any of the filters.isUsed() returns false.
-     * @param bCallRefresh if true, then clear and refresh hub.
+     * @param bCallRefresh if true, then call refresh.
      */
     public void addFilter(OAFilter<T> f, boolean bCallRefresh) {
         if (f == null) return;
@@ -71,6 +112,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         if (bCallRefresh) refresh();
     }
 
+    
     /**
      * Clear hub and check all cached objects to see if they should be added to hub.
      * To be added, isUsedFromObjectCache() and isUsed() must return true.
@@ -108,10 +150,15 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     
     
     /**
-     * add a property to listen to.  If the property changes, then it will be recalculated to determine if it should be added to hub, or removed from it.
+     * add a property to listen to.  If the property changes, then it will be recalculated to determine if it should be 
+     * added to hub, or removed from it.
      * This will recheck the object cache to see if any of the existing objects isUsed() is true and should be added to hub.
+     * It will not call refresh.
      */
     public void addDependentProperty(final String prop) {
+        addDependentProperty(prop, true);
+    }
+    protected void addDependentProperty(final String prop, final boolean bRefresh) {
         if (prop == null || prop.length() == 0) return;
         
         dependentPropertyNames = (String[]) OAArray.add(String.class, dependentPropertyNames, prop);
@@ -145,6 +192,9 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             close();
             return;
         }
+        
+        if (!bRefresh) return;
+        
         OAObjectCacheDelegate.callback(clazz, new OACallback() {
             @Override
             public boolean updateObject(Object obj) {
@@ -163,7 +213,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     }
     
     
-    private void setupCacheListener() {
+    protected void setupCacheListener() {
         if (hlObjectCache != null) return;
         hlObjectCache = new OAObjectCacheListener<T>() {
             @Override 
@@ -171,6 +221,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                 if (propName == null) return;
 
                 if (hubTemp != null) return; // hubTemp listener will get propChange for calcPropName
+                
                 Hub<T> hub = wrHub.get();
                 if (hub == null) return;
                 
@@ -212,7 +263,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         };
         OAObjectCacheDelegate.addListener(clazz, hlObjectCache);
     }
-    private void setupTempHubListener() {
+    protected void setupTempHubListener() {
         if (hlTemp != null) return;
         if (hubTemp == null) return;
         if (calcDependentPropertyName == null) return;
@@ -227,6 +278,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                 if (!calcDependentPropertyName.equalsIgnoreCase(propName)) return;
                     
                 T obj = e.getObject();
+                if (obj == null) return;
                 boolean b = isUsedFromObjectCache(obj); 
                 if (!b) hubTemp.remove(obj);
                         
@@ -259,8 +311,6 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         }
     }
 
-    
-    
     
     /**
      * Called to see if an object should be included in hub.
