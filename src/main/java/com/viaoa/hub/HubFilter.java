@@ -598,7 +598,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
             
             try {
-                OAThreadLocalDelegate.setLoadingObject(true);
+                //OAThreadLocalDelegate.setLoadingObject(true);
                 bCompleted = _initialize(cnt);
                 if (hub != null && bCompleted) {
                     bNewListFlag = true;                   
@@ -607,7 +607,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
             finally {
                 if (hub != null && bCompleted) bNewListFlag = false;                   
-                OAThreadLocalDelegate.setLoadingObject(false);
+                //OAThreadLocalDelegate.setLoadingObject(false);
     	    }
     	}
     	finally {
