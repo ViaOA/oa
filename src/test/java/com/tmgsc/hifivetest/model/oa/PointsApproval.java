@@ -14,8 +14,7 @@ import com.tmgsc.hifivetest.model.oa.propertypath.*;
     shortName = "pa",
     displayName = "Points Approval",
     displayProperty = "employee",
-    sortProperty = "seq",
-    filterClasses = {PointsApprovalMissingApproverFilter.class}
+    sortProperty = "seq"
 )
 @OATable(
     indexes = {

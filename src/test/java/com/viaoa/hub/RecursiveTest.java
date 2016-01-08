@@ -123,7 +123,7 @@ public class RecursiveTest extends OAUnitTest {
         
         Employee emp = hubProgram.getAt(1).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
         hubEmployee.setAO(emp);
-        assertEquals(hubEmployee.getAO(), emp);
+        assertEquals(emp, hubEmployee.getAO());
         program = emp.getLocation().getProgram();
         assertNotNull(program);
         assertEquals(hubProgram.getAO(), program);

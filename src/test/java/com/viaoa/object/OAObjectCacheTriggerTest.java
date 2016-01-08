@@ -23,7 +23,7 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         final AtomicInteger ai = new AtomicInteger();
         OAObjectCacheTrigger<Employee> objectCacheTrigger = new OAObjectCacheTrigger<Employee>(Employee.class) {
             @Override
-            void onTrigger(Employee obj) {
+            public void onTrigger(Employee obj) {
                 ai.incrementAndGet();
             }
         };
@@ -45,7 +45,7 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         Hub<Employee> hubEmployee = new Hub<Employee>(Employee.class);
         OAObjectCacheTrigger<Employee> objectCacheTrigger = new OAObjectCacheTrigger<Employee>(Employee.class) {
             @Override
-            void onTrigger(Employee obj) {
+            public void onTrigger(Employee obj) {
                 ai.incrementAndGet();
             }
             @Override
@@ -87,7 +87,7 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
                 return super.isUsed(emp);
             }
             @Override
-            void onTrigger(Employee emp) {
+            public void onTrigger(Employee emp) {
                 aiTrigger.incrementAndGet();
             }
         };

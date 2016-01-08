@@ -1587,9 +1587,10 @@ public class Program extends OAObject {
             hubRecentInspireRecipients = (Hub<InspireRecipient>) getHub(PROPERTY_RecentInspireRecipients);
             Hub<InspireRecipient> hubAll = new Hub<InspireRecipient>(InspireRecipient.class);
             new HubMerger(getEmployees(), hubAll, Employee.PROPERTY_InspireRecipients, true);
-            
+/*qqqq            
             InspireRecipientFilter filter = new InspireRecipientFilter();
             filter.createRecentFilter(hubAll, hubRecentInspireRecipients, false);
+*/            
         }
         return hubRecentInspireRecipients;
     }

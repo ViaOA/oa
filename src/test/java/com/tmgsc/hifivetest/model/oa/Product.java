@@ -13,8 +13,7 @@ import com.tmgsc.hifivetest.model.oa.propertypath.*;
 @OAClass(
     shortName = "pro",
     displayName = "Product",
-    displayProperty = "vendorCode",
-    filterClasses = {ProductActiveFilter.class}
+    displayProperty = "vendorCode"
 )
 @OATable(
     indexes = {

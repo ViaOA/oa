@@ -28,7 +28,7 @@ public class HubTriggerTest extends OAUnitTest {
                 return super.isUsed(object);
             }
             @Override
-            void onTrigger(Employee emp) {
+            public void onTrigger(Employee emp) {
                 ai.incrementAndGet();
             }
         };
@@ -94,7 +94,7 @@ public class HubTriggerTest extends OAUnitTest {
                 return super.isUsed(emp);
             }
             @Override
-            void onTrigger(Employee emp) {
+            public void onTrigger(Employee emp) {
                 ai.incrementAndGet();
             }
         };

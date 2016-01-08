@@ -21,7 +21,7 @@ public class HubCopyTest extends OAUnitTest {
         Hub hubFiltered = new Hub(VetUser.class);
         HubFilter hf = new HubFilter(hub2, hubFiltered) {
             @Override
-            public boolean isUsed(OAObject object) {
+            public boolean isUsed(Object object) {
                 return true;
             }
         };

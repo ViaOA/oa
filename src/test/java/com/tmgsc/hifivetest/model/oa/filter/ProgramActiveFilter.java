@@ -8,31 +8,32 @@ import com.viaoa.util.*;
 import java.util.*;
 import com.tmgsc.hifivetest.model.oa.*;
 import com.tmgsc.hifivetest.model.oa.filter.*;
+import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "Active", displayName = "Active", hasInputParams = false)
 public class ProgramActiveFilter extends OAObject implements CustomHubFilter {
     private static final long serialVersionUID = 1L;
 
-
     public static final String PPCode = ":Active()";
     private Hub<Program> hubMaster;
     private Hub<Program> hub;
-    private HubFilter<Program> filter;
-    private boolean bAllHubs;
+    private HubFilter<Program> hubFilter;
+    private OAObjectCacheFilter<Program> cacheFilter;
+    private boolean bUseObjectCache;
 
     public ProgramActiveFilter(Hub<Program> hub) {
-        this(true, null, hub);
+        this(null, hub, true);
     }
     public ProgramActiveFilter(Hub<Program> hubMaster, Hub<Program> hub) {
-        this(false, hubMaster, hub);
+        this(hubMaster, hub, false);
     }
-    public ProgramActiveFilter(boolean bAllHubs, Hub<Program> hubMaster, Hub<Program> hubFiltered) {
+    public ProgramActiveFilter(Hub<Program> hubMaster, Hub<Program> hubFiltered, boolean bUseObjectCache) {
         this.hubMaster = hubMaster;
         this.hub = hubFiltered;
-        if (hubMaster == null) this.hubMaster = new Hub<Program>(Program.class);
-        this.bAllHubs = bAllHubs;
-        getHubFilter(); // create filter
+        this.bUseObjectCache = bUseObjectCache;
+        if (hubMaster != null) getHubFilter();
+        if (bUseObjectCache) getObjectCacheFilter();
     }
 
 
@@ -43,75 +44,43 @@ public class ProgramActiveFilter extends OAObject implements CustomHubFilter {
         return false;
     }
     public void refresh() {
-        if (filter != null) getHubFilter().refresh();
+        if (hubFilter != null) getHubFilter().refresh();
+        if (cacheFilter != null) getObjectCacheFilter().refresh();
     }
 
     @Override
     public HubFilter<Program> getHubFilter() {
-        if (filter == null) {
-            filter = createHubFilter(hubMaster, hub, bAllHubs);
-        }
-        return filter;
-    }
-    protected HubFilter<Program> createHubFilter(final Hub<Program> hubMaster, Hub<Program> hub, boolean bAllHubs) {
-        HubFilter<Program> filter = new HubFilter<Program>(hubMaster, hub) {
+        if (hubFilter != null) return hubFilter;
+        if (hubMaster == null) return null;
+        hubFilter = new HubFilter<Program>(hubMaster, hub) {
             @Override
             public boolean isUsed(Program program) {
                 return ProgramActiveFilter.this.isUsed(program);
             }
         };
-        filter.addDependentProperty(Program.P_InactiveDate);
-        filter.addDependentProperty(Program.P_BeginDate);
-        filter.addDependentProperty(Program.P_EndDate);
- 
-        if (!bAllHubs) return filter;
-        final ArrayList<Hub> alHub = new ArrayList<Hub>();
-        alHub.add(hub);
-        alHub.add(hubMaster);
- 
-        OAObjectCacheDelegate.addListener(Program.class, new HubListenerAdapter() {
+        hubFilter.addDependentProperty(ProgramPP.inactiveDate());
+        hubFilter.addDependentProperty(ProgramPP.beginDate());
+        hubFilter.addDependentProperty(ProgramPP.endDate());
+        return hubFilter;
+    }
+
+    public OAObjectCacheFilter<Program> getObjectCacheFilter() {
+        if (cacheFilter != null) return cacheFilter;
+        if (!bUseObjectCache) return null;
+        cacheFilter = new OAObjectCacheFilter<Program>(hubMaster) {
             @Override
-            public void afterAdd(HubEvent e) {
-                Hub h = e.getHub();
-                if (h == null || alHub.contains(h)) return;
-                alHub.add(h);
-                Hub<Program> h2 = new Hub<Program>(Program.class);
-                alHub.add(h2);
-                createHubFilter(h, h2, false);
-                h2.addHubListener(new HubListenerAdapter() {
-                    @Override
-                    public void afterAdd(HubEvent e) {
-                        hubMaster.add((Program)e.getObject());
-                    }
-                    @Override
-                    public void afterRemove(HubEvent e) {
-                        Program obj = (Program) e.getObject();
-                        if (!OAObjectHubDelegate.isInHub(obj)) {
-                            hubMaster.remove(obj);
-                        }
-                    }
-                });
+            public boolean isUsedFromObjectCache(Program program) {
+                return ProgramActiveFilter.this.isUsedFromObjectCache(program);
             }
- 
             @Override
-            public void afterPropertyChange(HubEvent e) {
-                String prop = e.getPropertyName();
-                if (prop == null) return;
-                if (prop.equalsIgnoreCase(Program.P_InactiveDate)) {
-                    if (!hubMaster.contains(e.getObject())) hubMaster.add((Program) e.getObject());
-                    return;
-                }
-                if (prop.equalsIgnoreCase(Program.P_BeginDate)) {
-                    if (!hubMaster.contains(e.getObject())) hubMaster.add((Program) e.getObject());
-                    return;
-                }
-                if (prop.equalsIgnoreCase(Program.P_EndDate)) {
-                    if (!hubMaster.contains(e.getObject())) hubMaster.add((Program) e.getObject());
-                    return;
-                }
+            public boolean isUsed(Program program) {
+                return ProgramActiveFilter.this.isUsed(program);
             }
-        });
-        return filter;
+        };
+        cacheFilter.addDependentProperty(ProgramPP.inactiveDate());
+        cacheFilter.addDependentProperty(ProgramPP.beginDate());
+        cacheFilter.addDependentProperty(ProgramPP.endDate());
+        return cacheFilter;
     }
 
     public boolean isUsed(Program program) {
@@ -124,4 +93,8 @@ public class ProgramActiveFilter extends OAObject implements CustomHubFilter {
         return true;
     }
     
+    
+    public boolean isUsedFromObjectCache(Program program) {
+        return true;
+    }
 }

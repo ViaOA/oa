@@ -7,31 +7,32 @@ import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import java.util.*;
 import com.tmgsc.hifivetest.model.oa.*;
+import com.tmgsc.hifivetest.model.oa.propertypath.ItemPP;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "HelpingHands", displayName = "Helping Hands", hasInputParams = false)
 public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter {
     private static final long serialVersionUID = 1L;
 
-
     public static final String PPCode = ":HelpingHands()";
     private Hub<Item> hubMaster;
     private Hub<Item> hub;
-    private HubFilter<Item> filter;
-    private boolean bAllHubs;
+    private HubFilter<Item> hubFilter;
+    private OAObjectCacheFilter<Item> cacheFilter;
+    private boolean bUseObjectCache;
 
     public ItemHelpingHandsFilter(Hub<Item> hub) {
-        this(true, null, hub);
+        this(null, hub, true);
     }
     public ItemHelpingHandsFilter(Hub<Item> hubMaster, Hub<Item> hub) {
-        this(false, hubMaster, hub);
+        this(hubMaster, hub, false);
     }
-    public ItemHelpingHandsFilter(boolean bAllHubs, Hub<Item> hubMaster, Hub<Item> hubFiltered) {
+    public ItemHelpingHandsFilter(Hub<Item> hubMaster, Hub<Item> hubFiltered, boolean bUseObjectCache) {
         this.hubMaster = hubMaster;
         this.hub = hubFiltered;
-        if (hubMaster == null) this.hubMaster = new Hub<Item>(Item.class);
-        this.bAllHubs = bAllHubs;
-        getHubFilter(); // create filter
+        this.bUseObjectCache = bUseObjectCache;
+        if (hubMaster != null) getHubFilter();
+        if (bUseObjectCache) getObjectCacheFilter();
     }
 
 
@@ -42,29 +43,39 @@ public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter 
         return false;
     }
     public void refresh() {
-        if (filter != null) getHubFilter().refresh();
+        if (hubFilter != null) getHubFilter().refresh();
+        if (cacheFilter != null) getObjectCacheFilter().refresh();
     }
 
     @Override
     public HubFilter<Item> getHubFilter() {
-        if (filter == null) {
-            filter = createHubFilter(hubMaster, hub, bAllHubs);
-        }
-        return filter;
-    }
-    protected HubFilter<Item> createHubFilter(final Hub<Item> hubMaster, Hub<Item> hub, boolean bAllHubs) {
-        HubFilter<Item> filter = new HubFilter<Item>(hubMaster, hub) {
+        if (hubFilter != null) return hubFilter;
+        if (hubMaster == null) return null;
+        hubFilter = new HubFilter<Item>(hubMaster, hub) {
             @Override
             public boolean isUsed(Item item) {
                 return ItemHelpingHandsFilter.this.isUsed(item);
             }
         };
-        filter.addDependentProperty(Item.P_ItemTypes);
- 
-        if (!bAllHubs) return filter;
-        // need to listen to all Item
-        OAObjectCacheHubAdder hubCacheAdder = new OAObjectCacheHubAdder(hubMaster);
-        return filter;
+        hubFilter.addDependentProperty(ItemPP.itemTypes().pp);
+        return hubFilter;
+    }
+
+    public OAObjectCacheFilter<Item> getObjectCacheFilter() {
+        if (cacheFilter != null) return cacheFilter;
+        if (!bUseObjectCache) return null;
+        cacheFilter = new OAObjectCacheFilter<Item>(hubMaster) {
+            @Override
+            public boolean isUsedFromObjectCache(Item item) {
+                return ItemHelpingHandsFilter.this.isUsedFromObjectCache(item);
+            }
+            @Override
+            public boolean isUsed(Item item) {
+                return ItemHelpingHandsFilter.this.isUsed(item);
+            }
+        };
+        cacheFilter.addDependentProperty(ItemPP.itemTypes().pp);
+        return cacheFilter;
     }
 
     public boolean isUsed(Item item) {
@@ -74,5 +85,9 @@ public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter 
             if (itemType.getType() == ItemType.TYPE_HELPINGHANDS) { return true; }
         }
         return false;
+    }
+    
+    public boolean isUsedFromObjectCache(Item item) {
+        return true;
     }
 }

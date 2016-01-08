@@ -13,8 +13,7 @@ import com.tmgsc.hifivetest.model.oa.propertypath.*;
 @OAClass(
     shortName = "pr",
     displayName = "Points Request",
-    displayProperty = "requestingEmployee.firstLastName",
-    filterClasses = {PointsRequestUnapprovedPurchaseRequestsFilter.class}
+    displayProperty = "requestingEmployee.firstLastName"
 )
 @OATable(
     indexes = {
