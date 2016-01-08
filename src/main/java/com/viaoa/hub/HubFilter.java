@@ -39,7 +39,7 @@ import com.viaoa.util.filter.*;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 
-public class HubFilter<T extends OAObject> extends HubListenerAdapter<T> implements java.io.Serializable, OAFilter<T> {
+public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Serializable, OAFilter<T> {
     private static Logger LOG = Logger.getLogger(HubFilter.class.getName());
     private static final long serialVersionUID = 1L;
 

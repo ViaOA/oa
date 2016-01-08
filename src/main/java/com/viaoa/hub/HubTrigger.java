@@ -27,5 +27,5 @@ public abstract class HubTrigger<T extends OAObject> extends HubFilter<T> {
         super.removeObject(obj);
     }
     
-    abstract void onTrigger(T obj);
+    public abstract void onTrigger(T obj);
 }

@@ -237,5 +237,5 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
      * Method that will be called when isUsed() returns true, and isUsedFromObjectCache() returns true.
      * @param obj
      */
-    abstract void onTrigger(T obj);
+    public abstract void onTrigger(T obj);
 }

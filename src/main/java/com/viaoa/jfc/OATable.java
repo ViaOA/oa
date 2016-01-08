@@ -2144,7 +2144,7 @@ if (!getKeepSorted()) hub.cancelSort();
 
         hubFilter = new HubFilter(hubFilterMaster, getHub(), true) {
             @Override
-            public boolean isUsed(OAObject obj) {
+            public boolean isUsed(Object obj) {
                 for (OATableColumn tc : getAllTableColumns()) {
                     OATableFilterComponent tfc = tc.getFilterComponent();
                     if (tfc != null && !tfc.isUsed(obj)) {

@@ -15,7 +15,7 @@ import com.viaoa.object.OAObject;
 /**
  * A Hub that combines with a HubFilter.
 */
-public abstract class FilteredHub<T extends OAObject> extends Hub<T> {
+public abstract class FilteredHub<T> extends Hub<T> {
     
     private HubFilter<T> filter;
 

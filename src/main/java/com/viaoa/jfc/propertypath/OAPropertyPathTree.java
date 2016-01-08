@@ -647,7 +647,7 @@ public class OAPropertyPathTree extends OATree {
             Hub h = new Hub(CalcPropertyDef.class);
             HubFilter hf = new HubFilter(hub, h) {
                 @Override
-                public boolean isUsed(OAObject object) {
+                public boolean isUsed(Object object) {
                     CalcPropertyDef cp = (CalcPropertyDef) object;
 
                     Object objx = parentTnd.getObject();
