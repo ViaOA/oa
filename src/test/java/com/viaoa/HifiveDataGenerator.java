@@ -1,10 +1,12 @@
 package com.viaoa;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import com.tmgsc.hifivetest.delegate.ModelDelegate;
 import com.tmgsc.hifivetest.model.oa.*;
+import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 
@@ -31,6 +33,15 @@ public class HifiveDataGenerator {
             }
         }        
 
+        OAFinder<Program, Location> f = new OAFinder<Program, Location>(ProgramPP.locations().pp) {
+            @Override
+            protected void onFound(Location loc) {
+                assertNotNull(loc.getProgram());
+            }
+        };
+        f.find(ModelDelegate.getPrograms());
+        
+        
         for (int i=0; i<5; i++) {
             Catalog catalog = new Catalog();
             catalog.setName("catalog."+i);
@@ -58,15 +69,6 @@ public class HifiveDataGenerator {
     private void createLocations(Hub<Location> hub, int level, int maxLevels, int maxEmpLevels) {
         Location loc = new Location();
         hub.add(loc);
-if (loc.getProgram() == null) {
-    int xx = 4;
-    xx++;
-    Location locx = new Location();
-    hub.add(loc);
-    
-    locx = new Location();
-    hub.add(loc);
-}
         if (level+1 < maxLevels) {
             createLocations(loc.getLocations(), level+1, maxLevels, maxEmpLevels);
         }

@@ -60,6 +60,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
     
     protected volatile boolean bSetRecursive;
     protected OALinkInfo liRecursiveOne, liRecursiveMany;
+    protected volatile boolean bSetLinkToOwner;
+    protected OALinkInfo liLinkToOwner;  // set by OAObjectInfoDelegate.getLinkToOwner
     
     
     public OAObjectInfo() {

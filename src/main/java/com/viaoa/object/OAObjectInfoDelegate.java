@@ -64,9 +64,7 @@ public class OAObjectInfoDelegate {
         
         // make sure that reverse linkInfos are created.
         //   ex: ServerRoot.users, the User.class needs to have LinkInfo to serveRoot
-        int x = oi.getLinkInfos().size();
-        for (int i=0; i<x; i++) {
-            OALinkInfo li = oi.getLinkInfos().get(i);
+        for (OALinkInfo li : oi.getLinkInfos()) {
             if (li.type != li.MANY) continue;
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
             if (liRev != null) continue;
@@ -224,9 +222,7 @@ public class OAObjectInfoDelegate {
 
     
     private static void createLink(OAObjectInfo thisOI, String name, Class clazz, int type) {
-        List al = thisOI.getLinkInfos();
-        for (int i=0; i<al.size(); i++) {
-            OALinkInfo li = (OALinkInfo) al.get(i);
+        for (OALinkInfo li : thisOI.getLinkInfos()) {
             if (name.equalsIgnoreCase(li.getName())) {
                 return;  // already exists
             }
@@ -344,12 +340,11 @@ public class OAObjectInfoDelegate {
         // combine LinkInfos
         alThis = thisOI.getLinkInfos();
         for (int x=0; x<2; x++) {
-            List al;
+            List<OALinkInfo> al;
             if (x == 0) al = child.getLinkInfos();
             else al = parent.getLinkInfos();
 
-            for (int i=0; i<al.size(); i++)  {
-                OALinkInfo li = (OALinkInfo) al.get(i);
+            for (OALinkInfo li : al)  {
                 for (int ii=0; ; ii++)  {
                     if (ii == alThis.size()) {
                         alThis.add(li);
@@ -397,11 +392,9 @@ public class OAObjectInfoDelegate {
         
         String name = li.getName();
         if (name != null && name.length() > 0) {  // see if it was already created
-            List al = thisOI.getLinkInfos();
-            for (int i=0; i<al.size(); i++) {
-                OALinkInfo lix = (OALinkInfo) al.get(i);
+            for (OALinkInfo lix : thisOI.getLinkInfos()) {
                 if (name.equalsIgnoreCase(lix.getName())) {
-                    al.remove(i);
+                    thisOI.getLinkInfos().remove(lix);
                     break;
                 }
             }
@@ -441,45 +434,41 @@ public class OAObjectInfoDelegate {
         }
         
         if (thisOI.thisClass == null) return null;
-        List al = thisOI.getLinkInfos();
 
-        for (int i=0; i < al.size(); i++) {
-            OALinkInfo li = (OALinkInfo) al.get(i);
+        for (OALinkInfo li : thisOI.getLinkInfos()) {
             if (li.bCalculated) continue;
             if (!li.bRecursive) continue; // 20131009
             if (li.toClass != null && li.toClass.equals(thisOI.thisClass)) {
                 if (li.getType() == OALinkInfo.MANY) {
                     thisOI.liRecursiveMany = li;
+                    if (thisOI.liRecursiveOne == null) {
+                        thisOI.liRecursiveOne = getReverseLinkInfo(thisOI.liRecursiveMany);  // 20131010 type=One are not annotated as recursive
+                    }
                     break;
                 }
                 else thisOI.liRecursiveOne = li;
             }
         }
 
-        if (thisOI.liRecursiveMany != null) {
-            if (type == OALinkInfo.ONE) {
-                if (thisOI.liRecursiveOne == null) {
-                    thisOI.liRecursiveOne = getReverseLinkInfo(thisOI.liRecursiveMany);  // 20131010 type=One are not annotated as recursive
-                }
-                return thisOI.liRecursiveOne;
-            }
-            return thisOI.liRecursiveMany;
-        }
-        return null;
+        if (type == OALinkInfo.ONE) return thisOI.liRecursiveOne;
+        return thisOI.liRecursiveMany;
     }
     
     public static OALinkInfo getLinkToOwner(OAObjectInfo thisOI) {
-        List al = thisOI.getLinkInfos();
-        for (int i=0; i < al.size(); i++) {
-            OALinkInfo li = (OALinkInfo) al.get(i);
+        if (thisOI == null) return null;
+        if (thisOI.bSetLinkToOwner) return thisOI.liLinkToOwner;
+        
+        for (OALinkInfo li : thisOI.getLinkInfos()) {
             OALinkInfo liRev = getReverseLinkInfo(li);
             if (liRev != null && liRev.getOwner() && liRev.getType() == OALinkInfo.MANY) {
                 if (!li.toClass.equals(thisOI.thisClass)) {  // make sure that it is not also a recursive link.
-                    return li;
+                    thisOI.liLinkToOwner = li;
+                    break;
                 }
             }
         }
-        return null;
+        thisOI.bSetLinkToOwner = true;
+        return thisOI.liLinkToOwner;
     }
     
     /**
@@ -703,9 +692,7 @@ public class OAObjectInfoDelegate {
      * @return
      */
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, OAObject fromObject, Hub hub) {
-        List al = oi.getLinkInfos();
-        for (int i=0; i<al.size(); i++) {
-            OALinkInfo li = (OALinkInfo) al.get(i);
+        for (OALinkInfo li : oi.getLinkInfos()) {
             String s = li.getName();
             
             Object objx = OAObjectReflectDelegate.getRawReference(fromObject, s);
@@ -719,9 +706,7 @@ public class OAObjectInfoDelegate {
         return getLinkInfo(oi, toClass);
     }
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, Class toClass) {
-        List al = oi.getLinkInfos();
-        for (int i=0; i<al.size(); i++) {
-            OALinkInfo li = (OALinkInfo) al.get(i);
+        for (OALinkInfo li : oi.getLinkInfos()) {
             if (li.getToClass().equals(toClass)) return li;
         }
         return null;

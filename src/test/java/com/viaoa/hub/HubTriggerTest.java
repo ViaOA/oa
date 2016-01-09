@@ -37,28 +37,11 @@ public class HubTriggerTest extends OAUnitTest {
                 ai.incrementAndGet();
             }
         };
-//        hubTrigger.addDependentProperty(Employee.P_LastName);
-//        hubTrigger.addDependentProperty(Employee.P_FirstName);
+        hubTrigger.addDependentProperty(Employee.P_LastName);
+        hubTrigger.addDependentProperty(Employee.P_FirstName);
         hubTrigger.addDependentProperty(EmployeePP.location().name());
 
         
-HifiveDataGenerator data = new HifiveDataGenerator();
-data.createSampleData1();
-
-OAFinder<Program, Location> f = new OAFinder<Program, Location>(ProgramPP.locations().pp) {
-    @Override
-    protected void onFound(Location loc) {
-        if (loc.getProgram() == null) {
-            int xx = 4;
-            xx++;
-        }
-    }
-};
-f.find(ModelDelegate.getPrograms());
-
-        
-if (true || false) return;//qqqqqqqqqqq        
-
         Location location = new Location();
         location.setId(0);
         

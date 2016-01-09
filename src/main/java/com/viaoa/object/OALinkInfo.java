@@ -276,10 +276,10 @@ public class OALinkInfo { //implements java.io.Serializable {
         for (OALinkInfo lix : getToObjectInfo().getLinkInfos()) {
             if (lix.name != null && findName.equalsIgnoreCase(lix.name)) {
                 revLinkInfo = lix;
-                return lix;
+                break;
             }
         }
-        return null;
+        return revLinkInfo;
     }
     
     private transient OAObjectInfo oi;

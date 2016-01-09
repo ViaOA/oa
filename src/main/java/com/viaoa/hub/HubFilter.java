@@ -275,7 +275,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         
         if (calcDependentPropertyName != null) {
             hlDependentProperties = new HubListenerAdapter();
-            if (hubMaster != null) hubMaster.addHubListener(hlDependentProperties, calcDependentPropertyName, dependentPropertyNames);
+            if (hubMaster != null) {
+                hubMaster.addHubListener(hlDependentProperties, calcDependentPropertyName, dependentPropertyNames);
+            }
         }
         
         if (bRefresh) refresh();
