@@ -1,11 +1,13 @@
 package com.viaoa.hub;
 
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsactestDataGenerator;
+import com.viaoa.object.OAFinder;
 import com.theice.tsactest.model.Model;
 import com.theice.tsactest.model.oa.*;
 import com.theice.tsactest.model.oa.propertypath.SiloPP;
@@ -15,6 +17,8 @@ import com.tmgsc.hifivetest.model.oa.EmployeeAward;
 import com.tmgsc.hifivetest.model.oa.Location;
 import com.tmgsc.hifivetest.model.oa.Program;
 import com.tmgsc.hifivetest.model.oa.propertypath.EmployeeAwardPP;
+import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
+
 
 public class HubLinkTest extends OAUnitTest {
 
@@ -268,7 +272,18 @@ public class HubLinkTest extends OAUnitTest {
         
         HifiveDataGenerator data = new HifiveDataGenerator();
         data.createSampleData1();
-
+        
+        OAFinder<Program, Location> f = new OAFinder<Program, Location>(ProgramPP.locations().pp) {
+            @Override
+            protected void onFound(Location loc) {
+                if (loc.getProgram() == null) {
+                    int xx = 4;
+                    xx++;
+                }
+            }
+        };
+        f.find(ModelDelegate.getPrograms());
+        
         final Hub<Program> hubProgram = ModelDelegate.getPrograms();
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
         final Hub<Employee> hubEmployee = hubLocation.getDetailHub(Location.P_Employees);
@@ -311,6 +326,8 @@ public class HubLinkTest extends OAUnitTest {
         assertEquals(loc, hubLocation.getAO());
         assertEquals(prog, hubProgram.getAO());
 
+//qqqqqqqq        
+f.find(ModelDelegate.getPrograms());
         
         prog = hubProgram.getAt(2);
         loc = prog.getLocations().getAt(0);
@@ -318,6 +335,17 @@ public class HubLinkTest extends OAUnitTest {
         emp = loc.getEmployees().getAt(0).getEmployees().getAt(0);
 
         hubEmployee.setAO(emp);
+
+if (hubEmployee.getAO() == null) {
+    hubEmployee.setAO(emp);
+    Object objx = hubEmployee.getAO();
+
+    hubEmployee.setAO(emp);
+    objx = hubEmployee.getAO();
+    int xx = 4;
+    xx++;
+}
+        
         assertEquals(emp, hubEmployee.getAO());
         assertEquals(loc, hubLocation.getAO());
         assertEquals(prog, hubProgram.getAO());

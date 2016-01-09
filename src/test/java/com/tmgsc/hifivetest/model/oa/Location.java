@@ -827,6 +827,10 @@ public class Location extends OAObject {
     }
     
     public void setProgram(Program newValue) {
+if (newValue == null) {
+    int xx = 4;
+    xx++;
+}
         fireBeforePropertyChange(P_Program, this.program, newValue);
         Program old = this.program;
         this.program = newValue;

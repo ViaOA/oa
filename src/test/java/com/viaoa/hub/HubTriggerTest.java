@@ -9,15 +9,20 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.tmgsc.hifivetest.delegate.ModelDelegate;
 import com.tmgsc.hifivetest.model.oa.*;
 import com.tmgsc.hifivetest.model.oa.propertypath.EmployeePP;
+import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
+import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
+import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObjectCacheFilter;
 
 public class HubTriggerTest extends OAUnitTest {
 
     @Test
     public void testA() {
+        reset();
         // dependents with and w/o "."        
         final AtomicInteger ai = new AtomicInteger();
         Hub<Employee> hubEmployee = new Hub<Employee>(Employee.class);
@@ -32,10 +37,27 @@ public class HubTriggerTest extends OAUnitTest {
                 ai.incrementAndGet();
             }
         };
-        hubTrigger.addDependentProperty(Employee.P_LastName);
-        hubTrigger.addDependentProperty(Employee.P_FirstName);
+//        hubTrigger.addDependentProperty(Employee.P_LastName);
+//        hubTrigger.addDependentProperty(Employee.P_FirstName);
         hubTrigger.addDependentProperty(EmployeePP.location().name());
+
         
+HifiveDataGenerator data = new HifiveDataGenerator();
+data.createSampleData1();
+
+OAFinder<Program, Location> f = new OAFinder<Program, Location>(ProgramPP.locations().pp) {
+    @Override
+    protected void onFound(Location loc) {
+        if (loc.getProgram() == null) {
+            int xx = 4;
+            xx++;
+        }
+    }
+};
+f.find(ModelDelegate.getPrograms());
+
+        
+if (true || false) return;//qqqqqqqqqqq        
 
         Location location = new Location();
         location.setId(0);
@@ -79,7 +101,7 @@ public class HubTriggerTest extends OAUnitTest {
         }
     }
     
-    @Test
+    //@Test
     public void testB() {
         reset();
         

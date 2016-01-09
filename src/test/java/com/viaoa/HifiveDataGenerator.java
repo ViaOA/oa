@@ -58,6 +58,15 @@ public class HifiveDataGenerator {
     private void createLocations(Hub<Location> hub, int level, int maxLevels, int maxEmpLevels) {
         Location loc = new Location();
         hub.add(loc);
+if (loc.getProgram() == null) {
+    int xx = 4;
+    xx++;
+    Location locx = new Location();
+    hub.add(loc);
+    
+    locx = new Location();
+    hub.add(loc);
+}
         if (level+1 < maxLevels) {
             createLocations(loc.getLocations(), level+1, maxLevels, maxEmpLevels);
         }
