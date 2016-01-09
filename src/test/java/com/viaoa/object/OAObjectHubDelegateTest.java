@@ -16,7 +16,370 @@ import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
 import com.viaoa.hub.HubListenerAdapter;
 
+/*
+qqqqqq test with multiple hubs
+   set weakRef=null
+   set weakRef.get=null
+*/
 public class OAObjectHubDelegateTest extends OAUnitTest {
+
+    @Test
+    public void testA() {
+        reset();
+        
+        final Employee emp = new Employee();
+        assertEquals(0, OAObjectHubDelegate.getHubReferenceCount(emp));
+        
+        Hub<Employee> hub = new Hub<Employee>(Employee.class);
+        hub.add(emp);
+
+        assertEquals(1, OAObjectHubDelegate.getHubReferenceCount(emp));
+
+        hub.add(emp);
+        hub.add(emp);
+        assertEquals(1, hub.getSize());
+        assertEquals(1, OAObjectHubDelegate.getHubReferenceCount(emp));
+        
+        
+        Hub<Employee> hub2 = new Hub<Employee>(Employee.class);
+        hub2.add(emp);
+        assertEquals(2, OAObjectHubDelegate.getHubReferenceCount(emp));
+        
+        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emp);
+        assertEquals(2, refs.length);
+        refs[0] = new WeakReference(null);
+        
+        hub.remove(emp);
+        refs = OAObjectHubDelegate.getHubReferencesNoCopy(emp);
+        assertEquals(hub2, refs[0].get());
+        assertEquals(1, refs.length);
+    }
+
+    @Test
+    public void testB() {
+        reset();
+
+        Hub<Employee>[] hubs = new Hub[10];
+        for (int i=0; i<hubs.length; i++) hubs[i] = new Hub<Employee>(Employee.class);
+
+        Employee[] emps = new Employee[10];
+        for (int i=0; i<emps.length; i++) emps[i] = new Employee();
+        
+        // add each emp to 3 hubs, all emp.weakHubs should be the same
+        for (int i=0; i<emps.length; i++) {
+            for (int j=0; j<3; j++) {
+                hubs[j].add(emps[i]);
+            }
+            
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            for (int j=0; j<i; j++) {
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[j]);
+                assertEquals(refs, refs2);
+            }            
+        }
+        for (int j=0; j<3; j++) {
+            assertEquals(10, hubs[j].getSize());
+        }
+        for (int j=3; j<10; j++) {
+            assertEquals(0, hubs[j].getSize());
+        }
+
+        // remove an emp from one hub, all other emp.weakHubs should stay the same
+        hubs[2].remove(emps[0]);
+        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+        assertEquals(2, refs.length);
+        
+        refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[1]);
+        for (int i=1; i<emps.length; i++) {
+            WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[i]);
+            assertEquals(refs, refs2);
+        }
+        
+        hubs[2].add(emps[0]);
+        WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+        assertEquals(3, refs2.length);
+        assertEquals(refs, refs2);
+    }
+    
+    @Test
+    public void testC() {
+        reset();
+
+        Hub<Employee>[] hubs = new Hub[10];
+        for (int i=0; i<hubs.length; i++) hubs[i] = new Hub<Employee>(Employee.class);
+
+        Employee[] emps = new Employee[10];
+        for (int i=0; i<emps.length; i++) emps[i] = new Employee();
+        
+        // add each emp to 3 hubs, all emp.weakHubs should be the same
+        for (int i=0; i<emps.length; i++) {
+            for (int j=0; j<3; j++) {
+                hubs[j].add(emps[i]);
+            }
+            
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            for (int j=0; j<i; j++) {
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[j]);
+                assertEquals(refs, refs2);
+            }            
+        }
+        for (int j=0; j<3; j++) {
+            assertEquals(10, hubs[j].getSize());
+        }
+        for (int j=3; j<10; j++) {
+            assertEquals(0, hubs[j].getSize());
+        }
+
+        // remove an emp from one hub, all other emp.weakHubs should stay the same
+        hubs[0].remove(emps[0]);
+        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+        assertEquals(2, refs.length);
+        
+        refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[1]);
+        for (int i=1; i<emps.length; i++) {
+            WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[i]);
+            assertEquals(refs, refs2);
+        }
+        
+        hubs[0].add(emps[0]);
+        WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+        assertEquals(3, refs2.length);
+        assertNotEquals(refs, refs2);
+
+        for (int i=1; i<emps.length; i++) {
+            refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[i]);
+            assertEquals(refs, refs2);
+        }
+    }
+    
+
+    @Test
+    public void testE() {
+        reset();
+        Hub<Employee>[] hubs = new Hub[10];
+        for (int i=0; i<hubs.length; i++) hubs[i] = new Hub<Employee>(Employee.class);
+
+        Employee[] emps = new Employee[10];
+        for (int i=0; i<emps.length; i++) emps[i] = new Employee();
+        
+        for (int i=0; i<emps.length; i++) {
+            for (int j=0; j<3; j++) {
+                hubs[j].add(emps[i]);
+            }
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            for (int j=0; j<i; j++) {
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[j]);
+                assertEquals(refs, refs2);
+                assertEquals(3, refs.length);
+            }            
+        }
+
+        for (int i=0; i<emps.length; i++) {
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            refs[2] = new WeakReference(null);
+        }
+        
+        for (int i=0; i<emps.length; i++) {
+            hubs[2].remove(emps[i]);
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            assertEquals(2, refs.length);
+        }
+    }
+
+    @Test
+    public void testF() {
+        reset();
+        Hub<Employee>[] hubs = new Hub[10];
+        for (int i=0; i<hubs.length; i++) hubs[i] = new Hub<Employee>(Employee.class);
+
+        Employee[] emps = new Employee[10];
+        for (int i=0; i<emps.length; i++) emps[i] = new Employee();
+        
+        for (int i=0; i<emps.length; i++) {
+            for (int j=0; j<3; j++) {
+                hubs[j].add(emps[i]);
+            }
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            for (int j=0; j<i; j++) {
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[j]);
+                assertEquals(refs, refs2);
+                assertEquals(3, refs.length);
+            }            
+        }
+
+        for (int i=0; i<emps.length; i++) {
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            refs[1] = new WeakReference(null);
+        }
+        
+        for (int i=0; i<emps.length; i++) {
+            hubs[1].remove(emps[i]);
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            assertEquals(2, refs.length);
+        }
+    }
+
+    @Test
+    public void testG() {
+        reset();
+        Hub<Employee>[] hubs = new Hub[10];
+        for (int i=0; i<hubs.length; i++) hubs[i] = new Hub<Employee>(Employee.class);
+
+        Employee[] emps = new Employee[10];
+        for (int i=0; i<emps.length; i++) emps[i] = new Employee();
+        
+        for (int i=0; i<emps.length; i++) {
+            for (int j=0; j<3; j++) {
+                hubs[j].add(emps[i]);
+            }
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            for (int j=0; j<i; j++) {
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[j]);
+                assertEquals(refs, refs2);
+                assertEquals(3, refs.length);
+            }            
+        }
+
+        for (int i=0; i<emps.length; i++) {
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            refs[1] = new WeakReference(null);
+        }
+        
+        for (int i=0; i<emps.length; i++) {
+            hubs[0].remove(emps[i]);
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[i]);
+            assertEquals(2, refs.length);
+        }
+    }
+    @Test
+    public void testH() {
+        reset();
+        Hub<Employee>[] hubs = new Hub[10];
+        for (int i=0; i<hubs.length; i++) hubs[i] = new Hub<Employee>(Employee.class);
+
+        Employee[] emps = new Employee[10];
+        for (int i=0; i<emps.length; i++) emps[i] = new Employee();
+        
+        for (int i=0; i<emps.length; i++) {
+            for (int j=0; j<3; j++) {
+                hubs[j].add(emps[i]);
+            }
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            for (int j=0; j<i; j++) {
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[j]);
+                assertEquals(refs, refs2);
+                assertEquals(3, refs.length);
+            }            
+        }
+
+        for (int i=0; i<emps.length; i++) {
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            refs[1] = new WeakReference(null);
+        }
+        
+        for (int i=0; i<emps.length; i++) {
+            hubs[2].remove(emps[i]);
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            assertEquals(1, refs.length);
+        }
+    }
+    
+    @Test
+    public void testI() {
+        reset();
+        Hub<Employee>[] hubs = new Hub[10];
+        for (int i=0; i<hubs.length; i++) hubs[i] = new Hub<Employee>(Employee.class);
+
+        Employee[] emps = new Employee[10];
+        for (int i=0; i<emps.length; i++) emps[i] = new Employee();
+        
+        for (int i=0; i<emps.length; i++) {
+            for (int j=0; j<hubs.length; j++) {
+                hubs[j].add(emps[i]);
+            }
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[i]);
+            assertEquals(10, refs.length);
+        }
+        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+        for (int i=1; i<emps.length; i++) {
+            WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[i]);
+            assertNotEquals(refs, refs2);
+            
+            for (int j=0; j<10; j++) {
+                assertEquals(refs[j], refs2[j]);  // reused weakReference instance
+            }
+            for (int j=0; j<10; j++) {
+                assertEquals(refs[j].get(), refs2[j].get());  // same hub
+            }
+        }
+        
+        // removing
+        for (int j=0; j<hubs.length; j++) {
+            for (int i=0; i<emps.length; i++) {
+                refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[i]);
+                hubs[j].remove(emps[i]);
+                
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[i]);
+                if (j == 9) {
+                    assertEquals(null, refs2);
+                    continue;
+                }
+                
+                int cnt = 0;
+                for (WeakReference wr : refs2) {
+                    if (wr == null) break;
+                    cnt++;
+                    assertNotEquals(hubs[j], wr.get());
+                }
+                assertEquals(10-(j+1), cnt);
+            }
+        }
+    }
+    
+    
+    @Test
+    public void testD() {
+        reset();
+
+        Hub<Employee>[] hubs = new Hub[10];
+        for (int i=0; i<hubs.length; i++) hubs[i] = new Hub<Employee>(Employee.class);
+
+        Employee[] emps = new Employee[10];
+        for (int i=0; i<emps.length; i++) emps[i] = new Employee();
+        
+        // add each emp to 3 hubs, all emp.weakHubs should be the same
+        for (int i=0; i<emps.length; i++) {
+            for (int j=0; j<3; j++) {
+                hubs[j].add(emps[i]);
+            }
+            
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            for (int j=0; j<i; j++) {
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[j]);
+                assertEquals(refs, refs2);
+            }            
+        }
+        for (int j=0; j<3; j++) {
+            assertEquals(10, hubs[j].getSize());
+        }
+        for (int j=3; j<10; j++) {
+            assertEquals(0, hubs[j].getSize());
+        }
+        
+        // add to 4th hub, each emps.weakHubs should be different
+        for (int i=0; i<emps.length; i++) {
+            for (int j=3; j<4; j++) {
+                hubs[j].add(emps[i]);
+            }
+            
+            WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emps[0]);
+            for (int j=1; j<i; j++) {
+                WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emps[j]);
+                assertNotEquals(refs, refs2);
+            }            
+        }
+    }
+    
     
     @Test
     public void test() {

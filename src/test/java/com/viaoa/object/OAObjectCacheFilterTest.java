@@ -126,5 +126,7 @@ public class OAObjectCacheFilterTest extends OAUnitTest {
             empx.setLocation(null);
             assertEquals(10-(++i), hubFiltered.getSize());
         }
+        
+        objectCacheFilter.close();
     }
 }

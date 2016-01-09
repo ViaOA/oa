@@ -82,6 +82,8 @@ public class HubTriggerTest extends OAUnitTest {
             emp.setLocation(location);
             assertEquals(++i, ai.get());
         }
+        
+        hubTrigger.close();
     }
     
     //@Test
@@ -154,6 +156,8 @@ public class HubTriggerTest extends OAUnitTest {
             emp.setLocation(location);
             assertEquals(++i, ai.get());
         }
+        
+        hubTrigger.close();
     }
 }
 

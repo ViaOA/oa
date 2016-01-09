@@ -213,9 +213,12 @@ public class OAArray {
     	int x = array.length;
     	int pos = -1;
     	for (int i=0; pos<0 && i<x; i++) {
+            if (searchValue == array[i]) {
+                pos = i;
+                break;  // exact match
+            }
     		if (searchValue.equals(array[i])) {
     		    pos = i;
-    		    if (searchValue == array[i]) break;  // exact match
     		}
     	}
     	if (pos<0) {
@@ -223,11 +226,12 @@ public class OAArray {
     	}
         return removeAt(c, array, pos);
     }
-    public static Object[] removeAt(Class c, Object[] array, int pos) {
-        if (array == null || array.length == 0) return array;
-        if (pos < 0 || pos >= array.length) return array;
+    public static Object[] removeAt(final Class c, final Object[] array, final int pos) {
+        if (array == null) return null;
+        final int x = array.length;
+        if (x == 0) return array;
+        if (pos < 0 || pos >= x) return array;
 
-        int x = array.length;
         if (x == 1) {
             return (Object[]) Array.newInstance(c, 0);
         }

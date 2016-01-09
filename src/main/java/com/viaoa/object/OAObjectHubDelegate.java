@@ -104,14 +104,18 @@ public class OAObjectHubDelegate {
 
                 Hub hx = oaObj.weakhubs[pos].get();
 
-                if (hx != null && hx != hub) continue;
                 bFound = (hx == hub);
+                if (hx != null && !bFound) continue;
                 
                 if (currentSize < 4) {
                     // 20160105 weakhubs[] size <4 can be shared by other objs - need to create a new weakref[]
-                    if (!bFound) continue;
                     if (currentSize == 1) oaObj.weakhubs = null;
                     else oaObj.weakhubs = (WeakReference<Hub<?>>[]) OAArray.removeAt(WeakReference.class, oaObj.weakhubs, pos);
+                    if (!bFound && oaObj.weakhubs != null) {
+                        pos--; // need to revisit
+                        currentSize--;  // array was resized
+                        continue;
+                    }
                     break;
                 }
                 else {
@@ -126,8 +130,13 @@ public class OAObjectHubDelegate {
                         }
                         oaObj.weakhubs[pos] = oaObj.weakhubs[lastEndPos];
                         oaObj.weakhubs[lastEndPos] = null;
+                        if (!bFound) {
+                            pos--; // need to revisit this slot (currentSize is still the same)
+                        }
                         break;
                     }
+                    if (!bFound) continue;
+                    
                     if (currentSize > 10 && ((currentSize - lastEndPos) < (currentSize * .75))) {
                         // resize array
                         int newSize = lastEndPos + (lastEndPos / 10) + 1;

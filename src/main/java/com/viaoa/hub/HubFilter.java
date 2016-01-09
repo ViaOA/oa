@@ -140,6 +140,16 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     public void setServerSideOnly(boolean b) {
         bServerSideOnly = b;
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        }
+        finally {
+            super.finalize();
+        }
+    }
     
     public void close() {
         // need to make sure that no more events get processed
@@ -608,8 +618,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         HubData hd = null;
         try {
             if (hub != null) {
-                hd = hub.data;
-                hd.setInFetch(true);
                 try {
                     aiClearing.incrementAndGet();
                     // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
@@ -621,6 +629,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                 finally {
                     aiClearing.decrementAndGet();
                 }
+
+                hd = hub.data;
+                hd.setInFetch(true);
             }
             
             try {
@@ -652,7 +663,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         for (int i=0; hubMaster!=null;i++) {
             T obj = hubMaster.elementAt(i);
             if (obj == null) break;
-            if (aiInitializeCount.get() != cnt) return false;
+            if (aiInitializeCount.get() != cnt) {
+                return false;
+            }
             update(obj, true);
         }
         

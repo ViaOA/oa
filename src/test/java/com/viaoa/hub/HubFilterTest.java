@@ -1,6 +1,7 @@
 package com.viaoa.hub;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -11,12 +12,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tmgsc.hifivetest.model.oa.*;
 import com.tmgsc.hifivetest.model.oa.propertypath.EmployeePP;
+import com.tmgsc.hifivetest.model.oa.propertypath.PointsAwardLevelPP;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObjectCacheFilter;
+import com.viaoa.object.OAObjectHubDelegate;
 
 public class HubFilterTest extends OAUnitTest {
 
-    @Test
+//    @Test
     public void testA() {
         // dependents with and w/o "."        
         
@@ -39,7 +42,7 @@ public class HubFilterTest extends OAUnitTest {
         assertEquals(hls[0], hls2[0]);
     }
 
-    @Test
+//    @Test
     public void test() {
         init();
 
@@ -63,7 +66,7 @@ public class HubFilterTest extends OAUnitTest {
 
     public void _test(final Hub<PointsAwardLevel> hubMasterMain) {
         System.out.println("HubFilterTest, thread="+Thread.currentThread().getName());
-        for (int i=0; i<25; i++) {
+        for (int i=0; i<50; i++) {
             final Hub<PointsAwardLevel> hubMaster = hubMasterMain.createSharedHub();
             Hub<PointsAwardLevel> hubFiltered = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
             //hubMaster.copyInto(hubFiltered);
@@ -74,15 +77,17 @@ public class HubFilterTest extends OAUnitTest {
                 }
             }; 
             hf.addDependentProperty("id");
+            if (i % 5 == 0) hf.addDependentProperty(PointsAwardLevelPP.location().id());
             
             int x = hubFiltered.getSize();
             
 
-            if (i % 50 == 0) {
-                for (int j=0; j<5; j++) System.gc();
+            if (i % 1 == 5) {
+                for (int j=0; j<1; j++) System.gc();
             }
             
             //System.out.println("i="+i+", hubFiltered.getSize="+hubFiltered.getSize());
+            
             assertEquals(200, hubFiltered.getSize());
             // hf.close();
 
@@ -92,7 +97,9 @@ public class HubFilterTest extends OAUnitTest {
     
     @Test
     public void test2() {
+        OAObjectHubDelegate.ShowWarnings = false;
         final int max = 5;
+        
 
         final Hub<PointsAwardLevel> hubMaster1 = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
         for (int i=0; i<200; i++) {
@@ -109,6 +116,7 @@ public class HubFilterTest extends OAUnitTest {
         final CyclicBarrier barrier = new CyclicBarrier(max);
         final CountDownLatch countDownLatch = new CountDownLatch(max);
         final AtomicInteger aiDone = new AtomicInteger(); 
+        final AtomicInteger aiError = new AtomicInteger(); 
         
         for (int i=0; i<max; i++) {
             final int id = i;
@@ -118,9 +126,11 @@ public class HubFilterTest extends OAUnitTest {
                     try {
                         barrier.await();
                         Hub<PointsAwardLevel> hub = (id %2 == 0) ? hubMaster1 : hubMaster2;
+                        aiError.getAndIncrement();
                         _test(hub);
+                        aiError.getAndDecrement();
                     }
-                    catch (Exception e) {
+                    catch (Throwable e) {
                         System.out.println("HubFilterTest error: "+e);
                         e.printStackTrace();
                     }
@@ -144,10 +154,12 @@ public class HubFilterTest extends OAUnitTest {
                 // TODO: handle exception
             }
         }
+        OAObjectHubDelegate.ShowWarnings = true;
+        assertEquals("error from threads, errorCnt="+aiError.get(), 0, aiError.get());
     }    
     
 
-    @Test
+//    @Test
     public void test3() {
         Hub<Employee> hub = new Hub<Employee>(Employee.class);
         for (int i=0; i< 20; i++) {
@@ -178,7 +190,7 @@ public class HubFilterTest extends OAUnitTest {
         assertEquals(4, hubFiltered.size());
     }
 
-    @Test
+//    @Test
     public void test4() {
         reset();
 

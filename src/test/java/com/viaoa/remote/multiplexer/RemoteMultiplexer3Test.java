@@ -151,7 +151,7 @@ public class RemoteMultiplexer3Test extends OAUnitTest {
             String s = "test2 "+i;
             remoteServer.ping2(s);  // async call
         }
-        assertTrue(serverPingCount2 > 0);
+        assertTrue("serverPingCount2="+serverPingCount2, serverPingCount2 > 0);
         
         // C2S using queued request/reply
         RemoteServerInterface remoteServerQ = (RemoteServerInterface) remoteMultiplexerClient.lookup("serverQ");

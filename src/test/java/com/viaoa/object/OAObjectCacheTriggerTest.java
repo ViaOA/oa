@@ -32,6 +32,7 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         assertEquals(1, ai.get());
         emp = new Employee();
         assertEquals(2, ai.get());
+        objectCacheTrigger.close();
     }
 
     @Test
@@ -62,6 +63,7 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         assertEquals(0, ai.get());
         emp = new Employee();
         assertEquals(1, ai.get());
+        objectCacheTrigger.close();
     }
 
     @Test
@@ -128,5 +130,6 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
             assertEquals(i, aiIsUsed.get());
             assertEquals(0, aiTrigger.get());
         }
+        objectCacheTrigger.close();
     }
 }
