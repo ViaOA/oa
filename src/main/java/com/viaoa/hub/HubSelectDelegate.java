@@ -266,7 +266,11 @@ public class HubSelectDelegate {
         
         boolean bRunSelect;
         bRunSelect = oi.getUseDataSource();
-        bRunSelect = (bRunSelect && select.getDataSource() != null);
+
+        // 20160110 selects now have hubFinders, etc to do selects
+        bRunSelect = (bRunSelect && (select.getDataSource() != null || select.getFinder() != null));
+        //was: bRunSelect = (bRunSelect && select.getDataSource() != null);
+        
 	    
 	    HubDataDelegate.incChangeCount(thisHub);
 	    if (!select.getAppend()) {

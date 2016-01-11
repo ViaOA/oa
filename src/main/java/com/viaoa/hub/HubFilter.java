@@ -47,7 +47,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     protected WeakReference<Hub<T>> weakHub;
     private boolean bShareAO;
     private volatile boolean bClosed;
-    private boolean bServerSideOnly;
+    protected boolean bServerSideOnly;
 
     // listener setup for dependent properties
     private static AtomicInteger aiUniqueNameCnt = new AtomicInteger();

@@ -2,10 +2,12 @@ package com.viaoa.object;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
 import com.viaoa.hub.HubListenerAdapter;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAFilter;
 
@@ -39,6 +41,8 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
     // list of filters that must return true for the isUsed to return true.
     private ArrayList<OAFilter<T>> alFilter;
 
+    protected boolean bServerSideOnly;
+    
     /**
      * Create new cache trigger.  Cached objects that are true for isUsedFromObjectCache & isUsed will then call onTrigger.
      */
@@ -70,6 +74,14 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
         }
         
         setupCacheListener();
+    }
+
+    /**
+     * This needs to be set to true if it is only created on the server.
+     * This is so that changes will be published to the clients, even if initiated on OAClientThread. 
+     */
+    public void setServerSideOnly(boolean b) {
+        bServerSideOnly = b;
     }
     
     /**
@@ -142,7 +154,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
                 if (!b) return;
                 
                 if (isUsedFromObjectCache(obj) && isUsed(obj)) {
-                    onTrigger(obj);
+                    callOnTrigger(obj);
                 }
             }
             
@@ -158,7 +170,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
                     boolean b = OAThreadLocalDelegate.isLoadingObject();
                     try {
                         if (b) OAThreadLocalDelegate.setLoadingObject(false);
-                        onTrigger(obj);
+                        callOnTrigger(obj);
                     }
                     finally {
                         if (b) OAThreadLocalDelegate.setLoadingObject(true);
@@ -188,7 +200,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
                         
                 b = b && isUsed(obj);
 
-                if (b) onTrigger(obj);
+                if (b) callOnTrigger(obj);
             }
         };
         hubTemp.addHubListener(hlTemp, calcDependentPropertyName, dependentPropertyNames);
@@ -233,6 +245,21 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
         return true;
     }
 
+    private void callOnTrigger(T obj) {
+        try {
+            if (bServerSideOnly) { 
+                OARemoteThreadDelegate.sendMessages(true);
+            }
+            onTrigger(obj);
+        }
+        finally {
+            if (bServerSideOnly) {
+                OARemoteThreadDelegate.sendMessages(false);
+            }
+        }
+        
+    }
+    
     /**
      * Method that will be called when isUsed() returns true, and isUsedFromObjectCache() returns true.
      * @param obj

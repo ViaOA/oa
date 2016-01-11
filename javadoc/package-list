@@ -1,7 +1,9 @@
 com.viaoa.annotation
 com.viaoa.comm.discovery
+com.viaoa.comm.io
 com.viaoa.comm.multiplexer
 com.viaoa.comm.multiplexer.io
+com.viaoa.comm.ssl
 com.viaoa.ds
 com.viaoa.ds.autonumber
 com.viaoa.ds.cs
@@ -16,7 +18,9 @@ com.viaoa.ds.remote
 com.viaoa.hub
 com.viaoa.jfc
 com.viaoa.jfc.border
+com.viaoa.jfc.console
 com.viaoa.jfc.control
+com.viaoa.jfc.dialog
 com.viaoa.jfc.dnd
 com.viaoa.jfc.editor.html
 com.viaoa.jfc.editor.html.control
@@ -60,3 +64,4 @@ com.viaoa.transaction
 com.viaoa.util
 com.viaoa.util.converter
 com.viaoa.util.file
+com.viaoa.util.filter

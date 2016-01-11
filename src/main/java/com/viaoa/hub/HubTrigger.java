@@ -1,6 +1,7 @@
 package com.viaoa.hub;
 
 import com.viaoa.object.OAObject;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OAFilter;
 
 /**
@@ -20,7 +21,8 @@ public abstract class HubTrigger<T extends OAObject> extends HubFilter<T> {
     @Override
     protected void addObject(T obj, boolean bIsInitialzing) {
         super.addObject(obj, bIsInitialzing);
-        if (!bIsInitialzing) onTrigger(obj);
+        if (bIsInitialzing) return;
+        onTrigger(obj);
     }
     @Override
     protected void removeObject(T obj) {

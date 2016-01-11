@@ -351,6 +351,7 @@ public class HubAddRemoveDelegate {
         }
         else { // 20120425 need to send ObjectCache event
             // 20130518 dont send if bInFetch (too much noise)
+            // 201512 not needed, too noisy
             // OAObjectCacheDelegate.fireAfterAddEvent(thisHub, obj, thisHub.getCurrentSize()-1);
         }
     }

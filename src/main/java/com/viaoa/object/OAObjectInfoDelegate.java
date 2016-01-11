@@ -506,9 +506,9 @@ public class OAObjectInfoDelegate {
 
                     boolean bIsServer = OASync.isServer(hub);
                     
-                    alCache = new ArrayList(li.cacheSize * (bIsServer?10:1));
+                    alCache = new ArrayList(li.cacheSize+1);
                     OAObjectHashDelegate.hashLinkInfoCacheArrayList.put(li, alCache);
-                    hsCache = new HashSet(li.cacheSize * (bIsServer?10:1), .85f);
+                    hsCache = new HashSet(li.cacheSize+3, .85f);
                     OAObjectHashDelegate.hashLinkInfoCacheHashSet.put(li, hsCache);
                 }                
             }
@@ -528,7 +528,7 @@ public class OAObjectInfoDelegate {
     }
     
     private static boolean _cacheHub(OALinkInfo li, Hub hub, ArrayList alCache, HashSet hsCache) {
-        if (hsCache.contains(hub)) return false; 
+        if (hsCache.contains(hub)) return true; 
         
         boolean bIsServer = OASync.isServer(hub);
         if (bIsServer) {
@@ -542,9 +542,7 @@ public class OAObjectInfoDelegate {
         
         int x = alCache.size();
         if (x > li.cacheSize) {
-            if (!bIsServer || (x > li.cacheSize * 10)) {
-                hsCache.remove(alCache.remove(0));
-            }
+            hsCache.remove(alCache.remove(0));
         }
         return true;
     }    
@@ -860,7 +858,7 @@ public class OAObjectInfoDelegate {
     }
 
 
-    // 20141130 weakReferencealbe 
+    // 20141130 weakReferenceable 
 
     /**
      * Returns true if any of the parent links has type=Many and cacheSize>0,

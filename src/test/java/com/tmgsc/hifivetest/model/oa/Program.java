@@ -1295,8 +1295,8 @@ public class Program extends OAObject {
         cascadeDelete = true, 
         mustBeEmptyForDelete = true, 
         seqProperty = Location.P_Seq, 
-        sortProperty = Location.P_Seq
-        //cacheSize = 100
+        sortProperty = Location.P_Seq,
+        cacheSize = 100
     )
     public Hub<Location> getLocations() {
         if (hubLocations == null) {

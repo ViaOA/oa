@@ -422,11 +422,11 @@ public class HubEventDelegate {
 	    @param newValue new value of property
 	    @see #fireCalcPropertyChange(Object,String)
 	*/
-	public static void fireAfterPropertyChange(Hub thisHub, OAObject oaObj, String propertyName, Object oldValue, Object newValue, OALinkInfo linkInfo ) {
+	public static void fireAfterPropertyChange(final Hub thisHub, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue, final OALinkInfo linkInfo ) {
 		// 2007/01/03 need to call propertyChangeDupChain() first, since propertyChange
 		//            could need to change a detail hub(s), before a HubLinkEventListener is called, which
 		//            could have needed the detail hubs to be changed.
-	    
+	    if (thisHub == null) return;
 	    if (linkInfo != null) {
             propertyChangeUpdateDetailHubs(thisHub, oaObj, propertyName);
 	    }
@@ -474,6 +474,11 @@ public class HubEventDelegate {
     	            OAThreadLocalDelegate.setSendingEvent(false);
     	        }
 //	        }
+	    }
+	    
+	    // 20160110 
+	    if (oaObj != null && !oaObj.isLoading()) {
+	        HubDelegate.setReferenceable(thisHub, true);
 	    }
 	}
 	
