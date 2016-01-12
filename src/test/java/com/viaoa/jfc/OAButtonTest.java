@@ -21,10 +21,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.theicetest.tsactest.model.oa.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsactestDataGenerator;
 import com.viaoa.hub.Hub;
-import com.theice.tsactest.model.oa.*;
 
 public class OAButtonTest extends OAUnitTest {
 

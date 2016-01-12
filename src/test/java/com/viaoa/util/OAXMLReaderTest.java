@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 
 import org.junit.Test;
 
-import com.theice.tsac.model.oa.*;
+import com.theicetest.tsac.model.oa.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObject;
 

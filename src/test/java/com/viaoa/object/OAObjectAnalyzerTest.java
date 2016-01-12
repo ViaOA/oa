@@ -3,9 +3,9 @@ package com.viaoa.object;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import com.theicetest.tsactest.model.oa.*;
 import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
-import com.theice.tsactest.model.oa.*;
 
 public class OAObjectAnalyzerTest extends OAUnitTest {
 

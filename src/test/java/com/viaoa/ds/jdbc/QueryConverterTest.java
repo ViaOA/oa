@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
-import com.theice.tsactest.model.oa.*;
+import com.theicetest.tsactest.model.oa.*;
 import com.tmgsc.hifivetest.DataSource;
 
 public class QueryConverterTest extends OAUnitTest {

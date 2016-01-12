@@ -2589,6 +2589,18 @@ public class OAString {
         return s;
     }
     
+    
+    public static String append(String orig, String append) {
+        return append(orig, append, " ");
+    }
+
+    public static String append(String orig, String append, String sep) {
+        if (append == null) return orig;
+        if (orig == null) orig = "";
+        else orig += sep;
+        return orig + append;
+    }
+    
     public static void main(String[] args) {
         String s = "abCDe_ 1.2-34.59:5";
         String s2 = OAString.makeJavaIndentifier(s);

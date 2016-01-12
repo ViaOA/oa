@@ -6,8 +6,8 @@ import static org.junit.Assert.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import com.theice.tsactest.model.oa.*;
-import com.theice.tsactest.model.oa.propertypath.*;
+import com.theicetest.tsactest.model.oa.*;
+import com.theicetest.tsactest.model.oa.propertypath.*;
 import com.tmgsc.hifivetest.model.oa.Employee;
 import com.viaoa.OAUnitTest;
 import com.viaoa.ds.autonumber.OADataSourceAuto;

@@ -11,6 +11,8 @@
 package com.viaoa.jfc;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Method;
 
 import javax.swing.*;
@@ -425,5 +427,36 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         return getController().getLabel();
     }
 
+    public void blink(final Color fcolor, final Color bcolor, final int numberOfTimes) {
+        final Color fc = this.getForeground();
+        final Color bc = this.getBackground();
+        final Timer timer = new Timer(150, null);
+
+        ActionListener al = new ActionListener() {
+            int cnt;
+            public void actionPerformed(ActionEvent e) {
+                boolean b = (cnt++ % 2 == 0);
+                
+                Color c;
+                if (fcolor != null) {
+                    c = (b ? fcolor : fc);
+                    setForeground(c);
+                }
+                if (bcolor != null) {
+                    c = (b ? bcolor : bc);
+                    setBackground(c);
+                }
+
+                if (!b && ((cnt / 2) >= numberOfTimes) ) {
+                    timer.stop();
+                }
+            }
+        };                 
+        timer.addActionListener(al);
+        timer.setRepeats(true);
+        timer.setInitialDelay(250);
+        timer.start();
+    }
+    
 }
 

@@ -3,8 +3,8 @@ package com.viaoa.object;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theice.tsactest.model.oa.*;
-import com.theice.tsactest.model.oa.propertypath.*;
+import com.theicetest.tsactest.model.oa.*;
+import com.theicetest.tsactest.model.oa.propertypath.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;

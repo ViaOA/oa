@@ -9,10 +9,11 @@ import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
+
+import com.theicetest.tsactest2.delegate.ModelDelegate;
+import com.theicetest.tsactest2.model.oa.cs.ServerRoot;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.util.*;
-import com.theice.tsactest2.delegate.ModelDelegate;
-import com.theice.tsactest2.model.oa.cs.ServerRoot;
 
 /**
  *  Run this manually to then run Client junit tests.

@@ -2,13 +2,14 @@ package com.viaoa.ds;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import com.theicetest.tsactest.model.Model;
+import com.theicetest.tsactest.model.oa.*;
+import com.theicetest.tsactest.model.oa.propertypath.SitePP;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsactestDataGenerator;
 import com.viaoa.object.OAFinder;
 import com.viaoa.util.OAFilter;
-import com.theice.tsactest.model.Model;
-import com.theice.tsactest.model.oa.*;
-import com.theice.tsactest.model.oa.propertypath.SitePP;
 
 public class OASelectTest extends OAUnitTest {
 

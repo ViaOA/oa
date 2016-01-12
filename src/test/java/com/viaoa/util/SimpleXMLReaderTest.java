@@ -11,7 +11,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.theice.tsac.model.oa.*;
+import com.theicetest.tsac.model.oa.*;
 import com.viaoa.OAUnitTest;
 
 public class SimpleXMLReaderTest extends OAUnitTest {

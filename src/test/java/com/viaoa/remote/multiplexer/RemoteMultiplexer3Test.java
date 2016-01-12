@@ -6,7 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.theice.tsactest.model.oa.Server;
+import com.theicetest.tsactest.model.oa.Server;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;

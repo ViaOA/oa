@@ -7,7 +7,8 @@ import java.net.Socket;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import com.theice.tsactest.model.oa.Server;
+
+import com.theicetest.tsactest.model.oa.Server;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAThreadLocalDelegate;
 

@@ -2,7 +2,8 @@ package com.viaoa.ds;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import com.theice.tsactest.model.oa.*;
+
+import com.theicetest.tsactest.model.oa.*;
 import com.tmgsc.hifivetest.DataSource;
 import com.viaoa.OAUnitTest;
 import com.viaoa.ds.jdbc.OADataSourceJDBC;
