@@ -228,9 +228,9 @@ public class OAObjectCSDelegate {
      * 20150815 returns true if this should be deleted on this computer, false if it is done on the server. 
     */
     protected static boolean delete(OAObject obj) {
-        LOG.fine("obj="+obj);
         if (obj == null) return false;
         if (OASyncDelegate.isServer(obj.getClass())) return true;  // invoke on the server
+        LOG.fine("obj="+obj);
         
         if (!OARemoteThreadDelegate.shouldSendMessages()) return true;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return true;

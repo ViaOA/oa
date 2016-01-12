@@ -57,7 +57,7 @@ public class NextNumber extends OAObject {
         String old = this.id;
         this.id = id;
         firePropertyChange("Id", old, this.id);
-        LOG.fine("NextNumber, id="+id);
+        LOG.finer("NextNumber, id="+id);
         if (cnter > 200) {
             LOG.warning("NextNumber over 200, id="+id);
         }

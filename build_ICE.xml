@@ -29,9 +29,9 @@
         <signjar jar="dist/${FileName}.jar" alias="icecert" keystore="keystore/icestore.jks" storepass="password" />
     </target>
 	
-	<!-- 20130317 removed depends rmic -->
-    <target name="Jar" depends="UpdateBinFiles" description="Jar Project">
-		<jar basedir="bin" destfile="dist/${FileName}.jar"  manifest="manifest.mf" update="false" excludes="**/builder/**, **/website/**, **/doc-files/**, **/scheduler/**, **/vetjobs/**" />
+    <!-- target name="Jar" depends="UpdateBinFiles" description="Jar Project" -->
+    <target name="Jar" description="Jar Project">
+		<jar basedir="target/classes" destfile="dist/${FileName}.jar"  manifest="manifest.mf" update="false" excludes="**/builder/**, **/website/**, **/doc-files/**, **/scheduler/**, **/vetjobs/**" />
         <!-- jar basedir="../OAEditor/bin" destfile="dist/${FileName}.jar"  update="true"/ -->
 	</target>
 

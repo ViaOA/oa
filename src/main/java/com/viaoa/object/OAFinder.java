@@ -545,5 +545,4 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         bAddOrFilter = false;
     }
     
-    
 }
