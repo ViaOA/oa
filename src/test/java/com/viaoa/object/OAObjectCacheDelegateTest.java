@@ -3,14 +3,15 @@ package com.viaoa.object;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theicetest.tsactest.model.oa.*;
-import com.theicetest.tsactest.model.oa.propertypath.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
 import com.viaoa.hub.HubListenerAdapter;
+
+import test.theice.tsac3.model.oa.*;
+import test.theice.tsac3.model.oa.propertypath.*;
 
 public class OAObjectCacheDelegateTest extends OAUnitTest {
     

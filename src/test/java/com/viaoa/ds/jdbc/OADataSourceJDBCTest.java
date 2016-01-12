@@ -6,9 +6,10 @@ import com.viaoa.OAUnitTest;
 import com.viaoa.ds.OASelect;
 import com.viaoa.ds.jdbc.OADataSourceJDBC;
 import com.viaoa.transaction.OATransaction;
-import com.tmgsc.hifivetest.DataSource;
-import com.tmgsc.hifivetest.Resource;
-import com.tmgsc.hifivetest.model.oa.*;
+
+import test.hifive.DataSource;
+import test.hifive.Resource;
+import test.hifive.model.oa.*;
 
 public class OADataSourceJDBCTest extends OAUnitTest {
     private DataSource dsSqlServer;

@@ -1,8 +1,5 @@
 package com.viaoa;
 
-import com.theicetest.tsactest.model.Model;
-import com.tmgsc.hifivetest.delegate.ModelDelegate;
-import com.tmgsc.hifivetest.model.oa.cs.ServerRoot;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.autonumber.NextNumber;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
@@ -10,11 +7,15 @@ import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
 
+import test.hifive.delegate.ModelDelegate;
+import test.hifive.model.oa.cs.ServerRoot;
+import test.theice.tsac3.model.Model;
+
 public class OAUnitTest {
 
     protected OADataSourceAuto dsAuto;
     protected OADataSourceAuto dsCache;
-    protected com.theicetest.tsactest.model.Model modelTsac;
+    protected test.theice.tsac3.model.Model modelTsac;
     
     protected OADataSource getDataSource() {
         return getAutoDataSource();
@@ -37,7 +38,7 @@ public class OAUnitTest {
         reset();
     }
     protected void reset() {
-        modelTsac = new com.theicetest.tsactest.model.Model();
+        modelTsac = new test.theice.tsac3.model.Model();
         ModelDelegate.getPrograms().clear();
         ServerRoot sr = new ServerRoot();
         ModelDelegate.initialize(sr);

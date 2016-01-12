@@ -7,9 +7,10 @@ import java.io.PrintWriter;
 
 import org.junit.Test;
 
-import com.theicetest.tsac.model.oa.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObject;
+
+import test.theice.tsac.model.oa.*;
 
 public class OAXMLReaderTest extends OAUnitTest {
 

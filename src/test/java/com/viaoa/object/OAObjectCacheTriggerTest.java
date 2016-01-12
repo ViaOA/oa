@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.tmgsc.hifivetest.model.oa.Employee;
-import com.tmgsc.hifivetest.model.oa.Location;
-import com.tmgsc.hifivetest.model.oa.propertypath.EmployeePP;
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.filter.OANotEmptyFilter;
+
+import test.hifive.model.oa.Employee;
+import test.hifive.model.oa.Location;
+import test.hifive.model.oa.propertypath.EmployeePP;
 
 public class OAObjectCacheTriggerTest extends OAUnitTest {
     

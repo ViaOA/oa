@@ -9,13 +9,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.theicetest.tsactest2.model.oa.*;
-import com.theicetest.tsactest2.model.oa.cs.ServerRoot;
-import com.theicetest.tsactest2.model.oa.propertypath.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObjectKey;
+
+import test.theice.tsac2.model.oa.*;
+import test.theice.tsac2.model.oa.cs.ServerRoot;
+import test.theice.tsac2.model.oa.propertypath.*;
 
 /**
  * **** IMPORTANT **** 

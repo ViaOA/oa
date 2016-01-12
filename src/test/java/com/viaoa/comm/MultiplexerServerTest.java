@@ -6,10 +6,11 @@ import java.net.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theicetest.tsactest.model.oa.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.util.OAString;
+
+import test.theice.tsac3.model.oa.*;
 
 public class MultiplexerServerTest extends OAUnitTest {
     private volatile boolean bStopCalled;

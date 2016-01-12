@@ -13,9 +13,10 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAFilter;
-import com.tmgsc.hifivetest.DataSource;
-import com.tmgsc.hifivetest.Resource;
-import com.tmgsc.hifivetest.model.oa.*;
+
+import test.hifive.DataSource;
+import test.hifive.Resource;
+import test.hifive.model.oa.*;
 
 public class OAObjectDeleteDelegateTest extends OAUnitTest {
 

@@ -10,12 +10,13 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.tmgsc.hifivetest.model.oa.*;
-import com.tmgsc.hifivetest.model.oa.propertypath.EmployeePP;
-import com.tmgsc.hifivetest.model.oa.propertypath.PointsAwardLevelPP;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObjectCacheFilter;
 import com.viaoa.object.OAObjectHubDelegate;
+
+import test.hifive.model.oa.*;
+import test.hifive.model.oa.propertypath.EmployeePP;
+import test.hifive.model.oa.propertypath.PointsAwardLevelPP;
 
 public class HubFilterTest extends OAUnitTest {
 

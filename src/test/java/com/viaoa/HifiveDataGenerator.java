@@ -4,11 +4,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.tmgsc.hifivetest.delegate.ModelDelegate;
-import com.tmgsc.hifivetest.model.oa.*;
-import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
+
+import test.hifive.delegate.ModelDelegate;
+import test.hifive.model.oa.*;
+import test.hifive.model.oa.propertypath.ProgramPP;
 
 public class HifiveDataGenerator {
 

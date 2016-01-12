@@ -4,9 +4,11 @@ package com.viaoa.hub;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import com.viaoa.OAUnitTest;
+
+import test.hifive.delegate.ModelDelegate;
+import test.hifive.model.oa.*;
+
 import com.viaoa.HifiveDataGenerator;
-import com.tmgsc.hifivetest.delegate.ModelDelegate;
-import com.tmgsc.hifivetest.model.oa.*;
 
 public class HubSetPosTest extends OAUnitTest {
 

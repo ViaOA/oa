@@ -6,15 +6,16 @@ import static org.junit.Assert.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import com.theicetest.tsactest.model.oa.*;
-import com.theicetest.tsactest.model.oa.propertypath.*;
-import com.tmgsc.hifivetest.model.oa.Employee;
 import com.viaoa.OAUnitTest;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
 import com.viaoa.hub.HubListenerAdapter;
+
+import test.hifive.model.oa.Employee;
+import test.theice.tsac3.model.oa.*;
+import test.theice.tsac3.model.oa.propertypath.*;
 
 /*
 qqqqqq test with multiple hubs

@@ -6,13 +6,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.theicetest.tsactest.model.oa.Server;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.*;
+
+import test.theice.tsac3.model.oa.Server;
 
 public class RemoteMultiplexer3Test extends OAUnitTest {
     private MultiplexerServer multiplexerServer;

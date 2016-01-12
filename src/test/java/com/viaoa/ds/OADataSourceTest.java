@@ -3,12 +3,13 @@ package com.viaoa.ds;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theicetest.tsactest.model.oa.*;
-import com.tmgsc.hifivetest.DataSource;
 import com.viaoa.OAUnitTest;
 import com.viaoa.ds.jdbc.OADataSourceJDBC;
 import com.viaoa.hub.Hub;
 import com.viaoa.util.OAFilter;
+
+import test.hifive.DataSource;
+import test.theice.tsac3.model.oa.*;
 
 public class OADataSourceTest extends OAUnitTest {
     

@@ -2,8 +2,9 @@ package com.viaoa.comm.io;
 
 import java.io.*;
 
-import com.theicetest.tsac.model.oa.Server;
 import com.viaoa.util.OAFile;
+
+import test.theice.tsac.model.oa.Server;
 
 public class OAObjectInputStreamTest {
 

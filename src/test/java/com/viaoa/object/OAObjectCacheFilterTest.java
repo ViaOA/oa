@@ -5,11 +5,13 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import com.tmgsc.hifivetest.model.oa.Employee;
-import com.tmgsc.hifivetest.model.oa.Location;
+
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
 import com.viaoa.util.OAFilter;
+
+import test.hifive.model.oa.Employee;
+import test.hifive.model.oa.Location;
 
 public class OAObjectCacheFilterTest extends OAUnitTest {
     

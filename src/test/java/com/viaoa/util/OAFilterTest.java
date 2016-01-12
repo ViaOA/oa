@@ -3,11 +3,12 @@ package com.viaoa.util;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theicetest.tsactest.model.oa.*;
-import com.theicetest.tsactest.model.oa.propertypath.SitePP;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsactestDataGenerator;
 import com.viaoa.util.filter.*;
+
+import test.theice.tsac3.model.oa.*;
+import test.theice.tsac3.model.oa.propertypath.SitePP;
 
 public class OAFilterTest extends OAUnitTest {
     

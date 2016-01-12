@@ -8,9 +8,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.theicetest.tsactest.model.oa.Server;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAThreadLocalDelegate;
+
+import test.theice.tsac3.model.oa.Server;
 
 /**
  * NOT Done:

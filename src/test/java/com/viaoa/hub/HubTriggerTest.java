@@ -9,14 +9,15 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.tmgsc.hifivetest.delegate.ModelDelegate;
-import com.tmgsc.hifivetest.model.oa.*;
-import com.tmgsc.hifivetest.model.oa.propertypath.EmployeePP;
-import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
 import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObjectCacheFilter;
+
+import test.hifive.delegate.ModelDelegate;
+import test.hifive.model.oa.*;
+import test.hifive.model.oa.propertypath.EmployeePP;
+import test.hifive.model.oa.propertypath.ProgramPP;
 
 public class HubTriggerTest extends OAUnitTest {
 

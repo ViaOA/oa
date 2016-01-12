@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import com.theicetest.tsactest.model.oa.*;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
@@ -16,6 +15,8 @@ import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.sync.*;
 import com.viaoa.util.OAFilter;
+
+import test.theice.tsac3.model.oa.*;
 
 public class Test {
 

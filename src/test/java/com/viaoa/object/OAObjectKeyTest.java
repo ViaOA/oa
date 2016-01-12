@@ -3,8 +3,9 @@ package com.viaoa.object;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theicetest.tsactest.model.oa.Server;
 import com.viaoa.OAUnitTest;
+
+import test.theice.tsac3.model.oa.Server;
 
 public class OAObjectKeyTest extends OAUnitTest {
 

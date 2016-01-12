@@ -7,10 +7,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.theicetest.tsac.TsacDataGenerator;
-import com.theicetest.tsac.model.Model;
-import com.theicetest.tsac.model.oa.*;
-import com.theicetest.tsac.model.oa.propertypath.*;
 import com.viaoa.OAUnitTest;
 
 import static org.junit.Assert.*;
@@ -18,6 +14,11 @@ import static org.junit.Assert.*;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAGroupBy;
 import com.viaoa.util.OAString;
+
+import test.theice.tsac.TsacDataGenerator;
+import test.theice.tsac.model.Model;
+import test.theice.tsac.model.oa.*;
+import test.theice.tsac.model.oa.propertypath.*;
 
 public class HubGroupByTest extends OAUnitTest {
 

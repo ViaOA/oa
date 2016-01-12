@@ -12,9 +12,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.theicetest.tsactest.model.oa.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
+
+import test.theice.tsac3.model.oa.*;
 
 public class MultiplexerClientTest extends OAUnitTest {
     private AtomicInteger aiCount = new AtomicInteger();

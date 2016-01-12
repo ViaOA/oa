@@ -10,11 +10,12 @@ import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.TsactestDataGenerator;
 import com.viaoa.hub.Hub;
-import com.theicetest.tsactest.model.oa.*;
-import com.theicetest.tsactest.model.oa.propertypath.*;
-import com.tmgsc.hifivetest.delegate.ModelDelegate;
-import com.tmgsc.hifivetest.model.oa.*;
-import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
+
+import test.hifive.delegate.ModelDelegate;
+import test.hifive.model.oa.*;
+import test.hifive.model.oa.propertypath.ProgramPP;
+import test.theice.tsac3.model.oa.*;
+import test.theice.tsac3.model.oa.propertypath.*;
 
 public class OAFinderTest extends OAUnitTest {
     

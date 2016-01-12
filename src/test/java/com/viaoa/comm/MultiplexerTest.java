@@ -9,9 +9,10 @@ import java.net.Socket;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.theicetest.tsactest.model.oa.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
+
+import test.theice.tsac3.model.oa.*;
 
 public class MultiplexerTest extends OAUnitTest {
     /*

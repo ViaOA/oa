@@ -8,12 +8,13 @@ import com.viaoa.OAUnitTest;
 import static org.junit.Assert.*;
 import com.viaoa.object.OAFinder;
 import com.viaoa.util.OAString;
-import com.theicetest.tsactest.model.oa.*;
-import com.tmgsc.hifivetest.delegate.ModelDelegate;
-import com.tmgsc.hifivetest.model.oa.Employee;
-import com.tmgsc.hifivetest.model.oa.Location;
-import com.tmgsc.hifivetest.model.oa.Program;
-import com.tmgsc.hifivetest.model.oa.propertypath.ProgramPP;
+
+import test.hifive.delegate.ModelDelegate;
+import test.hifive.model.oa.Employee;
+import test.hifive.model.oa.Location;
+import test.hifive.model.oa.Program;
+import test.hifive.model.oa.propertypath.ProgramPP;
+import test.theice.tsac3.model.oa.*;
 
 public class HubMergerTest extends OAUnitTest {
 

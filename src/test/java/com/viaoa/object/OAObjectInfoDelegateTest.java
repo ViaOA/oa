@@ -6,12 +6,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.tmgsc.hifivetest.model.oa.*;
-import com.tmgsc.hifivetest.model.oa.propertypath.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
+
+import test.hifive.model.oa.*;
+import test.hifive.model.oa.propertypath.*;
 
 public class OAObjectInfoDelegateTest extends OAUnitTest {
 

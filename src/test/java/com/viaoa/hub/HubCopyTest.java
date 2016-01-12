@@ -5,7 +5,8 @@ import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObject;
-import com.vetjobstest.VetUser;
+
+import test.vetjobs.VetUser;
 
 public class HubCopyTest extends OAUnitTest {
 
