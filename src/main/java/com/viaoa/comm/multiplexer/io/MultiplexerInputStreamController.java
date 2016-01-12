@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.object.OAThreadLocalDelegate;
 
 /**
  * Internally created by MultiplexerSocketController to manage the InputStream for the 
@@ -91,6 +92,7 @@ public abstract class MultiplexerInputStreamController {
      * is a command, then the command is performed. This will loop until close() is called.
      */
     void readRealSocketLoop() throws Exception {
+        long msLastStackDump = 0;
         for (int cntx = 0; !_bIsClosed; cntx++) {
             int readId = _dataInputStream.readInt(); // socket.id or 0 for command
             msLastRead = System.currentTimeMillis();
@@ -162,8 +164,15 @@ public abstract class MultiplexerInputStreamController {
                             else if (cnt == (_timeoutSeconds * 4)) {
                                 if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
                                     LOG.warning("VSocket id=" + vs._id + ", name=" + vs.getServerSocketName() + ", has been timed out, will disconnect socket and continue");
+                                    
                                     synchronized (vs._lockObject) {
                                         vs.close(); // this will notify the thread
+                                    }
+
+                                    long ms = System.currentTimeMillis();
+                                    if (msLastStackDump + 30000 < ms) {
+                                        LOG.warning(OAThreadLocalDelegate.getAllStackTraces());
+                                        msLastStackDump = ms;
                                     }
                                 }
                             }

@@ -1138,7 +1138,7 @@ static volatile int unlockCnt;
             StackTraceElement[] stes = (StackTraceElement[]) me.getValue();
             if (stes == null) continue;
             for (StackTraceElement ste : stes) {
-                s = "  "+ste.getClassName()+" "+ste.getMethodName()+" "+ste.getLineNumber();
+                s = "  "+ste.toString(); //was: ste.getClassName()+" "+ste.getMethodName()+" "+ste.getLineNumber();
                 result += s + "\n";
             }
         }
