@@ -1,13 +1,15 @@
 package com.viaoa.hub;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
 
+import test.theice.tsac.DataGenerator;
 import test.theice.tsac.delegate.ModelDelegate;
+import test.theice.tsac.model.Model;
 import test.theice.tsac.model.oa.*;
-import test.theice.tsac.model.oa.propertypath.*;
 
 public class DetailHubTest extends OAUnitTest {
 
@@ -15,6 +17,10 @@ public class DetailHubTest extends OAUnitTest {
     public void testDetailHub() {
         reset();
 
+        Model model = new Model();
+        
+        DataGenerator dg = new DataGenerator(model);
+        
         Hub<Site> hubSite = ModelDelegate.getSites();
         hubSite.setAO(null);
         assertNull(hubSite.getAO());

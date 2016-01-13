@@ -1,6 +1,7 @@
 package com.viaoa.hub;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import java.util.concurrent.CountDownLatch;
@@ -8,12 +9,12 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.viaoa.TsactestDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAFinder;
 
 import test.hifive.model.oa.PointsAwardLevel;
 import test.theice.tsac3.model.Model;
+import test.theice.tsac3.Tsac3tDataGenerator;
 import test.theice.tsac3.model.oa.*;
 import test.theice.tsac3.model.oa.propertypath.EnvironmentPP;
 import test.theice.tsac3.model.oa.propertypath.ServerPP;
@@ -201,7 +202,7 @@ public class HubListenerTest extends OAUnitTest {
         };
         
 
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
+        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
         data.createSampleData1();
         
         
@@ -318,7 +319,7 @@ public class HubListenerTest extends OAUnitTest {
         };
         
 
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
+        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
         data.createSampleData1();
         
         Hub<Site> hub = modelTsac.getSites();

@@ -15,7 +15,7 @@ import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAGroupBy;
 import com.viaoa.util.OAString;
 
-import test.theice.tsac.TsacDataGenerator;
+import test.theice.tsac.DataGenerator;
 import test.theice.tsac.model.Model;
 import test.theice.tsac.model.oa.*;
 import test.theice.tsac.model.oa.propertypath.*;
@@ -26,7 +26,7 @@ public class HubGroupByTest extends OAUnitTest {
     public void Test() {
         init();
         Model model = new Model();
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        DataGenerator data = new DataGenerator(model);
         data.createSampleData1();
 
         String pp = SitePP.environments().silos().pp;
@@ -59,7 +59,7 @@ public class HubGroupByTest extends OAUnitTest {
     public void Test2() {
         init();
         Model model = new Model();
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        DataGenerator data = new DataGenerator(model);
         data.createSampleData1();
 
         String pp = SitePP.environments().silos().pp;
@@ -169,7 +169,7 @@ public class HubGroupByTest extends OAUnitTest {
     public void TestSplit() {
         init();
         Model model = new Model();
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        DataGenerator data = new DataGenerator(model);
         data.createSampleData1();
 
         String pp = SitePP.environments().silos().pp;
@@ -225,7 +225,7 @@ public class HubGroupByTest extends OAUnitTest {
     public void TestSplit2() {
         init();
         Model model = new Model();
-        TsacDataGenerator data = new TsacDataGenerator(model);
+        DataGenerator data = new DataGenerator(model);
         data.createSampleData1();
 
         String pp = SitePP.environments().silos().pp;

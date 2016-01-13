@@ -2,32 +2,32 @@ package com.viaoa.hub;
 
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
-import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
-import com.viaoa.TsactestDataGenerator;
 import com.viaoa.object.OAFinder;
 
+import test.hifive.HifiveDataGenerator;
 import test.hifive.delegate.ModelDelegate;
-import test.hifive.model.oa.Employee;
-import test.hifive.model.oa.EmployeeAward;
-import test.hifive.model.oa.Location;
-import test.hifive.model.oa.Program;
-import test.hifive.model.oa.propertypath.EmployeeAwardPP;
-import test.hifive.model.oa.propertypath.ProgramPP;
-import test.theice.tsac3.model.Model;
-import test.theice.tsac3.model.oa.*;
-import test.theice.tsac3.model.oa.propertypath.SiloPP;
+import test.hifive.model.oa.*;
+import test.hifive.model.oa.propertypath.*;
 
+import test.theice.tsac3.Tsac3DataGenerator;
+import test.theice.tsac3.model.oa.*;
+import test.theice.tsac3.model.oa.propertypath.*;
+import test.theice.tsac3.model.Model;
 
 public class HubLinkTest extends OAUnitTest {
 
+    test.theice.tsac3.model.Model modelTsac = new test.theice.tsac3.model.Model();
+    
     @Test
     public void linkTest() {
         reset();
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
-        data.createSampleData1();
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
 
         Hub<ServerType> hubServerType = modelTsac.getServerTypes();
         Hub<ServerStatus> hubServerStatus = modelTsac.getServerStatuses();
@@ -88,10 +88,11 @@ public class HubLinkTest extends OAUnitTest {
     
     @Test
     public void autoCreateLinkTest() {
+        
         reset();
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
-        data.createSampleData1();
-    
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
         
         Hub<Site> hubSite = modelTsac.getSites();
         Hub<Environment> hubEnvironment = hubSite.getDetailHub(Site.P_Environments);
@@ -137,9 +138,9 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void autoCreateLinkTest2() {
         reset();
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
-        data.createSampleData1();
-    
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
         
         Hub<Site> hubSite = modelTsac.getSites();
         Hub<Environment> hubEnvironment = hubSite.getDetailHub(Site.P_Environments);
@@ -219,8 +220,9 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void linkAOTest() {
         reset();
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
-        data.createSampleData1();
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
 
         Hub<ServerType> hubServerType = modelTsac.getServerTypes();
         Hub<ServerStatus> hubServerStatus = modelTsac.getServerStatuses();
@@ -272,7 +274,7 @@ public class HubLinkTest extends OAUnitTest {
         init();
         
         HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        data.createSampleData();
         
         OAFinder<Program, Location> f = new OAFinder<Program, Location>(ProgramPP.locations().pp) {
             @Override

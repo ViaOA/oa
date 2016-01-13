@@ -7,15 +7,10 @@ import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
 
-import test.hifive.delegate.ModelDelegate;
-import test.hifive.model.oa.cs.ServerRoot;
-import test.theice.tsac3.model.Model;
-
 public class OAUnitTest {
 
     protected OADataSourceAuto dsAuto;
     protected OADataSourceAuto dsCache;
-    protected test.theice.tsac3.model.Model modelTsac;
     
     protected OADataSource getDataSource() {
         return getAutoDataSource();
@@ -34,15 +29,10 @@ public class OAUnitTest {
         return dsCache;
     }
     
-    protected void init() {
+    public void init() {
         reset();
     }
     protected void reset() {
-        modelTsac = new test.theice.tsac3.model.Model();
-        ModelDelegate.getPrograms().clear();
-        ServerRoot sr = new ServerRoot();
-        ModelDelegate.initialize(sr);
-        
         if (dsCache != null) {
             dsCache.close();
             dsCache.setGlobalNextNumber(null);

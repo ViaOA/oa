@@ -1,33 +1,33 @@
 package com.viaoa.hub;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
-import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
-import com.viaoa.TsactestDataGenerator;
 
+import test.hifive.HifiveDataGenerator;
+import test.hifive.HifiveUnitTest;
 import test.hifive.delegate.ModelDelegate;
 import test.hifive.model.oa.*;
-import test.theice.tsac3.model.oa.*;
 
-public class HubDetailTest extends OAUnitTest {
+public class HubDetailTest extends HifiveUnitTest {
 
     @Test
     public void detailHubTest() {
         reset();
-        Hub<Server> hubServer = new Hub<Server>(Server.class); 
+        Hub<Program> hubProgram = new Hub<Program>(Program.class); 
 
-        Hub<ServerInstall> hubServerInstall = hubServer.getDetailHub(Server.P_ServerInstalls);
+        Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
         
-        Server server;
+        Program program;
         for (int i=0; i<10; i++) {
-            server = new Server();
-            hubServer.add(server);
+            program = new Program();
+            hubProgram.add(program);
         }
-        for (Server s : hubServer) {
-            hubServer.setAO(s);
-            assertEquals(s.getServerInstalls(), hubServerInstall.getSharedHub());
+        for (Program p : hubProgram) {
+            hubProgram.setAO(p);
+            assertEquals(p.getLocations(), hubProgram.getSharedHub());
         }
         
         reset();
@@ -38,7 +38,7 @@ public class HubDetailTest extends OAUnitTest {
         reset();
 
         HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        data.createSampleData();
 
         final Hub<Program> hubProgram = ModelDelegate.getPrograms();
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
@@ -59,8 +59,8 @@ public class HubDetailTest extends OAUnitTest {
     public void detailHub3Test() {
         reset();
         
-        HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        HifiveDataGenerator data = getDataGenerator();
+        data.createSampleData();
 
         final Hub<Program> hubProgram = ModelDelegate.getPrograms();
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
@@ -94,8 +94,8 @@ public class HubDetailTest extends OAUnitTest {
     public void detailHub4Test() {
         reset();
         
-        HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        HifiveDataGenerator data = getDataGenerator();
+        data.createSampleData();
 
         final Hub<Program> hubProgram = ModelDelegate.getPrograms();
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);

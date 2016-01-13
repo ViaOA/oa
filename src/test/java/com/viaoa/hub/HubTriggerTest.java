@@ -1,6 +1,7 @@
 package com.viaoa.hub;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -9,11 +10,11 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObjectCacheFilter;
 
+import test.hifive.HifiveDataGenerator;
 import test.hifive.delegate.ModelDelegate;
 import test.hifive.model.oa.*;
 import test.hifive.model.oa.propertypath.EmployeePP;

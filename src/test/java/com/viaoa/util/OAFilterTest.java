@@ -1,12 +1,13 @@
 package com.viaoa.util;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
-import com.viaoa.TsactestDataGenerator;
 import com.viaoa.util.filter.*;
 
+import test.theice.tsac3.Tsac3tDataGenerator;
 import test.theice.tsac3.model.oa.*;
 import test.theice.tsac3.model.oa.propertypath.SitePP;
 
@@ -283,7 +284,7 @@ public class OAFilterTest extends OAUnitTest {
     @Test
     public void ppTest() {
         init();
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
+        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
         data.createSampleData1();
         
         // test with pp that has class

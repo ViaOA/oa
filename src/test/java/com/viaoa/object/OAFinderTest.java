@@ -6,14 +6,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.viaoa.HifiveDataGenerator;
 import com.viaoa.OAUnitTest;
-import com.viaoa.TsactestDataGenerator;
 import com.viaoa.hub.Hub;
 
+import test.hifive.HifiveDataGenerator;
 import test.hifive.delegate.ModelDelegate;
 import test.hifive.model.oa.*;
 import test.hifive.model.oa.propertypath.ProgramPP;
+import test.theice.tsac3.*;
 import test.theice.tsac3.model.oa.*;
 import test.theice.tsac3.model.oa.propertypath.*;
 
@@ -23,7 +23,7 @@ public class OAFinderTest extends OAUnitTest {
     @Test
     public void finderSimpleTest() {
         init();
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
+        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
         data.createSampleData1();
 
         // a finder without a filter should return all objects
@@ -72,7 +72,7 @@ public class OAFinderTest extends OAUnitTest {
     @Test
     public void finderTest() {
         init();
-        TsactestDataGenerator data = new TsactestDataGenerator(modelTsac);
+        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
         data.createSampleData1();
 
         OAFinder<Site, Server> finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);

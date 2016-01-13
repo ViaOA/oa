@@ -1,4 +1,4 @@
-package com.viaoa;
+package test.hifive;
 
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ public class HifiveDataGenerator {
     
     public int cntEmployee;
     
-    public void createSampleData1() {
+    public void createSampleData() {
         // OAThreadLocalDelegate.setLoadingObject(true); // dont set, since it wont set recursive parents
         
         for (int i=0; i<5; i++) {

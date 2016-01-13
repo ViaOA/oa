@@ -7,7 +7,7 @@ import com.viaoa.object.OAThreadLocalDelegate;
 import test.theice.tsac.model.Model;
 import test.theice.tsac.model.oa.*;
 
-public class TsacDataGenerator {
+public class DataGenerator {
     public static final int MaxSiteLoop = 3;
     public static final int MaxEnviromentLoop = 3;
     public static final int MaxSiloLoop = 3;
@@ -16,7 +16,7 @@ public class TsacDataGenerator {
 
     protected Model model;
     
-    public TsacDataGenerator(Model model) {
+    public DataGenerator(Model model) {
         this.model = model;
     }
     
@@ -86,7 +86,7 @@ public class TsacDataGenerator {
         OAThreadLocalDelegate.setLoadingObject(false);
     }
 
-    public void runSampleThread() {
+    public void runRandomChangesThread() {
         Thread tx = new Thread(new Runnable() {
             int cnt;
 

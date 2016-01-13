@@ -1,4 +1,4 @@
-package com.viaoa;
+package test.theice.tsac3;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
@@ -14,9 +14,8 @@ import test.theice.tsac3.model.oa.Silo;
 import test.theice.tsac3.model.oa.SiloType;
 import test.theice.tsac3.model.oa.Site;
 
-public class TsactestDataGenerator {
+public class Tsac3DataGenerator {
 
-    
     public static final int MaxSiteLoop = 3;
     public static final int MaxEnviromentLoop = 3;
     public static final int MaxSiloLoop = 3;
@@ -25,11 +24,11 @@ public class TsactestDataGenerator {
 
     protected Model model;
     
-    public TsactestDataGenerator(Model model) {
+    public Tsac3DataGenerator(Model model) {
         this.model = model;
     }
     
-    public void createSampleData1() {
+    public void createSampleData() {
         OAThreadLocalDelegate.setLoadingObject(true);
 
         for (int i=0; i<10; i++) {
