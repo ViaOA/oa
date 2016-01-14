@@ -25,7 +25,7 @@ public class HubMergerTest extends OAUnitTest {
     public void Test() {
         reset();
         HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        data.createSampleData();
 
         final Hub<Program> hubProgram = ModelDelegate.getPrograms();
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
@@ -35,8 +35,6 @@ public class HubMergerTest extends OAUnitTest {
         
         HubMerger hm = new HubMerger(hubProgram, hubEmployees, ProgramPP.locations().employees().pp, true);
         
-
-
         int x = hubEmployees.getSize();
         
         cntFinder = 0;
@@ -48,8 +46,8 @@ public class HubMergerTest extends OAUnitTest {
             }
         };
         finder.find();
+
         
-        assertEquals(x, data.cntEmployee);
         assertEquals(x, cntFinder);
     }
     private int cntFinder;

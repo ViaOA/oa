@@ -22,7 +22,7 @@ public class RecursiveTest extends OAUnitTest {
         reset();
 
         HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        data.createSampleData();
 
         final Hub<Catalog> hubCatalog = ModelDelegate.getCatalogs();
         
@@ -95,7 +95,7 @@ public class RecursiveTest extends OAUnitTest {
         reset();
 
         HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        data.createSampleData();
 
         final Hub<Program> hubProgram = ModelDelegate.getPrograms();
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);

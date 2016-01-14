@@ -14,7 +14,7 @@ import com.viaoa.object.OAFinder;
 
 import test.hifive.model.oa.PointsAwardLevel;
 import test.theice.tsac3.model.Model;
-import test.theice.tsac3.Tsac3tDataGenerator;
+import test.theice.tsac3.Tsac3DataGenerator;
 import test.theice.tsac3.model.oa.*;
 import test.theice.tsac3.model.oa.propertypath.EnvironmentPP;
 import test.theice.tsac3.model.oa.propertypath.ServerPP;
@@ -201,9 +201,9 @@ public class HubListenerTest extends OAUnitTest {
             }
         };
         
-
-        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
-        data.createSampleData1();
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
         
         
         Hub<Server> hub = new Hub<Server>(Server.class);
@@ -318,9 +318,9 @@ public class HubListenerTest extends OAUnitTest {
             }
         };
         
-
-        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
-        data.createSampleData1();
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
         
         Hub<Site> hub = modelTsac.getSites();
         

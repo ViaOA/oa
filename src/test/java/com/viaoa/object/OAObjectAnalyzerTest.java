@@ -15,7 +15,7 @@ public class OAObjectAnalyzerTest extends OAUnitTest {
     public void test() {
         init();
         HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        data.createSampleData();
         
         
         OAObjectAnalyzer oa = new OAObjectAnalyzer();

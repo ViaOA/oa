@@ -7,7 +7,8 @@ import static org.junit.Assert.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.util.filter.*;
 
-import test.theice.tsac3.Tsac3tDataGenerator;
+import test.theice.tsac3.Tsac3DataGenerator;
+import test.theice.tsac3.model.Model;
 import test.theice.tsac3.model.oa.*;
 import test.theice.tsac3.model.oa.propertypath.SitePP;
 
@@ -284,8 +285,9 @@ public class OAFilterTest extends OAUnitTest {
     @Test
     public void ppTest() {
         init();
-        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
-        data.createSampleData1();
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
         
         // test with pp that has class
         OAEqualFilter f = new OAEqualFilter(new OAPropertyPath(Site.class, SitePP.environments().silos().servers().id()), 1);

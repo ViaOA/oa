@@ -9,7 +9,7 @@ import com.viaoa.object.OAFinder;
 import com.viaoa.util.OAFilter;
 
 import test.theice.tsac3.model.Model;
-import test.theice.tsac3.Tsac3tDataGenerator;
+import test.theice.tsac3.Tsac3DataGenerator;
 import test.theice.tsac3.model.oa.*;
 import test.theice.tsac3.model.oa.propertypath.SitePP;
 
@@ -35,8 +35,8 @@ public class OASelectTest extends OAUnitTest {
         
         // specific tests
         Model modelTsac = new Model();
-        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
-        data.createSampleData1();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
 
         selSite = new OASelect<Site>(Site.class);
         selSite.select();

@@ -427,9 +427,11 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         return getController().getLabel();
     }
 
+    private Color fgColor, bgColor;
+    
     public void blink(final Color fcolor, final Color bcolor, final int numberOfTimes) {
-        final Color fc = this.getForeground();
-        final Color bc = this.getBackground();
+        if (fgColor == null) fgColor = this.getForeground(); 
+        if (bgColor == null) bgColor = this.getBackground(); 
         final Timer timer = new Timer(150, null);
 
         ActionListener al = new ActionListener() {
@@ -439,11 +441,11 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
                 
                 Color c;
                 if (fcolor != null) {
-                    c = (b ? fcolor : fc);
+                    c = (b ? fcolor : fgColor);
                     setForeground(c);
                 }
                 if (bcolor != null) {
-                    c = (b ? bcolor : bc);
+                    c = (b ? bcolor : bgColor);
                     setBackground(c);
                 }
 

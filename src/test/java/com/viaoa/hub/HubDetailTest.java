@@ -27,7 +27,7 @@ public class HubDetailTest extends HifiveUnitTest {
         }
         for (Program p : hubProgram) {
             hubProgram.setAO(p);
-            assertEquals(p.getLocations(), hubProgram.getSharedHub());
+            assertEquals(p.getLocations(), hubLocation.getSharedHub());
         }
         
         reset();

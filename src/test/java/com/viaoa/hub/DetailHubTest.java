@@ -37,7 +37,7 @@ public class DetailHubTest extends OAUnitTest {
         
 //        assertNotNull(hubSite.getAO());
         
-        assertNotNull(dhEnv.getAO());
+        assertNull(dhEnv.getAO());
 		
 	}
 	

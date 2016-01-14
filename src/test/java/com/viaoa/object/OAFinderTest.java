@@ -14,6 +14,7 @@ import test.hifive.delegate.ModelDelegate;
 import test.hifive.model.oa.*;
 import test.hifive.model.oa.propertypath.ProgramPP;
 import test.theice.tsac3.*;
+import test.theice.tsac3.model.Model;
 import test.theice.tsac3.model.oa.*;
 import test.theice.tsac3.model.oa.propertypath.*;
 
@@ -23,8 +24,9 @@ public class OAFinderTest extends OAUnitTest {
     @Test
     public void finderSimpleTest() {
         init();
-        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
-        data.createSampleData1();
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
 
         // a finder without a filter should return all objects
         OAFinder f = new OAFinder();
@@ -72,8 +74,9 @@ public class OAFinderTest extends OAUnitTest {
     @Test
     public void finderTest() {
         init();
-        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
-        data.createSampleData1();
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
 
         OAFinder<Site, Server> finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);
 
@@ -130,7 +133,7 @@ public class OAFinderTest extends OAUnitTest {
     public void recursiveFinderTest() {
         init();
         HifiveDataGenerator data = new HifiveDataGenerator();
-        data.createSampleData1();
+        data.createSampleData();
         
         Employee emp = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
         emp.setLastName("xxx");

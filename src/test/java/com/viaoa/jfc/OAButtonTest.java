@@ -24,7 +24,8 @@ import static org.junit.Assert.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
 
-import test.theice.tsac3.Tsac3tDataGenerator;
+import test.theice.tsac3.Tsac3DataGenerator;
+import test.theice.tsac3.model.Model;
 import test.theice.tsac3.model.oa.*;
 
 public class OAButtonTest extends OAUnitTest {
@@ -41,8 +42,10 @@ public class OAButtonTest extends OAUnitTest {
         JPanel pan = new JPanel(new GridLayout(5,5));
         
         reset();
-        Tsac3tDataGenerator data = new Tsac3tDataGenerator(modelTsac);
-        data.createSampleData1();
+
+        Model modelTsac = new Model();
+        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
+        data.createSampleData();
         
         hubSite = modelTsac.getSites();
         hubEnvironment = hubSite.getDetailHub(Site.P_Environments);
