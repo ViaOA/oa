@@ -751,7 +751,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
 
     /**
-     * Hub used to add active object to whenever active object is changed in
+     * Hub used to add active object to whenever this active object is changed in
      * this Hub. This can be used for building a pick list type program, where a
      * user can select objects that are then added to a list.
      */
