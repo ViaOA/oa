@@ -16,6 +16,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 /**
@@ -50,14 +51,18 @@ public abstract class OACircularQueue<TYPE> {
     // last position that a registered session has used. All previous positions can be set to null
     private volatile long lastUsedPos;
 
-    private volatile int waitingOnSessionId = -1;
     private volatile boolean bWaitingToGet;
 
     private Class<TYPE> classType;
 
-    private ArrayList<Integer> alSession;
-    private ConcurrentHashMap<Integer, Long> hmSessionPosition;
-    private ConcurrentHashMap<Integer, Long> hmSessionLastTime;
+    private volatile ConcurrentHashMap<Integer, Session> hmSession;
+    
+    private static class Session {
+        int id;
+        long queuePos;
+        int maxFallBehind;
+        long msLastRead;
+    }
     
     
     /**
@@ -113,49 +118,42 @@ public abstract class OACircularQueue<TYPE> {
      * @return current queueHeadPosition
      */
     public long registerSession(int sessionId, int maxFallBehind) {
-        if (alSession == null) {
+        Session session = new Session();
+        session.id = sessionId;
+        session.maxFallBehind = maxFallBehind;
+        session.msLastRead = System.currentTimeMillis();
+        
+        if (hmSession == null) {
             synchronized(LOCKQueue) {
-                if (alSession == null) alSession = new ArrayList<Integer>();
-            }
-        }
-        if (!alSession.contains(sessionId)) alSession.add(sessionId);
-
-        if (hmSessionPosition == null || hmSessionLastTime == null) {
-            synchronized(LOCKQueue) {
-                if (hmSessionPosition == null) hmSessionPosition = new ConcurrentHashMap<Integer, Long>();
-                if (hmSessionLastTime == null) hmSessionLastTime = new ConcurrentHashMap<Integer, Long>();
+                if (hmSession == null) hmSession = new ConcurrentHashMap<Integer, Session>();
             }
         }
         long x = queueHeadPosition;
-        hmSessionPosition.put(sessionId, x);
-        hmSessionLastTime.put(sessionId, System.currentTimeMillis());
-        
+        session.queuePos = x;
+        hmSession.put(session.id, session);
         return x;
     }
     public void unregisterSession(int sessionId) {
-        if (hmSessionPosition != null) {
-            hmSessionPosition.remove(sessionId);
-        }
-        if (alSession != null) {
-            alSession.remove(new Integer(sessionId));
+        if (hmSession != null) {
+            hmSession.remove(sessionId);
         }
     }
     
     // 20141208 null out queue slots, so that they can be GC'd
     //   this is called from a sync block
     
-    private void cleanupQueue() {
-        if (hmSessionPosition == null) return; // no session registered
+    protected void cleanupQueue() {
+        if (hmSession == null) return; // no session registered
         if (queueHeadPosition < 1) return;
         long pos = queueHeadPosition-1;
         boolean bFoundOne = false;
-        for (Map.Entry<Integer, Long> entry : hmSessionPosition.entrySet()) {
-            long x = entry.getValue();
-            if (x < (queueHeadPosition - queueSize)) {
+        for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
+            Session session = entry.getValue();
+            if (session.queuePos < (queueHeadPosition - queueSize)) {
                 continue; // overflow
             }
             bFoundOne = true;
-            if (x < pos) pos = x; 
+            pos = Math.min(pos, session.queuePos); 
         }
         if (bFoundOne && lastUsedPos < pos) {
             lastUsedPos = Math.max(queueHeadPosition-queueSize, lastUsedPos);
@@ -183,52 +181,65 @@ public abstract class OACircularQueue<TYPE> {
         return addMessage(msg);
     }
     
+    private int cntQueueWait; // number of times a addMessage has called wait.    
     private long tsLastLog;
+
     public int addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
-            if (alSession != null) {
+
+            if (hmSession != null) {
                 // wait up to 1 second for any slow consumer
-                for (int i=0; i<10; i++) {
-                    int sessionIdFound = -1;
-                    for (int id : alSession) {
-                        Object obj = hmSessionPosition.get(id);
-                        if (obj == null) continue;
-                        long x = ((Long) obj).longValue();
-                        
+                for (int i=0; i<100; i++) {
+                    
+//qqqqqqq add code to check for maxfallbehind qqqqqqqq
+
+                    Session sessionFound = null;
+                    for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
+                        Session session = entry.getValue();
+                        if (session.queuePos < (queueHeadPosition - queueSize)) {
+                            continue; // overflow
+                        }
+
                         // check to see if it is getting close to a queue overrun
-                        if ( (x + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10))) ) continue;
-                        
-                        obj = hmSessionLastTime.get(id);
-                        if (obj == null) continue;
-                        long ts = ((Long) obj).longValue();
+                        if ( (session.queuePos + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10))) ) {
+                            
+                            if (session.maxFallBehind == 0) continue;
+                            if ( (session.queuePos + session.maxFallBehind) > queueHeadPosition) {
+                                continue;
+                            }
+                        }
+                    
+                        long ts = session.msLastRead;
                         long tsNow = System.currentTimeMillis();
                         if (ts + 1500 < tsNow) {
                             if (tsNow > tsLastLog + 2500) {
                                 LOG.fine("session over 1.5 seconds getting last msg, queSize="+queueSize+
-                                        ", currentHeadPos="+queueHeadPosition+", session="+id+", sessionPos="+x);
+                                        ", currentHeadPos="+queueHeadPosition+", session="+session.id+", sessionPos="+session.queuePos);
                                 tsLastLog = tsNow;
                             }
                             continue;  // too slow, dont wait for this one
                         }
-                        sessionIdFound = id;
+                        sessionFound = session;
                         break;
                     }
-                    if (sessionIdFound < 0) break;
-                    waitingOnSessionId = sessionIdFound;
+                    if (sessionFound == null) {
+                        break;
+                    }
                     try {
-                        LOCKQueue.wait(100);
+                        LOCKQueue.wait(10);
+                        ++cntQueueWait;
+                        
                         long tsNow = System.currentTimeMillis();
                         if (tsNow > tsLastLog + 2500) {
-                            LOG.fine("avoiding queue overrun, queSize="+queueSize+", currentPos="+queueHeadPosition+", sessionSize="+hmSessionPosition.size());
+                            LOG.fine("avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+                                    ", totalSessions="+hmSession.size() +
+                                    ", slowSession="+sessionFound.id +
+                                    ", qpos="+sessionFound.queuePos +
+                                    ", totalWaits="+cntQueueWait);
                             tsLastLog = tsNow;
                         }
                     }
                     catch (Exception e) {
-                    }
-                    finally {
-                        if (sessionIdFound == waitingOnSessionId) {
-                            waitingOnSessionId = -1;
-                        }
                     }
                 }
             }
@@ -315,11 +326,16 @@ public abstract class OACircularQueue<TYPE> {
     public TYPE[] getMessages(final int sessionId, final long posTail, final int maxReturnAmount, int maxWait) throws Exception {
 
         TYPE[] msgs = null;
+
+        Session session;
+        if (hmSession != null) {
+            session = hmSession.get(sessionId);
+        }
+        else session = null;
+        
         for ( ;; ) {
             msgs =  _getMessages(posTail, maxReturnAmount, maxWait);
-            if (hmSessionLastTime != null) {
-                hmSessionLastTime.put(sessionId, System.currentTimeMillis());
-            }
+            if (session != null) session.msLastRead = System.currentTimeMillis();
 
             if (msgs != null || maxWait == 0) {
                 break;
@@ -331,7 +347,7 @@ public abstract class OACircularQueue<TYPE> {
         }
 
         if (msgs != null && msgs.length > 0) {
-            if (hmSessionPosition != null) hmSessionPosition.put(sessionId, posTail+msgs.length);
+            if (session != null) session.queuePos = (posTail + msgs.length);
             
             /* 20160115 dont notify, it needs to wait and give slow thread time 
             if (waitingOnSessionId == sessionId) {
@@ -344,7 +360,7 @@ public abstract class OACircularQueue<TYPE> {
         return msgs;
     }
     
-    private int cleanupCnt;
+    private AtomicInteger  aiCleanupQueue = new AtomicInteger(); 
     private TYPE[] _getMessages(long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
         synchronized(LOCKQueue) {
@@ -364,7 +380,7 @@ public abstract class OACircularQueue<TYPE> {
             
             if (amt == 0 && maxWait != 0) {
                 // need to wait
-                if (++cleanupCnt % 50 == 0) {
+                if (aiCleanupQueue.incrementAndGet() % 50 == 0) {
                     cleanupQueue();
                 }
                 bWaitingToGet = true;

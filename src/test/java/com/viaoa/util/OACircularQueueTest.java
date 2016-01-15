@@ -1,7 +1,9 @@
 package com.viaoa.util;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import com.viaoa.OAUnitTest;
 import static org.junit.Assert.*;
@@ -12,14 +14,28 @@ public class OACircularQueueTest extends OAUnitTest {
     private volatile boolean bStopReader;
     private AtomicInteger ai = new AtomicInteger();
     private final Object lock = new Object();
+
+    @BeforeClass
+    public static void beforeTest() {
+        OALogUtil.consoleOnly(Level.FINER);
+    }
     
     public OACircularQueueTest() {
-        que = new OACircularQueue<Integer>(10000) {};
+        que = new OACircularQueue<Integer>(10000) {
+            int cntCleanup;
+            @Override
+            protected void cleanupQueue() {
+                System.out.println((++cntCleanup)+") cleanupQueue() called");
+                super.cleanupQueue();
+            }
+            
+            
+        };
         que.setName("testQueue");
     }
     
     void runReader(int id) {
-        long pos = que.registerSession(id);
+        long pos = que.registerSession(id, 0);
         
         System.out.println("start reader."+id+", que pos="+pos);
         for (int i=0; !bStopReader;i++) {
