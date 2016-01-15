@@ -101,11 +101,18 @@ public abstract class OACircularQueue<TYPE> {
     }
     
     
+    public long registerSession(int sessionId) {
+        return registerSession(sessionId, 0);
+    }
     /**
      * This is used to let the queue know who the consumers are, so that 
-     * queue slots can be set to null.
+     * queue slots can be set to null once they are not needed.  
+     * It is also used so that queue writers dont go too fast and overrun the readers.
+     * @param sessionId identifier for the session
+     * @param maxFallBehind max amount that it can fall behind the head, else an addMessage will wait for up to 1 second.
+     * @return current queueHeadPosition
      */
-    public long registerSession(int sessionId) {
+    public long registerSession(int sessionId, int maxFallBehind) {
         if (alSession == null) {
             synchronized(LOCKQueue) {
                 if (alSession == null) alSession = new ArrayList<Integer>();
@@ -179,8 +186,6 @@ public abstract class OACircularQueue<TYPE> {
     private long tsLastLog;
     public int addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
-            
-            
             if (alSession != null) {
                 // wait up to 1 second for any slow consumer
                 for (int i=0; i<10; i++) {
@@ -189,16 +194,20 @@ public abstract class OACircularQueue<TYPE> {
                         Object obj = hmSessionPosition.get(id);
                         if (obj == null) continue;
                         long x = ((Long) obj).longValue();
-                        if ( (x + queueSize) > (queueHeadPosition+50)) continue;
+                        
+                        // check to see if it is getting close to a queue overrun
+                        if ( (x + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10))) ) continue;
                         
                         obj = hmSessionLastTime.get(id);
                         if (obj == null) continue;
                         long ts = ((Long) obj).longValue();
                         long tsNow = System.currentTimeMillis();
                         if (ts + 1500 < tsNow) {
-                            LOG.fine("session over 1.5 seconds getting last msg, queSize="+queueSize+
-                                    ", currentHeadPos="+queueHeadPosition+", session="+id+", sessionPos="+x);
-                            tsLastLog = tsNow;
+                            if (tsNow > tsLastLog + 2500) {
+                                LOG.fine("session over 1.5 seconds getting last msg, queSize="+queueSize+
+                                        ", currentHeadPos="+queueHeadPosition+", session="+id+", sessionPos="+x);
+                                tsLastLog = tsNow;
+                            }
                             continue;  // too slow, dont wait for this one
                         }
                         sessionIdFound = id;
@@ -324,11 +333,13 @@ public abstract class OACircularQueue<TYPE> {
         if (msgs != null && msgs.length > 0) {
             if (hmSessionPosition != null) hmSessionPosition.put(sessionId, posTail+msgs.length);
             
+            /* 20160115 dont notify, it needs to wait and give slow thread time 
             if (waitingOnSessionId == sessionId) {
                 synchronized(LOCKQueue) {
                     LOCKQueue.notifyAll();
                 }            
             }
+            */
         }        
         return msgs;
     }

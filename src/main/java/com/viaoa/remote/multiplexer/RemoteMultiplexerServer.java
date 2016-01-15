@@ -1563,7 +1563,7 @@ public class RemoteMultiplexerServer {
 
                 hmAsyncQueue.put(asyncQueueName, "");
                 final OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(asyncQueueName);
-                final long qPos = cq.registerSession(connectionId);
+                final long qPos = cq.registerSession(connectionId, 100);
                 
                 // set up thread that will get messages from queue and send to client
                 final String threadName = "Client." + connectionId + ".queue." + asyncQueueName;

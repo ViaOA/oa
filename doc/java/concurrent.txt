@@ -2,6 +2,13 @@
 
 
 
+
+
+
+
+
+
+
 >> simple flag
     private AtomicBoolean abUpdating = new AtomicBoolean(false);
     public void update() {
@@ -205,6 +212,29 @@
 
 >> LinkedBlockingDeque<E>
 >> LinkedBlockingQueue<E>
+
+        private static LinkedBlockingQueue<MRADServerCommand> queueBlocking = new LinkedBlockingQueue<MRADServerCommand>();
+        ...
+        threadQueue = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (;;) {
+                    try {
+                        MRADServerCommand msc = queueBlocking.take();
+                        runOnServer(msc);
+                    }
+                    catch (Exception e) {
+                        // logged by command
+                    }
+                }
+            }
+        }, "threadName.queue");
+        threadQueue.setDaemon(true);
+        threadQueue.start();
+        
+        
+
+
 >> PriorityBlockingQueue
 
 
@@ -323,6 +353,49 @@ qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
         Throwable throwable;
     }
 
+QQQQQQQQQQQQQQQQQQQQQQQ  from HubFilterTest
+
+    final CyclicBarrier barrier = new CyclicBarrier(max);
+    final CountDownLatch countDownLatch = new CountDownLatch(max);
+    final AtomicInteger aiDone = new AtomicInteger(); 
+    final AtomicInteger aiError = new AtomicInteger(); 
+    
+    for (int i=0; i<max; i++) {
+        final int id = i;
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    barrier.await();  // wait until all (max) call await 
+                    Hub<PointsAwardLevel> hub = (id %2 == 0) ? hubMaster1 : hubMaster2;
+                    aiError.getAndIncrement();
+                    _test(hub);
+                    aiError.getAndDecrement();
+                }
+                catch (Throwable e) {
+                    System.out.println("HubFilterTest error: "+e);
+                    e.printStackTrace();
+                }
+                finally {
+                    aiDone.getAndIncrement();
+                    countDownLatch.countDown();
+                }
+            }
+        });
+        t.start();
+    }
+    
+    for (int i=0;;i++) {
+        try {
+            countDownLatch.await(1, TimeUnit.SECONDS);
+            if (aiDone.get() == max) break;
+            hubMaster1.setPos(i%hubMaster1.getSize());
+            hubMaster2.setPos(i%hubMaster2.getSize());
+        }
+        catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
 
 
 
