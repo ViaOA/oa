@@ -191,8 +191,6 @@ public abstract class OACircularQueue<TYPE> {
                 // wait up to 1 second for any slow consumer
                 for (int i=0; i<100; i++) {
                     
-//qqqqqqq add code to check for maxfallbehind qqqqqqqq
-
                     Session sessionFound = null;
                     for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
                         Session session = entry.getValue();

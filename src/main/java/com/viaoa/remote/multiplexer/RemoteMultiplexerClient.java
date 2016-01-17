@@ -22,6 +22,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -100,6 +101,8 @@ public class RemoteMultiplexerClient {
         LOG.fine("new multiplexer client");
         if (multiplexerClient == null) throw new IllegalArgumentException("multiplexerClient is required");
         this.multiplexerClient = multiplexerClient;
+        setupRequestQueueThread();
+        setupSyncRequestQueueThread();
     }
 
     public MultiplexerClient getMultiplexerClient() {
@@ -646,13 +649,14 @@ volatile static int threadCheck;
     private final ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
     private volatile long msLastCreatedRemoteThread;
 
-    private OARemoteThread getRemoteClientThread(RequestInfo ri) {
+    private OARemoteThread getRemoteClientThread(RequestInfo ri, boolean bSendMessgage) {
         OARemoteThread remoteThread;
         synchronized (alRemoteClientThread) {
             for (OARemoteThread rt : alRemoteClientThread) {
                 synchronized (rt.Lock) {
                     if (rt.requestInfo == null) {
                         rt.requestInfo = ri;
+                        rt.setSendMessages(bSendMessgage);
                         return rt;
                     }
                 }
@@ -727,25 +731,24 @@ volatile static int threadCheck;
     }
 
     protected void onRemoteThreadCreated(int threadCount) {
-        if (threadCount > 15) {
-            int ms;
-            if (threadCount < 20) ms = 1;
-            else if (threadCount < 30) ms = 2;
-            else if (threadCount < 40) ms = 3;
-            else if (threadCount < 50) ms = 5;
-            else if (threadCount < 55) ms = 6;
-            else if (threadCount < 63) ms = 10;
-            else {
-                if (threadCount > 75) {
-                    LOG.warning("alRemoteClientThread.size() = " + threadCount);
-                }
-                ms = 20;
+        if (threadCount < 15) return;
+        int ms;
+        if (threadCount < 20) ms = 1;
+        else if (threadCount < 30) ms = 2;
+        else if (threadCount < 40) ms = 3;
+        else if (threadCount < 50) ms = 5;
+        else if (threadCount < 55) ms = 6;
+        else if (threadCount < 63) ms = 10;
+        else {
+            if (threadCount > 75) {
+                LOG.warning("alRemoteClientThread.size() = " + threadCount);
             }
-            try {
-                Thread.currentThread().sleep(ms);
-            }
-            catch (Exception e) {
-            }
+            ms = 20;
+        }
+        try {
+            Thread.currentThread().sleep(ms);
+        }
+        catch (Exception e) {
         }
     }
 
@@ -809,6 +812,86 @@ volatile static int threadCheck;
             if (b) afterInvokForStoC(ri);
         }
     }
+
+    /**
+     * All requests that need to be processed will be read from vsocket and put in que
+     */
+    private LinkedBlockingQueue<RequestInfo> queRequestInfo = new LinkedBlockingQueue<RequestInfo>();
+    protected void setupRequestQueueThread() {
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                for (;;) {
+                    try {
+                        RequestInfo  ri = queRequestInfo.take(); // blocks
+                        if (ri.bind != null && RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
+                            queSyncRequestInfo.put(ri);
+                            continue;
+                        }
+                        OARemoteThread t = getRemoteClientThread(ri, true);
+                        t.setSendMessages(true);
+                        synchronized (t.Lock) {
+                            t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
+                        }
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "RequestQueueThread error", e);
+                    }
+                }
+            }
+        });
+        t.setName("RemoteRequestQueue");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /**
+     * All Sync requests that need to be processed will be read from vsocket and put in que
+     */
+    private LinkedBlockingQueue<RequestInfo> queSyncRequestInfo = new LinkedBlockingQueue<RequestInfo>();
+    protected void setupSyncRequestQueueThread() {
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                for (;;) {
+                    try {
+                        RequestInfo  ri = queSyncRequestInfo.take(); // blocks
+                        
+                        if (ri.type == RequestInfo.Type.StoC_QueuedResponse || ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
+                            // return response from sync message
+                            RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
+                            synchronized (rix) {
+                                rix.response = ri.response;
+                                rix.exception = ri.exception;
+                                rix.exceptionMessage = ri.exceptionMessage;
+                                rix.methodInvoked = true;
+                                rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                            }
+                            continue;
+                        }
+
+                        OARemoteThread t = getRemoteClientThread(ri, false);
+                        synchronized (t.Lock) {
+                            t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
+                            for ( ; t.requestInfo == ri && !ri.methodInvoked; ) {
+                                t.Lock.wait();
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "SyncRequestQueueThread error", e);
+                    }
+                }
+            }
+        });
+        t.setName("RemoteSyncRequestQueue");
+        t.setDaemon(true);
+        t.start();
+    }
+    
+    
+    
+    /**
+     * @return true if this message is completed and can be logged
+     */
     private boolean _processSocket(final RequestInfo ri, final RemoteObjectInputStream ois) throws Exception {
 
         if (ri.type == RequestInfo.Type.StoC_QueuedResponse || ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
@@ -818,7 +901,11 @@ volatile static int threadCheck;
             Object objx = ois.readObject();
             
             ri.messageId = ois.readInt();
-            RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
+            
+            boolean bIsSync = (ri.bind != null && RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass));            
+            RequestInfo rix;
+            if (bIsSync) rix = hmAsyncRequestInfo.get(ri.messageId);
+            else rix = hmAsyncRequestInfo.remove(ri.messageId);
             
             if (x == 0) {
                 ri.exception = (Exception) objx;
@@ -852,28 +939,31 @@ volatile static int threadCheck;
                 if (ri.response != null && rix.methodInfo.compressedReturn && rix.methodInfo.remoteReturn == null) {
                     ri.response = ((OACompressWrapper) ri.response).getObject();
                 }
-                synchronized (rix) {
-                    rix.response = ri.response;
-                    rix.exception = ri.exception;
-                    rix.exceptionMessage = ri.exceptionMessage;
-                    rix.methodInvoked = true;
-                    // 6:CtoS_QueuedRequest  notify waiting thread from #4
-                    rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                if (bIsSync) {
+                    queRequestInfo.put(ri);
+                }
+                else {
+                    synchronized (rix) {
+                        rix.response = ri.response;
+                        rix.exception = ri.exception;
+                        rix.exceptionMessage = ri.exceptionMessage;
+                        rix.methodInvoked = true;
+                        // 6:CtoS_QueuedRequest  notify waiting thread from #4
+                        rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                    }
                 }
             }
             return true;
         }
 
+        // put ri on queue to be processed by remoteClientThread
+        
         if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
             ri.bindName = ois.readAsciiString();
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
             ri.messageId = ois.readInt();
-
-            OARemoteThread t = getRemoteClientThread(ri);
-            synchronized (t.Lock) {
-                t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-            }
+            queRequestInfo.put(ri);
             return false;
         }
         
@@ -888,11 +978,7 @@ volatile static int threadCheck;
                 return false;
             }
             ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
-
-            OARemoteThread t = getRemoteClientThread(ri);
-            synchronized (t.Lock) {
-                t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-            }
+            queRequestInfo.put(ri);
             return false;
         }
 
@@ -922,22 +1008,13 @@ volatile static int threadCheck;
             
             ri.bind = getBindInfo(ri.bindName);
             if (ri.bind == null) {
-                // ri.exceptionMessage = "could not find bind object";
+                // ri.exceptionMessage = "could not find bind object", this client not set up to receive it.
                 return false;
             }
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
             // one client sent the broadcast, this is where other clients will process it
-            OARemoteThread t = getRemoteClientThread(ri);
-            synchronized (t.Lock) {
-                t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(ri)
-                if (ri.bind != null && RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
-                    // sync broadcast
-                    for ( ; t.requestInfo != null && !ri.methodInvoked; ) {
-                        t.Lock.wait();
-                    }
-                }
-            }
+            queRequestInfo.put(ri);
             return false;
         }
         
@@ -948,20 +1025,7 @@ volatile static int threadCheck;
             ri.bind = getBindInfo(ri.bindName);
             if (ri.bind == null) return false;
             ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
-
-            long t1 = System.currentTimeMillis();
-            OARemoteThread t = getRemoteClientThread(ri);
-            
-            synchronized (t.Lock) {
-                t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-                if (RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
-                    // if sync broadcast
-                    for (; t.requestInfo != null && !ri.methodInvoked;) {
-                        t.Lock.wait();
-                    }
-                }
-                
-            }
+            queRequestInfo.put(ri);
             return false;
         }
         
@@ -974,7 +1038,7 @@ volatile static int threadCheck;
                 ri.exceptionMessage = "invalid bind name";
             }
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
-            processMessageForStoC(ri);
+            queRequestInfo.put(ri);
             return false;
         }
         
@@ -987,8 +1051,7 @@ volatile static int threadCheck;
                 ri.exceptionMessage = "invalid bind name";
             }
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
-
-            processMessageForStoC(ri);
+            queRequestInfo.put(ri);
             return false;
         }
 

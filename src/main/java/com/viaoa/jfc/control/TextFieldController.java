@@ -20,6 +20,7 @@ import javax.swing.text.DocumentFilter;
 import javax.swing.text.DocumentFilter.FilterBypass;
 
 import java.lang.reflect.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import com.viaoa.object.*;
@@ -37,8 +38,8 @@ import com.viaoa.jfc.*;
 public class TextFieldController extends JFCController implements FocusListener, ActionListener, KeyListener, MouseListener {
     private static Logger LOG = Logger.getLogger(TextFieldController.class.getName());
     protected JTextField textField;
-    protected String prevText;
-    private boolean bSettingText;
+    protected volatile String prevText;
+    private final AtomicInteger aiSettingText = new AtomicInteger();
     private Object activeObject;
     private Object focusActiveObject;
     //private int dataSourceMax=-2;
@@ -107,14 +108,14 @@ public class TextFieldController extends JFCController implements FocusListener,
             getEnabledController().add(getActualHub());
         }
         else {
-            bSettingText = true;
+            aiSettingText.incrementAndGet();
             if (document != null) document.setAllowAll(true);
             if (tf != null) {
                 if (tf instanceof OATextField) ((OATextField)tf).setText("", false);
                 else tf.setText("");
             }
             if (document != null) document.setAllowAll(false);
-            bSettingText = false;
+            aiSettingText.decrementAndGet();
         }
 
         document = new OAPlainDocument() {
@@ -374,7 +375,7 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
                     text = getNullDescription();
                     if (text == null) text = "";
                 }
-                bSettingText = true;
+                aiSettingText.incrementAndGet();
                 
                 // 20110605 see if select all is current done
                 int p1 = textField.getSelectionStart();
@@ -386,7 +387,7 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
                 if (b) {
                     textField.selectAll();
                 }
-                bSettingText = false;
+                aiSettingText.decrementAndGet();
             }
     	}
     	
@@ -417,7 +418,7 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
 
     private boolean bSaving; // only used by saveChanges(), calling setText generates actionPerformed()
     public void saveText() {
-        if (bSettingText) return;
+        if (aiSettingText.get() > 0) return;
         if (bSaving) return;
         try {
             bSaving = true;
@@ -625,22 +626,23 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
                     text = getNullDescription();
                     if (text == null) text = " ";
                 }
-                boolean bHold = bSettingText;
-                bSettingText = true;
-
-                // 20110605 see if select all is currently done
-                int p1 = textField.getSelectionStart();
-                int p2 = textField.getSelectionEnd();
-                boolean b = p1 == 0 && text != null && p2 == text.length(); 
-                
-                textField.setText(text);
-                prevText = text; // 20110112 to fix bug found while testing undo
-                
-                if (b) {
-                    textField.selectAll();
+                aiSettingText.incrementAndGet();
+                try {
+                    // 20110605 see if select all is currently done
+                    int p1 = textField.getSelectionStart();
+                    int p2 = textField.getSelectionEnd();
+                    boolean b = p1 == 0 && text != null && p2 == text.length(); 
+                    
+                    textField.setText(text);
+                    prevText = text; // 20110112 to fix bug found while testing undo
+                    
+                    if (b) {
+                        textField.selectAll();
+                    }
                 }
-                
-                bSettingText = bHold;
+                finally {
+                    aiSettingText.decrementAndGet();
+                }
             }   
         }        
         super.update();

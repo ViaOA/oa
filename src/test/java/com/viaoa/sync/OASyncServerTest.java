@@ -65,7 +65,11 @@ public class OASyncServerTest {
         }
     }
     public void start() throws Exception {
-        readSerializeFromFile();
+//qqq        readSerializeFromFile();
+     //qqq need to create a new data.bin
+        
+        serverRoot = new ServerRoot();
+        
         
         // ServerRoot
         ModelDelegate.initialize(serverRoot, null);
