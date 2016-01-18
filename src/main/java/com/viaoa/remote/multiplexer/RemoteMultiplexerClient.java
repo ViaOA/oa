@@ -664,6 +664,7 @@ volatile static int threadCheck;
         }
         msLastCreatedRemoteThread = System.currentTimeMillis();
         remoteThread = createRemoteClientThread();
+        remoteThread.setSendMessages(bSendMessgage);
             
         synchronized (alRemoteClientThread) {
             remoteThread.requestInfo = ri;
