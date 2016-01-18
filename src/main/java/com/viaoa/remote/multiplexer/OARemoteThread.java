@@ -30,8 +30,6 @@ public class OARemoteThread extends Thread {
     volatile boolean watingOnLock;
     volatile long msStartNextThread;
     volatile long msLastUsed;
-    // if true, then some events will be queued to be processed by a Executer
-    private boolean bQueueEvents;
 
     // volatile boolean sendMessages;  // if false then events are not sent, since this is processing a message
     
@@ -39,19 +37,8 @@ public class OARemoteThread extends Thread {
     
     public OARemoteThread() {
     }
-    public OARemoteThread(boolean bQueueEvents) {
-        this.bQueueEvents = bQueueEvents;
-    }
     public OARemoteThread(Runnable r) {
         super(r);
-    }
-    public OARemoteThread(Runnable r, boolean bQueueEvents) {
-        super(r);
-        this.bQueueEvents = bQueueEvents;
-    }
-
-    public boolean getShouldQueueEvents() {
-        return bQueueEvents;
     }
     
     // note: this is overwritten to start a new thread

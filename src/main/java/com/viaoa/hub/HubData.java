@@ -41,7 +41,7 @@ public class HubData implements java.io.Serializable {
         <p>
         This is used by OA.JSP components to know if a frame should be updated.  See com.viaoa.html.OATable.
     */
-    protected transient int changeCount;
+    protected volatile transient int changeCount;
     
     // used by setChanged
     protected volatile boolean changed;
@@ -83,6 +83,7 @@ public class HubData implements java.io.Serializable {
         return hubDatax;
     }
     
+/*    
     public int getNewListCount() {
         if (hubDatax == null) return 0;
         return hubDatax.newListCount;
@@ -92,6 +93,7 @@ public class HubData implements java.io.Serializable {
             getHubDatax().newListCount = newListCount;
         }
     }
+*/    
     public Vector getVecAdd() {
         if (hubDatax == null) return null;
         return hubDatax.vecAdd;
@@ -327,10 +329,10 @@ public class HubData implements java.io.Serializable {
         vector = readVector(s);
         
         Vector vec = readVector(s);
-        setVecAdd(vec);
+        if (vec != null && vec.size() > 0) setVecAdd(vec);
         
         vec = readVector(s);
-        setVecRemove(vec);
+        if (vec != null && vec.size() > 0) setVecRemove(vec);
     }
 
     

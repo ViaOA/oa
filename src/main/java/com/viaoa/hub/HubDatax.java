@@ -40,7 +40,7 @@ public class HubDatax implements java.io.Serializable {
 	    This is used by JSP components to know if a frame should be updated. <br>
 	    See com.viaoa.html.OATable and com.viaoa.html.OANav
 	*/
-	protected transient int newListCount;
+//	protected transient int newListCount;
 	
 	// If bTrackChanges is true, then all objects that are added to Hub are added to this vector.
 	protected transient Vector vecAdd; // only for OAObjects

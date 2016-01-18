@@ -21,7 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDataDelegate;
+import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
+import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
@@ -34,6 +36,9 @@ import com.viaoa.util.OAString;
 public class OATable implements OAJspComponent {
     private static final long serialVersionUID = 1L;
 
+// 20160118 todo:  need to have a new way to know if hub.newList, old way as hub.data.datax.newListCount       
+    
+    
     private Hub hub;
     private String id;
     private OAForm form;
@@ -52,7 +57,8 @@ public class OATable implements OAJspComponent {
     private int scrollTop;
     private int scrollLeft;
     private HubListener hubListener;
-    private int newListCount; // for hub
+    private volatile int newListCount; // for hub
+    private volatile int lastListCount;
 
     private int width;
     private int height;
@@ -62,8 +68,17 @@ public class OATable implements OAJspComponent {
     public OATable(String id, Hub hub) {
         this.id = id;
         this.hub = hub;
-        newListCount = HubDataDelegate.getNewListCount(hub);
+//        newListCount = HubDataDelegate.getNewListCount(hub);
+        
+        hubListener = new HubListenerAdapter() {
+            @Override
+            public void onNewList(HubEvent e) {
+                newListCount++;
+            }
+        };
+    
     }
+        
     
     public Hub getHub() {
         return hub;
@@ -348,14 +363,13 @@ public class OATable implements OAJspComponent {
     
     @Override
     public String getAjaxScript() {
+        int x;
 
-        int x = HubDataDelegate.getNewListCount(hub);
-        if (x != newListCount) {
-            newListCount = x;
+        if (lastListCount != newListCount) {
+            lastListCount = newListCount;
             scrollLeft = scrollTop = 0;
             if (pager != null) pager.setCurrentPage(0);
         }
-        
         
         int scrollAmt = (pager == null) ? hub.getSize() : pager.getScrollAmount();
         int topRow = (pager == null) ? 0 : pager.getTopRow();

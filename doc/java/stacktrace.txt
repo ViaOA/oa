@@ -2,6 +2,13 @@
     StackTraceElement[] stes = remoteThread.getStackTrace();
     Exception ex = new Exception();
     ex.setStackTrace(stes);
+    LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
+            + ri.toLogString(), ex);
+qqqqqq
+
+    StackTraceElement[] stes = remoteThread.getStackTrace();
+    Exception ex = new Exception();
+    ex.setStackTrace(stes);
 
 
 qqqqqqqqqqqqqqqqqqqqqq

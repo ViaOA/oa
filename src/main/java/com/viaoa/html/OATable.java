@@ -665,18 +665,21 @@ public class OATable extends OAHtmlComponent {
             }
             if (lastActiveObject != hub.getActiveObject()) b = true;
             if (HubDetailDelegate.getMasterObject(hub) != lastMasterObject) b = true; 
+/* 20160118 remove hub.data.datax.newListCount       
             if (HubDataDelegate.getNewListCount(hub) != newListCount) {
                 newListCount = HubDataDelegate.getNewListCount(hub);
                 b = true;
             }
+*/            
         }
         
         if (b) {
             bNeedsRefreshed = true;
             lastActiveObject = hub.getActiveObject();
             lastMasterObject = HubDetailDelegate.getMasterObject(hub);
+/* 20160118 remove hub.data.datax.newListCount       
             newListCount = HubDataDelegate.getNewListCount(hub);
-
+*/
             if (!bTopRowSet && scrollAmount > 0) {
                 int pos = Math.max(hub.getPos(),0);
                 if (pos < topRow) {

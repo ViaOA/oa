@@ -525,7 +525,9 @@ public class HubEventDelegate {
 	            hl[i].onNewList(hubEvent);
 	        }
 	    }
-	    thisHub.data.setNewListCount(thisHub.data.getNewListCount()+1);
+	    // 20160118 use this instead of newListCount
+	    HubDataDelegate.incChangeCount(thisHub);
+	    //was:  thisHub.data.setNewListCount(thisHub.data.getNewListCount()+1);
 	}
 
 	public static void fireAfterFetchMoreEvent(Hub thisHub) {

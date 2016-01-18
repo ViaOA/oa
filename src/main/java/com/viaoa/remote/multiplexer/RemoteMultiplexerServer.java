@@ -1193,7 +1193,7 @@ public class RemoteMultiplexerServer {
             StackTraceElement[] stes = remoteThread.getStackTrace();
             Exception ex = new Exception();
             ex.setStackTrace(stes);
-            LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for remoteThread, request="
+            LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for the remoteThread, request="
                     + ri.toLogString(), ex);
         }
         ri.nsEnd = System.nanoTime();

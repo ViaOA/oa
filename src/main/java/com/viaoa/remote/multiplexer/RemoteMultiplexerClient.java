@@ -676,7 +676,7 @@ volatile static int threadCheck;
     }
 
     private OARemoteThread createRemoteClientThread() {
-        OARemoteThread t = new OARemoteThread(true) {
+        OARemoteThread t = new OARemoteThread() {
             @Override
             public void run() {
                 /* 20151103 on hold for OAsyncCombinedClient work
@@ -829,7 +829,6 @@ volatile static int threadCheck;
                             continue;
                         }
                         OARemoteThread t = getRemoteClientThread(ri, true);
-                        t.setSendMessages(true);
                         synchronized (t.Lock) {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
                         }
@@ -869,11 +868,21 @@ volatile static int threadCheck;
                             continue;
                         }
 
+                        int maxSeconds = Math.max(ri.methodInfo == null ? 0 : ri.methodInfo.timeoutSeconds, 0);
+                        if (maxSeconds < 1) maxSeconds = 1;
+
                         OARemoteThread t = getRemoteClientThread(ri, false);
                         synchronized (t.Lock) {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-                            for ( ; t.requestInfo == ri && !ri.methodInvoked; ) {
-                                t.Lock.wait();
+                            for (int i=0 ; t.requestInfo == ri && !ri.methodInvoked && i < (maxSeconds*10); i++) {
+                                t.Lock.wait(100);
+                            }
+                            if (t.requestInfo == ri && !ri.methodInvoked) {
+                                StackTraceElement[] stes = t.getStackTrace();
+                                Exception ex = new Exception();
+                                ex.setStackTrace(stes);
+                                LOG.log(Level.WARNING, "timeout waiting for sync message to process, will continue, this is stacktrace for the remoteThread, request="
+                                        + ri.toLogString(), ex);
                             }
                         }
                     }

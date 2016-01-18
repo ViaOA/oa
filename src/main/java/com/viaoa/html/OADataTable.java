@@ -90,11 +90,12 @@ public class OADataTable extends OAHtmlComponent {
    
    private int newListCount;
    protected void init() {
-       
+/* 20160118 remove hub.data.datax.newListCount       
        if (HubDataDelegate.getNewListCount(hub) != newListCount) {
     	   newListCount = HubDataDelegate.getNewListCount(hub);
     	   currentPage = 0;
        }
+*/       
    }
    
    public void setDefaultComponent(OAHtmlComponent comp) {

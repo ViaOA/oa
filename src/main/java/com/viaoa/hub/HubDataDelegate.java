@@ -511,10 +511,11 @@ public class HubDataDelegate {
 	    This is used by html/jsp components so that they "know" when/if Hub has changed,
 	    which will cause them to be refreshed.
 	*/
+/*	
 	public static int getNewListCount(Hub thisHub) {
 	    return thisHub.data.getNewListCount();
 	}
-
+*/
     public static boolean contains(Hub hub, Object obj) {
         if (!(obj instanceof OAObject)) {
             if (!hub.data.isOAObjectFlag()) {
