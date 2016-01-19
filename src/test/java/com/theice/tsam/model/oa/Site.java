@@ -28,7 +28,6 @@ public class Site extends OAObject {
     private static Logger LOG = Logger.getLogger(Site.class.getName());
     public static final String PROPERTY_Id = "Id";
     public static final String P_Id = "Id";
-    public static final String P_Count = "Count";
     public static final String PROPERTY_AbbrevName = "AbbrevName";
     public static final String P_AbbrevName = "AbbrevName";
     public static final String PROPERTY_Name = "Name";
@@ -47,9 +46,6 @@ public class Site extends OAObject {
     protected String name;
     protected boolean production;
 
-    protected int count;
-    
-    
     // Links to other objects.
     protected transient Hub<Environment> hubEnvironments;
     protected transient Timezone timezone;
@@ -162,17 +158,6 @@ public class Site extends OAObject {
 
         changedFlag = false;
         newFlag = false;
-    }
-//qqqqqqq custom for testing
-    
-    public int getCount() {
-        return count;
-    }
-    public void setCount(int newValue) {
-        fireBeforePropertyChange(P_Count, this.count, newValue);
-        int old = count;
-        this.count = newValue;
-        firePropertyChange(P_Count, old, this.count);
     }
 
 

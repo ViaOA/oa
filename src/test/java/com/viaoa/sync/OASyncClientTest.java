@@ -96,9 +96,6 @@ public class OASyncClientTest extends OAUnitTest {
         final CountDownLatch countDownLatch = new CountDownLatch(maxThreads);
         final AtomicInteger aiDone = new AtomicInteger();
         
-
-        int cnt1 = site.getCount();
-
         final AtomicInteger ai = new AtomicInteger();
         
         for (int i=0; i<maxThreads; i++) {
@@ -126,17 +123,9 @@ public class OASyncClientTest extends OAUnitTest {
             });
             t.start();
         }
-        
-        
-        
         countDownLatch.await(5, TimeUnit.SECONDS);
         
         assertEquals(maxThreads * maxIterations, ai.get());
-
-        
-        int cnt2 = site.getCount();
-        assertEquals(maxThreads * maxIterations, cnt2 - cnt1);
-
     }
     
     

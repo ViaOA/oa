@@ -20,11 +20,13 @@ import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocal;
 import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.sync.remote.RemoteTestInterface;
 import com.viaoa.util.*;
 import com.theice.tsam.delegate.ModelDelegate;
 import com.theice.tsam.delegate.RemoteDelegate;
 import com.theice.tsam.model.oa.AdminUser;
 import com.theice.tsam.model.oa.Environment;
+import com.theice.tsam.model.oa.Server;
 import com.theice.tsam.model.oa.Site;
 import com.theice.tsam.model.oa.cs.ClientRoot;
 import com.theice.tsam.model.oa.cs.ServerRoot;
@@ -140,7 +142,15 @@ public class OASyncServerTest {
         syncServer.createSyncLookup(RemoteModelInterface.BindName, remoteModel, RemoteModelInterface.class);
         RemoteDelegate.setRemoteModel(remoteModel);
 
-        syncServer.createLookup(RemoteAppInterface.BindName+"2", remoteApp, RemoteAppInterface.class);
+        
+        RemoteTestInterface remoteTest = new RemoteTestInterface() {
+            @Override
+            public String getName(Server server) {
+                return server.getName();
+            }
+        }; 
+        syncServer.createLookup(RemoteTestInterface.BindName, remoteTest, RemoteTestInterface.class);
+        
         
         return syncServer;
     }    
