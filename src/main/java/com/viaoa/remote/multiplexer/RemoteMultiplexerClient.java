@@ -322,9 +322,12 @@ volatile static int threadCheck;
                 synchronized (ri) {
                     for (int i = 0; ; i++) {
                         if (ri.methodInvoked) break;
-                        if (i > 0 && ri.methodInfo.timeoutSeconds > 0 && i >= ri.methodInfo.timeoutSeconds) {
-                            if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
-                                break;
+                        if (i > 0) {
+                            if (!multiplexerClient.isConnected()) break;
+                            if (ri.methodInfo.timeoutSeconds > 0 && i >= ri.methodInfo.timeoutSeconds) {
+                                if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                                    break;
+                                }
                             }
                         }
                         ri.wait(1000); // request timeout
@@ -1012,6 +1015,7 @@ volatile static int threadCheck;
                 return true;
             }
             
+            // one client sent the broadcast, this is where other clients will process it
             ri.bindName = ois.readAsciiString();
             ri.methodNameSignature = ois.readAsciiString();
             ri.args = (Object[]) ois.readObject();
@@ -1023,7 +1027,6 @@ volatile static int threadCheck;
             }
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
-            // one client sent the broadcast, this is where other clients will process it
             queRequestInfo.put(ri);
             return false;
         }

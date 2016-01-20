@@ -4,10 +4,12 @@ package com.viaoa.sync;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +18,7 @@ import org.junit.Test;
 
 import com.theice.tsam.model.oa.cs.ServerRoot;
 import com.theice.tsam.model.oa.propertypath.*;
+import com.theice.tsam.delegate.ModelDelegate;
 import com.theice.tsam.model.oa.*;
 import com.theice.tsam.remote.RemoteAppInterface;
 import com.viaoa.OAUnitTest;
@@ -27,11 +30,16 @@ import com.viaoa.hub.HubListener;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.sync.remote.RemoteBroadcastInterface;
+import com.viaoa.util.OALogUtil;
+import com.viaoa.util.OAString;
 
 
 /**
  * **** IMPORTANT **** 
  *      to run as Junit test, OASyncServerTest will need to be running in a separate JVM
+ *
+ *      Run this class in 1+ other JVMs
  * *******************
  */
 public class OASyncClientTest extends OAUnitTest {
@@ -40,9 +48,11 @@ public class OASyncClientTest extends OAUnitTest {
     private static OASyncClient syncClient;
 
     private RemoteAppInterface remoteApp;
+    private RemoteBroadcastInterface remoteBroadcast, remoteBroadcastHold;
+    private ArrayBlockingQueue<String> queBroadcastMessages = new ArrayBlockingQueue<String>(100);
+    final CountDownLatch countDownLatchMain = new CountDownLatch(1);
     
-    
-    @Test
+    //@Test
     public void testA() throws Exception {
         if (serverRoot == null) return;
     
@@ -80,7 +90,7 @@ public class OASyncClientTest extends OAUnitTest {
         assertNotEquals("xx", site.getName());
     }
 
-    @Test
+    //@Test
     public void testB() throws Exception {
         if (serverRoot == null) return;
     
@@ -128,40 +138,50 @@ public class OASyncClientTest extends OAUnitTest {
         assertEquals(maxThreads * maxIterations, ai.get());
     }
     
-    
-    
-    
-    
-    
-    
     @Test
-    public void test() {
+    public void testC() throws Exception {
         if (serverRoot == null) return;
         
-        for (Site site : serverRoot.getSites()) {
-            int x = 0;
-            for (Environment env : site.getEnvironments()) {
-                x++;
-                for (Silo silo : env.getSilos()) {
-                    x++;
-                    for (Server server : silo.getServers()) {
-                        x++;
-                        for (Application app : server.getApplications()) {
-                            x++;
-                        }
-                    }
+        remoteBroadcast.startTest();
+        
+        testMain();
+        
+        Thread.sleep(5000);
+        
+        for (String s : queBroadcastMessages) {
+            System.out.println("OASyncClientTest error="+s);
+        }
+        assertEquals(0, queBroadcastMessages.size());
+        
+    }
+    
+    public void testMain() throws Exception {
+        Server server = new Server();
+        ModelDelegate.getSites().getAt(0).getEnvironments().getAt(0).getSilos().getAt(0).getServers().add(server);
+        
+        long ms1 = System.currentTimeMillis();
+        
+        Hub<Application> h = server.getApplications();
+        boolean b = false;
+        while ( (System.currentTimeMillis() - ms1) < (15 * 60 * 1000)) {
+            server.setName(OAString.getRandomString(1, 20));
+            if (h.getSize() == 0 || (h.getSize() < 100 && Math.random() < .5)) {
+                Application app = new Application();
+                h.add(app);
+            }
+            else {
+                if (Math.random() < .33) {
+                    h.deleteAll();
+                    b = true;
                 }
+                else h.getAt(0).delete();
             }
         }
-
-        OAFinder<Site, Application> finder = new OAFinder<Site, Application>(SitePP.environments().silos().servers().applications().pp);
-        for (Application app : finder.find(serverRoot.getSites())) {
-            //System.out.println(app.getApplicationType().getName());
-            int x = 0;
-            x++;
-        }
-  
-        System.out.println("Done reading on client");
+        if (!b) h.removeAll();
+        
+        String s = server.getName();
+        remoteBroadcast.sendName(server, s);
+        remoteBroadcast.sendAppCount(server, server.getApplications().getSize());
     }
     
     
@@ -205,13 +225,38 @@ public class OASyncClientTest extends OAUnitTest {
         MultiplexerClient.DEBUG = true;
         syncClient = new OASyncClient("localhost", port);
         
+        
         // **NOTE** need to make sure that ServerTest is running in another jvm
         try {
             syncClient.start();
 
             remoteApp = (RemoteAppInterface) syncClient.lookup(RemoteAppInterface.BindName);
-            serverRoot = remoteApp.getServerRoot();
+            remoteBroadcastHold = new RemoteBroadcastInterface() {
+                @Override
+                public void sendName(Server server, String name) {
+                    System.out.println("sendName called");
+                    if (!OAString.isEqual(server.getName(), name)) {
+                        queBroadcastMessages.add(server.getId()+" has name="+server.getName()+", broadcast name="+name);
+                    }
+                }
+                @Override
+                public void sendAppCount(Server server, int cnt) {
+                    System.out.println("sendAppCount called");
+                    if (server.getApplications().getSize() != cnt) {
+                        queBroadcastMessages.add(server.getId()+" has cnt="+server.getApplications().getSize()+", broadcast cnt="+cnt);
+                    }
+                }
+                @Override
+                public void startTest() {
+                    countDownLatchMain.countDown();
+                }
+            };
             
+            remoteBroadcast = (RemoteBroadcastInterface) syncClient.lookupBroadcast(RemoteBroadcastInterface.BindName, remoteBroadcastHold);
+            
+            
+            serverRoot = remoteApp.getServerRoot();
+            ModelDelegate.initialize(serverRoot, null);
             // serverRoot = (ServerRoot) syncClient.getRemoteServer().getObject(ServerRoot.class, new OAObjectKey(777));
         }
         catch (Exception e) {
@@ -227,10 +272,15 @@ public class OASyncClientTest extends OAUnitTest {
     }
 
     public static void main(String[] args) throws Exception {
+        OALogUtil.consoleOnly(Level.FINE);
         OASyncClientTest test = new OASyncClientTest();
         test.setup();
-        test.test();
-        //Thread.sleep(1300);
+        System.out.println("waiting for unit test OASyncClientTest to broadcast start message");
+        test.countDownLatchMain.await();
+        System.out.println("running test");
+        test.testMain();
+        Thread.sleep(2500);
         test.tearDown();
+        System.out.println("DONE running test");
     }
 }

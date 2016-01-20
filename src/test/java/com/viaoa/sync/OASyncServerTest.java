@@ -20,6 +20,7 @@ import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocal;
 import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.sync.remote.RemoteBroadcastInterface;
 import com.viaoa.sync.remote.RemoteTestInterface;
 import com.viaoa.util.*;
 import com.theice.tsam.delegate.ModelDelegate;
@@ -42,7 +43,7 @@ public class OASyncServerTest {
     private static Logger LOG = Logger.getLogger(OASyncServerTest.class.getName());
     
     private ServerRoot serverRoot;    
-    private OASyncServer syncServer;
+    public OASyncServer syncServer;
 
     public void start() throws Exception {  
         serverRoot = readSerializeFromFile();
@@ -86,16 +87,17 @@ public class OASyncServerTest {
     
     public OASyncServer getSyncServer() {
         if (syncServer != null) return syncServer;
+        
         syncServer = new OASyncServer(1099) {
             @Override
             protected void onClientConnect(Socket socket, int connectionId) {
                 super.onClientConnect(socket, connectionId);
-                OASyncServerTest.this.onClientConnect(socket, connectionId);
+                //OASyncServerTest.this.onClientConnect(socket, connectionId);
             }
             @Override
             protected void onClientDisconnect(int connectionId) {
                 super.onClientDisconnect(connectionId);
-                OASyncServerTest.this.onClientDisconnect(connectionId);
+                //OASyncServerTest.this.onClientDisconnect(connectionId);
             }
         };
 
@@ -150,16 +152,31 @@ public class OASyncServerTest {
             }
         }; 
         syncServer.createLookup(RemoteTestInterface.BindName, remoteTest, RemoteTestInterface.class);
-        
+
+        remoteBroadcast = new RemoteBroadcastInterface() {
+            @Override
+            public void sendName(Server server, String name) {
+            }
+            @Override
+            public void sendAppCount(Server server, int cnt) {
+            }
+            @Override
+            public void startTest() {
+/*                
+                Server server = new Server();
+                ModelDelegate.getSites().getAt(0).getEnvironments().getAt(0).getSilos().getAt(0).getServers().add(server);
+                server.setName("name on server");
+                remoteBroadcast.sendName(server, server.getName());
+                remoteBroadcast.sendAppCount(server, server.getApplications().getSize());
+*/                
+            }
+        }; 
+        remoteBroadcast = (RemoteBroadcastInterface) syncServer.createBroadcast(RemoteBroadcastInterface.BindName, remoteBroadcast, RemoteBroadcastInterface.class, "broadcast", 100);
         
         return syncServer;
-    }    
-    protected void onClientConnect(Socket socket, int connectionId) {
-        // TODO Auto-generated method stub
-    }
-    protected void onClientDisconnect(int connectionId) {
-        // TODO Auto-generated method stub
-    }
+    }   
+    private RemoteBroadcastInterface remoteBroadcast;
+    
 
     private ServerRoot readSerializeFromFile() throws Exception {
         File file = new File(OAFile.convertFileName("runtime/test/tsam.bin"));
@@ -209,8 +226,9 @@ public class OASyncServerTest {
         test.start();
         
         for (int i=1;;i++) {
-            System.out.println(i+") ServerTest is running "+(new OATime()));
-            Thread.sleep(30 * 1000);
+            int x = test.syncServer.getSessionCount();
+            System.out.println(i+") ServerTest is running "+(new OATime())+",  sessionCount="+x);
+            Thread.sleep(10 * 1000);
         }
     }
     

@@ -52,7 +52,7 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         int x = guids.length;
         for (int i=0; i<x; i++) {
             clientGetDetail.removeGuid(guids[i]);
-            LOG.fine("remove guid="+guids[i]+" for "+sessionId);
+            //LOG.fine("remove guid="+guids[i]+" for "+sessionId);
         }
     }
     

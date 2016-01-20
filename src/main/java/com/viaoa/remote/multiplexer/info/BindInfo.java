@@ -61,8 +61,16 @@ public class BindInfo {
         if (referenceQueue == null) weakRef = new WeakReference<Object>(obj);
         else weakRef = new WeakReference<Object>(obj, referenceQueue);
     }
+    private boolean bObjectGCd;
     public Object getObject() {
-        if (weakRef != null) return weakRef.get();
+        if (weakRef != null) {
+            Object obj = weakRef.get();
+            if (obj == null && !bObjectGCd) {
+                bObjectGCd = true;
+                LOG.warning("object has been GCd, name="+name);
+            }
+            return obj;
+        }
         return null;
     }
     

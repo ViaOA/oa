@@ -257,8 +257,8 @@ public class HubCSDelegate {
      * 20150206 returns true if this should be deleted on this computer, false if it is done on the server. 
     */
     protected static boolean deleteAll(Hub thisHub) {
-        LOG.fine("hub="+thisHub);
         if (OASyncDelegate.isServer(thisHub)) return true;  // invoke on the server
+        LOG.fine("hub="+thisHub);
         
         if (!OARemoteThreadDelegate.shouldSendMessages()) return true;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return true;

@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -388,7 +389,19 @@ public class OASyncServer {
                     if (cx != null && cx.remoteClientCallback != null) {
                         cx.remoteClientCallback.stop(title, msg);
                     }
-                }            
+                }
+                @Override
+                public void createSession(Socket socket, int connectionId) {
+                    aiSessionCount.incrementAndGet();
+                    super.createSession(socket, connectionId);
+                    OASyncServer.this.onSessionCreated(connectionId, socket);
+                }
+                @Override
+                public void removeSession(int connectionId) {
+                    aiSessionCount.decrementAndGet();
+                    super.removeSession(connectionId);
+                    OASyncServer.this.onSessionRemoved(connectionId);
+                }
             };
             
             // register remote objects
@@ -403,6 +416,17 @@ public class OASyncServer {
         return remoteMultiplexerServer;
     }
 
+    private AtomicInteger aiSessionCount = new AtomicInteger();
+    public int getSessionCount() {
+        return aiSessionCount.get();
+    }
+    
+    protected void onSessionCreated(int connectionId, Socket socket) {
+    }
+    protected void onSessionRemoved(int connectionId) {
+    }
+    
+    
     public void createLookup(String name, Object obj, Class interfaceClass) {
         getRemoteMultiplexerServer().createLookup(name, obj, interfaceClass, null, -1);
     }

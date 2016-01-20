@@ -111,10 +111,7 @@ public class OAObjectCSDelegate {
         // CACHE_NOTE: this "note" is added to all code that needs to work with the server cache for a client
         if (oaObj == null) return;
         
-        Class c;
-        if (oaObj == null) c = Object.class;
-        else c = oaObj.getClass();
-        
+        Class c = oaObj.getClass();
         if (!OASyncDelegate.isClient(c)) return;
         int guid = oaObj.getObjectKey().getGuid();
         if (guid < 0 || hashServerSideCache.contains(guid)) return;

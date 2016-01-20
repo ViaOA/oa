@@ -36,25 +36,24 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
         this.sessionId = sessionId;
     }
     
-    private int nextWarningCnt = 100;
-    
     @Override
     public void addToCache(OAObject obj) {
         int guid = OAObjectDelegate.getGuid(obj);
         hashCache.put(guid, obj);
         int x = hashCache.size();
-        LOG.fine("sessionId="+sessionId+", cache size="+x+", obj="+obj);
-        if (x >= nextWarningCnt) {
-            LOG.warning("sessionId="+sessionId+", cache size="+x+", obj="+obj);
-            nextWarningCnt += 100;
+        //LOG.fine("sessionId="+sessionId+", cache size="+x+", obj="+obj);
+        if (x % 100 == 0) {
+            LOG.fine("sessionId="+sessionId+", cache size="+x+", obj="+obj);
         }
     }
     @Override
     public void removeFromCache(int guid) {
         hashCache.remove(guid);
         int x = hashCache.size();
-        LOG.fine("sessionId="+sessionId+", cache size="+x+", guid="+guid);
-        if (x < 100) nextWarningCnt = 100;
+        //LOG.fine("sessionId="+sessionId+", cache size="+x+", guid="+guid);
+        if (x>0 && x % 100 == 0) {
+            LOG.fine("sessionId="+sessionId+", cache size="+x);
+        }
     }
 
     

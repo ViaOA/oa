@@ -115,12 +115,13 @@ public class RemoteMultiplexerServer {
      * @see MultiplexerServer#onClientDisconnect
      */
     public void removeSession(int connectionId) {
+        LOG.fine("removing session, connectionId="+connectionId);
         Session s = hmSession.remove(connectionId);
         if (s != null) {
             s.onDisconnect();
         }
     }
-
+    
     /**
      * This can be called when MultiplexerServer.onClientConnect(..) is called.
      * 
@@ -131,12 +132,13 @@ public class RemoteMultiplexerServer {
         session.realSocket = socket;
     }
 
-    protected Session getSession(int connectionId) {
+    public Session getSession(int connectionId) {
         Session session = hmSession.get(connectionId);
         if (session == null) {
             session = new Session();
             session.connectionId = connectionId;
             hmSession.put(connectionId, session);
+            LOG.fine("create session, connectionId="+connectionId);
         }
         return session;
     }
