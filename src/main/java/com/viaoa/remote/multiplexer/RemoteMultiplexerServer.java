@@ -1637,7 +1637,11 @@ public class RemoteMultiplexerServer {
                         continue;
                     }
   
-                    if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
+                    if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
+                    }                    
+                    else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
+                    }                    
+                    else if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
                         if (ri.connectionId == connectionId) {
                             hsQueuedRequest.add(ri.messageId);
                         }
@@ -1659,10 +1663,6 @@ public class RemoteMultiplexerServer {
                     }
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedResponse) {
                         continue;  
-                    }                    
-                    else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
-                    }                    
-                    else if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
                     }                    
                     else if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
                         if (ri.connectionId != connectionId) {

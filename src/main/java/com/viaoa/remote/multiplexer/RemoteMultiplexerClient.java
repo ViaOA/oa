@@ -578,6 +578,7 @@ volatile static int threadCheck;
                 return vs;
             }
         };
+        poolVirtualSocketCtoS.setHighMarkTimeLimit(10000);
         return poolVirtualSocketCtoS;
     }
 
@@ -737,17 +738,17 @@ volatile static int threadCheck;
     protected void onRemoteThreadCreated(int threadCount) {
         if (threadCount < 15) return;
         int ms;
-        if (threadCount < 20) ms = 1;
-        else if (threadCount < 30) ms = 2;
-        else if (threadCount < 40) ms = 3;
-        else if (threadCount < 50) ms = 5;
-        else if (threadCount < 55) ms = 6;
-        else if (threadCount < 63) ms = 10;
+        if (threadCount < 20) ms = 10;
+        else if (threadCount < 30) ms = 20;
+        else if (threadCount < 40) ms = 30;
+        else if (threadCount < 50) ms = 50;
+        else if (threadCount < 55) ms = 60;
+        else if (threadCount < 63) ms = 100;
         else {
             if (threadCount > 75) {
                 LOG.warning("alRemoteClientThread.size() = " + threadCount);
             }
-            ms = 20;
+            ms = 250;
         }
         try {
             Thread.currentThread().sleep(ms);

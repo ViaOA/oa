@@ -10,7 +10,6 @@ import com.viaoa.annotation.*;
 import com.theice.tsam.delegate.oa.*;
 import com.theice.tsam.model.oa.filter.*;
 import com.theice.tsam.model.oa.propertypath.*;
-import com.viaoa.util.OADateTime;
 
  
 @OAClass(
@@ -114,6 +113,7 @@ public class Server extends OAObject {
     }
     public void setName(String newValue) {
         fireBeforePropertyChange(P_Name, this.name, newValue);
+       
         String old = name;
         this.name = newValue;
         firePropertyChange(P_Name, old, this.name);

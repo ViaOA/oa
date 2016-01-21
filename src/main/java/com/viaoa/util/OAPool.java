@@ -31,6 +31,8 @@ public abstract class OAPool<TYPE> {
     private volatile int currentUsed;
     private volatile int highMark;
     private volatile long msHighMarkValid;  // msTime that highMark is valie
+
+    private int msHighMarkValidTimeLimit = 5000;
     
     class Pool {
         TYPE resource;
@@ -59,6 +61,14 @@ public abstract class OAPool<TYPE> {
         if (classType == null) {
             throw new RuntimeException("class must define <TYPE>, or use constructure that accepts 'Class clazz'");
         }
+    }
+    
+    
+    /**
+     * Amount of time to wait before removing extra objects from the pool.
+     */
+    public void setHighMarkTimeLimit(int ms) {
+        msHighMarkValidTimeLimit = ms;
     }
     
     public void setMinimum(int x) {
@@ -147,9 +157,15 @@ public abstract class OAPool<TYPE> {
             
             currentUsed++;
             long msNow = System.currentTimeMillis();
-            if (currentUsed >= highMark || msNow > msHighMarkValid) {
+            if (currentUsed >= highMark) {
                 highMark = currentUsed;
-                msHighMarkValid = msNow + 2500;
+                // System.out.println((new OATime()).toString("hh:mm:ss.S")+" get ... highMark="+highMark);                            
+                msHighMarkValid = msNow + msHighMarkValidTimeLimit;
+            }
+            else if (msNow > msHighMarkValid) { // let it creep down
+                highMark = Math.max(currentUsed, highMark-1);
+                msHighMarkValid = msNow + (msHighMarkValidTimeLimit/3);
+                // System.out.println((new OATime()).toString("hh:mm:ss.S")+" get/creepdown ... highMark="+highMark);                            
             }
         }
         // needs to be create outside of sync block
@@ -191,8 +207,11 @@ public abstract class OAPool<TYPE> {
                     int mark = (msNow > msHighMarkValid) ? min : highMark;
                     if (mark < x) {
                         bRelease = true;
-                        highMark = Math.max(min, highMark-1);
-                        msHighMarkValid = msNow + 250;
+                        if (msNow > msHighMarkValid) {
+                            highMark = Math.max(currentUsed, highMark-1);
+                            //System.out.println((new OATime()).toString("hh:mm:ss.S")+" releasing/creepdown ... highMark="+highMark);                            
+                            msHighMarkValid = msNow + (msHighMarkValidTimeLimit/3);
+                        }
                     }
                 }
                 if (bRelease) {
@@ -215,8 +234,22 @@ public abstract class OAPool<TYPE> {
     public Object[] getAllItems() {
         synchronized (alResource) {
             int x = alResource.size();
-            Object[] objs = alResource.toArray();
+            Object[] objs = new Object[x];
+            int i = 0;
+            for (Pool pool : alResource) {
+                objs[i++] = pool.resource;
+            }
             return objs;
+        }
+    }
+
+    public void add(TYPE obj) {
+        if (obj == null) return;
+        synchronized (alResource) {
+            Pool p = new Pool();
+            p.used = false;
+            alResource.add(p);
+            alResource.notifyAll();
         }
     }
     

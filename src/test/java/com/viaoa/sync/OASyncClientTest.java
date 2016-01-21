@@ -23,6 +23,7 @@ import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAFinder;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
+import com.viaoa.util.OAConv;
 import com.viaoa.util.OALogUtil;
 import com.viaoa.util.OAString;
 
@@ -38,7 +39,7 @@ public class OASyncClientTest extends OAUnitTest {
     private static ServerRoot serverRoot;    
     private static OASyncClient syncClient;
     
-    private final int testSeconds = 120;
+    private final int testSeconds = 30;
 
     private RemoteAppInterface remoteApp;
     private RemoteBroadcastInterface remoteBroadcast, remoteBroadcastHold;
@@ -145,20 +146,36 @@ public class OASyncClientTest extends OAUnitTest {
         
         System.out.println("Starting tests");
         remoteBroadcast.startTest();
+
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+        Site site = ModelDelegate.getSites().getAt(0);
+        Environment env = site.getEnvironments().getAt(0);
+        Silo silo = env.getSilos().getAt(0);
+        
+//qqqqqqqqqqqq        
+for (int i=0; i<50; i++) {
+        Server server;
+        server = new Server();
+        silo.getServers().add(server);
+}
+        for (Server server : silo.getServers()) {
+           server.setName("0");
+        }
         
         testMain(testSeconds);
         
         System.out.println("Broadcast.stopTest, "+aiOnClientStart.get()+" other clients are in this test");
         remoteBroadcast.stopTest();
         
-        Thread.sleep(2500);
         for (int i=0; i<20 && aiOnClientStart.get() > aiOnClientDone.get(); i++) {
             System.out.println("waiting for other clients to stop, total started="+aiOnClientStart.get()+", done="+aiOnClientDone.get());
             Thread.sleep(500);
         }
+        Thread.sleep(50);
+        
         System.out.println("Broadcast.sendResults, total started="+aiOnClientStart.get()+", done="+aiOnClientDone.get());
         remoteBroadcast.sendResults();
-        Thread.sleep(2500);
+        Thread.sleep(50);
         
         System.out.println("Error list, size="+queBroadcastMessages.size());
         for (String s : queBroadcastMessages) {
@@ -207,15 +224,16 @@ public class OASyncClientTest extends OAUnitTest {
         
         long msEnd = System.currentTimeMillis() + (secondsToRun * 1000);
         
-        Hub<Application> h = server.getApplications();
         int cnt = 0;
         boolean bServerDelete = false;
         while (System.currentTimeMillis() < msEnd && !bStopCalled) {
             cnt++;
             site.setName(OAString.getRandomString(1, 20)+"."+cnt);
             
-            //server = silo.getServers().getAt( (int) (silo.getServers().getSize() * Math.random()) );
-            //if (server == null) continue;
+            server = silo.getServers().getAt( (int) (silo.getServers().getSize() * Math.random()) );
+            if (server == null) continue;
+
+            Hub<Application> h = server.getApplications();
             
             /*
             if (!bServerDelete && Math.random() < .1) {
@@ -235,6 +253,7 @@ public class OASyncClientTest extends OAUnitTest {
             else if (x < 50) d = .65;
             else d = .5;
             
+           
             if (Math.random() < d) {
                 Application app = new Application();
                 if (Math.random() < .5) app.setServer(server);
@@ -242,7 +261,8 @@ public class OASyncClientTest extends OAUnitTest {
             }
             else {
                 if (x > 20 && Math.random() < .20) {
-                    h.deleteAll();
+//qq                    h.deleteAll();
+h.getAt(0).delete();
                 }
                 else h.getAt(0).delete();
             }

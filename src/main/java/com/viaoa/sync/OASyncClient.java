@@ -690,7 +690,7 @@ public class OASyncClient {
                     else {
                         // slow this thread down, giving others time to catch up before reading another message from queue
                         try {
-                            Thread.currentThread().sleep(100);
+                            Thread.currentThread().sleep(500);
                         }
                         catch (Exception e) {
                         }

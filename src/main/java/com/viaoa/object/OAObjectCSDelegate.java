@@ -227,7 +227,7 @@ public class OAObjectCSDelegate {
     protected static boolean delete(OAObject obj) {
         if (obj == null) return false;
         if (OASyncDelegate.isServer(obj.getClass())) return true;  // invoke on the server
-        LOG.fine("obj="+obj);
+        LOG.finer("obj="+obj);
         
         if (!OARemoteThreadDelegate.shouldSendMessages()) return true;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return true;
@@ -255,7 +255,7 @@ public class OAObjectCSDelegate {
 	}    
 	
     protected static byte[] getServerReferenceBlob(OAObject oaObj, String linkPropertyName) {
-        LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
+        LOG.finer("object="+oaObj+", linkProperyName="+linkPropertyName);
         if (oaObj == null || linkPropertyName == null) return null;
         Object obj = null;
         
@@ -272,7 +272,7 @@ public class OAObjectCSDelegate {
 	
     // used by OAObjectReflectDelegate.getReferenceHub()
     protected static Object getServerReference(OAObject oaObj, String linkPropertyName) {
-        LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
+        LOG.finer("object="+oaObj+", linkProperyName="+linkPropertyName);
         if (oaObj == null || linkPropertyName == null) return null;
         Object value = null;
         OASyncClient sc = OASyncDelegate.getSyncClient(oaObj.getClass());
@@ -288,7 +288,7 @@ public class OAObjectCSDelegate {
     
 	// used by OAObjectReflectDelegate.getReferenceHub()
 	protected static Hub getServerReferenceHub(OAObject oaObj, String linkPropertyName) {
-        LOG.fine("object="+oaObj+", linkProperyName="+linkPropertyName);
+        LOG.finer("object="+oaObj+", linkProperyName="+linkPropertyName);
         if (oaObj == null || linkPropertyName == null) return null;
     	Hub hub = null;
         OASyncClient sc = OASyncDelegate.getSyncClient(oaObj.getClass());
@@ -376,7 +376,7 @@ public class OAObjectCSDelegate {
         // Important NOTE: dont send, it is now using beforePropertyChange
         if (true || false) return;
 
-        LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
+        //LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
         
         if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
