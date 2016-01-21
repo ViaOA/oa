@@ -38,7 +38,7 @@ public class OASyncClientTest extends OAUnitTest {
     private static ServerRoot serverRoot;    
     private static OASyncClient syncClient;
     
-    private final int testSeconds = 10;
+    private final int testSeconds = 120;
 
     private RemoteAppInterface remoteApp;
     private RemoteBroadcastInterface remoteBroadcast, remoteBroadcastHold;
@@ -171,9 +171,9 @@ public class OASyncClientTest extends OAUnitTest {
         testMain(testSeconds);
     }
 
-    CountDownLatch cdlDone = new CountDownLatch(5);
+    CountDownLatch cdlDone = new CountDownLatch(10);
     public void testMain(final int secondsToRun) throws Exception {
-        int maxThreads = 5;
+        int maxThreads = 10;
         for (int i=0; i<maxThreads; i++) {
             Thread t = new Thread(new Runnable() {
                 @Override

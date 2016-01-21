@@ -189,7 +189,7 @@ public abstract class OACircularQueue<TYPE> {
 
             if (hmSession != null) {
                 // wait up to 1 second for any slow consumer
-                for (int i=0; i<100; i++) {
+                for (int i=0; i<20; i++) {
                     
                     Session sessionFound = null;
                     for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
@@ -210,7 +210,7 @@ public abstract class OACircularQueue<TYPE> {
                         long ts = session.msLastRead;
                         long tsNow = System.currentTimeMillis();
                         if (ts + 1500 < tsNow) {
-                            if (tsNow > tsLastLog + 2500) {
+                            if (tsNow > tsLastLog + 1500) {
                                 LOG.fine("session over 1.5 seconds getting last msg, queSize="+queueSize+
                                         ", currentHeadPos="+queueHeadPosition+", session="+session.id+", sessionPos="+session.queuePos);
                                 tsLastLog = tsNow;
@@ -224,7 +224,7 @@ public abstract class OACircularQueue<TYPE> {
                         break;
                     }
                     try {
-                        LOCKQueue.wait(10);
+                        LOCKQueue.wait(50);
                         ++cntQueueWait;
                         
                         long tsNow = System.currentTimeMillis();
