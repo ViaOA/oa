@@ -29,8 +29,8 @@ public abstract class OAPool<TYPE> {
     private int max;
     private ArrayList<Pool> alResource = new ArrayList<Pool>();
     private volatile int currentUsed;
-    private volatile int highValue;
-    private volatile long msHighValue;
+    private volatile int highMark;
+    private volatile long msHighMarkValid;  // msTime that highMark is valie
     
     class Pool {
         TYPE resource;
@@ -118,35 +118,24 @@ public abstract class OAPool<TYPE> {
     }
     
     public TYPE get() {
-        TYPE x = _get();
-        synchronized (alResource) {
-            currentUsed++;
-            if (currentUsed >= highValue) {
-                highValue = currentUsed;
-                msHighValue = System.currentTimeMillis();
-            }
-        }
-        return x;
-    }
-    
-    protected TYPE _get() {
-        Pool poolNew = null;
+        Pool pool = null;
         synchronized (alResource) {
             for ( ;; ) {
                 for (Pool p: alResource) {
                     if (!p.used && (p.resource != null)) {
-                        p.used = true;
-                        return p.resource;
+                        pool = p;
+                        break;
                     }
                 }
-
+                if (pool != null) break;
+                
                 int x = alResource.size();
                 if (x < max || max == 0) {
-                    poolNew = new Pool();
-                    poolNew.used = true;
-                    alResource.add(poolNew);
+                    pool = new Pool();
+                    alResource.add(pool);
                     break;
                 }
+
                 // need to wait
                 try {
                     alResource.wait();
@@ -154,11 +143,21 @@ public abstract class OAPool<TYPE> {
                 catch (Exception e) {
                 }
             }
+            pool.used = true;
+            
+            currentUsed++;
+            long msNow = System.currentTimeMillis();
+            if (currentUsed >= highMark || msNow > msHighMarkValid) {
+                highMark = currentUsed;
+                msHighMarkValid = msNow + 2500;
+            }
         }
         // needs to be create outside of sync block
-        TYPE res = create();
-        poolNew.resource = res;
-        return res;
+        if (pool.resource == null) {
+            TYPE res = create();
+            pool.resource = res;
+        }
+        return pool.resource;
     }
     
     // remove from the pool
@@ -179,25 +178,23 @@ public abstract class OAPool<TYPE> {
     }
     
     public void release(TYPE resource) {
-        boolean bFound = false;
-        boolean bRelease;
+        boolean bRelease = false;
         synchronized (alResource) {
-            // see if the pool can be shrunk, by removing this resource
-            bRelease = false;
-            int x = alResource.size();
-            if (x > min && (currentUsed < x)) {
-                long msNow = System.currentTimeMillis();
-                if (msNow - msHighValue > 500) {
-                    bRelease = true;
-                    highValue = currentUsed;
-                }
-            }
-            
             for (Pool p: alResource) {
                 if (p.resource != resource) continue;
                 if (p.used) currentUsed--;
                 p.used = false;
-                bFound = true;
+
+                int x = alResource.size();
+                if (x > min) {
+                    long msNow = System.currentTimeMillis();
+                    int mark = (msNow > msHighMarkValid) ? min : highMark;
+                    if (mark < x) {
+                        bRelease = true;
+                        highMark = Math.max(min, highMark-1);
+                        msHighMarkValid = msNow + 250;
+                    }
+                }
                 if (bRelease) {
                     alResource.remove(p);
                 }
@@ -207,7 +204,7 @@ public abstract class OAPool<TYPE> {
                 break;
             }
         }
-        if (bFound && bRelease) {
+        if (bRelease) {
             removed(resource);
         }
     }

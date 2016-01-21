@@ -109,7 +109,7 @@ public class OAPoolTest extends OAUnitTest{
         assertEquals(0, aiRemoved.get());
         
         if (secondsToRun > 5) {
-            Thread.sleep(500);
+            Thread.sleep(2502);
             String s = pool.get();
             assertEquals(maxThreads, aiCreated.get());
             assertEquals(5, pool.getCurrentSize());

@@ -139,6 +139,7 @@ public class OASyncClientTest extends OAUnitTest {
     
     @Test
     public void testC() throws Exception {
+        MultiplexerClient.DEBUG = true;
         if (serverRoot == null) return;
         bRunningInJunit = true;
         
@@ -187,7 +188,7 @@ public class OASyncClientTest extends OAUnitTest {
                         cdlDone.countDown();                        
                     }
                 }
-            });
+            }, "TEST_THREAD_"+i);
             t.start();
         }
         _testMain(secondsToRun);
@@ -379,6 +380,7 @@ public class OASyncClientTest extends OAUnitTest {
     }
 
     public static void main(String[] args) throws Exception {
+        MultiplexerClient.DEBUG = true;
         OALogUtil.consoleOnly(Level.FINE);
         OASyncClientTest test = new OASyncClientTest();
         test.setup();
