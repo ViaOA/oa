@@ -1,6 +1,18 @@
 
 
 
+> convert hash.values to array
+
+    public VirtualSocket[] getMultiplexerSockets() {
+        VirtualSocket[] vss = new VirtualSocket[0];
+        if (_hashtableSocket != null) {
+            vss = (VirtualSocket[]) getSocketHashtable().values().toArray(vss);
+        }
+        return vss;
+    }
+
+
+qqqqqq
 
         OADataSourceJDBC oads = getOADataSourceJDBC();
         for (Entry<Class, Integer> entry : hash.entrySet()) {

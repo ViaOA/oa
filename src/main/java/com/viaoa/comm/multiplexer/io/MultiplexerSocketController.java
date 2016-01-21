@@ -594,6 +594,7 @@ public class MultiplexerSocketController implements Serializable {
                         vs._lockObject.notify();
                     }
                 }
+                _hashtableSocket = null;
             }
         }
     }

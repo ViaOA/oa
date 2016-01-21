@@ -29,14 +29,13 @@ public abstract class OAPool<TYPE> {
     private int max;
     private ArrayList<Pool> alResource = new ArrayList<Pool>();
     private volatile int currentUsed;
-    private volatile int maxUsed;
-    private volatile long msMaxUsed;
+    private volatile int highValue;
+    private volatile long msHighValue;
     
     class Pool {
         TYPE resource;
         boolean used;
     }
-    
     
     public OAPool(Class clazz, int min, int max) {
         this.classType = clazz;
@@ -58,7 +57,7 @@ public abstract class OAPool<TYPE> {
         }
         LOG.fine("classType=" + classType);
         if (classType == null) {
-            throw new RuntimeException("class must define <TYPE>, or use construture that accepts 'Class clazz'");
+            throw new RuntimeException("class must define <TYPE>, or use constructure that accepts 'Class clazz'");
         }
     }
     
@@ -74,54 +73,79 @@ public abstract class OAPool<TYPE> {
     public int getMaximum() {
         return max;
     }
+    public int getCurrentSize() {
+        int x;
+        synchronized (alResource) {
+            x = alResource.size();
+        }
+        return x;
+    }
+    public int getCurrentUsed() {
+        synchronized (alResource) {
+            return currentUsed;
+        }
+    }
 
     /**
      * This will make sure that the pool has at least minimum amount of objects.
      * By default, the pool will start with size zero objects.  
      */
     public void loadMinimum() {
+        ArrayList<Pool> al = new ArrayList<Pool>(min);
         synchronized (alResource) {
             int x = alResource.size();
             for (int i=x; i<min; i++) {
-                TYPE res = create();
                 Pool p = new Pool();
-                p.resource = res;
                 p.used = true;
                 alResource.add(p);
+                al.add(p);
             }
+        }
+        
+        for (Pool p : al) {
+            if (p.resource != null) continue;
+            TYPE res = create();
+            synchronized (alResource) {
+                p.resource = res;
+                p.used = false;
+            }
+        }
+        if (al.size() > 0) {
+            synchronized (alResource) {
+                alResource.notifyAll();
+            }            
         }
     }
     
     public TYPE get() {
         TYPE x = _get();
+        synchronized (alResource) {
+            currentUsed++;
+            if (currentUsed >= highValue) {
+                highValue = currentUsed;
+                msHighValue = System.currentTimeMillis();
+            }
+        }
         return x;
     }
     
     protected TYPE _get() {
-        for (int i=0;;i++) {
-            synchronized (alResource) {
-                if (i == 0) {
-                    currentUsed++;
-                    if (currentUsed > maxUsed) {
-                        maxUsed = currentUsed;
-                        msMaxUsed = System.currentTimeMillis();
-                    }
-                }
-                
+        Pool poolNew = null;
+        synchronized (alResource) {
+            for ( ;; ) {
                 for (Pool p: alResource) {
-                    if (!p.used) {
+                    if (!p.used && (p.resource != null)) {
                         p.used = true;
                         return p.resource;
                     }
                 }
+
                 int x = alResource.size();
                 if (x < max || max == 0) {
-                    TYPE res = create();
-                    Pool p = new Pool();
-                    p.resource = res;
-                    p.used = true;
-                    alResource.add(p);
-                    return res;
+                    poolNew = new Pool();
+                    poolNew.used = true;
+                    alResource.add(poolNew);
+                    break;
                 }
                 // need to wait
                 try {
@@ -131,33 +155,41 @@ public abstract class OAPool<TYPE> {
                 }
             }
         }
+        // needs to be create outside of sync block
+        TYPE res = create();
+        poolNew.resource = res;
+        return res;
     }
+    
     // remove from the pool
     public void remove(TYPE resource) {
+        boolean bFound = false;
         synchronized (alResource) {
             for (Pool p: alResource) {
                 if (p.resource != resource) continue;
                 if (p.used) currentUsed--;
                 p.used = false;
                 alResource.remove(p);
-                removed(resource);
                 alResource.notifyAll();
+                bFound = true;
                 break;
             }
         }        
+        if (bFound) removed(resource);
     }
+    
     public void release(TYPE resource) {
+        boolean bFound = false;
+        boolean bRelease;
         synchronized (alResource) {
-            
             // see if the pool can be shrunk, by removing this resource
-            boolean bRelease = false;
+            bRelease = false;
             int x = alResource.size();
-            if (x > min && (currentUsed+1) < x) {
+            if (x > min && (currentUsed < x)) {
                 long msNow = System.currentTimeMillis();
-                if (msNow - msMaxUsed > 800) {
-                    if (x > (maxUsed+1)) bRelease = true;
-                    msMaxUsed = msNow;
-                    maxUsed = currentUsed;
+                if (msNow - msHighValue > 500) {
+                    bRelease = true;
+                    highValue = currentUsed;
                 }
             }
             
@@ -165,15 +197,18 @@ public abstract class OAPool<TYPE> {
                 if (p.resource != resource) continue;
                 if (p.used) currentUsed--;
                 p.used = false;
+                bFound = true;
                 if (bRelease) {
                     alResource.remove(p);
-                    removed(resource);
                 }
                 else {
                     alResource.notifyAll();
                 }
                 break;
             }
+        }
+        if (bFound && bRelease) {
+            removed(resource);
         }
     }
 

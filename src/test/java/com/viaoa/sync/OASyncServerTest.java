@@ -170,6 +170,25 @@ public class OASyncServerTest {
                 remoteBroadcast.sendAppCount(server, server.getApplications().getSize());
 */                
             }
+            @Override
+            public void sendName(Site site, String name) {
+            }
+            @Override
+            public void stopTest() {
+            }
+            @Override
+            public void sendResults() {
+            }
+            @Override
+            public void onClientStart() {
+                // TODO Auto-generated method stub
+                
+            }
+            @Override
+            public void onClientDone() {
+                // TODO Auto-generated method stub
+                
+            }
         }; 
         remoteBroadcast = (RemoteBroadcastInterface) syncServer.createBroadcast(RemoteBroadcastInterface.BindName, remoteBroadcast, RemoteBroadcastInterface.class, "broadcast", 100);
         

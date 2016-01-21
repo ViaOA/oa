@@ -23,6 +23,7 @@ import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubEventDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAArray;
+import com.viaoa.util.OANotExist;
 
 public class OAObjectDeleteDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectDeleteDelegate.class.getName());
@@ -186,6 +187,7 @@ public class OAObjectDeleteDelegate {
 	private static void deleteChildren(OAObject oaObj, OACascade cascade) {
 		OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 	    List al = oi.getLinkInfos();
+	    boolean bIsNew = oaObj.isNew();
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getCalculated()) continue;
@@ -193,6 +195,11 @@ public class OAObjectDeleteDelegate {
 	    	String prop = li.name;
 		    if (prop == null || prop.length() < 1) continue;
 	    	
+            // 20160120
+		    if (bIsNew && OAObjectPropertyDelegate.getProperty(oaObj, prop, true, false) == OANotExist.instance) {
+		        continue;
+		    }
+		    
 	        if (li.getType() == OALinkInfo.ONE) {
 	            if ((li.getOwner() || li.cascadeDelete) && !li.getPrivateMethod()) {
         	    	Object obj = OAObjectReflectDelegate.getProperty(oaObj, prop);

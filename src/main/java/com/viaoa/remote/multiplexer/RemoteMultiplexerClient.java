@@ -856,7 +856,7 @@ volatile static int threadCheck;
             public void run() {
                 for (;;) {
                     try {
-                        RequestInfo  ri = queSyncRequestInfo.take(); // blocks
+                        RequestInfo ri = queSyncRequestInfo.take(); // blocks
                         
                         if (ri.type == RequestInfo.Type.StoC_QueuedResponse || ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
                             // return response from sync message

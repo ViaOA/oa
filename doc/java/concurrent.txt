@@ -2,10 +2,32 @@
 
 
 
+>> sample
+    // main thread starts "max" threads
 
+    final CyclicBarrier barrier = new CyclicBarrier(max);
+    final CountDownLatch countDownLatch = new CountDownLatch(max);
+    
+    for (int i=0; i<max; i++) {
+        final int id = i;
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    barrier.await();  // wait for all threads to get to this point
+                }
+                catch (Throwable e) {
+                }
+                finally {
+                    countDownLatch.countDown();
+                }
+            }
+        });
+        t.start();
+    }
 
-
-
+    // wait for all threads to finish        
+    countDownLatch.await();
 
 
 
@@ -178,7 +200,7 @@
 >> DelayQueue<E extends Delayed>
 
 
->> Semaphore
+>> Semaphore - allows "cnt" number to access, whereas a lock only allows one
     
     new Semaphore(cnt)
     
