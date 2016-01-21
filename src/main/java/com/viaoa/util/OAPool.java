@@ -210,6 +210,17 @@ public abstract class OAPool<TYPE> {
     }
 
     /**
+     * @return object array of all objects that are currently in the pool.
+     */
+    public Object[] getAllItems() {
+        synchronized (alResource) {
+            int x = alResource.size();
+            Object[] objs = alResource.toArray();
+            return objs;
+        }
+    }
+    
+    /**
      * Callback method used to request a new object for the pool.
      */
     protected abstract TYPE create();
