@@ -839,6 +839,8 @@ public class RemoteMultiplexerClient {
                             continue;
                         }
                         
+//qqqqqqqqqqqvvvvvvvvvvvvvvvv
+                        
                         OARemoteThread t = getRemoteClientThread(ri, true);
                         synchronized (t.Lock) {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
