@@ -638,5 +638,4 @@ public class MultiplexerSocketController implements Serializable {
     public String getInvalidConnectionMessage() {
         return _invalidConnectionMessage;
     }
-
 }

@@ -279,19 +279,17 @@ public class RemoteMultiplexerClient {
         return proxy;
     }
 
-volatile static int threadCheck;    
+    //volatile static int threadCheck;    
     protected Object onInvokeForCtoS(BindInfo bind, Object proxy, Method method, Object[] args) throws Throwable {
         //LOG.fine(method.getName());
         RequestInfo ri = new RequestInfo();
         // 1:CtoS_QueuedRequest start
         // 1:CtoS_QueuedRequestNoResponse
 
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
         if (Thread.currentThread() instanceof OARemoteThread) {
-//if (threadCheck++ < 50) LOG.log(Level.WARNING, "Info only: bind="+bind.name+", method="+method.getName(), new Exception("RemoteThread used for CtoS method call"));            
+            //if (threadCheck++ < 50) LOG.log(Level.WARNING, "Info only: bind="+bind.name+", method="+method.getName(), new Exception("RemoteThread used for CtoS method call"));            
         }
-        
-        
+
         VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
         try {
             ri.msStart = System.currentTimeMillis();
@@ -315,6 +313,7 @@ volatile static int threadCheck;
 
             // 4:CtoS_QueuedRequestNoResponse END
             
+            
             if (ri.bSent && ri.bind.usesQueue && ri.type.hasReturnValue()) {
                 releaseSocketForCtoS(socket);
                 socket = null;
@@ -336,6 +335,13 @@ volatile static int threadCheck;
                 // 7:CtoS_QueuedRequest END
                 if (!ri.methodInvoked) {
                     ri.exceptionMessage = "timeout waiting on response from server";
+                }
+                else {
+                    // 20160122 queue thread will wait for OARemoteThreadDelegate.startNextThread()
+                    //    to call OAThreadLocalDelegate.notifyWaitingThread(), and wake up que thread waiting on ri lock
+                    if (ri.bind != null && ri.bind.isOASync) {
+                        OAThreadLocalDelegate.setNotifyObject(ri);
+                    }
                 }
             }
         }
@@ -828,10 +834,11 @@ volatile static int threadCheck;
                 for (;;) {
                     try {
                         RequestInfo  ri = queRequestInfo.take(); // blocks
-                        if (ri.bind != null && RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
+                        if (ri.bind != null && ri.bind.isOASync) {
                             queSyncRequestInfo.put(ri);
                             continue;
                         }
+                        
                         OARemoteThread t = getRemoteClientThread(ri, true);
                         synchronized (t.Lock) {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
@@ -858,24 +865,34 @@ volatile static int threadCheck;
                 for (;;) {
                     try {
                         RequestInfo ri = queSyncRequestInfo.take(); // blocks
-                        
-                        if (ri.type == RequestInfo.Type.StoC_QueuedResponse || ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
-                            // return response from sync message
-                            RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
-                            synchronized (rix) {
-                                rix.response = ri.response;
-                                rix.exception = ri.exception;
-                                rix.exceptionMessage = ri.exceptionMessage;
-                                rix.methodInvoked = true;
-                                rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
-qqqqqqqqqqq                                
-//qqqqqqqqqqqqqqqqqqqqqq                                
-//qqqqqqqqqqqqqq wait for notify
-                                // 20160121 wait for OARemoteThreadDelegate.startNextThread to be called, which will then notify rix for
-                                rix.wait(25);
-                                
+
+                        // 20160122 this client called a oasync method. This is ack. 
+                        if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {                        
+                            if (ri.bind != null && ri.bind.isOASync) {
+                                if (ri.connectionId == multiplexerClient.getConnectionId()) {
+                                    // return response from sync message
+                                    RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
+                                    synchronized (rix) {
+                                        rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
+                                        rix.methodInvoked = true;
+                                        rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+        
+                                        // 20160121 wait for OARemoteThreadDelegate.startNextThread to be called, which will 
+                                        //      then notify rix that sync msg is done, and next msg can be processed
+//qqqqqqqqqqqqqqqqqqqqqq                                        
+long ms1 = System.currentTimeMillis();                                        
+                                        rix.wait(1005);
+int diff = (int) (System.currentTimeMillis() - ms1);                                         
+if (diff > 20) {
+    System.out.println("xxxxxxxxxxxxxxxxxxxxxxxx QQQQQQQQQQQQQQQ "+diff+"  type="+rix.type+", method="+rix.method);
+    int xx = 4;
+    xx++;//qqqqqqqqqqqqq
+}
+//System.out.println(">>> time "+diff+"  type="+rix.type);
+                                    }
+                                    continue;
+                                }
                             }
-                            continue;
                         }
 
                         int maxSeconds = Math.max(ri.methodInfo == null ? 0 : ri.methodInfo.timeoutSeconds, 0);
@@ -921,11 +938,7 @@ qqqqqqqqqqq
             Object objx = ois.readObject();
             
             ri.messageId = ois.readInt();
-            
-            boolean bIsSync = (ri.bind != null && RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass));            
-            RequestInfo rix;
-            if (bIsSync) rix = hmAsyncRequestInfo.get(ri.messageId);
-            else rix = hmAsyncRequestInfo.remove(ri.messageId);
+            RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
             
             if (x == 0) {
                 ri.exception = (Exception) objx;
@@ -959,18 +972,13 @@ qqqqqqqqqqq
                 if (ri.response != null && rix.methodInfo.compressedReturn && rix.methodInfo.remoteReturn == null) {
                     ri.response = ((OACompressWrapper) ri.response).getObject();
                 }
-                if (bIsSync) {
-                    queRequestInfo.put(ri);
-                }
-                else {
-                    synchronized (rix) {
-                        rix.response = ri.response;
-                        rix.exception = ri.exception;
-                        rix.exceptionMessage = ri.exceptionMessage;
-                        rix.methodInvoked = true;
-                        // 6:CtoS_QueuedRequest  notify waiting thread from #4
-                        rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
-                    }
+                synchronized (rix) {
+                    rix.response = ri.response;
+                    rix.exception = ri.exception;
+                    rix.exceptionMessage = ri.exceptionMessage;
+                    rix.methodInvoked = true;
+                    // 6:CtoS_QueuedRequest  notify waiting thread from #4
+                    rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
                 }
             }
             return true;
@@ -1007,18 +1015,26 @@ qqqqqqqqqqq
             ri.messageId = ois.readInt();
             
             if (ri.connectionId == multiplexerClient.getConnectionId()) {
-                // this client called the broadcast
-                RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
+                RequestInfo rix = hmAsyncRequestInfo.get(ri.messageId);
                 if (rix == null) {
                     ri.exceptionMessage = "StoC requestInfo not found";
                 }
                 else {
-                    synchronized (rix) {
-                        rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
-                        rix.methodInvoked = true;
-                        rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                    if (rix.bind.isOASync) {
+                        ri.bind = rix.bind;
+                        queRequestInfo.put(ri);
+                    }
+                    else {
+                        hmAsyncRequestInfo.remove(ri.messageId);
+                        synchronized (rix) {
+                            rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
+                            rix.methodInvoked = true;
+                            rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                        }
                     }
                 }
+                
+                // this client called the broadcast
                 return true;
             }
             

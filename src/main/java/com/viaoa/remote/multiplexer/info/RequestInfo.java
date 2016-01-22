@@ -107,7 +107,7 @@ public class RequestInfo {
     public Object response;
 
     public volatile boolean methodInvoked;  // set to true with the method has been invoked
-    public volatile boolean processedByServerQueue;  // flag set on server after it's processed    
+    public volatile boolean processedByServerQueue;  // flag set on server after it's processed
     
     public RequestInfo() {
         this.cnt = aiCount.incrementAndGet();

@@ -1245,27 +1245,28 @@ static volatile int unlockCnt;
     public static void setNotifyObject(Object obj) {
         if (obj == null) {
             if (OAThreadLocalDelegate.TotalNotifyWaitingObject.get() == 0) return;
-        }
-        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
-        if (obj == null) {
-            if (tl.notifyObject != null) TotalNotifyWaitingObject.decrementAndGet();
+            OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(false);
+            if (tl != null && (tl.notifyObject != null)) {
+                TotalNotifyWaitingObject.decrementAndGet();
+                tl.notifyObject = obj;
+            }
         }
         else {
+            OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
             if (tl.notifyObject == null) TotalNotifyWaitingObject.incrementAndGet();
+            tl.notifyObject = obj;
         }
-        tl.notifyObject = obj;
     }
     public static void notifyWaitingThread() {
         if (OAThreadLocalDelegate.TotalNotifyWaitingObject.get() == 0) return;
 
-        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(false);
+        if (tl == null) return;
         if (tl.notifyObject == null) return;
         synchronized (tl.notifyObject) {
             tl.notifyObject.notifyAll();
         }
         setNotifyObject(null);
     }
-
-
 }
 

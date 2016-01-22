@@ -58,12 +58,13 @@ public class Server extends OAObject {
      
     protected int id;
     protected OADateTime created;
-    protected String name;
+    protected volatile String name;
     protected String hostName;
     protected String ipAddress;
     protected String dnsName;
     protected String shortDnsName;
     protected String userId;
+    protected volatile int cnt;
      
     // Links to other objects.
     protected transient Hub<Application> hubApplications;
@@ -285,6 +286,20 @@ public class Server extends OAObject {
 
         changedFlag = false;
         newFlag = false;
+    }
+    
+    
+    public int getCnt() {
+        return cnt;
+    }
+    public void setCnt(int newValue) {
+        fireBeforePropertyChange("cnt", this.cnt, newValue);
+if (newValue != this.cnt+1) {  //qqqqqqqqqqqqqqqqqqqq
+    System.out.println("Server.setCnt() error qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq old="+this.cnt+", new="+newValue);
+}
+        int old = cnt;
+        this.cnt = newValue;
+        firePropertyChange("cnt", old, this.cnt);
     }
 }
  

@@ -24,8 +24,10 @@ import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAFinder;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OADateTime;
 import com.viaoa.util.OALogUtil;
 import com.viaoa.util.OAString;
+import com.viaoa.util.OATime;
 
 /**
  * **** IMPORTANT **** 
@@ -39,7 +41,7 @@ public class OASyncClientTest extends OAUnitTest {
     private static ServerRoot serverRoot;    
     private static OASyncClient syncClient;
     
-    private final int testSeconds = 30;
+    private int testSeconds = 30 * 60;
 
     private RemoteAppInterface remoteApp;
     private RemoteBroadcastInterface remoteBroadcast, remoteBroadcastHold;
@@ -144,38 +146,42 @@ public class OASyncClientTest extends OAUnitTest {
         if (serverRoot == null) return;
         bRunningInJunit = true;
         
-        System.out.println("Starting tests");
-        remoteBroadcast.startTest();
 
 //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
         Site site = ModelDelegate.getSites().getAt(0);
         Environment env = site.getEnvironments().getAt(0);
         Silo silo = env.getSilos().getAt(0);
         
-//qqqqqqqqqqqq        
-for (int i=0; i<50; i++) {
+        
+for (int i=0; i<500; i++) {
         Server server;
         server = new Server();
         silo.getServers().add(server);
 }
         for (Server server : silo.getServers()) {
-           server.setName("0");
+          // server.setName("0");
         }
         
-        testMain(testSeconds);
+testSeconds=30;
+
+        System.out.println("Starting tests "+(new OATime()).toString("hh:mm:ss.S")+", for "+testSeconds+" seconds");
+        remoteBroadcast.startTest();
+
+
+        //testMain(testSeconds);
         
-        System.out.println("Broadcast.stopTest, "+aiOnClientStart.get()+" other clients are in this test");
+        System.out.println("Broadcast.stopTest, "+aiOnClientStart.get()+" other clients are in this test, "+(new OATime()).toString("hh:mm:ss.S"));
         remoteBroadcast.stopTest();
         
-        for (int i=0; i<20 && aiOnClientStart.get() > aiOnClientDone.get(); i++) {
-            System.out.println("waiting for other clients to stop, total started="+aiOnClientStart.get()+", done="+aiOnClientDone.get());
+        for (int i=0; i<60 && aiOnClientStart.get() > aiOnClientDone.get(); i++) {
+            System.out.println((i+1)+"/60) waiting for other clients to stop, total started="+aiOnClientStart.get()+", done="+aiOnClientDone.get());
             Thread.sleep(500);
         }
-        Thread.sleep(50);
+        Thread.sleep(500);
         
         System.out.println("Broadcast.sendResults, total started="+aiOnClientStart.get()+", done="+aiOnClientDone.get());
         remoteBroadcast.sendResults();
-        Thread.sleep(50);
+        Thread.sleep(4500);
         
         System.out.println("Error list, size="+queBroadcastMessages.size());
         for (String s : queBroadcastMessages) {
@@ -211,16 +217,32 @@ for (int i=0; i<50; i++) {
         _testMain(secondsToRun);
     }
     
+    
     public void _testMain(int secondsToRun) throws Exception {
         Site site = ModelDelegate.getSites().getAt(0);
         Environment env = site.getEnvironments().getAt(0);
         Silo silo = env.getSilos().getAt(0);
 
-        Server server;
-        server = new Server();
-        silo.getServers().add(server);
+        String s = OAString.getRandomString(5, 6);
+        
+        int cnt = 0;
+        for (Server server : silo.getServers()) {
+            server.setName(s+"."+(cnt++));
+        }
+        
+    }
+    
+    public void _testMain2(int secondsToRun) throws Exception {
+        Site site = ModelDelegate.getSites().getAt(0);
+        Environment env = site.getEnvironments().getAt(0);
+        Silo silo = env.getSilos().getAt(0);
 
-        //server = silo.getServers().getAt(0);
+        Server server;
+        Server serverNew;
+        serverNew = new Server();
+        silo.getServers().add(serverNew);
+
+server = silo.getServers().getAt(0);
         
         long msEnd = System.currentTimeMillis() + (secondsToRun * 1000);
         
@@ -229,6 +251,8 @@ for (int i=0; i<50; i++) {
         while (System.currentTimeMillis() < msEnd && !bStopCalled) {
             cnt++;
             site.setName(OAString.getRandomString(1, 20)+"."+cnt);
+            
+            serverNew.setCnt(cnt);
             
             server = silo.getServers().getAt( (int) (silo.getServers().getSize() * Math.random()) );
             if (server == null) continue;
@@ -255,6 +279,7 @@ for (int i=0; i<50; i++) {
             
            
             if (Math.random() < d) {
+//if (h.getSize() > 25) continue;                
                 Application app = new Application();
                 if (Math.random() < .5) app.setServer(server);
                 else h.add(app);
@@ -352,12 +377,12 @@ h.getAt(0).delete();
                 }
                 @Override
                 public void stopTest() {
-                    System.out.println("received stopTest message");
+                    System.out.println("received stopTest message ******************");
                     bStopCalled = true;
                 }
                 @Override
                 public void sendResults() {
-                    System.out.println("received sendResults message");
+                    System.out.println("received sendResults message ***************");
                     bStopCalled = true;
                     countDownLatchSendResults.countDown();
                 }
@@ -376,12 +401,9 @@ h.getAt(0).delete();
                 public void onClientDone() {
                     aiOnClientDone.incrementAndGet();
                 }
-                
-                
             };
             
             remoteBroadcast = (RemoteBroadcastInterface) syncClient.lookupBroadcast(RemoteBroadcastInterface.BindName, remoteBroadcastHold);
-            
             
             serverRoot = remoteApp.getServerRoot();
             ModelDelegate.initialize(serverRoot, null);
@@ -410,7 +432,7 @@ h.getAt(0).delete();
         test.remoteBroadcast.onClientStart();
         test.testMain();
         test.bStopCalled = true;
-        boolean b = test.cdlDone.await(7, TimeUnit.SECONDS);
+        boolean b = test.cdlDone.await(10, TimeUnit.SECONDS);
         if (!b) System.out.println("ERROR qqqqqqqqqqqq all threads were not done qqqqqqqqqqqqqq");
         test.remoteBroadcast.onClientDone();
         System.out.println("test done, waiting on stop message");
