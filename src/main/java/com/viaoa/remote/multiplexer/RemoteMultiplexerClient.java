@@ -868,6 +868,12 @@ volatile static int threadCheck;
                                 rix.exceptionMessage = ri.exceptionMessage;
                                 rix.methodInvoked = true;
                                 rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+qqqqqqqqqqq                                
+//qqqqqqqqqqqqqqqqqqqqqq                                
+//qqqqqqqqqqqqqq wait for notify
+                                // 20160121 wait for OARemoteThreadDelegate.startNextThread to be called, which will then notify rix for
+                                rix.wait(25);
+                                
                             }
                             continue;
                         }

@@ -57,6 +57,7 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalGetDetailHub = new AtomicInteger();
 //qqq    private static AtomicInteger TotalRunnable = new AtomicInteger();
     private static AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
+    private static AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
 
     public static final HashMap<Object, OAThreadLocal[]> hmLock = new HashMap<Object, OAThreadLocal[]>(53, .75f);
     
@@ -1239,5 +1240,32 @@ static volatile int unlockCnt;
         return mc;
     }
     */
+
+    // 20160121 allows an object to wait to be notified by OARemoteThreadDelegate.startNextThread()
+    public static void setNotifyObject(Object obj) {
+        if (obj == null) {
+            if (OAThreadLocalDelegate.TotalNotifyWaitingObject.get() == 0) return;
+        }
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
+        if (obj == null) {
+            if (tl.notifyObject != null) TotalNotifyWaitingObject.decrementAndGet();
+        }
+        else {
+            if (tl.notifyObject == null) TotalNotifyWaitingObject.incrementAndGet();
+        }
+        tl.notifyObject = obj;
+    }
+    public static void notifyWaitingThread() {
+        if (OAThreadLocalDelegate.TotalNotifyWaitingObject.get() == 0) return;
+
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
+        if (tl.notifyObject == null) return;
+        synchronized (tl.notifyObject) {
+            tl.notifyObject.notifyAll();
+        }
+        setNotifyObject(null);
+    }
+
+
 }
 

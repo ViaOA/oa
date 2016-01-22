@@ -115,6 +115,9 @@ public class OAThreadLocal {
     protected ArrayList<Runnable> alRunnable;
 */    
 
+    // 20160121
+    protected Object notifyObject;
+    
 }
 
 
