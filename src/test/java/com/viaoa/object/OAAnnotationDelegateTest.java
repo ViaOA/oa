@@ -31,20 +31,19 @@ public class OAAnnotationDelegateTest extends OAUnitTest {
 
     @Test
     public void testUpdate() throws Exception  {
-        testUpdate1();
-        
-        testUpdate2(Server.class);
+        testUpdateClass(Server.class);
         testUpdateDatabase(Server.class);
         
-        testUpdate2(Application.class);  // match
+        testUpdateClass(Application.class);  // match
         testUpdateDatabase(Application.class);
         
-        testUpdate2(AdminUserCategory.class); // recursive
+        testUpdateClass(AdminUserCategory.class); // recursive
         testUpdateDatabase(AdminUserCategory.class);
     }
     
     
-    protected void testUpdate1() {
+    @Test
+    protected void testSimpleUpdate() {
         final Class c = Server.class;
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
         
@@ -65,7 +64,7 @@ public class OAAnnotationDelegateTest extends OAUnitTest {
         assertEquals(true, li.getCascadeSave());
     }
  
-    protected void testUpdate2(final Class clazz) {
+    protected void testUpdateClass(final Class clazz) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
     
         OAClass oaclass = (OAClass) clazz.getAnnotation(OAClass.class);
