@@ -503,9 +503,11 @@ public class OAObjectReflectDelegate {
                                 OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.getToClass());
                                 OALinkInfo linkInfox = OAObjectInfoDelegate.getLinkInfo(oix, matchProperty);
                                 if (linkInfox != null) {
-                                    hubMatch = new Hub(linkInfox.getToClass());
-                                    HubMerger hm = new HubMerger(oaObj, hubMatch, matchHubPropPath);
-                                    hm.setServerSideOnly(true);
+                                    if (!OAThreadLocalDelegate.isDeleting()) {                                
+                                        hubMatch = new Hub(linkInfox.getToClass());
+                                        HubMerger hm = new HubMerger(oaObj, hubMatch, matchHubPropPath);
+                                        hm.setServerSideOnly(true);
+                                    }
                                 }
                             }
                         }

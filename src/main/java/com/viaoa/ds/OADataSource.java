@@ -70,8 +70,8 @@ public abstract class OADataSource implements OADataSourceInterface {
         OADataSource[] ds = getDataSources();
         int x = ds.length;
         OADataSource dsFound = null;
-        for (int i=0; i<x; i++) {
-            if (ds[i].bEnable && ds[i].isClassSupported(clazz, filter)) {
+        for (int i=0; ds != null &&  i<x; i++) {
+            if (ds[i] != null && ds[i].bEnable && ds[i].isClassSupported(clazz, filter)) {
                 if (dsFound == null || (dsFound.bLast && !ds[i].bLast)) dsFound = ds[i];
             }
         }

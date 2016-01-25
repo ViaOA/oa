@@ -14,11 +14,13 @@ import java.util.logging.Logger;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
+import test.theice.tsac.model.oa.propertypath.SitePP;
+
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
+import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObjectSerializer;
-import com.viaoa.object.OAThreadLocal;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
 import com.viaoa.sync.remote.RemoteTestInterface;
@@ -26,7 +28,6 @@ import com.viaoa.util.*;
 import com.theice.tsam.delegate.ModelDelegate;
 import com.theice.tsam.delegate.RemoteDelegate;
 import com.theice.tsam.model.oa.AdminUser;
-import com.theice.tsam.model.oa.Environment;
 import com.theice.tsam.model.oa.Server;
 import com.theice.tsam.model.oa.Site;
 import com.theice.tsam.model.oa.cs.ClientRoot;
@@ -37,7 +38,7 @@ import com.theice.tsam.remote.RemoteModelImpl;
 import com.theice.tsam.remote.RemoteModelInterface;
 
 /**
- *  Run this manually to then run OASyncClientTest junit tests.
+ *  Run this manually, and then run OASyncClientTest multiple times, and then run it as a junit test.
  */
 public class OASyncServerTest {
     private static Logger LOG = Logger.getLogger(OASyncServerTest.class.getName());
@@ -83,7 +84,6 @@ public class OASyncServerTest {
             }
         });
     }
-    
     
     public OASyncServer getSyncServer() {
         if (syncServer != null) return syncServer;
@@ -155,39 +155,41 @@ public class OASyncServerTest {
 
         remoteBroadcast = new RemoteBroadcastInterface() {
             @Override
-            public void sendName(Server server, String name) {
-            }
-            @Override
-            public void sendAppCount(Server server, int cnt) {
-            }
-            @Override
             public void startTest() {
-/*                
-                Server server = new Server();
-                ModelDelegate.getSites().getAt(0).getEnvironments().getAt(0).getSilos().getAt(0).getServers().add(server);
-                server.setName("name on server");
-                remoteBroadcast.sendName(server, server.getName());
-                remoteBroadcast.sendAppCount(server, server.getApplications().getSize());
-*/                
-            }
-            @Override
-            public void sendName(Site site, String name) {
             }
             @Override
             public void stopTest() {
             }
             @Override
-            public void sendResults() {
+            public void sendStats() {
+                OAFinder<Site, Server> f = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp) {
+                    @Override
+                    protected void onFound(Server server) {
+                        respondStats(server, server.getName(), server.getApplications().getSize());
+                    }
+                };
+                f.find(ModelDelegate.getSites());
             }
             @Override
-            public void onClientStart() {
-                // TODO Auto-generated method stub
-                
+            public void respondStats(Site site, String name) {
+            }
+            @Override
+            public void respondStats(Server server, String name, int cntApps) {
+            }
+            @Override
+            public void respondStats(String msg) {
+            }
+            @Override
+            public void onClientTestStarted() {
+            }
+            @Override
+            public void onClientTestDone() {
+            }
+            @Override
+            public void onClientStatsSent() {
             }
             @Override
             public void onClientDone() {
-                // TODO Auto-generated method stub
-                
             }
         }; 
         remoteBroadcast = (RemoteBroadcastInterface) syncServer.createBroadcast(RemoteBroadcastInterface.BindName, remoteBroadcast, RemoteBroadcastInterface.class, OASyncServer.SyncQueueName, 100);
@@ -241,15 +243,21 @@ public class OASyncServerTest {
 
     public static void main(String[] args) throws Exception {
         MultiplexerServer.DEBUG = true;
-        OALogUtil.consoleOnly(Level.FINE);
+        OALogUtil.consoleOnly(Level.CONFIG);
         OASyncServerTest test = new OASyncServerTest();
         
         test.start();
         
+        int scnt = -1;
         for (int i=1;;i++) {
-            int x = test.syncServer.getSessionCount();
+            int x;
+            do {
+                x = test.syncServer.getSessionCount();
+                Thread.sleep(1 * 1000);
+            }
+            while (x == scnt);
+            scnt = x;
             System.out.println(i+") ServerTest is running "+(new OATime())+",  sessionCount="+x);
-            Thread.sleep(10 * 1000);
         }
     }
     

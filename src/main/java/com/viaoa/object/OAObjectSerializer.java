@@ -425,7 +425,7 @@ indent--;//qqqqqqqqqqqqq
         wcnter++;
         LOG.finer(wcnter+") "+msg);
 //qqqqqqqqqqqqqqqqq        
-        if (true) {            
+        if (false) {            
 //was        if (totalObjectsWritten > 250 || (wcnter%250 == 0)) {            
             System.out.println(wcnter+") ObjectSerializer "+msg);
         }

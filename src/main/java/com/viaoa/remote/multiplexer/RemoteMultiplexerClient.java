@@ -304,6 +304,7 @@ public class RemoteMultiplexerClient {
             ri.method = method;
             ri.args = args;
             ri.methodInfo = ri.bind.getMethodInfo(ri.method);
+            ri.isFromRemoteThread = (Thread.currentThread() instanceof OARemoteThread);
             if (ri.methodInfo != null) {
                 ri.methodNameSignature = ri.methodInfo.methodNameSignature;
                 ri.socket.setTimeoutSeconds(ri.methodInfo.timeoutSeconds);
@@ -657,7 +658,6 @@ public class RemoteMultiplexerClient {
 
     private final AtomicInteger aiClientThreadCount = new AtomicInteger();
     private final ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
-    private volatile long msLastCreatedRemoteThread;
 
     private OARemoteThread getRemoteClientThread(RequestInfo ri, boolean bSendMessgage) {
         OARemoteThread remoteThread;
@@ -672,7 +672,6 @@ public class RemoteMultiplexerClient {
                 }
             }
         }
-        msLastCreatedRemoteThread = System.currentTimeMillis();
         remoteThread = createRemoteClientThread();
         remoteThread.setSendMessages(bSendMessgage);
             
@@ -766,7 +765,6 @@ public class RemoteMultiplexerClient {
     private boolean shouldClose(final OARemoteThread remoteThread) {
         if (alRemoteClientThread.size() < 4) return false;
         long msNow = System.currentTimeMillis();
-        if (msNow - msLastCreatedRemoteThread < 1000) return false;
         int cnt = 0;
         int minFree = 2;
         if (alRemoteClientThread.size() > 10) minFree = 4;
@@ -833,13 +831,22 @@ public class RemoteMultiplexerClient {
             public void run() {
                 for (;;) {
                     try {
-                        RequestInfo  ri = queRequestInfo.take(); // blocks
+                        RequestInfo  ri = queRequestInfo.take();
                         if (ri.bind != null && ri.bind.isOASync) {
-                            queSyncRequestInfo.put(ri);
+                            // might need to handle this without waiting in the sync que, else it could exhaust remoteThreads
+                            if (ri.isFromRemoteThread) {
+                                RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
+                                synchronized (rix) {
+                                    rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
+                                    rix.methodInvoked = true;
+                                    rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                                }                                
+                            }
+                            else {
+                                queSyncRequestInfo.put(ri);
+                            }
                             continue;
                         }
-                        
-//qqqqqqqqqqqvvvvvvvvvvvvvvvv
                         
                         OARemoteThread t = getRemoteClientThread(ri, true);
                         synchronized (t.Lock) {
@@ -882,14 +889,15 @@ public class RemoteMultiplexerClient {
                                         // 20160121 wait for OARemoteThreadDelegate.startNextThread to be called, which will 
                                         //      then notify rix that sync msg is done, and next msg can be processed
 //qqqqqqqqqqqqqqqqqqqqqq                                        
-long ms1 = System.currentTimeMillis();                                        
-                                        rix.wait(1005);
-int diff = (int) (System.currentTimeMillis() - ms1);                                         
+//long ms1 = System.currentTimeMillis();                                        
+                                        rix.wait(25);
+/*int diff = (int) (System.currentTimeMillis() - ms1);                                         
 if (diff > 20) {
     System.out.println("xxxxxxxxxxxxxxxxxxxxxxxx QQQQQQQQQQQQQQQ "+diff+"  type="+rix.type+", method="+rix.method);
     int xx = 4;
     xx++;//qqqqqqqqqqqqq
 }
+*/
 //System.out.println(">>> time "+diff+"  type="+rix.type);
                                     }
                                     continue;
@@ -1023,7 +1031,8 @@ if (diff > 20) {
                 }
                 else {
                     if (rix.bind.isOASync) {
-                        ri.bind = rix.bind;
+                        ri.bind = rix.bind; 
+                        ri.isFromRemoteThread = rix.isFromRemoteThread;
                         queRequestInfo.put(ri);
                     }
                     else {

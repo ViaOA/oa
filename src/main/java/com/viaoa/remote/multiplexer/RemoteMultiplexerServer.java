@@ -1124,7 +1124,7 @@ public class RemoteMultiplexerServer {
     
     private AtomicInteger aiRemoteClientThreadPos = new AtomicInteger();
     /**
-     * This will have the currentThread wait for a RemoteThread process the request using invokeCtoS _invokeCtoS
+     * This will have the currentThread wait for a RemoteThread to process the request using invokeCtoS _invokeCtoS
      */
     protected void invokeUsingRemoteThread(final RequestInfo ri, boolean bFromServerQueueThread) throws Exception {
         if (ri == null) return;

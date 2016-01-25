@@ -16,7 +16,7 @@ import com.viaoa.util.OADateTime;
 public class RemoteMultiplexerTest4 extends OAUnitTest {
     private MultiplexerServer multiplexerServer;
     private RemoteMultiplexerServer remoteMultiplexerServer; 
-    public final int port = 1099;
+    public final int port = 1101;
     final String queueName = "que";
     final int queueSize = 2500;
     

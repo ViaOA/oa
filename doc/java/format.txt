@@ -1,6 +1,11 @@
 
 
- p(String.format("    gc.weightx = %.2ff;", (float) (jc.fillPercent/100.0f)));
+
+
+String.format( "STATS: Cnt=%,d, Avg=%,.2f", aiCnt.get(), (float) (aiTimeMs.get()/aiCnt.get()) );
+
+String.format("    gc.weightx = %.2ff;", (float) (jc.fillPercent/100.0f));
+
 
 
     Format String Symbol Meaning (same as DecimalFormat)

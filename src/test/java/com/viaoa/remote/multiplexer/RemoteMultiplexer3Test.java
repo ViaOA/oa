@@ -22,7 +22,7 @@ public class RemoteMultiplexer3Test extends OAUnitTest {
     private MultiplexerClient multiplexerClient;
     private RemoteMultiplexerClient remoteMultiplexerClient;
 
-    public final int port = 1099;
+    public final int port = 1101;
     final String queueName = "que";
     final int queueSize = 500;
     

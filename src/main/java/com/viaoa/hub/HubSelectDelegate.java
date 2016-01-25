@@ -215,8 +215,8 @@ public class HubSelectDelegate {
 	    @see #hasMoreData
 	    @see #isFetching
 	*/
-	public static void select(final Hub thisHub, OASelect select) {  // This is the main select method for Hub that all of the other select methods call.
-        cancelSelect(thisHub, true);
+	public static void select(final Hub thisHub, OASelect select, boolean bCancelPrevious) {  // This is the main select method for Hub that all of the other select methods call.
+        if (bCancelPrevious) cancelSelect(thisHub, true);
 	    if (select == null) {
 	        return;
 	    }
@@ -338,7 +338,8 @@ public class HubSelectDelegate {
 		    String s = null;
 		    OASelect selHold = hub.data.getSelect();
 		    cancelSelect(hub, true);
-		    
+
+qqqqqqqqqqqqqq might not want to keep filter qqqqqqqqqqqqqqqq		    
 		    sel = new OASelect(hub.getObjectClass());
 		    if (bAddToHub) hub.data.setSelect(sel);
 		    if (selHold != null) {
@@ -426,27 +427,36 @@ public class HubSelectDelegate {
 	    return sel.getOrder();
 	}
 
-
-	
+qqqqqqqqqqqqqqqqqqqqqqqq	
 	public static void select(Hub thisHub, boolean bAppendFlag) {
 		OASelect sel = getSelect(thisHub);
-		if (sel == null) sel = createNewSelect(thisHub, true);
+		boolean bCancelFirst;
+		if (sel == null) {
+		    sel = createNewSelect(thisHub, true);
+		    bCancelFirst = false;
+		}
 		else {
 		    sel.setWhereObject(null);
 		    sel.setParams(null);
 		    sel.setWhere(null);
             sel.setOrder(null);
 		    sel.setPassthru(false);
+		    bCancelFirst = true;
 		}
 	    sel.setAppend(bAppendFlag);
-        select(thisHub, sel);
+        select(thisHub, sel, bCancelFirst);
 	}	
 
 	// Main Select here:
 	protected static void select(Hub thisHub, OAObject whereObject, String whereClause, Object[] whereParams, String orderByClause, boolean bAppendFlag) {
 		OASelect sel = getSelect(thisHub);
-		if (sel == null) sel = createNewSelect(thisHub, false);
+		boolean bCancelFirst;
+		if (sel == null)  {
+		    sel = createNewSelect(thisHub, false);
+		    bCancelFirst = false;
+		}
 		else {
+		    bCancelFirst = true;
 	        sel.setPassthru(false);
 		}
 		sel.setWhereObject(whereObject);

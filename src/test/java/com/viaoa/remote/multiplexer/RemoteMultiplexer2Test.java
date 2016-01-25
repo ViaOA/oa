@@ -23,7 +23,7 @@ public class RemoteMultiplexer2Test extends OAUnitTest {
     private RemoteMultiplexerServer remoteMultiplexerServer; 
     private final AtomicInteger aiRemoteCount = new AtomicInteger();
 
-    public final int port = 1099;
+    public final int port = 1101;
     final String queueName = "que";
     final int queueSize = 2500;
     

@@ -100,7 +100,7 @@ public class OASyncClient {
         this.serverHostName = serverHostName;
         this.serverHostPort = serverHostPort;
         this.bUpdateSyncDelegate = bUpdateSyncDelegate;
-        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
+        //was: if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
     }
     
     
@@ -560,6 +560,10 @@ public class OASyncClient {
         }
         
         clientInfo.setStarted(true);
+
+        // 20160124
+        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
+        
         LOG.config("startup completed successful");
     }
     
@@ -587,11 +591,13 @@ public class OASyncClient {
         multiplexerClient = null;
         remoteMultiplexerClient = null;
         
-        OASyncDelegate.setSyncClient(packagex, null);
-        OASyncDelegate.setRemoteServer(packagex, null);
-        OASyncDelegate.setRemoteSync(packagex, null);
-        OASyncDelegate.setRemoteSession(packagex, null);
-        OASyncDelegate.setRemoteClient(packagex, null);
+        if (bUpdateSyncDelegate) {        
+            OASyncDelegate.setSyncClient(packagex, null);
+            OASyncDelegate.setRemoteServer(packagex, null);
+            OASyncDelegate.setRemoteSync(packagex, null);
+            OASyncDelegate.setRemoteSession(packagex, null);
+            OASyncDelegate.setRemoteClient(packagex, null);
+        }
     }
 
     public void onStopCalled(String title, String msg) {
