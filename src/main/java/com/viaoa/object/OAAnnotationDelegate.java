@@ -1,4 +1,4 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+/*  Copyright 1999-2016 Vince Via vvia@viaoa.com
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -13,7 +13,6 @@ package com.viaoa.object;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.annotation.*;
@@ -23,9 +22,9 @@ import com.viaoa.util.*;
 
 
 /**
- * Delegate used work with OAObject annotations.
+ * Delegate used load OAObject annotations into OAObjectInfo, Database, etc
  * @author vvia
- *
+ * 
  */
 public class OAAnnotationDelegate {
     private static Logger LOG = Logger.getLogger(OAAnnotationDelegate.class.getName());
@@ -543,10 +542,10 @@ public class OAAnnotationDelegate {
         System.out.println("done");
     }
 
-    static String getPropertyName(String s) {
+    public static String getPropertyName(String s) {
         return getPropertyName(s, true);
     }
-    static String getPropertyName(String s, boolean bToLower) {
+    public static String getPropertyName(String s, boolean bToLower) {
         boolean b = true;
         if (s.startsWith("get")) {
             s = s.substring(3);

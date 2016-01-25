@@ -79,7 +79,7 @@ public class HubSelectDelegate {
 						}
 						*/
 						capacity += 75;  // this will override the default behaviour of how the Vector grows itself (which is to double in size)
-//LOG.config("resizing, from:"+size+", to:"+capacity+", hub:"+thisHub);//qqqqqqqqqqqqqqqqqq                        
+//LOG.config("resizing, from:"+size+", to:"+capacity+", hub:"+thisHub);                        
 						HubDataDelegate.ensureCapacity(thisHub, capacity);
 					}
                 	HubAddRemoveDelegate.add(thisHub, obj);
@@ -200,9 +200,19 @@ public class HubSelectDelegate {
 	/**
 	    Returns OASelect used for querying datasource.
 	*/
-	protected static OASelect getSelect(Hub hub) {
-	    return hub.data.getSelect();
+	protected static OASelect getSelect(Hub thisHub) {
+	    return getSelect(thisHub, false);
 	}
+	
+    protected static OASelect getSelect(Hub thisHub, boolean bCreateIfNull) {
+        if (thisHub == null) return null;
+        OASelect sel = thisHub.data.getSelect();
+        if (sel != null || !bCreateIfNull) return sel;
+        
+        sel = new OASelect(thisHub.getObjectClass());
+        thisHub.data.setSelect(sel);
+        return sel;
+    }
 	
 	/**
 	    Used to populate Hub with objects returned from a OADataSource select.
@@ -215,8 +225,8 @@ public class HubSelectDelegate {
 	    @see #hasMoreData
 	    @see #isFetching
 	*/
-	public static void select(final Hub thisHub, OASelect select, boolean bCancelPrevious) {  // This is the main select method for Hub that all of the other select methods call.
-        if (bCancelPrevious) cancelSelect(thisHub, true);
+	public static void select(final Hub thisHub, OASelect select) {  // This is the main select method for Hub that all of the other select methods call.
+        cancelSelect(thisHub, true);
 	    if (select == null) {
 	        return;
 	    }
@@ -330,37 +340,17 @@ public class HubSelectDelegate {
 	}
 
 	/**
-	    Creates a new OASelect object by first calling cancelSelect.
-	*/
-	public static OASelect createNewSelect(Hub hub, boolean bAddToHub) {
-	    OASelect sel;
-	    synchronized (hub.data) {
-		    String s = null;
-		    OASelect selHold = hub.data.getSelect();
-		    cancelSelect(hub, true);
-
-qqqqqqqqqqqqqq might not want to keep filter qqqqqqqqqqqqqqqq		    
-		    sel = new OASelect(hub.getObjectClass());
-		    if (bAddToHub) hub.data.setSelect(sel);
-		    if (selHold != null) {
-		        sel.setHubFilter(selHold.getHubFilter());
-		    }
-		}
-	    return sel;
-	}
-	
-	/**
 	    Cancels current OASelect, calling select.cancel()
 	    This will also set SelectLater to false and RequiredWhere to null.
 	*/
-	protected static void cancelSelect(Hub thisHub, boolean bRemove) {
+	protected static void cancelSelect(Hub thisHub, boolean bRemoveSelect) {
 	    OASelect sel = thisHub.data.getSelect();
 	    boolean bHasMoreData;
 		if (sel != null) {
 		    boolean b = sel.hasBeenStarted();
 		    bHasMoreData = (b && sel.hasMore());
 	    	if (b) sel.cancel();
-	        if (bRemove) thisHub.data.setSelect(null);
+	        if (bRemoveSelect) thisHub.data.setSelect(null);
 	        if (b) HubDataDelegate.resizeToFit(thisHub);
 	    }
 		else bHasMoreData = false;
@@ -392,7 +382,8 @@ qqqqqqqqqqqqqq might not want to keep filter qqqqqqqqqqqqqqqq
 	public static void setSelectWhere(Hub thisHub, String s) {
         OASelect sel = getSelect(thisHub);
 	    if (sel == null) {
-	        sel = createNewSelect(thisHub, true);
+            sel = new OASelect(thisHub.getObjectClass());
+            thisHub.data.setSelect(sel);
 	    }
 	    sel.setWhere(s);
 	}
@@ -411,8 +402,10 @@ qqqqqqqqqqqqqq might not want to keep filter qqqqqqqqqqqqqqqq
 		thisHub.data.setSortProperty(s);
 
 		OASelect sel = getSelect(thisHub);
+//qqqqqqqqq needs to be syncronized with hub.data		
 	    if (!OAString.isEmpty(s) && sel == null) {
-	        sel = createNewSelect(thisHub, true);
+            sel = new OASelect(thisHub.getObjectClass());
+            thisHub.data.setSelect(sel);
 	    }
         sel.setOrder(s);
 	}
@@ -427,38 +420,16 @@ qqqqqqqqqqqqqq might not want to keep filter qqqqqqqqqqqqqqqq
 	    return sel.getOrder();
 	}
 
-qqqqqqqqqqqqqqqqqqqqqqqq	
 	public static void select(Hub thisHub, boolean bAppendFlag) {
-		OASelect sel = getSelect(thisHub);
-		boolean bCancelFirst;
-		if (sel == null) {
-		    sel = createNewSelect(thisHub, true);
-		    bCancelFirst = false;
-		}
-		else {
-		    sel.setWhereObject(null);
-		    sel.setParams(null);
-		    sel.setWhere(null);
-            sel.setOrder(null);
-		    sel.setPassthru(false);
-		    bCancelFirst = true;
-		}
+	    if (thisHub == null) return;
+	    OASelect sel = new OASelect(thisHub.getObjectClass());
 	    sel.setAppend(bAppendFlag);
-        select(thisHub, sel, bCancelFirst);
+        select(thisHub, sel);
 	}	
 
 	// Main Select here:
 	protected static void select(Hub thisHub, OAObject whereObject, String whereClause, Object[] whereParams, String orderByClause, boolean bAppendFlag) {
-		OASelect sel = getSelect(thisHub);
-		boolean bCancelFirst;
-		if (sel == null)  {
-		    sel = createNewSelect(thisHub, false);
-		    bCancelFirst = false;
-		}
-		else {
-		    bCancelFirst = true;
-	        sel.setPassthru(false);
-		}
+        OASelect sel = new OASelect(thisHub.getObjectClass());
 		sel.setWhereObject(whereObject);
         sel.setParams(whereParams);
         sel.setWhere(whereClause);
@@ -468,25 +439,14 @@ qqqqqqqqqqqqqqqqqqqqqqqq
     }
 
     public static void selectPassthru(Hub thisHub, String whereClause, String orderClause) {
-		OASelect sel = getSelect(thisHub);
-		if (sel == null) sel = createNewSelect(thisHub, true);
-		else {
-            sel.setWhereObject(null);
-            sel.setParams(null);
-            sel.setAppend(false);
-		}
+        OASelect sel = new OASelect(thisHub.getObjectClass());
         sel.setPassthru(true);
         sel.setWhere(whereClause);
         sel.setOrder(orderClause);
         select(thisHub, sel);
     }
     public static void selectPassthru(Hub thisHub, String whereClause, String orderClause, boolean bAppend) {
-        OASelect sel = getSelect(thisHub);
-        if (sel == null) sel = createNewSelect(thisHub, true);
-        else {
-            sel.setWhereObject(null);
-            sel.setParams(null);
-        }
+        OASelect sel = new OASelect(thisHub.getObjectClass());
         sel.setPassthru(true);
         sel.setAppend(bAppend);
         sel.setWhere(whereClause);
@@ -502,25 +462,13 @@ qqqqqqqqqqqqqqqqqqqqqqqq
         if (thisHub == null) return false;
         Object objAO = thisHub.getAO();
         OASelect sel = getSelect(thisHub);
-
-        final Object master = thisHub.getMasterObject();
-        if (sel != null) {
-            cancelSelect(thisHub, false);  // dont remove select from hub
-            sel.reset();
+        
+        if (sel == null) {
+            return false;
         }
         else {
-            if (master == null) return false;
-            OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
-            if (li == null) return false;
-            li = li.getReverseLinkInfo();
-            if (li == null) return false;
-            OADataSource ds = OADataSource.getDataSource(thisHub.getObjectClass());
-            if (ds == null) return false;
-            
-            sel = new OASelect(thisHub.getObjectClass());
-            sel.setWhereObject((OAObject) master);
-            sel.setPropertyFromWhereObject(li.getName());
-            sel.setOrder(li.getSortProperty());
+            cancelSelect(thisHub, false);
+            sel.reset(false);
         }
         
         sel.setDirty(true);
@@ -534,11 +482,9 @@ qqqqqqqqqqqqqqqqqqqqqqqq
         sel.setDirty(false);
 
         // check to see if any objects need to be removed from the original list
-        if (master == null) {
-            for (Object obj : thisHub) {
-                if (!hs.contains(obj)) {
-                    thisHub.remove(obj);
-                }
+        for (Object obj : thisHub) {
+            if (!hs.contains(obj)) {
+                thisHub.remove(obj);
             }
         }
         

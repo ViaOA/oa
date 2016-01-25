@@ -16,11 +16,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import test.theice.tsac.model.oa.propertypath.SitePP;
+import test.theice.tsam.delegate.ModelDelegate;
+import test.theice.tsam.model.oa.*;
+import test.theice.tsam.model.oa.cs.ServerRoot;
+import test.theice.tsam.remote.RemoteAppInterface;
 
-import com.theice.tsam.model.oa.cs.ServerRoot;
-import com.theice.tsam.delegate.ModelDelegate;
-import com.theice.tsam.model.oa.*;
-import com.theice.tsam.remote.RemoteAppInterface;
+import test.theice.tsam.model.oa.Application;
+import test.theice.tsam.model.oa.Environment;
+import test.theice.tsam.model.oa.Server;
+import test.theice.tsam.model.oa.Silo;
+import test.theice.tsam.model.oa.Site;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.hub.Hub;

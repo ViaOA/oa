@@ -15,6 +15,17 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import test.theice.tsac.model.oa.propertypath.SitePP;
+import test.theice.tsam.delegate.ModelDelegate;
+import test.theice.tsam.delegate.RemoteDelegate;
+import test.theice.tsam.model.oa.AdminUser;
+import test.theice.tsam.model.oa.Server;
+import test.theice.tsam.model.oa.Site;
+import test.theice.tsam.model.oa.cs.ClientRoot;
+import test.theice.tsam.model.oa.cs.ServerRoot;
+import test.theice.tsam.remote.RemoteAppImpl;
+import test.theice.tsam.remote.RemoteAppInterface;
+import test.theice.tsam.remote.RemoteModelImpl;
+import test.theice.tsam.remote.RemoteModelInterface;
 
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.hub.HubEvent;
@@ -25,17 +36,6 @@ import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
 import com.viaoa.sync.remote.RemoteTestInterface;
 import com.viaoa.util.*;
-import com.theice.tsam.delegate.ModelDelegate;
-import com.theice.tsam.delegate.RemoteDelegate;
-import com.theice.tsam.model.oa.AdminUser;
-import com.theice.tsam.model.oa.Server;
-import com.theice.tsam.model.oa.Site;
-import com.theice.tsam.model.oa.cs.ClientRoot;
-import com.theice.tsam.model.oa.cs.ServerRoot;
-import com.theice.tsam.remote.RemoteAppImpl;
-import com.theice.tsam.remote.RemoteAppInterface;
-import com.theice.tsam.remote.RemoteModelImpl;
-import com.theice.tsam.remote.RemoteModelInterface;
 
 /**
  *  Run this manually, and then run OASyncClientTest multiple times, and then run it as a junit test.

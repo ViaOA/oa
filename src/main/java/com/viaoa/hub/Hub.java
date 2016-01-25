@@ -225,7 +225,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
             if (bCreateSelect) {
                 // create select, but dont call select.select(), since it could be
                 // coming from server. See: OAObjectReflectDelegate.getReferenceHub(..)
-                OASelect sel = HubSelectDelegate.createNewSelect(this, true);
+                OASelect sel = HubSelectDelegate.getSelect(this, true);
                 if (masterObject != null) {
                     sel.setWhereObject(masterObject);
                     sel.setPropertyFromWhereObject(linkInfo.getReverseName());
@@ -1801,21 +1801,15 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         return HubSelectDelegate.getSelect(this);
     }
     public OASelect getSelect(boolean bCreateIfNull) {
-        OASelect sel = HubSelectDelegate.getSelect(this);
-        if (sel == null && bCreateIfNull) {
-            sel = HubSelectDelegate.createNewSelect(this, true);
-        }
+        OASelect sel = HubSelectDelegate.getSelect(this, true);
         return sel;
     }
 
     /**
-     * Cancel the reading of anymore records from OADataSource, from last select
-     * statement. This will also set SelectLater to false.
+     * Cancel the reading of anymore records from OADataSource.
      */
     public void cancelSelect() {
-        boolean b = (this.datam.masterHub != null || this.datam.masterObject != null);
-        // if false, then keep select in case refreshSelect is called, etc
-        HubSelectDelegate.cancelSelect(this, b);
+        HubSelectDelegate.cancelSelect(this, true);
     }
 
     /**

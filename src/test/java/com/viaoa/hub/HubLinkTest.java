@@ -1,6 +1,5 @@
 package com.viaoa.hub;
 
-
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -11,6 +10,7 @@ import com.viaoa.object.OAFinder;
 import test.hifive.HifiveDataGenerator;
 import test.hifive.delegate.ModelDelegate;
 import test.hifive.model.oa.*;
+import test.hifive.model.oa.cs.ServerRoot;
 import test.hifive.model.oa.propertypath.*;
 
 import test.theice.tsac3.Tsac3DataGenerator;
@@ -272,6 +272,7 @@ public class HubLinkTest extends OAUnitTest {
     @Test
     public void recursiveLinkTest() {
         init();
+        ModelDelegate.initialize(new ServerRoot()); 
         
         HifiveDataGenerator data = new HifiveDataGenerator();
         data.createSampleData();

@@ -3,9 +3,10 @@ package com.viaoa.sync.remote;
 
 import java.util.ArrayList;
 
-import com.theice.tsam.model.oa.Server;
 import com.viaoa.remote.multiplexer.annotation.*;
 import com.viaoa.util.OAProperties;
+
+import test.theice.tsam.model.oa.Server;
 
 @OARemoteInterface
 public interface RemoteTestInterface {

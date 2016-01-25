@@ -1,5 +1,6 @@
 package com.viaoa;
 
+
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.autonumber.NextNumber;
 import com.viaoa.ds.autonumber.OADataSourceAuto;

@@ -56,6 +56,19 @@ public class OAArray {
         return false;
     }
 
+    public static boolean isEqual(Object[] objs1, Object[] objs2) {
+        if (objs1 == objs2) return true;
+        if (objs1 == null || objs2 == null) return false;
+        int x = objs1.length;
+        if (x != objs2.length) return false;
+        for (int i=0; i<x; i++) {
+            if (objs1[i] == objs2[i]) continue;
+            if (objs1[i] == null || objs2[i] == null) return false;
+            if (!objs1[i].equals(objs2[i])) return false;
+        }
+        return true;
+    }
+    
     
     
     

@@ -1,8 +1,11 @@
 // Copied from OATemplate project by OABuilder 12/13/15 02:58 PM
 package com.viaoa.sync.remote;
 
-import com.theice.tsam.model.oa.*;
+import test.theice.tsam.model.oa.Server;
+import test.theice.tsam.model.oa.Site;
 import com.viaoa.remote.multiplexer.annotation.*;
+
+import test.theice.tsam.model.oa.*;
 
 @OARemoteInterface
 public interface RemoteBroadcastInterface {

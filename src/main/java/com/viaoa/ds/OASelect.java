@@ -160,10 +160,15 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
         Calls cancel() and clears out previous where,order, count,amountRead.
     */
     public void reset() {
+        reset(false);
+    }
+    public void reset(boolean bClearOutValues) {
         closeQuery();
-        where = null;
-        order = null;
-        whereObject = null;
+        if (bClearOutValues) {
+            where = null;
+            order = null;
+            whereObject = null;
+        }
         amountCount = -1;
         amountRead = -1;
         bCancelled = false;
