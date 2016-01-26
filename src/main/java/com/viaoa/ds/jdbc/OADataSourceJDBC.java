@@ -46,7 +46,7 @@ public class OADataSourceJDBC extends OADataSource {
     protected ConnectionPool connectionPool;
 
     /**
-        Create new OADataSourceJDBC using a Database mappling object.
+        Create new OADataSourceJDBC using a Database mapping object.
     */
     public OADataSourceJDBC(Database database, DBMetaData dbmd) {
         this.database = database;

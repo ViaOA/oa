@@ -251,7 +251,8 @@ public class OAObjectHubDelegate {
             if (oaObj.weakhubs == null) {
                 
                 // 20160105 check to use same as another object in hub
-                for (int i=0; i<4; i++) {
+                int x = Math.min(4, hub.getCurrentSize());
+                for (int i=0; i<x; i++) {
                     OAObject objx = (OAObject) hub.getAt(i);
                     if (objx == null) break;
                     if (objx == oaObj) continue;
@@ -298,27 +299,30 @@ public class OAObjectHubDelegate {
                     // no room
                     
                     // 20160105 if currentSize<3, check to see if it can use the same as another obj in hub
-                    for (int i=0; currentSize<3 && i<4; i++) {
-                        OAObject objx = (OAObject) hub.getAt(i);
-                        if (objx == null) break;
-                        if (objx == oaObj) continue;
-                        WeakReference[] wrs = objx.weakhubs;
-                        if (wrs == null) continue;
-                        if (wrs.length != currentSize+1) continue;
-                        
-                        bReused = true;
-                        for (int j=0; j<currentSize; j++) {
-                            if (wrs[j] != oaObj.weakhubs[j]) {
-                                bReused = false;
-                                break;
+                    if (currentSize < 3) {
+                        int x = Math.min(4, hub.getCurrentSize());
+                        for (int i=0; i<x; i++) {
+                            OAObject objx = (OAObject) hub.getAt(i);
+                            if (objx == null) break;
+                            if (objx == oaObj) continue;
+                            WeakReference[] wrs = objx.weakhubs;
+                            if (wrs == null) continue;
+                            if (wrs.length != currentSize+1) continue;
+                            
+                            bReused = true;
+                            for (int j=0; j<currentSize; j++) {
+                                if (wrs[j] != oaObj.weakhubs[j]) {
+                                    bReused = false;
+                                    break;
+                                }
                             }
-                        }
-                        if (bReused) {
-                            if (wrs[currentSize].get() != hub) bReused = false;
-                            else {
-                                oaObj.weakhubs = wrs;
-                                pos = currentSize;
-                                break;
+                            if (bReused) {
+                                if (wrs[currentSize].get() != hub) bReused = false;
+                                else {
+                                    oaObj.weakhubs = wrs;
+                                    pos = currentSize;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -353,7 +357,8 @@ public class OAObjectHubDelegate {
             if (!bReused) {
                 // 20160105 see if weakRef can be reused
                 boolean b = false;
-                for (int i=0; !b && i<4; i++) {
+                int x = Math.min(4, hub.getCurrentSize());
+                for (int i=0; !b && i<x; i++) {
                     OAObject objx = (OAObject) hub.getAt(i);
                     if (objx == null) break;
                     if (objx == oaObj) continue;

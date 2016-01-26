@@ -46,7 +46,7 @@ public class HubData implements java.io.Serializable {
     // used by setChanged
     protected volatile boolean changed;
     
-    private transient volatile HubDatax hubDatax; // extension
+    protected transient volatile HubDatax hubDatax; // extension
     
 	/**
 	    Constructor that supplies params for sizing Vector.

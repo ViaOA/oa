@@ -26,7 +26,6 @@ public class OADataSourceTest extends OAUnitTest {
         Server server = new Server();
         assertEquals(server.getId(), 0);
         
-        
         getCacheDataSource();
         getAutoDataSource();
         

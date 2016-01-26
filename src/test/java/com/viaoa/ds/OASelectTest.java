@@ -10,7 +10,8 @@ import com.viaoa.util.OAFilter;
 
 import test.theice.tsac3.model.Model;
 import test.theice.tsac3.Tsac3DataGenerator;
-import test.theice.tsac3.model.oa.*;
+import test.theice.tsac3.model.oa.Server;
+import test.theice.tsac3.model.oa.Site;
 import test.theice.tsac3.model.oa.propertypath.SitePP;
 
 public class OASelectTest extends OAUnitTest {

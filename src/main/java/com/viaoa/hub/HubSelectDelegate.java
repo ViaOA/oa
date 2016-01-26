@@ -44,6 +44,8 @@ public class HubSelectDelegate {
         int x = fetchMore(thisHub, HubSelectDelegate.getSelect(thisHub), famt);
         return x;
     }
+    private static int cntWarning;
+    
     protected static int fetchMore(Hub thisHub, OASelect sel, int famt) {
         if (sel == null) return 0;
         int fa = sel.getFetchAmount();  // default amount to load
@@ -55,9 +57,14 @@ public class HubSelectDelegate {
         if (famt > 0) fa = famt;
         int cnt = 0;
 
+        if (hubData.isInFetch() && cntWarning++ < 20) {
+            Exception e = new Exception("fetchMore called while already fetching");
+            LOG.log(Level.WARNING, "fetchMore warning", e);
+        }
+        
         try {
-        	hubData.setInFetch(true);
-
+            hubData.setInFetch(true);
+        	
 			int capacity = hubData.vector.capacity(); // number of available 'slots'
             int size = hubData.vector.size(); // number of elements
             
@@ -149,7 +156,7 @@ public class HubSelectDelegate {
 	public static void loadAllData(Hub thisHub, OASelect select) {
 	    if (thisHub == null || select == null) return;
 	    
-	    // 20121015 adjusted locking
+	    // 20121015 adjusted for locking
 	    for (int i=0; ;i++) {
     	    boolean bCanRun = false;
             synchronized (thisHub.data) {
@@ -402,7 +409,6 @@ public class HubSelectDelegate {
 		thisHub.data.setSortProperty(s);
 
 		OASelect sel = getSelect(thisHub);
-//qqqqqqqqq needs to be syncronized with hub.data		
 	    if (!OAString.isEmpty(s) && sel == null) {
             sel = new OASelect(thisHub.getObjectClass());
             thisHub.data.setSelect(sel);
@@ -428,7 +434,8 @@ public class HubSelectDelegate {
 	}	
 
 	// Main Select here:
-	protected static void select(Hub thisHub, OAObject whereObject, String whereClause, Object[] whereParams, String orderByClause, boolean bAppendFlag) {
+	protected static void select(Hub thisHub, OAObject whereObject, String whereClause, 
+	        Object[] whereParams, String orderByClause, boolean bAppendFlag) {
         OASelect sel = new OASelect(thisHub.getObjectClass());
 		sel.setWhereObject(whereObject);
         sel.setParams(whereParams);
@@ -464,7 +471,15 @@ public class HubSelectDelegate {
         OASelect sel = getSelect(thisHub);
         
         if (sel == null) {
-            return false;
+            Object obj = thisHub.getMasterObject();
+            if (!(obj instanceof OAObject)) return false;
+
+            OALinkInfo linkInfo = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
+            if (linkInfo == null) return false;
+            
+            sel = new OASelect(thisHub.getObjectClass());
+            sel.setWhereObject((OAObject) obj);
+            sel.setPropertyFromWhereObject(linkInfo.getReverseName());
         }
         else {
             cancelSelect(thisHub, false);
@@ -491,4 +506,5 @@ public class HubSelectDelegate {
         thisHub.setAO(objAO);
         return true;
 	}
+	
 }
