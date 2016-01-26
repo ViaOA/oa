@@ -1,5 +1,6 @@
 package com.viaoa.object;
 
+
 import java.util.ArrayList;
 
 import org.junit.Test;
@@ -8,30 +9,37 @@ import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
+import com.viaoa.util.OAFilter;
+import com.viaoa.util.OAGreaterThanZeroTest;
+import com.viaoa.util.filter.OAAndFilter;
+import com.viaoa.util.filter.OAEqualFilter;
+import com.viaoa.util.filter.OAGreaterFilter;
+import com.viaoa.util.filter.OALessFilter;
+import com.viaoa.util.filter.OAOrFilter;
 
 import test.hifive.HifiveDataGenerator;
 import test.hifive.delegate.ModelDelegate;
-import test.hifive.model.oa.*;
+import test.hifive.model.oa.Employee;
+import test.hifive.model.oa.Program;
 import test.hifive.model.oa.propertypath.ProgramPP;
-import test.theice.tsac3.*;
-import test.theice.tsac3.model.Model;
-import test.theice.tsac3.model.oa.*;
-import test.theice.tsac3.model.oa.propertypath.*;
+import test.theice.tsam.*;
+import test.theice.tsam.model.oa.*;
+import test.theice.tsam.model.oa.cs.ServerRoot;
+import test.theice.tsam.model.oa.propertypath.*;
+import test.theice.tsam.util.DataGenerator;
 
 public class OAFinderTest extends OAUnitTest {
     
     
     @Test
-    public void finderSimpleTest() {
-        init();
-        Model modelTsac = new Model();
-        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
-        data.createSampleData();
-
+    public void finder1Test() throws Exception {
+        ServerRoot root = DataGenerator.getServerRoot();
+        
         // a finder without a filter should return all objects
         OAFinder f = new OAFinder();
-        ArrayList al = f.find(modelTsac.getSites());
-        assertEquals(modelTsac.getSites().size(), al.size());
+        ArrayList al = f.find(root.getSites());
+
+        assertEquals(root.getSites().size(), al.size());
 
         f = new OAFinder() {
             int cnt;
@@ -41,8 +49,16 @@ public class OAFinderTest extends OAUnitTest {
                 return (cnt++ == 0);
             }
         };
-        al = f.find(modelTsac.getSites());
+        al = f.find(root.getSites());
         assertEquals(1, al.size());
+    }
+        
+    @Test
+    public void finder2Test() throws Exception {
+        ServerRoot root = DataGenerator.getServerRoot();
+        
+        OAFinder f = new OAFinder();
+        ArrayList al;
         
         f = new OAFinder() {
             @Override
@@ -51,83 +67,129 @@ public class OAFinderTest extends OAUnitTest {
                 return false;
             }
         };
-        al = f.find(modelTsac.getSites());
+        al = f.find(root.getSites());
         assertEquals(0, al.size());
 
         f = new OAFinder();
-        f.addEqualFilter(null, modelTsac.getSites().getAt(0));
-        al = f.find(modelTsac.getSites());
+        f.addEqualFilter(null, root.getSites().getAt(0));
+        al = f.find(root.getSites());
         assertEquals(1, al.size());
         
-        int id = modelTsac.getSites().getAt(0).getId();
+        int id = root.getSites().getAt(0).getId();
         f.addEqualFilter("id", id+"");
-        al = f.find(modelTsac.getSites());
+        al = f.find(root.getSites());
         assertEquals(1, al.size());
         
         f.addEqualFilter("id", id);
-        al = f.find(modelTsac.getSites());
+        al = f.find(root.getSites());
         assertEquals(1, al.size());
         
         reset();
     }
-    
+
     @Test
-    public void finderTest() {
-        init();
-        Model modelTsac = new Model();
-        Tsac3DataGenerator data = new Tsac3DataGenerator(modelTsac);
-        data.createSampleData();
+    public void findFirstTest() throws Exception {
+        ServerRoot root = DataGenerator.getServerRoot();
 
-        OAFinder<Site, Server> finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);
+        String pp = SitePP.environments().silos().servers().pp;
 
-        Hub<Site> hubSite = modelTsac.getSites();
-        Server server = finder.findFirst(hubSite);
-        assertEquals(server.getName(), "Server.0.0.0.0");
-        assertEquals(server.getId(), 1);
+        OAFinder<Site, Server> finder = new OAFinder<Site, Server>(pp);
         
-        ArrayList<Server> alServer = finder.find(modelTsac.getSites());
-        int cnt = 0;
-        for (Server ser : alServer) {
-            assertEquals(ser.getId(), ++cnt);
-        }
-        
-        finder.clearFilters();
-        finder.addEqualFilter(Server.P_Id, 5);
-        alServer = finder.find(hubSite);
-        assertEquals(alServer.size(), 1);
-        server = alServer.get(0);
-        assertEquals(server.getId(), 5);
-
-        finder.clearFilters();
-        finder.addLessFilter(Server.P_Id, 5);
-        alServer = finder.find(hubSite);
-        assertEquals(alServer.size(), 4);
-        
-        finder.clearFilters();
-        finder.addLessOrEqualFilter(Server.P_Id, 5);
-        alServer = finder.find(hubSite);
-        assertEquals(alServer.size(), 5);
-
-        finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);
-        finder.addEqualFilter(ServerPP.id(), 1);
-        server = finder.findFirst(hubSite);
+        Server server = root.getSites().getAt(0).getEnvironments().getAt(0).getSilos().getAt(0).getServers().getAt(0);
         assertNotNull(server);
-        assertEquals(server.getId(), 1);
-        
-        finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);
-        finder.addEqualFilter(ServerPP.silo().environment().name(), "Environment.0.0");
-        server = finder.findFirst(hubSite);
-        assertNotNull(server);
-        assertEquals(server.getId(), 1);
-
-        finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);
-        finder.addEqualFilter(ServerPP.silo().environment().name(), "Environment.0.0");
-        server = finder.findFirst(hubSite);
-        assertNotNull(server);
-        assertEquals(server.getId(), 1);
-
-        reset();
+        assertEquals(server, finder.findFirst(root.getSites()));
     }
+
+    @Test
+    public void maxFoundTest() throws Exception {
+        ServerRoot root = DataGenerator.getServerRoot();
+
+        String pp = SitePP.environments().silos().servers().pp;
+
+        OAFinder<Site, Server> finder = new OAFinder<Site, Server>(pp);
+        finder.setMaxFound(5);
+        
+        ArrayList<Server> alServer = finder.find(root.getSites());
+        
+        assertEquals(5, alServer.size());
+    }
+    
+    
+    private int cnt;
+    @Test
+    public void filterTest() throws Exception {
+        ServerRoot root = DataGenerator.getServerRoot();
+
+        // set server.cnt
+        cnt = 0;
+        String pp = SitePP.environments().silos().servers().pp;
+        
+        OAFinder<Site, Server> f = new OAFinder<Site, Server>(pp) {
+            @Override
+            protected void onFound(Server obj) {
+                obj.setMiscCnt(cnt++);
+            }
+        };
+        f.find(root.getSites());
+        
+        final int totalServers = cnt;
+        
+
+        OAFinder<Site, Server> finder = new OAFinder<Site, Server>(pp);
+
+        ArrayList<Server> alServer;
+        
+        finder.clearFilters();
+        finder.addEqualFilter(Server.P_MiscCnt, 3);
+        alServer = finder.find(root.getSites());
+        assertEquals(alServer.size(), 1);
+        assertEquals(3, alServer.get(0).getMiscCnt());
+
+        finder.clearFilters();
+        finder.addLessFilter(Server.P_MiscCnt, 3);
+        alServer = finder.find(root.getSites());
+        assertTrue(alServer.size() == 3);
+
+        
+        finder.clearFilters();
+        finder.addLessOrEqualFilter(Server.P_MiscCnt, 5);
+        alServer = finder.find(root.getSites());
+        assertEquals(alServer.size(), 6);
+
+        finder = new OAFinder<Site, Server>(pp);
+        finder.addEqualFilter(Server.P_MiscCnt, 1);
+        Server server = finder.findFirst(root.getSites());
+        assertNotNull(server);
+        assertEquals(server.getMiscCnt(), 1);
+        
+        Site site = root.getSites().getAt(0);
+        finder = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp);
+        finder.addEqualFilter(ServerPP.silo().environment().site().name(),  site.getName());
+        server = finder.findFirst(root.getSites());
+        assertNotNull(server);
+    
+        finder = new OAFinder<Site, Server>(pp);
+        OAFilter f1 = new OAEqualFilter(Server.P_MiscCnt, 4);
+        OAFilter f2 = new OAEqualFilter(Server.P_MiscCnt, 3);
+        
+        finder.addFilter(new OAOrFilter(f1, f2));
+        
+        alServer = finder.find(root.getSites());
+        assertEquals(2, alServer.size());
+        
+        
+        finder = new OAFinder<Site, Server>(pp);
+        f1 = new OAGreaterFilter(Server.P_MiscCnt, 2);
+        f2 = new OALessFilter(Server.P_MiscCnt, 5);
+        
+        finder.addFilter(new OAAndFilter(f1, f2));
+        
+        alServer = finder.find(root.getSites());
+        assertEquals(2, alServer.size());
+    }
+    
+    
+    
     
     @Test
     public void recursiveFinderTest() {
@@ -147,24 +209,6 @@ public class OAFinderTest extends OAUnitTest {
         empx = finder.findFirst(ModelDelegate.getPrograms());
         assertNull(empx);
         
-        
         reset();
-    }
-
-    @Test
-    public void equalsTest() {
-        init();
-
-        OAFinder<Site, Site> finder = new OAFinder<Site, Site>();
-        String pp = SitePP.environments().silos().servers().hostName();
-        finder.addEqualFilter(pp, "none");
-        
-        pp = SitePP.environments().silos().servers().gsmrServer().instanceNumber();
-        finder.addEqualFilter(pp, 1);
-        
-        Hub<Site> hub = new Hub<Site>(Site.class);
-        Site site = finder.findFirst(hub);
-
-        assertNull(site);
     }
 }

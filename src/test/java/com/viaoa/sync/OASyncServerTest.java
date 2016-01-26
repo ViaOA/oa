@@ -27,6 +27,7 @@ import test.theice.tsam.remote.RemoteAppImpl;
 import test.theice.tsam.remote.RemoteAppInterface;
 import test.theice.tsam.remote.RemoteModelImpl;
 import test.theice.tsam.remote.RemoteModelInterface;
+import test.theice.tsam.util.DataGenerator;
 
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.hub.HubEvent;
@@ -47,8 +48,9 @@ public class OASyncServerTest {
     private ServerRoot serverRoot;    
     public OASyncServer syncServer;
 
-    public void start() throws Exception {  
-        serverRoot = readSerializeFromFile();
+    public void start() throws Exception {
+        DataGenerator dg = new DataGenerator();
+        serverRoot = dg.readSerializeFromFile();
         setupTestA();
         ModelDelegate.initialize(serverRoot, null);
         getSyncServer().start();
@@ -201,47 +203,6 @@ public class OASyncServerTest {
     }   
     private RemoteBroadcastInterface remoteBroadcast;
     
-
-    private ServerRoot readSerializeFromFile() throws Exception {
-        File file = new File(OAFile.convertFileName("runtime/test/tsam.bin"));
-        if (!file.exists()) {
-            return null;
-        }
-        FileInputStream fis = new FileInputStream(file);
-    
-        Inflater inflater = new Inflater();
-        InflaterInputStream inflaterInputStream = new InflaterInputStream(fis, inflater, 1024*3);
-        
-        ObjectInputStream ois = new ObjectInputStream(inflaterInputStream) {
-            @Override
-            protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
-                ObjectStreamClass cd = super.readClassDescriptor();
-                try {
-                    Field f = cd.getClass().getDeclaredField("name");
-                    f.setAccessible(true);
-                    String name = (String) f.get(cd);
-                    //String name2 = OAString.convert(name, ".tsac.", ".tsac2.");
-                    if (name.indexOf("com.theice.tsam.") == 0) {
-                        name = OAString.convert(name, "com.theice.tsam.", "test.theice.tsam.");
-                        f.set(cd, name);
-                    }
-                } 
-                catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                return cd;
-            }
-        };
-
-        OAObjectSerializer wrap = (OAObjectSerializer) ois.readObject(); 
-        ServerRoot serverRoot = (ServerRoot) wrap.getObject();
-        String version = (String) ois.readObject();
-        
-        ois.close();
-        fis.close();
-
-        return serverRoot;
-    }
 
     public static void main(String[] args) throws Exception {
         MultiplexerServer.DEBUG = true;

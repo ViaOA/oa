@@ -53,6 +53,8 @@ public class Server extends OAObject {
     public static final String P_ShortDnsName = "ShortDnsName";
     public static final String PROPERTY_UserId = "UserId";
     public static final String P_UserId = "UserId";
+    public static final String P_SyncCnt = "SyncCnt";
+    public static final String P_MiscCnt = "MiscCnt";
      
     public static final String PROPERTY_DisplayName = "DisplayName";
     public static final String P_DisplayName = "DisplayName";
@@ -72,7 +74,8 @@ public class Server extends OAObject {
     protected String dnsName;
     protected String shortDnsName;
     protected String userId;
-    protected volatile int cnt;
+    protected volatile int syncCnt;
+    protected volatile int miscCnt;
      
     // Links to other objects.
     protected transient Hub<Application> hubApplications;
@@ -297,18 +300,29 @@ public class Server extends OAObject {
     }
     
     
-    @OAProperty(displayName = "Cnt", maxLength = 7, displayLength = 5, columnLength = 5)
-    public int getCnt() {
-        return cnt;
+    @OAProperty(displayName = "SyncCnt", maxLength = 7, displayLength = 5, columnLength = 5)
+    public int getSyncCnt() {
+        return syncCnt;
     }
-    public void setCnt(int newValue) {
-        fireBeforePropertyChange("cnt", this.cnt, newValue);
-        int old = cnt;
-        if (newValue != this.cnt+1) {  
+    public void setSyncCnt(int newValue) {
+        fireBeforePropertyChange(P_SyncCnt, this.syncCnt, newValue);
+        int old = syncCnt;
+        if (newValue != this.syncCnt+1) {  
             throw new RuntimeException("expected "+(old+1)+", received="+newValue);
         }
-        this.cnt = newValue;
-        firePropertyChange("cnt", old, this.cnt);
+        this.syncCnt = newValue;
+        firePropertyChange(P_SyncCnt, old, this.syncCnt);
+    }
+
+    @OAProperty(displayName = "MiscCnt", maxLength = 7, displayLength = 5, columnLength = 5)
+    public int getMiscCnt() {
+        return miscCnt;
+    }
+    public void setMiscCnt(int newValue) {
+        fireBeforePropertyChange(P_MiscCnt, this.miscCnt, newValue);
+        int old = miscCnt;
+        this.miscCnt = newValue;
+        firePropertyChange(P_MiscCnt, old, this.miscCnt);
     }
 }
  

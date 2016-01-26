@@ -1,4 +1,4 @@
-package com.viaoa.object;
+package com.viaoa.util;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -7,12 +7,10 @@ import com.viaoa.OAUnitTest;
 
 import test.theice.tsac3.model.oa.*;
 
-public class OAEditModeTest extends OAUnitTest {
+public class OAFindFileTest extends OAUnitTest {
 
     @Test
     public void test() {
-        
-        OAEditMode em = new OAEditMode();
         
     }
     

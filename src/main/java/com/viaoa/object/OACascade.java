@@ -23,13 +23,19 @@ import com.viaoa.hub.Hub;
 /**
  * Used for cascading methods, to be able to know if an object
  * has already been visited.
+ * 
+ * Since this is a recursive visitor, it could cause stack overflows.  To handle this, there is
+ * a depth that can be used.  When/if the max depth is reached, then objects can be added to an array
+ * and then restarted once the stack unwinding is done.
+ * 
+ * 
  * @author vvia
  */
 public class OACascade {
     private static Logger LOG = Logger.getLogger(OACascade.class.getName());
     // convert to this?  private IdentityHashMap hmCascade;
-    private TreeSet<Integer> mapCascade;
-    private TreeSet<Hub> mapCascadeHub;
+    private TreeSet<Integer> treeObject;
+    private TreeSet<Hub> treeHub;
     private ReentrantReadWriteLock rwLock;
     private ReentrantReadWriteLock rwLockHub;
   
@@ -76,13 +82,15 @@ public class OACascade {
         // LOG.finer("new OACascade");
     }
 
+    /** 20160126 not used.  confusing: remove from tree or list
     public void remove(OAObject oaObj) {
-        if (mapCascade != null) {
+        if (treeObject != null) {
             if (rwLock != null) rwLock.readLock().lock();
-            mapCascade.remove(oaObj.guid);
+            treeObject.remove(oaObj.guid);
             if (rwLock != null) rwLock.readLock().unlock();
         }
     }
+    */
     
     private HashSet<Class> hsIgnore; 
     public void ignore(Class clazz) {
@@ -93,21 +101,21 @@ public class OACascade {
     public boolean wasCascaded(OAObject oaObj, boolean bAdd) {
         if (oaObj == null) return false;
         if (hsIgnore != null && hsIgnore.contains(oaObj.getClass())) return true;
-        if (mapCascade == null) {
+        if (treeObject == null) {
             if (!bAdd) return false;
             if (rwLock != null) rwLock.writeLock().lock();
-            mapCascade = new TreeSet<Integer>();
+            treeObject = new TreeSet<Integer>();
             if (rwLock != null) rwLock.writeLock().unlock();
         }
         
         if (rwLock != null) rwLock.readLock().lock();
-        boolean b = mapCascade.contains(oaObj.guid);
+        boolean b = treeObject.contains(oaObj.guid);
         if (rwLock != null) rwLock.readLock().unlock();
         if (b) return true;
 
         if (bAdd) {
             if (rwLock != null) rwLock.writeLock().lock();
-            mapCascade.add(oaObj.guid);
+            treeObject.add(oaObj.guid);
             if (rwLock != null) rwLock.writeLock().unlock();
         }
         return false;
@@ -116,21 +124,21 @@ public class OACascade {
     public boolean wasCascaded(Hub hub, boolean bAdd) {
         if (hub == null) return false;
 
-        if (mapCascadeHub == null) {
+        if (treeHub == null) {
             if (!bAdd) return false;
             if (rwLockHub != null) rwLockHub.writeLock().lock();
-            mapCascadeHub = new TreeSet<Hub>();
+            treeHub = new TreeSet<Hub>();
             if (rwLockHub != null) rwLockHub.writeLock().unlock();
         }
         
         if (rwLockHub != null) rwLockHub.readLock().lock();
-        boolean b = mapCascadeHub.contains(hub);
+        boolean b = treeHub.contains(hub);
         if (rwLockHub != null) rwLockHub.readLock().unlock();
         if (b) return true;
         
         if (bAdd) {
             if (rwLockHub != null) rwLockHub.writeLock().lock();
-            mapCascadeHub.add(hub);
+            treeHub.add(hub);
             if (rwLockHub != null) rwLockHub.writeLock().unlock();
         }
         return false;

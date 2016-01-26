@@ -47,6 +47,7 @@ public abstract class OACircularQueue<TYPE> {
      *  Uses module queueSize to determine the array position.  
     */
     private volatile long queueHeadPosition;  
+    private volatile long queueLowPosition;  
 
     // last position that a registered session has used. All previous positions can be set to null
     private volatile long lastUsedPos;
@@ -107,6 +108,7 @@ public abstract class OACircularQueue<TYPE> {
     
     
     public long registerSession(int sessionId) {
+        this.queueLowPosition = 0; // reset
         return registerSession(sessionId, 0);
     }
     /**
@@ -134,6 +136,7 @@ public abstract class OACircularQueue<TYPE> {
         return x;
     }
     public void unregisterSession(int sessionId) {
+        this.queueLowPosition = 0; // reset
         if (hmSession != null) {
             hmSession.remove(sessionId);
         }
@@ -183,11 +186,19 @@ public abstract class OACircularQueue<TYPE> {
     
     private int cntQueueWait; // number of times a addMessage has called wait.    
     private long tsLastLog;
-
+    
     public int addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
 
-            if (hmSession != null) {
+            boolean b = (hmSession != null);
+            if (b) {
+                if ( (queueLowPosition + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10))) ) {
+                    b = false;
+                }
+            }
+            
+            if (b) {
+                queueLowPosition = queueHeadPosition;
                 // wait up to 1 second for any slow consumer
                 for (int i=0; i<20; i++) {
                     
@@ -197,6 +208,7 @@ public abstract class OACircularQueue<TYPE> {
                         if (session.queuePos < (queueHeadPosition - queueSize)) {
                             continue; // overflow
                         }
+                        queueLowPosition = Math.min(session.queuePos, queueLowPosition);
 
                         // check to see if it is getting close to a queue overrun
                         if ( (session.queuePos + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10))) ) {
@@ -207,6 +219,7 @@ public abstract class OACircularQueue<TYPE> {
                             }
                         }
                     
+                        
                         long ts = session.msLastRead;
                         long tsNow = System.currentTimeMillis();
                         if (ts + 1500 < tsNow) {

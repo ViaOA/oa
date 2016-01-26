@@ -21,7 +21,7 @@ import com.viaoa.sync.OASyncServer;
 public class RemoteSyncTest extends OAUnitTest {
     private MultiplexerServer multiplexerServer;
     private RemoteMultiplexerServer remoteMultiplexerServer; 
-    public final int port = 1099;
+    public final int port = 1101;
     final String queueName = "que";
     final int queueSize = 2500;
     

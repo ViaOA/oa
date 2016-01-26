@@ -11,7 +11,10 @@ public class OAEditMessageTest extends OAUnitTest {
 
     @Test
     public void test() {
+        Server server = new Server();
+        OAEditMessage em = new OAEditMessage("test");
         
+        assertEquals("test", em.getMessage());
     }
     
 }

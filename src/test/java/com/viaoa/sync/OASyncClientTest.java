@@ -267,7 +267,7 @@ public class OASyncClientTest extends OAUnitTest {
             long ts1 = System.currentTimeMillis();
             aiTimeMs.addAndGet(ts1-ts);
 
-            serverNew.setCnt(cnt);
+            serverNew.setSyncCnt(cnt);
 
             Hub<Server> hubServer = silo.getServers();
             int x = hubServer.getSize();

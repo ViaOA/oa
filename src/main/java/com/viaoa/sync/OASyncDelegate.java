@@ -141,9 +141,9 @@ public class OASyncDelegate {
         else {
             p = ObjectPackage;
             if (ss != null) {
-                hmSyncServer.put(p, ss);
                 if (oaSyncServer == null) oaSyncServer = ss; 
                 else if (oaSyncServer != ss) oaSyncServer = null;
+                hmSyncServer.put(p, ss);
             }
             else {
                 OASyncServer ssx = hmSyncServer.remove(p);
@@ -200,13 +200,13 @@ public class OASyncDelegate {
         else {
             p = ObjectPackage;
             if (sc != null) {
-                hmSyncClient.put(p, sc);
                 if (oaSyncClient == null) oaSyncClient = sc; 
                 else if (oaSyncClient != sc) oaSyncClient = null;
+                hmSyncClient.put(p, sc);
             }
             else {
-                hmSyncClient.remove(p);
-                if (oaSyncClient == sc) oaSyncClient = null;
+                OASyncClient scx = hmSyncClient.remove(p);
+                if (oaSyncClient == scx) oaSyncClient = null;
             }
         }
     }

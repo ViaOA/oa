@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class OALogUtil {
+    private static Level levelRoot;
 
     public static void disable() {
         Logger log = Logger.getLogger("");
@@ -31,8 +32,14 @@ public class OALogUtil {
         }
     }
     public static void consoleOnly(Level level) {
+        if (levelRoot != null) {
+            if (levelRoot.equals(level)) return; // already done
+        }
+        levelRoot = level;
         consoleOnly(level, "");
     }    
+    
+    
     public static void consoleOnly(Level level, String name) {
         Logger log = Logger.getLogger("");
         log.setLevel(Level.OFF);        

@@ -288,7 +288,7 @@ public class HubLinkTest extends OAUnitTest {
         };
         f.find(ModelDelegate.getPrograms());
         
-        final Hub<Program> hubProgram = ModelDelegate.getPrograms();
+        final Hub<Program> hubProgram = ModelDelegate.getPrograms().createSharedHub();
         final Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
         final Hub<Employee> hubEmployee = hubLocation.getDetailHub(Location.P_Employees);
 
