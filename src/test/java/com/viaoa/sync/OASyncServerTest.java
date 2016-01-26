@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
+import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -215,18 +216,19 @@ public class OASyncServerTest {
             @Override
             protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
                 ObjectStreamClass cd = super.readClassDescriptor();
-                /*
                 try {
                     Field f = cd.getClass().getDeclaredField("name");
                     f.setAccessible(true);
                     String name = (String) f.get(cd);
-                    String name2 = OAString.convert(name, ".tsac.", ".tsac2.");
-                    name2 = OAString.convert(name2, "com.", "test.");
-                    f.set(cd, name2);
-                } catch (Exception e) {
+                    //String name2 = OAString.convert(name, ".tsac.", ".tsac2.");
+                    if (name.indexOf("com.theice.tsam.") == 0) {
+                        name = OAString.convert(name, "com.theice.tsam.", "test.theice.tsam.");
+                        f.set(cd, name);
+                    }
+                } 
+                catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                */
                 return cd;
             }
         };

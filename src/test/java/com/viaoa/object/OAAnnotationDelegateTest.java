@@ -43,7 +43,7 @@ public class OAAnnotationDelegateTest extends OAUnitTest {
     
     
     @Test
-    protected void testSimpleUpdate() {
+    public void testSimpleUpdate() {
         final Class c = Server.class;
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
         
