@@ -3253,17 +3253,19 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 if (table.chkSelection != null) table.repaint();
                 if (getRunningValueChanged()) return;
                 int pos = hub.getPos(obj);
-                hub.setPos(pos);
-                if (pos >= 0) {
-                    try {
-                        aiIgnoreValueChanged.incrementAndGet();
+
+                try {
+                    aiIgnoreValueChanged.incrementAndGet();
+                    hub.setPos(pos);
+                    if (pos >= 0) {
                         ListSelectionModel lsm = table.getSelectionModel();
                         lsm.addSelectionInterval(pos, pos);
                     }
-                    finally {
-                        aiIgnoreValueChanged.decrementAndGet();
-                    }
                 }
+                finally {
+                    aiIgnoreValueChanged.decrementAndGet();
+                }
+
                 Container cont = table.getParent();
                 for (int i=0; i<3 && cont!=null; i++) {
                     cont.repaint();
@@ -3512,7 +3514,8 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
     public @Override void afterChangeActiveObject(HubEvent e) {
         if (getRunningValueChanged()) return; // 20131113
-
+        if (getIgnoreValueChanged()) return; // 20160127
+        
         int row = getHub().getPos();
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
 
