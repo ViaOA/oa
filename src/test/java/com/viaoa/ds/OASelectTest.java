@@ -17,7 +17,7 @@ import test.theice.tsac3.model.oa.propertypath.SitePP;
 public class OASelectTest extends OAUnitTest {
 
     @Test
-    public void Test() {
+    public void selectTest() {
         reset();
 
         OASelect<Site> selSite = new OASelect<Site>(Site.class);

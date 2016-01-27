@@ -9,6 +9,11 @@ import org.junit.Test;
 import com.viaoa.OAUnitTest;
 import static org.junit.Assert.*;
 
+/**
+ * 
+ * @author vvia
+ *
+ */
 public class OACircularQueueTest extends OAUnitTest {
     private OACircularQueue<Integer> que;
     private volatile boolean bStopWriter;

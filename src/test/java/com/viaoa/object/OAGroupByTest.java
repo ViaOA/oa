@@ -5,13 +5,14 @@ import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
 
-import test.theice.tsac3.model.oa.*;
+import test.theice.tsam.model.oa.*;
 
 public class OAGroupByTest extends OAUnitTest {
 
     @Test
     public void test() {
         
+        OAGroupBy<Server, Application> gb = new OAGroupBy<Server, Application>();
     }
     
 }

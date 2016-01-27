@@ -15,7 +15,7 @@ import test.theice.tsam.model.oa.Server;
 public class OACalcInfoTest extends OAUnitTest {
 
     @Test
-    public void test() {
+    public void calcInfoTest() {
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(Server.class);
         
         ArrayList<OACalcInfo> al = oi.getCalcInfos();

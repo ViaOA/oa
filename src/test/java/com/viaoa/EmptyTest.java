@@ -20,6 +20,7 @@ public class EmptyTest extends OAUnitTest {
     }
 
     
+    @Test
     public void testx() throws Exception {
         int maxThreads = 5;
         final CyclicBarrier barrier = new CyclicBarrier(maxThreads);
@@ -50,6 +51,8 @@ public class EmptyTest extends OAUnitTest {
             });
             t.start();
         }
+        
+        // wait for threads to finish
         countDownLatch.await(10, TimeUnit.SECONDS);
         
     }

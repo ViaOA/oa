@@ -28,7 +28,12 @@ import com.viaoa.hub.*;
    from a root Class to a property value.  To go from object to object, reference property names are used.
   
    <p>
-   <ul>Querys
+   An OAFinder can be used to act as the datasource.
+   <p>
+   An OAFilter can be used to further filter the results.
+  
+   <p>
+   <ul>Queries
    <li>All property names and connectors names are case insensitive.
    <li>Can use the following connectors "AND", "&&", "||", "OR", "(", ")"
    <li>Can use "=", "==", "!=", "<", "<=", ">", ">=", "LIKE", "%" (wildcard), "null" (any case)
@@ -54,7 +59,6 @@ import com.viaoa.hub.*;
 		Object[] params = new Object[] {dept, "Jones%", fname};
         select.setWhere(query);
 		select.setParams(params);
-
    </pre>
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
@@ -110,7 +114,7 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
     }
 
     /** 
-        Create a new OASelect that is initialzed to query Objects for a Class. 
+        Create a new OASelect that is initialized to query Objects for a Class. 
     */
     public OASelect(Class<TYPE> c, String where, String order) {
         setSelectClass(c);
@@ -119,7 +123,7 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
     }
 
     /** 
-    Create a new OASelect that is initialzed to query Objects for a Class. 
+    Create a new OASelect that is initialized to query Objects for a Class. 
 	*/
 	public OASelect(Class<TYPE> c, String where, Object[] params, String order) {
 	    setSelectClass(c);
@@ -277,6 +281,10 @@ public class OASelect<TYPE extends OAObject> implements Serializable, Iterable<T
         return this.dsFilter;
     }
 
+    /**
+     * 
+     * @param finder
+     */
     public void setFinder(OAFinder<?, TYPE> finder) {
         this.finder = finder;
     }
