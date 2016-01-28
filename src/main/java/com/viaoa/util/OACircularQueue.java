@@ -60,9 +60,8 @@ public abstract class OACircularQueue<TYPE> {
     
     private static class Session {
         int id;
-        long queuePos;
-        int maxFallBehind;
-        long msLastRead;
+        volatile long queuePos;
+        volatile long msLastRead;
     }
     
     
@@ -107,10 +106,6 @@ public abstract class OACircularQueue<TYPE> {
     }
     
     
-    public long registerSession(int sessionId) {
-        this.queueLowPosition = 0; // reset
-        return registerSession(sessionId, 0);
-    }
     /**
      * This is used to let the queue know who the consumers are, so that 
      * queue slots can be set to null once they are not needed.  
@@ -119,10 +114,10 @@ public abstract class OACircularQueue<TYPE> {
      * @param maxFallBehind max amount that it can fall behind the head, else an addMessage will wait for up to 1 second.
      * @return current queueHeadPosition
      */
-    public long registerSession(int sessionId, int maxFallBehind) {
+    public long registerSession(int sessionId) {
+        this.queueLowPosition = 0; // reset
         Session session = new Session();
         session.id = sessionId;
-        session.maxFallBehind = maxFallBehind;
         session.msLastRead = System.currentTimeMillis();
         
         if (hmSession == null) {
@@ -201,7 +196,6 @@ public abstract class OACircularQueue<TYPE> {
                 queueLowPosition = queueHeadPosition;
                 // wait up to 1 second for any slow consumer
                 for (int i=0; i<20; i++) {
-                    
                     Session sessionFound = null;
                     for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
                         Session session = entry.getValue();
@@ -211,24 +205,23 @@ public abstract class OACircularQueue<TYPE> {
                         queueLowPosition = Math.min(session.queuePos, queueLowPosition);
 
                         // check to see if it is getting close to a queue overrun
-                        if ( (session.queuePos + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10))) ) {
-                            
-                            if (session.maxFallBehind == 0) continue;
-                            if ( (session.queuePos + session.maxFallBehind) > queueHeadPosition) {
-                                continue;
-                            }
+                        if ( (session.queuePos + queueSize) > (queueHeadPosition + Math.min(25,(queueSize/10))) ) {
+                            continue;
                         }
                     
                         
                         long ts = session.msLastRead;
                         long tsNow = System.currentTimeMillis();
-                        if (ts + 1500 < tsNow) {
-                            if (tsNow > tsLastLog + 1500) {
-                                LOG.fine("session over 1.5 seconds getting last msg, queSize="+queueSize+
-                                        ", currentHeadPos="+queueHeadPosition+", session="+session.id+", sessionPos="+session.queuePos);
+                        if (ts + 1000 < tsNow) {
+                            if (tsNow > tsLastLog + 1000) {
+                                LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
+                                        ", currentHeadPos="+queueHeadPosition+", session="+session.id+
+                                        ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms");
                                 tsLastLog = tsNow;
                             }
-                            continue;  // too slow, dont wait for this one
+                            if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-ts))) {
+                                continue;  // too slow, dont wait for this one
+                            }
                         }
                         sessionFound = session;
                         break;
@@ -271,6 +264,16 @@ public abstract class OACircularQueue<TYPE> {
     }
     
     public final int WaitUntilNotified = -1;
+    
+    /**
+     * This is call whenever a session is getting close to a queue overrun and it has not
+     * called get for 1+ seconds.
+     * @param sessionId
+     * @return default is false, which will allow messages to be added without waiting on this sessionId;
+     */
+    protected boolean shouldWaitOnSlowSession(int sessionId, int msSinceLastRead) {
+        return false;
+    }
     
     /**
      * will block until a message is available.
@@ -322,7 +325,7 @@ public abstract class OACircularQueue<TYPE> {
     public TYPE[] getMessages(long posTail, int maxReturnAmount, int maxWait) throws Exception {
         TYPE[] msgs = null;
         for ( ;; ) {
-            msgs =  _getMessages(posTail, maxReturnAmount, maxWait);
+            msgs =  _getMessages(-1, posTail, maxReturnAmount, maxWait);
 
             if (msgs != null || maxWait == 0) {
                 break;
@@ -335,7 +338,6 @@ public abstract class OACircularQueue<TYPE> {
         return msgs;
     }
     public TYPE[] getMessages(final int sessionId, final long posTail, final int maxReturnAmount, int maxWait) throws Exception {
-
         TYPE[] msgs = null;
 
         Session session;
@@ -345,7 +347,8 @@ public abstract class OACircularQueue<TYPE> {
         else session = null;
         
         for ( ;; ) {
-            msgs =  _getMessages(posTail, maxReturnAmount, maxWait);
+            if (session != null) session.msLastRead = System.currentTimeMillis();
+            msgs =  _getMessages(sessionId, posTail, maxReturnAmount, maxWait);
             if (session != null) session.msLastRead = System.currentTimeMillis();
 
             if (msgs != null || maxWait == 0) {
@@ -370,13 +373,18 @@ public abstract class OACircularQueue<TYPE> {
         }        
         return msgs;
     }
+    public void keepAlive(final int sessionId) {
+        if (hmSession == null) return;
+        Session session = hmSession.get(sessionId);
+        if (session != null) session.msLastRead = System.currentTimeMillis();
+    }
     
     private AtomicInteger  aiCleanupQueue = new AtomicInteger(); 
-    private TYPE[] _getMessages(long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
+    private TYPE[] _getMessages(final int sessionId, long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
         synchronized(LOCKQueue) {
             if ((posTail + queueSize) < queueHeadPosition) {
-                throw new Exception("message queue overrun");
+                throw new Exception("message queue overrun, sessionId="+sessionId+", pos="+posTail+", headPos="+queueHeadPosition);
             }
             else {
                 if (posTail > queueHeadPosition) {

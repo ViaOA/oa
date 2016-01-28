@@ -21,11 +21,6 @@ import test.theice.tsam.model.oa.*;
 import test.theice.tsam.model.oa.cs.ServerRoot;
 import test.theice.tsam.remote.RemoteAppInterface;
 
-import test.theice.tsam.model.oa.Application;
-import test.theice.tsam.model.oa.Environment;
-import test.theice.tsam.model.oa.Server;
-import test.theice.tsam.model.oa.Silo;
-import test.theice.tsam.model.oa.Site;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.hub.Hub;
@@ -85,6 +80,11 @@ public class OASyncClientTest extends OAUnitTest {
         
         final Site site = serverRoot.getSites().getAt(0);
         site.setProduction(false);  // if true, then this is the trigger on server to start a new thread
+
+        Silo silo = site.getEnvironments().getAt(0).getSilos().getAt(0);
+        Server server = silo.getServers().getAt(0);
+        MRADServer mradServer = silo.getMRADServer();
+        
         
         final AtomicInteger aiServerCalledPropChange = new AtomicInteger();
         
@@ -98,18 +98,29 @@ public class OASyncClientTest extends OAUnitTest {
                 aiServerCalledPropChange.incrementAndGet();
             }
         });
+
+        mradServer.getMRADServerCommands().addHubListener(new HubListenerAdapter<MRADServerCommand>() {
+            @Override
+            public void afterAdd(HubEvent<MRADServerCommand> e) {
+                // this will cause a callback to the server, which should not cause the client to disconnect/etc
+                MRADServerCommand mc = e.getObject();
+                mc.getMRADClientCommands();
+            }
+        });
         
         site.setName("xx");
         
         assertEquals(0, aiServerCalledPropChange.get());
         site.setProduction(true);
         
-        for (int i=0; i<10; i++) {
-            Thread.sleep(100);
+        for (int i=0; i<120; i++) {
             if (!site.getProduction()) break;
+            Thread.sleep(1000);
+            if (bStopCalled) break;
         }
-
-        assertEquals(100, aiServerCalledPropChange.get());
+        boolean b = site.getProduction();
+        
+        assertEquals(2000, aiServerCalledPropChange.get());
         assertFalse(site.getProduction());
         assertNotEquals("xx", site.getName());
     }
@@ -377,7 +388,14 @@ public class OASyncClientTest extends OAUnitTest {
     @Before
     public void setup() throws Exception {
         MultiplexerClient.DEBUG = true;
-        syncClient = new OASyncClient("localhost", port);
+        syncClient = new OASyncClient("localhost", port) {
+            @Override
+            public void onStopCalled(String title, String msg) {
+                bStopCalled = true;
+                super.onStopCalled(title, msg);
+            }
+            
+        };
         
         
         // **NOTE** need to make sure that ServerTest is running in another jvm
@@ -514,6 +532,12 @@ public class OASyncClientTest extends OAUnitTest {
         OALogUtil.consoleOnly(Level.CONFIG);
 
         OASyncClientTest test = new OASyncClientTest();
+
+        /*
+        test.setup();        
+        test.testA();
+        */
+        
         test.runLocalClientTest();
         
         System.out.println("DONE running test, exiting program");

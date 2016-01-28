@@ -660,15 +660,53 @@ public class RemoteMultiplexerClient {
     private final ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
 
     private OARemoteThread getRemoteClientThread(RequestInfo ri, boolean bSendMessgage) {
+        
         OARemoteThread remoteThread;
         synchronized (alRemoteClientThread) {
-            for (OARemoteThread rt : alRemoteClientThread) {
-                synchronized (rt.Lock) {
-                    if (rt.requestInfo == null) {
-                        rt.requestInfo = ri;
-                        rt.setSendMessages(bSendMessgage);
-                        return rt;
+            for (int i=0; ; i++) {
+                for (OARemoteThread rt : alRemoteClientThread) {
+                    synchronized (rt.Lock) {
+                        if (rt.requestInfo == null) {
+                            rt.requestInfo = ri;
+                            rt.setSendMessages(bSendMessgage);
+                            return rt;
+                        }
                     }
+                }
+
+                // note: too many threads can increase the vsockets, and reduce the msgQue speed
+                
+                int x = alRemoteClientThread.size();
+                if (x < 10) break;
+                if (x < 15) {
+                    if (i > 2) break;   // 50ms
+                }
+                else if (x < 20) {
+                    if (i > 4) break;   // 100ms
+                }
+                else if (x < 30) {
+                    if (i > 8) break;   // 200ms
+                }
+                else if (x < 40) {
+                    if (i > 20) break;  // 500ms
+                }
+                else if (x < 50) {
+                    if (i > 40) break;  // 1 second
+                }
+                else if (x < 100) {
+                    if (i > 60) break;  // 1.5 seconds 
+                }
+                else {
+                    // otherwise 100 is max and need to wait
+                    if (i > 0 && i % 100 == 0) {
+                        LOG.warning("waiting on free remoteThread to use, waitTime="+(i*25)+"ms");
+                    }
+                }
+                
+                try {
+                    alRemoteClientThread.wait(25);
+                }
+                catch (Exception e) {
                 }
             }
         }
@@ -679,9 +717,11 @@ public class RemoteMultiplexerClient {
             remoteThread.requestInfo = ri;
             alRemoteClientThread.add(remoteThread);
         }
-        onRemoteThreadCreated(alRemoteClientThread.size());
-        
+        LOG.fine("new remoteThread created, liveCount=" + alRemoteClientThread.size()+", totalCreated="+aiClientThreadCount.get());
+        onRemoteThreadCreated(aiClientThreadCount.get(), alRemoteClientThread.size());
         return remoteThread;
+    }
+    protected void onRemoteThreadCreated(int totalCount, int liveCount) {
     }
 
     private OARemoteThread createRemoteClientThread() {
@@ -705,8 +745,8 @@ public class RemoteMultiplexerClient {
                         }
 
                         this.msLastUsed = System.currentTimeMillis();
-
                         processMessageForStoC(requestInfo);
+                        this.msLastUsed = System.currentTimeMillis();
 
                         synchronized (Lock) {
                             if (requestInfo != null) {
@@ -740,34 +780,20 @@ public class RemoteMultiplexerClient {
         return t;
     }
 
-    protected void onRemoteThreadCreated(int threadCount) {
-        if (threadCount < 15) return;
-        int ms;
-        if (threadCount < 20) ms = 10;
-        else if (threadCount < 30) ms = 20;
-        else if (threadCount < 40) ms = 30;
-        else if (threadCount < 50) ms = 50;
-        else if (threadCount < 55) ms = 60;
-        else if (threadCount < 63) ms = 100;
-        else {
-            if (threadCount > 75) {
-                LOG.warning("alRemoteClientThread.size() = " + threadCount);
-            }
-            ms = 250;
-        }
-        try {
-            Thread.currentThread().sleep(ms);
-        }
-        catch (Exception e) {
-        }
-    }
 
     private boolean shouldClose(final OARemoteThread remoteThread) {
         if (alRemoteClientThread.size() < 4) return false;
         long msNow = System.currentTimeMillis();
         int cnt = 0;
         int minFree = 2;
-        if (alRemoteClientThread.size() > 10) minFree = 4;
+        int msMax = 2000;
+        
+        int x = alRemoteClientThread.size(); 
+        if (x > 10) {
+            minFree = 4;
+            if (x > 40) msMax = 250;
+            else msMax = 500;
+        }
         
         synchronized (alRemoteClientThread) {
             for (OARemoteThread rt : alRemoteClientThread) {
@@ -777,7 +803,7 @@ public class RemoteMultiplexerClient {
                         continue;
                     }
                     if (rt.requestInfo == null) {
-                        if (rt.msLastUsed + 1000 < msNow) { 
+                        if (rt.msLastUsed + msMax < msNow) { 
                             cnt++;
                         }
                     }
@@ -788,6 +814,7 @@ public class RemoteMultiplexerClient {
                     return true;
                 }
             }
+            alRemoteClientThread.notifyAll();
         }
         return false;
     }

@@ -18,9 +18,7 @@ import java.util.zip.InflaterInputStream;
 import test.theice.tsac.model.oa.propertypath.SitePP;
 import test.theice.tsam.delegate.ModelDelegate;
 import test.theice.tsam.delegate.RemoteDelegate;
-import test.theice.tsam.model.oa.AdminUser;
-import test.theice.tsam.model.oa.Server;
-import test.theice.tsam.model.oa.Site;
+import test.theice.tsam.model.oa.*;
 import test.theice.tsam.model.oa.cs.ClientRoot;
 import test.theice.tsam.model.oa.cs.ServerRoot;
 import test.theice.tsam.remote.RemoteAppImpl;
@@ -77,10 +75,30 @@ public class OASyncServerTest {
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        for (int i=0; i<100; i++) {
-                            site.setAbbrevName("ab."+i);
+                        System.out.println("TestA start "+((new OATime()).toString("HH:mm:ss.SSS")));
+                        Silo silo = site.getEnvironments().getAt(0).getSilos().getAt(0);
+                        Server server = silo.getServers().getAt(0);
+                        MRADServer mradServer = silo.getMRADServer();
+                        if (mradServer == null) {
+                            mradServer = new MRADServer();
+                            silo.setMRADServer(mradServer);
+                        }
+                        
+                        for (int i=0; i<2000; i++) {
+                            if ((i+1)%250==0) System.out.println((i+1)+"/2000");
+                            site.setAbbrevName("test."+i);
+                            server.setName("test."+i);
+                            
+                            MRADServerCommand sc = new MRADServerCommand();
+                            for (int j=0; j<5; j++) {
+                                MRADClientCommand cc = new MRADClientCommand();
+                                sc.getMRADClientCommands().add(cc);
+                                if (j == 0) mradServer.getMRADServerCommands().add(sc);
+                            }
+                            sc.delete();
                         }
                         site.setProduction(false);
+                        System.out.println("TestA done "+((new OATime()).toString("HH:mm:ss.SSS")));
                     }
                 }); 
                 t.start();
@@ -206,7 +224,8 @@ public class OASyncServerTest {
 
     public static void main(String[] args) throws Exception {
         MultiplexerServer.DEBUG = true;
-        OALogUtil.consoleOnly(Level.CONFIG);
+        OALogUtil.consoleOnly(Level.FINE, "com.viaoa.util.OACircularQueue");
+        
         OASyncServerTest test = new OASyncServerTest();
         
         test.start();

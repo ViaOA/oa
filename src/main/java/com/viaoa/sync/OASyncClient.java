@@ -59,8 +59,6 @@ import static com.viaoa.sync.OASyncServer.*;
 public class OASyncClient {
     protected static Logger LOG = Logger.getLogger(OASyncClient.class.getName());
 
-    static final int MAX_ThreadCount = 100;
-    
     /** this is used to create a connection (socket) to GSMR server. */
     private MultiplexerClient multiplexerClient;
 
@@ -682,28 +680,15 @@ public class OASyncClient {
         if (remoteMultiplexerClient != null) return remoteMultiplexerClient; 
         remoteMultiplexerClient = new RemoteMultiplexerClient(getMultiplexerClient()) {
             @Override
-            protected void onRemoteThreadCreated(int threadCount) {
-                getClientInfo().setRemoteThreadCount(threadCount);
-                super.onRemoteThreadCreated(threadCount);
-
-                if (threadCount > (MAX_ThreadCount * .85)) {
+            protected void onRemoteThreadCreated(int totalCount, int liveCount) {
+                getClientInfo().setRemoteThreadCount(liveCount);
+                if (liveCount > 80) {
                     long msNow = System.currentTimeMillis();
-                    if (msLastThreadCountWarning + 1000 < msNow) {
+                    if (msLastThreadCountWarning + 2500 < msNow) {
                         msLastThreadCountWarning = msNow;
                         String s = OALogUtil.getThreadDump();
-                        LOG.warning("RemoteThread count="+threadCount+", max="+MAX_ThreadCount+"\n"+s);
+                        LOG.warning("RemoteThread liveCount="+liveCount+", totalCreated="+totalCount+"\n"+s);
                     }
-                    else {
-                        // slow this thread down, giving others time to catch up before reading another message from queue
-                        try {
-                            Thread.currentThread().sleep(500);
-                        }
-                        catch (Exception e) {
-                        }
-                    }
-                }
-                if (threadCount >= MAX_ThreadCount) {
-                    onRemoteThreadCountExceeded();
                 }
             }                
         };
@@ -713,14 +698,6 @@ public class OASyncClient {
         return getMultiplexerClient().getConnectionId();
     }
     
-    protected void onRemoteThreadCountExceeded() {
-        LOG.log(Level.WARNING, "max RemoteThread count of "+MAX_ThreadCount+" exceeded, calling OASyncClient.stop");
-        try {
-            stop();
-        }
-        catch (Exception ex) {
-        }
-    }
 
     /**
      * called when object is removed from object cache (called by oaObject.finalize)

@@ -24,9 +24,13 @@ public class OACircularQueueTest extends OAUnitTest {
 
     
     void runReader(int id) {
-        long pos = que.registerSession(id, 0);
+        long pos = que.registerSession(id);
         
-        System.out.println("start reader."+id+", que pos="+pos);
+        String s = "";
+        if (id == 0) s = " *** NOTE: this will be a slow reader, but will not get a queueOverrun";
+        else if (id == 1) s = " *** NOTE: this reader will get a queueOverrun";
+        
+        System.out.println("start reader."+id+", que pos="+pos+s);
         for (int i=0; !bStopReader;i++) {
             try {
                 Integer[] ints = que.getMessages(id, pos, 250, 10);

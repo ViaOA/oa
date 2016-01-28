@@ -128,13 +128,13 @@ public class RemoteMultiplexerServer {
      * @see MultiplexerServer#onClientConnect
      */
     public void createSession(Socket socket, int connectionId) {
-        Session session = getSession(connectionId);
+        Session session = getSession(connectionId, true);
         session.realSocket = socket;
     }
 
-    public Session getSession(int connectionId) {
+    public Session getSession(int connectionId, boolean bCreateIfNull) {
         Session session = hmSession.get(connectionId);
-        if (session == null) {
+        if (session == null && bCreateIfNull) {
             session = new Session();
             session.connectionId = connectionId;
             hmSession.put(connectionId, session);
@@ -142,7 +142,8 @@ public class RemoteMultiplexerServer {
         }
         return session;
     }
-
+    
+    
     /**
      * starts serverSockets for remote messages.
      * 
@@ -202,7 +203,7 @@ public class RemoteMultiplexerServer {
     protected void processSocketCtoS(final VirtualSocket socket) throws Exception {
         final int socketId = socket.getId();
         final int connectionId = socket.getConnectionId();
-        final Session session = getSession(connectionId);
+        final Session session = getSession(connectionId, true);
         
         for (;;) {
             if (socket.isClosed()) break;
@@ -501,7 +502,7 @@ public class RemoteMultiplexerServer {
     protected void onNewConnectionForStoC(Socket socket) {
         final VirtualSocket vSocket = (VirtualSocket) socket;
         int connectionId = vSocket.getConnectionId();
-        Session session = getSession(connectionId);
+        Session session = getSession(connectionId, true);
         session.addSocketForStoC(vSocket);
     }
 
@@ -892,7 +893,18 @@ public class RemoteMultiplexerServer {
         if (bind.usesQueue && !bDontUseQueue) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(bind.asyncQueueName);
             if (cq == null) {
-                cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {};
+                cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
+                    @Override
+                    protected boolean shouldWaitOnSlowSession(int sessionId, int msSinceLastRead) {
+                        if (msSinceLastRead > 60000) return false;
+                        Session session = getSession(sessionId, false);
+                        if (session == null) return false;
+                        if (session.bDisconnected) return false;
+                        if (session.realSocket.isClosed()) return false;
+                        return true;
+                    }
+                    
+                };
                 cq.setName(queueName);
                 hmAsyncCircularQueue.put(bind.asyncQueueName, cq);
             }
@@ -1342,7 +1354,9 @@ public class RemoteMultiplexerServer {
                         }
                         
                         Session session;
-                        if (requestInfo.connectionId != 0) session = getSession(requestInfo.connectionId);
+                        if (requestInfo.connectionId != 0) {
+                            session = getSession(requestInfo.connectionId, false);
+                        }
                         else session = null;
                         // 6:CtoS_QueuedRequest invoke
                         // 6:CtoS_QueuedRequestNoResponse
@@ -1529,7 +1543,6 @@ public class RemoteMultiplexerServer {
                 return;
             }
 
-//qqqqqqqqqq get lock
             synchronized (vsocket) {
                 RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                 oos.writeByte(ri.type.ordinal());
@@ -1565,7 +1578,7 @@ public class RemoteMultiplexerServer {
 
                 hmAsyncQueue.put(asyncQueueName, "");
                 final OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(asyncQueueName);
-                final long qPos = cq.registerSession(connectionId, (int) (cq.getSize() * .8));
+                final long qPos = cq.registerSession(connectionId);
                 
                 // set up thread that will get messages from queue and send to client
                 final String threadName = "Client." + connectionId + ".queue." + asyncQueueName;
@@ -1619,7 +1632,7 @@ public class RemoteMultiplexerServer {
 
                 RequestInfo[] ris = null;
                 try {
-                    ris = cque.getMessages(connectionId, qpos, 50, 2000);
+                    ris = cque.getMessages(connectionId, qpos, 20, 2000);
                 }
                 catch (Exception e) {
                     LOG.log(Level.WARNING, "Message queue overrun with msg CircularQueue", e);
@@ -1631,12 +1644,12 @@ public class RemoteMultiplexerServer {
                 }
 
                 for (RequestInfo ri : ris) {
+                    cque.keepAlive(connectionId);
                     qpos++;
                     if (vsocket.isClosed()) return;
                     if (ri == null || ri.bind == null) {
                         continue;
                     }
-  
                     if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
                     }                    
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
@@ -1677,7 +1690,7 @@ public class RemoteMultiplexerServer {
                     }
 
                     waitForProcessedByServer(ri);
-                    
+
                     synchronized (vsocket) {
                         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                         oos.writeByte(ri.type.ordinal());
