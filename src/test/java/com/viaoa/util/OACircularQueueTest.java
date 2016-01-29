@@ -19,10 +19,9 @@ public class OACircularQueueTest extends OAUnitTest {
     private volatile boolean bStopWriter;
     private volatile boolean bStopReader;
     private AtomicInteger ai = new AtomicInteger();
-    private final Object lock = new Object();
     private int cntCleanup;
+    private final Object lockWrite = new Object();
 
-    
     void runReader(int id) {
         long pos = que.registerSession(id);
         
@@ -46,9 +45,6 @@ public class OACircularQueueTest extends OAUnitTest {
                 else if (id == 1 && !bStopWriter) {
                     Thread.sleep(1600);  // let it overrun
                 }
-                
-                //if ((i%20)==0) System.out.printf("[R"+id+"."+pos+"] ");
-                // Thread.sleep(32);
             }
             catch (Exception e) {
                 System.out.println("sessionId="+id+", runReader Exception: "+e);
@@ -63,25 +59,20 @@ public class OACircularQueueTest extends OAUnitTest {
         System.out.println("start writer."+id);
         int cnt = 0;
         for (int i=0; !bStopWriter; i++) {
-            synchronized (lock) {
+            int throttleAmt = 0;
+            if (id == 0 && (i%50==0)) throttleAmt = 100; 
+            synchronized (lockWrite) {
                 int x = ai.getAndIncrement();
-                que.addMessageToQueue(x);
-                cnt++;
+                que.addMessageToQueue(x, throttleAmt);
             }
-            if ((i%100000)==0) {
-                //if ((i%1000)==0) System.out.printf("\n(W."+i+") ");
-                try {
-                    Thread.sleep(25);
-                }
-                catch (Exception e) {}
-            }
+            cnt++;
         }
         System.out.println("end writer."+id+", total queued="+cnt);
     }
     
     @Test
     public void runTests() throws Exception {
-        OALogUtil.consoleOnly(Level.FINER);
+        OALogUtil.consoleOnly(Level.FINE);
 
         que = new OACircularQueue<Integer>(1000) {
             @Override
@@ -119,17 +110,17 @@ public class OACircularQueueTest extends OAUnitTest {
         }
 
         
-        for (int i=0; i<8; i++) {
+        for (int i=0; i<5; i++) {
             Thread.sleep(1000);
             //if (que.getHeadPostion() > 1000) break;
         }
         System.out.println("stopping ..");
         bStopWriter = true;
-        Thread.sleep(20);
+        Thread.sleep(50);
         bStopReader = true;
         assertTrue(cntCleanup > 5);
         assertTrue(que.getHeadPostion() > 100);
-        Thread.sleep(50);
+        Thread.sleep(250);
         System.out.println("que.getHeadPostion="+que.getHeadPostion());
         System.out.println("done");
     }

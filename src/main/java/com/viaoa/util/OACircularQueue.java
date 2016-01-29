@@ -13,7 +13,6 @@ package com.viaoa.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,10 +29,6 @@ import java.util.logging.Logger;
  * @author vvia
  * Note: this is made abstract to be able to get the Generic class that is used.
  */
-
-// todo: option to registerSession as a "leader", so that it will never have a queue overrun.  A call to add when then have to 
-//         make sure that the leader is not overran, and must wait, etc.
-
 public abstract class OACircularQueue<TYPE> {
     private static Logger LOG = Logger.getLogger(OACircularQueue.class.getName());
     
@@ -176,90 +171,130 @@ public abstract class OACircularQueue<TYPE> {
      * @return position of message in the queue
      */
     public int addMessageToQueue(TYPE msg) {
-        return addMessage(msg);
+        return addMessageToQueue(msg, 0);
+    }
+    public int addMessage(TYPE msg) {
+        return addMessageToQueue(msg);
+    }
+    /**
+     * @param bThrottle if true, then make sure that headPos is not too far ahead of readers
+     */
+    public int addMessageToQueue(final TYPE msg, final int throttleAmount) {
+        synchronized(LOCKQueue) {
+            return _addMessage(msg, throttleAmount);
+        }
     }
     
     private volatile int cntQueueWait; // number of times a addMessage has called wait.    
+    private volatile int cntQueueThrottle;    
     private volatile long tsLastLog;
     
-    public int addMessage(TYPE msg) {
-        synchronized(LOCKQueue) {
+    private int _addMessage(final TYPE msg, final int throttleAmount) {
+        boolean b = (hmSession != null);
 
-            boolean b = (hmSession != null);
-            if (b) {
-                if ( (queueLowPosition + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10))) ) {
-                    b = false;
-                }
+        if (b) {
+            if ( (queueLowPosition + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10))) ) {
+                b = false;
             }
-            
-            if (b) {
-                queueLowPosition = queueHeadPosition;
+            if (throttleAmount > 0) b = true;
+        }
+        
+        if (b) {
+            queueLowPosition = queueHeadPosition;
+            boolean bNeedsThrottle = false;
+            int cntThrottle = 0;
+            for (int i=0; ; i++) {
+                Session slowSessionFound = null;
+                for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
+                    Session session = entry.getValue();
+                    
+                    if (session.queuePos < (queueHeadPosition - queueSize)) {
+                        continue; // overflowed already
+                    }
+                    queueLowPosition = Math.min(session.queuePos, queueLowPosition);
 
-                for (int i=0; ; i++) {
-                    Session slowSessionFound = null;
-                    for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
-                        Session session = entry.getValue();
-                        if (session.queuePos < (queueHeadPosition - queueSize)) {
-                            continue; // overflowed already
-                        }
-                        queueLowPosition = Math.min(session.queuePos, queueLowPosition);
-
-                        // check to see if it is getting close to a queue overrun
-                        if ( (session.queuePos + queueSize) > (queueHeadPosition + Math.min(25,(queueSize/10))) ) {
+                    // check to see if it is getting close to a queue overrun
+                    if ( (session.queuePos + queueSize) > (queueHeadPosition + Math.min(25,(queueSize/10))) ) {
+                        if (throttleAmount < 1 || bNeedsThrottle) {
                             continue;
                         }
-                    
-                        long ts = session.msLastRead;
-                        long tsNow = System.currentTimeMillis();
-                        if (ts + 1000 < tsNow) {
-                            if (tsLastLog + 1000 < tsNow) {
-                                LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
-                                        ", currentHeadPos="+queueHeadPosition+", session="+session.id+
-                                        ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms");
-                                tsLastLog = tsNow;
-                            }
-                            if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-ts))) {
-                                continue;  // too slow, dont wait for this one
-                            }
+                        if (session.queuePos + 100 < queueHeadPosition) {
+                            bNeedsThrottle = true;
                         }
-                        slowSessionFound = session;
-                        break;
+                        continue;
                     }
-                    if (slowSessionFound == null) {
-                        break;
-                    }
-                    try {
-                        LOCKQueue.wait(25);
-                        ++cntQueueWait;
-                        
-                        long tsNow = System.currentTimeMillis();
-                        if (tsNow > tsLastLog + 2500) {
-                            LOG.fine("avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
-                                    ", totalSessions="+hmSession.size() +
-                                    ", slowSession="+slowSessionFound.id +
-                                    ", qpos="+slowSessionFound.queuePos +
-                                    ", totalWaits="+cntQueueWait);
+                
+                    long ts = session.msLastRead;
+                    long tsNow = System.currentTimeMillis();
+                    if (ts + 1000 < tsNow) {
+                        if (tsLastLog + 1000 < tsNow) {
+                            LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
+                                    ", currentHeadPos="+queueHeadPosition+", session="+session.id+
+                                    ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms");
                             tsLastLog = tsNow;
                         }
+                        if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-ts))) {
+                            continue;  // too slow, dont wait for this one
+                        }
                     }
-                    catch (Exception e) {
+                    slowSessionFound = session;
+                    break;
+                }
+                if (slowSessionFound == null && !bNeedsThrottle) {
+                    break;
+                }
+
+                try {
+                    if (slowSessionFound == null) {
+                        // throttle=true
+                        if (cntThrottle++ > 10) break;
+                        LOCKQueue.wait(10);
+                        ++cntQueueThrottle;                        
+                    }
+                    else {
+                        LOCKQueue.wait(25);
+                        ++cntQueueWait;
+                    }
+                    
+                    long tsNow = System.currentTimeMillis();
+                    if (tsNow > tsLastLog + 2500) {
+                        if (slowSessionFound != null) {
+                            LOG.fine("avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+                                ", totalSessions="+hmSession.size() +
+                                ", slowSession="+slowSessionFound.id +
+                                ", qpos="+slowSessionFound.queuePos +
+                                ", totalWaits="+cntQueueWait +
+                                ", totalThrottles="+cntQueueThrottle
+                                );
+                        }
+                        else {
+                            LOG.fine("queue throttle, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+                                ", totalSessions="+hmSession.size() +
+                                ", throttleAmount="+throttleAmount +
+                                ", totalWaits="+cntQueueWait +
+                                ", totalThrottles="+cntQueueThrottle
+                                );
+                        }
+                        tsLastLog = tsNow;
                     }
                 }
+                catch (Exception e) {
+                }
             }
-            
-            int posHead = (int) (queueHeadPosition++ % queueSize);
-            
-            if (queueHeadPosition < 0) {
-                queueHeadPosition = posHead + 1;
-            }
-            msgQueue[posHead] = msg;
-            if (bWaitingToGet) {
-                bWaitingToGet = false;
-                LOCKQueue.notifyAll();
-            }
-            
-            return posHead;
         }
+        
+        int posHead = (int) (queueHeadPosition++ % queueSize);
+        
+        if (queueHeadPosition < 0) {
+            queueHeadPosition = posHead + 1;
+        }
+        msgQueue[posHead] = msg;
+        if (bWaitingToGet) {
+            bWaitingToGet = false;
+            LOCKQueue.notifyAll();
+        }
+        
+        return posHead;
     }
     
     public final int WaitUntilNotified = -1;

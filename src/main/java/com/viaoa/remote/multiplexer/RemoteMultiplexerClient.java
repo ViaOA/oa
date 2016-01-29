@@ -102,6 +102,7 @@ public class RemoteMultiplexerClient {
         if (multiplexerClient == null) throw new IllegalArgumentException("multiplexerClient is required");
         this.multiplexerClient = multiplexerClient;
         setupRequestQueueThread();
+        setupRequestQueueThread2();
         setupSyncRequestQueueThread();
     }
 
@@ -290,7 +291,7 @@ public class RemoteMultiplexerClient {
             //if (threadCheck++ < 50) LOG.log(Level.WARNING, "Info only: bind="+bind.name+", method="+method.getName(), new Exception("RemoteThread used for CtoS method call"));            
         }
 
-        VirtualSocket socket = getSocketForCtoS(); // used to send message, and get response
+        VirtualSocket socket = getSocketForCtoS(); // used to send message
         try {
             ri.msStart = System.currentTimeMillis();
             ri.nsStart = System.nanoTime();
@@ -313,7 +314,6 @@ public class RemoteMultiplexerClient {
             ri.bSent = _onInvokeForCtoS(ri);
 
             // 4:CtoS_QueuedRequestNoResponse END
-            
             
             if (ri.bSent && ri.bind.usesQueue && ri.type.hasReturnValue()) {
                 releaseSocketForCtoS(socket);
@@ -849,19 +849,20 @@ public class RemoteMultiplexerClient {
         }
     }
 
+    private LinkedBlockingQueue<RequestInfo> queRequestInfo = new LinkedBlockingQueue<RequestInfo>();
     /**
      * All requests that need to be processed will be read from vsocket and put in que
      */
-    private LinkedBlockingQueue<RequestInfo> queRequestInfo = new LinkedBlockingQueue<RequestInfo>();
     protected void setupRequestQueueThread() {
         Thread t = new Thread(new Runnable() {
             public void run() {
                 for (;;) {
                     try {
-                        RequestInfo  ri = queRequestInfo.take();
+                        RequestInfo ri = queRequestInfo.take();
                         if (ri.bind != null && ri.bind.isOASync) {
-                            // might need to handle this without waiting in the sync que, else it could exhaust remoteThreads
                             if (ri.isFromRemoteThread) {
+                                // this is the return from a sync request that was made while processing a 
+                                //      message in a remoteThread
                                 RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
                                 synchronized (rix) {
                                     rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
@@ -872,8 +873,32 @@ public class RemoteMultiplexerClient {
                             else {
                                 queSyncRequestInfo.put(ri);
                             }
-                            continue;
                         }
+                        else {
+                            queRequestInfo2.put(ri);
+                        }
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "RequestQueueThread error", e);
+                    }
+                }
+            }
+        });
+        t.setName("QueueControl1");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private LinkedBlockingQueue<RequestInfo> queRequestInfo2 = new LinkedBlockingQueue<RequestInfo>();
+    /**
+     * que that needs to have the request process by a remoteThread
+     */
+    protected void setupRequestQueueThread2() {
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                for (;;) {
+                    try {
+                        RequestInfo  ri = queRequestInfo2.take();
                         
                         OARemoteThread t = getRemoteClientThread(ri, true);
                         synchronized (t.Lock) {
@@ -886,15 +911,16 @@ public class RemoteMultiplexerClient {
                 }
             }
         });
-        t.setName("RemoteRequestQueue");
+        t.setName("QueueControl2");
         t.setDaemon(true);
         t.start();
     }
-
-    /**
-     * All Sync requests that need to be processed will be read from vsocket and put in que
-     */
+    
+    
     private LinkedBlockingQueue<RequestInfo> queSyncRequestInfo = new LinkedBlockingQueue<RequestInfo>();
+    /**
+     * que that is for sync requests, and sync return values/ack
+     */
     protected void setupSyncRequestQueueThread() {
         Thread t = new Thread(new Runnable() {
             public void run() {
@@ -902,7 +928,7 @@ public class RemoteMultiplexerClient {
                     try {
                         RequestInfo ri = queSyncRequestInfo.take(); // blocks
 
-                        // 20160122 this client called a oasync method. This is ack. 
+                        // 20160122 this client called a oasync method. This is the return ack.
                         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {                        
                             if (ri.bind != null && ri.bind.isOASync) {
                                 if (ri.connectionId == multiplexerClient.getConnectionId()) {
@@ -915,17 +941,7 @@ public class RemoteMultiplexerClient {
         
                                         // 20160121 wait for OARemoteThreadDelegate.startNextThread to be called, which will 
                                         //      then notify rix that sync msg is done, and next msg can be processed
-//qqqqqqqqqqqqqqqqqqqqqq                                        
-//long ms1 = System.currentTimeMillis();                                        
                                         rix.wait(25);
-/*int diff = (int) (System.currentTimeMillis() - ms1);                                         
-if (diff > 20) {
-    System.out.println("xxxxxxxxxxxxxxxxxxxxxxxx QQQQQQQQQQQQQQQ "+diff+"  type="+rix.type+", method="+rix.method);
-    int xx = 4;
-    xx++;//qqqqqqqqqqqqq
-}
-*/
-//System.out.println(">>> time "+diff+"  type="+rix.type);
                                     }
                                     continue;
                                 }
@@ -956,7 +972,7 @@ if (diff > 20) {
                 }
             }
         });
-        t.setName("RemoteSyncRequestQueue");
+        t.setName("SyncQueueController");
         t.setDaemon(true);
         t.start();
     }
