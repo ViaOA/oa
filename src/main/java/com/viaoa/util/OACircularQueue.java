@@ -179,8 +179,8 @@ public abstract class OACircularQueue<TYPE> {
         return addMessage(msg);
     }
     
-    private int cntQueueWait; // number of times a addMessage has called wait.    
-    private long tsLastLog;
+    private volatile int cntQueueWait; // number of times a addMessage has called wait.    
+    private volatile long tsLastLog;
     
     public int addMessage(TYPE msg) {
         synchronized(LOCKQueue) {
@@ -194,13 +194,13 @@ public abstract class OACircularQueue<TYPE> {
             
             if (b) {
                 queueLowPosition = queueHeadPosition;
-                // wait up to 1 second for any slow consumer
-                for (int i=0; i<20; i++) {
-                    Session sessionFound = null;
+
+                for (int i=0; ; i++) {
+                    Session slowSessionFound = null;
                     for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
                         Session session = entry.getValue();
                         if (session.queuePos < (queueHeadPosition - queueSize)) {
-                            continue; // overflow
+                            continue; // overflowed already
                         }
                         queueLowPosition = Math.min(session.queuePos, queueLowPosition);
 
@@ -209,11 +209,10 @@ public abstract class OACircularQueue<TYPE> {
                             continue;
                         }
                     
-                        
                         long ts = session.msLastRead;
                         long tsNow = System.currentTimeMillis();
                         if (ts + 1000 < tsNow) {
-                            if (tsNow > tsLastLog + 1000) {
+                            if (tsLastLog + 1000 < tsNow) {
                                 LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
                                         ", currentHeadPos="+queueHeadPosition+", session="+session.id+
                                         ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms");
@@ -223,22 +222,22 @@ public abstract class OACircularQueue<TYPE> {
                                 continue;  // too slow, dont wait for this one
                             }
                         }
-                        sessionFound = session;
+                        slowSessionFound = session;
                         break;
                     }
-                    if (sessionFound == null) {
+                    if (slowSessionFound == null) {
                         break;
                     }
                     try {
-                        LOCKQueue.wait(50);
+                        LOCKQueue.wait(25);
                         ++cntQueueWait;
                         
                         long tsNow = System.currentTimeMillis();
                         if (tsNow > tsLastLog + 2500) {
                             LOG.fine("avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                                     ", totalSessions="+hmSession.size() +
-                                    ", slowSession="+sessionFound.id +
-                                    ", qpos="+sessionFound.queuePos +
+                                    ", slowSession="+slowSessionFound.id +
+                                    ", qpos="+slowSessionFound.queuePos +
                                     ", totalWaits="+cntQueueWait);
                             tsLastLog = tsNow;
                         }
