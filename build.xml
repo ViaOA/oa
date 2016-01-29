@@ -121,7 +121,7 @@
     </target>
 
     
-    <!-- this is used to sign the iText-2.1.7.jar file using viaos certificate 
+    <!-- this is used to sign the iText-2.1.7.jar file using viaoa certificate 
          first copy iText-2.1.7.jar to dist/itext.jar 
          then run this target to sign the jar.
     -->
@@ -129,7 +129,6 @@
     <target name="JarIText" depends="" description="Jar IText files">
         <jar basedir="/temp/itext" destfile="dist/itext.jar" manifest="manifest.mf" casesensitive="true" update="false"  />
     </target>
-    
     <target name="SignItext" depends="">
         <signjar jar="dist/itext.jar" alias="viaoa" keystore="keystore/viaoa.jks" storepass="vince1" />
     </target>
