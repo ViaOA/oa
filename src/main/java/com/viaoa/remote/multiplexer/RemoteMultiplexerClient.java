@@ -365,7 +365,7 @@ public class RemoteMultiplexerClient {
      */
     protected void afterInvokeForCtoS(RequestInfo ri) {
         if (ri == null || !ri.bSent) return;
-        // LOG.fine(ri.toLogString());
+        //LOG.fine(ri.toLogString());
     }
 
     // "dummy" object, that is used when methods are not supported in proxy interface, but are in Object

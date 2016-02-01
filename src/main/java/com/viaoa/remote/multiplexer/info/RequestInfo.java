@@ -84,7 +84,7 @@ public class RequestInfo {
     final public int cnt;
     public long msStart;
     public long nsStart; 
-    public long nsEnd; 
+    public long nsEnd;
 
     public BindInfo bind;
     public VirtualSocket socket;
@@ -139,7 +139,6 @@ public class RequestInfo {
             msg += "|";
             msg += "|";
         }
-        msg += "|" + (nsEnd-nsStart);
                 
         if (exception != null) {
             msg += "|"+exception;
@@ -147,6 +146,39 @@ public class RequestInfo {
         else if (exceptionMessage != null) {
             msg += "|"+exceptionMessage;
         }
+        else {
+            msg += "|";
+        }
+        msg += "|";
+        
+        if (method == null) return msg;
+        Class[] cs = method.getParameterTypes();
+
+        if (cs == null || cs.length == 0) return msg;
+        
+        int i = 0;
+        for (Class c : cs) {
+            String s;
+            if (args != null && args.length > i) {
+                Object obj = args[i];
+                if (obj == null) s = "";
+                else {
+                    if (obj instanceof Class) {
+                        s = ((Class) obj).getSimpleName();
+                    }
+                    else {
+                        s = obj.toString();
+                        if (s.length() > 30) s = s.substring(0,28)+"..";
+                    }
+                }
+            }
+            else s = "";
+            if (i > 0) msg += "|";
+            msg += "["+i+"]="+s;
+            i++;
+        }
+        
+        
         return msg;
     }
     
@@ -157,8 +189,8 @@ public class RequestInfo {
         msg += "|Type";
         msg += "|Object";
         msg += "|Method";
-        msg += "|nsRead";
-        msg += "[|exception]";
+        msg += "|exception";
+        msg += "|arguments";
         return msg;
     }
     
