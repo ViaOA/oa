@@ -2,16 +2,18 @@ package com.viaoa.comm.io;
 
 import java.io.*;
 
+import org.junit.Test;
+
 import com.viaoa.util.OAFile;
 
 import test.theice.tsac.model.oa.Server;
 
 public class OAObjectInputStreamTest {
 
-    
+    @Test
     public void test() throws Exception {
 
-        File file = new File(OAFile.convertFileName("runtime/test/data.bin"));
+        File file = new File(OAFile.convertFileName("test.bin"));
         OAFile.mkdirsForFile(file);
         
         FileOutputStream out = new FileOutputStream(file);

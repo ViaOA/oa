@@ -40,7 +40,7 @@ public @interface OARemoteMethod {
     // do not use queue (even if parent uses a msg queue)
     boolean dontUseQueue() default false;
     
-    // send return value using socket from queued messages
+    // send return value using the socket that writes queued messages from the server to the client
     boolean returnOnQueueSocket() default false;
 }
 

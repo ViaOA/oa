@@ -25,6 +25,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OARemoteInterface {
-//    String asyncQueueName() default "";
-//    int asyncQueueSize() default 500;
+    
+    /**
+     * If true, then all methods that are called will be put in a queue and processed by OARemoteThread serially. 
+     */
+    boolean isOASync() default false;
 }

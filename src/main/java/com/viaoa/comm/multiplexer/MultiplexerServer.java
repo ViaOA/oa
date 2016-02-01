@@ -36,12 +36,8 @@ import com.viaoa.comm.multiplexer.io.MultiplexerServerSocketController;
 public class MultiplexerServer {
     private static Logger LOG = Logger.getLogger(MultiplexerServer.class.getName());
 
-//qqqqqqqqqqqq    
+    //qqqqqqqqqqqq    
     public static boolean DEBUG = false;
-    
-    static {
-//      System.out.println("******* qqqqqqqqqq MultiplexerClient.DEBUG="+DEBUG);
-    }
     
     /**
      * Server port.

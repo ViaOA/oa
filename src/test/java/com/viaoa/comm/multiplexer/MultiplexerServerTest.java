@@ -29,6 +29,7 @@ public class MultiplexerServerTest extends OAUnitTest {
                 }
             }
         };
+        t.setDaemon(true);
         t.start();
     }
     private void _test(int maxConnections) throws Exception {
@@ -82,24 +83,21 @@ public class MultiplexerServerTest extends OAUnitTest {
         DataInputStream dis = new DataInputStream(is);
         DataOutputStream dos = new DataOutputStream(os);
 
-        
-        
-        int x = dis.readInt();
-        byte[]bs = new byte[x];
         long tot = 0;
-        
+        byte[] bs = null;
         for (int i=0; !bStopCalled; i++) {
             
+            int x = dis.readInt();
+            if (x < 0) break;
+            
+            if (bs == null) bs = new byte[x];
+
             dis.readFully(bs);
             tot += x;
             //System.out.println("server, cnt="+i+", totBytes="+tot);
 
-//dos.writeInt(1);
-//dos.write(new byte[1]);
-/*was            
             dos.writeInt(bs.length);
             dos.write(bs);
-*/            
         }
     }
 

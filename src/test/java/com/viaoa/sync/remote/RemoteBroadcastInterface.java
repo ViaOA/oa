@@ -22,7 +22,7 @@ public interface RemoteBroadcastInterface {
     public void onClientDone();
     
     public void respondStats(Site site, String name);
-    public void respondStats(Server server, String name, int cntApps);
+    public void respondStats(Server server, String name, int cntApps, long nameChecksum);
     public void respondStats(String msg);
     
     

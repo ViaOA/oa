@@ -35,7 +35,6 @@ import com.viaoa.remote.multiplexer.info.BindInfo;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
-import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.OACompressWrapper;
 import com.viaoa.util.OAPool;
 import com.viaoa.util.OAReflect;
@@ -102,7 +101,6 @@ public class RemoteMultiplexerClient {
         if (multiplexerClient == null) throw new IllegalArgumentException("multiplexerClient is required");
         this.multiplexerClient = multiplexerClient;
         setupRequestQueueThread();
-        setupRequestQueueThread2();
         setupSyncRequestQueueThread();
     }
 
@@ -280,7 +278,7 @@ public class RemoteMultiplexerClient {
         return proxy;
     }
 
-    //volatile static int threadCheck;    
+    // volatile static int threadCheck;    
     protected Object onInvokeForCtoS(BindInfo bind, Object proxy, Method method, Object[] args) throws Throwable {
         //LOG.fine(method.getName());
         RequestInfo ri = new RequestInfo();
@@ -305,7 +303,6 @@ public class RemoteMultiplexerClient {
             ri.method = method;
             ri.args = args;
             ri.methodInfo = ri.bind.getMethodInfo(ri.method);
-            ri.isFromRemoteThread = (Thread.currentThread() instanceof OARemoteThread);
             if (ri.methodInfo != null) {
                 ri.methodNameSignature = ri.methodInfo.methodNameSignature;
                 ri.socket.setTimeoutSeconds(ri.methodInfo.timeoutSeconds);
@@ -314,8 +311,8 @@ public class RemoteMultiplexerClient {
             ri.bSent = _onInvokeForCtoS(ri);
 
             // 4:CtoS_QueuedRequestNoResponse END
-            
-            if (ri.bSent && ri.bind.usesQueue && ri.type.hasReturnValue()) {
+  
+            if (ri.bSent && (ri.bind.usesQueue && (ri.type.hasReturnValue() || ri.bind.isOASync)) ) {
                 releaseSocketForCtoS(socket);
                 socket = null;
                 // 4:CtoS_QueuedRequest wait on return value from server
@@ -340,7 +337,7 @@ public class RemoteMultiplexerClient {
                 else {
                     // 20160122 queue thread will wait for OARemoteThreadDelegate.startNextThread()
                     //    to call OAThreadLocalDelegate.notifyWaitingThread(), and wake up que thread waiting on ri lock
-                    if (ri.bind != null && ri.bind.isOASync) {
+                    if (ri.bind.isOASync) {
                         OAThreadLocalDelegate.setNotifyObject(ri);
                     }
                 }
@@ -458,6 +455,8 @@ public class RemoteMultiplexerClient {
 
         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(ri.socket, hmClassDescOutput, aiClassDescOutput);
 
+        
+        // set the correct type of message that this will be, which determines how it will be handled.
         if (ri.bind.usesQueue && ri.methodInfo.returnOnQueueSocket) {
             ri.type = RequestInfo.Type.CtoS_ReturnOnQueueSocket;
         }
@@ -482,7 +481,7 @@ public class RemoteMultiplexerClient {
                 ri.type = RequestInfo.Type.CtoS_SocketRequest;
             }
         }
-
+        
         if (ri.type.usesQueue() && ri.type.hasReturnValue()) {
             // 3:CtoS_QueuedRequest put in hm to wait on server response
             hmAsyncRequestInfo.put(ri.messageId, ri); // used to wait for server to send it back on StoC
@@ -849,56 +848,17 @@ public class RemoteMultiplexerClient {
         }
     }
 
+
     private LinkedBlockingQueue<RequestInfo> queRequestInfo = new LinkedBlockingQueue<RequestInfo>();
     /**
-     * All requests that need to be processed will be read from vsocket and put in que
+     * que that has a remoteThread process the request
      */
     protected void setupRequestQueueThread() {
         Thread t = new Thread(new Runnable() {
             public void run() {
                 for (;;) {
                     try {
-                        RequestInfo ri = queRequestInfo.take();
-                        if (ri.bind != null && ri.bind.isOASync) {
-                            if (ri.isFromRemoteThread) {
-                                // this is the return from a sync request that was made while processing a 
-                                //      message in a remoteThread
-                                RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
-                                synchronized (rix) {
-                                    rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
-                                    rix.methodInvoked = true;
-                                    rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
-                                }                                
-                            }
-                            else {
-                                queSyncRequestInfo.put(ri);
-                            }
-                        }
-                        else {
-                            queRequestInfo2.put(ri);
-                        }
-                    }
-                    catch (Exception e) {
-                        LOG.log(Level.WARNING, "RequestQueueThread error", e);
-                    }
-                }
-            }
-        });
-        t.setName("QueueControl1");
-        t.setDaemon(true);
-        t.start();
-    }
-
-    private LinkedBlockingQueue<RequestInfo> queRequestInfo2 = new LinkedBlockingQueue<RequestInfo>();
-    /**
-     * que that needs to have the request process by a remoteThread
-     */
-    protected void setupRequestQueueThread2() {
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                for (;;) {
-                    try {
-                        RequestInfo  ri = queRequestInfo2.take();
+                        RequestInfo  ri = queRequestInfo.take();
                         
                         OARemoteThread t = getRemoteClientThread(ri, true);
                         synchronized (t.Lock) {
@@ -928,11 +888,10 @@ public class RemoteMultiplexerClient {
                     try {
                         RequestInfo ri = queSyncRequestInfo.take(); // blocks
 
-                        // 20160122 this client called a oasync method. This is the return ack.
                         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {                        
                             if (ri.bind != null && ri.bind.isOASync) {
                                 if (ri.connectionId == multiplexerClient.getConnectionId()) {
-                                    // return response from sync message
+                                    // 20160122 this client called a oasync method. This is the return ack.
                                     RequestInfo rix = hmAsyncRequestInfo.remove(ri.messageId);
                                     synchronized (rix) {
                                         rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
@@ -940,7 +899,7 @@ public class RemoteMultiplexerClient {
                                         rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
         
                                         // 20160121 wait for OARemoteThreadDelegate.startNextThread to be called, which will 
-                                        //      then notify rix that sync msg is done, and next msg can be processed
+                                        //      then notify rix that sync msg is done, and then the next sync msg can be processed
                                         rix.wait(25);
                                     }
                                     continue;
@@ -1068,27 +1027,25 @@ public class RemoteMultiplexerClient {
             ri.messageId = ois.readInt();
             
             if (ri.connectionId == multiplexerClient.getConnectionId()) {
+                // this client called a broadcast
                 RequestInfo rix = hmAsyncRequestInfo.get(ri.messageId);
                 if (rix == null) {
                     ri.exceptionMessage = "StoC requestInfo not found";
+                    return true;
+                }
+
+                if (rix.bind.isOASync) {
+                    ri.bind = rix.bind; 
+                    queSyncRequestInfo.put(ri);  // sync que will notify the original thread
                 }
                 else {
-                    if (rix.bind.isOASync) {
-                        ri.bind = rix.bind; 
-                        ri.isFromRemoteThread = rix.isFromRemoteThread;
-                        queRequestInfo.put(ri);
-                    }
-                    else {
-                        hmAsyncRequestInfo.remove(ri.messageId);
-                        synchronized (rix) {
-                            rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
-                            rix.methodInvoked = true;
-                            rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
-                        }
+                    hmAsyncRequestInfo.remove(ri.messageId);
+                    synchronized (rix) {
+                        rix.response = OAReflect.getEmptyPrimitive(rix.method.getReturnType());
+                        rix.methodInvoked = true;
+                        rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
                     }
                 }
-                
-                // this client called the broadcast
                 return true;
             }
             
@@ -1104,7 +1061,12 @@ public class RemoteMultiplexerClient {
             }
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
-            queRequestInfo.put(ri);
+            if (ri.bind.isOASync) {
+                queSyncRequestInfo.put(ri);
+            }
+            else {
+                queRequestInfo.put(ri);
+            }
             return false;
         }
         
@@ -1115,7 +1077,13 @@ public class RemoteMultiplexerClient {
             ri.bind = getBindInfo(ri.bindName);
             if (ri.bind == null) return false;
             ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
-            queRequestInfo.put(ri);
+
+            if (ri.bind.isOASync) {
+                queSyncRequestInfo.put(ri);
+            }
+            else {
+                queRequestInfo.put(ri);
+            }
             return false;
         }
         
@@ -1416,41 +1384,5 @@ public class RemoteMultiplexerClient {
     protected BindInfo getBindInfo(RequestInfo ri, String name, Object obj, Class interfaceClass, boolean bDontUseQueue) {
         return getBindInfo(name, obj, interfaceClass, (ri.bind.usesQueue&&!bDontUseQueue), ri.bind.isBroadcast);
     }
-
-/*    
-    // thread pool
-    private ThreadPoolExecutor executorService;
-    private LinkedBlockingQueue<Runnable> queExecutorService;
-
-    protected ExecutorService getExecutorService() {
-        if (executorService != null) return executorService;
-
-        ThreadFactory tf = new ThreadFactory() {
-            AtomicInteger ai = new AtomicInteger();
-
-            @Override
-            public Thread newThread(Runnable r) {
-                OARemoteThread t = new OARemoteThread(r, false); // needs to be this type of thread
-                t.setName("Multiplexer.executorService." + ai.getAndIncrement());
-                t.setDaemon(true);
-                t.setPriority(Thread.NORM_PRIORITY);
-                return t;
-            }
-        };
-
-        queExecutorService = new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE);
-        // min/max must be equal, since new threads are only created when queue is full
-        executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, queExecutorService, tf) {
-            @Override
-            public Future<?> submit(Runnable task) {
-                //LOG.fine("running task in thread=" + Thread.currentThread().getName());
-                return super.submit(task);
-            }
-        };
-        executorService.allowCoreThreadTimeOut(true); // must have this
-
-        return executorService;
-    }
-*/
 
 }

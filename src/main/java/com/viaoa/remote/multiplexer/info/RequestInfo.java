@@ -38,13 +38,14 @@ public class RequestInfo {
         CtoS_SocketRequest(false, true),
         CtoS_SocketRequestNoResponse(false, false),
         
+        // send on socket and have it returned on the same socket that the queue uses.
         CtoS_ReturnOnQueueSocket(true, true, true),
         
         CtoS_QueuedRequest(true, true),
         CtoS_QueuedRequestNoResponse(true, false),
         CtoS_QueuedResponse(true, false), // client returning result from stoc_queuedRequest
         
-        CtoS_QueuedBroadcast(true, true),          // will return to client, once it is processed (not invoked) on the server
+        CtoS_QueuedBroadcast(true, true),   // will return to client, once it is processed (not invoked) on the server
 
         StoC_CreateNewStoCSocket(false, false),
         StoC_QueuedBroadcast(true, false),
@@ -108,7 +109,7 @@ public class RequestInfo {
 
     public volatile boolean methodInvoked;  // set to true with the method has been invoked
     public volatile boolean processedByServerQueue;  // flag set on server after it's processed
-    public boolean isFromRemoteThread; // know if the thread making the remote call is a remoteThread
+//    public boolean isFromRemoteThread; // know if the thread making the remote call is a remoteThread
     
     public RequestInfo() {
         this.cnt = aiCount.incrementAndGet();

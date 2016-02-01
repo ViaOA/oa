@@ -14,7 +14,7 @@
 
 
 
-Simple, with as many threads as needed
+>>> Simple, with as many threads as needed
 
     private ExecutorService executorService;
 
@@ -54,7 +54,7 @@ Simple, with as many threads as needed
 
 
 
-=================
+====== this version sill use a fixed size thread pool
 
     Runnable rr = new Runnable() {
         @Override
@@ -95,8 +95,7 @@ Simple, with as many threads as needed
         
         queExecutorService = new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE);
         // min/max must be equal, since new threads are only created when queue is full
-        executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, 
-                queExecutorService, tf) 
+        executorService = new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, queExecutorService, tf) 
         {
             @Override
             public Future<?> submit(Runnable task) {
@@ -104,7 +103,7 @@ Simple, with as many threads as needed
                 return super.submit(task);
             }
         };
-        executorService.allowCoreThreadTimeOut(true);  // must have this
+        executorService.allowCoreThreadTimeOut(true);  // ** must have this
         
         return executorService;
     }

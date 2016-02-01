@@ -85,7 +85,10 @@ public class OASyncServerTest {
                         }
                         
                         for (int i=0; i<2000; i++) {
-                            if ((i+1)%250==0) System.out.println((i+1)+"/2000");
+                            if ((i+1)%250==0) {
+                                System.out.println((i+1));
+                            }
+                            
                             site.setAbbrevName("test."+i);
                             server.setName("test."+i);
                             
@@ -186,7 +189,7 @@ public class OASyncServerTest {
                 OAFinder<Site, Server> f = new OAFinder<Site, Server>(SitePP.environments().silos().servers().pp) {
                     @Override
                     protected void onFound(Server server) {
-                        respondStats(server, server.getName(), server.getApplications().getSize());
+                        respondStats(server, server.getName(), server.getApplications().getSize(), server.getNameChecksum());
                     }
                 };
                 f.find(ModelDelegate.getSites());
@@ -195,7 +198,7 @@ public class OASyncServerTest {
             public void respondStats(Site site, String name) {
             }
             @Override
-            public void respondStats(Server server, String name, int cntApps) {
+            public void respondStats(Server server, String name, int cntApps, long nameChecksum) {
             }
             @Override
             public void respondStats(String msg) {

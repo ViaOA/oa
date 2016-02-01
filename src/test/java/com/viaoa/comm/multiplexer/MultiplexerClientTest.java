@@ -1,21 +1,13 @@
 package com.viaoa.comm.multiplexer;
 
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
-
-import test.theice.tsac3.model.oa.*;
 
 public class MultiplexerClientTest extends OAUnitTest {
     private AtomicInteger aiCount = new AtomicInteger();
@@ -23,11 +15,8 @@ public class MultiplexerClientTest extends OAUnitTest {
     public void test(int ... msgSizes) throws Exception {
         final MultiplexerClient mc = new MultiplexerClient("localhost", 1101);
         mc.start();
-        
         mc.DEBUG = true;
         
-//Thread.sleep(5000);
-
         for (int i=0; i<msgSizes.length; i++) {
             final int id = i;
             final int msgSize = msgSizes[i];
@@ -43,6 +32,7 @@ public class MultiplexerClientTest extends OAUnitTest {
                     }
                 }
             };
+            t.setDaemon(true);
             t.setName("Thread."+i+".value."+msgSize);
             t.start();
         }
@@ -67,25 +57,23 @@ public class MultiplexerClientTest extends OAUnitTest {
         
         long tot = 0;
         byte[] bs = new byte[msgSize];
-        dos.writeInt(msgSize);
         
-        for (int i=0; !bStopCalled ;i++) {
+        for (int i=0;  ;i++) {
+            dos.writeInt(msgSize);
             dos.write(bs);
 
-//            int x = dis.readInt();
-//            dis.read(bs,0,1);
-            
-/*qqq             
             int x = dis.readInt();
             dis.readFully(bs);
-*/
+
             tot += msgSize;
-            if (i % 1000 == 0) {
-                System.out.println("client, id="+id+", cnt="+i+", bs="+msgSize+", totBytes="+tot);
+            if (bStopCalled || i % 500 == 0) {
+                System.out.println("client, id="+id+", cnt="+i+", bs="+msgSize+", totBytes="+tot+", allCnt="+aiCount.get());
             }
             
             aiCount.incrementAndGet();
+            if (bStopCalled) break;
         }
+        dos.writeInt(-1);
         socket.close();
     }
     

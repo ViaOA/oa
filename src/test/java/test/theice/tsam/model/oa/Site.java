@@ -48,7 +48,7 @@ public class Site extends OAObject {
      
     protected int id;
     protected String abbrevName;
-    protected String name;
+    protected volatile String name;
     protected boolean production;
 
     // Links to other objects.

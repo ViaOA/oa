@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 import com.viaoa.remote.multiplexer.annotation.OARemoteParameter;
-import com.viaoa.sync.remote.RemoteSyncInterface;
 
 /**
  * Internal information about a remote Object. 
@@ -40,7 +39,7 @@ public class BindInfo {
     public boolean usesQueue;
     public String asyncQueueName;
     public int asyncQueueSize;
-    public boolean isOASync;  // RemoteSyncInterface.java
+    public boolean isOASync; 
 
     public WeakReference weakRef;
     public Class interfaceClass; // used to create the proxy
@@ -56,7 +55,11 @@ public class BindInfo {
         this.asyncQueueName = queueName;
         this.asyncQueueSize = queueSize;
         this.usesQueue = (asyncQueueName != null);
-        this.isOASync = RemoteSyncInterface.class.isAssignableFrom(interfaceClass);
+
+        OARemoteInterface rc = (OARemoteInterface) interfaceClass.getAnnotation(OARemoteInterface.class);
+        if (rc != null) {
+            this.isOASync = rc.isOASync();
+        }
     }
     
     
