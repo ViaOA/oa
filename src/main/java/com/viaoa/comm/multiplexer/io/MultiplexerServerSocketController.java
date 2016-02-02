@@ -14,6 +14,8 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 /**
@@ -295,6 +297,7 @@ public class MultiplexerServerSocketController {
      * Adds a new SocketController to list.
      */
     protected void add(MultiplexerSocketController vsc) {
+        aiCreatedConnectionCnt.incrementAndGet();
         synchronized (_alSocketController) {
             _alSocketController.add(vsc);
         }
@@ -303,11 +306,20 @@ public class MultiplexerServerSocketController {
         }
     }
 
+    
+    
     /**
      * Removes a SocketController from list.
      */
     protected void remove(MultiplexerSocketController vsc) {
         if (vsc == null) return;
+        
+        aiRemovedReadCnt.addAndGet(vsc.getInputStreamController().getReadCount());
+        aiRemovedReadSize.addAndGet(vsc.getInputStreamController().getReadSize());
+
+        aiRemovedWriteCnt.addAndGet(vsc.getOutputStreamController().getWriteCount());
+        aiRemovedWriteSize.addAndGet(vsc.getOutputStreamController().getWriteSize());
+        
         boolean b;
         synchronized (_alSocketController) {
             b = _alSocketController.remove(vsc) && vsc.isValid();
@@ -396,4 +408,68 @@ public class MultiplexerServerSocketController {
 
     public void onClientDisconnect(int connectionId) {
     }
+
+
+
+    
+    // 20160202
+    private AtomicLong aiRemovedReadCnt = new AtomicLong();
+    private AtomicLong aiRemovedReadSize = new AtomicLong();
+    
+    private AtomicLong aiRemovedWriteCnt = new AtomicLong();
+    private AtomicLong aiRemovedWriteSize = new AtomicLong();
+    
+    private AtomicInteger aiCreatedConnectionCnt = new AtomicInteger();
+    
+    /**
+     * @return number of writes made.
+     */
+    public long getWriteCount() {
+        long cnt = aiRemovedWriteCnt.get();
+        for (MultiplexerSocketController sc : _alSocketController) {
+            cnt += sc.getOutputStreamController().getWriteCount();
+        }
+        return cnt;
+    }
+    /*
+     * size of data that has been written.
+     */
+    public long getWriteSize() {
+        long size = aiRemovedWriteSize.get();
+        for (MultiplexerSocketController sc : _alSocketController) {
+            size += sc.getOutputStreamController().getWriteSize();
+        }
+        return size;
+    }
+
+    
+    /**
+     * @return number of reads made.
+     */
+    public long getReadCount() {
+        long cnt = aiRemovedReadCnt.get();
+        for (MultiplexerSocketController sc : _alSocketController) {
+            cnt += sc.getInputStreamController().getReadCount();
+        }
+        return cnt;
+    }
+    /*
+     * size of data that has been read.
+     */
+    public long getReadSize() {
+        long size = aiRemovedReadSize.get();
+        for (MultiplexerSocketController sc : _alSocketController) {
+            size += sc.getInputStreamController().getReadSize();
+        }
+        return size;
+    }
+
+    public int getCreatedConnectionCount() {
+        return aiCreatedConnectionCnt.get();
+    }
+    public int getLiveConnectionCount() {
+        if (_alSocketController == null) return 0;
+        return _alSocketController.size();
+    }
+    
 }

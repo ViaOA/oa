@@ -281,6 +281,8 @@ public class RemoteMultiplexerClient {
     // volatile static int threadCheck;    
     protected Object onInvokeForCtoS(BindInfo bind, Object proxy, Method method, Object[] args) throws Throwable {
         //LOG.fine(method.getName());
+        aiMethodCallCnt.incrementAndGet();
+        
         RequestInfo ri = new RequestInfo();
         // 1:CtoS_QueuedRequest start
         // 1:CtoS_QueuedRequestNoResponse
@@ -632,7 +634,7 @@ public class RemoteMultiplexerClient {
                         if (socket.isClosed()) {
                             break;
                         }
-                        processSocket(socket, id);
+                        processStoCSocket(socket, id);
                     }
                     catch (Exception e) {
                         if (!socket.isClosed()) {
@@ -818,11 +820,14 @@ public class RemoteMultiplexerClient {
         return false;
     }
 
-    protected void processSocket(final VirtualSocket socket, int threadId) throws Exception {
+    protected void processStoCSocket(final VirtualSocket socket, int threadId) throws Exception {
         if (socket.isClosed()) return;
         RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
 
+        // wait for next message
         RequestInfo.Type type = RequestInfo.getType(ois.readByte());
+        aiReceivedMethodCallCnt.incrementAndGet();
+        
         if (type == RequestInfo.Type.StoC_CreateNewStoCSocket) {
             // server is requesting another vsocket "stoc"
             createSocketForStoC();
@@ -1385,4 +1390,23 @@ public class RemoteMultiplexerClient {
         return getBindInfo(name, obj, interfaceClass, (ri.bind.usesQueue&&!bDontUseQueue), ri.bind.isBroadcast);
     }
 
+
+    // 20160202
+    private AtomicInteger aiMethodCallCnt = new AtomicInteger();
+    private AtomicInteger aiReceivedMethodCallCnt = new AtomicInteger();
+    
+    /**
+     * number of remote methods called.
+     */
+    public long getMethodCallCount() {
+        return aiMethodCallCnt.get();
+    }
+    /*
+     * number of methods/broadcast received
+     */
+    public long getReceivedMethodCount() {
+        return aiReceivedMethodCallCnt.get();
+    }
+    
+    
 }

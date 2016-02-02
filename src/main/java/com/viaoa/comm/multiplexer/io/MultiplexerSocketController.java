@@ -609,6 +609,10 @@ public class MultiplexerSocketController implements Serializable {
         }
         return vss;
     }
+    public int getLiveSocketCount() {
+        if (_hashtableSocket == null) return 0;
+        return _hashtableSocket.size();
+    }
 
     private Hashtable<Integer, VirtualSocket> getSocketHashtable() {
         if (_hashtableSocket == null) {

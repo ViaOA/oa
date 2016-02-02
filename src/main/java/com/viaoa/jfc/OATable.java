@@ -1375,7 +1375,11 @@ if (!getKeepSorted()) hub.cancelSort();
                 }
             }
         }
-        super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
+        try {
+            super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
+        }
+        catch (Exception e) {
+        }
     }
 
     // 20150423

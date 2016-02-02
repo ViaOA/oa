@@ -15,6 +15,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 /**
@@ -99,6 +100,23 @@ public class MultiplexerOutputStreamController {
         }
     }
 
+    // 20160202    
+    private AtomicLong aiWriteSize = new AtomicLong();
+    private AtomicLong aiWriteCnt = new AtomicLong();
+    
+    /**
+     * @return number of writes made.
+     */
+    public long getWriteCount() {
+        return aiWriteCnt.get();
+    }
+    /*
+     * size of data that has been written.
+     */
+    public long getWriteSize() {
+        return aiWriteSize.get();
+    }
+    
     /**
      * Called by vsockets, to write to the "real" outputstream. A header is created that includes the
      * vsocket Id, length of data. <br>
@@ -118,6 +136,9 @@ public class MultiplexerOutputStreamController {
             pos += len;
         }
         while (pos < fullLength);
+        
+        aiWriteCnt.incrementAndGet();
+        aiWriteSize.addAndGet(fullLength);
     }
 
     /**
@@ -136,13 +157,16 @@ public class MultiplexerOutputStreamController {
         finally {
             releaseOutputStream(); // this will flush
         }
-    }    
+    }
+    
     private void _write(VirtualSocket vs, byte[] bs, int offset, int len, DataOutputStream outputStream) throws IOException {
 //System.out.println("   mosc_write=>  vs.id="+vs._id+", offset="+offset+", len="+len+", waitingCount="+_writeLockWaitingCount+", thread="+Thread.currentThread().getName());//qqqqqqqqqqqq        
         outputStream.writeInt(vs._id); // header
         outputStream.writeInt(len); // header
         outputStream.write(bs, offset, len);
 
+        
+        
         // this is to throttle the amount of data that can be written per fraction of a second (ex: 10x = 100ms)
         if (iThrottleLimitPerFractionSecond > 0) {
             throttleTotalBytesWritten += len;

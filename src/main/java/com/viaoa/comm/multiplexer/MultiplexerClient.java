@@ -13,6 +13,8 @@ package com.viaoa.comm.multiplexer;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -226,9 +228,19 @@ public class MultiplexerClient {
     public VirtualSocket createSocket(String serverSocketName) throws IOException {
         LOG.fine("creating new socket, name=" + serverSocketName);
         VirtualSocket vs = _controlSocket.createSocket(serverSocketName);
+        aiCreateSocketCnt.incrementAndGet();
         return vs;
     }
 
+    // 20160202    
+    private AtomicInteger aiCreateSocketCnt = new AtomicInteger();
+    public int getCreatedSocketCount() {
+        return aiCreateSocketCnt.get();
+    }
+    public int getLiveSocketCount() {
+        return _controlSocket.getLiveSocketCount();
+    }
+    
     /**
      * Close the "real" socket to server.
      * 
@@ -285,4 +297,36 @@ public class MultiplexerClient {
         return _host;
     }
 
+    
+    
+    /**
+     * @return number of writes made.
+     */
+    public long getWriteCount() {
+        if (_controlSocket == null) return 0;
+        return _controlSocket.getOutputStreamController().getWriteCount(); 
+    }
+    /*
+     * size of data that has been written.
+     */
+    public long getWriteSize() {
+        if (_controlSocket == null) return 0;
+        return _controlSocket.getOutputStreamController().getWriteSize(); 
+    }
+    
+    /**
+     * @return number of reads made.
+     */
+    public long getReadCount() {
+        if (_controlSocket == null) return 0;
+        return _controlSocket.getInputStreamController().getReadCount(); 
+    }
+    /*
+     * size of data that has been read.
+     */
+    public long getReadSize() {
+        if (_controlSocket == null) return 0;
+        return _controlSocket.getInputStreamController().getReadSize(); 
+    }
+    
 }

@@ -234,4 +234,44 @@ public class MultiplexerServer {
     protected void onClientConnect(Socket socket, int connectionId) {
         LOG.fine("connectionId=" + connectionId);
     }
+
+    /**
+     * @return number of reads made.
+     */
+    public long getReadCount() {
+        if (_controlServerSocket == null) return 0;
+        return _controlServerSocket.getReadCount(); 
+    }
+    /*
+     * size of data that has been read.
+     */
+    public long getReadSize() {
+        if (_controlServerSocket == null) return 0;
+        return _controlServerSocket.getReadSize(); 
+    }
+
+    /**
+     * @return number of writes made.
+     */
+    public long getWriteCount() {
+        if (_controlServerSocket == null) return 0;
+        return _controlServerSocket.getWriteCount(); 
+    }
+    /*
+     * size of data that has been written.
+     */
+    public long getWriteSize() {
+        if (_controlServerSocket == null) return 0;
+        return _controlServerSocket.getWriteSize(); 
+    }
+
+    public int getCreatedConnectionCount() {
+        if (_controlServerSocket == null) return 0;
+        return _controlServerSocket.getCreatedConnectionCount();
+    }
+    public int getLiveConnectionCount() {
+        if (_controlServerSocket == null) return 0;
+        return _controlServerSocket.getLiveConnectionCount();
+    }
+    
 }

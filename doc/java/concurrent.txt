@@ -116,7 +116,7 @@
 
 
 >> ConcurrentHashMap<K,V>
-    // includes extra constructor param for an estimate on number of trhreads that will be using it
+    // includes extra constructor param for an estimate on number of threads that will be using it
     
     private ConcurrentHashMap<Hub, OADateTime> hmHub = new ConcurrentHashMap<Hub, OADateTime>(53, .75f, 3);
     

@@ -12,6 +12,7 @@ package com.viaoa.comm.multiplexer.io;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,6 +86,7 @@ public abstract class MultiplexerInputStreamController {
     public long getLastReadTime() {
         return msLastRead;
     }
+    
     
     /**
      * Call by MultiplexerSocketController thread that manages the input stream. This will read the
@@ -191,6 +193,25 @@ public abstract class MultiplexerInputStreamController {
         LOG.fine("MultiplexerInputStreamController: socket has been closed, (leaving readRealSocket loop)");
     }
 
+    
+    // 20160202    
+    private AtomicLong aiReadSize = new AtomicLong();
+    private AtomicLong aiReadCnt = new AtomicLong();
+    
+    /**
+     * @return number of reads made.
+     */
+    public long getReadCount() {
+        return aiReadCnt.get();
+    }
+    /*
+     * size of data that has been read.
+     */
+    public long getReadSize() {
+        return aiReadSize.get();
+    }
+    
+    
     /**
      * Called by vsockets, to read from the "real" inputstream. Once the "readRealSocket" receives a
      * header that is for an vsocket, it will then allow the vsocket to have access to read from the
@@ -205,6 +226,10 @@ public abstract class MultiplexerInputStreamController {
         finally {
             _releaseInputStream(vs);
         }
+        
+        aiReadCnt.incrementAndGet();
+        aiReadSize.addAndGet(x);
+        
         return x;
     }
 

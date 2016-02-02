@@ -108,6 +108,10 @@ public class RemoteMultiplexerServer {
         this.multiplexerServer = server;
     }
 
+    public MultiplexerServer getMultiplexerServer() {
+        return this.multiplexerServer;
+    }
+    
     /**
      * This can be called when MultiplexerServer.onClientDisconnect(..) is called. If this is not called,
      * then the next socket.IO method will throw an IOException.
@@ -215,6 +219,8 @@ public class RemoteMultiplexerServer {
             
             boolean b = _processSocketCtoSRequest(ri, session);
             ri.nsEnd = System.nanoTime();
+            
+            aiReceivedMethodCallCnt.incrementAndGet();            
             if (b) {
                 afterInvokeForCtoS(ri);
             }
@@ -528,6 +534,7 @@ public class RemoteMultiplexerServer {
     private AtomicInteger aiMessageId = new AtomicInteger();
     
     protected Object onInvokeForStoC(Object proxyInstance, Session session, String bindName, Method method, Object[] args) throws Exception {
+        aiMethodCallCnt.incrementAndGet();
         RequestInfo ri = new RequestInfo();
         try {
             ri.connectionId = 0;
@@ -965,6 +972,7 @@ public class RemoteMultiplexerServer {
     }
 
     protected RequestInfo onInvokeBroadcast(BindInfo bind, Method method, Object[] args) throws Exception {
+        aiMethodCallCnt.incrementAndGet();
         RequestInfo ri = new RequestInfo();
         ri.connectionId = 0;
         ri.msStart = System.currentTimeMillis();
@@ -1799,4 +1807,30 @@ public class RemoteMultiplexerServer {
             return true;
         }
     }
+
+    // 20160202
+    private AtomicInteger aiMethodCallCnt = new AtomicInteger();
+    private AtomicInteger aiReceivedMethodCallCnt = new AtomicInteger();
+    
+    /**
+     * number of remote methods called.
+     */
+    public long getMethodCallCount() {
+        return aiMethodCallCnt.get();
+    }
+    /*
+     * number of methods/broadcast received
+     */
+    public long getReceivedMethodCount() {
+        return aiReceivedMethodCallCnt.get();
+    }
+    
+    public long getQueueHeadPos() {
+        for (Map.Entry<String, OACircularQueue<RequestInfo>> entry : this.hmAsyncCircularQueue.entrySet()) { 
+            OACircularQueue<RequestInfo> cq = entry.getValue();
+            return cq.getHeadPostion();
+        }        
+        return 0;
+    }
+
 }
