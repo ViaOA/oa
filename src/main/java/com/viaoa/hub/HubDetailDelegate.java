@@ -241,11 +241,30 @@ public class HubDetailDelegate {
            then add to dHub.vector
         */
         if (detail == null || detail.type == detail.HUBMERGER) return;
+        
         if (detail.bIgnoreUpdate) {  // set by hubDetail.setup()
+            // this is called by hubListener in HubDetail, to make sure that the detailHub is "reconnected" to the masterHub.
+            //    it can get disconnected when it is changed to point (shared) to a child hub. 
+            // in case detailHub was set/shared to a recursive child hub.  This will set it back to be off of the masterHub (thisHub)
             if (detailHub.datam.masterObject == (OAObject)thisHub.dataa.activeObject) {
-                // in case it was set to a recursive child hub
+                // 20160204
+                if (detailHub.datam.masterHub != thisHub) {
+                    Hub hx = detailHub.datau.getSharedHub();
+                    boolean b = (hx != null && hx.datam == detailHub.datam);  // this happens by setting sharedHub - when it was sharing with a child hub
+                    if (b) {
+                        // this will reconnect detailHub to the masterHub (thisHub)
+                        detailHub.datam = new HubDataMaster();
+                        detailHub.datam.liDetailToMaster = OAObjectInfoDelegate.getReverseLinkInfo(detail.liMasterToDetail);
+                        detailHub.datam.masterHub = thisHub;
+                        detailHub.datam.masterObject = (OAObject)thisHub.dataa.activeObject;
+                        HubShareDelegate.syncSharedHubs(detailHub, detail.bShareActiveObject, detailHub.dataa, hx.dataa, bUpdateLink); 
+                    }
+                }
+                
+                /*was
                 detailHub.datam.liDetailToMaster = OAObjectInfoDelegate.getReverseLinkInfo(detail.liMasterToDetail);
                 detailHub.datam.masterHub = thisHub;
+                */
             }
             return;
         }
@@ -332,18 +351,24 @@ public class HubDetailDelegate {
             detailHub.datau.setSharedHub(h);
             HubShareDelegate.addSharedHub(h, detailHub);
 
-            // 20120926 "h" could be a shared/calc Hub 
+            // 20120926 "h" could be a shared/calc Hub.
+            // 20160204 this can happen for recursive, where the detailHub is pointing/shared to a childHub.
+            //     this will reconnect it to the parent
             if (detailHub.datam.masterObject != (OAObject) h.datam.masterObject) {
-                if (detailHub.datau.getSharedHub() != null && detailHub.datau.getSharedHub().datam == detailHub.datam) detailHub.datam = new HubDataMaster();
+                Hub hx = detailHub.datau.getSharedHub();
+                if (hx != null && hx.datam == detailHub.datam) {
+                    detailHub.datam = new HubDataMaster();
+                }
+                
                 detailHub.datam.masterObject = (OAObject) h.datam.masterObject;
                 detailHub.datam.liDetailToMaster = h.datam.liDetailToMaster;
-                detailHub.datam.masterHub = h.datam.masterHub;
+                
+                // 20160204
+                detailHub.datam.masterHub = detail.hubMaster;
+                //was: detailHub.datam.masterHub = h.datam.masterHub;
             }            
-            
-            
             HubShareDelegate.syncSharedHubs(detailHub, detail.bShareActiveObject, detailHub.dataa, h.dataa, bUpdateLink); 
 
-            // 20080628 add "if" statement.
             if (detailHub.datam.masterObject != null && h.datam.masterObject == null) {
                 HubDetailDelegate.setMasterObject(h, detailHub.datam.masterObject, detailHub.datam.liDetailToMaster);
             }

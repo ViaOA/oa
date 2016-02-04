@@ -88,7 +88,7 @@ public class RecursiveTest extends OAUnitTest {
         hubSection.setAO(sec);
         assertEquals(hubCatalog.getAO(), hubCatalog.getAt(0));
         assertEquals(sec.getCatalog(), hubCatalog.getAO());
-        assertEquals(hubSection.getMasterHub(), hubCatalog);  // it should still be a detailHub
+        assertNull(hubSection.getMasterHub());  // it should still be a detailHub
         
         hubCatalog.setPos(1);
         assertNull(hubSection.getAO());
@@ -102,26 +102,63 @@ public class RecursiveTest extends OAUnitTest {
     public void recursiveHubDetailTest2() {
 
         HifiveDataGenerator data = new HifiveDataGenerator();
-        Hub<Section> hub = new Hub<Section>(Section.class);
-        data.createSections(null, hub, 0, 4);
+        Hub<Section> hubMaster = new Hub<Section>(Section.class);
+        data.createSections(null, hubMaster, 0, 4);
         
-        Hub<Section> hubDetail = hub.getDetailHub(Section.P_Sections);
-        assertEquals(hubDetail.getMasterHub(), hub);  // it should still be a detailHub
-        
-        // 20160203 set hubSection (catalog.detailHub) to a lower (recursive) hub
-        
-        
-        Section sec = hub.getAt(0).getSections().getAt(0).getSections().getAt(0).getSections().getAt(0);
+        Hub<Section> hubDetail = hubMaster.getDetailHub(Section.P_Sections);
+        assertEquals(hubDetail.getMasterHub(), hubMaster);  // it should still be a detailHub
+
+        Section sec;
+        sec = hubMaster.getAt(0).getSections().getAt(0);
         assertNotNull(sec);
         
         hubDetail.setAO(sec);
         assertEquals(hubDetail.getAO(), sec);
-        assertEquals(hubDetail.getMasterObject(), hub.getAt(0));
+        assertEquals(hubDetail.getMasterHub(), hubMaster);
+        assertEquals(hubMaster.getAt(0), sec.getParentSection());
+        assertEquals(hubDetail.getMasterObject(), sec.getParentSection());
+        assertEquals(hubMaster.getAt(0), hubMaster.getActiveObject());
         
-        hub.setAO(null);
+        hubMaster.setAO(null);
+        assertNull(hubMaster.getAO());
+        assertNotNull(hubDetail.getMasterHub());
         assertNull(hubDetail.getAO());
-        assertNull(hub.getAO());
-        assertEquals(hubDetail.getMasterHub(), hub);  // it should still be a detailHub
+        assertEquals(hubDetail.getMasterHub(), hubMaster);
+        assertNull(hubDetail.getMasterObject());
+
+//qqqqqqqqq create another test that has a top/owner hub above sections        
+        // set hubSection to a lower (recursive) child hub
+        sec = hubMaster.getAt(0).getSections().getAt(0).getSections().getAt(0);
+        assertNotNull(sec);
+        
+        hubDetail.setAO(sec);
+        assertEquals(hubDetail.getAO(), sec);
+        assertNull(hubDetail.getMasterHub());
+        assertEquals(hubDetail.getMasterObject(), sec.getParentSection());
+        assertEquals(hubMaster.getAt(0), hubMaster.getActiveObject());
+        
+        hubMaster.setAO(null);
+        assertNotNull(hubDetail.getMasterHub());
+        assertNull(hubDetail.getAO());
+        assertNull(hubMaster.getAO());
+        assertEquals(hubDetail.getMasterHub(), hubMaster);  // it should still be a detailHub
+        
+        
+        // set hubSection to a lower (recursive) child hub
+        sec = hubMaster.getAt(0).getSections().getAt(0).getSections().getAt(0).getSections().getAt(0);
+        assertNotNull(sec);
+        
+        hubDetail.setAO(sec);
+        assertEquals(hubDetail.getAO(), sec);
+        assertNull(hubDetail.getMasterHub());
+        assertEquals(hubDetail.getMasterObject(), sec.getParentSection());
+        assertEquals(hubMaster.getAt(0), hubMaster.getActiveObject());
+        
+        hubMaster.setAO(null);
+        assertNotNull(hubDetail.getMasterHub());
+        assertNull(hubDetail.getAO());
+        assertNull(hubMaster.getAO());
+        assertEquals(hubDetail.getMasterHub(), hubMaster);  // it should still be a detailHub
         
         int xx = 4;
         xx++;
@@ -177,12 +214,14 @@ public class RecursiveTest extends OAUnitTest {
         assertNotNull(hubEmployee.getMasterHub());
         assertNull(hubEmployee.getMasterObject());
         
-        Employee emp = hubProgram.getAt(1).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
+        loc = hubProgram.getAt(1).getLocations().getAt(0).getLocations().getAt(0);
+        Employee emp = loc.getEmployees().getAt(0).getEmployees().getAt(0);
         hubEmployee.setAO(emp);
         assertEquals(emp, hubEmployee.getAO());
         program = emp.getLocation().getProgram();
         assertNotNull(program);
         assertEquals(hubProgram.getAO(), program);
+        assertEquals(hubProgram.getAt(1), program);
         assertEquals(hubLocation.getAO(), emp.getLocation());
 
         Hub<Location> hx = hubProgram.getAt(2).getLocations();
@@ -216,6 +255,7 @@ public class RecursiveTest extends OAUnitTest {
         emp = hubProgram.getAt(2).getLocations().getAt(1).getEmployees().getAt(0).getEmployees().getAt(0);
         ea.setEmployee(emp);
         assertNotNull(hubEmployee.getAO());
+        assertEquals(emp, hubEmployee.getAO());
         assertNotNull(hubLocation.getAO());
         assertEquals(hubLocation.getAO(), emp.getLocation());
         assertNotNull(hubProgram.getAO());
@@ -270,33 +310,37 @@ public class RecursiveTest extends OAUnitTest {
         assertEquals(hubEmployee.getMasterHub(), hubLocation);
         assertEquals(hubLocation.getMasterHub(), hubProgram);
 
+        // hubLocation.AO to a loc in a child hub
+        //   this should set hubLocation as a sharedHub, and not be connected to masterHub (hubProgram).
         loc = hubProgram.getAt(2).getLocations().getAt(1).getLocations().getAt(0);
         program = loc.getProgram();
         hubLocation.setAO(loc);
-        assertNull(hubLocation.getMasterHub());
-        assertEquals(loc.getParentLocation(), hubLocation.getMasterObject());
+        assertNull(hubLocation.getMasterHub());  // disconnected from masterHub, since it is shared with a child hub (recursive)
+        assertEquals(loc.getParentLocation(), hubLocation.getMasterObject());  // new masterHub
         assertEquals(hubLocation.getAO(), loc);
         assertNull(hubEmployee.getAO());
-        assertNotNull(hubLocation.getAO());
         assertNotNull(hubProgram.getAO());
         assertEquals(hubProgram.getAO(), program);
         assertEquals(hubProgramLinked.getAO(), program);
         assertNull(ea.getEmployee());
-
-        ea = new EmployeeAward();
-        hubEmployeeAward.add(ea);
-        hubEmployeeAward.setAO(ea);
-        assertNotNull(hubEmployeeAward.getAO());
+        assertEquals(hubLocation.getMasterObject(), loc.getParentLocation());
         
+        // at this point, hubLocation is acting as a shared hub
         
+        // now change hubLocation.ao to a root level location
         loc = hubProgram.getAt(0).getLocations().getAt(0);
         program = loc.getProgram();
+        assertEquals(hubProgram.getAt(0), program);
+        
+        // this will cause hubLocation to change it's shared hub, and also reconnect to masterHub
         hubLocation.setAO(loc);
-        //assertNull(hubLocation.getMasterHub());
-        assertEquals(hubLocation.getMasterObject(), program);
+//qqqqqqqqq add hubLocation.sharedHubs and test them         
+        assertNotNull(hubLocation.getMasterHub());
+        assertEquals(hubLocation.getMasterHub(), hubProgram);
+        
+        assertEquals(program, hubLocation.getMasterObject());
         assertEquals(hubLocation.getAO(), loc);
         assertNull(hubEmployee.getAO());
-        assertNotNull(hubLocation.getAO());
         assertNotNull(hubProgram.getAO());
         assertEquals(hubProgram.getAO(), program);
         assertEquals(hubProgramLinked.getAO(), program);
@@ -307,14 +351,12 @@ public class RecursiveTest extends OAUnitTest {
         hubLocation.setAO(loc);
         assertNotNull(hubLocation.getMasterHub());
         assertEquals(hubLocation.getMasterObject(), program);
-        assertEquals(hubLocation.getAO(), loc);
         assertNull(hubEmployee.getAO());
         assertNull(hubLocation.getAO());
         assertNotNull(hubProgram.getAO());
         assertEquals(hubProgram.getAO(), program);
         assertEquals(hubProgramLinked.getAO(), null); // linked to hubLocation
         assertNull(ea.getEmployee());
-        assertNotNull(hubEmployeeAward.getAO());
 
         
         loc = hubProgram.getAt(0).getLocations().getAt(0);
@@ -329,7 +371,6 @@ public class RecursiveTest extends OAUnitTest {
         assertEquals(hubProgramLinked.getAO(), program);
         assertNull(ea.getEmployee());
         assertEquals(loc.getProgram(), program);
-        assertNotNull(hubEmployeeAward.getAO());
         
         hubProgramLinked.setPos(1);
         program = hubProgram.getAO();
@@ -346,8 +387,9 @@ public class RecursiveTest extends OAUnitTest {
         assertEquals(loc.getProgram(), program);
 
         hubEmployee.setPos(0);
-        assertEquals(ea.getEmployee(), hubEmployee.getAO());
-        assertNotNull(hubEmployeeAward.getAO());
+        assertTrue(ea.wasDeleted());
+        assertNull(ea.getEmployee());
+        assertNull(hubEmployeeAward.getAO());
         
         reset();
     }

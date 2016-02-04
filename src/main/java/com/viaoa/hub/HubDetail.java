@@ -93,17 +93,17 @@ class HubDetail implements java.io.Serializable {
     
     boolean bIgnoreUpdate;
 
-    /** 20150119 
+    /** 20150119, 20160204
      *  this is for master.detail that are recursive, in cases where the detail hub could be
-     *  pointing (shared) to a child hub.
-     *  This is used by HubDetailDelegate.updateDetail(..)
+     *  pointing (shared) to a child hub, which leaves it disconnected from the masterHub.
+     *  This is used by HubDetailDelegate.updateDetail(..), where it will be reconnected to the masterHub.
      */
     protected void setup() {
         if (hubMaster == null) return;
         if (hubDetail == null) return;
         if (liMasterToDetail == null) return;
         
-        OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(hubDetail.data.getObjectInfo(), OALinkInfo.ONE);
+        final OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(hubDetail.data.getObjectInfo(), OALinkInfo.ONE);
         if (liRecursive == null) return;
         if (liRecursive == liMasterToDetail) return;
 
@@ -120,10 +120,20 @@ class HubDetail implements java.io.Serializable {
                 Object obj = e.getObject();
                 if (!(obj instanceof OAObject)) return;
 
-                Object parent = OAObjectReflectDelegate.getProperty((OAObject)obj, liDetailToMaster.getName());
-                if (parent != null && !(parent instanceof OAObject)) {
-                    return;  // 20150920 should not happen since this is only if master is type=link.One
+                Object parent = null;
+                for (;;) {
+                    Object objx = OAObjectReflectDelegate.getProperty((OAObject)obj, liDetailToMaster.getName());
+                    if (objx == null) break;
+                    parent = objx;
+                    if (!(parent instanceof OAObject)) {
+                        return; 
+                    }
+                    if (liDetailToMaster != liRecursive) {
+                        break;
+                    }
+                    obj = objx;
                 }
+                
                 if (hubMaster.getAO() == parent) return;
 
                 try {

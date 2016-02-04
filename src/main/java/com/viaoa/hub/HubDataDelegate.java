@@ -424,7 +424,7 @@ public class HubDataDelegate {
                             if (dm.liDetailToMaster != null) hashRecursiveHubDetail.put(thisHub, dm.liDetailToMaster);
                         }
                     	Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, liMany.getName());
-//vvvvvvvvvvvv this will cause hub.datam.detailHub = null                    	
+                    	
                     	HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
                         pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
                 	}
