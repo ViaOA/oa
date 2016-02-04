@@ -68,8 +68,8 @@ public class OATreeTableController extends OATree implements OATableComponent {
     }
 
     public void paint(Graphics g) {
-        int h = getRowHeight();
-        h = table.getRowHeight();
+        //int h = getRowHeight();
+        int h = table.getRowHeight();
         g.translate(0, (-visibleRow * h) - 3);
         super.paint(g);
     }

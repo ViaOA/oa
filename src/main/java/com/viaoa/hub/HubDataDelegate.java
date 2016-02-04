@@ -389,7 +389,7 @@ public class HubDataDelegate {
 	        }
 	    }
 	    
-        if (pos < 0 && adjustMaster && thisHub.datau.getSharedHub() != null) {
+        if (pos < 0 && adjustMaster && (thisHub.datau.getSharedHub() != null || HubDetailDelegate.getHubWithMasterHub(thisHub) != null)) {
             OALinkInfo liRecursiveOne = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
 
             // need to verify that this hub is recursive with masterObject
@@ -413,7 +413,7 @@ public class HubDataDelegate {
                         pos = getPos(h, object, adjustMaster, bUpdateLink);
                     }
                     if (pos < 0) {
-                        bUseMaster = true;  // adjust master hub
+                        bUseMaster = true;  // adjust master/owner for this recursive hub
                     }
                 }
                 else {
@@ -424,6 +424,7 @@ public class HubDataDelegate {
                             if (dm.liDetailToMaster != null) hashRecursiveHubDetail.put(thisHub, dm.liDetailToMaster);
                         }
                     	Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, liMany.getName());
+//vvvvvvvvvvvv this will cause hub.datam.detailHub = null                    	
                     	HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
                         pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
                 	}

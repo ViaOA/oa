@@ -3077,15 +3077,28 @@ if (!getKeepSorted()) hub.cancelSort();
 
     public void onMouseOver(int row, int column, MouseEvent evt) {
         super.setToolTipText("");
+        if (mouseOverRow == row && mouseOverColumn == column) return;
         mouseOverRow = row;
         mouseOverColumn = column;
-
-        if (rectMouseOver != null) repaint(rectMouseOver);
+        repaint();
+        /* 20160203 change to repaint, since treetable was not refreshing correctly on treenode column and mouseOver of the selected row
+        if (rectMouseOver != null) {
+            repaint(rectMouseOver);
+            OATable tx = getLeftTable();
+            if (tx != null) {
+                tx.repaint();
+            }
+            tx = getRightTable();
+            if (tx != null) {
+                tx.repaint();
+            }
+        }
         if (row < 0) rectMouseOver = null;
         else {
             rectMouseOver = getCellRect(row, column, true);
             repaint(rectMouseOver);
         }
+        */
     }
 
 

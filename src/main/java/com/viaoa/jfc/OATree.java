@@ -1129,7 +1129,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 }
 
                 // mouseover effect                
-                if (row == rowLastMouse2) {
+                if (row == rowLastMouse2 && rowLastMouse2 >= 0) {
                     if (!selected) {
                         lbl.setBackground(OATable.COLOR_MouseOver);
                         lbl.setForeground(Color.white);

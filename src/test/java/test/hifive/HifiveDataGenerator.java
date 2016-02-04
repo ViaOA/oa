@@ -53,7 +53,7 @@ public class HifiveDataGenerator {
         }
     }
 
-    private void createSections(final Catalog catalog, Hub<Section> hub, int level, int maxLevels) {
+    public void createSections(final Catalog catalog, Hub<Section> hub, int level, int maxLevels) {
         Section sec = new Section();
         hub.add(sec);
         assertEquals(sec.getCatalog(), catalog);
@@ -64,7 +64,6 @@ public class HifiveDataGenerator {
         for (int i=0; i<5; i++) {
             Item item = new Item();
             sec.getItems().add(item);
-            
         }
     }
     private void createLocations(Hub<Location> hub, int level, int maxLevels, int maxEmpLevels) {

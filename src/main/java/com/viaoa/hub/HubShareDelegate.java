@@ -460,6 +460,7 @@ public class HubShareDelegate {
 	    boolean shareActiveObject2 = true;
 	
 	    if (sharedMasterHub == null) {
+//vvvvvvvvvvvvvv dont replace if detailHub	        
 	    	thisHub.data = new HubData(thisHub.data.objClass);
 	    	thisHub.datam = new HubDataMaster();
 	    }
@@ -495,6 +496,7 @@ public class HubShareDelegate {
 	        // 2006/05/31 moved from below
 	        addSharedHub(sharedMasterHub, thisHub); // adds to datau.vecSharedHub
 	        thisHub.data = sharedMasterHub.data;
+//vvvvvvvvvvvvvv dont replace if detailHub          
 	        thisHub.datam = sharedMasterHub.datam;
 	        // dont share "datau"
 	        // dont share "dataa" unless shareActiveObject is true
