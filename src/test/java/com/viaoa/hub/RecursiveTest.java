@@ -100,7 +100,6 @@ public class RecursiveTest extends OAUnitTest {
 
     @Test
     public void recursiveHubDetailTest2() {
-
         HifiveDataGenerator data = new HifiveDataGenerator();
         Hub<Section> hubMaster = new Hub<Section>(Section.class);
         data.createSections(null, hubMaster, 0, 4);
@@ -126,7 +125,6 @@ public class RecursiveTest extends OAUnitTest {
         assertEquals(hubDetail.getMasterHub(), hubMaster);
         assertNull(hubDetail.getMasterObject());
 
-//qqqqqqqqq create another test that has a top/owner hub above sections        
         // set hubSection to a lower (recursive) child hub
         sec = hubMaster.getAt(0).getSections().getAt(0).getSections().getAt(0);
         assertNotNull(sec);
@@ -159,12 +157,95 @@ public class RecursiveTest extends OAUnitTest {
         assertNull(hubDetail.getAO());
         assertNull(hubMaster.getAO());
         assertEquals(hubDetail.getMasterHub(), hubMaster);  // it should still be a detailHub
+
+        // make sure changing ao on ref hub does not adjust it to point to another hub
+        Hub<Section> hx = hubMaster.getAt(0).getSections().getAt(0).getSections();
+        assertNull(hx.getAO());
+        assertNull(hx.getMasterHub());
+        assertNotNull(hx.getMasterObject());
+
         
-        int xx = 4;
-        xx++;
+        sec = hubMaster.getAt(0).getSections().getAt(0).getSections().getAt(0).getSections().getAt(0);
+        assertNotNull(sec);
+        hx.setAO(sec);  // this should not make hx adjust
+        assertNull(hx.getAO());
+        assertNull(hx.getMasterHub());
+        assertNull(hx.getMasterHub());
+        assertNotNull(hx.getMasterObject());
+        
+        // test with a shared hub off of the ref hub
+        Hub<Section> h = new Hub<Section>(Section.class);
+        h.setSharedHub(hx);
+        h.setAO(sec);  // this should adjust to the hub that has sec
+        assertEquals(sec, h.getAO());
+        assertNull(hx.getMasterHub());
+        assertNull(hx.getMasterHub());
+        assertNull(h.getMasterHub());
+        assertNotNull(h.getMasterObject());
+        assertNotEquals(h.getMasterHub(), hx);
     }    
     
-    
+    @Test
+    public void recursiveHubDetailTest3() {
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        Hub<Section> hubMaster = new Hub<Section>(Section.class);
+        data.createSections(null, hubMaster, 0, 5);
+        
+        Hub<Section> hubDetail = hubMaster.getDetailHub(Section.P_Sections);
+        assertEquals(hubDetail.getMasterHub(), hubMaster);  // it should still be a detailHub
+
+        // test with a second detail, to make it 3 deep
+        Hub<Section> hubDetail2 = hubDetail.getDetailHub(Section.P_Sections);
+
+        assertEquals(hubDetail.getMasterHub(), hubMaster);
+        assertEquals(hubDetail2.getMasterHub(), hubDetail);
+        
+        hubMaster.setPos(0);
+        assertNotNull(hubMaster.getAO());
+        
+        hubDetail.setPos(0);
+        assertNotNull(hubMaster.getAO());
+        assertNotNull(hubDetail.getAO());
+
+        hubDetail2.setPos(0);
+        assertNotNull(hubMaster.getAO());
+        assertNotNull(hubDetail.getAO());
+        assertNotNull(hubDetail2.getAO());
+        
+        assertEquals(hubDetail.getMasterHub(), hubMaster);
+        assertEquals(hubDetail2.getMasterHub(), hubDetail);
+
+        assertEquals(hubMaster.getAt(0), hubMaster.getAO());
+        assertEquals(hubMaster.getAt(0).getSections().getAt(0), hubDetail.getAO());
+        assertEquals(hubMaster.getAt(0).getSections().getAt(0).getSections().getAt(0), hubDetail2.getAO());
+        
+        
+        
+        Section sec = hubMaster.getAt(0).getSections().getAt(0).getSections().getAt(0);  // get a lower level sec, below detailHubs
+        assertNotNull(sec);
+        assertEquals(hubDetail2.getAO(), sec);
+        
+        sec = sec.getSections().getAt(0);
+        assertNotNull(sec);
+        
+        hubDetail2.setAO(sec);  // this should disconnect it from hubDetail, so that it's a sharedHub with the sec.refHub sections
+        assertEquals(sec, hubDetail2.getAO());
+        
+        assertEquals(hubDetail.getMasterHub(), hubMaster);
+        assertNull(hubDetail2.getMasterHub());
+        assertEquals(sec.getParentSection().getParentSection(), hubDetail.getAO());
+        assertEquals(sec.getParentSection().getParentSection().getParentSection(), hubMaster.getAO());
+        
+        hubMaster.setPos(-1);  // this will reset hubDetail2 masterHub
+        assertEquals(hubDetail.getMasterHub(), hubMaster);
+        assertEquals(hubDetail2.getMasterHub(), hubDetail);
+        
+        assertNull(hubMaster.getAO());
+        assertNull(hubDetail.getAO());
+        assertNull(hubDetail2.getAO());
+        
+        
+    }
     
     
     /**

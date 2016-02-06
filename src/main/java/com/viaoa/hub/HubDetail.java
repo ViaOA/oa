@@ -131,6 +131,7 @@ class HubDetail implements java.io.Serializable {
                     if (liDetailToMaster != liRecursive) {
                         break;
                     }
+                    if (hubMaster.contains(parent)) break; 
                     obj = objx;
                 }
                 

@@ -65,8 +65,8 @@ public class RemoteMultiplexer3Test extends OAUnitTest {
 
     @After
     public void tearDown() throws Exception {
-        multiplexerClient.close();
-        multiplexerServer.stop();
+        if (multiplexerClient != null) multiplexerClient.close();
+        if (multiplexerServer != null) multiplexerServer.stop();
     }
     
     private int serverPingCount, serverPingCount2;

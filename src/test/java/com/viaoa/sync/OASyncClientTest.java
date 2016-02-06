@@ -45,7 +45,7 @@ import com.viaoa.util.OATime;
  * If the server is not running, then unit test will not fail, the tests in this class will just exit without any errors.
  */
 public class OASyncClientTest extends OAUnitTest {
-    private static int port = 1099;
+    private static int port = 1101;
     private static ServerRoot serverRoot;    
     private static OASyncClient syncClient;
     

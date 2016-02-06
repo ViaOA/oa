@@ -940,10 +940,17 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         Sets up listeners for tree expansion events (TreeExpansionListener).
     */
     public void addNotify() {
-        bAddNotify = true;
-        addTreeExpansionListener(this);
-        addTreeSelectionListener(this);
+        addNotify(true);
+    }
+    public void addNotify(boolean bExpandedVersion) {
+        if (bExpandedVersion) {
+            bAddNotify = true;
+            addTreeExpansionListener(this);
+            addTreeSelectionListener(this);
+        }        
         super.addNotify();
+        
+        if (!bExpandedVersion) return;
         
         if (bStructureChanged) {
             if (SwingUtilities.isEventDispatchThread()) {

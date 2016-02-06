@@ -388,8 +388,8 @@ public class HubDataDelegate {
                 HubSelectDelegate.fetchMore(thisHub);
 	        }
 	    }
-	    
-        if (pos < 0 && adjustMaster && (thisHub.datau.getSharedHub() != null || HubDetailDelegate.getHubWithMasterHub(thisHub) != null)) {
+
+        if (pos < 0 && adjustMaster && (thisHub.datau.getSharedHub() != null || thisHub.datam.masterHub != null)) {
             OALinkInfo liRecursiveOne = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
 
             // need to verify that this hub is recursive with masterObject

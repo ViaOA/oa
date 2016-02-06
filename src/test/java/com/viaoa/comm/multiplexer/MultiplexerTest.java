@@ -22,7 +22,7 @@ public class MultiplexerTest extends OAUnitTest {
         ctest.test(Maxes);
         
         Thread.sleep(1000);
-        ctest.stop();
+        stest.stop();
         
         int x = ctest.getCount();
         assertTrue(x > 1000);

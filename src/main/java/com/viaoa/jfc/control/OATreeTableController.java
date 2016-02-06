@@ -178,7 +178,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
     
     @Override
     public void addNotify() {
-        super.addNotify();
+        super.addNotify(false);
     }
     
     void setup() {
