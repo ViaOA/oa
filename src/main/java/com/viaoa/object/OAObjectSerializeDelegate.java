@@ -47,8 +47,10 @@ public class OAObjectSerializeDelegate {
         }
 	    in.defaultReadObject();
 	    
+        OAObjectInfo oi = null;
+        boolean bIsServer = OASyncDelegate.isServer(oaObj.getClass());
+	    
 	    // read properties
-        OAObjectInfo oi =  null;
         for ( ; ; ) {
             Object obj = in.readObject();
             if (!(obj instanceof String)) break; // flag to end
@@ -56,7 +58,19 @@ public class OAObjectSerializeDelegate {
             String key = (String)obj;
             Object value = in.readObject();
             if (value instanceof OANullObject) value = null;
-
+            
+            if (bIsServer) {
+                // 20160206 dont read calcProps if server, they need to be recalc'ed 
+                if (oi == null) {
+                    oi = OAObjectHashDelegate.hashObjectInfo.get(oaObj.getClass());
+                }
+                if (oi != null) {
+                    OALinkInfo li = oi.getLinkInfo(key);
+                    if (li != null && li.bCalculated) {
+                        continue;
+                    }
+                }
+            }
             OAObjectPropertyDelegate.unsafeSetPropertyIfEmpty(oaObj, key, value);  // HubSerializeDelegate._readResolve could have set this first (as weakref)
         }
         OAObjectDelegate.updateGuid(oaObj.guid);
@@ -286,11 +300,13 @@ public class OAObjectSerializeDelegate {
             String key = (String) objs[i];
             if (key == null) continue;
             OALinkInfo li = oi.getLinkInfo(key);
+
             if (li != null && li.bCalculated) {
                 if (!bIsServer || !li.bServerSideCalc) {
                     continue;
                 }
             }
+
             Object obj = objs[i+1];
 
             if (obj instanceof IODummy) {
