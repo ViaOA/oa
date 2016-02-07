@@ -28,7 +28,6 @@ import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANullObject;
 
 public class OAObjectSerializeDelegate {
-
 	private static Logger LOG = Logger.getLogger(OAObjectSerializeDelegate.class.getName());
     
 	protected static void _readObject(OAObject oaObj, java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {

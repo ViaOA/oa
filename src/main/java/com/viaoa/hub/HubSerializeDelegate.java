@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.viaoa.object.*;
+import com.viaoa.sync.OASyncDelegate;
 
 
 /**
@@ -92,10 +93,17 @@ public class HubSerializeDelegate {
             Object value = thisHub;
             OALinkInfo liRev = thisHub.datam.liDetailToMaster.getReverseLinkInfo();
             
-            if (liRev != null && OAObjectInfoDelegate.cacheHub(liRev, thisHub)) {
-                value = new WeakReference(value);
-            }
-            OAObjectPropertyDelegate.setPropertyHubIfNotSet(thisHub.datam.masterObject, liRev.getName(), value);            
+            boolean b = true;
+            if (liRev != null) {
+                if (liRev.getCalculated() && OASyncDelegate.isServer(thisHub.getObjectClass())) {
+                    // 20160206 dont read calcProps if server, they need to be recalc'ed 
+                    b = false;
+                }
+                else if (OAObjectInfoDelegate.cacheHub(liRev, thisHub)) {
+                    value = new WeakReference(value);
+                }
+            }        
+            if (b) OAObjectPropertyDelegate.setPropertyHubIfNotSet(thisHub.datam.masterObject, liRev.getName(), value);            
         }
         return thisHub;
     }
