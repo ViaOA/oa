@@ -378,13 +378,24 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * Clear all of the filter values.
      */
     public void resetFilters() {
+        try {
+            hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+            _resetFilters();
+        }
+        finally {
+            hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+        }
+    }
+    private void _resetFilters() {
         for (OATableColumn tc :  getAllTableColumns()) {
             if (tc.getFilterComponent() != null) {
                 tc.getFilterComponent().reset();
             }
         }
         if (hubFilter != null) hubFilter.refresh();
-        else if (tableRight != null && tableRight.hubFilter != null) tableRight.hubFilter.refresh();
+        else if (tableRight != null && tableRight.hubFilter != null) {
+            tableRight.hubFilter.refresh();
+        }
         Container cont = getParent();
         for (int i=0; i<3 && cont!=null; i++) {
             cont.repaint();
