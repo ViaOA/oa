@@ -296,7 +296,38 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
      * @param bWaitIfPrinting
      */
     @Override
-    public void setText(String text) {
+    public void setText(final String text) {
+        try {
+            _setText(text);
+        }
+        catch (Exception e) {
+        }
+    }
+    protected void _setText(final String text) throws Exception {
+        if (SwingUtilities.isEventDispatchThread()) {
+            _setText1(text);
+        }
+        else {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    _setText1(text);
+                }
+            });
+        }
+    }
+    protected void _setText1(String text) {
+        for (int i=0; i<5; i++) {
+            try {
+                _setText2(text);
+                break;
+            }
+            catch (Exception e) {
+                // concurrency error, will retry up to 5 times
+            }
+        }
+    }
+    protected void _setText2(String text) {
         if (text == null) text = "";
 
         if (text.indexOf("<%=") >= 0) {
