@@ -25,3 +25,14 @@ exam.getDate(),OADateTime.getFormat(java.text.DateFormat.LONG)
     cal.set(Calendar.MILLISECOND, 0);
     beginDate = cal.getTime();
 
+
+
+qqqqqqq
+
+        long msNow = System.currentTimeMillis();
+        long msSingleDay = 24 * 60 * 60 * 1000;
+        long msTime = msNow - (ICE2SF.NumberOfLoginDays * msSingleDay);
+        
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String sDate = df.format(new Date(msTime));
+        sDate += "T23:01:01Z";

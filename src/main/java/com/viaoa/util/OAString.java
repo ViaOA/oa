@@ -2600,6 +2600,13 @@ public class OAString {
         else orig += sep;
         return orig + append;
     }
+
+    /*  See:  OACompare
+    public static boolean isLike(String value, String matchValue) {
+        return OACompare.isLike(value, matchValue);        
+    }
+    */
+    
     
     public static void main(String[] args) {
         String s = "abCDe_ 1.2-34.59:5";
