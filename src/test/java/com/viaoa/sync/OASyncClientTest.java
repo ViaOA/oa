@@ -23,6 +23,7 @@ import test.theice.tsam.remote.RemoteAppInterface;
 
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
+import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
@@ -68,11 +69,48 @@ public class OASyncClientTest extends OAUnitTest {
     private AtomicInteger aiSendStats = new AtomicInteger();
 
     
+    @Test
+    public void testC() throws Exception {
+        if (serverRoot == null) return;
+
+        final Site site = serverRoot.getSites().getAt(0);
+        OADataSource ds = OADataSource.getDataSource(MRADClientCommand.class);
+        assertNotNull(ds);  // make sure that the server has DS setup
+        Silo silo = site.getEnvironments().getAt(0).getSilos().getAt(0);
+        Server server = silo.getServers().getAt(0);
+
+        MRADServer mradServer = silo.getMRADServer();
+        
+        MRADServerCommand msc = new MRADServerCommand();
+        assertEquals(0, msc.getId());
+
+        
+        
+        long ms = System.currentTimeMillis();
+        for (int i=0; i<1000 ;i++) {
+            MRADClientCommand mcc = new MRADClientCommand();
+            assertEquals(0, mcc.getId());
+            msc.getMRADClientCommands().add(mcc);
+        }
+        mradServer.getMRADServerCommands().add(msc);
+     
+        long msDiff = System.currentTimeMillis() - ms;
+        System.out.println("msDiff="+msDiff);
+        assertTrue(msDiff < 1500);
+
+        assertEquals(0, msc.getId());
+        mradServer.save();
+        assertNotEquals(0, msc.getId());
+        for (MRADClientCommand mc : msc.getMRADClientCommands()) {
+            assertNotEquals(0, mc.getId());
+        }
+    }    
+    
     /**
      * Run basic tests with oasyncservertest
      * @throws Exception
      */
-    @Test
+//qq    @Test
     public void testA() throws Exception {
         if (serverRoot == null) return;
     
@@ -126,7 +164,7 @@ public class OASyncClientTest extends OAUnitTest {
         assertNotEquals("xx", site.getName());
     }
 
-    @Test
+//qq    @Test
     public void testB() throws Exception {
         if (serverRoot == null) return;
     
@@ -177,7 +215,7 @@ public class OASyncClientTest extends OAUnitTest {
     /**
      * This will run with other instances that are running in their own jvm
      */
-    @Test
+//qq    @Test
     public void testForMain() throws Exception {
         if (serverRoot == null) return;
 

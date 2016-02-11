@@ -13,6 +13,9 @@ package com.viaoa.ds.objectcache;
 import java.util.*;
 
 import com.viaoa.object.*;
+import com.viaoa.remote.multiplexer.OARemoteThread;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
 import com.viaoa.util.filter.OAEqualFilter;
@@ -131,7 +134,7 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
     }
     @Override
     public boolean supportsInitializeObject() {
-        return true;
+        return false; // save will autoassign newnumber
     }
 
     protected boolean isOtherDataSource() {

@@ -47,6 +47,16 @@ public abstract class RemoteDataSource {
         String propFromWhereObject;
 
         switch (command) {
+        case OADataSourceClient.INITIALIZEOBJECT:
+            clazz = (Class) objects[0].getClass();
+            ds = getDataSource(clazz);
+            if (ds != null) {
+                OARemoteThreadDelegate.sendMessages(true);
+                ds.initializeObject((OAObject) objects[0]);
+                OARemoteThreadDelegate.sendMessages(false);
+            }
+            break;
+        
         case OADataSourceClient.IT_NEXT:
             obj = datasourceNext((String) objects[0]);
             break;
@@ -247,15 +257,6 @@ public abstract class RemoteDataSource {
             ds = getDataSource(clazz);
             if (ds != null) obj = new Boolean(ds.supportsInitializeObject());
             else obj = null;
-            break;
-        case OADataSourceClient.INITIALIZEOBJECT:
-            clazz = (Class) objects[0].getClass();
-            ds = getDataSource(clazz);
-            if (ds != null) {
-                OARemoteThreadDelegate.sendMessages(true);
-                ds.initializeObject((OAObject) objects[0]);
-                OARemoteThreadDelegate.sendMessages(false);
-            }
             break;
 
         case OADataSourceClient.INSERT_WO_REFERENCES:

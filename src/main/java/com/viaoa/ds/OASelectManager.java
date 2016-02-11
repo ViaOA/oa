@@ -64,7 +64,7 @@ public class OASelectManager {
     }    
 
     protected static void performCleanup() {
-        LOG.fine("checking selects");
+        LOG.finer("checking selects");
         long time = new Date().getTime();
         time -= (timeLimitInSeconds * 1000);
 
@@ -90,7 +90,7 @@ public class OASelectManager {
                 it.remove();
             }
         }
-        LOG.fine("done, before="+iTotal+", after="+hmSelect.size());
+        LOG.finer("done, before="+iTotal+", after="+hmSelect.size());
     }
     
 }

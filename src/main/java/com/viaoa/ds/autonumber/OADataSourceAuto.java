@@ -201,6 +201,7 @@ public class OADataSourceAuto extends OADataSource {
     }
     
     public void insertWithoutReferences(OAObject obj) {
+        initializeObject(obj);
     }
 
     

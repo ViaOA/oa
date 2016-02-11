@@ -627,7 +627,7 @@ public class RemoteMultiplexerServer {
             }
                 
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-            cq.addMessageToQueue(ri, 250);
+            cq.addMessageToQueue(ri);
             waitForProcessedByServer(ri);
 
             if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
@@ -1024,7 +1024,8 @@ public class RemoteMultiplexerServer {
 
         // put "ri" in circular queue for clients to pick up.       
         OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-        cque.addMessageToQueue(ri, 150);  // this will throttle if the headpos is 150 above any sesssion
+        int x = (cque.getSize() / 3);
+        cque.addMessageToQueue(ri, x);  // this will throttle
         
         if (ri.object != null) {
             waitForProcessedByServer(ri);

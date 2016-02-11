@@ -111,7 +111,7 @@ public class OAObjectDSDelegate {
 	*/
 	protected static void save(OAObject oaObj) {
 		OADataSource dataSource = getDataSource(oaObj);
-		if (dataSource != null && dataSource.supportsStorage()) {
+		if (dataSource != null) {
 		   	if (oaObj.getNew()) {
 		   		dataSource.insert(oaObj);
 		   	}
@@ -122,7 +122,7 @@ public class OAObjectDSDelegate {
 	}
 	protected static void saveWithoutReferences(OAObject oaObj) {
 		OADataSource dataSource = getDataSource(oaObj);
-		if (dataSource != null && dataSource.supportsStorage()) {
+		if (dataSource != null) {
 		   	if (oaObj.getNew()) {
 		   		dataSource.insertWithoutReferences(oaObj);
 		   	}
@@ -136,7 +136,7 @@ public class OAObjectDSDelegate {
     public static void removeReference(OAObject oaObj, OALinkInfo li) {
         if (li == null) return;
         OADataSource dataSource = getDataSource(oaObj);
-        if (dataSource != null && dataSource.supportsStorage()) {
+        if (dataSource != null) {
             if (!oaObj.getNew()) {
                 dataSource.update(oaObj, new String[] {li.getName()}, null);  // only update the link property name (which is null)
             }
@@ -145,7 +145,7 @@ public class OAObjectDSDelegate {
 
 	public static void save(OAObject obj, boolean bInsert) {
 		OADataSource dataSource = getDataSource(obj);
-		if (dataSource != null && dataSource.supportsStorage()) {
+		if (dataSource != null) {
 		   	if (bInsert) dataSource.insert(obj);
 		   	else dataSource.update(obj);
 		}		
@@ -157,7 +157,7 @@ public class OAObjectDSDelegate {
 	public static void delete(OAObject obj) {
 		if (obj == null) return;
 		OADataSource ds = OADataSource.getDataSource(obj.getClass());
-		if (ds != null && ds.supportsStorage()) {
+		if (ds != null) {
         	ds.delete(obj);
         }
 	}

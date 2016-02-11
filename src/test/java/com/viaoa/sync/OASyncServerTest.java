@@ -28,6 +28,7 @@ import test.theice.tsam.remote.RemoteModelInterface;
 import test.theice.tsam.util.DataGenerator;
 
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAFinder;
@@ -112,7 +113,10 @@ public class OASyncServerTest {
     public OASyncServer getSyncServer() {
         if (syncServer != null) return syncServer;
         
-        syncServer = new OASyncServer(1099) {
+        // for non-DB objects
+        new OADataSourceObjectCache();
+        
+        syncServer = new OASyncServer(1101) {
             @Override
             protected void onClientConnect(Socket socket, int connectionId) {
                 super.onClientConnect(socket, connectionId);

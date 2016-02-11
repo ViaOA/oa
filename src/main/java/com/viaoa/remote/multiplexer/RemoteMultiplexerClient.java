@@ -820,10 +820,10 @@ public class RemoteMultiplexerClient {
         return false;
     }
 
+int qqq=0;//qqqqqqqqqqq    
     protected void processStoCSocket(final VirtualSocket socket, int threadId) throws Exception {
         if (socket.isClosed()) return;
         RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
-
         // wait for next message
         RequestInfo.Type type = RequestInfo.getType(ois.readByte());
         aiReceivedMethodCallCnt.incrementAndGet();

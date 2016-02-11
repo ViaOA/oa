@@ -507,7 +507,8 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectEventDelegate.fireBeforePropertyChange(this, propertyName, oldObj, newObj, bLocalOnly, true);
     }
     protected void fireBeforePropertyChange(String propertyName, Object oldObj, Object newObj) {
-    	OAObjectEventDelegate.fireBeforePropertyChange(this, propertyName, oldObj, newObj, false, true);
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(this.getClass());
+    	OAObjectEventDelegate.fireBeforePropertyChange(this, propertyName, oldObj, newObj, oi.getLocalOnly(), true);
     }
 
     /** @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
