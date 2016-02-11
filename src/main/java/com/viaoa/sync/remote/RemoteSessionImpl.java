@@ -42,7 +42,7 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
         hashCache.put(guid, obj);
         int x = hashCache.size();
         //LOG.fine("sessionId="+sessionId+", cache size="+x+", obj="+obj);
-        if (x % 100 == 0) {
+        if (x % 250 == 0) {
             LOG.fine("sessionId="+sessionId+", cache size="+x+", obj="+obj);
         }
     }

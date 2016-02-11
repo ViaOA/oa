@@ -205,6 +205,7 @@ public abstract class OACircularQueue<TYPE> {
             queueLowPosition = queueHeadPosition;
             boolean bNeedsThrottle = false;
             int cntThrottle = 0;
+            int cntWait = 0;
             for (int i=0; ; i++) {
                 Session slowSessionFound = null;
                 for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
@@ -220,7 +221,7 @@ public abstract class OACircularQueue<TYPE> {
                         if (throttleAmount < 1 || bNeedsThrottle) {
                             continue;
                         }
-                        if (session.queuePos + 100 < queueHeadPosition) {
+                        if ((session.queuePos + throttleAmount) < queueHeadPosition) {
                             bNeedsThrottle = true;
                         }
                         continue;
@@ -232,7 +233,7 @@ public abstract class OACircularQueue<TYPE> {
                         if (tsLastErrorLog + 1000 < tsNow) {
                             LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
                                     ", currentHeadPos="+queueHeadPosition+", session="+session.id+
-                                    ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms");
+                                    ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms ago");
                             tsLastErrorLog = tsNow;
                         }
                         if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-ts))) {
@@ -249,13 +250,14 @@ public abstract class OACircularQueue<TYPE> {
                 try {
                     if (slowSessionFound == null) {
                         // throttle=true
-                        if (cntThrottle++ > 10) break;
                         LOCKQueue.wait(10);
-                        ++cntQueueThrottle;                        
+                        if (cntThrottle++ == 0) ++cntQueueThrottle;                        
+                        else if (cntThrottle > 9) break;
                     }
                     else {
                         LOCKQueue.wait(25);
-                        ++cntQueueWait;
+                        if (cntWait++ == 0) ++cntQueueWait;
+                        else if (cntWait > 9) break;
                     }
                     
                     long tsNow = System.currentTimeMillis();

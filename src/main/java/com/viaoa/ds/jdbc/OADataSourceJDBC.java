@@ -151,20 +151,20 @@ public class OADataSourceJDBC extends OADataSource {
 
     public @Override void insert(OAObject object) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(object);
-        LOG.fine("object="+object.getClass()+", key="+key);
+        LOG.finer("object="+object.getClass()+", key="+key);
         InsertDelegate.insert(this, object);
     }
 
     public @Override void insertWithoutReferences(OAObject obj) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
-        LOG.fine("object="+obj.getClass()+", key="+key);
+        LOG.finer("object="+obj.getClass()+", key="+key);
     	InsertDelegate.insertWithoutReferences(this, obj);
     }
 
     
     public @Override void delete(OAObject object) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(object);
-        LOG.fine("object="+object.getClass()+", key="+key);
+        LOG.finer("object="+object.getClass()+", key="+key);
         DeleteDelegate.delete(this, object);
     }
 

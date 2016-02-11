@@ -876,7 +876,7 @@ public class RemoteMultiplexerClient {
                 }
             }
         });
-        t.setName("QueueControl2");
+        t.setName("QueueController");
         t.setDaemon(true);
         t.start();
     }

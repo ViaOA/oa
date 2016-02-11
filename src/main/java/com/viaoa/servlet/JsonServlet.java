@@ -70,7 +70,7 @@ public class JsonServlet extends HttpServlet {
         String query = null;
         boolean bSendAllData = false;
         
-        LOG.fine(String.format("class=%s, id=%s, property=%s, query=%s", className, id, propName, query));
+        LOG.finer(String.format("class=%s, id=%s, property=%s, query=%s", className, id, propName, query));
 
         boolean bDescribe = req.getParameterMap().containsKey("describe");
         String badParams = null;

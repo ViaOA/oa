@@ -627,7 +627,7 @@ public class RemoteMultiplexerServer {
             }
                 
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-            cq.addMessageToQueue(ri, 200);
+            cq.addMessageToQueue(ri, 250);
             waitForProcessedByServer(ri);
 
             if (ri.type == RequestInfo.Type.StoC_QueuedRequest) {
@@ -903,7 +903,7 @@ public class RemoteMultiplexerServer {
                 cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
                     @Override
                     protected boolean shouldWaitOnSlowSession(int sessionId, int msSinceLastRead) {
-                        if (msSinceLastRead > 60000) return false;
+                        if (msSinceLastRead > 20000) return false;  // dont wait over 20 seconds
                         Session session = getSession(sessionId, false);
                         if (session == null) return false;
                         if (session.bDisconnected) return false;
