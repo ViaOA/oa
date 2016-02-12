@@ -122,7 +122,9 @@ public class OAObjectDelegate {
 	        	OAObjectCSDelegate.initialize(oaObj);
 	        }
 	        if (bInitializeWithDS) {
-	        	OAObjectDSDelegate.initialize(oaObj);
+	            if (OAObjectDSDelegate.getAssignIdOnCreate(oaObj)) {
+	                OAObjectDSDelegate.assignId(oaObj);
+	            }
 	        }
 	    	if (bSetChangedToFalse) {
 	    		oaObj.setChanged(false);
@@ -211,7 +213,9 @@ public class OAObjectDelegate {
         }
 
         //OAObjectCSDelegate.initialize(oaObj);
-        OAObjectDSDelegate.initialize(oaObj);
+        if (OAObjectDSDelegate.getAssignIdOnCreate(oaObj)) {
+            OAObjectDSDelegate.assignId(oaObj);
+        }
         
         oaObj.getObjectKey();
     }

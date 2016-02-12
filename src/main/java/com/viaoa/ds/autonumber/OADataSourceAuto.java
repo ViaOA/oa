@@ -152,7 +152,7 @@ public class OADataSourceAuto extends OADataSource {
         This will also call OAObject.save() if Auto Save is true.
 
     */
-    public void initializeObject(OAObject oaObj) {
+    public void assignId(OAObject oaObj) {
         if (oaObj == null) return;
 
         NextNumber nn = getNextNumber(oaObj.getClass());
@@ -197,11 +197,11 @@ public class OADataSourceAuto extends OADataSource {
         Overwritten to only initialize object.  OADataSourceNextNumber Does not support data storage.
     */
     public void insert(OAObject object) {
-        initializeObject(object);
+        if (!getAssignIdOnCreate()) assignId(object);
     }
     
     public void insertWithoutReferences(OAObject obj) {
-        initializeObject(obj);
+        if (!getAssignIdOnCreate()) assignId(obj);
     }
 
     

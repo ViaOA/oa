@@ -7,6 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
+import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
@@ -23,6 +24,7 @@ public class OAObjectInfoDelegateTest extends OAUnitTest {
      */
     @Test
     public void testHubCache() {
+        reset();
         
         // "dummy" datasource.  Obj Cache wont cache if there is not a ds that supports storage.
         OADataSourceObjectCache ds = new OADataSourceObjectCache() {
@@ -52,15 +54,25 @@ public class OAObjectInfoDelegateTest extends OAUnitTest {
         // setup
         Program program = new Program();
         Hub<Location> hubLocs = program.getLocations(); 
-        Location loc = new Location();
-        hubLocs.add(loc);
-        hubLocs.saveAll();
-        
-        Hub<Employee> hubEmps = loc.getEmployees();
-        
+
         // prog.hubLocations will be stored using a weakRef, and the hub will be add to cache
         Object obj = OAObjectPropertyDelegate.getProperty(program, Program.P_Locations);
         assertTrue(obj instanceof WeakReference);
+        
+        Location loc = new Location();
+        hubLocs.add(loc);
+
+        // prog.hubLocations will be stored using a weakRef, and the hub will be add to cache
+        obj = OAObjectPropertyDelegate.getProperty(program, Program.P_Locations);
+        assertFalse(obj instanceof WeakReference);
+        
+        hubLocs.saveAll();
+
+        obj = OAObjectPropertyDelegate.getProperty(program, Program.P_Locations);
+        assertTrue(obj instanceof WeakReference);
+        
+        
+        Hub<Employee> hubEmps = loc.getEmployees();
         
         // loc.hubEmployees will be stored using a weakRef, and the hub will be add to cache
         obj = OAObjectPropertyDelegate.getProperty(loc, Location.P_Employees);

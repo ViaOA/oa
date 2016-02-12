@@ -77,9 +77,7 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         return obj;
     }
 
-int qq=0;    
     public Object datasource(int command, Object[] objects) {
-System.out.println((++qq)+")  RemoteClientImpl.java  cmd="+command);//qqqqqqqqqqqqqqqqqqqqqq        
         if (remoteDataSource == null) {
             remoteDataSource = new RemoteDataSource() {
                 // used when an object from ds is not already in a hub with master.

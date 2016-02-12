@@ -63,21 +63,16 @@ public class OADataSourceMock extends OADataSource {
     }
 
     @Override
-    public void setAssignNumberOnCreate(boolean b) {
+    public void setAssignIdOnCreate(boolean b) {
     }
 
     @Override
-    public boolean getAssignNumberOnCreate() {
+    public boolean getAssignIdOnCreate() {
         return false;
     }
 
     @Override
     public boolean getSupportsPreCount() {
-        return false;
-    }
-
-    @Override
-    public boolean supportsInitializeObject() {
         return false;
     }
 
@@ -91,7 +86,7 @@ public class OADataSourceMock extends OADataSource {
     }
 
     @Override
-    public void initializeObject(OAObject object) {
+    public void assignId(OAObject object) {
     }
 
     @Override

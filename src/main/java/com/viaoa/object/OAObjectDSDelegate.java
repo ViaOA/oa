@@ -22,21 +22,21 @@ public class OAObjectDSDelegate {
     /**
      * Initialize a newly created OAObject.
      */
-    public static void initialize(OAObject oaObj) {
+    public static void assignId(OAObject oaObj) {
     	if (oaObj == null) return;
     	// OADataSource is set up to check isLoading() so that it does not initialize the objects that it is creating    	
         OADataSource ds = getDataSource(oaObj);
         if (ds != null) {
-            ds.initializeObject(oaObj);  // datasource might need to set Id property
+            ds.assignId(oaObj);  // datasource might need to set Id property
         }
     }
 
-    public static boolean supportsInitializeObject(OAObject oaObj) {
+    public static boolean getAssignIdOnCreate(OAObject oaObj) {
         if (oaObj == null) return false;
         // OADataSource is set up to check isLoading() so that it does not initialize the objects that it is creating       
         OADataSource ds = getDataSource(oaObj);
         if (ds == null) return false;
-        return ds.supportsInitializeObject();
+        return ds.getAssignIdOnCreate();
     }
     
 	/**

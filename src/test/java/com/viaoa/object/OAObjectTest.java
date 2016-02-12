@@ -55,7 +55,10 @@ public class OAObjectTest extends OAUnitTest {
         // now with DS
         getDataSource();
         server = new Server();
-        assertEquals(server.getId(), 1); // auto assigned
+        assertEquals(0, server.getId()); // not auto assigned
+
+        server.save();
+        assertEquals(1, server.getId()); // auto assigned
         
         // clean up
         reset();
@@ -119,21 +122,23 @@ public class OAObjectTest extends OAUnitTest {
         getDataSource();
         assertEquals(OADataSource.getDataSource(Server.class), dsAuto);
         Server server2 = new Server();
-        assertFalse(server2.isNull(Server.P_Id));
+        assertTrue(server2.isNull(Server.P_Id));
 
         // test: guid should be 2
         gidNext++;
         int x = OAObjectDelegate.getGuid(server2);
         assertEquals(x, gidNext);
         
-        assertEquals(server2.getId(), 1);
+        assertEquals(0, server2.getId());
+        server2.save();
+        assertEquals(1, server2.getId());
         
         server2 = new Server();
         gidNext++;
         x = OAObjectDelegate.getGuid(server2);
         assertEquals(x, gidNext);
-        
-        assertEquals(server2.getId(), 3);  // 2 was already manually assigned
+        server2.save();
+        assertEquals(3, server2.getId());  // 2 was already manually assigned
         
         // clean up
         reset();

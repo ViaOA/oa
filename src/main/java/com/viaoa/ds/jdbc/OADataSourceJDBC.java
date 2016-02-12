@@ -114,11 +114,11 @@ public class OADataSourceJDBC extends OADataSource {
     /**
 	    Set all properties that are mapped to a column to NULL
 	*/
-	public @Override void initializeObject(OAObject object) {
+	public @Override void assignId(OAObject object) {
 	    if (!bAssignNumberOnCreate) return;
-	    _initializeObject(object);
+	    _assignId(object);
 	}
-    private void _initializeObject(OAObject object) {
+    private void _assignId(OAObject object) {
 	    Class clazz = object.getClass();
 	    for (;;) {
 	        Table table = database.getTable(clazz);

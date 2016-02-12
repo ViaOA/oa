@@ -47,13 +47,14 @@ public abstract class RemoteDataSource {
         String propFromWhereObject;
 
         switch (command) {
-        case OADataSourceClient.INITIALIZEOBJECT:
+        case OADataSourceClient.ASSIGN_ID:
             clazz = (Class) objects[0].getClass();
             ds = getDataSource(clazz);
             if (ds != null) {
-                OARemoteThreadDelegate.sendMessages(true);
-                ds.initializeObject((OAObject) objects[0]);
-                OARemoteThreadDelegate.sendMessages(false);
+                //not needed
+                //OARemoteThreadDelegate.sendMessages(true);
+                ds.assignId((OAObject) objects[0]);
+                //OARemoteThreadDelegate.sendMessages(false);
             }
             break;
         
@@ -70,10 +71,10 @@ public abstract class RemoteDataSource {
                 obj = new Boolean(b);
             }
             break;
-        case OADataSourceClient.ASSIGNNUMBERONCREATE:
+        case OADataSourceClient.GET_ASSIGN_ID_ON_CREATE:
             ds = getDataSource();
             if (ds != null) {
-                b = ds.getAssignNumberOnCreate();
+                b = ds.getAssignIdOnCreate();
                 obj = new Boolean(b);
             }
             else obj = Boolean.FALSE;
@@ -249,13 +250,6 @@ public abstract class RemoteDataSource {
                 hashIterator.put((String) obj, iterator);
                 LOG.finer("add iterator, size="+hashIterator.size());
             }
-            else obj = null;
-            break;
-
-        case OADataSourceClient.SUPPORTSINITIALIZEOBJECT: 
-            clazz = (Class) objects[0];
-            ds = getDataSource(clazz);
-            if (ds != null) obj = new Boolean(ds.supportsInitializeObject());
             else obj = null;
             break;
 

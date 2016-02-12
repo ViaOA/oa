@@ -49,8 +49,6 @@ public class OADataSourceClient extends OADataSource {
     /** internal value to work with OAClient */
     public static final int SAVE = 8;
     /** internal value to work with OAClient */
-    public static final int ASSIGNNUMBERONCREATE = 9;
-    /** internal value to work with OAClient */
     public static final int COUNT = 10;
     /** internal value to work with OAClient */
     public static final int COUNTPASSTHRU = 11;
@@ -77,9 +75,9 @@ public class OADataSourceClient extends OADataSource {
     public static final int SELECTPASSTHRU = 22;
 
     /** internal value to work with OAClient */
-    public static final int INITIALIZEOBJECT = 24; 
+    public static final int GET_ASSIGN_ID_ON_CREATE = 24; 
     /** internal value to work with OAClient */
-    public static final int SUPPORTSINITIALIZEOBJECT = 25; 
+    public static final int ASSIGN_ID = 25; 
 
     public static final int GET_PROPERTY = 26;
     
@@ -103,13 +101,23 @@ public class OADataSourceClient extends OADataSource {
         return remoteClientSync;
     }
 
-    public void setAssignNumberOnCreate(boolean b) {
+    private boolean bCalledGetAssignIdOnCreate;
+    private boolean bGetAssignIdOnCreate;
+    
+    public void setAssignIdOnCreate(boolean b) {
+        bCalledGetAssignIdOnCreate = true;
+        bGetAssignIdOnCreate = b;
     }
-    public boolean getAssignNumberOnCreate() {
+
+    public boolean getAssignIdOnCreate() {
+        if (bCalledGetAssignIdOnCreate) {
+            return bGetAssignIdOnCreate;
+        }
         verifyConnection();
-        Object obj = getRemoteClient().datasource(ASSIGNNUMBERONCREATE, new Object[] {});
-        if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
-        return false;
+        Object obj = getRemoteClient().datasource(GET_ASSIGN_ID_ON_CREATE, new Object[] {});
+        bCalledGetAssignIdOnCreate = true;
+        if (obj instanceof Boolean) bGetAssignIdOnCreate = ((Boolean)obj).booleanValue();
+        return bGetAssignIdOnCreate;
     }
 
     public boolean isAvailable() {
@@ -222,12 +230,20 @@ public class OADataSourceClient extends OADataSource {
         return -1;
     }
 
+    
+    private boolean bCalledSupportsStorage;
+    private boolean bSupportsStorage;
+
 
     /** does this dataSource support selecting/storing/deleting  */
     public @Override boolean supportsStorage() {
+        if (bCalledSupportsStorage) {
+            return bSupportsStorage;
+        }
         Object obj = getRemoteClient().datasource(SUPPORTSSTORAGE, null);
-        if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
-        return false;
+        bCalledSupportsStorage = true;
+        if (obj instanceof Boolean) bSupportsStorage = ((Boolean)obj).booleanValue();
+        return bSupportsStorage;
     }
 
 
@@ -292,15 +308,8 @@ public class OADataSourceClient extends OADataSource {
         return getRemoteClient().datasource(EXECUTE, new Object[] {command});
     }
 
-
-    public @Override void initializeObject(OAObject obj) {
-        if (bSupportsInitFlag && !bSupportsInit) return;
-        verifyConnection();
-        if (!bSupportsInitFlag) { 
-            initSupportsInitializeObject(obj.getClass());
-            if (bSupportsInitFlag && !bSupportsInit) return;
-        }
-        getRemoteClient().datasource(INITIALIZEOBJECT, new Object[] {obj} );  // NOTE WAS: dont use, this calls server.  ObjectId could be changed on server and never be found when returned
+    public @Override void assignId(OAObject obj) {
+        getRemoteClient().datasource(ASSIGN_ID, new Object[] {obj} );
     }
 
     public @Override boolean willCreatePropertyValue(OAObject object, String propertyName) {
@@ -404,20 +413,6 @@ public class OADataSourceClient extends OADataSource {
         return null;
     }
 	
-	private boolean bSupportsInit;
-    private boolean bSupportsInitFlag;
-	
-	@Override
-	public boolean supportsInitializeObject() {
-        return bSupportsInit;
-	}
-    protected void initSupportsInitializeObject(Class clazz) {
-        if (bSupportsInitFlag) return;
-        bSupportsInitFlag = true;
-        bSupportsInit = true;
-        Object objx = getRemoteClient().datasource(SUPPORTSINITIALIZEOBJECT, new Object[] { clazz });
-        if (objx instanceof Boolean) bSupportsInit = ((Boolean) objx).booleanValue();
-    }
 
 
 }

@@ -50,7 +50,7 @@ public class OASyncServerTest {
     public void start() throws Exception {
         DataGenerator dg = new DataGenerator();
         serverRoot = dg.readSerializeFromFile();
-        setupTestA();
+        setupTestB();
         ModelDelegate.initialize(serverRoot, null);
         getSyncServer().start();
     }
@@ -60,7 +60,7 @@ public class OASyncServerTest {
         }
     }
 
-    public void setupTestA() {
+    public void setupTestB() {
         serverRoot.getSites().addHubListener(new HubListenerAdapter<Site>() {
             @Override
             public void afterPropertyChange(HubEvent<Site> e) {
@@ -114,9 +114,10 @@ public class OASyncServerTest {
         if (syncServer != null) return syncServer;
         
         // for non-DB objects
-        new OADataSourceObjectCache();
+        OADataSourceObjectCache ds = new OADataSourceObjectCache();
+        // ds.setAssignIdOnCreate(true);
         
-        syncServer = new OASyncServer(1101) {
+        syncServer = new OASyncServer(1102) {
             @Override
             protected void onClientConnect(Socket socket, int connectionId) {
                 super.onClientConnect(socket, connectionId);

@@ -33,7 +33,7 @@ public class OADataSourceJDBCTest extends OAUnitTest {
         
         dsSqlServer = new DataSource();
         dsSqlServer.open();
-        dsSqlServer.getOADataSource().setAssignNumberOnCreate(true);
+        dsSqlServer.getOADataSource().setAssignIdOnCreate(true);
         if (!dsSqlServer.getOADataSource().verify()) {
             System.out.println("SQL Server test will not be done");
             return;

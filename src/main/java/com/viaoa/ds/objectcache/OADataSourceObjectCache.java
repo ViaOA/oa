@@ -125,16 +125,12 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
     }
 
 
-    public @Override void initializeObject(OAObject obj) {
-        super.initializeObject(obj);  // have autonumber handle this
+    public @Override void assignId(OAObject obj) {
+        super.assignId(obj);  // have autonumber handle this
     }
     
     public boolean getSupportsPreCount() {
         return false;
-    }
-    @Override
-    public boolean supportsInitializeObject() {
-        return false; // save will autoassign newnumber
     }
 
     protected boolean isOtherDataSource() {

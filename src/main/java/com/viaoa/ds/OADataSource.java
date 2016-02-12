@@ -38,7 +38,7 @@ public abstract class OADataSource implements OADataSourceInterface {
     private static Vector vecDataSource = new Vector(5,5);
     protected String name;
     protected boolean bLast;
-    protected boolean bAssignNumberOnCreate;  // if true, then Id will be assigned when object is created, else when saved
+    protected boolean bAssignNumberOnCreate=false;  // if true, then Id will be assigned when object is created, else when saved
     protected String guid; // seed value to use when creating GUID for seq assigned object keys
     protected boolean bEnable=true;
 
@@ -185,7 +185,7 @@ public abstract class OADataSource implements OADataSourceInterface {
         @param b if true, assign autonumber property when object is created, else assign when object is saved.
     */
     @Override
-    public void setAssignNumberOnCreate(boolean b) {
+    public void setAssignIdOnCreate(boolean b) {
         bAssignNumberOnCreate = b;
     }
     /**
@@ -193,7 +193,7 @@ public abstract class OADataSource implements OADataSourceInterface {
         @see #setAssignNumberOnCreate
     */
     @Override
-    public boolean getAssignNumberOnCreate() {
+    public boolean getAssignIdOnCreate() {
         return bAssignNumberOnCreate;
     }
 
@@ -717,15 +717,8 @@ public abstract class OADataSource implements OADataSourceInterface {
         Called by OAObject to initialize a new Object.
     */
     @Override
-    public abstract void initializeObject(OAObject obj);
+    public abstract void assignId(OAObject obj);
 
-    /**
-        Called by OAObject to initialize a new Object.
-    */
-    @Override
-    public boolean supportsInitializeObject() {
-        return true;
-    }
     
     /**
         Returns true if the dataSource will set the property value before saving.

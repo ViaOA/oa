@@ -26,15 +26,17 @@ public interface OADataSourceInterface {
     boolean getEnabled();
     void setEnabled(boolean b);
     boolean getAllowIdChange();
-    void setAssignNumberOnCreate(boolean b);
-    boolean getAssignNumberOnCreate();
+    
+    void setAssignIdOnCreate(boolean b);
+    boolean getAssignIdOnCreate();
+    void assignId(OAObject object);
+    
+   
     boolean getSupportsPreCount();
-    boolean supportsInitializeObject();
     
     void close();
     void reopen(int pos);
     
-    void initializeObject(OAObject object);
     boolean willCreatePropertyValue(OAObject object, String propertyName);
     
     void save(OAObject obj);

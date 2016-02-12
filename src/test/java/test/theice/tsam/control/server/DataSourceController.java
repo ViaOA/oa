@@ -65,7 +65,7 @@ public class DataSourceController {
         else {
             dataSource = new DataSource();
             dataSource.open();
-            dataSource.getOADataSource().setAssignNumberOnCreate(true);
+            dataSource.getOADataSource().setAssignIdOnCreate(true);
         }
 
         // for non-DB objects

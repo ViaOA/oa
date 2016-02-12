@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDetailDelegate;
@@ -75,7 +76,7 @@ public class OASyncClient {
     private RemoteSyncInterface remoteSyncImpl;
     private String serverHostName;
     private int serverHostPort;
-    private final boolean bUpdateSyncDelegate;
+    private final boolean bUpdateSyncDelegate;  // flag to know if this is the main client. Otherwise it could be a combinedSyncClient
 
     // used by getDetail
     private OAObject[] lastMasterObjects = new OAObject[10];
@@ -595,6 +596,8 @@ public class OASyncClient {
             OASyncDelegate.setRemoteSync(packagex, null);
             OASyncDelegate.setRemoteSession(packagex, null);
             OASyncDelegate.setRemoteClient(packagex, null);
+            OADataSource ds = getOADataSourceClient();
+            if (ds != null) ds.close();
         }
     }
 

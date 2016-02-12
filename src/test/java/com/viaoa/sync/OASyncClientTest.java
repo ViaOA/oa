@@ -24,6 +24,7 @@ import test.theice.tsam.remote.RemoteAppInterface;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.ds.OADataSource;
+import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
@@ -46,7 +47,7 @@ import com.viaoa.util.OATime;
  * If the server is not running, then unit test will not fail, the tests in this class will just exit without any errors.
  */
 public class OASyncClientTest extends OAUnitTest {
-    private static int port = 1101;
+    private static int port = 1102;
     private static ServerRoot serverRoot;    
     private static OASyncClient syncClient;
     
@@ -70,9 +71,15 @@ public class OASyncClientTest extends OAUnitTest {
 
     
     @Test
-    public void testC() throws Exception {
+    public void testA() throws Exception {
         if (serverRoot == null) return;
 
+        /*
+          Make sure that OASyncServerTest
+             OADataSourceObjectCache ds = new OADataSourceObjectCache();
+             ds.setAssignIdOnCreate(false); // so that client new object changes will not be sent to server
+         */
+        
         final Site site = serverRoot.getSites().getAt(0);
         OADataSource ds = OADataSource.getDataSource(MRADClientCommand.class);
         assertNotNull(ds);  // make sure that the server has DS setup
@@ -84,19 +91,20 @@ public class OASyncClientTest extends OAUnitTest {
         MRADServerCommand msc = new MRADServerCommand();
         assertEquals(0, msc.getId());
 
-        
-        
         long ms = System.currentTimeMillis();
         for (int i=0; i<1000 ;i++) {
             MRADClientCommand mcc = new MRADClientCommand();
             assertEquals(0, mcc.getId());
             msc.getMRADClientCommands().add(mcc);
         }
-        mradServer.getMRADServerCommands().add(msc);
-     
         long msDiff = System.currentTimeMillis() - ms;
         System.out.println("msDiff="+msDiff);
-        assertTrue(msDiff < 1500);
+
+        mradServer.getMRADServerCommands().add(msc);
+     
+        msDiff = System.currentTimeMillis() - ms;
+        System.out.println("msDiff="+msDiff);
+        assertTrue(msDiff < 1750);  // this will be 30+ seconds if using ds.setAssignIdOnCreate(true)
 
         assertEquals(0, msc.getId());
         mradServer.save();
@@ -110,8 +118,8 @@ public class OASyncClientTest extends OAUnitTest {
      * Run basic tests with oasyncservertest
      * @throws Exception
      */
-//qq    @Test
-    public void testA() throws Exception {
+    @Test
+    public void testB() throws Exception {
         if (serverRoot == null) return;
     
         remoteApp.isRunningAsDemo();
@@ -164,8 +172,8 @@ public class OASyncClientTest extends OAUnitTest {
         assertNotEquals("xx", site.getName());
     }
 
-//qq    @Test
-    public void testB() throws Exception {
+    @Test
+    public void testC() throws Exception {
         if (serverRoot == null) return;
     
         remoteApp.isRunningAsDemo();
@@ -215,7 +223,7 @@ public class OASyncClientTest extends OAUnitTest {
     /**
      * This will run with other instances that are running in their own jvm
      */
-//qq    @Test
+    @Test
     public void testForMain() throws Exception {
         if (serverRoot == null) return;
 
@@ -271,7 +279,6 @@ public class OASyncClientTest extends OAUnitTest {
             }
         }
         assertEquals(0, queErrors.size());
-        
         
         assertTrue(aiOnClientTestStart.get() == 0 || aiSendStats.get() > 0);
     }

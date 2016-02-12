@@ -51,7 +51,7 @@ public class Test {
                 return null;
             }            
         };
-        ds.setAssignNumberOnCreate(true);
+        ds.setAssignIdOnCreate(true);
 
         ss.start();
 

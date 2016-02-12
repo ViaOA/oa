@@ -49,7 +49,7 @@ public class OAObjectDeleteDelegateTest extends OAUnitTest {
         
         
         ImageStore is = new ImageStore();
-        assertEquals(is.getId(), 1); // auto assigned
+        assertEquals(is.getId(), 0); // not auto assigned
         
         // 1toM private program has images, image has private program
         Program program = new Program();
@@ -85,6 +85,7 @@ public class OAObjectDeleteDelegateTest extends OAUnitTest {
         int cntSelect = 0;
         assertEquals(cntSelect, aiSelect.get());
         is.save();
+        cntSelect++;  // save will verify that new id is not used
         assertEquals(cntSelect, aiSelect.get());
 
         // has to call ds to get it
@@ -150,7 +151,7 @@ public class OAObjectDeleteDelegateTest extends OAUnitTest {
             System.out.println("SQL Server test will not be done");
             return;
         }
-        dsSqlServer.getOADataSource().setAssignNumberOnCreate(true);
+        dsSqlServer.getOADataSource().setAssignIdOnCreate(true);
 
         OATransaction trans = new OATransaction(java.sql.Connection.TRANSACTION_SERIALIZABLE);
         trans.start();

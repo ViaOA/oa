@@ -47,6 +47,9 @@ public class OAObjectEventDelegate {
 	            if (OASyncDelegate.isServer(oaObj)) {  // 20150604 if client, then it needs to send prop change to server
 	                return; 
 	            }
+	            if (OAObjectCSDelegate.isInClientSideCache(oaObj)) {  // 20160212 created on client, has not been sent to server yet
+	                return;
+	            }
 	        }
 	    }
 	    
@@ -64,10 +67,12 @@ public class OAObjectEventDelegate {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         final String propertyU = propertyName.toUpperCase();
         OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, propertyU);
-        OALinkInfo toLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
-        OALinkInfo liRecursive;
+        OALinkInfo toLinkInfo;
+        if (linkInfo != null) toLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
+        else toLinkInfo = null;
+        
         if (toLinkInfo != null && toLinkInfo.bRecursive) {
-            liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
+            OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);  // ex: "ParentSection"
             if (liRecursive == linkInfo) {
                 // parent property changed.  ex: "setParentSection"
                 // verify that it can be placed
@@ -199,6 +204,10 @@ public class OAObjectEventDelegate {
 		if (linkInfo != null && oldObj == null) {
 		    // oldObj might never have been loaded before setMethod was called, which will have the oldValue=null -
 		    //   need to check in oaObj.properties to see what orig value was.
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+the oaobjkey in oaobj.properties[] could have been populated from oaobj.read()
+    
+
 		    oldObj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true, true);
 		    if (oldObj == OANotExist.instance) {
 		        bWasEmpty = true;
