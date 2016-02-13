@@ -253,13 +253,15 @@ public abstract class OACircularQueue<TYPE> {
                     if (slowSessionFound == null) {
                         // throttle=true
                         LOCKQueue.wait(10);
-                        if (cntThrottle++ == 0) ++cntQueueThrottle;                        
-                        else if (cntThrottle > 9) break; // 100ms max
+                        if (cntThrottle++ == 0) ++cntQueueThrottle;
+//qqqqqqqqqqqq                        
+//                        else if (cntThrottle > 9) break; // 100ms max
                     }
                     else {
                         LOCKQueue.wait(25);
                         if (cntWait++ == 0) ++cntQueueWait;
-                        else if (cntWait > 39) break;  // 1000ms max
+//qqqqqqqqqqqq                        
+//                        else if (cntWait > 39) break;  // 1000ms max
                     }
                     
                     long tsNow = System.currentTimeMillis();
