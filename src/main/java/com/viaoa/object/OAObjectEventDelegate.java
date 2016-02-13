@@ -204,10 +204,6 @@ public class OAObjectEventDelegate {
 		if (linkInfo != null && oldObj == null) {
 		    // oldObj might never have been loaded before setMethod was called, which will have the oldValue=null -
 		    //   need to check in oaObj.properties to see what orig value was.
-qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-the oaobjkey in oaobj.properties[] could have been populated from oaobj.read()
-    
-
 		    oldObj = OAObjectPropertyDelegate.getProperty(oaObj, propertyName, true, true);
 		    if (oldObj == OANotExist.instance) {
 		        bWasEmpty = true;
