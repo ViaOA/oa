@@ -140,7 +140,7 @@ public class OAObjectSerializeDelegate {
                 else if (localValue == null && value instanceof Hub) {
                     // fall through and store the oaObjNew Hub value
                 }
-                else continue;
+                else continue;  // note: any other value could be from a propertyChange that happened on the server, that is in the msg que for this client
             }
 
             
