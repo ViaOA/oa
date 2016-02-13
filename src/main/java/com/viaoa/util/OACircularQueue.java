@@ -187,8 +187,10 @@ public abstract class OACircularQueue<TYPE> {
     
     private volatile int cntQueueWait; // number of times a addMessage has called wait.    
     private volatile int cntQueueThrottle;    
-    private volatile long tsLastErrorLog;
+    private volatile long tsLastAvoidOverrunLog;
+    private volatile long tsLastThrottleLog;
     private volatile long tsLastAddLog;
+    private volatile long tsLastOneSecondLog;
     
     
     private int _addMessage(final TYPE msg, final int throttleAmount) {
@@ -230,11 +232,11 @@ public abstract class OACircularQueue<TYPE> {
                     long ts = session.msLastRead;
                     long tsNow = System.currentTimeMillis();
                     if (ts + 1000 < tsNow) {
-                        if (tsLastErrorLog + 1000 < tsNow) {
+                        if (tsLastOneSecondLog + 1000 < tsNow) {
                             LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
                                     ", currentHeadPos="+queueHeadPosition+", session="+session.id+
                                     ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms ago");
-                            tsLastErrorLog = tsNow;
+                            tsLastOneSecondLog = tsNow;
                         }
                         if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-ts))) {
                             continue;  // too slow, dont wait for this one
@@ -261,8 +263,8 @@ public abstract class OACircularQueue<TYPE> {
                     }
                     
                     long tsNow = System.currentTimeMillis();
-                    if (tsNow > tsLastErrorLog + 2500) {
-                        if (slowSessionFound != null) {
+                    if (slowSessionFound != null) {
+                        if (tsNow > tsLastAvoidOverrunLog + 2500) {
                             LOG.fine("cqName="+name+", avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                                 ", totalSessions="+hmSession.size() +
                                 ", slowSession="+slowSessionFound.id +
@@ -270,16 +272,19 @@ public abstract class OACircularQueue<TYPE> {
                                 ", totalWaits="+cntQueueWait +
                                 ", totalThrottles="+cntQueueThrottle
                                 );
+                            tsLastAvoidOverrunLog = tsNow;
                         }
-                        else {
+                    }
+                    else {
+                        if (tsNow > tsLastThrottleLog + 2500) {
                             LOG.fine("cqName="+name+", queue throttle, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                                 ", totalSessions="+hmSession.size() +
                                 ", throttleAmount="+throttleAmount +
                                 ", totalWaits="+cntQueueWait +
                                 ", totalThrottles="+cntQueueThrottle
                                 );
+                            tsLastThrottleLog = tsNow;
                         }
-                        tsLastErrorLog = tsNow;
                     }
                 }
                 catch (Exception e) {
