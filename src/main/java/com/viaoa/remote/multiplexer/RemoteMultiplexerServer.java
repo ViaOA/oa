@@ -37,7 +37,6 @@ import com.viaoa.remote.multiplexer.info.BindInfo;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
-import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.OACircularQueue;
 import com.viaoa.util.OACompressWrapper;
 import com.viaoa.util.OAReflect;
@@ -455,7 +454,11 @@ public class RemoteMultiplexerServer {
         
         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-            cq.addMessageToQueue(ri);
+//qqqqqqqqqqqq set a throttle amount qqqqqqqqqq
+            
+            int x = Math.min(200, cq.getSize() / 5);
+            
+            cq.addMessageToQueue(ri, x);
             return false;
         }
         
@@ -971,6 +974,7 @@ public class RemoteMultiplexerServer {
         return obj;
     }
 
+    // server is calling a remote broadcast method
     protected RequestInfo onInvokeBroadcast(BindInfo bind, Method method, Object[] args) throws Exception {
         aiMethodCallCnt.incrementAndGet();
         RequestInfo ri = new RequestInfo();
@@ -1024,7 +1028,8 @@ public class RemoteMultiplexerServer {
 
         // put "ri" in circular queue for clients to pick up.       
         OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-        int x = (cque.getSize() / 3);
+//qqqqqqqqqqqqqqqqqqqq        
+        int x = Math.min(200, cque.getSize() / 5);
         cque.addMessageToQueue(ri, x);  // this will throttle
         
         if (ri.object != null) {
@@ -1180,6 +1185,7 @@ public class RemoteMultiplexerServer {
                 alRemoteClientThread.add(remoteThread);
                 if (alRemoteClientThread.size() > 50) {
                     LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
+//qqqqqqqqqqqqq need a throttle qqqqqqqqqqqq                    
                 }
                 synchronized (remoteThread.Lock) {
                     remoteThread.requestInfo = ri;
@@ -1194,8 +1200,8 @@ public class RemoteMultiplexerServer {
         // remoteThread is now processing the request
         
         if (bFromServerQueueThread) {  // if true, then need to get back to queue asap
-            if (RemoteSyncInterface.class.isAssignableFrom(ri.bind.interfaceClass)) {
-                // wait for OA to call OARemoteThread.startNextThread
+            if (ri.bind.isOASync) {
+                // the remoteThread.startNextThread will call notifyProcessedByServer 
                 waitForProcessedByServer(ri);
             }
             // need to continue to get requests from the queue

@@ -32,18 +32,23 @@ public class OACircularQueueTest extends OAUnitTest {
         System.out.println("start reader."+id+", que pos="+pos+s);
         for (int i=0; !bStopReader;i++) {
             try {
-                Integer[] ints = que.getMessages(id, pos, 250, 10);
+                Integer[] ints = que.getMessages(id, pos, 500, 10);
                 if (ints == null) continue;
                 
-                for (Integer val : ints) {
-                    assertNotNull(val);
-                    assertEquals(val.intValue(), pos++);
+                if (pos < 499) {
+                    // verify that they are in order
+                    for (Integer val : ints) {
+                        assertNotNull(val);
+                        assertEquals(val.intValue(), pos++);
+                    }
                 }
+                else pos += ints.length;
+                
                 if (id == 0 && !bStopWriter) {
-                    Thread.sleep(15);  // so that writers will have to wait on reader#0
+                    Thread.sleep(5);  // so that writers will have to wait on reader#0
                 }
                 else if (id == 1 && !bStopWriter) {
-                    Thread.sleep(1600);  // let it overrun
+//                    Thread.sleep(1200);  // let it overrun
                 }
             }
             catch (Exception e) {
@@ -60,11 +65,14 @@ public class OACircularQueueTest extends OAUnitTest {
         int cnt = 0;
         for (int i=0; !bStopWriter; i++) {
             int throttleAmt = 0;
-            if (id == 0 && (i%50==0)) throttleAmt = 100; 
-            synchronized (lockWrite) {
-                int x = ai.getAndIncrement();
-                que.addMessageToQueue(x, throttleAmt);
+            if (id == 0 && (i%25==0)) throttleAmt = 100;
+            if (ai.get() < 501) {
+                synchronized (lockWrite) {
+                    int x = ai.getAndIncrement();
+                    que.addMessageToQueue(x, throttleAmt);
+                }
             }
+            else que.addMessageToQueue(ai.getAndIncrement(), throttleAmt);
             cnt++;
         }
         System.out.println("end writer."+id+", total queued="+cnt);
@@ -110,7 +118,7 @@ public class OACircularQueueTest extends OAUnitTest {
         }
 
         
-        for (int i=0; i<5; i++) {
+        for (int i=0; i<8; i++) {
             Thread.sleep(1000);
             //if (que.getHeadPostion() > 1000) break;
         }
