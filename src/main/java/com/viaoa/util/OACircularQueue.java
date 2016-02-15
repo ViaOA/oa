@@ -180,10 +180,13 @@ public abstract class OACircularQueue<TYPE> {
      * @param bThrottle if true, then make sure that headPos is not too far ahead of readers
      */
     public int addMessageToQueue(final TYPE msg, final int throttleAmount) {
+        return addMessageToQueue(msg, throttleAmount, -1);
+    }
+    public int addMessageToQueue(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore) {
         for (int i=0;;i++) {
             int x;
             synchronized(LOCKQueue) {
-                x = _addMessage(msg, throttleAmount, (i<100));
+                x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<100));
             }
             if (x >= 0) return x;
             try {
@@ -203,7 +206,7 @@ public abstract class OACircularQueue<TYPE> {
     private volatile long tsLastOneSecondLog;
     
     
-    private int _addMessage(final TYPE msg, final int throttleAmount, final boolean bCheckSessions) {
+    private int _addMessage(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore, final boolean bCheckSessions) {
         final long tsNow = System.currentTimeMillis();
 
         boolean b = bCheckSessions && (hmSession != null);
@@ -233,7 +236,9 @@ public abstract class OACircularQueue<TYPE> {
                     }
                     // see if it needs to be throttled
                     if ((session.queuePos + throttleAmount) < queueHeadPosition) {
-                        bNeedsThrottle = true;
+                        if (session.id != throttleSessionToIgnore) {
+                            bNeedsThrottle = true;
+                        }
                     }
                     continue;
                 }

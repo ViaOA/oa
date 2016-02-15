@@ -484,7 +484,7 @@ public class RemoteMultiplexerClient {
             }
         }
         
-        if (ri.type.usesQueue() && ri.type.hasReturnValue()) {
+        if (ri.type.usesQueue() && (ri.type.hasReturnValue() || ri.bind.isOASync) ) {
             // 3:CtoS_QueuedRequest put in hm to wait on server response
             hmAsyncRequestInfo.put(ri.messageId, ri); // used to wait for server to send it back on StoC
             if (!bFirstStoCsocketCreated) {
@@ -505,7 +505,7 @@ public class RemoteMultiplexerClient {
             oos.writeInt(ri.connectionId);
             oos.writeInt(ri.messageId);
         }
-        else if (ri.type.hasReturnValue() && ri.type.usesQueue()) {
+        else if (ri.type.usesQueue() && (ri.type.hasReturnValue() || ri.bind.isOASync)) {
             oos.writeInt(ri.messageId);
         }
         oos.flush();

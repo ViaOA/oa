@@ -45,7 +45,7 @@ public class RequestInfo {
         CtoS_QueuedRequestNoResponse(true, false),
         CtoS_QueuedResponse(true, false), // client returning result from stoc_queuedRequest
         
-        CtoS_QueuedBroadcast(true, true),   // will return to client, once it is processed (not invoked) on the server
+        CtoS_QueuedBroadcast(true, false),   // will return to client, once it is processed (not invoked) on the server
 
         StoC_CreateNewStoCSocket(false, false),
         StoC_QueuedBroadcast(true, false),

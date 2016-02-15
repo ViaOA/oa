@@ -457,8 +457,7 @@ public class RemoteMultiplexerServer {
 //qqqqqqqqqqqq set a throttle amount qqqqqqqqqq
             
             int x = Math.min(200, cq.getSize() / 5);
-            
-            cq.addMessageToQueue(ri, x);
+            cq.addMessageToQueue(ri, x, session.connectionId);
             return false;
         }
         
@@ -1026,15 +1025,26 @@ public class RemoteMultiplexerServer {
         processStoCArguments(ri);        
         if (ri.response == null) ri.response = OAReflect.getEmptyPrimitive(ri.method.getReturnType());
 
+
+        boolean b = true;
+        Thread t = Thread.currentThread();
+        if (t instanceof OARemoteThread) {
+            OARemoteThread rt = (OARemoteThread) t;
+            RequestInfo rix = rt.requestInfo;
+            if (rix.bind.usesQueue) {
+                b = false;
+            }
+        }
+
         // put "ri" in circular queue for clients to pick up.       
         OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
 //qqqqqqqqqqqqqqqqqqqq        
-        int x = Math.min(200, cque.getSize() / 5);
-        cque.addMessageToQueue(ri, x);  // this will throttle
+        int x;
+        if (b) x = Math.min(200, cque.getSize() / 5);
+        else x = 0;
+        cque.addMessageToQueue(ri, x, 0);  // this will throttle
         
-        if (ri.object != null) {
-//qqqqqqqqqq dont wait if this is remoteThread from syncQueue
-            
+        if (b) {
             waitForProcessedByServer(ri);
         }
         
@@ -1170,30 +1180,39 @@ public class RemoteMultiplexerServer {
         
         OARemoteThread remoteThread = null;
         synchronized (alRemoteClientThread) {    
-            int x = alRemoteClientThread.size();
-            for (int i=0; i<x; i++) {
-                OARemoteThread rct = alRemoteClientThread.get( aiRemoteClientThreadPos.incrementAndGet()%x );
-                synchronized (rct.Lock) {
-                    if (rct.requestInfo == null) {
-                        remoteThread = rct;
-                        rct.requestInfo = ri;
-                        rct.Lock.notifyAll(); 
-                        break;
+            for (int cnt=0; ; cnt++) {
+                int x = alRemoteClientThread.size();
+                for (int i=0; i<x; i++) {
+                    OARemoteThread rct = alRemoteClientThread.get( aiRemoteClientThreadPos.incrementAndGet()%x );
+                    synchronized (rct.Lock) {
+                        if (rct.requestInfo == null) {
+                            remoteThread = rct;
+                            rct.requestInfo = ri;
+                            rct.Lock.notifyAll(); 
+                            break;
+                        }
                     }
                 }
-            }
-            if (remoteThread == null) {
-                remoteThread = createRemoteClientThread();
-                alRemoteClientThread.add(remoteThread);
-                if (alRemoteClientThread.size() > 50) {
-                    LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
-//? Thread.sleep(250);                    
-//qqqqqqqqqqqqq need a throttle qqqqqqqqqqqq                    
+                if (remoteThread != null || x < 50 || cnt > 5) break;
+                try {
+                    alRemoteClientThread.wait(50);
                 }
+                catch (Exception e) {
+                }
+            }
+        }
+
+        if (remoteThread == null) {
+            remoteThread = createRemoteClientThread();
+            synchronized (alRemoteClientThread) {    
+                alRemoteClientThread.add(remoteThread);
                 synchronized (remoteThread.Lock) {
                     remoteThread.requestInfo = ri;
                     remoteThread.Lock.notifyAll(); 
                 }
+            }
+            if (alRemoteClientThread.size() > 50) {
+                LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
             }
         }
         
@@ -1805,8 +1824,22 @@ public class RemoteMultiplexerServer {
             ri.notifyAll();
         }
     }
-    protected boolean waitForProcessedByServer(RequestInfo ri) {
-        if (ri == null) return false;
+    protected void waitForProcessedByServer(RequestInfo ri) {
+        if (ri == null) return;
+        if (!ri.bind.usesQueue) return;
+        
+        // 20160215 dont wait if thread is already processing a que request
+        Thread t = Thread.currentThread();
+        if (t instanceof OARemoteThread) {
+            OARemoteThread rt = (OARemoteThread) t;
+            RequestInfo rix = rt.requestInfo;
+            if (rix != null && ri != rix) {
+                if (ri.bind.usesQueue && rix.bind.usesQueue) {
+                    return;
+                }
+            }
+        }
+        
         synchronized (ri) {
             for (int i=0; !ri.processedByServerQueue; i++) {
                 try {
@@ -1814,7 +1847,7 @@ public class RemoteMultiplexerServer {
                 }
                 catch (Exception e) {}
             }
-            return true;
+            return;
         }
     }
 
