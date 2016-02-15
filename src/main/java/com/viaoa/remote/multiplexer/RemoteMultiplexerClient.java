@@ -1040,7 +1040,19 @@ int qqq=0;//qqqqqqqqqqq
                 }
 
                 if (rix.bind.isOASync) {
-                    ri.bind = rix.bind; 
+                    ri.bind = rix.bind;
+                    
+qqqq need to make sure that remoteThread requests dont get in que and then other remotethreads must be created to finally notify 
+    the waiting remoteThread that called it
+qqqqqqqq if it was called (rix) from a remoteThread, then go ahead and notify it now, so it wont get stuck waiting and
+    needing more remoteThreads created before getting to it
+    
+need a flag when it is called, set in rix
+
+also, get rid of ri.methodName
+
+make sure that a remoteThread broadcast in server does not wait for it to be processed in que
+
                     queSyncRequestInfo.put(ri);  // sync que will notify the original thread
                 }
                 else {

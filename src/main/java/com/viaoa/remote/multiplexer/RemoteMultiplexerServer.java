@@ -1118,7 +1118,9 @@ public class RemoteMultiplexerServer {
             qpos += ris.length;
             
             for (RequestInfo ri : ris) {
-                if (ri == null) continue;
+                if (ri == null) {
+                    continue;
+                }
 
                 boolean bNotifyMethodInvoked = false;
 
@@ -1151,7 +1153,9 @@ public class RemoteMultiplexerServer {
                     // 8:CtoS_QueuedRequest flag as processed
                 }
                 
-                if (!ri.processedByServerQueue) notifyProcessedByServer(ri);
+                if (!ri.processedByServerQueue) {
+                    notifyProcessedByServer(ri);
+                }
                 if (bNotifyMethodInvoked) {
                     notifyMethodInvoked(ri);
                 }
@@ -1223,7 +1227,7 @@ public class RemoteMultiplexerServer {
         
         if (bFromServerQueueThread) {  // if true, then need to get back to queue asap
             if (ri.bind.isOASync) {
-                // the remoteThread.startNextThread will call notifyProcessedByServer 
+                // note: the remoteThread.startNextThread will call notifyProcessedByServer 
                 waitForProcessedByServer(ri);
             }
             // need to continue to get requests from the queue

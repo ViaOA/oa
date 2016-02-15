@@ -416,14 +416,6 @@ public abstract class OACircularQueue<TYPE> {
 
         if (msgs != null && msgs.length > 0) {
             if (session != null) session.queuePos = (posTail + msgs.length);
-            
-            /* 20160115 dont notify, it needs to wait and give slow thread time 
-            if (waitingOnSessionId == sessionId) {
-                synchronized(LOCKQueue) {
-                    LOCKQueue.notifyAll();
-                }            
-            }
-            */
         }        
         return msgs;
     }
@@ -435,6 +427,57 @@ public abstract class OACircularQueue<TYPE> {
     
     private AtomicInteger  aiCleanupQueue = new AtomicInteger(); 
     private TYPE[] _getMessages(final int sessionId, long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
+        int amt;
+        
+        if ((posTail + queueSize) < queueHeadPosition) {
+            throw new Exception("message queue overrun, sessionId="+sessionId+", pos="+posTail+", headPos="+queueHeadPosition);
+        }
+        else {
+            if (posTail > queueHeadPosition) {
+                posTail = queueHeadPosition;
+                //throw new IllegalArgumentException("posTail should not be larger then headPos");
+            }
+        }
+        amt = (int) ((queueHeadPosition-1) - posTail);  // note: use -1 since this code is not sync, and the addMsg could be in the process
+        if (maxReturnAmount > 0 && amt > maxReturnAmount) {
+            amt = maxReturnAmount;
+        }
+        
+        if (amt == 0 && maxWait != 0) {
+            if (aiCleanupQueue.incrementAndGet() % 50 == 0) {
+                cleanupQueue();
+            }
+
+            synchronized(LOCKQueue) {
+                amt = (int) (queueHeadPosition - posTail);
+                if (amt == 0) {
+                    bWaitingToGet = true;
+                    if (maxWait > 0) {
+                        LOCKQueue.wait(maxWait);
+                    }
+                    else {
+                        for (;;) {
+                            LOCKQueue.wait();
+                            if (posTail != queueHeadPosition) break; // protect from spurious wakeup (yes, it happens)
+                        }
+                    }
+                }
+            }
+        }
+
+        TYPE[] msgs;
+        if (amt > 0) {
+            msgs = (TYPE[]) Array.newInstance(classType, amt);
+            for (int i=0; i<amt; i++) {
+                msgs[i] = msgQueue[ (int) (posTail++ % queueSize) ]; 
+            }
+        }
+        else msgs = null;
+        return msgs;
+    }
+
+/*was before 20160215   
+    private TYPE[] _getMessages__ORIG___(final int sessionId, long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
         synchronized(LOCKQueue) {
             if ((posTail + queueSize) < queueHeadPosition) {
@@ -478,7 +521,10 @@ public abstract class OACircularQueue<TYPE> {
         else msgs = null;
         return msgs;
     }
-
+*/    
+    
+    
+    
     /**
      * Get message at actual position in queue
      * @param pos is actual array position, must be less then queSize, else null is returned. 
