@@ -1033,6 +1033,8 @@ public class RemoteMultiplexerServer {
         cque.addMessageToQueue(ri, x);  // this will throttle
         
         if (ri.object != null) {
+//qqqqqqqqqq dont wait if this is remoteThread from syncQueue
+            
             waitForProcessedByServer(ri);
         }
         
@@ -1185,6 +1187,7 @@ public class RemoteMultiplexerServer {
                 alRemoteClientThread.add(remoteThread);
                 if (alRemoteClientThread.size() > 50) {
                     LOG.warning("alRemoteClientThread.size() = " + alRemoteClientThread.size());
+//? Thread.sleep(250);                    
 //qqqqqqqqqqqqq need a throttle qqqqqqqqqqqq                    
                 }
                 synchronized (remoteThread.Lock) {
