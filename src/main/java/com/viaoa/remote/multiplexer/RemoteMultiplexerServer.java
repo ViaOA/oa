@@ -454,7 +454,6 @@ public class RemoteMultiplexerServer {
         
         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-//qqqqqqqqqqqq set a throttle amount qqqqqqqqqq
             
             int x = Math.min(200, cq.getSize() / 5);
             cq.addMessageToQueue(ri, x, session.connectionId);
@@ -549,6 +548,7 @@ public class RemoteMultiplexerServer {
             ri.method = method;
             ri.args = args;
             ri.messageId = aiMessageId.incrementAndGet();
+            ri.isRemoteThread = (Thread.currentThread() instanceof OARemoteThread);
             onInvokeForStoC(session, ri);
         }
         catch (Exception e) {
@@ -985,6 +985,7 @@ public class RemoteMultiplexerServer {
         ri.args = args;
         ri.bind = bind;
         ri.type = RequestInfo.Type.StoC_QueuedBroadcast;
+        ri.isRemoteThread = (Thread.currentThread() instanceof OARemoteThread);
 
         ri.methodInfo = ri.bind.getMethodInfo(ri.method);
         ri.object = ri.bind.getObject();
@@ -1028,7 +1029,7 @@ public class RemoteMultiplexerServer {
 
         boolean b = true;
         Thread t = Thread.currentThread();
-        if (t instanceof OARemoteThread) {
+        if (ri.isRemoteThread) {
             OARemoteThread rt = (OARemoteThread) t;
             RequestInfo rix = rt.requestInfo;
             if (rix.bind.usesQueue) {
@@ -1038,7 +1039,7 @@ public class RemoteMultiplexerServer {
 
         // put "ri" in circular queue for clients to pick up.       
         OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-//qqqqqqqqqqqqqqqqqqqq        
+        
         int x;
         if (b) x = Math.min(200, cque.getSize() / 5);
         else x = 0;

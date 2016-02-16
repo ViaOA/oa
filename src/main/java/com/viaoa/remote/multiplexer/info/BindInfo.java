@@ -39,7 +39,7 @@ public class BindInfo {
     public boolean usesQueue;
     public String asyncQueueName;
     public int asyncQueueSize;
-    public boolean isOASync; 
+    public boolean isOASync;
 
     public WeakReference weakRef;
     public Class interfaceClass; // used to create the proxy

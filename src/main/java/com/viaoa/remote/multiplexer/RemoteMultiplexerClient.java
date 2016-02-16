@@ -309,6 +309,7 @@ public class RemoteMultiplexerClient {
                 ri.methodNameSignature = ri.methodInfo.methodNameSignature;
                 ri.socket.setTimeoutSeconds(ri.methodInfo.timeoutSeconds);
             }
+            ri.isRemoteThread = (Thread.currentThread() instanceof OARemoteThread);
             
             ri.bSent = _onInvokeForCtoS(ri);
 
@@ -1039,20 +1040,11 @@ int qqq=0;//qqqqqqqqqqq
                     return true;
                 }
 
-                if (rix.bind.isOASync) {
+                
+                // if oasync was called by remoteThread, then dont put in queue, which would have made it take more remoteThreads to get to it.
+                //     instead, notify it when it is received back from the server.
+                if (rix.bind.isOASync && !rix.isRemoteThread) {
                     ri.bind = rix.bind;
-                    
-qqqq need to make sure that remoteThread requests dont get in que and then other remotethreads must be created to finally notify 
-    the waiting remoteThread that called it
-qqqqqqqq if it was called (rix) from a remoteThread, then go ahead and notify it now, so it wont get stuck waiting and
-    needing more remoteThreads created before getting to it
-    
-need a flag when it is called, set in rix
-
-also, get rid of ri.methodName
-
-make sure that a remoteThread broadcast in server does not wait for it to be processed in que
-
                     queSyncRequestInfo.put(ri);  // sync que will notify the original thread
                 }
                 else {

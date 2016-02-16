@@ -107,6 +107,8 @@ public class RequestInfo {
     public String exceptionMessage;
     public Object response;
 
+    public boolean isRemoteThread;  // if this request was made by an oaRemoteThread
+    
     public volatile boolean methodInvoked;  // set to true with the method has been invoked
     public volatile boolean processedByServerQueue;  // flag set on server after it's processed
 //    public boolean isFromRemoteThread; // know if the thread making the remote call is a remoteThread
