@@ -14,6 +14,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
@@ -51,7 +52,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private boolean bRequiresCasade;
     private OACascade cascade;
 
-    private boolean bStop;
+    private volatile boolean bStop;
     private ArrayList<T> alFound;
 
     // stack

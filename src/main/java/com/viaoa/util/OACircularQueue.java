@@ -53,6 +53,10 @@ public abstract class OACircularQueue<TYPE> {
 
     private volatile ConcurrentHashMap<Integer, Session> hmSession;
     
+    private final int MS_Throttle = 10;
+    private final int MS_Wait = 25;
+    
+    
     private static class Session {
         int id;
         volatile long queuePos;
@@ -183,14 +187,17 @@ public abstract class OACircularQueue<TYPE> {
         return addMessageToQueue(msg, throttleAmount, -1);
     }
     public int addMessageToQueue(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore) {
-        for (int i=0;;i++) {
+        for (int i=0; ;i++) {
             int x;
             synchronized(LOCKQueue) {
-                x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<100));
+                if (throttleAmount > 0) x = 10;
+                else x = 200;  // 5 seconds max, before letting it overrun
+                x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<x));
             }
             if (x >= 0) return x;
+            x = Math.abs(x);
             try {
-                Thread.sleep(Math.abs(x));
+                Thread.sleep(x);
             }
             catch (Exception e) {
                 System.out.println("circque error:"+e);
@@ -273,7 +280,7 @@ public abstract class OACircularQueue<TYPE> {
                     tsLastAvoidOverrunLog = tsNow;
                     tsLastAddLog = tsNow;
                 }
-                return -25;
+                return -MS_Wait;
             }
 
         
@@ -289,7 +296,7 @@ public abstract class OACircularQueue<TYPE> {
                     tsLastThrottleLog = tsNow;
                     tsLastAddLog = tsNow;
                 }
-                return -10;
+                return -MS_Throttle;
             }            
         }
 
@@ -438,12 +445,15 @@ public abstract class OACircularQueue<TYPE> {
                 //throw new IllegalArgumentException("posTail should not be larger then headPos");
             }
         }
+        
+        // first check without locking
         amt = (int) ((queueHeadPosition-1) - posTail);  // note: use -1 since this code is not sync, and the addMsg could be in the process
         if (maxReturnAmount > 0 && amt > maxReturnAmount) {
             amt = maxReturnAmount;
         }
         
-        if (amt == 0 && maxWait != 0) {
+        
+        if (amt <= 0 && maxWait != 0) {
             if (aiCleanupQueue.incrementAndGet() % 50 == 0) {
                 cleanupQueue();
             }

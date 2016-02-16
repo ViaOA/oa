@@ -1091,28 +1091,11 @@ public class RemoteMultiplexerServer {
 
     private void processQueueMessagesOnServer(final OACircularQueue<RequestInfo> cque, final String bindName, long qpos) throws Exception {
         if (cque == null) return;
-        int cqueWaitMs = 2500;
         for (;;) {
             RequestInfo[] ris;
-            ris = cque.getMessages(0, qpos, 20, cqueWaitMs);
+            ris = cque.getMessages(0, qpos, 20, 10000);
             
-            if (ris == null) {  // remove any unneeded threads, one at a time
-                synchronized (alRemoteClientThread) {
-                    if (alRemoteClientThread.size() > 3) {
-                        for (OARemoteThread rct : alRemoteClientThread) {
-                            if (rct.requestInfo != null) continue;
-                            synchronized (rct.Lock) {
-                                if (rct.requestInfo != null) continue;
-                                rct.stopCalled = true;
-                                alRemoteClientThread.remove(rct);
-                                rct.Lock.notifyAll();
-                            }
-                            break;
-                        }
-                        cqueWaitMs = 2000;
-                    }
-                    else cqueWaitMs = 30000; 
-                }
+            if (ris == null) {
                 continue;
             }
             
@@ -1378,22 +1361,28 @@ public class RemoteMultiplexerServer {
     
     
     // use OARemoteThread to process broadcast messages on the server
-    private AtomicInteger aiClientThreadCount = new AtomicInteger();
-    private ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
+    private final AtomicInteger aiClientThreadCount = new AtomicInteger();
+    private final ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
 
     private OARemoteThread createRemoteClientThread() {
         OARemoteThread t = new OARemoteThread() {
             @Override
             public void run() {
+                boolean bReset = true;
                 for ( ;!stopCalled; ) {
                     try {
+                        if (shouldClose(this)) break;
                         synchronized (Lock) {
-                            reset();
+                            if (bReset) {
+                                reset();
+                                bReset = false;
+                            }
                             if (requestInfo == null) {
-                                Lock.wait();
+                                Lock.wait(1000);
                                 if (requestInfo == null) continue;
                             }
                         }
+                        bReset = true;
                         
                         Session session;
                         if (requestInfo.connectionId != 0) {
@@ -1438,6 +1427,26 @@ public class RemoteMultiplexerServer {
         return t;
     }
 
+    private boolean shouldClose(final OARemoteThread remoteThread) {
+        int x = alRemoteClientThread.size();
+        if (x < 4) return false;
+        int max;
+        if (x > 100) max = 100;
+        else if (x > 50) max = 500;
+        else max = 1000;
+        if (remoteThread.requestInfo != null) return false;            
+        
+        if (remoteThread.msLastUsed == 0 || (remoteThread.msLastUsed + max > System.currentTimeMillis()) ) return false;
+        synchronized (alRemoteClientThread) {
+            if (remoteThread.requestInfo != null) return false;            
+            if (alRemoteClientThread.size() < 4) return false;
+            alRemoteClientThread.remove(remoteThread);
+            remoteThread.stopCalled = true;
+        }
+        return true;
+    }
+    
+    
     protected void onException(int connectionId, String title, String msg, Exception e, boolean bWillDisconnect) {
     }
     

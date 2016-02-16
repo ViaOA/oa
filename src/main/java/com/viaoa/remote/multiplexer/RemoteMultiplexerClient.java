@@ -667,6 +667,7 @@ public class RemoteMultiplexerClient {
         synchronized (alRemoteClientThread) {
             for (int i=0; ; i++) {
                 for (OARemoteThread rt : alRemoteClientThread) {
+                    if (rt.requestInfo != null) continue;
                     synchronized (rt.Lock) {
                         if (rt.requestInfo == null) {
                             rt.requestInfo = ri;
@@ -733,20 +734,22 @@ public class RemoteMultiplexerClient {
                 /* 20151103 on hold for OAsyncCombinedClient work
                 OAThreadLocalDelegate.setRemoteMultiplexerClient(RemoteMultiplexerClient.this);
                 */
-                for (; ;) {
+                boolean bReset = true;
+                for ( ;!stopCalled; ) {
                     try {
+                        if (shouldClose(this)) break;
                         synchronized (Lock) {
-                            if (stopCalled) {
-                                break;
+                            if (bReset) {
+                                reset();
+                                bReset = false;
                             }
-                            reset();
                             if (requestInfo == null) {
-                                Lock.wait();
+                                Lock.wait(1000);
                                 if (requestInfo == null) continue;
                             }
                         }
+                        bReset = true;
 
-                        this.msLastUsed = System.currentTimeMillis();
                         processMessageForStoC(requestInfo);
                         this.msLastUsed = System.currentTimeMillis();
 
@@ -757,7 +760,6 @@ public class RemoteMultiplexerClient {
                             }
                             Lock.notifyAll();
                         }
-                        shouldClose(this);
                     }
                     catch (Exception e) {
                         LOG.log(Level.WARNING, "error in OARemoteThread", e);
@@ -784,41 +786,25 @@ public class RemoteMultiplexerClient {
 
 
     private boolean shouldClose(final OARemoteThread remoteThread) {
-        if (alRemoteClientThread.size() < 4) return false;
-        long msNow = System.currentTimeMillis();
-        int cnt = 0;
-        int minFree = 2;
-        int msMax = 2000;
-        
+        if (remoteThread.requestInfo != null) return false;
         int x = alRemoteClientThread.size(); 
-        if (x > 10) {
-            minFree = 4;
-            if (x > 40) msMax = 250;
-            else msMax = 500;
-        }
+        if (x < 4) return false;
+        
+        int max;
+        if (x > 50) max = 100;
+        else if (x > 30) max = 500;
+        else max = 1000;
+
+        if (remoteThread.msLastUsed == 0 || (remoteThread.msLastUsed + max > System.currentTimeMillis()) ) return false;
         
         synchronized (alRemoteClientThread) {
-            for (OARemoteThread rt : alRemoteClientThread) {
-                synchronized (rt.Lock) {
-                    if (rt == remoteThread) {
-                        if (rt.requestInfo != null) return false;
-                        continue;
-                    }
-                    if (rt.requestInfo == null) {
-                        if (rt.msLastUsed + msMax < msNow) { 
-                            cnt++;
-                        }
-                    }
-                }
-                if (cnt > minFree) {
-                    alRemoteClientThread.remove(remoteThread);
-                    remoteThread.stopCalled = true;
-                    return true;
-                }
-            }
-            alRemoteClientThread.notifyAll();
+            if (remoteThread.requestInfo != null) return false;            
+            if (alRemoteClientThread.size() < 4) return false;
+            
+            alRemoteClientThread.remove(remoteThread);
+            remoteThread.stopCalled = true;
         }
-        return false;
+        return true;
     }
 
 int qqq=0;//qqqqqqqqqqq    

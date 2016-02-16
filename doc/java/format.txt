@@ -1,10 +1,24 @@
 
 
 
+String.format("%,5d) %,6d %,6d", ++cnt, ms, ms1);
 
 String.format( "STATS: Cnt=%,d, Avg=%,.2f", aiCnt.get(), (float) (aiTimeMs.get()/aiCnt.get()) );
 
 String.format("    gc.weightx = %.2ff;", (float) (jc.fillPercent/100.0f));
+
+// 8 charcter in width and 3 digit after decimal point
+System.out.printf("%8.3f %n", Math.E);
+
+// 0 pad
+String.format("%0,3d)", 5);
+
+// space pad
+String.format("%,3d)", 5);
+
+
+
+Read more: http://javarevisited.blogspot.com/2012/08/how-to-format-string-in-java-printf.html#ixzz40KZLCjK9
 
 
 
@@ -12,7 +26,7 @@ String.format("    gc.weightx = %.2ff;", (float) (jc.fillPercent/100.0f));
     <pre>
     0      a digit, if no digit exists, then '0' will be used. 
                 ex: '000' for 38 = '038'
-    #      a digit, zero shows as absent
+    #      a digit (NOT '#") , zero shows as absent
                 ex: '#' for 8204 = '8204'
     .      placeholder for decimal separator
     ,      placeholder for grouping separator.

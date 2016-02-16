@@ -48,6 +48,10 @@ public class HubAddRemoveDelegate {
             return;
         }
 
+        if (!thisHub.contains(obj)) {
+            return;
+        }
+        
         if (!thisHub.getEnabled()) {
             return;
         }
