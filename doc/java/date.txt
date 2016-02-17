@@ -36,3 +36,12 @@ qqqqqqq
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String sDate = df.format(new Date(msTime));
         sDate += "T23:01:01Z";
+
+        
+qqqqqqqq
+    int _time_utc_offset;   //timezone offset between Local & UTC time
+    TimeZone timezone = TimeZone.getTimeZone( "GMT" +  _time_utc_offset ); // e.g. GMT-09:00
+    calendar.setTimeZone( timezone );
+    final SimpleDateFormat sdf = new SimpleDateFormat( _SQL_FORMAT_DEFAULT );
+    sdf.setTimeZone(TimeZone.getTimeZone("GMT" +  _time_utc_offset));
+        

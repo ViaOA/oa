@@ -481,7 +481,7 @@ public class RemoteMultiplexerTest extends OAUnitTest {
     
     
     private volatile int cntClientBroadcastPing;
-    @Test(timeout=2000)
+    @Test //(timeout=2000)
     public void testStoC_QueuedBroadcast() throws Exception {
         RemoteClientInterface remoteClient;
         MultiplexerClient multiplexerClient;
@@ -528,8 +528,11 @@ public class RemoteMultiplexerTest extends OAUnitTest {
 
         cntClientBroadcastPing=0;
         cntCtoSRequestServer = cntCtoSRequestClient = 0;
+        cntBroadcastPing = 0;
         b = remoteBroadcast.ping("testx");
         assertEquals(0, cntClientBroadcastPing);
+        Thread.sleep(200); // wait for server to get it
+        assertEquals(1, cntBroadcastPing);
         assertEquals(1, cntCtoSRequestClient);
         assertEquals(1, cntCtoSRequestServer);
         

@@ -1,7 +1,7 @@
 
 
 
-Compiling with JDK 1.6 using Eclipse Mars
+** Compiling with JDK 1.6 using Eclipse Mars
     set project properties, java compiler, compliance 1.6
 
 

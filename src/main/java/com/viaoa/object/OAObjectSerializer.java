@@ -146,6 +146,11 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         if (callback != null) obj = callback.getReferenceValueToSend(obj);
         return obj;
     }
+    
+    
+    /**
+     * Max number of objects to serialize.
+     */
     public void setMax(int max) {
         this.max = max;
     }
