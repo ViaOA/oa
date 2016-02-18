@@ -75,8 +75,16 @@ public class OATable implements OAJspComponent {
             public void onNewList(HubEvent e) {
                 newListCount++;
             }
+            @Override
+            public void afterRemove(HubEvent e) {
+            }
+            @Override
+            public void afterAdd(HubEvent e) {
+            }
+            @Override
+            public void afterInsert(HubEvent e) {
+            }
         };
-    
     }
         
     
