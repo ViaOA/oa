@@ -347,9 +347,10 @@ public class OADataSourceJDBC extends OADataSource {
     }
     
     public boolean verify() throws Exception {
+        System.out.println("");
         return VerifyDelegate.verify(this);
     }
-
+ 
     @Override
     public byte[] getPropertyBlobValue(OAObject obj, String propertyName) {
         byte[] result = null;

@@ -59,7 +59,7 @@ public class HubSelectDelegate {
 
         if (hubData.isInFetch() && cntWarning++ < 20) {
             Exception e = new Exception("fetchMore called while already fetching");
-            LOG.log(Level.WARNING, "fetchMore warning", e);
+            LOG.log(Level.WARNING, "fetchMore warning, will continue", e);
         }
         
         try {
