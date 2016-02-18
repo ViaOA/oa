@@ -189,9 +189,9 @@ public abstract class OACircularQueue<TYPE> {
     public int addMessageToQueue(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore) {
         for (int i=0; ;i++) {
             int x;
+            if (throttleAmount > 0) x = 10;
+            else x = 300;  // 7.5 seconds max, before letting it overrun
             synchronized(LOCKQueue) {
-                if (throttleAmount > 0) x = 10;
-                else x = 200;  // 5 seconds max, before letting it overrun
                 x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<x));
             }
             if (x >= 0) return x;
