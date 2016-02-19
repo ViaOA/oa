@@ -18,7 +18,6 @@ All rights reserved.
 package com.viaoa.ds.jdbc.delegate;
 
 import java.io.*;
-import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
@@ -26,7 +25,6 @@ import java.util.logging.*;
 import com.viaoa.ds.jdbc.*;
 import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.object.*;
-import com.viaoa.util.*;
 
 /**
  * Manages inserts for JDBC datasource.
@@ -106,7 +104,6 @@ public class InsertDelegate {
             Object obj = oaObj.getProperty(column.propertyName); 
             // see if column needs to be assigned to a seq number
             // support for DB generated keys
-qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq           See VJERROR.txt   
             if (column.primaryKey) {
                 boolean b = false;
             	if (obj == null) b = true;

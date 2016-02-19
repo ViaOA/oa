@@ -12,6 +12,7 @@ package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -187,7 +188,7 @@ public class OAObjectSaveDelegate {
 		}
 	}
 	
-	private static ArrayList<Integer> alSaveNewLock = new ArrayList<Integer>(5);
+	private static HashSet<Integer> hsSaveNewLock = new HashSet<Integer>(11);
 	
     /** @param bFullSave false=dont flag as unchanged, used when object needs to be saved twice. First to create
 	    object in datasource so that reference objects can refer to it
@@ -198,19 +199,18 @@ public class OAObjectSaveDelegate {
         // if new, then need to hold a lock
 	    boolean bIsNew = oaObj.isNew();
 	    if (bIsNew) {
-//qqqqqqqqqqqqqqqqqqqqqq	        
-//LOG.warning("SAVING NEW vvvvvv: obj="+oaObj+", id="+oaObj.getProperty("id"));	        
-	        synchronized (alSaveNewLock) {
+	        synchronized (hsSaveNewLock) {
 	            boolean b = false;
 	            for ( ; ; ) {
-	                if (!alSaveNewLock.contains(oaObj.guid)) {
+	                if (!oaObj.isNew()) return true; // already saved
+	                if (!hsSaveNewLock.contains(oaObj.guid)) {
 	                    if (b) return true; // already saved
-	                    alSaveNewLock.add(oaObj.guid);
+	                    hsSaveNewLock.add(oaObj.guid);
 	                    break;
 	                }
 	                b = true;
 	                try {
-	                    alSaveNewLock.wait();
+	                    hsSaveNewLock.wait();
 	                }
 	                catch (Exception e) {}
 	            }    
@@ -251,9 +251,9 @@ public class OAObjectSaveDelegate {
 	    }
 	    finally {
 	        if (bIsNew) {
-	            synchronized (alSaveNewLock) {
-                    alSaveNewLock.remove((Object) (new Integer(oaObj.guid)) ); // needs to use Object instead of primitive
-                    alSaveNewLock.notifyAll();           
+	            synchronized (hsSaveNewLock) {
+                    hsSaveNewLock.remove((Object) (new Integer(oaObj.guid)) ); // needs to use Object instead of primitive
+                    hsSaveNewLock.notifyAll();           
 	            }
 	        }
 	        //was, before 5/4:

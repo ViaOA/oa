@@ -19,6 +19,7 @@ package com.viaoa.ds.jdbc.delegate;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import com.viaoa.ds.jdbc.*;
@@ -34,7 +35,7 @@ import com.viaoa.object.*;
 public class AutonumberDelegate {
     private static Logger LOG = Logger.getLogger(AutonumberDelegate.class.getName());
 
-    private static HashMap<String, AtomicInteger> hashNext = new HashMap<String, AtomicInteger>(39, .75f);  // Table, Integer
+    private static ConcurrentHashMap<String, AtomicInteger> hashNext = new ConcurrentHashMap<String, AtomicInteger>(39, .75f);  // Table, Integer
     private static Object LOCK = new Object();
 	
     /**
