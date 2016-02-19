@@ -106,6 +106,7 @@ public class InsertDelegate {
             Object obj = oaObj.getProperty(column.propertyName); 
             // see if column needs to be assigned to a seq number
             // support for DB generated keys
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq           See VJERROR.txt   
             if (column.primaryKey) {
                 boolean b = false;
             	if (obj == null) b = true;
