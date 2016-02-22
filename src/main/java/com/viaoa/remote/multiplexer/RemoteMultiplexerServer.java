@@ -454,7 +454,7 @@ public class RemoteMultiplexerServer {
         
         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-            int x = Math.min(500, cq.getSize() / 2);
+            int x = Math.min(1000, cq.getSize() / 2);
             cq.addMessageToQueue(ri, x, session.connectionId);
             return false;
         }
@@ -1040,7 +1040,7 @@ public class RemoteMultiplexerServer {
         OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
         
         int x;
-        if (b) x = Math.min(500, cque.getSize() / 2);
+        if (b) x = Math.min(1000, cque.getSize() / 2);
         else x = 0;
         cque.addMessageToQueue(ri, x, 0);  // this will throttle
         

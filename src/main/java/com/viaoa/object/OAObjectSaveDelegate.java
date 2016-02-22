@@ -12,6 +12,7 @@ package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -188,7 +189,7 @@ public class OAObjectSaveDelegate {
 		}
 	}
 	
-	private static HashSet<Integer> hsSaveNewLock = new HashSet<Integer>(11);
+	private static final HashMap<Integer, Thread> hmSaveNewLock = new HashMap<Integer, Thread>(11);
 	
     /** @param bFullSave false=dont flag as unchanged, used when object needs to be saved twice. First to create
 	    object in datasource so that reference objects can refer to it
@@ -199,18 +200,18 @@ public class OAObjectSaveDelegate {
         // if new, then need to hold a lock
 	    boolean bIsNew = oaObj.isNew();
 	    if (bIsNew) {
-	        synchronized (hsSaveNewLock) {
-	            boolean b = false;
-	            for ( ; ; ) {
+	        synchronized (hmSaveNewLock) {
+	            for (int i=0 ; ; i++) {
 	                if (!oaObj.isNew()) return true; // already saved
-	                if (!hsSaveNewLock.contains(oaObj.guid)) {
-	                    if (b) return true; // already saved
-	                    hsSaveNewLock.add(oaObj.guid);
+	                Thread t = hmSaveNewLock.get(new Integer(oaObj.guid));
+	                if (t == null) {
+	                    if (i > 0) return true; // already saved
+	                    hmSaveNewLock.put(new Integer(oaObj.guid), Thread.currentThread());
 	                    break;
 	                }
-	                b = true;
 	                try {
-	                    hsSaveNewLock.wait();
+	                    if (t == Thread.currentThread()) return true;  // already saving in this thread
+	                    hmSaveNewLock.wait(100);
 	                }
 	                catch (Exception e) {}
 	            }    
@@ -251,9 +252,9 @@ public class OAObjectSaveDelegate {
 	    }
 	    finally {
 	        if (bIsNew) {
-	            synchronized (hsSaveNewLock) {
-                    hsSaveNewLock.remove((Object) (new Integer(oaObj.guid)) ); // needs to use Object instead of primitive
-                    hsSaveNewLock.notifyAll();           
+	            synchronized (hmSaveNewLock) {
+                    hmSaveNewLock.remove((Object) (new Integer(oaObj.guid)) ); // needs to use Object instead of primitive
+                    hmSaveNewLock.notifyAll();           
 	            }
 	        }
 	        //was, before 5/4:

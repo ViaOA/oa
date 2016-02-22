@@ -900,7 +900,7 @@ int qqq=0;//qqqqqqqqqqq
                         }
 
                         int maxSeconds = Math.max(ri.methodInfo == null ? 0 : ri.methodInfo.timeoutSeconds, 0);
-                        if (maxSeconds < 1) maxSeconds = 1;
+                        if (maxSeconds < 2) maxSeconds = 2;
 
                         OARemoteThread t = getRemoteClientThread(ri, false);
                         synchronized (t.Lock) {
@@ -912,7 +912,7 @@ int qqq=0;//qqqqqqqqqqq
                                 StackTraceElement[] stes = t.getStackTrace();
                                 Exception ex = new Exception();
                                 ex.setStackTrace(stes);
-                                LOG.log(Level.WARNING, "timeout waiting for sync message to process, will continue, this is stacktrace for the remoteThread, request="
+                                LOG.log(Level.WARNING, "timeout waiting for sync message to process, will continue, this is stacktrace for the remoteThread="+t.getName()+", request="
                                         + ri.toLogString(), ex);
                             }
                         }

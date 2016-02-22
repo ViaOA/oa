@@ -104,7 +104,7 @@ public class OASyncClientTest extends OAUnitTest {
      
         msDiff = System.currentTimeMillis() - ms;
         System.out.println("msDiff="+msDiff);
-        assertTrue(msDiff < 1750);  // this will be 30+ seconds if using ds.setAssignIdOnCreate(true)
+        assertTrue(msDiff < 3500);  // this will be 30+ seconds if using ds.setAssignIdOnCreate(true)
 
         assertEquals(0, msc.getId());
         mradServer.save();
@@ -172,7 +172,7 @@ public class OASyncClientTest extends OAUnitTest {
         assertNotEquals("xx", site.getName());
     }
 
-    @Test
+   @Test
     public void testC() throws Exception {
         if (serverRoot == null) return;
     
@@ -603,6 +603,8 @@ public class OASyncClientTest extends OAUnitTest {
         System.out.println("sending done");
         
         remoteBroadcast.onClientDone();
+        
+        Thread.sleep(1000);
 
         tearDown();
     }
