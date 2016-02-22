@@ -447,7 +447,9 @@ public abstract class OADataSource implements OADataSourceInterface {
         // if it can be decided to use either insert() or update()
         if (obj == null) return;
         if (obj instanceof OAObject) {
-            if ( ((OAObject)obj).getNew() ) insert(obj);
+            if ( ((OAObject)obj).getNew() ) {
+                insert(obj);
+            }
             else update(obj);
         }
     }

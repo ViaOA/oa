@@ -75,7 +75,7 @@ public class AutonumberDelegate {
 	}
 
 	public static void setNextNumber(OADataSourceJDBC ds, Table table, int nextNumberToUse) {
-        // LOG.finer("table="+table.name+", nextNumberToUse="+nextNumberToUse);
+        LOG.finer("table="+table.name+", nextNumberToUse="+nextNumberToUse);
         Column[] columns = table.getColumns();
         for (int i=0; columns != null && i < columns.length; i++) {
             Column column = columns[i];
@@ -124,7 +124,7 @@ public class AutonumberDelegate {
                     finally {
                         if (statement != null) ds.releaseStatement(statement);
                     }
-                    // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", got max="+max);
+                    LOG.fine("table="+table.name+", column="+pkColumn.columnName+", max="+max);
                     ai = new AtomicInteger(max);
                 	hashNext.put(table.name, ai);
                 }
@@ -165,7 +165,7 @@ public class AutonumberDelegate {
             where = " WHERE "+column+" like '"+ dbmd.guid + "-%'";
         }
 		s = s + from + where;;
-        //LOG.finer("table="+table.name+", column="+dbcolumn.columnName+", query="+s);
+        LOG.fine("table="+table.name+", column="+dbcolumn.columnName+", query="+s);
 		
 		return s;
 	}
