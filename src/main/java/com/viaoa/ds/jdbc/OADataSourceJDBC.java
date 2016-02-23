@@ -152,13 +152,13 @@ public class OADataSourceJDBC extends OADataSource {
     public @Override void insert(OAObject object) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(object);
 //qqqqqqqqqqqqqqqqqqq        
-LOG.fine("object="+object.getClass()+", key="+key+", isNew="+object.isNew());
+LOG.fine("object="+object.getClass().getSimpleName()+", key="+key+", isNew="+object.isNew());
 //        LOG.finer("object="+object.getClass()+", key="+key+", isNew="+object.isNew());
         try {
             InsertDelegate.insert(this, object);
         }
         catch (RuntimeException e) {
-            LOG.warning("Insert ERROR: object="+object.getClass()+", key="+key+", isNew="+object.isNew());
+            LOG.log(Level.WARNING, "OADataSourceJDBC.insert ERROR: object="+object.getClass().getSimpleName()+", key="+key+", isNew="+object.isNew(), e);
             throw e;
         }
     }

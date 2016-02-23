@@ -70,7 +70,7 @@ public class OAObjectSaveDelegate {
                 if (OAObjectSaveDelegate.onSave(oaObj)) break;
                 
                 // try again, object might have been changed in the process
-                String msg = "error saving, class="+oaObj.getClass().getName()+", key="+oaObj.getObjectKey();
+                String msg = "onSave returned false, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", isNew="+oaObj.isNew();
                 if (i == 0) msg += ", will try again now";
                 else msg += ", will try again the next time save is called";
                 LOG.warning(msg);
@@ -197,6 +197,7 @@ public class OAObjectSaveDelegate {
 	protected static boolean onSave(OAObject oaObj) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
 
+LOG.fine(oaObj.getClass().getSimpleName()+", isNew="+oaObj.isNew());        
         // if new, then need to hold a lock
 	    boolean bIsNew = oaObj.isNew();
 	    if (bIsNew) {
@@ -239,7 +240,7 @@ public class OAObjectSaveDelegate {
                     OAObjectDSDelegate.save(oaObj);
                 }
                 catch (Exception e) {
-                    String msg = "error saving, class="+oaObj.getClass().getName()+", key="+oaObj.getObjectKey();
+                    String msg = "error saving, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", isNew="+oaObj.isNew()+", wasNew="+bIsNew;
                     LOG.log(Level.WARNING, msg, e);
                     oaObj.setChanged(true);
                     return false;
