@@ -470,7 +470,9 @@ public class RemoteMultiplexerServer {
      */
     protected void afterInvokeForCtoS(RequestInfo ri) {
         if (ri == null) return;
-        //LOG.fine(ri.toLogString());
+        if (ri.exception != null || ri.exceptionMessage != null) {
+            LOG.log(Level.WARNING, ri.toLogString(), ri.exception);
+        }        
     }
 
     /**
@@ -791,7 +793,9 @@ public class RemoteMultiplexerServer {
      */
     protected void afterInvokeForStoC(RequestInfo ri) {
         if (ri == null) return;
-        //LOG.log(Level.FINE, ri.toLogString(), ri.exception);
+        if (ri.exception != null || ri.exceptionMessage != null) {
+            LOG.log(Level.WARNING, ri.toLogString(), ri.exception);
+        }        
     }
 
     // remove gc'd binding objects

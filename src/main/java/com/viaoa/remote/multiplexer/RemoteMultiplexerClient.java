@@ -368,7 +368,9 @@ public class RemoteMultiplexerClient {
      */
     protected void afterInvokeForCtoS(RequestInfo ri) {
         if (ri == null || !ri.bSent) return;
-        //LOG.fine(ri.toLogString());
+        if (ri.exception != null || ri.exceptionMessage != null) {
+            LOG.log(Level.WARNING, ri.toLogString(), ri.exception);
+        }        
     }
 
     // "dummy" object, that is used when methods are not supported in proxy interface, but are in Object
@@ -1315,7 +1317,9 @@ int qqq=0;//qqqqqqqqqqq
      */
     public void afterInvokForStoC(RequestInfo ri) {
         if (ri == null) return;
-        //LOG.fine(ri.toLogString());
+        if (ri.exception != null || ri.exceptionMessage != null) {
+            LOG.log(Level.WARNING, ri.toLogString(), ri.exception);
+        }        
     }
 
     /**

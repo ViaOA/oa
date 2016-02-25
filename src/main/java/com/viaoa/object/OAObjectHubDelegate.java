@@ -378,7 +378,7 @@ public class OAObjectHubDelegate {
                 }
                 else aiReuseWeakRef.incrementAndGet();
                 if (pos>0 && pos%50==0 && ShowWarnings) {
-                    LOG.warning("object="+oaObj+", weakhubs="+pos);
+                    LOG.fine("object="+oaObj+", weakhubs="+pos);
                 }
             }
         }

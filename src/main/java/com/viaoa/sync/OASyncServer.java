@@ -460,6 +460,14 @@ public class OASyncServer {
 
     protected void afterInvokeRemoteMethod(RequestInfo ri) {
         if (ri == null) return;
+        
+        if (ri.bind == null) return;
+        if (ri.bind.isOASync) {
+            if (ri.exception == null && ri.exceptionMessage == null) {
+                return;
+            }
+        }
+        
         try {
             if (queRemoteRequestLogging != null) {
                 if (queRemoteRequestLogging.offer(ri, 5, TimeUnit.MILLISECONDS)) {
@@ -485,7 +493,6 @@ public class OASyncServer {
      * Thread that will get requests from the queue, and write to request log file.
      */
     void startRequestLoggerThread() throws Exception {
-        if (true || false) return;        
         LOG.fine("starting log thread");
         if (threadStatsLogger != null) return;
 
@@ -493,7 +500,7 @@ public class OASyncServer {
 
         getRemoteRequestLogPrintWriter(); // initialize log remote log file
 
-        String tname = "SyncServer_logRequests";
+        String tname = "OASyncServer_logRequests";
         LOG.config("starting thread that writes logs, threadName=" + tname);
         threadStatsLogger = new Thread(new Runnable() {
             @Override
@@ -568,11 +575,11 @@ public class OASyncServer {
     }
 
     protected String getLogFileName() {
-        return "logs/remoteRequests";
+        return "logs/remote";
     }
     
     public void start() throws Exception {
-        // startRequestLoggerThread();
+        startRequestLoggerThread();
         getServerInfo();
         getMultiplexerServer().start();
         getRemoteMultiplexerServer().start();
