@@ -39,6 +39,7 @@ import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientCallbackInterface;
 import com.viaoa.sync.remote.RemoteSessionInterface;
@@ -693,7 +694,16 @@ public class OASyncClient {
                         LOG.warning("RemoteThread liveCount="+liveCount+", totalCreated="+totalCount+"\n"+s);
                     }
                 }
-            }                
+            }
+            @Override
+            protected void afterInvokeForCtoS(RequestInfo ri) {
+                OASyncClient.this.afterInvokeRemoteMethod(ri);
+            }
+            @Override
+            public void afterInvokForStoC(RequestInfo ri) {
+                OASyncClient.this.afterInvokeRemoteMethod(ri);
+            }
+            
         };
         return remoteMultiplexerClient;
     }
@@ -701,6 +711,22 @@ public class OASyncClient {
         return getMultiplexerClient().getConnectionId();
     }
     
+    protected void afterInvokeRemoteMethod(RequestInfo ri) {
+        if (ri == null) return;
+        
+        // dont log oasync msgs
+        if (ri.bind == null) return;
+        if (ri.bind.isOASync) {
+            if (ri.exception == null && ri.exceptionMessage == null) {
+                return;
+            }
+        }
+        logRequest(ri);
+    }
+    protected void logRequest(RequestInfo ri) {
+        LOG.fine(ri.toLogString());
+    }
+
 
     /**
      * called when object is removed from object cache (called by oaObject.finalize)
@@ -708,15 +734,16 @@ public class OASyncClient {
      */
     public void objectRemoved(int guid) {
         try {
-            if (guid > 0) {
-                if (bUpdateSyncDelegate) queRemoveGuid.add(guid);
+            if (guid > 0 && bUpdateSyncDelegate) {
+                LinkedBlockingQueue<Integer> q = queRemoveGuid;
+                if (q != null) q.add(guid);
             }
         }
         catch (Exception e) {
         }
     }
 
-    private LinkedBlockingQueue<Integer> queRemoveGuid;
+    private volatile LinkedBlockingQueue<Integer> queRemoveGuid;
     private Thread threadRemoveGuid;
     private void startQueueGuidThread() {
         if (queRemoveGuid != null) return;
@@ -724,15 +751,15 @@ public class OASyncClient {
         threadRemoveGuid = new Thread(new Runnable() {
             long msLastError;
             int cntError;
-            int[] guids = new int[50];
+            int[] guids = new int[150];
             @Override
             public void run() {
                 RemoteSessionInterface rsi = null;
                 for (int guidPos = 0;;) {
                     try {
                         int guid = queRemoveGuid.take(); 
-                        guids[guidPos++ % 50] = guid;
-                        if (guidPos % 50 == 0) {
+                        guids[guidPos++ % 150] = guid;
+                        if (guidPos % 150 == 0) {
                             if (rsi == null) {
                                 rsi = OASyncClient.this.getRemoteSession();
                             }

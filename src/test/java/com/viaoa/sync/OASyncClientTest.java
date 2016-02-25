@@ -32,6 +32,7 @@ import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
+import com.viaoa.sync.remote.RemoteTsamInterface;
 import com.viaoa.util.OALogUtil;
 import com.viaoa.util.OAString;
 import com.viaoa.util.OATime;
@@ -54,6 +55,7 @@ public class OASyncClientTest extends OAUnitTest {
     private final int maxThreads = 7;
     private final int testSeconds = 30;
 
+    private RemoteTsamInterface remoteTsam;
     private RemoteAppInterface remoteApp;
     private RemoteBroadcastInterface remoteBroadcast, remoteBroadcastHold;
     private ArrayBlockingQueue<String> queErrors = new ArrayBlockingQueue<String>(100);
@@ -69,8 +71,32 @@ public class OASyncClientTest extends OAUnitTest {
     private AtomicInteger aiOnClientDone = new AtomicInteger();
     private AtomicInteger aiSendStats = new AtomicInteger();
 
+    @Test (timeout=60000)
+    public void tsamTest() {
+        if (serverRoot == null) return;
+        
+        Hub<MRADClient> hub = serverRoot.getDefaultSilo().getMRADServer().getMRADClients();
+        
+        //hub = new Hub<MRADClient>(MRADClient.class);
+        //hub.add(serverRoot.getDefaultSilo().getMRADServer().getMRADClients().getAt(0));
+
+        AdminUser user = serverRoot.getAdminUsers().getAt(0);
+        Command command = serverRoot.getCommands().getAt(0);
+        
+//qqqqq        
+        for (int i=0; i<25; i++) {
+            MRADServerCommand msc = remoteTsam.createMRADServerCommand(user, hub, command);
+            assertNotNull(msc);
+            Hub<MRADClientCommand>  h = msc.getMRADClientCommands();
+            serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().add(msc);
+            serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().setAO(msc);
+            assertTrue(remoteTsam.runCommand(msc));
+            System.out.println(i+") tsamTest");
+        }
+    }
+
     
-    @Test
+  // @Test
     public void testA() throws Exception {
         if (serverRoot == null) return;
 
@@ -118,7 +144,7 @@ public class OASyncClientTest extends OAUnitTest {
      * Run basic tests with oasyncservertest
      * @throws Exception
      */
-    @Test
+  // @Test
     public void testB() throws Exception {
         if (serverRoot == null) return;
     
@@ -172,7 +198,7 @@ public class OASyncClientTest extends OAUnitTest {
         assertNotEquals("xx", site.getName());
     }
 
-   @Test
+ // @Test
     public void testC() throws Exception {
         if (serverRoot == null) return;
     
@@ -223,7 +249,7 @@ public class OASyncClientTest extends OAUnitTest {
     /**
      * This will run with other instances that are running in their own jvm
      */
-    @Test
+  // @Test
     public void testForMain() throws Exception {
         if (serverRoot == null) return;
 
@@ -419,8 +445,6 @@ public class OASyncClientTest extends OAUnitTest {
         remoteBroadcast.respondStats(s);
     }
     
-    
-    
     //@Test
     public void objectLinkMatchTest() {
         if (serverRoot == null) return;
@@ -464,14 +488,24 @@ public class OASyncClientTest extends OAUnitTest {
                 bStopCalled = true;
                 super.onStopCalled(title, msg);
             }
-            
+            int cnt=0;
+            @Override
+            protected void afterInvokeRemoteMethod(RequestInfo ri) {
+                super.afterInvokeRemoteMethod(ri);
+                // System.out.println((++cnt)+") "+ri.toLogString());
+            }
+            @Override
+            protected void logRequest(RequestInfo ri) {
+                System.out.println((++cnt)+") "+ri.toLogString());
+            }
         };
-        
         
         // **NOTE** need to make sure that ServerTest is running in another jvm
         try {
             syncClient.start();
-
+            
+            remoteTsam = (RemoteTsamInterface) syncClient.lookup(RemoteTsamInterface.BindName);
+            
             remoteApp = (RemoteAppInterface) syncClient.lookup(RemoteAppInterface.BindName);
             remoteBroadcastHold = new RemoteBroadcastInterface() {
 

@@ -376,11 +376,11 @@ public class OASyncServer {
             remoteMultiplexerServer = new RemoteMultiplexerServer(getMultiplexerServer()) {
                 @Override
                 protected void afterInvokeForCtoS(RequestInfo ri) {
-                    // OASyncServer.this.afterInvokeRemoteMethod(ri);
+                    OASyncServer.this.afterInvokeRemoteMethod(ri);
                 }
                 @Override
                 protected void afterInvokeForStoC(RequestInfo ri) {
-                    // no-op
+                    OASyncServer.this.afterInvokeRemoteMethod(ri);
                 }
                 
                 @Override
@@ -461,6 +461,7 @@ public class OASyncServer {
     protected void afterInvokeRemoteMethod(RequestInfo ri) {
         if (ri == null) return;
         
+        // dont log oasync msgs
         if (ri.bind == null) return;
         if (ri.bind.isOASync) {
             if (ri.exception == null && ri.exceptionMessage == null) {
@@ -478,7 +479,7 @@ public class OASyncServer {
         catch (Exception e) {
             LOG.log(Level.WARNING, "error adding remote request to log queue", e);
         }
-        LOG.fine("RemoteLog data: " + ri.toLogString());
+        // LOG.fine("RemoteLog data: " + ri.toLogString());
     }
 
     
@@ -493,12 +494,15 @@ public class OASyncServer {
      * Thread that will get requests from the queue, and write to request log file.
      */
     void startRequestLoggerThread() throws Exception {
-        LOG.fine("starting log thread");
+        LOG.fine("starting remote method log thread");
         if (threadStatsLogger != null) return;
 
+        if (getRemoteRequestLogPrintWriter() == null) {
+            LOG.fine("remote log file name is null, will not log remote messages");
+            return;
+        }
+        
         queRemoteRequestLogging = new ArrayBlockingQueue<RequestInfo>(250);
-
-        getRemoteRequestLogPrintWriter(); // initialize log remote log file
 
         String tname = "OASyncServer_logRequests";
         LOG.config("starting thread that writes logs, threadName=" + tname);
@@ -533,8 +537,8 @@ public class OASyncServer {
         }
     }
 
-    protected void logRequest(RequestInfo gsRequest) throws Exception {
-        if (gsRequest == null) return;
+    protected void logRequest(RequestInfo ri) throws Exception {
+        if (ri == null) return;
 
         PrintWriter pw = null;
         try {
@@ -544,11 +548,11 @@ public class OASyncServer {
             pw = null;
         }
         if (pw != null) {
-            pw.println(gsRequest.toLogString());
+            pw.println(ri.toLogString());
             pw.flush();
         }
         else {
-            System.out.println("Remote RequestLog data: " + gsRequest.toLogString());
+            System.out.println("Remote RequestLog data: " + ri.toLogString());
         }
     }    
 
@@ -566,6 +570,7 @@ public class OASyncServer {
         }
         String fileName = getLogFileName();
         LOG.config("Remote log file is " + fileName);
+        if (fileName == null) return null;
         FileOutputStream fout = new FileOutputStream(fileName, true);
         BufferedOutputStream bout = new BufferedOutputStream(fout);
         pwRemoteRequestLogger = new PrintWriter(bout);
@@ -575,7 +580,7 @@ public class OASyncServer {
     }
 
     protected String getLogFileName() {
-        return "logs/remote";
+        return null;
     }
     
     public void start() throws Exception {

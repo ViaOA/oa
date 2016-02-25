@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.util.OADateTime;
 
 /**
  * This is used to track and capture information for each sync request that is being processed.
@@ -164,14 +165,24 @@ public class RequestInfo {
             if (args != null && args.length > i) {
                 Object obj = args[i];
                 if (obj == null) s = "";
+                else if (obj instanceof Class) {
+                    s = ((Class) obj).getSimpleName();
+                }
+                else if (obj instanceof String) {
+                    s = (String) obj;
+                    if (s.length() > 30) s = s.substring(0,28)+"..";
+                }
+                else if (obj instanceof Number) {
+                    s = obj.toString();
+                }
+                else if (obj instanceof Boolean) {
+                    s = ((Boolean)obj).toString();
+                }
+                else if (obj instanceof OADateTime) {
+                    s = obj.toString();
+                }
                 else {
-                    if (obj instanceof Class) {
-                        s = ((Class) obj).getSimpleName();
-                    }
-                    else {
-                        s = obj.toString();
-                        if (s.length() > 30) s = s.substring(0,28)+"..";
-                    }
+                    s = obj.getClass().getSimpleName();
                 }
             }
             else s = "";

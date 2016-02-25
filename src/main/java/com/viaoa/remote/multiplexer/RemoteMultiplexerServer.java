@@ -1686,7 +1686,7 @@ public class RemoteMultiplexerServer {
 
                 RequestInfo[] ris = null;
                 try {
-                    ris = cque.getMessages(connectionId, qpos, 20, 2000);
+                    ris = cque.getMessages(connectionId, qpos, 100, 2000);
                 }
                 catch (Exception e) {
                     LOG.log(Level.WARNING, "Message queue overrun with msg CircularQueue", e);

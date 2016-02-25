@@ -29,6 +29,7 @@ import test.theice.tsam.util.DataGenerator;
 
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.ds.objectcache.OADataSourceObjectCache;
+import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAFinder;
@@ -36,6 +37,7 @@ import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
 import com.viaoa.sync.remote.RemoteTestInterface;
+import com.viaoa.sync.remote.RemoteTsamInterface;
 import com.viaoa.util.*;
 
 /**
@@ -182,6 +184,33 @@ public class OASyncServerTest {
         }; 
         syncServer.createLookup(RemoteTestInterface.BindName, remoteTest, RemoteTestInterface.class);
 
+
+        // TSAM test
+        RemoteTsamInterface remoteTsam = new RemoteTsamInterface() {
+            @Override
+            public MRADServerCommand createMRADServerCommand(AdminUser user, Hub<MRADClient> hub, Command command) {
+                MRADServerCommand msc = new MRADServerCommand();
+                msc.setAdminUser(user);
+                msc.setCommand(command);
+                
+                if (hub != null) {
+                    for (MRADClient mcx : hub) {
+                        MRADClientCommand ccmd = new MRADClientCommand();
+                        ccmd.setMRADClient(mcx);
+                        msc.getMRADClientCommands().add(ccmd);
+                    }
+                }
+                return msc;
+            }
+            @Override
+            public boolean runCommand(MRADServerCommand cmd) {
+                return true;
+            }
+        }; 
+        syncServer.createLookup(RemoteTsamInterface.BindName, remoteTsam, RemoteTsamInterface.class, OASyncServer.SyncQueueName, 0);
+        
+        
+        
         remoteBroadcast = new RemoteBroadcastInterface() {
             @Override
             public void startTest() {
