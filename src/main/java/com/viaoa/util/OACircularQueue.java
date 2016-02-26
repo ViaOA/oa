@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  * Note: this is made abstract to be able to get the Generic class that is used.
  */
 public abstract class OACircularQueue<TYPE> {
-    private static Logger LOG = Logger.getLogger(OACircularQueue.class.getName());
+    private static final Logger LOG = Logger.getLogger(OACircularQueue.class.getName());
     
     private volatile int queueSize;
     private final Object LOCKQueue = new Object();
@@ -86,7 +86,7 @@ public abstract class OACircularQueue<TYPE> {
             }
             c = c.getSuperclass();
         }
-        LOG.fine("classType=" + classType);
+        OACircularQueue.LOG.fine("classType=" + classType);
         if (classType == null) {
             throw new RuntimeException("class must define <TYPE>, or use construture that accepts 'Class clazz'");
         }
@@ -253,7 +253,7 @@ public abstract class OACircularQueue<TYPE> {
                 long ts = session.msLastRead;
                 if (ts + 1000 < tsNow) {
                     if (tsLastOneSecondLog + 1000 < tsNow) {
-                        LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
+                        OACircularQueue.LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
                                 ", currentHeadPos="+queueHeadPosition+", session="+session.id+
                                 ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms ago");
                         tsLastOneSecondLog = tsNow;
@@ -270,7 +270,7 @@ public abstract class OACircularQueue<TYPE> {
             if (slowSessionFound != null) {
                 ++cntQueueWait;
                 if (tsNow > tsLastAvoidOverrunLog + 1000) {
-                    LOG.fine("cqName="+name+", avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+                    OACircularQueue.LOG.fine("cqName="+name+", avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                         ", totalSessions="+hmSession.size() +
                         ", slowSession="+slowSessionFound.id +
                         ", qpos="+slowSessionFound.queuePos +
@@ -287,7 +287,7 @@ public abstract class OACircularQueue<TYPE> {
             if (bNeedsThrottle) {
                 ++cntQueueThrottle;
                 if (tsNow > tsLastThrottleLog + 1000) {
-                    LOG.fine("cqName="+name+", queue throttle, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+                    OACircularQueue.LOG.fine("cqName="+name+", queue throttle, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                         ", totalSessions="+hmSession.size() +
                         ", throttleAmount="+throttleAmount +
                         ", totalWaits="+cntQueueWait +
@@ -301,7 +301,7 @@ public abstract class OACircularQueue<TYPE> {
         }
 
         if (tsNow > tsLastAddLog + 5000) {
-            LOG.fine("cqName="+name+", queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+            OACircularQueue.LOG.fine("cqName="+name+", queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                 ", totalSessions="+hmSession.size() +
                 ", throttleAmount="+throttleAmount +
                 ", totalWaits="+cntQueueWait +

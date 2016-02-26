@@ -77,14 +77,14 @@ public class OASyncClientTest extends OAUnitTest {
         
         Hub<MRADClient> hub = serverRoot.getDefaultSilo().getMRADServer().getMRADClients();
         
-        //hub = new Hub<MRADClient>(MRADClient.class);
-        //hub.add(serverRoot.getDefaultSilo().getMRADServer().getMRADClients().getAt(0));
+        hub = new Hub<MRADClient>(MRADClient.class);
+        hub.add(serverRoot.getDefaultSilo().getMRADServer().getMRADClients().getAt(0));
 
         AdminUser user = serverRoot.getAdminUsers().getAt(0);
         Command command = serverRoot.getCommands().getAt(0);
         
 //qqqqq        
-        for (int i=0; i<25; i++) {
+        for (int i=0; i<59000; i++) {
             MRADServerCommand msc = remoteTsam.createMRADServerCommand(user, hub, command);
             assertNotNull(msc);
             Hub<MRADClientCommand>  h = msc.getMRADClientCommands();
@@ -655,7 +655,10 @@ public class OASyncClientTest extends OAUnitTest {
         test.testA();
         */
         
-        test.runLocalClientTest();
+//        test.runLocalClientTest();
+test.setup();
+test.tsamTest();        
+        
         
         System.out.println("DONE running test, exiting program");
     }

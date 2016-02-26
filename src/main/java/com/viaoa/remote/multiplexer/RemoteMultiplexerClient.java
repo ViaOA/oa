@@ -802,6 +802,12 @@ public class RemoteMultiplexerClient {
         synchronized (alRemoteClientThread) {
             if (remoteThread.requestInfo != null) return false;            
             if (alRemoteClientThread.size() < 4) return false;
+
+            int cntUsed = 0;
+            for (OARemoteThread rt : alRemoteClientThread) {
+                if (rt.requestInfo != null) cntUsed++;
+            }
+            if (cntUsed + 3 > x) return false;
             
             alRemoteClientThread.remove(remoteThread);
             remoteThread.stopCalled = true;
@@ -881,7 +887,7 @@ int qqq=0;//qqqqqqqqqqq
                 for (;;) {
                     try {
                         RequestInfo ri = queSyncRequestInfo.take(); // blocks
-
+System.out.println("-->"+queSyncRequestInfo.size());
                         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {                        
                             if (ri.bind != null && ri.bind.isOASync) {
                                 if (ri.connectionId == multiplexerClient.getConnectionId()) {
@@ -908,7 +914,8 @@ int qqq=0;//qqqqqqqqqqq
                         synchronized (t.Lock) {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
                             for (int i=0 ; t.requestInfo == ri && !ri.methodInvoked && i < (maxSeconds*10); i++) {
-                                t.Lock.wait(100);
+//qqqqqqqqqqqqqqqqqqqqqqqqqq                                
+                                t.Lock.wait(10000);//qqqqqqqqqqqqqqqqqqqqqqqqqqqqq
                             }
                             if (t.requestInfo == ri && !ri.methodInvoked) {
                                 StackTraceElement[] stes = t.getStackTrace();

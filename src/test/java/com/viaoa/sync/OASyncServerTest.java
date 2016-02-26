@@ -261,7 +261,9 @@ public class OASyncServerTest {
 
     public static void main(String[] args) throws Exception {
         MultiplexerServer.DEBUG = true;
-        OALogUtil.consoleOnly(Level.FINE, "com.viaoa.util.OACircularQueue");
+        OALogUtil.consoleOnly(Level.FINE, OACircularQueue.class.getName());//"com.viaoa.util.OACircularQueue");
+        
+        Logger logx = Logger.getLogger(OACircularQueue.class.getName());
         
         OASyncServerTest test = new OASyncServerTest();
         
