@@ -815,7 +815,6 @@ public class RemoteMultiplexerClient {
         return true;
     }
 
-int qqq=0;//qqqqqqqqqqq    
     protected void processStoCSocket(final VirtualSocket socket, int threadId) throws Exception {
         if (socket.isClosed()) return;
         RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
@@ -887,7 +886,6 @@ int qqq=0;//qqqqqqqqqqq
                 for (;;) {
                     try {
                         RequestInfo ri = queSyncRequestInfo.take(); // blocks
-System.out.println("-->"+queSyncRequestInfo.size());
                         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {                        
                             if (ri.bind != null && ri.bind.isOASync) {
                                 if (ri.connectionId == multiplexerClient.getConnectionId()) {
@@ -914,8 +912,7 @@ System.out.println("-->"+queSyncRequestInfo.size());
                         synchronized (t.Lock) {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
                             for (int i=0 ; t.requestInfo == ri && !ri.methodInvoked && i < (maxSeconds*10); i++) {
-//qqqqqqqqqqqqqqqqqqqqqqqqqq                                
-                                t.Lock.wait(10000);//qqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+                                t.Lock.wait(100);
                             }
                             if (t.requestInfo == ri && !ri.methodInvoked) {
                                 StackTraceElement[] stes = t.getStackTrace();
@@ -1040,7 +1037,7 @@ System.out.println("-->"+queSyncRequestInfo.size());
                 //     instead, notify it when it is received back from the server.
                 if (rix.bind.isOASync && !rix.isRemoteThread) {
                     ri.bind = rix.bind;
-                    queSyncRequestInfo.put(ri);  // sync que will notify the original thread
+                    putQueSyncRequestInfo(ri);  // sync que will notify the original thread
                 }
                 else {
                     hmAsyncRequestInfo.remove(ri.messageId);
@@ -1066,7 +1063,7 @@ System.out.println("-->"+queSyncRequestInfo.size());
             else ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
             if (ri.bind.isOASync) {
-                queSyncRequestInfo.put(ri);
+                putQueSyncRequestInfo(ri);
             }
             else {
                 queRequestInfo.put(ri);
@@ -1083,7 +1080,7 @@ System.out.println("-->"+queSyncRequestInfo.size());
             ri.methodInfo = ri.bind.getMethodInfo(ri.methodNameSignature);
 
             if (ri.bind.isOASync) {
-                queSyncRequestInfo.put(ri);
+                putQueSyncRequestInfo(ri);
             }
             else {
                 queRequestInfo.put(ri);
@@ -1137,6 +1134,39 @@ System.out.println("-->"+queSyncRequestInfo.size());
         }
     }
 
+    private void putQueSyncRequestInfo(final RequestInfo ri) throws Exception {
+        // add throttle, based on number of current remoteThreads, etc        
+        queSyncRequestInfo.put(ri);  // sync que will notify the original thread
+        
+        int x = queSyncRequestInfo.size();
+        if (x < 100) return;
+        
+        int max;
+        if (hmAsyncRequestInfo.size() > 0) {  // waiting for something
+            if (alRemoteClientThread.size() > 10) {
+                max = 2500;
+            }
+            else max = 500;
+        }
+        else {
+            // not waiting, just processing
+            max = 350;
+        }
+        if (x < max) return;
+        
+//System.out.println("**THROTTLE** begin  syncQue -->"+queSyncRequestInfo.size()+", remoteThread.cnt="+alRemoteClientThread.size()+"  *********************");
+        for (int i=0; i<50; i++) {  // cant wait more then a second, since circQue checks msLastRead
+            Thread.sleep(100);
+            x = queSyncRequestInfo.size();
+            if (x < (max/10)) break;
+            if (hmAsyncRequestInfo.size() > 0) {
+                if (alRemoteClientThread.size() > 10) {
+                    if (i > 2) break;
+                }
+            }
+        }
+    }
+    
     private void _processMessageForStoC(RequestInfo ri) throws Exception {
 
         if (ri.bind == null) {

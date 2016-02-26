@@ -192,7 +192,6 @@ public class OASyncServerTest {
                 MRADServerCommand msc = new MRADServerCommand();
                 msc.setAdminUser(user);
                 msc.setCommand(command);
-                
                 if (hub != null) {
                     for (MRADClient mcx : hub) {
                         MRADClientCommand ccmd = new MRADClientCommand();

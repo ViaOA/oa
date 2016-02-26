@@ -72,7 +72,7 @@ public class OASyncClientTest extends OAUnitTest {
     private AtomicInteger aiSendStats = new AtomicInteger();
 
     @Test (timeout=60000)
-    public void tsamTest() {
+    public void tsamTest() throws Exception {
         if (serverRoot == null) return;
         
         Hub<MRADClient> hub = serverRoot.getDefaultSilo().getMRADServer().getMRADClients();
@@ -87,11 +87,14 @@ public class OASyncClientTest extends OAUnitTest {
         for (int i=0; i<59000; i++) {
             MRADServerCommand msc = remoteTsam.createMRADServerCommand(user, hub, command);
             assertNotNull(msc);
+            
             Hub<MRADClientCommand>  h = msc.getMRADClientCommands();
             serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().add(msc);
             serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().setAO(msc);
             assertTrue(remoteTsam.runCommand(msc));
+            
             System.out.println(i+") tsamTest");
+//if (i % 25 == 0) Thread.sleep(50);            
         }
     }
 
@@ -658,7 +661,6 @@ public class OASyncClientTest extends OAUnitTest {
 //        test.runLocalClientTest();
 test.setup();
 test.tsamTest();        
-        
         
         System.out.println("DONE running test, exiting program");
     }

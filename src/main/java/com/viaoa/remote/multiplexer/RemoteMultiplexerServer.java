@@ -454,7 +454,8 @@ public class RemoteMultiplexerServer {
         
         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-            int x = Math.min(1000, cq.getSize() / 2);
+//qqqqqqqqqqqqqqqqqqqq            
+            int x = Math.min(250, cq.getSize() / 2);
             cq.addMessageToQueue(ri, x, session.connectionId);
             return false;
         }
@@ -1030,25 +1031,30 @@ public class RemoteMultiplexerServer {
         if (ri.response == null) ri.response = OAReflect.getEmptyPrimitive(ri.method.getReturnType());
 
 
-        boolean b = true;
         Thread t = Thread.currentThread();
+        RequestInfo rix;
         if (ri.isRemoteThread) {
             OARemoteThread rt = (OARemoteThread) t;
-            RequestInfo rix = rt.requestInfo;
-            if (rix.bind.usesQueue) {
-                b = false;
-            }
+            rix = rt.requestInfo;
         }
+        else rix = null;
 
         // put "ri" in circular queue for clients to pick up.       
         OACircularQueue<RequestInfo> cque = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
         
         int x;
-        if (b) x = Math.min(1000, cque.getSize() / 2);
-        else x = 0;
-        cque.addMessageToQueue(ri, x, 0);  // this will throttle
+        if (rix == null) {  
+            // command running on the server
+            x = Math.min(350, cque.getSize() / 2);
+            cque.addMessageToQueue(ri, x, 0);  // this will throttle
+        }
+        else {
+            // command running because of a client request (rix)            
+            x = Math.min(175, cque.getSize() / 2);
+            cque.addMessageToQueue(ri, x, rix.connectionId);  // this will throttle
+        }
         
-        if (b) {
+        if (rix == null) {
             waitForProcessedByServer(ri);
         }
         
@@ -1381,7 +1387,10 @@ public class RemoteMultiplexerServer {
                                 bReset = false;
                             }
                             if (requestInfo == null) {
-                                Lock.wait(1000);
+                                if (alRemoteClientThread.size() > 15) {
+                                    Lock.wait(1000);
+                                }
+                                else Lock.wait(10000);
                                 if (requestInfo == null) continue;
                             }
                         }
@@ -1431,7 +1440,7 @@ public class RemoteMultiplexerServer {
     }
 
     private boolean shouldClose(final OARemoteThread remoteThread) {
-        int x = alRemoteClientThread.size();
+        final int x = alRemoteClientThread.size();
         if (x < 4) return false;
         int max;
         if (x > 100) max = 100;
@@ -1443,6 +1452,13 @@ public class RemoteMultiplexerServer {
         synchronized (alRemoteClientThread) {
             if (remoteThread.requestInfo != null) return false;            
             if (alRemoteClientThread.size() < 4) return false;
+            
+            int cntUsed = 0;
+            for (OARemoteThread rt : alRemoteClientThread) {
+                if (rt.requestInfo != null) cntUsed++;
+            }
+            if (cntUsed + 3 > x) return false;
+            
             alRemoteClientThread.remove(remoteThread);
             remoteThread.stopCalled = true;
         }

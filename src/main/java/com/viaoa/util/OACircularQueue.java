@@ -186,16 +186,26 @@ public abstract class OACircularQueue<TYPE> {
     public int addMessageToQueue(final TYPE msg, final int throttleAmount) {
         return addMessageToQueue(msg, throttleAmount, -1);
     }
+    
     public int addMessageToQueue(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore) {
-        for (int i=0; ;i++) {
-            int x;
-            if (throttleAmount > 0) x = 10;
-            else x = 300;  // 7.5 seconds max, before letting it overrun
+        boolean bAdditionalThrottle = false;
+        boolean bWaited = false;
+        int x;
+        for (int i=0 ; ;i++) {
+            if (!bWaited && throttleAmount > 0) x = 10;
+            else {
+                x = 300;  // 7.5 seconds max, before letting it overrun
+                bWaited = false;
+            }
+            
+            if (i >= x/2) bAdditionalThrottle = true;
             synchronized(LOCKQueue) {
                 x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<x));
             }
-            if (x >= 0) return x;
+            if (x >= 0) break;
+
             x = Math.abs(x);
+            if (x == MS_Wait) bWaited = true; 
             try {
                 Thread.sleep(x);
             }
@@ -203,6 +213,44 @@ public abstract class OACircularQueue<TYPE> {
                 System.out.println("circque error:"+e);
             }
         }
+        
+        if (bAdditionalThrottle && throttleSessionToIgnore >= 0) {
+            afterThrottle(msg, throttleSessionToIgnore);
+        }
+        return x;
+    }
+    
+    
+    private volatile long msLastAfterThrottle;
+    private volatile int lastThrottleSession;
+    private volatile int lastThrottleSessionCount;
+    private volatile int cntAfterThrottle;
+    
+    /**
+     * called after an addMessage had to be throttled.  This will apply an additional throttle.
+     */
+    protected void afterThrottle(final TYPE msg, final int throttleSessionToIgnore) {
+        long msNow = System.currentTimeMillis();
+        if (throttleSessionToIgnore == lastThrottleSession && (msLastAfterThrottle + 1000 > msNow)) {
+            try {
+                int x = 10;
+                if (lastThrottleSessionCount > 0) {
+                    if (lastThrottleSessionCount > 50) x = 500;
+                    else x *= lastThrottleSessionCount;
+                }
+                cntAfterThrottle++;
+                Thread.sleep(x);
+                msNow += x;
+            }
+            catch (Exception e) {
+                System.out.println("circque error:"+e);
+            }
+        }
+        else lastThrottleSessionCount = 0;
+        
+        msLastAfterThrottle = msNow;
+        lastThrottleSession = throttleSessionToIgnore;
+        lastThrottleSessionCount++;
     }
     
     private volatile int cntQueueWait; // number of times a addMessage has called wait.    
@@ -275,7 +323,8 @@ public abstract class OACircularQueue<TYPE> {
                         ", slowSession="+slowSessionFound.id +
                         ", qpos="+slowSessionFound.queuePos +
                         ", totalWaits="+cntQueueWait +
-                        ", totalThrottles="+cntQueueThrottle
+                        ", totalThrottles="+cntQueueThrottle +
+                        ", afterThrottles="+cntAfterThrottle
                         );
                     tsLastAvoidOverrunLog = tsNow;
                     tsLastAddLog = tsNow;
@@ -291,7 +340,8 @@ public abstract class OACircularQueue<TYPE> {
                         ", totalSessions="+hmSession.size() +
                         ", throttleAmount="+throttleAmount +
                         ", totalWaits="+cntQueueWait +
-                        ", totalThrottles="+cntQueueThrottle
+                        ", totalThrottles="+cntQueueThrottle +
+                        ", afterThrottles="+cntAfterThrottle
                         );
                     tsLastThrottleLog = tsNow;
                     tsLastAddLog = tsNow;
@@ -305,7 +355,8 @@ public abstract class OACircularQueue<TYPE> {
                 ", totalSessions="+hmSession.size() +
                 ", throttleAmount="+throttleAmount +
                 ", totalWaits="+cntQueueWait +
-                ", totalThrottles="+cntQueueThrottle
+                ", totalThrottles="+cntQueueThrottle +
+                ", afterThrottles="+cntAfterThrottle
                 );
             tsLastAddLog = tsNow;
         }
