@@ -71,7 +71,7 @@ public class OASyncClientTest extends OAUnitTest {
     private AtomicInteger aiOnClientDone = new AtomicInteger();
     private AtomicInteger aiSendStats = new AtomicInteger();
 
-    @Test (timeout=60000)
+    @Test (timeout=5000)
     public void tsamTest() throws Exception {
         if (serverRoot == null) return;
         
@@ -83,8 +83,7 @@ public class OASyncClientTest extends OAUnitTest {
         AdminUser user = serverRoot.getAdminUsers().getAt(0);
         Command command = serverRoot.getCommands().getAt(0);
         
-//qqqqq        
-        for (int i=0; i<59000; i++) {
+        for (int i=0; i<500; i++) {
             MRADServerCommand msc = remoteTsam.createMRADServerCommand(user, hub, command);
             assertNotNull(msc);
             
@@ -94,12 +93,12 @@ public class OASyncClientTest extends OAUnitTest {
             assertTrue(remoteTsam.runCommand(msc));
             
             System.out.println(i+") tsamTest");
-//if (i % 25 == 0) Thread.sleep(50);            
+            // if (i % 25 == 0) Thread.sleep(50);            
         }
     }
 
     
-  // @Test
+    @Test
     public void testA() throws Exception {
         if (serverRoot == null) return;
 
@@ -147,7 +146,7 @@ public class OASyncClientTest extends OAUnitTest {
      * Run basic tests with oasyncservertest
      * @throws Exception
      */
-  // @Test
+    @Test
     public void testB() throws Exception {
         if (serverRoot == null) return;
     
@@ -201,7 +200,7 @@ public class OASyncClientTest extends OAUnitTest {
         assertNotEquals("xx", site.getName());
     }
 
- // @Test
+    @Test
     public void testC() throws Exception {
         if (serverRoot == null) return;
     
@@ -252,7 +251,7 @@ public class OASyncClientTest extends OAUnitTest {
     /**
      * This will run with other instances that are running in their own jvm
      */
-  // @Test
+    @Test
     public void testForMain() throws Exception {
         if (serverRoot == null) return;
 
@@ -658,9 +657,8 @@ public class OASyncClientTest extends OAUnitTest {
         test.testA();
         */
         
-//        test.runLocalClientTest();
-test.setup();
-test.tsamTest();        
+        test.runLocalClientTest();
+        //test.tsamTest();        
         
         System.out.println("DONE running test, exiting program");
     }
