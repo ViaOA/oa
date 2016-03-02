@@ -130,7 +130,7 @@ public class OASyncClient {
     
     public int cntGetDetail;
     /**
-     * This works directly with ClientGetDetail, by using a customized objectSerializer
+     * This works on the server using ClientGetDetail, by using a customized objectSerializer
      * @param masterObject
      * @param propertyName
      * @return
