@@ -36,7 +36,7 @@ public abstract class RemoteDataSource {
     private ConcurrentHashMap<String, Iterator> hashIterator = new ConcurrentHashMap<String, Iterator>(); // used to store DB
     
     public Object datasource(int command, Object[] objects) {
-        LOG.finer("command="+command);
+        //LOG.finer("command="+command);
         Object obj = null;
         Class clazz, masterClass;
         OADataSource ds;
