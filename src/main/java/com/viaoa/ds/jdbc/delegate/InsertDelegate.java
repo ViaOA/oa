@@ -78,7 +78,7 @@ public class InsertDelegate {
         }
         catch (Exception e) {
             if (objs == null || objs.length == 0) objs = new String[] {"no sql generated"};
-            LOG.log(Level.WARNING, "insert(), sql="+objs[0], e);
+            //LOG.log(Level.WARNING, "insert(), sql="+objs[0], e);
         	throw new RuntimeException("Error on insert, sql="+objs[0], e);
         }
     }
@@ -219,6 +219,9 @@ public class InsertDelegate {
                    
         DBLogDelegate.logInsert(sqlInsert, params);
         */
+//qqqqqqqqqqqqqqq        
+DBLogDelegate.logInsert(sqlInsert, params);
+
         Statement statement = null;
         PreparedStatement preparedStatement = null;
         try {

@@ -248,7 +248,7 @@ public class UpdateDelegate {
     private static void performUpdate(OADataSourceJDBC ds, String sqlUpdate, Object[] sqlParams) throws Exception {
         Statement statement = null;
 
-        DBLogDelegate.logUpdate(sqlUpdate, sqlParams);
+        // DBLogDelegate.logUpdate(sqlUpdate, sqlParams);
         
         PreparedStatement preparedStatement = null;
         try {

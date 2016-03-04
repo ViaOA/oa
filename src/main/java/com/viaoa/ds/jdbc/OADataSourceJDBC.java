@@ -154,6 +154,8 @@ public class OADataSourceJDBC extends OADataSource {
 //qqqqqqqqqqqqqqqqqqq        
 LOG.fine("object="+object.getClass().getSimpleName()+", key="+key+", isNew="+object.isNew());
 //        LOG.finer("object="+object.getClass()+", key="+key+", isNew="+object.isNew());
+        InsertDelegate.insert(this, object);
+/*was
         try {
             InsertDelegate.insert(this, object);
         }
@@ -161,24 +163,25 @@ LOG.fine("object="+object.getClass().getSimpleName()+", key="+key+", isNew="+obj
             LOG.log(Level.WARNING, "OADataSourceJDBC.insert ERROR: object="+object.getClass().getSimpleName()+", key="+key+", isNew="+object.isNew(), e);
             throw e;
         }
+*/        
     }
 
     public @Override void insertWithoutReferences(OAObject obj) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
-        LOG.finer("object="+obj.getClass()+", key="+key+", isNew="+obj.isNew());
+        LOG.fine("object="+obj.getClass()+", key="+key+", isNew="+obj.isNew());
     	InsertDelegate.insertWithoutReferences(this, obj);
     }
 
     
     public @Override void delete(OAObject object) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(object);
-        LOG.finer("object="+object.getClass()+", key="+key);
+        LOG.fine("object="+object.getClass().getSimpleName()+", key="+key);
         DeleteDelegate.delete(this, object);
     }
 
 	public @Override void updateMany2ManyLinks(OAObject masterObject, OAObject[] adds, OAObject[] removes, String propFromMaster) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(masterObject);
-        LOG.finer("object="+masterObject.getClass()+", key="+key);
+        LOG.finer("object="+masterObject.getClass().getSimpleName()+", key="+key);
 		UpdateDelegate.updateMany2ManyLinks(this, masterObject, adds, removes, propFromMaster);
 	}
 

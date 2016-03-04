@@ -69,7 +69,8 @@ public class OAObjectDeleteDelegate {
 	            }
 	            catch (Exception e) {
                     String msg = "error calling delete, class="+oaObj.getClass().getName()+", key="+oaObj.getObjectKey();
-                    LOG.log(Level.WARNING, msg, e);
+                    // LOG.log(Level.WARNING, msg, e);
+                    throw new RuntimeException(msg, e);
 	            }
 	        }
 

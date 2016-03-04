@@ -151,13 +151,50 @@ public class OAObjectSaveDelegate {
 	            	OAObject oaRef = (OAObject) obj;
 		            if (oaRef.getNew()) {
 		            	if (cascade.wasCascaded(oaRef, false)) {
-		            		// have to save new reference object before oaObj can be saved.
-			    		    OAObjectInfo oiRef = OAObjectInfoDelegate.getOAObjectInfo(oaRef.getClass());
-			    		    if (oiRef.getUseDataSource()) {
-			    			    OAObjectDSDelegate.saveWithoutReferences(oaRef);
-			    		    }
-			    		    OAObjectDelegate.setNew(oaRef, false);
-			    		    if (!oaRef.changedFlag) oaRef.changedFlag = true;  // so that it will be save/updated
+		            	    boolean bSave = false;
+		                    synchronized (hmSaveNewLock) {
+	                            for ( ;; ) {
+                                    if (!oaRef.getNew()) break;
+	                                Thread t = hmSaveNewLock.get(new Integer(oaRef.guid));
+    		                        if (t == null) {
+    		                            hmSaveNewLock.put(new Integer(oaRef.guid), Thread.currentThread());
+    		                            bSave = true;
+    		                            break;
+    		                        }
+    		                        if (t == Thread.currentThread()) break;
+	                                try {
+	                                    hmSaveNewLock.wait(100);
+	                                }
+	                                catch (Exception e) {
+	                                }
+		                        }
+		                    }		            	    
+
+		                    if (bSave) {
+    		                    // have to save new reference object before oaObj can be saved.
+    			    		    OAObjectInfo oiRef = OAObjectInfoDelegate.getOAObjectInfo(oaRef.getClass());
+    			    		    Exception ex = null;
+    			    		    if (oiRef.getUseDataSource()) {
+    			    			    try {
+    			    			        OAObjectDSDelegate.saveWithoutReferences(oaRef);
+    			    			    }
+    			    			    catch (Exception e) {
+    			    			        ex = e;
+    			    			    }
+    			    		    }
+    			    		    OAObjectDelegate.setNew(oaRef, false);
+    			    		    if (!oaRef.changedFlag) oaRef.changedFlag = true;  // so that it will be save/updated
+
+                                synchronized (hmSaveNewLock) {
+                                    hmSaveNewLock.remove(new Integer(oaRef.guid));
+                                    hmSaveNewLock.notifyAll();
+                                }
+    			    		    
+    			    		    if (ex != null) {
+    			                    String msg = "error calling saveWithoutReferences, class="+oaRef.getClass().getName()+", key="+oaRef.getObjectKey();
+    			                    throw new RuntimeException(msg, ex);
+    			    		    }
+		                    }
 		                }
 		                else {
 		                	if (bValidCascade) save(oaRef, iCascadeRule, cascade);
@@ -197,7 +234,7 @@ public class OAObjectSaveDelegate {
 	protected static boolean onSave(OAObject oaObj) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
 
-LOG.fine(oaObj.getClass().getSimpleName()+", isNew="+oaObj.isNew());        
+//LOG.fine(oaObj.getClass().getSimpleName()+", isNew="+oaObj.isNew());        
         // if new, then need to hold a lock
 	    boolean bIsNew = oaObj.isNew();
 	    if (bIsNew) {
@@ -214,7 +251,8 @@ LOG.fine(oaObj.getClass().getSimpleName()+", isNew="+oaObj.isNew());
 	                    if (t == Thread.currentThread()) return true;  // already saving in this thread
 	                    hmSaveNewLock.wait(100);
 	                }
-	                catch (Exception e) {}
+	                catch (Exception e) {
+	                }
 	            }    
 	        }
 	    }
@@ -236,14 +274,24 @@ LOG.fine(oaObj.getClass().getSimpleName()+", isNew="+oaObj.isNew());
             oaObj.setChanged(false);
 	        
             if (oi.getUseDataSource()) {
-                try {
-                    OAObjectDSDelegate.save(oaObj);
-                }
-                catch (Exception e) {
-                    String msg = "error saving, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", isNew="+oaObj.isNew()+", wasNew="+bIsNew;
-                    LOG.log(Level.WARNING, msg, e);
-                    oaObj.setChanged(true);
-                    return false;
+                for (int i=0; i<2; i++) {
+                    try {
+                        OAObjectDSDelegate.save(oaObj);
+                        break;
+                    }
+                    catch (Exception e) {
+                        String msg = "error saving, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", isNew="+oaObj.isNew()+", wasNew="+bIsNew+", will retry="+(i==0);
+                        if (i > 0 || !bIsNew) {
+                            throw new RuntimeException(msg, e);
+                        }
+                        
+                        LOG.log(Level.WARNING, msg, e);
+                        oaObj.setChanged(true);
+                        if (bIsNew) {
+                            OAObjectDelegate.setNew(oaObj, false);
+                            bIsNew = false;
+                        }
+                    }
                 }
             }
             OAObjectLogDelegate.logToXmlFile(oaObj, true);
