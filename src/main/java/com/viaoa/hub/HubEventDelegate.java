@@ -81,6 +81,16 @@ public class HubEventDelegate {
 	    }
 	    //OAObjectCacheDelegate.fireAfterRemoveEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
+	    
+        // 20160304
+	    OAObject objx = thisHub.getMasterObject();
+	    if (objx != null) {
+            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+            if (s != null) {
+    	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+    	        oi.onChangeForMethodCallback(s, objx);
+            }
+	    }
 	}
 
 	public static void fireBeforeRemoveAllEvent(Hub thisHub) {
@@ -118,6 +128,16 @@ public class HubEventDelegate {
 //            }
 	    }
         //fireMasterObjectChangeEvent(thisHub, true);
+	    
+        // 20160304
+        OAObject objx = thisHub.getMasterObject();
+        if (objx != null) {
+            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+            if (s != null) {
+                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                oi.onChangeForMethodCallback(s, objx);
+            }
+        }
 	}
 	public static void fireBeforeAddEvent(Hub thisHub, Object obj, int pos) {
 	    HubListener[] hl = getAllListeners(thisHub);
@@ -173,6 +193,16 @@ public class HubEventDelegate {
 	    }
 	    //OAObjectCacheDelegate.fireAfterAddEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
+	    
+        // 20160304
+        OAObject objx = thisHub.getMasterObject();
+        if (objx != null) {
+            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+            if (s != null) {
+                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                oi.onChangeForMethodCallback(s, objx);
+            }
+        }
 	}
 	public static void fireBeforeInsertEvent(Hub thisHub, Object obj, int pos) {
 	    HubListener[] hl = getAllListeners(thisHub);
@@ -228,6 +258,16 @@ public class HubEventDelegate {
 	    }
 	    //OAObjectCacheDelegate.fireAfterInsertEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
+
+        // 20160304
+        OAObject objx = thisHub.getMasterObject();
+        if (objx != null) {
+            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+            if (s != null) {
+                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                oi.onChangeForMethodCallback(s, objx);
+            }
+        }
 	}
 	public static void fireAfterChangeActiveObjectEvent(Hub thisHub, Object obj, int pos, boolean bAllShared) {
 	    HubListener[] hl = getAllListeners(thisHub, bAllShared?1:3);

@@ -29,4 +29,10 @@ public @interface OAMethod {
     String description() default "";
     String toolTip() default "";
     String help() default "";
+
+    /** 
+     * Property paths that will automatically call this method when the propPath is changed.
+     */
+    String[] callBackProperties() default {};
+
 }

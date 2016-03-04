@@ -175,7 +175,7 @@ public class OAObjectEventDelegate {
 	    5: Send event to Server.
 	    @see OAThreadLocalDelegate#setSuppressFirePropertyChange(boolean) to suppress this method from running by the current thread.
 	*/
-	protected static void firePropertyChange(final OAObject oaObj, String propertyName, Object oldObj, Object newObj, boolean bLocalOnly, boolean bSetChanged) {
+	protected static void firePropertyChange(final OAObject oaObj, final String propertyName, Object oldObj, Object newObj, boolean bLocalOnly, boolean bSetChanged) {
 	    if (oaObj == null || propertyName == null) return;
 	    if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
 	    
@@ -369,6 +369,9 @@ public class OAObjectEventDelegate {
         if (linkInfo != null) {
         	updateLink(oaObj, oi, linkInfo, oldObj, newObj);
         }
+        
+        // 20160304
+        if (!bIsLoading) oi.onChangeForMethodCallback(propertyName, oaObj);        
 	}
 
 	

@@ -12,12 +12,15 @@ package com.viaoa.object;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.OAReflect;
 
 /** 
     OAObjectInfo contains information about an OAObject.
@@ -28,6 +31,7 @@ import com.viaoa.util.OAPropertyPath;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 public class OAObjectInfo { //implements java.io.Serializable {
+    private static Logger LOG = Logger.getLogger(OAObjectInfo.class.getName());
     static final long serialVersionUID = 1L;
     static final Object vlock = new Object();
 
@@ -363,6 +367,81 @@ public class OAObjectInfo { //implements java.io.Serializable {
         return supportsStorage == 1;
     }
 
+
+    /**
+     * 20160304 callbacks that need to be made when a property/hub is changed.
+     */
+    public static class MethodCallback {
+        Class fromClass;
+        String methodName;  // method to call in callback class
+        Method method;
+        String listenerProperty;  // property/hub to listen to.
+
+        String sppToThisClass;  // propPath from the fromClass to thisClass
+        String sppToFromClass;;  // propPath from thisClass to fromClass
+
+        OAPropertyPath ppToThisClass;
+        OAPropertyPath ppToFromClass;
+    }
+
+    protected ArrayList<MethodCallback> alAutoCall = new ArrayList<OAObjectInfo.MethodCallback>();
+    protected ConcurrentHashMap<String, MethodCallback> hmAutoCall = new ConcurrentHashMap<String, OAObjectInfo.MethodCallback>();
+
+    
+    /**
+     */
+    public void addMethodCallback(Class fromClass, String methodName, String propertyPathToThisClass, String listenerProperty) {
+        if (fromClass == null || methodName == null || propertyPathToThisClass == null || listenerProperty == null) {
+            throw new IllegalArgumentException("args can not be null");
+        }
+        String s = "fromClass="+fromClass.getSimpleName()+", thisClass="+thisClass.getSimpleName() + ", " + "propertyPathToThis="+propertyPathToThisClass+", method="+methodName;
+        LOG.fine(s);
+
+        final MethodCallback ac = new MethodCallback();
+        ac.fromClass = fromClass;
+        ac.methodName = methodName;
+        ac.method = OAReflect.getMethod(fromClass, methodName);
+        ac.sppToThisClass = propertyPathToThisClass;
+        ac.listenerProperty = listenerProperty;
+        
+        hmAutoCall.put(listenerProperty.toUpperCase(), ac);
+        
+        ac.ppToThisClass = new OAPropertyPath(fromClass, propertyPathToThisClass);
+        ac.ppToFromClass = ac.ppToThisClass.getReversePropertyPath();
+        ac.sppToFromClass = ac.ppToFromClass.getPropertyPath(); 
+    }
+    
+    /**
+     * called by OAObject.propChange, and Hub.add/remove/removeAll/insert when a change is made.
+     */
+    public void onChangeForMethodCallback(String prop, OAObject oaObj) {
+        if (prop == null) return;
+        if (oaObj == null) return;
+        final MethodCallback ac = hmAutoCall.get(prop.toUpperCase());
+        if (ac == null) return;
+
+        String s = "thisClass="+thisClass.getSimpleName() + ", " + "propertyPath="+ac.sppToFromClass+", method="+ac.methodName;
+        LOG.fine(s);
+        
+        
+        OAFinder finder = new OAFinder(ac.sppToFromClass) {
+            @Override
+            protected void onFound(OAObject obj) {
+                try {
+                    ac.method.invoke(obj, null);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("OAObjectInof.autoCall error, "
+                        + "thisClass="+thisClass.getSimpleName() + ", "
+                        + "propertyPath="+ac.sppToFromClass+", method="+ac.methodName,
+                        e);
+                }
+            }
+        };
+        finder.find(oaObj);
+    }
+    
+    
 }
 
 
