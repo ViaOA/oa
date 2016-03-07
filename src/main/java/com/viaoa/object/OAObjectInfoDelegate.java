@@ -62,6 +62,9 @@ public class OAObjectInfoDelegate {
         oi = _getOAObjectInfo(clazz);
         hash.put(clazz, oi);
         
+        // must be ran after oi is created and stored (in hash), since it will create propPaths, which will load other ObjectInfos
+        OAAnnotationDelegate.update2(oi, clazz);
+        
         // make sure that reverse linkInfos are created.
         //   ex: ServerRoot.users, the User.class needs to have LinkInfo to serveRoot
         for (OALinkInfo li : oi.getLinkInfos()) {

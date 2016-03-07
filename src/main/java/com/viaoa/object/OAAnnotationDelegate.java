@@ -39,8 +39,20 @@ public class OAAnnotationDelegate {
             clazz = clazz.getSuperclass();
         }
     }    
+
+    /**
+     * needs to be called after OAObjectInfo has been created.
+     */
+    public static void update2(OAObjectInfo oi, Class clazz) {
+        HashSet<String> hs = new HashSet<String>();
+        for ( ; clazz != null; ) {
+            if (OAObject.class.equals(clazz)) break;
+            _update2(oi, clazz);
+            clazz = clazz.getSuperclass();
+        }
+    }    
     
-    private static void _update(OAObjectInfo oi, Class clazz, HashSet<String> hs) {
+    private static void _update(final OAObjectInfo oi, final Class clazz, HashSet<String> hs) {
         String s;
         
         if (!hs.contains("OAClass")) {
@@ -149,7 +161,7 @@ public class OAAnnotationDelegate {
         }
         
       
-        // Verify calcProperties
+        // calcProperties
         ArrayList<OACalcInfo> alCalc = oi.getCalcInfos();
         for (Method m : methods) {
             OACalculatedProperty annotation = (OACalculatedProperty) m.getAnnotation(OACalculatedProperty.class);
@@ -269,6 +281,58 @@ public class OAAnnotationDelegate {
             }
             li.setOAMany(annotation);
         }
+    }
+
+    // 20160305 OACallback annotations
+    private static void _update2(final OAObjectInfo oi, final Class clazz) {
+        Method[] methods = clazz.getDeclaredMethods();
+        String s;
+        String[] ss;
+        for (Method m : methods) {
+            OACallbackMethod annotation = (OACallbackMethod) m.getAnnotation(OACallbackMethod.class);
+            if (annotation == null) continue;
+            String[] props = annotation.properties();
+            if (props == null || props.length == 0) continue;
+            boolean bBackgroundThread = annotation.runInBackgroundThread(); 
+            boolean bOnlyUseLoadedData = annotation.onlyUseLoadedData();
+            boolean bServerSideOnly = annotation.runOnServer(); 
+            
+            // verify that method signature is correct, else log.warn
+            s = "public void callbackName(OAObject fromObject, String propName, Object oldValue, Object newValue)";
+            s = ("callback method signature for class="+clazz.getSimpleName()+", callbackMethod="+m.getName()+", must match: "+s);
+            Class[] cs = m.getParameterTypes();
+            if (cs == null || cs.length != 4 || !Modifier.isPublic(m.getModifiers())) {
+                LOG.warning(s);
+                continue;
+            }
+            if (!cs[0].equals(OAObject.class) || !cs[1].equals(String.class) || !cs[2].equals(Object.class) || !cs[3].equals(Object.class)) {
+                LOG.warning(s);
+                continue;
+            }
+
+            for (String spp : props) {
+                OAPropertyPath pp = new OAPropertyPath(clazz, spp);  
+                
+                // call OAObjectInfo.addCallback for every prop in the propPath
+                String spp2 = "";
+                OAObjectInfo oix = oi;
+                for (int i=0; i<pp.getLinkInfos().length; i++) {
+                    OALinkInfo li = pp.getLinkInfos()[i];                    
+                    
+                    oix.addCallback(clazz, m.getName(), spp2, li.getName(), bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+                    
+                    oix = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
+
+                    if (spp2.length() > 0) spp2 += ".";
+                    spp2 += li.getName();
+                }
+                
+                if (!pp.isLastPropertyLinkInfo()) {
+                    ss = pp.getProperties();
+                    oix.addCallback(clazz, m.getName(), spp2, ss[ss.length-1], bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+                }
+            }
+        }        
     }
 
     // 20111027

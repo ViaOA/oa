@@ -43,7 +43,7 @@ public class HubEventDelegate {
 	    }
 	}
 	
-	public static void fireAfterRemoveEvent(Hub thisHub, Object obj, int pos) {
+	public static void fireAfterRemoveEvent(Hub thisHub, final Object obj, int pos) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
 	    if (x > 0) {
@@ -83,13 +83,17 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, false);
 	    
         // 20160304
-	    OAObject objx = thisHub.getMasterObject();
-	    if (objx != null) {
-            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-            if (s != null) {
-    	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-    	        oi.onChangeForMethodCallback(s, objx);
-            }
+	    if (!thisHub.isFetching()) {
+	        if (obj instanceof OAObject && !((OAObject)obj).isLoading()) {
+        	    OAObject objx = thisHub.getMasterObject();
+        	    if (objx != null) {
+                    String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+                    if (s != null) {
+            	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+            	        oi.callback(s, objx, obj, null);
+                    }
+        	    }
+	        }
 	    }
 	}
 
@@ -130,12 +134,14 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, true);
 	    
         // 20160304
-        OAObject objx = thisHub.getMasterObject();
-        if (objx != null) {
-            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-            if (s != null) {
-                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                oi.onChangeForMethodCallback(s, objx);
+        if (!thisHub.isFetching()) {
+            OAObject objx = thisHub.getMasterObject();
+            if (objx != null) {
+                String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+                if (s != null) {
+                    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                    oi.callback(s, objx, null, null);
+                }
             }
         }
 	}
@@ -155,7 +161,7 @@ public class HubEventDelegate {
 	        }
 	    }
 	}
-	public static void fireAfterAddEvent(Hub thisHub, Object obj, int pos) {
+	public static void fireAfterAddEvent(Hub thisHub, final Object obj, int pos) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
 	    if (x > 0) {
@@ -195,14 +201,18 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, false);
 	    
         // 20160304
-        OAObject objx = thisHub.getMasterObject();
-        if (objx != null) {
-            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-            if (s != null) {
-                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                oi.onChangeForMethodCallback(s, objx);
+	    if (!thisHub.isFetching()) {
+            if (obj instanceof OAObject && !((OAObject)obj).isLoading()) {
+                OAObject objx = thisHub.getMasterObject();
+                if (objx != null) {
+                    String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+                    if (s != null) {
+                        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                        oi.callback(s, objx, null, obj);
+                    }
+                }
             }
-        }
+	    }
 	}
 	public static void fireBeforeInsertEvent(Hub thisHub, Object obj, int pos) {
 	    HubListener[] hl = getAllListeners(thisHub);
@@ -220,7 +230,7 @@ public class HubEventDelegate {
 	        }
 	    }
 	}
-	public static void fireAfterInsertEvent(Hub thisHub, Object obj, int pos) {
+	public static void fireAfterInsertEvent(Hub thisHub, final Object obj, int pos) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
 	    if (x > 0) {
@@ -260,12 +270,16 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, false);
 
         // 20160304
-        OAObject objx = thisHub.getMasterObject();
-        if (objx != null) {
-            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-            if (s != null) {
-                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                oi.onChangeForMethodCallback(s, objx);
+        if (!thisHub.isFetching()) {
+            if (obj instanceof OAObject && !((OAObject)obj).isLoading()) {
+                OAObject objx = thisHub.getMasterObject();
+                if (objx != null) {
+                    String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+                    if (s != null) {
+                        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                        oi.callback(s, objx, null, obj);
+                    }
+                }
             }
         }
 	}

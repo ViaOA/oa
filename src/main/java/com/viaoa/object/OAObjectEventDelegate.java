@@ -371,7 +371,7 @@ public class OAObjectEventDelegate {
         }
         
         // 20160304
-        if (!bIsLoading) oi.onChangeForMethodCallback(propertyName, oaObj);        
+        if (!bIsLoading) oi.callback(propertyName, oaObj, oldObj, newObj);        
 	}
 
 	

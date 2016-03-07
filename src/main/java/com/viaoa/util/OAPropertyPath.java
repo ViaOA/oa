@@ -102,7 +102,7 @@ public class OAPropertyPath<T> {
     
     public OAPropertyPath getReversePropertyPath() {
         if (revPropertyPath != null) return revPropertyPath;
-        if (linkInfos == null) return null;
+        if (linkInfos == null || linkInfos.length == 0) return null;
 
         Class c = null;
         String pp = "";
@@ -127,6 +127,10 @@ public class OAPropertyPath<T> {
         return methods[methods.length -1].getAnnotation(OACalculatedProperty.class);
     }
 
+    public boolean isLastPropertyLinkInfo() {
+        return bLastProperyLinkInfo;
+    }
+    
     public String[] getProperties() {
         return properties;
     }

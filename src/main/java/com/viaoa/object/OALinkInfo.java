@@ -209,6 +209,12 @@ public class OALinkInfo { //implements java.io.Serializable {
     public Object getValue(Object obj) {
         return OAObjectReflectDelegate.getProperty((OAObject)obj, name);
     }
+
+    public boolean isLoaded(Object obj) {
+        if (!(obj instanceof OAObject)) return true;
+        OAObject oaObj = (OAObject) obj;
+        return OAObjectPropertyDelegate.isPropertyLoaded(oaObj, name);
+    }
     
     public void setMatchProperty(String prop) {
         this.matchProperty = prop;

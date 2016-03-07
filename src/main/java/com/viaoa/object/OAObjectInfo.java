@@ -18,6 +18,8 @@ import java.util.logging.Logger;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAReflect;
@@ -382,65 +384,122 @@ public class OAObjectInfo { //implements java.io.Serializable {
 
         OAPropertyPath ppToThisClass;
         OAPropertyPath ppToFromClass;
+        
+        boolean bOnlyUseLoadedData;
+        boolean bRunOnServer;
+        boolean bRunInBackgroundThread;
     }
 
-    protected ArrayList<MethodCallback> alAutoCall = new ArrayList<OAObjectInfo.MethodCallback>();
-    protected ConcurrentHashMap<String, MethodCallback> hmAutoCall = new ConcurrentHashMap<String, OAObjectInfo.MethodCallback>();
+    protected ConcurrentHashMap<String, ArrayList<MethodCallback>> hmAutoCall = new ConcurrentHashMap<String, ArrayList<MethodCallback>>();
 
     
     /**
+     * used by OAObject OACallback annotations to be able to call a method when a change is made in the callbacks propertyPath.
      */
-    public void addMethodCallback(Class fromClass, String methodName, String propertyPathToThisClass, String listenerProperty) {
+    public void addCallback(Class fromClass, String methodName, String propertyPathToThisClass, String listenerProperty, 
+            final boolean bOnlyUseLoadedData, 
+            final boolean bServerSideOnly, 
+            final boolean bBackgroundThread
+            )
+    {
+        
         if (fromClass == null || methodName == null || propertyPathToThisClass == null || listenerProperty == null) {
             throw new IllegalArgumentException("args can not be null");
         }
         String s = "fromClass="+fromClass.getSimpleName()+", thisClass="+thisClass.getSimpleName() + ", " + "propertyPathToThis="+propertyPathToThisClass+", method="+methodName;
         LOG.fine(s);
 
-        final MethodCallback ac = new MethodCallback();
-        ac.fromClass = fromClass;
-        ac.methodName = methodName;
-        ac.method = OAReflect.getMethod(fromClass, methodName);
-        ac.sppToThisClass = propertyPathToThisClass;
-        ac.listenerProperty = listenerProperty;
+        ArrayList<MethodCallback> al = hmAutoCall.get(listenerProperty.toUpperCase());
+        if (al == null) {
+            synchronized (hmAutoCall) {
+                al = hmAutoCall.get(listenerProperty.toUpperCase());
+                if (al == null) {
+                    al = new ArrayList<OAObjectInfo.MethodCallback>();
+                    hmAutoCall.put(listenerProperty.toUpperCase(), al);
+                }                
+            }
+        }
+
+        for (MethodCallback cb : al) {
+            if (cb.fromClass == fromClass) {
+                if (cb.methodName.equals(methodName)) {
+                    if (cb.ppToThisClass.equals(propertyPathToThisClass)) {
+                        if (cb.listenerProperty.equals(listenerProperty)) {
+                            return;  // already used by another prop path in this oacallback's list of dependent properties
+                        }
+                    }
+                }
+            }
+        }
+
+        MethodCallback cb = new MethodCallback();
+        al.add(cb);
+        cb.fromClass = fromClass;
+        cb.methodName = methodName;
+        cb.method = OAReflect.getMethod(fromClass, methodName, 4); // 3={String, Object, Object}
+        cb.sppToThisClass = propertyPathToThisClass;
+        cb.listenerProperty = listenerProperty;
+        cb.bOnlyUseLoadedData = bOnlyUseLoadedData;
+        cb.bRunOnServer = bServerSideOnly;
+        cb.bRunInBackgroundThread = bBackgroundThread;
         
-        hmAutoCall.put(listenerProperty.toUpperCase(), ac);
-        
-        ac.ppToThisClass = new OAPropertyPath(fromClass, propertyPathToThisClass);
-        ac.ppToFromClass = ac.ppToThisClass.getReversePropertyPath();
-        ac.sppToFromClass = ac.ppToFromClass.getPropertyPath(); 
+        cb.ppToThisClass = new OAPropertyPath(fromClass, propertyPathToThisClass);
+        cb.ppToFromClass = cb.ppToThisClass.getReversePropertyPath();
+        if (cb.ppToFromClass != null) cb.sppToFromClass = cb.ppToFromClass.getPropertyPath(); 
     }
     
     /**
      * called by OAObject.propChange, and Hub.add/remove/removeAll/insert when a change is made.
+     * This will then check to see if there is callback method to send the change to.
      */
-    public void onChangeForMethodCallback(String prop, OAObject oaObj) {
+    public void callback(final String prop, final OAObject oaObj, final Object oldValue, final Object newValue) {
         if (prop == null) return;
         if (oaObj == null) return;
-        final MethodCallback ac = hmAutoCall.get(prop.toUpperCase());
-        if (ac == null) return;
 
-        String s = "thisClass="+thisClass.getSimpleName() + ", " + "propertyPath="+ac.sppToFromClass+", method="+ac.methodName;
+        ArrayList<MethodCallback> al = hmAutoCall.get(prop.toUpperCase());
+        if (al == null) return;
+        
+        for (MethodCallback cb : al) {
+            _callback(cb, prop, oaObj, oldValue, newValue);
+        }
+    }        
+    private void _callback(final MethodCallback cb, final String prop, final OAObject oaObj, final Object oldValue, final Object newValue) {
+        if (cb.bRunOnServer) {
+            if (!OASync.isServer()) return;
+            OASync.sendMessages();
+        }
+        
+        String s = "thisClass="+thisClass.getSimpleName() + ", " + "propertyPath="+cb.sppToFromClass+", method="+cb.methodName;
         LOG.fine(s);
+
+        s = cb.sppToThisClass;
+        if (s == null || s.length() == 0) s = prop;
+        else s += "." + prop;
+        final String pp = s;
         
-        
-        OAFinder finder = new OAFinder(ac.sppToFromClass) {
+        OAFinder finder = new OAFinder(cb.sppToFromClass) {
             @Override
-            protected void onFound(OAObject obj) {
+            protected void onFound(OAObject objFrom) {
                 try {
-                    ac.method.invoke(obj, null);
+                    cb.method.invoke(objFrom, new Object[] {oaObj, pp, oldValue, newValue} );
                 }
                 catch (Exception e) {
                     throw new RuntimeException("OAObjectInof.autoCall error, "
                         + "thisClass="+thisClass.getSimpleName() + ", "
-                        + "propertyPath="+ac.sppToFromClass+", method="+ac.methodName,
+                        + "propertyPath="+cb.sppToFromClass+", fromClass="+cb.fromClass.getSimpleName()+", method="+cb.methodName,
                         e);
                 }
             }
         };
+        finder.setUseOnlyLoadedData(cb.bOnlyUseLoadedData);
         finder.find(oaObj);
     }
+
+//    TESTTESTESTTESTTEST
     
+//qqqqqqqqqqqq run in another thread ...... flag
+    
+//?? qqqqqqqqq option to cancel if it is called again while it is being processed qqqqqqqqqqq    
     
 }
 

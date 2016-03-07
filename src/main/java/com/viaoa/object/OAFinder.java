@@ -65,6 +65,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private F fromObject;
     private Hub<F> fromHub;
     private boolean bUseAll;
+    
+    /**
+     * flag to know if it should only find data that is currently in memory.
+     */
+    private boolean bUseOnlyLoadedData;
 
     public OAFinder() {
     }
@@ -83,6 +88,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         this.strPropertyPath = propPath;
         this.bUseAll = bUseAll;
     }
+    
+    
     /**
      * Add the found object to the list that is returned by find.
      * This can be overwritten to get all of the objects as they are found.
@@ -100,6 +107,18 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         bStop = true;
     }
 
+    public void setUseOnlyLoadedData(boolean b) {
+        this.bUseOnlyLoadedData = b;
+    }
+
+    // 20160306
+    /**
+     * Flag (default=false) to only use data that is already in memory and not to load from server or datasource.
+     */
+    public boolean getUseOnlyLoadedData() {
+        return bUseOnlyLoadedData;
+    }
+    
     public void setMaxFound(int x) {
         this.maxFound = x;
     }
@@ -387,6 +406,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         if (pos == 0) {
             // 20151026 see if root object is recursive
             if (liRecursiveRoot != null) {
+                // 20160306
+                if (getUseOnlyLoadedData() && !liRecursiveRoot.isLoaded(obj)) return;
                 Object objx = liRecursiveRoot.getValue(obj);
                 find(objx, pos); // go up a level to then go through hub
                 if (bStop) return;
@@ -394,6 +415,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
         else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length) {
             if (recursiveLinkInfos[pos - 1] != null) {
+                // 20160306
+                if (getUseOnlyLoadedData() && !recursiveLinkInfos[pos - 1].isLoaded(obj)) return;
                 Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
                 find(objx, pos); // go up a level to then go through hub
                 if (bStop) return;
@@ -401,6 +424,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
 
         if (linkInfos != null && pos < linkInfos.length) {
+            // 20160306
+            if (getUseOnlyLoadedData() && !linkInfos[pos].isLoaded(obj)) return;
             Object objx = linkInfos[pos].getValue(obj);
             find(objx, pos + 1);
             if (bStop) return;
