@@ -302,12 +302,14 @@ public class OAAnnotationDelegate {
             s = ("callback method signature for class="+clazz.getSimpleName()+", callbackMethod="+m.getName()+", must match: "+s);
             Class[] cs = m.getParameterTypes();
             if (cs == null || cs.length != 4 || !Modifier.isPublic(m.getModifiers())) {
-                LOG.warning(s);
-                continue;
+                throw new RuntimeException(s);
+                //LOG.warning(s);
+                //continue;
             }
             if (!cs[0].equals(OAObject.class) || !cs[1].equals(String.class) || !cs[2].equals(Object.class) || !cs[3].equals(Object.class)) {
-                LOG.warning(s);
-                continue;
+                throw new RuntimeException(s);
+                //LOG.warning(s);
+                //continue;
             }
 
             for (String spp : props) {

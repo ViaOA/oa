@@ -2455,6 +2455,20 @@ public class OAString {
     public static String toString(String str) {
         return defaultString(str, "");
     }
+    
+    public static String toNonNull(String str) {
+        if (str == null) return "";
+        return str;
+    }
+    public static String getNonNull(String str) {
+        if (str == null) return "";
+        return str;
+    }
+    public static String convertToNonNull(String str) {
+        if (str == null) return "";
+        return str;
+    }
+    
     /**
      * Convert to a string, if null then it returns ""
      */

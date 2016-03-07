@@ -390,8 +390,21 @@ public class OAObjectInfo { //implements java.io.Serializable {
         boolean bRunInBackgroundThread;
     }
 
-    protected ConcurrentHashMap<String, ArrayList<MethodCallback>> hmAutoCall = new ConcurrentHashMap<String, ArrayList<MethodCallback>>();
+    protected ConcurrentHashMap<String, ArrayList<MethodCallback>> hmCallback = new ConcurrentHashMap<String, ArrayList<MethodCallback>>();
 
+    public ArrayList<String> getCallbackPropertNames() {
+        ArrayList<String> al = new ArrayList<String>();
+        for (String s : hmCallback.keySet()) {
+            al.add(s);
+        }
+        return al;
+    }
+    public ArrayList<MethodCallback> getCallbacks(String propertyName) {
+        if (propertyName == null) return null;
+        ArrayList<MethodCallback> al = hmCallback.get(propertyName.toUpperCase());
+        return al;
+    }
+    
     
     /**
      * used by OAObject OACallback annotations to be able to call a method when a change is made in the callbacks propertyPath.
@@ -409,13 +422,13 @@ public class OAObjectInfo { //implements java.io.Serializable {
         String s = "fromClass="+fromClass.getSimpleName()+", thisClass="+thisClass.getSimpleName() + ", " + "propertyPathToThis="+propertyPathToThisClass+", method="+methodName;
         LOG.fine(s);
 
-        ArrayList<MethodCallback> al = hmAutoCall.get(listenerProperty.toUpperCase());
+        ArrayList<MethodCallback> al = hmCallback.get(listenerProperty.toUpperCase());
         if (al == null) {
-            synchronized (hmAutoCall) {
-                al = hmAutoCall.get(listenerProperty.toUpperCase());
+            synchronized (hmCallback) {
+                al = hmCallback.get(listenerProperty.toUpperCase());
                 if (al == null) {
                     al = new ArrayList<OAObjectInfo.MethodCallback>();
-                    hmAutoCall.put(listenerProperty.toUpperCase(), al);
+                    hmCallback.put(listenerProperty.toUpperCase(), al);
                 }                
             }
         }
@@ -423,8 +436,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
         for (MethodCallback cb : al) {
             if (cb.fromClass == fromClass) {
                 if (cb.methodName.equals(methodName)) {
-                    if (cb.ppToThisClass.equals(propertyPathToThisClass)) {
-                        if (cb.listenerProperty.equals(listenerProperty)) {
+                    if (cb.sppToThisClass.equalsIgnoreCase(propertyPathToThisClass)) {
+                        if (cb.listenerProperty.equalsIgnoreCase(listenerProperty)) {
                             return;  // already used by another prop path in this oacallback's list of dependent properties
                         }
                     }
@@ -456,7 +469,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         if (prop == null) return;
         if (oaObj == null) return;
 
-        ArrayList<MethodCallback> al = hmAutoCall.get(prop.toUpperCase());
+        ArrayList<MethodCallback> al = hmCallback.get(prop.toUpperCase());
         if (al == null) return;
         
         for (MethodCallback cb : al) {
@@ -495,10 +508,9 @@ public class OAObjectInfo { //implements java.io.Serializable {
         finder.find(oaObj);
     }
 
-//    TESTTESTESTTESTTEST
     
+//    TESTTESTESTTESTTEST callback  set OACallbackMethodTest
 //qqqqqqqqqqqq run in another thread ...... flag
-    
 //?? qqqqqqqqq option to cancel if it is called again while it is being processed qqqqqqqqqqq    
     
 }

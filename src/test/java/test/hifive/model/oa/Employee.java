@@ -740,7 +740,36 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         // no-op, used by hubListener when program or location is changed
         return false;
     }
-     
+
+    /* example from oabuilder generator    
+    @OACallbackMethod(onlyUseLoadedData=false, runOnServer=false, runInBackgroundThread=false, properties = {P_Location+"."+Location.P_Program, P_Location+"."+Location.P_AwardTypes, P_Location+"."+Location.P_Ecards, P_Location+"."+Location.P_InspireCoreValues, P_Location+"."+Location.P_InspireAwardType, P_Location+"."+Location.P_AddOnItems, P_Program+"."+Program.P_InspireAwardType, P_Program+"."+Program.P_InspireCoreValues, P_Program+"."+Program.P_Ecards, P_Program+"."+Program.P_AwardTypes})
+    public void hierarchyTestCallback(OAObject fromObject, String propPathFromThis, Object oldValue, Object newValue) {
+        
+    }
+    */    
+    
+    @OACallbackMethod(onlyUseLoadedData=true, runOnServer=true, runInBackgroundThread=true,
+        properties = {
+            P_Location, 
+            P_Location+"."+Location.P_Program, 
+            P_Location+"."+Location.P_AwardTypes, 
+            P_Location+"."+Location.P_Ecards, 
+            P_Location+"."+Location.P_InspireAwardType, 
+            P_Location+"."+Location.P_AddOnItems,
+            P_Location+"."+Location.P_InspireCoreValues, 
+            P_Program+"."+Program.P_InspireCoreValues, 
+            P_Program+"."+Program.P_InspireAwardType, 
+            P_Program+"."+Program.P_AwardTypes, 
+            P_Program+"."+Program.P_Ecards
+        }
+    )
+    public boolean hierarchyChangedCallback(OAObject fromObject, String propPathFromThis, Object oldValue, Object newValue) {
+        cntCallback++;
+        return false;
+    }
+    public transient int cntCallback;
+    
+    
     @OACalculatedProperty(displayName = "Next Anniversary Date", displayLength = 8, properties = {P_HireDate})
     public OADate getNextAnniversaryDate() {
         return new OADate();//EmployeeDelegate.getNextAnniversaryDate(this);
