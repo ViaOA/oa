@@ -143,6 +143,10 @@ public abstract class HubPropController {
                 if (propertyPath == null) update();
             }
             @Override
+            public void afterInsert(HubEvent e) {
+                if (propertyPath == null) update();
+            }
+            @Override
             public void afterRemove(HubEvent e) {
                 if (propertyPath == null) update();
             }
