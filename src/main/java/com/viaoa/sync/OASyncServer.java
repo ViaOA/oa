@@ -46,7 +46,7 @@ public class OASyncServer {
     public static final String ServerLookupName = "syncserver";
     public static final String SyncLookupName = "oasync";
     public static final String SyncQueueName = "oasync";
-    public static final int QueueSize = 10000;
+    public static final int QueueSize = 20000;
     
     private int port;
     private MultiplexerServer multiplexerServer;
@@ -416,7 +416,7 @@ public class OASyncServer {
         return remoteMultiplexerServer;
     }
 
-    private AtomicInteger aiSessionCount = new AtomicInteger();
+    private AtomicInteger aiSessionCount = new AtomicInteger(); // needs to start at 1 (0 is for the server)
     public int getSessionCount() {
         return aiSessionCount.get();
     }

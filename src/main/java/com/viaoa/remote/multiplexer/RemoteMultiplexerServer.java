@@ -909,7 +909,7 @@ public class RemoteMultiplexerServer {
                 cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
                     @Override
                     protected boolean shouldWaitOnSlowSession(int sessionId, int msSinceLastRead) {
-                        if (msSinceLastRead > 20000) return false;  // dont wait over 20 seconds
+                        if (msSinceLastRead > 5000) return false;  // dont wait over 5 seconds
                         Session session = getSession(sessionId, false);
                         if (session == null) return false;
                         if (session.bDisconnected) return false;
@@ -1078,7 +1078,7 @@ public class RemoteMultiplexerServer {
         final long qPos = cq.registerSession(0);
 
         // set up thread that will get messages from queue and send to client
-        final String threadName = "Broadcast.queue." + asyncQueueName;
+        final String threadName = "ProcessQueue." + asyncQueueName;
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1714,7 +1714,6 @@ public class RemoteMultiplexerServer {
                 }
 
                 for (RequestInfo ri : ris) {
-                    cque.keepAlive(connectionId);
                     qpos++;
                     if (vsocket.isClosed()) return;
                     if (ri == null || ri.bind == null) {
@@ -1760,6 +1759,7 @@ public class RemoteMultiplexerServer {
                     }
 
                     waitForProcessedByServer(ri);
+                    cque.keepAlive(connectionId);
 
                     synchronized (vsocket) {
                         RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);

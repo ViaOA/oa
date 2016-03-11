@@ -71,7 +71,7 @@ public class OASyncClientTest extends OAUnitTest {
     private AtomicInteger aiOnClientDone = new AtomicInteger();
     private AtomicInteger aiSendStats = new AtomicInteger();
 
-    @Test (timeout=5000)
+    @Test (timeout=15000)
     public void tsamTest() throws Exception {
         if (serverRoot == null) return;
         

@@ -51,9 +51,9 @@ public abstract class OACircularQueue<TYPE> {
 
     private Class<TYPE> classType;
 
-    private volatile ConcurrentHashMap<Integer, Session> hmSession;
+    private final ConcurrentHashMap<Integer, Session> hmSession = new ConcurrentHashMap<Integer, Session>();;
     
-    private final int MS_Throttle = 10;
+    private final int MS_Throttle = 5;
     private final int MS_Wait = 25;
     
     
@@ -61,6 +61,8 @@ public abstract class OACircularQueue<TYPE> {
         int id;
         volatile long queuePos;
         volatile long msLastRead;
+        volatile boolean bIgnore; 
+        volatile boolean bOverrun; 
     }
     
     
@@ -119,11 +121,6 @@ public abstract class OACircularQueue<TYPE> {
         session.id = sessionId;
         session.msLastRead = System.currentTimeMillis();
         
-        if (hmSession == null) {
-            synchronized(LOCKQueue) {
-                if (hmSession == null) hmSession = new ConcurrentHashMap<Integer, Session>();
-            }
-        }
         long x = queueHeadPosition;
         session.queuePos = x;
         hmSession.put(session.id, session);
@@ -131,16 +128,14 @@ public abstract class OACircularQueue<TYPE> {
     }
     public void unregisterSession(int sessionId) {
         this.queueLowPosition = 0; // reset
-        if (hmSession != null) {
-            hmSession.remove(sessionId);
-        }
+        hmSession.remove(sessionId);
     }
     
     // 20141208 null out queue slots, so that they can be GC'd
     //   this is called from a sync block
     
     protected void cleanupQueue() {
-        if (hmSession == null) return; // no session registered
+        if (hmSession.size() == 0) return; // no session registered
         if (queueHeadPosition < 1) return;
         long pos = queueHeadPosition-1;
         boolean bFoundOne = false;
@@ -192,15 +187,16 @@ public abstract class OACircularQueue<TYPE> {
         boolean bWaited = false;
         int x;
         for (int i=0 ; ;i++) {
-            if (!bWaited && throttleAmount > 0) x = 10;
+            int maxTries;
+            if (!bWaited && throttleAmount > 0) maxTries = 10;
             else {
-                x = 300;  // 7.5 seconds max, before letting it overrun
+                maxTries = 200;  // 200 * 25ms  (5 secs) max, before letting it overrun
                 bWaited = false;
             }
             
-            if (i >= x/2) bAdditionalThrottle = true;
+            if (i >= (int) (maxTries * .85)) bAdditionalThrottle = true;
             synchronized(LOCKQueue) {
-                x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<x));
+                x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<maxTries));
             }
             if (x >= 0) break;
 
@@ -233,17 +229,15 @@ public abstract class OACircularQueue<TYPE> {
         long msNow = System.currentTimeMillis();
         if (throttleSessionToIgnore == lastThrottleSession && (msLastAfterThrottle + 1000 > msNow)) {
             try {
-                int x = 10;
-                if (lastThrottleSessionCount > 0) {
-                    if (lastThrottleSessionCount > 50) x = 500;
-                    else x *= lastThrottleSessionCount;
-                }
                 cntAfterThrottle++;
-                Thread.sleep(x);
-                msNow += x;
+                Thread.sleep(lastThrottleSessionCount+2);
+                msNow += lastThrottleSessionCount;
+                if (lastThrottleSessionCount > 12) {
+                    lastThrottleSessionCount = 0;
+                }
             }
             catch (Exception e) {
-                System.out.println("circque error:"+e);
+                System.out.println("OACircularQueue error:"+e);
             }
         }
         else lastThrottleSessionCount = 0;
@@ -264,7 +258,7 @@ public abstract class OACircularQueue<TYPE> {
     private int _addMessage(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore, final boolean bCheckSessions) {
         final long tsNow = System.currentTimeMillis();
 
-        boolean b = bCheckSessions && (hmSession != null);
+        boolean b = bCheckSessions && (hmSession.size() > 0);
         if (b) {
             if (throttleAmount < 1 &&  ((queueLowPosition + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10)))) ) {
                 b = false;
@@ -278,12 +272,26 @@ public abstract class OACircularQueue<TYPE> {
             Session slowSessionFound = null;
             for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
                 Session session = entry.getValue();
+                if (session.bIgnore || session.bOverrun) continue;
                 
                 if ((session.queuePos + queueSize) < queueHeadPosition) {
                     continue; // overflowed already
                 }
                 queueLowPosition = Math.min(session.queuePos, queueLowPosition);
 
+                if (session.msLastRead + 1000 < tsNow) {
+                    if (tsLastOneSecondLog + 1000 < tsNow) {
+                        OACircularQueue.LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
+                                ", currentHeadPos="+queueHeadPosition+", session="+session.id+
+                                ", sessionPos="+session.queuePos+", lastRead="+(tsNow-session.msLastRead)+"ms ago");
+                        tsLastOneSecondLog = tsNow;
+                    }
+                    if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-session.msLastRead))) {
+                        session.bIgnore = true;
+                        continue;  // too slow, dont wait for this one
+                    }
+                }
+                
                 // check to see if it is getting close to a queue overrun
                 if ( (session.queuePos + queueSize - (Math.min(25,(queueSize/10)))) > queueHeadPosition ) {
                     if (throttleAmount < 1 || bNeedsThrottle) {
@@ -297,19 +305,8 @@ public abstract class OACircularQueue<TYPE> {
                     }
                     continue;
                 }
-            
-                long ts = session.msLastRead;
-                if (ts + 1000 < tsNow) {
-                    if (tsLastOneSecondLog + 1000 < tsNow) {
-                        OACircularQueue.LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
-                                ", currentHeadPos="+queueHeadPosition+", session="+session.id+
-                                ", sessionPos="+session.queuePos+", lastRead="+(tsNow-ts)+"ms ago");
-                        tsLastOneSecondLog = tsNow;
-                    }
-                    if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-ts))) {
-                        continue;  // too slow, dont wait for this one
-                    }
-                }
+
+                
                 slowSessionFound = session;
                 break;
             }
@@ -375,7 +372,7 @@ public abstract class OACircularQueue<TYPE> {
         return posHead;
     }
     
-    public final int WaitUntilNotified = -1;
+    public final int msWaitUntilNotified = -1;
     
     /**
      * This is call whenever a session is getting close to a queue overrun and it has not
@@ -391,16 +388,16 @@ public abstract class OACircularQueue<TYPE> {
      * will block until a message is available.
      */
     public TYPE getMessage(long posTail) throws Exception {
-        TYPE[] vals = getMessages(posTail, 1, WaitUntilNotified);
+        TYPE[] vals = getMessages(posTail, 1, msWaitUntilNotified);
         return vals[0];
     }
     /**
      * Get next message, with a timeout
      * @param posTail current position to pull messages from
-     * @param maxWait max number of milliseconds to wait
+     * @param msMaxWait max number of milliseconds to wait
      */
-    public TYPE getMessage(long posTail, int maxWait) throws Exception {
-        TYPE[] vals = getMessages(posTail, 1, maxWait);
+    public TYPE getMessage(long posTail, int msMaxWait) throws Exception {
+        TYPE[] vals = getMessages(posTail, 1, msMaxWait);
         if (vals == null || vals.length == 0) return null;
         return vals[0];
     }
@@ -419,57 +416,60 @@ public abstract class OACircularQueue<TYPE> {
      * will block until at least one message is available.
      */
     public TYPE[] getMessages(long posTail) throws Exception {
-        return getMessages(posTail, 0, WaitUntilNotified);
+        return getMessages(posTail, 0, msWaitUntilNotified);
     }
     
     /**
      * will block until at least one message is available.
      */
     public TYPE[] getMessages(long posTail, int maxReturnAmount) throws Exception {
-        return getMessages(posTail, maxReturnAmount, WaitUntilNotified);
+        return getMessages(posTail, maxReturnAmount, msWaitUntilNotified);
     }
 
     /**
      * @param posTail current position to use to get next message
      * @param maxReturnAmount 
-     * @param maxWait if no messages are available, wait this amount of miliseconds for an available message.
+     * @param msMaxWait if no messages are available, wait this amount of miliseconds for an available message.
      */
-    public TYPE[] getMessages(long posTail, int maxReturnAmount, int maxWait) throws Exception {
+    public TYPE[] getMessages(long posTail, int maxReturnAmount, int msMaxWait) throws Exception {
         TYPE[] msgs = null;
         for ( ;; ) {
-            msgs =  _getMessages(-1, posTail, maxReturnAmount, maxWait);
+            msgs =  _getMessages(-1, null, posTail, maxReturnAmount, msMaxWait);
 
-            if (msgs != null || maxWait == 0) {
+            if (msgs != null || msMaxWait == 0) {
                 break;
             }
             // else it waited until a message was available and then returned w/o message
             //   or waited maxWait and then returned.
             // ... need to loop again w/o a wait to get any added message(s)
-            maxWait = 0;
+            msMaxWait = 0;
         }
         return msgs;
     }
-    public TYPE[] getMessages(final int sessionId, final long posTail, final int maxReturnAmount, int maxWait) throws Exception {
+    public TYPE[] getMessages(final int sessionId, final long posTail, final int maxReturnAmount, int msMaxWait) throws Exception {
         TYPE[] msgs = null;
 
         Session session;
-        if (hmSession != null) {
+        if (sessionId >= 0 && hmSession.size() != 0) {
             session = hmSession.get(sessionId);
         }
         else session = null;
         
         for ( ;; ) {
-            if (session != null) session.msLastRead = System.currentTimeMillis();
-            msgs =  _getMessages(sessionId, posTail, maxReturnAmount, maxWait);
+            if (session != null) {
+                session.msLastRead = System.currentTimeMillis();
+                session.bIgnore = false;
+            }
+            msgs =  _getMessages(sessionId, session, posTail, maxReturnAmount, msMaxWait);
             if (session != null) session.msLastRead = System.currentTimeMillis();
 
-            if (msgs != null || maxWait == 0) {
+            if (msgs != null || msMaxWait == 0) {
                 break;
             }
             // else it waited until a message was available and then returned w/o message
             //   or waited maxWait and then returned.
             // ... need to loop again w/o a wait to get any added message(s)
-            maxWait = 0;
+            msMaxWait = 0;
         }
 
         if (msgs != null && msgs.length > 0) {
@@ -478,16 +478,19 @@ public abstract class OACircularQueue<TYPE> {
         return msgs;
     }
     public void keepAlive(final int sessionId) {
-        if (hmSession == null) return;
         Session session = hmSession.get(sessionId);
-        if (session != null) session.msLastRead = System.currentTimeMillis();
+        if (session != null) {
+            session.msLastRead = System.currentTimeMillis();
+            session.bIgnore = false;
+        }
     }
     
     private AtomicInteger  aiCleanupQueue = new AtomicInteger(); 
-    private TYPE[] _getMessages(final int sessionId, long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
+    private TYPE[] _getMessages(final int sessionId, final Session session, long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
         
         if ((posTail + queueSize) < queueHeadPosition) {
+            if (session != null) session.bOverrun = true;
             throw new Exception("message queue overrun, sessionId="+sessionId+", pos="+posTail+", headPos="+queueHeadPosition);
         }
         else {
@@ -536,54 +539,6 @@ public abstract class OACircularQueue<TYPE> {
         else msgs = null;
         return msgs;
     }
-
-/*was before 20160215   
-    private TYPE[] _getMessages__ORIG___(final int sessionId, long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
-        int amt;
-        synchronized(LOCKQueue) {
-            if ((posTail + queueSize) < queueHeadPosition) {
-                throw new Exception("message queue overrun, sessionId="+sessionId+", pos="+posTail+", headPos="+queueHeadPosition);
-            }
-            else {
-                if (posTail > queueHeadPosition) {
-                    posTail = queueHeadPosition;
-                    //throw new IllegalArgumentException("posTail should not be larger then headPos");
-                }
-            }
-            amt = (int) (queueHeadPosition - posTail);
-            if (maxReturnAmount > 0 && amt > maxReturnAmount) {
-                amt = maxReturnAmount;
-            }
-            
-            if (amt == 0 && maxWait != 0) {
-                // need to wait
-                if (aiCleanupQueue.incrementAndGet() % 50 == 0) {
-                    cleanupQueue();
-                }
-                bWaitingToGet = true;
-                if (maxWait > 0) {
-                    LOCKQueue.wait(maxWait);
-                }
-                else {
-                    for (;;) {
-                        LOCKQueue.wait();
-                        if (posTail != queueHeadPosition) break; // protect from spurious wakeup (yes, it happens)
-                    }
-                }
-            }
-        }
-        TYPE[] msgs;
-        if (amt > 0) {
-            msgs = (TYPE[]) Array.newInstance(classType, amt);
-            for (int i=0; i<amt; i++) {
-                msgs[i] = msgQueue[ (int) (posTail++ % queueSize) ]; 
-            }
-        }
-        else msgs = null;
-        return msgs;
-    }
-*/    
-    
     
     
     /**
