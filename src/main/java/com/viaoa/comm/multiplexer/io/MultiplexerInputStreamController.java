@@ -165,7 +165,7 @@ public abstract class MultiplexerInputStreamController {
                             }
                             else if (cnt == (_timeoutSeconds * 4)) {
                                 if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
-                                    LOG.warning("VSocket id=" + vs._id + ", name=" + vs.getServerSocketName() + ", has been timed out, will disconnect socket and continue");
+                                    LOG.warning("Connection="+_connectionId+", VSocket id=" + vs._id + ", name=" + vs.getServerSocketName() + ", has been timed out, will disconnect socket and continue");
                                     
                                     synchronized (vs._lockObject) {
                                         vs.close(); // this will notify the thread
