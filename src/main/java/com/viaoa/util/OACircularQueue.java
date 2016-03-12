@@ -183,7 +183,6 @@ public abstract class OACircularQueue<TYPE> {
     }
     
     public int addMessageToQueue(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore) {
-        boolean bAdditionalThrottle = false;
         boolean bWaited = false;
         int x;
         for (int i=0 ; ;i++) {
@@ -194,7 +193,6 @@ public abstract class OACircularQueue<TYPE> {
                 bWaited = false;
             }
             
-            if (i >= (int) (maxTries * .85)) bAdditionalThrottle = true;
             synchronized(LOCKQueue) {
                 x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<maxTries));
             }
@@ -210,41 +208,7 @@ public abstract class OACircularQueue<TYPE> {
             }
         }
         
-        if (bAdditionalThrottle && throttleSessionToIgnore >= 0) {
-            afterThrottle(msg, throttleSessionToIgnore);
-        }
         return x;
-    }
-    
-    
-    private volatile long msLastAfterThrottle;
-    private volatile int lastThrottleSession;
-    private volatile int lastThrottleSessionCount;
-    private volatile int cntAfterThrottle;
-    
-    /**
-     * called after an addMessage had to be throttled.  This will apply an additional throttle.
-     */
-    protected void afterThrottle(final TYPE msg, final int throttleSessionToIgnore) {
-        long msNow = System.currentTimeMillis();
-        if (throttleSessionToIgnore == lastThrottleSession && (msLastAfterThrottle + 1000 > msNow)) {
-            try {
-                cntAfterThrottle++;
-                Thread.sleep(lastThrottleSessionCount+2);
-                msNow += lastThrottleSessionCount;
-                if (lastThrottleSessionCount > 12) {
-                    lastThrottleSessionCount = 0;
-                }
-            }
-            catch (Exception e) {
-                System.out.println("OACircularQueue error:"+e);
-            }
-        }
-        else lastThrottleSessionCount = 0;
-        
-        msLastAfterThrottle = msNow;
-        lastThrottleSession = throttleSessionToIgnore;
-        lastThrottleSessionCount++;
     }
     
     private volatile int cntQueueWait; // number of times a addMessage has called wait.    
@@ -279,6 +243,24 @@ public abstract class OACircularQueue<TYPE> {
                 }
                 queueLowPosition = Math.min(session.queuePos, queueLowPosition);
 
+                
+                boolean bIsSafe = ( (session.queuePos + queueSize - (Math.min(25,(queueSize/10)))) > queueHeadPosition );
+                
+                // check to see if it is getting close to a queue overrun
+                if (bIsSafe) {
+                    if (throttleAmount < 1 || bNeedsThrottle) {
+                        continue;
+                    }
+                    // see if it needs to be throttled
+                    if ((session.queuePos + throttleAmount) < queueHeadPosition) {
+                        if (session.id != throttleSessionToIgnore) {
+                            bNeedsThrottle = true;
+                        }
+                        else continue;
+                    }
+                    else continue;
+                }
+
                 if (session.msLastRead + 1000 < tsNow) {
                     if (tsLastOneSecondLog + 1000 < tsNow) {
                         OACircularQueue.LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
@@ -292,21 +274,8 @@ public abstract class OACircularQueue<TYPE> {
                     }
                 }
                 
-                // check to see if it is getting close to a queue overrun
-                if ( (session.queuePos + queueSize - (Math.min(25,(queueSize/10)))) > queueHeadPosition ) {
-                    if (throttleAmount < 1 || bNeedsThrottle) {
-                        continue;
-                    }
-                    // see if it needs to be throttled
-                    if ((session.queuePos + throttleAmount) < queueHeadPosition) {
-                        if (session.id != throttleSessionToIgnore) {
-                            bNeedsThrottle = true;
-                        }
-                    }
-                    continue;
-                }
-
-                
+                if (bIsSafe) continue; 
+                    
                 slowSessionFound = session;
                 break;
             }
@@ -320,8 +289,7 @@ public abstract class OACircularQueue<TYPE> {
                         ", slowSession="+slowSessionFound.id +
                         ", qpos="+slowSessionFound.queuePos +
                         ", totalWaits="+cntQueueWait +
-                        ", totalThrottles="+cntQueueThrottle +
-                        ", afterThrottles="+cntAfterThrottle
+                        ", totalThrottles="+cntQueueThrottle
                         );
                     tsLastAvoidOverrunLog = tsNow;
                     tsLastAddLog = tsNow;
@@ -337,8 +305,7 @@ public abstract class OACircularQueue<TYPE> {
                         ", totalSessions="+hmSession.size() +
                         ", throttleAmount="+throttleAmount +
                         ", totalWaits="+cntQueueWait +
-                        ", totalThrottles="+cntQueueThrottle +
-                        ", afterThrottles="+cntAfterThrottle
+                        ", totalThrottles="+cntQueueThrottle
                         );
                     tsLastThrottleLog = tsNow;
                     tsLastAddLog = tsNow;
@@ -352,8 +319,7 @@ public abstract class OACircularQueue<TYPE> {
                 ", totalSessions="+hmSession.size() +
                 ", throttleAmount="+throttleAmount +
                 ", totalWaits="+cntQueueWait +
-                ", totalThrottles="+cntQueueThrottle +
-                ", afterThrottles="+cntAfterThrottle
+                ", totalThrottles="+cntQueueThrottle
                 );
             tsLastAddLog = tsNow;
         }

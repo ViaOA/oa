@@ -47,7 +47,7 @@ public class OACircularQueueTest extends OAUnitTest {
                 else pos += ints.length;
                   
                 if (id == 1 && !bStopWriter) {
-                    Thread.sleep(3);  // so that writers will have to wait on reader#1
+                    Thread.sleep(1);  // so that writers will have to wait on reader#1
                 }
                 else if (id == 2 && !bStopWriter) {
                     Thread.sleep(1005);  // let it overrun

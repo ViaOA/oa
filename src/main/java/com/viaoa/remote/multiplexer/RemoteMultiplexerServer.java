@@ -387,28 +387,17 @@ public class RemoteMultiplexerServer {
             oos.flush();
             return false;            
         }
-        
+
         if (ri.type == RequestInfo.Type.CtoS_SocketRequestNoResponse) {
             if (ri.exceptionMessage != null) return true;
             invokeUsingRemoteThread(ri, false);
             return false;            
         }
 
-        // 20151129 invoke now, return result using the queue thread
+        // invoke now, return result using the queue socket
         if (ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
-            if (ri.exceptionMessage == null) {
-                invokeUsingRemoteThread(ri, false);
-            }
-            if (ri.exceptionMessage != null) {
-                ri.methodInvoked = true;
-            }
-            session.setupAsyncQueueSender(ri.bind.asyncQueueName);
-            try {
-                session.writeOnQueueSocket(ri);
-            }
-            catch (Exception e) {
-                ri.exception = e;
-            }
+            if (ri.exceptionMessage != null) return true;
+            invokeUsingRemoteThread(ri, false);
             return false;            
         }
         
@@ -454,8 +443,7 @@ public class RemoteMultiplexerServer {
         
         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-//qqqqqqqqqqqqqqqqqqqq            
-            int x = Math.min(250, cq.getSize() / 2);
+            int x = Math.min(350, cq.getSize() / 2);
             cq.addMessageToQueue(ri, x, session.connectionId);
             return false;
         }
@@ -1050,7 +1038,7 @@ public class RemoteMultiplexerServer {
         }
         else {
             // command running because of a client request (rix)            
-            x = Math.min(175, cque.getSize() / 2);
+            x = Math.min(250, cque.getSize() / 2);
             cque.addMessageToQueue(ri, x, rix.connectionId);  // this will throttle
         }
         
@@ -1118,7 +1106,7 @@ public class RemoteMultiplexerServer {
                 boolean bNotifyMethodInvoked = false;
 
                 if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
-                    // 4:CtoS_QueuedRequest invoke 
+                    // 4:CtoS_QueuedRequest invoke
                     invokeUsingRemoteThread(ri, true);
                 }
                 else if (ri.type == RequestInfo.Type.CtoS_QueuedRequestNoResponse) {
@@ -1227,27 +1215,30 @@ public class RemoteMultiplexerServer {
             return;
         }
         
-        for (;;) {
-            if (waitForMethodInvoked(ri, maxSeconds)) break;
-            if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
-                ri.exceptionMessage = "timeout waiting for response";
-                break;
+        if ((ri.type != RequestInfo.Type.CtoS_SocketRequestNoResponse) && (ri.type != RequestInfo.Type.CtoS_ReturnOnQueueSocket)) {
+            // the calling thread is waiting for this request to be completed
+            for (;;) {
+                if (waitForMethodInvoked(ri, maxSeconds)) break;
+                if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                    ri.exceptionMessage = "timeout waiting for response";
+                    break;
+                }
             }
+
+            long ms2 = System.currentTimeMillis();
+            // this can be removed, sanity check only
+            if (maxSeconds > 0 && (ms2-ms1) >= (maxSeconds * 1000)) {
+                StackTraceElement[] stes = remoteThread.getStackTrace();
+                Exception ex = new Exception();
+                ex.setStackTrace(stes);
+                LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for the remoteThread, request="
+                        + ri.toLogString(), ex);
+            }
+            ri.nsEnd = System.nanoTime();
         }
-        
-        long ms2 = System.currentTimeMillis();
-        // this can be removed, sanity check only
-        if (maxSeconds > 0 && (ms2-ms1) >= (maxSeconds * 1000)) {
-            StackTraceElement[] stes = remoteThread.getStackTrace();
-            Exception ex = new Exception();
-            ex.setStackTrace(stes);
-            LOG.log(Level.WARNING, "timeout waiting for message, will continue, this is stacktrace for the remoteThread, request="
-                    + ri.toLogString(), ex);
-        }
-        ri.nsEnd = System.nanoTime();
     }
 
-    protected void _invoke(final OARemoteThread rt, final RequestInfo ri, final Session session) throws Exception {
+    protected void _invokeByRemoteThread(final OARemoteThread rt, final RequestInfo ri, final Session session) throws Exception {
         if (ri == null) return;
 
         if (ri.methodInfo == null) {
@@ -1295,7 +1286,25 @@ public class RemoteMultiplexerServer {
             cq.addMessageToQueue(ri);
         }
         
-        notifyMethodInvoked(ri);
+        if (ri.type == RequestInfo.Type.CtoS_SocketRequestNoResponse) {
+            // thread is not waiting
+        }
+        else if (ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
+            if (ri.exceptionMessage != null) {
+                ri.methodInvoked = true;
+            }
+            session.setupAsyncQueueSender(ri.bind.asyncQueueName);
+            try {
+                session.writeOnQueueSocket(ri);
+            }
+            catch (Exception e) {
+                ri.exception = e;
+            }
+        }
+        else {
+            // notify waiting thread
+            notifyMethodInvoked(ri);
+        }
         afterInvokeForCtoS(ri);
     }
     
@@ -1403,7 +1412,7 @@ public class RemoteMultiplexerServer {
                         else session = null;
                         // 6:CtoS_QueuedRequest invoke
                         // 6:CtoS_QueuedRequestNoResponse
-                        _invoke(this, requestInfo, session);
+                        _invokeByRemoteThread(this, requestInfo, session);
 
                         this.msLastUsed = System.currentTimeMillis();
                         synchronized (Lock) {
