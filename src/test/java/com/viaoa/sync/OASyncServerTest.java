@@ -9,6 +9,9 @@ import java.io.ObjectStreamClass;
 import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -199,10 +202,13 @@ public class OASyncServerTest {
                         msc.getMRADClientCommands().add(ccmd);
                     }
                 }
+                ModelDelegate.getDefaultSilo().getMRADServer().getMRADServerCommands().add(msc);
                 return msc;
             }
             @Override
             public boolean runCommand(MRADServerCommand cmd) {
+                // cause some "noise"
+                OASyncServerTest.this.runCommand(cmd);
                 return true;
             }
         }; 
@@ -258,6 +264,64 @@ public class OASyncServerTest {
     private RemoteBroadcastInterface remoteBroadcast;
     
 
+    private boolean bRunCommand;
+    private final AtomicInteger aiRunCommand = new AtomicInteger();
+    private final Object lock = new Object();
+    protected void runCommand(final MRADServerCommand sc) {
+        synchronized (lock) {
+            aiRunCommand.incrementAndGet();
+            lock.notifyAll();
+        }
+        if (bRunCommand) return;
+        bRunCommand = true;
+        for (MRADClientCommand mcz : sc.getMRADClientCommands()) {
+            final MRADClientCommand mcx = mcz;
+            Thread t = new Thread() {
+                int lastCnt;
+                @Override
+                public void run() {
+                    for (;;) {
+                        lastCnt = aiRunCommand.get();
+                        update();
+                        synchronized (lock) {
+                            if (lastCnt == aiRunCommand.get()) {
+                                try {
+                                    lock.wait();
+                                }
+                                catch (Exception e) {
+                                }
+                            }
+                        }
+                    }
+                }
+                void update() {
+                    MRADClient mc = mcx.getMRADClient();
+                    Application app = mc.getApplication();
+                    if (app == null) {
+                        app = new Application();
+                        mc.setApplication(app);
+                    }
+                    HostInfo hi = mc.getHostInfo();
+                    if (hi == null) {
+                        hi = new HostInfo();
+                        mc.setHostInfo(hi);
+                    }
+                    for (int i=0; i<10; i++) {
+                        mc.setStartScript(OAString.createRandomString(8,24));
+                        mc.setStopScript(OAString.createRandomString(8,24));
+                        hi.setJarDirectory(OAString.createRandomString(88,824));
+                        mc.setApplicationStatus(OAString.createRandomString(6,24));
+                    }
+                    Hub<ApplicationStatus> h = serverRoot.getApplicationStatuses();
+                    ApplicationStatus as = h.getAt( (int) Math.random() * h.size());
+                    app.setApplicationStatus(as);
+                }
+            };
+            t.start();
+        }
+    }
+    
+    
     public static void main(String[] args) throws Exception {
         MultiplexerServer.DEBUG = true;
         OALogUtil.consoleOnly(Level.FINE, OACircularQueue.class.getName());//"com.viaoa.util.OACircularQueue");

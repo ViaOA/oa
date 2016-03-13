@@ -19,6 +19,8 @@ import test.theice.tsac.model.oa.propertypath.SitePP;
 import test.theice.tsam.delegate.ModelDelegate;
 import test.theice.tsam.model.oa.*;
 import test.theice.tsam.model.oa.cs.ServerRoot;
+import test.theice.tsam.model.oa.propertypath.MRADServerPP;
+import test.theice.tsam.model.oa.propertypath.SiloPP;
 import test.theice.tsam.remote.RemoteAppInterface;
 
 import com.viaoa.OAUnitTest;
@@ -28,6 +30,7 @@ import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
+import com.viaoa.hub.HubMerger;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -71,30 +74,71 @@ public class OASyncClientTest extends OAUnitTest {
     private AtomicInteger aiOnClientDone = new AtomicInteger();
     private AtomicInteger aiSendStats = new AtomicInteger();
 
-    @Test (timeout=15000)
+    @Test //(timeout=15000)
     public void tsamTest() throws Exception {
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqq        
+
+        Hub<MRADClient> hub = serverRoot.getDefaultSilo().getMRADServer().getMRADClients();
+        for (int i=hub.size(); i<400; i++) {
+            Application app = new Application();
+            Server server = new Server();
+            serverRoot.getDefaultSilo().getServers().add(server);
+            server.getApplications().add(app);
+        }
+        
+        int maxThreads = 2;
+        final CyclicBarrier barrier = new CyclicBarrier(maxThreads);
+        final CountDownLatch countDownLatch = new CountDownLatch(maxThreads);
+        for (int i=0; i<maxThreads; i++) {
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        barrier.await();
+                        _tsamTest();
+                        countDownLatch.countDown();
+                    }
+                    catch (Exception e) {
+                        System.out.println("error: "+e);
+                    }
+                }
+            };
+            t.start();
+        }
+            countDownLatch.await();
+//          boolean b = countDownLatch.await(120, TimeUnit.SECONDS);
+    }
+    public void _tsamTest() throws Exception {
         if (serverRoot == null) return;
         
         Hub<MRADClient> hub = serverRoot.getDefaultSilo().getMRADServer().getMRADClients();
         
-        hub = new Hub<MRADClient>(MRADClient.class);
-        hub.add(serverRoot.getDefaultSilo().getMRADServer().getMRADClients().getAt(0));
-
         AdminUser user = serverRoot.getAdminUsers().getAt(0);
         Command command = serverRoot.getCommands().getAt(0);
         
-        for (int i=0; i<500; i++) {
+        // create a hubMerger that will be getting data from the commands being created
+        
+        Hub<Application> hubApplication = new Hub<Application>(Application.class);
+        HubMerger<Silo, Application> hm = new HubMerger<Silo, Application>(serverRoot.getDefaultSilo(), hubApplication, SiloPP.servers().applications().pp);
+
+        Hub<MRADClientCommand> hubMRADClientCommand = new Hub<MRADClientCommand>(MRADClientCommand.class);
+        HubMerger<MRADServer, MRADClientCommand> hm2 = new HubMerger<MRADServer, MRADClientCommand>(serverRoot.getDefaultSilo().getMRADServer(), hubMRADClientCommand, MRADServerPP.mradServerCommands().mradClientCommands().pp);
+
+        for (int i=0; i<50; i++) {
             MRADServerCommand msc = remoteTsam.createMRADServerCommand(user, hub, command);
             assertNotNull(msc);
             
-            Hub<MRADClientCommand>  h = msc.getMRADClientCommands();
-            serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().add(msc);
-            serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().setAO(msc);
+            //serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().add(msc);
+            //serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().setAO(msc);
+//qqqqqqqqqqqq            
             assertTrue(remoteTsam.runCommand(msc));
             
-            System.out.println(i+") tsamTest");
-            // if (i % 25 == 0) Thread.sleep(50);            
+            System.out.println(i+") tsamTest, hubApplication.size="+hubApplication.size()+", hubMRADClientCommand.size="+hubMRADClientCommand.size());
+            // if (i % 25 == 0) Thread.sleep(50);
+Thread.sleep(500);//qqqqqqqqqqqqqqqqqq            
         }
+        int x = 4;
+        x++;
     }
 
     
@@ -493,8 +537,8 @@ public class OASyncClientTest extends OAUnitTest {
             int cnt=0;
             @Override
             protected void afterInvokeRemoteMethod(RequestInfo ri) {
-                super.afterInvokeRemoteMethod(ri);
-                // System.out.println((++cnt)+") "+ri.toLogString());
+ //               super.afterInvokeRemoteMethod(ri);
+ System.out.println((++cnt)+") "+ri.toLogString());
             }
             @Override
             protected void logRequest(RequestInfo ri) {

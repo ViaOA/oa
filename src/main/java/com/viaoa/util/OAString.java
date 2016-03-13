@@ -1746,6 +1746,9 @@ public class OAString {
 		return newline;
     }
 
+    public static String createRandomString(int min, int max) {
+        return getRandomString(min, max, true, true, false);
+    }    
     public static String getRandomString(int min, int max) {
         return getRandomString(min, max, true, true, false);
     }    
@@ -1759,6 +1762,9 @@ public class OAString {
      * @parma  bCapFirstChar if true and bUseAlpha, then the first char will be capitalized, otherwise all chars will be lowercase.
      * @return
      */
+    public static String createRandomString(int min, int max, boolean bUseDigits, boolean bUseAlpha, boolean bCapFirstChar) {
+        return getRandomString(min, max, bUseDigits, bUseAlpha, bCapFirstChar);
+    }
     public static String getRandomString(int min, int max, boolean bUseDigits, boolean bUseAlpha, boolean bCapFirstChar) {
 		String result = "";
 		int x = min;

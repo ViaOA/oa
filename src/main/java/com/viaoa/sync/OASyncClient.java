@@ -173,7 +173,6 @@ public class OASyncClient {
                 siblingKeys = getDetailSiblings(masterObject, li, propertyName);
             }
   
-            
             additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
             try {
                 if (OARemoteThreadDelegate.isRemoteThread()) {

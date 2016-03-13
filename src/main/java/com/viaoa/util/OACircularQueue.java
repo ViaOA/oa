@@ -193,13 +193,20 @@ public abstract class OACircularQueue<TYPE> {
                 bWaited = false;
             }
             
+if (i+1 >= maxTries) {
+    int xx = 4;
+    xx++;//qqqqqqqqqqqqqqqq
+}
+
             synchronized(LOCKQueue) {
                 x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<maxTries));
             }
             if (x >= 0) break;
 
             x = Math.abs(x);
-            if (x == MS_Wait) bWaited = true; 
+            if (x == MS_Wait) {
+                bWaited = true; 
+            }
             try {
                 Thread.sleep(x);
             }
@@ -244,7 +251,7 @@ public abstract class OACircularQueue<TYPE> {
                 queueLowPosition = Math.min(session.queuePos, queueLowPosition);
 
                 
-                boolean bIsSafe = ( (session.queuePos + queueSize - (Math.min(25,(queueSize/10)))) > queueHeadPosition );
+                boolean bIsSafe = ( ((session.queuePos + queueSize) - (Math.min(50,(queueSize/10)))) > queueHeadPosition );
                 
                 // check to see if it is getting close to a queue overrun
                 if (bIsSafe) {
@@ -283,7 +290,8 @@ public abstract class OACircularQueue<TYPE> {
             
             if (slowSessionFound != null) {
                 ++cntQueueWait;
-                if (tsNow > tsLastAvoidOverrunLog + 1000) {
+//qqqqqqqqqqqqqqqqq                
+//                if (tsNow > tsLastAvoidOverrunLog + 1000) {
                     OACircularQueue.LOG.fine("cqName="+name+", avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                         ", totalSessions="+hmSession.size() +
                         ", slowSession="+slowSessionFound.id +
@@ -293,7 +301,7 @@ public abstract class OACircularQueue<TYPE> {
                         );
                     tsLastAvoidOverrunLog = tsNow;
                     tsLastAddLog = tsNow;
-                }
+//                }
                 return -MS_Wait;
             }
 
