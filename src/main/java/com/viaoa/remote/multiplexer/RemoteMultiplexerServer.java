@@ -1038,7 +1038,7 @@ public class RemoteMultiplexerServer {
         }
         else {
             // command running because of a client request (rix)            
-            x = Math.min(250, cque.getSize() / 2);
+            x = Math.min(200, cque.getSize() / 2);
             cque.addMessageToQueue(ri, x, rix.connectionId);  // this will throttle
         }
         
