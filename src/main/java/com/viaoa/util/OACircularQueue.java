@@ -185,6 +185,10 @@ public abstract class OACircularQueue<TYPE> {
     public int addMessageToQueue(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore) {
         boolean bWaited = false;
         int x;
+        
+int lastq = -1;
+long posq = this.queueHeadPosition;//qqqqqqqqqqqqqqqqqqq
+int tcntq=0;
         for (int i=0 ; ;i++) {
             int maxTries;
             if (!bWaited && throttleAmount > 0) maxTries = 10;
@@ -193,16 +197,16 @@ public abstract class OACircularQueue<TYPE> {
                 bWaited = false;
             }
             
-if (i+1 >= maxTries) {
+if (i+1 >= maxTries && maxTries > 190) {
     int xx = 4;
     xx++;//qqqqqqqqqqqqqqqq
 }
-
             synchronized(LOCKQueue) {
                 x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<maxTries));
             }
             if (x >= 0) break;
-
+lastq = x;
+if (x == MS_Throttle) tcntq++;
             x = Math.abs(x);
             if (x == MS_Wait) {
                 bWaited = true; 
@@ -230,20 +234,42 @@ if (i+1 >= maxTries) {
         final long tsNow = System.currentTimeMillis();
 
         boolean b = bCheckSessions && (hmSession.size() > 0);
+if (!b) {
+    int xx =4;
+    xx++;//qqqqqqqqqqqqqqqqq
+}
         if (b) {
             if (throttleAmount < 1 &&  ((queueLowPosition + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10)))) ) {
-                b = false;
+//qq                b = false;
             }
         }
+//qqqqqqqqqqqqqqqq
+        if (!b) {//qqqqqqqqqqqqqqq
+            for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
+                Session session = entry.getValue();
+                boolean bIsSafe = ( ((session.queuePos + queueSize) - (Math.min(50,(queueSize/10)))) > queueHeadPosition );
+                if (!bIsSafe) {
+                    int xx = 4;
+                    xx++;
+System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT "+session.id+", pos="+session.queuePos);
+if (session.id == throttleSessionToIgnore) b = true;
+//                    b=true;
+                }
+            }            
+        }
+        
         
         if (b) {
+//        if (b) {
             queueLowPosition = queueHeadPosition;
             boolean bNeedsThrottle = false;
 
             Session slowSessionFound = null;
             for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
                 Session session = entry.getValue();
-                if (session.bIgnore || session.bOverrun) continue;
+                if (session.bIgnore || session.bOverrun) {
+                    continue;
+                }
                 
                 if ((session.queuePos + queueSize) < queueHeadPosition) {
                     continue; // overflowed already
@@ -282,7 +308,10 @@ if (i+1 >= maxTries) {
                 }
                 
                 if (bIsSafe) continue; 
-                    
+if (!b) {//qqqqqqqqq
+    int xx =4;
+    xx++;
+}
                 slowSessionFound = session;
                 break;
             }

@@ -335,7 +335,12 @@ public class RemoteMultiplexerClient {
                 }
                 // 7:CtoS_QueuedRequest END
                 if (!ri.methodInvoked) {
-                    ri.exceptionMessage = "timeout waiting on response from server";
+                    if (!multiplexerClient.isConnected()) {
+                        ri.exceptionMessage = "socket disconnected";
+                    }
+                    else {
+                        ri.exceptionMessage = "timeout waiting on response from server";
+                    }
                 }
                 else {
                     // 20160122 queue thread will wait for OARemoteThreadDelegate.startNextThread()

@@ -296,6 +296,7 @@ public class OASyncServerTest {
                 }
                 void update() {
                     MRADClient mc = mcx.getMRADClient();
+                    if (mc == null) return;
                     Application app = mc.getApplication();
                     if (app == null) {
                         app = new Application();
