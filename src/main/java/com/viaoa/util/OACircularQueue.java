@@ -54,7 +54,7 @@ public abstract class OACircularQueue<TYPE> {
     private final ConcurrentHashMap<Integer, Session> hmSession = new ConcurrentHashMap<Integer, Session>();;
     
     private final int MS_Throttle1 = 2;
-    private final int MS_Throttle2 = 5;
+    private final int MS_Throttle2 = 6;
     private final int MS_Wait = 20;
     
     
