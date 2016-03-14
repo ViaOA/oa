@@ -53,15 +53,16 @@ public abstract class OACircularQueue<TYPE> {
 
     private final ConcurrentHashMap<Integer, Session> hmSession = new ConcurrentHashMap<Integer, Session>();;
     
-    private final int MS_Throttle = 5;
-    private final int MS_Wait = 25;
+    private final int MS_Throttle1 = 2;
+    private final int MS_Throttle2 = 5;
+    private final int MS_Wait = 20;
     
     
     private static class Session {
         int id;
         volatile long queuePos;
         volatile long msLastRead;
-        volatile boolean bIgnore; 
+        volatile boolean bInactive; 
         volatile boolean bOverrun; 
     }
     
@@ -183,42 +184,19 @@ public abstract class OACircularQueue<TYPE> {
     }
     
     public int addMessageToQueue(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore) {
-        boolean bWaited = false;
         int x;
-        
-int lastq = -1;
-long posq = this.queueHeadPosition;//qqqqqqqqqqqqqqqqqqq
-int tcntq=0;
         for (int i=0 ; ;i++) {
-            int maxTries;
-            if (!bWaited && throttleAmount > 0) maxTries = 10;
-            else {
-                maxTries = 200;  // 200 * 25ms  (5 secs) max, before letting it overrun
-                bWaited = false;
-            }
-            
-if (i+1 >= maxTries && maxTries > 190) {
-    int xx = 4;
-    xx++;//qqqqqqqqqqqqqqqq
-}
             synchronized(LOCKQueue) {
-                x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, (i<maxTries));
+                x = _addMessage(msg, throttleAmount, throttleSessionToIgnore, i);
             }
             if (x >= 0) break;
-lastq = x;
-if (x == MS_Throttle) tcntq++;
-            x = Math.abs(x);
-            if (x == MS_Wait) {
-                bWaited = true; 
-            }
             try {
-                Thread.sleep(x);
+                Thread.sleep(-x);
             }
             catch (Exception e) {
                 System.out.println("circque error:"+e);
             }
         }
-        
         return x;
     }
     
@@ -230,70 +208,46 @@ if (x == MS_Throttle) tcntq++;
     private volatile long tsLastOneSecondLog;
     
     
-    private int _addMessage(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore, final boolean bCheckSessions) {
+    private int _addMessage(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore, final int retryCnt) {
         final long tsNow = System.currentTimeMillis();
 
-        boolean b = bCheckSessions && (hmSession.size() > 0);
-if (!b) {
-    int xx =4;
-    xx++;//qqqqqqqqqqqqqqqqq
-}
-        if (b) {
-            if (throttleAmount < 1 &&  ((queueLowPosition + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10)))) ) {
-//qq                b = false;
-            }
+        if (throttleAmount < 1 && ((queueLowPosition + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10)))) ) {
         }
-//qqqqqqqqqqqqqqqq
-        if (!b) {//qqqqqqqqqqqqqqq
-            for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
-                Session session = entry.getValue();
-                boolean bIsSafe = ( ((session.queuePos + queueSize) - (Math.min(50,(queueSize/10)))) > queueHeadPosition );
-                if (!bIsSafe) {
-                    int xx = 4;
-                    xx++;
-System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT "+session.id+", pos="+session.queuePos);
-if (session.id == throttleSessionToIgnore) b = true;
-//                    b=true;
-                }
-            }            
-        }
-        
-        
-        if (b) {
-//        if (b) {
+        else {
             queueLowPosition = queueHeadPosition;
             boolean bNeedsThrottle = false;
-
             Session slowSessionFound = null;
+            
             for (Map.Entry<Integer, Session> entry : hmSession.entrySet()) {
                 Session session = entry.getValue();
-                if (session.bIgnore || session.bOverrun) {
+                if (session.bInactive || session.bOverrun) {
                     continue;
                 }
                 
                 if ((session.queuePos + queueSize) < queueHeadPosition) {
+                    session.bOverrun = true;
                     continue; // overflowed already
                 }
                 queueLowPosition = Math.min(session.queuePos, queueLowPosition);
 
-                
-                boolean bIsSafe = ( ((session.queuePos + queueSize) - (Math.min(50,(queueSize/10)))) > queueHeadPosition );
+                boolean bIsSafe = (session.queuePos + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10)));
                 
                 // check to see if it is getting close to a queue overrun
                 if (bIsSafe) {
-                    if (throttleAmount < 1 || bNeedsThrottle) {
-                        continue;
+                    if (throttleAmount < 1 || bNeedsThrottle || retryCnt > 10) {
                     }
-                    // see if it needs to be throttled
-                    if ((session.queuePos + throttleAmount) < queueHeadPosition) {
+                    else {
+                        // see if it needs to be throttled
+                        if ((session.queuePos + throttleAmount) > queueHeadPosition) continue;
                         if (session.id != throttleSessionToIgnore) {
                             bNeedsThrottle = true;
                         }
-                        else continue;
                     }
-                    else continue;
+                    continue;
                 }
 
+                slowSessionFound = session;
+                
                 if (session.msLastRead + 1000 < tsNow) {
                     if (tsLastOneSecondLog + 1000 < tsNow) {
                         OACircularQueue.LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
@@ -302,25 +256,16 @@ if (session.id == throttleSessionToIgnore) b = true;
                         tsLastOneSecondLog = tsNow;
                     }
                     if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-session.msLastRead))) {
-                        session.bIgnore = true;
+                        session.bInactive = true;
                         continue;  // too slow, dont wait for this one
                     }
                 }
-                
-                if (bIsSafe) continue; 
-if (!b) {//qqqqqqqqq
-    int xx =4;
-    xx++;
-}
-                slowSessionFound = session;
-                break;
             }
 
             
             if (slowSessionFound != null) {
                 ++cntQueueWait;
-//qqqqqqqqqqqqqqqqq                
-//                if (tsNow > tsLastAvoidOverrunLog + 1000) {
+                if (tsNow > tsLastAvoidOverrunLog + 1000) {
                     OACircularQueue.LOG.fine("cqName="+name+", avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                         ", totalSessions="+hmSession.size() +
                         ", slowSession="+slowSessionFound.id +
@@ -330,8 +275,9 @@ if (!b) {//qqqqqqqqq
                         );
                     tsLastAvoidOverrunLog = tsNow;
                     tsLastAddLog = tsNow;
-//                }
-                return -MS_Wait;
+                }
+                if (retryCnt < 200) return -MS_Wait;
+                bNeedsThrottle = false;
             }
 
         
@@ -347,7 +293,8 @@ if (!b) {//qqqqqqqqq
                     tsLastThrottleLog = tsNow;
                     tsLastAddLog = tsNow;
                 }
-                return -MS_Throttle;
+                if (retryCnt < 5) return -MS_Throttle1;
+                return -MS_Throttle2;
             }            
         }
 
@@ -461,7 +408,7 @@ if (!b) {//qqqqqqqqq
         for ( ;; ) {
             if (session != null) {
                 session.msLastRead = System.currentTimeMillis();
-                session.bIgnore = false;
+                session.bInactive = false;
             }
             msgs =  _getMessages(sessionId, session, posTail, maxReturnAmount, msMaxWait);
             if (session != null) session.msLastRead = System.currentTimeMillis();
@@ -484,7 +431,7 @@ if (!b) {//qqqqqqqqq
         Session session = hmSession.get(sessionId);
         if (session != null) {
             session.msLastRead = System.currentTimeMillis();
-            session.bIgnore = false;
+            session.bInactive = false;
         }
     }
     
@@ -519,14 +466,14 @@ if (!b) {//qqqqqqqqq
                 amt = (int) (queueHeadPosition - posTail);
                 if (amt == 0) {
                     bWaitingToGet = true;
-                    if (maxWait > 0) {
-                        LOCKQueue.wait(maxWait);
-                    }
-                    else {
-                        for (;;) {
-                            LOCKQueue.wait();
-                            if (posTail != queueHeadPosition) break; // protect from spurious wakeup (yes, it happens)
+                    for (;;) {
+                        if (maxWait > 0) {
+                            LOCKQueue.wait(maxWait);
                         }
+                        else {
+                            LOCKQueue.wait();
+                        }
+                        if (posTail != queueHeadPosition) break; // protect from spurious wakeup (yes, it happens)
                     }
                 }
             }

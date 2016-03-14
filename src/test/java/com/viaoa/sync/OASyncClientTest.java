@@ -78,15 +78,14 @@ public class OASyncClientTest extends OAUnitTest {
     public void tsamTest() throws Exception {
 //qqqqqqqqqqqqqqqqqqqqqqqqqqqq        
 
-        Hub<MRADClient> hub = serverRoot.getDefaultSilo().getMRADServer().getMRADClients();
-        for (int i=hub.size(); i<400; i++) {
-            Application app = new Application();
-            Server server = new Server();
-            serverRoot.getDefaultSilo().getServers().add(server);
-            server.getApplications().add(app);
+        final Hub<MRADClient> hub = new Hub<MRADClient>();
+        for (int i=0; i<400; i++) {
+            MRADClient mc = serverRoot.getDefaultSilo().getMRADServer().getMRADClients().getAt(i);
+            if (mc == null) break;
+            hub.add(mc);
         }
         
-        int maxThreads = 2;
+        int maxThreads = 10;
         final CyclicBarrier barrier = new CyclicBarrier(maxThreads);
         final CountDownLatch countDownLatch = new CountDownLatch(maxThreads);
         for (int i=0; i<maxThreads; i++) {
@@ -95,7 +94,7 @@ public class OASyncClientTest extends OAUnitTest {
                 public void run() {
                     try {
                         barrier.await();
-                        _tsamTest();
+                        _tsamTest(hub);
                         countDownLatch.countDown();
                     }
                     catch (Exception e) {
@@ -108,10 +107,10 @@ public class OASyncClientTest extends OAUnitTest {
             countDownLatch.await();
 //          boolean b = countDownLatch.await(120, TimeUnit.SECONDS);
     }
-    public void _tsamTest() throws Exception {
+    public void _tsamTest(final Hub<MRADClient> hub) throws Exception {
         if (serverRoot == null) return;
         
-        Hub<MRADClient> hub = serverRoot.getDefaultSilo().getMRADServer().getMRADClients();
+        // Hub<MRADClient> hub = serverRoot.getDefaultSilo().getMRADServer().getMRADClients();
         
         AdminUser user = serverRoot.getAdminUsers().getAt(0);
         Command command = serverRoot.getCommands().getAt(0);
@@ -135,7 +134,7 @@ public class OASyncClientTest extends OAUnitTest {
             
             System.out.println(i+") tsamTest, hubApplication.size="+hubApplication.size()+", hubMRADClientCommand.size="+hubMRADClientCommand.size());
             // if (i % 25 == 0) Thread.sleep(50);
-Thread.sleep(500);//qqqqqqqqqqqqqqqqqq            
+Thread.sleep(5);//qqqqqqqqqqqqqqqqqq            
         }
         int x = 4;
         x++;
