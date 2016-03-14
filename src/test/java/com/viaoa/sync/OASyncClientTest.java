@@ -76,7 +76,6 @@ public class OASyncClientTest extends OAUnitTest {
 
     @Test //(timeout=15000)
     public void tsamTest() throws Exception {
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqq        
 
         final Hub<MRADClient> hub = new Hub<MRADClient>();
         for (int i=0; i<400; i++) {
@@ -85,7 +84,7 @@ public class OASyncClientTest extends OAUnitTest {
             hub.add(mc);
         }
         
-        int maxThreads = 10;
+        int maxThreads = 2;
         final CyclicBarrier barrier = new CyclicBarrier(maxThreads);
         final CountDownLatch countDownLatch = new CountDownLatch(maxThreads);
         for (int i=0; i<maxThreads; i++) {
@@ -104,8 +103,7 @@ public class OASyncClientTest extends OAUnitTest {
             };
             t.start();
         }
-            countDownLatch.await();
-//          boolean b = countDownLatch.await(120, TimeUnit.SECONDS);
+        countDownLatch.await();
     }
     public void _tsamTest(final Hub<MRADClient> hub) throws Exception {
         if (serverRoot == null) return;
@@ -123,21 +121,15 @@ public class OASyncClientTest extends OAUnitTest {
         Hub<MRADClientCommand> hubMRADClientCommand = new Hub<MRADClientCommand>(MRADClientCommand.class);
         HubMerger<MRADServer, MRADClientCommand> hm2 = new HubMerger<MRADServer, MRADClientCommand>(serverRoot.getDefaultSilo().getMRADServer(), hubMRADClientCommand, MRADServerPP.mradServerCommands().mradClientCommands().pp);
 
-        for (int i=0; i<50; i++) {
+        for (int i=0; i<3; i++) {
             MRADServerCommand msc = remoteTsam.createMRADServerCommand(user, hub, command);
             assertNotNull(msc);
             
-            //serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().add(msc);
-            //serverRoot.getDefaultSilo().getMRADServer().getMRADServerCommands().setAO(msc);
-//qqqqqqqqqqqq            
             assertTrue(remoteTsam.runCommand(msc));
             
             System.out.println(i+") tsamTest, hubApplication.size="+hubApplication.size()+", hubMRADClientCommand.size="+hubMRADClientCommand.size());
-            // if (i % 25 == 0) Thread.sleep(50);
-Thread.sleep(5);//qqqqqqqqqqqqqqqqqq            
+            Thread.sleep(50);            
         }
-        int x = 4;
-        x++;
     }
 
     
