@@ -471,7 +471,7 @@ public class RemoteMultiplexerTest extends OAUnitTest {
         assertEquals(RequestInfo.Type.CtoS_SocketRequestNoResponse, riServer.type);
         
         assertTrue(riServer.processedByServerQueue);
-        assertTrue(riServer.methodInvoked);
+        // assertTrue(riServer.methodInvoked);
         
         assertTrue(riServer.nsEnd > 0);
         assertTrue(riClient.nsEnd > 0);
