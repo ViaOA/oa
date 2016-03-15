@@ -1731,6 +1731,11 @@ public class RemoteMultiplexerServer {
                     if (ri.type == RequestInfo.Type.StoC_QueuedBroadcast) {
                     }                    
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
+                        if (ri.connectionId == connectionId) {
+                            if (!ri.type.hasReturnValue() && !ri.bind.isOASync) {
+                                continue;
+                            }
+                        }
                     }                    
                     else if (ri.type == RequestInfo.Type.CtoS_QueuedRequest) {
                         if (ri.connectionId == connectionId) {
