@@ -1139,15 +1139,18 @@ public class RemoteMultiplexerClient {
         }
     }
 
+    /**
+     * This will throttle how many messages will be read into the sync processing queue.
+     */
     private void putQueSyncRequestInfo(final RequestInfo ri) throws Exception {
         // add throttle, based on number of current remoteThreads, etc        
         queSyncRequestInfo.put(ri);  // sync que will notify the original thread
         
         int x = queSyncRequestInfo.size();
-        if (x < 100) return;
+        if (x < 350) return;
         
         int max;
-        if (hmAsyncRequestInfo.size() > 0) {  // waiting for something
+        if (hmAsyncRequestInfo.size() > 0) {  // this is how many request that this client is waiting for.
             if (alRemoteClientThread.size() > 10) {
                 max = 2500;
             }
@@ -1159,14 +1162,14 @@ public class RemoteMultiplexerClient {
         }
         if (x < max) return;
         
-//System.out.println("**THROTTLE** begin  syncQue -->"+queSyncRequestInfo.size()+", remoteThread.cnt="+alRemoteClientThread.size()+"  *********************");
-        for (int i=0; i<50; i++) {  // cant wait more then a second, since circQue checks msLastRead
-            Thread.sleep(100);
+        LOG.fine("throttle begin  syncQue.size="+queSyncRequestInfo.size()+", remoteThread.cnt="+alRemoteClientThread.size());
+        for (int i=0; i<20; i++) {  // cant wait more then a second, since circQue checks msLastRead
+            Thread.sleep(40);
             x = queSyncRequestInfo.size();
             if (x < (max/10)) break;
-            if (hmAsyncRequestInfo.size() > 0) {
+            if (hmAsyncRequestInfo.size() > 0) {  // waiting on response
                 if (alRemoteClientThread.size() > 10) {
-                    if (i > 2) break;
+                    if (i > 1) break;
                 }
             }
         }
