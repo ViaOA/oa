@@ -307,7 +307,7 @@ public class OASyncServerTest {
                         hi = new HostInfo();
                         mc.setHostInfo(hi);
                     }
-                    for (int i=0; i<10; i++) {
+                    for (int i=0; i<5; i++) {
                         mc.setStartScript(OAString.createRandomString(8,24));
                         mc.setStopScript(OAString.createRandomString(8,24));
                         hi.setJarDirectory(OAString.createRandomString(88,824));

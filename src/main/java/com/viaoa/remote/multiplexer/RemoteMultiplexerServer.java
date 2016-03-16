@@ -443,7 +443,7 @@ public class RemoteMultiplexerServer {
         
         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(ri.bind.asyncQueueName);
-            int x = Math.min(350, cq.getSize() / 2);
+            int x = Math.min(1500, cq.getSize() / 2);
             cq.addMessageToQueue(ri, x, session.connectionId);
             return false;
         }
@@ -1033,12 +1033,12 @@ public class RemoteMultiplexerServer {
         int x;
         if (rix == null) {  
             // command running on the server
-            x = Math.min(350, cque.getSize() / 2);
+            x = Math.min(1000, cque.getSize() / 2);
             cque.addMessageToQueue(ri, x, 0);  // this will throttle
         }
         else {
-            // command running because of a client request (rix)            
-            x = Math.min(200, cque.getSize() / 2);
+            // command running because of a client request (rix) that triggered that message           
+            x = Math.min(650, cque.getSize() / 2);
             cque.addMessageToQueue(ri, x, rix.connectionId);  // this will throttle
         }
         

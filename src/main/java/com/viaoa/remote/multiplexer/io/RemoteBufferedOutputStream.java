@@ -23,7 +23,7 @@ import java.io.OutputStream;
  */
 public class RemoteBufferedOutputStream extends FilterOutputStream {
     private static final int TotalBuffers = 32;
-    private static final int BufferSize = 1024 * 8;
+    private static final int BufferSize = 8 * 1024;
     protected byte[] bsBuffer;
     protected int count;
     protected boolean bOwnedBuffer;  // true if the bsBuffer is not from the pool
@@ -47,7 +47,12 @@ public class RemoteBufferedOutputStream extends FilterOutputStream {
                 if (!isUsed[i]) {
                     isUsed[i] = true;
                     if (buffers[i] == null) {
-                        buffers[i] = new byte[BufferSize];
+                        int x = BufferSize;
+                        if (i < 2) x *= 8;
+                        else if (i < 4) x *= 4;
+                        else if (i < 6) x *= 3;
+                        else if (i < 8) x *= 2;
+                        buffers[i] = new byte[ x ];
                     }
                     return buffers[i];
                 }

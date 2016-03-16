@@ -84,7 +84,7 @@ public class OASyncClientTest extends OAUnitTest {
             hub.add(mc);
         }
         
-        int maxThreads = 2;
+        int maxThreads = 1;
         final CyclicBarrier barrier = new CyclicBarrier(maxThreads);
         final CountDownLatch countDownLatch = new CountDownLatch(maxThreads);
         for (int i=0; i<maxThreads; i++) {
@@ -121,14 +121,14 @@ public class OASyncClientTest extends OAUnitTest {
         Hub<MRADClientCommand> hubMRADClientCommand = new Hub<MRADClientCommand>(MRADClientCommand.class);
         HubMerger<MRADServer, MRADClientCommand> hm2 = new HubMerger<MRADServer, MRADClientCommand>(serverRoot.getDefaultSilo().getMRADServer(), hubMRADClientCommand, MRADServerPP.mradServerCommands().mradClientCommands().pp);
 
-        for (int i=0; i<3; i++) {
+        for (int i=0; i<25; i++) {
             MRADServerCommand msc = remoteTsam.createMRADServerCommand(user, hub, command);
             assertNotNull(msc);
             
             assertTrue(remoteTsam.runCommand(msc));
             
             System.out.println(i+") tsamTest, hubApplication.size="+hubApplication.size()+", hubMRADClientCommand.size="+hubMRADClientCommand.size());
-            Thread.sleep(50);            
+            Thread.sleep(500);            
         }
     }
 
