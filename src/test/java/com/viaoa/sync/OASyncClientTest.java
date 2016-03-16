@@ -76,7 +76,7 @@ public class OASyncClientTest extends OAUnitTest {
 
     @Test //(timeout=15000)
     public void tsamTest() throws Exception {
-
+        if (serverRoot == null) return;
         final Hub<MRADClient> hub = new Hub<MRADClient>();
         for (int i=0; i<400; i++) {
             MRADClient mc = serverRoot.getDefaultSilo().getMRADServer().getMRADClients().getAt(i);

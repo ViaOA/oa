@@ -63,20 +63,25 @@ public class OAObjectHubDelegate {
         }
         return false;
     }
-
+    
     public static boolean isInHubWithMaster(OAObject oaObj) {
+        return isInHubWithMaster(oaObj, null);
+    }
+
+    public static boolean isInHubWithMaster(OAObject oaObj, Hub hubToIgnore) {
         if (oaObj == null) return false;
         WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
         if (refs == null) return false;
         for (WeakReference<Hub<?>> ref : refs) {
             if (ref != null) {
                 Hub h = ref.get();
+                if (h == hubToIgnore) continue;
                 if (h != null && h.getMasterObject() != null) return true;
             }
         }
         return false;
     }
-
+    
 
     // 20150105 the obj.weakhubs can be shared, so it can not be nulled out
     /**

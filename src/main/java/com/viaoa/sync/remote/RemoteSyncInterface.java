@@ -14,6 +14,7 @@ package com.viaoa.sync.remote;
 import java.util.Comparator;
 
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
 @OARemoteInterface(isOASync=true)
@@ -24,6 +25,8 @@ public interface RemoteSyncInterface {
 
     // HubCSDelegate
     boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj);
+    boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj);
+    
     
     boolean insertInHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj, int pos);
     

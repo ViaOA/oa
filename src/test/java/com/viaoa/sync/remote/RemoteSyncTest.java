@@ -11,6 +11,7 @@ import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerServer;
 import com.viaoa.sync.OASyncDelegate;
@@ -78,6 +79,10 @@ public class RemoteSyncTest extends OAUnitTest {
             @Override
             public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj) {
                 return false;
+            }
+            @Override
+            public boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj) {
+                return addToHub(masterObjectClass, masterObjectKey, hubPropertyName, obj.getObject());
             }
             @Override
             public void clearHubChanges(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName) {

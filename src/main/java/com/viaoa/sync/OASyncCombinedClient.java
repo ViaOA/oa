@@ -15,6 +15,7 @@ import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
+import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.*;
 import com.viaoa.sync.remote.RemoteSyncInterface;
@@ -308,6 +309,10 @@ public class OASyncCombinedClient {
                         }
                         return true;
                     }
+                    @Override
+                    public boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj) {
+                        return addToHub(masterObjectClass, masterObjectKey, hubPropertyName, obj.getObject());
+                    }
                 };
                 return remoteSync;
             }
@@ -418,6 +423,10 @@ public class OASyncCombinedClient {
                             LOG.log(Level.WARNING, "", e);
                         }
                         return true;
+                    }
+                    @Override
+                    public boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj) {
+                        return addToHub(masterObjectClass, masterObjectKey, hubPropertyName, obj.getObject());
                     }
                 };
                 return remoteSync;

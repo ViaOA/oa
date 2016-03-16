@@ -21,6 +21,7 @@ import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.sync.OASyncDelegate;
 
 /**
@@ -66,6 +67,12 @@ if ("application".equalsIgnoreCase(s)) {
         return true;
     }
 
+    @Override
+    public boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj) {
+        return addToHub(masterObjectClass, masterObjectKey, hubPropertyName, obj.getObject());
+    }
+    
+    
     @Override
     public boolean insertInHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object objInsert, int pos) {
         OAObject obj = getObject(masterObjectClass, masterObjectKey);
@@ -204,5 +211,6 @@ if ("application".equalsIgnoreCase(s)) {
 
         HubDataDelegate.clearHubChanges(h);
     }
+
 }
 

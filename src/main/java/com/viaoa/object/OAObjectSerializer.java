@@ -346,7 +346,10 @@ indent--;//qqqqqqqqqqqqq
             }
             return false;
         }
-        return true;  // 20150519 was false
+        //return true;  // 20150519 was false
+        // 20160316 not sure why it was set to true.
+        //     setting to false
+        return false;
     }
     
     /**

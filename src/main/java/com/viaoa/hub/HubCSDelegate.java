@@ -103,12 +103,12 @@ public class HubCSDelegate {
 	/**
 	 * Have object added to same Hub on other workstations.
 	 */
-	public static void addToHub(Hub thisHub, OAObject obj) {
+	public static void addToHub(final Hub thisHub, final OAObject thisObj) {
         if (OASyncDelegate.isSingleUser(thisHub)) return;
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
         
-	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
+	    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisObj);
 	    if (oi.getLocalOnly()) return;
 
         OALinkInfo li = thisHub.datam.liDetailToMaster;
@@ -140,10 +140,44 @@ public class HubCSDelegate {
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync(thisHub);
         if (rs != null) {
+            if (OASync.isServer()) {
+                // if server, then send extra references if obj is new, so that client will not have to ask for it
+                if (thisObj.isNew() && !OAObjectHubDelegate.isInHubWithMaster(thisObj, thisHub)) {
+                    OAObjectSerializer oos = new OAObjectSerializer(thisObj, false, new OAObjectSerializerCallback() {
+                        @Override
+                        protected void beforeSerialize(OAObject obj) {
+                        }
+                        @Override
+                        public boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object objRef, boolean bDefault) {
+                            if (bDefault) return true;
+                            boolean b = _shouldSerializeReference(oaObj, propertyName, objRef, bDefault);
+                            return b;
+                        }
+                        boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object objRef, boolean bDefault) {
+                            if (oaObj != thisObj) return false;
+                            if (objRef instanceof Hub) return true;
+                            if (objRef instanceof OAObject) {
+                                if (thisHub.getMasterObject() == objRef) return false;
+                                if (((OAObject) objRef).isNew()) {
+                                    if (OAObjectHubDelegate.isInHubWithMaster((OAObject)objRef)) return false;                                    
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                    });
+                    rs.addNewToHub(
+                            thisHub.datam.masterObject.getClass(), 
+                            thisHub.datam.masterObject.getObjectKey(), 
+                            HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), oos);
+                }
+                return;
+            }
+            
             rs.addToHub(
                 thisHub.datam.masterObject.getClass(), 
                 thisHub.datam.masterObject.getObjectKey(), 
-                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), obj);
+                HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), thisObj);
         }
 	}	
 
