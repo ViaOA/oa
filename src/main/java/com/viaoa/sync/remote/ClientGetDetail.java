@@ -164,13 +164,20 @@ public class ClientGetDetail {
             for (OAObjectKey key : siblingKeys) {
                 OAObject obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) continue;
+
+                rwLockTreeSerialized.readLock().lock();
+                Object objx = treeSerialized.get(key.getGuid());
+                rwLockTreeSerialized.readLock().unlock();
+                if (objx != null && ((Boolean) objx).booleanValue()) {
+                    continue; // already sent with all refs
+                }
                 
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
-                    if (System.currentTimeMillis() - t1 > 100) break;
+                    if (System.currentTimeMillis() - t1 > 50) break;
                 }
+                
                 value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
-                // value will never be on the client, since it would not have included it in the siblings
                 hmExtraData.put(key, value);
             }
         }

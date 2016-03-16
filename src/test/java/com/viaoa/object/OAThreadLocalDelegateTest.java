@@ -119,7 +119,7 @@ public class OAThreadLocalDelegateTest extends OAUnitTest {
         
     }
 
-    @Test(timeout=2000)
+    @Test//(timeout=2000)
     public void deadlockTest() {
         final Object lockA = "LockA";
         final Object lockB = "LockB";
