@@ -30,7 +30,7 @@ public abstract class OAPool<TYPE> {
     private ArrayList<Pool> alResource = new ArrayList<Pool>();
     private volatile int currentUsed;
     private volatile int highMark;
-    private volatile long msHighMarkValid;  // msTime that highMark is valie
+    private volatile long msHighMarkValid;  // msTime that highMark is valid
 
     private int msHighMarkValidTimeLimit = 5000;
     

@@ -38,6 +38,7 @@ import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
 import com.viaoa.util.OACompressWrapper;
 import com.viaoa.util.OAPool;
 import com.viaoa.util.OAReflect;
+import com.viaoa.util.Tuple;
 
 
 /*** DEBUGing 
@@ -100,8 +101,9 @@ public class RemoteMultiplexerClient {
         LOG.fine("new multiplexer client");
         if (multiplexerClient == null) throw new IllegalArgumentException("multiplexerClient is required");
         this.multiplexerClient = multiplexerClient;
-        setupRequestQueueThread();
+        setupSyncRunnableQueueThread();
         setupSyncRequestQueueThread();
+        setupRequestQueueThread();
     }
 
     public MultiplexerClient getMultiplexerClient() {
@@ -658,22 +660,21 @@ public class RemoteMultiplexerClient {
                 }
             }
         });
-        t.setName("OASocket_StoC." + socket.getConnectionId() + "." + socket.getId());
+        t.setName("Remote.Socket.StoC." + socket.getConnectionId() + "." + socket.getId());
         t.setDaemon(true);
         t.start();
         bFirstStoCsocketCreated = true;
         LOG.fine("created StoC socket and thread, connectionId=" + socket.getConnectionId() + ", vid=" + id);
     }
 
-    private final AtomicInteger aiClientThreadCount = new AtomicInteger();
-    private final ArrayList<OARemoteThread> alRemoteClientThread = new ArrayList<OARemoteThread>();
+    private final AtomicInteger aiRemoteThreadCount = new AtomicInteger();
+    private final ArrayList<OARemoteThread> alRemoteThread = new ArrayList<OARemoteThread>();
 
-    private OARemoteThread getRemoteClientThread(RequestInfo ri, boolean bSendMessgage) {
-        
+    private OARemoteThread getRemoteThread(RequestInfo ri, boolean bSendMessgage) {
         OARemoteThread remoteThread;
-        synchronized (alRemoteClientThread) {
+        synchronized (alRemoteThread) {
             for (int i=0; ; i++) {
-                for (OARemoteThread rt : alRemoteClientThread) {
+                for (OARemoteThread rt : alRemoteThread) {
                     if (rt.requestInfo != null) continue;
                     synchronized (rt.Lock) {
                         if (rt.requestInfo == null) {
@@ -686,7 +687,7 @@ public class RemoteMultiplexerClient {
 
                 // note: too many threads can increase the vsockets, and reduce the msgQue speed
                 
-                int x = alRemoteClientThread.size();
+                int x = alRemoteThread.size();
                 if (x < 10) break;
                 if (x < 15) {
                     if (i > 2) break;   // 50ms
@@ -714,27 +715,27 @@ public class RemoteMultiplexerClient {
                 }
                 
                 try {
-                    alRemoteClientThread.wait(25);
+                    alRemoteThread.wait(25);
                 }
                 catch (Exception e) {
                 }
             }
         }
-        remoteThread = createRemoteClientThread();
+        remoteThread = createRemoteThread();
         remoteThread.setSendMessages(bSendMessgage);
             
-        synchronized (alRemoteClientThread) {
+        synchronized (alRemoteThread) {
             remoteThread.requestInfo = ri;
-            alRemoteClientThread.add(remoteThread);
+            alRemoteThread.add(remoteThread);
         }
-        LOG.fine("new remoteThread created, liveCount=" + alRemoteClientThread.size()+", totalCreated="+aiClientThreadCount.get());
-        onRemoteThreadCreated(aiClientThreadCount.get(), alRemoteClientThread.size());
+        LOG.fine("new remoteThread created, liveCount=" + alRemoteThread.size()+", totalCreated="+aiRemoteThreadCount.get());
+        onRemoteThreadCreated(aiRemoteThreadCount.get(), alRemoteThread.size());
         return remoteThread;
     }
     protected void onRemoteThreadCreated(int totalCount, int liveCount) {
     }
 
-    private OARemoteThread createRemoteClientThread() {
+    private OARemoteThread createRemoteThread() {
         OARemoteThread t = new OARemoteThread() {
             @Override
             public void run() {
@@ -751,13 +752,15 @@ public class RemoteMultiplexerClient {
                                 bReset = false;
                             }
                             if (requestInfo == null) {
-                                Lock.wait(1000);
+                                Lock.wait(2000);
                                 if (requestInfo == null) continue;
                             }
                         }
                         bReset = true;
 
                         processMessageForStoC(requestInfo);
+                        this.setAllowRunnable(false);  // turn back off, it could have been set to true in setupSyncRequestQueueThread
+                        
                         this.msLastUsed = System.currentTimeMillis();
 
                         synchronized (Lock) {
@@ -774,6 +777,16 @@ public class RemoteMultiplexerClient {
                 }
             }
 
+            // 20160317
+            @Override
+            public void addRunnable(Runnable r) {
+                if (!getAllowRunnable()) {
+                    super.addRunnable(r);
+                    return;
+                }
+                addSyncRunnable(requestInfo, r);
+            }
+            
             @Override
             public void startNextThread() {
                 if (startedNextThread) return;
@@ -785,7 +798,7 @@ public class RemoteMultiplexerClient {
             }
         };
         t.setDaemon(true);
-        t.setName("OARemoteThread." + aiClientThreadCount.getAndIncrement());
+        t.setName("Remote.RemoteThread." + aiRemoteThreadCount.getAndIncrement());
         t.start();
         //LOG.fine("thread name=" + t.getName());
         return t;
@@ -794,7 +807,7 @@ public class RemoteMultiplexerClient {
 
     private boolean shouldClose(final OARemoteThread remoteThread) {
         if (remoteThread.requestInfo != null) return false;
-        int x = alRemoteClientThread.size(); 
+        int x = alRemoteThread.size(); 
         if (x < 4) return false;
         
         int max;
@@ -804,17 +817,17 @@ public class RemoteMultiplexerClient {
 
         if (remoteThread.msLastUsed == 0 || (remoteThread.msLastUsed + max > System.currentTimeMillis()) ) return false;
         
-        synchronized (alRemoteClientThread) {
+        synchronized (alRemoteThread) {
             if (remoteThread.requestInfo != null) return false;            
-            if (alRemoteClientThread.size() < 4) return false;
+            if (alRemoteThread.size() < 4) return false;
 
             int cntUsed = 0;
-            for (OARemoteThread rt : alRemoteClientThread) {
+            for (OARemoteThread rt : alRemoteThread) {
                 if (rt.requestInfo != null) cntUsed++;
             }
             if (cntUsed + 3 > x) return false;
             
-            alRemoteClientThread.remove(remoteThread);
+            alRemoteThread.remove(remoteThread);
             remoteThread.stopCalled = true;
         }
         return true;
@@ -864,7 +877,7 @@ public class RemoteMultiplexerClient {
                     try {
                         RequestInfo  ri = queRequestInfo.take();
                         
-                        OARemoteThread t = getRemoteClientThread(ri, true);
+                        OARemoteThread t = getRemoteThread(ri, true);
                         synchronized (t.Lock) {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
                         }
@@ -875,7 +888,7 @@ public class RemoteMultiplexerClient {
                 }
             }
         });
-        t.setName("QueueController");
+        t.setName("Remote.RequestQueue");
         t.setDaemon(true);
         t.start();
     }
@@ -903,7 +916,7 @@ public class RemoteMultiplexerClient {
         
                                         // 20160121 wait for OARemoteThreadDelegate.startNextThread to be called, which will 
                                         //      then notify rix that sync msg is done, and then the next sync msg can be processed
-                                        rix.wait(25);
+                                        rix.wait(5);
                                     }
                                     continue;
                                 }
@@ -911,12 +924,21 @@ public class RemoteMultiplexerClient {
                         }
 
                         int maxSeconds = Math.max(ri.methodInfo == null ? 0 : ri.methodInfo.timeoutSeconds, 0);
-                        if (maxSeconds < 2) maxSeconds = 2;
+                        if (maxSeconds < 1) maxSeconds = 1;
 
-                        OARemoteThread t = getRemoteClientThread(ri, false);
+                        OARemoteThread t = getRemoteThread(ri, false);
+                        
+                        // 20160317
+                        t.setAllowRunnable(true); // so that oasync methods will be able to have event processing done in a threadpool
+                        
                         synchronized (t.Lock) {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
-                            for (int i=0 ; t.requestInfo == ri && !ri.methodInvoked && i < (maxSeconds*10); i++) {
+                            for (int i=0 ; t.requestInfo == ri && !ri.methodInvoked; i++) {
+                                if (i >= (maxSeconds*10)) {
+                                    if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                                        break;
+                                    }
+                                }
                                 t.Lock.wait(100);
                             }
                             if (t.requestInfo == ri && !ri.methodInvoked) {
@@ -934,9 +956,122 @@ public class RemoteMultiplexerClient {
                 }
             }
         });
-        t.setName("SyncQueueController");
+        t.setName("Remote.SyncRequestQueue");
         t.setDaemon(true);
         t.start();
+    }
+    
+    // 20160317
+    /**
+     * que that is for Runnable that are set by calling OARemoteThread.addRunnable, which are used by OA events when
+     *    the thread is OARemoteThead and getAllowRunnable=true  (which is set up when processing queSyncRequestInfo messages.
+     */
+    private LinkedBlockingQueue<Tuple<RequestInfo, Runnable>> queSyncRunnable = new LinkedBlockingQueue<Tuple<RequestInfo, Runnable>>();
+    /**
+     * Called by oaRemoteThead.addRunnable()
+     */
+    private void addSyncRunnable(RequestInfo ri, Runnable r) {
+        LOG.finer("adding runnable, queSize="+(queSyncRunnable.size()+1));
+        try {
+            queSyncRunnable.put(new Tuple(ri, r));
+        }
+        catch (Exception e) {
+            LOG.log(Level.WARNING, "error calling addSyncRunnable", e);
+        }
+
+        int total = aiSyncRunnableQueueThread.get();
+        if (total > 50) return;
+        
+        int busy = aiSyncRunnableQueueThreadBusy.get();
+        int avail = total - busy;
+        if (avail >= queSyncRunnable.size()) {
+            return;
+        }
+
+        if (total > 10) {
+            if (avail > 0) return;
+        }
+
+        
+        boolean b = false;
+        synchronized (lockRunnableQueue) {
+            total = aiSyncRunnableQueueThread.get();
+            if (total > 50) return;
+            busy = aiSyncRunnableQueueThreadBusy.get();
+            avail = total - busy;
+
+            if (avail >= queSyncRunnable.size()) {
+                return;
+            }
+
+            if (total > 5) {
+                if (avail > 0) return;
+            }
+            b = true;
+            aiSyncRunnableQueueThread.incrementAndGet();
+        }
+        if (b) {
+            //System.out.println("createSyncRunnableQueueThread =====> total="+total+", busy="+busy+", AVAIL="+avail+", queSize="+queSyncRunnable.size());
+            createSyncRunnableQueueThread();
+        }
+    }
+    protected void setupSyncRunnableQueueThread() {
+        LOG.fine("setup");
+        for (int i=0; i<3; i++) {
+            aiSyncRunnableQueueThread.incrementAndGet();
+            createSyncRunnableQueueThread();
+        }
+    }
+    private final Object lockRunnableQueue = new Object();
+    private final Object lockRunnableQueue2 = new Object();
+    private final AtomicInteger aiSyncRunnableQueueThread = new AtomicInteger(0);  // current size
+    private final AtomicInteger aiSyncRunnableQueueThreadTotal = new AtomicInteger(0); // total created
+    private final AtomicInteger aiSyncRunnableQueueThreadBusy = new AtomicInteger(0); // number that are running
+    protected void createSyncRunnableQueueThread() {
+        OARemoteThread t = new OARemoteThread() {
+            @Override
+            public void run() {
+                for (int i=0;!stopCalled; i++) {
+                    try {
+                        Tuple<RequestInfo, Runnable> tup = queSyncRunnable.take(); // blocks
+                        if (tup == null) continue;
+                        Runnable r = tup.b;
+                        if (r == null) continue;
+                        reset();
+                        this.requestInfo = tup.a;
+                        this.setAllowRunnable(false);
+                        this.msLastUsed = System.currentTimeMillis();
+                        
+                        try {
+                            aiSyncRunnableQueueThreadBusy.incrementAndGet();
+                            r.run();
+                        }
+                        finally {
+                            aiSyncRunnableQueueThreadBusy.decrementAndGet();
+                        }
+                        if (i < 50) continue;
+                        
+                        synchronized (lockRunnableQueue2) {
+                            int x = queSyncRunnable.size();
+                            
+                            int x1 = aiSyncRunnableQueueThread.get();
+                            int x2 = aiSyncRunnableQueueThreadBusy.get();
+                            if (x1 - x2 < x) continue;
+                            
+                            if (x1 > 10) break; // end
+                        }
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "error processing OARemoteThread runnable, requestInfo="+requestInfo.toLogString(), e);
+                    }
+                }
+                aiSyncRunnableQueueThread.decrementAndGet();
+            }
+        };
+        t.setDaemon(true);
+        t.setName("Remote.RunnableQueue."+aiSyncRunnableQueueThreadTotal.getAndIncrement());
+        t.start();
+        //LOG.fine("thread name=" + t.getName());
     }
     
     
@@ -1151,7 +1286,7 @@ public class RemoteMultiplexerClient {
         
         int max;
         if (hmAsyncRequestInfo.size() > 0) {  // this is how many request that this client is waiting for.
-            if (alRemoteClientThread.size() > 10) {
+            if (alRemoteThread.size() > 10) {
                 max = 2500;
             }
             else max = 500;
@@ -1162,14 +1297,14 @@ public class RemoteMultiplexerClient {
         }
         if (x < max) return;
         
-        LOG.fine("throttle begin  syncQue.size="+queSyncRequestInfo.size()+", remoteThread.cnt="+alRemoteClientThread.size());
-        for (int i=0; i<20; i++) {  // cant wait more then a second, since circQue checks msLastRead
-            Thread.sleep(40);
+        LOG.fine("throttle begin  syncQue.size="+queSyncRequestInfo.size()+", remoteThread.cnt="+alRemoteThread.size());
+        for (int i=0; i<55; i++) {  // cant wait more then a second, since circQue checks msLastRead
+            Thread.sleep(15);
             x = queSyncRequestInfo.size();
             if (x < (max/10)) break;
             if (hmAsyncRequestInfo.size() > 0) {  // waiting on response
-                if (alRemoteClientThread.size() > 10) {
-                    if (i > 1) break;
+                if (alRemoteThread.size() > 12) {
+                    if (i > 3) break;
                 }
             }
         }
@@ -1446,6 +1581,4 @@ public class RemoteMultiplexerClient {
     public long getReceivedMethodCount() {
         return aiReceivedMethodCallCnt.get();
     }
-    
-    
 }

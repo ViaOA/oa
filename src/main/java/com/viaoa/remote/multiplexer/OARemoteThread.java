@@ -41,6 +41,30 @@ public class OARemoteThread extends Thread {
         super(r);
     }
     
+    // flag to know if runnable is able to be handled by another thread(pool)
+    private boolean bAllowRunnable;
+    
+    /**
+     * Flag to know if the addRunnable was overwritten to handle in another thread (pool).
+     * Otherwise, calling addRunnable will call the run() method directly.
+     * @return default is false
+     */
+    public void setAllowRunnable(boolean b) {
+        bAllowRunnable = b;
+    }
+    public boolean getAllowRunnable() {
+        return bAllowRunnable;
+    }
+    
+    /**
+     * By default, this will call r.run().
+     * This can be overwritten to have it ran in another way.
+     */
+    public void addRunnable(Runnable r) {
+        if (r == null) return;
+        r.run();
+    }
+    
     // note: this is overwritten to start a new thread
     public void startNextThread() {
         startedNextThread = true;

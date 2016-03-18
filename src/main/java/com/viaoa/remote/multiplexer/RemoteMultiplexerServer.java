@@ -176,7 +176,7 @@ public class RemoteMultiplexerServer {
                 }
             }
         });
-        t.setName("OAServerSocket_CtoS");
+        t.setName("Remote.ServerSocket.CtoS");
         t.setDaemon(true);
         t.start();
         //LOG.config("created Client to Server serversocket thread");
@@ -198,7 +198,7 @@ public class RemoteMultiplexerServer {
                 }
             }
         });
-        t.setName("OASocket_CtoS." + vSocket.getConnectionId() + "." + vSocket.getId());
+        t.setName("Remote.Socket.CtoS." + vSocket.getConnectionId() + "." + vSocket.getId());
         t.setDaemon(true);
         t.start();
     }
@@ -486,7 +486,7 @@ public class RemoteMultiplexerServer {
                 }
             }
         });
-        t.setName("OAServerSocket_StoC");
+        t.setName("Remote.ServerSocket.StoC");
         t.setDaemon(true);
         t.start();
         //LOG.config("created Server to Client serversocket thread");
@@ -1066,7 +1066,7 @@ public class RemoteMultiplexerServer {
         final long qPos = cq.registerSession(0);
 
         // set up thread that will get messages from queue and send to client
-        final String threadName = "ProcessQueue." + asyncQueueName;
+        final String threadName = "Remote.ServerQueueProcessor." + asyncQueueName;
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1442,7 +1442,7 @@ public class RemoteMultiplexerServer {
                 }
             }
         };
-        t.setName("OARemoteThread." + aiClientThreadCount.getAndIncrement());
+        t.setName("Remote.RemoteThread." + aiClientThreadCount.getAndIncrement());
         t.setDaemon(true);
         t.start();
         return t;
@@ -1660,7 +1660,7 @@ public class RemoteMultiplexerServer {
                 final long qPos = cq.registerSession(connectionId);
                 
                 // set up thread that will get messages from queue and send to client
-                final String threadName = "Client." + connectionId + ".queue." + asyncQueueName;
+                final String threadName = "Remote.Client." + connectionId + ".circQueWriter." + asyncQueueName;
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {

@@ -166,12 +166,14 @@ public class HubCSDelegate {
                             return false;
                         }
                     });
+                    
                     rs.addNewToHub(
                             thisHub.datam.masterObject.getClass(), 
                             thisHub.datam.masterObject.getObjectKey(), 
                             HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), oos);
+                            
+                    return;
                 }
-                return;
             }
             
             rs.addToHub(

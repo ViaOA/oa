@@ -55,7 +55,6 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalIsSendingEvent = new AtomicInteger(); // used to manage calcPropertyChanges while another event(s) is being processed
     private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
     private static AtomicInteger TotalGetDetailHub = new AtomicInteger();
-//qqq    private static AtomicInteger TotalRunnable = new AtomicInteger();
     private static AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
     private static AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
 
@@ -1158,49 +1157,6 @@ static volatile int unlockCnt;
         return getOAThreadLocal().requestInfo;
     }
 
-//qqqqqqqqqqqqqqqqqqqqqqq    
-
-    // Runnable ---------------
-    /**
-       These are the events from a OARemoteThread, that will be put in a queue
-       to be processed by an ExecutionerService
-    */
-/**QQQQQQQQQQQQQ    
-    public static ArrayList<Runnable> getRunnables(boolean bClear) {
-        if (OAThreadLocalDelegate.TotalRunnable.get() == 0) {
-            return null;
-        }
-        ArrayList<Runnable> al = getRunnables(OAThreadLocalDelegate.getThreadLocal(false), bClear);
-        return al;
-    }
-    protected static ArrayList<Runnable> getRunnables(OAThreadLocal ti, boolean bClear) {
-        if (ti == null) return null;
-        ArrayList<Runnable> al = ti.alRunnable;
-        if (bClear && ti.alRunnable != null) {
-            ti.alRunnable = null;
-            OAThreadLocalDelegate.TotalRunnable.decrementAndGet();
-        }
-        return al;
-    }
-    public static void addRunnable(Runnable run) {
-        addRunnable(OAThreadLocalDelegate.getThreadLocal(true), run);
-    }
-    protected static void addRunnable(OAThreadLocal ti, Runnable run) {
-        if (ti == null) return;
-        if (ti.alRunnable == null) {
-            ti.alRunnable = new ArrayList<Runnable>();
-            OAThreadLocalDelegate.TotalRunnable.incrementAndGet();
-        }
-        ti.alRunnable.add(run);
-    }
-    public static void clearRunnables() {
-        clearRunnables(OAThreadLocalDelegate.getThreadLocal(true));
-    }
-    protected static void clearRunnables(OAThreadLocal ti) {
-        if (ti == null) return;
-        ti.alRunnable = null;
-    }
-***/    
     /**
      * Flag that can be set to allow messages from OARemoteThread to be
      * sent to other clients/server.

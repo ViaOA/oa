@@ -56,7 +56,9 @@ if ("application".equalsIgnoreCase(s)) {
     @Override
     public boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object objAdd) {
         OAObject obj = getObject(masterObjectClass, masterObjectKey);
-        if (obj == null) return false;
+        if (obj == null) {
+            return false;
+        }
 
         Hub h = getHub(obj, hubPropertyName);
         if (h == null) {
@@ -69,7 +71,8 @@ if ("application".equalsIgnoreCase(s)) {
 
     @Override
     public boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj) {
-        return addToHub(masterObjectClass, masterObjectKey, hubPropertyName, obj.getObject());
+        Object objx = obj.getObject();
+        return addToHub(masterObjectClass, masterObjectKey, hubPropertyName, objx);
     }
     
     

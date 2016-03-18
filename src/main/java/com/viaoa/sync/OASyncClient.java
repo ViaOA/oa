@@ -136,7 +136,6 @@ public class OASyncClient {
      * @return
      */
     public Object getDetail(final OAObject masterObject, final String propertyName) {
-        //qqqqqvvvvv        
         //System.out.println("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName+", levels="+levels);
         //LOG.finer("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName);
         
@@ -147,48 +146,34 @@ public class OASyncClient {
         // LOG.fine("masterObject="+masterObject+", propertyName="+propertyName);
         if (masterObject == null || propertyName == null) return null;
 
-        boolean bGetSibs;
+        boolean bGetSibs = false;
         OAObjectKey[] siblingKeys = null;
         String[] additionalMasterProperties = null; 
         Object result = null;
 
-/*        
-        if (OARemoteThreadDelegate.shouldMessageBeQueued()) {
-            // this needs to be fast, and only request the single property
-            bGetSibs = false;
-            try {
-                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName);
+        try {
+            if (OARemoteThreadDelegate.isRemoteThread()) {
+                    // use annotated version that does not use the msg queue
+                result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                        additionalMasterProperties, siblingKeys);
             }
-            catch (Exception e) {
-                LOG.log(Level.WARNING, "getDetail error", e);
+            else {
+                // this will "ask" for additional data "around" the requested property
+                bGetSibs = true;
+                // send siblings to return back with same prop
+                OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
+                if (li == null || !li.getCalculated()) {
+                    siblingKeys = getDetailSiblings(masterObject, li, propertyName);
+                }
+                additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
+                
+                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                        additionalMasterProperties, siblingKeys);
             }
         }
-        else {
-*/        
-            // this will "ask" for additional data "around" the requested property
-            bGetSibs = true;
-            // send siblings to return back with same prop
-            OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
-            if (li == null || !li.getCalculated()) {
-                siblingKeys = getDetailSiblings(masterObject, li, propertyName);
-            }
-  
-            additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
-            try {
-                if (OARemoteThreadDelegate.isRemoteThread()) {
-                    // use annotated version that does not use the msg queue
-                    result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                            additionalMasterProperties, siblingKeys);
-                }
-                else {
-                    result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                            additionalMasterProperties, siblingKeys);
-                }
-            }
-            catch (Exception e) {
-                LOG.log(Level.WARNING, "getDetail error", e);
-            }
-//        }
+        catch (Exception e) {
+            LOG.log(Level.WARNING, "getDetail error", e);
+        }
         
         lastMasterObjects[lastMasterCnter++%lastMasterObjects.length] = masterObject;
         

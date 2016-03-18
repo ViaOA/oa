@@ -208,9 +208,8 @@ public abstract class OACircularQueue<TYPE> {
     private volatile long tsLastOneSecondLog;
     
     
-    private int _addMessage(final TYPE msg, final int throttleAmount, final int throttleSessionToIgnore, final int retryCnt) {
+    private int _addMessage(final TYPE msg, int throttleAmount, final int throttleSessionToIgnore, final int retryCnt) {
         final long tsNow = System.currentTimeMillis();
-
         if (throttleAmount < 1 && ((queueLowPosition + queueSize) > (queueHeadPosition + Math.min(100,(queueSize/10)))) ) {
         }
         else {
