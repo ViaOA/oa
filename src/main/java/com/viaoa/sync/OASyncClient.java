@@ -708,6 +708,13 @@ public class OASyncClient {
         logRequest(ri);
     }
     protected void logRequest(RequestInfo ri) {
+        /* debug        
+        if (ri.exception != null || ri.exceptionMessage != null) {
+            if (ri.exception != null) {
+                ri.exception.printStackTrace();
+            }
+        }
+        */
         LOG.fine(ri.toLogString());
     }
 

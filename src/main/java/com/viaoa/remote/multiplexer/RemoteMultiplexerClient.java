@@ -924,7 +924,7 @@ public class RemoteMultiplexerClient {
                         }
 
                         int maxSeconds = Math.max(ri.methodInfo == null ? 0 : ri.methodInfo.timeoutSeconds, 0);
-                        if (maxSeconds < 1) maxSeconds = 1;
+                        if (maxSeconds < 3) maxSeconds = 3;
 
                         OARemoteThread t = getRemoteThread(ri, false);
                         
@@ -988,7 +988,7 @@ public class RemoteMultiplexerClient {
             return;
         }
 
-        if (total > 10) {
+        if (total > 5) {
             if (avail > 0) return;
         }
 
@@ -1007,8 +1007,10 @@ public class RemoteMultiplexerClient {
             if (total > 5) {
                 if (avail > 0) return;
             }
-            b = true;
-            aiSyncRunnableQueueThread.incrementAndGet();
+            else {
+                b = true;
+                aiSyncRunnableQueueThread.incrementAndGet();
+            }
         }
         if (b) {
             //System.out.println("createSyncRunnableQueueThread =====> total="+total+", busy="+busy+", AVAIL="+avail+", queSize="+queSyncRunnable.size());
@@ -1031,6 +1033,15 @@ public class RemoteMultiplexerClient {
         OARemoteThread t = new OARemoteThread() {
             @Override
             public void run() {
+                int x = aiSyncRunnableQueueThread.get(); 
+                if (x > 10 && (x % 2)==0) {
+                    try {
+                        Thread.sleep(2);  // throttle
+                    }
+                    catch (Exception e) {
+                    }
+                }
+                final long tsStart = System.currentTimeMillis();
                 for (int i=0;!stopCalled; i++) {
                     try {
                         Tuple<RequestInfo, Runnable> tup = queSyncRunnable.take(); // blocks
@@ -1049,10 +1060,12 @@ public class RemoteMultiplexerClient {
                         finally {
                             aiSyncRunnableQueueThreadBusy.decrementAndGet();
                         }
-                        if (i < 50) continue;
+                        if (i < 25) {
+                            if ((System.currentTimeMillis() - tsStart) < 1000) continue;
+                        }
                         
                         synchronized (lockRunnableQueue2) {
-                            int x = queSyncRunnable.size();
+                            x = queSyncRunnable.size();
                             
                             int x1 = aiSyncRunnableQueueThread.get();
                             int x2 = aiSyncRunnableQueueThreadBusy.get();

@@ -240,7 +240,10 @@ public class OADataSourceClient extends OADataSource {
         if (bCalledSupportsStorage) {
             return bSupportsStorage;
         }
-        Object obj = getRemoteClient().datasource(SUPPORTSSTORAGE, null);
+        RemoteClientInterface rc = getRemoteClient();
+        if (rc == null) return false;
+        
+        Object obj = rc.datasource(SUPPORTSSTORAGE, null);
         bCalledSupportsStorage = true;
         if (obj instanceof Boolean) bSupportsStorage = ((Boolean)obj).booleanValue();
         return bSupportsStorage;
