@@ -149,11 +149,12 @@ public class HubCSDelegate {
                         }
                         @Override
                         public boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object objRef, boolean bDefault) {
-                            if (bDefault) return true;
+                            if (!bDefault) return false;
                             boolean b = _shouldSerializeReference(oaObj, propertyName, objRef, bDefault);
                             return b;
                         }
-                        boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object objRef, boolean bDefault) {
+                        
+                        private boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object objRef, boolean bDefault) {
                             if (oaObj != thisObj) return false;
                             if (objRef instanceof Hub) return true;
                             if (objRef instanceof OAObject) {

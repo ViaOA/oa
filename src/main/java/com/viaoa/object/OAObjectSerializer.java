@@ -1,4 +1,4 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+/*  Copyright 1999-2016 Vince Via vvia@viaoa.com
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -32,10 +32,6 @@ import com.viaoa.util.Tuple;
     OAObject serialization will then call the serializer to determine which
     reference properties should be included in the serialization.
     <p>
-    Example:
-    <code>
-    </code>
-    
     Note: this is final so that it can not be subclassed, which would cause serialization problems when it tries to recreate 
     with the new subclass instance - remember this is a wrapper that is serialized and transported, then unserialized (trust me, painful lessons here ha)
     Use setCallback(..) to be able to control each object's setting as it is serialized.
@@ -161,7 +157,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         return totalObjectsWritten;
     }
     
-    private int indent;
+    // private int indent;
     
     /** 
      * Called by OAObjectSerializeDelegate.writeObject(), before an object is serialized.
@@ -170,13 +166,13 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * @see OAObjectSerializeCallback#setupSerializedProperties(Object, Stack)
      */
     void beforeSerialize(OAObject oaObj) {
-//qqqqqqqqqqqqqqqqq        
+        /* test        
         indent++;
-/* test        
         String msg = "";
         for (int i=0; i<indent; i++) msg += "  ";
         System.out.println(msg+""+oaObj.getClass()+" "+oaObj.getObjectKey().getGuid());
-*/        
+         */
+        
         totalObjectsWritten++;
         if (callback != null) {
             // save and push current settings into stack
@@ -196,7 +192,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * Called by OAObjectSerializeDelegate.writeObject(), after an object has been serialized.
      */
     void afterSerialize(OAObject obj) {
-indent--;//qqqqqqqqqqqqq        
+        // indent--;        
         if (callback != null) {
             callback.afterSerialize(obj);
         }
@@ -267,7 +263,7 @@ indent--;//qqqqqqqqqqqqq
     protected boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj) {
         return shouldSerializeReference(oaObj, propertyName, obj, null);
     }
-    
+
     protected boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj, OALinkInfo linkInfo) {
         boolean b = _shouldSerializeReference(oaObj, propertyName, obj);
         
@@ -315,7 +311,9 @@ indent--;//qqqqqqqqqqqqq
      */
     private boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object reference) {
         if (max > 0) {
-            if ((totalObjectsWritten+minExpectedAmt) > max) return false; // 20141119
+            if ((totalObjectsWritten+minExpectedAmt) > max) {
+                return false; // 20141119
+            }
             if (reference instanceof Hub) {
                 Hub h = (Hub) reference;
                 if (totalObjectsWritten + minExpectedAmt + h.getSize() > max) return false; // 20141119
@@ -346,10 +344,7 @@ indent--;//qqqqqqqqqqqqq
             }
             return false;
         }
-        //return true;  // 20150519 was false
-        // 20160316 not sure why it was set to true.
-        //     setting to false
-        return false;
+        return true;  // default, must be true
     }
     
     /**
@@ -432,12 +427,11 @@ indent--;//qqqqqqqqqqqqq
 
         wcnter++;
         LOG.finer(wcnter+") "+msg);
-//qqqqqqqqqqqqqqqqq        
+        /*test        
         if (false) {            
-//was        if (totalObjectsWritten > 250 || (wcnter%250 == 0)) {            
-            System.out.println(wcnter+") ObjectSerializer "+msg);
+            if (totalObjectsWritten > 250 || (wcnter%250 == 0)) System.out.println(wcnter+") ObjectSerializer "+msg);
         }
-        
+        */
     }
 
     static int wcnter;
@@ -526,10 +520,11 @@ indent--;//qqqqqqqqqqqqq
     	}
     	rcnter++;
         LOG.finer(rcnter+") "+msg);
-//qqqqqqqqqqqqqqq        
+        /*test        
         if (totalObjectsWritten > 25 || (rcnter%50 == 0)) {            
-//            System.out.println(rcnter+") ObjectSerializer "+msg);
+            System.out.println(rcnter+") ObjectSerializer "+msg);
         }
+        */
     }
 
     
@@ -614,7 +609,6 @@ indent--;//qqqqqqqqqqqqq
         /*
         Object objz = IncludeProperties.values()[0].ordinal();
         for (IncludeProperties ip : IncludeProperties.values()) {
-            
         }
         */
     }
