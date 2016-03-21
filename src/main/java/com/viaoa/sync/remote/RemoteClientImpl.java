@@ -174,8 +174,5 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         obj.delete();
         return true;
     }
-
 }
-
-
 

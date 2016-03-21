@@ -36,12 +36,12 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         OAObject obj = getObject(objectClass, origKey);
         if (obj == null) {
-/* TEST
-String s = objectClass.getSimpleName();            
-if ("application".equalsIgnoreCase(s)) {
-    System.out.println("property change not found, app.guid="+origKey.getGuid()+", prop="+propertyName);
-}
-*/            
+        /* TEST
+        String s = objectClass.getSimpleName();            
+        if ("application".equalsIgnoreCase(s)) {
+            System.out.println("property change not found, app.guid="+origKey.getGuid()+", prop="+propertyName);
+        }
+        */            
             return false;
         }
         OAObjectReflectDelegate.setProperty((OAObject)obj, propertyName, newValue, null);
