@@ -901,6 +901,7 @@ public class OATextController {
                 }
             };
             updateUndoable();
+            undoManager.setLimit(20);  // 20160322
         }
         return undoManager;
     }
