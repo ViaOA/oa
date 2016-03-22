@@ -1,4 +1,12 @@
 
+qqqqqq
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        for (;;) {
+            System.out.print("Enter command or 'h'elp: ");
+            String cmd = br.readLine();
+        }
+
+
 
 
 // convert a String with NL to a buffered stream
