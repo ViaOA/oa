@@ -26,6 +26,13 @@ import java.sql.Time;
 public class OADate extends OADateTime {
     private static final long serialVersionUID = 1L;
 
+    public final static String Format1 = "yyyy-MM-dd";
+    public final static String Format2 = "MM/dd/yyyy";
+    public final static String Format3 = "yyyyMMdd";
+    public final static String Format4 = "yyyy-MMM-dd";
+    public final static String Format5 = "MMM dd, yyyy";
+    public final static String Format6 = "MMM dd, yy";
+    
     // Unique for this subclass
     /** default output format.  Default is DateFormat.SHORT */
     protected static String dateOutputFormat;

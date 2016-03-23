@@ -71,7 +71,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     private static final long serialVersionUID = 1L;
     protected GregorianCalendar cal;
     protected String format;
-
+    
     private static SimpleDateFormat[] simpleDateFormats;
     private static int simpleDateFormatCounter;
     static {

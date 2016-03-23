@@ -26,6 +26,14 @@ import java.text.*;
 public class OATime extends OADateTime {
     private static final long serialVersionUID = 1L;
 
+    public final static String Format1 = "hh:mma";
+    public final static String Format2 = "hh:mm:ssa";
+    public final static String Format3 = "hh:mm:ss.SSSa";
+    
+    public final static String Format4 = "HH:mm";
+    public final static String Format5 = "HH:mm:ss";
+    public final static String Format6 = "HH:mm:ss.SSS";
+    
     // Unique for this subclass
     /** default output format */
     protected static String timeOutputFormat = "hh:mma";
