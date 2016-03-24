@@ -47,7 +47,7 @@ public class OAObjectEventDelegate {
 	            if (OASyncDelegate.isServer(oaObj)) {  // 20150604 if client, then it needs to send prop change to server
 	                return; 
 	            }
-	            if (OAObjectCSDelegate.isInClientSideCache(oaObj)) {  // 20160212 created on client, has not been sent to server yet
+	            if (OAObjectCSDelegate.isInNewObjectCache(oaObj)) {  // 20160212 created on client, has not been sent to server yet
 	                return;
 	            }
 	        }
@@ -154,8 +154,8 @@ public class OAObjectEventDelegate {
         sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
         
         if (!bLocalOnly) {
-            // 20140314 if it is in clientSideCache (this client only), then dont send prop changes
-            if (!OAObjectCSDelegate.isInClientSideCache(oaObj)) {
+            // 20140314 if it is in newObjectCache (this computer only), then dont send prop changes
+            if (!OAObjectCSDelegate.isInNewObjectCache(oaObj)) {
                 OAObjectCSDelegate.fireBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
             }
         }

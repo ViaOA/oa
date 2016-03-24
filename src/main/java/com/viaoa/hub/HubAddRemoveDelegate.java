@@ -131,6 +131,7 @@ public class HubAddRemoveDelegate {
         boolean b = false;
         if (thisHub.getSize() == 0) return;
         try {
+            thisHub.setAO(null);
             OAThreadLocalDelegate.lock(thisHub);
             b = _clear(thisHub, bSetAOtoNull, bSendNewList);
         }

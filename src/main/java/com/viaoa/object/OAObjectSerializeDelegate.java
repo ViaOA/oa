@@ -258,10 +258,13 @@ public class OAObjectSerializeDelegate {
             serializer.beforeSerialize(oaObj);
         }
         
-        boolean bClientSideCache = OAObjectCSDelegate.isInClientSideCache(oaObj);
+        boolean bNewObjectCache = OAObjectCSDelegate.isInNewObjectCache(oaObj);
         
         if (stream instanceof RemoteObjectOutputStream) {
-            if (!bClientSideCache && !OASyncDelegate.isServer(oaObj.getClass())) {
+            if (bNewObjectCache){
+                stream.writeByte((byte) 2); 
+            }
+            else if (!OASyncDelegate.isServer(oaObj.getClass())) {
                // only need to send key to the server
                stream.writeByte((byte) 1); 
                stream.writeObject(oaObj.getObjectKey());
@@ -270,22 +273,16 @@ public class OAObjectSerializeDelegate {
                }
                return;
             }
-            else if (bClientSideCache){
-                stream.writeByte((byte) 2); 
-            }
             else stream.writeByte((byte) 0); 
         }
         
         stream.defaultWriteObject();  // does not write references (transient)
         
-        _writeProperties(oaObj, stream, serializer, bClientSideCache); // this will write transient properties
+        _writeProperties(oaObj, stream, serializer, bNewObjectCache); // this will write transient properties
         
   		stream.writeObject(OAObjectDelegate.FALSE);  // end of property list
 
-  		// 20140314
-        if (bClientSideCache) {
-            OAObjectCSDelegate.removeFromClientSideCache(oaObj);
-        }
+        OAObjectCSDelegate.removeFromNewObjectCache(oaObj);
 
         // 20141124
         if (serializer != null) {
@@ -293,7 +290,7 @@ public class OAObjectSerializeDelegate {
         }
 	}
 
-    protected static void _writeProperties(OAObject oaObj, java.io.ObjectOutputStream stream, OAObjectSerializer serializer, boolean bClientSideCache) throws IOException {
+    protected static void _writeProperties(final OAObject oaObj, final java.io.ObjectOutputStream stream, final OAObjectSerializer serializer, final boolean bNewObjectCache) throws IOException {
         // this method can not support synchronized blocks, since multiple threads could be calling it and then cause deadlock
         // default way for OAServer to send objects.  Clients always send objectKeys.
         //   this way, only the object properties are sent, no reference objects or Hubs
@@ -344,10 +341,10 @@ public class OAObjectSerializeDelegate {
                 }
             }
             else {  
-                // see if something can be sent to the client
+                // see if something can be sent
                 if (obj instanceof OAObject) {
                     // always send OAObjectKey to reference objects
-                    if (!OAObjectCSDelegate.isInClientSideCache((OAObject)obj)) {
+                    if (!OAObjectCSDelegate.isInNewObjectCache((OAObject)obj)) {
                         obj = OAObjectKeyDelegate.getKey((OAObject)obj);
                     }
                     b = true;
@@ -359,7 +356,7 @@ public class OAObjectSerializeDelegate {
                     // see if a hub.size=0 can be sent
                     
                     Hub hubx = (Hub) obj;
-                    if (bClientSideCache) {
+                    if (bNewObjectCache) {
                         b = true;  // this is when the client is sending an object that the server does not have
                     }
                     else if (hubx.size() > 0 || hubx.getSharedHub() != null) {

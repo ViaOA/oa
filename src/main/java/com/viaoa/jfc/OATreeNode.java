@@ -66,6 +66,7 @@ public class OATreeNode implements Cloneable {
     boolean titleFlag;
     public Method[] methodsToHub; // methods to find Hub
     public boolean bRecursive;
+    public OATreeNode originalNode;
     
     class Def {  // so that nodes can be reused/recursive
         boolean showAll = true;  // if false then only the activeObject is shown, if true then all objects in hub are used
@@ -138,7 +139,9 @@ public class OATreeNode implements Cloneable {
     public OATreeNode(OATableComponent editor) {
         this(editor.getPropertyPath(), editor.getHub(), null, editor);
     }
-
+    public OATreeNode(OATreeNode originalNode) {
+        this.originalNode = originalNode;
+    }
     
 // replaced with HubRoot    
     // 20120302
@@ -807,17 +810,17 @@ public class OATreeNode implements Cloneable {
         _add(node, null);
     }
     
-    private void _add(final OATreeNode originalNode, String propertyPath) {
-        
+    private void _add(OATreeNode originalNode, String propertyPath) {
         OATreeNode node = originalNode;
         if (node == this) {
             if (this.hub != null || !OAString.isEmpty(propertyPath)) {
                 // need to create another node, that uses the link property to find hub
-                node = new OATreeNode() {
+                node = new OATreeNode(originalNode) {
                     @Override
                     public Icon getIcon(Object obj) {
                         return originalNode.getIcon(obj);
                     }
+                    
                 };
                 node.def = this.def;
                 node.bRecursive = true;
@@ -1108,6 +1111,7 @@ public class OATreeNode implements Cloneable {
 
     /** method to override to know when node is double clicked. */
     public void onDoubleClick(Object obj, MouseEvent e) {
+        if (originalNode != null) originalNode.onDoubleClick(obj, e);
     }
    
 
@@ -1116,11 +1120,13 @@ public class OATreeNode implements Cloneable {
      *  
      */
     public void objectSelected(Object obj) {
+        if (originalNode != null) originalNode.objectSelected(obj);
     }
     /** This is called in the SwingWorker thread, to allow for background processing like
      * getting data from server.
      */
     public void beforeObjectSelected(Object obj) {
+        if (originalNode != null) originalNode.beforeObjectSelected(obj);
     }
 
     // 20130728 can be overwritten per object

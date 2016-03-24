@@ -290,6 +290,7 @@ public class OAObjectDelegate {
             }
 		}
         OAObjectCacheDelegate.removeObject(oaObj); // remove from class cache
+        
         hmAutoAdd.remove(oaObj.guid);
         oaObj.weakhubs = null;
 	}

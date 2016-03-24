@@ -11,6 +11,7 @@
 package com.viaoa.object;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.*;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -33,7 +34,7 @@ public class OAObjectCSDelegate {
     /**
      * Objects that have been created on the client and have not be sent to the server.
      */
-    private static final ConcurrentHashMap<Integer, Integer> hashClientSideCache = new ConcurrentHashMap<Integer, Integer>(31, .75f);
+    private static final ConcurrentHashMap<Integer, Integer> hashNewObjectCache = new ConcurrentHashMap<Integer, Integer>(31, .75f);
     
     /**
      * @return true if the current thread is from the OAClient.getMessage().
@@ -70,9 +71,7 @@ public class OAObjectCSDelegate {
     */
     protected static void initialize(OAObject oaObj) {
 	    if (oaObj == null) return;
-	    if (!OASyncDelegate.isServer(oaObj.getClass())) {
-	        addToClientSideCache(oaObj);
-	    }
+        addToNewObjectCache(oaObj);
     }
 
     public static boolean isInServerSideCache(OAObject oaObj) {
@@ -97,7 +96,7 @@ public class OAObjectCSDelegate {
         if (sc != null) {
             if (guid > 0) sc.objectRemoved(guid);
         }
-        hashClientSideCache.remove(guid);
+        hashNewObjectCache.remove(guid);
     }
     
     /**
@@ -160,28 +159,33 @@ public class OAObjectCSDelegate {
         return null;
 	}
 
+	
+	private static final AtomicInteger aiNewObjectCacheSize = new AtomicInteger();
     /**
-     * Objects that are so far only on the client, and have not been sent to server.
+     * Objects that are so far only on this computer, and have not been sent to other computers (client or server).
      * This is called during initialization.
-     * Once they are serialized (sent to server), then it will be removed.
+     * Once they are serialized (oaobject.writeObject), then it will be removed.
      */
-    protected static void addToClientSideCache(OAObject oaObj) {
+    protected static void addToNewObjectCache(OAObject oaObj) {
         if (oaObj == null) return;
-        if (OASyncDelegate.isServer(oaObj.getClass())) return;
         int guid = oaObj.getObjectKey().getGuid();
-        hashClientSideCache.put(guid, guid);
+        if (hashNewObjectCache.put(guid, guid) == null) {
+            aiNewObjectCacheSize.incrementAndGet();
+        }
     }
-    protected static boolean removeFromClientSideCache(OAObject oaObj) {
+    protected static boolean removeFromNewObjectCache(OAObject oaObj) {
         if (oaObj == null) return false;
-        if (OASyncDelegate.isServer(oaObj.getClass())) return false;
+        if (hashNewObjectCache.size() == 0) return false;
         int guid = oaObj.getObjectKey().getGuid();
-        return (hashClientSideCache.remove(guid) != null);
+        boolean b = (hashNewObjectCache.remove(guid) != null);
+        if (b) aiNewObjectCacheSize.decrementAndGet();
+        return b;
     }
-    public static boolean isInClientSideCache(OAObject oaObj) {
+    public static boolean isInNewObjectCache(OAObject oaObj) {
+        if (aiNewObjectCacheSize.get() == 0) return false;
         if (oaObj == null) return false;
-        if (OASyncDelegate.isServer(oaObj.getClass())) return false;
         int guid = oaObj.getObjectKey().getGuid();
-        return hashClientSideCache.contains(guid);
+        return hashNewObjectCache.contains(guid);
     }
 	
 	

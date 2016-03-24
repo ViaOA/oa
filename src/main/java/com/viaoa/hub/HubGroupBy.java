@@ -1132,7 +1132,13 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
 
             @Override
             public void onNewList(HubEvent e) {
-                HubGroupBy.this.getCombinedHub().clear();
+                try {
+                    bIgnoreAOChange = true;
+                    HubGroupBy.this.getCombinedHub().clear();
+                }
+                finally {
+                    bIgnoreAOChange = false;
+                }
                 if (hubGroupBy != null) {
                     for (G a : hubGroupBy) {
                         HubGroupBy.this.hubCombined.add(new OAGroupBy(a));

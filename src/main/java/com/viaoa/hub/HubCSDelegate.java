@@ -131,9 +131,8 @@ public class HubCSDelegate {
 	        return; // 20140309
 	    }
 	    
-	    // 20140314 dont need to send if only on client so far
-        boolean bClientSideCache = OAObjectCSDelegate.isInClientSideCache(thisHub.datam.masterObject);
-	    if (bClientSideCache) {
+	    // 20140314 dont need to send if masterObject is only on client so far
+        if (OAObjectCSDelegate.isInNewObjectCache(thisHub.datam.masterObject)) {
 	        return;
 	    }
 
