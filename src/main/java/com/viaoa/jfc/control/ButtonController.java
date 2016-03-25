@@ -426,7 +426,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 ex = (Exception) t;
             }
-            afterActionPerformedFailure("Error: "+OAString.fmt(ex.getMessage(), "40L."), ex);
+            afterActionPerformedFailure("Command error: "+OAString.fmt(ex.getMessage(), "100L.").trim(), ex);
         }
         else {
             if (b) afterActionPerformed();
@@ -669,9 +669,10 @@ public class ButtonController extends JFCController implements ActionListener {
                     }   
                     
                     try {
-                        if (!get()) return;
+                        if (!get() && exception == null) return;
                     }
                     catch (Exception e) {
+                        exception = e;
                     }
                     
                     String s = completedMessage;
@@ -725,6 +726,11 @@ public class ButtonController extends JFCController implements ActionListener {
         return default_onActionPerformed();
     }
     public boolean default_onActionPerformed() {
+        boolean b = false;
+        b = _default_onActionPerformed();
+        return b;
+    }
+    private boolean _default_onActionPerformed() {
         Object ho = null;
         Hub hub = getActualHub();
         if (hub == null) return false;

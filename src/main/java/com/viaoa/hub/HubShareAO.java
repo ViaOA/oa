@@ -16,27 +16,31 @@ package com.viaoa.hub;
 public class HubShareAO extends HubListenerAdapter {
 	private Hub hub1;
 	private Hub hub2;
-	
-	public HubShareAO(Hub hub1, Hub hub2) {
-		this.hub1 = hub1;
+
+	/**
+	 * @param bOneWayOnly if true, then hub1.ao change will update hub2.ao.  If false then both will set the others ao.
+	 */
+    public HubShareAO(Hub hub1, Hub hub2, boolean bOneWayOnly) {
+        this.hub1 = hub1;
         this.hub2 = hub2;
 
-/*debug        
-if (HubShareDelegate.isUsingSameSharedAO(hub1, hub2)) {
-    int xx = 4;
-    xx++;
-}
-*/        
-		hub1.addHubListener(this);
-        hub2.addHubListener(this);
+        hub1.addHubListener(this);
+        if (!bOneWayOnly) hub2.addHubListener(this);
+    }
+	
+	public HubShareAO(Hub hub1, Hub hub2) {
+	    this(hub1, hub2, false);
 	}
 
     @Override
     public void afterChangeActiveObject(HubEvent evt) {
+        if (HubShareDelegate.isUsingSameSharedAO(hub1, hub2)) {
+            return;
+        }
         Hub h = evt.getHub();
         Object obj = h.getAO();
         if (h == hub1) hub2.setAO(obj);
-        else hub1.setAO(obj);
+        else if (h == hub2) hub1.setAO(obj);
     }
 	
 	public void close() {

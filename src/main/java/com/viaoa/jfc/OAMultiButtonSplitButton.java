@@ -207,6 +207,11 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         mainButton.setEnabled(cmdSelected.isEnabled());
         cmdSelected.addPropertyChangeListener(propertyChangeListener);
     }
+    public void setSelected(int pos) {
+        if (!bShowSelectedButton) return;
+        if (pos < 0 || buttons == null || pos >= buttons.length) return;
+        setSelected(buttons[pos]);
+    }
     
     public Dimension getPreferredSize() {
         if (mainButton == null) return super.getPreferredSize();
@@ -269,6 +274,4 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         frm.setLocation(1600, 500);
         frm.setVisible(true);
     }
-    
-    
 }
