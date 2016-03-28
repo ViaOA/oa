@@ -20,7 +20,7 @@ import test.hifive.model.oa.propertypath.PointsAwardLevelPP;
 
 public class HubFilterTest extends OAUnitTest {
 
-//    @Test
+    @Test
     public void testA() {
         // dependents with and w/o "."        
         
@@ -43,7 +43,7 @@ public class HubFilterTest extends OAUnitTest {
         assertEquals(hls[0], hls2[0]);
     }
 
-//    @Test
+    @Test
     public void test() {
         init();
 

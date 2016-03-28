@@ -23,23 +23,23 @@ public class HubAddRemoveDelegate {
 
     private static Logger LOG = Logger.getLogger(HubAddRemoveDelegate.class.getName());
     
-    public static void remove(Hub thisHub, Object obj) {
+    public static void remove(final Hub thisHub, final Object obj) {
         remove(thisHub, obj, false, true, false, true, true, false);
     }
 
-    public static void remove(Hub thisHub, int pos) {
+    public static void remove(final Hub thisHub, final int pos) {
         remove(thisHub, pos, false);
     }
     
-    protected static void remove(Hub thisHub, int pos, boolean bForce) {
+    protected static void remove(final Hub thisHub, final int pos, final boolean bForce) {
         Object obj = HubDataDelegate.getObjectAt(thisHub, pos);
         remove(thisHub, obj, bForce, true, false, true, true, false);
     }
 
     
-    public static void remove(Hub thisHub, Object obj, boolean bForce, 
-            boolean bSendEvent, boolean bDeleting, boolean bSetAO, 
-            boolean bSetPropToMaster, boolean bIsRemovingAll) 
+    public static void remove(final Hub thisHub, Object obj, final boolean bForce, 
+            final boolean bSendEvent, final boolean bDeleting, final boolean bSetAO, 
+            final boolean bSetPropToMaster, final boolean bIsRemovingAll) 
     {
         if (obj == null) return;
         
@@ -123,15 +123,14 @@ public class HubAddRemoveDelegate {
         HubDelegate.setReferenceable(thisHub, true);
     }
 
-    public static void clear(Hub thisHub) {
+    public static void clear(final Hub thisHub) {
         clear(thisHub, true, true);
     }
     
-    public static void clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
+    public static void clear(final Hub thisHub, final boolean bSetAOtoNull, final boolean bSendNewList) {
         boolean b = false;
         if (thisHub.getSize() == 0) return;
         try {
-            thisHub.setAO(null);
             OAThreadLocalDelegate.lock(thisHub);
             b = _clear(thisHub, bSetAOtoNull, bSendNewList);
         }
@@ -143,7 +142,7 @@ public class HubAddRemoveDelegate {
             _afterClear(thisHub, bSetAOtoNull, bSendNewList);
         }
     }
-    private static boolean _clear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
+    private static boolean _clear(final Hub thisHub, final boolean bSetAOtoNull, final boolean bSendNewList) {
         if (thisHub.datau.getSharedHub() != null) {
             return _clear(thisHub.datau.getSharedHub(), bSetAOtoNull, bSendNewList);
         }
@@ -152,6 +151,7 @@ public class HubAddRemoveDelegate {
             return false;
         }
 
+        if (bSetAOtoNull) thisHub.setAO(null);
         HubSelectDelegate.cancelSelect(thisHub, false);
 
         // 20140616 moved this here since other objects (ex: HubMerger) uses the
@@ -183,13 +183,14 @@ public class HubAddRemoveDelegate {
             objLast = obj;
             
             // 20140422 set to false, since clients will now have clear msg         
-            remove(thisHub, obj, false, false, 
-                    false, true, true, true); // dont force, dont send remove events
+            remove(thisHub, obj, false, 
+                    false, false, bSetAOtoNull, 
+                    true, true); // dont force, dont send remove events
             //was: remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull, true); // dont force, dont send remove events
         }
         return true;
     }
-    private static void _afterClear(Hub thisHub, boolean bSetAOtoNull, boolean bSendNewList) {
+    private static void _afterClear(final Hub thisHub, final boolean bSetAOtoNull, final boolean bSendNewList) {
         // 20140501
         if (bSetAOtoNull) {
             HubShareDelegate.setSharedHubsAfterRemoveAll(thisHub);
@@ -210,7 +211,7 @@ public class HubAddRemoveDelegate {
         @see OAObject#canAdd
         @see #setObjectClass
     */
-    public static boolean canAdd(Hub thisHub, Object obj) {
+    public static boolean canAdd(final Hub thisHub, final Object obj) {
         String s = canAddMsg(thisHub, obj);
         return s == null;
     }
@@ -274,7 +275,7 @@ public class HubAddRemoveDelegate {
     }
 
     
-    public static void add(Hub thisHub, Object obj) {
+    public static void add(final Hub thisHub, final Object obj) {
         if (thisHub == null || obj == null) return;
         if (thisHub.datau.getSharedHub() != null) {
             if (thisHub.getEnabled()) {
@@ -300,7 +301,7 @@ public class HubAddRemoveDelegate {
         }
         if (b) _afterAdd(thisHub, obj);
     }
-    private static boolean _add(Hub thisHub, Object obj, boolean bIsLoading) {
+    private static boolean _add(final Hub thisHub, final Object obj, final boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
             return internalAdd(thisHub, obj, bIsLoading, true);
@@ -349,7 +350,7 @@ public class HubAddRemoveDelegate {
         }
         return true;
     }
-    private static void _afterAdd(Hub thisHub, Object obj) {
+    private static void _afterAdd(final Hub thisHub, final Object obj) {
         if (!thisHub.data.isInFetch()) {
             HubEventDelegate.fireAfterAddEvent(thisHub, obj, thisHub.getCurrentSize()-1);
             HubDelegate.setReferenceable(thisHub, true);
@@ -363,7 +364,7 @@ public class HubAddRemoveDelegate {
 
     /** internal method to add to vector and hashtable
      */
-    protected static boolean internalAdd(Hub thisHub, Object obj, boolean bIsLoading, boolean bHasLock) {
+    protected static boolean internalAdd(final Hub thisHub, final Object obj, final boolean bIsLoading, final boolean bHasLock) {
         if (obj == null) return false;
 
         // this will lock, sync(data), and startNextThread
@@ -379,7 +380,7 @@ public class HubAddRemoveDelegate {
     }
 
     
-    protected static void sortMove(Hub thisHub, Object obj) {
+    protected static void sortMove(final Hub thisHub, final Object obj) {
         for (int i=0; i<5; i++) {
             try {
                 int pos = thisHub.getPos(obj);
@@ -397,7 +398,7 @@ public class HubAddRemoveDelegate {
         @param posFrom position of object to move
         @param posTo position where object should be after the move
     */
-    protected static void move(Hub thisHub, int posFrom, int posTo) {
+    protected static void move(final Hub thisHub, final int posFrom, int posTo) {
         if (posFrom == posTo) {
             if (thisHub.data.getSortListener() == null) return;
         }
@@ -464,7 +465,7 @@ public class HubAddRemoveDelegate {
         @see #add
         @see #sort
     */
-    public static boolean insert(Hub thisHub, Object obj, int pos) {
+    public static boolean insert(final Hub thisHub, final Object obj, final int pos) {
         if (obj == null) return false;
         if (thisHub.datau.getSharedHub() != null) {
             return insert(thisHub.datau.getSharedHub(), obj, pos);
@@ -485,7 +486,7 @@ public class HubAddRemoveDelegate {
     }        
         
     // returns new Pos
-    private static int _insert(Hub thisHub, Object obj, int pos, boolean bIsLoading) {
+    private static int _insert(final Hub thisHub, final Object obj, int pos, final boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
             boolean b = internalAdd(thisHub, obj, bIsLoading, true);
@@ -599,7 +600,7 @@ public class HubAddRemoveDelegate {
 
         return pos;
     }
-    private static void _afterInsert(Hub thisHub, Object obj, int pos) {
+    private static void _afterInsert(final Hub thisHub, final Object obj, final int pos) {
         HubEventDelegate.fireAfterInsertEvent(thisHub, obj, pos);
         
         if (!thisHub.data.isInFetch()) {
@@ -615,7 +616,7 @@ public class HubAddRemoveDelegate {
         @param pos2 position of object to move to, if there is not an object at this position, then no move is performed.
         @see #move
     */
-    public static void swap(Hub thisHub, int pos1, int pos2) {
+    public static void swap(final Hub thisHub, int pos1, int pos2) {
         if (thisHub.datau.getSharedHub() != null) {
             swap(thisHub.datau.getSharedHub(), pos1, pos2);
             return;

@@ -180,8 +180,10 @@ public class OATreeTableController extends OATree implements OATableComponent {
     public void addNotify() {
         super.addNotify(false);
     }
-    
+
+    private volatile boolean bIgnoreFlag;
     private Object lastRemoved;
+    
     void setup() {
         if (hub == null) {
             return;
@@ -190,7 +192,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
         hub.addHubListener(new HubListenerAdapter() {
             @Override
             public void beforeRemove(HubEvent e) {
-                throw new RuntimeException("cant remove from table, must be removed from the Tree node");
+                bIgnoreFlag = true;
             }
         });
         
@@ -213,6 +215,10 @@ public class OATreeTableController extends OATree implements OATableComponent {
 
             @Override
             public void treeNodesRemoved(TreeModelEvent e) {
+                if (bIgnoreFlag) {
+                    bIgnoreFlag = false;
+                    return;
+                }
                 TreePath tp = e.getTreePath();
                 int row = OATreeTableController.this.getRowForPath(tp);
                 
