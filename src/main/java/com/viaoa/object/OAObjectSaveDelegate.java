@@ -311,7 +311,7 @@ public class OAObjectSaveDelegate {
 	        //oaObj.setDeleted(false);  // in case it was deleted, and then re-saved
 	        //oaObj.setChanged(false);
 	    }
-        oaObj.saved();
+        oaObj.afterSave();
         return true;
 	}
 	

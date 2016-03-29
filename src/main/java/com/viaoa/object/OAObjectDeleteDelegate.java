@@ -315,7 +315,7 @@ public class OAObjectDeleteDelegate {
             	OAObjectDSDelegate.delete(oaObj);
     	    }
 		}
-	    oaObj.deleted();
+	    oaObj.afterDelete();
 	}
 }
 

@@ -656,7 +656,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
     
     /** This is used to save object to OADataSource and flag object as
-        being saved, removing all changes.
+        being saved and no longer new.
         <p>
         It does the following:
         <ol>
@@ -681,8 +681,19 @@ public class OAObject implements java.io.Serializable, Comparable {
         @see Hub#saved
     */
     public void save(int iCascadeRule) {
-    	OAObjectSaveDelegate.save(this, iCascadeRule);  // this will save on server if using OAClient
+        if (!canSave(null)) {
+            if (iCascadeRule == CASCADE_NONE) {
+                throw new RuntimeException("can Save returned false for "+getClass().getSimpleName());
+            }
+            return;  // else allow it to keep going
+        }
+        
+        OAObjectSaveDelegate.save(this, iCascadeRule);  // this will save on server if using OAClient
     }
+    public boolean canSave(OAEditMessage em) {
+        return true;
+    }
+    
     /**
      * Cascade save all links.
      */
@@ -690,29 +701,28 @@ public class OAObject implements java.io.Serializable, Comparable {
         OAObjectSaveDelegate.save(this, OAObject.CASCADE_ALL_LINKS); 
     }
     /**
-     * Method that can be overwritten to "know" when it is saved.
-     * Note: overwritting the save() method will not always work,
-     * since the object could be saved during a cascade save that
-     * started from another objects call to delete.
+     * called after an object is saved
      */
-    public void saved() {
+    public void afterSave() {
     }
 
-    
-    
     /** Remove this object from all hubs and deletes object from OADataSource.
+        Calls canDelete first.
         @see Hub#deleted
     */
     public void delete() {
+        if (!canDelete(null)) {
+            throw new RuntimeException("can Delete returned false for "+getClass().getSimpleName());
+        }
     	OAObjectDeleteDelegate.delete(this);
     }
+    public boolean canDelete(OAEditMessage em) {
+        return true;
+    }
     /**
-     * Method that can be overwritten to "know" when it is deleted.
-     * Note: overwritting the delete() method will not always work,
-     * since the object could be deleted during a cascade delete that
-     * started from another objects call to delete.
+     * called after an object is deleted.
      */
-    public void deleted() {
+    public void afterDelete() {
     }
 
 
@@ -849,6 +859,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     public void loadReferences(int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc) {
         OAObjectReflectDelegate.loadAllReferences(this, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc);
     }
+
 }
 
 
