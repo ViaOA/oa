@@ -229,11 +229,10 @@ public class HubAddRemoveDelegate {
             return canAddMsg(thisHub.datau.getSharedHub(), obj);
         }
     
-        HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
-        if (dm.masterHub != null) {
-            // if there is a masterHub, then make sure that this Hub is active/valid
-            if (dm.masterObject == null) { // 20130829
-            //was: if (thisHub.datam.masterObject == null) {
+        // if there is a masterHub, then make sure that this Hub is active/valid
+        if (thisHub.datam.masterObject == null && thisHub.getCurrentSize() == 0) { // 20160330
+            HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
+            if (dm.masterHub != null) {
                 return "has masterHub, but masterObject is null";
             }
         }
