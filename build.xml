@@ -32,9 +32,8 @@
 	<!-- 20130317 removed depends rmic -->
     <target name="Jar" depends="UpdateBinFiles" description="Jar Project">
         <jar basedir="bin" destfile="dist/${FileName}.jar"  manifest="manifest.mf" update="false" 
-            excludes="**/builder/**, **/website/**, **/doc-files/**, **/vetjobstest/**, **/theice/**, **/tmgsc/**, **/Test.class, **/Test$*.class" 
+            excludes="test/**, **/builder/**, **/website/**, **/doc-files/**, **/vetjobstest/**, **/theice/**, **/tmgsc/**, **/*Test.class, **/*Test$*.class" 
         />
-        
         
         <!-- jar basedir="../OAEditor/bin" destfile="dist/${FileName}.jar"  update="true"/ -->
 	</target>
