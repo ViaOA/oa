@@ -86,6 +86,7 @@ public class ClientGetDetail {
         
         OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
         os.setMax(2500);
+        os.setMaxSize(250000);
 
 // qqqqqqqqqqqqqq
         String s = String.format(

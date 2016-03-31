@@ -167,7 +167,7 @@ public class OASyncClient {
                 }
                 additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
                 
-                result = getRemoteClient().getDetail(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
                         additionalMasterProperties, siblingKeys);
             }
         }

@@ -80,6 +80,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     private transient int max;
     private transient int minExpectedAmt; // minimum expected to save
 
+    private transient int maxSize;
     private transient HashMap<OALinkInfo, Integer> hmLinkInfoCount;
     
     /**
@@ -155,6 +156,13 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     }
     public int getTotalObjectsWritten() {
         return totalObjectsWritten;
+    }
+    
+    public void setMaxSize(int maxSize) {
+        this.maxSize = maxSize;
+    }
+    public int getMaxSize() {
+        return this.maxSize;
     }
     
     // private int indent;
@@ -310,6 +318,9 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * This will used the excludedClasses, callback, or allReferences flag.
      */
     private boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object reference) {
+        if (maxSize > 0) {
+            if (getCompressedWritten() > maxSize) return false;
+        }
         if (max > 0) {
             if ((totalObjectsWritten+minExpectedAmt) > max) {
                 return false; // 20141119
@@ -367,6 +378,13 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     	}
     }
 
+    public long getCompressedWritten() {
+        if (deflater == null) return -1;
+        return deflater.getBytesWritten();
+    }
+    
+    private transient Deflater deflater;
+    
     /**
      * Note: if compression is true, then this will use a new ObjectOutputStream to save the wrapped object.
      * Remember: each ObjectStream keeps track of the objects that it has serialized and will not duplicated
@@ -375,7 +393,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     private void _writeObject(ObjectOutputStream stream) throws IOException {
         String msg;
         if (bCompress) {
-        	Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);//BEST_SPEED BEST_COMPRESSION);
+        	deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);//BEST_SPEED BEST_COMPRESSION);
         	DeflaterOutputStream dos = new DeflaterOutputStream(stream, deflater, 1024*3);
             
         	RemoteObjectOutputStream roos;
