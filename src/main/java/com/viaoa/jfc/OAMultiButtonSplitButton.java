@@ -149,6 +149,7 @@ public class OAMultiButtonSplitButton extends OASplitButton {
     }
     
     public void addButton(final JButton cmd) {
+        if (cmd == null) return;
         addButton(cmd, false);
     }
   
@@ -164,6 +165,7 @@ public class OAMultiButtonSplitButton extends OASplitButton {
     }
     
     public void addButton(final JButton cmd, boolean bDefault) {
+        if (cmd == null) return;
         // cmd.setAlignmentX(LEFT_ALIGNMENT);
         cmd.setHorizontalAlignment(SwingConstants.LEFT);  // Sets the horizontal alignment of the icon and text.
 
