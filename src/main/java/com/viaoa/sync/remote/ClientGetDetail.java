@@ -85,14 +85,14 @@ public class ClientGetDetail {
         if ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
         
         OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
-        os.setMax(2500);
-        os.setMaxSize(250000);
+        os.setMax(1000);  // max number of objects to write
+        os.setMaxSize(250000);  // max size of compressed data to write out
 
 // qqqqqqqqqqqqqq
         String s = String.format(
             "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d, masterProps=%s",
             ++cntx, 
-            masterObject, 
+            masterObject.getClass().getSimpleName(), 
             property, 
             detailValue,
             (siblingKeys == null)?0:siblingKeys.length,

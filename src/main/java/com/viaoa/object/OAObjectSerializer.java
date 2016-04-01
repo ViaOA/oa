@@ -319,7 +319,9 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      */
     private boolean _shouldSerializeReference(OAObject oaObj, String propertyName, Object reference) {
         if (maxSize > 0) {
-            if (getCompressedWritten() > maxSize) return false;
+            if (getCompressedWritten() > maxSize) {
+                return false;
+            }
         }
         if (max > 0) {
             if ((totalObjectsWritten+minExpectedAmt) > max) {
@@ -380,7 +382,8 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
 
     public long getCompressedWritten() {
         if (deflater == null) return -1;
-        return deflater.getBytesWritten();
+        long x = deflater.getBytesWritten();
+        return x;
     }
     
     private transient Deflater deflater;
@@ -437,9 +440,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
 
             msg = String.format(
                     "wrote object=%s, extra=%s, totalObjects=%,d", 
-                    object==null?"null":object.getClass().getName(), 
+                    object==null?"null":object.getClass().getSimpleName(), 
                     extraObject==null?"null":extraObject.getClass().getName(),
-                    totalObjectsWritten);
+                    totalObjectsWritten 
+                    );
         }
         stream.writeInt(totalObjectsWritten);
 
