@@ -389,7 +389,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         return tableCellEditor;
     }
 
-
+    // 20160402 
 
     // hack: JComboBox could be container, so set focus to first good component
     JComponent focusComp;
@@ -400,6 +400,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
             focusComp = (JComponent) getEditor().getEditorComponent();
             if ( !(focusComp instanceof OATextField) ) focusComp = null; // dont use default editor
         }
+        
         if (focusComp == null) {
             Component[] comps = getComponents();
             for (int i=0; i<comps.length; i++) {
@@ -411,6 +412,10 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
             }
             if (focusComp == null) focusComp = this;
         }
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqq    20160401 needs to use this, ex: oacomboDate in a table will not allow dropdown to be clicked, since the txtfld would lose focus and then the table focusListener would stop editing    
+focusComp = this;
+//qqqqqqqq needs to be tested with other custom combos, ex: color combo
+        
         return focusComp;
     }
 
@@ -418,18 +423,33 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         Overwritten, to setup editor component.
     */
     public void requestFocus() {
+        ComboBoxEditor cbe = getEditor(); 
+        if (cbe != null) {
+            JComponent jc = (JComponent) cbe.getEditorComponent();
+            if (jc instanceof OATextField) {
+                ((OATextField)jc).requestFocus();
+                ((OATextField)jc).selectAll();
+                return;
+            }
+        }
+        super.requestFocus();
+        /* was 20160402
         getFocusComponent();
         if (focusComp != this) {
             focusComp.requestFocus();
             if (focusComp instanceof OATextField) ((OATextField)focusComp).selectAll();
         }
         else super.requestFocus();
+        */
     }
     @Override
     public synchronized void addFocusListener(FocusListener l) {
         getFocusComponent();
         if (focusComp != this) {
             focusComp.addFocusListener(l);
+        }
+        else { // 20160402
+            super.addFocusListener(l);
         }
     }
     

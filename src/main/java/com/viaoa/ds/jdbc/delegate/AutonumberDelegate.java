@@ -35,8 +35,8 @@ import com.viaoa.object.*;
 public class AutonumberDelegate {
     private static Logger LOG = Logger.getLogger(AutonumberDelegate.class.getName());
 
-    private static ConcurrentHashMap<String, AtomicInteger> hashNext = new ConcurrentHashMap<String, AtomicInteger>(39, .75f);  // Table, Integer
-    private static Object LOCK = new Object();
+    private static final ConcurrentHashMap<String, AtomicInteger> hashNext = new ConcurrentHashMap<String, AtomicInteger>(39, .75f);  // Table.name.upper, Integer
+    private static final Object LOCK = new Object();
 	
     /**
 	    Assigns autonumber properties.
@@ -65,17 +65,19 @@ public class AutonumberDelegate {
 	 * This is used to determine if an assigned ID needs to change the autoNextNumber ID
 	 */
 	public static void verifyNumberUsed(OADataSourceJDBC ds, OAObject object, Table table, Column column, final int id) {
+	    if (table == null || table.name == null || column == null) return;
         // LOG.finer("table="+table.name+", column="+column.columnName+", verifyId="+id);
         for (;;) {
             int idNext = getNextNumber(ds, table, column, false);
             if (id < idNext) break;
-            AtomicInteger ai = hashNext.get(table.name);
-            if (ai.compareAndSet(idNext, id+1)) break; // else need to try again
+            AtomicInteger ai = hashNext.get(table.name.toUpperCase());
+            if (ai == null || ai.compareAndSet(idNext, id+1)) break; // else need to try again
         }
 	}
 
 	public static void setNextNumber(OADataSourceJDBC ds, Table table, int nextNumberToUse) {
-        LOG.finer("table="+table.name+", nextNumberToUse="+nextNumberToUse);
+        if (table == null || table.name == null) return;
+        LOG.fine("table="+table.name+", nextNumberToUse="+nextNumberToUse);
         Column[] columns = table.getColumns();
         for (int i=0; columns != null && i < columns.length; i++) {
             Column column = columns[i];
@@ -94,14 +96,16 @@ public class AutonumberDelegate {
     }	
     //========================= Utilities ===========================
     protected static int _getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
+        if (table == null || table.name == null || pkColumn == null) return -1;
         // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", bAutoIncrement="+bAutoIncrement);
         
         int max = 0;
-        AtomicInteger ai = hashNext.get(table.name);
+        final String hashId = table.name.toUpperCase();
+        AtomicInteger ai = hashNext.get(hashId);
         if (ai == null) {
     	    DBMetaData dbmd = ds.getDBMetaData();
             synchronized(LOCK) {
-                ai = hashNext.get(table.name);
+                ai = hashNext.get(hashId);
                 if (ai == null) {
                     String query = "";
                     if (dbmd.guid != null && dbmd.guid.length() > 0) {
@@ -126,7 +130,7 @@ public class AutonumberDelegate {
                     }
                     LOG.fine("table="+table.name+", column="+pkColumn.columnName+", max="+max);
                     ai = new AtomicInteger(max);
-                	hashNext.put(table.name, ai);
+                	hashNext.put(hashId, ai);
                 }
             }
         }
