@@ -448,7 +448,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         stream.writeInt(totalObjectsWritten);
 
         wcnter++;
-        LOG.finer(wcnter+") "+msg);
+        LOG.fine(wcnter+") "+msg);
         /*test        
         if (false) {            
             if (totalObjectsWritten > 250 || (wcnter%250 == 0)) System.out.println(wcnter+") ObjectSerializer "+msg);
@@ -541,7 +541,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
                     totalObjectsWritten);
     	}
     	rcnter++;
-        LOG.finer(rcnter+") "+msg);
+        LOG.fine(rcnter+") "+msg);
         /*test        
         if (totalObjectsWritten > 25 || (rcnter%50 == 0)) {            
             System.out.println(rcnter+") ObjectSerializer "+msg);

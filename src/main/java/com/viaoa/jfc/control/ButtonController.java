@@ -799,7 +799,7 @@ public class ButtonController extends JFCController implements ActionListener {
                         msg = "Error while saving\n" + e;
                     }
                     if (msg != null) {
-                        JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.ERROR_MESSAGE,null);
+                        JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(button), msg, "Error", JOptionPane.ERROR_MESSAGE,null);
                         break;
                     }
                     

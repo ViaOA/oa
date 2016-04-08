@@ -433,14 +433,17 @@ public class HubShareDelegate {
 	    //was: if (sharedMasterHub == thisHub) sharedMasterHub = null;
 
 
-	    
 	    // make sure both hubs are compatible
 	    if (sharedMasterHub != null) {
 	        if (thisHub.getObjectClass() == null) {
 	            HubDelegate.setObjectClass(thisHub, sharedMasterHub.getObjectClass());
 	        }
-	        if (!thisHub.getObjectClass().equals(sharedMasterHub.getObjectClass()) ) {
-	            if (!thisHub.getObjectClass().isAssignableFrom(sharedMasterHub.getObjectClass())) {
+	        else if (sharedMasterHub.getObjectClass() == null) {
+                HubDelegate.setObjectClass(sharedMasterHub, thisHub.getObjectClass());
+            }
+	        Class c = thisHub.getObjectClass(); 
+	        if (c != null && !c.equals(sharedMasterHub.getObjectClass()) ) {
+	            if (!c.isAssignableFrom(sharedMasterHub.getObjectClass())) {
 	                throw new RuntimeException("objectClasses do not match");
 	            }
 	        }

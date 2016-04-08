@@ -74,7 +74,7 @@ public class HubData implements java.io.Serializable {
             synchronized (this) {
                 if (hubDatax == null) {
                     if (++qq % 500 == 0) {
-                        LOG.fine((qq)+") HubDatax created");
+                        LOG.finer((qq)+") HubDatax created");
                     }
                     this.hubDatax = new HubDatax();
                 }

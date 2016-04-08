@@ -23,6 +23,23 @@ public class HubDatax implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization
 
 
+    public boolean isNeeded() {
+        if (sortProperty != null) return true;
+        if (!sortAsc) return true;
+        if (uniqueProperty != null) return true;
+
+        if (vecAdd != null && vecAdd.size() > 0) return true;
+        if (vecRemove != null && vecRemove.size() > 0) return true;
+        if (sortListener != null) return true;
+        if (select != null && select.hasMore()) return true;
+        if (refresh) return true;
+        if (hashProperty != null && hashProperty.size() > 0) return true;
+        if (selectOrder != null) return true;
+        if (autoSequence != null) return true;
+        if (autoMatch != null) return true;
+        return false;
+    }
+    
     public boolean shouldSerialize() {
         if (sortProperty != null) return true;
         if (!sortAsc) return true;
@@ -40,7 +57,7 @@ public class HubDatax implements java.io.Serializable {
 	    This is used by JSP components to know if a frame should be updated. <br>
 	    See com.viaoa.html.OATable and com.viaoa.html.OANav
 	*/
-//	protected transient int newListCount;
+    // protected transient int newListCount;
 	
 	// If bTrackChanges is true, then all objects that are added to Hub are added to this vector.
 	protected transient Vector vecAdd; // only for OAObjects

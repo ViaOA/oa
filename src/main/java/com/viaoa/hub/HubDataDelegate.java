@@ -36,6 +36,11 @@ public class HubDataDelegate {
             if (thisHub.data.getVecAdd() != null) thisHub.data.getVecAdd().removeAllElements();
     		if (thisHub.data.getVecRemove() != null) thisHub.data.getVecRemove().removeAllElements();
     		thisHub.data.vector.removeAllElements();
+    	
+            // 20160407
+            if (thisHub.data.hubDatax != null) {
+                if (!thisHub.data.hubDatax.isNeeded()) thisHub.data.hubDatax = null;
+            }
     	}
         thisHub.data.changed = false;
 		thisHub.data.changeCount++;
@@ -75,6 +80,10 @@ public class HubDataDelegate {
             if (v != null) {
                 bSendEvent = bSendEvent || v.size() > 0;
                 v.removeAllElements();
+            }
+            // 20160407
+            if (thisHub.data.hubDatax != null) {
+                if (!thisHub.data.hubDatax.isNeeded()) thisHub.data.hubDatax = null;
             }
         }
         if (bSendEvent) {
@@ -480,14 +489,24 @@ public class HubDataDelegate {
 	
 	protected static void removeFromAddedList(Hub thisHub, Object obj) {
 	    synchronized (thisHub.data) {
+            if (thisHub.data.hubDatax == null) return;
 	    	Vector v = thisHub.data.getVecAdd();
 	    	if (v != null) v.remove(obj);
+            // 20160407
+            if (thisHub.data.hubDatax != null) {
+                if (!thisHub.data.hubDatax.isNeeded()) thisHub.data.hubDatax = null;
+            }
 	    }
 	}
 	public static void removeFromRemovedList(Hub thisHub, Object obj) {
+        if (thisHub.data.hubDatax == null) return;
 	    synchronized (thisHub.data) {
 	    	Vector v = thisHub.data.getVecRemove();
 	    	if (v != null) v.remove(obj);
+            // 20160407
+            if (thisHub.data.hubDatax != null) {
+                if (!thisHub.data.hubDatax.isNeeded()) thisHub.data.hubDatax = null;
+            }
 	    }
 	}
 
