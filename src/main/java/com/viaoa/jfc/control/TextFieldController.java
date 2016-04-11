@@ -517,8 +517,10 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
                     }
                 }
             }
-            OAUndoableEdit ue = OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), prevValue, getPropertyPathValue(activeObject) );
-            OAUndoManager.add(ue);
+            if (getEnableUndo()) {
+                OAUndoableEdit ue = OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), prevValue, getPropertyPathValue(activeObject) );
+                OAUndoManager.add(ue);
+            }
         }
         catch (Throwable t) {
             System.out.println("Error in TextFieldController, "+t);

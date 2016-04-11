@@ -554,7 +554,12 @@ public class HubAddRemoveDelegate {
     
         int x = thisHub.getCurrentSize();
         if (pos > x) pos = x;
-        if (!canAdd(thisHub, obj)) return -1; 
+
+        
+        String s = canAddMsg(thisHub, obj);
+        if (s != null) {
+            throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
+        }
 
         
         HubEventDelegate.fireBeforeInsertEvent(thisHub, obj, pos);

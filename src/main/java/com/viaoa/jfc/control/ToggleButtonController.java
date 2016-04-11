@@ -12,10 +12,12 @@ package com.viaoa.jfc.control;
 
 import java.awt.event.*;
 import java.lang.reflect.*;
+
 import javax.swing.*;
 
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.*;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.*;
 
 /**
@@ -357,8 +359,10 @@ public class ToggleButtonController extends JFCController implements ItemListene
                             if (method == null) throw new RuntimeException("Hub2ToggleButton.itemStateChanged() - cant find setMethod for property \""+getPropertyName()+"\"");
                             method.invoke(obj, new Object[] { value } );
                             */
-                            OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, getPropertyPathFromActualHub(), prev, getPropertyPathValue(obj)) );
-                            
+                            if (getEnableUndo()) {
+                                OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, getPropertyPathFromActualHub(), prev, getPropertyPathValue(obj)) );
+                            }
+
                             bFlag = false;
                             Object objx = getActualHub().getActiveObject();
                             if (obj == objx) { // 20130919, object could have been removed

@@ -104,7 +104,7 @@ public class DateChooserController extends JFCController implements PropertyChan
         Object obj = h.getActiveObject();
         if (obj != null) {
             Object prev = getPropertyPathValue(obj);
-            OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription,obj, getPropertyPathFromActualHub(), prev, dateChooser.getDate()));
+            if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription,obj, getPropertyPathFromActualHub(), prev, dateChooser.getDate()));
             setPropertyPathValue(obj, dateChooser.getDate());
             // OAReflect.setPropertyValue(obj, getSetMethod(), dateChooser.getDate());
         }

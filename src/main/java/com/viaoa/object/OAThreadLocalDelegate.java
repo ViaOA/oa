@@ -876,7 +876,30 @@ static volatile int unlockCnt;
         }
     }
 
-    // CaptureUndoablePropertyChanges -----------------------
+    
+    
+    // UndoablePropertyChanges -----------------------
+    public static void setCreateUndoablePropertyChanges(boolean b) {
+        // LOG.finer(""+b);
+        setCreateUndoablePropertyChanges(OAThreadLocalDelegate.getThreadLocal(b), b);
+    }
+    private static long msCreateUndoablePropertyChanges;
+    protected static void setCreateUndoablePropertyChanges(OAThreadLocal ti, boolean b) {
+        if (ti == null) return;
+        if (ti.compoundUndoableName != null) return;
+        int x;
+        ti.createUndoablePropertyChanges = b;
+        if (b) {
+            x = OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.getAndIncrement();
+        }
+        else {
+            x = OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.decrementAndGet();
+        }
+        if (x > 50 || x < 0) {
+            msCreateUndoablePropertyChanges = throttleLOG("TotalCaptureUndoablePropertyChanges="+x+", ti.createUndoablePropertyChanges="+ti.createUndoablePropertyChanges, msCreateUndoablePropertyChanges);
+        }
+    }
+    
     public static boolean getCreateUndoablePropertyChanges() {
         boolean b; 
         if (OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.get() == 0) {
@@ -893,11 +916,6 @@ static volatile int unlockCnt;
         if (ti == null) return false;
         return ti.createUndoablePropertyChanges;
     }
-
-
-//qqqqqqqqqq add support for other undoables, like:  hub.add, .remove, etc.    
-    
-    
     
     public static void startUndoable(String compoundName) {
         startUndoable(OAThreadLocalDelegate.getThreadLocal(true), compoundName);
@@ -927,30 +945,6 @@ static volatile int unlockCnt;
         OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.decrementAndGet();
     }
 
-    
-/// 20150323 remove this qqqqqqqq    
-    public static void setCreateUndoablePropertyChanges(boolean b) {
-        // LOG.finer(""+b);
-        setCreateUndoablePropertyChanges(OAThreadLocalDelegate.getThreadLocal(b), b);
-    }
-    private static long msCreateUndoablePropertyChanges;
-    protected static void setCreateUndoablePropertyChanges(OAThreadLocal ti, boolean b) {
-        if (ti == null) return;
-        if (ti.compoundUndoableName != null) return;
-        int x;
-        ti.createUndoablePropertyChanges = b;
-        if (b) {
-            x = OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.getAndIncrement();
-        }
-        else {
-            x = OAThreadLocalDelegate.TotalCaptureUndoablePropertyChanges.decrementAndGet();
-        }
-        if (x > 50 || x < 0) {
-            msCreateUndoablePropertyChanges = throttleLOG("TotalCaptureUndoablePropertyChanges="+x+", ti.createUndoablePropertyChanges="+ti.createUndoablePropertyChanges, msCreateUndoablePropertyChanges);
-        }
-    }
-    
-    
     
     // TotalIsSendingEvent  20120104
     public static boolean isSendingEvent() {

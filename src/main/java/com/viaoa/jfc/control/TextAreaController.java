@@ -258,7 +258,9 @@ public class TextAreaController extends JFCController implements FocusListener, 
                     }
                 }
             }
-            OAUndoManager.add( OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), prevValue, getPropertyPathValue(activeObject)) );
+            if (getEnableUndo()) {
+                OAUndoManager.add( OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), prevValue, getPropertyPathValue(activeObject)) );
+            }
         }
         catch (Exception e) {
         	JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 

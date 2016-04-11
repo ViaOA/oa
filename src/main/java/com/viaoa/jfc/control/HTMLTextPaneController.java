@@ -254,7 +254,7 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
                     String hold = prevText;
                     prevText = newText;
                     bSettingText = true;
-                    OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), hold, newText) );
+                    if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), hold, newText) );
                     setPropertyPathValue(activeObject, newText);
                     // ((OAObject)activeObject).setProperty(getPropertyName(), newText);
                 }

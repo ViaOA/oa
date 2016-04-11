@@ -265,7 +265,7 @@ public class FormattedTextFieldController extends JFCController implements Focus
                     }
                 }
             }
-            OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), prevValue, getPropertyPathValue(activeObject)) );
+            if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), prevValue, getPropertyPathValue(activeObject)) );
         }
         catch (Exception e) {
         	JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 

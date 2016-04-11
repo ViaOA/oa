@@ -225,7 +225,7 @@ public class ListController extends JFCController implements ListSelectionListen
                     if (pos < 0) pos = 0;
                     hub.insert(obj, pos);
                     
-                    OAUndoManager.add(OAUndoableEdit.createUndoableInsert(undoDescription, hub, obj, pos));
+                    if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoableInsert(undoDescription, hub, obj, pos));
                     
                     hub.setActiveObject(obj);
                 }

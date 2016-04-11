@@ -140,13 +140,15 @@ public class CustomComboBoxController extends JFCController {
         if (bDisplayPropertyOnly) return; // 2007/05/25
 
     	Hub h = getHub();
-        if (h != null) {
+        if (getEnableUndo() && h != null) {
             OAObject obj = (OAObject) h.getAO();
 	        if (obj != null) {
                 Object prev = getPropertyPathValue(obj);
 	            // was; Object prev = obj.getProperty(getPropertyName());
 	            if (value != prev && (value == null || !value.equals(prev))) {
-	                OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, getPropertyPathFromActualHub(), prev, value) );
+	                if (getEnableUndo()) {
+	                    OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, getPropertyPathFromActualHub(), prev, value) );
+	                }
                     setPropertyPathValue(obj, value);
 	                // was: obj.setProperty(getPropertyName(), value);
 	            }
