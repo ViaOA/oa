@@ -77,7 +77,8 @@ public class AutonumberDelegate {
 
 	public static void setNextNumber(OADataSourceJDBC ds, Table table, int nextNumberToUse) {
         if (table == null || table.name == null) return;
-        LOG.fine("table="+table.name+", nextNumberToUse="+nextNumberToUse);
+//qqqqqqqqqqqqqqqqq        
+LOG.warning("table="+table.name+", nextNumberToUse="+nextNumberToUse);
         Column[] columns = table.getColumns();
         for (int i=0; columns != null && i < columns.length; i++) {
             Column column = columns[i];
@@ -95,7 +96,7 @@ public class AutonumberDelegate {
         return x;
     }	
     //========================= Utilities ===========================
-    protected static int _getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
+    private static int _getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
         if (table == null || table.name == null || pkColumn == null) return -1;
         // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", bAutoIncrement="+bAutoIncrement);
         
@@ -103,32 +104,42 @@ public class AutonumberDelegate {
         final String hashId = table.name.toUpperCase();
         AtomicInteger ai = hashNext.get(hashId);
         if (ai == null) {
-    	    DBMetaData dbmd = ds.getDBMetaData();
             synchronized(LOCK) {
                 ai = hashNext.get(hashId);
                 if (ai == null) {
-                    String query = "";
-                    if (dbmd.guid != null && dbmd.guid.length() > 0) {
-                    	query = getMaxGuidQuery(dbmd, table, pkColumn);
+                    if (ds == null) {
+                        max = 1;
                     }
                     else {
-                    	query = getMaxIdQuery(dbmd, table, pkColumn);
+                        DBMetaData dbmd = ds.getDBMetaData();
+                        String query = "";
+                        if (dbmd.guid != null && dbmd.guid.length() > 0) {
+                        	query = getMaxGuidQuery(dbmd, table, pkColumn);
+                        }
+                        else {
+                        	query = getMaxIdQuery(dbmd, table, pkColumn);
+                        }
+    
+                        Statement statement = null;
+                        try {
+                            statement = ds.getStatement(query);
+                            ResultSet rs = statement.executeQuery(query);
+                            if (rs.next()) max = (rs.getInt(1) + 1);
+                            rs.close();
+                            
+//qqqqqqqqqqqqqqq
+LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", query="+query);
+                            
+                        }
+                        catch (Exception e) {
+                            throw new RuntimeException("OADataSource.getNextNumber() failed for "+table.name+" Query:"+query, e);
+                        }
+                        finally {
+                            if (statement != null) ds.releaseStatement(statement);
+                        }
                     }
-
-                    Statement statement = null;
-                    try {
-                        statement = ds.getStatement(query);
-                        ResultSet rs = statement.executeQuery(query);
-                        if (rs.next()) max = (rs.getInt(1) + 1);
-                        rs.close();
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException("OADataSource.getNextNumber() failed for "+table.name+" Query:"+query, e);
-                    }
-                    finally {
-                        if (statement != null) ds.releaseStatement(statement);
-                    }
-                    LOG.fine("table="+table.name+", column="+pkColumn.columnName+", max="+max);
+//qqqqqqqqqqqqqqq
+                    LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max);
                     ai = new AtomicInteger(max);
                 	hashNext.put(hashId, ai);
                 }
