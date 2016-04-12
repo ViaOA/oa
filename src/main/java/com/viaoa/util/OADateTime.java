@@ -536,7 +536,15 @@ public class OADateTime implements java.io.Serializable, Comparable {
     public void setHour(int hr) {
         cal.set(Calendar.HOUR, hr);
     }
+    
+    public int get12Hour() {
+        return cal.get(Calendar.HOUR);
+    }
+    public void set12Hour(int hr) {
+        cal.set(Calendar.HOUR, hr);
+    }
 
+    
     /**
         Gets the hour of the day based on 24 hour clock.
         @return Hour 0-23

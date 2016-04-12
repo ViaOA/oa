@@ -80,7 +80,7 @@ public class AutonumberDelegate {
 	public static void setNextNumber(OADataSourceJDBC ds, Table table, int nextNumberToUse) {
         if (table == null || table.name == null) return;
 //qqqqqqqqqqqqqqqqq        
-LOG.warning("table="+table.name+", nextNumberToUse="+nextNumberToUse);
+//LOG.warning("table="+table.name+", nextNumberToUse="+nextNumberToUse);
         Column[] columns = table.getColumns();
         for (int i=0; columns != null && i < columns.length; i++) {
             Column column = columns[i];
@@ -91,14 +91,14 @@ LOG.warning("table="+table.name+", nextNumberToUse="+nextNumberToUse);
         }
 	}
 
-    protected static int getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
+    protected static int getNextNumber(final OADataSourceJDBC ds, final Table table, final Column pkColumn, final boolean bAutoIncrement) {
  //qqqqqqqqqqqqqqq
         int x = _getNextNumber(ds, table, pkColumn, bAutoIncrement);
 //        LOG.warning("table="+table+", name="+table.name+", bAutoIncrement="+bAutoIncrement+", returning="+x);
         return x;
     }	
     //========================= Utilities ===========================
-    private static int _getNextNumber(OADataSourceJDBC ds, Table table, Column pkColumn, boolean bAutoIncrement) {
+    private static int _getNextNumber(final OADataSourceJDBC ds, final Table table, final Column pkColumn, final boolean bAutoIncrement) {
         if (table == null || table.name == null || pkColumn == null) return -1;
         // LOG.finer("table="+table.name+", column="+pkColumn.columnName+", bAutoIncrement="+bAutoIncrement);
         
@@ -130,7 +130,7 @@ LOG.warning("table="+table.name+", nextNumberToUse="+nextNumberToUse);
                             rs.close();
                             
 //qqqqqqqqqqqqqqq
-LOG.log(Level.WARNING, "table="+table.name+", column="+pkColumn.columnName+", max="+max+", query="+query+", hash="+hashNext, new Exception("get info"));
+//LOG.log(Level.WARNING, "table="+table.name+", column="+pkColumn.columnName+", max="+max+", query="+query+", hash="+hashNext, new Exception("get info"));
                             
                         }
                         catch (Exception e) {
@@ -142,7 +142,7 @@ LOG.log(Level.WARNING, "table="+table.name+", column="+pkColumn.columnName+", ma
                     }
                     ai = new AtomicInteger(max);
 //qqqqqqqqqqqqqqq
-                    LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai);
+//                    LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai);
                 	hashNext.put(hashId, ai);
                 }
             }
@@ -155,7 +155,7 @@ LOG.log(Level.WARNING, "table="+table.name+", column="+pkColumn.columnName+", ma
             max = ai.get();
         }
 //qqqqqqqqqqqqqqqq        
-LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai+", bAutoIncrement="+bAutoIncrement);
+//LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai+", bAutoIncrement="+bAutoIncrement);
         return max;
     }
     
