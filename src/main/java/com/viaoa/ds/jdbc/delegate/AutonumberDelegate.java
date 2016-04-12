@@ -21,7 +21,9 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.viaoa.ds.jdbc.*;
 import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.object.*;
@@ -128,7 +130,7 @@ LOG.warning("table="+table.name+", nextNumberToUse="+nextNumberToUse);
                             rs.close();
                             
 //qqqqqqqqqqqqqqq
-LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", query="+query);
+LOG.log(Level.WARNING, "table="+table.name+", column="+pkColumn.columnName+", max="+max+", query="+query+", hash="+hashNext, new Exception("get info"));
                             
                         }
                         catch (Exception e) {
@@ -138,9 +140,9 @@ LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", 
                             if (statement != null) ds.releaseStatement(statement);
                         }
                     }
-//qqqqqqqqqqqqqqq
-                    LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max);
                     ai = new AtomicInteger(max);
+//qqqqqqqqqqqqqqq
+                    LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai);
                 	hashNext.put(hashId, ai);
                 }
             }
@@ -152,6 +154,8 @@ LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", 
         else {
             max = ai.get();
         }
+//qqqqqqqqqqqqqqqq        
+LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai+", bAutoIncrement="+bAutoIncrement);
         return max;
     }
     
