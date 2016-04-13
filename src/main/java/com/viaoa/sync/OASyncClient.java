@@ -180,6 +180,7 @@ public class OASyncClient {
         if (result instanceof OAObjectSerializer) {
             // see ClientGetDetail.getSerializedDetail(..)
             OAObjectSerializer os = (OAObjectSerializer) result;
+
             result = os.getObject();
             
             // the custom serializer can send extra objects, and might using objKey instead of the object. 

@@ -625,12 +625,6 @@ public class MultiplexerSocketController implements Serializable {
         return (this._socket == null || this._socket.isClosed());
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        close();
-        super.finalize();
-    }
-
     /**
      * Message to display when a non-multiplexersocket connects. This message will be sent to client, followed by a disconnect.
      */

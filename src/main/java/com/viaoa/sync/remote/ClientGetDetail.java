@@ -39,8 +39,8 @@ public class ClientGetDetail {
     private static Logger LOG = Logger.getLogger(ClientGetDetail.class.getName());
 
     // tracks guid for all oaObjects serialized, the Boolean: true=all references have been sent, false=object has been sent (might not have all references)
-    private TreeMap<Integer, Boolean> treeSerialized = new TreeMap<Integer, Boolean>();
-    private ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
+    private final TreeMap<Integer, Boolean> treeSerialized = new TreeMap<Integer, Boolean>();
+    private final ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
 
     public void removeGuid(int guid) {
         rwLockTreeSerialized.writeLock().lock();
@@ -218,7 +218,7 @@ public class ClientGetDetail {
         //    the serialized object.
         OAObjectSerializerCallback callback = new OAObjectSerializerCallback() {
             boolean bMasterSent;
-            
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv            
             // keep track of which objects are being sent to client in this serialization
             HashSet<Integer> hsSendingGuid = new HashSet<Integer>();
             
