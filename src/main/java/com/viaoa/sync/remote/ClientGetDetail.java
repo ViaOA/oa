@@ -28,7 +28,7 @@ import com.viaoa.object.OAObjectSerializerCallback;
 import com.viaoa.util.OANotExist;
 
 /**
- * This is used for each clientSession, that creates a RemoteClientImpl for
+ * This is used on the server for each clientSession, that creates a RemoteClientImpl for
  * getDetail(..) remote requests.  This class will return the object/s for the
  * request, and extra objects to include.
  * 
@@ -85,7 +85,7 @@ public class ClientGetDetail {
         if ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
         
         OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
-        os.setMax(1000);  // max number of objects to write
+        os.setMax(1500);  // max number of objects to write
         os.setMaxSize(250000);  // max size of compressed data to write out
 
 // qqqqqqqqqqqqqq
@@ -218,7 +218,6 @@ public class ClientGetDetail {
         //    the serialized object.
         OAObjectSerializerCallback callback = new OAObjectSerializerCallback() {
             boolean bMasterSent;
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv            
             // keep track of which objects are being sent to client in this serialization
             HashSet<Integer> hsSendingGuid = new HashSet<Integer>();
             
@@ -226,14 +225,12 @@ public class ClientGetDetail {
             protected void afterSerialize(OAObject obj) {
                 int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
                 boolean bx = hsSendingGuid.remove(guid);
-
                 // update tree of sent objects
                 rwLockTreeSerialized.writeLock().lock();
                 if (bx || treeSerialized.get(guid) == null) {
                     treeSerialized.put(guid, bx);
                 }
                 rwLockTreeSerialized.writeLock().unlock();
-                
             }
             
             // this will "tell" OAObjectSerializer which reference properties to include with each OAobj
@@ -250,9 +247,11 @@ public class ClientGetDetail {
                         excludeAllProperties();
                         return;
                     }
-                    
-                    hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());  // flag that all masterObject props have been sent to client
-                    if (masterProperties == null || masterProperties.length == 0) includeAllProperties();
+
+                    if (masterProperties == null || masterProperties.length == 0) {
+                        hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());  // flag that all masterObject props have been sent to client
+                        includeAllProperties();
+                    }
                     else includeProperties(masterProperties);                    
                     return;
                 }
@@ -270,7 +269,9 @@ public class ClientGetDetail {
                     }
                     else {
                         boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
-                        if (b) hsSendingGuid.add(obj.getObjectKey().getGuid());
+                        if (b) {
+                            hsSendingGuid.add(obj.getObjectKey().getGuid());
+                        }
                         includeAllProperties();
                     }
                     return;
@@ -284,7 +285,9 @@ public class ClientGetDetail {
                     }
                     else {
                         boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
-                        if (b) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                        if (b) {
+                            hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                        }
                         includeAllProperties();
                     }
                     return;
@@ -314,7 +317,9 @@ public class ClientGetDetail {
                     else {
                         // client does not have it, send whatever is loaded
                         b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
-                        if (b) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                        if (b) {
+                            hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                        }
                         includeAllProperties(); // will send whatever is loaded
                     }
                     return;
