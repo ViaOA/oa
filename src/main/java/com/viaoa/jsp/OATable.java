@@ -642,6 +642,24 @@ public class OATable implements OAJspComponent {
         sb.append("    var v = $(this).parents('tr').attr('oarow');\n");
         sb.append("    if (v == null) return;\n");
         sb.append("    $('#oahidden"+id+"').val(v);\n");
+
+        
+        
+        
+//qqqqqqqqqqqqqqqqqqqqqqq dont submit if it has a target or tabindex set
+//instead return true qqqqqqqqqqqqqqq
+        
+        sb.append("    if ($(this).attr('target').length == 0) {\n"); 
+        sb.append("        alert('hey');\n");
+        sb.append("        return true;\n");
+        sb.append("    }\n");
+        sb.append("    if ($(this).attr('tabindex') == 0) {\n"); 
+        
+        sb.append("        alert('hey');\n");
+        sb.append("        return true;\n");
+        sb.append("    }\n");
+        
+
         sb.append("    $('#oacommand').val('href='+$(this).attr('href'));\n"); 
         sb.append("    $('form').submit();\n");
         sb.append("    return false;\n");

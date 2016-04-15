@@ -79,8 +79,7 @@ public class AutonumberDelegate {
 
 	public static void setNextNumber(OADataSourceJDBC ds, Table table, int nextNumberToUse) {
         if (table == null || table.name == null) return;
-//qqqqqqqqqqqqqqqqq        
-//LOG.warning("table="+table.name+", nextNumberToUse="+nextNumberToUse);
+        LOG.fine("table="+table.name+", nextNumberToUse="+nextNumberToUse);
         Column[] columns = table.getColumns();
         for (int i=0; columns != null && i < columns.length; i++) {
             Column column = columns[i];
@@ -92,9 +91,8 @@ public class AutonumberDelegate {
 	}
 
     protected static int getNextNumber(final OADataSourceJDBC ds, final Table table, final Column pkColumn, final boolean bAutoIncrement) {
- //qqqqqqqqqqqqqqq
         int x = _getNextNumber(ds, table, pkColumn, bAutoIncrement);
-//        LOG.warning("table="+table+", name="+table.name+", bAutoIncrement="+bAutoIncrement+", returning="+x);
+        //LOG.finer("table="+table+", name="+table.name+", bAutoIncrement="+bAutoIncrement+", returning="+x);
         return x;
     }	
     //========================= Utilities ===========================
@@ -128,10 +126,7 @@ public class AutonumberDelegate {
                             ResultSet rs = statement.executeQuery(query);
                             if (rs.next()) max = (rs.getInt(1) + 1);
                             rs.close();
-                            
-//qqqqqqqqqqqqqqq
-//LOG.log(Level.WARNING, "table="+table.name+", column="+pkColumn.columnName+", max="+max+", query="+query+", hash="+hashNext, new Exception("get info"));
-                            
+                            LOG.fine("table="+table.name+", column="+pkColumn.columnName+", max="+max+", query="+query+", hash="+hashNext);
                         }
                         catch (Exception e) {
                             throw new RuntimeException("OADataSource.getNextNumber() failed for "+table.name+" Query:"+query, e);
@@ -141,8 +136,6 @@ public class AutonumberDelegate {
                         }
                     }
                     ai = new AtomicInteger(max);
-//qqqqqqqqqqqqqqq
-//                    LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai);
                 	hashNext.put(hashId, ai);
                 }
             }
@@ -154,8 +147,8 @@ public class AutonumberDelegate {
         else {
             max = ai.get();
         }
-//qqqqqqqqqqqqqqqq        
-//LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai+", bAutoIncrement="+bAutoIncrement);
+        //qqqqqqqqqqqqqqqq        
+        //LOG.warning("table="+table.name+", column="+pkColumn.columnName+", max="+max+", ai="+ai+", bAutoIncrement="+bAutoIncrement);
         return max;
     }
     

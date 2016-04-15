@@ -37,6 +37,7 @@ public class OAEncryption {
      * the hash is stored and is used to compare the hash of user input.
      */
     public static String getHash(String input){
+        if (input == null) return null;
         MessageDigest md = null;
         
         try {
