@@ -70,7 +70,7 @@ public class CardFilter extends OAObject {
         setChanging(false);
     }
 
-    private ArrayList<WeakReference<HubFilter>> alFilter;
+    private transient ArrayList<WeakReference<HubFilter>> alFilter;
     private void add(HubFilter filter) {
         if (alFilter == null) alFilter = new ArrayList<WeakReference<HubFilter>>(5);
         alFilter.add(new WeakReference<HubFilter>(filter));

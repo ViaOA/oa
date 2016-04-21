@@ -1350,10 +1350,12 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
         
         getCombinedHub();
         HubListener<OAGroupBy<F, G>> hl = new HubListenerAdapter<OAGroupBy<F, G>>() {
+            /*
             Hub<OAGroupBy<F, G>> getOtherHub(HubEvent e) {
                 if (e.getSource() == hub1) return hub2;
                 return hub1;
             }
+            */
             
             @Override
             public void afterAdd(HubEvent<OAGroupBy<F, G>> e) {

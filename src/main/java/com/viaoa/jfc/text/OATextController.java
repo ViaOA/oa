@@ -137,11 +137,13 @@ public class OATextController {
         if (cmdSpellCheck != null) cmdSpellCheck.setEnabled(b);
 
         
-        int p = editor.getCaretPosition();
-        int p2 = editor.getCaret().getMark();
-
-        if (cmdCut != null) cmdCut.setEnabled((p != p2) && b);
-        if (cmdCopy != null) cmdCopy.setEnabled((p != p2));
+        if (editor != null) {
+            int p = editor.getCaretPosition();
+            int p2 = editor.getCaret().getMark();
+    
+            if (cmdCut != null) cmdCut.setEnabled((p != p2) && b);
+            if (cmdCopy != null) cmdCopy.setEnabled((p != p2));
+        }
         
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
         Object objx;
@@ -868,7 +870,7 @@ public class OATextController {
         else {
             if (editor != null) spellChecker.spellCheck(editor);
         }
-        editor.requestFocus();  // so that lostFocus will be called, and text will be saved
+        if (editor != null) editor.requestFocus();  // so that lostFocus will be called, and text will be saved
     }
     
     /**

@@ -108,9 +108,14 @@ public class OACascade {
             if (rwLock != null) rwLock.writeLock().unlock();
         }
         
-        if (rwLock != null) rwLock.readLock().lock();
-        boolean b = treeObject.contains(oaObj.guid);
-        if (rwLock != null) rwLock.readLock().unlock();
+        boolean b;
+        try {
+            if (rwLock != null) rwLock.readLock().lock();            
+            b = treeObject.contains(oaObj.guid);
+        }
+        finally {
+            if (rwLock != null) rwLock.readLock().unlock();
+        }
         if (b) return true;
 
         if (bAdd) {
@@ -131,9 +136,14 @@ public class OACascade {
             if (rwLockHub != null) rwLockHub.writeLock().unlock();
         }
         
-        if (rwLockHub != null) rwLockHub.readLock().lock();
-        boolean b = treeHub.contains(hub);
-        if (rwLockHub != null) rwLockHub.readLock().unlock();
+        boolean b = false;
+        try {
+            if (rwLockHub != null) rwLockHub.readLock().lock();
+            b = treeHub.contains(hub);
+        }
+        finally {
+            if (rwLockHub != null) rwLockHub.readLock().unlock();
+        }
         if (b) return true;
         
         if (bAdd) {

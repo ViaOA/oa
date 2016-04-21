@@ -372,8 +372,11 @@ public class OAFile extends java.io.File {
     public static void delTree(File f) throws IOException {
         if (f == null || !f.exists()) return;
         if (f.isDirectory()) {
-            for (File c : f.listFiles()) {
-                delTree(c);
+            File[] fs = f.listFiles();
+            if (fs != null) {
+                for (File c : fs) {
+                    delTree(c);
+                }
             }
         }
         f.delete();

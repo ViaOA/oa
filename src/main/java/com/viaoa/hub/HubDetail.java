@@ -59,7 +59,7 @@ class HubDetail implements java.io.Serializable {
     protected int referenceCount;
 
     /** Information about the reference, from master to detail. */
-    protected OALinkInfo liMasterToDetail;
+    protected transient OALinkInfo liMasterToDetail;
 
     protected Hub hubMaster;
 	protected Hub hubDetail;

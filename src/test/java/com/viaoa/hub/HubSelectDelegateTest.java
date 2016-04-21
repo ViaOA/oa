@@ -25,7 +25,7 @@ public class HubSelectDelegateTest extends OAUnitTest {
         
         hub.loadAllData();
         
-        assertNull(hub.data.hubDatax.select);
+        assertNull(hub.data.hubDatax);
         
         
         hub = new Hub<Server>(Server.class);
@@ -54,7 +54,7 @@ public class HubSelectDelegateTest extends OAUnitTest {
         assertNotNull(HubSelectDelegate.getSelect(hub));
         assertNotNull(hub.data.hubDatax.select);
         hub.loadAllData();
-        assertNull(hub.data.hubDatax.select);
+        assertNull(hub.data.hubDatax);
         assertNull(HubSelectDelegate.getSelect(hub));
         assertNull(hub.getSelect());
         
@@ -83,8 +83,10 @@ public class HubSelectDelegateTest extends OAUnitTest {
 
         sel = new OASelect<Server>(Server.class);
         HubSelectDelegate.select(hub, sel);
-        assertEquals(45, hub.getCurrentSize());
-        
+
+        if (OADataSource.getDataSource(Server.class) != null) {
+            assertEquals(45, hub.getCurrentSize());
+        }
         ds.close();
     }
     
@@ -96,15 +98,21 @@ public class HubSelectDelegateTest extends OAUnitTest {
         OASelect<Server> sel = new OASelect<Server>(Server.class);
 
         hub.select(sel);
-        assertNotNull(hub.data.hubDatax.select);
-        assertEquals(45, hub.getCurrentSize());
+        if (OADataSource.getDataSource(Server.class) != null) {
+            assertNotNull(hub.data.hubDatax.select);
+            assertEquals(45, hub.getCurrentSize());
+        }
+        else {
+            assertNull(hub.data.hubDatax.select);
+            assertEquals(0, hub.getCurrentSize());
+        }
 
         HubSelectDelegate.cancelSelect(hub, false);
         assertNotNull(hub.data.hubDatax.select);
         assertEquals(45, hub.getCurrentSize());
 
         HubSelectDelegate.cancelSelect(hub, true);
-        assertNull(hub.data.hubDatax.select);
+        assertNull(hub.data.hubDatax);
         assertEquals(45, hub.getCurrentSize());
         
         ds.close();
@@ -148,7 +156,7 @@ public class HubSelectDelegateTest extends OAUnitTest {
         HubSelectDelegate.loadAllData(hub);
         assertEquals(50, hub.getCurrentSize());
         
-        assertNull(hub.data.hubDatax.select);
+        assertNull(hub.data.hubDatax);
         
         ds.close();
     }

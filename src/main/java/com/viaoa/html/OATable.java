@@ -547,7 +547,7 @@ public class OATable extends OAHtmlComponent {
         else obj = hub.elementAt(topRow + row);
         OATableColumn tc = (OATableColumn) columns.elementAt(col);
 
-        if (row + topRow == hub.getPos() && tc.comp != null) {
+        if (hub != null && row + topRow == hub.getPos() && tc.comp != null) {
             String n = this.name+"OA"+col;
             if (form.getComponent(n) == null) form.add(n, tc.comp);
             return tc.comp.getHtml();

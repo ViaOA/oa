@@ -89,8 +89,10 @@ public class OALinkInfo { //implements java.io.Serializable {
         
         OALinkInfo li = (OALinkInfo) obj;
         
-        if (li.toClass == null && this.toClass != null) return false;
-        else if (!li.toClass.equals(this.toClass)) return false;
+        if (li.toClass != this.toClass) {
+            if (li.toClass == null || this.toClass == null) return false;
+            if (!li.toClass.equals(this.toClass)) return false;
+        }
 
         if (li.name == null) {
             if (this.name != null) return false;
@@ -99,6 +101,16 @@ public class OALinkInfo { //implements java.io.Serializable {
             if (!li.name.equalsIgnoreCase(this.name)) return false;
         }
         return true;
+    }
+    @Override
+    public int hashCode() {
+        String s;
+        if (toClass != null) s = toClass.toString() + ".";
+        else s = ".";
+        
+        if (name != null) s += name.toUpperCase();
+                
+        return s.hashCode();
     }
 
     public boolean isOwner() {

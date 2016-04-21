@@ -2669,7 +2669,7 @@ if (!getKeepSorted()) hub.cancelSort();
             }
         }
         
-        if (tc.compFilter != null) {
+        if (tc != null && tc.compFilter != null) {
             if (headerRenderer.buttonHeight > 0 && pt.y > headerRenderer.buttonHeight) {
                 s = "enter value to filter by "+s;
             }

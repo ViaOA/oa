@@ -36,8 +36,10 @@ public class OAFindFile {
 		if (file.isDirectory()) {
 	        System.out.println("checking "+file);         
 			File[] files = file.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				findFile(files[i]);
+			if (files != null) {
+    			for (int i = 0; i < files.length; i++) {
+    				findFile(files[i]);
+    			}
 			}
 		} 
 		else {

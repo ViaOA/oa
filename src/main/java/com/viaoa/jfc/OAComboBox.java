@@ -197,7 +197,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     	this.popupColumns = cols;
 // 20101031 replaced wih code found at http://jroller.com/santhosh/category/Swing?page=1
 // now uses bDoLayout
-if (cols > 0) return; //qqqqqqqqqqqqqqq
+if (true || cols > 0) return; //qqqqqqqqqqqqqqq
 
         if (listenPopupMenu == null) this.removePopupMenuListener(listenPopupMenu);
     	
@@ -224,8 +224,8 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
     			JPopupMenu pop = (JPopupMenu) obj;
     			if (!(pop.getLayout() instanceof BorderLayout)) {
 	    			JScrollPane sp = getScrollPane(pop);
-	    			sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 	    			if (sp == null) return;
+                    sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 	    			pop.setLayout(new BorderLayout());
 	    			pop.add(sp, BorderLayout.CENTER);
 	    			pop.pack();
@@ -402,7 +402,7 @@ if (cols > 0) return; //qqqqqqqqqqqqqqq
     public void setHub(Hub hub) {
         control.setHub(hub);
         if (table != null) {
-            if (table != null) table.resetColumn(this);
+            table.resetColumn(this);
         }
     }
     /**

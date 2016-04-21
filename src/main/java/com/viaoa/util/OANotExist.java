@@ -28,4 +28,8 @@ public class OANotExist implements java.io.Serializable {
     public boolean equals(Object obj) {
         return (obj == null || obj == OANotExist.instance || obj instanceof OANotExist);
     }
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }

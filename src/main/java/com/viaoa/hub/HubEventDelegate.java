@@ -563,6 +563,7 @@ public class HubEventDelegate {
 	    @see #select
 	 */
 	public static void fireOnNewListEvent(Hub thisHub, boolean bAll) {
+	    if (thisHub == null) return;
 	    HubListener[] hl = getAllListeners(thisHub, (bAll?0:2) );
 	    int x = hl.length;
 	    if (x > 0) {

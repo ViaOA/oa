@@ -40,7 +40,7 @@ public class MultiplexerServerTest extends OAUnitTest {
 
         multiplexerServer.DEBUG = true;
         
-        for (int i=0; maxConnections==0 || i<maxConnections; i++) {
+        for (int i=0; (maxConnections==0 && i==0) || i<maxConnections; i++) {
             Socket s = ss.accept();
             test(s);
         }

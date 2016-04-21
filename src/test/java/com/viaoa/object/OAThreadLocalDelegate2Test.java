@@ -41,7 +41,7 @@ public class OAThreadLocalDelegate2Test extends OAUnitTest {
         }
         public void run() {
             for (int i=0; i<1500 && !bStop; i++) {
-                int x = (int) Math.random() * tests.length;
+                int x = (int) (Math.random() * tests.length);
                 Test test = tests[x];
                 test.test();
                 aiCnt.incrementAndGet();
@@ -103,10 +103,10 @@ public class OAThreadLocalDelegate2Test extends OAUnitTest {
             public void test() {
                 OAThreadLocalDelegate.setSuppressCSMessages(true); 
                 delay();
-                assertTrue(OAThreadLocalDelegate.isSkipObjectInitialize());
+                assertTrue(OAThreadLocalDelegate.isSuppressCSMessages());
                 OAThreadLocalDelegate.setSuppressCSMessages(false); 
                 delay();
-                assertFalse(OAThreadLocalDelegate.isSkipObjectInitialize()); 
+                assertFalse(OAThreadLocalDelegate.isSuppressCSMessages()); 
             }
         };
 

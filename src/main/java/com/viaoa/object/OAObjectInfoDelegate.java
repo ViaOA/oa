@@ -826,7 +826,7 @@ public class OAObjectInfoDelegate {
 
         
         propertyPath = revPropertyPath;
-        revPropertyPath = null;
+        revPropertyPath = "";
         st = new StringTokenizer(propertyPath, ".");
         for (int i=0; st.hasMoreTokens(); i++) {
             String value = st.nextToken();

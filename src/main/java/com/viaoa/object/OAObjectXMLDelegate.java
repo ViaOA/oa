@@ -90,7 +90,7 @@ public class OAObjectXMLDelegate {
 	    ArrayList alProp = oi.getPropertyInfos();  // reg props, not link props
 	    for (int i=0; i < alProp.size(); i++) {
 	    	OAPropertyInfo pi = (OAPropertyInfo) alProp.get(i);
-	        if (bKeyOnly && !pi.getId()) continue;
+	        if (!pi.getId()) continue;
 	        
 	        String propName = pi.getName();
 	        Object value = OAObjectReflectDelegate.getProperty(oaObj, propName);

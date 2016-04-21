@@ -60,6 +60,10 @@ public abstract class HubPropController {
             else if (hp.propertyPath != null) return false;
             return true;
         }
+        @Override
+        public int hashCode() {
+            return hub.hashCode();
+        }
     }
     public HubPropController() {
     }    

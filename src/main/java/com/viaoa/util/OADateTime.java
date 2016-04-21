@@ -254,7 +254,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
             milsecs = t.getMilliSecond();
         }
         setCalendar(year,month,day,hrs,mins,secs,milsecs);
-        setTimeZone(d.getTimeZone());
+        if (d != null) setTimeZone(d.getTimeZone());
     }
 
     /**

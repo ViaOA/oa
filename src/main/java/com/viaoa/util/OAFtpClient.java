@@ -275,12 +275,12 @@ public class OAFtpClient {
             while(!done) { // read lines til finds last line
                 next = reader.readLine();
                 // Read "over" blank line responses
-                while (next.equals("") || next.equals("  ")) {
+                while (next == null || next.equals("") || next.equals("  ")) {
                     next = reader.readLine();
                 }
 
                 // If next starts with "tester", we're done
-               if(next.substring(0,4).equals(tester))
+               if(next != null && next.substring(0,4).equals(tester))
                    done = true;
             }
             return next;

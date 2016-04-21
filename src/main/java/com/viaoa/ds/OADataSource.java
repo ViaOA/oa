@@ -42,7 +42,7 @@ public abstract class OADataSource implements OADataSourceInterface {
     protected String guid; // seed value to use when creating GUID for seq assigned object keys
     protected boolean bEnable=true;
 
-    private static OADataSource[] dsAll;
+    private static volatile OADataSource[] dsAll;
     
     //-------- static methods -------------------------------
     /**
@@ -51,9 +51,11 @@ public abstract class OADataSource implements OADataSourceInterface {
     public static OADataSource[] getDataSources() {
         if (dsAll == null) {
             synchronized(vecDataSource) {
-                int x = vecDataSource.size();
-                dsAll = new OADataSource[x];
-                vecDataSource.copyInto(dsAll);
+                if (dsAll == null) {
+                    int x = vecDataSource.size();
+                    dsAll = new OADataSource[x];
+                    vecDataSource.copyInto(dsAll);
+                }
             }
         }
         return dsAll;

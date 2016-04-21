@@ -859,7 +859,6 @@ System.out.println("MyImageView.getScale exception:"+t+", will use 1.0");//qqqqq
 
         if (newImage != null) {
             Element elem = getElement();
-            AttributeSet attr = elem.getAttributes();
 
             // Get the width/height and set the state ivar before calling
             // anything that might cause the image to be loaded, and thus the

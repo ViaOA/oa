@@ -130,10 +130,10 @@ public class OAConverterNumber implements OAConverterInterface {
             Rectangle r = (Rectangle) value;
             long l = 0L;
             
-            l += r.x << 48;
-            l += r.y << 32;
-            l += r.width << 16;
-            l += r.height;
+            l += ((long)r.x) << 48;
+            l += ((long)r.y) << 32;
+            l += ((long)r.width) << 16;
+            l += ((long)r.height);
             num = new Long(l);
         }
         else if (value instanceof Color) {
@@ -234,7 +234,7 @@ public class OAConverterNumber implements OAConverterInterface {
 
 
     public static void main(String[] args) {
-        BigDecimal bd = new BigDecimal(1.23456);
+        BigDecimal bd = BigDecimal.valueOf(1.23456);
         BigDecimal bd2 = bd.setScale(3, BigDecimal.ROUND_HALF_UP);
         // System.out.println(bd + " -> "+bd2);
         
@@ -257,7 +257,7 @@ public class OAConverterNumber implements OAConverterInterface {
 
         
         
-        bd = bd.multiply(new BigDecimal(2.1));
+        bd = bd.multiply(BigDecimal.valueOf(2.1));
         
         bd = bd.setScale(8, BigDecimal.ROUND_HALF_UP);
         System.out.println("==>"+bd);        

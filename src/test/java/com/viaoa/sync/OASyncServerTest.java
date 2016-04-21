@@ -314,7 +314,7 @@ public class OASyncServerTest {
                         mc.setApplicationStatus(OAString.createRandomString(6,24));
                     }
                     Hub<ApplicationStatus> h = serverRoot.getApplicationStatuses();
-                    ApplicationStatus as = h.getAt( (int) Math.random() * h.size());
+                    ApplicationStatus as = h.getAt( (int) (Math.random() * h.size()));
                     app.setApplicationStatus(as);
                 }
             };

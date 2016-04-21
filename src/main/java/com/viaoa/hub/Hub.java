@@ -488,9 +488,12 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      */
     protected void finalize() throws Throwable {
         super.finalize();
-        // 20160109 if this is sharedHub,then only removeSharedHub
-        Hub hx = this.datau.getSharedHub();
-        if (this.datau != null && hx != null) {
+        
+        Hub hx;
+        if (this.datau != null) hx = this.datau.getSharedHub();
+        else hx = null;
+        
+        if (hx != null) {
             HubShareDelegate.removeSharedHub(hx, this);
         }
         else {  
@@ -1817,9 +1820,11 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @see OASelect
      */
+    /* 20160421, removed so that an exhausted select can be removed and Hub.data.datax can be freed
     public void refreshSelect() {
         HubSelectDelegate.refreshSelect(this);
     }
+    */
 
     /**
      * Returns the Hub that this Hub is linked to.

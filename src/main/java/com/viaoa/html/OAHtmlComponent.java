@@ -192,7 +192,7 @@ public abstract class OAHtmlComponent implements Serializable {
     public void close() {
         if (object != null) HubTemp.deleteHub(hub);
         if (actualHub != null) {
-            if (actualHub != null && hub != actualHub) {
+            if (hub != actualHub) {
                 HubDetailDelegate.removeDetailHub(hub, actualHub);
             }
         }
@@ -236,7 +236,7 @@ public abstract class OAHtmlComponent implements Serializable {
     
     /** this should not be called, it is set when the component is added to OAForm */
     public void setFormName() {
-        this.name = name;
+        //this.name = name;
     }
 
     /** name used on form.  Default is to use same value as getFormName() */

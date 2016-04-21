@@ -229,7 +229,7 @@ public class OAGrid implements OAJspComponent {
         
         sb.append("<tbody>");
         
-        int scrollAmt = (pager == null) ? ((int)(Math.ceil(hub.getSize()/columns))) : pager.getScrollAmount();
+        int scrollAmt = (pager == null) ? ((int)(Math.ceil( ((double)hub.getSize())/columns))) : pager.getScrollAmount();
         int topRow = (pager == null) ? 0 : pager.getTopRow();
         
         

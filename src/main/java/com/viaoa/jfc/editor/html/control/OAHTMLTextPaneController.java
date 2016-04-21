@@ -384,9 +384,10 @@ public class OAHTMLTextPaneController extends OATextController {
                         if (attrSet != null) {
                             AttributeSet anchor = (AttributeSet) attrSet.getAttribute(HTML.Tag.A);
                             bIsMouseOverLink = (anchor != null);
+
+                            Object objx =  attrSet.getAttribute(StyleConstants.NameAttribute);
+                            bIsMouseOverImage = (objx == HTML.Tag.IMG);
                         }
-                        Object objx =  attrSet.getAttribute(StyleConstants.NameAttribute);
-                        bIsMouseOverImage = (objx == HTML.Tag.IMG);
                     }
                 }
                 updateCursorForLinkOrImage();
@@ -1732,7 +1733,7 @@ public class OAHTMLTextPaneController extends OATextController {
             for (int i=0; i<genericFontFamily.length; i++) vec.add(genericFontFamily[i]);
     
             getFontNames();
-            for (int i=0; i<fontNames.length; i++) vec.add(fontNames[i]);
+            for (int i=0; fontNames != null && i<fontNames.length; i++) vec.add(fontNames[i]);
     
             cboFontName = new JComboBox(vec);
             cboFontName.setToolTipText("Set/Change Font");
@@ -3260,7 +3261,7 @@ System.out.println("View Font="+fontView);//qqqqqqqqq
 
         
         // see if image is selected
-        int pos = htmlEditor.getSelectionStart();
+        int pos = htmlEditor==null ? -1 : htmlEditor.getSelectionStart();
         // if (pos == 0) pos = 1;  // 0 = first paragraph   20100928 removed because the doc might not have a paragraph (especially after using ^a+del)
         View view = getView(pos+1);  // view for images is after the cursor position
         boolean b;

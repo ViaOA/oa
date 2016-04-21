@@ -135,7 +135,7 @@ public class RCExecuteDelegate {
     }
 
 
-    private static ThreadPoolExecutor executorService;
+    private static volatile ThreadPoolExecutor executorService;
     private static ExecutorService getExecutorService() {
         if (executorService != null) return executorService;
         // min/max must be equal, since new threads are only created when queue is full

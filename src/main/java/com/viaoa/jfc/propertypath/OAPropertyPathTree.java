@@ -513,8 +513,8 @@ public class OAPropertyPathTree extends OATree {
                 if (pos < 0) break;
                 for (int j = pos; j < nodeData.getChildCount(); j++) {
                     nodeData = nodeData.getChild(j);
+                    if (nodeData == null) break;
                     if (nodeData.object == od) break;
-                    nodeData = null;
                 }
                 if (nodeData == null) break;
                 al.add(od);

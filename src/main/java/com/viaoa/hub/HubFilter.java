@@ -13,6 +13,7 @@ package com.viaoa.hub;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -107,6 +108,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         if (hub == null) {  // 20131129 hub can now be null, used by Triggers
             // throw new IllegalArgumentException("hub can not be null");
         }
+        
         this.hubMaster = hubMaster;
         if (hub != null) this.weakHub = new WeakReference(hub);
         this.bShareAO = bShareAO;

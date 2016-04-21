@@ -224,36 +224,35 @@ public class OAAnnotationVerifier {
                 p("link does not exist");
                 bResult = false;
             }
-          
-            
-            if (li.getToClass() != m.getReturnType()) {
-                p("wrong link class");
-                bResult = false;
-            }
-
-            if (li.getCascadeSave() != annotation.cascadeSave()) {
-                p("wrong cascade save");
-                bResult = false;
-            }
-            if (li.getCascadeDelete() != annotation.cascadeDelete()) {
-                p("wrong cascade delete");
-                bResult = false;
-            }
-            s = li.getReverseName();
-            if (s != annotation.reverseName() && (s != null && !s.equalsIgnoreCase(annotation.reverseName()))) {
-                p("wrong reverse name");
-                bResult = false;
-            }
-            if (li.getOwner() != annotation.owner()) {
-                p("wrong owner");
-                bResult = false;
-            }
-            
-            if (li.getAutoCreateNew() && li.getAutoCreateNew() != annotation.autoCreateNew()) {
-                p("wrong autoCreateNew");
-                bResult = false;
-            }
-            
+            else {
+                if (li.getToClass() != m.getReturnType()) {
+                    p("wrong link class");
+                    bResult = false;
+                }
+    
+                if (li.getCascadeSave() != annotation.cascadeSave()) {
+                    p("wrong cascade save");
+                    bResult = false;
+                }
+                if (li.getCascadeDelete() != annotation.cascadeDelete()) {
+                    p("wrong cascade delete");
+                    bResult = false;
+                }
+                s = li.getReverseName();
+                if (s != annotation.reverseName() && (s != null && !s.equalsIgnoreCase(annotation.reverseName()))) {
+                    p("wrong reverse name");
+                    bResult = false;
+                }
+                if (li.getOwner() != annotation.owner()) {
+                    p("wrong owner");
+                    bResult = false;
+                }
+                
+                if (li.getAutoCreateNew() && li.getAutoCreateNew() != annotation.autoCreateNew()) {
+                    p("wrong autoCreateNew");
+                    bResult = false;
+                }
+            }            
             int x = alLinkInfo.indexOf(li);
             bs[x] = true;
         }
@@ -280,26 +279,25 @@ public class OAAnnotationVerifier {
                 p("link does not exist");
                 bResult = false;
             }
-          
-            
-            if (li.getCascadeSave() != annotation.cascadeSave()) {
-                p("wrong cascade save");
-                bResult = false;
+            else {
+                if (li.getCascadeSave() != annotation.cascadeSave()) {
+                    p("wrong cascade save");
+                    bResult = false;
+                }
+                if (li.getCascadeDelete() != annotation.cascadeDelete()) {
+                    p("wrong cascade delete");
+                    bResult = false;
+                }
+                s = li.getReverseName();
+                if (s != annotation.reverseName() && (s != null && !s.equalsIgnoreCase(annotation.reverseName()))) {
+                    p("wrong reverse name");
+                    bResult = false;
+                }
+                if (li.getOwner() != annotation.owner()) {
+                    p("wrong owner");
+                    bResult = false;
+                }
             }
-            if (li.getCascadeDelete() != annotation.cascadeDelete()) {
-                p("wrong cascade delete");
-                bResult = false;
-            }
-            s = li.getReverseName();
-            if (s != annotation.reverseName() && (s != null && !s.equalsIgnoreCase(annotation.reverseName()))) {
-                p("wrong reverse name");
-                bResult = false;
-            }
-            if (li.getOwner() != annotation.owner()) {
-                p("wrong owner");
-                bResult = false;
-            }
-            
             int x = alLinkInfo.indexOf(li);
             bs[x] = true;
             

@@ -32,7 +32,7 @@ import com.viaoa.util.*;
 import java.util.*;
 
 /** TreeNode for OATree.  */
-public class OATreeNode extends OAHtmlComponent implements Cloneable, java.io.Serializable {
+public class OATreeNode extends OAHtmlComponent implements Cloneable {
     private static final long serialVersionUID = 1L;
     String propertyPath;  // property path after the path to a hub   ex: emps.dept.name => dept.name
     boolean titleFlag;

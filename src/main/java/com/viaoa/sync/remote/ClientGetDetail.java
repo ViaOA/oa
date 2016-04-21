@@ -43,9 +43,13 @@ public class ClientGetDetail {
     private final ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
 
     public void removeGuid(int guid) {
-        rwLockTreeSerialized.writeLock().lock();
-        treeSerialized.remove(guid);
-        rwLockTreeSerialized.writeLock().unlock();
+        try {
+            rwLockTreeSerialized.writeLock().lock();
+            treeSerialized.remove(guid);
+        }
+        finally {
+            rwLockTreeSerialized.writeLock().unlock();
+        }
     }
     
     public void close() {
@@ -226,11 +230,15 @@ public class ClientGetDetail {
                 int guid = OAObjectKeyDelegate.getKey(obj).getGuid();
                 boolean bx = hsSendingGuid.remove(guid);
                 // update tree of sent objects
-                rwLockTreeSerialized.writeLock().lock();
-                if (bx || treeSerialized.get(guid) == null) {
-                    treeSerialized.put(guid, bx);
+                try {
+                    rwLockTreeSerialized.writeLock().lock();
+                    if (bx || treeSerialized.get(guid) == null) {
+                        treeSerialized.put(guid, bx);
+                    }
                 }
-                rwLockTreeSerialized.writeLock().unlock();
+                finally {
+                    rwLockTreeSerialized.writeLock().unlock();
+                }
             }
             
             // this will "tell" OAObjectSerializer which reference properties to include with each OAobj
@@ -449,9 +457,14 @@ public class ClientGetDetail {
     private boolean isOnClient(Object obj) {
         if (!(obj instanceof OAObject)) return false;
         rwLockTreeSerialized.readLock().lock();
-        Object objx = treeSerialized.get( ((OAObject)obj).getObjectKey().getGuid());
-        rwLockTreeSerialized.readLock().unlock();
-        return objx != null;
+        Object objx;
+        try {
+            objx = treeSerialized.get( ((OAObject)obj).getObjectKey().getGuid());
+        }
+        finally {
+            rwLockTreeSerialized.readLock().unlock();
+        }
+        return (objx != null);
     }
     
     private boolean wasFullySentToClient(Object obj) {

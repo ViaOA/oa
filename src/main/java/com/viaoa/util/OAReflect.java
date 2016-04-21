@@ -198,7 +198,7 @@ public class OAReflect {
                 method = OAReflect.getMethod(clazz, name.substring(3), 0);
                 if (method == null) {
                     // 20120807 if OAObject, which is the return value when using <generics>, ex: OALeftJoin
-                    if (!bThrowException || clazz.equals(OAObject.class)) return null;
+                    if (!bThrowException || (clazz != null && clazz.equals(OAObject.class))) return null;
                     //was: if (!bThrowException) return null;
                     RuntimeException rex = new RuntimeException("OAReflect.getMethods() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+name+" path="+propertyPath);
                     rex.printStackTrace();
@@ -208,7 +208,7 @@ public class OAReflect {
             vec.addElement(method);
     
             clazz = method.getReturnType();
-            if (clazz.equals(Hub.class)) {
+            if (clazz != null && clazz.equals(Hub.class)) {
                 // try to find the ObjectClass for Hub
                 Class c = OAObjectInfoDelegate.getHubPropertyClass(classLast, name.substring(3));
                 if (c != null) {
@@ -664,11 +664,13 @@ public class OAReflect {
             boolean b = file.exists();
             if (file.isDirectory()) {
                 String[] ss = file.list();
+                if (ss != null) {
                 for (String s : ss) {
                     int pos = s.indexOf(".class");
                     if (pos < 0) continue; 
                     s = s.substring(0,pos);
                     list.add(s);
+                }
                 }
             }
             else if (protocol == null || !protocol.equals("jar")) {

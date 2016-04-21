@@ -147,7 +147,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
         if (table != null) {
-            if (table != null) table.resetColumn(this);
+            table.resetColumn(this);
         }
     }
     public String getTableHeading() { //zzzzz

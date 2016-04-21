@@ -45,6 +45,7 @@ public class OAEncryption {
         }
         catch(NoSuchAlgorithmException e){
             System.out.println("No SHA-256");
+            return null;
         }
         try {
           md.update(input.getBytes("UTF-8"));
@@ -191,8 +192,9 @@ public class OAEncryption {
             md = MessageDigest.getInstance("MD5");
         }
         catch(NoSuchAlgorithmException e){
-            System.out.println("No MD5");
+            throw new RuntimeException("No MD5 available");
         }
+        
         try {
           md.update(input.getBytes(), 0, input.length());
         }

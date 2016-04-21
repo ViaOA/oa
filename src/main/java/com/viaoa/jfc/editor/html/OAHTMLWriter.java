@@ -281,6 +281,8 @@ public class OAHTMLWriter extends AbstractWriter {
         }
 
         AttributeSet attr = elem.getAttributes();
+        if (attr == null) return;
+        
         closeOutUnwantedEmbeddedTags(attr);
         writeEmbeddedTags(attr);
 

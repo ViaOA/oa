@@ -114,8 +114,8 @@ public class ConnectionPool implements Runnable {
                 boolean bLocked = false;
                 try {
                     OAConnection con = createNewOAConnection();
-                    lock.lock();
                     bLocked = true;
+                    lock.lock();
                     if (alOAConnection.size() >= dbmd.maxConnections) break;
                     con.bAvailable = true;
                     alOAConnection.add(con);

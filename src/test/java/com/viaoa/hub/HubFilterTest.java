@@ -83,7 +83,7 @@ public class HubFilterTest extends OAUnitTest {
             int x = hubFiltered.getSize();
             
 
-            if (i % 1 == 5) {
+            if (i % 5 == 0) {
                 for (int j=0; j<1; j++) System.gc();
             }
             

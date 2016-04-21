@@ -79,7 +79,6 @@ public class OAObjectHashDelegate {
      */
 	protected static final ConcurrentHashMap<Class, Object> hashCacheClass = new ConcurrentHashMap<Class, Object>(147, 0.75f);
 	
-	
 	/** 
      * List of listeners for Cached objects    
      * Key   = Class
@@ -110,13 +109,11 @@ public class OAObjectHashDelegate {
 		Map<String, Method> map = hashClassMethod.get(clazz);
     	if (map == null) {
 	    	synchronized (hashClassMethod) {
-		    	if (map == null) {
-		        	map =  OAObjectHashDelegate.hashClassMethod.get(clazz);
-		        	if (map == null) {
-		        		map = new ConcurrentHashMap<String, Method>(37, .75f);
-		        		OAObjectHashDelegate.hashClassMethod.put(clazz, map);
-		        	}
-		    	}
+	        	map =  OAObjectHashDelegate.hashClassMethod.get(clazz);
+	        	if (map == null) {
+	        		map = new ConcurrentHashMap<String, Method>(37, .75f);
+	        		OAObjectHashDelegate.hashClassMethod.put(clazz, map);
+	        	}
 	    	}	    	
     	}
     	return map;
@@ -125,12 +122,10 @@ public class OAObjectHashDelegate {
         Set<String> map = hashClassMethodNotFound.get(clazz);
         if (map == null) {
             synchronized (hashClassMethodNotFound) {
+                map =  OAObjectHashDelegate.hashClassMethodNotFound.get(clazz);
                 if (map == null) {
-                    map =  OAObjectHashDelegate.hashClassMethodNotFound.get(clazz);
-                    if (map == null) {
-                        map = new HashSet<String>(3, .75f);
-                        OAObjectHashDelegate.hashClassMethodNotFound.put(clazz, map);
-                    }
+                    map = new HashSet<String>(3, .75f);
+                    OAObjectHashDelegate.hashClassMethodNotFound.put(clazz, map);
                 }
             }           
         }

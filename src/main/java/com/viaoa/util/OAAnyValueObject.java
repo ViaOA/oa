@@ -28,4 +28,8 @@ public class OAAnyValueObject implements java.io.Serializable {
     public boolean equals(Object obj) {
         return true;
     }
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }

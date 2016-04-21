@@ -487,10 +487,11 @@ public class DataSourceController {
                     );
                 }
             }
-            
+            /*
             protected void setup(OAObject arg0) {
                 // replaced by beforeSerialize()
             }
+            */
         });
         oos.writeObject(wrap);
 

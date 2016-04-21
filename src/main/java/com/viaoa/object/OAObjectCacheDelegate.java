@@ -218,8 +218,13 @@ public class OAObjectCacheDelegate {
     	LOG.fine("class="+clazz);
         Vector vecListener = (Vector) OAObjectHashDelegate.hashCacheListener.get(clazz);
         if (vecListener == null) {
-            vecListener = new Vector(5,5);
-            OAObjectHashDelegate.hashCacheListener.put(clazz, vecListener);
+            synchronized (OAObjectHashDelegate.hashCacheListener) {
+                vecListener = (Vector) OAObjectHashDelegate.hashCacheListener.get(clazz);
+                if (vecListener == null) {
+                    vecListener = new Vector(5,5);
+                    OAObjectHashDelegate.hashCacheListener.put(clazz, vecListener);
+                }
+            }
         }
         if (!vecListener.contains(l)) {
         	listenerCount++;

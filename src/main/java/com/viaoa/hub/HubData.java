@@ -150,6 +150,9 @@ public class HubData implements java.io.Serializable {
     public void setSelect(OASelect select) {
         if (hubDatax != null || select != null) {
             getHubDatax().select = select;
+            if (select == null) {
+                if (!hubDatax.isNeeded()) hubDatax = null;
+            }
         }
     }
     public boolean isRefresh() {

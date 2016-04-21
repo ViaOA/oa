@@ -1483,7 +1483,7 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
     }
     public void setProgram(Program newValue) {
         Program old = this.program;
-        if (old != this.program) {
+        if (newValue != this.program) {
             fireBeforePropertyChange(PROPERTY_Program, old, newValue);
         }
         this.program = getProgram();

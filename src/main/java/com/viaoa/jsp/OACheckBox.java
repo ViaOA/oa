@@ -126,44 +126,46 @@ public class OACheckBox implements OAJspComponent, OATableEditor {
         OAObject obj = null;
         bChecked = false;
         
-        for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
-            name = (String) ex.getKey();
-            if (!name.equals(getGroupName())) continue; 
-            String[] values = ex.getValue();
-            if (values == null) continue;
-
-            boolean b = false;
-            for (String sx: values) {
-                if (sx.toUpperCase().startsWith(id.toUpperCase())) {
-                    b = true;
-                    name = sx;
-                    break;
-                }
-            }
-            if (!b) continue;
-            
-            if (name.equalsIgnoreCase(id)) {
-                bChecked = true;
-                if (hub != null) { 
-                    obj = (OAObject) hub.getAO();
-                }
-                break;
-            }
-            else {
-                if (name.toUpperCase().startsWith(id.toUpperCase()+"_")) {
-                    s = name.substring(id.length()+1);
-                    
-                    if (s.startsWith("guid.")) {
-                        s = s.substring(5);
-                        OAObjectKey k = new OAObjectKey(null, OAConv.toInt(s), true);
-                        obj = OAObjectCacheDelegate.get(hub.getObjectClass(), k);
+        if (hmNameValue != null) {
+            for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
+                name = (String) ex.getKey();
+                if (!name.equals(getGroupName())) continue; 
+                String[] values = ex.getValue();
+                if (values == null) continue;
+    
+                boolean b = false;
+                for (String sx: values) {
+                    if (sx.toUpperCase().startsWith(id.toUpperCase())) {
+                        b = true;
+                        name = sx;
+                        break;
                     }
-                    else {
-                        obj = OAObjectCacheDelegate.get(hub.getObjectClass(), s);
-                    }
+                }
+                if (!b) continue;
+                
+                if (name.equalsIgnoreCase(id)) {
                     bChecked = true;
-                    lastAjaxSent = null;  
+                    if (hub != null) { 
+                        obj = (OAObject) hub.getAO();
+                    }
                     break;
+                }
+                else {
+                    if (name.toUpperCase().startsWith(id.toUpperCase()+"_")) {
+                        s = name.substring(id.length()+1);
+                        
+                        if (s.startsWith("guid.")) {
+                            s = s.substring(5);
+                            OAObjectKey k = new OAObjectKey(null, OAConv.toInt(s), true);
+                            obj = OAObjectCacheDelegate.get(hub.getObjectClass(), k);
+                        }
+                        else {
+                            obj = OAObjectCacheDelegate.get(hub.getObjectClass(), s);
+                        }
+                        bChecked = true;
+                        lastAjaxSent = null;  
+                        break;
+                    }
                 }
             }
         }

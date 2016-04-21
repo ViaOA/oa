@@ -3,6 +3,8 @@ package test.theice.tsac3.model.oa;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+
+import com.viaoa.ds.OADataSourceIterator;
 import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
@@ -25,10 +27,10 @@ public class Test {
                 return true;
             }
             int cnt;
-            //@Override
-            public Iterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyFromMaster, String queryOrder, int max, OAFilter filter) {
+            @Override
+            public OADataSourceIterator select(Class selectClass, OAObject whereObject, String extraWhere, Object[] args, String propertyNameFromWhereObject, String queryOrder, int max, OAFilter filter, boolean bDirty) {
                 if (whereObject instanceof Silo && Server.class.equals(selectClass)) {
-                    return new Iterator() {
+                    return new OADataSourceIterator() {
                         int x = 0;
                         @Override
                         public boolean hasNext() {
@@ -41,6 +43,16 @@ public class Test {
                         }
                         @Override
                         public void remove() {
+                        }
+                        @Override
+                        public String getQuery() {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+                        @Override
+                        public String getQuery2() {
+                            // TODO Auto-generated method stub
+                            return null;
                         }
                     };
                 }

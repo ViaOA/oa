@@ -121,7 +121,6 @@ public class HubShareDelegate {
         return null;
     }
     
-    
     public static HubFilter getHubFilter(Hub thisHub) {
         Hub h = HubShareDelegate.getMainSharedHub(thisHub);
         if (h.datam.masterObject != null || h.datam.masterHub != null) {
@@ -138,6 +137,7 @@ public class HubShareDelegate {
         }
         return null;
     }
+
     public static HubShareAO getHubShareAO(Hub thisHub) {
         Hub h = HubShareDelegate.getMainSharedHub(thisHub);
         
@@ -165,8 +165,8 @@ public class HubShareDelegate {
         }
         if (!bIncludeFilteredHubs) return null;
         
-        // a HubFilter could also be sharing the AO
-        HubFilter hc = getHubFilter(thisHub);
+        // a HubCopy could also be sharing the AO
+        HubCopy hc = getHubCopy(thisHub);
         if (hc != null) {
             if (!bOnlyIfSharedAO || hc.isSharingAO()) { 
                 return hc.getMasterHub();
@@ -206,8 +206,8 @@ public class HubShareDelegate {
         }
         if (!bIncludeFilteredHubs || cnter > 0) return null;
         
-        // not found, check to see if there is a hubFilter (HubCopy) that is shared
-        HubFilter hc = getHubFilter(thisHub);
+        // not found, check to see if there is a HubCopy that is shared
+        HubCopy hc = getHubCopy(thisHub);
         if (hc != null) {
             if (!bOnlyIfSharedAO || hc.isSharingAO()) {
                 Hub mh = hc.getMasterHub();

@@ -322,7 +322,9 @@ public class HubDelegate {
     	}
         
         boolean bHasMethod = true;
-    	if (bM2M) {
+        if (dm == null) {
+        }
+        else if (bM2M) {
     	    bHasMethod = false;
     	    if (dm.masterObject != null && dm.liDetailToMaster != null) { 
     	    	updateMany2ManyLinks(thisHub, dm); // update any link tables
@@ -330,7 +332,7 @@ public class HubDelegate {
     	}
     	else {
         	// 20120907 cases where there is not a public method created, and would use a link table.
-        	Method method = OAObjectInfoDelegate.getMethod(dm.liDetailToMaster);
+            Method method = OAObjectInfoDelegate.getMethod(dm.liDetailToMaster);
         	if (method == null || ((method.getModifiers() & (Modifier.PRIVATE)) > 0) ) {
         	    bHasMethod = false;
                 updateMany2ManyLinks(thisHub, dm); // update any link tables
@@ -352,7 +354,7 @@ public class HubDelegate {
                 }
     		}
     		else {
-    			if (dm.liDetailToMaster != null && bHasMethod) {
+    			if (dm != null && dm.liDetailToMaster != null && bHasMethod) {
 	        		Object ox = OAObjectReflectDelegate.getProperty(obj, dm.liDetailToMaster.getName());
 	    			if (ox == null) { // else property has been reassigned
                         // 20120925

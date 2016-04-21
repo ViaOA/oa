@@ -231,7 +231,7 @@ public class JFCController extends HubListenerAdapter {
             temp
         };
         hubListenerPropertyName = propertyPathFromActualHub;
-        int pos = hubListenerPropertyName.lastIndexOf('.');
+        int pos = hubListenerPropertyName==null ? -1 : hubListenerPropertyName.lastIndexOf('.');
         if (pos >= 0) {
             hubListenerPropertyName = hubListenerPropertyName.substring(pos+1);
         }
@@ -628,7 +628,7 @@ public class JFCController extends HubListenerAdapter {
             }
             String methodName = "set" + ss[ss.length-1];
             methodSet = OAReflect.getMethod(c, methodName, 1);
-            setMethodClass = cs[cs.length-1];
+            if (cs != null) setMethodClass = cs[cs.length-1];
             
             methodName = "isValid" + ss[ss.length-1];
             methodValidate = OAReflect.getMethod(c, methodName, 2);

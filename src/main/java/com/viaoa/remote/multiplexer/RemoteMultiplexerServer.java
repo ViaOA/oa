@@ -894,20 +894,24 @@ public class RemoteMultiplexerServer {
         if (bind.usesQueue && !bDontUseQueue) {
             OACircularQueue<RequestInfo> cq = hmAsyncCircularQueue.get(bind.asyncQueueName);
             if (cq == null) {
-                cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
-                    @Override
-                    protected boolean shouldWaitOnSlowSession(int sessionId, int msSinceLastRead) {
-                        if (msSinceLastRead > 5000) return false;  // dont wait over 5 seconds
-                        Session session = getSession(sessionId, false);
-                        if (session == null) return false;
-                        if (session.bDisconnected) return false;
-                        if (session.realSocket.isClosed()) return false;
-                        return true;
+                synchronized (hmAsyncCircularQueue) {
+                    if (cq == null) {
+                        cq = new OACircularQueue<RequestInfo>(bind.asyncQueueSize) {
+                            @Override
+                            protected boolean shouldWaitOnSlowSession(int sessionId, int msSinceLastRead) {
+                                if (msSinceLastRead > 5000) return false;  // dont wait over 5 seconds
+                                Session session = getSession(sessionId, false);
+                                if (session == null) return false;
+                                if (session.bDisconnected) return false;
+                                if (session.realSocket.isClosed()) return false;
+                                return true;
+                            }
+                            
+                        };
+                        cq.setName(queueName);
+                        hmAsyncCircularQueue.put(bind.asyncQueueName, cq);
                     }
-                    
-                };
-                cq.setName(queueName);
-                hmAsyncCircularQueue.put(bind.asyncQueueName, cq);
+                }
             }
         }
         return bind;

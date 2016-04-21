@@ -78,7 +78,7 @@ public class HubDeleteDelegate {
         OADataSource dataSource = null;
         if (bIsOa && li != null && li.getType() == li.ONE) {
             Method method = OAObjectInfoDelegate.getMethod(li);
-            if (method == null || ((method.getModifiers() & Modifier.PRIVATE) == 1) ) {
+            if (method == null || ((method.getModifiers() & Modifier.PRIVATE) == 2) ) {
                 // uses a link table, need to delete from link table first
                 liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
 

@@ -145,7 +145,7 @@ public class OADataSourceClient extends OADataSource {
     }
     
     public void setMaxLength(Class c, String propertyName, int length) {
-        if (c != null ||propertyName == null) return;
+        if (c == null || propertyName == null) return;
         String key = (c.getName() + "-" + propertyName).toUpperCase();
         hmMax.put(key, new Integer(length));
     }

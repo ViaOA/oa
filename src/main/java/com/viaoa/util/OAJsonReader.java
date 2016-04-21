@@ -370,10 +370,12 @@ public class OAJsonReader {
                     token.type = TokenType.colon;
                     bReturn = true;
                 }
+                /* done, above
                 else if (ch == ',') {
                     token.type = TokenType.comma;
                     bReturn = true;
                 }
+                */
                 else if ( (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_') {
                     token.type = TokenType.string;
                 }

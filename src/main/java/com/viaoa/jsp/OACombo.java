@@ -146,6 +146,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
         boolean bWasSubmitted = false;  // was the combo submited with the form
 
         OAObject objLinkTo = null;
+        if (hmNameValue != null) {        
         for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
             name = (String) ex.getKey();
             if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
@@ -174,7 +175,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
                 break;
             }
         }
-
+        }
         ArrayList alSelected = new ArrayList();
         Object objSelected = null;
         for (int i=0; values != null && i < values.length; i++) {
@@ -328,7 +329,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
         // todo: create script to only send change of selection
         
         String ids = id;
-        Hub hubLink = hub.getLinkHub();
+        Hub hubLink = hub==null ? null : hub.getLinkHub();
         if (hubLink != null) {
             Object objLink = hubLink.getAO();
             if (objLink != null) {

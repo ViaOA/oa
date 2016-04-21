@@ -464,7 +464,7 @@ public class OAPropertyPath<T> {
             if (method == null) clazz = li.getToClass();
             else clazz = method.getReturnType();
             
-            if (clazz.equals(Hub.class)) {
+            if (clazz != null && clazz.equals(Hub.class)) {
                 // try to find the ObjectClass for Hub
                 Class c = OAObjectInfoDelegate.getHubPropertyClass(classLast, propertyName);
                 if (c != null) {
@@ -720,9 +720,9 @@ public class OAPropertyPath<T> {
             }                        
             if (OAReflect.isInteger(c)) {
                 if (op.isCurrency()) {
-                    String format = OAConv.getCurrencyFormat();
+                    String fx = OAConv.getCurrencyFormat();
                     if (deci < 0) deci = 0;
-                    format = getDecimalFormat(format, deci);
+                    format = getDecimalFormat(fx, deci);
                 }                
                 else {
                     format = OAConv.getIntegerFormat();

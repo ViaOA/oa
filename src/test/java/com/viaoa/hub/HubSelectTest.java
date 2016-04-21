@@ -4,6 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
+import com.viaoa.ds.OADataSource;
 
 import test.theice.tsac3.model.oa.*;
 
@@ -15,7 +16,12 @@ public class HubSelectTest extends OAUnitTest {
         assertNull(hubServer.getSelect());
         
         hubServer.select();
-        assertNotNull(hubServer.getSelect());
+        hubServer.loadAllData();
+        
+        assertNull(hubServer.getSelect());
+        
+        
+        //assertEquals(0, hubServer.getSize());
 
         hubServer.cancelSelect();
         assertNull(hubServer.getSelect());

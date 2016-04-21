@@ -17,7 +17,7 @@ import com.viaoa.object.*;
 /** 
     Filter that is used to listen to all objects added to OAObjectCacheDelegate and then add to a specific Hub.
 */
-public class OAObjectCacheHubAdder<T extends OAObject> implements OAObjectCacheListener<T>, java.io.Serializable {
+public class OAObjectCacheHubAdder<T extends OAObject> implements OAObjectCacheListener<T> {
     static final long serialVersionUID = 1L;
 
     protected WeakReference<Hub<T>> wfHub;

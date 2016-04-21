@@ -32,7 +32,7 @@ public class HubListenerTree {
     private static Logger LOG = Logger.getLogger(HubListenerTree.class.getName());
     
     private volatile HubListener[] listeners; 
-    private final HubListenerTreeNode root;
+    private final HubListenerTreeNode root = new HubListenerTreeNode();
 
     private class HubListenerTreeNode {
         Hub hub;
@@ -168,7 +168,6 @@ public class HubListenerTree {
     }
     
     public HubListenerTree(Hub hub) {
-        root = new HubListenerTreeNode();    
         root.hub = hub;
     }
     

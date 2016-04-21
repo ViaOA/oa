@@ -26,7 +26,7 @@ import com.viaoa.util.*;
 // creates a gif or jpg out of an image
 
 
-public class OAImageCreator implements java.io.Serializable {
+public class OAImageCreator {
     protected Dimension dimSize;
     protected BufferedImage image;
     protected Color transparentColor;

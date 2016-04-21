@@ -28,4 +28,8 @@ public class OANullObject implements java.io.Serializable {
     public boolean equals(Object obj) {
         return (obj == null || obj == OANullObject.instance || obj instanceof OANullObject);
     }
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }

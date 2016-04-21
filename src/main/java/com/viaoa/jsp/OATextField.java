@@ -175,6 +175,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
         String[] values = null;
         String value = null;
 
+        if (hmNameValue != null) {        
         for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
             name = ex.getKey();
             if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
@@ -208,6 +209,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                     break;
                 }
             }
+        }
         }
 
         value = convertInputText(value);
@@ -340,6 +342,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
 
         if (isRequired()) {
             sb.append("$('#"+id+"').addClass('oaRequired');\n");
+            sb.append("$('#"+id+"').attr('required', 'true');\n");
         }
         sb.append("$('#"+id+"').blur(function() {$(this).removeClass('oaError');}); \n");
 

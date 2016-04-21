@@ -483,7 +483,8 @@ boolean bClosed;//qqqqqq temp for debugging
     }
 
     private Object convert(Class paramType, Object obj) throws Exception {
-        if (obj != null && obj.getClass().equals(paramType)) return obj;
+        if (obj == null) return null;
+        if (obj.getClass().equals(paramType)) return obj;
 
         if (obj instanceof Clob) {
             obj = ((Clob)obj).getSubString(1, (int) ((Clob)obj).length());

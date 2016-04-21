@@ -71,12 +71,14 @@ public class JobLoader implements Runnable {
             System.out.println("JobLoader: checking directory "+fnames[i]+" for FTP files");
             
             String[] fnames2 = file.list();
-            for (int i2=0; i2<fnames2.length; i2++) {
-                String fn2 = fn + "\\" + fnames2[i2];
-                file = new File(fn2);
-                if (file.isDirectory()) continue;
-                
-                process(emp, fn2, fnames2[i2]);
+            if (fnames2 != null) {
+                for (int i2=0; i2<fnames2.length; i2++) {
+                    String fn2 = fn + "\\" + fnames2[i2];
+                    file = new File(fn2);
+                    if (file.isDirectory()) continue;
+                    
+                    process(emp, fn2, fnames2[i2]);
+                }
             }
             
         }

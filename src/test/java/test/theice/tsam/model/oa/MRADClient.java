@@ -626,7 +626,7 @@ public class MRADClient extends OAObject {
             if (!OAString.isEmpty(s)) {
                 s = OAString.field(s, ":", 2, 99);
                 if (s != null && s.toLowerCase().indexOf("error") < 0) {
-                    s.trim();
+                    s = s.trim();
                     return s;
                 }
             }

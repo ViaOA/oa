@@ -28,4 +28,8 @@ public class OANotNullObject implements java.io.Serializable {
     public boolean equals(Object obj) {
         return (obj != null);
     }
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }

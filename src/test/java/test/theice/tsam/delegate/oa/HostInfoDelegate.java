@@ -99,6 +99,7 @@ public class HostInfoDelegate {
         return hi;
     }
     private static MyHostInfo _getHostInfo(MRADClient mc) {
+        if (mc == null) return null;
         if (hostName == null) {
             try {
                 hostName = InetAddress.getLocalHost().getHostName();

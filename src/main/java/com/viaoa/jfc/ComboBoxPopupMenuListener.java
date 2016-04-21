@@ -54,8 +54,8 @@ public class ComboBoxPopupMenuListener implements PopupMenuListener {
 		
 		if (!(pop.getLayout() instanceof BorderLayout)) {
 			JScrollPane sp = getScrollPane(pop);
+            if (sp == null) return;
 			sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			if (sp == null) return;
 			pop.setLayout(new BorderLayout());
 			pop.add(sp, BorderLayout.CENTER);
 			pop.pack();

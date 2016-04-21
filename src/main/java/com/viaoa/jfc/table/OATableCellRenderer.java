@@ -25,7 +25,7 @@ import com.viaoa.jfc.*;
     Internally used by OATable to wrap a column component and will call the components getTableRenderer()
     Will also call OATable listeners getTableCellRendererComponent().
 */
-public class OATableCellRenderer implements TableCellRenderer, java.io.Serializable {
+public class OATableCellRenderer implements TableCellRenderer {
 
     OATableColumn tableColumn;
     private JLabel lblRenderer;

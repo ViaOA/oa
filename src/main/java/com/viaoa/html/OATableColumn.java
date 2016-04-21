@@ -36,7 +36,7 @@ import com.viaoa.util.*;
     &lt;/td&gt;
 </pre>    
 */
-public class OATableColumn extends OAHtmlComponent implements java.io.Serializable {
+public class OATableColumn extends OAHtmlComponent {
     private static final long serialVersionUID = 1L;
     String[] propertyPaths;
     protected Method[][] methods;

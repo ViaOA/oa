@@ -31,4 +31,8 @@ public class OAGreaterThanZero implements java.io.Serializable {
         if (num == null) return false;
         return (num.doubleValue() > 0.0);
     }
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }

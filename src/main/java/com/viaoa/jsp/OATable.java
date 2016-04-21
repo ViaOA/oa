@@ -406,7 +406,7 @@ public class OATable implements OAJspComponent {
             lastHubPos = hub.getPos();
             if (pager != null) {
                 x = pager.getScrollAmount();
-                pager.setCurrentPage( (int) Math.ceil(lastHubPos/x) );
+                pager.setCurrentPage( (int) Math.ceil(lastHubPos/((double)x)) );
             }
         }
 
@@ -644,18 +644,10 @@ public class OATable implements OAJspComponent {
         sb.append("    $('#oahidden"+id+"').val(v);\n");
 
         
-        
-        
-//qqqqqqqqqqqqqqqqqqqqqqq dont submit if it has a target or tabindex set
-//instead return true qqqqqqqqqqqqqqq
-        
-        sb.append("    if ($(this).attr('target').length == 0) {\n"); 
-        sb.append("        alert('hey');\n");
+        sb.append("    if ($(this).attr('target').length > 0) {\n");
         sb.append("        return true;\n");
         sb.append("    }\n");
-        sb.append("    if ($(this).attr('tabindex') == 0) {\n"); 
-        
-        sb.append("        alert('hey');\n");
+        sb.append("    if ($(this).attr('tabindex').length > 0) {\n");
         sb.append("        return true;\n");
         sb.append("    }\n");
         

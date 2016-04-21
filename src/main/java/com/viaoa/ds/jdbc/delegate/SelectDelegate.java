@@ -185,7 +185,7 @@ public class SelectDelegate {
     // 20121013 changes to use PreparedStatements for Selecting Many link
     public static OADataSourceIterator select(OADataSourceJDBC ds, Class clazz, OAObject whereObject, String extraWhere, Object[] params, String propertyFromWhereObject, String queryOrder, int max, boolean bDirty) {
         // dont need to select if master object (whereObject) is new
-        if (whereObject.getNew()) return null;
+        if (whereObject == null || whereObject.getNew()) return null;
 
         Table table = ds.getDatabase().getTable(clazz);
         if (table == null) return null;

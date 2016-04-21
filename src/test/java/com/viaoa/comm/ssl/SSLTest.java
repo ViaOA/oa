@@ -100,7 +100,7 @@ public class SSLTest extends OAUnitTest {
             System.out.println(cntClient+") client");            
             //System.out.println("client: getting input");            
             byte[] bs2 = client.input();
-            new String(bs2);
+            String s = new String(bs2);
             
 
             //System.out.println("client: sending output");            

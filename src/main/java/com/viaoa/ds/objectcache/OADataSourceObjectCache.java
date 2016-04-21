@@ -78,7 +78,7 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
                     throw new RuntimeException("query parsing failed", e);
                 }
             }
-            else if (whereObject != null || propertyFromWhereObject != null) {
+            else if (whereObject != null && propertyFromWhereObject != null) {
                 OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(whereObject.getClass());
                 OALinkInfo li = oi.getLinkInfo(propertyFromWhereObject);
                 if (li != null) li = li.getReverseLinkInfo();

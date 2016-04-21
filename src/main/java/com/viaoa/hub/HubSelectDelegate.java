@@ -283,7 +283,6 @@ public class HubSelectDelegate {
 
 	    HubEventDelegate.fireBeforeSelectEvent(thisHub);
 	    
-        thisHub.data.setSelect(select);
         
         boolean bRunSelect;
         bRunSelect = oi.getUseDataSource();
@@ -292,9 +291,12 @@ public class HubSelectDelegate {
         bRunSelect = (bRunSelect && (select.getDataSource() != null || select.getFinder() != null));
         //was: bRunSelect = (bRunSelect && select.getDataSource() != null);
         
-	    
 	    HubDataDelegate.incChangeCount(thisHub);
-	    if (!select.getAppend()) {
+	   
+	    if (select.getAppend()) {
+            thisHub.data.setSelect(select);
+	    }
+	    else {
             thisHub.setAO(null); // 20100507
 	    	if (thisHub.isOAObject()) {
 	            int z = HubDataDelegate.getCurrentSize(thisHub);
@@ -304,6 +306,7 @@ public class HubSelectDelegate {
 	            }
 	        }
 	    	HubDataDelegate.clearAllAndReset(thisHub);
+	        thisHub.data.setSelect(select);
 	        
 	    	if (select.getRewind()) {
 	    	    
@@ -362,7 +365,7 @@ public class HubSelectDelegate {
 		    bHasMoreData = (b && sel.hasMore());
 	    	if (b) sel.cancel();
 	        if (bRemoveSelect) thisHub.data.setSelect(null);
-	        if (b) HubDataDelegate.resizeToFit(thisHub);
+	        if (!b) HubDataDelegate.resizeToFit(thisHub);
 	    }
 		else bHasMoreData = false;
 		

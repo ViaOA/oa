@@ -81,6 +81,19 @@ public class OAForm extends OABase implements Serializable {
     /** add script to be returned to browser, only once on initialize (then cleared) */
     public String jsAddScriptOnce;
     
+    public enum Type {
+        None,
+        Bootstrap
+    }
+    protected Type type = Type.None;
+    
+    public void setType(Type t) {
+        this.type = t;
+    }
+    public Type getType() {
+        return type;
+    }
+    
     
     public OAForm() {
     }
@@ -340,7 +353,8 @@ public class OAForm extends OABase implements Serializable {
         sb.append("    }\n");
         sb.append("    oaShowMessage('Required fields are missing', msg);\n");
         sb.append("    return false;\n");
-        sb.append("}\n");   
+        sb.append("}\n");
+
         sb.append("if (errors.length > 0) {\n");
         sb.append("    var msg = '';\n");
         sb.append("    for (var i=0; i<errors.length; i++) {\n");

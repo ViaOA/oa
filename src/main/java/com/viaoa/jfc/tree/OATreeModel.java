@@ -28,7 +28,7 @@ public class OATreeModel implements TreeModel {
     OATreeNodeData root;
     boolean bMessage;  // flag to know if an event is currently being called
     TreeModelListener[] listeners = new TreeModelListener[0];
-
+    private final Object lockListeners = new Object();
 
     public OATreeModel(OATree tree) {
         this.tree = tree;
@@ -37,7 +37,7 @@ public class OATreeModel implements TreeModel {
 
     public void addTreeModelListener(TreeModelListener l) {
     	if (l == null) return;
-        synchronized (listeners) {
+        synchronized (lockListeners) {
             for (int i=0; i < listeners.length; i++) {
                 if (listeners[i] == l) return;
             }
@@ -49,7 +49,7 @@ public class OATreeModel implements TreeModel {
     }
     public void removeTreeModelListener(TreeModelListener l) {
         if (l == null || listeners.length == 0) return;
-        synchronized (listeners) {
+        synchronized (lockListeners) {
             TreeModelListener[] l2 = new TreeModelListener[listeners.length-1];
             for (int i=0, j=0; i < listeners.length; i++) {
                 if (listeners[i] != l) {

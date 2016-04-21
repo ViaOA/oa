@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  * 
  * @author vvia
  */
-public class MultiplexerSocketController implements Serializable {
+public class MultiplexerSocketController {
     private static Logger LOG = Logger.getLogger(MultiplexerSocketController.class.getName());
     /**
      * Status of real connection.
@@ -81,10 +81,10 @@ public class MultiplexerSocketController implements Serializable {
     private AtomicBoolean _abClosing = new AtomicBoolean(false);
 
     /** used to manage the real socket outputstream */
-    private MultiplexerOutputStreamController _outputStreamController;
+    private volatile MultiplexerOutputStreamController _outputStreamController;
     
     /** used to manage the real socketinputstream */
-    private MultiplexerInputStreamController _inputStreamController;
+    private volatile MultiplexerInputStreamController _inputStreamController;
     private final Object _LockStreamController = new Object();
 
     /** max ID assigned to virtual socket. */

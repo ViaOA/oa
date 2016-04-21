@@ -271,5 +271,9 @@ public class OAUndoableEdit implements UndoableEdit {
         }
         return true;
     }
+    @Override
+    public int hashCode() {
+        return (type + "." + object).hashCode(); 
+    }
 }
 

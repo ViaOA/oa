@@ -38,7 +38,12 @@ public class ObjectCacheIterator<T> implements OADataSourceIterator {
         this.clazz = c;
         this.filter = filter;
     }
-    public synchronized T next() {
+    
+    public T next() {
+        return getNext();
+    }
+    
+    private synchronized T getNext() {
         T obj;
         if (nextObject != null) {
             obj = nextObject;
@@ -78,7 +83,7 @@ public class ObjectCacheIterator<T> implements OADataSourceIterator {
     
     public synchronized boolean hasNext() {
         if (nextObject == null) {
-            nextObject = next();
+            nextObject = getNext();
         }
         return (nextObject != null);
     }

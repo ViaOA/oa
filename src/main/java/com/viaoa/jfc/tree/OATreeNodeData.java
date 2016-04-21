@@ -32,7 +32,7 @@ public class OATreeNodeData {
 	public OATreeNode node;
     public Object object;
     public OATreeNodeData parent;
-    public ArrayList<OATreeNodeData> listChildren;
+    public volatile ArrayList<OATreeNodeData> listChildren;
     Hub2TreeNode[] hub2TreeNodes;  // used to listen to all of the Hubs for the children that this is the parent of.
     
     public OATreeNodeData(OATreeNode node, Object obj, OATreeNodeData parent) {

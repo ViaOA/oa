@@ -518,7 +518,7 @@ public class HubDetailDelegate {
                     // 20130916 make sure it has the same masterObject
                     //    since it could be a recursive hub, that points
                     //    to the root hub, and not just it's parent
-                    if (h.datam.masterHub != null) return true;
+                    return true;
                 }
                 return false;
             }
