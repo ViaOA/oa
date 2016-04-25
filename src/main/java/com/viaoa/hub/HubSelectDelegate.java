@@ -365,7 +365,7 @@ public class HubSelectDelegate {
 		    bHasMoreData = (b && sel.hasMore());
 	    	if (b) sel.cancel();
 	        if (bRemoveSelect) thisHub.data.setSelect(null);
-	        if (!b) HubDataDelegate.resizeToFit(thisHub);
+	        HubDataDelegate.resizeToFit(thisHub);
 	    }
 		else bHasMoreData = false;
 		

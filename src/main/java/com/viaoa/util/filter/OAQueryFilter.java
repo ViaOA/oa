@@ -86,7 +86,7 @@ public class OAQueryFilter<T> implements OAFilter {
     
     // AND
     private OAQueryToken parseForAnd(OAQueryToken token) throws Exception {
-        if (token != null && token.type != OAQueryTokenType.AND) {
+        if (token == null || token.type != OAQueryTokenType.AND) {
             token = parseForOr(token);
         }
         if (token != null && token.type == OAQueryTokenType.AND) {
@@ -108,7 +108,7 @@ public class OAQueryFilter<T> implements OAFilter {
 
     // OR
     private OAQueryToken parseForOr(OAQueryToken token) throws Exception {
-        if (token != null && token.type != OAQueryTokenType.OR) {
+        if (token == null || token.type != OAQueryTokenType.OR) {
             token = parseForBracket(token);
         }
         if (token != null && token.type == OAQueryTokenType.OR) {

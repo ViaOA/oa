@@ -104,13 +104,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     @Override
     public int hashCode() {
-        String s;
-        if (toClass != null) s = toClass.toString() + ".";
-        else s = ".";
-        
-        if (name != null) s += name.toUpperCase();
-                
-        return s.hashCode();
+        return 1;
     }
 
     public boolean isOwner() {
