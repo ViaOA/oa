@@ -217,6 +217,17 @@ public class OAObjectHubDelegate {
         return oaObj.weakhubs;
     }
 
+    public static boolean isInHub(OAObject oaObj, Hub hub) {
+        if (oaObj == null || hub == null) return false;
+        WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
+        int cnt = 0;
+        for (int i = 0; refs != null && i < refs.length; i++) {
+            if (refs[i] != null && refs[i].get() == hub) return true;
+        }
+        return false;
+    }
+    
+    
     public static int getHubReferenceCount(OAObject oaObj) {
         if (oaObj == null) return 0;
         WeakReference<Hub<?>>[] refs = oaObj.weakhubs;

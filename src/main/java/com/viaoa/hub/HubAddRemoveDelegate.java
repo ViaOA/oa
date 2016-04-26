@@ -334,19 +334,30 @@ public class HubAddRemoveDelegate {
             return false;
         }
         
-        // moved before listeners are notified.  Else listeners could ask for more objects
-        HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
-        
-        // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
-        Hub rootHub = thisHub.getRootHub();
-        if (rootHub != null) {
-            if (rootHub == thisHub) {
-                OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
-                if (liRecursive != null) {
-                    OAObjectReflectDelegate.setProperty((OAObject)obj, liRecursive.getName(), null, null);
+        // 20160426 make sure that it has not been removed 
+        if (obj instanceof OAObject) {
+            if (OAObjectHubDelegate.isInHub((OAObject)obj, thisHub)) {
+                // moved before listeners are notified.  Else listeners could ask for more objects
+                HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
+                
+                // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
+                Hub rootHub = thisHub.getRootHub();
+                if (rootHub != null) {
+                    if (rootHub == thisHub) {
+                        OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
+                        if (liRecursive != null) {
+                            OAObjectReflectDelegate.setProperty((OAObject)obj, liRecursive.getName(), null, null);
+                        }
+                    }
                 }
             }
+            else {
+                int xx = 4;
+                xx++;
+            }
         }
+        
+        
         return true;
     }
     private static void _afterAdd(final Hub thisHub, final Object obj) {

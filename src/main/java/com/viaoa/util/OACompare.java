@@ -112,7 +112,7 @@ public class OACompare {
         if (value.equals(matchValue)) return true;
 
         
-        // allow OAObject to be compared with a pkey vvalue
+        // allow OAObject to be compared with a pkey value
         //    ex:  Order.equals(5), is true if order.id == 5
         if (value instanceof OAObject) {
             return ((OAObject)value).equals(matchValue);

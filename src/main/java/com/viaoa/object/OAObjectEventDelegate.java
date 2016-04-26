@@ -23,9 +23,11 @@ import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
+import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
+import com.viaoa.util.OAString;
 
 
 public class OAObjectEventDelegate {
@@ -443,7 +445,13 @@ public class OAObjectEventDelegate {
 	    if (revLinkInfo == null) return;
 	
 	    Object obj;
-	
+
+	    // 20160426 make sure that it has not changed
+	    obj = OAObjectPropertyDelegate.getProperty(oaObj, linkInfo.name);
+	    if (obj != newObj) {
+	        return;
+	    }
+	    
 	    if (revLinkInfo.type == OALinkInfo.ONE) {
 	        try {
 	            OAObjectInfo oiRev = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.toClass);

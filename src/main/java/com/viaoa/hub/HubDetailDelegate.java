@@ -109,6 +109,7 @@ public class HubDetailDelegate {
     */
     protected static void setPropertyToMasterHub(Hub thisHub, Object detailObject, Object objMaster) {
         if (thisHub == null || detailObject == null) return;
+        if (!(detailObject instanceof OAObject)) return;
 
         HubDataMaster dm;
         if (objMaster != null) {
