@@ -1047,6 +1047,11 @@ public class OAObjectReflectDelegate {
         loadAllReferences(obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade);
     }
 
+    public static void loadAllReferences(OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
+            boolean bIncludeCalc, OACallback callback, OACascade cascade) {
+        loadAllReferences(obj, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, 500);
+    }
+
     // ** MAIN reference loader here **
     /**
      * 
@@ -1062,14 +1067,24 @@ public class OAObjectReflectDelegate {
      *            will be called before loading references. If the callback.updateObject returns false,
      *            then the current object references will not be loaded
      * @param cascade
-     *            used to impl vistor pattern
+     *            used to impl visitor pattern
+     * @param max maximum recursive object to call loadAllRefereces on (recursive)        
      */
     public static void loadAllReferences(OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
-            boolean bIncludeCalc, OACallback callback, OACascade cascade) {
-        if (obj == null) return;
-        if (cascade.wasCascaded(obj, true)) return;
+            boolean bIncludeCalc, OACallback callback, OACascade cascade, final int max) {
+        _loadAllReferences(0, obj, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, 500);
+    }
+    
+    private static int _loadAllReferences(int currentCount, OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
+            boolean bIncludeCalc, OACallback callback, OACascade cascade, final int max) {
+        
+        if (max > 0 && currentCount >= max) {
+            return currentCount;
+        }
+        if (obj == null) return currentCount;
+        if (cascade.wasCascaded(obj, true)) return currentCount;
         if (callback != null) {
-            if (!callback.updateObject(obj)) return;
+            if (!callback.updateObject(obj)) return currentCount;
         }
 
         boolean bOwnedOnly = (levelsLoaded >= maxLevelsToLoad);
@@ -1093,8 +1108,8 @@ public class OAObjectReflectDelegate {
                 Hub hubx = OAThreadLocalDelegate.setGetDetailHub((Hub) objx);
                 try {
                     for (Object objz : (Hub) objx) {
-                        loadAllReferences((OAObject) objz, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc,
-                                callback, cascade);
+                        currentCount =_loadAllReferences(currentCount++, (OAObject) objz, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc,callback, cascade, max);
+                        if (max > 0 && currentCount >= max) break;
                     }
                 }
                 finally {
@@ -1102,10 +1117,10 @@ public class OAObjectReflectDelegate {
                 }
             }
             else if (objx instanceof OAObject) {
-                loadAllReferences((OAObject) objx, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback,
-                        cascade);
+                currentCount =_loadAllReferences(currentCount++, (OAObject) objx, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, max);
             }
         }
+        return currentCount;
     }
 
     // 20121001

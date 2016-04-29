@@ -454,6 +454,8 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             if (totalObjectsWritten > 250 || (wcnter%250 == 0)) System.out.println(wcnter+") ObjectSerializer "+msg);
         }
         */
+//qqqqqqqqqqqqqq        
+//System.out.println(wcnter+") ObjectSerializer "+msg);        
     }
 
     static int wcnter;
@@ -547,6 +549,8 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             System.out.println(rcnter+") ObjectSerializer "+msg);
         }
         */
+//qqqqqqqqqq        
+//        System.out.println(rcnter+") ObjectSerializer "+msg);
     }
 
     
