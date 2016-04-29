@@ -967,89 +967,111 @@ public class OAObjectReflectDelegate {
         return true;
     }
 
-    public static void loadAllReferences(OAObject obj, boolean bOne, boolean bMany, boolean bIncludeCalc) {
+    public static int loadAllReferences(OAObject obj, boolean bOne, boolean bMany, boolean bIncludeCalc) {
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
         List<OALinkInfo> al = io.getLinkInfos();
+        int cnt = 0;
         for (OALinkInfo li : al) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
             if (!bOne && li.getType() == OALinkInfo.ONE) continue;
             if (!bMany && li.getType() == OALinkInfo.MANY) continue;
             getProperty(obj, li.getName());
+            cnt++;
         }
+        return cnt;
     }
 
-    public static void loadAllReferences(OAObject obj, int maxLevelsToLoad) {
-        OACascade c = new OACascade();
-        loadAllReferences(obj, 0, maxLevelsToLoad, 0, true, null, c);
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad) {
+        return _loadAllReferences(0, obj, 0, maxLevelsToLoad, 0, true, null, null, 0);
     }
 
-    public static void loadAllReferences(Hub hub, int maxLevelsToLoad) {
-        OACascade c = new OACascade();
-        loadAllReferences(hub, 0, maxLevelsToLoad, 0, true, null, c);
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, 0, true, null, null, 0);
     }
 
-    public static void loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad) {
-        OACascade c = new OACascade();
-        loadAllReferences(obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, true, null, c);
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad) {
+        return _loadAllReferences(0, obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, true, null, null, 0);
+    }
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, int maxRefsToLoad) {
+        return _loadAllReferences(0, obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, true, null, null, maxRefsToLoad);
     }
 
-    public static void loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad) {
-        OACascade c = new OACascade();
-        loadAllReferences(hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, true, null, c);
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, true, null, null, 0);
+    }
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, int maxRefsToLoad) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, true, null, null, maxRefsToLoad);
     }
 
-    public static void loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc) {
-        OACascade c = new OACascade();
-        loadAllReferences(obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, c);
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc) {
+        return _loadAllReferences(0, obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, null, 0);
+    }
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, int maxRefsToLoad) {
+        return _loadAllReferences(0, obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, null, maxRefsToLoad);
     }
 
-    public static void loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc) {
-        OACascade c = new OACascade();
-        loadAllReferences(hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, c);
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, null, 0);
+    }
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, int maxRefsToLoad) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, null, maxRefsToLoad);
     }
 
-    public static void loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc,
-            OACallback callback) {
-        OACascade c = new OACascade();
-        loadAllReferences(obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, c);
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback) {
+        return _loadAllReferences(0, obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, null, 0);
+    }
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback, int maxRefsToLoad) {
+        return _loadAllReferences(0, obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, null, maxRefsToLoad);
     }
 
-    public static void loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc,
-            OACallback callback) {
-        OACascade c = new OACascade();
-        loadAllReferences(hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, c);
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, null, 0);
+    }
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback, int maxRefsToLoad) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, null, maxRefsToLoad);
     }
 
-    public static void loadAllReferences(Hub hub, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
-            boolean bIncludeCalc, OACallback callback, OACascade cascade) {
+    public static int loadAllReferences(final Hub hub, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback, OACascade cascade) {
+        int cnt = 0;
         Hub hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
         try {
-            for (Object obj : hub) {
-                loadAllReferences((OAObject) obj, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback,
-                        cascade);
-            }
+            cnt = _loadAllReferences(0, hub, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, 0);
         }
         finally {
             OAThreadLocalDelegate.resetGetDetailHub(hubx);
         }
+        return cnt;
     }
-
-    public static void loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc,
-            OACascade cascade) {
-        for (Object obj : hub) {
-            loadAllReferences((OAObject) obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade);
+    public static int loadAllReferences(final Hub hub, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback, OACascade cascade, int maxRefsToLoad) {
+        int cnt = 0;
+        Hub hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
+        try {
+            cnt = _loadAllReferences(0, hub, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, maxRefsToLoad);
         }
+        finally {
+            OAThreadLocalDelegate.resetGetDetailHub(hubx);
+        }
+        return cnt;
     }
 
-    public static void loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc,
-            OACascade cascade) {
-        loadAllReferences(obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade);
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACascade cascade) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade, 0);
+    }
+    public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACascade cascade, int maxRefsToLoad) {
+        return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade, maxRefsToLoad);
     }
 
-    public static void loadAllReferences(OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACascade cascade) {
+        return loadAllReferences(obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade);
+    }
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACascade cascade, int maxRefsToLoad) {
+        return loadAllReferences(obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade, maxRefsToLoad);
+    }
+
+    public static int loadAllReferences(OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
             boolean bIncludeCalc, OACallback callback, OACascade cascade) {
-        loadAllReferences(obj, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, 500);
+        return loadAllReferences(obj, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, 0);
     }
 
     // ** MAIN reference loader here **
@@ -1068,25 +1090,42 @@ public class OAObjectReflectDelegate {
      *            then the current object references will not be loaded
      * @param cascade
      *            used to impl visitor pattern
-     * @param max maximum recursive object to call loadAllRefereces on (recursive)        
+     * @param max maximum recursive objects to call loadAllRefereces on.        
      */
-    public static void loadAllReferences(OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
-            boolean bIncludeCalc, OACallback callback, OACascade cascade, final int max) {
-        _loadAllReferences(0, obj, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, 500);
+    public static int loadAllReferences(OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
+            boolean bIncludeCalc, OACallback callback, OACascade cascade, final int maxRefsToLoad) {
+        return _loadAllReferences(0, obj, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, maxRefsToLoad);
     }
-    
-    private static int _loadAllReferences(int currentCount, OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
-            boolean bIncludeCalc, OACallback callback, OACascade cascade, final int max) {
+
+    private static int _loadAllReferences(int currentRefsLoaded, final Hub hub, final int levelsLoaded, final int maxLevelsToLoad, final int additionalOwnedLevelsToLoad,
+            final boolean bIncludeCalc, final OACallback callback, OACascade cascade, final int maxRefsToLoad) {
         
-        if (max > 0 && currentCount >= max) {
-            return currentCount;
+        if (cascade == null) cascade = new OACascade();
+        int cnt = 0;
+        for (Object obj : hub) {
+            int max = maxRefsToLoad > 0 ? (maxRefsToLoad-cnt) : 0;
+            cnt += _loadAllReferences(cnt, (OAObject) obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade, max);
+            if (maxRefsToLoad > 0 && cnt >= maxRefsToLoad) break;
         }
-        if (obj == null) return currentCount;
-        if (cascade.wasCascaded(obj, true)) return currentCount;
+        return cnt;
+        
+    }    
+    
+    private static int _loadAllReferences(int currentRefsLoaded, final OAObject obj, final int levelsLoaded, final int maxLevelsToLoad, final int additionalOwnedLevelsToLoad,
+            final boolean bIncludeCalc, final OACallback callback, OACascade cascade, final int maxRefsToLoad) {
+
+        if (cascade == null) cascade = new OACascade();
+
+        if (maxRefsToLoad > 0 && currentRefsLoaded >= maxRefsToLoad) {
+            return currentRefsLoaded;
+        }
+        if (obj == null) return currentRefsLoaded;
+        if (cascade.wasCascaded(obj, true)) return currentRefsLoaded;
         if (callback != null) {
-            if (!callback.updateObject(obj)) return currentCount;
+            if (!callback.updateObject(obj)) return currentRefsLoaded;
         }
 
+        currentRefsLoaded++;
         boolean bOwnedOnly = (levelsLoaded >= maxLevelsToLoad);
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
@@ -1108,8 +1147,8 @@ public class OAObjectReflectDelegate {
                 Hub hubx = OAThreadLocalDelegate.setGetDetailHub((Hub) objx);
                 try {
                     for (Object objz : (Hub) objx) {
-                        currentCount =_loadAllReferences(currentCount++, (OAObject) objz, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc,callback, cascade, max);
-                        if (max > 0 && currentCount >= max) break;
+                        currentRefsLoaded = _loadAllReferences(currentRefsLoaded, (OAObject) objz, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc,callback, cascade, maxRefsToLoad);
+                        if (maxLevelsToLoad > 0 && currentRefsLoaded >= maxLevelsToLoad) break;
                     }
                 }
                 finally {
@@ -1117,10 +1156,10 @@ public class OAObjectReflectDelegate {
                 }
             }
             else if (objx instanceof OAObject) {
-                currentCount =_loadAllReferences(currentCount++, (OAObject) objx, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, max);
+                currentRefsLoaded = _loadAllReferences(currentRefsLoaded, (OAObject) objx, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, maxRefsToLoad);
             }
         }
-        return currentCount;
+        return currentRefsLoaded;
     }
 
     // 20121001
