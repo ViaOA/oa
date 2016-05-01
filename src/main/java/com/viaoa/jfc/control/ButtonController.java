@@ -733,7 +733,7 @@ public class ButtonController extends JFCController implements ActionListener {
     private boolean _default_onActionPerformed() {
         Object ho = null;
         Hub hub = getActualHub();
-        if (hub == null) return false;
+        if (hub == null) return true;
         if (hub != null) ho = hub.getActiveObject();
         if (bManual) return true;
         
