@@ -202,7 +202,7 @@ public class ClientGetDetail {
             }
         }
     
-        OAObjectSerializerCallback cb = createOAObjectSerializerCallback(masterObject, bMasterWasPreviouslySent, 
+        OAObjectSerializerCallback cb = createOAObjectSerializerCallback(os, masterObject, bMasterWasPreviouslySent, 
                 detailObject, dHub, propFromMaster, masterProperties, siblingKeys, hmExtraData);
         os.setCallback(cb);
 
@@ -212,6 +212,7 @@ public class ClientGetDetail {
     
     // callback to customize the return values from getDetail(..) 
     private OAObjectSerializerCallback createOAObjectSerializerCallback(
+            final OAObjectSerializer os, 
             final OAObject masterObject, final boolean bMasterWasPreviouslySent, 
             final Object detailObject, final Hub detailHub,
             final String propFromMaster, 
@@ -258,10 +259,13 @@ public class ClientGetDetail {
                     }
 
                     if (masterProperties == null || masterProperties.length == 0) {
-                        hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());  // flag that all masterObject props have been sent to client
+                        if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());  // flag that all masterObject props have been sent to client
                         includeAllProperties();
                     }
-                    else includeProperties(masterProperties);                    
+                    else {
+                        if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());  // flag that all masterObject props have been sent to client
+                        includeAllProperties();
+                    }
                     return;
                 }
 
@@ -279,7 +283,7 @@ public class ClientGetDetail {
                     else {
                         boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
                         if (b) {
-                            hsSendingGuid.add(obj.getObjectKey().getGuid());
+                            if (!os.hasReachedMax()) hsSendingGuid.add(obj.getObjectKey().getGuid());
                         }
                         includeAllProperties();
                     }
@@ -289,13 +293,13 @@ public class ClientGetDetail {
                 if (detailHub != null && detailHub.contains(obj)) {
                     // this Object is a Hub - will send all references (all have been loaded)
                     if (wasFullySentToClient(obj)) {
-                        hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                        if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
                         excludeAllProperties();  // client has it all
                     }
                     else {
                         boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
                         if (b) {
-                            hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                            if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
                         }
                         includeAllProperties();
                     }
@@ -327,7 +331,7 @@ public class ClientGetDetail {
                         // client does not have it, send whatever is loaded
                         b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
                         if (b) {
-                            hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                            if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
                         }
                         includeAllProperties(); // will send whatever is loaded
                     }

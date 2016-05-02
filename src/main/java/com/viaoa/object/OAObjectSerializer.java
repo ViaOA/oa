@@ -313,6 +313,19 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         return true;
     }
     
+    private boolean bReachedMax;
+    // 20160502
+    public boolean hasReachedMax() {
+        if (bReachedMax) return true;
+        if (maxSize > 0 && (getCompressedWritten() > maxSize)) {
+            bReachedMax = true;
+        }
+        else if (max > 0 && ((totalObjectsWritten+minExpectedAmt) > max)) {
+            bReachedMax = true;
+        }
+        return bReachedMax;
+    }
+    
     /**
      * Used to determine if an object reference property should be include for serialization.
      * This will used the excludedClasses, callback, or allReferences flag.
