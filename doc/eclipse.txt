@@ -1,4 +1,17 @@
 
+20160502 create new project in Stash and load into Eclipse
+    1: create a new repo in stash  (ex: tsac/tslm)
+            ex: https://stash.intcx.net/projects/TSAC/repos/tslm/browse
+    2: create local project in git directory
+            copy C:\Users\vvia\git\ICE_stash_template  to new directory name
+    3: change all "tslm" to "new_name" in all of pom.xml files
+    4: from Eclipse, create a new Java project to point to the new directory
+    5: commit to stash
+    6: delete eclipse project
+    7: eclipse import/existing maven projects
+        this will create multiple projects in eclipse (like tsam)
+
+
 
 
 ** Compiling with JDK 1.6 using Eclipse Mars
