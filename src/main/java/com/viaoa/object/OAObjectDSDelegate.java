@@ -27,10 +27,33 @@ public class OAObjectDSDelegate {
     	// OADataSource is set up to check isLoading() so that it does not initialize the objects that it is creating    	
         OADataSource ds = getDataSource(oaObj);
         if (ds != null) {
-            ds.assignId(oaObj);  // datasource might need to set Id property
+            try {
+                setAssigningId(oaObj, true);
+                ds.assignId(oaObj);  // datasource might need to set Id property
+            }
+            finally {
+                setAssigningId(oaObj, false);
+            }
         }
     }
 
+    // 20160505
+    /**
+     * Flag to know that the DS is assigning the Id, and that the value does not 
+     * need to be verified by the propertyChange event
+     */
+    public static void setAssigningId(OAObject obj, boolean b) {
+        if (obj == null) return;
+        int g = OAObjectDelegate.getGuid(obj);
+        if (b) OAObjectHashDelegate.getAssigningIdHash().put(g, g);
+        else OAObjectHashDelegate.getAssigningIdHash().remove(g);
+    }
+    public static boolean isAssigningId(OAObject obj) {
+        if (obj == null) return false;
+        int g = OAObjectDelegate.getGuid(obj);
+        return OAObjectHashDelegate.getAssigningIdHash().containsKey(g);
+    }
+    
     public static boolean getAssignIdOnCreate(OAObject oaObj) {
         if (oaObj == null) return false;
         // OADataSource is set up to check isLoading() so that it does not initialize the objects that it is creating       

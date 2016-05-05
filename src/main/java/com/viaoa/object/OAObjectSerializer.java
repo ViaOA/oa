@@ -461,7 +461,11 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         stream.writeInt(totalObjectsWritten);
 
         wcnter++;
-        LOG.fine(wcnter+") "+msg);
+        if (bCompress) {
+            LOG.fine(wcnter+") "+msg);
+        }
+        else LOG.finer(wcnter+") "+msg);
+        
         /*test        
         if (false) {            
             if (totalObjectsWritten > 250 || (wcnter%250 == 0)) System.out.println(wcnter+") ObjectSerializer "+msg);

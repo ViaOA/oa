@@ -554,7 +554,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     public void addNotLikeFilter(String pp, Object val) {
         addFilter(new OANotLikeFilter(pp, val));
     }
-  
+
+    public void addOrFilter(OAFilter f1, OAFilter f2) {
+        OAOrFilter f = new OAOrFilter(f1, f2);
+        addFilter(f);
+    }
     
     /**
      * This will create an Or with the existing filter and the next filter that is added.

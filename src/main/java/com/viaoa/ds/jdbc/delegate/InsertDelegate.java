@@ -270,7 +270,14 @@ DBLogDelegate.logInsert(sqlInsert, params);
             	
             	if (rs.next()) {
             		Object val = rs.getObject(1);
-                    oaObj.setProperty(columnAutoGen.propertyName, val);
+            		
+                    try {
+                        OAObjectDSDelegate.setAssigningId(oaObj, true);
+                        oaObj.setProperty(columnAutoGen.propertyName, val);
+                    }
+                    finally {
+                        OAObjectDSDelegate.setAssigningId(oaObj, false);
+                    }
             	}
                 rs.close();
             }

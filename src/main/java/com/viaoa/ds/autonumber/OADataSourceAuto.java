@@ -170,8 +170,15 @@ public class OADataSourceAuto extends OADataSource {
             Object test = OAObjectCacheDelegate.getObject(oaObj.getClass(), id);
 	        //was: Object test = OAObjectReflectDelegate.getObject(oaObj.getClass(), id);
 	        if (test == null) break;
-        }        
-        oaObj.setProperty(prop, id);
+        }
+        
+        try {
+            OAObjectDSDelegate.setAssigningId(oaObj, true);
+            oaObj.setProperty(prop, id);
+        }
+        finally {
+            OAObjectDSDelegate.setAssigningId(oaObj, false);
+        }
     }
 
     

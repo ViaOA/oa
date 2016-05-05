@@ -116,7 +116,13 @@ public class OADataSourceJDBC extends OADataSource {
 	*/
 	public @Override void assignId(OAObject object) {
 	    if (!bAssignNumberOnCreate) return;
-	    _assignId(object);
+        try {
+            OAObjectDSDelegate.setAssigningId(object, true);
+            _assignId(object);
+        }
+        finally {
+            OAObjectDSDelegate.setAssigningId(object, false);
+        }
 	}
     private void _assignId(OAObject object) {
 	    Class clazz = object.getClass();
@@ -151,19 +157,17 @@ public class OADataSourceJDBC extends OADataSource {
 
     public @Override void insert(OAObject object) {
         OAObjectKey key = OAObjectKeyDelegate.getKey(object);
-//qqqqqqqqqqqqqqqqqqq        
-LOG.fine("object="+object.getClass().getSimpleName()+", key="+key+", isNew="+object.isNew());
-//        LOG.finer("object="+object.getClass()+", key="+key+", isNew="+object.isNew());
+        LOG.finer("object="+object.getClass()+", key="+key+", isNew="+object.isNew());
         InsertDelegate.insert(this, object);
-/*was
-        try {
-            InsertDelegate.insert(this, object);
-        }
-        catch (RuntimeException e) {
-            LOG.log(Level.WARNING, "OADataSourceJDBC.insert ERROR: object="+object.getClass().getSimpleName()+", key="+key+", isNew="+object.isNew(), e);
-            throw e;
-        }
-*/        
+        /*was
+                try {
+                    InsertDelegate.insert(this, object);
+                }
+                catch (RuntimeException e) {
+                    LOG.log(Level.WARNING, "OADataSourceJDBC.insert ERROR: object="+object.getClass().getSimpleName()+", key="+key+", isNew="+object.isNew(), e);
+                    throw e;
+                }
+        */        
     }
 
     public @Override void insertWithoutReferences(OAObject obj) {

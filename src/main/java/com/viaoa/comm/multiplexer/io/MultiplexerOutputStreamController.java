@@ -286,6 +286,7 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
     private void releaseOutputStream() throws IOException {
         if (_bIsClosed) return;
         synchronized (WRITELOCK) {
+            if (_bIsClosed) return;
             try {
                 if (_writeLockWaitingCount == 0) {
                     _dataOutputStream.flush();

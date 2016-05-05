@@ -20,6 +20,7 @@ import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.ds.OADataSource;
+import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
@@ -109,13 +110,15 @@ public class OAObjectEventDelegate {
         if (linkInfo == null && !OARemoteThreadDelegate.isRemoteThread()) {
             OAPropertyInfo propInfo = OAObjectInfoDelegate.getPropertyInfo(oi, propertyU);
             if (propInfo != null) {
-                if (propInfo.getId()) {
+                
+                if (propInfo.getId() && !OAObjectDSDelegate.isAssigningId(oaObj)) {
                     String s = OAObjectKeyDelegate.verifyKeyChange(oaObj);
                     if (s != null) {
                         throw new RuntimeException(s);
                     }
-                }
-                if (propInfo.getUnique() && newObj != null) {
+                } 
+                
+                if (propInfo.getUnique() && newObj != null && !OAObjectDSDelegate.isAssigningId(oaObj)) {
                     OAFilter<OAObject> filter = new OAFilter<OAObject>() {
                         public boolean isUsed(OAObject obj) {
                             Object objx = obj.getProperty(propertyU);
@@ -124,7 +127,8 @@ public class OAObjectEventDelegate {
                         }
                     };
                     OADataSource ds = OADataSource.getDataSource(oaObj.getClass(), filter);
-                    if (ds != null) {
+                    
+                    if (ds != null && (!(ds instanceof OADataSourceObjectCache))) {
                         Iterator it = ds.select(oaObj.getClass(), propertyU+" = ?", new Object[] {newObj}, null, null, null, null, 2, filter, false);
                         try {
                             for ( ;it != null && it.hasNext(); ) {
@@ -138,7 +142,7 @@ public class OAObjectEventDelegate {
                             if (it != null) it.remove();
                         }
                     }
-                    else {
+                    else if (!propInfo.getId()) {
                         Object objLast = null;
                         for (;;) {
                             Object objx = OAObjectCacheDelegate.findNext(objLast, oaObj.getClass(), propertyU, newObj);

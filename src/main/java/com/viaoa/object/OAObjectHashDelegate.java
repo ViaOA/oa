@@ -43,6 +43,14 @@ public class OAObjectHashDelegate {
 	protected static final Hashtable<OALinkInfo, ArrayList> hashLinkInfoCacheArrayList = new Hashtable<OALinkInfo, ArrayList>(47,0.75f);
     protected static final Hashtable<OALinkInfo, HashSet> hashLinkInfoCacheHashSet = new Hashtable<OALinkInfo, HashSet>(47,0.75f);
 
+
+    /**
+     * Used to flag that an OAObject.Id property is gettting safely assigned
+     */
+    static private final ConcurrentHashMap<Integer, Integer> hashAssigningId = new ConcurrentHashMap<Integer, Integer>(15, 0.75F);
+    public static Map<Integer, Integer> getAssigningIdHash() {
+        return hashAssigningId;
+    }
 	
 	/** 
 	 *  Used by OAObjectInfoDelegate to store the Root Hub for recursive classes.
