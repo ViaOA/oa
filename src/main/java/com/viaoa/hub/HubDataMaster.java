@@ -55,8 +55,21 @@ class HubDataMaster implements java.io.Serializable {
      */
     public boolean getTrackChanges() {
         if (masterObject == null) return false;
-        if (liDetailToMaster == null) return true;
+        
+        // 20160505 change to false.  ex: ServerRoot.hubUsers (calc/merged)
+        if (liDetailToMaster == null) {
+            return false;
+        }
+        //was:  if (liDetailToMaster == null) return true;
+        
         if (liDetailToMaster.getCalculated()) return false;
+        
+        // 20160505 check to see if rev li is calc.
+        OALinkInfo liRev = liDetailToMaster.getReverseLinkInfo();
+        if (liRev != null && liRev.getCalculated()) {
+            return false;
+        }
+        
         return true;
     }
 
