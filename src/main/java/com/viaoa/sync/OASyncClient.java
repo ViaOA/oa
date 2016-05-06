@@ -151,6 +151,7 @@ public class OASyncClient {
         String[] additionalMasterProperties = null; 
         Object result = null;
 
+        
         try {
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
@@ -159,13 +160,20 @@ public class OASyncClient {
             }
             else {
                 // this will "ask" for additional data "around" the requested property
+                boolean bForMerger = OAThreadLocalDelegate.isHubMergerChanging();
+if (bForMerger) {
+    int xx = 4;
+    xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
+}
                 bGetSibs = true;
                 // send siblings to return back with same prop
                 OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
                 if (li == null || !li.getCalculated()) {
-                    siblingKeys = getDetailSiblings(masterObject, li, propertyName);
+                    siblingKeys = getDetailSiblings(masterObject, li, propertyName, bForMerger);
                 }
-                additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
+                if (!bForMerger) {
+                    additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
+                }
                 
                 result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
                         additionalMasterProperties, siblingKeys);
@@ -235,7 +243,7 @@ public class OASyncClient {
     /**
      * Find any other siblings to get the same property for sibling objects in same hub.
      */
-    protected OAObjectKey[] getDetailSiblings(final OAObject masterObject, final OALinkInfo linkInfo, final String property) {
+    protected OAObjectKey[] getDetailSiblings(final OAObject masterObject, final OALinkInfo linkInfo, final String property, final boolean bForMerger) {
         // note: could be for a blob property
 
         Hub siblingHub = null;
@@ -250,7 +258,7 @@ public class OASyncClient {
         }
         
         ArrayList<OAObjectKey> al = new ArrayList<OAObjectKey>();
-        _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, hubThreadLocal!=null);
+        _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, hubThreadLocal!=null, bForMerger);
 
         
         if (al == null || al.size() == 0) return null;
@@ -318,10 +326,10 @@ public class OASyncClient {
     
     
     private void _getDetailSiblings(HashSet<Object> hsValues, ArrayList<OAObjectKey> alResults, final OAObject masterObject, 
-            final Hub siblingHub, OALinkInfo linkInfo, String propertyName, boolean bAgressive) {
+            final Hub siblingHub, OALinkInfo linkInfo, String propertyName, final boolean bAgressive, final boolean bForMerger) {
         
-        _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive);
-        if (alResults.size() > 25 || linkInfo == null) return;
+        _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive, bForMerger);
+        if (alResults.size() > (bForMerger?500:25) || linkInfo == null) return;
 
         // go up to master.parent and get siblings from there
         OAObject parentMasterObject = siblingHub.getMasterObject();
@@ -371,15 +379,15 @@ public class OASyncClient {
 
             Hub h = (Hub) liRev.getValue(obj);
             if (h.getSize() > 0) {
-                _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive);
+                _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive, bForMerger);
             }
-            if (alResults.size() > 100) break;
+            if (alResults.size() > (bForMerger?500:100)) break;
         }        
     }    
     
     
     private void _getDetailSiblingsA(HashSet<Object> hsValues, ArrayList<OAObjectKey> al, 
-            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive) {
+            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive, boolean bForMerger) {
         // get the same property for siblings
 
         // find best starting pos, either before or after
@@ -421,7 +429,10 @@ public class OASyncClient {
                 }
                 else if (bIsMany || bIsOne2One) {                
                     al.add(key);
-                    if (al.size() >= (50*(bAgressive?2:1))) break;
+                    if (bForMerger) {
+                        if (al.size() > 500) break;
+                    }
+                    else if (al.size() >= (50*(bAgressive?2:1))) break;
                 } 
                 // otherwise, it must be null
             }
@@ -431,7 +442,10 @@ public class OASyncClient {
                     value = OAObjectCacheDelegate.get(valueClass, value);
                     if (value == null) { // not on client
                         al.add(key);
-                        if (al.size() >= (100*(bAgressive?2:1))) break;
+                        if (bForMerger) {
+                            if (al.size() > 500) break;
+                        }
+                        else if (al.size() > (100*(bAgressive?2:1))) break;
                     }
                 }
             }

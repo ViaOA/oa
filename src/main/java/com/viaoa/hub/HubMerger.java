@@ -1272,7 +1272,9 @@ static int cntq;
         @Override
         public void onNewList(HubEvent e) {
             try {
-                if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(true);
+                if (hub == hubRoot) {
+                    OAThreadLocalDelegate.setHubMergerIsChanging(true);
+                }
                 _onNewList(e);
             }
             finally {
