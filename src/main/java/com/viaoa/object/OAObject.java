@@ -18,7 +18,9 @@ import java.lang.ref.*;  // java1.2
 import com.viaoa.hub.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
+import com.viaoa.sync.OASyncClient;
 import com.viaoa.sync.OASyncDelegate;
+import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.util.*;
 
 
@@ -487,13 +489,6 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
 
     /**
-     * @return true if the current thread is from the OAClient.getMessage().
-     */
-    public boolean isClientThread() {
-        return OAObjectCSDelegate.isRemoteThread(); 
-    }
-    
-    /**
         Used to manage property changes.
         Sends a "beforePropertyChange()" to all listeners of the Hubs that this object is a member of.  <br>
         The original value is saved and can be retreived by calling getOriginalPropertyValue or canel.
@@ -783,6 +778,10 @@ public class OAObject implements java.io.Serializable, Comparable {
     public boolean isServer() {
         return OASyncDelegate.isServer(getClass());
     }
+    public boolean isClient() {
+        return !OASyncDelegate.isServer(getClass());
+    }
+    
     /*
     public boolean beginServerOnly() {
         return OASync.beginServerOnly(getClass().getPackage());
@@ -863,7 +862,45 @@ public class OAObject implements java.io.Serializable, Comparable {
         OAObjectReflectDelegate.loadAllReferences(this, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, maxRefsToLoad);
     }
 
+    // 20160506
+    /**
+     * 
+     * @param params
+     * @return
+     */
+    public Object remote(Object... args) {
+        StackTraceElement[] sts = Thread.currentThread().getStackTrace();
+        String mname = sts[1].getMethodName();
+        
+        if (!isRemoteAvailable()) {
+            throw new RuntimeException("method "+mname+", isRemoable=false, thread="+Thread.currentThread());
+        }
+        
+        OASyncClient sc = OASync.getSyncClient();
+        if (sc == null) {
+            throw new RuntimeException("method "+mname+", OASyncClient=null, thread="+Thread.currentThread());
+        }
+
+        RemoteServerInterface rs;
+        try {
+            rs = sc.getRemoteServer();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("method "+mname+", OASyncClient=null, thread="+Thread.currentThread(), e);
+        }
+
+        if (rs == null) {
+            throw new RuntimeException("method "+mname+", RemoteServerInterface=null, thread="+Thread.currentThread());
+        }
+        
+        Object val = rs.runRemoteMethod(getClass(), OAObjectKeyDelegate.getKey(this), mname, args);
+        
+        return val;
+    }
+    /**
+     * returns true if this is a oaclient and is not a remoteThread.
+     */
+    public boolean isRemoteAvailable() {
+        return (isClient() && !isRemoteThread());
+    }
 }
-
-
-

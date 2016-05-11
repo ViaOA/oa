@@ -10,11 +10,16 @@
 */
 package com.viaoa.sync.remote;
 
+import java.lang.reflect.Method;
+
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAObjectInfo;
+import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.object.OAObjectInfoDelegateTest;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.sync.OASyncDelegate;
@@ -65,6 +70,28 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
         return obj;
     }
 
+    @Override
+    public Object runRemoteMethod(Class clazz, OAObjectKey objKey, String methodName, Object[] args) {
+        Object obj = getObject(clazz, objKey);
+        if (obj == null) {
+            throw new RuntimeException("Object could not be found, class="+clazz+", objKey="+objKey);
+        }
+        OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(clazz);
+        Method method = OAObjectInfoDelegate.getMethod(clazz, methodName);
+        if (method == null) {
+            throw new RuntimeException("method "+methodName+" not found in class "+clazz.getSimpleName());
+        }
+        Object objResult = null;
+        try {
+            objResult = method.invoke(obj, args);
+        }
+        catch (Exception e) {
+            throw new RuntimeException("exception calling method="+methodName+", class="+clazz.getSimpleName(), e);
+        }
+        return objResult;
+    }
+
+    
     @Override
     public abstract RemoteClientInterface getRemoteClient(ClientInfo clientInfo);    
     

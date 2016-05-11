@@ -44,4 +44,11 @@ public interface RemoteServerInterface {
     
     @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void refresh(Class clazz);
+
+    /**
+     * Used by OAObject.remote to run a remote command from an OAObject.
+     */
+    @OARemoteMethod
+    Object runRemoteMethod(Class clazz, OAObjectKey objKey, String methodName, Object[] args);
+    
 }
