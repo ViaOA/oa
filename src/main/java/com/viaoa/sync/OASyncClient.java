@@ -161,10 +161,6 @@ public class OASyncClient {
             else {
                 // this will "ask" for additional data "around" the requested property
                 boolean bForMerger = OAThreadLocalDelegate.isHubMergerChanging();
-if (bForMerger) {
-    int xx = 4;
-    xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
-}
                 bGetSibs = true;
                 // send siblings to return back with same prop
                 OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
@@ -234,7 +230,8 @@ if (bForMerger) {
                 iNew, 
                 iDup
             );
-            //System.out.println(s);
+//qqqqqqqqq            
+//System.out.println(s);
             LOG.fine(s);
         }
         return result;
