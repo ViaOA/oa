@@ -14,6 +14,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -402,6 +404,17 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
             bIsCurrentlyVisible = super.isVisible(bIsCurrentlyVisible);
             return OALabel.this.isVisible(bIsCurrentlyVisible);
         }
+        
+        // 20160516
+        @Override
+        protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+            if (bIsCurrentlyEnabled) return bIsCurrentlyEnabled;
+            if (bIsHubCalc) {
+                if (hub == null) return false;
+                return hub.isValid();
+            }
+            return false;
+        }
     }
 
     @Override
@@ -419,6 +432,10 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     }
     public void setEnabled(Hub hub, String prop, Object compareValue) {
     }
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+    }
 
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
@@ -428,8 +445,10 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     }
 
     private Color fgColor, bgColor;
+    private final AtomicInteger aiBlink = new AtomicInteger();
     
     public void blink(final Color fcolor, final Color bcolor, final int numberOfTimes) {
+        final int cntBlink = aiBlink.getAndIncrement();
         if (fgColor == null) fgColor = this.getForeground(); 
         if (bgColor == null) bgColor = this.getBackground(); 
         final Timer timer = new Timer(150, null);
@@ -437,6 +456,10 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         ActionListener al = new ActionListener() {
             int cnt;
             public void actionPerformed(ActionEvent e) {
+                if (cntBlink != aiBlink.get()) {
+                    cnt = numberOfTimes-1;
+                }
+
                 boolean b = (cnt++ % 2 == 0);
                 
                 Color c;

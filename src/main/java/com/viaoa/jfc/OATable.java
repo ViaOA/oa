@@ -3558,10 +3558,26 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         else {
             // 20151225
             table.hubSelect.add(getHub().getAO());
+/* 20160516 removed, so that it will add the AO to the selected list, and not replace the selected list.            
             for (Object obj : table.hubSelect) {
                 if (obj != getHub().getAO()) table.hubSelect.remove(obj);
             }
             rebuildListSelectionModel();
+*/            
+
+            // 20160516
+            Rectangle cellRect;
+            if (row < 0) cellRect = new Rectangle(0, 0, 10, 10);
+            else {
+                Container cont = table.getParent();
+                cellRect = table.getCellRect(row, 0, true);
+                if (cont instanceof JViewport) {
+                    cellRect.x = ((JViewport) cont).getViewPosition().x;
+                    cellRect.width = 5;
+                }
+            }
+            if (cellRect != null) table.scrollRectToVisible(cellRect);
+            // table.repaint();
         }
     }
 
@@ -3622,7 +3638,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
             if (cellRect != null) table.scrollRectToVisible(cellRect);
             table.repaint();
-
         }
     }
 

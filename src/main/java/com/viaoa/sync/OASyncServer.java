@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.hub.Hub;
 import com.viaoa.object.OACascade;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;

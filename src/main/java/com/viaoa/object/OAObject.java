@@ -868,6 +868,38 @@ public class OAObject implements java.io.Serializable, Comparable {
      * @param params
      * @return
      */
+    public static void callRemote(Hub hub, Object... args) {
+        if (hub == null) return;
+        
+        StackTraceElement[] sts = Thread.currentThread().getStackTrace();
+        String mname = sts[2].getMethodName();
+        
+        final Class clazz = hub.getObjectClass();
+        
+        if (OASyncDelegate.isServer(clazz) || OARemoteThreadDelegate.isRemoteThread()) {
+            throw new RuntimeException("method "+mname+", isRemoable=false, thread="+Thread.currentThread());
+        }
+        
+        OASyncClient sc = OASync.getSyncClient();
+        if (sc == null) {
+            throw new RuntimeException("method "+mname+", OASyncClient=null, thread="+Thread.currentThread());
+        }
+
+        RemoteServerInterface rs;
+        try {
+            rs = sc.getRemoteServer();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("method "+mname+", OASyncClient=null, thread="+Thread.currentThread(), e);
+        }
+
+        if (rs == null) {
+            throw new RuntimeException("method "+mname+", RemoteServerInterface=null, thread="+Thread.currentThread());
+        }
+        
+        rs.runRemoteMethod(hub, mname, args);
+    }
+    
     public Object remote(Object... args) {
         StackTraceElement[] sts = Thread.currentThread().getStackTrace();
         String mname = sts[1].getMethodName();
@@ -901,6 +933,14 @@ public class OAObject implements java.io.Serializable, Comparable {
      * returns true if this is a oaclient and is not a remoteThread.
      */
     public boolean isRemoteAvailable() {
-        return (isClient() && !isRemoteThread());
+        if (OARemoteThreadDelegate.isRemoteThread()) return false; 
+        return isClient();
+    }
+    public static boolean isRemoteAvailable(Hub hub) {
+        if (hub == null) return false;
+        if (OARemoteThreadDelegate.isRemoteThread()) return false; 
+        final Class clazz = hub.getObjectClass();
+        if (OASyncDelegate.isServer(clazz)) return false;
+        return true;
     }
 }

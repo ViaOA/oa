@@ -697,4 +697,11 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     public JComponent getDisplayComponent() {
         return control.getDisplayComponent();
     }
+
+    public void setConfirmComponent(JComponent comp) {
+        control.setDisplayComponent(comp);
+    }
+    public JComponent getConfirmComponent() {
+        return control.getDisplayComponent();
+    }
 }

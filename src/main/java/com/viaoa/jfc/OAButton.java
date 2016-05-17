@@ -616,6 +616,14 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     public String getConfirmMessage() {
         return control.default_getConfirmMessage();
     }
+    
+    public void setConfirmComponent(JComponent comp) {
+        control.setConfirmComponent(comp);
+    }
+    public JComponent getConfirmComponent() {
+        return control.getConfirmComponent();
+    }
+    
 
     /**
         Popup message when command is completed

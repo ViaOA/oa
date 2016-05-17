@@ -10,6 +10,7 @@
 */
 package com.viaoa.jfc.control;
 
+import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -23,6 +24,8 @@ import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.SwingWorker.StateValue;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 
 import java.io.File;
@@ -39,6 +42,7 @@ import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.util.*;
 import com.viaoa.jfc.*;
 import com.viaoa.jfc.OAButton.ButtonEnabledMode;
+import com.viaoa.jfc.dialog.OAConfirmDialog;
 import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.jfc.table.*;
@@ -360,11 +364,13 @@ public class ButtonController extends JFCController implements ActionListener {
         return default_confirmActionPerformed();
     }
     public boolean default_confirmActionPerformed() {
-        if (!OAString.isEmpty(confirmMessage)) {
+        if (OAString.isEmpty(confirmMessage) && compConfirm == null) return true;
+        if (compConfirm == null) {
             int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(button), confirmMessage, "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
             return (x == 0);
         }
-        else return true;
+        getConfirmDialog().setVisible(true);
+        return !getConfirmDialog().wasCancelled();
     }
     
     
@@ -1002,23 +1008,41 @@ public class ButtonController extends JFCController implements ActionListener {
                 break;
             }
             
+            
             if (methodName != null) {
-                Method[] method = OAReflect.getMethods(hub.getObjectClass(), methodName);
-
+                // Method[] method = OAReflect.getMethods(hub.getObjectClass(), methodName);
+                
                 String msg = null;
                 if (mhub != null && mhub.getSize() > 0) {
-                    Object[] objs = mhub.toArray();
-                    for (Object obj : objs) {
-                        if (obj instanceof OAObject) {
-                            Object objx = OAReflect.executeMethod(obj, methodName);
-                            if (msg != null && objx instanceof String) {
-                                msg = (String) objx;
-                                msg = msg + " (total " + objs.length + ")";
-                            }
+                    
+                    // see if there is a static method for the mhub
+                    Method method = OAReflect.getMethod(hub.getObjectClass(), methodName, new Object[] {mhub});
+                    if (method != null) {
+                        try {
+                            Object objx = method.invoke(null, mhub);
+                        }
+                        catch (Exception e) {
+                            String msgx = "Error calling Method "+method+", using hub="+mhub;
+                            throw new RuntimeException(msgx, e);
+                        }
+                        if (msg == null) {
+                            msg = "processed " + mhub.getSize();
                         }
                     }
-                    if (msg == null) {
-                        if (objs.length > 1) msg = "processed " + objs.length;
+                    else {
+                        Object[] objs = mhub.toArray();
+                        for (Object obj : objs) {
+                            if (obj instanceof OAObject) {
+                                Object objx = OAReflect.executeMethod(obj, methodName);
+                                if (msg != null && objx instanceof String) {
+                                    msg = (String) objx;
+                                    msg = msg + " (total " + objs.length + ")";
+                                }
+                            }
+                        }
+                        if (msg == null) {
+                            if (objs.length > 1) msg = "processed " + objs.length;
+                        }
                     }
                 }
                 else {
@@ -1028,7 +1052,7 @@ public class ButtonController extends JFCController implements ActionListener {
                     }
                 }
                 if (msg != null) {
-                    JOptionPane.showMessageDialog(OAJFCUtil.getWindow(button), msg, "Information", JOptionPane.INFORMATION_MESSAGE);
+                //    JOptionPane.showMessageDialog(OAJFCUtil.getWindow(button), msg, "Information", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
@@ -1447,6 +1471,13 @@ public class ButtonController extends JFCController implements ActionListener {
         return compDisplay;
     }
     
+    private JComponent compConfirm;
+    public void setConfirmComponent(JComponent comp) {
+        this.compConfirm = comp;
+    }
+    public JComponent getConfirmComponent() {
+        return compConfirm;
+    }
 
     private OAPasswordDialog dlgPassword;
     /**
@@ -1529,6 +1560,22 @@ public class ButtonController extends JFCController implements ActionListener {
     }
     public boolean getPasswordProtected() {
         return bPasswordProtected;
+    }
+
+    
+    private OAConfirmDialog dlgConfirm;
+    public OAConfirmDialog getConfirmDialog() {
+        if (this.dlgConfirm != null) return this.dlgConfirm;; 
+
+        dlgConfirm = new OAConfirmDialog(SwingUtilities.getWindowAncestor(this.button), button.getText(), getConfirmMessage());
+        
+        JPanel pan = new JPanel(new BorderLayout());
+        pan.setBorder(new EmptyBorder(5, 5, 5, 5));
+        pan.add(getConfirmComponent());
+        dlgConfirm.add(pan, BorderLayout.CENTER); 
+        dlgConfirm.resize();
+        
+        return this.dlgConfirm;
     }
     
 }

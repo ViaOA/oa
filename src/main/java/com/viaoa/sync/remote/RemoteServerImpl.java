@@ -77,7 +77,11 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
             throw new RuntimeException("Object could not be found, class="+clazz+", objKey="+objKey);
         }
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(clazz);
-        Method method = OAObjectInfoDelegate.getMethod(clazz, methodName);
+        
+        int x = 0;
+        if (args != null && args.length > 0) x += args.length;
+        Method method = OAObjectInfoDelegate.getMethod(oi, methodName, x);
+
         if (method == null) {
             throw new RuntimeException("method "+methodName+" not found in class "+clazz.getSimpleName());
         }
@@ -91,6 +95,31 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
         return objResult;
     }
 
+    @Override
+    public Object runRemoteMethod(Hub hub, String methodName, Object[] args) {
+        if (hub == null) return null;
+        Class clazz = hub.getObjectClass();
+        OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(clazz);
+        
+        int x = 1;
+        if (args != null && args.length > 0) x += args.length;
+        Method method = OAObjectInfoDelegate.getMethod(oi, methodName, x);
+
+        if (method == null) {
+            throw new RuntimeException("method "+methodName+" not found in class "+clazz.getSimpleName());
+        }
+        Object objResult = null;
+        try {
+            Object[] objs = new Object[x];
+            objs[0] = hub;
+            if (x > 1) System.arraycopy(args, 0, objs, 1, x-1);
+            objResult = method.invoke(null, objs);
+        }
+        catch (Exception e) {
+            throw new RuntimeException("exception calling method="+methodName+", class="+clazz.getSimpleName()+", hub="+hub, e);
+        }
+        return objResult;
+    }
     
     @Override
     public abstract RemoteClientInterface getRemoteClient(ClientInfo clientInfo);    

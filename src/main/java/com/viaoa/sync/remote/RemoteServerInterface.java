@@ -11,6 +11,7 @@
 package com.viaoa.sync.remote;
 
 
+import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.remote.multiplexer.annotation.*;
@@ -51,4 +52,9 @@ public interface RemoteServerInterface {
     @OARemoteMethod
     Object runRemoteMethod(Class clazz, OAObjectKey objKey, String methodName, Object[] args);
     
+    /**
+     * Used by OAObject.remote to run a remote command for a Hub of OAObjects.
+     */
+    @OARemoteMethod
+    Object runRemoteMethod(Hub hub, String methodName, Object[] args);
 }
