@@ -902,7 +902,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     
     public Object remote(Object... args) {
         StackTraceElement[] sts = Thread.currentThread().getStackTrace();
-        String mname = sts[1].getMethodName();
+        String mname = sts[2].getMethodName();
         
         if (!isRemoteAvailable()) {
             throw new RuntimeException("method "+mname+", isRemoable=false, thread="+Thread.currentThread());
