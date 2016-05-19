@@ -1562,6 +1562,10 @@ public class ButtonController extends JFCController implements ActionListener {
         return bPasswordProtected;
     }
 
+    public void setDisplayDialogVisible(boolean b) {
+        if (dlgConfirm == null) return;
+        getConfirmDialog().setVisible(b);
+    }
     
     private OAConfirmDialog dlgConfirm;
     public OAConfirmDialog getConfirmDialog() {
