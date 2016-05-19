@@ -583,13 +583,13 @@ public class ButtonController extends JFCController implements ActionListener {
         }
 
         final Window window = OAJFCUtil.getWindow(button);
-        final OAWaitDialog dlg = new OAWaitDialog(window, true);  // allowCancel, was false
-        dlg.getCancelButton().setText("Run in background");
-        dlg.getCancelButton().setToolTipText("use this to close the dialog, and allow the the procss to run in the background");
+        final OAWaitDialog dlgWait = new OAWaitDialog(window, true);  // allowCancel, was false
+        dlgWait.getCancelButton().setText("Run in background");
+        dlgWait.getCancelButton().setToolTipText("use this to close the dialog, and allow the the procss to run in the background");
         
         String s = processingTitle;
         if (s == null) s = "Processing";
-        dlg.setTitle(s);
+        dlgWait.setTitle(s);
 
         s = processingMessage;
         if (s == null) {
@@ -598,18 +598,18 @@ public class ButtonController extends JFCController implements ActionListener {
             else s = " \"" + s + "\"";
             s = "Please wait ... processing request" + s;
         }
-        dlg.setStatus(s);
+        dlgWait.setStatus(s);
 
         s = getConsoleProperty();
         OAConsole con = null;
         if (!OAString.isEmpty(s)) {
             con = new OAConsole(getHub(), s, 45);
             con.setPreferredSize(14, 1, true);
-            dlg.setConsole(con);
+            dlgWait.setConsole(con);
         }
         
         if (compDisplay != null) {
-            dlg.setDisplayComponent(compDisplay);
+            dlgWait.setDisplayComponent(compDisplay);
             if (con != null) con.setPreferredSize(6, 1, true);
         }
         
@@ -642,36 +642,36 @@ public class ButtonController extends JFCController implements ActionListener {
             protected void done() {
                 
                 synchronized (Lock) {
-                    if (!dlg.wasCancelled() && console == null && compDisplay == null) {
-                        if (dlg.isVisible()) {
-                            dlg.setVisible(false);
+                    if (!dlgWait.wasCancelled() && console == null && compDisplay == null) {
+                        if (dlgWait.isVisible()) {
+                            dlgWait.setVisible(false);
                         }
                     }
                     else {
-                        dlg.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        dlg.done();//hack
+                        dlgWait.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        dlgWait.done();//hack
                         if (console != null) console.close();
-                        JButton cmd = dlg.getCancelButton();
+                        JButton cmd = dlgWait.getCancelButton();
                         cmd.setText("Close");
                         cmd.setToolTipText("the command has completed, click to close window.");
                         
                         cmd.registerKeyboardAction(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                dlg.setVisible(false);
+                                dlgWait.setVisible(false);
                             }
                         }, "xx", KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false), JComponent.WHEN_IN_FOCUSED_WINDOW);
                         cmd.registerKeyboardAction(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                dlg.setVisible(false);
+                                dlgWait.setVisible(false);
                             }
                         }, "zz", KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_IN_FOCUSED_WINDOW);
                         
                         
-                        dlg.getProgressBar().setIndeterminate(false);
-                        dlg.getProgressBar().setMaximum(100);
-                        dlg.getProgressBar().setValue(100);
+                        dlgWait.getProgressBar().setIndeterminate(false);
+                        dlgWait.getProgressBar().setMaximum(100);
+                        dlgWait.getProgressBar().setValue(100);
                     }   
                     
                     try {
@@ -687,10 +687,10 @@ public class ButtonController extends JFCController implements ActionListener {
                     }
                     else if (OAString.isEmpty(s)) s = "Command has completed";
                     
-                    dlg.setStatus(s);
-                    dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                    if (dlg.wasCancelled()) {
-                        dlg.setVisible(true, false);
+                    dlgWait.setStatus(s);
+                    dlgWait.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                    if (dlgWait.wasCancelled()) {
+                        dlgWait.setVisible(true, false);
                     }
                     reportActionCompleted(true, exception);
                 }
@@ -700,7 +700,7 @@ public class ButtonController extends JFCController implements ActionListener {
 
         synchronized (Lock) {
             if (sw.getState() != StateValue.DONE && aiCompleted.get() == 0) {
-                dlg.setVisible(true);  // the thread will wait until the dialog is closed
+                dlgWait.setVisible(true);  // the thread will wait until the dialog is closed
             }
         }
 
@@ -1562,11 +1562,6 @@ public class ButtonController extends JFCController implements ActionListener {
         return bPasswordProtected;
     }
 
-    public void setDisplayDialogVisible(boolean b) {
-        if (dlgConfirm == null) return;
-        getConfirmDialog().setVisible(b);
-    }
-    
     private OAConfirmDialog dlgConfirm;
     public OAConfirmDialog getConfirmDialog() {
         if (this.dlgConfirm != null) return this.dlgConfirm;; 

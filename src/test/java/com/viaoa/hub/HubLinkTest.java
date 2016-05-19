@@ -369,6 +369,39 @@ if (hubEmployee.getAO() == null) {
         reset();
     }
 
+    
+    @Test
+    public void linkTest2() {
+        reset();
+
+        Location loc = new Location();
+        AwardType at = new AwardType();
+        loc.getAwardTypes().add(at);;
+        
+        Employee emp = new Employee();
+        EmployeeAward ea = new EmployeeAward();
+        ea.setAwardType(at);
+        emp.getEmployeeAwards().add(ea);
+        emp.getEmployeeAwards().setPos(0);
+        
+        Hub<AwardType> hubAwardType = loc.getAwardTypes().createShared();
+        
+        hubAwardType.setLinkHub(emp.getEmployeeAwards(), EmployeeAward.P_AwardType);
+
+        assertNotNull(hubAwardType.getAO());
+        
+        AwardType at2 = new AwardType();
+        ea.setAwardType(at2);
+        
+        assertNull(hubAwardType.getAO());
+    }    
+    
+    public static void main(String[] args) throws Exception {
+        HubLinkTest test = new HubLinkTest();
+        test.linkTest2();
+        System.out.println("Done");
+    }
+    
 }
 
 

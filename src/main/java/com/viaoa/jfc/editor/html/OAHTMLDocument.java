@@ -175,12 +175,17 @@ public class OAHTMLDocument extends HTMLDocument {
                 if (mas != null) {
                     // remove any attr from mas that exist in charAttr
                     Enumeration en = mas.getAttributeNames();
+                    ArrayList al = new ArrayList();
                     while (en.hasMoreElements()) {
                         Object obj = en.nextElement();
                         if (charAttr.getAttribute(obj) != null) {
-                            mas.removeAttribute(obj);
+                            al.add(obj);
                         }
                     }
+                    for (Object objx : al) {
+                        mas.removeAttribute(objx);
+                    }
+                    
                     b = (t == HTML.Tag.FONT || t == HTML.Tag.U || t == HTML.Tag.B || t == HTML.Tag.I || t == HTML.Tag.STRIKE || t == HTML.Tag.SUP || t == HTML.Tag.SUB);
 
                     if (b) {
