@@ -28,7 +28,7 @@ public abstract class OABase implements Serializable {
     private static final long serialVersionUID = 1L;
 	
     // 2008 made all of these transient
-    protected transient Hashtable hashtable = new Hashtable(13,0.75f);
+    protected transient volatile Hashtable hashtable = new Hashtable(13,0.75f);
     protected Hashtable hashHub = new Hashtable(13,0.75f);
     protected transient Vector vecError = new Vector(5,5);
     protected transient Vector vecMessage = new Vector(5,5);
