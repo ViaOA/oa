@@ -137,7 +137,7 @@ public class OASyncClient {
      */
     public Object getDetail(final OAObject masterObject, final String propertyName) {
         //System.out.println("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName+", levels="+levels);
-        //LOG.finer("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName);
+        LOG.fine("masterObject="+masterObject+", propertyName="+propertyName);
         
         int cntx = ++cntGetDetail;        
         int xDup = OAObjectSerializeDelegate.cntDup;
