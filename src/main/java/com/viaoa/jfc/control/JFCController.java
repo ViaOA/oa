@@ -310,6 +310,7 @@ public class JFCController extends HubListenerAdapter {
         Sets the Hub that this component will work with. 
     */
     public void setHub(Hub newHub) {
+        if (OACompare.isEqual(this.hub, newHub)) return;
         close();
         this.hub = newHub;
         resetHubOrProperty();
@@ -376,14 +377,13 @@ public class JFCController extends HubListenerAdapter {
         "department.manager.lastName"
     */
     public void setPropertyPath(String s) {
-        if (propertyPath == null || !s.equals(propertyPath)) {
-            Object obj = hubObject;  // fake out close
-            hubObject = null;
-            closeMain();
-            hubObject = obj;
-            propertyPath = s;
-            resetHubOrProperty();
-        }
+        if (OAString.isEqual(propertyPath, s, true)) return;
+        Object obj = hubObject;  // fake out close
+        hubObject = null;
+        closeMain();
+        hubObject = obj;
+        propertyPath = s;
+        resetHubOrProperty();
     }
     /**
         A dot (".") separated list of property names.
@@ -436,6 +436,7 @@ public class JFCController extends HubListenerAdapter {
         @see HubGuiAdapter#setPropertyPath(String)
     */
     public void setImageProperty(String prop) {
+        if (OAString.isEqual(prop, imageProperty, true)) return;;
         this.imageProperty = prop;
         methodsToImage = null;
         getMethodsToImage(); // this will verify
@@ -1034,6 +1035,7 @@ public class JFCController extends HubListenerAdapter {
         return this.font;
     }
     public void setFontProperty(String s) {
+        if (OAString.isEqual(s, fontProperty, true)) return;;
         fontProperty = s;
         methodsToFont = null;
         getMethodsToFont();
@@ -1079,6 +1081,7 @@ public class JFCController extends HubListenerAdapter {
     }
 
     public void setBackgroundColorProperty(String s) {
+        if (OAString.isEqual(s, backgroundColorProperty, true)) return;;
         backgroundColorProperty = s;
         methodsToBackgroundColor = null;
         getMethodsToBackgroundColor();
@@ -1090,6 +1093,7 @@ public class JFCController extends HubListenerAdapter {
     }
 
     public void setForegroundColorProperty(String s) {
+        if (OAString.isEqual(s, foregroundColorProperty, true)) return;;
         foregroundColorProperty = s;
         methodsToForegroundColor = null;
         getMethodsToForegroundColor();
@@ -1141,6 +1145,7 @@ public class JFCController extends HubListenerAdapter {
     }
 
     public void setIconColorProperty(String s) {
+        if (OAString.isEqual(s, iconColorProperty, true)) return;;
         iconColorProperty = s;
         methodsToIconColor = null;
         getMethodsToIconColor();
@@ -1170,6 +1175,7 @@ public class JFCController extends HubListenerAdapter {
     }
     
     public void setToolTipTextProperty(String s) {
+        if (OAString.isEqual(s, toolTipTextProperty, true)) return;;
         toolTipTextProperty = s;
         methodsToToolTipText = null;
         resetHubListener();

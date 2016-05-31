@@ -472,9 +472,18 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         }
         */
 //qqqqqqqqqqqqqq        
-//System.out.println(wcnter+") ObjectSerializer "+msg);        
+System.out.println(wcnter+") ObjectSerializer "+msg);        
+
+if (object == null) {
+    int xx = 4;
+    xx++;
+    //qqqqqqqqqqqqqqqqqq
+    }
+    
     }
 
+    
+    
     static int wcnter;
     static int rcnter;
     
@@ -539,11 +548,16 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         	long sizeBefore = inflater.getBytesRead();
         	long sizeAfter = inflater.getBytesWritten();
 
+        	
             msg = String.format("Read object=%s, extra=%s, compressed=%,d, uncompressed=%,d, totalObjects=%,d", 
                     object==null?"null":object.getClass().getName(), 
                     extraObject==null?"null":extraObject.getClass().getName(),
                     sizeBefore, sizeAfter, totalObjectsWritten);
-
+if (object == null) {
+int xx = 4;
+xx++;
+//qqqqqqqqqqqqqqqqqq
+}
     	}
     	else {
             boolean b = stream.readBoolean();
@@ -567,7 +581,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         }
         */
 //qqqqqqqqqq        
-//        System.out.println(rcnter+") ObjectSerializer "+msg);
+        System.out.println(rcnter+") ObjectSerializer "+msg);
     }
 
     

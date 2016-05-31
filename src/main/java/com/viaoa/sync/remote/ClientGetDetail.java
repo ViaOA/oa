@@ -103,7 +103,7 @@ public class ClientGetDetail {
             masterProps==null?"":(""+masterProps.length)
         );
 //qqqqqqqqq        
-//       System.out.println(s);
+       System.out.println(s);
         LOG.fine(s);
         
         return os;
@@ -169,7 +169,9 @@ public class ClientGetDetail {
             Class clazz = masterObject.getClass();
             for (OAObjectKey key : siblingKeys) {
                 OAObject obj = OAObjectCacheDelegate.get(clazz, key);
-                if (obj == null) continue;
+                if (obj == null) {
+                    continue;
+                }
 
                 rwLockTreeSerialized.readLock().lock();
                 Object objx = treeSerialized.get(key.getGuid());
@@ -180,7 +182,10 @@ public class ClientGetDetail {
                 
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
-                    if (System.currentTimeMillis() - t1 > 50) break;
+                    if (System.currentTimeMillis() - t1 > 50) {
+//qqqqqqqqqqqqqqq                        
+//                        break;
+                    }
                 }
                 
                 value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS

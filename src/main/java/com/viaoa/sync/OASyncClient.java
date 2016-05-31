@@ -195,13 +195,20 @@ public class OASyncClient {
                 for (Entry<OAObjectKey, Object> entry : hmExtraData.entrySet()) {
                     Object value = entry.getValue();
                     if (value == masterObject) continue;
-                    if (!(value instanceof OAObject)) continue; // all hubs will be added to master props
+                    if (!(value instanceof OAObject)) {
+                        if (value != null) continue; // all hubs will be added to master props
+                    }
                     
                     OAObject obj = OAObjectCacheDelegate.getObject(masterObject.getClass(), entry.getKey());
                     
                     // note:  only references that had an oaObjectKey that was not in the cache were in the sibling list
                     OAObject oaValue = (OAObject) value;
-                    OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, oaValue.getObjectKey(), false, false);
+                    if (oaValue == null) { 
+                        OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, null, true, false);
+                    }
+                    else {
+                        OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, oaValue.getObjectKey(), false, false);
+                    }
                 }
             }
         }
@@ -231,7 +238,7 @@ public class OASyncClient {
                 iDup
             );
 //qqqqqqqqq            
-//System.out.println(s);
+System.out.println(s);
             LOG.fine(s);
         }
         return result;
