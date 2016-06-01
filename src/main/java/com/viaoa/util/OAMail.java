@@ -197,6 +197,20 @@ public class OAMail implements java.io.Serializable {
         transport.close();
         //was: Transport.send(message);
     }
+
+    
+    public boolean isValidEmailAddress(String email) {
+        if (email == null || email.length() == 0) return false;
+        
+        try {
+            InternetAddress emailAddr = new InternetAddress(email);
+            emailAddr.validate();
+            return true;
+        }
+        catch (Exception ex) {
+            return false;
+        }
+    }
     
 
     public static void main(String[] args) throws Exception {
