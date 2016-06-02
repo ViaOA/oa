@@ -238,7 +238,7 @@ public class OASyncClient {
                 iDup
             );
 //qqqqqqqqq            
-System.out.println(s);
+System.out.println(s+"  "+Thread.currentThread().getName());
             LOG.fine(s);
         }
         return result;
@@ -418,7 +418,7 @@ System.out.println(s);
             bIsMany = linkInfo.getType() == linkInfo.MANY;
         }
         
-        for (int i=0; i<250; i++) {
+        for (int i=0; i<650; i++) {
             Object obj = siblingHub.getAt(i+pos);
             if (obj == null) break;
             if (obj == masterObject) continue;
@@ -429,14 +429,14 @@ System.out.println(s);
             if (value instanceof OANotExist) {
                 if (linkInfo == null) {  // must be blob
                     al.add(key);
-                    if (al.size() >= 10) break;  // only get 10 extra blobs, ha
+//qqqq                    if (al.size() >= 25) {break;  // only get 25 extra blobs, ha
                 }
                 else if (bIsMany || bIsOne2One) {                
                     al.add(key);
                     if (bForMerger) {
                         if (al.size() > 500) break;
                     }
-                    else if (al.size() >= (50*(bAgressive?2:1))) break;
+//qqqq                    else if (al.size() >= (100*(bAgressive?3:1))) break;
                 } 
                 // otherwise, it must be null
             }
@@ -447,12 +447,14 @@ System.out.println(s);
                     if (value == null) { // not on client
                         al.add(key);
                         if (bForMerger) {
-                            if (al.size() > 500) break;
+                            if (al.size() > 650) break;
                         }
-                        else if (al.size() > (100*(bAgressive?2:1))) break;
+//qqqqq                        else if (al.size() > (150*(bAgressive?3:1))) break;
                     }
                 }
             }
+//qqqqqqqqqqqqqq            
+if (al.size() > 500) break;
             // note: if value is null and a Many, then it's value is an empty Hub
         }
     }
