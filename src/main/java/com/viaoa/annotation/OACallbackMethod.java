@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 /**
  * Describes an OAObject callback method.
  * 
- * This is used to avoid creating"far reaching" property path listeners, where a hub is listening to a propertyPath of objects.
+ * This is used to avoid creating "far reaching" property path listeners, where a hub is listening to a propertyPath of objects.
  * Instead, a change to the end of a property path will then loop through and invoke the callback for all objects that
  * are in the reversing of the property path.
  * Example:  an order discount is dependent on the emp.dep.company.discount

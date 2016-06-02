@@ -77,7 +77,7 @@ public class OATreeNode implements Cloneable {
         Method methodToObject; // method to get to object object.  ex: dept.name => dept
         public Method[] methodsToProperty;  // methods to get property value from object => name
         public boolean  methodsToPropertyNotUsed;
-        Hub updateHub; // hub to be notfied by OATree when selection is changed
+        Hub updateHub; // hub to be notified by OATree when selection is changed
         Hub hubSelected; // hub that has selected/checked tree node items
         // flag to create a hubMerger (if 2 or more hubs in path) - need to also garbage collect it when not used
         //    will have to put object in separate Hub to create merger from
