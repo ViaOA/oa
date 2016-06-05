@@ -429,14 +429,14 @@ System.out.println(s+"  "+Thread.currentThread().getName());
             if (value instanceof OANotExist) {
                 if (linkInfo == null) {  // must be blob
                     al.add(key);
-//qqqq                    if (al.size() >= 25) {break;  // only get 25 extra blobs, ha
+                    if (al.size() >= 25) break;  // only get 25 extra blobs, ha
                 }
                 else if (bIsMany || bIsOne2One) {                
                     al.add(key);
                     if (bForMerger) {
                         if (al.size() > 500) break;
                     }
-//qqqq                    else if (al.size() >= (100*(bAgressive?3:1))) break;
+                    else if (al.size() >= (100*(bAgressive?3:1))) break;
                 } 
                 // otherwise, it must be null
             }
@@ -449,12 +449,10 @@ System.out.println(s+"  "+Thread.currentThread().getName());
                         if (bForMerger) {
                             if (al.size() > 650) break;
                         }
-//qqqqq                        else if (al.size() > (150*(bAgressive?3:1))) break;
+                        else if (al.size() > (150*(bAgressive?3:1))) break;
                     }
                 }
             }
-//qqqqqqqqqqqqqq            
-if (al.size() > 500) break;
             // note: if value is null and a Many, then it's value is an empty Hub
         }
     }

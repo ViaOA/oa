@@ -167,6 +167,7 @@ public class ClientGetDetail {
             hmExtraData = new HashMap<OAObjectKey, Object>();
             // send back a lightweight hashmap (oaObjKey, value)
             Class clazz = masterObject.getClass();
+            int tot = 0;
             for (OAObjectKey key : siblingKeys) {
                 OAObject obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) {
@@ -182,14 +183,18 @@ public class ClientGetDetail {
                 
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
-                    if (System.currentTimeMillis() - t1 > 50) {
-//qqqqqqqqqqqqqqq                        
-//                        break;
+                    if (System.currentTimeMillis() - t1 > 1000) {
+                        break;
                     }
                 }
                 
                 value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
                 hmExtraData.put(key, value);
+                
+                if (value instanceof Hub) {
+                    tot += ((Hub) value).getSize();
+                    if (tot > 1250) break;
+                }
             }
         }
         

@@ -183,9 +183,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         @see #setRefreshOnLinkChange(boolean) to refresh list when linkTo Hub AO changes
     */
     public void addDependentProperty(String prop) {
-        _addDependentProperty(prop, true);
+        addDependentProperty(prop, true);
     }
-    private void _addDependentProperty(String prop, boolean bRefesh) {
+    public void addDependentProperty(String prop, boolean bRefesh) {
         if (bClosed) return;
         _addProperty(prop, bRefesh);
     }
@@ -931,7 +931,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
      */
     private void _addFilter(final String propPath, final OAFilter filter) {
         if (filter == null) return;
-        _addDependentProperty(propPath, false);
+        addDependentProperty(propPath, false);
         
         OAFilter<T> f;
         if (OAString.isEmpty(propPath)) {

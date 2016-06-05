@@ -78,8 +78,10 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         setupCacheListener();
         if (filter != null) addFilter(filter, false);
         if (hub.getSize() == 0) {
-            refresh();
-        }  // else the hub must have been preselected
+            if (dependentPropPaths != null) {
+                refresh();
+            }
+        }
     }
     
     /**
@@ -158,7 +160,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     public void addDependentProperty(final String prop) {
         addDependentProperty(prop, true);
     }
-    protected void addDependentProperty(final String prop, final boolean bRefresh) {
+    public void addDependentProperty(final String prop, final boolean bRefresh) {
         if (prop == null || prop.length() == 0) return;
         
         dependentPropertyNames = (String[]) OAArray.add(String.class, dependentPropertyNames, prop);
@@ -264,7 +266,12 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         OAObjectCacheDelegate.addListener(clazz, hlObjectCache);
     }
     protected void setupTempHubListener() {
-        if (hlTemp != null) return;
+        // 20160602
+        if (hlTemp != null) {
+            hubTemp.removeHubListener(hlTemp);
+        }
+        //was: if (hlTemp != null) return;
+        
         if (hubTemp == null) return;
         if (calcDependentPropertyName == null) return;
 
@@ -296,7 +303,8 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
 
     @Override
     protected void finalize() throws Throwable {
-        close();
+        // 20160602 not needed, since listeners are kept in gc reachable collections
+        // close();
         super.finalize();
     }
     

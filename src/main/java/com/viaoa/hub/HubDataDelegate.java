@@ -161,7 +161,8 @@ public class HubDataDelegate {
 	            }
 	            else {
 	                if (!bDeleting) {
-                    	createVecRemove(thisHub).addElement(obj);
+                    	Vector vec = createVecRemove(thisHub);
+                    	if (!vec.contains(obj)) vec.addElement(obj);
 	                }
 	            }
 		        thisHub.setChanged( (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
@@ -196,19 +197,20 @@ public class HubDataDelegate {
             LOG.fine("large Hub with masterObject, Hub="+thisHub);//qqqqqqqqqqqqqq
         }
         
-	    thisHub.data.changeCount++;
-	    if (!bIsLoading) {
-	        if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
-                if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
-            		thisHub.data.getVecRemove().removeElement(obj);
+        if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
+            if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
+        		thisHub.data.getVecRemove().removeElement(obj);
+            }
+            else {
+                if (!bIsLoading) {
+                    createVecAdd(thisHub).addElement(obj);
                 }
-                else {
-                	createVecAdd(thisHub).addElement(obj);
-                }
-	            thisHub.setChanged( (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
-	        }
-	        else thisHub.setChanged(true);
-	    }
+            }
+            if (!bIsLoading) thisHub.setChanged( (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
+        }
+        else if (!bIsLoading) thisHub.setChanged(true);
+
+        thisHub.data.changeCount++;
 	    return true;
 	}
 
@@ -232,16 +234,18 @@ public class HubDataDelegate {
         if (!bIsLoading && thisHub.contains(obj)) return false;
     	thisHub.data.vector.insertElementAt(obj, pos);
 
-    	if (!bIsLoading && (thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
+    	if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
             if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
         		thisHub.data.getVecRemove().removeElement(obj);
             }
             else {
-            	createVecAdd(thisHub).addElement(obj);
+                if (!bIsLoading) {
+                    createVecAdd(thisHub).addElement(obj);
+                }
             }
-	        thisHub.setChanged( (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
+            if (!bIsLoading) thisHub.setChanged( (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
 	    }
-	    else thisHub.setChanged(true);
+	    else if (!bIsLoading) thisHub.setChanged(true);
 		
 	    thisHub.data.changeCount++;
 	    return true;

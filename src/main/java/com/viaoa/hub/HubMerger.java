@@ -137,6 +137,14 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     }
 
     /**
+     * Number of objects that are used in this merger.
+     */
+    public int getObjectCount() {
+        if (dataRoot == null) return 0;
+        return dataRoot.getObjectCount();
+    }
+    
+    /**
      * This needs to be set to true if it is only created on the server, but client applications will be
      * using the same Hub that is filtered. This is so that changes on the hub will be published to the
      * clients, even if initiated on an OAClientThread.
@@ -149,7 +157,8 @@ static int cntq;
     private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll, boolean bIncludeRootHub) {
 //QQQQQQQQQQQQQQQQQqqqqqqqqqqqqqq
-System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath="+propertyPath);        
+System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath="+propertyPath);   
+
         HubData hd = null;
         try {
             // 20120624 hubCombined could be a detail hub.
@@ -588,6 +597,23 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             createChildren();
         }
 
+        
+        public int getObjectCount() {
+            if (hub == null) return 0;
+            int cnt = hub.getSize();
+            if (alChildren == null) return cnt;
+            try {
+                lock.readLock().lock();
+                cnt = alChildren.size();
+                for (Data child : alChildren) {
+                    cnt += child.getObjectCount();
+                }
+            }
+            finally {
+                lock.readLock().unlock();
+            }
+            return cnt;
+        }
         public int getChildrenCount() {
             if (!bEnabled) return 0;
             int cnt;
