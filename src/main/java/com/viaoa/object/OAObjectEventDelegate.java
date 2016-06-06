@@ -45,8 +45,10 @@ public class OAObjectEventDelegate {
 	    
 	    if (oaObj == null || propertyName == null) return;
 	    if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
-	    if (OAThreadLocalDelegate.isLoadingObject()) {
+	    final boolean bIsLoading = OAThreadLocalDelegate.isLoadingObject(); 
+	    if (bIsLoading) {
 	        if (!OAObjectHubDelegate.isInHub(oaObj)) {  // 20110719: could be in the OAObjectCache.SelectAllHubs
+	            // no listeners, need to load quick as possible
 	            if (OASyncDelegate.isServer(oaObj)) {  // 20150604 if client, then it needs to send prop change to server
 	                return; 
 	            }
@@ -64,6 +66,20 @@ public class OAObjectEventDelegate {
         if (oldObj == newObj) return;
         if (oldObj != null && oldObj.equals(newObj)) return;
 
+        
+        // 20160606 verify to the prop can be changed
+        if (!bIsLoading && !OARemoteThreadDelegate.isRemoteThread()) {
+            Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
+            if (hubs != null) {
+                for (Hub h : hubs) {
+                    if (h == null) continue;
+                    if (!h.canChangeProperty(oaObj, propertyName, oldObj, newObj)) {
+                        throw new RuntimeException("can change property returned false, property cant be changed.");
+                    }
+                }
+            }
+        }
+        
         
         // 20150109 verify that change is permitted
         // verify if recursive link that new parent is allowed

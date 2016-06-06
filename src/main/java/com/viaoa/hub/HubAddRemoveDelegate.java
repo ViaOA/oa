@@ -55,7 +55,13 @@ public class HubAddRemoveDelegate {
         if (!thisHub.getEnabled()) {
             return;
         }
-        
+        if (!OARemoteThreadDelegate.isRemoteThread()) {
+            if (!canRemove(thisHub, obj)) {
+                if (!OAThreadLocalDelegate.isDeleting(obj)) {
+                    throw new RuntimeException("Cant remove object, can remove retured false");
+                }
+            }
+        }
         if (!bIsRemovingAll) {
             obj = HubDelegate.getRealObject(thisHub, obj);
             if (obj == null) return;
@@ -122,6 +128,32 @@ public class HubAddRemoveDelegate {
         }
         HubDelegate.setReferenceable(thisHub, true);
     }
+    
+    public static boolean canRemove(final Hub thisHub, final Object obj) {
+        if (thisHub == null) return false;
+        if (obj instanceof OAObject) {
+            if (!thisHub.canRemove((OAObject) obj)) {
+                return false;
+            }
+        }
+        else if (!thisHub.canRemove()) {
+            return false;
+        }
+        return true;
+    }
+    public static boolean canDelete(final Hub thisHub, final Object obj) {
+        if (thisHub == null) return false;
+        if (obj instanceof OAObject) {
+            if (!thisHub.canDelete((OAObject) obj)) {
+                return false;
+            }
+        }
+        else if (!thisHub.canDelete()) {
+            return false;
+        }
+        return true;
+    }
+    
 
     public static void clear(final Hub thisHub) {
         clear(thisHub, true, true);
@@ -212,6 +244,14 @@ public class HubAddRemoveDelegate {
         @see #setObjectClass
     */
     public static boolean canAdd(final Hub thisHub, final Object obj) {
+        if (obj instanceof OAObject) {
+            if (!thisHub.canAdd((OAObject) obj)) {
+                return false;
+            }
+        }
+        else if (!thisHub.canAdd()) {
+            return false;
+        }
         String s = canAddMsg(thisHub, obj);
         return s == null;
     }
@@ -282,6 +322,7 @@ public class HubAddRemoveDelegate {
                 return;
             }
         }
+        
         if (thisHub.data.getSortListener() != null) {
             // use getCurrentSize to guess that it will go at the end, in 
             //  cases where this is loaded in order.
@@ -290,6 +331,13 @@ public class HubAddRemoveDelegate {
         }
         
         boolean bIsLoading = thisHub.isLoading();
+        if (!bIsLoading && !OARemoteThreadDelegate.isRemoteThread()) {
+            if (!canAdd(thisHub, obj)) {
+                throw new RuntimeException("Cant add object, can add retured false");
+            }
+        }
+        
+        
         boolean b = false;
         try {
             if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
@@ -319,9 +367,11 @@ public class HubAddRemoveDelegate {
         }
 
         if (!bIsLoading) {
-            String s = canAddMsg(thisHub, obj);
-            if (s != null) {
-                throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
+            if (!OARemoteThreadDelegate.isRemoteThread()) {
+                String s = canAddMsg(thisHub, obj);
+                if (s != null) {
+                    throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
+                }
             }
             HubEventDelegate.fireBeforeAddEvent(thisHub, obj, thisHub.getCurrentSize());
         }
@@ -351,13 +401,7 @@ public class HubAddRemoveDelegate {
                     }
                 }
             }
-            else {
-                int xx = 4;
-                xx++;
-            }
         }
-        
-        
         return true;
     }
     private static void _afterAdd(final Hub thisHub, final Object obj) {
@@ -482,6 +526,13 @@ public class HubAddRemoveDelegate {
         }
         
         boolean bIsLoading = thisHub.isLoading();
+        
+        if (!bIsLoading && !OARemoteThreadDelegate.isRemoteThread()) {
+            if (!canAdd(thisHub, obj)) {
+                throw new RuntimeException("Cant insert object, can add retured false");
+            }
+        }
+        
         int newPos = pos;
         try {
             if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
@@ -651,7 +702,6 @@ public class HubAddRemoveDelegate {
         move(thisHub, pos1+1,pos2);
     }
 
-    
     public static OAObject[] getAddedObjects(Hub thisHub) {
         return HubDataDelegate.getAddedObjects(thisHub);
     }

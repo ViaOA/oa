@@ -472,13 +472,8 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         }
         */
 //qqqqqqqqqqqqqq        
-System.out.println(wcnter+") ObjectSerializer "+msg);        
+if (bCompress) System.out.println(wcnter+") ObjectSerializer "+msg);        
 
-if (object == null) {
-    int xx = 4;
-    xx++;
-    //qqqqqqqqqqqqqqqqqq
-    }
     
     }
 
@@ -553,11 +548,6 @@ if (object == null) {
                     object==null?"null":object.getClass().getName(), 
                     extraObject==null?"null":extraObject.getClass().getName(),
                     sizeBefore, sizeAfter, totalObjectsWritten);
-if (object == null) {
-int xx = 4;
-xx++;
-//qqqqqqqqqqqqqqqqqq
-}
     	}
     	else {
             boolean b = stream.readBoolean();
@@ -581,7 +571,7 @@ xx++;
         }
         */
 //qqqqqqqqqq        
-        System.out.println(rcnter+") ObjectSerializer "+msg);
+        if (bCompress) System.out.println(rcnter+") ObjectSerializer "+msg);
     }
 
     

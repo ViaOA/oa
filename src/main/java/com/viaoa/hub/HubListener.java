@@ -45,7 +45,13 @@ public interface HubListener<T> extends EventListener {
 	    @see Hub#add Hub.add
 	*/
 	public void beforeAdd(HubEvent<T> e);
-    
+
+//qqqqqqqqq	
+    public boolean canChangeProperty(HubEvent<T> e);
+    public boolean canAdd(HubEvent<T> e);
+    public boolean canRemove(HubEvent<T> e);
+    public boolean canDelete(HubEvent<T> e);
+	
     /** 
         Event sent after object is added to Hub,
         before cache size is checked and

@@ -49,5 +49,25 @@ public class HubListenerAdapter<T> implements HubListener<T> {
 
     @Override
     public void afterLoad(HubEvent<T> e) {}
+    
+    
+    
+    
+    @Override
+    public boolean canAdd(HubEvent<T> e) {
+        return true;
+    }
+    @Override
+    public boolean canRemove(HubEvent<T> e) {
+        return true;
+    }
+    @Override
+    public boolean canDelete(HubEvent<T> e) {
+        return true;
+    }
+    @Override
+    public boolean canChangeProperty(HubEvent<T> e) {
+        return true;
+    }
 }
 

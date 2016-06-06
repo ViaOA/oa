@@ -2121,6 +2121,33 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         return OASyncDelegate.isServer(getObjectClass());
     }
     
-
+    public boolean canAdd() {
+        return HubEventDelegate.canAdd(this);
+    }
+    public boolean canAdd(OAObject obj) {
+        return HubEventDelegate.canAdd(this, obj);
+    }
+    public boolean canRemove() {
+        return HubEventDelegate.canRemove(this);
+    }
+    public boolean canRemove(OAObject obj) {
+        return HubEventDelegate.canRemove(this, obj);
+    }
+    public boolean canDelete() {
+        return HubEventDelegate.canDelete(this);
+    }
+    public boolean canDelete(OAObject obj) {
+        return HubEventDelegate.canDelete(this, obj);
+    }
+    public boolean canChangeProperty(String prop) {
+        return HubEventDelegate.canChangeProperty(this, prop);
+    }
+    public boolean canChangeProperty(OAObject obj, String prop) {
+        return HubEventDelegate.canChangeProperty(this, obj, prop);
+    }
+    public boolean canChangeProperty(OAObject obj, String prop, Object oldValue, Object newValue) {
+        return HubEventDelegate.canChangeProperty(this, obj, prop, oldValue, newValue);
+    }
+    
     // public transient boolean DEBUG; // for debugging
 }

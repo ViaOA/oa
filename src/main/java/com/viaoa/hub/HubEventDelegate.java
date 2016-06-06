@@ -12,9 +12,12 @@ package com.viaoa.hub;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASyncDelegate;
 
 /**
  * Delegate used to register Hub listeners, get Listeners and to send Events to Hub listeners. 
@@ -611,18 +614,22 @@ public class HubEventDelegate {
             throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
         }
         getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
+        clearGetAllListenerCache(thisHub);
     }
     public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
         if (property != null && property.indexOf('.') >= 0) {
             throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
         }
         getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths, bActiveObjectOnly);
+        clearGetAllListenerCache(thisHub);
     }
     public static void addHubListener(Hub thisHub, HubListener hl, String property) {
         getHubListenerTree(thisHub).addListener(hl, property);
+        clearGetAllListenerCache(thisHub);
 	}
     public static void addHubListener(Hub thisHub, HubListener hl, String property, boolean bActiveObjectOnly) {
         getHubListenerTree(thisHub).addListener(hl, property, bActiveObjectOnly);
+        clearGetAllListenerCache(thisHub);
     }
 	
 	// this is taken from HubDataUnique
@@ -637,6 +644,7 @@ public class HubEventDelegate {
 	*/
 	public static void addHubListener(Hub thisHub, HubListener hl) {
         getHubListenerTree(thisHub).addListener(hl);
+        clearGetAllListenerCache(thisHub);
     }
 	
 	public static int TotalHubListeners; 	
@@ -647,6 +655,7 @@ public class HubEventDelegate {
 	protected static void removeHubListener(Hub thisHub, HubListener l) {
 	    if (thisHub.datau.getListenerTree() == null) return;
 	    thisHub.datau.getListenerTree().removeListener(thisHub, l);
+        clearGetAllListenerCache(thisHub);
 	}
 	
 	/**
@@ -674,14 +683,46 @@ public class HubEventDelegate {
 	public static HubListener[] getAllListeners(Hub thisHub) {
 	    return getAllListeners(thisHub,0);
 	}
+	
+	// 20160606 cache for getAllListeners
+    static final int maxCacheGetAllListeners = 12;
+	private static class CacheGetAllListeners {
+	    Hub hub;
+	    HubListener[] hl;
+	}
+	private static final ReentrantReadWriteLock rwCacheGetAllListeners = new ReentrantReadWriteLock();
+	private static final CacheGetAllListeners[] cacheGetAllListeners = new CacheGetAllListeners[maxCacheGetAllListeners];
+
+	
+	static {
+	    for (int i=0; i<maxCacheGetAllListeners; i++) cacheGetAllListeners[i] = new CacheGetAllListeners();
+	}
+	private static final AtomicInteger aiGetAllListeners = new AtomicInteger();
+	
 	protected static HubListener[] getAllListeners(Hub thisHub, int type) {
 	    /* 0: get all
 	       1: get all that are duplicates (dataa == dataa)
 	       2: get all that are shared with this hub only
 	       3: get all that are duplicates (dataa == dataa), dont go to beginning
 	    */
-	    int size = 0;
-	
+	    // 20160606
+	    if (type == 0) {
+	        try {
+	            rwCacheGetAllListeners.readLock().lock();
+	            for (int i=0; i<maxCacheGetAllListeners; i++) {
+	                
+	                CacheGetAllListeners cl = cacheGetAllListeners[i];
+	                HubListener[] hl = cl.hl;
+	                if (cl.hub == thisHub) {
+	                    return hl;
+	                }
+	            }
+	        }
+	        finally {
+                rwCacheGetAllListeners.readLock().unlock();
+	        }
+	    }
+	    
 	    Hub h = thisHub;
 	
 	    // go to beginning of shared hub chain
@@ -690,7 +731,38 @@ public class HubEventDelegate {
 	    }
 	    if (type == 3) type = 1;
 	    HubListener[] hl = getAllListenersRecursive(h, thisHub, type);
+
+        if (type == 0) {
+            try {
+                rwCacheGetAllListeners.writeLock().lock();
+                CacheGetAllListeners cl = cacheGetAllListeners[ aiGetAllListeners.getAndIncrement() % maxCacheGetAllListeners ];
+                cl.hub = thisHub;
+                cl.hl = hl;
+            }
+            finally {
+                rwCacheGetAllListeners.writeLock().unlock();
+            }
+        }
+	    
 	    return hl;
+	}
+	
+	public static void clearGetAllListenerCache(Hub hub) {
+	    try {
+    	    rwCacheGetAllListeners.writeLock().lock();
+    	    for (int i=0; i<maxCacheGetAllListeners; i++) {
+    	        Hub h = cacheGetAllListeners[i].hub;
+    	        if (h == null) continue;
+    	        
+    	        if (hub == null || hub.getObjectClass().equals(h.getObjectClass())) {
+    	            cacheGetAllListeners[i].hub = null;
+    	            cacheGetAllListeners[i].hl = null;
+    	        }
+    	    }
+	    }
+	    finally {
+            rwCacheGetAllListeners.writeLock().unlock();
+	    }
 	}
 	
     protected static HubListener[] getAllListenersRecursive(Hub thisHub, Hub hub, int type) {
@@ -770,5 +842,77 @@ public class HubEventDelegate {
                 hl[i].afterLoad(hubEvent);
             }
         }
+    }
+    
+    public static boolean canAdd(Hub thisHub) {
+        return canAdd(thisHub, null);
+    }
+    public static boolean canAdd(Hub thisHub, OAObject obj) {
+        HubListener[] hl = getAllListeners(thisHub);
+        if (hl == null) return true;
+        int x = hl.length;
+        int i;
+        if (x > 0) {
+            HubEvent hubEvent = new HubEvent(thisHub);
+            for (i=0; i<x; i++) {
+                if (!hl[i].canAdd(hubEvent)) return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean canRemove(Hub thisHub) {
+        return canRemove(thisHub, null);
+    }
+    public static boolean canRemove(Hub thisHub, OAObject obj) {
+        HubListener[] hl = getAllListeners(thisHub);
+        if (hl == null) return true;
+        int x = hl.length;
+        int i;
+        if (x > 0) {
+            HubEvent hubEvent = new HubEvent(thisHub, obj);
+            for (i=0; i<x; i++) {
+                if (!hl[i].canRemove(hubEvent)) return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean canDelete(Hub thisHub) {
+        return canDelete(thisHub, null);
+    }
+    public static boolean canDelete(Hub thisHub, OAObject obj) {
+        HubListener[] hl = getAllListeners(thisHub);
+        if (hl == null) return true;
+        int x = hl.length;
+        int i;
+        if (x > 0) {
+            HubEvent hubEvent = new HubEvent(thisHub, obj);
+            for (i=0; i<x; i++) {
+                if (!hl[i].canDelete(hubEvent)) return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean canChangeProperty(Hub thisHub, String propName) {
+        return canChangeProperty(thisHub, null, propName, null, null);
+    }
+    public static boolean canChangeProperty(Hub thisHub, OAObject obj, String propName) {
+        return canChangeProperty(thisHub, obj, propName, null, null);
+    }
+    
+    public static boolean canChangeProperty(Hub thisHub, OAObject obj, String propName, Object oldValue, Object newValue) {
+        HubListener[] hl = getAllListeners(thisHub);
+        if (hl == null) return true;
+        int x = hl.length;
+        int i;
+        if (x > 0) {
+            HubEvent hubEvent = new HubEvent(thisHub, obj, propName, oldValue, newValue);
+            for (i=0; i<x; i++) {
+                if (!hl[i].canChangeProperty(hubEvent)) return false;
+            }
+        }
+        return true;
     }
 }
