@@ -366,7 +366,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     protected void setCalendar(OADateTime dt) {
         if (dt == null) dt = new OADateTime();
         try {
-            setCalendar( (GregorianCalendar) (dt.cal.clone()) );
+            setCalendar(dt.cal);
         }
         catch (Exception e) {}
     }
