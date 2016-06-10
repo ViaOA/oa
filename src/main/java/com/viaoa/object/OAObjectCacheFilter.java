@@ -127,10 +127,10 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             close();
             return;
         }
-        hub.clear();
 
         try {
             hub.setLoading(true);
+            hub.clear();
             // need to check loaded objects 
             OAObjectCacheDelegate.callback(clazz, new OACallback() {
                 @Override

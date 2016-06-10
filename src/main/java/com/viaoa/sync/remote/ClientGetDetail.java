@@ -148,17 +148,19 @@ public class ClientGetDetail {
                     long tDiff = System.currentTimeMillis() - t1;
                     if (OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false)) continue;
                     if (tDiff < 3L) {
-                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 1, false);
+                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 8);
                     }
                     else {
-                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 0, 1, false);
-                        if (tDiff > 8L) break;
+                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 5);
+                        if (tDiff > 50L) break;
                     }
                 }
             }
         }
         else if ((detailObject instanceof OAObject) && !wasFullySentToClient(detailObject)) {
-            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false);
+//qqqqqqqqqqqqqqq     NEED a flag for max new loads qqqqqqqqqqqqqqq       
+//was:            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false, 15);
+            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 0, false, 10);
         }
         
         HashMap<OAObjectKey, Object> hmExtraData = null;

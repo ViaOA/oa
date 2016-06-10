@@ -753,8 +753,19 @@ public class HubEventDelegate {
     	    for (int i=0; i<maxCacheGetAllListeners; i++) {
     	        Hub h = cacheGetAllListeners[i].hub;
     	        if (h == null) continue;
+
+    	        if (hub == null) {
+                    cacheGetAllListeners[i].hub = null;
+                    cacheGetAllListeners[i].hl = null;
+                    continue;
+                }
+    	        Class c = hub.getObjectClass();
+    	        if (c == null) continue;
+
+                Class c2 = h.getObjectClass();
+                if (c2 == null) continue;
     	        
-    	        if (hub == null || hub.getObjectClass().equals(h.getObjectClass())) {
+    	        if (c.equals(c2)) {
     	            cacheGetAllListeners[i].hub = null;
     	            cacheGetAllListeners[i].hl = null;
     	        }

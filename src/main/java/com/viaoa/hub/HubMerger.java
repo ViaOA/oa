@@ -530,7 +530,8 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
         Node child;
         Node recursiveChild;
         Data data; // first node for root and used for Hub for link.type = One
-
+        OACascade cascade;
+        
         void close() {
             if (data != null) data.close();
             data = null;
@@ -1004,6 +1005,15 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             if (!bEnabled) return;
             if (node.recursiveChild == null) return;
 
+            boolean bHadCascade;
+            if (node.recursiveChild.cascade == null) {
+                node.recursiveChild.cascade = new OACascade();
+                bHadCascade = false;
+            }
+            else bHadCascade = true;
+            
+            if (node.cascade.wasCascaded(parent, true)) return;
+            
             Hub h = (Hub) node.recursiveChild.liFromParentToChild.getValue(parent);
             Data d = new Data(node.recursiveChild, parent, h);
             try {
@@ -1014,6 +1024,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             }
             finally {
                 lock.writeLock().unlock();
+                if (!bHadCascade) node.recursiveChild.cascade = null;
             }
         }
 
