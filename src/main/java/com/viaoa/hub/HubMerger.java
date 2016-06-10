@@ -1012,7 +1012,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             }
             else bHadCascade = true;
             
-            if (node.cascade.wasCascaded(parent, true)) return;
+            if (node.recursiveChild.cascade.wasCascaded(parent, true)) return;
             
             Hub h = (Hub) node.recursiveChild.liFromParentToChild.getValue(parent);
             Data d = new Data(node.recursiveChild, parent, h);
