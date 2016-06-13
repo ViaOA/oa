@@ -160,6 +160,7 @@ static int cntq;
 System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath="+propertyPath);   
 
         HubData hd = null;
+        long ts = System.currentTimeMillis();
         try {
             // 20120624 hubCombined could be a detail hub.
             OAThreadLocalDelegate.setSuppressCSMessages(true);
@@ -172,6 +173,10 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
         finally {
             if (hd != null) hd.setInFetch(false);
             OAThreadLocalDelegate.setSuppressCSMessages(false);
+        }
+        ts = System.currentTimeMillis() - ts;
+        if (ts > 2000) {
+            LOG.warning("init for merger took "+ts+"ms"+", hub="+hubRoot+", propertyPath="+propertyPath);
         }
     }
 
@@ -1308,6 +1313,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
         
         @Override
         public void onNewList(HubEvent e) {
+            long ts = System.currentTimeMillis();
             try {
                 if (hub == hubRoot) {
                     OAThreadLocalDelegate.setHubMergerIsChanging(true);
@@ -1320,6 +1326,13 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             //20150630
             if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
                 onNewListRealHub(e);
+            }
+            
+            if (hub == hubRoot) {
+                ts = System.currentTimeMillis() - ts;
+                if (ts > 2000) {
+                    LOG.warning("onNewList for merger took "+ts+"ms"+", hub="+hubRoot+", propertyPath="+path);
+                }
             }
         }
 

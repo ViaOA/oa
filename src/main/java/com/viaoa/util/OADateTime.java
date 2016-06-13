@@ -304,10 +304,9 @@ public class OADateTime implements java.io.Serializable, Comparable {
         int h = in.readInt();
         int min = in.readInt();
         int s = in.readInt();
-        int mil = in.readInt();
+        int ms = in.readInt();
 
-        cal = new GregorianCalendar(y, mon, d, h, min, s);
-        cal.set(Calendar.MILLISECOND, mil);
+        createCalendar(y, mon, d, h, min, s, ms);
         
         // Timezone adjustment - this will adjust the clock based on timezone differences
         // int tzone = in.readInt();
@@ -315,6 +314,10 @@ public class OADateTime implements java.io.Serializable, Comparable {
         // if (diff != 0) cal.add(Calendar.HOUR, diff / (3600 * 1000));
     }
     
+    protected void createCalendar(int y, int mon, int d, int h, int min, int s, int ms) {
+        cal = new GregorianCalendar(y, mon, d, h, min, s);
+        if (ms > 0) cal.set(Calendar.MILLISECOND, ms);
+    }
     
     /**
         Returns a clone of the calendar used by this object.
@@ -326,8 +329,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
 
     // conversions
     protected void setCalendar(int year, int month, int day, int hrs, int mins, int secs, int milsecs) {
-        cal = new GregorianCalendar(year,month,day, hrs, mins, secs);
-        setMilliSecond(milsecs);
+        createCalendar(year,month,day, hrs, mins, secs, milsecs);
     }
     protected void setCalendar(GregorianCalendar c) {
         if (c == null) setCalendar(new OADateTime());

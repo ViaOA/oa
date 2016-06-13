@@ -15,8 +15,10 @@ import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
+
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OACallback;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
@@ -103,7 +105,7 @@ public class ClientGetDetail {
             masterProps==null?"":(""+masterProps.length)
         );
 //qqqqqqqqq        
-       System.out.println(s);
+        System.out.println(s);
         LOG.fine(s);
         
         return os;
@@ -135,6 +137,8 @@ public class ClientGetDetail {
         if (masterProperties != null && masterObject instanceof OAObject) {
             for (String s : masterProperties) {
                 ((OAObject) masterObject).getProperty(s);
+                long tDiff = System.currentTimeMillis() - t1;
+                if (tDiff > 10L) break;
             }
         }
         
@@ -147,24 +151,23 @@ public class ClientGetDetail {
                     
                     long tDiff = System.currentTimeMillis() - t1;
                     if (OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false)) continue;
-                    if (tDiff < 3L) {
-                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 8);
+                    if (tDiff < 5L) {
+                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 5);
                     }
                     else {
-                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 5);
-                        if (tDiff > 50L) break;
+                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 3);
+                        if (tDiff > 20L) break;
                     }
                 }
             }
         }
         else if ((detailObject instanceof OAObject) && !wasFullySentToClient(detailObject)) {
-//qqqqqqqqqqqqqqq     NEED a flag for max new loads qqqqqqqqqqqqqqq       
-//was:            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 1, false, 15);
-            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 0, false, 10);
+            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 0, false, 5);
         }
         
         HashMap<OAObjectKey, Object> hmExtraData = null;
         
+        boolean bLoad = true;
         if (siblingKeys != null && siblingKeys.length > 0) {
             hmExtraData = new HashMap<OAObjectKey, Object>();
             // send back a lightweight hashmap (oaObjKey, value)
@@ -185,17 +188,21 @@ public class ClientGetDetail {
                 
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
-                    if (System.currentTimeMillis() - t1 > 1000) {
-                        break;
+                    if (bLoad) {
+                        bLoad = ((System.currentTimeMillis() - t1) < 350);
                     }
+                    if (!bLoad) continue;
                 }
                 
-                value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
+                if (bLoad) value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
+                else if (value instanceof OAObjectKey) continue;
                 hmExtraData.put(key, value);
                 
                 if (value instanceof Hub) {
                     tot += ((Hub) value).getSize();
-                    if (tot > 1250) break;
+                    if (tot > 2000) {
+                        break;
+                    }
                 }
             }
         }

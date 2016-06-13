@@ -137,12 +137,18 @@ public class OADateTimeTest extends OAUnitTest {
         dt3 = dt3.addSeconds(1);
         long ts4 = dt3.getTime();  // EST 1:00:00am
         assertEquals(1, dt3.getHour());
-        
-        int xx =4;
-        xx++;
-        
-        
     }
+
+    @Test
+    public void dateTest() {
+        
+        OADate d1 = new OADate(2016, Calendar.SEPTEMBER, 27);
+        OADate d1x = new OADate(2016, Calendar.SEPTEMBER, 27);
+        
+        OADate d2 = new OADate(d1);
+        OADate d3 = new OADate();
+    }
+    
     
     
 //qqqqqqqqqqqqqqqqqqqq    

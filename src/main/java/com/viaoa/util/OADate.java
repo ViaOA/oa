@@ -11,6 +11,8 @@
 package com.viaoa.util;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.text.*;
 import java.sql.Time;
 
@@ -317,6 +319,93 @@ public class OADate extends OADateTime {
         System.out.println("-----> "+d);
     }
 ****/
+
+    // cache calendars
+    private static final ConcurrentHashMap<Long, GregorianCalendar> hmCache = new ConcurrentHashMap<Long, GregorianCalendar>();
+    
+    private static final int CacheSize = 250;
+    private static final long[] alCache = new long[CacheSize]; 
+    private static final AtomicInteger aiCache = new AtomicInteger();
+    
+    protected static GregorianCalendar getCachedCalendar(int year, int month, int day) {
+        final long ts = (year * 10000) + (month * 100) + day;
+        GregorianCalendar cal = hmCache.get(ts);
+        if (cal != null) return cal;
+        
+        cal = new GregorianCalendar(year, month, day);
+        hmCache.put(ts, cal);
+        
+        int pos = (aiCache.getAndIncrement() % CacheSize);
+        long lx = alCache[pos];
+        alCache[pos] = ts;
+        if (lx > 0) hmCache.remove(lx);
+        return cal;
+    }
+
+    @Override
+    protected void createCalendar(int y, int mon, int d, int h, int min, int s, int ms) {
+        cal = getCachedCalendar(y, mon, d);
+    }
+    @Override
+    public void setYear(int y) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.YEAR, y);
+    }
+    @Override
+    public void setMonth(int month) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.MONTH, month);
+    }
+    @Override
+    public void setDay(int d) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.DATE, d);
+    }
+    @Override
+    public void setHour(int hr) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.HOUR, hr);
+    }
+    @Override
+    public void set12Hour(int hr) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.HOUR, hr);
+    }
+    @Override
+    public void set24Hour(int hr) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.HOUR_OF_DAY, hr);
+    }
+    @Override
+    public void setAM_PM(int ap) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.AM_PM, ap);
+    }
+    @Override
+    public void setMinute(int m) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.MINUTE, m);
+    }
+    @Override
+    public void setSecond(int s) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.SECOND, s);
+    }
+    @Override
+    public void setMilliSecond(int ms) {
+        cal = (GregorianCalendar) cal.clone(); 
+        cal.set(Calendar.MILLISECOND, ms);
+    }
+    @Override
+    public void clearTime() {
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.AM_PM, Calendar.AM);
+        cal.get(Calendar.DATE);  // causes recalc
+    }
+    
 }
 
 

@@ -1125,7 +1125,6 @@ public class OAObjectReflectDelegate {
             if (!callback.updateObject(obj)) return currentRefsLoaded;
         }
 
-        currentRefsLoaded++;
         boolean bOwnedOnly = (levelsLoaded >= maxLevelsToLoad);
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
@@ -1134,7 +1133,13 @@ public class OAObjectReflectDelegate {
             if (li.bPrivateMethod) continue;
             if (bOwnedOnly && !li.bOwner) continue;
 
-            Object objx = obj.getProperty(li.getName()); // load prop
+            
+            Object objx = OAObjectPropertyDelegate.getProperty(obj, li.getName(), true, true);
+            if (objx instanceof OANotExist || objx instanceof OAObjectKey) {  // not loaded from ds
+                currentRefsLoaded++;
+            }
+            
+            objx = obj.getProperty(li.getName()); // load prop
             if (objx == null) continue;
 
             if (levelsLoaded + 1 >= maxLevelsToLoad) {
