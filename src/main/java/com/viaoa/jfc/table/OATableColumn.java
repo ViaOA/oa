@@ -35,7 +35,7 @@ public class OATableColumn {
     TableCellRenderer renderer;
     boolean bLinkOnPos;
     OATable table;
-    HubMerger hubMerger;
+//    HubMerger hubMerger;
     Hub hubCombined;
     boolean useHubGetObjectForLink;
     String fmt;
@@ -468,7 +468,10 @@ public class OATableColumn {
                     if (row >= 0) table.setChanged(row, col, val);
                 }
             };
-            table.getHub().addHubListener(hubListener, propx, new String[] { path });
+            
+            // 20160613 have it run in background
+            table.getHub().addHubListener(hubListener, propx, new String[] { path }, false, true);
+            //was: table.getHub().addHubListener(hubListener, propx, new String[] { path });
         }
         else if (methods != null && !OAString.isEmpty(path)) {
             // 20150315

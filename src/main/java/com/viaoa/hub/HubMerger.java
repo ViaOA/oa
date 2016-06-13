@@ -13,8 +13,15 @@ package com.viaoa.hub;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -63,8 +70,9 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     private boolean bEnabled = true;
     private boolean bIsRecusive;
     private boolean bIncludeRootHub;
-
-    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private boolean bUseBackgroundThread;
+    
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public int TotalHubListeners; // for testing only
 
@@ -72,6 +80,13 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
 
     private boolean bServerSideOnly;
 
+    // used to run onNewList in another thread that can be cancelled
+    private final Object lockNewList = new Object();
+    private volatile boolean bRunningNewList; 
+    private volatile boolean bNewListCancel;
+    
+    
+    
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath) {
         this(hubRoot, hubCombinedObjects, propertyPath, false, null, true, false);
     }
@@ -88,9 +103,18 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, false);
     }
 
+    public void setUseBackgroundThread(boolean b) {
+        bUseBackgroundThread = b;
+    }
+    public boolean getUseBackgroundThread() {
+        return bUseBackgroundThread;
+    }
+    
+    
+    
     /**
-     * Main constructor that includes all of the config params Used to create an object that will
-     * automatically update a Hub with all of the objects from a property path of a Hub.
+     * Main constructor that includes all of the config params Used to create an new hubMerger that will
+     * automatically update a Hub with all of the objects from a property path from a root Hub.
      * 
      * @param hubRoot
      *            root Hub. The active object of this Hub will be used to get all objects in the
@@ -109,8 +133,10 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
      * @param bIncludeRootHub
      *            if the objects in the rootHub should also be included.
      */
-    public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
-            boolean bUseAll, boolean bIncludeRootHub) {
+    public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, 
+        String propertyPath, boolean bShareActiveObject, String selectOrder,
+        boolean bUseAll, boolean bIncludeRootHub) 
+    {
         if (hubRoot == null) {
             throw new IllegalArgumentException("Root hub can not be null");
         }
@@ -121,7 +147,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         }
         init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
     }
-
+    
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll,
             boolean bIncludeRootHub) {
         this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, bIncludeRootHub);
@@ -809,6 +835,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
 
         void createChildren() {
             if (!bEnabled) return;
+            if (bNewListCancel) return;
             // XOG.finer("createChildren");
 
             if (node.child != null || node.recursiveChild != null) {
@@ -831,6 +858,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
                     for (int i = 0;; i++) {
                         OAObject obj = (OAObject) hub.elementAt(i);
                         if (obj == null) break;
+                        if (bNewListCancel) return;
                         createChild(obj);
                     }
                 }
@@ -844,6 +872,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
                         for (int i = 0;; i++) {
                             OAObject obj = (OAObject) hub.elementAt(i);
                             if (obj == null) break;
+                            if (bNewListCancel) return;
                             createChild(obj);
                         }
                     }
@@ -938,6 +967,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
         }
 
         void _createChild(OAObject parent) {
+            if (bNewListCancel) return;
             try {
                 if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
                 _createChild2(parent);
@@ -1009,6 +1039,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
         void _createRecursiveChild(OAObject parent) {
             if (!bEnabled) return;
             if (node.recursiveChild == null) return;
+            if (bNewListCancel) return;
 
             boolean bHadCascade;
             if (node.recursiveChild.cascade == null) {
@@ -1311,14 +1342,50 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             */
         }
         
+
         @Override
-        public void onNewList(HubEvent e) {
+        public void onNewList(final HubEvent e) {
+            if ((hub == hubRoot) && bUseBackgroundThread) {
+                synchronized (lockNewList) {
+                    bNewListCancel = true;
+                    if (bRunningNewList) return;
+                    bRunningNewList = true;
+                }
+                
+                getExecutorService().submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (;;) {
+                            synchronized (lockNewList) {
+                                bNewListCancel = false;
+                            }
+                            try {
+                                _onNewList(e);
+                            }
+                            catch (Exception e) {
+                                LOG.log(Level.WARNING, "exception running onNewList in HubMerger", e);
+                            }
+                            synchronized (lockNewList) {
+                                if (!bNewListCancel) {
+                                    bRunningNewList = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            else {
+                _onNewList(e);
+            }
+        }
+        public void _onNewList(HubEvent e) {
             long ts = System.currentTimeMillis();
             try {
                 if (hub == hubRoot) {
                     OAThreadLocalDelegate.setHubMergerIsChanging(true);
                 }
-                _onNewList(e);
+                _onNewList2(e);
             }
             finally {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
@@ -1336,7 +1403,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             }
         }
 
-        public void _onNewList(HubEvent e) {
+        public void _onNewList2(HubEvent e) {
             HubData hd = null;
             try {
                 if (hubCombined != null && this.hub != hubCombined) {
@@ -1731,4 +1798,23 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             }
         }
     }
+    
+//qqqqqqqqqqqqq
+    private static ExecutorService executorService;
+    private static final AtomicInteger aiThreadCnt = new AtomicInteger();
+    protected static ExecutorService getExecutorService() {
+        if (executorService == null) {
+            executorService = Executors.newCachedThreadPool(new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r, "HubMerger."+aiThreadCnt.getAndIncrement());
+                    t.setDaemon(true);
+                    t.setPriority(Thread.MIN_PRIORITY);
+                    return t;
+                }
+            });
+        }
+        return executorService;
+    }
+    
 }

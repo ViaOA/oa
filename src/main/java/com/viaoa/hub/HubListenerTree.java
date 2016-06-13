@@ -242,22 +242,25 @@ public class HubListenerTree {
                 break;
             }
         }       
-        addListenerMain(hl, property, calcProps, bActiveObjectOnly);
+        addListenerMain(hl, property, calcProps, bActiveObjectOnly, false);
     }
 
     public void addListener(HubListener hl, final String property, String[] dependentPropertyPaths) {
         if (hl == null) return;
         addListener(hl, property, dependentPropertyPaths, false);
     }    
-
     public void addListener(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+        addListener(hl, property, dependentPropertyPaths, bActiveObjectOnly, false);
+    }
+
+    public void addListener(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, boolean bAllowBackgroundThread) {
         if (hl == null) return;
         try {
             OAThreadLocalDelegate.setHubListenerTree(true);
             addListener(hl, property); // this will check for dependent calcProps
             // now add the additional dependent properties
             if (dependentPropertyPaths != null && dependentPropertyPaths.length > 0) {
-                addDependentListeners(property, hl, dependentPropertyPaths, bActiveObjectOnly);
+                addDependentListeners(property, hl, dependentPropertyPaths, bActiveObjectOnly, bAllowBackgroundThread);
             }
         }
         finally {
@@ -272,12 +275,12 @@ public class HubListenerTree {
      * 
      *  NOTE: only the last prop is listened to in for a dependent propertyPath.
      */
-    private void addListenerMain(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+    private void addListenerMain(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, final boolean bAllowBackgroundThread) {
         try {
             OAThreadLocalDelegate.setHubListenerTree(true);
             this.addListener(hl);
             if (dependentPropertyPaths != null && dependentPropertyPaths.length > 0) {
-                addDependentListeners(property, hl, dependentPropertyPaths, bActiveObjectOnly);
+                addDependentListeners(property, hl, dependentPropertyPaths, bActiveObjectOnly, bAllowBackgroundThread);
             }
         }
         finally {
@@ -285,7 +288,7 @@ public class HubListenerTree {
             OAThreadLocalDelegate.setIgnoreTreeListenerProperty(null);
         }
     }    
-    private void addDependentListeners(final String origPropertyName, final HubListener origHubListener, final String[] dependentPropertyNames, final boolean bActiveObjectOnly) {
+    private void addDependentListeners(final String origPropertyName, final HubListener origHubListener, final String[] dependentPropertyNames, final boolean bActiveObjectOnly, final boolean bAllowBackgroundThread) {
         //LOG.finer("Hub="+root.hub+", property="+origPropertyName);
 
         // 20120826 check for endless loops
@@ -338,7 +341,7 @@ public class HubListenerTree {
                             void update() {
                                 try {
                                     removeListener(this);
-                                    addDependentListeners(origPropertyName, origHubListener, new String[] {dependPropName}, bActiveObjectOnly);
+                                    addDependentListeners(origPropertyName, origHubListener, new String[] {dependPropName}, bActiveObjectOnly, bAllowBackgroundThread);
                                 }
                                 catch (Exception e) {
                                     return;
@@ -416,6 +419,7 @@ public class HubListenerTree {
                         if (node.getCalcPropertyNames().indexOf(origPropertyName) < 0) {
                             node.getCalcPropertyNames().add(origPropertyName);
                         }
+                        if (!bAllowBackgroundThread) node.hubMerger.setUseBackgroundThread(false);
                     }
                     else {
                         //LOG.finer("creating hubMerger");
@@ -478,6 +482,7 @@ public class HubListenerTree {
                                     }
                                 }
                             };
+                            newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
                         }
                         else {
                             // 20140527 need to listen to property
@@ -529,6 +534,7 @@ public class HubListenerTree {
                                     super.afterAddRealHub(e);
                                 }
                             };
+                            newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
                         }
                         
                         node.children = (HubListenerTreeNode[]) OAArray.add(HubListenerTreeNode.class, node.children, newTreeNode);
