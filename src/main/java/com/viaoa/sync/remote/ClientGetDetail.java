@@ -72,7 +72,7 @@ public class ClientGetDetail {
      * that will be sent back to the client.
      */
     public Object getDetail(final Class masterClass, final OAObjectKey masterObjectKey, 
-            final String property, final String[] masterProps, final OAObjectKey[] siblingKeys) {
+            final String property, final String[] masterProps, final OAObjectKey[] siblingKeys, final boolean bForHubMerger) {
 
         if (masterObjectKey == null || property == null) return null;
 
@@ -88,12 +88,15 @@ public class ClientGetDetail {
 
         Object detailValue = OAObjectReflectDelegate.getProperty((OAObject) masterObject, property);
         
-        if ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0)) return detailValue;
+        if ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0)) {
+            return detailValue;
+        }
         
-        OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys);
+        OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys, bForHubMerger);
         os.setMax(1500);  // max number of objects to write
         os.setMaxSize(250000);  // max size of compressed data to write out
-
+        os.setMax(1000);  // max number of objects to write
+        
 // qqqqqqqqqqqqqq
         String s = String.format(
             "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d, masterProps=%s",
@@ -123,7 +126,7 @@ public class ClientGetDetail {
      * send max X objects 
      * 
      */
-    protected OAObjectSerializer getSerializedDetail(final OAObject masterObject, final Object detailObject, final String propFromMaster, final String[] masterProperties, final OAObjectKey[] siblingKeys) {
+    protected OAObjectSerializer getSerializedDetail(final OAObject masterObject, final Object detailObject, final String propFromMaster, final String[] masterProperties, final OAObjectKey[] siblingKeys, final boolean bForHubMerger) {
         // at this point, we know that the client does not have all of the master's references,
         // and we know that value != null, since getDetail would not have been called.
         // include the references "around" this object and master object, along with any siblings
@@ -152,7 +155,7 @@ public class ClientGetDetail {
                     long tDiff = System.currentTimeMillis() - t1;
                     if (OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false)) continue;
                     if (tDiff < 5L) {
-                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 5);
+                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 5); //qqqqq make sure that it will load 5 new props/refs
                     }
                     else {
                         OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 3);
@@ -189,21 +192,25 @@ public class ClientGetDetail {
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
                     if (bLoad) {
-                        bLoad = ((System.currentTimeMillis() - t1) < 350);
+                        bLoad = ((System.currentTimeMillis() - t1) < (bForHubMerger?350:100));
                     }
                     if (!bLoad) continue;
                 }
                 
                 if (bLoad) value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
                 else if (value instanceof OAObjectKey) continue;
-                hmExtraData.put(key, value);
-                
+
                 if (value instanceof Hub) {
-                    tot += ((Hub) value).getSize();
-                    if (tot > 2000) {
-                        break;
+                    int x = ((Hub) value).getSize();
+                    if (tot != 0) {
+                        if (tot+x > (bForHubMerger?5000:1000)) {
+                            continue;
+                        }
                     }
+                    tot += x;
                 }
+                
+                hmExtraData.put(key, value);
             }
         }
         
@@ -282,8 +289,7 @@ public class ClientGetDetail {
                         includeAllProperties();
                     }
                     else {
-                        if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());  // flag that all masterObject props have been sent to client
-                        includeAllProperties();
+                        includeProperties(masterProperties);
                     }
                     return;
                 }
@@ -310,17 +316,31 @@ public class ClientGetDetail {
                 }
 
                 if (detailHub != null && detailHub.contains(obj)) {
-                    // this Object is a Hub - will send all references (all have been loaded)
-                    if (wasFullySentToClient(obj)) {
-                        if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
-                        excludeAllProperties();  // client has it all
+                    // include all props of first 25
+                    boolean b = false;
+                    for (int i=0; i<25; i++) {
+                        Object objx = detailHub.getAt(i);
+                        if (objx == null || objx == obj) {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (!b) {
+                        excludeAllProperties();
                     }
                     else {
-                        boolean b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
-                        if (b) {
+                        // this Object is a Hub - will send all references (all have been loaded)
+                        if (wasFullySentToClient(obj)) {
                             if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                            excludeAllProperties();  // client has it all
                         }
-                        includeAllProperties();
+                        else {
+                            b = OAObjectReflectDelegate.areAllReferencesLoaded(obj, false);
+                            if (b) {
+                                if (!os.hasReachedMax()) hsSendingGuid.add(OAObjectKeyDelegate.getKey(obj).getGuid());
+                            }
+                            includeAllProperties();
+                        }
                     }
                     return;
                 }
@@ -389,46 +409,51 @@ public class ClientGetDetail {
                 if (!bDefault) return false;
                 if (referenceValue == null) return false;
                 
-                if (oaObj == masterObject) return true;
-                if (oaObj == detailObject) return !wasFullySentToClient(referenceValue);
+                if (oaObj == masterObject) {
+                    return true;
+                }
+                
+                if (oaObj == detailObject) {
+                    return !wasFullySentToClient(referenceValue);
+                }
                 
                 OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);
                 if (hmExtraData != null) {
                     if (oaObj.getClass().equals(masterObject.getClass())) {
                         if (hmExtraData.get(key) != null) {
-                            // sibling objects only "ask" for propertyName
-                            return propFromMaster.equals(propertyName);
+                            return true;
                         }
                     }
                 }
+               
                 if (referenceValue instanceof Hub) {
-                    Hub hub = (Hub) referenceValue;
-                    if (hub.getSize() == 0) return false;
+                    Hub hubValue = (Hub) referenceValue;
+                    if (hubValue.getSize() == 0) return false;
                     
                     // dont include hubs with masterObject in it, so that it wont be sending sibling data for masterObj
-                    if (hub.contains(masterObject)) {
+                    if (hubValue.contains(masterObject)) {
                         return false;  
                     }
 
                     // dont send other sibling data
-                    if (detailObject != null && detailHub == null && hub.contains(detailObject)) {
+                    if (detailObject != null && detailHub == null && hubValue.contains(detailObject)) {
                         return false;  
                     }
 
                     
                     // this will do a quick test to see if this is a Hub with any of the same objects in it.
                     if (detailHub != null) {
-                        if (!detailHub.getObjectClass().equals(hub.getObjectClass())) {
+                        if (!detailHub.getObjectClass().equals(hubValue.getObjectClass())) {
                             return true;
                         }
                         Hub h1, h2;
-                        if (detailHub.getSize() > hub.getSize()) {
-                            h1 = hub;
+                        if (detailHub.getSize() > hubValue.getSize()) {
+                            h1 = hubValue;
                             h2 = detailHub;
                         }
                         else {
                             h1 = detailHub;
-                            h2 = hub;
+                            h2 = hubValue;
                         }
                         for (int i=0; i<3; i++) {
                             Object objx = h1.getAt(i);
@@ -443,6 +468,7 @@ public class ClientGetDetail {
 
                 if (!(referenceValue instanceof OAObject)) return true;
                 
+
                 int level = this.getLevelsDeep();
                 
                 if (referenceValue == masterObject) {
@@ -471,7 +497,7 @@ public class ClientGetDetail {
                 if (level < 3) {
                     return true;
                 }
-                return objx == null;
+                return (objx == null);
             }
         };
         return callback;

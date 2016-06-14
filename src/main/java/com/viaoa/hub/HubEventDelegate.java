@@ -574,6 +574,9 @@ public class HubEventDelegate {
 	        for (int i=0; i<x; i++) {
 	            hl[i].onNewList(hubEvent);
 	        }
+            for (int i=0; i<x; i++) {
+                hl[i].afterNewList(hubEvent);
+            }
 	    }
 	    // 20160118 use this instead of newListCount
 	    HubDataDelegate.incChangeCount(thisHub);

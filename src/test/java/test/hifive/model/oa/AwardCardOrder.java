@@ -156,7 +156,7 @@ public class AwardCardOrder extends OAObject {
                 balance += this.value;
                 System.out.println("Balance2: "+balance);
                 if (newValue > balance) {
-                    throw new RuntimeException("Value cant be greater then "+balance);
+                    //throw new RuntimeException("Value cant be greater then "+balance);
                 }
             }
         }

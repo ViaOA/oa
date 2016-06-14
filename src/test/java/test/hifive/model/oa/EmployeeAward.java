@@ -1473,6 +1473,7 @@ public class EmployeeAward extends OAObject {
     )
     public Hub<Value> getValues() {
         if (hubValues == null) {
+            hubValues = (Hub<Value>) getHub(P_Values);
 /*            
             FilteredHub<Value> fh = new FilteredHub<Value>(ModelDelegate.getValues()) {
                 protected boolean isUsed(Value cv) {

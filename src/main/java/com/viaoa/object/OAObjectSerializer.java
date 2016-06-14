@@ -77,7 +77,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     /**
      * Max number of objects to serialize.
      */
-    private transient int max;
+    private transient int maxObjects;
     private transient int minExpectedAmt; // minimum expected to save
 
     private transient int maxSize;
@@ -149,10 +149,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * Max number of objects to serialize.
      */
     public void setMax(int max) {
-        this.max = max;
+        this.maxObjects = max;
     }
     public int getMax() {
-        return this.max;
+        return this.maxObjects;
     }
     public int getTotalObjectsWritten() {
         return totalObjectsWritten;
@@ -320,7 +320,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         if (maxSize > 0 && (getCompressedWritten() > maxSize)) {
             bReachedMax = true;
         }
-        else if (max > 0 && ((totalObjectsWritten+minExpectedAmt) > max)) {
+        else if (maxObjects > 0 && ((totalObjectsWritten+minExpectedAmt) > maxObjects)) {
             bReachedMax = true;
         }
         return bReachedMax;
@@ -336,13 +336,13 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
                 return false;
             }
         }
-        if (max > 0) {
-            if ((totalObjectsWritten+minExpectedAmt) > max) {
+        if (maxObjects > 0) {
+            if ((totalObjectsWritten+minExpectedAmt) > maxObjects) {
                 return false; // 20141119
             }
             if (reference instanceof Hub) {
                 Hub h = (Hub) reference;
-                if (totalObjectsWritten + minExpectedAmt + h.getSize() > max) return false; // 20141119
+                if (totalObjectsWritten + minExpectedAmt + h.getSize() > maxObjects) return false; // 20141119
             }
         }
         if (parentWrapper != null) {

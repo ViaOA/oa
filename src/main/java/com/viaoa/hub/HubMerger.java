@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.object.*;
 import com.viaoa.util.OAPropertyPath;
 
@@ -84,7 +85,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     private final Object lockNewList = new Object();
     private volatile boolean bRunningNewList; 
     private volatile boolean bNewListCancel;
-    
+    private volatile HubEvent hubEventBackgroundThread;
     
     
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath) {
@@ -1344,10 +1345,12 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
         
 
         @Override
-        public void onNewList(final HubEvent e) {
-            if ((hub == hubRoot) && bUseBackgroundThread) {
+        public void onNewList(final HubEvent hubEvent) {
+            if ((hub == hubRoot) && OASync.isClient(hubRoot.getObjectClass())) {
                 synchronized (lockNewList) {
                     bNewListCancel = true;
+                    hubEventBackgroundThread = hubEvent;
+
                     if (bRunningNewList) return;
                     bRunningNewList = true;
                 }
@@ -1360,12 +1363,16 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
                                 bNewListCancel = false;
                             }
                             try {
-                                _onNewList(e);
+                                _onNewList(hubEvent);
                             }
                             catch (Exception e) {
                                 LOG.log(Level.WARNING, "exception running onNewList in HubMerger", e);
                             }
                             synchronized (lockNewList) {
+                                if (hubEventBackgroundThread == hubEvent) {
+                                    hubEventBackgroundThread = null;
+                                }
+                                lockNewList.notifyAll();
                                 if (!bNewListCancel) {
                                     bRunningNewList = false;
                                     break;
@@ -1376,9 +1383,31 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
                 });
             }
             else {
-                _onNewList(e);
+                _onNewList(hubEvent);
             }
         }
+
+        /**
+         * Wait for background thread to finish loading
+         */
+        @Override
+        public void afterNewList(HubEvent hubEvent) {
+            if (bUseBackgroundThread) return; // let run in the background
+            
+            synchronized (lockNewList) {
+                for (;;) {
+                    if (hubEventBackgroundThread != hubEvent) break;
+                    try {
+                        lockNewList.wait();
+                    }
+                    catch (Exception e) {
+                    }
+                }
+            }
+        }
+        
+        
+        
         public void _onNewList(HubEvent e) {
             long ts = System.currentTimeMillis();
             try {

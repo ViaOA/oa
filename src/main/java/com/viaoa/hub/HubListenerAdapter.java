@@ -37,6 +37,7 @@ public class HubListenerAdapter<T> implements HubListener<T> {
     public void beforeSelect(HubEvent<T> e) { }
     public void afterSort(HubEvent<T> e) { }
     public void onNewList(HubEvent<T> e) { }
+    public void afterNewList(HubEvent<T> e) { }
     public void afterFetchMore(HubEvent<T> e) { }
     
     private InsertLocation insertWhere;

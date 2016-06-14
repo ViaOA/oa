@@ -659,7 +659,7 @@ public class Program extends OAObject {
         return itemUpcharge;
     }
     public void setItemUpcharge(double newValue) {
-        if (newValue != 0 && (newValue <= .001 || newValue > 1.0)) throw new RuntimeException("must be a percentage");
+       // if (newValue != 0 && (newValue <= .001 || newValue > 1.0)) throw new RuntimeException("must be a percentage");
         double old = itemUpcharge;
         fireBeforePropertyChange(PROPERTY_ItemUpcharge, old, newValue);
         this.itemUpcharge = newValue;
@@ -671,7 +671,7 @@ public class Program extends OAObject {
         return cardUpcharge;
     }
     public void setCardUpcharge(double newValue) {
-        if (newValue != 0 && (newValue <= .001 || newValue > 1.0)) throw new RuntimeException("must be a percentage");
+        // if (newValue != 0 && (newValue <= .001 || newValue > 1.0)) throw new RuntimeException("must be a percentage");
         double old = cardUpcharge;
         fireBeforePropertyChange(PROPERTY_CardUpcharge, old, newValue);
         this.cardUpcharge = newValue;
@@ -683,7 +683,7 @@ public class Program extends OAObject {
         return charityUpcharge;
     }
     public void setCharityUpcharge(double newValue) {
-        if (newValue != 0 && (newValue <= .001 || newValue > 1.0)) throw new RuntimeException("must be a percentage");
+        //if (newValue != 0 && (newValue <= .001 || newValue > 1.0)) throw new RuntimeException("must be a percentage");
         double old = charityUpcharge;
         fireBeforePropertyChange(PROPERTY_CharityUpcharge, old, newValue);
         this.charityUpcharge = newValue;
@@ -695,7 +695,7 @@ public class Program extends OAObject {
         return cashUpcharge;
     }
     public void setCashUpcharge(double newValue) {
-        if (newValue != 0 && (newValue <= .001 || newValue > 1.0)) throw new RuntimeException("must be a percentage");
+        //if (newValue != 0 && (newValue <= .001 || newValue > 1.0)) throw new RuntimeException("must be a percentage");
         double old = cashUpcharge;
         fireBeforePropertyChange(PROPERTY_CashUpcharge, old, newValue);
         this.cashUpcharge = newValue;

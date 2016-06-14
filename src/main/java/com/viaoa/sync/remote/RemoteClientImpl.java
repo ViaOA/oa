@@ -57,9 +57,9 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     }
     
     @Override
-    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
+    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger) {
         LOG.fine("masterClass="+masterClass+", prop="+property);
-        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys);
+        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys, bForHubMerger);
         return obj;
     }
 
@@ -67,13 +67,13 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     @Override
     public Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
         LOG.fine("masterClass="+masterClass+", prop="+property);
-        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys);
+        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys, false);
         return obj;
     }
     
     @Override
     public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property) {
-        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, null, null);
+        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, null, null, false);
         return obj;
     }
 

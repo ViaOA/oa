@@ -103,6 +103,11 @@ public interface HubListener<T> extends EventListener {
     */
     public void onNewList(HubEvent<T> e);
     
+    /**
+     * Called after onNewList is called
+     */
+    public void afterNewList(HubEvent<T> e);
+    
 
     /**
         Event sent from OAObject when save() is being performed.

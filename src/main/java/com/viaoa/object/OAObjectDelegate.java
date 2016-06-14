@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.*;
 
 import com.viaoa.hub.*;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
 
@@ -76,7 +77,8 @@ public class OAObjectDelegate {
     	    return;
     	}
 
-    	initialize(oaObj, oi, oi.getInitializeNewObjects(), oi.getUseDataSource(), oi.getAddToCache(), !oi.getLocalOnly(), true);
+    	boolean bInitializeWithCS = !oi.getLocalOnly() && OASync.isClient(oaObj.getClass());    	
+    	initialize(oaObj, oi, oi.getInitializeNewObjects(), oi.getUseDataSource(), oi.getAddToCache(), bInitializeWithCS, true);
     }
     
     /**

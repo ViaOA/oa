@@ -263,7 +263,6 @@ System.out.println(s+"  "+Thread.currentThread().getName());
         
         ArrayList<OAObjectKey> al = new ArrayList<OAObjectKey>();
         _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, hubThreadLocal!=null, bForMerger);
-
         
         if (al == null || al.size() == 0) return null;
         int x = al.size();

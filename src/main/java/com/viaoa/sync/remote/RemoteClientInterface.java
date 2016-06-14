@@ -29,7 +29,7 @@ public interface RemoteClientInterface {
     Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property);
     
     Object getDetail(Class masterClass, OAObjectKey masterObjectKey, 
-            String property, String[] masterProps, OAObjectKey[] siblingKeys);
+            String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger);
 
     // dont put in queue, but have it returned on vsocket for queued messages  
     //     All of the other methods are put in queue to be processed and have the return value set.

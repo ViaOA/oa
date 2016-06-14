@@ -37,13 +37,6 @@ public class ServerRoot extends OAObject {
     public static final String PROPERTY_Id = "Id";
     public static final String PROPERTY_ServerInfo = "ServerInfo";
     
-    private Hub<Program> hubProgram; 
-    public Hub<Program> getPrograms() {
-        if (hubProgram == null) {
-            hubProgram = new Hub<Program>(Program.class);
-        }
-        return hubProgram;
-    }
     
     /*$$Start: ServerRoot1 $$*/
     public static final String P_ActivePrograms = "ActivePrograms";
