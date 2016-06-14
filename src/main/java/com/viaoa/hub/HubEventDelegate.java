@@ -761,7 +761,7 @@ public class HubEventDelegate {
     	        Hub h = cacheGetAllListeners[i].hub;
     	        if (h == null) continue;
 
-    	        if (hub == null) {
+                if (hub == null || hub == h) {
                     cacheGetAllListeners[i].hub = null;
                     cacheGetAllListeners[i].hl = null;
                     continue;
