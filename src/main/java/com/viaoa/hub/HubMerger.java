@@ -206,23 +206,25 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         ts = System.currentTimeMillis() - ts;
 
         
-        String s = ("HM."+id+") new HubMerger hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll);
+        String s = ("HM."+id+") new HubMerger hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
         s += ", combinedHub="+hubCombined;
         s += ", time="+ts+"ms";
         
-        if (bUseAll) {
-            int x = hubRoot.size();
-            if (x > 50) {
-                if (x > 150 || propertyPath.indexOf(".") > 0) {
-                    s += ", ALERT";
+        if (!bUseBackgroundThread) {
+            if (bUseAll) {
+                int x = hubRoot.size();
+                if (x > 50) {
+                    if (x > 150 || propertyPath.indexOf(".") > 0) {
+                        s += ", ALERT";
+                    }
                 }
             }
-        }
-        if (hubCombined.getSize() > 250) {
-            s += ", ALERT";
-        }
-        if (ts > 1000) {
-            s += ", ALERT";
+            if (hubCombined.getSize() > 250) {
+                s += ", ALERT";
+            }
+            if (ts > 1000) {
+                s += ", ALERT";
+            }
         }
         OAPerformance.LOG.fine(s);
         LOG.fine(s);
@@ -1448,23 +1450,25 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             
             if (hub == hubRoot) {
                 ts = System.currentTimeMillis() - ts;
-                String s = ("HM."+id+") HubMerger.onNewList hub="+hubRoot+", propertyPath="+propertyPath);
+                String s = ("HM."+id+") onNewList hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
                 s += ", combinedHub="+hubCombined;
                 s += ", time="+ts+"ms";
                 
-                if (bUseAll) {
-                    int x = hubRoot.size();
-                    if (x > 50) {
-                        if (x > 150 || propertyPath.indexOf(".") > 0) {
-                            s += ", ALERT";
+                if (!bUseBackgroundThread) {
+                    if (bUseAll) {
+                        int x = hubRoot.size();
+                        if (x > 50) {
+                            if (x > 150 || propertyPath.indexOf(".") > 0) {
+                                s += ", ALERT";
+                            }
                         }
                     }
-                }
-                if (hubCombined.getSize() > 250) {
-                    s += ", ALERT";
-                }
-                if (ts > 1000) {
-                    s += ", ALERT";
+                    if (hubCombined.getSize() > 250) {
+                        s += ", ALERT";
+                    }
+                    if (ts > 1000) {
+                        s += ", ALERT";
+                    }
                 }
                 OAPerformance.LOG.fine(s);
                 LOG.fine(s);
@@ -1804,23 +1808,25 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                     _afterChangeActiveObject();
                     
                     ts = System.currentTimeMillis() - ts;
-                    String s = ("HM."+id+") HubMerger.changeAO hub="+hubRoot+", propertyPath="+propertyPath);
+                    String s = ("HM."+id+") onChangeAO hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
                     s += ", combinedHub="+hubCombined;
                     s += ", time="+ts+"ms";
                     
-                    if (bUseAll) {
-                        int x = hubRoot.size();
-                        if (x > 50) {
-                            if (x > 150 || propertyPath.indexOf(".") > 0) {
-                                s += ", ALERT";
+                    if (!bUseBackgroundThread) {
+                        if (bUseAll) {
+                            int x = hubRoot.size();
+                            if (x > 50) {
+                                if (x > 150 || propertyPath.indexOf(".") > 0) {
+                                    s += ", ALERT";
+                                }
                             }
                         }
-                    }
-                    if (hubCombined.getSize() > 250) {
-                        s += ", ALERT";
-                    }
-                    if (ts > 1000) {
-                        s += ", ALERT";
+                        if (hubCombined.getSize() > 250) {
+                            s += ", ALERT";
+                        }
+                        if (ts > 1000) {
+                            s += ", ALERT";
+                        }
                     }
                     OAPerformance.LOG.fine(s);
                     LOG.fine(s);
