@@ -60,7 +60,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     private Node nodeRoot; // first node from propertyPath
     private Data dataRoot; // node used for the root Hub
 
-    String path; // property path
+    String propertyPath; // property path
     Hub hubCombined; // Hub that stores the results
     Hub hubRoot; // main hub used as the first hub.
     boolean bShareEndHub; // if true, then hubCombined can be shared with the currently found "single"
@@ -83,9 +83,12 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
 
     // used to run onNewList in another thread that can be cancelled
     private final Object lockNewList = new Object();
-    private volatile boolean bRunningNewList; 
+    private boolean bRunningNewList; 
     private volatile boolean bNewListCancel;
-    private volatile HubEvent hubEventBackgroundThread;
+    private HubEvent hubEventBackgroundThread;
+    
+    private final int id;
+    private static final AtomicInteger aiId = new AtomicInteger();
     
     
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath) {
@@ -138,6 +141,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         String propertyPath, boolean bShareActiveObject, String selectOrder,
         boolean bUseAll, boolean bIncludeRootHub) 
     {
+        id = aiId.getAndIncrement();
         if (hubRoot == null) {
             throw new IllegalArgumentException("Root hub can not be null");
         }
@@ -156,6 +160,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
 
     private boolean bCreatedFromOneObject;
     public HubMerger(F obj, Hub<T> hubCombinedObjects, String propertyPath) {
+        id = aiId.getAndIncrement();
         bCreatedFromOneObject = true;
         Hub h = new Hub(obj.getClass());
         h.add(obj);
@@ -180,11 +185,8 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         bServerSideOnly = b;
     }
 
-static int cntq;    
     private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll, boolean bIncludeRootHub) {
-//QQQQQQQQQQQQQQQQQqqqqqqqqqqqqqq
-System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath="+propertyPath);   
 
         HubData hd = null;
         long ts = System.currentTimeMillis();
@@ -202,16 +204,35 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
         ts = System.currentTimeMillis() - ts;
-        if (ts > 2000) {
-            LOG.warning("init for merger took "+ts+"ms"+", hub="+hubRoot+", propertyPath="+propertyPath);
+
+        
+        String s = ("HM."+id+") new HubMerger hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll);
+        s += ", combinedHub="+hubCombined;
+        s += ", time="+ts+"ms";
+        
+        if (bUseAll) {
+            int x = hubRoot.size();
+            if (x > 50) {
+                if (x > 150 || propertyPath.indexOf(".") > 0) {
+                    s += ", ALERT";
+                }
+            }
         }
+        if (hubCombined.getSize() > 250) {
+            s += ", ALERT";
+        }
+        if (ts > 1000) {
+            s += ", ALERT";
+        }
+        OAPerformance.LOG.fine(s);
+        LOG.fine(s);
     }
 
     private void _init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll, boolean bIncludeRootHub) {
         this.hubRoot = hubRoot;
         this.hubCombined = hubCombinedObjects;
-        this.path = propertyPath;
+        this.propertyPath = propertyPath;
         this.bShareActiveObject = bShareActiveObject;
         this.bUseAll = bUseAll;
         this.bIncludeRootHub = bIncludeRootHub;
@@ -250,7 +271,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
     }
 
     public String getPath() {
-        return this.path;
+        return this.propertyPath;
     }
 
     private String description;
@@ -413,12 +434,12 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
         Class clazz = hubRoot.getObjectClass();
 
         // 20120809 using new OAPropertyPath
-        OAPropertyPath oaPropPath = new OAPropertyPath(path);
+        OAPropertyPath oaPropPath = new OAPropertyPath(propertyPath);
         try {
             oaPropPath.setup(clazz);
         }
         catch (Exception e) {
-            throw new IllegalArgumentException("Cant find property for PropertyPath=\"" + path + "\" starting with Class "
+            throw new IllegalArgumentException("Cant find property for PropertyPath=\"" + propertyPath + "\" starting with Class "
                     + hubRoot.getObjectClass().getName(), e);
         }
         if (oaPropPath.hasPrivateLink()) {
@@ -479,7 +500,7 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
 
             OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, prop);
             if (linkInfo == null) {
-                throw new IllegalArgumentException("Cant find " + prop + " for PropertyPath \"" + path + "\" starting with Class "
+                throw new IllegalArgumentException("Cant find " + prop + " for PropertyPath \"" + propertyPath + "\" starting with Class "
                         + hubRoot.getObjectClass().getName());
             }
             bLastWasMany = linkInfo.getType() == linkInfo.MANY;
@@ -519,14 +540,14 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             if (!clazz.equals(Hub.class)) {
                 // if (!OAObject.class.equals(clazz)) { // 20120809 could be using generic type reference
                 // (ex: OALeftJoin.A)
-                throw new IllegalArgumentException("Classes do not match.  Property path \"" + path + "\" is for objects of Class "
+                throw new IllegalArgumentException("Classes do not match.  Property path \"" + propertyPath + "\" is for objects of Class "
                         + clazz.getName() + " and hubCombined is for objects of Class " + hubCombined.getObjectClass());
                 // }
             }
         }
         if (bIncludeRootHub && hubCombined != null) {
             if (!hubRoot.getObjectClass().equals(clazz)) {
-                throw new IllegalArgumentException("IncludeRootHub=true, and HubRoot class does not match.  Property path \"" + path
+                throw new IllegalArgumentException("IncludeRootHub=true, and HubRoot class does not match.  Property path \"" + propertyPath
                         + "\" is for objects of Class " + clazz.getName() + " and hubCombined is for objects of Class "
                         + hubCombined.getObjectClass());
             }
@@ -1345,8 +1366,11 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
         
 
         @Override
-        public void onNewList(final HubEvent hubEvent) {
-            if ((hub == hubRoot) && OASync.isClient(hubRoot.getObjectClass())) {
+        public void onNewList(HubEvent hubEvent) {
+            if ((hub != hubRoot) || OASync.isServer()) {
+                _onNewList(hubEvent);
+            }
+            else {
                 synchronized (lockNewList) {
                     bNewListCancel = true;
                     hubEventBackgroundThread = hubEvent;
@@ -1358,23 +1382,23 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
                 getExecutorService().submit(new Runnable() {
                     @Override
                     public void run() {
+                        HubEvent hubEventCurrent;
                         for (;;) {
                             synchronized (lockNewList) {
+                                hubEventCurrent = hubEventBackgroundThread;
                                 bNewListCancel = false;
                             }
                             try {
-                                _onNewList(hubEvent);
+                                _onNewList(hubEventCurrent);
                             }
                             catch (Exception e) {
                                 LOG.log(Level.WARNING, "exception running onNewList in HubMerger", e);
                             }
+                            
                             synchronized (lockNewList) {
-                                if (hubEventBackgroundThread == hubEvent) {
-                                    hubEventBackgroundThread = null;
-                                }
-                                lockNewList.notifyAll();
                                 if (!bNewListCancel) {
                                     bRunningNewList = false;
+                                    lockNewList.notifyAll();
                                     break;
                                 }
                             }
@@ -1382,21 +1406,21 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
                     }
                 });
             }
-            else {
-                _onNewList(hubEvent);
-            }
         }
 
         /**
-         * Wait for background thread to finish loading
+         * If rootHub, then wait for background thread to finish loading
          */
         @Override
         public void afterNewList(HubEvent hubEvent) {
+            if ((hub != hubRoot) || OASync.isServer()) {
+                return;
+            }
             if (bUseBackgroundThread) return; // let run in the background
             
             synchronized (lockNewList) {
                 for (;;) {
-                    if (hubEventBackgroundThread != hubEvent) break;
+                    if (!bRunningNewList) break;
                     try {
                         lockNewList.wait();
                     }
@@ -1405,8 +1429,6 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
                 }
             }
         }
-        
-        
         
         public void _onNewList(HubEvent e) {
             long ts = System.currentTimeMillis();
@@ -1426,9 +1448,26 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
             
             if (hub == hubRoot) {
                 ts = System.currentTimeMillis() - ts;
-                if (ts > 2000) {
-                    LOG.warning("onNewList for merger took "+ts+"ms"+", hub="+hubRoot+", propertyPath="+path);
+                String s = ("HM."+id+") HubMerger.onNewList hub="+hubRoot+", propertyPath="+propertyPath);
+                s += ", combinedHub="+hubCombined;
+                s += ", time="+ts+"ms";
+                
+                if (bUseAll) {
+                    int x = hubRoot.size();
+                    if (x > 50) {
+                        if (x > 150 || propertyPath.indexOf(".") > 0) {
+                            s += ", ALERT";
+                        }
+                    }
                 }
+                if (hubCombined.getSize() > 250) {
+                    s += ", ALERT";
+                }
+                if (ts > 1000) {
+                    s += ", ALERT";
+                }
+                OAPerformance.LOG.fine(s);
+                LOG.fine(s);
             }
         }
 
@@ -1760,7 +1799,31 @@ System.out.println((++cntq)+") new HubMerger.init hub="+hubRoot+", propertyPath=
                 try {
                     hd.setInFetch(true);
                     if (!bShareEndHub) hubCombined.clear();
+                    
+                    long ts = System.currentTimeMillis();
                     _afterChangeActiveObject();
+                    
+                    ts = System.currentTimeMillis() - ts;
+                    String s = ("HM."+id+") HubMerger.changeAO hub="+hubRoot+", propertyPath="+propertyPath);
+                    s += ", combinedHub="+hubCombined;
+                    s += ", time="+ts+"ms";
+                    
+                    if (bUseAll) {
+                        int x = hubRoot.size();
+                        if (x > 50) {
+                            if (x > 150 || propertyPath.indexOf(".") > 0) {
+                                s += ", ALERT";
+                            }
+                        }
+                    }
+                    if (hubCombined.getSize() > 250) {
+                        s += ", ALERT";
+                    }
+                    if (ts > 1000) {
+                        s += ", ALERT";
+                    }
+                    OAPerformance.LOG.fine(s);
+                    LOG.fine(s);
                 }
                 finally {
                     hd.setInFetch(b);

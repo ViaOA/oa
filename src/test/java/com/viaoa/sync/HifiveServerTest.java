@@ -59,10 +59,10 @@ public class HifiveServerTest {
         for (int i=0; i<5; i++) {
             Program prog = new Program();
             
-            for (int cnt=0; cnt<5; cnt++) {
+            for (int cnt=0; cnt<10; cnt++) {
                 Location loc = new Location();
                 prog.getLocations().add(loc);
-                for (int cnt2=0; cnt2<10; cnt2++) {
+                for (int cnt2=0; cnt2<50; cnt2++) {
                     Employee emp = new Employee();
                     loc.getEmployees().add(emp);
                 }
@@ -97,6 +97,8 @@ public class HifiveServerTest {
     public static void main(String[] args) throws Exception {
         MultiplexerServer.DEBUG = true;
         OALogUtil.consoleOnly(Level.FINE, OACircularQueue.class.getName());//"com.viaoa.util.OACircularQueue");
+        OALogUtil.consolePerformance();
+        
         
         Logger logx = Logger.getLogger(OACircularQueue.class.getName());
         

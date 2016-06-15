@@ -1247,7 +1247,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Used to create Master/Detail relationships. Set the controlling/master
      * hub for this hub
      * 
-     * @param path
+     * @param propertyPath
      *            is the property path from masterHub to get to this hub
      */
     public void setMasterHub(Hub masterHub) {
@@ -1258,7 +1258,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Used to create Master/Detail relationships. Set the controlling/master
      * hub for this hub
      * 
-     * @param path
+     * @param propertyPath
      *            is the property path from masterHub to get to this hub
      */
     public void setMasterHub(Hub masterHub, boolean bShared) {
@@ -1299,7 +1299,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Used to create Master/Detail relationships. Set the controlling/master
      * hub for this hub
      * 
-     * @param path
+     * @param propertyPath
      *            is the property path from masterHub to get to this hub
      */
     public Hub getMasterHub() {

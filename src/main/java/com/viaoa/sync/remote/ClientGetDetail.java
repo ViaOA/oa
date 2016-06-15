@@ -27,6 +27,7 @@ import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAObjectSerializerCallback;
+import com.viaoa.object.OAPerformance;
 import com.viaoa.util.OANotExist;
 
 /**
@@ -58,8 +59,8 @@ public class ClientGetDetail {
         treeSerialized.clear();
     }
     
-    private int cntx;
-    private int errorCnt;
+    private static volatile int cntx;
+    private static volatile int errorCnt;
     /**
      * called by OASyncClient.getDetail(..), from an OAClient to the OAServer
      * @param masterClass
@@ -97,7 +98,7 @@ public class ClientGetDetail {
         os.setMaxSize(250000);  // max size of compressed data to write out
         os.setMax(1000);  // max number of objects to write
         
-// qqqqqqqqqqqqqq
+
         Object objx = os.getExtraObject();
         int cntSib=0;
         if (objx instanceof HashMap) {
@@ -114,8 +115,8 @@ public class ClientGetDetail {
             (siblingKeys == null)?0:siblingKeys.length,
             masterProps==null?"":(""+masterProps.length)
         );
-//qqqqqqqqq        
-        System.out.println(s);
+        
+        OAPerformance.LOG.fine(s);
         LOG.fine(s);
         
         return os;

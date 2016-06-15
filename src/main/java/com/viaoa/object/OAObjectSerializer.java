@@ -59,6 +59,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     transient String[] excludeProps;
 
     private transient OAObjectSerializerCallback callback;
+
+    private static volatile int wcnter;
+    private static volatile int rcnter;
+    
     
     // Solution for handling deep object graphs that can cause stack overflow exceptions:
     // This is used to handle stackTraceOverflow from happening.
@@ -453,8 +457,8 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
 
             msg = String.format(
                     "wrote object=%s, extra=%s, totalObjects=%,d", 
-                    object==null?"null":object.getClass().getSimpleName(), 
-                    extraObject==null?"null":extraObject.getClass().getName(),
+                    object, 
+                    extraObject==null?"null":extraObject.getClass().getSimpleName(),
                     totalObjectsWritten 
                     );
         }
@@ -471,18 +475,13 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             if (totalObjectsWritten > 250 || (wcnter%250 == 0)) System.out.println(wcnter+") ObjectSerializer "+msg);
         }
         */
-//qqqqqqqqqqqqqq        
-if (bCompress) System.out.println(wcnter+") ObjectSerializer "+msg);        
-
-    
+        
+        if (bCompress) {
+            OAPerformance.LOG.fine(wcnter+") ObjectSerializer "+msg);
+            LOG.fine(wcnter+" " + msg);
+        }
     }
 
-    
-    
-    static int wcnter;
-    static int rcnter;
-    
-    
     
     /**
      * Called once the _writeObject has serialized the object, so that any overFlow objects can be serialized
@@ -545,8 +544,8 @@ if (bCompress) System.out.println(wcnter+") ObjectSerializer "+msg);
 
         	
             msg = String.format("Read object=%s, extra=%s, compressed=%,d, uncompressed=%,d, totalObjects=%,d", 
-                    object==null?"null":object.getClass().getName(), 
-                    extraObject==null?"null":extraObject.getClass().getName(),
+                    object, 
+                    extraObject==null?"null":extraObject.getClass().getSimpleName(),
                     sizeBefore, sizeAfter, totalObjectsWritten);
     	}
     	else {
@@ -559,8 +558,8 @@ if (bCompress) System.out.println(wcnter+") ObjectSerializer "+msg);
         	finishRead(stream);
             totalObjectsWritten = stream.readInt();
             msg = String.format("Read object=%s, extra=%s, totalObjects=%,d", 
-                    object==null?"null":object.getClass().getName(), 
-                    extraObject==null?"null":extraObject.getClass().getName(),
+                    object, 
+                    extraObject==null?"null":extraObject.getClass().getSimpleName(),
                     totalObjectsWritten);
     	}
     	rcnter++;
@@ -570,11 +569,12 @@ if (bCompress) System.out.println(wcnter+") ObjectSerializer "+msg);
             System.out.println(rcnter+") ObjectSerializer "+msg);
         }
         */
-//qqqqqqqqqq        
-        if (bCompress) System.out.println(rcnter+") ObjectSerializer "+msg);
+        
+        if (bCompress) {
+            OAPerformance.LOG.fine(rcnter+") ObjectSerializer "+msg);
+            LOG.fine(rcnter+" " + msg);
+        }
     }
-
-    
     
     
     /**

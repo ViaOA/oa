@@ -32,10 +32,8 @@ public class HifiveClientTest extends OAUnitTest {
         
         Hub<Program> h = serverRoot.getActivePrograms();
         for (Program p : h) {
-            int xx = 4;
-            xx++;
-            //p.getEmployees();
-             p.getLocations();
+            p.getLocations();
+            p.getEmployees();
         }
         
         ModelDelegate.initialize(serverRoot);
@@ -46,6 +44,7 @@ public class HifiveClientTest extends OAUnitTest {
     public static void main(String[] args) throws Exception {
         MultiplexerClient.DEBUG = true;
         OALogUtil.consoleOnly(Level.CONFIG);
+        OALogUtil.consolePerformance();
 
         HifiveClientTest test = new HifiveClientTest();
         test.test();

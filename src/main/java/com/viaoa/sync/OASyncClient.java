@@ -36,6 +36,7 @@ import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializeDelegate;
 import com.viaoa.object.OAObjectSerializer;
+import com.viaoa.object.OAPerformance;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
@@ -128,7 +129,7 @@ public class OASyncClient {
         t.start();
     }
     
-    public int cntGetDetail;
+    public volatile int cntGetDetail;
     /**
      * This works on the server using ClientGetDetail, by using a customized objectSerializer
      * @param masterObject
@@ -222,7 +223,6 @@ public class OASyncClient {
             OAObjectHubDelegate.setMasterObject((Hub) result, masterObject, propertyName);
         }
 
-        //qqqqqqq        
         if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntx % 100 == 0) {
             int iNew = OAObjectSerializeDelegate.cntNew; 
             int iDup = OAObjectSerializeDelegate.cntDup;
@@ -242,8 +242,7 @@ public class OASyncClient {
                 iNew, 
                 iDup
             );
-//qqqqqqqqq            
-System.out.println(s);
+            OAPerformance.LOG.fine(s);
             LOG.fine(s);
         }
         return result;

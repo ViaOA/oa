@@ -38,6 +38,18 @@ public class OALogUtil {
         levelRoot = level;
         consoleOnly(level, "");
     }    
+
+    /**
+     * Send OAPerformance logging to console.
+     */
+    public static void consolePerformance() {
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(Level.FINE);
+
+        Logger log = Logger.getLogger("com.viaoa.object.OAPerformance");
+        log.setLevel(Level.FINE);
+        log.addHandler(ch);
+    }    
     
     
     public static void consoleOnly(Level level, String name) {
