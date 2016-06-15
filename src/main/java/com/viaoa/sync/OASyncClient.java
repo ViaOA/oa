@@ -181,6 +181,7 @@ public class OASyncClient {
         
         lastMasterObjects[lastMasterCnter++%lastMasterObjects.length] = masterObject;
         
+        int cntSib = 0;
         if (result instanceof OAObjectSerializer) {
             // see ClientGetDetail.getSerializedDetail(..)
             OAObjectSerializer os = (OAObjectSerializer) result;
@@ -192,9 +193,13 @@ public class OASyncClient {
             
             if (objx instanceof HashMap) {
                 HashMap<OAObjectKey, Object> hmExtraData = (HashMap<OAObjectKey, Object>) objx;
+                cntSib = hmExtraData.size();
                 for (Entry<OAObjectKey, Object> entry : hmExtraData.entrySet()) {
                     Object value = entry.getValue();
-                    if (value == masterObject) continue;
+                    if (value == masterObject) {
+                        if (cntSib > 0) cntSib--;
+                        continue;
+                    }
                     if (!(value instanceof OAObject)) {
                         if (value != null) continue; // all hubs will be added to master props
                     }
@@ -223,13 +228,13 @@ public class OASyncClient {
             int iDup = OAObjectSerializeDelegate.cntDup;
             
             String s = String.format(
-                "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%b %,d, moreProps=%d, " +
+                "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d/%,d, moreProps=%d, " +
                 "newCnt=%,d, dupCnt=%,d, totNewCnt=%,d, totDupCnt=%,d",
                 cntx, 
                 masterObject, 
                 propertyName, 
-                result==null?"null":result.getClass().getName(),
-                bGetSibs,
+                result==null?"null":result.getClass().getSimpleName(),
+                cntSib,
                 (siblingKeys == null)?0:siblingKeys.length,
                 additionalMasterProperties==null?0:additionalMasterProperties.length,
                 iNew-xNew, 
@@ -238,7 +243,7 @@ public class OASyncClient {
                 iDup
             );
 //qqqqqqqqq            
-System.out.println(s+"  "+Thread.currentThread().getName());
+System.out.println(s);
             LOG.fine(s);
         }
         return result;

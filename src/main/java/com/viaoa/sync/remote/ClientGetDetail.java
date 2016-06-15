@@ -98,12 +98,19 @@ public class ClientGetDetail {
         os.setMax(1000);  // max number of objects to write
         
 // qqqqqqqqqqqqqq
+        Object objx = os.getExtraObject();
+        int cntSib=0;
+        if (objx instanceof HashMap) {
+            cntSib = ((HashMap) objx).size();
+            if (cntSib > 0 && (masterProps != null && masterProps.length > 0)) cntSib--;
+        }
         String s = String.format(
-            "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d, masterProps=%s",
+            "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d/%,d, masterProps=%s",
             ++cntx, 
             masterObject.getClass().getSimpleName(), 
             property, 
             detailValue,
+            cntSib,        
             (siblingKeys == null)?0:siblingKeys.length,
             masterProps==null?"":(""+masterProps.length)
         );
