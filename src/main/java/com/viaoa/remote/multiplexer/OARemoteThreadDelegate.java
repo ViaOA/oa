@@ -46,7 +46,8 @@ public class OARemoteThreadDelegate {
         Thread t = Thread.currentThread();
         if (t instanceof OARemoteThread) {
             OARemoteThread rt = (OARemoteThread) t;
-            if (!rt.startedNextThread) rt.startNextThread();
+            if (rt.startedNextThread) return;
+            rt.startNextThread();
         }
         // 20160121
         OAThreadLocalDelegate.notifyWaitingThread();
@@ -59,6 +60,7 @@ public class OARemoteThreadDelegate {
         }
         return true;
     }
+
     
     public static RequestInfo getRequestInfo() {
         Thread t = Thread.currentThread();

@@ -144,8 +144,11 @@ public class HubDataDelegate {
     private static int _remove2(Hub thisHub, Object obj, boolean bDeleting, boolean bIsRemovingAll) {
         int pos;
         if (bIsRemovingAll) {
+            pos = -1;
+            /*
             if (thisHub.data.vector.remove(obj)) pos = 0;
             else pos = -1;
+            */
         }
         else {
 	        pos = thisHub.getPos(obj);

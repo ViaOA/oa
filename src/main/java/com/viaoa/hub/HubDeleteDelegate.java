@@ -12,6 +12,7 @@ package com.viaoa.hub;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Vector;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
@@ -32,19 +33,28 @@ public class HubDeleteDelegate {
             return;  // Done on server.
         }
 
-        boolean b = OASyncDelegate.isServer(thisHub);
-        
         try {
-            if (b) {
-                OARemoteThreadDelegate.sendMessages(true);
-                // 20150303
-                HubCSDelegate.removeAllFromHub(thisHub);
-            }
-            OACascade cascade = new OACascade();
-            deleteAll(thisHub, cascade);
+            OARemoteThreadDelegate.sendMessages(true);
+            _runDeleteAll(thisHub);
         }
         finally {
-            if (b) OARemoteThreadDelegate.sendMessages(false);
+            OARemoteThreadDelegate.sendMessages(false);
+        }
+    }
+    // only runs on the server
+    private static void _runDeleteAll(Hub thisHub) {
+        Object[] objs;
+        if (thisHub.isOAObject()) objs = thisHub.toArray();
+        else objs = null;
+        
+        HubAddRemoveDelegate.clear(thisHub);
+        HubDataDelegate.clearHubChanges(thisHub);
+        
+        if (objs != null) {
+            OACascade cascade = new OACascade();
+            for (Object obj : objs) {
+                OAObjectDeleteDelegate.delete((OAObject)obj, cascade);
+            }
         }
     }
     
@@ -69,7 +79,6 @@ public class HubDeleteDelegate {
     private static void _deleteAll(Hub thisHub, OACascade cascade) {
         boolean bIsOa = thisHub.isOAObject();
         Object objLast = null;
-        int pos = 0;
 
         // 20121005 need to check to see if a link table was used for a 1toM, where createMethod for One is false
         OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
@@ -87,6 +96,57 @@ public class HubDeleteDelegate {
             }
         }        
 
+
+        // 20160615 
+        Object[] objs = thisHub.toArray();
+        thisHub.data.vector.removeAllElements();
+        
+        if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && thisHub.isOAObject()) {
+            Vector vecRemove = thisHub.data.getVecRemove();
+            int x = vecRemove==null ? 0 : vecRemove.size(); 
+            for (Object obj : objs) {
+                if (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().removeElement(obj)) {
+                    // no-op
+                }
+                else {
+                    boolean b = false;
+                    for (int i=0; i<x; i++) {
+                        if (obj == vecRemove.elementAt(i)) {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (!b) {
+                        if (vecRemove == null) vecRemove = HubDataDelegate.createVecRemove(thisHub);
+                        vecRemove.addElement(obj);
+                    }
+                }
+            }
+            HubDataDelegate.setChanged(thisHub, (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
+        }
+        else {
+            HubDataDelegate.setChanged(thisHub, true);
+        }
+
+        for (Object obj : objs) {
+            HubAddRemoveDelegate.remove(thisHub, obj, false, true, true, true, true, true);
+
+            if (dataSource != null) {
+                dataSource.updateMany2ManyLinks(masterObj, null, new OAObject[] {(OAObject)obj}, liRev.getName());
+            }
+            
+            if (bIsOa) {
+                OAObjectDeleteDelegate.delete((OAObject)obj, cascade);
+            }
+            else {
+                if (thisHub.isOAObject() && obj instanceof OAObject) OAObjectDSDelegate.delete((OAObject)obj);
+            }
+        }
+        
+        
+        
+        /* was
+        int pos = 0;
         for (; ; ) {
             Object obj = thisHub.elementAt(pos);
             if (obj == null) break;
@@ -114,6 +174,7 @@ public class HubDeleteDelegate {
             	if (thisHub.isOAObject() && obj instanceof OAObject) OAObjectDSDelegate.delete((OAObject)obj);
             }
         }
+        */
     	HubDelegate._updateHubAddsAndRemoves(thisHub, cascade);
      	
     	thisHub.setChanged(false); // removes all vecAdd, vecRemove objects

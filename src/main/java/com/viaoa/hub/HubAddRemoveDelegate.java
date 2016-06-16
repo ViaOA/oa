@@ -10,7 +10,10 @@
 */
 package com.viaoa.hub;
 
+import java.util.Vector;
 import java.util.logging.Logger;
+
+import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.object.*;
 
@@ -48,14 +51,14 @@ public class HubAddRemoveDelegate {
             return;
         }
 
-        if (!thisHub.contains(obj)) {
+        if (!bIsRemovingAll && !thisHub.contains(obj)) {
             return;
         }
         
-        if (!thisHub.getEnabled()) {
+        if (!bIsRemovingAll && !thisHub.getEnabled()) {
             return;
         }
-        if (!OARemoteThreadDelegate.isRemoteThread()) {
+        if (!bIsRemovingAll && !OARemoteThreadDelegate.isRemoteThread()) {
             if (!canRemove(thisHub, obj)) {
                 if (!OAThreadLocalDelegate.isDeleting(obj)) {
                     throw new RuntimeException("Cant remove object, can remove retured false");
@@ -99,7 +102,7 @@ public class HubAddRemoveDelegate {
         
         // this will lock, sync(data), and startNextThread
         pos = HubDataDelegate._remove(thisHub, obj, bDeleting, bIsRemovingAll);
-        if (pos < 0) {
+        if (!bIsRemovingAll && pos < 0) {
             LOG.finer("object not removed, obj="+obj);
             return;
         }
@@ -183,14 +186,18 @@ public class HubAddRemoveDelegate {
             return false;
         }
 
+        Thread thread = Thread.currentThread();
+        if (thread instanceof OARemoteThread) {
+            OARemoteThread rt = (OARemoteThread) thread;
+            rt.setStartedNextThread(true);  // keep it from being started
+        }
+        
         if (bSetAOtoNull) thisHub.setAO(null);
         HubSelectDelegate.cancelSelect(thisHub, false);
 
+        
         // 20140616 moved this here since other objects (ex: HubMerger) uses the
         //   to fire new events, etc.
-        // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
-        OARemoteThreadDelegate.startNextThread(); 
-        
         HubEventDelegate.fireBeforeRemoveAllEvent(thisHub);
         
         //int x = HubDataDelegate.getCurrentSize(thisHub);
@@ -202,6 +209,51 @@ public class HubAddRemoveDelegate {
             HubCSDelegate.removeAllFromHub(thisHub);
         }
         
+        // 20160615 
+        Object[] objs = thisHub.toArray();
+        thisHub.data.vector.removeAllElements();
+        
+        if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && thisHub.isOAObject()) {
+            Vector vecRemove = thisHub.data.getVecRemove();
+            int x = vecRemove==null ? 0 : vecRemove.size(); 
+            for (Object obj : objs) {
+                if (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().removeElement(obj)) {
+                    // no-op
+                }
+                else {
+                    boolean b = false;
+                    for (int i=0; i<x; i++) {
+                        if (obj == vecRemove.elementAt(i)) {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (!b) {
+                        if (vecRemove == null) vecRemove = HubDataDelegate.createVecRemove(thisHub);
+                        vecRemove.addElement(obj);
+                    }
+                }
+            }
+            HubDataDelegate.setChanged(thisHub, (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().size() > 0) || (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().size() > 0) );
+        }
+        else {
+            HubDataDelegate.setChanged(thisHub, true);
+        }
+        
+        // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+        if (thread instanceof OARemoteThread) {
+            OARemoteThread rt = (OARemoteThread) thread;
+            rt.setStartedNextThread(false);
+        }
+        OARemoteThreadDelegate.startNextThread(); 
+
+        // need to now have the object ref to hub removed. 
+        for (Object obj : objs) {
+            remove(thisHub, obj, false, false, false, bSetAOtoNull, true, true); 
+        }
+        
+        
+        /*was
         Object objLast = null;
         for (int pos=0 ; ; ) {
             Object obj = thisHub.elementAt(pos);
@@ -220,6 +272,7 @@ public class HubAddRemoveDelegate {
                     true, true); // dont force, dont send remove events
             //was: remove(thisHub, ho, false, bSendEvent, false, bSetAOtoNull, bSetAOtoNull, true); // dont force, dont send remove events
         }
+        */
         return true;
     }
     private static void _afterClear(final Hub thisHub, final boolean bSetAOtoNull, final boolean bSendNewList) {

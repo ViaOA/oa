@@ -100,6 +100,10 @@ public class OARemoteThread extends Thread {
         return watingOnLock;
     }
 
+    public void setStartedNextThread(boolean b) {
+        startedNextThread = b;
+    }
+    
     /**
      * called before processing the next OASync message.
      */
