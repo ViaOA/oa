@@ -449,7 +449,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         al.add(cb);
         cb.fromClass = fromClass;
         cb.methodName = methodName;
-        cb.method = OAReflect.getMethod(fromClass, methodName, 4); // 3={String, Object, Object}
+        cb.method = OAReflect.getMethod(fromClass, methodName, 1); // =HubEvent
         cb.sppToThisClass = propertyPathToThisClass;
         cb.listenerProperty = listenerProperty;
         cb.bOnlyUseLoadedData = bOnlyUseLoadedData;
@@ -461,10 +461,25 @@ public class OAObjectInfo { //implements java.io.Serializable {
         if (cb.ppToFromClass != null) cb.sppToFromClass = cb.ppToFromClass.getPropertyPath(); 
     }
     
+    public boolean getHasCallbacks() {
+        return hmCallback.size() > 0;
+    }
+    
     /**
      * called by OAObject.propChange, and Hub.add/remove/removeAll/insert when a change is made.
      * This will then check to see if there is callback method to send the change to.
      */
+    public void callback(final String prop, final HubEvent hubEvent) {
+        if (prop == null || hubEvent == null) return;
+        
+        ArrayList<MethodCallback> al = hmCallback.get(prop.toUpperCase());
+        if (al == null) return;
+        
+        for (MethodCallback cb : al) {
+            _callback(prop, cb, hubEvent);
+        }
+    }        
+    /*was
     public void callback(final String prop, final OAObject oaObj, final Object oldValue, final Object newValue) {
         if (prop == null) return;
         if (oaObj == null) return;
@@ -475,8 +490,10 @@ public class OAObjectInfo { //implements java.io.Serializable {
         for (MethodCallback cb : al) {
             _callback(cb, prop, oaObj, oldValue, newValue);
         }
-    }        
+    }    
     private void _callback(final MethodCallback cb, final String prop, final OAObject oaObj, final Object oldValue, final Object newValue) {
+    */    
+    private void _callback(final String prop, final MethodCallback cb, final HubEvent hubEvent) {
         if (cb.bRunOnServer) {
             if (!OASync.isServer()) return;
             OASync.sendMessages();
@@ -494,7 +511,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             @Override
             protected void onFound(OAObject objFrom) {
                 try {
-                    cb.method.invoke(objFrom, new Object[] {oaObj, pp, oldValue, newValue} );
+                    cb.method.invoke(objFrom, new Object[] {hubEvent} );
                 }
                 catch (Exception e) {
                     throw new RuntimeException("OAObjectInof.autoCall error, "
@@ -505,7 +522,17 @@ public class OAObjectInfo { //implements java.io.Serializable {
             }
         };
         finder.setUseOnlyLoadedData(cb.bOnlyUseLoadedData);
-        finder.find(oaObj);
+        
+        Object obj = hubEvent.getObject();
+        if (obj == null) {
+            Hub h = hubEvent.getHub();
+            if (h != null) {
+                obj = h.getMasterObject();
+            }
+        }
+        if (obj instanceof OAObject) {
+            finder.find( (OAObject) obj);
+        }
     }
 
     

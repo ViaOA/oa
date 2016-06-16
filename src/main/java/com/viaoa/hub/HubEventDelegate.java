@@ -49,8 +49,10 @@ public class HubEventDelegate {
 	public static void fireAfterRemoveEvent(Hub thisHub, final Object obj, int pos) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
+        HubEvent hubEvent = null;
 	    if (x > 0) {
-	        final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+	        hubEvent = new HubEvent(thisHub,obj,pos);
+	        final HubEvent evt = hubEvent; 
 	        
             if (OARemoteThreadDelegate.shouldEventsBeQueued()) {
                 Runnable r = new Runnable() {
@@ -59,7 +61,7 @@ public class HubEventDelegate {
                         try {
                             OAThreadLocalDelegate.setSendingEvent(true);
                             for (int i=0; i<x; i++) { 
-                                hl[i].afterRemove(hubEvent);
+                                hl[i].afterRemove(evt);
                             }
                         }
                         finally {
@@ -92,7 +94,10 @@ public class HubEventDelegate {
                     String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
                     if (s != null) {
             	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-            	        oi.callback(s, objx, obj, null);
+            	        if (oi.getHasCallbacks()) {
+                            if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
+                	        oi.callback(s, hubEvent);
+            	        }
                     }
         	    }
 	        }
@@ -112,14 +117,16 @@ public class HubEventDelegate {
 	public static void fireAfterRemoveAllEvent(Hub thisHub) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
+        HubEvent hubEvent = null;
 	    if (x > 0) {
-            final HubEvent hubEvent = new HubEvent(thisHub);
+            hubEvent = new HubEvent(thisHub);
+            final HubEvent evt = hubEvent;
             if (OARemoteThreadDelegate.shouldEventsBeQueued()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
                         for (int i=0; i<x; i++) { 
-                            hl[i].afterRemoveAll(hubEvent);
+                            hl[i].afterRemoveAll(evt);
                         }
                     }
                 };
@@ -140,7 +147,10 @@ public class HubEventDelegate {
                 String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
                 if (s != null) {
                     OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                    oi.callback(s, objx, null, null);
+                    if (oi.getHasCallbacks()) {
+                        if (hubEvent == null) hubEvent = new HubEvent(thisHub);
+                        oi.callback(s, hubEvent);
+                    }
                 }
             }
         }
@@ -164,8 +174,10 @@ public class HubEventDelegate {
 	public static void fireAfterAddEvent(Hub thisHub, final Object obj, int pos) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
+        HubEvent hubEvent = null;
 	    if (x > 0) {
-            final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+            hubEvent = new HubEvent(thisHub,obj,pos);
+            final HubEvent evt = hubEvent;
             
             if (OARemoteThreadDelegate.shouldEventsBeQueued()) {
                 Runnable r = new Runnable() {
@@ -174,7 +186,7 @@ public class HubEventDelegate {
                         try {
                             OAThreadLocalDelegate.setSendingEvent(true);
                             for (int i=0; i<x; i++) { 
-                                hl[i].afterAdd(hubEvent);
+                                hl[i].afterAdd(evt);
                             }
                         }
                         finally {
@@ -207,7 +219,10 @@ public class HubEventDelegate {
                     String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
                     if (s != null) {
                         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                        oi.callback(s, objx, null, obj);
+                        if (oi.getHasCallbacks()) {
+                            if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
+                            oi.callback(s, hubEvent);
+                        }
                     }
                 }
             }
@@ -232,17 +247,18 @@ public class HubEventDelegate {
 	public static void fireAfterInsertEvent(Hub thisHub, final Object obj, int pos) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
+        HubEvent hubEvent = null;
 	    if (x > 0) {
-            final HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
-            
+            hubEvent = new HubEvent(thisHub, obj, pos);
             if (OARemoteThreadDelegate.shouldEventsBeQueued()) {
+                final HubEvent evt = hubEvent;
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
                         try {
                             OAThreadLocalDelegate.setSendingEvent(true);
                             for (int i=0; i<x; i++) { 
-                                hl[i].afterInsert(hubEvent);
+                                hl[i].afterInsert(evt);
                             }
                         }
                         finally {
@@ -275,7 +291,10 @@ public class HubEventDelegate {
                     String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
                     if (s != null) {
                         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                        oi.callback(s, objx, null, obj);
+                        if (oi.getHasCallbacks()) {
+                            if (hubEvent != null) hubEvent = new HubEvent(thisHub, obj, pos);
+                            oi.callback(s, hubEvent);
+                        }
                     }
                 }
             }

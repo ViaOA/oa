@@ -372,7 +372,8 @@ public class OAObjectEventDelegate {
     	    sendHubPropertyChange(oaObj, propertyName, oldObj, newObj, linkInfo);
     	    OAObjectCacheDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj, bLocalOnly, true);
     	}
-	    oaObj.changedFlag = bChangeHold;
+
+    	oaObj.changedFlag = bChangeHold;
 	
         // set to Changed
         if (!bIsChangeProp && bSetChanged && !bChangeHold && (calcInfo == null)) {
@@ -392,9 +393,15 @@ public class OAObjectEventDelegate {
         if (linkInfo != null) {
         	updateLink(oaObj, oi, linkInfo, oldObj, newObj);
         }
-        
+
+	
         // 20160304
-        if (!bIsLoading) oi.callback(propertyName, oaObj, oldObj, newObj);        
+        if (!bIsLoading) {
+            if (oi.getHasCallbacks()) {
+                HubEvent hubEvent = new HubEvent(oaObj, propertyName, oldObj, newObj);
+                oi.callback(propertyName, hubEvent);
+            }
+        }
 	}
 
 	

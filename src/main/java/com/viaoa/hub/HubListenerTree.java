@@ -419,8 +419,7 @@ public class HubListenerTree {
                         if (node.getCalcPropertyNames().indexOf(origPropertyName) < 0) {
                             node.getCalcPropertyNames().add(origPropertyName);
                         }
-//qqqqqqqqqqqqqvvvvvvvvvvvv                        
-//                        if (!bAllowBackgroundThread) node.hubMerger.setUseBackgroundThread(false);
+                        if (!bAllowBackgroundThread) node.hubMerger.setUseBackgroundThread(false);
                     }
                     else {
                         //LOG.finer("creating hubMerger");
@@ -435,8 +434,7 @@ public class HubListenerTree {
                         if (j == pps.length-1) {
                             // 20120823 if this is the last hub, then need to listen for each add/remove
                             final HubListenerTreeNode nodeThis = node;
-System.out.println("HubListenerTree.1 - not creating hubMerger for hub="+hub+", propPath="+spp);                            
-/**qqqqqq                            
+                            OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {
                                 @Override
                                 protected void beforeRemoveRealHub(HubEvent e) {
@@ -486,7 +484,6 @@ System.out.println("HubListenerTree.1 - not creating hubMerger for hub="+hub+", 
                                 }
                             };
                             newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
-*/                            
                         }
                         else {
                             // 20140527 need to listen to property
@@ -523,8 +520,7 @@ System.out.println("HubListenerTree.1 - not creating hubMerger for hub="+hub+", 
                                 node.hmListener.put(origHubListener, hls);
                             }
                             
-    System.out.println("HubListenerTree.2 - not creating hubMerger for hub="+hub+", propPath="+spp);                            
-    /***qqqqqqqqqvvvvvvvv                            
+                            OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {
                                 @Override
                                 protected void beforeRemoveRealHub(HubEvent e) {
@@ -542,7 +538,6 @@ System.out.println("HubListenerTree.1 - not creating hubMerger for hub="+hub+", 
                                 }
                             };
                             newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
-****/                            
                         }
                         
                         node.children = (HubListenerTreeNode[]) OAArray.add(HubListenerTreeNode.class, node.children, newTreeNode);

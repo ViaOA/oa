@@ -322,8 +322,7 @@ public class OADate extends OADateTime {
 
     // cache calendars
     private static final ConcurrentHashMap<Long, GregorianCalendar> hmCache = new ConcurrentHashMap<Long, GregorianCalendar>();
-    
-    private static final int CacheSize = 250;
+    private static final int CacheSize = 1500;
     private static final long[] alCache = new long[CacheSize]; 
     private static final AtomicInteger aiCache = new AtomicInteger();
     

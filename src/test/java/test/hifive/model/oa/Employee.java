@@ -763,7 +763,7 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
             P_Program+"."+Program.P_Ecards
         }
     )
-    public boolean hierarchyChangedCallback(OAObject fromObject, String propPathFromThis, Object oldValue, Object newValue) {
+    public boolean hierarchyChangedCallback(HubEvent hubEvent) {
         cntCallback++;
         return false;
     }

@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import com.viaoa.annotation.*;
 import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubEvent;
 import com.viaoa.util.*;
 
 
@@ -298,18 +299,14 @@ public class OAAnnotationDelegate {
             boolean bServerSideOnly = annotation.runOnServer(); 
             
             // verify that method signature is correct, else log.warn
-            s = "public void callbackName(OAObject fromObject, String propName, Object oldValue, Object newValue)";
+            s = "public void callbackName(HubEvent hubEvent)";
             s = ("callback method signature for class="+clazz.getSimpleName()+", callbackMethod="+m.getName()+", must match: "+s);
             Class[] cs = m.getParameterTypes();
-            if (cs == null || cs.length != 4 || !Modifier.isPublic(m.getModifiers())) {
+            if (cs == null || cs.length != 1 || !Modifier.isPublic(m.getModifiers())) {
                 throw new RuntimeException(s);
-                //LOG.warning(s);
-                //continue;
             }
-            if (!cs[0].equals(OAObject.class) || !cs[1].equals(String.class) || !cs[2].equals(Object.class) || !cs[3].equals(Object.class)) {
+            if (!cs[0].equals(HubEvent.class)) {
                 throw new RuntimeException(s);
-                //LOG.warning(s);
-                //continue;
             }
 
             for (String spp : props) {
