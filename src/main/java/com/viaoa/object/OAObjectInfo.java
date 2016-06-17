@@ -371,26 +371,26 @@ public class OAObjectInfo { //implements java.io.Serializable {
 
 
     /**
-     * 20160304 callbacks that need to be made when a property/hub is changed.
+     * callbacks that need to be made when a property/hub is changed.
      */
-    public static class MethodCallback {
-        Class fromClass;
-        String methodName;  // method to call in callback class
-        Method method;
+    protected static class CallbackInfo {
+        Class rootClass;
+
+        String ppFull;
+        String ppToThisClass;  // propPath from the root Class to thisClass
+        String ppToRootClass;;  // reverse propPath from thisClass to root Class
+
         String listenerProperty;  // property/hub to listen to.
-
-        String sppToThisClass;  // propPath from the fromClass to thisClass
-        String sppToFromClass;;  // propPath from thisClass to fromClass
-
-        OAPropertyPath ppToThisClass;
-        OAPropertyPath ppToFromClass;
         
         boolean bOnlyUseLoadedData;
         boolean bRunOnServer;
         boolean bRunInBackgroundThread;
+        OACallbackListener callbackListener;
     }
 
-    protected ConcurrentHashMap<String, ArrayList<MethodCallback>> hmCallback = new ConcurrentHashMap<String, ArrayList<MethodCallback>>();
+    
+    // list of callbacks per prop/link name
+    protected ConcurrentHashMap<String, ArrayList<CallbackInfo>> hmCallback = new ConcurrentHashMap<String, ArrayList<CallbackInfo>>();
 
     public ArrayList<String> getCallbackPropertNames() {
         ArrayList<String> al = new ArrayList<String>();
@@ -399,66 +399,124 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
         return al;
     }
-    public ArrayList<MethodCallback> getCallbacks(String propertyName) {
-        if (propertyName == null) return null;
-        ArrayList<MethodCallback> al = hmCallback.get(propertyName.toUpperCase());
-        return al;
-    }
-    
-    
-    /**
-     * used by OAObject OACallback annotations to be able to call a method when a change is made in the callbacks propertyPath.
-     */
-    public void addCallback(Class fromClass, String methodName, String propertyPathToThisClass, String listenerProperty, 
+
+    public void createCallback(
+            OACallbackListener callbackListener,
+            String[] propertyPaths, 
             final boolean bOnlyUseLoadedData, 
             final boolean bServerSideOnly, 
             final boolean bBackgroundThread
-            )
+        )
+    {
+        for (String spp : propertyPaths) {
+            OAPropertyPath pp = new OAPropertyPath(thisClass, spp);  
+            
+            // addCallback for every prop in the propPath
+            String spp2 = "";
+            OAObjectInfo oix = this;
+            for (int i=0; i<pp.getLinkInfos().length; i++) {
+                OALinkInfo li = pp.getLinkInfos()[i];                    
+                
+                oix.addCallback(spp, thisClass, callbackListener, spp2, li.getName(), bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+                
+                if (spp2.length() > 0) spp2 += ".";
+                spp2 += li.getName();
+                
+                oix = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
+            }
+            
+            if (!pp.isLastPropertyLinkInfo()) {
+                String[] ss = pp.getProperties();
+                oix.addCallback(spp, thisClass, callbackListener, spp2, ss[ss.length-1], bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+            }
+        }
+    }    
+
+    // add the callback to the correct OI for a propertyPath
+    protected void addCallback(
+            String ppFull,
+            Class rootClass,
+            final OACallbackListener callbackListener,
+            final String propertyPath, 
+            String listenerProperty, 
+            final boolean bOnlyUseLoadedData, 
+            final boolean bServerSideOnly, 
+            final boolean bBackgroundThread
+        )
     {
         
-        if (fromClass == null || methodName == null || propertyPathToThisClass == null || listenerProperty == null) {
+        if (rootClass == null || callbackListener == null || propertyPath == null || listenerProperty == null) {
             throw new IllegalArgumentException("args can not be null");
         }
-        String s = "fromClass="+fromClass.getSimpleName()+", thisClass="+thisClass.getSimpleName() + ", " + "propertyPathToThis="+propertyPathToThisClass+", method="+methodName;
+        String s = "fromClass="+rootClass.getSimpleName()+", thisClass="+thisClass.getSimpleName() + ", " + "propertyPath="+propertyPath;
         LOG.fine(s);
 
-        ArrayList<MethodCallback> al = hmCallback.get(listenerProperty.toUpperCase());
+        ArrayList<CallbackInfo> al = hmCallback.get(listenerProperty.toUpperCase());
         if (al == null) {
             synchronized (hmCallback) {
                 al = hmCallback.get(listenerProperty.toUpperCase());
                 if (al == null) {
-                    al = new ArrayList<OAObjectInfo.MethodCallback>();
+                    al = new ArrayList<OAObjectInfo.CallbackInfo>();
                     hmCallback.put(listenerProperty.toUpperCase(), al);
                 }                
             }
         }
-
-        for (MethodCallback cb : al) {
-            if (cb.fromClass == fromClass) {
-                if (cb.methodName.equals(methodName)) {
-                    if (cb.sppToThisClass.equalsIgnoreCase(propertyPathToThisClass)) {
-                        if (cb.listenerProperty.equalsIgnoreCase(listenerProperty)) {
-                            return;  // already used by another prop path in this oacallback's list of dependent properties
-                        }
-                    }
-                }
-            }
+        for (CallbackInfo ci : al) {
+            if (ci.callbackListener == callbackListener) return;
         }
 
-        MethodCallback cb = new MethodCallback();
-        al.add(cb);
-        cb.fromClass = fromClass;
-        cb.methodName = methodName;
-        cb.method = OAReflect.getMethod(fromClass, methodName, 1); // =HubEvent
-        cb.sppToThisClass = propertyPathToThisClass;
+        final CallbackInfo cb = new CallbackInfo();
+        cb.ppFull = ppFull;
+        cb.callbackListener = callbackListener;
+        cb.rootClass = rootClass;
+        cb.ppToThisClass = propertyPath;
         cb.listenerProperty = listenerProperty;
         cb.bOnlyUseLoadedData = bOnlyUseLoadedData;
         cb.bRunOnServer = bServerSideOnly;
         cb.bRunInBackgroundThread = bBackgroundThread;
         
-        cb.ppToThisClass = new OAPropertyPath(fromClass, propertyPathToThisClass);
-        cb.ppToFromClass = cb.ppToThisClass.getReversePropertyPath();
-        if (cb.ppToFromClass != null) cb.sppToFromClass = cb.ppToFromClass.getPropertyPath(); 
+        OAPropertyPath pp = new OAPropertyPath(rootClass, propertyPath);
+        pp = pp.getReversePropertyPath();
+        if (pp != null) cb.ppToRootClass = pp.getPropertyPath(); 
+        synchronized (hmCallback) {
+            al.add(cb);
+        }
+    }
+    
+    public void removeCallback(OACallbackListener callbackListener, String[] propertyPaths) {
+        for (String spp : propertyPaths) {
+            OAPropertyPath pp = new OAPropertyPath(thisClass, spp);  
+            
+            OAObjectInfo oix = this;
+            for (int i=0; i<pp.getLinkInfos().length; i++) {
+                oix._removeCallback(callbackListener);
+                
+                OALinkInfo li = pp.getLinkInfos()[i];                    
+                oix = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
+            }
+            
+            if (!pp.isLastPropertyLinkInfo()) {
+                oix._removeCallback(callbackListener);
+            }
+        }
+    }
+    protected CallbackInfo _removeCallback(OACallbackListener callbackListener) {
+        CallbackInfo ciFound = null;
+        synchronized (hmCallback) {
+            for (ArrayList<CallbackInfo> al : hmCallback.values()) {
+                for (CallbackInfo ci : al) {
+                    if (ci.callbackListener == callbackListener) {
+                        ciFound = ci;
+                        break;
+                    }
+                }
+                if (ciFound != null) {
+                    al.remove(ciFound);
+                    break;
+                }
+            }
+        }
+        return ciFound;
     }
     
     public boolean getHasCallbacks() {
@@ -472,74 +530,72 @@ public class OAObjectInfo { //implements java.io.Serializable {
     public void callback(final String prop, final HubEvent hubEvent) {
         if (prop == null || hubEvent == null) return;
         
-        ArrayList<MethodCallback> al = hmCallback.get(prop.toUpperCase());
+        ArrayList<CallbackInfo> al = hmCallback.get(prop.toUpperCase());
         if (al == null) return;
         
-        for (MethodCallback cb : al) {
+        for (CallbackInfo cb : al) {
             _callback(prop, cb, hubEvent);
         }
     }        
-    /*was
-    public void callback(final String prop, final OAObject oaObj, final Object oldValue, final Object newValue) {
-        if (prop == null) return;
-        if (oaObj == null) return;
 
-        ArrayList<MethodCallback> al = hmCallback.get(prop.toUpperCase());
-        if (al == null) return;
-        
-        for (MethodCallback cb : al) {
-            _callback(cb, prop, oaObj, oldValue, newValue);
-        }
-    }    
-    private void _callback(final MethodCallback cb, final String prop, final OAObject oaObj, final Object oldValue, final Object newValue) {
-    */    
-    private void _callback(final String prop, final MethodCallback cb, final HubEvent hubEvent) {
+    private void _callback(final String prop, final CallbackInfo cb, final HubEvent hubEvent) {
         if (cb.bRunOnServer) {
             if (!OASync.isServer()) return;
             OASync.sendMessages();
         }
         
-        String s = "thisClass="+thisClass.getSimpleName() + ", " + "propertyPath="+cb.sppToFromClass+", method="+cb.methodName;
+        String s = "thisClass="+thisClass.getSimpleName() + ", " + "propertyPathToRoot="+cb.ppToRootClass;
         LOG.fine(s);
-
-        s = cb.sppToThisClass;
-        if (s == null || s.length() == 0) s = prop;
-        else s += "." + prop;
-        final String pp = s;
         
-        OAFinder finder = new OAFinder(cb.sppToFromClass) {
-            @Override
-            protected void onFound(OAObject objFrom) {
-                try {
-                    cb.method.invoke(objFrom, new Object[] {hubEvent} );
-                }
-                catch (Exception e) {
-                    throw new RuntimeException("OAObjectInof.autoCall error, "
-                        + "thisClass="+thisClass.getSimpleName() + ", "
-                        + "propertyPath="+cb.sppToFromClass+", fromClass="+cb.fromClass.getSimpleName()+", method="+cb.methodName,
-                        e);
-                }
+        if (cb.ppToRootClass == null) {
+            try {
+                cb.callbackListener.callback((OAObject) hubEvent.getObject(), hubEvent, cb.ppToThisClass);
             }
-        };
-        finder.setUseOnlyLoadedData(cb.bOnlyUseLoadedData);
-        
-        Hub h = hubEvent.getHub();
-        Object obj;
-        if (h != null) {
-            obj = h.getMasterObject();
+            catch (Exception e) {
+                throw new RuntimeException("OAObjectInof.autoCall error, "
+                    + "thisClass="+thisClass.getSimpleName() + ", "
+                    + "propertyPath="+cb.ppToRootClass+", rootClass="+cb.rootClass.getSimpleName(),
+                    e);
+            }
         }
-        else obj = null;
+        else {
+            s = cb.ppToThisClass;
+            if (s == null || s.length() == 0) s = prop;
+            else s += "." + prop;
+            
+            final String pp = s;
+            
+            Hub h = hubEvent.getHub();
+            Object obj;
+            if (h != null) {
+                obj = h.getMasterObject();
+            }
+            else obj = null;
+            
+            if (obj == null) {
+                obj = hubEvent.getObject();
+            }
+            OAFinder finder = new OAFinder(cb.ppToRootClass) {
+                @Override
+                protected void onFound(OAObject objRoot) {
+                    try {
+                        cb.callbackListener.callback(objRoot, hubEvent, cb.ppToThisClass);
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException("OAObjectInof.autoCall error, "
+                            + "thisClass="+thisClass.getSimpleName() + ", "
+                            + "propertyPath="+cb.ppToRootClass+", rootClass="+cb.rootClass.getSimpleName(),
+                            e);
+                    }
+                }
+            };
+            finder.setUseOnlyLoadedData(cb.bOnlyUseLoadedData);
         
-        if (obj == null) {
-            obj = hubEvent.getObject();
-        }
-        if (obj instanceof OAObject) {
-            finder.find( (OAObject) obj);
+            if (obj instanceof OAObject) {
+                finder.find( (OAObject) obj);
+            }
         }
     }
-
-    
-//    TESTTESTESTTESTTEST callback  set OACallbackMethodTest
 //qqqqqqqqqqqq run in another thread ...... flag
 //?? qqqqqqqqq option to cancel if it is called again while it is being processed qqqqqqqqqqq    
     

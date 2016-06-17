@@ -1,5 +1,15 @@
 
 
+* hashMap
+
+
+        for (Value value : hmInfo.values()) {
+            
+        }
+        for (String s : hmInfo.keySet()) {
+        }
+
+
         Map<String, String> map = OAString.getHTMLAttributeMap(s);
         for (Map.Entry<String, String> ex : map.entrySet()) {
             String sx = ex.getKey();

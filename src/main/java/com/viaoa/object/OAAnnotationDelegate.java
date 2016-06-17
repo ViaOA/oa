@@ -308,29 +308,15 @@ public class OAAnnotationDelegate {
             if (!cs[0].equals(HubEvent.class)) {
                 throw new RuntimeException(s);
             }
-
-            for (String spp : props) {
-                OAPropertyPath pp = new OAPropertyPath(clazz, spp);  
-                
-                // call OAObjectInfo.addCallback for every prop in the propPath
-                String spp2 = "";
-                OAObjectInfo oix = oi;
-                for (int i=0; i<pp.getLinkInfos().length; i++) {
-                    OALinkInfo li = pp.getLinkInfos()[i];                    
-                    
-                    oix.addCallback(clazz, m.getName(), spp2, li.getName(), bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
-                    
-                    oix = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
-
-                    if (spp2.length() > 0) spp2 += ".";
-                    spp2 += li.getName();
+            
+            final Method mx = m;
+            OACallbackListener cbl = new OACallbackListener() {
+                @Override
+                public void callback(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
+                    mx.invoke(obj, new Object[] {hubEvent});
                 }
-                
-                if (!pp.isLastPropertyLinkInfo()) {
-                    ss = pp.getProperties();
-                    oix.addCallback(clazz, m.getName(), spp2, ss[ss.length-1], bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
-                }
-            }
+            };
+            oi.createCallback(cbl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
         }        
     }
 
