@@ -523,12 +523,15 @@ public class OAObjectInfo { //implements java.io.Serializable {
         };
         finder.setUseOnlyLoadedData(cb.bOnlyUseLoadedData);
         
-        Object obj = hubEvent.getObject();
+        Hub h = hubEvent.getHub();
+        Object obj;
+        if (h != null) {
+            obj = h.getMasterObject();
+        }
+        else obj = null;
+        
         if (obj == null) {
-            Hub h = hubEvent.getHub();
-            if (h != null) {
-                obj = h.getMasterObject();
-            }
+            obj = hubEvent.getObject();
         }
         if (obj instanceof OAObject) {
             finder.find( (OAObject) obj);
