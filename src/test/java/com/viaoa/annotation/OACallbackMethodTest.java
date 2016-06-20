@@ -13,6 +13,7 @@ import com.viaoa.object.OATriggerListener;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.object.OATriggerDelegate;
 
 import test.hifive.model.oa.*;
 import test.hifive.model.oa.propertypath.LocationPP;
@@ -90,7 +91,7 @@ public class OACallbackMethodTest extends OAUnitTest {
         
         String[] ss = new String[]{ ProgramPP.locations().employees().employeeAwards().pp };
         
-        oi3.createTrigger(cl, ss, false, false, false);
+        OATriggerDelegate.createTrigger(Program.class, "test", cl, ss, false, false, false);
 
         al = oi3.getTriggerPropertNames();
         assertEquals(5, al.size());

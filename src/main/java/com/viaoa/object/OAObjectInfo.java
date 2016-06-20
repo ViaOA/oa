@@ -14,6 +14,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import com.viaoa.ds.OADataSource;
@@ -23,6 +24,7 @@ import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAReflect;
+import com.viaoa.util.OAString;
 
 /** 
     OAObjectInfo contains information about an OAObject.
@@ -350,8 +352,6 @@ public class OAObjectInfo { //implements java.io.Serializable {
     	}
     }
 
-   
- // 2008/01/02 all of these were created to support the old oa.html package    
     public OALinkInfo getRecursiveLinkInfo(int type) {
     	return OAObjectInfoDelegate.getRecursiveLinkInfo(this, type);
     }
@@ -371,6 +371,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
 
 
     /**
+     * June 2016
      * triggers when a property/hub is changed.
      */
     protected static class TriggerInfo {
@@ -382,6 +383,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     
     // list of triggers per prop/link name
     protected ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerInfo>> hmTriggerInfo = new ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerInfo>>();
+    private AtomicInteger aiTrigger = new AtomicInteger();
     
     public ArrayList<String> getTriggerPropertNames() {
         ArrayList<String> al = new ArrayList<String>();
@@ -395,13 +397,13 @@ public class OAObjectInfo { //implements java.io.Serializable {
     protected void createTrigger(OATrigger trigger) {
         if (trigger == null) return;
 
+        _addTrigger(trigger, null, null, trigger.propertyName);
         if (trigger.dependentPropertyPaths == null) {
-//qqqqqq ??? should not use triggers for single prop (use hubListener instead), or objectCache listener
-            addTrigger(trigger, null, null, trigger.propertyName);
             return;
         }
         
         for (String dependentPropPath : trigger.dependentPropertyPaths) {
+            if (OAString.isEmpty(dependentPropPath)) continue;
             OAPropertyPath pp = new OAPropertyPath(thisClass, dependentPropPath);  
             
             // addTrigger for every prop in the propPath
@@ -411,7 +413,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             for (int i=0; i<pp.getLinkInfos().length; i++) {
                 OALinkInfo li = pp.getLinkInfos()[i];                    
 
-                oix.addTrigger(trigger, propPath, revPropPath, li.getName());
+                oix._addTrigger(trigger, propPath, revPropPath, li.getName());
                 
                 if (propPath.length() > 0) {
                     propPath += ".";
@@ -420,20 +422,20 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 propPath += li.getName();
                 revPropPath = li.getReverseName() + revPropPath;
                 
-//qqqqqqqqqqq reverse path might not work (if it has a private method)    
+                // todo: reverse path might not work (if it has a private method)    
                 oix = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
             }
 
             if (!pp.isLastPropertyLinkInfo()) {
                 String[] ss = pp.getProperties();
-                oix.addTrigger(trigger, propPath, revPropPath, ss[ss.length-1]);
+                oix._addTrigger(trigger, propPath, revPropPath, ss[ss.length-1]);
             }
         }
     }    
     
     // add the trigger to the correct OI for a propertyPath
-    private void addTrigger(final OATrigger trigger, final String propPath, final String revPropPath, final String listenProperty) { 
-        if (trigger == null || revPropPath == null || listenProperty == null) {
+    private void _addTrigger(final OATrigger trigger, final String propPath, final String revPropPath, final String listenProperty) { 
+        if (trigger == null || listenProperty == null) {
             throw new IllegalArgumentException("args can not be null");
         }
 
@@ -451,6 +453,15 @@ public class OAObjectInfo { //implements java.io.Serializable {
             if (ti.trigger.triggerListener == trigger.triggerListener) return;
         }
 
+        int x = aiTrigger.incrementAndGet();
+        
+        String s = (thisClass.getSimpleName()+", prop="+listenProperty+", trigger.cnt="+x);
+        LOG.fine(s);
+        OAPerformance.LOG.fine(s);
+        if (x > 50) {
+            LOG.warning(s);
+        }
+        
         TriggerInfo ti = new TriggerInfo();
         ti.trigger = trigger;
         ti.ppFromRootClass = propPath;
@@ -469,7 +480,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
             OATriggerListener tl = new OATriggerListener() {
                 @Override
                 public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
-                    trigger.triggerListener.onTrigger(obj, hubEvent, propPath);
+                    // notify prop
+                    onChange(listenProperty, hubEvent);
                 }
             };
             OATrigger t = OATriggerDelegate.createTrigger(thisClass, "", tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread);
@@ -489,13 +501,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
             
             OAObjectInfo oix = this;
             for (int i=0; i<pp.getLinkInfos().length; i++) {
-                oix._removeTrigger(trigger);
-                
                 OALinkInfo li = pp.getLinkInfos()[i];                    
                 oix = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
-            }
-            
-            if (!pp.isLastPropertyLinkInfo()) {
                 oix._removeTrigger(trigger);
             }
         }
@@ -519,7 +526,10 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 }
                 if (tiFound != null) {
                     al.remove(tiFound);
-                    break;
+                    if (al.size() == 0) {
+                        hmTriggerInfo.remove(tiFound.listenProperty.toUpperCase());
+                        aiTrigger.decrementAndGet();
+                    }
                 }
             }
         }
@@ -530,7 +540,6 @@ public class OAObjectInfo { //implements java.io.Serializable {
         return hmTriggerInfo.size() > 0;
     }
     
-//qqqqqqqqqq make sure that this is getting called by all    
     /**
      * called by OAObject.propChange, and Hub.add/remove/removeAll/insert when a change is made.
      * This will then check to see if there is trigger method to send the change to.
@@ -545,6 +554,17 @@ public class OAObjectInfo { //implements java.io.Serializable {
             _onChange(prop, ti, hubEvent);
         }
     }        
+    
+    public ArrayList<OATrigger> getTriggers(String propertyName) {
+        if (propertyName == null) return null;
+        CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(propertyName.toUpperCase());
+        if (al == null) return null;
+        ArrayList<OATrigger> alTrigger = new ArrayList<OATrigger>();
+        for (TriggerInfo ti : al) {
+            alTrigger.add(ti.trigger);
+        }
+        return alTrigger;
+    }
 
     private void _onChange(final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
         if (ti.trigger.bServerSideOnly) {

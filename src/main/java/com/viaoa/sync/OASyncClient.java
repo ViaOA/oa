@@ -548,6 +548,8 @@ public class OASyncClient {
 
         getClientInfo();
         getMultiplexerClient().setKeepAlive(115); 
+
+        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
         
         LOG.fine("starting multiplexer client");
         getMultiplexerClient().start(); // this will connect to server using multiplexer
@@ -567,8 +569,6 @@ public class OASyncClient {
         
         clientInfo.setStarted(true);
 
-        // 20160124
-        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
         
         LOG.config("startup completed successful");
     }

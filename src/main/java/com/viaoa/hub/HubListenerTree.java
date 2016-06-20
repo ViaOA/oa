@@ -10,6 +10,7 @@
 */
 package com.viaoa.hub;
 
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import com.viaoa.annotation.OAMany;
 import com.viaoa.object.*;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.OAString;
 
 /**
  *  Used by Hub to manage listeners.
@@ -224,7 +226,7 @@ public class HubListenerTree {
     
     
     /**
-     * Used by Hub to store HubListers and dependent calcProperties
+     * Used by Hub to store HubListeners and dependent calcProperties
      */
     public void addListener(HubListener hl, String property) {
         if (hl == null) return;
@@ -287,7 +289,71 @@ public class HubListenerTree {
             OAThreadLocalDelegate.setHubListenerTree(false);
             OAThreadLocalDelegate.setIgnoreTreeListenerProperty(null);
         }
-    }    
+    }
+    
+//qqqqqqqqqqqqqqqqqqqqqqq    
+//qqqqqqqqqq 20160620 qqqqqqqq    
+    public void addListenerTrigger(HubListener hl, final String property) {
+        addListenerTrigger(hl, property, null, false, false);
+    }
+    public void addListenerTrigger(HubListener hl, final String property, String[] dependentPropertyPaths) {
+        addListenerTrigger(hl, property, dependentPropertyPaths, false, false);
+    }
+    public void addListenerTrigger(HubListener hl, final String property, boolean bActiveObjectOnly) {
+        addListenerTrigger(hl, property, null, bActiveObjectOnly, false);
+    }
+    public void addListenerTrigger(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+        addListenerTrigger(hl, property, dependentPropertyPaths, bActiveObjectOnly, false);
+    }
+    public void addListenerTrigger(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, final boolean bAllowBackgroundThread) {
+        if (hl == null) return;
+        this.addListener(hl);
+        if (OAString.isEmpty(property)) return;
+
+        if (dependentPropertyPaths == null) {
+            OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(root.hub.getObjectClass());
+            String[] calcProps = null;
+            for (OACalcInfo ci : oi.getCalcInfos()) {
+                if (ci.getName().equalsIgnoreCase(property)) {
+                    dependentPropertyPaths = ci.getProperties();
+                    break;
+                }
+            }       
+            if (dependentPropertyPaths == null) return;
+        }
+        
+        boolean b = false;
+        for (String s : dependentPropertyPaths) {
+            if (!OAString.isEmpty(s)) {
+                b = true;
+                break;
+            }
+        }
+        if (!b) return;
+        
+        OATriggerListener tl = new OATriggerListener() {
+            @Override
+            public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
+                HubEventDelegate.fireCalcPropertyChange(root.hub, obj, property);
+            }
+        };
+        
+        OATrigger t = new OATrigger(root.hub.getObjectClass(), property, tl, dependentPropertyPaths, true, false, false);
+        OATriggerDelegate.createTrigger(t);
+        
+//qqqqqqqqqqqq need to store trigger with HL and use for removeListener
+//        OATriggerDelegate.removeTrigger(t);
+    }
+    public void removeListenerTrigger(HubListener hl) {
+        synchronized (root) {
+            HubListener[] hold = listeners; 
+            listeners = (HubListener[]) OAArray.removeValue(HubListener.class, listeners, hl);
+        }        
+//qqqqqqqqqqqqqqqqqqqq
+//      OATriggerDelegate.removeTrigger(t);
+        
+    }
+    
     private void addDependentListeners(final String origPropertyName, final HubListener origHubListener, final String[] dependentPropertyNames, final boolean bActiveObjectOnly, final boolean bAllowBackgroundThread) {
         //LOG.finer("Hub="+root.hub+", property="+origPropertyName);
 
