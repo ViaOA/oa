@@ -81,6 +81,14 @@ public class OAObjectCacheHubAdder<T extends OAObject> implements OAObjectCacheL
     public boolean isUsed(T obj) {
         return true;
     }
+
+    @Override
+    public void afterAdd(Hub<T> hub, T obj) {
+    }
+
+    @Override
+    public void afterRemove(Hub<T> hub, T obj) {
+    }
     
 }
 

@@ -1,5 +1,7 @@
 package com.viaoa.object;
 
+import com.viaoa.hub.Hub;
+
 
 /**
  * Used by OAObjectCacheDelegate to send out object cache events.
@@ -16,4 +18,10 @@ public interface OAObjectCacheListener<T extends OAObject> {
      * called when a new object is added to OAObjectCache, doing the object construction. 
      */
     public void afterAdd(T obj);
+    
+    public void afterAdd(Hub<T> hub, T obj);
+    
+    public void afterRemove(Hub<T> hub, T obj);
+    
+    
 }

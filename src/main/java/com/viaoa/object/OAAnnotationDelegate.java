@@ -310,13 +310,13 @@ public class OAAnnotationDelegate {
             }
             
             final Method mx = m;
-            OACallbackListener cbl = new OACallbackListener() {
+            OATriggerListener cbl = new OATriggerListener() {
                 @Override
-                public void callback(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
+                public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
                     mx.invoke(obj, new Object[] {hubEvent});
                 }
             };
-            oi.createCallback(cbl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+            oi.createTrigger(cbl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
         }        
     }
 

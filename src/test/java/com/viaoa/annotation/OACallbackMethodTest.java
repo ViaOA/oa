@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
-import com.viaoa.object.OACallbackListener;
+import com.viaoa.object.OATriggerListener;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
@@ -26,17 +26,17 @@ public class OACallbackMethodTest extends OAUnitTest {
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(Employee.class);
 
-        ArrayList<String> al = oi.getCallbackPropertNames();
+        ArrayList<String> al = oi.getTriggerPropertNames();
         assertEquals(2, al.size());
         
         OAObjectInfo oi2 = OAObjectInfoDelegate.getOAObjectInfo(Location.class);
-        al = oi2.getCallbackPropertNames();
+        al = oi2.getTriggerPropertNames();
         assertEquals(6, al.size());
         
         emp.cntCallback = 0;
         
         OAObjectInfo oi3 = OAObjectInfoDelegate.getOAObjectInfo(Program.class);
-        al = oi3.getCallbackPropertNames();
+        al = oi3.getTriggerPropertNames();
         assertEquals(4, al.size());
 
         assertEquals(0, emp.cntCallback);
@@ -77,22 +77,22 @@ public class OACallbackMethodTest extends OAUnitTest {
         OAObjectInfo oi2 = OAObjectInfoDelegate.getOAObjectInfo(Location.class);
         
         OAObjectInfo oi3 = OAObjectInfoDelegate.getOAObjectInfo(Program.class);
-        ArrayList<String> al = oi3.getCallbackPropertNames();
+        ArrayList<String> al = oi3.getTriggerPropertNames();
         assertEquals(4, al.size());
 
         
-        OACallbackListener cl = new OACallbackListener() {
+        OATriggerListener cl = new OATriggerListener() {
             @Override
-            public void callback(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
+            public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
             }
         };
 
         
         String[] ss = new String[]{ ProgramPP.locations().employees().employeeAwards().pp };
         
-        oi3.createCallback(cl, ss, false, false, false);
+        oi3.createTrigger(cl, ss, false, false, false);
 
-        al = oi3.getCallbackPropertNames();
+        al = oi3.getTriggerPropertNames();
         assertEquals(5, al.size());
         
       //qqqqqqqq        

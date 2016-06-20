@@ -371,226 +371,216 @@ public class OAObjectInfo { //implements java.io.Serializable {
 
 
     /**
-     * callbacks that need to be made when a property/hub is changed.
+     * triggers when a property/hub is changed.
      */
-    protected static class CallbackInfo {
-        Class rootClass;
-
-        String ppFull;
-        String ppToThisClass;  // propPath from the root Class to thisClass
+    protected static class TriggerInfo {
+        OATrigger trigger;
+        String ppFromRootClass;;  
         String ppToRootClass;;  // reverse propPath from thisClass to root Class
-
-        String listenerProperty;  // property/hub to listen to.
-        
-        boolean bOnlyUseLoadedData;
-        boolean bRunOnServer;
-        boolean bRunInBackgroundThread;
-        OACallbackListener callbackListener;
+        String listenProperty;  // property/hub to listen to.
     }
-
     
-    // list of callbacks per prop/link name
-    protected ConcurrentHashMap<String, ArrayList<CallbackInfo>> hmCallback = new ConcurrentHashMap<String, ArrayList<CallbackInfo>>();
-
-    public ArrayList<String> getCallbackPropertNames() {
+    // list of triggers per prop/link name
+    protected ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerInfo>> hmTriggerInfo = new ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerInfo>>();
+    
+    public ArrayList<String> getTriggerPropertNames() {
         ArrayList<String> al = new ArrayList<String>();
-        for (String s : hmCallback.keySet()) {
+        for (String s : hmTriggerInfo.keySet()) {
             al.add(s);
         }
         return al;
     }
 
-    public void createCallback(
-            OACallbackListener callbackListener,
-            String[] propertyPaths, 
-            final boolean bOnlyUseLoadedData, 
-            final boolean bServerSideOnly, 
-            final boolean bBackgroundThread
-        )
-    {
-        for (String spp : propertyPaths) {
-            OAPropertyPath pp = new OAPropertyPath(thisClass, spp);  
+    // see OATriggerDelegate
+    protected void createTrigger(OATrigger trigger) {
+        if (trigger == null) return;
+
+        if (trigger.dependentPropertyPaths == null) {
+//qqqqqq ??? should not use triggers for single prop (use hubListener instead), or objectCache listener
+            addTrigger(trigger, null, null, trigger.propertyName);
+            return;
+        }
+        
+        for (String dependentPropPath : trigger.dependentPropertyPaths) {
+            OAPropertyPath pp = new OAPropertyPath(thisClass, dependentPropPath);  
             
-            // addCallback for every prop in the propPath
-            String spp2 = "";
+            // addTrigger for every prop in the propPath
+            String propPath = "";
+            String revPropPath = "";
             OAObjectInfo oix = this;
             for (int i=0; i<pp.getLinkInfos().length; i++) {
                 OALinkInfo li = pp.getLinkInfos()[i];                    
+
+                oix.addTrigger(trigger, propPath, revPropPath, li.getName());
                 
-                oix.addCallback(spp, thisClass, callbackListener, spp2, li.getName(), bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+                if (propPath.length() > 0) {
+                    propPath += ".";
+                    revPropPath = "." + revPropPath;
+                }
+                propPath += li.getName();
+                revPropPath = li.getReverseName() + revPropPath;
                 
-                if (spp2.length() > 0) spp2 += ".";
-                spp2 += li.getName();
-                
+//qqqqqqqqqqq reverse path might not work (if it has a private method)    
                 oix = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
             }
-            
+
             if (!pp.isLastPropertyLinkInfo()) {
                 String[] ss = pp.getProperties();
-                oix.addCallback(spp, thisClass, callbackListener, spp2, ss[ss.length-1], bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+                oix.addTrigger(trigger, propPath, revPropPath, ss[ss.length-1]);
             }
         }
     }    
-
-    // add the callback to the correct OI for a propertyPath
-    protected void addCallback(
-            String ppFull,
-            Class rootClass,
-            final OACallbackListener callbackListener,
-            final String propertyPath, 
-            String listenerProperty, 
-            final boolean bOnlyUseLoadedData, 
-            final boolean bServerSideOnly, 
-            final boolean bBackgroundThread
-        )
-    {
-        
-        if (rootClass == null || callbackListener == null || propertyPath == null || listenerProperty == null) {
+    
+    // add the trigger to the correct OI for a propertyPath
+    private void addTrigger(final OATrigger trigger, final String propPath, final String revPropPath, final String listenProperty) { 
+        if (trigger == null || revPropPath == null || listenProperty == null) {
             throw new IllegalArgumentException("args can not be null");
         }
-        String s = "fromClass="+rootClass.getSimpleName()+", thisClass="+thisClass.getSimpleName() + ", " + "propertyPath="+propertyPath;
-        LOG.fine(s);
 
-        ArrayList<CallbackInfo> al = hmCallback.get(listenerProperty.toUpperCase());
+        CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(listenProperty.toUpperCase());
         if (al == null) {
-            synchronized (hmCallback) {
-                al = hmCallback.get(listenerProperty.toUpperCase());
+            synchronized (hmTriggerInfo) {
+                al = hmTriggerInfo.get(listenProperty.toUpperCase());
                 if (al == null) {
-                    al = new ArrayList<OAObjectInfo.CallbackInfo>();
-                    hmCallback.put(listenerProperty.toUpperCase(), al);
+                    al = new CopyOnWriteArrayList<OAObjectInfo.TriggerInfo>();
+                    hmTriggerInfo.put(listenProperty.toUpperCase(), al);
                 }                
             }
         }
-        for (CallbackInfo ci : al) {
-            if (ci.callbackListener == callbackListener) return;
+        for (TriggerInfo ti : al) {
+            if (ti.trigger.triggerListener == trigger.triggerListener) return;
         }
 
-        final CallbackInfo cb = new CallbackInfo();
-        cb.ppFull = ppFull;
-        cb.callbackListener = callbackListener;
-        cb.rootClass = rootClass;
-        cb.ppToThisClass = propertyPath;
-        cb.listenerProperty = listenerProperty;
-        cb.bOnlyUseLoadedData = bOnlyUseLoadedData;
-        cb.bRunOnServer = bServerSideOnly;
-        cb.bRunInBackgroundThread = bBackgroundThread;
+        TriggerInfo ti = new TriggerInfo();
+        ti.trigger = trigger;
+        ti.ppFromRootClass = propPath;
+        ti.ppToRootClass = revPropPath;
+        ti.listenProperty = listenProperty;
+
+        String[] calcProps = null;
+        for (OACalcInfo ci : getCalcInfos()) {
+            if (ci.getName().equalsIgnoreCase(listenProperty)) {
+                calcProps = ci.getProperties();
+                break;
+            }
+        }    
         
-        OAPropertyPath pp = new OAPropertyPath(rootClass, propertyPath);
-        pp = pp.getReversePropertyPath();
-        if (pp != null) cb.ppToRootClass = pp.getPropertyPath(); 
-        synchronized (hmCallback) {
-            al.add(cb);
+        if (calcProps != null) {
+            OATriggerListener tl = new OATriggerListener() {
+                @Override
+                public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
+                    trigger.triggerListener.onTrigger(obj, hubEvent, propPath);
+                }
+            };
+            OATrigger t = OATriggerDelegate.createTrigger(thisClass, "", tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread);
+            trigger.dependentTriggers = (OATrigger[]) OAArray.add(OATrigger.class, trigger.dependentTriggers, t); 
         }
+        al.add(ti);
     }
-    
-    public void removeCallback(OACallbackListener callbackListener, String[] propertyPaths) {
-        for (String spp : propertyPaths) {
+
+    public void removeTrigger(OATrigger trigger) {
+        if (trigger == null) return;
+        _removeTrigger(trigger);
+        
+        if (trigger.dependentPropertyPaths == null) return;
+        
+        for (String spp : trigger.dependentPropertyPaths) {
             OAPropertyPath pp = new OAPropertyPath(thisClass, spp);  
             
             OAObjectInfo oix = this;
             for (int i=0; i<pp.getLinkInfos().length; i++) {
-                oix._removeCallback(callbackListener);
+                oix._removeTrigger(trigger);
                 
                 OALinkInfo li = pp.getLinkInfos()[i];                    
                 oix = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
             }
             
             if (!pp.isLastPropertyLinkInfo()) {
-                oix._removeCallback(callbackListener);
+                oix._removeTrigger(trigger);
             }
         }
+        if (trigger.dependentTriggers == null) return;
+        
+        // close any child/calc triggers
+        for (OATrigger t : trigger.dependentTriggers) {
+            OAObjectInfo oix =  OAObjectInfoDelegate.getOAObjectInfo(t.rootClass);
+            oix.removeTrigger(t);
+        }
     }
-    protected CallbackInfo _removeCallback(OACallbackListener callbackListener) {
-        CallbackInfo ciFound = null;
-        synchronized (hmCallback) {
-            for (ArrayList<CallbackInfo> al : hmCallback.values()) {
-                for (CallbackInfo ci : al) {
-                    if (ci.callbackListener == callbackListener) {
-                        ciFound = ci;
+    protected TriggerInfo _removeTrigger(OATrigger trigger) {
+        TriggerInfo tiFound = null;
+        synchronized (hmTriggerInfo) {
+            for (CopyOnWriteArrayList<TriggerInfo> al : hmTriggerInfo.values()) {
+                for (TriggerInfo ci : al) {
+                    if (ci.trigger == trigger) {
+                        tiFound = ci;
                         break;
                     }
                 }
-                if (ciFound != null) {
-                    al.remove(ciFound);
+                if (tiFound != null) {
+                    al.remove(tiFound);
                     break;
                 }
             }
         }
-        return ciFound;
+        return tiFound;
     }
     
-    public boolean getHasCallbacks() {
-        return hmCallback.size() > 0;
+    public boolean getHasTriggers() {
+        return hmTriggerInfo.size() > 0;
     }
     
+//qqqqqqqqqq make sure that this is getting called by all    
     /**
      * called by OAObject.propChange, and Hub.add/remove/removeAll/insert when a change is made.
-     * This will then check to see if there is callback method to send the change to.
+     * This will then check to see if there is trigger method to send the change to.
      */
-    public void callback(final String prop, final HubEvent hubEvent) {
+    public void onChange(final String prop, final HubEvent hubEvent) {
         if (prop == null || hubEvent == null) return;
         
-        ArrayList<CallbackInfo> al = hmCallback.get(prop.toUpperCase());
+        CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(prop.toUpperCase());
         if (al == null) return;
         
-        for (CallbackInfo cb : al) {
-            _callback(prop, cb, hubEvent);
+        for (TriggerInfo ti : al) {
+            _onChange(prop, ti, hubEvent);
         }
     }        
 
-    private void _callback(final String prop, final CallbackInfo cb, final HubEvent hubEvent) {
-        if (cb.bRunOnServer) {
+    private void _onChange(final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
+        if (ti.trigger.bServerSideOnly) {
             if (!OASync.isServer()) return;
             OASync.sendMessages();
         }
         
-        String s = "thisClass="+thisClass.getSimpleName() + ", " + "propertyPathToRoot="+cb.ppToRootClass;
-        LOG.fine(s);
-        
-        if (cb.ppToRootClass == null) {
+        if (ti.ppToRootClass == null) {
             try {
-                cb.callbackListener.callback((OAObject) hubEvent.getObject(), hubEvent, cb.ppToThisClass);
+                ti.trigger.triggerListener.onTrigger((OAObject) hubEvent.getObject(), hubEvent, ti.ppToRootClass);
             }
             catch (Exception e) {
                 throw new RuntimeException("OAObjectInof.autoCall error, "
                     + "thisClass="+thisClass.getSimpleName() + ", "
-                    + "propertyPath="+cb.ppToRootClass+", rootClass="+cb.rootClass.getSimpleName(),
+                    + "propertyPath="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
                     e);
             }
         }
         else {
-            s = cb.ppToThisClass;
-            if (s == null || s.length() == 0) s = prop;
-            else s += "." + prop;
-            
-            final String pp = s;
-            
-            Hub h = hubEvent.getHub();
-            Object obj;
-            if (h != null) {
-                obj = h.getMasterObject();
-            }
-            else obj = null;
-            
-            if (obj == null) {
-                obj = hubEvent.getObject();
-            }
-            OAFinder finder = new OAFinder(cb.ppToRootClass) {
+            OAFinder finder = new OAFinder(ti.ppToRootClass) {
                 @Override
                 protected void onFound(OAObject objRoot) {
                     try {
-                        cb.callbackListener.callback(objRoot, hubEvent, cb.ppToThisClass);
+                        ti.trigger.triggerListener.onTrigger(objRoot, hubEvent, ti.ppFromRootClass);
                     }
                     catch (Exception e) {
                         throw new RuntimeException("OAObjectInof.autoCall error, "
                             + "thisClass="+thisClass.getSimpleName() + ", "
-                            + "propertyPath="+cb.ppToRootClass+", rootClass="+cb.rootClass.getSimpleName(),
+                            + "propertyPath="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
                             e);
                     }
                 }
             };
-            finder.setUseOnlyLoadedData(cb.bOnlyUseLoadedData);
+            finder.setUseOnlyLoadedData(ti.trigger.bOnlyUseLoadedData);
         
+            Object obj = hubEvent.getObject();
             if (obj instanceof OAObject) {
                 finder.find( (OAObject) obj);
             }
@@ -600,5 +590,3 @@ public class OAObjectInfo { //implements java.io.Serializable {
 //?? qqqqqqqqq option to cancel if it is called again while it is being processed qqqqqqqqqqq    
     
 }
-
-

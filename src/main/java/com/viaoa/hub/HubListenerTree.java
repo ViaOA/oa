@@ -432,7 +432,7 @@ public class HubListenerTree {
                         String spp = "(" + hubClass.getName() + ")" + property;
                         
                         if (j == pps.length-1) {
-                            // 20120823 if this is the last hub, then need to listen for each add/remove
+                            // 20120823 if last prop is a hub, then need to listen for each add/remove
                             final HubListenerTreeNode nodeThis = node;
                             OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {

@@ -262,6 +262,13 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                     }
                 }
             }
+
+            @Override
+            public void afterAdd(Hub<T> hub, T obj) {
+            }
+            @Override
+            public void afterRemove(Hub<T> hub, T obj) {
+            }
         };
         OAObjectCacheDelegate.addListener(clazz, hlObjectCache);
     }

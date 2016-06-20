@@ -79,6 +79,12 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
             public void afterAdd(OAObject obj) {
                 cnt1++;
             }
+            @Override
+            public void afterAdd(Hub hub, OAObject obj) {
+            }
+            @Override
+            public void afterRemove(Hub hub, OAObject obj) {
+            }
         };
         OAObjectCacheDelegate.addListener(Server.class, hl);
         

@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
 
@@ -207,7 +208,7 @@ public class OAObjectCacheDelegate {
     }
     
 
-    private static int listenerCount;
+    private static final AtomicInteger aiListenerCount = new AtomicInteger();
     /** Listeners support for HubEvents.  
         <p>
         The following events are sent:<br>
@@ -227,9 +228,9 @@ public class OAObjectCacheDelegate {
             }
         }
         if (!vecListener.contains(l)) {
-        	listenerCount++;
+            aiListenerCount.incrementAndGet();
         	vecListener.addElement(l);
-        	LOG.fine("total listeners="+listenerCount);
+        	LOG.fine("total listeners="+aiListenerCount.get());
         }
     }
 
@@ -248,8 +249,8 @@ public class OAObjectCacheDelegate {
         if (vecListener != null) {
             synchronized(vecListener) {
                 if (vecListener.remove(l)) {
-                	listenerCount--;
-                	LOG.fine("total listeners="+listenerCount);
+                    aiListenerCount.decrementAndGet();
+                	LOG.fine("total listeners="+aiListenerCount.get());
                 }
             }
         }
@@ -260,7 +261,7 @@ public class OAObjectCacheDelegate {
         @see addListener(Class, HubListener) 
     */
     public static OAObjectCacheListener[] getListeners(Class c) {
-        if (listenerCount == 0) return null;
+        if (aiListenerCount.get() == 0) return null;
         // LOG.finest("class="+c);
     	Vector vecListener = (Vector) OAObjectHashDelegate.hashCacheListener.get(c);
         if (vecListener == null) return null;
@@ -280,7 +281,7 @@ public class OAObjectCacheDelegate {
     /** called by OAObject to send a HubEvent. */
     protected static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue, boolean bLocalOnly, boolean bSendEvent) {
         // Note: oldValue could be OAObjectKey, but will be resolved when HubEvent.getOldValue() is called
-    	if (listenerCount == 0) return;
+    	if (aiListenerCount.get() == 0) return;
         if (obj == null || propertyName == null) return;
         if (bSendEvent) {
             // LOG.finest("object="+obj+", propertyName="+propertyName+", key="+origKey);
@@ -294,7 +295,7 @@ public class OAObjectCacheDelegate {
     }
 
 	protected static void fireAfterAddEvent(Object obj) {
-        if (listenerCount == 0) return;
+        if (aiListenerCount.get() == 0) return;
         if (obj == null) return;
         final OAObjectCacheListener[] hl = getListeners(obj.getClass());
         if (hl == null) return; 
@@ -306,7 +307,36 @@ public class OAObjectCacheDelegate {
 	        }
 	    }
 	}
-    
+
+    public static void fireAfterAddEvent(Hub hub, Object obj) {
+        if (aiListenerCount.get() == 0) return;
+        if (obj == null) return;
+        final OAObjectCacheListener[] hl = getListeners(obj.getClass());
+        if (hl == null) return; 
+        final int x = hl.length;
+        if (x > 0) {
+            // LOG.finest("Hub="+thisHub+", object="+obj);
+            for (int i=0; i<x; i++) { 
+                hl[i].afterAdd(hub, (OAObject) obj);
+            }
+        }
+    }
+    public static void fireAfterRemoveEvent(Hub hub, Object obj) {
+        if (aiListenerCount.get() == 0) return;
+        if (obj == null) return;
+        final OAObjectCacheListener[] hl = getListeners(obj.getClass());
+        if (hl == null) return; 
+        final int x = hl.length;
+        if (x > 0) {
+            // LOG.finest("Hub="+thisHub+", object="+obj);
+            for (int i=0; i<x; i++) { 
+                hl[i].afterRemove(hub, (OAObject) obj);
+            }
+        }
+    }
+	
+	
+	
     /**
         Removes all objects from HubController.
     */
@@ -320,24 +350,33 @@ public class OAObjectCacheDelegate {
 	/**
     Used to <i>visit</i> every object in the Cache.
 	*/
-	public static void callback(OACallback callback) {
-        LOG.fine("callback");
+    public static void callback(OACallback callback) {
+        visit(callback);
+    }
+	public static void visit(OACallback callback) {
+        LOG.fine("visit");
     	Object[] cs = OAObjectHashDelegate.hashCacheClass.keySet().toArray();
     	if (cs == null) return;
     	int x = cs.length;
     	for (int i=0; i<x; i++) {
-            callback(callback, (Class) cs[i]);
+            visit(callback, (Class) cs[i]);
     	}
 	}
 
 	public static void callback(Class clazz, OACallback callback) {
-		callback(callback, clazz);
+		visit(callback, clazz);
 	}
+    public static void visit(Class clazz, OACallback callback) {
+        visit(callback, clazz);
+    }
 	
     /**
     Used to <i>visit</i> every object in the Cache for a Class.
 	*/
-	public static void callback(OACallback callback, Class clazz) {
+    public static void callback(OACallback callback, Class clazz) {
+        visit(callback, clazz);
+    }
+	public static void visit(OACallback callback, Class clazz) {
         if (callback == null) return;
         TreeMapHolder tmh = (TreeMapHolder) OAObjectHashDelegate.hashCacheClass.get(clazz);
         if (tmh == null) return;

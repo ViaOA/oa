@@ -83,6 +83,7 @@ public class HubEventDelegate {
     	        }
             }
 	    }
+        OAObjectCacheDelegate.fireAfterRemoveEvent(thisHub, obj);
 	    //OAObjectCacheDelegate.fireAfterRemoveEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
 	    
@@ -94,9 +95,9 @@ public class HubEventDelegate {
                     String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
                     if (s != null) {
             	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-            	        if (oi.getHasCallbacks()) {
+            	        if (oi.getHasTriggers()) {
                             if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
-                	        oi.callback(s, hubEvent);
+                	        oi.onChange(s, hubEvent);
             	        }
                     }
         	    }
@@ -147,9 +148,9 @@ public class HubEventDelegate {
                 String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
                 if (s != null) {
                     OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                    if (oi.getHasCallbacks()) {
+                    if (oi.getHasTriggers()) {
                         if (hubEvent == null) hubEvent = new HubEvent(thisHub);
-                        oi.callback(s, hubEvent);
+                        oi.onChange(s, hubEvent);
                     }
                 }
             }
@@ -208,6 +209,7 @@ public class HubEventDelegate {
     	        }
             }
 	    }
+        OAObjectCacheDelegate.fireAfterRemoveEvent(thisHub, obj);
 	    //OAObjectCacheDelegate.fireAfterAddEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
 	    
@@ -219,9 +221,9 @@ public class HubEventDelegate {
                     String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
                     if (s != null) {
                         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                        if (oi.getHasCallbacks()) {
+                        if (oi.getHasTriggers()) {
                             if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
-                            oi.callback(s, hubEvent);
+                            oi.onChange(s, hubEvent);
                         }
                     }
                 }
@@ -280,6 +282,7 @@ public class HubEventDelegate {
                 }
             }
 	    }
+        OAObjectCacheDelegate.fireAfterAddEvent(thisHub, obj);
 	    //OAObjectCacheDelegate.fireAfterInsertEvent(thisHub, obj, pos);
         //fireMasterObjectChangeEvent(thisHub, false);
 
@@ -291,9 +294,9 @@ public class HubEventDelegate {
                     String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
                     if (s != null) {
                         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                        if (oi.getHasCallbacks()) {
+                        if (oi.getHasTriggers()) {
                             if (hubEvent != null) hubEvent = new HubEvent(thisHub, obj, pos);
-                            oi.callback(s, hubEvent);
+                            oi.onChange(s, hubEvent);
                         }
                     }
                 }

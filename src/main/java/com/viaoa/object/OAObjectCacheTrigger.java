@@ -177,6 +177,14 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
                     }
                 }
             }
+
+            @Override
+            public void afterAdd(Hub<T> hub, T obj) {
+            }
+
+            @Override
+            public void afterRemove(Hub<T> hub, T obj) {
+            }
         };
         OAObjectCacheDelegate.addListener(clazz, hlObjectCache);
     }
