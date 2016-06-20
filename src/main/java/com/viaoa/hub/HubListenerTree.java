@@ -14,8 +14,10 @@ package com.viaoa.hub;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.viaoa.annotation.OAMany;
 import com.viaoa.object.*;
 import com.viaoa.util.OAArray;
@@ -341,17 +343,18 @@ public class HubListenerTree {
         OATrigger t = new OATrigger(root.hub.getObjectClass(), property, tl, dependentPropertyPaths, true, false, false);
         OATriggerDelegate.createTrigger(t);
         
-//qqqqqqqqqqqq need to store trigger with HL and use for removeListener
-//        OATriggerDelegate.removeTrigger(t);
+        hmTrigger.put(hl, t);
     }
+    
+    private ConcurrentHashMap<HubListener, OATrigger> hmTrigger = new ConcurrentHashMap<HubListener, OATrigger>();
     public void removeListenerTrigger(HubListener hl) {
         synchronized (root) {
-            HubListener[] hold = listeners; 
+//qqqqq change to an arraylist 
             listeners = (HubListener[]) OAArray.removeValue(HubListener.class, listeners, hl);
         }        
-//qqqqqqqqqqqqqqqqqqqq
-//      OATriggerDelegate.removeTrigger(t);
-        
+
+        OATrigger t = hmTrigger.get(hl);
+        if (t != null) OATriggerDelegate.removeTrigger(t);
     }
     
     private void addDependentListeners(final String origPropertyName, final HubListener origHubListener, final String[] dependentPropertyNames, final boolean bActiveObjectOnly, final boolean bAllowBackgroundThread) {
