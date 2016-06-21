@@ -10,23 +10,32 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OATriggerDelegate {
     public static OATrigger createTrigger(
         Class rootClass,
-        String name,
         OATriggerListener triggerListener,
         String[] dependentPropertyPaths, 
         final boolean bOnlyUseLoadedData, 
         final boolean bServerSideOnly, 
         final boolean bBackgroundThread)
     {
-        OATrigger t = new OATrigger(rootClass, name, triggerListener, dependentPropertyPaths, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+        OATrigger t = new OATrigger(rootClass, triggerListener, dependentPropertyPaths, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
 
         createTrigger(t);
         return t;
     }
-
+    
     public static void createTrigger(OATrigger trigger) {
+        createTrigger(trigger, false);
+    }
+
+    /**
+     * 
+     * @param trigger
+     * @param bSkipFirstNonManyProperty if true, then if the first prop of the propertyPath is not Type=many, then it will not be used.  This
+     * is used when there is a HubListener already listening to the objects.
+     */
+    public static void createTrigger(OATrigger trigger, boolean bSkipFirstNonManyProperty) {
         if (trigger == null) return;
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(trigger.rootClass);
-        oi.createTrigger(trigger);
+        oi.createTrigger(trigger, bSkipFirstNonManyProperty);
     }
     
     public static boolean removeTrigger(OATrigger trigger) {

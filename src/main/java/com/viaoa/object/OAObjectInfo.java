@@ -394,26 +394,28 @@ public class OAObjectInfo { //implements java.io.Serializable {
     }
 
     // see OATriggerDelegate
-    protected void createTrigger(OATrigger trigger) {
+    protected void createTrigger(final OATrigger trigger, final boolean bSkipFirstNonManyProperty) {
         if (trigger == null) return;
 
-        _addTrigger(trigger, null, null, trigger.propertyName);
-        if (trigger.dependentPropertyPaths == null) {
+        if (trigger.propertyPaths == null) {
             return;
         }
         
-        for (String dependentPropPath : trigger.dependentPropertyPaths) {
-            if (OAString.isEmpty(dependentPropPath)) continue;
-            OAPropertyPath pp = new OAPropertyPath(thisClass, dependentPropPath);  
+        for (String triggerPropPath : trigger.propertyPaths) {
+            if (OAString.isEmpty(triggerPropPath)) continue;
+            OAPropertyPath pp = new OAPropertyPath(thisClass, triggerPropPath);  
             
             // addTrigger for every prop in the propPath
             String propPath = "";
             String revPropPath = "";
             OAObjectInfo oix = this;
             for (int i=0; i<pp.getLinkInfos().length; i++) {
-                OALinkInfo li = pp.getLinkInfos()[i];                    
-
-                oix._addTrigger(trigger, propPath, revPropPath, li.getName());
+                OALinkInfo li = pp.getLinkInfos()[i];
+                if (bSkipFirstNonManyProperty && i == 0 && (li.getType() == OALinkInfo.ONE)) {
+                }
+                else {
+                    oix._addTrigger(trigger, propPath, revPropPath, li.getName());
+                }
                 
                 if (propPath.length() > 0) {
                     propPath += ".";
@@ -428,7 +430,9 @@ public class OAObjectInfo { //implements java.io.Serializable {
 
             if (!pp.isLastPropertyLinkInfo()) {
                 String[] ss = pp.getProperties();
-                oix._addTrigger(trigger, propPath, revPropPath, ss[ss.length-1]);
+                if (!bSkipFirstNonManyProperty || ss.length > 1) {
+                    oix._addTrigger(trigger, propPath, revPropPath, ss[ss.length-1]);
+                }
             }
         }
     }    
@@ -439,8 +443,10 @@ public class OAObjectInfo { //implements java.io.Serializable {
             throw new IllegalArgumentException("args can not be null");
         }
 
+        boolean bFound = true;
         CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(listenProperty.toUpperCase());
         if (al == null) {
+            bFound = false;
             synchronized (hmTriggerInfo) {
                 al = hmTriggerInfo.get(listenProperty.toUpperCase());
                 if (al == null) {
@@ -468,24 +474,26 @@ public class OAObjectInfo { //implements java.io.Serializable {
         ti.ppToRootClass = revPropPath;
         ti.listenProperty = listenProperty;
 
-        String[] calcProps = null;
-        for (OACalcInfo ci : getCalcInfos()) {
-            if (ci.getName().equalsIgnoreCase(listenProperty)) {
-                calcProps = ci.getProperties();
-                break;
-            }
-        }    
-        
-        if (calcProps != null) {
-            OATriggerListener tl = new OATriggerListener() {
-                @Override
-                public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
-                    // notify prop
-                    onChange(listenProperty, hubEvent);
+        if (!bFound) {
+            String[] calcProps = null;
+            for (OACalcInfo ci : getCalcInfos()) {
+                if (ci.getName().equalsIgnoreCase(listenProperty)) {
+                    calcProps = ci.getProperties();
+                    break;
                 }
-            };
-            OATrigger t = OATriggerDelegate.createTrigger(thisClass, "", tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread);
-            trigger.dependentTriggers = (OATrigger[]) OAArray.add(OATrigger.class, trigger.dependentTriggers, t); 
+            }    
+            
+            if (calcProps != null) {
+                OATriggerListener tl = new OATriggerListener() {
+                    @Override
+                    public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
+                        // notify prop
+                        onChange(listenProperty, hubEvent);
+                    }
+                };
+                OATrigger t = OATriggerDelegate.createTrigger(thisClass, tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread);
+                trigger.dependentTriggers = (OATrigger[]) OAArray.add(OATrigger.class, trigger.dependentTriggers, t); 
+            }
         }
         al.add(ti);
     }
@@ -494,9 +502,9 @@ public class OAObjectInfo { //implements java.io.Serializable {
         if (trigger == null) return;
         _removeTrigger(trigger);
         
-        if (trigger.dependentPropertyPaths == null) return;
+        if (trigger.propertyPaths == null) return;
         
-        for (String spp : trigger.dependentPropertyPaths) {
+        for (String spp : trigger.propertyPaths) {
             OAPropertyPath pp = new OAPropertyPath(thisClass, spp);  
             
             OAObjectInfo oix = this;
@@ -526,9 +534,9 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 }
                 if (tiFound != null) {
                     al.remove(tiFound);
+                    aiTrigger.decrementAndGet();
                     if (al.size() == 0) {
                         hmTriggerInfo.remove(tiFound.listenProperty.toUpperCase());
-                        aiTrigger.decrementAndGet();
                     }
                 }
             }

@@ -316,7 +316,7 @@ public class OAAnnotationDelegate {
                     mx.invoke(obj, new Object[] {hubEvent});
                 }
             };
-            OATriggerDelegate.createTrigger(clazz, m.getName(), tl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+            OATriggerDelegate.createTrigger(clazz, tl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
         }        
     }
 
