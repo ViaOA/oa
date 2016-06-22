@@ -10,21 +10,15 @@
 */
 package com.viaoa.hub;
 
-
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.viaoa.annotation.OAMany;
 import com.viaoa.object.*;
 import com.viaoa.util.OAArray;
-import com.viaoa.util.OACompare;
 import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAString;
 
 /**
  *  Used by Hub to manage listeners.
@@ -40,7 +34,7 @@ public class HubListenerTree<T> {
     private final Hub hub;
     private volatile HubListener[] listeners;
     private final Object lock  = new Object();
-    private volatile int lastCount;
+    private volatile int cntLast;  // listeners that are flagged to be last
 
     public HubListenerTree(Hub<T> hub) {
         this.hub = hub;
@@ -55,8 +49,8 @@ public class HubListenerTree<T> {
 
         synchronized (lock) {
             HubListener.InsertLocation loc = hl.getLocation();
-            if (listeners == null || listeners.length==0 || loc == HubListener.InsertLocation.LAST || (loc == null && lastCount==0)) {
-                if (loc == HubListener.InsertLocation.LAST) lastCount++;
+            if (listeners == null || listeners.length==0 || loc == HubListener.InsertLocation.LAST || (loc == null && cntLast==0)) {
+                if (loc == HubListener.InsertLocation.LAST) cntLast++;
                 listeners = (HubListener []) OAArray.add(HubListener.class, listeners, hl);
             }
             else if (loc == HubListener.InsertLocation.FIRST) {
@@ -92,7 +86,6 @@ public class HubListenerTree<T> {
         
         try {
             OAThreadLocalDelegate.setHubListenerTree(true);
-            addListener(hl, property); // this will check for dependent calcProps
             
             OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hub.getObjectClass());
             String[] calcProps = null;
@@ -117,177 +110,216 @@ public class HubListenerTree<T> {
         }
     }    
     
-    private ArrayList<ListenerInfo> alListenerInfo;
     private static class ListenerInfo {
         HubListener hl;
-        String propertyName;
-        String[] calcPropertyPaths;
-        String[] dependentPropertyPaths;
-
-        ArrayList<DependentPropertyInfo> calcs;
-        ArrayList<DependentPropertyInfo> depends;
-        
-        ArrayList<DependentPropertyInfo> alDependentPropertyInfos;
+        ArrayList<String> alExtraListenerProperties;
+        ArrayList<OATrigger> alTrigger;
     }
+    // list of HubListeners that have dependent prop listeners or triggers created.
+    private ArrayList<ListenerInfo> alListenerInfo;
     
-    private ArrayList<DependentPropertyInfo> alDependentPropertyInfo;
-    private static class DependentPropertyInfo {
-        String dependentPropertyPath;
+    private static class TriggerInfo {
+        String propertyPath;
         OATrigger trigger;
-        HubListener extraHubListener;
-        HashSet<String> hsListenToProperties;
-        ArrayList<String> alSendEventPropertyName;
     }
-
     
+    private ConcurrentHashMap<String, ArrayList<String>> hsExtraProperties = new ConcurrentHashMap<String, ArrayList<String>>();  // prop.upper
+    private HubListener hlExtra; // extra hublistener that will listen to any of the local propertys or one links (not many)
+    private HashMap<String, OATrigger> hsTrigger;  // propertyPath.upper
     
     private void addDependentListeners(final HubListener<T> hl, final String propertyName, final String[] dependentPropertyPaths) {
         if (dependentPropertyPaths == null || dependentPropertyPaths.length == 0) return;
-
+        synchronized (lock) {
+            _addDependentListeners(hl, propertyName, dependentPropertyPaths);
+        }
+    }
+    private void _addDependentListeners(final HubListener<T> hl, final String propertyName, final String[] dependentPropertyPaths) {
         ListenerInfo li = new ListenerInfo();
         li.hl = hl;
-        li.propertyName = propertyName;
-        
+        boolean bUsed = false;
         
         HashSet<String> hs = new HashSet<String>(); // extra hubListener for first property(s)
         for (String dpp : dependentPropertyPaths) {
-            String s = _addDependentListener(li, dpp);
+            if (dpp == null || dpp.length() == 0) continue;
             
-            
-            
-            if (hs.size() > 0) {
-                
+            _addDependentListener(li, propertyName, dpp);
+            if (!bUsed) {
+                if (alListenerInfo == null) alListenerInfo = new ArrayList<HubListenerTree.ListenerInfo>();
+                alListenerInfo.add(li);
+                bUsed = true;
             }
         }
         
-
-        
-        // create a hublistener for first prop in dependentPP, if they are ONE or propName
-        li.hubListenerExtra = new HubListenerAdapter() {
-            public void afterPropertyChange(HubEvent e) {
-                String prop = e.getPropertyName();
-                if (prop == null) return;
-                
-                if (hsListenToProps.contains(prop.toUpperCase())) {
-                    HubEventDelegate.fireCalcPropertyChange(root.hub, e.getObject(), origPropertyName);
-                }
-            }
-        };
-        addListener(li.hubListenerExtra);
-    }
-    
-    /**
-     * @param hsListenToProps hashSet of prop names that can be listened to, so that the trigger wont have to.
-     */
-    private HashSet<String> _addDependentListeners(HashSet<String> hsListenToProps, final ListenerInfo li, final String origPropertyName, final String[] dependentPropertyPaths, final boolean bActiveObjectOnly, final boolean bAllowBackgroundThread) {
-        if (dependentPropertyPaths == null) return hsListenToProps;
-
-        boolean b = false;
-        for (String spp : dependentPropertyPaths) {
-            if (!OAString.isEmpty(spp)) {
-                b = true;
-                break;
-            }
-        }
-        if (!b) return hsListenToProps;
-        
-//qqqqqqqqqq might already be listening  qqqqqqqqqqqqqq 
-        
-        // check to see if the dependPPs first prop can be listened to, so that a trigger wont have to be used.
-        boolean bNeedsTrigger = false;
-        for (String spp : dependentPropertyPaths) {
-            if (OAString.isEmpty(spp)) continue;
-
-            OAPropertyPath pp = new OAPropertyPath(root.hub.getObjectClass(), spp);
-            String[] props = pp.getProperties();
-            OALinkInfo[] lis = pp.getLinkInfos();
-            
-            if ((lis.length > 0 && lis[0].getType() == OALinkInfo.ONE) || (lis.length == 0 && props.length == 1)) {
-                if (hsListenToProps == null) hsListenToProps = new HashSet<String>();
-                hsListenToProps.add(props[0].toUpperCase());
-                if (props.length > 1) bNeedsTrigger = true;
-                
-                if (lis.length == 0) {
-                    // could be a calcProp
-                    OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(root.hub.getObjectClass());
-                    String[] calcProps = null;
-                    for (OACalcInfo ci : oi.getCalcInfos()) {
-                        if (ci.getName().equalsIgnoreCase(props[0])) {
-                            // make recursive
-                            _addDependentListeners(hsListenToProps, hl, origPropertyName, ci.getProperties(), bActiveObjectOnly, bAllowBackgroundThread);
-                            break;
+        if (hlExtra == null && hsExtraProperties.size() > 0) {
+            hlExtra = new HubListenerAdapter() {
+                public void afterPropertyChange(HubEvent e) {
+                    String prop = e.getPropertyName();
+                    if (prop == null) return;
+                    
+                    ArrayList<String> al = hsExtraProperties.get(prop.toUpperCase()); 
+                    if (al != null) {
+                        for (String s : al) {
+                            HubEventDelegate.fireCalcPropertyChange(hub, e.getObject(), s);
                         }
-                    }       
+                    }
                 }
+            };
+            addListener(hlExtra);
+        };
+    }
+
+    private void _addDependentListener(final ListenerInfo li, final String propertyName, final String dependentPropertyPath) {
+        OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), dependentPropertyPath);
+        String[] props = pp.getProperties();
+        OALinkInfo[] lis = pp.getLinkInfos();
+        
+        if ((lis.length > 0 && lis[0].getType() == OALinkInfo.ONE) || (lis.length == 0 && props.length == 1)) {
+            ArrayList<String> al = hsExtraProperties.get(props[0].toUpperCase());
+            if (al == null) {
+                al = new ArrayList<String>();
+                hsExtraProperties.put(props[0].toUpperCase(), al);
             }
-            else {
-                bNeedsTrigger = true;
+            al.add(propertyName);
+            
+            if (li.alExtraListenerProperties == null) {
+                li.alExtraListenerProperties = new ArrayList<String>();
+            }
+            li.alExtraListenerProperties.add(props[0].toUpperCase());
+            
+            boolean bNeedsTrigger = (props.length > 1);
+            
+            if (lis.length == 0) {
+                // could be a calcProp
+                OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hub.getObjectClass());
+                String[] calcProps = null;
+                for (OACalcInfo ci : oi.getCalcInfos()) {
+                    if (ci.getName().equalsIgnoreCase(props[0])) {
+                        // make recursive
+                        String[] ps = ci.getProperties();
+                        if (ps == null) break;
+                        for (String p : ps) {
+                            _addDependentListener(li, propertyName, p);
+                        }
+                        break;
+                    }
+                }       
+            }
+            if (!bNeedsTrigger) return;
+        }
+
+        // see if a trigger has already been created for this listener
+        OATrigger trigger;
+        if (hsTrigger == null) {
+            hsTrigger = new HashMap<String, OATrigger>();
+        }
+        else {
+            trigger = hsTrigger.get(dependentPropertyPath.toUpperCase());
+            if (trigger != null) {
+                if (li.alTrigger == null) li.alTrigger = new ArrayList<OATrigger>();
+                if (!li.alTrigger.contains(trigger)) li.alTrigger.add(trigger);
+                return;
             }
         }
         
-        if (!bNeedsTrigger) return hsListenToProps;
-
         OATriggerListener tl = new OATriggerListener() {
             @Override
             public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
-                HubEventDelegate.fireCalcPropertyChange(root.hub, obj, origPropertyName);
+                if (obj == null || !HubListenerTree.this.hub.contains(obj)) return;
+                HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, obj, propertyName);
             }
         };
         
-//qqqqqqqqqqq create an option give the hub to trigger, so it can send triggers to only this hub        
-        OATrigger t = new OATrigger(root.hub.getObjectClass(), tl, dependentPropertyPaths, true, false, false);
+        trigger = new OATrigger(hub.getObjectClass(), tl, dependentPropertyPath, true, false, false);
+        OATriggerDelegate.createTrigger(trigger, true);
+
+        hsTrigger.put(dependentPropertyPath.toUpperCase(), trigger);
         
-        synchronized (hmTrigger) {
-            ArrayList<OATrigger> al = hmTrigger.get(hl);;
-            if (al == null) {
-                al = new ArrayList<OATrigger>();
-                hmTrigger.put(hl, al);
-            }
-            al.add(t);
-        }
-        
-        OATriggerDelegate.createTrigger(t, true);
-        
-        return hsListenToProps;
+        if (li.alTrigger == null) li.alTrigger = new ArrayList<OATrigger>();
+        if (!li.alTrigger.contains(trigger)) li.alTrigger.add(trigger);
+        return;
     }
     
 
-    public void removeListener(Hub thisHub, HubListener hl) {
-        removeListener(hl);
-    }
     public void removeListener(HubListener hl) {
+        synchronized (lock) {
+            _removeListener(hl);
+        }
+    }
+    private void _removeListener(HubListener hl) {
         if (hl == null) return;
 
-        synchronized (root) {
-            HubListener[] hold = listeners; 
-            listeners = (HubListener[]) OAArray.removeValue(HubListener.class, listeners, hl);
-            if (hold == listeners) {
-                return;
-            }
-            --ListenerCount;
-            if (hl.getLocation() == HubListener.InsertLocation.LAST) lastCount--;
+        // 1: remove hubListener 
+        HubListener[] hold = listeners; 
+        listeners = (HubListener[]) OAArray.removeValue(HubListener.class, listeners, hl);
+        if (hold == listeners) {
+            return;
         }
-        
-        synchronized (alListenerInfo) {
-            for (ListenerInfo lix : alListenerInfo) {
-                if (lix.alHubListener.contains(hl)) {
-                    lix.alHubListener.remove(hl);
-                    if (lix.alHubListener.size() == 0) {
-                        if (lix.alTrigger != null) {
-                            for (OATrigger t : lix.alTrigger) {
-                                OATriggerDelegate.removeTrigger(t);
-                            }
-                        }
-                        if (lix.hubListenerExtra != null) {
-                            removeListener(lix.hubListenerExtra);
-                        }
-                        alListenerInfo.remove(lix);
+        if (hl.getLocation() == HubListener.InsertLocation.LAST) cntLast--;
+
+        if (alListenerInfo == null) return;
+
+        // 2: remove any listenerInfo
+        ListenerInfo li = null;
+        for (ListenerInfo lix : alListenerInfo) {
+            if (lix.hl != hl) continue;
+            li = lix;
+            break;
+        }
+
+        if (li == null) return; // none required
+        alListenerInfo.remove(li);
+
+        // 3: remove any hlExtra properties that this hl had for the hlExtra propertyChange events
+        if (hlExtra != null && hsExtraProperties != null && li.alExtraListenerProperties != null) {
+            // see if this is the only listener for each of the extra properties
+            for (String p : li.alExtraListenerProperties) { 
+                boolean b = false;
+                // check other listenerInfo
+                for (ListenerInfo lix : alListenerInfo) {
+                    if (lix.hl == hl) continue;
+                    if (lix.alExtraListenerProperties == null) continue;
+                    if (lix.alExtraListenerProperties.contains(p.toUpperCase())) {
+                        b = true;
+                        break;
                     }
-                    break;
+                }
+                if (!b) {
+                    // dont listen to it anymore
+                    hsExtraProperties.remove(p.toUpperCase());
+                }
+            }
+        }
+
+        // 4: check to see if the hlExtra is still needed
+        if (hlExtra != null && hsExtraProperties != null && hsExtraProperties.size() == 0) {
+            hlExtra = null;
+            _removeListener(hlExtra);
+        }
+
+        // 5: check if any of the triggers can be removed
+        if (li.alTrigger != null) {
+            // see if this is the last listener for a trigger
+            for (OATrigger t : li.alTrigger) {
+                boolean b = false;
+                for (ListenerInfo lix : alListenerInfo) {
+                    if (lix.hl == hl) continue;
+                    if (lix.alTrigger == null) continue;
+                    if (lix.alTrigger.contains(t)) {
+                        b = true;
+                        break;
+                    }                            
+                }                    
+                if (!b) {
+                    OATriggerDelegate.removeTrigger(t);
+                    for (Map.Entry<String, OATrigger> me : hsTrigger.entrySet()) {
+                        if (me.getValue() == t) {
+                            hsTrigger.remove(me.getKey());
+                            break;
+                        }
+                    }
                 }
             }
         }
     }    
-    
 }
 

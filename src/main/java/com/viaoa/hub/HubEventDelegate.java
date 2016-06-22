@@ -645,14 +645,14 @@ public class HubEventDelegate {
         if (property != null && property.indexOf('.') >= 0) {
             throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
         }
-        getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths, bActiveObjectOnly);
+        getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
         clearGetAllListenerCache(thisHub);
     }
     public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, boolean bUseBackgroundThread) {
         if (property != null && property.indexOf('.') >= 0) {
             throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
         }
-        getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths, bActiveObjectOnly, bUseBackgroundThread);
+        getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
         clearGetAllListenerCache(thisHub);
     }
     public static void addHubListener(Hub thisHub, HubListener hl, String property) {
@@ -660,7 +660,7 @@ public class HubEventDelegate {
         clearGetAllListenerCache(thisHub);
 	}
     public static void addHubListener(Hub thisHub, HubListener hl, String property, boolean bActiveObjectOnly) {
-        getHubListenerTree(thisHub).addListener(hl, property, bActiveObjectOnly);
+        getHubListenerTree(thisHub).addListener(hl, property);
         clearGetAllListenerCache(thisHub);
     }
 	

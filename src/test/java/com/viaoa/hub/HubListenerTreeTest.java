@@ -12,7 +12,7 @@ public class HubListenerTreeTest extends OAUnitTest {
 
 //see:  HubListenerTest
     
-    //@Test
+    @Test
     public void test() {
 
         Employee emp = new Employee();
@@ -29,7 +29,10 @@ public class HubListenerTreeTest extends OAUnitTest {
         h.addHubListener(hl, "prop", ss);
         
         
-        
+        h.addHubListener(hl, "prop", ss);
+        h.addHubListener(hl, "prop", ss);
+        h.addHubListener(hl, "prop", ss);
+
         
     }
     
