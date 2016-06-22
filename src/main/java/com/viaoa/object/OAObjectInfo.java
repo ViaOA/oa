@@ -393,6 +393,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         return al;
     }
 
+    
     // see OATriggerDelegate
     protected void createTrigger(final OATrigger trigger, final boolean bSkipFirstNonManyProperty) {
         if (trigger == null) return;
@@ -400,6 +401,18 @@ public class OAObjectInfo { //implements java.io.Serializable {
         if (trigger.propertyPaths == null) {
             return;
         }
+
+        String s = "";
+        if (trigger.propertyPaths != null) {
+            for (String triggerPropPath : trigger.propertyPaths) {
+                if (s.length() > 0) s += ", ";
+                s += triggerPropPath;
+            }
+        }        
+        s = (thisClass.getSimpleName()+", propPaths=["+s+"], skipFirst="+bSkipFirstNonManyProperty);
+        LOG.fine(s);
+        if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
+        
         
         for (String triggerPropPath : trigger.propertyPaths) {
             if (OAString.isEmpty(triggerPropPath)) continue;
@@ -460,19 +473,20 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
 
         int x = aiTrigger.incrementAndGet();
-        
-        String s = (thisClass.getSimpleName()+", prop="+listenProperty+", trigger.cnt="+x);
-        LOG.fine(s);
-        OAPerformance.LOG.fine(s);
-        if (x > 50) {
-            LOG.warning(s);
-        }
-        
+
         TriggerInfo ti = new TriggerInfo();
         ti.trigger = trigger;
         ti.ppFromRootClass = propPath;
         ti.ppToRootClass = revPropPath;
         ti.listenProperty = listenProperty;
+        
+        String s = (thisClass.getSimpleName()+", prop="+listenProperty+", revPropPath="+revPropPath+", trigger.cnt="+x);
+        LOG.fine(s);
+        if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
+        if (x > 100) {
+            LOG.warning(s);
+        }
+        
 
         if (!bFound) {
             String[] calcProps = null;
@@ -523,21 +537,28 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
     }
     protected TriggerInfo _removeTrigger(OATrigger trigger) {
+        if (trigger == null) return null;
         TriggerInfo tiFound = null;
         synchronized (hmTriggerInfo) {
             for (CopyOnWriteArrayList<TriggerInfo> al : hmTriggerInfo.values()) {
-                for (TriggerInfo ci : al) {
-                    if (ci.trigger == trigger) {
-                        tiFound = ci;
+                for (TriggerInfo ti : al) {
+                    if (ti.trigger == trigger) {
+                        tiFound = ti;
                         break;
                     }
                 }
                 if (tiFound != null) {
                     al.remove(tiFound);
-                    aiTrigger.decrementAndGet();
+                    int x = aiTrigger.decrementAndGet();
                     if (al.size() == 0) {
                         hmTriggerInfo.remove(tiFound.listenProperty.toUpperCase());
                     }
+                    
+                    String s = (thisClass.getSimpleName()+", prop="+tiFound.listenProperty+", revPropPath="+tiFound.ppToRootClass+", trigger.cnt="+x);
+                    LOG.fine(s);
+                    if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
+                    
+                    break;
                 }
             }
         }
@@ -580,7 +601,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             OASync.sendMessages();
         }
         
-        if (ti.ppToRootClass == null) {
+        if (ti.ppToRootClass == null || ti.ppToRootClass.length() == 0) {
             try {
                 ti.trigger.triggerListener.onTrigger((OAObject) hubEvent.getObject(), hubEvent, ti.ppToRootClass);
             }

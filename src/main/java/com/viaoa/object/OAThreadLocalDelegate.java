@@ -53,7 +53,6 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalCaptureUndoablePropertyChanges = new AtomicInteger();
     private static AtomicInteger TotalHubMergerChanging = new AtomicInteger();
     private static AtomicInteger TotalIsSendingEvent = new AtomicInteger(); // used to manage calcPropertyChanges while another event(s) is being processed
-    private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
     private static AtomicInteger TotalGetDetailHub = new AtomicInteger();
     private static AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
     private static AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
@@ -1011,49 +1010,6 @@ static volatile int unlockCnt;
         return false;
     }
 
-    // HubListenerTree used to determine how deep tree is, caused by listening to dependent props (like calcs, etc)                                
-    public static int getHubListenerTreeCount() {
-        int x; 
-        if (OAThreadLocalDelegate.TotalHubListenerTreeCount.get() == 0) {
-            x = 0;
-        }
-        else {
-            x = getHubListenerTreeCount(OAThreadLocalDelegate.getThreadLocal(false));
-        }
-        return x;
-    }
-    protected static int getHubListenerTreeCount(OAThreadLocal ti) {
-        if (ti == null) return 0;
-        return ti.hubListenerTreeCount;
-    }
-    public static void setHubListenerTree(boolean b) {
-        setHubListenerTree(OAThreadLocalDelegate.getThreadLocal(b), b);
-    }
-    private static long msHubListenerTree;
-    protected static void setHubListenerTree(OAThreadLocal ti, boolean b) {
-        if (ti == null) return;
-        int x;
-        
-        if (b) {
-            ti.hubListenerTreeCount++;
-            x = OAThreadLocalDelegate.TotalHubListenerTreeCount.getAndIncrement();
-        }
-        else {
-            ti.hubListenerTreeCount--;
-            x = OAThreadLocalDelegate.TotalHubListenerTreeCount.decrementAndGet();
-        }
-        if (x > 20 || x < 0) {
-            msHubListenerTree = throttleLOG("TotalHubListenerTreeCount="+x, msHubListenerTree);
-        }
-    }
-
-    public static void setIgnoreTreeListenerProperty(String prop) {
-        getThreadLocal(true).ignoreTreeListenerProperty = prop;            
-    }
-    public static String getIgnoreTreeListenerProperty() {
-        return getThreadLocal(true).ignoreTreeListenerProperty;            
-    }
-    
 
     // TotalIsSendingEvent  20120104
     public static Hub getGetDetailHub() {

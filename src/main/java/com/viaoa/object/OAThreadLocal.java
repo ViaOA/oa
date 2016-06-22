@@ -46,8 +46,6 @@ public class OAThreadLocal {
 
     protected int sendingEvent;  // HubEventDelegate is sending an event.  Used so that calcPropertyEvents (see HubListenerTree) are only sent out once
 
-    protected int hubListenerTreeCount;  // tracks how deep listeners are for a single listener
-    
 	// === COUNTERS ===========================
 	
 	/**
@@ -96,8 +94,6 @@ public class OAThreadLocal {
     protected String compoundUndoableName;
     protected Tuple<Object, String>[] calcPropertyEvents;
     
-    
-    protected String ignoreTreeListenerProperty;
     
     protected Hub getDetailHub; // hub that a get detail is being called for. This is a helper for getting detail from server
     

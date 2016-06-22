@@ -1340,21 +1340,29 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            name to listen for
      * @see HubEvent
      */
-    public void addHubListener(HubListener<TYPE> hl, String property) {
-        HubEventDelegate.addHubListener(this, hl, property);
+    public boolean addHubListener(HubListener<TYPE> hl, String property) {
+        return HubEventDelegate.addHubListener(this, hl, property);
     }
-    public void addHubListener(HubListener<TYPE> hl, String property, boolean bActiveObjectOnly) {
-        HubEventDelegate.addHubListener(this, hl, property, bActiveObjectOnly);
+    public boolean addHubListener(HubListener<TYPE> hl, String property, boolean bActiveObjectOnly) {
+        return HubEventDelegate.addHubListener(this, hl, property, bActiveObjectOnly);
     }
 
-    public void addHubListener(HubListener<TYPE> hl, String property, String[] dependentPropertyPaths) {
-        HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths);
+    public boolean addHubListener(HubListener<TYPE> hl, String property, String[] dependentPropertyPaths) {
+        return HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths);
     }
-    public void addHubListener(HubListener<TYPE> hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
-        HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths, bActiveObjectOnly);
+    public boolean addHubListener(HubListener<TYPE> hl, String property, String dependentPropertyPath) {
+        String[] ss;
+        if (dependentPropertyPath != null && dependentPropertyPath.length() > 0) {
+            ss = new String[] {dependentPropertyPath};
+        }
+        else ss = null;
+        return HubEventDelegate.addHubListener(this, hl, property, ss);
     }
-    public void addHubListener(HubListener<TYPE> hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, boolean bUseBackgroundThread) {
-        HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths, bActiveObjectOnly, bUseBackgroundThread);
+    public boolean addHubListener(HubListener<TYPE> hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+        return HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths, bActiveObjectOnly);
+    }
+    public boolean addHubListener(HubListener<TYPE> hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, boolean bUseBackgroundThread) {
+        return HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths, bActiveObjectOnly, bUseBackgroundThread);
     }
 
     /**
@@ -1382,8 +1390,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            HubListener object
      * @see HubEvent
      */
-    public void addHubListener(HubListener<TYPE> hl) {
-        HubEventDelegate.addHubListener(this, hl);
+    public boolean addHubListener(HubListener<TYPE> hl) {
+        return HubEventDelegate.addHubListener(this, hl);
     }
 
     /**
@@ -1393,8 +1401,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            HubListener object
      * @see #addHubListener
      */
-    public void removeHubListener(HubListener<TYPE> hl) {
-        HubEventDelegate.removeHubListener(this, hl);
+    public boolean removeHubListener(HubListener<TYPE> hl) {
+        return HubEventDelegate.removeHubListener(this, hl);
     }
 
     /**
