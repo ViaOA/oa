@@ -274,6 +274,7 @@ public class HubListenerTree<T> {
                     if (objx == null) return;
                     if (!(objx.getClass().equals(HubListenerTree.this.hub.getObjectClass()))) return;
                     if (!HubListenerTree.this.hub.contains(objx)) return;
+                    obj = (OAObject) objx;
                 }
                 HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, obj, propertyName);
             }
