@@ -42,5 +42,11 @@ public class OATrigger {
             this.bServerSideOnly = bServerSideOnly;
             this.bUseBackgroundThread = bUseBackgroundThread;
         }
+
+    public OATrigger[] getDependentTriggers() {
+        return dependentTriggers;        
+    }
     
 }
+
+

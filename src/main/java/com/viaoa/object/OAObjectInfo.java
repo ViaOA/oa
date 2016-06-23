@@ -10,7 +10,6 @@
 */
 package com.viaoa.object;
 
-import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -19,11 +18,9 @@ import java.util.logging.Logger;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 
 /** 
@@ -502,7 +499,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
                     @Override
                     public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
                         // notify prop
-                        onChange(listenProperty, hubEvent);
+                        onChange(obj, listenProperty, hubEvent);
                     }
                 };
                 OATrigger t = OATriggerDelegate.createTrigger(thisClass, tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread);
@@ -536,33 +533,30 @@ public class OAObjectInfo { //implements java.io.Serializable {
             oix.removeTrigger(t);
         }
     }
-    protected TriggerInfo _removeTrigger(OATrigger trigger) {
-        if (trigger == null) return null;
-        TriggerInfo tiFound = null;
+    protected void _removeTrigger(OATrigger trigger) {
+        if (trigger == null) return;
         synchronized (hmTriggerInfo) {
+            // find all that use this trigger (1+)
             for (CopyOnWriteArrayList<TriggerInfo> al : hmTriggerInfo.values()) {
+                TriggerInfo tiFound = null;
                 for (TriggerInfo ti : al) {
                     if (ti.trigger == trigger) {
                         tiFound = ti;
                         break;
                     }
                 }
-                if (tiFound != null) {
-                    al.remove(tiFound);
-                    int x = aiTrigger.decrementAndGet();
-                    if (al.size() == 0) {
-                        hmTriggerInfo.remove(tiFound.listenProperty.toUpperCase());
-                    }
-                    
-                    String s = (thisClass.getSimpleName()+", prop="+tiFound.listenProperty+", revPropPath="+tiFound.ppToRootClass+", trigger.cnt="+x);
-                    LOG.fine(s);
-                    if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
-                    
-                    break;
+                if (tiFound == null) continue;
+                al.remove(tiFound);
+                int x = aiTrigger.decrementAndGet();
+                if (al.size() == 0) {
+                    hmTriggerInfo.remove(tiFound.listenProperty.toUpperCase());
                 }
+                
+                String s = (thisClass.getSimpleName()+", prop="+tiFound.listenProperty+", revPropPath="+tiFound.ppToRootClass+", trigger.cnt="+x);
+                LOG.fine(s);
+                if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
             }
         }
-        return tiFound;
     }
     
     public boolean getHasTriggers() {
@@ -573,14 +567,14 @@ public class OAObjectInfo { //implements java.io.Serializable {
      * called by OAObject.propChange, and Hub.add/remove/removeAll/insert when a change is made.
      * This will then check to see if there is trigger method to send the change to.
      */
-    public void onChange(final String prop, final HubEvent hubEvent) {
+    public void onChange(final OAObject fromObject, final String prop, final HubEvent hubEvent) {
         if (prop == null || hubEvent == null) return;
         
         CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(prop.toUpperCase());
         if (al == null) return;
         
         for (TriggerInfo ti : al) {
-            _onChange(prop, ti, hubEvent);
+            _onChange(fromObject, prop, ti, hubEvent);
         }
     }        
     
@@ -595,7 +589,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         return alTrigger;
     }
 
-    private void _onChange(final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
+    private void _onChange(final OAObject fromObject, final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
         if (ti.trigger.bServerSideOnly) {
             if (!OASync.isServer()) return;
             OASync.sendMessages();
@@ -603,7 +597,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         
         if (ti.ppToRootClass == null || ti.ppToRootClass.length() == 0) {
             try {
-                ti.trigger.triggerListener.onTrigger((OAObject) hubEvent.getObject(), hubEvent, ti.ppToRootClass);
+                ti.trigger.triggerListener.onTrigger(fromObject, hubEvent, ti.ppToRootClass);
             }
             catch (Exception e) {
                 throw new RuntimeException("OAObjectInof.autoCall error, "

@@ -401,7 +401,7 @@ public class OAObjectEventDelegate {
         if (!bIsLoading) {
             if (oi.getHasTriggers()) {
                 HubEvent hubEvent = new HubEvent(oaObj, propertyName, oldObj, newObj);
-                oi.onChange(propertyName, hubEvent);
+                oi.onChange(oaObj, propertyName, hubEvent);
             }
         }
 	}

@@ -15,7 +15,7 @@ public interface OAObjectCacheListener<T extends OAObject> {
     public void afterPropertyChange(T obj, String propertyName, Object oldValue, Object newValue);
 
     /** 
-     * called when a new object is added to OAObjectCache, doing the object construction. 
+     * called when a new object is added to OAObjectCache, during the object construction. 
      */
     public void afterAdd(T obj);
     

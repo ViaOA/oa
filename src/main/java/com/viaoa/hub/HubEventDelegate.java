@@ -97,7 +97,7 @@ public class HubEventDelegate {
             	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
             	        if (oi.getHasTriggers()) {
                             if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
-                	        oi.onChange(s, hubEvent);
+                	        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
             	        }
                     }
         	    }
@@ -150,7 +150,7 @@ public class HubEventDelegate {
                     OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
                     if (oi.getHasTriggers()) {
                         if (hubEvent == null) hubEvent = new HubEvent(thisHub);
-                        oi.onChange(s, hubEvent);
+                        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
                     }
                 }
             }
@@ -223,7 +223,7 @@ public class HubEventDelegate {
                         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
                         if (oi.getHasTriggers()) {
                             if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
-                            oi.onChange(s, hubEvent);
+                            oi.onChange(thisHub.getMasterObject(), s, hubEvent);
                         }
                     }
                 }
@@ -296,7 +296,7 @@ public class HubEventDelegate {
                         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
                         if (oi.getHasTriggers()) {
                             if (hubEvent != null) hubEvent = new HubEvent(thisHub, obj, pos);
-                            oi.onChange(s, hubEvent);
+                            oi.onChange(thisHub.getMasterObject(), s, hubEvent);
                         }
                     }
                 }

@@ -199,7 +199,7 @@ public class HubDataDelegate {
         if (xx > 499 && thisHub.datam.masterObject != null && (xx%100)==0) {
             LOG.fine("large Hub with masterObject, Hub="+thisHub);//qqqqqqqqqqqqqq
         }
-        
+qqqqqqqqqqqqqq
         if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
             if (thisHub.data.getVecRemove() != null && thisHub.data.getVecRemove().contains(obj)) {
         		thisHub.data.getVecRemove().removeElement(obj);

@@ -264,20 +264,11 @@ public class HubListenerTree<T> {
         
         OATriggerListener tl = new OATriggerListener() {
             @Override
-qqqqqqqqq might want to have propertyPath be "Employees" for add/remove events            
-            public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
-                if (obj == null || !(obj.getClass().equals(HubListenerTree.this.hub.getObjectClass())) || !HubListenerTree.this.hub.contains(obj)) {
-                    // could be an add or remove from a many reference (hub)
-                    //   ex: this=location,  prop=employees, event: loc.emps.add(emp)
-                    Hub h = hubEvent.getHub();
-                    if (h == null) return;
-                    Object objx = h.getMasterObject();
-                    if (objx == null) return;
-                    if (!(objx.getClass().equals(HubListenerTree.this.hub.getObjectClass()))) return;
-                    if (!HubListenerTree.this.hub.contains(objx)) return;
-                    obj = (OAObject) objx;
+            public void onTrigger(OAObject fromObject, HubEvent hubEvent, String propertyPath) throws Exception {
+                if (fromObject == null || !HubListenerTree.this.hub.contains(fromObject)) {
+                    return;
                 }
-                HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, obj, propertyName);
+                HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, fromObject, propertyName);
             }
         };
         

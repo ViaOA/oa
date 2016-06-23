@@ -11,6 +11,6 @@ public class OAPerformance {
     public final static Logger LOG = Logger.getLogger(OAPerformance.class.getName());
     
     public static final boolean IncludeTriggers = true;
-    public static final boolean IncludeHubListeners = true;
+    public static final boolean IncludeHubListeners = false;
     
 }
