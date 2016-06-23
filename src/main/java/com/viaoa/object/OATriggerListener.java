@@ -19,11 +19,11 @@ public interface OATriggerListener {
     
     /**
      * Called when a change is made to a dependent property. 
-     * @param obj root object that is affected by the event
+     * @param objRoot root object that is affected by the event
      * @param hubEvent info about the event
-     * @param propertyPath path from root class to the object that has the event
+     * @param propertyPathFromRoot path from root class to the object that has the event
      */
-    public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception;
+    public void onTrigger(OAObject objRoot, HubEvent hubEvent, String propertyPathFromRoot) throws Exception;
 }
 
 

@@ -55,11 +55,11 @@ public class AutonumberDelegate {
 	    else value = new Integer(id);
 	    
 	    try {
-	        OAThreadLocalDelegate.setAssigningObjectKey(true); 
+	        OAObjectDSDelegate.setAssigningId(object, true);
 	        OAObjectReflectDelegate.setProperty(object, column.propertyName, value, null);
 	    }
 	    finally {
-            OAThreadLocalDelegate.setAssigningObjectKey(false); 
+            OAObjectDSDelegate.setAssigningId(object, false);
 	    }
 	}
 	

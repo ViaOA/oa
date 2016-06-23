@@ -73,7 +73,8 @@ public class OAThreadLocal {
     /**
      *  Flag to know that an object key property is being assigned
      */
-    protected int assigningObjectKey;
+    // protected int assigningObjectKey;
+	// use OAObjectDSDelegate.setAssigningId(..)
 
     
     // 20110104

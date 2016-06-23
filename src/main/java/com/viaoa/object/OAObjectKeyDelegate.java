@@ -68,7 +68,7 @@ public class OAObjectKeyDelegate {
 
 	    // 20090906 dont need to verify if database/etc has assigned it
 	    if (bVerify) {
-	        if (OAThreadLocalDelegate.isAssigningObjectKey()) bVerify = false; 
+	        if (OAObjectDSDelegate.isAssigningId(oaObj)) bVerify = false;
 	    }
 	    
 	

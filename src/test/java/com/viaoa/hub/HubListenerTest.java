@@ -232,7 +232,7 @@ public class HubListenerTest extends OAUnitTest {
         }, false);
         
         hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls != null && hls.length == 3);
+        assertTrue(hls != null && hls.length == 2);
         
         int cChange2 = 0;
         assertEquals(cntChange2, cChange2); 
@@ -274,11 +274,11 @@ public class HubListenerTest extends OAUnitTest {
         //---
         hub.addHubListener(hl);
         hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls != null && hls.length == 2);
+        assertTrue(hls != null && hls.length == 1);
         
         hub.removeHubListener(hl);
         hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls != null && hls.length == 1);
+        assertTrue(hls == null || hls.length == 0);
 
         hub.removeHubListener(hl);
         hls = HubEventDelegate.getAllListeners(hub);
@@ -340,7 +340,7 @@ public class HubListenerTest extends OAUnitTest {
         }, false);
         
         hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls != null && hls.length == 2);
+        assertTrue(hls != null && hls.length == 1);
 
         hub.getAt(1).getEnvironments().getAt(1).getSilos().getAt(1).getServers().getAt(0).setName("xx4");
         assertEquals(cntChange, 1);
@@ -448,13 +448,12 @@ public class HubListenerTest extends OAUnitTest {
         }
         
         int x = aiListnerCount.get();
-        x = (int) (x / 4);
-        assertEquals(x, HubEventDelegate.getAllListeners(hub1).length);
-        assertEquals(x, HubEventDelegate.getAllListeners(hub2).length);
-        assertEquals(x, HubEventDelegate.getAllListeners(hub3).length);
-        assertEquals(x, HubEventDelegate.getAllListeners(hub4).length);
+        assertEquals(1, HubEventDelegate.getAllListeners(hub1).length);
+        assertEquals(1, HubEventDelegate.getAllListeners(hub2).length);
+        assertEquals(1, HubEventDelegate.getAllListeners(hub3).length);
+        assertEquals(1, HubEventDelegate.getAllListeners(hub4).length);
     
-        for (int i=0; i<x; i++) {
+        for (int i=0; i<1; i++) {
             hub1.removeHubListener(hl);
             hub2.removeHubListener(hl);
             hub3.removeHubListener(hl);

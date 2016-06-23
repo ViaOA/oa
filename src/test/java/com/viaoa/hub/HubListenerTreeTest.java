@@ -160,8 +160,10 @@ public class HubListenerTreeTest extends OAUnitTest {
         prog.setName("zz");
         assertEquals(3, ai.get());
 
+        
         loc.getEmployees().add(emp);
-        assertEquals(4, ai.get());
+        // 2 propChange events:  Location, "testxx"
+        assertEquals(5, ai.get());
         
         
         h.removeHubListener(hl);
@@ -289,12 +291,15 @@ public class HubListenerTreeTest extends OAUnitTest {
 
         emp.setFirstName("fnx");
         assertEquals(2, ai.get());
+        
+        assertTrue(h.removeHubListener(hl));
     }
     
     
     
     public static void main(String[] args) {
         HubListenerTreeTest test = new HubListenerTreeTest();
+        test.test6();
         test.test7();
     }
 }

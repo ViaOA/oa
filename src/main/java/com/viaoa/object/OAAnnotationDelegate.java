@@ -13,12 +13,17 @@ package com.viaoa.object;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.annotation.*;
+import com.viaoa.ds.OASelect;
 import com.viaoa.ds.jdbc.db.*;
+import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
+import com.viaoa.hub.HubEventDelegate;
+import com.viaoa.hub.HubListenerTree;
 import com.viaoa.util.*;
 
 
@@ -287,33 +292,85 @@ public class OAAnnotationDelegate {
     // 20160305 OACallback annotations
     private static void _update2(final OAObjectInfo oi, final Class clazz) {
         Method[] methods = clazz.getDeclaredMethods();
+        if (methods == null) return;
         String s;
         String[] ss;
-        for (Method m : methods) {
-            OACallbackMethod annotation = (OACallbackMethod) m.getAnnotation(OACallbackMethod.class);
+        
+        for (Method method : methods) {
+            OACallbackMethod annotation = (OACallbackMethod) method.getAnnotation(OACallbackMethod.class);
             if (annotation == null) continue;
+            
             String[] props = annotation.properties();
             if (props == null || props.length == 0) continue;
             boolean bBackgroundThread = annotation.runInBackgroundThread(); 
-            boolean bOnlyUseLoadedData = annotation.onlyUseLoadedData();
+            final boolean bOnlyUseLoadedData = annotation.onlyUseLoadedData();
             boolean bServerSideOnly = annotation.runOnServer(); 
             
             // verify that method signature is correct, else log.warn
             s = "public void callbackName(HubEvent hubEvent)";
-            s = ("callback method signature for class="+clazz.getSimpleName()+", callbackMethod="+m.getName()+", must match: "+s);
-            Class[] cs = m.getParameterTypes();
-            if (cs == null || cs.length != 1 || !Modifier.isPublic(m.getModifiers())) {
+            s = ("callback method signature for class="+clazz.getSimpleName()+", callbackMethod="+method.getName()+", must match: "+s);
+            Class[] cs = method.getParameterTypes();
+            if (cs == null || cs.length != 1 || !Modifier.isPublic(method.getModifiers())) {
                 throw new RuntimeException(s);
             }
             if (!cs[0].equals(HubEvent.class)) {
                 throw new RuntimeException(s);
             }
             
-            final Method mx = m;
+            final Method mx = method;
             OATriggerListener tl = new OATriggerListener() {
                 @Override
-                public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
-                    mx.invoke(obj, new Object[] {hubEvent});
+                public void onTrigger(OAObject objRoot, final HubEvent hubEvent, String propertyPathFromRoot) throws Exception {
+                    if (objRoot != null) {
+                        mx.invoke(objRoot, new Object[] {hubEvent});
+                        return;
+                    }
+
+                    // the reverse property did not work to get objRoot - need to find root objs
+                    final OAFinder finder = new OAFinder(propertyPathFromRoot) {
+                        protected boolean isUsed(OAObject obj) {
+                            if (obj == hubEvent.getObject()) return true;
+                            Hub h = hubEvent.getHub();
+                            if (h == null) return false;
+                            if (h.getMasterObject() == obj) return true;
+                            return false;
+                        }
+                    };
+                    finder.setUseOnlyLoadedData(bOnlyUseLoadedData);
+
+                    Hub h = OAObjectCacheDelegate.getSelectAllHub(clazz);
+                    if (h != null) {
+                        for (Object objx : h) {
+                            if (finder.findFirst( (OAObject) objx) == null) continue;
+                            mx.invoke(objx, new Object[] {hubEvent});
+                        }
+                    }
+                    else if (bOnlyUseLoadedData) {
+                        OAObjectCacheDelegate.visit(clazz, new OACallback() {
+                            @Override
+                            public boolean updateObject(Object obj) {
+                                if (finder.findFirst( (OAObject) obj) == null) return true;
+                                try {
+                                    mx.invoke(obj, new Object[] {hubEvent});
+                                }
+                                catch (Exception e) {
+                                    // TODO: handle exception
+                                }
+                                return true;
+                            }
+                        });
+                    }
+                    else {
+                        OASelect sel = new OASelect(oi.getForClass());
+                        sel.select();
+                        for (;;) {
+                            Object objNext = sel.next();
+                            if (objNext == null) break;
+                            if (finder.findFirst( (OAObject) objNext) != null) {
+                                mx.invoke(objNext, new Object[] {hubEvent});
+                            }
+                        }
+                    }
                 }
             };
             OATriggerDelegate.createTrigger(clazz, tl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);

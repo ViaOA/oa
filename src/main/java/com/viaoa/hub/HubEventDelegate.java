@@ -453,7 +453,7 @@ public class HubEventDelegate {
 	    HubListener[] hl = HubEventDelegate.getAllListeners(thisHub);
 	    int x = hl.length;
 	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub,object,propertyName,null,null);
+	        HubEvent hubEvent = new HubEvent(thisHub, object, propertyName, null, null);
 	        for (int i=0; i<x; i++) {
 	            hl[i].afterPropertyChange(hubEvent);
 	        }

@@ -63,6 +63,9 @@ class HubDataMaster implements java.io.Serializable {
         //was:  if (liDetailToMaster == null) return true;
         
         if (liDetailToMaster.getCalculated()) return false;
+
+        // 20160623 so that serverRoot wont store changes to objects
+        if (!liDetailToMaster.getToObjectInfo().getUseDataSource()) return false;
         
         // 20160505 check to see if rev li is calc.
         OALinkInfo liRev = liDetailToMaster.getReverseLinkInfo();

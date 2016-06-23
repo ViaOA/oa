@@ -47,7 +47,6 @@ public class OAObjectDeleteDelegateTest extends OAUnitTest {
             }
         };
         
-        
         ImageStore is = new ImageStore();
         assertEquals(is.getId(), 0); // not auto assigned
         
@@ -85,7 +84,7 @@ public class OAObjectDeleteDelegateTest extends OAUnitTest {
         int cntSelect = 0;
         assertEquals(cntSelect, aiSelect.get());
         is.save();
-        cntSelect++;  // save will verify that new id is not used
+        //cntSelect++;  // save will not verify that new id is not used
         assertEquals(cntSelect, aiSelect.get());
 
         // has to call ds to get it

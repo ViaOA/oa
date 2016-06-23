@@ -549,11 +549,12 @@ public class OASyncClient {
         getClientInfo();
         getMultiplexerClient().setKeepAlive(115); 
 
-        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
         
         LOG.fine("starting multiplexer client");
         getMultiplexerClient().start(); // this will connect to server using multiplexer
         clientInfo.setConnectionId(getMultiplexerClient().getConnectionId());
+
+        if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
         
         LOG.fine("getting remote object for Client Session");
         getRemoteServer();

@@ -157,7 +157,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     public boolean getCalculated() {
         return bCalculated;
     }
-
+    
     public void setServerSideCalc(boolean b) {
         this.bServerSideCalc = b;
     }

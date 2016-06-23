@@ -42,7 +42,6 @@ public class OAThreadLocalDelegate {
 	private static final ThreadLocal<OAThreadLocal> threadLocal = new ThreadLocal<OAThreadLocal>();
 	
 	private static AtomicInteger TotalIsLoadingObject = new AtomicInteger();
-    private static AtomicInteger TotalIsAssigningObjectKey = new AtomicInteger();
 	private static AtomicInteger TotalObjectCacheAddMode = new AtomicInteger();
 	private static AtomicInteger TotalObjectSerializer = new AtomicInteger();
 	private static AtomicInteger TotalSkipObjectInitialize = new AtomicInteger();
@@ -469,45 +468,6 @@ public class OAThreadLocalDelegate {
 		}
 	}
 
-	
-    // isAssigningObjectKey -----------------------
-    public static boolean isAssigningObjectKey() {
-        boolean b; 
-        if (OAThreadLocalDelegate.TotalIsAssigningObjectKey.get() == 0) {
-            // LOG.finest("fast");
-            b = false;
-        }
-        else {
-            b = isAssigningObjectKey(OAThreadLocalDelegate.getThreadLocal(false));
-            // LOG.finest(""+b);
-        }
-        return b;
-    }
-    protected static boolean isAssigningObjectKey(OAThreadLocal ti) {
-        if (ti == null) return false;
-        return ti.assigningObjectKey > 0;
-    }
-    public static void setAssigningObjectKey(boolean b) {
-        // LOG.finer(""+b);
-        setAssigningObjectKey(OAThreadLocalDelegate.getThreadLocal(b), b);
-    }
-    private static long msAssigningObjectKey;
-    protected static void setAssigningObjectKey(OAThreadLocal ti, boolean b) {
-        if (ti == null) return;
-        int x,x2;
-        if (b) {
-            x = ++ti.assigningObjectKey;
-            x2 = OAThreadLocalDelegate.TotalIsAssigningObjectKey.incrementAndGet();
-        }
-        else {
-            x = --ti.assigningObjectKey;
-            x2 = OAThreadLocalDelegate.TotalIsAssigningObjectKey.decrementAndGet();
-        }
-        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) {
-            msAssigningObjectKey = throttleLOG("TotalIsAssigningObjectKey ="+x2+", ti="+x, msAssigningObjectKey);
-        }
-    }
-	
     
     /** getFlag -----------------------
      * Flag used for generic/misc purposes

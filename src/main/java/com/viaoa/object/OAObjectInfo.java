@@ -376,6 +376,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         String ppFromRootClass;;  
         String ppToRootClass;;  // reverse propPath from thisClass to root Class
         String listenProperty;  // property/hub to listen to.
+        boolean bReversePropertyIsInvalid;
     }
     
     // list of triggers per prop/link name
@@ -588,8 +589,27 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
         return alTrigger;
     }
-
+    
     private void _onChange(final OAObject fromObject, final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
+        boolean b = false;
+        boolean b2 = false; 
+        if (ti.trigger.bServerSideOnly) {
+            if (!OASync.isServer()) return;
+            b = true;
+            b2 = OASync.sendMessages();
+        }
+
+        try {
+            _onChange2(fromObject, prop, ti, hubEvent);
+        }
+        finally {
+            if (b) {
+                OASync.sendMessages(b2);
+            }
+        }
+    }
+
+    private void _onChange2(final OAObject fromObject, final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
         if (ti.trigger.bServerSideOnly) {
             if (!OASync.isServer()) return;
             OASync.sendMessages();
@@ -605,28 +625,51 @@ public class OAObjectInfo { //implements java.io.Serializable {
                     + "propertyPath="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
                     e);
             }
+            return;
         }
-        else {
-            OAFinder finder = new OAFinder(ti.ppToRootClass) {
-                @Override
-                protected void onFound(OAObject objRoot) {
-                    try {
-                        ti.trigger.triggerListener.onTrigger(objRoot, hubEvent, ti.ppFromRootClass);
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException("OAObjectInof.autoCall error, "
-                            + "thisClass="+thisClass.getSimpleName() + ", "
-                            + "propertyPath="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
-                            e);
-                    }
-                }
-            };
-            finder.setUseOnlyLoadedData(ti.trigger.bOnlyUseLoadedData);
         
-            Object obj = hubEvent.getObject();
-            if (obj instanceof OAObject) {
-                finder.find( (OAObject) obj);
+        if (ti.bReversePropertyIsInvalid) {
+            // the reverse pp is invalid, cant send a change event for the affected objects.
+            //    will send one event for the change that was made
+            try {
+                ti.trigger.triggerListener.onTrigger(null, hubEvent, ti.ppFromRootClass);
             }
+            catch (Exception e) {
+                throw new RuntimeException("OAObjectInfo.trigger error, "
+                    + "thisClass="+thisClass.getSimpleName() + ", "
+                    + "propertyPath="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
+                    e);
+            }
+            return;
+        }
+        
+        OAFinder finder = new OAFinder(ti.ppToRootClass) {
+            HashSet<Integer> hs = new HashSet<Integer>();
+            @Override
+            protected void onFound(OAObject objRoot) {
+                int g = OAObjectKeyDelegate.getKey(objRoot).getGuid();
+                if (hs.contains(g)) return;
+                hs.add(g);
+                try {
+                    ti.trigger.triggerListener.onTrigger(objRoot, hubEvent, ti.ppFromRootClass);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("OAObjectInfo.autoCall error, "
+                        + "thisClass="+thisClass.getSimpleName() + ", "
+                        + "propertyPathToRoot="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
+                        e);
+                }
+            }
+            
+        };
+        finder.setUseOnlyLoadedData(ti.trigger.bOnlyUseLoadedData);
+    
+        try {
+            finder.find(fromObject);
+        }
+        catch (Exception e) {
+            ti.bReversePropertyIsInvalid = true;
+            _onChange2(fromObject, prop, ti, hubEvent);
         }
     }
 //qqqqqqqqqqqq run in another thread ...... flag

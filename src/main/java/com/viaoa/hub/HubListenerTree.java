@@ -264,11 +264,50 @@ public class HubListenerTree<T> {
         
         OATriggerListener tl = new OATriggerListener() {
             @Override
-            public void onTrigger(OAObject fromObject, HubEvent hubEvent, String propertyPath) throws Exception {
-                if (fromObject == null || !HubListenerTree.this.hub.contains(fromObject)) {
+            public void onTrigger(final OAObject rootObject, final HubEvent hubEvent, final String propertyPathFromRoot) throws Exception {
+                
+                if (rootObject != null) {
+                    if (HubListenerTree.this.hub.contains(rootObject)) {
+                        HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, rootObject, propertyName);
+                    }
                     return;
                 }
-                HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, fromObject, propertyName);
+
+                // the reverse property did not work
+                if (!hub.isOAObject()) {
+                    HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, rootObject, propertyName);
+                    return;
+                }
+                
+                if (!(hubEvent.getObject() instanceof OAObject)) {
+                    HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, rootObject, propertyName);
+                    return;
+                }
+
+                
+                // need to find all objects that are affected
+                OAFinder finder = new OAFinder(propertyPathFromRoot) {
+                    protected boolean isUsed(OAObject obj) {
+                        if (obj == hubEvent.getObject()) return true;
+                        Hub h = hubEvent.getHub();
+                        if (h == null) return false;
+                        if (h.getMasterObject() == obj) return true;
+                        return false;
+                    }
+                };
+                finder.setUseOnlyLoadedData(true);
+                
+                for (Object obj : hub) {
+                    try {
+                        if (finder.findFirst( (OAObject) obj) != null) {
+                            HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, obj, propertyName);
+                        }
+                    }
+                    catch (Exception e) {
+                        break;
+                    }
+                }
+                return;
             }
         };
         

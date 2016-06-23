@@ -74,17 +74,6 @@ public class OAThreadLocalDelegate2Test extends OAUnitTest {
             }
         };
     
-        tests[pos++] = new Test("AssigningObjectKey") {
-            @Override
-            public void test() {
-                OAThreadLocalDelegate.setAssigningObjectKey(true); 
-                delay();
-                assertTrue(OAThreadLocalDelegate.isAssigningObjectKey());
-                OAThreadLocalDelegate.setAssigningObjectKey(false); 
-                delay();
-                assertFalse(OAThreadLocalDelegate.isAssigningObjectKey()); 
-            }
-        };
         
         tests[pos++] = new Test("SkipInitialize") {
             @Override
