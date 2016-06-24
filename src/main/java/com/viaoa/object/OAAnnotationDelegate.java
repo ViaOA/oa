@@ -364,8 +364,24 @@ public class OAAnnotationDelegate {
                         if (hubEvent.getObject() != null) {
                             OADataSource ds = OADataSource.getDataSource(clazz);
                             if (ds != null && ds.supportsStorage()) {
-                                String query = propertyPathFromRoot + " = ?";
-                                sel = new OASelect(oi.getForClass(), query, new Object[] {hubEvent.getObject()}, "");
+                                
+                                OAObject objWhere;
+                                Hub hx = hubEvent.getHub();
+                                if (OAString.isEmpty(hubEvent.getPropertyName()) && hx != null && hx.getMasterObject() != null) {
+                                    // if hub add/insert/remove
+                                    objWhere = h.getMasterObject();
+                                }
+                                else {
+                                    objWhere = (OAObject) hubEvent.getObject();
+                                }
+
+                                if (OAString.isEmpty(propertyPathFromRoot)) {
+                                    sel = new OASelect(oi.getForClass(), objWhere, "");
+                                }
+                                else {
+                                    String query = propertyPathFromRoot + " = ?";
+                                    sel = new OASelect(oi.getForClass(), query, new Object[] {hubEvent.getObject()}, "");
+                                }
                             }
                         }
                         

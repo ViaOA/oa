@@ -49,6 +49,7 @@ public class OATriggerDelegate {
 
     public static void runTrigger(Runnable r) {
 //        qqqqqqqqqq create executorservice, logging, etc
+        r.run();
         
         
     }

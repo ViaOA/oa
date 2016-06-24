@@ -46,6 +46,9 @@ public class OATrigger {
     public OATrigger[] getDependentTriggers() {
         return dependentTriggers;        
     }
+    public OATriggerListener getTriggerListener() {
+        return triggerListener;
+    }
     
 }
 

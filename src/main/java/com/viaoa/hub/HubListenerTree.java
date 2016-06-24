@@ -103,7 +103,7 @@ public class HubListenerTree<T> {
         return addListener(hl, property, null);
     }
 
-    public boolean addListener(HubListener hl, final String property, String[] dependentPropertyPaths) {
+    public boolean addListener(HubListener hl, final String propertyName, String[] dependentPropertyPaths) {
         if (hl == null) return false;
 
         String s = "";
@@ -113,7 +113,7 @@ public class HubListenerTree<T> {
                 s += triggerPropPath;
             }
         }
-        s = (hub.getObjectClass().getSimpleName()+", property="+property+", ppDepend=["+s+"]");
+        s = (hub.getObjectClass().getSimpleName()+", property="+propertyName+", ppDepend=["+s+"]");
         LOG.fine(s);
         if (OAPerformance.IncludeHubListeners) {
             OAPerformance.LOG.fine(s);
@@ -124,145 +124,13 @@ public class HubListenerTree<T> {
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hub.getObjectClass());
         String[] calcProps = null;
         for (OACalcInfo ci : oi.getCalcInfos()) {
-            if (ci.getName().equalsIgnoreCase(property)) {
+            if (ci.getName().equalsIgnoreCase(propertyName)) {
                 calcProps = ci.getProperties();
                 break;
             }
-        }       
-        if (calcProps != null && calcProps.length > 0) {
-            if (addDependentListeners(hl, property, dependentPropertyPaths)) bWasAdded = true;
-        }
-
-        // now add the additional dependent properties
-        if (dependentPropertyPaths != null && dependentPropertyPaths.length > 0) {
-            if (addDependentListeners(hl, property, dependentPropertyPaths)) bWasAdded = true;
-        }
-        return bWasAdded;
-    }    
-    
-    private boolean addDependentListeners(final HubListener<T> hl, final String propertyName, final String[] dependentPropertyPaths) {
-        if (dependentPropertyPaths == null || dependentPropertyPaths.length == 0) return false;
-        synchronized (lock) {
-            return _addDependentListeners(hl, propertyName, dependentPropertyPaths);
-        }
-    }
-    private boolean _addDependentListeners(final HubListener<T> hl, final String propertyName, final String[] dependentPropertyPaths) {
-        ListenerInfo li = null;
-
-        if (alListenerInfo != null) {
-            for (ListenerInfo lix : alListenerInfo) {
-                if (lix.hl == hl) {
-                    li = lix;
-                    break;
-                }
-            }
-        }
-        if (li == null) {
-            li = new ListenerInfo();
-            li.hl = hl;
-        }
+        }   
         
-        boolean bUsed = false;
-        
-        boolean bWasAdded = false;
-
-        for (String dpp : dependentPropertyPaths) {
-            if (dpp == null || dpp.length() == 0) continue;
-            
-            if (_addDependentListener(0, li, propertyName, dpp)) bWasAdded = true;;
-            if (bWasAdded && !bUsed) {
-                if (alListenerInfo == null) alListenerInfo = new ArrayList<HubListenerTree.ListenerInfo>();
-                if (!alListenerInfo.contains(li)) alListenerInfo.add(li);
-                bUsed = true;
-            }
-        }
-        
-        if (hlExtra == null && hsExtraProperties.size() > 0) {
-            hlExtra = new HubListenerAdapter() {
-                public void afterPropertyChange(HubEvent e) {
-                    String prop = e.getPropertyName();
-                    if (prop == null) return;
-                    
-                    ArrayList<String> al = hsExtraProperties.get(prop.toUpperCase()); 
-                    if (al != null) {
-                        for (String s : al) {
-                            HubEventDelegate.fireCalcPropertyChange(hub, e.getObject(), s);
-                        }
-                    }
-                }
-            };
-            if (addListener(hlExtra)) bWasAdded = true;
-        };
-        return bWasAdded;
-    }
-
-    private boolean _addDependentListener(final int cnter, final ListenerInfo li, final String propertyName, final String dependentPropertyPath) {
-        if (cnter > 15) return false;
-        
-        OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), dependentPropertyPath);
-        String[] props = pp.getProperties();
-        OALinkInfo[] lis = pp.getLinkInfos();
-        boolean bWasAdded = false;
-        
-        if ((lis.length > 0 && lis[0].getType() == OALinkInfo.ONE) || (lis.length == 0 && props.length == 1)) {
-            ArrayList<String> al = hsExtraProperties.get(props[0].toUpperCase());
-            if (al == null) {
-                al = new ArrayList<String>();
-                hsExtraProperties.put(props[0].toUpperCase(), al);
-            }
-            if (propertyName != null && !al.contains(propertyName.toUpperCase())) {
-                al.add(propertyName.toUpperCase());
-                bWasAdded = true;
-            }
-            
-            if (li.alExtraListenerProperties == null) {
-                li.alExtraListenerProperties = new ArrayList<String>();
-            }
-            if (!li.alExtraListenerProperties.contains(props[0].toUpperCase())) {
-                li.alExtraListenerProperties.add(props[0].toUpperCase());
-                bWasAdded = true;
-            }
-            
-            boolean bNeedsTrigger = (props.length > 1);
-            
-            if (lis.length == 0) {
-                // could be a calcProp
-                OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hub.getObjectClass());
-                String[] calcProps = null;
-                for (OACalcInfo ci : oi.getCalcInfos()) {
-                    if (ci.getName().equalsIgnoreCase(props[0])) {
-                        // make recursive
-                        String[] ps = ci.getProperties();
-                        if (ps == null) break;
-                        for (String p : ps) {
-                            if (_addDependentListener(cnter+1, li, propertyName, p)) bWasAdded = true;;
-                        }
-                        break;
-                    }
-                }       
-            }
-            if (!bNeedsTrigger) return bWasAdded;
-        }
-
-        // see if a trigger has already been created for this listener
-        OATrigger trigger;
-        if (hsTrigger == null) {
-            hsTrigger = new HashMap<String, OATrigger>();
-        }
-        else {
-            trigger = hsTrigger.get(dependentPropertyPath.toUpperCase());
-            if (trigger != null) {
-                if (li.alTrigger == null) li.alTrigger = new ArrayList<OATrigger>();
-                if (!li.alTrigger.contains(trigger)) {
-                    li.alTrigger.add(trigger);
-                    bWasAdded = true;
-                }
-                return bWasAdded;
-            }
-        }
-        
-        OATriggerListener tl = new OATriggerListener() {
-            
+        OATriggerListener triggerListener = new OATriggerListener() {
             @Override
             public void onTrigger(final OAObject rootObject, final HubEvent hubEvent, final String propertyPathFromRoot) throws Exception {
                 if (rootObject != null) {
@@ -309,7 +177,139 @@ public class HubListenerTree<T> {
             }
         };
         
-        trigger = new OATrigger(hub.getObjectClass(), tl, dependentPropertyPath, true, false, false);
+        if (calcProps != null && calcProps.length > 0) {
+            if (addDependentListeners(triggerListener, hl, propertyName, calcProps)) bWasAdded = true;
+        }
+
+        // now add the additional dependent properties
+        if (dependentPropertyPaths != null && dependentPropertyPaths.length > 0) {
+            if (addDependentListeners(triggerListener, hl, propertyName, dependentPropertyPaths)) bWasAdded = true;
+        }
+        return bWasAdded;
+    }    
+    
+    private boolean addDependentListeners(OATriggerListener triggerListener, final HubListener<T> hl, final String propertyName, final String[] dependentPropertyPaths) {
+        if (dependentPropertyPaths == null || dependentPropertyPaths.length == 0) return false;
+        synchronized (lock) {
+            return _addDependentListeners(triggerListener, hl, propertyName, dependentPropertyPaths);
+        }
+    }
+    private boolean _addDependentListeners(final OATriggerListener triggerListener, final HubListener<T> hl, final String propertyName, final String[] dependentPropertyPaths) {
+        ListenerInfo li = null;
+
+        if (alListenerInfo != null) {
+            for (ListenerInfo lix : alListenerInfo) {
+                if (lix.hl == hl) {
+                    li = lix;
+                    break;
+                }
+            }
+        }
+        if (li == null) {
+            li = new ListenerInfo();
+            li.hl = hl;
+        }
+        
+        boolean bUsed = false;
+        
+        boolean bWasAdded = false;
+
+        for (String dpp : dependentPropertyPaths) {
+            if (dpp == null || dpp.length() == 0) continue;
+            
+            if (_addDependentListener(triggerListener, 0, li, propertyName, dpp)) bWasAdded = true;;
+            if (bWasAdded && !bUsed) {
+                if (alListenerInfo == null) alListenerInfo = new ArrayList<HubListenerTree.ListenerInfo>();
+                if (!alListenerInfo.contains(li)) alListenerInfo.add(li);
+                bUsed = true;
+            }
+        }
+        
+        if (hlExtra == null && hsExtraProperties.size() > 0) {
+            hlExtra = new HubListenerAdapter() {
+                public void afterPropertyChange(HubEvent e) {
+                    String prop = e.getPropertyName();
+                    if (prop == null) return;
+                    
+                    ArrayList<String> al = hsExtraProperties.get(prop.toUpperCase()); 
+                    if (al != null) {
+                        for (String s : al) {
+                            HubEventDelegate.fireCalcPropertyChange(hub, e.getObject(), s);
+                        }
+                    }
+                }
+            };
+            if (addListener(hlExtra)) bWasAdded = true;
+        };
+        return bWasAdded;
+    }
+
+    private boolean _addDependentListener(final OATriggerListener triggerListener, final int cnter, final ListenerInfo li, final String propertyName, final String dependentPropertyPath) {
+        if (cnter > 15) return false;
+        
+        OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), dependentPropertyPath);
+        String[] props = pp.getProperties();
+        OALinkInfo[] lis = pp.getLinkInfos();
+        boolean bWasAdded = false;
+        
+        if ((lis.length > 0 && lis[0].getType() == OALinkInfo.ONE) || (lis.length == 0 && props.length == 1)) {
+            ArrayList<String> al = hsExtraProperties.get(props[0].toUpperCase());
+            if (al == null) {
+                al = new ArrayList<String>();
+                hsExtraProperties.put(props[0].toUpperCase(), al);
+            }
+            if (propertyName != null && !al.contains(propertyName.toUpperCase())) {
+                al.add(propertyName.toUpperCase());
+                bWasAdded = true;
+            }
+            
+            if (li.alExtraListenerProperties == null) {
+                li.alExtraListenerProperties = new ArrayList<String>();
+            }
+            if (!li.alExtraListenerProperties.contains(props[0].toUpperCase())) {
+                li.alExtraListenerProperties.add(props[0].toUpperCase());
+                bWasAdded = true;
+            }
+            
+            boolean bNeedsTrigger = (props.length > 1);
+            
+            if (lis.length == 0) {
+                // could be a calcProp
+                OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hub.getObjectClass());
+                String[] calcProps = null;
+                for (OACalcInfo ci : oi.getCalcInfos()) {
+                    if (ci.getName().equalsIgnoreCase(props[0])) {
+                        // make recursive
+                        String[] ps = ci.getProperties();
+                        if (ps == null) break;
+                        for (String p : ps) {
+                            if (_addDependentListener(triggerListener, cnter+1, li, propertyName, p)) bWasAdded = true;;
+                        }
+                        break;
+                    }
+                }       
+            }
+            if (!bNeedsTrigger) return bWasAdded;
+        }
+
+        // see if a trigger has already been created for this listener
+        OATrigger trigger;
+        if (hsTrigger == null) {
+            hsTrigger = new HashMap<String, OATrigger>();
+        }
+        else {
+            trigger = hsTrigger.get(dependentPropertyPath.toUpperCase());
+            if (trigger != null) {
+                if (li.alTrigger == null) li.alTrigger = new ArrayList<OATrigger>();
+                if (!li.alTrigger.contains(trigger)) {
+                    li.alTrigger.add(trigger);
+                    bWasAdded = true;
+                }
+                return bWasAdded;
+            }
+        }
+        
+        trigger = new OATrigger(hub.getObjectClass(), triggerListener, dependentPropertyPath, true, false, false);
         OATriggerDelegate.createTrigger(trigger, true);
 
         hsTrigger.put(dependentPropertyPath.toUpperCase(), trigger);

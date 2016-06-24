@@ -4,10 +4,12 @@ import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OATrigger;
+import com.viaoa.util.OADate;
 
 import test.hifive.model.oa.*;
 import test.hifive.model.oa.propertypath.EmployeePP;
 import test.hifive.model.oa.propertypath.LocationPP;
+import test.hifive.model.oa.propertypath.ProgramPP;
 
 import org.junit.Test;
 
@@ -295,11 +297,127 @@ public class HubListenerTreeTest extends OAUnitTest {
         assertTrue(h.removeHubListener(hl));
     }
     
+    @Test
+    public void test8() throws Exception {
+        Hub<Employee> h = new Hub<Employee>(Employee.class);
+
+        final AtomicInteger ai = new AtomicInteger();
+        HubListener hl = new HubListenerAdapter<Employee>() {
+            @Override
+            public void afterPropertyChange(HubEvent<Employee> e) {
+                if ("Testxx".equalsIgnoreCase(e.getPropertyName())) ai.incrementAndGet();
+            }
+        };
+
+        h.addHubListener(hl, "Testxx", EmployeePP.location().program().name());
+
+        Employee emp = new Employee();
+        h.add(emp);
+        assertEquals(0, ai.get());
+        
+        Location loc = new Location();
+        emp.setLocation(loc);
+        assertEquals(1, ai.get());
+        
+        emp.setLocation(null);
+        assertEquals(2, ai.get());
+        emp.setLocation(loc);
+        assertEquals(3, ai.get());
+        
+        Program prog = new Program();
+        loc.setProgram(prog);  // NOTE: trigger will later be done in bg thread  qqqqqqqqq
+        for (int i=0; i<4; i++) {
+            if (ai.get() == 4) break;
+            Thread.sleep(50);
+        }
+        assertEquals(4, ai.get());
+        
+        prog.setName("xx");
+        for (int i=0; i<4; i++) {
+            if (ai.get() == 5) break;
+            Thread.sleep(50);
+        }
+        assertEquals(5, ai.get());
+        
+        int xx = 4;
+        xx++;
+    }
     
+    @Test
+    public void test9() {
+        Hub<Program> h = new Hub<Program>(Program.class);
+
+        final AtomicInteger ai = new AtomicInteger();
+        HubListener hl = new HubListenerAdapter<Program>() {
+            @Override
+            public void afterPropertyChange(HubEvent<Program> e) {
+                if ("TestzzZ".equalsIgnoreCase(e.getPropertyName())) {
+                    ai.incrementAndGet();
+                }
+            }
+        };
+
+        h.addHubListener(hl, "TestzzZ", new String[] {
+            ProgramPP.locations().employees().employeeAwards().awardType().name(),
+            ProgramPP.locations().employees().fullName(),
+            ProgramPP.locations().employees().employeeAwards().pp,
+            ProgramPP.locations().employees().pp,
+            ProgramPP.locations().pp
+        });
+
+        int cnt = 0;
+        Program prog = new Program();
+        h.add(prog);
+        assertEquals(cnt, ai.get());
+        prog.setName("xx");
+        assertEquals(cnt, ai.get());
+        
+        Location loc = new Location();
+        prog.getLocations().add(loc);
+        assertEquals(++cnt, ai.get());
+        loc.setProgram(prog);
+        assertEquals(cnt, ai.get());
+        
+        Employee emp = new Employee();
+        emp.setLocation(loc);
+        assertEquals(++cnt, ai.get());
+        
+        EmployeeAward ea = new EmployeeAward();
+        ea.setEmployee(emp);
+        assertEquals(++cnt, ai.get());
+        
+        AwardType at = new AwardType();
+        ea.setAwardType(at);
+        assertEquals(++cnt, ai.get());
+                
+        ea.setAwardDate(new OADate());
+        assertEquals(cnt, ai.get());
+
+        at.setName("n");
+        assertEquals(++cnt, ai.get());
+        
+        ea.setEmployee(null);
+        assertEquals(++cnt, ai.get());
+
+        ea.setEmployee(emp);
+        assertEquals(++cnt, ai.get());
+        
+        emp.setFirstName("fxx");
+        assertEquals(++cnt, ai.get());
+        emp.setLastName("lxx");
+        assertEquals(++cnt, ai.get());
+        emp.setMiddleName("mxx");
+        assertEquals(++cnt, ai.get());
+        
+        h.removeHubListener(hl);
+        
+        //qqqqqqqqqq
+        // check triggers qqqqqqq
+    }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         HubListenerTreeTest test = new HubListenerTreeTest();
-        test.test6();
-        test.test7();
+        test.test8();
+        test.test9();
     }
 }
