@@ -46,7 +46,10 @@ public class OATriggerDelegate {
         
         return true;
     }
-    
-    
-    
+
+    public static void runTrigger(Runnable r) {
+//        qqqqqqqqqq create executorservice, logging, etc
+        
+        
+    }
 }

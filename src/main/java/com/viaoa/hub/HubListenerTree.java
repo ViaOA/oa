@@ -15,7 +15,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.viaoa.object.*;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
@@ -260,9 +262,9 @@ public class HubListenerTree<T> {
         }
         
         OATriggerListener tl = new OATriggerListener() {
+            
             @Override
             public void onTrigger(final OAObject rootObject, final HubEvent hubEvent, final String propertyPathFromRoot) throws Exception {
-                
                 if (rootObject != null) {
                     if (HubListenerTree.this.hub.contains(rootObject)) {
                         HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, rootObject, propertyName);
@@ -270,7 +272,7 @@ public class HubListenerTree<T> {
                     return;
                 }
 
-                // the reverse property did not work
+                // the reverse property could not be used to get objRoot - need to find root objs and send calc event
                 if (!hub.isOAObject()) {
                     HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, rootObject, propertyName);
                     return;
@@ -280,7 +282,6 @@ public class HubListenerTree<T> {
                     HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, rootObject, propertyName);
                     return;
                 }
-
                 
                 // need to find all objects that are affected
                 OAFinder finder = new OAFinder(propertyPathFromRoot) {

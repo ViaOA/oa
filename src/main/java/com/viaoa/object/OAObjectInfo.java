@@ -376,7 +376,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         String ppFromRootClass;;  
         String ppToRootClass;;  // reverse propPath from thisClass to root Class
         String listenProperty;  // property/hub to listen to.
-        boolean bReversePropertyIsInvalid;
+        boolean bDontUseReverseFinder;
     }
     
     // list of triggers per prop/link name
@@ -420,12 +420,16 @@ public class OAObjectInfo { //implements java.io.Serializable {
             String propPath = "";
             String revPropPath = "";
             OAObjectInfo oix = this;
+            boolean bDontUseReverseFinder = false;
             for (int i=0; i<pp.getLinkInfos().length; i++) {
                 OALinkInfo li = pp.getLinkInfos()[i];
+                OALinkInfo rli = li.getReverseLinkInfo();
+                if (rli == null || rli.getType() == OALinkInfo.MANY) bDontUseReverseFinder = true;
                 if (bSkipFirstNonManyProperty && i == 0 && (li.getType() == OALinkInfo.ONE)) {
                 }
                 else {
-                    oix._addTrigger(trigger, propPath, revPropPath, li.getName());
+                    TriggerInfo ti = oix._addTrigger(trigger, propPath, revPropPath, li.getName());
+                    ti.bDontUseReverseFinder = bDontUseReverseFinder; 
                 }
                 
                 if (propPath.length() > 0) {
@@ -442,14 +446,15 @@ public class OAObjectInfo { //implements java.io.Serializable {
             if (!pp.isLastPropertyLinkInfo()) {
                 String[] ss = pp.getProperties();
                 if (!bSkipFirstNonManyProperty || ss.length > 1) {
-                    oix._addTrigger(trigger, propPath, revPropPath, ss[ss.length-1]);
+                    TriggerInfo ti = oix._addTrigger(trigger, propPath, revPropPath, ss[ss.length-1]);
+                    ti.bDontUseReverseFinder = bDontUseReverseFinder; 
                 }
             }
         }
     }    
     
     // add the trigger to the correct OI for a propertyPath
-    private void _addTrigger(final OATrigger trigger, final String propPath, final String revPropPath, final String listenProperty) { 
+    private TriggerInfo _addTrigger(final OATrigger trigger, final String propPath, final String revPropPath, final String listenProperty) { 
         if (trigger == null || listenProperty == null) {
             throw new IllegalArgumentException("args can not be null");
         }
@@ -467,7 +472,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             }
         }
         for (TriggerInfo ti : al) {
-            if (ti.trigger.triggerListener == trigger.triggerListener) return;
+            if (ti.trigger.triggerListener == trigger.triggerListener) return ti;
         }
 
         int x = aiTrigger.incrementAndGet();
@@ -508,6 +513,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             }
         }
         al.add(ti);
+        return ti;
     }
 
     public void removeTrigger(OATrigger trigger) {
@@ -563,6 +569,19 @@ public class OAObjectInfo { //implements java.io.Serializable {
     public boolean getHasTriggers() {
         return hmTriggerInfo.size() > 0;
     }
+
+    public ArrayList<OATrigger> getTriggers(String propertyName) {
+        if (propertyName == null) return null;
+        CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(propertyName.toUpperCase());
+        if (al == null) return null;
+        ArrayList<OATrigger> alTrigger = new ArrayList<OATrigger>();
+        for (TriggerInfo ti : al) {
+            alTrigger.add(ti.trigger);
+        }
+        return alTrigger;
+    }
+
+    
     
     /**
      * called by OAObject.propChange, and Hub.add/remove/removeAll/insert when a change is made.
@@ -579,17 +598,6 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
     }        
     
-    public ArrayList<OATrigger> getTriggers(String propertyName) {
-        if (propertyName == null) return null;
-        CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(propertyName.toUpperCase());
-        if (al == null) return null;
-        ArrayList<OATrigger> alTrigger = new ArrayList<OATrigger>();
-        for (TriggerInfo ti : al) {
-            alTrigger.add(ti.trigger);
-        }
-        return alTrigger;
-    }
-    
     private void _onChange(final OAObject fromObject, final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
         boolean b = false;
         boolean b2 = false; 
@@ -599,6 +607,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             b2 = OASync.sendMessages();
         }
 
+        long ts = System.currentTimeMillis();
         try {
             _onChange2(fromObject, prop, ti, hubEvent);
         }
@@ -607,6 +616,13 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 OASync.sendMessages(b2);
             }
         }
+        ts = System.currentTimeMillis() - ts;
+        
+        if (ts > 3) {
+            String s = "over 3ms, fromObject="+fromObject.getClass().getSimpleName()+", property="+ti.ppFromRootClass+", ts="+ts;
+            LOG.fine(s);
+            OAPerformance.LOG.fine(s);
+        }
     }
 
     private void _onChange2(final OAObject fromObject, final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
@@ -614,7 +630,20 @@ public class OAObjectInfo { //implements java.io.Serializable {
             if (!OASync.isServer()) return;
             OASync.sendMessages();
         }
-        
+
+        if (ti.trigger.bUseBackgroundThread || ti.bDontUseReverseFinder) {
+            OATriggerDelegate.runTrigger(new Runnable() {
+                @Override
+                public void run() {
+                    _runOnChange2(fromObject, prop, ti, hubEvent);
+                }
+            });
+        }
+        else {
+            _runOnChange2(fromObject, prop, ti, hubEvent);
+        }
+    }        
+    private void _runOnChange2(final OAObject fromObject, final String prop, final TriggerInfo ti, final HubEvent hubEvent) {
         if (ti.ppToRootClass == null || ti.ppToRootClass.length() == 0) {
             try {
                 ti.trigger.triggerListener.onTrigger(fromObject, hubEvent, ti.ppToRootClass);
@@ -628,9 +657,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             return;
         }
         
-        if (ti.bReversePropertyIsInvalid) {
-            // the reverse pp is invalid, cant send a change event for the affected objects.
-            //    will send one event for the change that was made
+        if (ti.bDontUseReverseFinder) {
             try {
                 ti.trigger.triggerListener.onTrigger(null, hubEvent, ti.ppFromRootClass);
             }
@@ -660,7 +687,6 @@ public class OAObjectInfo { //implements java.io.Serializable {
                         e);
                 }
             }
-            
         };
         finder.setUseOnlyLoadedData(ti.trigger.bOnlyUseLoadedData);
     
@@ -668,11 +694,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
             finder.find(fromObject);
         }
         catch (Exception e) {
-            ti.bReversePropertyIsInvalid = true;
+            ti.bDontUseReverseFinder = true;
             _onChange2(fromObject, prop, ti, hubEvent);
         }
     }
-//qqqqqqqqqqqq run in another thread ...... flag
-//?? qqqqqqqqq option to cancel if it is called again while it is being processed qqqqqqqqqqq    
-    
 }

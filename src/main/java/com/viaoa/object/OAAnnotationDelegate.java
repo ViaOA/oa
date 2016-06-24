@@ -17,13 +17,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.annotation.*;
+import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.OASelect;
 import com.viaoa.ds.jdbc.db.*;
-import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
-import com.viaoa.hub.HubEventDelegate;
-import com.viaoa.hub.HubListenerTree;
 import com.viaoa.util.*;
 
 
@@ -302,7 +300,7 @@ public class OAAnnotationDelegate {
             
             String[] props = annotation.properties();
             if (props == null || props.length == 0) continue;
-            boolean bBackgroundThread = annotation.runInBackgroundThread(); 
+            final boolean bBackgroundThread = annotation.runInBackgroundThread(); 
             final boolean bOnlyUseLoadedData = annotation.onlyUseLoadedData();
             boolean bServerSideOnly = annotation.runOnServer(); 
             
@@ -325,8 +323,8 @@ public class OAAnnotationDelegate {
                         mx.invoke(objRoot, new Object[] {hubEvent});
                         return;
                     }
-
-                    // the reverse property did not work to get objRoot - need to find root objs
+                    
+                    // the reverse property could not be used to get objRoot - need to find root objs and call callback method
                     final OAFinder finder = new OAFinder(propertyPathFromRoot) {
                         protected boolean isUsed(OAObject obj) {
                             if (obj == hubEvent.getObject()) return true;
@@ -339,7 +337,7 @@ public class OAAnnotationDelegate {
                     finder.setUseOnlyLoadedData(bOnlyUseLoadedData);
 
                     Hub h = OAObjectCacheDelegate.getSelectAllHub(clazz);
-                    if (h != null) {
+                    if (h != null && bOnlyUseLoadedData) {
                         for (Object objx : h) {
                             if (finder.findFirst( (OAObject) objx) == null) continue;
                             mx.invoke(objx, new Object[] {hubEvent});
@@ -361,7 +359,17 @@ public class OAAnnotationDelegate {
                         });
                     }
                     else {
-                        OASelect sel = new OASelect(oi.getForClass());
+                        // see if a query can be used.
+                        OASelect sel = null;
+                        if (hubEvent.getObject() != null) {
+                            OADataSource ds = OADataSource.getDataSource(clazz);
+                            if (ds != null && ds.supportsStorage()) {
+                                String query = propertyPathFromRoot + " = ?";
+                                sel = new OASelect(oi.getForClass(), query, new Object[] {hubEvent.getObject()}, "");
+                            }
+                        }
+                        
+                        if (sel == null) sel = new OASelect(oi.getForClass());
                         sel.select();
                         for (;;) {
                             Object objNext = sel.next();
