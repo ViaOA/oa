@@ -21,9 +21,10 @@ public class OATriggerDelegate {
         String[] dependentPropertyPaths, 
         final boolean bOnlyUseLoadedData, 
         final boolean bServerSideOnly, 
-        final boolean bBackgroundThread)
+        final boolean bBackgroundThread,
+        final boolean bBackgroundThreadIfNeeded)
     {
-        OATrigger t = new OATrigger(name, rootClass, triggerListener, dependentPropertyPaths, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+        OATrigger t = new OATrigger(name, rootClass, triggerListener, dependentPropertyPaths, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread, bBackgroundThreadIfNeeded);
 
         createTrigger(t);
         return t;

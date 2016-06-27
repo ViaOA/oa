@@ -68,10 +68,6 @@ public class InspireRecipientRecentFilter extends OAObject implements CustomHubF
         if (!bUseObjectCache) return null;
         cacheFilter = new OAObjectCacheFilter<InspireRecipient>(hubMaster) {
             @Override
-            public boolean isUsedFromObjectCache(InspireRecipient inspireRecipient) {
-                return InspireRecipientRecentFilter.this.isUsedFromObjectCache(inspireRecipient);
-            }
-            @Override
             public boolean isUsed(InspireRecipient inspireRecipient) {
                 return InspireRecipientRecentFilter.this.isUsed(inspireRecipient);
             }
@@ -95,7 +91,4 @@ public class InspireRecipientRecentFilter extends OAObject implements CustomHubF
         return today.before(d);
     }
     
-    public boolean isUsedFromObjectCache(InspireRecipient inspireRecipient) {
-        return true;
-    }
 }

@@ -13,6 +13,7 @@ public class OATrigger {
     protected final boolean bOnlyUseLoadedData; 
     protected final boolean bServerSideOnly;
     protected final boolean bUseBackgroundThread;
+    protected final boolean bUseBackgroundThreadIfNeeded;
     protected OATrigger[] dependentTriggers;
     
     public OATrigger(
@@ -22,7 +23,8 @@ public class OATrigger {
         String[] propertyPaths, 
         final boolean bOnlyUseLoadedData, 
         final boolean bServerSideOnly, 
-        final boolean bUseBackgroundThread)
+        final boolean bUseBackgroundThread,
+        final boolean bUseBackgroundThreadIfNeeded)
     {
         this.name = name;
         this.rootClass = rootClass;
@@ -31,6 +33,7 @@ public class OATrigger {
         this.bOnlyUseLoadedData = bOnlyUseLoadedData;
         this.bServerSideOnly = bServerSideOnly;
         this.bUseBackgroundThread = bUseBackgroundThread;
+        this.bUseBackgroundThreadIfNeeded = bUseBackgroundThreadIfNeeded;
     }
     
     public OATrigger(
@@ -40,7 +43,8 @@ public class OATrigger {
             String propertyPath, 
             final boolean bOnlyUseLoadedData, 
             final boolean bServerSideOnly, 
-            final boolean bUseBackgroundThread)
+            final boolean bUseBackgroundThread,
+            final boolean bUseBackgroundThreadIfNeeded)
         {
             this.name = name;
             this.rootClass = rootClass;
@@ -49,6 +53,7 @@ public class OATrigger {
             this.bOnlyUseLoadedData = bOnlyUseLoadedData;
             this.bServerSideOnly = bServerSideOnly;
             this.bUseBackgroundThread = bUseBackgroundThread;
+            this.bUseBackgroundThreadIfNeeded = bUseBackgroundThreadIfNeeded;
         }
 
     public OATrigger[] getDependentTriggers() {

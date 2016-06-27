@@ -50,10 +50,6 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
             public void onTrigger(Employee obj) {
                 ai.incrementAndGet();
             }
-            @Override
-            public boolean isUsedFromObjectCache(Employee obj) {
-                return abFlag.get();
-            }
         };
 
         assertEquals(0, ai.get());
@@ -77,11 +73,6 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         final AtomicInteger aiIsUsed = new AtomicInteger();
         
         OAObjectCacheTrigger<Employee> objectCacheTrigger = new OAObjectCacheTrigger<Employee>(Employee.class) {
-            @Override
-            public boolean isUsedFromObjectCache(Employee emp) {
-                aiIsUsedFromObjectCache.incrementAndGet();
-                return super.isUsedFromObjectCache(emp);
-            }
             @Override
             public boolean isUsed(Employee emp) {
                 aiIsUsed.incrementAndGet();

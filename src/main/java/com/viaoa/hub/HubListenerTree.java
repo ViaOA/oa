@@ -308,7 +308,7 @@ public class HubListenerTree<T> {
             }
         }
         
-        trigger = new OATrigger(propertyName, hub.getObjectClass(), triggerListener, dependentPropertyPath, true, false, true);
+        trigger = new OATrigger(propertyName, hub.getObjectClass(), triggerListener, dependentPropertyPath, true, false, false, true);
         OATriggerDelegate.createTrigger(trigger, true);
 
         hsTrigger.put(dependentPropertyPath.toUpperCase(), trigger);

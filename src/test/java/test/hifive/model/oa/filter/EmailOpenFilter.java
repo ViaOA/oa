@@ -59,10 +59,11 @@ public class EmailOpenFilter extends OAObject implements CustomHubFilter {
                 return EmailOpenFilter.this.isUsed(email);
             }
         };
-        hubFilter.addDependentProperty(EmailPP.sentDateTime());
-        hubFilter.addDependentProperty(EmailPP.cancelDate());
-        hubFilter.addDependentProperty(EmailPP.fromEmail());
-        hubFilter.addDependentProperty(EmailPP.toEmail());
+        hubFilter.addDependentProperty(EmailPP.sentDateTime(), false);
+        hubFilter.addDependentProperty(EmailPP.cancelDate(), false);
+        hubFilter.addDependentProperty(EmailPP.fromEmail(), false);
+        hubFilter.addDependentProperty(EmailPP.toEmail(), false);
+        hubFilter.refresh();
         return hubFilter;
     }
 
@@ -70,10 +71,6 @@ public class EmailOpenFilter extends OAObject implements CustomHubFilter {
         if (cacheFilter != null) return cacheFilter;
         if (!bUseObjectCache) return null;
         cacheFilter = new OAObjectCacheFilter<Email>(hubMaster) {
-            @Override
-            public boolean isUsedFromObjectCache(Email email) {
-                return EmailOpenFilter.this.isUsedFromObjectCache(email);
-            }
             @Override
             public boolean isUsed(Email email) {
                 return EmailOpenFilter.this.isUsed(email);
@@ -88,8 +85,5 @@ public class EmailOpenFilter extends OAObject implements CustomHubFilter {
 
     public boolean isUsed(Email email) {
         return email.isOpen();
-    }
-    public boolean isUsedFromObjectCache(Email email) {
-        return true; 
     }
 }

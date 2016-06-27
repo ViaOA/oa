@@ -15,7 +15,7 @@ import com.viaoa.hub.HubEvent;
 /**
  * Code that is called to notify when a change is made to a dependent property. 
 */
-public interface OATriggerListener {
+public interface OATriggerListener<T extends OAObject> {
     
     /**
      * Called when a change is made to a dependent property. 
@@ -23,7 +23,7 @@ public interface OATriggerListener {
      * @param hubEvent info about the event
      * @param propertyPathFromRoot path from root class to the object that has the event
      */
-    public void onTrigger(OAObject objRoot, HubEvent hubEvent, String propertyPathFromRoot) throws Exception;
+    public void onTrigger(T objRoot, HubEvent hubEvent, String propertyPathFromRoot) throws Exception;
 }
 
 

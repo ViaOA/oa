@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
-import com.viaoa.hub.HubListener;
-import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAFilter;
 
@@ -16,32 +14,30 @@ import com.viaoa.util.OAFilter;
  * @author vvia
  */
 public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
-
+    private static final long serialVersionUID = 1L;
     private Class<T> clazz;
     private WeakReference<Hub<T>> wrHub;
 
-    // list of propPaths to listen for
-    private String[] dependentPropertyNames;
-    
-    // this will be set when a calc property is needed for the dependent propertyPath(s)
-    private String calcDependentPropertyName;
+    private String name;
 
+    private OAObjectCacheListener cacheListener;    
+    
+    // list of propPaths to listen for
+    private String[] dependentPropertyPaths;
+    
+    
+    
     // used to create a unique calc propName
     private static AtomicInteger aiUnique = new AtomicInteger();  
 
-    // object cache listener
-    private OAObjectCacheListener<T> hlObjectCache;
+    private OATrigger trigger;
     
-    // if a calc prop is used, then objects will be put into a temp hub, so that they can be listened to.
-    private Hub<T> hubTemp;  
-    private HubListener<T> hlTemp;
-
     // list of filters that must return true for the isUsed to return true.
     private ArrayList<OAFilter<T>> alFilter;
 
     
     /**
-     * create a object cache filter, and have hub updated with all objects that match filter(s) and isUsed methods return true.
+     * create an object cache filter, and have hub updated with all objects that match filter(s) and isUsed methods return true.
      */
     public OAObjectCacheFilter(Hub<T> hub) {
         this(hub, null);
@@ -49,7 +45,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     
     /**
      * Create new cache filter.  Cached objects that are true for isUsedFromObjectCache & isUsed will be added to hub.
-     * @param hub is size is equal to 0, then refresh will be called.  Otherwise refresh will not be called, since it's
+     * @param hub if size is equal to 0, then refresh will be called.  Otherwise refresh will not be called, since it's
      * assumed that the objects were preselected.
      */
     public OAObjectCacheFilter(Hub<T> hub, OAFilter<T> filter) {
@@ -57,8 +53,30 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         clazz = hub.getObjectClass();
         wrHub = new WeakReference<Hub<T>>(hub);
  
-        setupCacheListener();
         if (filter != null) addFilter(filter, false);
+        
+        cacheListener = new OAObjectCacheListener<T>() {
+            @Override
+            public void afterPropertyChange(T obj, String propertyName, Object oldValue, Object newValue) {
+            }
+            @Override
+            public void afterAdd(T obj) {
+                // new object is created
+                final Hub<T> hub = wrHub.get();
+                if (hub == null) return;
+                if (isUsed((T) obj)) {
+                    hub.add((T) obj);
+                }
+            }
+            @Override
+            public void afterAdd(Hub<T> hub, T obj) {
+            }
+            @Override
+            public void afterRemove(Hub<T> hub, T obj) {
+            }
+        };        
+        OAObjectCacheDelegate.addListener(clazz, cacheListener);
+        
         if (hub.getSize() == 0) {
             refresh();
         }  // else the hub must have been preselected
@@ -75,13 +93,10 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             }
         }
         
-        setupCacheListener();
         if (filter != null) addFilter(filter, false);
         if (hub.getSize() == 0) {
-            if (dependentPropPaths != null) {
-                refresh();
-            }
-        }
+            refresh();
+        }  // else the hub must have been preselected
     }
     
     /**
@@ -120,8 +135,6 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
      * To be added, isUsedFromObjectCache() and isUsed() must return true.
      */
     public void refresh() {
-        if (hubTemp != null) hubTemp.clear();
-
         final Hub<T> hub = wrHub.get();
         if (hub == null) {
             close();
@@ -132,14 +145,12 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             hub.setLoading(true);
             hub.clear();
             // need to check loaded objects 
-            OAObjectCacheDelegate.callback(clazz, new OACallback() {
+            OAObjectCacheDelegate.visit(clazz, new OACallback() {
+                @SuppressWarnings("unchecked")
                 @Override
                 public boolean updateObject(Object obj) {
-                    if (isUsedFromObjectCache((T) obj)) {
-                        if (hubTemp != null) hubTemp.add((T) obj);
-                        if (isUsed((T) obj)) {
-                            hub.add((T) obj);
-                        }
+                    if (isUsed((T) obj)) {
+                        hub.add((T) obj);
                     }
                     return true;
                 }
@@ -163,30 +174,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     public void addDependentProperty(final String prop, final boolean bRefresh) {
         if (prop == null || prop.length() == 0) return;
         
-        dependentPropertyNames = (String[]) OAArray.add(String.class, dependentPropertyNames, prop);
-        
-        // check to see if a calc property is used, which will require a temp Hub to be set up.
-        if (calcDependentPropertyName == null) {
-            boolean b = (prop.indexOf(".") >= 0);
-            if (!b) {
-                OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(clazz);
-                String[] calcProps = null;
-                for (OACalcInfo ci : oi.getCalcInfos()) {
-                    if (ci.getName().equalsIgnoreCase(prop)) {
-                        b = true;
-                    }
-                }
-            }
-            
-            if (b) {
-                calcDependentPropertyName = "OAObjectCacheFilter" + (aiUnique.incrementAndGet());
-                hubTemp = new Hub(clazz);
-            }
-        }
-        
-        if (calcDependentPropertyName != null) {
-            if (hlTemp == null) setupTempHubListener();
-        }
+        dependentPropertyPaths = (String[]) OAArray.add(String.class, dependentPropertyPaths, prop);
         
         // need to recheck in case there was previous changes for the newly added dependentProp that was never checked.  
         final Hub<T> hub = wrHub.get();
@@ -195,157 +183,109 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             return;
         }
         
+        setupTrigger();
+
         if (!bRefresh) return;
-        
-        OAObjectCacheDelegate.callback(clazz, new OACallback() {
+        OAObjectCacheDelegate.visit(clazz, new OACallback() {
             @Override
             public boolean updateObject(Object obj) {
-                if (isUsedFromObjectCache((T) obj)) {
-                    if (hubTemp != null) hubTemp.add((T) obj);
-                    if (isUsed((T) obj)) hub.add((T) obj);
-                    else hub.remove((T) obj);
-                }
-                else {
-                    if (hubTemp != null) hubTemp.remove((T) obj);
-                    hub.remove((T) obj);
-                }
+                if (isUsed((T) obj)) hub.add((T) obj);
+                else hub.remove((T) obj);
                 return true;
             }
         });
     }
     
-    
-    protected void setupCacheListener() {
-        if (hlObjectCache != null) return;
-        hlObjectCache = new OAObjectCacheListener<T>() {
-            @Override 
-            public void afterPropertyChange(T obj, String propName, Object oldValue, Object newValue) {
-                if (propName == null) return;
-
-                if (hubTemp != null) return; // hubTemp listener will get propChange for calcPropName
-                
-                Hub<T> hub = wrHub.get();
-                if (hub == null) return;
-                
-                if (dependentPropertyNames == null) return;
-                boolean b = false;
-                for (String s : dependentPropertyNames) {
-                    if (s.equalsIgnoreCase(propName)) {
-                        b = true;
-                    }
+    protected void setupTrigger() {
+        OATriggerListener<T> triggerListener = new OATriggerListener<T>() {
+            @Override
+            public void onTrigger(final T rootObject, final HubEvent hubEvent, final String propertyPathFromRoot) throws Exception {
+                final Hub<T> hub = wrHub.get();
+                if (hub == null) {
+                    return;
                 }
-                if (!b) return;
                 
-                if (isUsedFromObjectCache(obj) && isUsed(obj)) hub.add(obj);
-                else hub.remove(obj);
-            }
-            
-            @Override
-            public void afterAdd(T obj) {
-                Hub<T> hub = wrHub.get();
-                if (hub == null) return;
-                
-                if (!isUsedFromObjectCache(obj)) return; // it's new so it cant be in hubs yet
-
-                if (hubTemp != null) {
-                    hubTemp.add(obj);
-                }
-
-                if (isUsed(obj)) {
-                    boolean b = OAThreadLocalDelegate.isLoadingObject();
-                    try {
-                        if (b) OAThreadLocalDelegate.setLoadingObject(false);
-                        hub.add(obj);
-                    }
-                    finally {
-                        if (b) OAThreadLocalDelegate.setLoadingObject(true);
-                    }
-                }
-            }
-
-            @Override
-            public void afterAdd(Hub<T> hub, T obj) {
-            }
-            @Override
-            public void afterRemove(Hub<T> hub, T obj) {
-            }
-        };
-        OAObjectCacheDelegate.addListener(clazz, hlObjectCache);
-    }
-    protected void setupTempHubListener() {
-        // 20160602
-        if (hlTemp != null) {
-            hubTemp.removeHubListener(hlTemp);
-        }
-        //was: if (hlTemp != null) return;
-        
-        if (hubTemp == null) return;
-        if (calcDependentPropertyName == null) return;
-
-        // only used if a calc property is being used
-        // need to put all objects in hubTemp so that it can listen to prop changes
-        hlTemp = new HubListenerAdapter<T>() {
-            @Override
-            public void afterPropertyChange(HubEvent<T> e) {
-                String propName = e.getPropertyName();
-                if (propName == null) return;
-                if (!calcDependentPropertyName.equalsIgnoreCase(propName)) return;
+                if (rootObject == null) {
+                    Hub hubx = hubEvent.getHub();
+                    final OAObject masterObject = hubx == null ? null : hubx.getMasterObject();
                     
-                T obj = e.getObject();
-                if (obj == null) return;
-                boolean b = isUsedFromObjectCache(obj); 
-                if (!b) hubTemp.remove(obj);
-                        
-                b = b && isUsed(obj);
+                    // the reverse property could not be used to get objRoot 
+                    // - need see if any of the rootObjs + pp used the changed obj
+                    final OAFinder finder = new OAFinder(propertyPathFromRoot) {
+                        protected boolean isUsed(OAObject obj) {
+                            if (obj == hubEvent.getObject()) return true;
+                            if (masterObject == obj) return true;
+                            return false;
+                        }
+                    };
+                    finder.setUseOnlyLoadedData(false);
 
-                Hub<T> hub = wrHub.get();
-                if (hub != null) {
-                    if (b) hub.add(obj);
-                    else hub.remove(obj);
+                    OAObjectCacheDelegate.visit(clazz, new OACallback() {
+                        @SuppressWarnings("unchecked")
+                        @Override
+                        public boolean updateObject(Object obj) {
+                            if (finder.findFirst((OAObject) obj) == null) return true;
+                            
+                            if (isUsed((T) obj)) {
+                                hub.add((T) obj);
+                            }
+                            else {
+                                hub.remove((T) obj);
+                            }
+                            return true;
+                        }
+                    });
+                }
+                else {
+                    if (isUsed((T) rootObject)) hub.add((T) rootObject);
+                    else hub.remove((T) rootObject);
                 }
             }
         };
-        hubTemp.addHubListener(hlTemp, calcDependentPropertyName, dependentPropertyNames);
+        
+        if (trigger != null) {
+            OATriggerDelegate.removeTrigger(trigger);
+        }
+        
+        if (name == null) {
+            name = "OAObjectCacheFilter" + (aiUnique.incrementAndGet());
+        }
+        
+        trigger = new OATrigger(name, clazz, triggerListener, dependentPropertyPaths, true, false, false, true);
+        OATriggerDelegate.createTrigger(trigger);
     }
-
+    
+    
+    public void close() {
+        if (trigger == null) {
+            OATriggerDelegate.removeTrigger(trigger);
+            trigger = null;
+        }
+        if (cacheListener == null) {
+            OAObjectCacheDelegate.removeListener(clazz, cacheListener);
+            cacheListener = null;
+        }
+    }
+    
     @Override
     protected void finalize() throws Throwable {
-        // 20160602 not needed, since listeners are kept in gc reachable collections
-        // close();
+        close();
         super.finalize();
     }
     
-    public void close() {
-        if (hlObjectCache != null) {
-            OAObjectCacheDelegate.removeListener(clazz, hlObjectCache);
-            hlObjectCache = null;
-        }
-        if (hlTemp != null) {
-            hubTemp.removeHubListener(hlTemp);
-            hlTemp = null;
-        }
-    }
-
-    
     /**
      * Called to see if an object should be included in hub.
-     * By default, this will return true if all filters.isUsed() returns true.  If no filters, then default is to return true. 
+     * By default, this will return false if no filters have been added, or the result of the filters. 
      */
     @Override
     public boolean isUsed(T obj) {
-        if (alFilter != null) {
-            for (OAFilter f : alFilter) {
-                if (!f.isUsed(obj)) return false;
-            }
+        if (alFilter == null) {
+            return false;
         }
-        return true;
-    }
-    
-    /**
-     * Called to see if this object needs to used from the ObjectCache.  If this returns false, then it wont be considered to be added to hub.
-     * @return true by default, can be overwritten to be selective on which objects are being used from the cache.
-     */
-    public boolean isUsedFromObjectCache(T obj) {
+        
+        for (OAFilter<T> f : alFilter) {
+            if (!f.isUsed(obj)) return false;
+        }
         return true;
     }
 }

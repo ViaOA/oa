@@ -297,6 +297,7 @@ public class OAObjectCacheDelegate {
 	protected static void fireAfterAddEvent(Object obj) {
         if (aiListenerCount.get() == 0) return;
         if (obj == null) return;
+
         final OAObjectCacheListener[] hl = getListeners(obj.getClass());
         if (hl == null) return; 
 	    final int x = hl.length;

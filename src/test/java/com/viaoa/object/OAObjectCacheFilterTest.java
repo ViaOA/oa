@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
 import com.viaoa.util.OAFilter;
+import com.viaoa.util.filter.OAFilterDelegate;
 
 import test.hifive.model.oa.Employee;
 import test.hifive.model.oa.Location;
@@ -20,18 +21,21 @@ public class OAObjectCacheFilterTest extends OAUnitTest {
         ArrayList<Employee> al = new ArrayList<Employee>();
         reset();
         
-        final AtomicBoolean abFlag = new AtomicBoolean(true);
-        
         Hub<Employee> hubFiltered = new Hub<Employee>(Employee.class);
-        OAObjectCacheFilter<Employee> objectCacheFilter = new OAObjectCacheFilter<Employee>(hubFiltered) {
-            @Override
-            public boolean isUsedFromObjectCache(Employee obj) {
-                return abFlag.get();
-            }
-        };
+        OAObjectCacheFilter<Employee> objectCacheFilter = new OAObjectCacheFilter<Employee>(hubFiltered);
+        
         assertEquals(0, hubFiltered.getSize());
         Employee emp = new Employee();
+        assertEquals(0, hubFiltered.getSize());
+        
+        objectCacheFilter.addFilter(new OAFilter<Employee>() {
+            @Override
+            public boolean isUsed(Employee obj) {
+                return true;
+            }
+        });
         assertEquals(1, hubFiltered.getSize());
+
         
         OAObjectCacheDelegate.clearCache(Employee.class);
         objectCacheFilter.refresh();
@@ -49,12 +53,13 @@ public class OAObjectCacheFilterTest extends OAUnitTest {
             }
         };
         objectCacheFilter.addFilter(f);
+        objectCacheFilter.addDependentProperty("Id");
         assertEquals(0, hubFiltered.getSize());
 
         int i = 0;
         for (Employee empx : al) {
             empx.setId(++i);
-            assertEquals(0, hubFiltered.getSize());
+            assertEquals(i, hubFiltered.getSize());
         }
 
         objectCacheFilter.refresh();
@@ -91,13 +96,6 @@ public class OAObjectCacheFilterTest extends OAUnitTest {
         objectCacheFilter.addDependentProperty("location.name");
         assertEquals(10, hubFiltered.getSize());
         
-        abFlag.set(false);
-        objectCacheFilter.refresh();
-        assertEquals(0, hubFiltered.getSize());
-
-        abFlag.set(true);
-        objectCacheFilter.refresh();
-        assertEquals(10, hubFiltered.getSize());
         
         f = new OAFilter<Employee>() {
             public boolean isUsed(Employee emp) {

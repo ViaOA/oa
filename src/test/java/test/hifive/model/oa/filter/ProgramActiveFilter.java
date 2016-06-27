@@ -71,10 +71,6 @@ public class ProgramActiveFilter extends OAObject implements CustomHubFilter {
         if (!bUseObjectCache) return null;
         cacheFilter = new OAObjectCacheFilter<Program>(hubMaster) {
             @Override
-            public boolean isUsedFromObjectCache(Program program) {
-                return ProgramActiveFilter.this.isUsedFromObjectCache(program);
-            }
-            @Override
             public boolean isUsed(Program program) {
                 return ProgramActiveFilter.this.isUsed(program);
             }
@@ -92,11 +88,6 @@ public class ProgramActiveFilter extends OAObject implements CustomHubFilter {
         
         d = program.getBeginDate();
         if (d == null) return false;
-        return true;
-    }
-    
-    
-    public boolean isUsedFromObjectCache(Program program) {
         return true;
     }
 }

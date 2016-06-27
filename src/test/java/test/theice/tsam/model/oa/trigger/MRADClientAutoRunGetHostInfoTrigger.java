@@ -60,10 +60,6 @@ public class MRADClientAutoRunGetHostInfoTrigger {
         if (!bUseObjectCache) return null;
         cacheTrigger = new OAObjectCacheTrigger<MRADClient>(MRADClient.class) {
             @Override
-            public boolean isUsedFromObjectCache(MRADClient mradClient) {
-                return MRADClientAutoRunGetHostInfoTrigger.this.isUsedFromObjectCache(mradClient);
-            }
-            @Override
             public boolean isUsed(MRADClient mradClient) {
                 return MRADClientAutoRunGetHostInfoTrigger.this.isUsed(mradClient);
             }
@@ -81,7 +77,7 @@ public class MRADClientAutoRunGetHostInfoTrigger {
         sel.select("");
         while (sel.hasMore()) {
             MRADClient mradClient = sel.next();
-            if (isUsedFromObjectCache(mradClient) && isUsed(mradClient)) {
+            if (isUsed(mradClient)) {
                 onTrigger(mradClient);
             }
         }
@@ -91,14 +87,6 @@ public class MRADClientAutoRunGetHostInfoTrigger {
     // ==================
     // these have custom code that will need to be put in OABuilder
 
-    /** 
-     * filter when using OAObjectCache.
-     * @return true to listen to this object, false otherwise.
-     */
-    public boolean isUsedFromObjectCache(MRADClient mradClient) {
-        return true;
-    }
-    
     /** 
      * filter for hub, called when object is added or a dependent propertyPath is changed.
      * @return true to call onTrigger, false otherwise.

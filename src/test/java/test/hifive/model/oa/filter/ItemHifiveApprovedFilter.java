@@ -68,10 +68,6 @@ public class ItemHifiveApprovedFilter extends OAObject implements CustomHubFilte
         if (!bUseObjectCache) return null;
         cacheFilter = new OAObjectCacheFilter<Item>(hubMaster) {
             @Override
-            public boolean isUsedFromObjectCache(Item item) {
-                return ItemHifiveApprovedFilter.this.isUsedFromObjectCache(item);
-            }
-            @Override
             public boolean isUsed(Item item) {
                 return ItemHifiveApprovedFilter.this.isUsed(item);
             }
@@ -87,10 +83,5 @@ public class ItemHifiveApprovedFilter extends OAObject implements CustomHubFilte
         int hifiveRating = item.getHifiveRating();
         if (hifiveRating == Item.HIFIVERATING_approved) bResult = true;
         return bResult;
-    }
-    
-    
-    public boolean isUsedFromObjectCache(Item item) {
-        return true;
     }
 }

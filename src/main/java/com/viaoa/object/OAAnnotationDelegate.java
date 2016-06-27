@@ -317,7 +317,7 @@ public class OAAnnotationDelegate {
 
             // 20160625
             OATriggerListener tl = new OACallbackTriggerListener(clazz, method, bOnlyUseLoadedData);
-            OATriggerDelegate.createTrigger(method.getName(), clazz, tl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+            OATriggerDelegate.createTrigger(method.getName(), clazz, tl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread, true);
         }        
     }
 

@@ -16,8 +16,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
+
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
+import com.viaoa.remote.multiplexer.OARemoteThread;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OACompare;
@@ -377,7 +381,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
         String ppFromRootClass;;  
         String ppToRootClass;;  // reverse propPath from thisClass to root Class
         String listenProperty;  // property/hub to listen to.
-        boolean bDontUseReverseFinder;
+        boolean bNoReverseFinder;
+        boolean bReverseHasMany;
     }
     
     // list of triggers per prop/link name
@@ -434,16 +439,25 @@ public class OAObjectInfo { //implements java.io.Serializable {
             String propPath = "";
             String revPropPath = "";
             OAObjectInfo oix = this;
-            boolean bDontUseReverseFinder = false;
+            boolean bNoReverseFinder = false;
+            boolean bReverseHasMany = false;
+            
             for (int i=0; i<pp.getLinkInfos().length; i++) {
                 OALinkInfo li = pp.getLinkInfos()[i];
                 OALinkInfo rli = li.getReverseLinkInfo();
-                if (rli == null || rli.getType() == OALinkInfo.MANY) bDontUseReverseFinder = true;
+                if (rli == null) {
+                    bNoReverseFinder = true;
+                }
+                else if (rli.getType() == OALinkInfo.MANY) {
+                    bReverseHasMany = true;
+                }
+                
                 if (bSkipFirstNonManyProperty && i == 0 && (li.getType() == OALinkInfo.ONE)) {
                 }
                 else {
                     TriggerInfo ti = oix._addTrigger(trigger, propPath, revPropPath, li.getName());
-                    ti.bDontUseReverseFinder = bDontUseReverseFinder; 
+                    ti.bNoReverseFinder = bNoReverseFinder;
+                    ti.bReverseHasMany = bReverseHasMany;
                 }
                 
                 if (propPath.length() > 0) {
@@ -461,7 +475,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 String[] ss = pp.getProperties();
                 if (!bSkipFirstNonManyProperty || ss.length > 1) {
                     TriggerInfo ti = oix._addTrigger(trigger, propPath, revPropPath, ss[ss.length-1]);
-                    ti.bDontUseReverseFinder = bDontUseReverseFinder; 
+                    ti.bNoReverseFinder = bNoReverseFinder;
+                    ti.bReverseHasMany = bReverseHasMany;
                 }
             }
         }
@@ -527,7 +542,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
                         onChange(obj, listenProperty, hubEvent);
                     }
                 };
-                OATrigger t = OATriggerDelegate.createTrigger(listenProperty, thisClass, tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread);
+                OATrigger t = OATriggerDelegate.createTrigger(listenProperty, thisClass, tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread, true);
                 trigger.dependentTriggers = (OATrigger[]) OAArray.add(OATrigger.class, trigger.dependentTriggers, t); 
             }
         }
@@ -616,7 +631,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     
     
     /**
-     * called by OAObject.propChange, and Hub.add/remove/removeAll/insert when a change is made.
+     * called by OAObject.propChange, Hub.add/remove/removeAll/insert, and OAObjectCacheDelegate when a change is made.
      * This will then check to see if there is trigger method to send the change to.
      */
     public void onChange(final OAObject fromObject, final String prop, final HubEvent hubEvent) {
@@ -688,7 +703,22 @@ public class OAObjectInfo { //implements java.io.Serializable {
             OASync.sendMessages();
         }
 
-        if (ti.trigger.bUseBackgroundThread || ti.bDontUseReverseFinder) {
+        boolean b = false;
+        if (!ti.trigger.bUseBackgroundThread && ti.trigger.bUseBackgroundThreadIfNeeded && SwingUtilities.isEventDispatchThread()) {
+            // if swing thread, then run in bg thread if it has to do a many reverse pp, or if no rev pp 
+            if (ti.bNoReverseFinder) {
+                b = true;
+            }
+            else if (ti.bReverseHasMany) {
+                if (OASync.isServer()) {
+                    OADataSource ds = OADataSource.getDataSource(thisClass);
+                    b = (ds != null && ds.supportsStorage());  // might have to go to ds
+                }
+                else b = true; // if client
+            }
+        }
+        
+        if ( (b || ti.trigger.bUseBackgroundThread) && !OARemoteThreadDelegate.isRemoteThread()) {
             OATriggerDelegate.runTrigger(new Runnable() {
                 @Override
                 public void run() {
@@ -714,7 +744,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             return;
         }
         
-        if (ti.bDontUseReverseFinder) {
+        if (ti.bNoReverseFinder) {
             try {
                 ti.trigger.triggerListener.onTrigger(null, hubEvent, ti.ppFromRootClass);
             }
@@ -726,6 +756,28 @@ public class OAObjectInfo { //implements java.io.Serializable {
             }
             return;
         }
+        
+        if (ti.bReverseHasMany) {
+            // see if all of the data is loaded, so that a reverse pp + finder can be used.
+            boolean b = false;
+            if (OASync.isServer()) {
+                OADataSource ds = OADataSource.getDataSource(thisClass);
+                b = (ds == null || !ds.supportsStorage());  // server must have all data loaded
+            }
+            if (!b) {
+                try {
+                    ti.trigger.triggerListener.onTrigger(null, hubEvent, ti.ppFromRootClass);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("OAObjectInfo.trigger error, "
+                        + "thisClass="+thisClass.getSimpleName() + ", "
+                        + "propertyPath="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
+                        e);
+                }
+                return;
+            }
+        }
+        
         
         OAFinder finder = new OAFinder(ti.ppToRootClass) {
             HashSet<Integer> hs = new HashSet<Integer>();
@@ -746,12 +798,12 @@ public class OAObjectInfo { //implements java.io.Serializable {
             }
         };
         finder.setUseOnlyLoadedData(ti.trigger.bOnlyUseLoadedData);
-    
+
         try {
             finder.find(fromObject);
         }
         catch (Exception e) {
-            ti.bDontUseReverseFinder = true;
+            ti.bNoReverseFinder = true;
             _onChange2(fromObject, prop, ti, hubEvent);
         }
     }

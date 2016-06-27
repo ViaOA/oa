@@ -68,10 +68,6 @@ public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter 
         if (!bUseObjectCache) return null;
         cacheFilter = new OAObjectCacheFilter<Item>(hubMaster) {
             @Override
-            public boolean isUsedFromObjectCache(Item item) {
-                return ItemHelpingHandsFilter.this.isUsedFromObjectCache(item);
-            }
-            @Override
             public boolean isUsed(Item item) {
                 return ItemHelpingHandsFilter.this.isUsed(item);
             }
@@ -89,7 +85,4 @@ public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter 
         return false;
     }
     
-    public boolean isUsedFromObjectCache(Item item) {
-        return true;
-    }
 }

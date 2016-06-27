@@ -477,7 +477,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * Returns the Class of the objects that are being stored in this Hub.
      */
-    public Class getObjectClass() {
+    public Class<TYPE> getObjectClass() {
         return data.objClass;
     }
 
