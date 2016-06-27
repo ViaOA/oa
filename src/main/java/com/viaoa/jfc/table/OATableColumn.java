@@ -444,6 +444,8 @@ public class OATableColumn {
             methods = OAReflect.getMethods(hubTable.getObjectClass(), path);
         }
 
+        
+//qqqqqqqqqqqqqqq make smarter        
         // this will setup a Hub listener to listen for changes to columns that use propertyPaths
         // ?? might want this to be a setting
         if (methods != null && methods.length > 1 && path != null && path.indexOf('.') >= 0 && path.indexOf('.') != path.length() - 1) {

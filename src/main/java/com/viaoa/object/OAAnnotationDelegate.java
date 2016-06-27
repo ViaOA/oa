@@ -314,90 +314,10 @@ public class OAAnnotationDelegate {
             if (!cs[0].equals(HubEvent.class)) {
                 throw new RuntimeException(s);
             }
-            
-            final Method mx = method;
-            OATriggerListener tl = new OATriggerListener() {
-                @Override
-                public void onTrigger(OAObject objRoot, final HubEvent hubEvent, String propertyPathFromRoot) throws Exception {
-                    if (objRoot != null) {
-                        mx.invoke(objRoot, new Object[] {hubEvent});
-                        return;
-                    }
-                    
-                    // the reverse property could not be used to get objRoot - need to find root objs and call callback method
-                    final OAFinder finder = new OAFinder(propertyPathFromRoot) {
-                        protected boolean isUsed(OAObject obj) {
-                            if (obj == hubEvent.getObject()) return true;
-                            Hub h = hubEvent.getHub();
-                            if (h == null) return false;
-                            if (h.getMasterObject() == obj) return true;
-                            return false;
-                        }
-                    };
-                    finder.setUseOnlyLoadedData(bOnlyUseLoadedData);
 
-                    Hub h = OAObjectCacheDelegate.getSelectAllHub(clazz);
-                    if (h != null && bOnlyUseLoadedData) {
-                        for (Object objx : h) {
-                            if (finder.findFirst( (OAObject) objx) == null) continue;
-                            mx.invoke(objx, new Object[] {hubEvent});
-                        }
-                    }
-                    else if (bOnlyUseLoadedData) {
-                        OAObjectCacheDelegate.visit(clazz, new OACallback() {
-                            @Override
-                            public boolean updateObject(Object obj) {
-                                if (finder.findFirst( (OAObject) obj) == null) return true;
-                                try {
-                                    mx.invoke(obj, new Object[] {hubEvent});
-                                }
-                                catch (Exception e) {
-                                    // TODO: handle exception
-                                }
-                                return true;
-                            }
-                        });
-                    }
-                    else {
-                        // see if a query can be used.
-                        OASelect sel = null;
-                        if (hubEvent.getObject() != null) {
-                            OADataSource ds = OADataSource.getDataSource(clazz);
-                            if (ds != null && ds.supportsStorage()) {
-                                
-                                OAObject objWhere;
-                                Hub hx = hubEvent.getHub();
-                                if (OAString.isEmpty(hubEvent.getPropertyName()) && hx != null && hx.getMasterObject() != null) {
-                                    // if hub add/insert/remove
-                                    objWhere = h.getMasterObject();
-                                }
-                                else {
-                                    objWhere = (OAObject) hubEvent.getObject();
-                                }
-
-                                if (OAString.isEmpty(propertyPathFromRoot)) {
-                                    sel = new OASelect(oi.getForClass(), objWhere, "");
-                                }
-                                else {
-                                    String query = propertyPathFromRoot + " = ?";
-                                    sel = new OASelect(oi.getForClass(), query, new Object[] {hubEvent.getObject()}, "");
-                                }
-                            }
-                        }
-                        
-                        if (sel == null) sel = new OASelect(oi.getForClass());
-                        sel.select();
-                        for (;;) {
-                            Object objNext = sel.next();
-                            if (objNext == null) break;
-                            if (finder.findFirst( (OAObject) objNext) != null) {
-                                mx.invoke(objNext, new Object[] {hubEvent});
-                            }
-                        }
-                    }
-                }
-            };
-            OATriggerDelegate.createTrigger(clazz, tl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
+            // 20160625
+            OATriggerListener tl = new OACallbackTriggerListener(clazz, method, bOnlyUseLoadedData);
+            OATriggerDelegate.createTrigger(method.getName(), clazz, tl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread);
         }        
     }
 

@@ -12,10 +12,8 @@ package com.viaoa.hub;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.object.*;
@@ -129,6 +127,13 @@ public class HubListenerTree<T> {
                 break;
             }
         }   
+
+        if (calcProps == null || calcProps.length == 0) {
+            if (dependentPropertyPaths == null || dependentPropertyPaths.length == 0) {
+                return bWasAdded;
+            }
+        }
+        
         
         OATriggerListener triggerListener = new OATriggerListener() {
             @Override
@@ -145,11 +150,7 @@ public class HubListenerTree<T> {
                     HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, rootObject, propertyName);
                     return;
                 }
-                
-                if (!(hubEvent.getObject() instanceof OAObject)) {
-                    HubEventDelegate.fireCalcPropertyChange(HubListenerTree.this.hub, rootObject, propertyName);
-                    return;
-                }
+                if (hub.getSize() == 0) return;
                 
                 // need to find all objects that are affected
                 OAFinder finder = new OAFinder(propertyPathFromRoot) {
@@ -161,8 +162,7 @@ public class HubListenerTree<T> {
                         return false;
                     }
                 };
-                finder.setUseOnlyLoadedData(true);
-                
+                finder.setUseOnlyLoadedData(true);  // objects will be already loaded if calc prop already got it's value, otherwise the value has not been calculated yet.
                 for (Object obj : hub) {
                     try {
                         if (finder.findFirst( (OAObject) obj) != null) {
@@ -173,7 +173,6 @@ public class HubListenerTree<T> {
                         break;
                     }
                 }
-                return;
             }
         };
         
@@ -232,10 +231,10 @@ public class HubListenerTree<T> {
                     if (prop == null) return;
                     
                     ArrayList<String> al = hsExtraProperties.get(prop.toUpperCase()); 
-                    if (al != null) {
-                        for (String s : al) {
-                            HubEventDelegate.fireCalcPropertyChange(hub, e.getObject(), s);
-                        }
+                    if (al == null) return;
+
+                    for (String s : al) {
+                        HubEventDelegate.fireCalcPropertyChange(hub, e.getObject(), s);
                     }
                 }
             };
@@ -244,7 +243,7 @@ public class HubListenerTree<T> {
         return bWasAdded;
     }
 
-    private boolean _addDependentListener(final OATriggerListener triggerListener, final int cnter, final ListenerInfo li, final String propertyName, final String dependentPropertyPath) {
+    private boolean _addDependentListener(final OATriggerListener triggerListener, final int cnter, final ListenerInfo listenerInfo, final String propertyName, final String dependentPropertyPath) {
         if (cnter > 15) return false;
         
         OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), dependentPropertyPath);
@@ -263,11 +262,11 @@ public class HubListenerTree<T> {
                 bWasAdded = true;
             }
             
-            if (li.alExtraListenerProperties == null) {
-                li.alExtraListenerProperties = new ArrayList<String>();
+            if (listenerInfo.alExtraListenerProperties == null) {
+                listenerInfo.alExtraListenerProperties = new ArrayList<String>();
             }
-            if (!li.alExtraListenerProperties.contains(props[0].toUpperCase())) {
-                li.alExtraListenerProperties.add(props[0].toUpperCase());
+            if (!listenerInfo.alExtraListenerProperties.contains(props[0].toUpperCase())) {
+                listenerInfo.alExtraListenerProperties.add(props[0].toUpperCase());
                 bWasAdded = true;
             }
             
@@ -283,7 +282,7 @@ public class HubListenerTree<T> {
                         String[] ps = ci.getProperties();
                         if (ps == null) break;
                         for (String p : ps) {
-                            if (_addDependentListener(triggerListener, cnter+1, li, propertyName, p)) bWasAdded = true;;
+                            if (_addDependentListener(triggerListener, cnter+1, listenerInfo, propertyName, p)) bWasAdded = true;;
                         }
                         break;
                     }
@@ -300,22 +299,22 @@ public class HubListenerTree<T> {
         else {
             trigger = hsTrigger.get(dependentPropertyPath.toUpperCase());
             if (trigger != null) {
-                if (li.alTrigger == null) li.alTrigger = new ArrayList<OATrigger>();
-                if (!li.alTrigger.contains(trigger)) {
-                    li.alTrigger.add(trigger);
+                if (listenerInfo.alTrigger == null) listenerInfo.alTrigger = new ArrayList<OATrigger>();
+                if (!listenerInfo.alTrigger.contains(trigger)) {
+                    listenerInfo.alTrigger.add(trigger);
                     bWasAdded = true;
                 }
                 return bWasAdded;
             }
         }
         
-        trigger = new OATrigger(hub.getObjectClass(), triggerListener, dependentPropertyPath, true, false, false);
+        trigger = new OATrigger(propertyName, hub.getObjectClass(), triggerListener, dependentPropertyPath, true, false, true);
         OATriggerDelegate.createTrigger(trigger, true);
 
         hsTrigger.put(dependentPropertyPath.toUpperCase(), trigger);
         
-        if (li.alTrigger == null) li.alTrigger = new ArrayList<OATrigger>();
-        if (!li.alTrigger.contains(trigger)) li.alTrigger.add(trigger);
+        if (listenerInfo.alTrigger == null) listenerInfo.alTrigger = new ArrayList<OATrigger>();
+        if (!listenerInfo.alTrigger.contains(trigger)) listenerInfo.alTrigger.add(trigger);
         return true;
     }
     

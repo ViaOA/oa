@@ -125,11 +125,30 @@ public class OACompare {
             Hub h = (Hub) matchValue;
             return (h.getSize() == 1 && h.getAt(0) == matchValue);
         }
+        
         if (matchValue.getClass().isArray()) {
-            int x = Array.getLength(matchValue);
+            if (!value.getClass().isArray()) {
+                int x = Array.getLength(matchValue);
+                if (x != 1) return false;
+                Object val2 = Array.get(matchValue, 0);
+                return (isEqual(value, val2));
+            }
+            int x1 = Array.getLength(value);
+            int x2 = Array.getLength(matchValue);
+            if (x1 != x2) return false;
+            for (int i=0; i<x1; i++) {
+                Object val1 = Array.get(value, i);
+                Object val2 = Array.get(matchValue, i);
+                if (!isEqual(val1, val2)) return false;
+            }
+            return true;
+        }
+        
+        if (value.getClass().isArray()) {
+            int x = Array.getLength(value);
             if (x != 1) return false;
-            Object objx = Array.get(matchValue, 0);
-            return (isEqual(value, objx));
+            Object val1 = Array.get(value, 0);
+            return (isEqual(val1, matchValue));
         }
         
         if (bIgnoreCase) {

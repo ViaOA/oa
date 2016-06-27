@@ -184,6 +184,7 @@ public class HubListenerTreeTest extends OAUnitTest {
         };
 
         assertTrue(h.addHubListener(hl, "test", EmployeePP.fullName()));
+        assertTrue(h.addHubListener(hl, EmployeePP.fullName()));
         assertFalse(h.addHubListener(hl, EmployeePP.fullName()));
 
         assertFalse(h.addHubListener(hl, "test", EmployeePP.fullName()));
@@ -417,7 +418,6 @@ public class HubListenerTreeTest extends OAUnitTest {
     
     public static void main(String[] args) throws Exception {
         HubListenerTreeTest test = new HubListenerTreeTest();
-        test.test8();
         test.test9();
     }
 }

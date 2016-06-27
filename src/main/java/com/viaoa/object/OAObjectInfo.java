@@ -20,6 +20,7 @@ import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
+import com.viaoa.util.OACompare;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
@@ -382,6 +383,14 @@ public class OAObjectInfo { //implements java.io.Serializable {
     // list of triggers per prop/link name
     protected ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerInfo>> hmTriggerInfo = new ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerInfo>>();
     private AtomicInteger aiTrigger = new AtomicInteger();
+
+    private final static AtomicInteger aiAllTrigger = new AtomicInteger();
+    /**
+     * total triggers created.
+     */
+    public static int getTotalTriggers() {
+        return aiAllTrigger.get();
+    }
     
     public ArrayList<String> getTriggerPropertNames() {
         ArrayList<String> al = new ArrayList<String>();
@@ -392,7 +401,12 @@ public class OAObjectInfo { //implements java.io.Serializable {
     }
 
     
-    // see OATriggerDelegate
+    /**
+     * Not called directly, but used by OATriggerDelegate.createTrigger(..) to create, register and call a trigger.
+     * @param trigger
+     * @param bSkipFirstNonManyProperty if true then the first property of type prop/calc/one will not be listened to.  This is
+     * used when a hubListener takes care of these changes.
+     */
     protected void createTrigger(final OATrigger trigger, final boolean bSkipFirstNonManyProperty) {
         if (trigger == null) return;
 
@@ -407,7 +421,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 s += triggerPropPath;
             }
         }        
-        s = (thisClass.getSimpleName()+", propPaths=["+s+"], skipFirst="+bSkipFirstNonManyProperty);
+        s = (thisClass.getSimpleName()+", name="+trigger.name+", propPaths=["+s+"], skipFirst="+bSkipFirstNonManyProperty);
         LOG.fine(s);
         if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
         
@@ -472,21 +486,26 @@ public class OAObjectInfo { //implements java.io.Serializable {
             }
         }
         for (TriggerInfo ti : al) {
-            if (ti.trigger.triggerListener == trigger.triggerListener) return ti;
+            if (ti.trigger.triggerListener == trigger.triggerListener) {
+                if (OACompare.isEqual(propPath, ti.ppFromRootClass, true)) {
+                    return ti;
+                }
+            }
         }
 
         int x = aiTrigger.incrementAndGet();
-
+        aiAllTrigger.incrementAndGet();
+        
         TriggerInfo ti = new TriggerInfo();
         ti.trigger = trigger;
         ti.ppFromRootClass = propPath;
         ti.ppToRootClass = revPropPath;
         ti.listenProperty = listenProperty;
         
-        String s = (thisClass.getSimpleName()+", prop="+listenProperty+", revPropPath="+revPropPath+", trigger.cnt="+x);
+        String s = (thisClass.getSimpleName()+", name="+trigger.name+", listenPropName="+listenProperty+", revPropPath="+revPropPath+", trigger.cnt="+x+", total="+aiAllTrigger.get());
         LOG.fine(s);
         if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
-        if (x > 100) {
+        if (x > 180) {
             LOG.warning(s);
         }
         
@@ -508,7 +527,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
                         onChange(obj, listenProperty, hubEvent);
                     }
                 };
-                OATrigger t = OATriggerDelegate.createTrigger(thisClass, tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread);
+                OATrigger t = OATriggerDelegate.createTrigger(listenProperty, thisClass, tl, calcProps, trigger.bOnlyUseLoadedData, trigger.bServerSideOnly, trigger.bUseBackgroundThread);
                 trigger.dependentTriggers = (OATrigger[]) OAArray.add(OATrigger.class, trigger.dependentTriggers, t); 
             }
         }
@@ -518,6 +537,18 @@ public class OAObjectInfo { //implements java.io.Serializable {
 
     public void removeTrigger(OATrigger trigger) {
         if (trigger == null) return;
+        
+        String s = "";
+        if (trigger.propertyPaths != null) {
+            for (String triggerPropPath : trigger.propertyPaths) {
+                if (s.length() > 0) s += ", ";
+                s += triggerPropPath;
+            }
+        }        
+        s = (thisClass.getSimpleName()+", name="+trigger.name+", propPaths=["+s+"]");
+        LOG.fine(s);
+        if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
+        
         _removeTrigger(trigger);
         
         if (trigger.propertyPaths == null) return;
@@ -555,11 +586,12 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 if (tiFound == null) continue;
                 al.remove(tiFound);
                 int x = aiTrigger.decrementAndGet();
+                aiAllTrigger.decrementAndGet();
                 if (al.size() == 0) {
                     hmTriggerInfo.remove(tiFound.listenProperty.toUpperCase());
                 }
                 
-                String s = (thisClass.getSimpleName()+", prop="+tiFound.listenProperty+", revPropPath="+tiFound.ppToRootClass+", trigger.cnt="+x);
+                String s = (thisClass.getSimpleName()+", name="+trigger.name+", prop="+tiFound.listenProperty+", revPropPath="+tiFound.ppToRootClass+", trigger.cnt="+x+", total="+aiAllTrigger.get());
                 LOG.fine(s);
                 if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
             }
@@ -589,12 +621,24 @@ public class OAObjectInfo { //implements java.io.Serializable {
      */
     public void onChange(final OAObject fromObject, final String prop, final HubEvent hubEvent) {
         if (prop == null || hubEvent == null) return;
+
+        final int x = OAThreadLocalDelegate.getRecursiveTriggerCount();
+        if (x > 25) {
+            throw new RuntimeException("onChange for Triggers has caused a loop over 25"); 
+        }
         
-        CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(prop.toUpperCase());
-        if (al == null) return;
-        
-        for (TriggerInfo ti : al) {
-            _onChange(fromObject, prop, ti, hubEvent);
+        try {
+            OAThreadLocalDelegate.setRecursiveTriggerCount(x+1);
+            
+            CopyOnWriteArrayList<TriggerInfo> al = hmTriggerInfo.get(prop.toUpperCase());
+            if (al == null) return;
+            
+            for (TriggerInfo ti : al) {
+                _onChange(fromObject, prop, ti, hubEvent);
+            }
+        }
+        finally {
+            OAThreadLocalDelegate.setRecursiveTriggerCount(x);
         }
     }        
     
@@ -607,6 +651,19 @@ public class OAObjectInfo { //implements java.io.Serializable {
             b2 = OASync.sendMessages();
         }
 
+        
+        String s = "";
+        if (ti.trigger.propertyPaths != null) {
+            for (String triggerPropPath : ti.trigger.propertyPaths) {
+                if (s.length() > 0) s += ", ";
+                s += triggerPropPath;
+            }
+        }        
+        s = (thisClass.getSimpleName()+", name="+ti.trigger.name+", propPaths=["+s+"]");
+        LOG.fine(s);
+        if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
+        
+        
         long ts = System.currentTimeMillis();
         try {
             _onChange2(fromObject, prop, ti, hubEvent);
@@ -619,7 +676,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         ts = System.currentTimeMillis() - ts;
         
         if (ts > 3) {
-            String s = "over 3ms, fromObject="+fromObject.getClass().getSimpleName()+", property="+ti.ppFromRootClass+", ts="+ts;
+            s = "over 3ms, fromObject="+fromObject.getClass().getSimpleName()+", name="+ti.trigger.name+", property="+ti.ppFromRootClass+", ts="+ts;
             LOG.fine(s);
             OAPerformance.LOG.fine(s);
         }

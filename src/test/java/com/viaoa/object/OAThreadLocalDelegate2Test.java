@@ -58,7 +58,7 @@ public class OAThreadLocalDelegate2Test extends OAUnitTest {
     }
     
     void setup() {
-        tests = new Test[6];  
+        tests = new Test[5];  
         
         int pos = 0;
         tests[pos++] = new Test("LoadingObject") {

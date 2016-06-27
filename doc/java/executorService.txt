@@ -54,7 +54,7 @@
 
 
 
-====== this version sill use a fixed size thread pool
+====== this version will use a fixed size thread pool
 
     Runnable rr = new Runnable() {
         @Override

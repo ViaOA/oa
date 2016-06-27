@@ -101,7 +101,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
     
-    public static final int version = 160603;   // NOTE: also need to update manifest.mf
+    public static final int version = 160626;   // NOTE: also need to update manifest.mf
     static {
         /*
         Properties props = System.getProperties();

@@ -55,6 +55,7 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalGetDetailHub = new AtomicInteger();
     private static AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
     private static AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
+    private static AtomicInteger TotalRecursiveTriggerCount = new AtomicInteger();
 
     public static final HashMap<Object, OAThreadLocal[]> hmLock = new HashMap<Object, OAThreadLocal[]>(53, .75f);
     
@@ -1134,5 +1135,30 @@ static volatile int unlockCnt;
         }
         setNotifyObject(null);
     }
+
+
+    // recursiveTriggerCount -----------------------
+    public static int getRecursiveTriggerCount() {
+        int x; 
+        if (OAThreadLocalDelegate.TotalRecursiveTriggerCount.get() == 0) {
+            x = 0;
+        }
+        else {
+            x = getRecursiveTriggerCount(getThreadLocal(false));
+        }
+        return x;
+    }
+    protected static int getRecursiveTriggerCount(OAThreadLocal ti) {
+        if (ti == null) return 0;
+        return ti.recursiveTriggerCount;
+    }
+    public static void setRecursiveTriggerCount(int x) {
+        setRecursiveTriggerCount(OAThreadLocalDelegate.getThreadLocal(true), x);
+    }
+    protected static void setRecursiveTriggerCount(OAThreadLocal ti, int x) {
+        if (ti == null) return;
+        ti.recursiveTriggerCount = x;
+    }
+
 }
 

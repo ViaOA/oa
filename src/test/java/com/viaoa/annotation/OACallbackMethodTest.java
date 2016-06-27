@@ -91,7 +91,7 @@ public class OACallbackMethodTest extends OAUnitTest {
         
         String[] ss = new String[]{ ProgramPP.locations().employees().employeeAwards().pp };
         
-        OATriggerDelegate.createTrigger(Program.class, cl, ss, false, false, false);
+        OATriggerDelegate.createTrigger("xx", Program.class, cl, ss, false, false, false);
 
         al = oi3.getTriggerPropertNames();
         assertEquals(5, al.size());

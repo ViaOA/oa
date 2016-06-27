@@ -36,7 +36,7 @@ public class OATriggerTest extends OAUnitTest {
             }
         };
         
-        OATrigger t = new OATrigger(Program.class, tl, pps, false, false, false);
+        OATrigger t = new OATrigger("triggertest",Program.class, tl, pps, false, false, false);
         OATriggerDelegate.createTrigger(t);
         
         assertEquals(0, ai.get());
@@ -80,7 +80,7 @@ public class OATriggerTest extends OAUnitTest {
             }
         };
         
-        OATrigger t = new OATrigger(Program.class, tl, pps, false, false, false);
+        OATrigger t = new OATrigger("",Program.class, tl, pps, false, false, false);
         OATriggerDelegate.createTrigger(t);
         
         assertEquals(0, ai.get());
@@ -133,7 +133,7 @@ public class OATriggerTest extends OAUnitTest {
             }
         };
         
-        OATrigger t = new OATrigger(Program.class, tl, pps, false, false, false);
+        OATrigger t = new OATrigger("", Program.class, tl, pps, false, false, false);
         OATriggerDelegate.createTrigger(t);
         
         alT = oi.getTriggers("locations");
@@ -166,7 +166,7 @@ public class OATriggerTest extends OAUnitTest {
             }
         };
         
-        OATrigger t = new OATrigger(Program.class, tl, pps, false, false, false);
+        OATrigger t = new OATrigger("", Program.class, tl, pps, false, false, false);
         OATriggerDelegate.createTrigger(t);
 
         al = oi.getTriggerPropertNames();
@@ -238,7 +238,7 @@ public class OATriggerTest extends OAUnitTest {
         };
 
         
-        OATrigger t = new OATrigger(Employee.class, tl, pps, false, false, false);
+        OATrigger t = new OATrigger("",Employee.class, tl, pps, false, false, false);
         OATriggerDelegate.createTrigger(t);
 
         al = oi.getTriggerPropertNames();
