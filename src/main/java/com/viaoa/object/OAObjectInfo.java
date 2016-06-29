@@ -25,6 +25,7 @@ import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OACompare;
+import com.viaoa.util.OAInteger;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
@@ -756,14 +757,63 @@ public class OAObjectInfo { //implements java.io.Serializable {
             }
             return;
         }
+
+
+        final AtomicInteger aiStatus = new AtomicInteger(0);
+        // 1 = check to see if data is loaded
+        // 2 = data not found
+        
+        OAFinder finder = new OAFinder(ti.ppToRootClass) {
+            HashSet<Integer> hs = new HashSet<Integer>();
+            @Override
+            protected void onFound(OAObject objRoot) {
+                if (aiStatus.get() == 1) return;
+                
+                int g = OAObjectKeyDelegate.getKey(objRoot).getGuid();
+                if (hs.contains(g)) return;
+                hs.add(g);
+                try {
+                    ti.trigger.triggerListener.onTrigger(objRoot, hubEvent, ti.ppFromRootClass);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("OAObjectInfo.autoCall error, "
+                        + "thisClass="+thisClass.getSimpleName() + ", "
+                        + "propertyPathToRoot="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
+                        e);
+                }
+            }
+            @Override
+            protected void onDataNotFound() {
+                if (aiStatus.get() == 1) {
+                    aiStatus.set(2);
+                    stop();
+                }
+            }
+        };
+        finder.setUseOnlyLoadedData(ti.trigger.bOnlyUseLoadedData);
         
         if (ti.bReverseHasMany) {
-            // see if all of the data is loaded, so that a reverse pp + finder can be used.
+            // see if all of the data is already loaded, so that a reverse pp + finder can be used.
             boolean b = false;
             if (OASync.isServer()) {
                 OADataSource ds = OADataSource.getDataSource(thisClass);
                 b = (ds == null || !ds.supportsStorage());  // server must have all data loaded
             }
+            
+            if (!b) {
+                // see if finder has has all of the data loaded
+                aiStatus.set(1);
+                try {
+                    finder.find(fromObject);
+                }
+                catch (Exception e) {
+                    ti.bNoReverseFinder = true;
+                    _onChange2(fromObject, prop, ti, hubEvent);
+                }
+                b = (aiStatus.get() != 2);  // else: data is loaded, so use reverse pp to get data
+                aiStatus.set(0);
+            }
+            
             if (!b) {
                 try {
                     ti.trigger.triggerListener.onTrigger(null, hubEvent, ti.ppFromRootClass);
@@ -779,26 +829,6 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
         
         
-        OAFinder finder = new OAFinder(ti.ppToRootClass) {
-            HashSet<Integer> hs = new HashSet<Integer>();
-            @Override
-            protected void onFound(OAObject objRoot) {
-                int g = OAObjectKeyDelegate.getKey(objRoot).getGuid();
-                if (hs.contains(g)) return;
-                hs.add(g);
-                try {
-                    ti.trigger.triggerListener.onTrigger(objRoot, hubEvent, ti.ppFromRootClass);
-                }
-                catch (Exception e) {
-                    throw new RuntimeException("OAObjectInfo.autoCall error, "
-                        + "thisClass="+thisClass.getSimpleName() + ", "
-                        + "propertyPathToRoot="+ti.ppToRootClass+", rootClass="+ti.trigger.rootClass.getSimpleName(),
-                        e);
-                }
-            }
-        };
-        finder.setUseOnlyLoadedData(ti.trigger.bOnlyUseLoadedData);
-
         try {
             finder.find(fromObject);
         }

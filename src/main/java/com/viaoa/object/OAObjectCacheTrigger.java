@@ -71,6 +71,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
             }
             @Override
             public void afterAdd(T obj) {
+                if (OAThreadLocalDelegate.isLoadingObject()) return;
                 // new object is created
                 if (isUsed((T) obj)) {
                     callOnTrigger(obj);
@@ -93,7 +94,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
  
         if (dependentPropPaths != null) {
             for (String pp : dependentPropPaths) {
-                addDependentProperty(pp, false);
+                addDependentProperty(pp);
             }
         }
         
@@ -169,29 +170,19 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
      * It will not call refresh.
      */
     public void addDependentProperty(final String prop) {
-        addDependentProperty(prop, true);
-    }
-    public void addDependentProperty(final String prop, final boolean bRefresh) {
         if (prop == null || prop.length() == 0) return;
         
         dependentPropertyPaths = (String[]) OAArray.add(String.class, dependentPropertyPaths, prop);
         
         // need to recheck in case there was previous changes for the newly added dependentProp that was never checked.  
         setupTrigger();
-
-        if (!bRefresh) return;
-        OAObjectCacheDelegate.visit(clazz, new OACallback() {
-            @Override
-            public boolean updateObject(Object obj) {
-                if (isUsed((T) obj)) {
-                    callOnTrigger((T) obj);
-                }
-                return true;
-            }
-        });
     }
     
     protected void setupTrigger() {
+        if (trigger != null) {
+            OATriggerDelegate.removeTrigger(trigger);
+        }
+
         OATriggerListener<T> triggerListener = new OATriggerListener<T>() {
             @Override
             public void onTrigger(final T rootObject, final HubEvent hubEvent, final String propertyPathFromRoot) throws Exception {
@@ -231,10 +222,6 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
             }
         };
         
-        if (trigger != null) {
-            OATriggerDelegate.removeTrigger(trigger);
-        }
-        
         if (name == null) {
             name = "OAObjectCacheFilter" + (aiUnique.incrementAndGet());
         }
@@ -267,12 +254,10 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
      */
     @Override
     public boolean isUsed(T obj) {
-        if (alFilter == null) {
-            return false;
-        }
-        
-        for (OAFilter<T> f : alFilter) {
-            if (!f.isUsed(obj)) return false;
+        if (alFilter != null) {
+            for (OAFilter<T> f : alFilter) {
+                if (!f.isUsed(obj)) return false;
+            }
         }
         return true;
     }

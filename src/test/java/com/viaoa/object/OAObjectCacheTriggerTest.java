@@ -33,6 +33,19 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         assertEquals(1, ai.get());
         emp = new Employee();
         assertEquals(2, ai.get());
+        
+        try {
+            OAThreadLocalDelegate.setLoadingObject(true);
+            emp = new Employee();
+            assertEquals(2, ai.get());
+        }
+        finally {
+            OAThreadLocalDelegate.setLoadingObject(false);
+        }
+
+        emp = new Employee();
+        assertEquals(3, ai.get());
+        
         objectCacheTrigger.close();
     }
 
@@ -41,7 +54,6 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         reset();
         ArrayList<Employee> al = new ArrayList<Employee>();
         
-        final AtomicBoolean abFlag = new AtomicBoolean(true);
         final AtomicInteger ai = new AtomicInteger();
         
         Hub<Employee> hubEmployee = new Hub<Employee>(Employee.class);
@@ -53,13 +65,10 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         };
 
         assertEquals(0, ai.get());
-        abFlag.set(false);
         Employee emp = new Employee();
-        assertEquals(0, ai.get());
-        abFlag.set(true);
-        assertEquals(0, ai.get());
-        emp = new Employee();
         assertEquals(1, ai.get());
+        emp = new Employee();
+        assertEquals(2, ai.get());
         objectCacheTrigger.close();
     }
 
@@ -68,9 +77,8 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         reset();
         ArrayList<Employee> al = new ArrayList<Employee>();
         
-        final AtomicInteger aiTrigger = new AtomicInteger();
-        final AtomicInteger aiIsUsedFromObjectCache = new AtomicInteger();
         final AtomicInteger aiIsUsed = new AtomicInteger();
+        final AtomicInteger aiTrigger = new AtomicInteger();
         
         OAObjectCacheTrigger<Employee> objectCacheTrigger = new OAObjectCacheTrigger<Employee>(Employee.class) {
             @Override
@@ -88,12 +96,12 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         objectCacheTrigger.addDependentProperty(Employee.P_FirstName);
         objectCacheTrigger.addDependentProperty(Employee.P_LastName);
         objectCacheTrigger.addDependentProperty(EmployeePP.location().name());
+        
         objectCacheTrigger.addFilter(new OANotEmptyFilter(Employee.P_FirstLastName));
 
         Location location = new Location();
         location.setId(0);
         
-        assertEquals(0, aiIsUsedFromObjectCache.get());
         assertEquals(0, aiIsUsed.get());
         assertEquals(0, aiTrigger.get());
 
@@ -104,24 +112,37 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
             emp.setFirstName("fn"+i);
             emp.setLastName("ln"+i);
 
-            assertEquals(i*3 + 3, aiIsUsedFromObjectCache.get());
             assertEquals(i*3 + 3, aiIsUsed.get());
             assertEquals(0, aiTrigger.get());
         }
-        assertEquals(30, aiIsUsedFromObjectCache.get());
         assertEquals(30, aiIsUsed.get());
         assertEquals(0, aiTrigger.get());
 
-        aiIsUsedFromObjectCache.set(0);
         aiIsUsed.set(0);
         aiTrigger.set(0);
         int i = 0;
         for (Employee emp : al) {
             emp.setLocation(location);
-            assertEquals(++i, aiIsUsedFromObjectCache.get());
-            assertEquals(i, aiIsUsed.get());
+            assertEquals(++i, aiIsUsed.get());
             assertEquals(0, aiTrigger.get());
         }
+        
+        aiIsUsed.set(0);
+        aiTrigger.set(0);
+        location.setName("xx");
+        assertEquals(al.size(), aiIsUsed.get());
+        assertEquals(10, aiTrigger.get());
+        
+        
+        aiIsUsed.set(0);
+        aiTrigger.set(0);
+        i = 0;
+        for (Employee emp : al) {
+            emp.setFirstName("x");
+            assertEquals(++i, aiIsUsed.get());
+            assertEquals(i, aiTrigger.get());
+        }
+        
         objectCacheTrigger.close();
     }
 }

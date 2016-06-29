@@ -28,11 +28,11 @@ public class OACallbackMethodTest extends OAUnitTest {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(Employee.class);
 
         ArrayList<String> al = oi.getTriggerPropertNames();
-        assertEquals(2, al.size());
+        assertTrue(al.size() >= 2);
         
         OAObjectInfo oi2 = OAObjectInfoDelegate.getOAObjectInfo(Location.class);
         al = oi2.getTriggerPropertNames();
-        assertEquals(6, al.size());
+        assertTrue(al.size() >= 6);
         
         emp.cntCallback = 0;
         
@@ -48,6 +48,15 @@ public class OACallbackMethodTest extends OAUnitTest {
         assertEquals(1, emp.cntCallback);
         AwardType at = new AwardType();
         loc.getAwardTypes().add(at);
+        // callback is ran in bg thread
+        for (int i=0; i<3; i++) {
+            if (emp.cntCallback == 2) break;
+            try {
+                Thread.sleep(5);
+            }
+            catch (Exception e) {
+            }
+        }
         assertEquals(2, emp.cntCallback);
 
         AwardType at2 = new AwardType();
@@ -59,14 +68,41 @@ public class OACallbackMethodTest extends OAUnitTest {
         assertEquals(2, emp.cntCallback);
         
         loc.getAwardTypes().remove(at);
+        // callback is ran in bg thread
+        for (int i=0; i<3; i++) {
+            if (emp.cntCallback == 3) break;
+            try {
+                Thread.sleep(5);
+            }
+            catch (Exception e) {
+            }
+        }
         assertEquals(3, emp.cntCallback);
         
         Program prog = new Program();
         loc.setProgram(prog);
+        // callback is ran in bg thread
+        for (int i=0; i<3; i++) {
+            if (emp.cntCallback == 4) break;
+            try {
+                Thread.sleep(5);
+            }
+            catch (Exception e) {
+            }
+        }
         assertEquals(4, emp.cntCallback);
         
         Ecard ec = new Ecard();
         loc.getEcards().add(ec);
+        // callback is ran in bg thread
+        for (int i=0; i<3; i++) {
+            if (emp.cntCallback == 5) break;
+            try {
+                Thread.sleep(5);
+            }
+            catch (Exception e) {
+            }
+        }
         assertEquals(5, emp.cntCallback);
     }
     

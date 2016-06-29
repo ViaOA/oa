@@ -466,7 +466,8 @@ public class OASyncServer {
         if (ri.bind == null) return;
         if (ri.bind.isOASync) {
             if (ri.exception == null && ri.exceptionMessage == null) {
-                return;
+//qqqqqqqqqqqqqqqq                
+//                return;
             }
         }
         

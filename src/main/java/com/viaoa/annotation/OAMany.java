@@ -72,8 +72,6 @@ public @interface OAMany {
     /** true if calc hub is to be done on server side. */
     boolean isServerSideCalc() default false;
     
-    Class[] triggerClasses() default {};
-    
     String uniqueProperty() default ""; 
     
     String sortProperty() default "";

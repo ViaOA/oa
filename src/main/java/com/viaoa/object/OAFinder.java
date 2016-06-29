@@ -99,6 +99,14 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         alFound.add(obj);
         if (maxFound > 0 && alFound.size() >= maxFound) stop();
     }
+    
+    /**
+     * Called during a find when data was found.
+     * Use stop() to have the find aborted.
+     */
+    protected void onDataNotFound() {
+    }
+    
     /**
      * This is used to stop the current find that is in process.
      * This can be used when overwriting the onFound().
@@ -238,7 +246,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         setMaxFound(1);
         ArrayList<T> al = find(objectRoot);
         if (getMaxFound() == 1) setMaxFound(holdMax);
-        return (al.size() > 0);
+        return (al != null && al.size() > 0);
     }
 
     /**
@@ -250,7 +258,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         setMaxFound(1);
         ArrayList<T> al = find(objectRoot);
         T obj;
-        if (al.size() > 0) obj = al.get(0);
+        if (al != null && al.size() > 0) obj = al.get(0);
         else obj = null;
         if (getMaxFound() == 1) setMaxFound(holdMax);
         return obj;
@@ -278,7 +286,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return obj;
     }
     
-    
+
     /**
      * Given the propertyPath, find all of the objects from a root object.
      * @param objectRoot starting object to begin navigating through the propertyPath.
@@ -366,6 +374,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
     }
 
+    
     private void find(Object obj, int pos) {
         if (obj==null || bStop) return;
         try {
@@ -407,7 +416,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             // 20151026 see if root object is recursive
             if (liRecursiveRoot != null) {
                 // 20160306
-                if (getUseOnlyLoadedData() && !liRecursiveRoot.isLoaded(obj)) return;
+                if (getUseOnlyLoadedData() && !liRecursiveRoot.isLoaded(obj)) {
+                    onDataNotFound();
+                    return;
+                }
                 Object objx = liRecursiveRoot.getValue(obj);
                 find(objx, pos); // go up a level to then go through hub
                 if (bStop) return;
@@ -416,7 +428,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length) {
             if (recursiveLinkInfos[pos - 1] != null) {
                 // 20160306
-                if (getUseOnlyLoadedData() && !recursiveLinkInfos[pos - 1].isLoaded(obj)) return;
+                if (getUseOnlyLoadedData() && !recursiveLinkInfos[pos - 1].isLoaded(obj)) {
+                    onDataNotFound();
+                    return;
+                }
                 Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
                 find(objx, pos); // go up a level to then go through hub
                 if (bStop) return;
@@ -425,7 +440,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
 
         if (linkInfos != null && pos < linkInfos.length) {
             // 20160306
-            if (getUseOnlyLoadedData() && !linkInfos[pos].isLoaded(obj)) return;
+            if (getUseOnlyLoadedData() && !linkInfos[pos].isLoaded(obj)) {
+                onDataNotFound();
+                return;
+            }
             Object objx = linkInfos[pos].getValue(obj);
             find(objx, pos + 1);
             if (bStop) return;

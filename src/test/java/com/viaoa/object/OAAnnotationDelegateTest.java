@@ -177,9 +177,11 @@ public class OAAnnotationDelegateTest extends OAUnitTest {
                 assertTrue(OAString.isEqual(OAString.toString(li.getMatchProperty()), oamany.matchProperty()));
                 assertEquals(li.getPrivateMethod(), !oamany.createMethod());
                 assertEquals(li.getCacheSize(), oamany.cacheSize());
+                /*
                 Class[] cs1 = oamany.triggerClasses();
                 Class[] cs2 = li.getTriggerClasses();
                 assertTrue(OAArray.isEqual(cs1, cs2));
+                */
             }
             assertTrue(b);
         }

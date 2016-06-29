@@ -123,8 +123,7 @@ public class MRADServer extends OAObject {
         cascadeSave = true, 
         cascadeDelete = true, 
         matchHub = (MRADServer.P_Silo+"."+Silo.P_Servers+"."+Server.P_Applications), 
-        matchProperty = MRADClient.P_Application, 
-        triggerClasses = {MRADClientAutoRunGetHostInfoTrigger.class}
+        matchProperty = MRADClient.P_Application 
     )
     public Hub<MRADClient> getMRADClients() {
         if (hubMRADClients == null) {

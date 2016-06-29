@@ -279,10 +279,12 @@ public class OAAnnotationDelegate {
             li.setServerSideCalc(annotation.isServerSideCalc());
             li.setPrivateMethod(!annotation.createMethod());
             li.setCacheSize(annotation.cacheSize());
+            /*
             Class[] cs = annotation.triggerClasses();
             if (cs != null) {
                 li.setTriggerClasses(cs);
             }
+            */
             li.setOAMany(annotation);
         }
     }

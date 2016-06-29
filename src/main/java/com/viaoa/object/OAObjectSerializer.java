@@ -414,7 +414,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         String msg;
         if (bCompress) {
         	deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);//BEST_SPEED BEST_COMPRESSION);
-        	DeflaterOutputStream dos = new DeflaterOutputStream(stream, deflater, 1024*3);
+        	DeflaterOutputStream dos = new DeflaterOutputStream(stream, deflater, 1024*6);
             
         	RemoteObjectOutputStream roos;
             if (stream instanceof RemoteObjectOutputStream) {
@@ -478,7 +478,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         
         if (bCompress) {
             OAPerformance.LOG.fine(wcnter+") ObjectSerializer "+msg);
-            LOG.fine(wcnter+" " + msg);
         }
     }
 
@@ -515,7 +514,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     	String msg;
     	if (bCompress) {
     		Inflater inflater = new Inflater(true);
-        	InflaterInputStream iis = new InflaterInputStream(stream, inflater, 1024*3);
+        	InflaterInputStream iis = new InflaterInputStream(stream, inflater, 1024*6);
         	
         	RemoteObjectInputStream rois;
             if (stream instanceof RemoteObjectInputStream) {
@@ -572,7 +571,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         
         if (bCompress) {
             OAPerformance.LOG.fine(rcnter+") ObjectSerializer "+msg);
-            LOG.fine(rcnter+" " + msg);
         }
     }
     

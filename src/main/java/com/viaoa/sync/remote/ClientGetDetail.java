@@ -88,23 +88,37 @@ public class ClientGetDetail {
         }
 
         Object detailValue = OAObjectReflectDelegate.getProperty((OAObject) masterObject, property);
-        
-        if ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0)) {
-            return detailValue;
-        }
-        
-        OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys, bForHubMerger);
-        os.setMax(1500);  // max number of objects to write
-        os.setMaxSize(250000);  // max size of compressed data to write out
-        os.setMax(1000);  // max number of objects to write
-        
 
-        Object objx = os.getExtraObject();
+        
+        Object returnValue;
         int cntSib=0;
-        if (objx instanceof HashMap) {
-            cntSib = ((HashMap) objx).size();
-            if (cntSib > 0 && (masterProps != null && masterProps.length > 0)) cntSib--;
+        
+        boolean b = ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0));
+        if (b) {
+            if (detailValue instanceof Hub) {
+                if (((Hub) detailValue).getSize() > 100) b = false;
+            }
         }
+        
+        if (b) {
+            returnValue = detailValue;
+        }
+        else {
+            OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys, bForHubMerger);
+            os.setMax(1500);  // max number of objects to write
+            os.setMaxSize(250000);  // max size of compressed data to write out
+            os.setMax(1000);  // max number of objects to write
+            
+    
+            Object objx = os.getExtraObject();
+            if (objx instanceof HashMap) {
+                cntSib = ((HashMap) objx).size();
+                if (cntSib > 0 && (masterProps != null && masterProps.length > 0)) cntSib--;
+            }
+            
+            returnValue = os;
+        }
+            
         String s = String.format(
             "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d/%,d, masterProps=%s",
             ++cntx, 
@@ -119,7 +133,7 @@ public class ClientGetDetail {
         OAPerformance.LOG.fine(s);
         LOG.fine(s);
         
-        return os;
+        return returnValue;
     }
     
     /** 20130213
@@ -223,6 +237,12 @@ public class ClientGetDetail {
         }
         
         b = ((hmExtraData != null && hmExtraData.size() > 0) || (masterProperties != null && masterProperties.length > 0));
+        if (!b) {
+            if (detailObject instanceof Hub) {
+                if (((Hub) detailObject).getSize() > 100) b = true;
+            }
+        }
+        
         OAObjectSerializer os = new OAObjectSerializer(detailObject, b);
         if (hmExtraData != null && hmExtraData.size() > 0) {
             if ((masterProperties != null && masterProperties.length > 0)) {

@@ -697,12 +697,12 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
      
     @OACalculatedProperty(displayName = "Full Name", displayLength = 30, columnLength = 25, properties = {P_FirstName, P_LastName, P_MiddleName})
     public String getFirstMiddleLastName() {
-        return "";//EmployeeDelegate.getFirstMiddleLastName(this);
+        return firstName+" "+middleName+" "+lastName;//EmployeeDelegate.getFirstMiddleLastName(this);
     }
      
     @OACalculatedProperty(displayName = "Full Name", displayLength = 25, properties = {P_FirstName, P_LastName})
     public String getFirstLastName() {
-        return "";//EmployeeDelegate.getFirstLastName(this);
+        return firstName+" "+lastName;//EmployeeDelegate.getFirstLastName(this);
     }
      
     @OACalculatedProperty(displayName = "Points Issuance Balance", description = "number of points this user/manager has avail to issue to other submanagers, or for Hi5 awards to this manager's users", decimalPlaces = 2, displayLength = 7, properties = {P_PointsIssuances+"."+PointsIssuance.P_Points, P_FromPointsIssuances+"."+PointsIssuance.P_Points})

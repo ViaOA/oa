@@ -554,6 +554,7 @@ public class OAObjectReflectDelegate {
         }
         
         // 20131129 triggers
+        /*
         if (hub != null && OAObjectCSDelegate.isServer(oaObj) && linkInfo != null) {
             Class[] cs = linkInfo.getTriggerClasses();
             if (cs != null) {
@@ -567,7 +568,8 @@ public class OAObjectReflectDelegate {
                     }
                 }
             }
-        }            
+        } 
+        */           
         return hub;
     }
     private static Hub _getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, 
