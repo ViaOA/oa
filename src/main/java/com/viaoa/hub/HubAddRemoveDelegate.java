@@ -213,7 +213,9 @@ public class HubAddRemoveDelegate {
         Object[] objs = thisHub.toArray();
         thisHub.data.vector.removeAllElements();
         
-        if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && thisHub.isOAObject()) {
+        
+        boolean bIsDeleting = OAThreadLocalDelegate.isDeleting(thisHub); 
+        if (!bIsDeleting && (thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && thisHub.isOAObject()) {
             Vector vecRemove = thisHub.data.getVecRemove();
             int x = vecRemove==null ? 0 : vecRemove.size(); 
             for (Object obj : objs) {
@@ -247,11 +249,12 @@ public class HubAddRemoveDelegate {
         }
         OARemoteThreadDelegate.startNextThread(); 
 
-        // need to now have the object ref to hub removed. 
-        for (Object obj : objs) {
-            remove(thisHub, obj, false, false, false, bSetAOtoNull, true, true); 
+        // need to now have the object ref to hub removed.
+        if (!bIsDeleting) {
+            for (Object obj : objs) {
+                remove(thisHub, obj, false, false, bIsDeleting, bSetAOtoNull, true, true); 
+            }
         }
-        
         
         /*was
         Object objLast = null;

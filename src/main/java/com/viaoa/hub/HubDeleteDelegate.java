@@ -34,11 +34,13 @@ public class HubDeleteDelegate {
         }
 
         try {
+            OAThreadLocalDelegate.setDeleting(thisHub, true);
             OARemoteThreadDelegate.sendMessages(true);
             _runDeleteAll(thisHub);
         }
         finally {
             OARemoteThreadDelegate.sendMessages(false);
+            OAThreadLocalDelegate.setDeleting(thisHub, false);
         }
     }
     // only runs on the server
@@ -47,7 +49,7 @@ public class HubDeleteDelegate {
         if (thisHub.isOAObject()) objs = thisHub.toArray();
         else objs = null;
         
-        HubAddRemoveDelegate.clear(thisHub);
+        HubAddRemoveDelegate.clear(thisHub); // single event to remove all from hub (sent to clients)
         HubDataDelegate.clearHubChanges(thisHub);
         
         if (objs != null) {
@@ -56,6 +58,11 @@ public class HubDeleteDelegate {
                 OAObjectDeleteDelegate.delete((OAObject)obj, cascade);
             }
         }
+        
+        for (Object obj : objs) {
+            HubAddRemoveDelegate.remove(thisHub, obj, false, false, true, false, false, true); 
+        }
+        
     }
     
     

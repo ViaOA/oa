@@ -1300,25 +1300,26 @@ public class OAObjectReflectDelegate {
                 }
                 
                 if (ref == null && li.getPrivateMethod()) {
-                    // 20120907 might not have a method created, and uses a linkTable
-                    // 20151208 need to get from ds                        
-                    if (!bIsServer && !bIsCalc) {
-                        if (oaObj.isDeleted()) { // 20151117
-                            return null;
+                    OADataSource ds = OADataSource.getDataSource(li.getToClass());
+                    if (ds != null && ds.supportsStorage()) {
+                        if (!bIsServer && !bIsCalc) {
+                            if (oaObj.isDeleted()) { // 20151117
+                                return null;
+                            }
+                            ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                         }
-                        ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
+                        else {
+                            OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                            if (liReverse != null) {
+                                OASelect sel = new OASelect(li.getToClass());
+                                sel.setWhere(liReverse.getName()+" = ?");
+                                sel.setParams(new Object[] {oaObj});
+                                sel.select();
+                                ref = sel.next();
+                                sel.close();
+                            }
+                        }
                     }
-                    else {
-                        OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                        if (liReverse != null) {
-                            OASelect sel = new OASelect(li.getToClass());
-                            sel.setWhere(liReverse.getName()+" = ?");
-                            sel.setParams(new Object[] {oaObj});
-                            sel.select();
-                            ref = sel.next();
-                            sel.close();
-                        }
-                    }                        
                 }
             }
         }

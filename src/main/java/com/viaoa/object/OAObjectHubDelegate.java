@@ -82,7 +82,6 @@ public class OAObjectHubDelegate {
         return false;
     }
     
-
     // 20150105 the obj.weakhubs can be shared, so it can not be nulled out
     /**
      * Called by Hub when an OAObject is removed from a Hub.

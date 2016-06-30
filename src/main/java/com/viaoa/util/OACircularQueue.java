@@ -174,7 +174,7 @@ public abstract class OACircularQueue<TYPE> {
         return addMessageToQueue(msg, 0);
     }
     public int addMessage(TYPE msg) {
-        return addMessageToQueue(msg);
+        return addMessageToQueue(msg, 0);
     }
     /**
      * @param bThrottle if true, then make sure that headPos is not too far ahead of readers

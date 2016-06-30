@@ -17,10 +17,12 @@ import java.util.logging.Logger;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubAddRemoveDelegate;
+import com.viaoa.hub.HubCSDelegate;
 import com.viaoa.hub.HubDSDelegate;
 import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubEventDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OANotExist;
@@ -257,7 +259,7 @@ public class OAObjectDeleteDelegate {
 
                 if (masterObj != null) {
                     OADataSource ds = OADataSource.getDataSource(masterObj.getClass());
-                    if (ds != null) {
+                    if (ds != null && ds.supportsStorage()) {
                         ds.updateMany2ManyLinks(masterObj, null, new OAObject[] {oaObj}, liRev.name);
                     }
                 }
@@ -285,15 +287,29 @@ public class OAObjectDeleteDelegate {
             boolean bIsM2m = OAObjectInfoDelegate.isMany2Many(li);
         	
 	        if (!li.cascadeDelete && !li.getOwner()) {  // remove reference in any object to this object
-                if (hub.isOAObject()) {
+                if (hub.isOAObject() && hub.getSize() > 0) {
                     OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                    int x = hub.getSize();
-		            for (--x; x >= 0; x--) {
-		                obj = hub.elementAt(x);
-		                hub.remove(x);  // hub will set property for references master to null.
-
-		                if (!bIsM2m) OAObjectDSDelegate.removeReference((OAObject)obj, liRev); // update DB so that fkey violation is not thrown
-	                }
+                    boolean b;
+                    if (liRev.getPrivateMethod()) {
+                        // might have a link table
+                        OADataSource ds = OADataSource.getDataSource(oaObj.getClass());
+                        b = (ds != null && ds.supportsStorage());
+                    }
+                    else b = true;
+                    
+                    if (b) {
+                        int x = hub.getSize();
+    		            for (--x; x >= 0; x--) {
+    		                obj = hub.elementAt(x);
+    		                hub.remove(x);  // hub will set property for references master to null.
+    		                if (!bIsM2m) OAObjectDSDelegate.removeReference((OAObject)obj, liRev); // update DB so that fkey violation is not thrown
+    	                }
+                    }
+                    else {
+                        if (OASync.isServer()) {
+                            HubCSDelegate.removeAllFromHub(hub);
+                        }
+                    }
 	            }
 	        }
 	        else {

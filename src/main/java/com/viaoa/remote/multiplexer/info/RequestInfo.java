@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.object.OAObjectKey;
 import com.viaoa.util.OADateTime;
 
 /**
@@ -180,6 +181,12 @@ public class RequestInfo {
                 }
                 else if (obj instanceof OADateTime) {
                     s = obj.toString();
+                }
+                else if (obj instanceof OAObjectKey) {
+                    OAObjectKey key = (OAObjectKey) obj;
+                    Object[] ids = key.getObjectIds();
+                    if (ids != null && ids.length > 0 && ids[0] != null) s = "id:"+ids[0];
+                    else s = "guid:"+((OAObjectKey) obj).getGuid();
                 }
                 else {
                     s = obj.getClass().getSimpleName();

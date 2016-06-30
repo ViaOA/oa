@@ -121,11 +121,12 @@ public class HubCSDelegate {
             }
         }
 
-        if (!(thisHub.datam.masterObject instanceof OAObject)) return;
-	    if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.masterObject).getLocalOnly()) return;
-
         // must have a master object to be able to know which hub to add object to
         // send ADD message
+        
+        if (!(thisHub.datam.masterObject instanceof OAObject)) return;
+        OAObject master = (OAObject) thisHub.datam.masterObject;
+	    if (OAObjectInfoDelegate.getOAObjectInfo(master).getLocalOnly()) return;
 
 	    if (thisHub.isFetching()) {
 	        return; // 20140309
@@ -136,6 +137,20 @@ public class HubCSDelegate {
 	        return;
 	    }
 
+        // 20160630
+        final boolean bIsLoading = OAThreadLocalDelegate.isLoadingObject(); 
+        if (bIsLoading) {
+            if (!OAObjectHubDelegate.isInHub(master)) {
+                if (OASyncDelegate.isServer(master)) {
+                    return; 
+                }
+                if (OAObjectCSDelegate.isInNewObjectCache(master)) {
+                    return;
+                }
+            }
+        }
+
+        
         // 20110323 note: must send object, other clients might not have it.        
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync(thisHub);
         if (rs != null) {

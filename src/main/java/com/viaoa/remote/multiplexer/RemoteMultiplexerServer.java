@@ -1837,7 +1837,6 @@ public class RemoteMultiplexerServer {
         }
     }
     
-    
     protected void notifyMethodInvoked(RequestInfo ri) {
         if (ri == null) return;
         synchronized (ri) {
