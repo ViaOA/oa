@@ -185,7 +185,7 @@ public class TextFieldController extends JFCController implements FocusListener,
                     String s = "";
                     for (int i=0; i<string.length(); i++) {
                         char ch = string.charAt(i);
-                        if (Character.isDigit(ch) || ch == '-' || (bFloat && ch == '.')) {
+                        if (Character.isDigit(ch) || ch == '-' || (bFloat && ch == '.') || ch == ',') {
                             s += string.charAt(i);
                         }
                     }
@@ -200,7 +200,7 @@ public class TextFieldController extends JFCController implements FocusListener,
                     String s = "";
                     for (int i=0; i<text.length(); i++) {
                         char ch = text.charAt(i);
-                        if (Character.isDigit(ch) || ch == '-' || (bFloat && ch == '.')) {
+                        if (Character.isDigit(ch) || ch == '-' || (bFloat && ch == '.') || ch == ',') {
                             s += text.charAt(i);
                         }
                     }
@@ -367,9 +367,10 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
                 if (ftext == null) ftext = " ";
             }
             if (ftext.equals(textField.getText())) {  // otherwise, it was changed by OATable keystroke
-                String text;
+                String text; 
                 if (value == null) text = "";
-                else text = OAConv.toString(value, null); // dont include format, need raw/edit version
+                else text = OAConv.toString(value, getFormat()); // 20160705 allow editing with format chars
+                //was: else text = OAConv.toString(value, null); // dont include format, need raw/edit version
 
                 if (text == null) {
                     text = getNullDescription();

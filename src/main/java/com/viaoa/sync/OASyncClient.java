@@ -105,7 +105,7 @@ public class OASyncClient {
     }
     
     
-    public void startClientUpdateThread(final int seconds) {
+    public void startUpdateThread(final int seconds) {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -124,7 +124,7 @@ public class OASyncClient {
                     }
                 }
             }
-        }, "OASyncClient.updateClientInfo."+seconds);
+        }, "OASyncClient.update."+seconds);
         t.setDaemon(true);
         t.start();
     }

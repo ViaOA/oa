@@ -62,6 +62,8 @@ public class OAOutlookBar extends JPanel implements ActionListener {
 
         cardLayout = new CardLayout(0, 0);
         cardPanel = new JPanel(cardLayout);
+        cardPanel.add(new JPanel(), "empty");
+
 
         this.setLayout(new BorderLayout());
         this.add(topPanel, BorderLayout.NORTH);
@@ -284,6 +286,7 @@ public class OAOutlookBar extends JPanel implements ActionListener {
 
         this.visibleComponent = (barInfo == null) ? null : barInfo.getComponent();
         if (barInfo != null) cardLayout.show(cardPanel, barInfo.name);
+        else cardLayout.show(cardPanel, "empty");
 
 
         // Render the bottom bars: remove all components, reset the GridLayout to
@@ -362,12 +365,17 @@ public class OAOutlookBar extends JPanel implements ActionListener {
         JFrame frame = new JFrame("JOutlookBar Test");
         OAOutlookBar outlookBar = new OAOutlookBar();
         outlookBar.addBar("One", getDummyPanel("One"));
+        
+/*        
         outlookBar.addBar("Two", getDummyPanel("Two"));
         outlookBar.addBar("Three", getDummyPanel("Three"));
         outlookBar.addBar("Four", getDummyPanel("Four"));
         outlookBar.addBar("Five", getDummyPanel("Five"));
         outlookBar.setVisibleBar(2);
+*/        
         frame.getContentPane().add(outlookBar);
+        
+outlookBar.setVisible("One", false);//qqqq
 
         frame.setSize(800, 600);
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
