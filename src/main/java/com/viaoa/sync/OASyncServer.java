@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
-import com.viaoa.hub.Hub;
 import com.viaoa.object.OACascade;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
@@ -198,6 +198,36 @@ public class OASyncServer {
         return rs;
     }
 
+    /**
+     * updates ClientInfo
+     */
+    public void startServerUpdateThread(final int seconds) {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                getClientInfo();
+                for (;;) {
+                    clientInfo.setFreeMemory(Runtime.getRuntime().freeMemory());
+                    clientInfo.setTotalMemory(Runtime.getRuntime().totalMemory());
+                    try {
+                        onUpdate(clientInfo);
+                        Thread.sleep(seconds * 1000);
+                    }
+                    catch (Exception e) {
+                        break;
+                    }
+                }
+            }
+        }, "OASyncServer.updateClientInfo."+seconds);
+        t.setDaemon(true);
+        t.start();
+    }
+    
+    /**
+     * This can be overwritten to capture info about the server and client connections.
+     * @see #startServerUpdateThread(int)
+     * @see OASyncClient#startClientUpdateThread(int)
+     */
     public void onUpdate(ClientInfo ci) {
         int cid = ci.getConnectionId();
         ClientInfoExt cx = hmClientInfoExt.get(cid);

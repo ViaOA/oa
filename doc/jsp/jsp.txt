@@ -1,4 +1,19 @@
 
+<%@page trimDirectiveWhitespaces="true"%>
+
+<%
+   if (!isAdmin) {
+        // Note: response.sendRedirect() will keep processing the page.  jsp:forward will return from the page
+        %>
+            <jsp:forward page="empLogin.jsp" />
+        <%
+    }
+    response.setContentType("text/csv");
+    response.addHeader("Content-Disposition","attachment; filename=download.csv");
+
+
+
+
 
 JSP tags
     http://www.tutorialspoint.com/jsp/page_directive.htm
