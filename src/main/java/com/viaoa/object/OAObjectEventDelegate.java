@@ -119,7 +119,7 @@ public class OAObjectEventDelegate {
                 String s = "owner is being reassigned, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj;
                 RuntimeException e = new RuntimeException(s);
                 LOG.log(Level.WARNING, s, e);
-                throw e;
+                // throw e;
             }
         }
         
