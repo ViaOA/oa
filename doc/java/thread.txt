@@ -1,5 +1,68 @@
 
 
+>> sample que 
+    private volatile Thread threadMessageQueue;
+    private AtomicInteger aiStart = new AtomicInteger();
+    private LinkedBlockingQueue<?> queMessage = new LinkedBlockingQueue<?>();
+
+
+    public void start() throws Exception {
+        bIsStarted = true;
+        aiStart.incrementAndGet();
+        startQueueThread();
+    }
+
+    public void close() {
+        if (!bIsStarted) return;
+        bIsStarted = false;
+        aiStart.incrementAndGet();
+        queOnMessage.clear();
+        threadMessageQueue = null;
+    }
+
+    
+    <code>
+        queMessage.offer(?);
+    </code>
+
+    protected void startQueueThread() {
+        if (threadMessageQueue != null) return;
+
+        log("creating single thread and queue to process LLAD messages");
+        final int cntStart = aiStart.get();
+        
+        Runnable rr = new Runnable() {
+            public void run() {
+                long msLastException = 0;
+                for (int i=0; ;i++) {
+                    if (cntStart != aiStart.get()) break;
+                    if (!bIsStarted) break;
+                    try {
+                        QueMessage qm = queOnMessage.poll(5, TimeUnit.SECONDS);
+                        if (!bIsStarted) break;
+                        <process...>
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "Error processing queue", e);
+                        long ms = System.currentTimeMillis();
+                        if (msLastException > 0 && ((ms - msLastException) < 1000) ) {
+                            try {
+                                Thread.sleep(1000);
+                            }
+                            catch (InterruptedException e2) {
+                            }
+                        }
+                        msLastException = ms;
+                    }
+                }
+            }
+        };
+        threadMessageQueue = new Thread(rr, "Name.queue");
+        threadMessageQueue.setDaemon(true);
+        threadMessageQueue.start();
+    }
+
+
 
 
 Volatile
