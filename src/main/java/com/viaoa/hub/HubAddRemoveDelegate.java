@@ -85,7 +85,7 @@ public class HubAddRemoveDelegate {
         
         int pos = 0;
         if (!bIsRemovingAll || bSendEvent) {
-            pos = HubDataDelegate.getPos(thisHub, obj, false, false); // dont adjust master or update link when finding the postion of the object.
+            pos = HubDataDelegate.getPos(thisHub, obj, false, false); // dont adjust master or update link when finding the position of the object.
             if (pos < 0) {
                 //20140312 Hub might be changing, wait until _remove is called
                 // return;
@@ -223,14 +223,7 @@ public class HubAddRemoveDelegate {
                     // no-op
                 }
                 else {
-                    boolean b = false;
-                    for (int i=0; i<x; i++) {
-                        if (obj == vecRemove.elementAt(i)) {
-                            b = true;
-                            break;
-                        }
-                    }
-                    if (!b) {
+                    if (vecRemove.indexOf(obj) < 0) {
                         if (vecRemove == null) vecRemove = HubDataDelegate.createVecRemove(thisHub);
                         vecRemove.addElement(obj);
                     }
