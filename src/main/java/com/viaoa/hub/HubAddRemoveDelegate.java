@@ -397,6 +397,7 @@ public class HubAddRemoveDelegate {
         }
         if (b) _afterAdd(thisHub, obj);
     }
+    
     private static boolean _add(final Hub thisHub, final Object obj, final boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed

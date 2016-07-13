@@ -153,8 +153,9 @@ public class OAObjectReflectDelegate {
                 m = OAObjectInfoDelegate.getMethod(oi, "is" + propName, 0);
                 if (m == null) return null;
             }
-            if (m != null && (m.getModifiers() & Modifier.PRIVATE) == 0) {            
-                if (getPrimitiveNull(oaObj, propName)) return null;
+            if (m != null && (m.getModifiers() & Modifier.PRIVATE) == 0) {  
+                Class c = m.getReturnType();
+                if (c != null && c.isPrimitive() && getPrimitiveNull(oaObj, propName)) return null;
                 try {
                     return m.invoke(oaObj, null);
                 }
@@ -459,8 +460,7 @@ public class OAObjectReflectDelegate {
      * @param bSequence
      *            if true, then create a hub sequencer to manager the order of the objects in the hub.
      */
-    public static Hub getReferenceHub(OAObject oaObj, String linkPropertyName, 
-            String sortOrder, boolean bSequence, Hub hubMatch) {
+    public static Hub getReferenceHub(OAObject oaObj, String linkPropertyName, String sortOrder, boolean bSequence, Hub hubMatch) {
         /*
          lock obj.props[]
            get Hub from oaObj.props[]
@@ -475,66 +475,65 @@ public class OAObjectReflectDelegate {
         if (linkPropertyName == null) return null;
 
         Hub hub = null;
-        OAObjectInfo oi = null;
-        OALinkInfo linkInfo = null;
-
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
+        
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, true);
+        
         if (obj instanceof Hub) {
             // 20141215 could be server side, that deserialized the object+references without setting up.
             hub = (Hub) obj;
             
             // return if not server
-            if (!OAObjectCSDelegate.isServer(oaObj)) return hub;
+            if (OAObjectCSDelegate.isServer(oaObj)) {
 
-            // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))
-            if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
-
-            oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-            linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
-            
-            // check to see if there needs to be an autoMatch set up
-            if (HubDelegate.getAutoMatch(hub) == null) {
-                if (linkInfo != null) {
-                    String matchProperty = linkInfo.getMatchProperty();
-                    if (matchProperty != null && matchProperty.length() > 0) {
-                        if (hubMatch == null) {
-                            String matchHubPropPath = linkInfo.getMatchHub();
-                            if (matchHubPropPath != null && matchHubPropPath.length() > 0) {
-                                OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.getToClass());
-                                OALinkInfo linkInfox = OAObjectInfoDelegate.getLinkInfo(oix, matchProperty);
-                                if (linkInfox != null) {
-                                    if (!OAThreadLocalDelegate.isDeleting()) {                                
-                                        hubMatch = new Hub(linkInfox.getToClass());
-                                        HubMerger hm = new HubMerger(oaObj, hubMatch, matchHubPropPath);
-                                        hm.setServerSideOnly(true);
+                // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))
+                if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
+    
+                oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+                linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
+                
+                // check to see if there needs to be an autoMatch set up
+                if (HubDelegate.getAutoMatch(hub) == null) {
+                    if (linkInfo != null) {
+                        String matchProperty = linkInfo.getMatchProperty();
+                        if (matchProperty != null && matchProperty.length() > 0) {
+                            if (hubMatch == null) {
+                                String matchHubPropPath = linkInfo.getMatchHub();
+                                if (matchHubPropPath != null && matchHubPropPath.length() > 0) {
+                                    OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo(linkInfo.getToClass());
+                                    OALinkInfo linkInfox = OAObjectInfoDelegate.getLinkInfo(oix, matchProperty);
+                                    if (linkInfox != null) {
+                                        if (!OAThreadLocalDelegate.isDeleting()) {                                
+                                            hubMatch = new Hub(linkInfox.getToClass());
+                                            HubMerger hm = new HubMerger(oaObj, hubMatch, matchHubPropPath);
+                                            hm.setServerSideOnly(true);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if (hubMatch != null) {
-                            hub.setAutoMatch(matchProperty, hubMatch, true); // serverSide only
+                            if (hubMatch != null) {
+                                hub.setAutoMatch(matchProperty, hubMatch, true); // serverSide only
+                            }
                         }
                     }
                 }
-            }
-            
-            // check to see if there needs to be a seq
-            if (sortOrder != null && sortOrder.length() > 0) {
-                if (bSequence) {
-                    if (HubDelegate.getAutoSequence(hub) == null) {
-                        hub.setAutoSequence(sortOrder); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
+                
+                // check to see if there needs to be a seq
+                if (sortOrder != null && sortOrder.length() > 0) {
+                    if (bSequence) {
+                        if (HubDelegate.getAutoSequence(hub) == null) {
+                            hub.setAutoSequence(sortOrder); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
+                        }
                     }
-                }
-                else if (HubSortDelegate.getSortListener(hub) == null){
-                    // keep the hub sorted on server only
-                    HubSortDelegate.sort(hub, sortOrder, true, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
+                    else if (HubSortDelegate.getSortListener(hub) == null){
+                        // keep the hub sorted on server only
+                        HubSortDelegate.sort(hub, sortOrder, true, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
+                    }
                 }
             }
         }
         else {
-            oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-            linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
-            
             try {
                 OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
     
@@ -544,32 +543,20 @@ public class OAObjectReflectDelegate {
                 }
                 
                 hub = _getReferenceHub(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch, oi, linkInfo);
-                if (hub != null && HubDelegate.getMasterObject(hub) == null) {
-                    OAObjectHubDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
-                }            
             }
             finally {
                 OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
             }
         }
-        
-        // 20131129 triggers
-        /*
-        if (hub != null && OAObjectCSDelegate.isServer(oaObj) && linkInfo != null) {
-            Class[] cs = linkInfo.getTriggerClasses();
-            if (cs != null) {
-                for (Class c : cs) {
-                    try {
-                        Constructor con = c.getConstructor(Hub.class);
-                        con.newInstance(hub);
-                    }
-                    catch (Exception e) {
-                        LOG.log(Level.WARNING, "error while creating trigger", e);
-                    }
-                }
+
+        // 20160712
+        // need to set master, since it is transient when serialized
+        if (hub != null && HubDelegate.getMasterObject(hub) == null) {
+            OAObjectHubDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
+            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, new WeakReference(hub), hub);
             }
-        } 
-        */           
+        }            
         return hub;
     }
     private static Hub _getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, 

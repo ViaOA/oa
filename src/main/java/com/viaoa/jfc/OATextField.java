@@ -136,7 +136,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public void setColumns(int x) {
         super.setColumns(x);
         if (table != null) {
-            int w = OATable.getCharWidth(this,getFont(),x+1);
+            int w = OATable.getCharWidth(this,getFont(),x);
             table.setColumnWidth(table.getColumnIndex(this),w);
         }
     }

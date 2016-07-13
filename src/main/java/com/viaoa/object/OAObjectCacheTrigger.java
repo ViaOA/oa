@@ -71,7 +71,9 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
             }
             @Override
             public void afterAdd(T obj) {
-                if (OAThreadLocalDelegate.isLoadingObject()) return;
+                //removed, since this is when it is added to objCache
+                //if (OAThreadLocalDelegate.isLoadingObject()) return;
+                
                 // new object is created
                 if (isUsed((T) obj)) {
                     callOnTrigger(obj);

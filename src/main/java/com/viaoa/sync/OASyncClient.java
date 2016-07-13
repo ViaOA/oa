@@ -10,6 +10,7 @@
 */
 package com.viaoa.sync;
 
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -153,6 +154,7 @@ public class OASyncClient {
         Object result = null;
 
         
+        OALinkInfo li = null;
         try {
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
@@ -164,7 +166,7 @@ public class OASyncClient {
                 boolean bForMerger = OAThreadLocalDelegate.isHubMergerChanging();
                 bGetSibs = true;
                 // send siblings to return back with same prop
-                OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
+                if (li == null) li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
                 if (li == null || !li.getCalculated()) {
                     siblingKeys = getDetailSiblings(masterObject, li, propertyName, bForMerger);
                 }
@@ -201,26 +203,47 @@ public class OASyncClient {
                         if (cntSib > 0) cntSib--;
                         continue;
                     }
-                    if (!(value instanceof OAObject)) {
-                        if (value != null) continue; // all hubs will be added to master props
+                    
+                    if (value != null && !(value instanceof OAObject) && !(value instanceof Hub)) {
+                        continue; 
                     }
                     
                     OAObject obj = OAObjectCacheDelegate.getObject(masterObject.getClass(), entry.getKey());
-                    
-                    // note:  only references that had an oaObjectKey that was not in the cache were in the sibling list
-                    OAObject oaValue = (OAObject) value;
-                    if (oaValue == null) { 
-                        OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, null, true, false);
+                    if (obj == null) continue;
+
+                    // 20160713 if hub, need to set master+li
+                    if (value instanceof Hub) {
+                        Hub hub = (Hub) value;    
+                        if (li == null) li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
+                        if (hub.getMasterObject() == null) {
+                            OAObjectHubDelegate.setMasterObject(hub, obj, OAObjectInfoDelegate.getReverseLinkInfo(li));
+                            if (OAObjectInfoDelegate.cacheHub(li, hub)) {
+                                OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, new WeakReference(hub), hub);
+                            }
+                        }
                     }
                     else {
-                        OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, oaValue.getObjectKey(), false, false);
+                        // note:  only references that had an oaObjectKey that was not in the cache were in the sibling list
+                        OAObject oaValue = (OAObject) value;
+                        if (oaValue == null) { 
+                            OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, null, true, false);
+                        }
+                        else {
+                            OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, oaValue.getObjectKey(), false, false);
+                        }
                     }
                 }
             }
         }
         if (result instanceof Hub) {
-            // 20141125 in case Hub.datam.masterObject needs to be set. (should not happen, since only GC of master could cause this)
-            OAObjectHubDelegate.setMasterObject((Hub) result, masterObject, propertyName);
+            if (li == null) li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
+            Hub hub = (Hub) result;
+            if (hub.getMasterObject() == null) {
+                OAObjectHubDelegate.setMasterObject(hub, masterObject, OAObjectInfoDelegate.getReverseLinkInfo(li));
+                if (OAObjectInfoDelegate.cacheHub(li, hub)) {
+                    OAObjectPropertyDelegate.setPropertyCAS(masterObject, propertyName, new WeakReference(hub), hub);
+                }
+            }
         }
 
         if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntx % 100 == 0) {

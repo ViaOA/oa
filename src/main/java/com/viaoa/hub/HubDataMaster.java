@@ -35,8 +35,7 @@ class HubDataMaster implements java.io.Serializable {
     protected transient volatile OAObject masterObject;
     
     /** LinkInfo from Detail (MANY) to Master (ONE).  */
-    protected transient volatile OALinkInfo liDetailToMaster;  // Note: Dont make transient: it will get replaced in resolveObject, but needs the old one to find the match
-
+    protected transient volatile OALinkInfo liDetailToMaster; 
     
     public String getUniqueProperty() {
         if (liDetailToMaster == null) return null;

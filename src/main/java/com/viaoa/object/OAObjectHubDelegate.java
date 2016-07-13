@@ -488,7 +488,7 @@ public class OAObjectHubDelegate {
         HubDeleteDelegate.deleteAll(hub, cascade); // cascade delete and update M2M links
     }
 
-    protected static void setMasterObject(Hub hub, OAObject oaObj, OALinkInfo liDetailToMaster) {
+    public static void setMasterObject(Hub hub, OAObject oaObj, OALinkInfo liDetailToMaster) {
         if (HubDetailDelegate.getMasterObject(hub) == null) {
             HubDetailDelegate.setMasterObject(hub, oaObj, liDetailToMaster);
         }

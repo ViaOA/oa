@@ -76,8 +76,8 @@ public class OAObjectSerializeDelegate {
         OAObjectDelegate.updateGuid(oaObj.guid);
     }
 	
-	protected static Object _readResolve(final OAObject oaObjOrig) throws ObjectStreamException {
-		OAObject oaObjNew;
+	protected static Object _readResolve(final OAObject oaObjRead) throws ObjectStreamException {
+		OAObject oaObjUse;
 
 		/* 20151029 on hold
         OASyncCombinedClient cc = OASyncDelegate.getSyncCombinedClient();
@@ -88,52 +88,65 @@ public class OAObjectSerializeDelegate {
 		*/
 		
 		boolean bDup;
-        if (oaObjOrig.guid == 0) {
-        	LOG.warning("received object with guid=0, obj="+oaObjOrig+", reassigning a new guid");
-        	OAObjectDelegate.assignGuid(oaObjOrig);
-        	oaObjOrig.objectKey.guid = oaObjOrig.guid;
+        if (oaObjRead.guid == 0) {
+        	LOG.warning("received object with guid=0, obj="+oaObjRead+", reassigning a new guid");
+        	OAObjectDelegate.assignGuid(oaObjRead);
+        	oaObjRead.objectKey.guid = oaObjRead.guid;
         }
         
-		OAObjectInfo oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObjOrig);
+		OAObjectInfo oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObjRead);
 		if (oi.bAddToCache) {
-			oaObjNew = OAObjectCacheDelegate.add(oaObjOrig, false, false);
-			bDup = (oaObjOrig != oaObjNew);
+			oaObjUse = OAObjectCacheDelegate.add(oaObjRead, false, false);
+			bDup = (oaObjRead != oaObjUse);
 		}
 		else {
-			oaObjNew = oaObjOrig;
+			oaObjUse = oaObjRead;
 			bDup = false;
 		}
 
-		
+		// 20160713 assign hub.master+li
+        final Object[] objs = oaObjRead.properties;
+        for (int i=0; objs != null && i < objs.length; i+=2) {
+            Object value = objs[i+1];
+            if (!(value instanceof Hub)) continue;
 
-        /*
-        if ( ((cntDup+cntNew) % 5000) == 0) {
-            System.out.println(String.format("OAObjectSerializeDelegate: totDup=%d totNew=%d", cntDup, cntNew));
+            Hub hub = (Hub) value;
+            if (HubDelegate.getMasterObject(hub) != null) continue;
+
+            String key = (String) objs[i];
+            if (key == null) continue;
+            
+            OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
+            if (linkInfo == null) continue;
+            
+            OAObjectHubDelegate.setMasterObject(hub, oaObjRead, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
+            if (!bDup && linkInfo.cacheSize > 0) {
+                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                    OAObjectPropertyDelegate.setPropertyCAS(oaObjRead, key, new WeakReference(hub), hub);
+                }
+            }
         }
-        */        
 		
 		if (!bDup) {
 		    cntNew++;
-		    return oaObjNew;
+		    return oaObjUse;
 		}
-
 		cntDup++;
 		
         // check to see if references are needed or not
-        Object[] objs = oaObjOrig.properties;
         for (int i=0; objs != null && i < objs.length; i+=2) {
             String key = (String) objs[i];
             if (key == null) continue;
             Object value = objs[i+1];
 		
-            Object localValue = OAObjectPropertyDelegate.getProperty(oaObjNew, key, true, true);
+            Object localValue = OAObjectPropertyDelegate.getProperty(oaObjUse, key, true, true);
 
             if (localValue != OANotExist.instance) {
                 if (localValue instanceof OAObjectKey && (value instanceof OAObject)) {
                     OAObjectKey k1 = (OAObjectKey) localValue;
                     OAObjectKey k2 = OAObjectKeyDelegate.getKey( (OAObject) value);
                     if (k1.equals(k2)) {
-                        OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, localValue);
+                        OAObjectPropertyDelegate.setPropertyCAS(oaObjUse, key, value, localValue);
                     }
                     continue;
                 }
@@ -147,35 +160,41 @@ public class OAObjectSerializeDelegate {
             OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
             
             // need to replace any references to oaObjOrig with oaObjNew
-			boolean b = replaceReferences(oaObjOrig, oaObjNew, linkInfo, value);
+			boolean b = replaceReferences(oaObjRead, oaObjUse, linkInfo, value);
 			if (b) {
 			    if (value == null && linkInfo.getType() == linkInfo.MANY) {
 			        // 20150826 skip if prop is locked by another
 			        try {
-		                b = OAObjectPropertyDelegate.attemptPropertyLock(oaObjNew, key);
+		                b = OAObjectPropertyDelegate.attemptPropertyLock(oaObjUse, key);
 		                if (b) {
-		                    OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, localValue, (localValue == OANotExist.instance), false);
+		                    OAObjectPropertyDelegate.setPropertyCAS(oaObjUse, key, value, localValue, (localValue == OANotExist.instance), false);
 		                }
 			        }
 			        finally {
-                        if (b) OAObjectPropertyDelegate.releasePropertyLock(oaObjNew, linkInfo.getName());
+                        if (b) OAObjectPropertyDelegate.releasePropertyLock(oaObjUse, linkInfo.getName());
 			        }
 			    }
 			    else {
-			        OAObjectPropertyDelegate.setPropertyCAS(oaObjNew, key, value, localValue, (localValue == OANotExist.instance), false);
+			        if (value instanceof Hub && linkInfo.cacheSize > 0) {
+			            Hub hub = (Hub) value;
+    	                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+    	                    value = new WeakReference(hub);
+    	                }
+			        }			        
+			        OAObjectPropertyDelegate.setPropertyCAS(oaObjUse, key, value, localValue, (localValue == OANotExist.instance), false);
 			    }
 			}
         }
-        OAObjectDelegate.dontFinalize(oaObjOrig);
+        OAObjectDelegate.dontFinalize(oaObjRead);
 
-        return oaObjNew;
+        return oaObjUse;
     }
 
     public static volatile int cntDup; 
     public static volatile int cntNew; 
     public static volatile int cntSkip;
 
-	private static boolean replaceReferences(OAObject oaObjOrig, OAObject oaObjNew, OALinkInfo linkInfo, Object value) {
+	private static boolean replaceReferences(OAObject oaObjFrom, OAObject oaObjTo, OALinkInfo linkInfo, Object value) {
         // 20130215 value can be null
 	    if (linkInfo == null) return false;
 		//was: if (value == null || linkInfo == null) return false;
@@ -200,7 +219,7 @@ public class OAObjectSerializeDelegate {
 			}
 			
 			// this will only replace if current masterObj = oaObjOrig
-    		HubSerializeDelegate.replaceMasterObject((Hub) value, oaObjOrig, oaObjNew);
+    		HubSerializeDelegate.replaceMasterObject((Hub) value, oaObjFrom, oaObjTo);
 
 			for (int i=0; revName!=null; i++) { 
             	OAObject objx = (OAObject) hub.getAt(i);
@@ -208,11 +227,11 @@ public class OAObjectSerializeDelegate {
             	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false, true);
             	if (ref == null) {
             	}
-            	else if (ref == oaObjOrig || ref instanceof OAObjectKey) {
-            	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjNew, oaObjOrig);
+            	else if (ref == oaObjFrom || ref instanceof OAObjectKey) {
+            	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjTo, oaObjFrom);
             	}
             	else if (ref instanceof Hub) {
-            		HubSerializeDelegate.replaceObject((Hub) ref, oaObjOrig, oaObjNew);
+            		HubSerializeDelegate.replaceObject((Hub) ref, oaObjFrom, oaObjTo);
             	}
             }        	
         }
@@ -222,13 +241,13 @@ public class OAObjectSerializeDelegate {
 
         	Object ref = OAObjectPropertyDelegate.getProperty(objx, revName, false, true);
         	if (ref == null) return true;
-        	if (ref == oaObjOrig || ref.equals(oaObjOrig.objectKey)) {
-        	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjNew, oaObjOrig);
+        	if (ref == oaObjFrom || ref.equals(oaObjFrom.objectKey)) {
+        	    OAObjectPropertyDelegate.setPropertyCAS(objx, revName, oaObjTo, oaObjFrom);
         	}
         	else {
         		if (ref instanceof WeakReference) ref = ((WeakReference) ref).get();
         		if (ref instanceof Hub) {
-            		HubSerializeDelegate.replaceObject((Hub) ref, oaObjOrig, oaObjNew);
+            		HubSerializeDelegate.replaceObject((Hub) ref, oaObjFrom, oaObjTo);
         		}
         	}
         }

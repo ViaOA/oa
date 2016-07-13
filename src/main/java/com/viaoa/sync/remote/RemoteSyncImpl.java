@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.logging.Logger;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubAddRemoveDelegate;
 import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;

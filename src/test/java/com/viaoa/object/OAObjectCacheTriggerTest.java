@@ -34,18 +34,9 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
         emp = new Employee();
         assertEquals(2, ai.get());
         
-        try {
-            OAThreadLocalDelegate.setLoadingObject(true);
-            emp = new Employee();
-            assertEquals(2, ai.get());
-        }
-        finally {
-            OAThreadLocalDelegate.setLoadingObject(false);
-        }
-
         emp = new Employee();
         assertEquals(3, ai.get());
-        
+
         objectCacheTrigger.close();
     }
 

@@ -88,6 +88,9 @@ public class HubSerializeDelegate {
         
         // 20141116 make sure that masterObject.properties has hub
         // 20141204 added caching, weakRef
+        // **20160712 masterObject and li are transient
+        //    this is now assigned in OAObjectSerialize._readResolve, OASyncClient.getDetail, and OAObjectReflectDelegate.getReferenceHub(..)
+        /*
         if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
             // this will always set the locally found masterObject, and not a duplicate
             Object value = thisHub;
@@ -105,6 +108,7 @@ public class HubSerializeDelegate {
             }        
             if (b) OAObjectPropertyDelegate.setPropertyHubIfNotSet(thisHub.datam.masterObject, liRev.getName(), value);            
         }
+        */
         return thisHub;
     }
 }

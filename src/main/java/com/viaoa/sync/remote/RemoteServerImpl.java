@@ -19,9 +19,7 @@ import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
-import com.viaoa.object.OAObjectInfoDelegateTest;
 import com.viaoa.object.OAObjectKey;
-import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.sync.model.ClientInfo;
 
