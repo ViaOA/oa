@@ -191,7 +191,7 @@ public class OASyncClient {
 
             result = os.getObject();
             
-            // the custom serializer can send extra objects, and might using objKey instead of the object. 
+            // the custom serializer can send extra objects, and might use objKey instead of the object. 
             Object objx = os.getExtraObject();
             
             if (objx instanceof HashMap) {
@@ -204,45 +204,31 @@ public class OASyncClient {
                         continue;
                     }
                     
-                    if (value != null && !(value instanceof OAObject) && !(value instanceof Hub)) {
-                        continue; 
-                    }
-                    
                     OAObject obj = OAObjectCacheDelegate.getObject(masterObject.getClass(), entry.getKey());
-                    if (obj == null) continue;
+                    if (obj == null) continue; 
 
-                    // 20160713 if hub, need to set master+li
                     if (value instanceof Hub) {
                         Hub hub = (Hub) value;    
                         if (li == null) li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
-                        if (hub.getMasterObject() == null) {
-                            OAObjectHubDelegate.setMasterObject(hub, obj, OAObjectInfoDelegate.getReverseLinkInfo(li));
+                        if (li != null) {
                             if (OAObjectInfoDelegate.cacheHub(li, hub)) {
-                                OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, new WeakReference(hub), hub);
+                                value = new WeakReference(hub);
                             }
                         }
                     }
-                    else {
-                        // note:  only references that had an oaObjectKey that was not in the cache were in the sibling list
-                        OAObject oaValue = (OAObject) value;
-                        if (oaValue == null) { 
-                            OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, null, true, false);
-                        }
-                        else {
-                            OAObjectPropertyDelegate.setPropertyCAS(obj, propertyName, oaValue, oaValue.getObjectKey(), false, false);
-                        }
-                    }
+                    OAObjectPropertyDelegate.setProperty(obj, propertyName, value);  // this will also set the hub.masterObj+li
                 }
             }
         }
+        
         if (result instanceof Hub) {
-            if (li == null) li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
             Hub hub = (Hub) result;
-            if (hub.getMasterObject() == null) {
-                OAObjectHubDelegate.setMasterObject(hub, masterObject, OAObjectInfoDelegate.getReverseLinkInfo(li));
-                if (OAObjectInfoDelegate.cacheHub(li, hub)) {
-                    OAObjectPropertyDelegate.setPropertyCAS(masterObject, propertyName, new WeakReference(hub), hub);
-                }
+            if (li == null) li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
+            if (OAObjectInfoDelegate.cacheHub(li, hub)) {
+                OAObjectPropertyDelegate.setProperty(masterObject, propertyName, new WeakReference(hub));
+            }
+            else {
+                OAObjectPropertyDelegate.setProperty(masterObject, propertyName, hub);  // this will also set the hub.masterObj+li
             }
         }
 

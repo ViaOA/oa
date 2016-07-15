@@ -113,6 +113,16 @@ public class OAObjectPropertyDelegate {
         }
         oaObj.properties[pos] = name;
         oaObj.properties[pos+1] = value;
+        
+        // in case Hub.datam.masterObject is not set
+        Object objx = value;
+        if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
+        if (objx instanceof Hub) {
+            Hub hub = (Hub) objx;
+            if (hub.getMasterObject() == null) {
+                OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
+            }
+        }
     }
 
     public static void removeProperty(OAObject oaObj, String name, boolean bFirePropertyChange) {
@@ -196,11 +206,14 @@ public class OAObjectPropertyDelegate {
             oaObj.properties[pos+1] = value;
         }
         
-        // 20141125 in case Hub.datam.masterObject is not set
+        // in case Hub.datam.masterObject is not set
         Object objx = value;
         if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
         if (objx instanceof Hub) {
-            OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
+            Hub hub = (Hub) objx;
+            if (hub.getMasterObject() == null) {
+                OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
+            }
         }
     }
     
@@ -241,6 +254,16 @@ public class OAObjectPropertyDelegate {
             if (oaObj.properties[pos+1] == null) {
                 oaObj.properties[pos+1] = value;
                 oaObj.properties[pos] = name;
+            }
+        }
+        
+        // in case Hub.datam.masterObject is not set
+        Object objx = value;
+        if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
+        if (objx instanceof Hub) {
+            Hub hub = (Hub) objx;
+            if (hub.getMasterObject() == null) {
+                OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
             }
         }
     }
@@ -334,11 +357,15 @@ public class OAObjectPropertyDelegate {
                 oaObj.properties[pos+1] = newValue;
             }
 
-            // 20141125 in case Hub.datam.masterObject is not set
+            
+            // in case Hub.datam.masterObject is not set
             Object objx = newValue;
             if (objx instanceof WeakReference) objx = ((WeakReference) objx).get();
             if (objx instanceof Hub) {
-                OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
+                Hub hub = (Hub) objx;
+                if (hub.getMasterObject() == null) {
+                    OAObjectHubDelegate.setMasterObject((Hub) objx, oaObj, name);
+                }
             }
         }
         return newValue;

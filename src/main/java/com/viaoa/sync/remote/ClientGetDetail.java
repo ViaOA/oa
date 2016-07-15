@@ -10,6 +10,7 @@
 */
 package com.viaoa.sync.remote;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -177,7 +178,7 @@ public class ClientGetDetail {
                     long tDiff = System.currentTimeMillis() - t1;
                     if (OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false)) continue;
                     if (tDiff < 5L) {
-                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 5); //qqqqq make sure that it will load 5 new props/refs
+                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 5); 
                     }
                     else {
                         OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 3);
@@ -198,6 +199,7 @@ public class ClientGetDetail {
             // send back a lightweight hashmap (oaObjKey, value)
             Class clazz = masterObject.getClass();
             int tot = 0;
+            
             for (OAObjectKey key : siblingKeys) {
                 OAObject obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) {
@@ -418,10 +420,26 @@ public class ClientGetDetail {
                 // called by: OAObjectSerializerDelegate for ref props 
                 // called by: HubDataMaster write, so key can be sent instead of masterObject 
                 if (!(object instanceof OAObject)) return object;
+              
                 
-                if (isOnClient(object) || object == masterObject || object == detailObject) {  
-                    // even have masterObject send key, so that hub.datam will use it to resolve on client and make it faster
-                    return ((OAObject)object).getObjectKey();
+                OAObjectKey k = null;
+                if (object == masterObject || object == detailObject) {  
+                    k = ((OAObject)object).getObjectKey();
+                    return k;
+                }
+                
+                if (siblingKeys != null) {
+                    k = ((OAObject)object).getObjectKey();
+                    for (OAObjectKey k2 : siblingKeys) {
+                        if (k2.equals(k)) {
+                            return k;
+                        }
+                    }
+                }
+                
+                if (isOnClient(object)) {
+                    if (k == null) k = ((OAObject)object).getObjectKey();
+                    return k;
                 }
                 
                 return object;

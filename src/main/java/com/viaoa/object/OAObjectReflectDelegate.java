@@ -392,7 +392,6 @@ public class OAObjectReflectDelegate {
         }
         else {
             hub = new Hub(OAObjectKey.class);
-            HubDetailDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(li));
             OAObjectPropertyDelegate.setProperty(oaObj, propName, hub);
         }
 
@@ -549,14 +548,6 @@ public class OAObjectReflectDelegate {
             }
         }
 
-        // 20160712
-        // need to set master, since it is transient when serialized
-        if (hub != null && HubDelegate.getMasterObject(hub) == null) {
-            OAObjectHubDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
-            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
-                OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, new WeakReference(hub), hub);
-            }
-        }            
         return hub;
     }
     private static Hub _getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, 
@@ -659,7 +650,7 @@ public class OAObjectReflectDelegate {
             // request from server
             hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); 
             if (hub == null) {
-                // 20140311 master not on the Server, might have been GCd, create empty Hub 
+                // master not on the Server, might have been GCd, create empty Hub 
                 if (linkInfo == null) return null;
                 Class linkClass = linkInfo.toClass;
                 hub = new Hub(linkClass, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo), false);

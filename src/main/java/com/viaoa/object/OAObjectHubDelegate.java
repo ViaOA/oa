@@ -480,7 +480,7 @@ public class OAObjectHubDelegate {
     }
 
     protected static void saveAll(Hub hub, int iCascadeRule, OACascade cascade) {
-        if (hub == null) return; // qqq need to log this
+        if (hub == null) return; 
         HubSaveDelegate.saveAll(hub, iCascadeRule, cascade); // cascade save and update M2M links
     }
 

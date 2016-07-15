@@ -69,7 +69,6 @@ public class HubSerializeDelegate {
         This needs to add the hub to OAObject.hubs, but only if it is not a duplicate (and is not needed)
     */
     protected static Object _readResolve(Hub thisHub) throws ObjectStreamException {
-        // 20141115 reworked after changing read/writeObject of hubDataMaster
         for (int i=0; ; i++) {
             Object obj = thisHub.getAt(i);
             if (obj == null) break;
@@ -85,31 +84,6 @@ public class HubSerializeDelegate {
             }
             OAObjectHubDelegate.addHub((OAObject) obj, thisHub);
         }
-        
-        // 20141116 make sure that masterObject.properties has hub
-        // 20141204 added caching, weakRef
-        // 20160712 masterObject and li are transient
-        //    this is now assigned in OAObjectSerialize._readResolve, OASyncClient.getDetail, and OAObjectReflectDelegate.getReferenceHub(..)
-        // 20160714 was previously done in HubDataMaster.read/writeObject
-        /*
-        if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
-            // this will always set the locally found masterObject, and not a duplicate
-            Object value = thisHub;
-            OALinkInfo liRev = thisHub.datam.liDetailToMaster.getReverseLinkInfo();
-            
-            boolean b = true;
-            if (liRev != null) {
-                if (liRev.getCalculated() && OASyncDelegate.isServer(thisHub.getObjectClass())) {
-                    // 20160206 dont read calcProps if server, they need to be recalc'ed 
-                    b = false;
-                }
-                else if (OAObjectInfoDelegate.cacheHub(liRev, thisHub)) {
-                    value = new WeakReference(value);
-                }
-            }        
-            if (b) OAObjectPropertyDelegate.setPropertyHubIfNotSet(thisHub.datam.masterObject, liRev.getName(), value);            
-        }
-        */
         return thisHub;
     }
 }

@@ -281,8 +281,6 @@ public class OAObjectDeleteDelegate {
 	    	Hub hub = (Hub) obj;
 	        hub.loadAllData();
 	
-        	OAObjectHubDelegate.setMasterObject(hub, oaObj, OAObjectInfoDelegate.getReverseLinkInfo(li)); // make sure that master object is set.
-
             // 20120612 need to remove link table records
             boolean bIsM2m = OAObjectInfoDelegate.isMany2Many(li);
         	

@@ -14,16 +14,12 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
-
 import com.viaoa.comm.io.IODummy;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.hub.HubSerializeDelegate;
-import com.viaoa.hub.HubSortDelegate;
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.io.RemoteObjectInputStream;
 import com.viaoa.remote.multiplexer.io.RemoteObjectOutputStream;
-import com.viaoa.sync.OASyncCombinedClient;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
@@ -104,36 +100,15 @@ public class OAObjectSerializeDelegate {
 			bDup = false;
 		}
 
-		// 20160713 assign hub.master+li
-        final Object[] objs = oaObjRead.properties;
-        for (int i=0; objs != null && i < objs.length; i+=2) {
-            Object value = objs[i+1];
-            if (!(value instanceof Hub)) continue;
-
-            Hub hub = (Hub) value;
-            if (HubDelegate.getMasterObject(hub) != null) continue;
-
-            String key = (String) objs[i];
-            if (key == null) continue;
-            
-            OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, key);
-            if (linkInfo == null) continue;
-            
-            OAObjectHubDelegate.setMasterObject(hub, oaObjRead, OAObjectInfoDelegate.getReverseLinkInfo(linkInfo));
-            if (!bDup && linkInfo.cacheSize > 0) {
-                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
-                    OAObjectPropertyDelegate.setPropertyCAS(oaObjRead, key, new WeakReference(hub), hub);
-                }
-            }
-        }
-		
 		if (!bDup) {
 		    cntNew++;
 		    return oaObjUse;
 		}
 		cntDup++;
 		
-        // check to see if references are needed or not
+        final Object[] objs = oaObjRead.properties;
+
+		// check to see if references are needed or not
         for (int i=0; objs != null && i < objs.length; i+=2) {
             String key = (String) objs[i];
             if (key == null) continue;
@@ -214,7 +189,7 @@ public class OAObjectSerializeDelegate {
         	// handles M-1, M-M
         	Hub hub = (Hub) value;
 			if (!HubSerializeDelegate.isResolved(hub)) { 
-			    // not fully loaded, HubSerializeDelegete._readResolve will add it to the object.props
+			    // not fully loaded
 			    return false;
 			}
 			
@@ -298,7 +273,7 @@ public class OAObjectSerializeDelegate {
         stream.defaultWriteObject();  // does not write references (transient)
         
         _writeProperties(oaObj, stream, serializer, bNewObjectCache); // this will write transient properties
-        
+  
   		stream.writeObject(OAObjectDelegate.FALSE);  // end of property list
 
         OAObjectCSDelegate.removeFromNewObjectCache(oaObj);
@@ -350,6 +325,7 @@ public class OAObjectSerializeDelegate {
 
             boolean b = false;
             if (serializer != null && obj != null && !(obj instanceof byte[])) {
+//vvvvvvvvqqqqqqqqq clientGetDetail should return false if obj is on client                
                 b = serializer.shouldSerializeReference(oaObj, (String) key, obj, li);
             }
 
