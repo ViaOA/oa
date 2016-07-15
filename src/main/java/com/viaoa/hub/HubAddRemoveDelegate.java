@@ -217,14 +217,13 @@ public class HubAddRemoveDelegate {
         boolean bIsDeleting = OAThreadLocalDelegate.isDeleting(thisHub); 
         if (!bIsDeleting && (thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && thisHub.isOAObject()) {
             Vector vecRemove = thisHub.data.getVecRemove();
-            int x = vecRemove==null ? 0 : vecRemove.size(); 
             for (Object obj : objs) {
                 if (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().removeElement(obj)) {
                     // no-op
                 }
                 else {
+                    if (vecRemove == null) vecRemove = HubDataDelegate.createVecRemove(thisHub);
                     if (vecRemove.indexOf(obj) < 0) {
-                        if (vecRemove == null) vecRemove = HubDataDelegate.createVecRemove(thisHub);
                         vecRemove.addElement(obj);
                     }
                 }

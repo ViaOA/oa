@@ -676,8 +676,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
             }
         }        
         s = (thisClass.getSimpleName()+", name="+ti.trigger.name+", propPaths=["+s+"]");
-        LOG.fine(s);
-        if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
+        LOG.finer(s);
+        if (OAPerformance.IncludeTriggers) OAPerformance.LOG.finer(s);
         
         
         long ts = System.currentTimeMillis();
@@ -693,7 +693,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         
         if (ts > 3) {
             s = "over 3ms, fromObject="+fromObject.getClass().getSimpleName()+", name="+ti.trigger.name+", property="+ti.ppFromRootClass+", ts="+ts;
-            LOG.fine(s);
+            LOG.finer(s);
             OAPerformance.LOG.fine(s);
         }
     }

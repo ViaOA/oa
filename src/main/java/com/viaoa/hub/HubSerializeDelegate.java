@@ -58,7 +58,7 @@ public class HubSerializeDelegate {
     }
     
     /** 
-     * Used by OAObjectSerializeDelegate, should only be needed to handle some temp "bad" files.
+     * Used by OAObjectSerializeDelegate
      */
     public static boolean isResolved(Hub thisHub) {
         return (thisHub != null && thisHub.data != null && thisHub.data.vector != null);
@@ -88,8 +88,9 @@ public class HubSerializeDelegate {
         
         // 20141116 make sure that masterObject.properties has hub
         // 20141204 added caching, weakRef
-        // **20160712 masterObject and li are transient
+        // 20160712 masterObject and li are transient
         //    this is now assigned in OAObjectSerialize._readResolve, OASyncClient.getDetail, and OAObjectReflectDelegate.getReferenceHub(..)
+        // 20160714 was previously done in HubDataMaster.read/writeObject
         /*
         if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
             // this will always set the locally found masterObject, and not a duplicate

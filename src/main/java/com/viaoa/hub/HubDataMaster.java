@@ -120,6 +120,10 @@ class HubDataMaster implements java.io.Serializable {
             }
             else {
                 s.writeByte(2);
+if (!(masterObject instanceof OAObject)) {//qqqqqqqqqq
+    int qq = 4;
+    qq++;
+}
                 s.writeObject(masterObject);
             }
             s.writeObject(liDetailToMaster==null?null:liDetailToMaster.getReverseName());
@@ -135,10 +139,16 @@ class HubDataMaster implements java.io.Serializable {
                 cx = (Class) s.readObject();
                 OAObjectKey key = (OAObjectKey) s.readObject();
                 this.masterObject = (OAObject) OAObjectCacheDelegate.get(cx, key);
-                // note: OAObjectReflectDelegate._getReferenceHub(..) will set the masterObject if it is null
+                // note: masterObject might not be found yet - not yet deserialized
+                // other code will set it:
+                //  OAObjectReflectDelegate.getReferenceHub, OASyncClient.getDetail,
+if (this.masterObject == null) {
+    int xx=4;
+    xx++;//qqqqqqqqqqqqqq
+}
             }
             else if (bx == 2) {
-                this.masterObject = (OAObject) s.readObject();
+                 this.masterObject = (OAObject) s.readObject();
                 if (masterObject != null) cx = masterObject.getClass();
             }
             

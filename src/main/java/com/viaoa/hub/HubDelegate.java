@@ -161,6 +161,7 @@ public class HubDelegate {
 	public static OAObject getMasterObject(Hub hub) {
 		if (hub == null) return null;
 	    HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
+	    if (dm == null) return null;
 	    return dm.masterObject;
 	}
 	

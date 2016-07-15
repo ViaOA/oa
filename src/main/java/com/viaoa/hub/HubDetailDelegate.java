@@ -311,7 +311,7 @@ public class HubDetailDelegate {
                 for (int i=0; ; i++) {
                     Object objx = HubDataDelegate.getObjectAt(detailHub, i);
                     if (objx == null) break;
-                    OAObjectHubDelegate.removeHub((OAObject) objx, detailHub, false);
+                    OAObjectHubDelegate.removeHub((OAObject) objx, detailHub, true); // 20160713 changed to true so that it wont add to server cache
                 }
             }
             detailHub.data.vector.removeAllElements();
@@ -480,7 +480,6 @@ public class HubDetailDelegate {
         */
     }
 
-    
     /** returns DataMaster from any shared hub that has a MasterHub set. 
      *  If none is found, then the DataMaster for thisHub is returned.
      * */
@@ -489,6 +488,7 @@ public class HubDetailDelegate {
     }
     protected static HubDataMaster getDataMaster(final Hub thisHub, final Class masterClass) {
         if (thisHub == null) return null;
+
         if (thisHub.datam.masterHub != null) return thisHub.datam;
         
         OAFilter<Hub> filter = new OAFilter<Hub>() {
