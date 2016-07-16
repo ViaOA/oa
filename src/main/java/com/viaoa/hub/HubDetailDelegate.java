@@ -822,8 +822,10 @@ public class HubDetailDelegate {
         thisHub.datam.liDetailToMaster = liDetailToMaster;
         if (masterObject == thisHub.datam.masterObject) return;
         thisHub.datam.masterObject = masterObject;
-        thisHub.setChanged(false);
     }
+    
+    
+    
     public static void setMasterObject(Hub thisHub, OAObject masterObject) {
         setMasterObject(thisHub, masterObject, thisHub.datam.liDetailToMaster);
     }

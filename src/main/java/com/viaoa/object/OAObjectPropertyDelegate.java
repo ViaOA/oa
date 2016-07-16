@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 import com.viaoa.hub.Hub;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
-import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OANotExist;
 
 // 20140225 redone to simplify property locking using CAS

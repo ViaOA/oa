@@ -45,8 +45,12 @@ public class OAObjectDeleteDelegateTest extends OAUnitTest {
                 aiSelect.incrementAndGet();
                 return super.select(selectClass, queryWhere, params, queryOrder, whereObject, propertyFromWhereObject, extraWhere, max, filter, bDirty);
             }
+            @Override
+            public boolean supportsStorage() {
+                return true; // fake out so that it will call updateM2MLinks
+            }
         };
-        
+
         ImageStore is = new ImageStore();
         assertEquals(is.getId(), 0); // not auto assigned
         
