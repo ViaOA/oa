@@ -56,7 +56,11 @@ public class RequestInfo {
         StoC_QueuedRequestNoResponse(true, false),  
         StoC_SocketRequest(false, true),     // send request on socket.output and get result from socket.input
         StoC_SocketRequestNoResponse(false, false),
-        StoC_QueuedResponse(true, false);
+        StoC_QueuedResponse(true, false),
+        
+        StoC_StartObjectInputStream(false, false),
+        StoC_CloseObjectInputStream(false, false);
+
         
         
         Type(boolean usesQueue, boolean hasReturnValue) {

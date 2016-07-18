@@ -144,7 +144,6 @@ public class RemoteMultiplexerClient {
         }
         else {
             c = (Class) ois.readObject();
-            ;
         }
 
         releaseSocketForCtoS(socket);
@@ -639,12 +638,13 @@ public class RemoteMultiplexerClient {
                 /* 20151103 on hold for OAsyncCombinedClient work
                 OAThreadLocalDelegate.setRemoteMultiplexerClient(RemoteMultiplexerClient.this);
                 */
-                for (;;) {
+                RemoteObjectInputStream ois = null;
+                for (int i=0;;i++) {
                     try {
                         if (socket.isClosed()) {
                             break;
                         }
-                        processStoCSocket(socket, id);
+                        ois = processStoCSocket(socket, id, ois);
                     }
                     catch (Exception e) {
                         if (!socket.isClosed()) {
@@ -833,9 +833,16 @@ public class RemoteMultiplexerClient {
         return true;
     }
 
-    protected void processStoCSocket(final VirtualSocket socket, int threadId) throws Exception {
-        if (socket.isClosed()) return;
-        RemoteObjectInputStream ois = new RemoteObjectInputStream(socket, hmClassDescInput);
+    protected RemoteObjectInputStream processStoCSocket(final VirtualSocket socket, int threadId, RemoteObjectInputStream ois) throws Exception {
+        if (socket.isClosed()) return null;
+        
+        boolean bHadOis; 
+        if (ois != null) bHadOis = true;
+        else {
+            ois = new RemoteObjectInputStream(socket, hmClassDescInput);
+            bHadOis = false;
+        }
+
         // wait for next message
         RequestInfo.Type type = RequestInfo.getType(ois.readByte());
         aiReceivedMethodCallCnt.incrementAndGet();
@@ -843,9 +850,20 @@ public class RemoteMultiplexerClient {
         if (type == RequestInfo.Type.StoC_CreateNewStoCSocket) {
             // server is requesting another vsocket "stoc"
             createSocketForStoC();
-            return;
+            if (bHadOis) return ois;
+            return null;
         }
 
+        if (type == RequestInfo.Type.StoC_StartObjectInputStream) {
+            // server is requesting to reuse the ois
+            return ois;
+        }
+        if (type == RequestInfo.Type.StoC_CloseObjectInputStream) {
+            // server is requesting to close the ois
+            return null;
+        }
+        
+        
         RequestInfo ri = new RequestInfo();
         ri.type = type;
         ri.msStart = System.currentTimeMillis();
@@ -863,6 +881,8 @@ public class RemoteMultiplexerClient {
             ri.nsEnd = System.nanoTime();
             if (b) afterInvokForStoC(ri);
         }
+        if (bHadOis) return ois;
+        return null;
     }
 
 

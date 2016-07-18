@@ -10,6 +10,7 @@
 */
 package com.viaoa.remote.multiplexer;
 
+import java.io.IOException;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
@@ -1481,6 +1482,13 @@ public class RemoteMultiplexerServer {
     
     protected void onException(int connectionId, String title, String msg, Exception e, boolean bWillDisconnect) {
     }
+
+    
+    private  static class VirtualSocketInfo {
+        VirtualSocket vs;
+        RemoteObjectOutputStream oos;
+        long tsOos;
+    }
     
     /**
      * Tracks each client connection.
@@ -1492,9 +1500,9 @@ public class RemoteMultiplexerServer {
         public int connectionId;
         public Socket realSocket;
         private volatile boolean bDisconnected;
+        private HashMap<String, VirtualSocketInfo> hmAsyncQueueSocket = new HashMap<String, VirtualSocketInfo>();  
 
         public Session() {
-            
         }
         
         // performance enhancement for ObjectSteams
@@ -1620,38 +1628,52 @@ public class RemoteMultiplexerServer {
         public void writeOnQueueSocket(final RequestInfo ri) throws Exception {
             String qname = ri.bind.asyncQueueName;
 
-            VirtualSocket vsocket = hmAsyncQueueSocket.get(qname);
-            if (vsocket == null) {
+            VirtualSocketInfo vsi = hmAsyncQueueSocket.get(qname);
+            if (vsi == null) {
                 ri.exceptionMessage = "message queue does not have a virtualSocket, qname="+qname;
                 return;
             }
-
+            
+            VirtualSocket vsocket = vsi.vs;
+            
             synchronized (vsocket) {
-                RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
-                oos.writeByte(ri.type.ordinal());
+                if (vsi.oos == null) {
+                    vsi.oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
+                    vsi.oos.writeByte(RequestInfo.Type.StoC_StartObjectInputStream.ordinal());
+                    vsi.tsOos = System.currentTimeMillis();
+                }
+                
+                vsi.oos.writeByte(ri.type.ordinal());
                 
                 if (ri.exception != null) {
-                    oos.writeByte(0);
-                    oos.writeObject(ri.exception);
+                    vsi.oos.writeByte(0);
+                    vsi.oos.writeObject(ri.exception);
                 }
                 else if (ri.exceptionMessage != null) {
-                    oos.writeByte(1);
-                    oos.writeObject(ri.exceptionMessage);
+                    vsi.oos.writeByte(1);
+                    vsi.oos.writeObject(ri.exceptionMessage);
                 }
                 else if (ri.responseBindName != null) {
-                    oos.writeByte(2);
-                    oos.writeObject(new Object[] {ri.responseBindName, ri.responseBindUsesQueue} );
+                    vsi.oos.writeByte(2);
+                    vsi.oos.writeObject(new Object[] {ri.responseBindName, ri.responseBindUsesQueue} );
                 }
                 else {
-                    oos.writeByte(3);
-                    oos.writeObject(ri.response);
+                    vsi.oos.writeByte(3);
+                    vsi.oos.writeObject(ri.response);
                 }
-                oos.writeInt(ri.messageId);
-                oos.flush();
+                vsi.oos.writeInt(ri.messageId);
+                
+                if ((vsi.tsOos+250 < System.currentTimeMillis())) {
+                    vsi.oos.writeByte(RequestInfo.Type.StoC_CloseObjectInputStream.ordinal());
+                    vsi.oos.flush();
+                    vsi.oos = null;
+                }
+                else {
+                    vsi.oos.flush();
+                }
             }
         }
         
-        private HashMap<String, VirtualSocket> hmAsyncQueueSocket = new HashMap<String, VirtualSocket>();  
         
         // start thread that will send async return values back to client
         public void setupAsyncQueueSender(final String asyncQueueName) {
@@ -1688,10 +1710,14 @@ public class RemoteMultiplexerServer {
 
         private void writeQueueMessages(final String asyncQueueName,  final OACircularQueue<RequestInfo> cque, final long startQuePos) throws Exception {
             final VirtualSocket vsocket = getSocketForStoC();
-            hmAsyncQueueSocket.put(asyncQueueName, vsocket);
+            
+            VirtualSocketInfo vsi = new VirtualSocketInfo();
+            vsi.vs = vsocket;
+            
+            hmAsyncQueueSocket.put(asyncQueueName, vsi);
             
             try {
-                _writeQueueMessages(cque, vsocket, startQuePos);
+                _writeQueueMessages(cque, vsi, startQuePos);
             }
             finally {
                 cque.unregisterSession(connectionId);
@@ -1701,10 +1727,15 @@ public class RemoteMultiplexerServer {
         
         
         // used to send broadcast messages to client
-        private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, VirtualSocket vsocket, long qpos)
+        private void _writeQueueMessages(final OACircularQueue<RequestInfo> cque, final VirtualSocketInfo vsi, long qpos)
                 throws Exception {
-            int connectionId = vsocket.getConnectionId();
-            HashSet<Integer> hsQueuedRequest = new HashSet<Integer>(); 
+            
+            final VirtualSocket vsocket = vsi.vs;
+            final int connectionId = vsocket.getConnectionId();
+            final HashSet<Integer> hsQueuedRequest = new HashSet<Integer>();
+            
+int cntWrite = 0;
+int cntCreated = 0;
             for (int i=0;;i++) {
                 if (vsocket.isClosed()) {
                     if (realSocket != null && !realSocket.isClosed()) {
@@ -1723,6 +1754,7 @@ public class RemoteMultiplexerServer {
                     throw e;
                 }
                 if (ris == null) {
+//qqqqqqq might need to flush                    
                     continue;
                 }
 
@@ -1777,10 +1809,19 @@ public class RemoteMultiplexerServer {
                     }
 
                     waitForProcessedByServer(ri);
-                    cque.keepAlive(connectionId);
-
+                    cque.keepAlive(connectionId);  //qqqqqqq make faster
+cntWrite++;//qqqqqqqq
                     synchronized (vsocket) {
-                        RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
+                        
+                        //was: RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
+                        if (vsi.oos == null) {
+                            vsi.oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
+                            vsi.oos.writeByte(RequestInfo.Type.StoC_StartObjectInputStream.ordinal());
+                            vsi.tsOos = System.currentTimeMillis();
+cntCreated++;//qqqqqqqq
+                        }
+                        RemoteObjectOutputStream oos = vsi.oos;
+                        
                         oos.writeByte(ri.type.ordinal());
     
                         if (ri.type == RequestInfo.Type.StoC_QueuedResponse) {
@@ -1830,7 +1871,21 @@ public class RemoteMultiplexerServer {
                             oos.writeAsciiString(ri.methodInfo.methodNameSignature);
                             oos.writeObject(ri.args);  // args are already be processed (processStoCArguments)
                         }
-                        oos.flush();
+                        //was: oos.flush();
+                    
+//qqqqqqqqqqqqq                    
+                        long ts = System.currentTimeMillis();
+                        if (cque.getHeadPostion() == qpos || (vsi.tsOos+500 < ts)) {
+                            oos.writeByte(RequestInfo.Type.StoC_CloseObjectInputStream.ordinal());
+                            oos.flush();
+                            vsi.oos = null;
+                        }
+                        else if ((vsi.tsOos+250 < ts)) {
+                            oos.flush();
+                        }
+if (cntWrite % 50 == 0) System.out.printf("write=%,d, created=%,d\n", cntWrite, cntCreated);                    
+                    
+                    
                     }
                 }
             }

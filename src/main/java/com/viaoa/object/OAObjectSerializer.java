@@ -417,7 +417,9 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         	DeflaterOutputStream dos = new DeflaterOutputStream(stream, deflater, 1024*6);
             
         	RemoteObjectOutputStream roos;
-            if (stream instanceof RemoteObjectOutputStream) {
+        	boolean bStreamIsRoos = (stream instanceof RemoteObjectOutputStream);
+        	
+            if (bStreamIsRoos) {
                 roos = new RemoteObjectOutputStream(dos, (RemoteObjectOutputStream) stream);
             }
             else {
@@ -431,12 +433,16 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             if (extraObject != null) roos.writeObject(extraObject);
 
         	finishWrite(roos);
-
+        	
             roos.flush();
-            roos.close();
+            if (!bStreamIsRoos) {
+                roos.close();
+            }
             dos.finish();
             dos.flush();
-            dos.close();
+            if (!bStreamIsRoos) {
+                dos.close();
+            }
 
             long sizeBefore = deflater.getBytesRead();
             long sizeAfter = deflater.getBytesWritten();
