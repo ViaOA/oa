@@ -381,18 +381,7 @@ public abstract class OACircularQueue<TYPE> {
      * @param msMaxWait if no messages are available, wait this amount of miliseconds for an available message.
      */
     public TYPE[] getMessages(long posTail, int maxReturnAmount, int msMaxWait) throws Exception {
-        TYPE[] msgs = null;
-        for ( ;; ) {
-            msgs =  _getMessages(-1, null, posTail, maxReturnAmount, msMaxWait);
-
-            if (msgs != null || msMaxWait == 0) {
-                break;
-            }
-            // else it waited until a message was available and then returned w/o message
-            //   or waited maxWait and then returned.
-            // ... need to loop again w/o a wait to get any added message(s)
-            msMaxWait = 0;
-        }
+        TYPE[] msgs =  _getMessages(-1, null, posTail, maxReturnAmount, msMaxWait);
         return msgs;
     }
     public TYPE[] getMessages(final int sessionId, final long posTail, final int maxReturnAmount, int msMaxWait) throws Exception {
@@ -404,37 +393,18 @@ public abstract class OACircularQueue<TYPE> {
         }
         else session = null;
         
-        for ( ;; ) {
-            if (session != null) {
-                session.msLastRead = System.currentTimeMillis();
-                session.bInactive = false;
-            }
-            msgs =  _getMessages(sessionId, session, posTail, maxReturnAmount, msMaxWait);
-            if (session != null) session.msLastRead = System.currentTimeMillis();
-
-            if (msgs != null || msMaxWait == 0) {
-                break;
-            }
-            // else it waited until a message was available and then returned w/o message
-            //   or waited maxWait and then returned.
-            // ... need to loop again w/o a wait to get any added message(s)
-            msMaxWait = 0;
+        if (session != null) {
+            session.msLastRead = System.currentTimeMillis();
+            session.bInactive = false;
         }
+        msgs = _getMessages(sessionId, session, posTail, maxReturnAmount, msMaxWait);
+        if (session != null) session.msLastRead = System.currentTimeMillis();
 
         if (msgs != null && msgs.length > 0) {
             if (session != null) session.queuePos = (posTail + msgs.length);
         }        
         return msgs;
     }
-    public void keepAlive(final int sessionId) {
-        Session session = hmSession.get(sessionId);
-        if (session != null) {
-            session.msLastRead = System.currentTimeMillis();
-            session.bInactive = false;
-        }
-    }
-    
-    private AtomicInteger  aiCleanupQueue = new AtomicInteger(); 
     private TYPE[] _getMessages(final int sessionId, final Session session, long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
         
@@ -462,17 +432,22 @@ public abstract class OACircularQueue<TYPE> {
             }
 
             synchronized(LOCKQueue) {
-                amt = (int) (queueHeadPosition - posTail);
-                if (amt == 0) {
+                for (int i=0; ;i++) {
+                    amt = (int) (queueHeadPosition - posTail);
+                    if (amt > 0) {
+                        if (maxReturnAmount > 0 && amt > maxReturnAmount) {
+                            amt = maxReturnAmount;
+                        }
+                        break;
+                    }
+                    if (i > 0 && maxWait > 0) break;
+                    
                     bWaitingToGet = true;
-                    for (;;) {
-                        if (maxWait > 0) {
-                            LOCKQueue.wait(maxWait);
-                        }
-                        else {
-                            LOCKQueue.wait();
-                        }
-                        if (posTail != queueHeadPosition) break; // protect from spurious wakeup (yes, it happens)
+                    if (maxWait > 0) {
+                        LOCKQueue.wait(maxWait);
+                    }
+                    else {
+                        LOCKQueue.wait();
                     }
                 }
             }
@@ -488,7 +463,15 @@ public abstract class OACircularQueue<TYPE> {
         else msgs = null;
         return msgs;
     }
-    
+    private AtomicInteger  aiCleanupQueue = new AtomicInteger(); 
+
+    public void keepAlive(final int sessionId) {
+        Session session = hmSession.get(sessionId);
+        if (session != null) {
+            session.msLastRead = System.currentTimeMillis();
+            session.bInactive = false;
+        }
+    }
     
     /**
      * Get message at actual position in queue

@@ -224,7 +224,7 @@ public class OATreeModel implements TreeModel {
             }
             catch (Exception ex) {
                 System.out.println("OATree.doInvoke #"+invoker.type+"  "+ex);
-                //ex.printStackTrace();
+                ex.printStackTrace();
                 fireTreeStructureChanged();
             }
         }

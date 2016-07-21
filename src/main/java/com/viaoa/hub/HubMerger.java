@@ -216,7 +216,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                     }
                 }
             }
-            if (hubCombined.getSize() > 250) {
+            if (hubCombined != null && hubCombined.getSize() > 250) {
                 s += ", ALERT";
             }
             if (ts > 1000) {

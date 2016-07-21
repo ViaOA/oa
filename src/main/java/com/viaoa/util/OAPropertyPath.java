@@ -82,17 +82,18 @@ public class OAPropertyPath<T> {
     public OAPropertyPath(Class<T> fromClass, String propertyPath) {
         this.propertyPath = propertyPath;
         this.fromClass = fromClass;
+        
         try {
             setup(fromClass);
         }
         catch (Exception e) {
             try {
-//setup(fromClass);  // for debugging
+                //setup(fromClass);  // for debugging
             }
             catch (Exception e2) {
                 // TODO: handle exception
             }
-            throw new IllegalArgumentException("cant setup property path= "+propertyPath+", fromClass="+fromClass, e);
+            throw new IllegalArgumentException("cant setup, fromClass="+fromClass+", propertyPath="+propertyPath, e);
         }
     }
  

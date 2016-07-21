@@ -1987,6 +1987,10 @@ public class OAString {
         System.out.println("Codexx="+codexx);
     }
 
+    public static boolean notEmpty(Object obj) {
+        return !isEmpty(obj, false);
+    }
+    
 
     /**
      * @return If null, then returns true; if String and length is 0, returns true; if array and length == 0, returns true.

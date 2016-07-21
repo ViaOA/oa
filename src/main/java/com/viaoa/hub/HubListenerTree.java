@@ -111,7 +111,9 @@ public class HubListenerTree<T> {
                 s += triggerPropPath;
             }
         }
-        s = (hub.getObjectClass().getSimpleName()+", property="+propertyName+", ppDepend=["+s+"]");
+        
+        Class c = hub.getObjectClass();
+        s = ( (c==null?"":c.getSimpleName()) + ", property="+propertyName+", ppDepend=["+s+"]");
         LOG.fine(s);
         if (OAPerformance.IncludeHubListeners) {
             OAPerformance.LOG.fine(s);
@@ -245,6 +247,12 @@ public class HubListenerTree<T> {
 
     private boolean _addDependentListener(final OATriggerListener triggerListener, final int cnter, final ListenerInfo listenerInfo, final String propertyName, final String dependentPropertyPath) {
         if (cnter > 15) return false;
+        
+        // 20160720 if hub is groupBy, then 
+        Class c = hub.getObjectClass();
+        if (OAGroupBy.class.equals(c)) {
+            
+        }
         
         OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), dependentPropertyPath);
         String[] props = pp.getProperties();

@@ -31,7 +31,7 @@ public class OARemoteThreadDelegateTest extends OAUnitTest {
     
     private RemoteBroadcastInterface remoteBroadcast;
     private RemoteBroadcastInterface remoteBroadcastProxy;
-    final TestClient[] testClients = new TestClient[25];
+    final TestClient[] testClients = new TestClient[15];
     final RemoteSessionInterface[] remoteSessions = new RemoteSessionInterface[testClients.length];
     private volatile boolean bServerStarted;
     private volatile boolean bServerClosed;
@@ -44,6 +44,9 @@ public class OARemoteThreadDelegateTest extends OAUnitTest {
     
     @Before
     public void setup() throws Exception {
+        MultiplexerServer.DEBUG = true;        
+        MultiplexerClient.DEBUG = true;        
+        
         System.out.println("Before, calling setup");
         // setup server
         multiplexerServer = new MultiplexerServer(port);        
@@ -183,7 +186,7 @@ public class OARemoteThreadDelegateTest extends OAUnitTest {
         multiplexerServer.stop();
     }
 
-    @Test(timeout=35000)
+    @Test // (timeout=35000)
     public void test() throws Exception {
         final long tsBegin = System.currentTimeMillis();
         
@@ -218,7 +221,7 @@ public class OARemoteThreadDelegateTest extends OAUnitTest {
         }
         assertEquals(testClients.length, aiClientRegisterCount.get());
 
-        for (int i=0 ; i<10 && aiClientRegisterCountNoQ.get() != testClients.length; i++) {
+        for (int i=0 ; i<15 && aiClientRegisterCountNoQ.get() != testClients.length; i++) {
             synchronized (lockServerNoQ) {
                 System.out.println("   serverNoQ is waiting for all clients to call register(..), total regsitered="+aiClientRegisterCountNoQ.get());
                 lockServerNoQ.wait(500);
@@ -395,10 +398,10 @@ public class OARemoteThreadDelegateTest extends OAUnitTest {
                 }
             };
             
-            //System.out.println("TestClient. register START, client id="+this.id+", thread="+Thread.currentThread().getName());                
+System.out.println("1, client id="+this.id+"");                
             remoteServer.register(this.id, remoteClient);
-            //System.out.println("TestClient. register DONE, client id="+this.id+"");                
                 
+System.out.println("2, client id="+this.id+"");                
             assertTrue(remoteServer.isRegister(id));
 
             RemoteSessionInterface session = remoteServer.getSession(id);
@@ -409,6 +412,8 @@ public class OARemoteThreadDelegateTest extends OAUnitTest {
 
             RemoteSessionInterface sessionNoQ = remoteServerNoQ.getSession(id);
             assertSame(session, sessionNoQ);
+            
+System.out.println("3, client id="+this.id+"");                
             
             
             remoteClientNoQ = new RemoteClientInterface() {
@@ -422,9 +427,12 @@ public class OARemoteThreadDelegateTest extends OAUnitTest {
                 }
             };
             
+System.out.println("4, client id="+this.id+"");                
             remoteServerNoQ.register(this.id, remoteClientNoQ);
             assertTrue(remoteServerNoQ.isRegister(id));
 
+System.out.println("5, client id="+this.id+"");                
+            
             
             bInitialized = true;
             

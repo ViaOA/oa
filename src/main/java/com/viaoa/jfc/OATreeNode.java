@@ -932,10 +932,17 @@ public class OATreeNode implements Cloneable {
         String path = allowHub ? fullPath : def.propertyPath;
         if (path == null) path = "";
 
+        if (path.indexOf("(") >= 0) { // 20160720 need to use propPath
+            def.methodsToPropertyNotUsed = true; 
+            def.propertyPath = path;
+            return;
+        }
+        
         Vector vec = new Vector();
         for (pos=prev=0; pos >= 0; prev=pos+1) {
-            pos = path.indexOf('.',prev);
             String name;
+            
+            pos = path.indexOf('.',prev);
             if (pos >= 0) name = "get"+path.substring(prev,pos);
             else {
                 name = path.substring(prev);

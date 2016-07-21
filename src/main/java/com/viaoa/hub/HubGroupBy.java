@@ -46,6 +46,8 @@ import com.viaoa.util.OAString;
 public class HubGroupBy<F extends OAObject, G extends OAObject> {
     // from hub that are to be grouped
     private Hub<F> hubFrom;
+    private final Class<F> classFrom;
+    private Class<G> classGroupBy;
     
     // optional hub to use as groupBy list.  Required if the propertyPath has a "split/gap" (method does not exist) 
     private Hub<G> hubGroupBy;
@@ -75,6 +77,9 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     public HubGroupBy(Hub<F> hubB, String propertyPath, boolean bCreateNullList) {
         this.hubGroupBy = null;
         this.hubFrom = hubB;
+        this.classFrom = hubB.getObjectClass();
+        this.classGroupBy = null;
+        
         this.propertyPath = propertyPath;
         this.bCreateNullList = bCreateNullList; 
         setup();
@@ -100,6 +105,8 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     public HubGroupBy(Hub<F> hubB, Hub<G> hubFrom, String propertyPath, boolean bCreateNullList) {
         this.hubGroupBy = hubFrom;
         this.hubFrom = hubB;
+        this.classFrom = hubB.getObjectClass();
+        this.classGroupBy = null;
         this.propertyPath = propertyPath;
         this.bCreateNullList = bCreateNullList;
         setup();
@@ -114,6 +121,8 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     public HubGroupBy(HubGroupBy<F, G> hgb1, HubGroupBy<F, G> hgb2, boolean bCreateNullList) {
         if (hgb1 == null || hgb2 ==  null) throw new IllegalArgumentException("hgb1 & hgb2 can not be null");
         this.bCreateNullList = bCreateNullList;
+        this.classFrom = hgb1.classFrom;
+        this.classGroupBy = hgb1.classGroupBy;
         setupCombined(hgb1, hgb2);
     }
     public HubGroupBy(HubGroupBy<F, G> hgb1, HubGroupBy<F, G> hgb2) {
@@ -125,6 +134,8 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
      */
     public HubGroupBy(HubGroupBy<F, G> hgb, String pp, boolean bCreateNullList) {
         if (hgb == null) throw new IllegalArgumentException("hgb can not be null");
+        this.classFrom = hgb.classFrom;
+        this.classGroupBy = null;
         this.bCreateNullList = bCreateNullList;
         HubGroupBy<F, G> hgb2 = new HubGroupBy<F, G>(hgb.hubFrom, pp, bCreateNullList);
         setupCombined(hgb, hgb2);
@@ -185,6 +196,10 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         bIgnoreAOChange = false;
                     }
                 }
+                @Override
+                public void afterAdd(HubEvent e) {
+                    if (classGroupBy == null) classGroupBy = (Class<G>) e.getObject().getClass();
+                }
             });
         }
         return hubMaster;
@@ -196,6 +211,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     public Hub<F> getDetailHub() {
         if (hubDetail == null) {
             hubDetail = getCombinedHub().getDetailHub(OAGroupBy.P_Hub);
+            HubDelegate.setObjectClass(hubDetail, classFrom); 
             hubDetail.addHubListener(new HubListenerAdapter() {
                 @Override
                 public void afterChangeActiveObject(HubEvent e) {
@@ -218,7 +234,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
         OAPropertyPath opp = new OAPropertyPath(propertyPath);
 
         try {
-            opp.setup(hubFrom.getObjectClass(), (hubGroupBy != null));
+            opp.setup(classFrom, (hubGroupBy != null));
         }
         catch (Exception e) {
             throw new RuntimeException("PropertyPath setup failed", e);
@@ -316,7 +332,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
+                        gbNewFound = createGroupBy(null);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     for (Object gb1B : gb1.getHub()) {
@@ -335,8 +351,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
-                        gbNewFound.setGroupBy(objGB2b);
+                        gbNewFound = createGroupBy((G) objGB2b);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     for (Object gb1B : gb1.getHub()) {
@@ -439,7 +454,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     }
                     if (bFound) continue;
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
+                        gbNewFound = createGroupBy(null);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     gbNewFound.getHub().add(gb1B);
@@ -481,7 +496,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
+                        gbNewFound = createGroupBy(null);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     gbNewFound.getHub().add(gb1B);
@@ -498,8 +513,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
-                        gbNewFound.setGroupBy(objGB2b);
+                        gbNewFound = createGroupBy((G) objGB2b);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     gbNewFound.getHub().add(gb1B);
@@ -598,7 +612,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 }
                 if (!bFound) {
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
+                        gbNewFound = createGroupBy(null);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     gbNewFound.getHub().add(gb1B);
@@ -638,8 +652,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                             }
                         }
                         if (gbNewFound == null) {
-                            gbNewFound = new OAGroupBy();
-                            gbNewFound.setGroupBy((OAObject) gb2B);
+                            gbNewFound = createGroupBy((G) gb2B);
                             HubGroupBy.this.getCombinedHub().add(gbNewFound);
                         }
                     }
@@ -656,8 +669,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     }
 
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
-                        gbNewFound.setGroupBy((OAObject) gb2B);
+                        gbNewFound = createGroupBy((G) gb2B);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
 
@@ -762,7 +774,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
+                        gbNewFound = createGroupBy(null);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     for (Object gb1B : gb1Found.getHub()) {
@@ -804,8 +816,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
-                        gbNewFound.setGroupBy((OAObject) gb2B);
+                        gbNewFound = createGroupBy((G) gb2B);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     return;
@@ -825,8 +836,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 }
 
                 if (gbNewFound == null) {
-                    gbNewFound = new OAGroupBy();
-                    gbNewFound.setGroupBy((OAObject) gb2B);
+                    gbNewFound = createGroupBy((G) gb2B);
                     HubGroupBy.this.getCombinedHub().add(gbNewFound);
                 }
                 if (gb1Found == null) return;
@@ -929,7 +939,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                     if (gbNewFound == null) {
-                        gbNewFound = new OAGroupBy();
+                        gbNewFound = createGroupBy(null);
                         HubGroupBy.this.getCombinedHub().add(gbNewFound);
                     }
                     for (Object gb1B : gb1Found.getHub()) {
@@ -963,7 +973,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     }
                 }
                 if (gbNewFound == null) {
-                    gbNewFound = new OAGroupBy();
+                    gbNewFound = createGroupBy(null);
                     HubGroupBy.this.getCombinedHub().add(gbNewFound);
                 }
                 for (Object gb1B : gb1.getHub()) {
@@ -982,8 +992,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     }
                 }
                 if (gbNewFound == null) {
-                    gbNewFound = new OAGroupBy();
-                    gbNewFound.setGroupBy(objGB2b);
+                    gbNewFound = createGroupBy((G) objGB2b);
                     HubGroupBy.this.getCombinedHub().add(gbNewFound);
                 }
                 for (Object gb1B : gb1.getHub()) {
@@ -1038,7 +1047,10 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                             break;
                         }
                     }
-                    if (!bFound) HubGroupBy.this.hubCombined.add(new OAGroupBy(a));
+                    if (!bFound) {
+                        OAGroupBy gbNewFound = createGroupBy(a);
+                        HubGroupBy.this.hubCombined.add(gbNewFound);
+                    }
                 }
 
                 Object[] removeObjects;
@@ -1072,7 +1084,8 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 public void onNewList(HubEvent e) {
                     HubGroupBy.this.hubCombined.clear();
                     for (G a : hubGroupBy) {
-                        HubGroupBy.this.hubCombined.add(new OAGroupBy(a));
+                        OAGroupBy gbNewFound = createGroupBy(a);
+                        HubGroupBy.this.hubCombined.add(gbNewFound);
                     }
                     for (F b : hubFrom) {
                         add(b);
@@ -1087,7 +1100,10 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         break;
                     }
                 }
-                if (!bFound) HubGroupBy.this.hubCombined.add(new OAGroupBy(a));
+                if (!bFound) {
+                    OAGroupBy gbNewFound = createGroupBy(a);
+                    HubGroupBy.this.hubCombined.add(gbNewFound);
+                }
             }
         }
 
@@ -1141,7 +1157,8 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 }
                 if (hubGroupBy != null) {
                     for (G a : hubGroupBy) {
-                        HubGroupBy.this.hubCombined.add(new OAGroupBy(a));
+                        OAGroupBy gbNewFound = createGroupBy(a);
+                        HubGroupBy.this.hubCombined.add(gbNewFound);
                     }
                 }
                 for (F b : hubFrom) {
@@ -1192,7 +1209,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
         }
         else if (propertyPath.indexOf('.') < 0) {
             // propertyPath could be a hub
-            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hubFrom.getObjectClass());
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(classFrom);
             OALinkInfo li = oi.getLinkInfo(propertyPath);
             if (li == null || li.getType() == li.ONE) {
                 b = true;
@@ -1243,12 +1260,12 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 }
                 if (!bFound) {
                     // create new
-                    OAGroupBy<F, G> c = new OAGroupBy((G) valueA);
-                    HubGroupBy.this.hubCombined.add(c);
-                    c.getHub().add(b);
+                    OAGroupBy gbNewFound = createGroupBy((G) valueA);
+                    HubGroupBy.this.hubCombined.add(gbNewFound);
+                    gbNewFound.getHub().add(b);
                     if (bReturnList) {
                         if (al == null) al = new ArrayList<OAGroupBy>();
-                        al.add(c);
+                        al.add(gbNewFound);
                     }
                 }
             }
@@ -1265,7 +1282,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     return al;
                 }
                 // create new
-                OAGroupBy<F, G> gb = new OAGroupBy();
+                OAGroupBy gb = createGroupBy(null);
                 HubGroupBy.this.hubCombined.add(gb);
                 gb.getHub().add(b);
                 if (bReturnList) {
@@ -1287,7 +1304,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             }
 
             // create new
-            OAGroupBy<F, G> c = new OAGroupBy((G) valueA);
+            OAGroupBy<F,G> c = createGroupBy((G) valueA);
             HubGroupBy.this.hubCombined.add(c);
             c.getHub().add(b);
             if (bReturnList) {
@@ -1370,7 +1387,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 }
                 
                 if (gbFound == null) {
-                    gbFound = new OAGroupBy<OAObject, OAObject>(a);
+                    gbFound = createGroupBy(a);
                     HubGroupBy.this.getCombinedHub().add(gbFound);
                 }
                 for (OAObject obj : gb.getHub()) {
@@ -1421,7 +1438,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 OAGroupBy<F, G> gbFound = null;
                 
                 for (OAGroupBy<F, G> gb : hub1) {
-                    gbFound = new OAGroupBy<F, G>(gb.getGroupBy());
+                    gbFound = createGroupBy(gb.getGroupBy());
                     HubGroupBy.this.hubCombined.add(gbFound);
                     for (F obj : gb.getHub()) {
                         gbFound.getHub().add(obj);
@@ -1438,7 +1455,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         }
                     }
                     if (gbFound == null) {
-                        gbFound = new OAGroupBy<F, G>(a);
+                        gbFound = createGroupBy(a);
                         HubGroupBy.this.hubCombined.add(gbFound);
                     }
                     for (F obj : gb.getHub()) {
@@ -1498,7 +1515,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 }
                 
                 if (gbFound == null) {
-                    gbFound = new OAGroupBy<F, G>(a);
+                    gbFound = createGroupBy(a);
                     HubGroupBy.this.getCombinedHub().add(gbFound);
                 }
                 gbFound.getHub().add(objAdd);
@@ -1583,7 +1600,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                 }
                 
                 if (gbFound == null) {
-                    gbFound = new OAGroupBy<F, G>(a);
+                    gbFound = createGroupBy(a);
                     HubGroupBy.this.hubCombined.add(gbFound);
                 }
                 gbFound.getHub().add(objAdd);
@@ -1652,7 +1669,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                     }
                 }
                 if (gbFound == null) {
-                    gbFound = new OAGroupBy<F, G>(a);
+                    gbFound = createGroupBy(a);
                     HubGroupBy.this.getCombinedHub().add(gbFound);
                 }
                 for (F obj : gb.getHub()) {
@@ -1661,4 +1678,19 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             }
         }        
     }
+    
+    private OAGroupBy<F,G> createGroupBy(G grpBy) {
+        OAGroupBy<F,G> gb = new OAGroupBy<F, G>();
+        if (grpBy != null) gb.setGroupBy(grpBy);
+        HubDelegate.setObjectClass(gb.getHub(), classFrom);
+        return gb;
+    }
+    
+    public String getGroupByPP() {
+        return "("+classGroupBy.toString() + ")GroupBy";
+    }
+    public String getHubByPP() {
+        return "("+classFrom.toString() + ")hub";
+    }
+    
 }

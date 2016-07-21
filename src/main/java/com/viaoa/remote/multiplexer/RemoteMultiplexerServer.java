@@ -10,7 +10,6 @@
 */
 package com.viaoa.remote.multiplexer;
 
-import java.io.IOException;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
@@ -904,6 +903,7 @@ public class RemoteMultiplexerServer {
                                 Session session = getSession(sessionId, false);
                                 if (session == null) return false;
                                 if (session.bDisconnected) return false;
+                                if (session.realSocket == null) return false;
                                 if (session.realSocket.isClosed()) return false;
                                 return true;
                             }
@@ -1487,7 +1487,9 @@ public class RemoteMultiplexerServer {
     private  static class VirtualSocketInfo {
         VirtualSocket vs;
         RemoteObjectOutputStream oos;
-        long tsOos;
+        long tsLast;
+        int cntWrite;
+        int cntUnflushed;
     }
     
     /**
@@ -1640,7 +1642,7 @@ public class RemoteMultiplexerServer {
                 if (vsi.oos == null) {
                     vsi.oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                     vsi.oos.writeByte(RequestInfo.Type.StoC_StartObjectInputStream.ordinal());
-                    vsi.tsOos = System.currentTimeMillis();
+                    vsi.tsLast = System.currentTimeMillis();
                 }
                 
                 vsi.oos.writeByte(ri.type.ordinal());
@@ -1663,14 +1665,19 @@ public class RemoteMultiplexerServer {
                 }
                 vsi.oos.writeInt(ri.messageId);
                 
-                if ((vsi.tsOos+250 < System.currentTimeMillis())) {
+                // flush to stream
+                vsi.cntWrite++;
+                if (vsi.cntWrite > 50) {
                     vsi.oos.writeByte(RequestInfo.Type.StoC_CloseObjectInputStream.ordinal());
                     vsi.oos.flush();
+                    vsi.cntWrite = 0;
                     vsi.oos = null;
                 }
                 else {
                     vsi.oos.flush();
                 }
+                vsi.cntUnflushed = 0;
+                vsi.tsLast = System.currentTimeMillis();
             }
         }
         
@@ -1734,8 +1741,6 @@ public class RemoteMultiplexerServer {
             final int connectionId = vsocket.getConnectionId();
             final HashSet<Integer> hsQueuedRequest = new HashSet<Integer>();
             
-int cntWrite = 0;
-int cntCreated = 0;
             for (int i=0;;i++) {
                 if (vsocket.isClosed()) {
                     if (realSocket != null && !realSocket.isClosed()) {
@@ -1744,6 +1749,42 @@ int cntCreated = 0;
                     return;
                 }
 
+                long ts = System.currentTimeMillis();
+                
+                synchronized (vsocket) {
+                    // check to see if stream should be flushed
+                    if (vsi.oos != null && vsi.cntUnflushed > 0) {
+                        if (cque.getHeadPostion() == qpos) {
+                            if (vsi.cntWrite > 100) {
+                                vsi.oos.writeByte(RequestInfo.Type.StoC_CloseObjectInputStream.ordinal());
+                                vsi.oos.flush();
+                                vsi.cntWrite = 0;
+                                vsi.oos = null;
+                            }
+                            else {
+                                vsi.oos.flush();
+                            }
+                            vsi.cntUnflushed = 0;
+                            vsi.tsLast = ts;
+                        }
+                        else {
+                            if (vsi.cntWrite > 250) {
+                                vsi.oos.writeByte(RequestInfo.Type.StoC_CloseObjectInputStream.ordinal());
+                                vsi.oos.flush();
+                                vsi.cntUnflushed = 0;
+                                vsi.cntWrite = 0;
+                                vsi.oos = null;
+                                vsi.tsLast = ts;
+                            }
+                            else if (vsi.tsLast+250 < ts) {
+                                vsi.oos.flush();
+                                vsi.cntUnflushed = 0;
+                                vsi.tsLast = ts;
+                            }
+                        }
+                    }
+                }
+                
                 RequestInfo[] ris = null;
                 try {
                     ris = cque.getMessages(connectionId, qpos, 100, 2000);
@@ -1754,7 +1795,6 @@ int cntCreated = 0;
                     throw e;
                 }
                 if (ris == null) {
-//qqqqqqq might need to flush                    
                     continue;
                 }
 
@@ -1809,16 +1849,16 @@ int cntCreated = 0;
                     }
 
                     waitForProcessedByServer(ri);
-                    cque.keepAlive(connectionId);  //qqqqqqq make faster
-cntWrite++;//qqqqqqqq
+                    cque.keepAlive(connectionId); 
+
                     synchronized (vsocket) {
+                        vsi.cntUnflushed++;
+                        vsi.cntWrite++;
                         
-                        //was: RemoteObjectOutputStream oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                         if (vsi.oos == null) {
                             vsi.oos = new RemoteObjectOutputStream(vsocket, hmClassDescOutput, aiClassDescOutput);
                             vsi.oos.writeByte(RequestInfo.Type.StoC_StartObjectInputStream.ordinal());
-                            vsi.tsOos = System.currentTimeMillis();
-cntCreated++;//qqqqqqqq
+                            vsi.tsLast = System.currentTimeMillis();
                         }
                         RemoteObjectOutputStream oos = vsi.oos;
                         
@@ -1871,21 +1911,6 @@ cntCreated++;//qqqqqqqq
                             oos.writeAsciiString(ri.methodInfo.methodNameSignature);
                             oos.writeObject(ri.args);  // args are already be processed (processStoCArguments)
                         }
-                        //was: oos.flush();
-                    
-//qqqqqqqqqqqqq                    
-                        long ts = System.currentTimeMillis();
-                        if (cque.getHeadPostion() == qpos || (vsi.tsOos+500 < ts)) {
-                            oos.writeByte(RequestInfo.Type.StoC_CloseObjectInputStream.ordinal());
-                            oos.flush();
-                            vsi.oos = null;
-                        }
-                        else if ((vsi.tsOos+250 < ts)) {
-                            oos.flush();
-                        }
-if (cntWrite % 50 == 0) System.out.printf("write=%,d, created=%,d\n", cntWrite, cntCreated);                    
-                    
-                    
                     }
                 }
             }
