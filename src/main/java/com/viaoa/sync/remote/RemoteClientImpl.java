@@ -10,9 +10,7 @@
 */
 package com.viaoa.sync.remote;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
@@ -65,15 +63,15 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
 
     // 20151129 does not put in the msg queue, but will write the return value using the same vsocket that the msg queue thread uses.
     @Override
-    public Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys) {
+    public Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger) {
         LOG.fine("masterClass="+masterClass+", prop="+property);
-        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys, false);
+        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys, bForHubMerger);
         return obj;
     }
     
     @Override
-    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property) {
-        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, null, null, false);
+    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, boolean bForHubMerger) {
+        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, null, null, bForHubMerger);
         return obj;
     }
 

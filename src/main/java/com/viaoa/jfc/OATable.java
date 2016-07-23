@@ -85,6 +85,8 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
@@ -564,6 +566,68 @@ if (!getKeepSorted()) hub.cancelSort();
         hubAdapter = new MyHubAdapter(hub, this);
     }
 
+// 20160722 qqqqqqqqqqqq
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (hubViewable != null) getViewableHub();
+    }
+    
+    // used by columns that need a listener for only the visible rows
+    protected Hub hubViewable;
+    private AtomicInteger aiViewableChanged;
+    public Hub getViewableHub() {
+        boolean bCallUpdate = false;
+        if (hubViewable == null) {
+            hubViewable = new Hub();
+            bCallUpdate = true;
+        }
+        if (aiViewableChanged == null) {
+            Component c = this.getParent();
+            for ( ;c != null;c = c.getParent()) {
+                if (c instanceof JScrollPane) {
+                    aiViewableChanged = new AtomicInteger();
+                    bCallUpdate = true;
+                    JViewport vp = ((JScrollPane) c).getViewport();
+                    vp.addChangeListener(new ChangeListener() {
+                        @Override
+                        public void stateChanged(ChangeEvent e) {
+                            updateViewableHub();
+                        }
+                    });
+                }
+            }
+        }        
+        if (bCallUpdate) updateViewableHub();
+        return hubViewable;
+    }
+    protected void updateViewableHub() {
+        final int cnt = aiViewableChanged==null ? 0 : aiViewableChanged.incrementAndGet();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (aiViewableChanged == null || aiViewableChanged.get() == cnt) {
+                    _updateViewableHub();
+                }
+            }
+        });
+    }
+    
+    private void _updateViewableHub() {
+        if (hubViewable == null) return;
+        Rectangle rec = getVisibleRect();
+        int rowTop = rowAtPoint(rec.getLocation());
+        rec.translate(0, rec.height);
+        int rowBottom = rowAtPoint(rec.getLocation());
+
+        hubViewable.clear();
+        for (int i=rowTop; i<=rowBottom; i++) {
+            hubViewable.add(hub.getAt(i));
+        }
+    }
+    
+    
+    
     // START Drag&Drop
     static class MyDragSourceListener implements DragSourceListener {
         public void dragEnter(DragSourceDragEvent e) {

@@ -14,6 +14,7 @@ package com.viaoa.object;
 import java.util.ArrayList;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubMerger;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.transaction.OATransaction;
@@ -46,7 +47,9 @@ public class OAThreadLocal {
 
     protected int sendingEvent;  // HubEventDelegate is sending an event.  Used so that calcPropertyEvents (see HubListenerTree) are only sent out once
 
-	// === COUNTERS ===========================
+    protected int hubListenerTreeCount;  // tracks how deep listeners are for a single listener
+    
+    protected String ignoreTreeListenerProperty;
 	
 	/**
 	 *  If set, then OAObject.initialize methods are not called.  Used by DataSource when creating new objects.
@@ -96,6 +99,8 @@ public class OAThreadLocal {
     protected Tuple<Object, String>[] calcPropertyEvents;
     
     
+    
+    
     protected Hub getDetailHub; // hub that a get detail is being called for. This is a helper for getting detail from server
     
     public OAThreadLocal() {
@@ -111,6 +116,9 @@ public class OAThreadLocal {
     
     // 20160625
     protected int recursiveTriggerCount;
+
+    protected HubMerger getDetailMerger; // current HubMerger, that could be calling OASyncClient.getDetail
+
 }
 
 

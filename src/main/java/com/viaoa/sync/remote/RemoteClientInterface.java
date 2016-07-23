@@ -26,7 +26,7 @@ public interface RemoteClientInterface {
 
     OAObject createCopy(Class objectClass, OAObjectKey objectKey, String[] excludeProperties);
     
-    Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property);
+    Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, boolean bForHubMerger);
     
     Object getDetail(Class masterClass, OAObjectKey masterObjectKey, 
             String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger);
@@ -35,7 +35,7 @@ public interface RemoteClientInterface {
     //     All of the other methods are put in queue to be processed and have the return value set.
     @OARemoteMethod(returnOnQueueSocket=true)
     Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, 
-            String property, String[] masterProps, OAObjectKey[] siblingKeys);
+            String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger);
 
     
     Object datasource(int command, Object[] objects);

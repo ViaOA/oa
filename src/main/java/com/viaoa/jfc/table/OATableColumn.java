@@ -445,9 +445,7 @@ public class OATableColumn {
         }
 
         
-//qqqqqqqqqqqqqqq make smarter        
         // this will setup a Hub listener to listen for changes to columns that use propertyPaths
-        // ?? might want this to be a setting
         if (methods != null && methods.length > 1 && path != null && path.indexOf('.') >= 0 && path.indexOf('.') != path.length() - 1) {
             // 20101219 create a "dummy" prop, with path as a dependent propPath
             final String propx = "TableColumn_" + path.replace('.', '_');
@@ -472,8 +470,8 @@ public class OATableColumn {
             };
             
             // 20160613 have it run in background
-            table.getHub().addHubListener(hubListener, propx, new String[] { path }, false, true);
-            //was: table.getHub().addHubListener(hubListener, propx, new String[] { path });
+            // 20160722 only listen to viewed rows            
+            table.getViewableHub().addHubListener(hubListener, propx, new String[] { path }, false, true);
         }
         else if (methods != null && !OAString.isEmpty(path)) {
             // 20150315

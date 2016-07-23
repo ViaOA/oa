@@ -21,6 +21,7 @@ import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.OASyncClient;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubMerger;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAArray;
@@ -56,6 +57,10 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
     private static AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
     private static AtomicInteger TotalRecursiveTriggerCount = new AtomicInteger();
+    private static AtomicInteger TotalGetDetailMerger = new AtomicInteger();
+    
+    private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
+    
 
     public static final HashMap<Object, OAThreadLocal[]> hmLock = new HashMap<Object, OAThreadLocal[]>(53, .75f);
     
@@ -1159,6 +1164,83 @@ static volatile int unlockCnt;
         if (ti == null) return;
         ti.recursiveTriggerCount = x;
     }
+
+
+    // HubListenerTree used to determine how deep tree is, caused by listening to dependent props (like calcs, etc)                                
+    public static int getHubListenerTreeCount() {
+        int x; 
+        if (OAThreadLocalDelegate.TotalHubListenerTreeCount.get() == 0) {
+            x = 0;
+        }
+        else {
+            x = getHubListenerTreeCount(OAThreadLocalDelegate.getThreadLocal(false));
+        }
+        return x;
+    }
+    protected static int getHubListenerTreeCount(OAThreadLocal ti) {
+        if (ti == null) return 0;
+        return ti.hubListenerTreeCount;
+    }
+    public static void setHubListenerTree(boolean b) {
+        setHubListenerTree(OAThreadLocalDelegate.getThreadLocal(b), b);
+    }
+    private static long msHubListenerTree;
+    protected static void setHubListenerTree(OAThreadLocal ti, boolean b) {
+        if (ti == null) return;
+        int x;
+        
+        if (b) {
+            ti.hubListenerTreeCount++;
+            x = OAThreadLocalDelegate.TotalHubListenerTreeCount.getAndIncrement();
+        }
+        else {
+            ti.hubListenerTreeCount--;
+            x = OAThreadLocalDelegate.TotalHubListenerTreeCount.decrementAndGet();
+        }
+        if (x > 20 || x < 0) {
+            msHubListenerTree = throttleLOG("TotalHubListenerTreeCount="+x, msHubListenerTree);
+        }
+    }
+
+    public static void setIgnoreTreeListenerProperty(String prop) {
+        getThreadLocal(true).ignoreTreeListenerProperty = prop;            
+    }
+    public static String getIgnoreTreeListenerProperty() {
+        return getThreadLocal(true).ignoreTreeListenerProperty;            
+    }
+
+
+    public static HubMerger getGetDetailMerger() {
+        HubMerger m; 
+        if (OAThreadLocalDelegate.TotalGetDetailMerger.get() == 0) {
+            m = null;
+        }
+        else {
+            m = getGetDetailMerger(OAThreadLocalDelegate.getThreadLocal(false));
+        }
+        return m;
+    }
+    protected static HubMerger getGetDetailMerger(OAThreadLocal ti) {
+        if (ti == null) return null;
+        return ti.getDetailMerger;
+    }
+    public static HubMerger setGetDetailMerger(HubMerger hm) {
+        return setGetDetailMerger(OAThreadLocalDelegate.getThreadLocal(true), hm);
+    }
+    private static long msGetDetailMerger;
+    protected static HubMerger setGetDetailMerger(OAThreadLocal ti, HubMerger hubMerger) {
+        if (ti == null) return null;
+        HubMerger hubMergerx = ti.getDetailMerger;
+        ti.getDetailMerger = hubMerger;
+        int x;
+        if (hubMerger == null) x = OAThreadLocalDelegate.TotalGetDetailMerger.decrementAndGet();
+        else x = OAThreadLocalDelegate.TotalGetDetailMerger.getAndIncrement();
+        if (x > 50 || x < 0) {
+            msGetDetailMerger = throttleLOG("TotalGetDetailMerger="+x, msGetDetailMerger);
+        }
+        return hubMergerx;
+    }
+
 
 }
 

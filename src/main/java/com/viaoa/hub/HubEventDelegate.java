@@ -634,39 +634,34 @@ public class HubEventDelegate {
         @param property name to listen for
         @see HubEvent
     */
-    public static boolean addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths) {
+    public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths) {
         if (property != null && property.indexOf('.') >= 0) {
             throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
         }
-        boolean b = getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
+        getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
         clearGetAllListenerCache(thisHub);
-        return b;
     }
-    public static boolean addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
+    public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
         if (property != null && property.indexOf('.') >= 0) {
             throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
         }
-        boolean b = getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
+        getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
         clearGetAllListenerCache(thisHub);
-        return b;
     }
-    public static boolean addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, boolean bUseBackgroundThread) {
+    public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, boolean bUseBackgroundThread) {
         if (property != null && property.indexOf('.') >= 0) {
             throw new RuntimeException("dont use a property path for listener, use addHubListener(h,hl,propertyName, String[path]) instead");
         }
-        boolean b = getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
+        getHubListenerTree(thisHub).addListener(hl, property, dependentPropertyPaths);
         clearGetAllListenerCache(thisHub);
-        return b;
     }
-    public static boolean addHubListener(Hub thisHub, HubListener hl, String property) {
-        boolean b = getHubListenerTree(thisHub).addListener(hl, property);
+    public static void addHubListener(Hub thisHub, HubListener hl, String property) {
+        getHubListenerTree(thisHub).addListener(hl, property);
         clearGetAllListenerCache(thisHub);
-        return b;
 	}
-    public static boolean addHubListener(Hub thisHub, HubListener hl, String property, boolean bActiveObjectOnly) {
-        boolean b = getHubListenerTree(thisHub).addListener(hl, property);
+    public static void addHubListener(Hub thisHub, HubListener hl, String property, boolean bActiveObjectOnly) {
+        getHubListenerTree(thisHub).addListener(hl, property);
         clearGetAllListenerCache(thisHub);
-        return b;
     }
 	
 	// this is taken from HubDataUnique
@@ -679,10 +674,9 @@ public class HubEventDelegate {
 	    @see HubEvent
 	    @see #addHubListener(Hub, HubListener, String)
 	*/
-	public static boolean addHubListener(Hub thisHub, HubListener hl) {
-        boolean b = getHubListenerTree(thisHub).addListener(hl);
-        if (b) clearGetAllListenerCache(thisHub);
-        return b;
+	public static void addHubListener(Hub thisHub, HubListener hl) {
+        getHubListenerTree(thisHub).addListener(hl);
+        clearGetAllListenerCache(thisHub);
     }
 	
 	public static int TotalHubListeners; 	
@@ -690,12 +684,11 @@ public class HubEventDelegate {
 	    Remove HubListener from list.
 	    @see #addListener
 	*/
-	protected static boolean removeHubListener(Hub thisHub, HubListener l) {
-	    if (thisHub.datau.getListenerTree() == null) return false;
-	    boolean b = thisHub.datau.getListenerTree().removeListener(l);
+	protected static void removeHubListener(Hub thisHub, HubListener l) {
+	    if (thisHub.datau.getListenerTree() == null) return;
+	    thisHub.datau.getListenerTree().removeListener(l);
         //was: thisHub.datau.getListenerTree().removeListener(thisHub, l);
         clearGetAllListenerCache(thisHub);
-        return b;
 	}
 	
 	/**

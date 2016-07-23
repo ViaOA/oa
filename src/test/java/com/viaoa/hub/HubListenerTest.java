@@ -232,7 +232,7 @@ public class HubListenerTest extends OAUnitTest {
         }, false);
         
         hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls != null && hls.length == 2);
+        assertTrue(hls != null && hls.length == 3);
         
         int cChange2 = 0;
         assertEquals(cntChange2, cChange2); 
@@ -340,7 +340,7 @@ public class HubListenerTest extends OAUnitTest {
         }, false);
         
         hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls != null && hls.length == 1);
+        assertTrue(hls != null && hls.length == 2);
 
         hub.getAt(1).getEnvironments().getAt(1).getSilos().getAt(1).getServers().getAt(0).setName("xx4");
         assertEquals(cntChange, 1);

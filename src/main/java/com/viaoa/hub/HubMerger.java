@@ -190,6 +190,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         try {
             // 20120624 hubCombined could be a detail hub.
             OAThreadLocalDelegate.setSuppressCSMessages(true);
+            OAThreadLocalDelegate.setGetDetailMerger(HubMerger.this);
             if (hubCombinedObjects != null && !hubCombinedObjects.data.isInFetch()) {
                 hd = hubCombinedObjects.data;
                 hd.setInFetch(true);
@@ -199,6 +200,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         finally {
             if (hd != null) hd.setInFetch(false);
             OAThreadLocalDelegate.setSuppressCSMessages(false);
+            OAThreadLocalDelegate.setGetDetailMerger(null);
         }
         ts = System.currentTimeMillis() - ts;
 
@@ -876,7 +878,21 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                     if (hubCombined != null) hubCombined.setSharedHub(hub, bShareActiveObject);
                 }
                 else {
-                    for (int i = 0;; i++) {
+                    if (OASync.isClient(HubMerger.this.getRootHub().getObjectClass())) {
+                        // preload, so that any getDetail will be more efficient
+                        for (int i=0; ;i++) {
+                            OAObject obj = (OAObject) hub.elementAt(i);
+                            if (obj == null) break;
+                            if (bNewListCancel) return;
+                            if (node.child != null && node.child.liFromParentToChild != null) {
+                                node.child.liFromParentToChild.getValue(obj);
+                            }
+                            else if (node.liFromParentToChild != null) {
+                                node.liFromParentToChild.getValue(obj);
+                            }
+                        }
+                    }
+                    for (int i=0; ;i++) {
                         OAObject obj = (OAObject) hub.elementAt(i);
                         if (obj == null) break;
                         if (bNewListCancel) return;
@@ -888,8 +904,22 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                 if (bUseAll || this.node != nodeRoot && nodeRoot != null) {
                     OAThreadLocal tl;
                     Hub hubx = null;
-                    if (!bCreatedFromOneObject) hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
+                    //if (!bCreatedFromOneObject) hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
                     try {
+                        if (OASync.isClient(HubMerger.this.getRootHub().getObjectClass())) {
+                            // preload, so that any getDetail will be more efficient
+                            for (int i=0; ;i++) {
+                                OAObject obj = (OAObject) hub.elementAt(i);
+                                if (obj == null) break;
+                                if (bNewListCancel) return;
+                                if (node.child != null && node.child.liFromParentToChild != null) {
+                                    node.child.liFromParentToChild.getValue(obj);
+                                }
+                                else if (node.liFromParentToChild != null) {
+                                    node.liFromParentToChild.getValue(obj);
+                                }
+                            }
+                        }
                         for (int i = 0;; i++) {
                             OAObject obj = (OAObject) hub.elementAt(i);
                             if (obj == null) break;
@@ -898,7 +928,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                         }
                     }
                     finally {
-                        if (!bCreatedFromOneObject) OAThreadLocalDelegate.resetGetDetailHub(hubx);
+                    //    if (!bCreatedFromOneObject) OAThreadLocalDelegate.resetGetDetailHub(hubx);
                     }
                 }
                 else {
@@ -987,6 +1017,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             _createRecursiveChild(parent);
         }
 
+        
         void _createChild(OAObject parent) {
             if (bNewListCancel) return;
             try {
@@ -1894,7 +1925,6 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         }
     }
     
-//qqqqqqqqqqqqq
     private static ExecutorService executorService;
     private static final AtomicInteger aiThreadCnt = new AtomicInteger();
     protected static ExecutorService getExecutorService() {

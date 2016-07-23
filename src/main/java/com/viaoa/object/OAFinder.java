@@ -101,7 +101,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     }
     
     /**
-     * Called during a find when data was found.
+     * Called during a find when data was not found.
      * Use stop() to have the find aborted.
      */
     protected void onDataNotFound() {

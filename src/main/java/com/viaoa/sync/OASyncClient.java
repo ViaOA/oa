@@ -26,6 +26,8 @@ import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDetailDelegate;
+import com.viaoa.hub.HubMerger;
+import com.viaoa.object.OAFinder;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
@@ -52,6 +54,7 @@ import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.OALogUtil;
 import com.viaoa.util.OANotExist;
+import com.viaoa.util.OAPropertyPath;
 
 import static com.viaoa.sync.OASyncServer.*;
 
@@ -156,26 +159,26 @@ public class OASyncClient {
         
         OALinkInfo li = null;
         try {
+            HubMerger merger = OAThreadLocalDelegate.getGetDetailMerger();
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
                 result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                        additionalMasterProperties, siblingKeys);
+                        additionalMasterProperties, siblingKeys, merger!=null);
             }
             else {
                 // this will "ask" for additional data "around" the requested property
-                boolean bForMerger = OAThreadLocalDelegate.isHubMergerChanging();
                 bGetSibs = true;
                 // send siblings to return back with same prop
-                if (li == null) li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
+                li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
                 if (li == null || !li.getCalculated()) {
-                    siblingKeys = getDetailSiblings(masterObject, li, propertyName, bForMerger);
+                    siblingKeys = getDetailSiblings(masterObject, li, propertyName, merger);
                 }
-                if (!bForMerger) {
+                if (merger == null) {
                     additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
                 }
                 
                 result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                        additionalMasterProperties, siblingKeys);
+                        additionalMasterProperties, siblingKeys, merger!=null);
             }
         }
         catch (Exception e) {
@@ -260,7 +263,7 @@ public class OASyncClient {
     /**
      * Find any other siblings to get the same property for sibling objects in same hub.
      */
-    protected OAObjectKey[] getDetailSiblings(final OAObject masterObject, final OALinkInfo linkInfo, final String property, final boolean bForMerger) {
+    protected OAObjectKey[] getDetailSiblings(final OAObject masterObject, final OALinkInfo linkInfo, final String property, final HubMerger merger) {
         // note: could be for a blob property
 
         Hub siblingHub = null;
@@ -268,14 +271,51 @@ public class OASyncClient {
         if (hubThreadLocal != null && hubThreadLocal.contains(masterObject)) {
             siblingHub = hubThreadLocal;
         }
-        
         if (siblingHub == null) {
-            siblingHub = findBestSiblingHub(masterObject);
-            if (siblingHub == null) return null;
+            if (merger == null) siblingHub = findBestSiblingHub(masterObject);
+            if (siblingHub == null) {
+                if (merger == null) return null;
+                
+                Hub h = merger.getRootHub();
+                if (h == null) return null;
+                String spp = merger.getPath();
+                if (spp == null) return null;
+                
+                OAPropertyPath pp = new OAPropertyPath(h.getObjectClass(), spp);
+                spp = null;
+                for (OALinkInfo li : pp.getLinkInfos()) {
+                    if (property.equalsIgnoreCase(li.getName())) break;
+                    if (spp == null) spp = li.getName();
+                    else spp += "." + li.getName();
+                }
+                
+                OAFinder f = new OAFinder(h, spp) {
+                    int cnt;
+                    @Override
+                    protected boolean isUsed(OAObject obj) {
+                        boolean b = !OAObjectPropertyDelegate.isPropertyLoaded(obj, property);
+                        if (b) {
+                            if (++cnt > 500) {
+                                stop();
+                            }
+                        }
+                        return b;
+                    }
+                };
+                f.setUseOnlyLoadedData(true);
+                ArrayList al = f.find();
+                if (al == null || al.size() == 0) return null;
+                int x = al.size();
+                OAObjectKey[] keys = new OAObjectKey[x];
+                for (int i=0; i<x; i++) {
+                    keys[i] = ((OAObject)al.get(i)).getObjectKey();
+                }
+                return keys;
+            }
         }
         
         ArrayList<OAObjectKey> al = new ArrayList<OAObjectKey>();
-        _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, hubThreadLocal!=null, bForMerger);
+        _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, hubThreadLocal!=null, merger);
         
         if (al == null || al.size() == 0) return null;
         int x = al.size();
@@ -342,10 +382,10 @@ public class OASyncClient {
     
     
     private void _getDetailSiblings(HashSet<Object> hsValues, ArrayList<OAObjectKey> alResults, final OAObject masterObject, 
-            final Hub siblingHub, OALinkInfo linkInfo, String propertyName, final boolean bAgressive, final boolean bForMerger) {
+            final Hub siblingHub, OALinkInfo linkInfo, String propertyName, final boolean bAgressive, final HubMerger merger) {
         
-        _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive, bForMerger);
-        if (alResults.size() > (bForMerger?500:25) || linkInfo == null) return;
+        _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive, merger);
+        if (alResults.size() > (merger!=null?500:25) || linkInfo == null) return;
 
         // go up to master.parent and get siblings from there
         OAObject parentMasterObject = siblingHub.getMasterObject();
@@ -395,15 +435,15 @@ public class OASyncClient {
 
             Hub h = (Hub) liRev.getValue(obj);
             if (h.getSize() > 0) {
-                _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive, bForMerger);
+                _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive, merger);
             }
-            if (alResults.size() > (bForMerger?500:100)) break;
+            if (alResults.size() > (merger!=null?500:100)) break;
         }        
     }    
     
     
     private void _getDetailSiblingsA(HashSet<Object> hsValues, ArrayList<OAObjectKey> al, 
-            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive, boolean bForMerger) {
+            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive, final HubMerger merger) {
         // get the same property for siblings
 
         // find best starting pos, either before or after
@@ -445,7 +485,7 @@ public class OASyncClient {
                 }
                 else if (bIsMany || bIsOne2One) {                
                     al.add(key);
-                    if (bForMerger) {
+                    if (merger != null) {
                         if (al.size() > 500) break;
                     }
                     else if (al.size() >= (100*(bAgressive?3:1))) break;
@@ -458,7 +498,7 @@ public class OASyncClient {
                     value = OAObjectCacheDelegate.get(valueClass, value);
                     if (value == null) { // not on client
                         al.add(key);
-                        if (bForMerger) {
+                        if (merger != null) {
                             if (al.size() > 650) break;
                         }
                         else if (al.size() > (150*(bAgressive?3:1))) break;
