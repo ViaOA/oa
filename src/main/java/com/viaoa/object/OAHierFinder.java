@@ -35,41 +35,29 @@ qqqqqqqqqqqqqqqqqqqqqqqqqqq
  *  
  */
 public class OAHierFinder<F> {
-    private String[] strPropPath;
-    private OAPropertyPath[] propertyPaths;
+    private String property;
+    private String propertyPath;
+    private OAPropertyPath propPath;
     
-    
-    public OAHierFinder(String ... propPaths) {
-        this.strPropPath = propPaths;
+    public OAHierFinder(String propertyName, String propertyPath) {
+        this.property = propertyName;
+        this.propertyPath = this.propertyPath;
     }
-
-    public Object findFirstValue(F fromObject) {
+    
+    
+    
+    
+    public Object findFirst(F fromObject, OAComparator comp, OAFilter filter) {
         if (fromObject == null) return null;
         Class c = fromObject.getClass();
         
-        propertyPaths = new OAPropertyPath[strPropPath.length] ;
-        int i=0;
-        for (String pp : strPropPath) {
-            OAPropertyPath propPath = new  OAPropertyPath(c, pp);
-            propertyPaths[i++] = propPath;
-            if (i > 1) {
-                Method[] ms = propPath.getMethods();
-                c = ms[0].getReturnType();
-            }
-        }
+        propPath = new  OAPropertyPath(c, propertyPath);
         
-        Object value = null;;
-        try {
-            value = findFirstValue(fromObject, 0, 0);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("error finding value", e);
-        }
-        
+        Object value = findFirstValue(fromObject, filter, 0, 0);
         return value;
     }
 
-    protected Object findFirstValue(final Object obj, final int pos, final int startPos) throws Exception {
+    protected Object findFirstValue(final Object obj, OAFilter filter, final int pos, final int startPos) throws Exception {
         if (obj == null) return null;
         if (propertyPaths == null || propertyPaths.length <= pos) return null; 
 
