@@ -97,65 +97,17 @@ class HubDataMaster implements java.io.Serializable {
     }
     
     
-    // 20141125 custom writer so that linkInfo is not written, and so masterObject can use key instead             
+    // 20141125 custom writer so that linkInfo is not written, and so masterObject can use key instead
+    // 201607 dont need to write masterobject or linkinfo
+    //    OAObjectPropertyDelegate.setProperty will do this
     private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{
         s.defaultWriteObject();
-        
-        if (masterObject == null) {
-            s.writeByte(0);
-        }
-        else if (true) {
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-            // 20160715 try without sending master info.  It might be needed, so just testing for now
-            s.writeByte(0);
-        }
-        else {
-            OAObjectKey key = null;
-            OAObjectSerializer serializer = OAThreadLocalDelegate.getObjectSerializer();
-            if (serializer != null) {
-                Object objx = serializer.getReferenceValueToSend(masterObject);
-                if (objx instanceof OAObjectKey) {
-                    key = (OAObjectKey) objx;
-                }
-            }
-            if (key != null) {
-                s.writeByte(1);
-                s.writeObject(masterObject.getClass());
-                s.writeObject(key);
-            }
-            else {
-                s.writeByte(2);
-                s.writeObject(masterObject);
-            }
-            s.writeObject(liDetailToMaster==null?null:liDetailToMaster.getReverseName());
-        }
+        s.writeByte(0);
     }    
     
     private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
         s.defaultReadObject();
         byte bx = s.readByte();
-        if (bx != 0) {
-            Class cx = null;
-            if (bx == 1) {
-                cx = (Class) s.readObject();
-                OAObjectKey key = (OAObjectKey) s.readObject();
-                this.masterObject = (OAObject) OAObjectCacheDelegate.get(cx, key);
-            }
-            else if (bx == 2) {
-                this.masterObject = (OAObject) s.readObject();
-                if (masterObject != null) cx = masterObject.getClass();
-            }
-            
-            String revName = (String) s.readObject();
-            if (revName != null && cx != null) {
-                OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(cx);
-                OALinkInfo li = oi.getLinkInfo(revName);
-                if (li != null) {
-                    li = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                    this.liDetailToMaster = li;
-                }
-            }
-        }
     }
 }
 

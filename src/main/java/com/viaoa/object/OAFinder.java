@@ -23,7 +23,7 @@ import com.viaoa.util.filter.*;
 // 20140124
 /**
  * This is used to find all values from one OAObject/Hub to another OAObject/Hub, using a propertyPath.
- * Support is included to include Filters.
+ * Support is included for Filters.
  *
  * @param <F> type of hub or OAObject to use as the root (from)
  * @param <T> type of hub for the to class (to).

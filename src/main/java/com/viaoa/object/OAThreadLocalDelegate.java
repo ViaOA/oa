@@ -17,9 +17,7 @@ import java.util.logging.*;
 
 import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
-import com.viaoa.sync.OASyncClient;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubMerger;
 import com.viaoa.jfc.undo.OAUndoManager;
@@ -1240,7 +1238,6 @@ static volatile int unlockCnt;
         }
         return hubMergerx;
     }
-
 
 }
 

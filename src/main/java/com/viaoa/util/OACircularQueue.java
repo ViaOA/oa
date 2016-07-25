@@ -18,6 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
+import com.viaoa.object.OAPerformance;
+
 /**
  * Thread safe Circular Queue.
  * There is a single headPostion, and each consumer can have  a tailPosition.
@@ -249,10 +251,12 @@ public abstract class OACircularQueue<TYPE> {
                 
                 if (session.msLastRead + 1000 < tsNow) {
                     if (tsLastOneSecondLog + 1000 < tsNow) {
-                        OACircularQueue.LOG.fine("session over 1+ seconds getting last msg, queSize="+queueSize+
+                        String s = ("session over 1+ seconds getting last msg, queSize="+queueSize+
                                 ", currentHeadPos="+queueHeadPosition+", session="+session.id+
                                 ", sessionPos="+session.queuePos+", lastRead="+(tsNow-session.msLastRead)+"ms ago");
                         tsLastOneSecondLog = tsNow;
+                        OACircularQueue.LOG.fine(s);
+                        if (OAPerformance.IncludeCircularQueue) OAPerformance.LOG.fine(s);
                     }
                     if (!shouldWaitOnSlowSession(session.id, (int)(tsNow-session.msLastRead))) {
                         session.bInactive = true;
@@ -265,13 +269,15 @@ public abstract class OACircularQueue<TYPE> {
             if (slowSessionFound != null) {
                 ++cntQueueWait;
                 if (tsNow > tsLastAvoidOverrunLog + 1000) {
-                    OACircularQueue.LOG.fine("cqName="+name+", avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+                    String s = ("cqName="+name+", avoiding queue overrun, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                         ", totalSessions="+hmSession.size() +
                         ", slowSession="+slowSessionFound.id +
                         ", qpos="+slowSessionFound.queuePos +
                         ", totalWaits="+cntQueueWait +
                         ", totalThrottles="+cntQueueThrottle
                         );
+                    OACircularQueue.LOG.fine(s);
+                    if (OAPerformance.IncludeCircularQueue) OAPerformance.LOG.fine(s);
                     tsLastAvoidOverrunLog = tsNow;
                     tsLastAddLog = tsNow;
                 }
@@ -283,12 +289,14 @@ public abstract class OACircularQueue<TYPE> {
             if (bNeedsThrottle) {
                 ++cntQueueThrottle;
                 if (tsNow > tsLastThrottleLog + 1000) {
-                    OACircularQueue.LOG.fine("cqName="+name+", queue throttle, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+                    String s = ("cqName="+name+", queue throttle, queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                         ", totalSessions="+hmSession.size() +
                         ", throttleAmount="+throttleAmount +
                         ", totalWaits="+cntQueueWait +
                         ", totalThrottles="+cntQueueThrottle
                         );
+                    OACircularQueue.LOG.fine(s);
+                    if (OAPerformance.IncludeCircularQueue) OAPerformance.LOG.fine(s);
                     tsLastThrottleLog = tsNow;
                     tsLastAddLog = tsNow;
                 }
@@ -298,12 +306,14 @@ public abstract class OACircularQueue<TYPE> {
         }
 
         if (tsNow > tsLastAddLog + 5000) {
-            OACircularQueue.LOG.fine("cqName="+name+", queSize="+queueSize+", queHeadPos="+queueHeadPosition+
+            String s = ("cqName="+name+", queSize="+queueSize+", queHeadPos="+queueHeadPosition+
                 ", totalSessions="+hmSession.size() +
                 ", throttleAmount="+throttleAmount +
                 ", totalWaits="+cntQueueWait +
                 ", totalThrottles="+cntQueueThrottle
                 );
+            OACircularQueue.LOG.fine(s);
+            if (OAPerformance.IncludeCircularQueue) OAPerformance.LOG.fine(s);
             tsLastAddLog = tsNow;
         }
         

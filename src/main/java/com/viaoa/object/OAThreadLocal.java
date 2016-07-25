@@ -10,12 +10,8 @@
 */
 package com.viaoa.object;
 
-
-import java.util.ArrayList;
-
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubMerger;
-import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.Tuple;
@@ -120,7 +116,4 @@ public class OAThreadLocal {
     protected HubMerger getDetailMerger; // current HubMerger, that could be calling OASyncClient.getDetail
 
 }
-
-
-
 

@@ -37,24 +37,24 @@ public class OATrigger {
     }
     
     public OATrigger(
-            String name,
-            Class rootClass,
-            OATriggerListener triggerListener,
-            String propertyPath, 
-            final boolean bOnlyUseLoadedData, 
-            final boolean bServerSideOnly, 
-            final boolean bUseBackgroundThread,
-            final boolean bUseBackgroundThreadIfNeeded)
-        {
-            this.name = name;
-            this.rootClass = rootClass;
-            this.propertyPaths = new String[] {propertyPath};
-            this.triggerListener = triggerListener;
-            this.bOnlyUseLoadedData = bOnlyUseLoadedData;
-            this.bServerSideOnly = bServerSideOnly;
-            this.bUseBackgroundThread = bUseBackgroundThread;
-            this.bUseBackgroundThreadIfNeeded = bUseBackgroundThreadIfNeeded;
-        }
+        String name,
+        Class rootClass,
+        OATriggerListener triggerListener,
+        String propertyPath, 
+        final boolean bOnlyUseLoadedData, 
+        final boolean bServerSideOnly, 
+        final boolean bUseBackgroundThread,
+        final boolean bUseBackgroundThreadIfNeeded)
+    {
+        this.name = name;
+        this.rootClass = rootClass;
+        this.propertyPaths = new String[] {propertyPath};
+        this.triggerListener = triggerListener;
+        this.bOnlyUseLoadedData = bOnlyUseLoadedData;
+        this.bServerSideOnly = bServerSideOnly;
+        this.bUseBackgroundThread = bUseBackgroundThread;
+        this.bUseBackgroundThreadIfNeeded = bUseBackgroundThreadIfNeeded;
+    }
 
     public OATrigger[] getDependentTriggers() {
         return dependentTriggers;        

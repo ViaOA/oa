@@ -12,5 +12,6 @@ public class OAPerformance {
     
     public static final boolean IncludeTriggers = true;
     public static final boolean IncludeHubListeners = false;
+    public static final boolean IncludeCircularQueue = true;
     
 }

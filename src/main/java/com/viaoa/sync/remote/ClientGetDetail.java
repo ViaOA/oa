@@ -43,10 +43,25 @@ public class ClientGetDetail {
     private final TreeMap<Integer, Boolean> treeSerialized = new TreeMap<Integer, Boolean>();
     private final ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
 
+    public ClientGetDetail() {
+    }
+    
     public void removeGuid(int guid) {
         try {
             rwLockTreeSerialized.writeLock().lock();
             treeSerialized.remove(guid);
+        }
+        finally {
+            rwLockTreeSerialized.writeLock().unlock();
+        }
+    }
+    
+    public void addGuid(int guid) {
+        try {
+            rwLockTreeSerialized.writeLock().lock();
+            if (treeSerialized.get(guid) == null) {
+                treeSerialized.put(guid, false);
+            }
         }
         finally {
             rwLockTreeSerialized.writeLock().unlock();
@@ -203,12 +218,14 @@ public class ClientGetDetail {
                     continue;
                 }
 
+                /*
                 rwLockTreeSerialized.readLock().lock();
                 Object objx = treeSerialized.get(key.getGuid());
                 rwLockTreeSerialized.readLock().unlock();
                 if (objx != null && ((Boolean) objx).booleanValue()) {
                     continue; // already sent with all refs
                 }
+                */
                 
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds

@@ -68,17 +68,6 @@ public class OAObjectSerializeDelegate {
                 }
             }
             OAObjectPropertyDelegate.unsafeSetPropertyIfEmpty(oaObj, key, value);  // HubSerializeDelegate._readResolve could have set this first (as weakref)
-            
-//qqqqqqqqqqqqqqqq
-if (value instanceof Hub) {
-    Hub h = (Hub) value;
-    if (h.getMasterObject() == null) {
-        int xx = 0;
-        xx++;//qqqqqqqqqqqqq
-    }
-}
-            
-        
         }
         OAObjectDelegate.updateGuid(oaObj.guid);
     }
@@ -336,7 +325,6 @@ if (value instanceof Hub) {
 
             boolean b = false;
             if (serializer != null && obj != null && !(obj instanceof byte[])) {
-//vvvvvvvvqqqqqqqqq clientGetDetail should return false if obj is on client                
                 b = serializer.shouldSerializeReference(oaObj, (String) key, obj, li);
             }
 
