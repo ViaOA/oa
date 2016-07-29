@@ -143,6 +143,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             throw new IllegalArgumentException("Root hub can not be null");
         }
         LOG.fine("hubRoot="+hubRoot.getObjectClass().getSimpleName()+", propertyPath="+propertyPath);        
+
         if (hubCombinedObjects == null) {
             // 20150720 allow combinedHub to be null
             //throw new IllegalArgumentException("Combined hub can not be null");

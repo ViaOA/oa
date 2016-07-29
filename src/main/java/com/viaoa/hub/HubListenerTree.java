@@ -436,7 +436,6 @@ public class HubListenerTree {
                         newTreeNode.getCalcPropertyNames().add(origPropertyName);
 
                         String spp = "(" + hubClass.getName() + ")" + property;
-                        
                         if (j == pps.length-1) {
                             // 20120823 if this is the last hub, then need to listen for each add/remove
                             final HubListenerTreeNode nodeThis = node;
@@ -697,9 +696,7 @@ public class HubListenerTree {
             }
             --ListenerCount;
             if (hl.getLocation() == HubListener.InsertLocation.LAST) lastCount--;
-//qqqqqqqqqqqqqqq            
 //System.out.println("HubListenerTree.removeListener, ListenerCount="+ListenerCount+", hl="+hl);
-            
         }
         //System.out.println("HubListenerTree.removeListener, ListenerCount="+ListenerCount+" ==>"+hl+", hm.hl.cnt="+HubMerger.HubMergerHubListenerCount);
 

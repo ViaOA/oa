@@ -1687,7 +1687,8 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     }
     
     public String getGroupByPP() {
-        return "("+classGroupBy.toString() + ")GroupBy";
+        String s = "("+classGroupBy.toString() + ")GroupBy";
+        return s;
     }
     public String getHubByPP() {
         return "("+classFrom.toString() + ")hub";
