@@ -639,7 +639,14 @@ public class OAPropertyPath<T> {
                 j++;
                 if (li == null || !li.getRecursive()) continue;
                 OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(li.getToClass());
-                OALinkInfo lix = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.MANY);
+                
+                OALinkInfo lix;
+                if (li.getType() == OALinkInfo.MANY) {
+                    lix = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.MANY);
+                }
+                else {
+                    lix = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);
+                }
                 recursiveLinkInfos[j-1] = lix;
             }
         }

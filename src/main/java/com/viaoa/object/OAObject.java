@@ -526,7 +526,6 @@ public class OAObject implements java.io.Serializable, Comparable {
         fireBeforePropertyChange( property, new Double(oldObj),  new Double(newObj));
     }
 
-    
     protected void firePropertyChange(String propertyName, Object oldObj, Object newObj, boolean bLocalOnly) {
     	OAObjectEventDelegate.firePropertyChange(this, propertyName, oldObj, newObj, bLocalOnly, true);
     }
@@ -534,6 +533,11 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectEventDelegate.firePropertyChange(this, propertyName, oldObj, newObj, false, true);
     }
 
+    protected void firePropertyChange(String propertyName) {
+        OAObjectEventDelegate.firePropertyChange(this, propertyName, null, null, false, true, true);
+    }
+    
+    
     /** @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void firePropertyChange(String property, boolean oldObj, boolean newObj) {
         firePropertyChange( property, oldObj?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE,  newObj?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE);
@@ -561,6 +565,9 @@ public class OAObject implements java.io.Serializable, Comparable {
     */
     protected void fireLocalPropertyChange(String property, Object oldObj, Object newObj) {
     	firePropertyChange(property,oldObj,newObj,true);
+    }
+    protected void fireLocalPropertyChange(String property) {
+        OAObjectEventDelegate.firePropertyChange(this, property, null, null, true, true, true);
     }
     /**
         Version of firePropertyChange that will not send to OAServer.
@@ -938,4 +945,18 @@ public class OAObject implements java.io.Serializable, Comparable {
         if (OASyncDelegate.isServer(clazz)) return false;
         return true;
     }
+    
+    public boolean isLoaded(String prop) {
+        return OAObjectPropertyDelegate.isPropertyLoaded(this, prop);
+    }
+    public boolean isPropertyLoaded(String prop) {
+        return OAObjectPropertyDelegate.isPropertyLoaded(this, prop);
+    }
+
+    public Object hierFind(String propertyName, String heirarchyPropertyPath) {
+        OAHierFinder hf = new OAHierFinder<OAObject>(propertyName, heirarchyPropertyPath);
+        Object objx = hf.findFirstNotEmpty(this);
+        return objx;
+    }
+    
 }

@@ -32,21 +32,21 @@ import com.viaoa.util.filter.OANotEmptyFilter;
  */
 public class OAHierFinder<F extends OAObject> {
     private String property;
-    private String propertyPath;
-    private OAPropertyPath propPath;
+    private String strPropertyPath;
+    private OAPropertyPath propertyPath;
     private Object foundValue;
 
     
     public OAHierFinder(String propertyName, String propertyPath) {
         this.property = propertyName;
-        this.propertyPath = this.propertyPath;
+        this.strPropertyPath = propertyPath;
     }
     
     public Object findFirst(F fromObject, OAFilter filter) {
         if (fromObject == null) return null;
 
         Class c = fromObject.getClass();
-        propPath = new OAPropertyPath(c, propertyPath);
+        propertyPath = new OAPropertyPath(c, strPropertyPath);
         
         foundValue = null;
         findFirstValue(fromObject, filter, 0);
@@ -68,7 +68,10 @@ public class OAHierFinder<F extends OAObject> {
         if (pos == 0) {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
             OAPropertyInfo pi = oi.getPropertyInfo(property);
-            if (pi == null) b = false;
+            if (pi == null) {
+                OALinkInfo li = oi.getLinkInfo(property);
+                if (li == null) b = false;
+            }
         }
         if (b) {
             Object val = obj.getProperty(property);
@@ -77,24 +80,25 @@ public class OAHierFinder<F extends OAObject> {
                 return true;
             }
         }        
-        
-        String[] props = propPath.getProperties();
-        if (props == null || pos >= props.length) return false;
-        
-        OALinkInfo li = propPath.getRecursiveLinkInfos()[pos];
-        if (li != null) {
-            OALinkInfo rli = li.getReverseLinkInfo();
-            OAObject parent = (OAObject) li.getValue(obj);
+
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
+        OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);
+        if (liRecursive != null) {
+            OAObject parent = (OAObject) liRecursive.getValue(obj);
             if (parent != null) {
                 if (findFirstValue(parent, filter, pos)) return true;
                 return false;
             }
         }
         
-        OALinkInfo[] lis  = propPath.getLinkInfos();
-        if (lis == null || pos >= lis.length) return false;
-        li = lis[pos];
         
+        String[] props = propertyPath.getProperties();
+        if (props == null || pos >= props.length) return false;
+        
+        OALinkInfo[] lis  = propertyPath.getLinkInfos();
+        if (lis == null || pos >= lis.length) return false;
+        
+        final OALinkInfo li = lis[pos];
         OAObject objx = (OAObject) li.getValue(obj);
         if (findFirstValue(objx, filter, pos+1)) return true;
         
