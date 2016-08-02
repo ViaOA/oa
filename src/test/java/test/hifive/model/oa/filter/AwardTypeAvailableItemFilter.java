@@ -10,9 +10,6 @@ import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.hub.HubMerger;
 import com.viaoa.util.OAString;
 
-import test.hifive.model.oa.*;
-
-
 /**
  * Used by AwardType.getAvailableItems() to populate the list of available items.
  * 

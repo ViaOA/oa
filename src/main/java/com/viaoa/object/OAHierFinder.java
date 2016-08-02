@@ -53,6 +53,10 @@ public class OAHierFinder<F extends OAObject> {
         return foundValue;
     }
 
+    
+    public Object findFirst(F fromObject) {
+        return findFirst(fromObject, new OANotEmptyFilter());
+    }
     public Object findFirstNotEmpty(F fromObject) {
         return findFirst(fromObject, new OANotEmptyFilter());
     }
