@@ -2,6 +2,8 @@ package test.hifive.model.oa.filter;
 
 import java.util.logging.Logger;
 
+import test.hifive.model.oa.*;
+
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubFilter;
