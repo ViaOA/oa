@@ -32,7 +32,6 @@ public class OALinkInfo { //implements java.io.Serializable {
 
     String name;
     Class toClass;
-    // Class[] triggerClasses;
     int type;
     boolean cascadeSave;  // save, delete of this object will do same with link hub
     boolean cascadeDelete;  // save, delete of this object will do same with link hub
@@ -58,6 +57,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     protected boolean bServerSideCalc;
     protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
     private transient Method uniquePropertyGetMethod;
+    private String[] dependentProperties;
     private OAOne oaOne;
     private OAMany oaMany;
     
@@ -274,15 +274,6 @@ public class OALinkInfo { //implements java.io.Serializable {
         return this.matchHub;
     }
 
-    /*
-    public void setTriggerClasses(Class[] cs) {
-        this.triggerClasses = cs;
-    }
-    public Class[] getTriggerClasses() {
-        return this.triggerClasses;
-    }
-    */
-
     public OALinkInfo getReverseLinkInfo() {
         if (revLinkInfo != null) return revLinkInfo;
         String findName = reverseName;
@@ -323,6 +314,14 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     public OAMany getOAMany() {
         return this.oaMany;
+    }
+
+    /** for calc links */
+    public String[] getDependentProperties() {
+        return dependentProperties;
+    }
+    public void setDependentPropeties(String[] props) {
+        dependentProperties = props;
     }
 }
 

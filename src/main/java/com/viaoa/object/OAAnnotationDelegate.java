@@ -210,6 +210,7 @@ public class OAAnnotationDelegate {
                 oi.addLinkInfo(li);
             }
           
+            li.setDependentPropeties(annotation.dependentProperties());
             li.setImportMatch(annotation.isImportMatch());
             li.setCascadeSave(annotation.cascadeSave());
             li.setCascadeDelete(annotation.cascadeDelete());
