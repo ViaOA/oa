@@ -1831,7 +1831,15 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                 boolean b = hd.isInFetch();
                 try {
                     hd.setInFetch(true);
-                    if (!bShareEndHub) hubCombined.clear();
+                    if (!bShareEndHub) {
+                        try {
+                            OAThreadLocalDelegate.setHubMergerIsChanging(true);
+                            hubCombined.clear();
+                        }
+                        finally {
+                            OAThreadLocalDelegate.setHubMergerIsChanging(false);
+                        }
+                    }
                     
                     long ts = System.currentTimeMillis();
                     _afterChangeActiveObject();
@@ -1924,6 +1932,10 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                 if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
             }
         }
+    }
+
+    public boolean getUseAll() {
+        return bUseAll;
     }
     
     private static ExecutorService executorService;

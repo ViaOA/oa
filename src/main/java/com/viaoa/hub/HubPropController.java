@@ -157,7 +157,7 @@ public abstract class HubPropController {
         };
         newHubProp.hubListener = hl;
         
-        hub.addHubListener(hl, newPropertyPath, props);
+        hub.addHubListener(hl, newPropertyPath, props, true);
         hubProps = (HubProp[]) OAArray.add(HubProp.class, hubProps, newHubProp);
         update();
 

@@ -39,7 +39,8 @@ public class OAThreadLocal {
 	
 	// flag to know if hub events can be ignored, since hubMerger is doing an internal operation.  
 	//      Otherwise, there would be a lot of extra unneeded events. 
-	protected int hubHubMergerIsChanging;  
+	//      used by HubMerger and HubListenerTree
+	protected int hubMergerIsChangingCount;  
 
     protected int sendingEvent;  // HubEventDelegate is sending an event.  Used so that calcPropertyEvents (see HubListenerTree) are only sent out once
 

@@ -144,9 +144,16 @@ public class HubListenerTree {
                     }
                     
                     if (value instanceof Hub) {
-                        for (Object objx : ((Hub) value)) {
-                            if (alNewObjects.indexOf(objx) < 0) {
-                                alNewObjects.add(objx);
+                        // 20160805  
+                        if (root.hubMerger != null && !root.hubMerger.getUseAll()) {
+                            Object objx = root.hubMerger.getRootHub().getAO();
+                            alNewObjects.add(objx);
+                        }
+                        else {
+                            for (Object objx : ((Hub) value)) {
+                                if (alNewObjects.indexOf(objx) < 0) {
+                                    alNewObjects.add(objx);
+                                }
                             }
                         }
                     }
@@ -247,7 +254,17 @@ public class HubListenerTree {
                 property = ci.getName();
                 break;
             }
-        }       
+        }
+        if (calcProps == null) {
+            for (OALinkInfo li : oi.getLinkInfos()) {
+                if (li.getName().equalsIgnoreCase(property)) {
+                    // System.out.println(">>>> "+property);
+                    calcProps = li.getDependentProperties();
+                    property = li.getName();
+                    break;
+                }
+            }
+        }
         addListenerMain(hl, property, calcProps, bActiveObjectOnly, false);
     }
 
@@ -263,7 +280,7 @@ public class HubListenerTree {
         if (hl == null) return;
         try {
             OAThreadLocalDelegate.setHubListenerTree(true);
-            addListener(hl, property); // this will check for dependent calcProps
+            addListener(hl, property, bActiveObjectOnly); // this will check for dependent calcProps
             // now add the additional dependent properties
             if (dependentPropertyPaths != null && dependentPropertyPaths.length > 0) {
                 addDependentListeners(property, hl, dependentPropertyPaths, bActiveObjectOnly, bAllowBackgroundThread);
@@ -278,8 +295,6 @@ public class HubListenerTree {
     /**
      * @param dependentPropertyPaths
      * @param bActiveObjectOnly if true, then dependent props only listen to the hub's AO
-     * 
-     *  NOTE: only the last prop is listened to in for a dependent propertyPath.
      */
     private void addListenerMain(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, final boolean bAllowBackgroundThread) {
         try {
@@ -414,13 +429,16 @@ public class HubListenerTree {
                     boolean b = false;
                     for (int k=0; node.children != null && k < node.children.length; k++) { 
                         HubListenerTreeNode child = node.children[k];
-                        b = property.equalsIgnoreCase(child.property);
-                        if (b) {
+                        if (property.equalsIgnoreCase(child.property)) {
+                            if (j==0 && (node.hubMerger != null) && (!bActiveObjectOnly != node.hubMerger.getUseAll())) {
+                                continue; 
+                            }
                             node = child;
+                            b = true;
                             break;
                         }
                     }
-                    
+
                     if (b) {
                         if (node.getCalcPropertyNames().indexOf(origPropertyName) < 0) {
                             node.getCalcPropertyNames().add(origPropertyName);
@@ -609,7 +627,9 @@ public class HubListenerTree {
                             }
                             @Override // 20140423
                             public void afterRemoveAll(HubEvent e) {
-                                HubEventDelegate.fireCalcPropertyChange(root.hub, null, origPropertyName);
+                                if (!OAThreadLocalDelegate.isHubMergerChanging()) {
+                                    HubEventDelegate.fireCalcPropertyChange(root.hub, null, origPropertyName);
+                                }
                             }
                             private void onEvent(Object[] rootObjects) {
                                 if (rootObjects == null) return;
@@ -658,7 +678,7 @@ public class HubListenerTree {
                             }                
                         }
                     }; 
-                    hub.addHubListener(hl, property);  // note: property could be another calc-property
+                    hub.addHubListener(hl, property, bActiveObjectOnly);  // note: property could be another calc-property
 
                     HubListener[] hls;
                     if (node.hmListener == null) {
@@ -703,7 +723,7 @@ public class HubListenerTree {
         removeChildrenListeners(this.root, hl);
     }    
     
-    private void removeChildrenListeners(HubListenerTreeNode node, HubListener origHubListener) {
+    private void removeChildrenListeners(final HubListenerTreeNode node, final HubListener origHubListener) {
 
         if (node.hmListener != null) {
             HubListener[] hls = node.hmListener.remove(origHubListener);

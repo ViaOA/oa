@@ -470,7 +470,7 @@ public class OATableColumn {
             };
             
             // 20160613 have it run in background
-            // 20160722 only listen to viewed rows            
+            // 20160722 only listen to viewed rows
             table.getViewableHub().addHubListener(hubListener, propx, new String[] { path }, false, true);
         }
         else if (methods != null && !OAString.isEmpty(path)) {

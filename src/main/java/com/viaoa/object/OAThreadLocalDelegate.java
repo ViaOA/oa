@@ -815,7 +815,7 @@ static volatile int unlockCnt;
     }
     protected static boolean isHubMergerChanging(OAThreadLocal ti) {
         if (ti == null) return false;
-        return ti.hubHubMergerIsChanging > 0;
+        return ti.hubMergerIsChangingCount > 0;
     }
     public static void setHubMergerIsChanging(boolean b) {
         // LOG.finer(""+b);
@@ -827,11 +827,11 @@ static volatile int unlockCnt;
         int x;
         
         if (b) {
-            ti.hubHubMergerIsChanging++;
+            ti.hubMergerIsChangingCount++;
             x = OAThreadLocalDelegate.TotalHubMergerChanging.getAndIncrement();
         }
         else {
-            ti.hubHubMergerIsChanging--;
+            ti.hubMergerIsChangingCount--;
             x = OAThreadLocalDelegate.TotalHubMergerChanging.decrementAndGet();
         }
         if (x > 200 || x < 0) {

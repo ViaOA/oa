@@ -236,7 +236,7 @@ public class JFCController extends HubListenerAdapter {
             hubListenerPropertyName = hubListenerPropertyName.substring(pos+1);
         }
         if (actualHub == hub) {
-            actualHub.addHubListener(this, hubListenerPropertyName, props);
+            actualHub.addHubListener(this, hubListenerPropertyName, props, true);
         }
         else {
             // listener for property change
