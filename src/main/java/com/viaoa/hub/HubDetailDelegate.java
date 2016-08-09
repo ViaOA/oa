@@ -635,10 +635,11 @@ public class HubDetailDelegate {
         StringTokenizer st = new StringTokenizer(path, ".");
         boolean bLastMany = false;
         int cntMany = 0;
+        OALinkInfo li = null;
         for ( ;st.hasMoreTokens(); ) {
             String prop = st.nextToken();
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
-            OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, prop);
+            li = OAObjectInfoDelegate.getLinkInfo(oi, prop);
             if (li == null) {
                 throw new IllegalArgumentException("Cant find "+prop+" for PropertyPath \""+path+"\" starting with Class "+thisHub.getObjectClass().getName());
             }

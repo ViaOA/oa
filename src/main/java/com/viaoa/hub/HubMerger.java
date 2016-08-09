@@ -645,8 +645,18 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                     throw new RuntimeException("exception while creating Filter", e);
                 }
             }
-
-            this.hub.addHubListener(this);
+            
+            // 20160806
+            if (node == null || node.child == null || node.child.liFromParentToChild == null || node.child.liFromParentToChild.getDependentProperties() == null || node.child.liFromParentToChild.getDependentProperties().length == 0) {
+                this.hub.addHubListener(this);
+            }
+            else {            
+                this.hub.addHubListener(this,
+                    node.child.liFromParentToChild.getName(),
+                    node.child.liFromParentToChild.getDependentProperties(),
+                    true);
+            }
+                    
             bHubListener = true;
             aiHubListenerCount.incrementAndGet();
             TotalHubListeners++;
@@ -1783,18 +1793,27 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             }
         }
         void _afterPropertyChange(HubEvent e) {
-        
             if (!bEnabled) return;
             if (node.child == null) return; // last nodes
             String prop = e.getPropertyName();
             if (prop == null) return;
 
-            if (node.child.liFromParentToChild.getType() != OALinkInfo.ONE) return;
+            // 20160806
+            //was: if (node.child.liFromParentToChild.getType() != OALinkInfo.ONE) return;
             if (!node.child.liFromParentToChild.getName().equalsIgnoreCase(prop)) return;
-
 
             // 20110324 data might not have been created,
             if (node.child.data == null) return;
+            
+            // 20160806 could be a calculated many link 
+            if (node.child.liFromParentToChild.getType() == OALinkInfo.MANY) {
+                if (!node.child.liFromParentToChild.getCalculated()) return;
+                Object objx = e.getObject();
+                if (!(objx instanceof OAObject)) return;
+                // calling the method will cause the hub to be updated
+                node.child.liFromParentToChild.getValue((OAObject) objx);
+                return;
+            }
 
             if (this == dataRoot && !bUseAll) {
                 if (e.getObject() != hubRoot.getAO()) return;

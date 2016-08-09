@@ -277,6 +277,7 @@ public class OAAnnotationDelegate {
             
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());
+            li.setDependentPropeties(annotation.dependentProperties());
             li.setServerSideCalc(annotation.isServerSideCalc());
             li.setPrivateMethod(!annotation.createMethod());
             li.setCacheSize(annotation.cacheSize());

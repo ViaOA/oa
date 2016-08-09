@@ -76,6 +76,8 @@ public @interface OAMany {
     
     String sortProperty() default "";
     boolean sortAsc() default false;
+
+    String[] dependentProperties() default {};
 }
 
 /*  OALinkInfo

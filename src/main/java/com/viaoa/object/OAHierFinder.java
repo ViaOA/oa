@@ -75,6 +75,13 @@ public class OAHierFinder<F extends OAObject> {
             if (pi == null) {
                 OALinkInfo li = oi.getLinkInfo(property);
                 if (li == null) b = false;
+                else {
+                    if (li.getCalculated()) {
+                        if (li.getDependentProperties() != null) {
+                            b = false;
+                        }
+                    }
+                }
             }
         }
         if (b) {
