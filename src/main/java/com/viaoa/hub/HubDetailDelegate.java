@@ -361,8 +361,8 @@ public class HubDetailDelegate {
                     detailHub.datam = new HubDataMaster();
                 }
                 
-                detailHub.datam.masterObject = (OAObject) h.datam.masterObject;
-                detailHub.datam.liDetailToMaster = h.datam.liDetailToMaster;
+                if (h.datam.masterObject != null) detailHub.datam.masterObject = (OAObject) h.datam.masterObject;
+                if (h.datam.liDetailToMaster != null) detailHub.datam.liDetailToMaster = h.datam.liDetailToMaster;
                 
                 // 20160204
                 detailHub.datam.masterHub = detail.hubMaster;
