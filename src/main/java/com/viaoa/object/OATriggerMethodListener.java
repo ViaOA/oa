@@ -9,17 +9,17 @@ import com.viaoa.hub.HubEvent;
 import com.viaoa.util.OAString;
 
 /**
- * used by OAAnnoationDelegate for OACallbackMethod annotation.
- * This will create the necessary triggers that will call the callback method.
+ * used by OAAnnoationDelegate for OATriggerMethod annotation.
+ * This will create the necessary triggers that will call the trigger method.
  * @author vvia
  */
-public class OACallbackTriggerListener implements OATriggerListener {
+public class OATriggerMethodListener implements OATriggerListener {
     private final Class<?> clazz;
     private final Method method;
     private final boolean bOnlyUseLoadedData;
     private final OAObjectInfo oi;
     
-    public OACallbackTriggerListener(Class clazz, Method method, boolean bOnlyUseLoadedData) {
+    public OATriggerMethodListener(Class clazz, Method method, boolean bOnlyUseLoadedData) {
         this.clazz = clazz;
         this.method = method;
         this.bOnlyUseLoadedData = bOnlyUseLoadedData;
@@ -40,7 +40,7 @@ public class OACallbackTriggerListener implements OATriggerListener {
         Hub hub = hubEvent.getHub();
         final OAObject masterObject = hub == null ? null : hub.getMasterObject();
         
-        // the reverse property could not be used to get objRoot - need to find root objs and call callback method
+        // the reverse property could not be used to get objRoot - need to find root objs and call trigger method
         final OAFinder finder = new OAFinder(propertyPathFromRoot) {
             protected boolean isUsed(OAObject obj) {
                 if (obj == hubEvent.getObject()) return true;

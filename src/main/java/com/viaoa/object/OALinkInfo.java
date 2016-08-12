@@ -17,6 +17,7 @@ import java.util.List;
 import com.viaoa.annotation.OAMany;
 import com.viaoa.annotation.OAOne;
 import com.viaoa.ds.OADataSource;
+import com.viaoa.hub.CustomHubFilter;
 
 /** 
     Defines reference properties between OAObjects.
@@ -58,6 +59,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
     private transient Method uniquePropertyGetMethod;
     private String[] dependentProperties;
+    private String mergerPropertyPath;
     private OAOne oaOne;
     private OAMany oaMany;
     
@@ -322,6 +324,12 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     public void setDependentPropeties(String[] props) {
         dependentProperties = props;
+    }
+    public String getMergerPropertyPath() {
+        return mergerPropertyPath;
+    }
+    public void setMergerPropertyPath(String pp) {
+        this.mergerPropertyPath = pp;
     }
 }
 

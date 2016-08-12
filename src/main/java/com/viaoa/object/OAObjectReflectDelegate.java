@@ -29,6 +29,7 @@ import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteSessionInterface;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.OASelect;
+import com.viaoa.hub.CustomHubFilter;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubDelegate;
@@ -43,6 +44,7 @@ import com.viaoa.util.OAConv;
 import com.viaoa.util.OAConverter;
 import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
+import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 
@@ -548,6 +550,12 @@ public class OAObjectReflectDelegate {
             }
         }
 
+        // 20160811 check to see if hub uses a pp
+        if (OAString.notEmpty(linkInfo.getMergerPropertyPath()) ) {
+            String spp = linkInfo.getMergerPropertyPath();
+            new HubMerger(oaObj, hub, spp);
+        }
+        
         return hub;
     }
     private static Hub _getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, 

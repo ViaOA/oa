@@ -281,12 +281,8 @@ public class OAAnnotationDelegate {
             li.setServerSideCalc(annotation.isServerSideCalc());
             li.setPrivateMethod(!annotation.createMethod());
             li.setCacheSize(annotation.cacheSize());
-            /*
-            Class[] cs = annotation.triggerClasses();
-            if (cs != null) {
-                li.setTriggerClasses(cs);
-            }
-            */
+            s = annotation.mergerPropertyPath();
+            li.setMergerPropertyPath(s);
             li.setOAMany(annotation);
         }
     }
@@ -299,7 +295,7 @@ public class OAAnnotationDelegate {
         String[] ss;
         
         for (Method method : methods) {
-            OACallbackMethod annotation = (OACallbackMethod) method.getAnnotation(OACallbackMethod.class);
+            OATriggerMethod annotation = (OATriggerMethod) method.getAnnotation(OATriggerMethod.class);
             if (annotation == null) continue;
             
             String[] props = annotation.properties();
@@ -320,7 +316,7 @@ public class OAAnnotationDelegate {
             }
 
             // 20160625
-            OATriggerListener tl = new OACallbackTriggerListener(clazz, method, bOnlyUseLoadedData);
+            OATriggerListener tl = new OATriggerMethodListener(clazz, method, bOnlyUseLoadedData);
             OATriggerDelegate.createTrigger(method.getName(), clazz, tl, props, bOnlyUseLoadedData, bServerSideOnly, bBackgroundThread, true);
         }        
     }

@@ -16,11 +16,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.viaoa.hub.HubEvent;
+
 /**
- * Describes an OAObject callback method.
+ * Describes an OAObject trigger method.
  * 
  * This is used to avoid creating "far reaching" property path listeners, where a hub is listening to a propertyPath of objects.
- * Instead, a change to the end of a property path will then loop through and invoke the callback for all objects that
+ * Instead, a change to the end of a property path will then loop through and invoke the trigger for all objects that
  * are in the reversing of the property path.
  * Example:  an order discount is dependent on the emp.dep.company.discount
  * 
@@ -28,18 +30,18 @@ import java.lang.annotation.Target;
  * 
  * 
  * method signature will be:  
- *      public void callbackName(OAObject fromObject, String propPathFromThis, Object oldValue, Object newValue) 
+ *      public void nameTrigger(HubEvent hubEvent) 
  *      
  *  example:   
- *     @OACallbackMethod(onlyUseLoadedData=true, runOnServer=true, runInBackgroundThread=true, properties= {"test"})
+ *     @OATriggerMethod(onlyUseLoadedData=true, runOnServer=true, runInBackgroundThread=true, properties= {"test"})
  *
- *  Note: the callback method is not called if hub.isfetching, or oaobj.isLoading
+ *  Note: the trigger method is not called if hub.isfetching, or oaobj.isLoading
  *
  */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME) 
-public @interface OACallbackMethod {
+public @interface OATriggerMethod {
 
     /** 
      * Property paths that will automatically call this method when the propPath is changed.
@@ -48,7 +50,7 @@ public @interface OACallbackMethod {
     
     
     /**
-     * if true (default), then callbacks are only made on objects that are in memory.
+     * if true (default), then triggers are only made on objects that are in memory.
      */
     boolean onlyUseLoadedData() default true;
     

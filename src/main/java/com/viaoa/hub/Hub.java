@@ -1733,6 +1733,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public void select(String whereClause, String orderBy) {
         HubSelectDelegate.select(this, null, whereClause, null, orderBy, false);
     }
+    public void select(String whereClause, String orderBy, OAFilter filter) {
+        HubSelectDelegate.select(this, null, whereClause, null, orderBy, false, filter);
+    }
 
     /**
      * Used for generating query to retrieve objects from OADataSource. Example:<br>
@@ -1746,6 +1749,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            string used for generating SQL ORDER BY
      * @see OASelect
      */
+    public void select(String whereClause, Object[] whereParams, String orderBy, OAFilter filter) {
+        HubSelectDelegate.select(this, null, whereClause, whereParams, orderBy, false, filter);
+    }
     public void select(String whereClause, Object[] whereParams, String orderBy) {
         HubSelectDelegate.select(this, null, whereClause, whereParams, orderBy, false);
     }
@@ -1756,6 +1762,13 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
             params = new Object[] { whereParam };
         }
         HubSelectDelegate.select(this, null, whereClause, params, orderBy, false);
+    }
+    public void select(String whereClause, Object whereParam, String orderBy, OAFilter filter) {
+        Object[] params = null;
+        if (whereParam != null) {
+            params = new Object[] { whereParam };
+        }
+        HubSelectDelegate.select(this, null, whereClause, params, orderBy, false, filter);
     }
 
     /**

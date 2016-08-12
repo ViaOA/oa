@@ -28,7 +28,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
     
     
     // used to create a unique calc propName
-    private static AtomicInteger aiUnique = new AtomicInteger();  
+    private static final AtomicInteger aiUnique = new AtomicInteger();  
 
     private OATrigger trigger;
     
@@ -225,7 +225,7 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
         };
         
         if (name == null) {
-            name = "OAObjectCacheFilter" + (aiUnique.incrementAndGet());
+            name = "OAObjectCacheTrigger" + (aiUnique.incrementAndGet());
         }
         
         trigger = new OATrigger(name, clazz, triggerListener, dependentPropertyPaths, true, false, false, true);

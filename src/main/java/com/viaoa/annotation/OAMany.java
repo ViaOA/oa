@@ -78,6 +78,8 @@ public @interface OAMany {
     boolean sortAsc() default false;
 
     String[] dependentProperties() default {};
+
+    String mergerPropertyPath() default "";
 }
 
 /*  OALinkInfo

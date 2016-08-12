@@ -452,6 +452,18 @@ public class HubSelectDelegate {
         select(thisHub, sel);
     }
 
+    protected static void select(Hub thisHub, OAObject whereObject, String whereClause, 
+            Object[] whereParams, String orderByClause, boolean bAppendFlag, OAFilter filter) {
+        OASelect sel = new OASelect(thisHub.getObjectClass());
+        sel.setWhereObject(whereObject);
+        sel.setParams(whereParams);
+        sel.setWhere(whereClause);
+        sel.setAppend(bAppendFlag);
+        sel.setOrder(orderByClause);
+        sel.setFilter(filter);
+        select(thisHub, sel);
+    }
+	
     public static void selectPassthru(Hub thisHub, String whereClause, String orderClause) {
         OASelect sel = new OASelect(thisHub.getObjectClass());
         sel.setPassthru(true);

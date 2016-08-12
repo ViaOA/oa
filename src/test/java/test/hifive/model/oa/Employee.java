@@ -748,7 +748,7 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
     }
     */    
     
-    @OACallbackMethod(onlyUseLoadedData=true, runOnServer=true, runInBackgroundThread=true,
+    @OATriggerMethod(onlyUseLoadedData=true, runOnServer=true, runInBackgroundThread=true,
         properties = {
             P_Location, 
             P_Location+"."+Location.P_Program, 
