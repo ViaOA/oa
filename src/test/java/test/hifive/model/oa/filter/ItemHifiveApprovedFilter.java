@@ -13,7 +13,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "HifiveApproved", displayName = "Hi5 Approved Items", hasInputParams = false, description = "selects all items that  have a hi5 rating of approved")
-public class ItemHifiveApprovedFilter extends OAObject implements CustomHubFilter {
+public class ItemHifiveApprovedFilter extends OAObject implements CustomHubFilter<Item> {
     private static final long serialVersionUID = 1L;
 
     public static final String PPCode = ":HifiveApproved()";

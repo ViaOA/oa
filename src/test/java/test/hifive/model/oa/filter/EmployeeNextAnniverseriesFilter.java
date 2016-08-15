@@ -12,7 +12,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "NextAnniverseries", displayName = "Next Anniverseries", hasInputParams = false)
-public class EmployeeNextAnniverseriesFilter extends OAObject implements CustomHubFilter {
+public class EmployeeNextAnniverseriesFilter extends OAObject implements CustomHubFilter<Employee> {
     private static final long serialVersionUID = 1L;
 
 

@@ -12,7 +12,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "ApprovedOnly", displayName = "Approved Only", hasInputParams = false)
-public class InspireRecipientApprovedOnlyFilter extends OAObject implements CustomHubFilter {
+public class InspireRecipientApprovedOnlyFilter extends OAObject implements CustomHubFilter<InspireRecipient> {
     private static final long serialVersionUID = 1L;
 
 

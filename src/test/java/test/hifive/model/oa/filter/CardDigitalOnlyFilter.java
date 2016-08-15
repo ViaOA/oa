@@ -12,7 +12,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "DigitalOnly", displayName = "Digital Only", hasInputParams = false)
-public class CardDigitalOnlyFilter extends OAObject implements CustomHubFilter {
+public class CardDigitalOnlyFilter extends OAObject implements CustomHubFilter<Card> {
     private static final long serialVersionUID = 1L;
 
 

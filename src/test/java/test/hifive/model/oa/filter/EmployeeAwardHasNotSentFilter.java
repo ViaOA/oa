@@ -12,7 +12,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "HasNotSent", displayName = "New orders", hasInputParams = false)
-public class EmployeeAwardHasNotSentFilter extends OAObject implements CustomHubFilter {
+public class EmployeeAwardHasNotSentFilter extends OAObject implements CustomHubFilter<EmployeeAward> {
     private static final long serialVersionUID = 1L;
 
 

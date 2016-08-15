@@ -13,7 +13,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "HelpingHands", displayName = "Helping Hands", hasInputParams = false)
-public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter {
+public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter<Item> {
     private static final long serialVersionUID = 1L;
 
     public static final String PPCode = ":HelpingHands()";
@@ -76,6 +76,7 @@ public class ItemHelpingHandsFilter extends OAObject implements CustomHubFilter 
         return cacheFilter;
     }
 
+    @Override
     public boolean isUsed(Item item) {
         // itemTypes
         Hub<ItemType> hubItemTypes = item.getItemTypes();

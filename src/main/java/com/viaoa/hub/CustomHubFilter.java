@@ -13,10 +13,7 @@ package com.viaoa.hub;
 import com.viaoa.util.OAFilter;
 
 public interface CustomHubFilter<TYPE> extends OAFilter<TYPE> {
-
     HubFilter<TYPE> getHubFilter();
-    String getQuery();
-    
 }
 
 

@@ -13,7 +13,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "Recent", displayName = "Recent Recipient", hasInputParams = false)
-public class InspireRecipientRecentFilter extends OAObject implements CustomHubFilter {
+public class InspireRecipientRecentFilter extends OAObject implements CustomHubFilter<InspireRecipient> {
     private static final long serialVersionUID = 1L;
 
     public static final String PPCode = ":Recent()";

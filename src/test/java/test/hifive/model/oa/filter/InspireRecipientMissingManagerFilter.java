@@ -12,7 +12,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "MissingManager", displayName = "missing manager", hasInputParams = false, description = "there is a required manager that is missing")
-public class InspireRecipientMissingManagerFilter extends OAObject implements CustomHubFilter {
+public class InspireRecipientMissingManagerFilter extends OAObject implements CustomHubFilter<InspireRecipient> {
     private static final long serialVersionUID = 1L;
 
 

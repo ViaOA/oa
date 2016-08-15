@@ -15,7 +15,7 @@ import java.util.Calendar;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "Today", displayName = "Today", hasInputParams = false)
-public class ScheduleTodayFilter extends OAObject implements CustomHubFilter {
+public class ScheduleTodayFilter extends OAObject implements CustomHubFilter<Schedule> {
     private static final long serialVersionUID = 1L;
 
 
@@ -72,6 +72,7 @@ public class ScheduleTodayFilter extends OAObject implements CustomHubFilter {
         return filter;
     }
 
+    @Override
     public boolean isUsed(Schedule schedule) {
         boolean bResult = schedule.getIsForToday();
         return bResult;

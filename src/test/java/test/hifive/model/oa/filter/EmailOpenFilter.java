@@ -13,7 +13,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "Open", displayName = "Open Emails", hasInputParams = false)
-public class EmailOpenFilter extends OAObject implements CustomHubFilter {
+public class EmailOpenFilter extends OAObject implements CustomHubFilter<Email> {
     private static final long serialVersionUID = 1L;
 
     public static final String PPCode = ":Open()";

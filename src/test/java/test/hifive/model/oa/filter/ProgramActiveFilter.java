@@ -14,7 +14,7 @@ import java.util.*;
 
 @OAClass(useDataSource=false, localOnly=true)
 @OAClassFilter(name = "Active", displayName = "Active", hasInputParams = false)
-public class ProgramActiveFilter extends OAObject implements CustomHubFilter {
+public class ProgramActiveFilter extends OAObject implements CustomHubFilter<Program> {
     private static final long serialVersionUID = 1L;
 
     public static final String PPCode = ":Active()";
@@ -81,6 +81,7 @@ public class ProgramActiveFilter extends OAObject implements CustomHubFilter {
         return cacheFilter;
     }
 
+    @Override
     public boolean isUsed(Program program) {
         OADate now = new OADate();
         OADate d = program.getInactiveDate();
