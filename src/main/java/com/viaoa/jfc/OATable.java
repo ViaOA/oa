@@ -3244,13 +3244,13 @@ if (!getKeepSorted()) hub.cancelSort();
 
         // have the component customize
         OATableComponent oacomp = null;
+        int x = (tableLeft == null) ? 0 : tableLeft.columns.size();
         if (tableLeft != null && column < tableLeft.columns.size()) {
             OATableColumn tc = (OATableColumn) tableLeft.columns.elementAt(column);
             oacomp = tc.getOATableComponent();
 
         }
-        else if (column >= 0 && column < columns.size()) {
-            int x = (tableLeft == null) ? 0 : tableLeft.columns.size();
+        else if (column >= 0 && (column-x) < columns.size()) {
             OATableColumn tc = (OATableColumn) columns.elementAt(column-x);
             oacomp = tc.getOATableComponent();
         }
