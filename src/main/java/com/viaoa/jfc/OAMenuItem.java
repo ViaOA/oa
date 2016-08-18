@@ -297,6 +297,10 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         if (bText) setText(cmd.name());
         if (bToolTip) {
             String s = cmd.name();
+            if (cmd == ButtonCommand.Other) s = "";
+            else if (s.indexOf("Manual") > 0) {
+                s = s.substring(0, s.length()-6);
+            }
             if (getHub() != null) {
                 String s2 = getHub().getObjectClass().getSimpleName();
                 s2 = com.viaoa.util.OAString.convertHungarian(s2);

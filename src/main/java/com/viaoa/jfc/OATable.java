@@ -977,6 +977,7 @@ if (!getKeepSorted()) hub.cancelSort();
                 comp = getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged(row, column), bMouseOver);
             }
             if (comp == null) comp = compOrig;
+
             return comp;
         }
     }
@@ -3200,6 +3201,15 @@ if (!getKeepSorted()) hub.cancelSort();
      *      which is called by this method after it sets the defaults.
      */
     public Component getRenderer(Component comp, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
+        try {
+            comp = _getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+        }
+        catch (Exception e) {
+            LOG.log(Level.WARNING, "Error in table rendering", e);
+        }
+        return comp;
+    }
+    protected Component _getRenderer(Component comp, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
         JLabel lbl = null;
         // 1of3: set default settings
         if (!(comp instanceof JLabel)) {

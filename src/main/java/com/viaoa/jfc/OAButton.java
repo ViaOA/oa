@@ -19,6 +19,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.event.*;
 
+import com.viaoa.jfc.OAButton.ButtonCommand;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.table.OAButtonTableCellEditor;
@@ -321,7 +322,8 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         }
         if (bToolTip) {
             String s = cmd.name();
-            if (s.indexOf("Manual") > 0) {
+            if (cmd == ButtonCommand.Other) s = "";
+            else if (s.indexOf("Manual") > 0) {
                 s = s.substring(0, s.length()-6);
             }
             if (getHub() != null) {
