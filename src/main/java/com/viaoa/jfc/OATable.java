@@ -1974,7 +1974,9 @@ if (!getKeepSorted()) hub.cancelSort();
                                                                             // "removeEditor();"
                         obj = hub.elementAt(row);
                         hub.elementAt(row + 5);
-                        hubAdapter.onNewList(null);
+                        
+                        // 20160818 removed, not needed, afterFetchMore will handle this
+                        //was: hubAdapter.onNewList(null);
 
                         // make sure cell is visible
                         int pos = hub.getPos(obj);
@@ -3828,7 +3830,11 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
 
     public @Override void afterFetchMore(HubEvent e) {
-        onNewList(e);
+        // 20160818
+        int x = getHub().getSize();
+        if (x > 0) x--;
+        table.oaTableModel.fireTableRowsUpdated(0, x);
+        //was: onNewList(e);
     }
 }
 
