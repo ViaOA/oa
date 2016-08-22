@@ -75,7 +75,7 @@ public @interface OAMany {
     String uniqueProperty() default ""; 
     
     String sortProperty() default "";
-    boolean sortAsc() default false;
+    boolean sortAsc() default true;
 
     String[] dependentProperties() default {};
 

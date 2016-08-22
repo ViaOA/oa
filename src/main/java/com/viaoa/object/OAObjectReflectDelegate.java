@@ -520,17 +520,38 @@ public class OAObjectReflectDelegate {
                     }
                 }
                 
-                // check to see if there needs to be a seq
-                if (sortOrder != null && sortOrder.length() > 0) {
-                    if (bSequence) {
-                        if (HubDelegate.getAutoSequence(hub) == null) {
-                            hub.setAutoSequence(sortOrder); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
-                        }
+                // sort, seq, asc
+                boolean bSortAsc = true;
+                String seqProperty;
+                if (bSequence) {
+                    String s = linkInfo.getSeqProperty();
+                    if (OAString.notEmpty(s)) seqProperty = s;
+                    else seqProperty = sortOrder;
+                    if (OAString.isEmpty(seqProperty)) {
+                        bSequence = false;
                     }
-                    else if (HubSortDelegate.getSortListener(hub) == null){
-                        // keep the hub sorted on server only
-                        HubSortDelegate.sort(hub, sortOrder, true, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
+                }
+                else {
+                    seqProperty = linkInfo.getSeqProperty();
+                    bSequence = OAString.notEmpty(seqProperty);
+                }
+                if (bSequence) {
+                    sortOrder = null;
+                    bSortAsc = false;
+                }
+                else if (OAString.isEmpty(sortOrder)) {
+                    sortOrder = linkInfo.getSortProperty();
+                    bSortAsc = linkInfo.isSortAsc();
+                }
+                
+                if (bSequence) {
+                    if (HubDelegate.getAutoSequence(hub) == null) {
+                        hub.setAutoSequence(seqProperty); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
                     }
+                }
+                else if (OAString.notEmpty(sortOrder) && HubSortDelegate.getSortListener(hub) == null){
+                    // keep the hub sorted on server only
+                    HubSortDelegate.sort(hub, sortOrder, bSortAsc, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
                 }
             }
         }
@@ -567,19 +588,31 @@ public class OAObjectReflectDelegate {
         boolean bIsCalc = (linkInfo != null && linkInfo.bCalculated);
         boolean bIsServerSideCalc = (linkInfo != null && linkInfo.bServerSideCalc);
       
-        // 20141109 need to check for sortProp, sortAsc, 
-        if (sortOrder == null  && linkInfo != null) {
-            sortOrder = linkInfo.getSortProperty();
-        }
-        // 20141109 need to check for seqProp, seqAsc, 
-        if (!bSequence && linkInfo != null) {
+        // sort, seq, asc
+        boolean bSortAsc = true;
+        String seqProperty;
+        if (bSequence) {
             String s = linkInfo.getSeqProperty();
-            if (!OAString.isEmpty(s)) {
-                sortOrder = s;
-                bSequence = true;
+            if (OAString.notEmpty(s)) seqProperty = s;
+            else seqProperty = sortOrder;
+            if (OAString.isEmpty(seqProperty)) {
+                bSequence = false;
             }
         }
+        else {
+            seqProperty = linkInfo.getSeqProperty();
+            bSequence = OAString.notEmpty(seqProperty);
+        }
+        if (bSequence) {
+            sortOrder = seqProperty;
+            bSortAsc = true;
+        }
+        else if (OAString.isEmpty(sortOrder)) {
+            sortOrder = linkInfo.getSortProperty();
+            bSortAsc = linkInfo.isSortAsc();
+        }
 
+        
         Hub hub = null;
         if (propertyValue == null) { 
             // since it is in props with a null, then it was placed that way to mean it has 0 objects
@@ -762,15 +795,19 @@ public class OAObjectReflectDelegate {
                 select.cancel();
                 HubDataDelegate.resizeToFit(hub);
             }
-            if (bThisIsServer && sortOrder != null && sortOrder.length() > 0) {
+            
+            if (bThisIsServer) {
                 if (bSequence) {
-                    hub.setAutoSequence(sortOrder); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
+                    if (HubDelegate.getAutoSequence(hub) == null) {
+                        hub.setAutoSequence(seqProperty); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
+                    }
                 }
-                else {
+                else if (HubSortDelegate.getSortListener(hub) == null){
                     // keep the hub sorted on server only
-                    HubSortDelegate.sort(hub, sortOrder, true, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
+                    HubSortDelegate.sort(hub, sortOrder, bSortAsc, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
                 }
-            }
+            }            
+            
             // 20110505 autoMatch propertyPath
             String matchProperty = linkInfo.getMatchProperty();
             if (matchProperty != null && matchProperty.length() > 0) {
