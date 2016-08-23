@@ -47,7 +47,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     boolean mustBeEmptyForDelete; // this link must be emtpy before other side can be deleted
     private String uniqueProperty;  // unique propertyPath
     private String sortProperty;  // sort propetyPath
-    private boolean sortAsc;  // sort ascending
+    private boolean sortAsc=true;  // sort ascending
     private String seqProperty;  // sequence propetyPath
     private boolean isImportMatch;
     

@@ -486,8 +486,7 @@ public class OAObjectReflectDelegate {
             hub = (Hub) obj;
             
             // return if not server
-            if (OAObjectCSDelegate.isServer(oaObj)) {
-
+            if (OASync.isServer(oaObj)) {
                 // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))
                 if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
     
@@ -552,6 +551,21 @@ public class OAObjectReflectDelegate {
                 else if (OAString.notEmpty(sortOrder) && HubSortDelegate.getSortListener(hub) == null){
                     // keep the hub sorted on server only
                     HubSortDelegate.sort(hub, sortOrder, bSortAsc, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
+                }
+            }
+            else {
+                // client needs a sort listener
+                boolean bAsc = true;
+                String s = HubSortDelegate.getSortProperty(hub); // use sort order from orig hub
+                if (OAString.isEmpty(s)) s = sortOrder;
+                else bAsc = HubSortDelegate.getSortAsc(hub);
+                if (!bSequence && !OAString.isEmpty(s) && !HubSortDelegate.isSorted(hub)) {
+                    // client recvd hub that has sorted property, without sortListener, etc.
+                    // note: serialized hubs do not have sortListener created - must be manually done
+                    //      this is done here (after checking first), for cases where references are serialized in a CS call.
+                    //      - or during below, when it is directly called.
+                    HubSortDelegate.sort(hub, s, bAsc, null, true);// dont sort, or send out sort msg
+                    hub.resort(); // this will not send out event
                 }
             }
         }
@@ -802,7 +816,7 @@ public class OAObjectReflectDelegate {
                         hub.setAutoSequence(seqProperty); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
                     }
                 }
-                else if (HubSortDelegate.getSortListener(hub) == null){
+                else if (OAString.notEmpty(sortOrder) && HubSortDelegate.getSortListener(hub) == null){
                     // keep the hub sorted on server only
                     HubSortDelegate.sort(hub, sortOrder, bSortAsc, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
                 }

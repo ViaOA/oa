@@ -267,13 +267,11 @@ public class OAAnnotationDelegate {
             s = annotation.sortProperty();
             if (s != null && s.length() == 0) s = null;
             li.setSortProperty(s);
+            li.setSortAsc(annotation.sortAsc());
             
-            //qqq add sortAscending (boolean)
-
             s = annotation.seqProperty();
             if (s != null && s.length() == 0) s = null;
             li.setSeqProperty(s);
-            
             
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());

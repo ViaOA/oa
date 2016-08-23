@@ -97,7 +97,7 @@ public class HubSortDelegate {
             if (!bAlreadySortedAndLocalOnly) performSort(thisHub);
         }
         else { // cancel sort
-            thisHub.data.setSortAsc(false);
+            thisHub.data.setSortAsc(true);
         }
         
         if (!bAlreadySortedAndLocalOnly) {  // otherwise, no other client has this hub yet
