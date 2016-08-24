@@ -62,11 +62,14 @@ import java.math.*;
     MoneyFormat       = \u00A4#,##0.00
     BooleanFormat     = true;false;null
     
+    ALSO** support for OAString.format 
+    
     </pre>
 
     <p>
     NOTE: this also does rounding when digits are truncated.  
     @see OAConverter
+    @see OAString#format(double, String)
   */
 public class OAConverterNumber implements OAConverterInterface {
 
@@ -219,6 +222,11 @@ public class OAConverterNumber implements OAConverterInterface {
     protected Object convertFromNumber(Class toClass, Number numValue, String fmt) {
         if (toClass.equals(String.class)) {
             if (fmt == null) return numValue.toString();
+            
+            if (fmt.length() > 1 && fmt.indexOf('R') >= 0 || fmt.indexOf('L') >= 0 || fmt.indexOf('C') >= 0) {
+                return OAString.format(numValue.toString(), fmt);
+            }
+            
             String s = null;
             FormatPool fp = getFormatter(fmt);
             try {

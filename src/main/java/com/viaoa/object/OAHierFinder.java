@@ -35,11 +35,16 @@ public class OAHierFinder<F extends OAObject> {
     private String strPropertyPath;
     private OAPropertyPath propertyPath;
     private Object foundValue;
+    private boolean bIncludeFromObject;
 
     
     public OAHierFinder(String propertyName, String propertyPath) {
+        this(propertyName, propertyPath, true);
+    }
+    public OAHierFinder(String propertyName, String propertyPath, boolean bIncludeFromObject) {
         this.property = propertyName;
         this.strPropertyPath = propertyPath;
+        this.bIncludeFromObject = bIncludeFromObject;
     }
     
     public Object findFirst(F fromObject, OAFilter filter) {
@@ -69,7 +74,7 @@ public class OAHierFinder<F extends OAObject> {
         if (obj == null) return false;
         
         boolean b = true;
-        if (pos == 0) {
+        if (pos == 0 && bIncludeFromObject) {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
             OAPropertyInfo pi = oi.getPropertyInfo(property);
             if (pi == null) {
