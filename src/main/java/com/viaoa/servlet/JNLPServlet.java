@@ -83,7 +83,16 @@ public class JNLPServlet extends HttpServlet
         s = getServletContext().getServerInfo();  // jetty/7.6.0.v20120127
         s = getServletContext().getServletContextName(); // "/"
         s = getServletContext().getMajorVersion()+"";  // "2"
+        s = req.getServerName();
+        s = req.getLocalPort()+"";
+        s = req.getProtocol(); //  "HTTP/1.1"
+        s = req.getRealPath("test");  // "C:\Projects\java\gohi5\webcontent\test"
+        s = req.getRequestURI();  // "/jnlp/testx.jnlp"
+        s = req.getRequestURL()+"";  // "http://localhost:8082/jnlp/testrs.jnlp"
         */
+        s = req.getRequestURL()+"";
+        final String hostNameAndPort = OAString.field(s, "/", 3);
+                
 
         String path = getServletContext().getContextPath(); // ""
         path = getServletContext().getRealPath(path);  // C:\Projects\java\Hifive\webcontent
@@ -92,9 +101,11 @@ public class JNLPServlet extends HttpServlet
             webcontentDirectory = path;
         }
         
+        /*was 20160825
         String hostNameAndPort = req.getServerName();  // "localhost"
         int x = req.getLocalPort();  // 8082
         if (x > 0) hostNameAndPort += ":" + x;
+        */
         
         String scheme = req.getScheme();
                 
@@ -163,6 +174,13 @@ public class JNLPServlet extends HttpServlet
                     if (hs != null && hs.contains(n.toUpperCase())) continue; // overwritten from query string 
                     String v = entry.getValue();
                     if (v == null) v = "";
+                    
+                    if ("server".equalsIgnoreCase(n)) {
+                        String s2 = OAString.field(hostNameAndPort, ":", 2);
+                        if (OAString.isEmpty(s2)) s2 = hostNameAndPort;
+                        v = s2;
+                    }
+                    
                     s += n+"="+v+"</argument><argument>";
                 }
                 
