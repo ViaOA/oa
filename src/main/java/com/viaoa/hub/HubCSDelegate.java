@@ -128,9 +128,11 @@ public class HubCSDelegate {
         OAObject master = (OAObject) thisHub.datam.masterObject;
 	    if (OAObjectInfoDelegate.getOAObjectInfo(master).getLocalOnly()) return;
 
-	    if (thisHub.isFetching()) {
+	    /* 20160826 removed, since this is only needed when loading oaobj.hub, which already suppresses messages when loading
+	    if (OASync.isServer() && thisHub.isFetching()) {
 	        return; // 20140309
 	    }
+	    */
 	    
 	    // 20140314 dont need to send if masterObject is only on client so far
         if (OAObjectCSDelegate.isInNewObjectCache(thisHub.datam.masterObject)) {
