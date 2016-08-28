@@ -1365,6 +1365,27 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths, bActiveObjectOnly, bUseBackgroundThread);
     }
 
+    // 20160827
+    /**
+     * add a trigger to this hub that will send a property change event.
+     * @param hl listener
+     * @param property name of property for afterPropertyChange event
+     * @param propertyPath to listen to
+     */
+    public void addTriggerListener(HubListener<TYPE> hl, final String property, String propertyPath) {
+        OATriggerListener tl = new OATriggerListener() {
+            @Override
+            public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
+                HubEventDelegate.fireCalcPropertyChange(Hub.this, obj, property);
+            }
+        };
+        OATrigger trigger = OATriggerDelegate.createTrigger(property, getObjectClass(), tl, new String[] {propertyPath}, true, false, false, true);
+    }
+    public void removeTriggerListener(HubListener<TYPE> hl) {
+        //qqqqqqqqq to do qqqqqqqqqqqqqqqqq
+    }
+    
+    
     /**
      * Add a Listener to this hub specifying a specific property name and list
      * of property paths. The Hub will automatically set up internal listeners

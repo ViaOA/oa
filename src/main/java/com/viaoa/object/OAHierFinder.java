@@ -74,16 +74,19 @@ public class OAHierFinder<F extends OAObject> {
         if (obj == null) return false;
         
         boolean b = true;
-        if (pos == 0 && bIncludeFromObject) {
-            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
-            OAPropertyInfo pi = oi.getPropertyInfo(property);
-            if (pi == null) {
-                OALinkInfo li = oi.getLinkInfo(property);
-                if (li == null) b = false;
-                else {
-                    if (li.getCalculated()) {
-                        if (li.getDependentProperties() != null) {
-                            b = false;
+        if (pos == 0) {
+            if (!bIncludeFromObject) b = false;
+            else {
+                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
+                OAPropertyInfo pi = oi.getPropertyInfo(property);
+                if (pi == null) {
+                    OALinkInfo li = oi.getLinkInfo(property);
+                    if (li == null) b = false;
+                    else {
+                        if (li.getCalculated()) {
+                            if (li.getDependentProperties() != null) {
+                                b = false;
+                            }
                         }
                     }
                 }

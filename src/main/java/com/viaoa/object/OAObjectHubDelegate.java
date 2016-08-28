@@ -272,7 +272,7 @@ public class OAObjectHubDelegate {
                     if (objx == null) break;
                     if (objx == oaObj) continue;
                     WeakReference[] wrs = objx.weakhubs;
-                    if (wrs != null && wrs.length == 1 && wrs[0].get() == hub) {
+                    if (wrs != null && wrs.length == 1 && wrs[0] != null && wrs[0].get() == hub) {
                         oaObj.weakhubs = wrs;
                         bReused = true;
                         break;

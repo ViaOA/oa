@@ -530,11 +530,13 @@ public class OAObjectPropertyDelegate {
         
         boolean bSupportStorage = oi.getSupportsStorage();
         
-        
         for (OALinkInfo li : oi.getLinkInfos()) {
+            if (li.getType() != OALinkInfo.ONE) continue;
             OALinkInfo liRev = li.getReverseLinkInfo();
             if (liRev == null) continue;
             if (liRev.getType() != OALinkInfo.MANY) continue;
+            if (liRev.getTransient()) continue;
+            if (!OAObjectPropertyDelegate.isPropertyLoaded(obj, li.getName())) continue; // 20160827 added
             
             Object parent = li.getValue(obj); // parent
             if (!(parent instanceof OAObject)) continue;

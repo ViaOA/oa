@@ -52,7 +52,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
 
     // listener setup for dependent properties
     private static AtomicInteger aiUniqueNameCnt = new AtomicInteger();
-    private String calcDependentPropertyName;
+    private volatile String calcDependentPropertyName;
     private String[] dependentPropertyNames;
     private HubListener hlDependentProperties;
     
@@ -174,6 +174,8 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             if (hubMaster != null) hubMaster.removeHubListener(hlDependentProperties);
             hlDependentProperties = null;
         }
+        //qqqqqqqqqqq
+        // todo remove any created triggers
     }
     
 
@@ -189,7 +191,20 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         if (bClosed) return;
         _addProperty(prop, bRefesh);
     }
-
+    
+    // 20160827
+    public void addTrigger(String propPath) {
+        final String name = "HubFilter" + (aiUniqueNameCnt.incrementAndGet());
+        hubMaster.addHubListener(new HubListenerAdapter<T>() {
+            @Override
+            public void afterPropertyChange(HubEvent<T> e) {
+                if (!name.equalsIgnoreCase(e.getPropertyName())) return;
+                update(e.getObject(), false);
+            }
+        }, name, propPath);
+    }
+    
+    
     /** 
      * Add a dependent property from an oaObj, which will call refresh.
      */
@@ -231,7 +246,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         
         final String propName = s;
         
-        //todo:  need to all remove hl on close        
+        //todo:  need to add remove hl on close        
         HubListener hl = new HubListenerAdapter() {
             @Override
             public void afterChangeActiveObject(HubEvent e) {

@@ -17,6 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 
 /**
@@ -547,10 +548,12 @@ public class HubEventDelegate {
 	        }
 	    }
 	    
+	    /* 20160827 removed, since it is done when obj is changed, or when a Hub has a add/insert/remove
 	    // 20160110 
-	    if (oaObj != null && !oaObj.isLoading()) {
+	    if (linkInfo != null && oaObj != null && !oaObj.isLoading() && OASync.isServer()) {
 	        HubDelegate.setReferenceable(thisHub, true);
 	    }
+	    */
 	}
 	
 	/**
