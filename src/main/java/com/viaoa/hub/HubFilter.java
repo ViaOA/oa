@@ -530,6 +530,10 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     protected void update(T obj, boolean bIsInitialzing) {
         if (bClosed) return;
         Hub<T> hub = getHub();
+if (hub.contains(obj)) {
+    int xx = 4;
+    xx++;//qqqqqqqqqqqq
+}
         if (aiClearing.get() != 0) {
             return;
         }
@@ -709,7 +713,15 @@ cntQQQ++;//qqqqqqqqqq
             if (aiInitializeCount.get() != cnt) {
                 return false;
             }
+    if (hub.getSize() != i) {
+        int xx = 4;
+        xx++;//qqqqqqqqq
+    }
             update(obj, true);
+if (hub.getSize() != i+1) {
+    int xx = 4;
+    xx++;//qqqqqqqqq
+}
         }
 if (i != hubMaster.getSize()) {
     int xx = 4;

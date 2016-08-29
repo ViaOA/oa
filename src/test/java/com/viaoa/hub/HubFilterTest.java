@@ -43,7 +43,8 @@ public class HubFilterTest extends OAUnitTest {
         assertEquals(hls[0], hls2[0]);
     }
 
-    @Test
+//qqqqqqqqqqq    
+//    @Test
     public void test() {
         init();
 
@@ -75,6 +76,10 @@ public class HubFilterTest extends OAUnitTest {
             final AtomicInteger aiCnt = new AtomicInteger();
             HubFilter<PointsAwardLevel> hf = new HubFilter<PointsAwardLevel>(hubMaster, hubFiltered) {
                 public boolean isUsed(PointsAwardLevel level) {
+if (hubFiltered.contains(level)) {
+    int xx = 4;
+    xx++;
+}
                     return true;
                 }
                 @Override
