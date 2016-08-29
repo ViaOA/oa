@@ -530,7 +530,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     protected void update(T obj, boolean bIsInitialzing) {
         if (bClosed) return;
         Hub<T> hub = getHub();
-        if (aiClearing.get() != 0) return;
+        if (aiClearing.get() != 0) {
+            return;
+        }
         try {
             if (bServerSideOnly) { // 20120425
                 OARemoteThreadDelegate.sendMessages(true); // so that events will go out, even if OAClientThread
@@ -545,9 +547,22 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                             if (hubMaster == null || hubMaster.contains(obj)) {
                                 addObject(obj, bIsInitialzing);
                             }
+                            else {
+                                int xx = 4;
+                                xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
+                            }
+                        }
+                        else {
+                            int xx = 4;
+                            xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
                         }
                     }
                     else {
+
+                        int xx = 4;
+                        xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
+                        
+                        
                         // 2004/08/07 see if object is used by AO in HubLink
                         if (hubLink != null) {
                             Object objx = hubLink.getAO();
@@ -575,6 +590,14 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                         }
                     }
                 }
+                else {
+                    int xx = 4;
+                    xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
+                }
+            }
+            else {
+                int xx = 4;
+                xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
             }
         }
         finally {
@@ -671,18 +694,31 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         if (bCompleted) afterInitialize();
     }    
     
+public int cntQQQ = 0;    
     private boolean _initialize(final int cnt) {
         Hub<T> hub = getHub();
         if (hub == null) return false;
         if (bClosed) return false;
-        for (int i=0; hubMaster!=null;i++) {
+        int i = 0;
+        for (; hubMaster!=null;i++) {
             T obj = hubMaster.elementAt(i);
-            if (obj == null) break;
+cntQQQ++;//qqqqqqqqqq            
+            if (obj == null) {
+                break;
+            }
             if (aiInitializeCount.get() != cnt) {
                 return false;
             }
             update(obj, true);
         }
+if (i != hubMaster.getSize()) {
+    int xx = 4;
+    xx++;//qqqqqqqqqqq
+}
+if (i < 200) {
+    int xx = 4;
+    xx++;//qqqqqqqqqqq
+}
         
         // get linkToHub.prop value
         if (hubLink != null) {

@@ -31,7 +31,7 @@ public class OADataSourceAuto extends OADataSource {
     private Hub hubNextNumber; // new numbers for seq ids
 
     public OADataSourceAuto() {
-        this(null);
+        this(true);
     }
     public OADataSourceAuto(boolean bMakeLastDataSource) {
         this(null);

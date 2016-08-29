@@ -32,13 +32,10 @@ public class HubSelectDelegateTest extends OAUnitTest {
         OASelect<Server> sel = new OASelect<Server>(Server.class);
         assertFalse(sel.hasBeenStarted());
         
-        assertFalse(hub.data.isInFetch());
         HubSelectDelegate.fetchMore(hub, sel, 10);
         assertTrue(sel.hasBeenStarted());
         assertEquals(10, hub.getCurrentSize());
         assertEquals(10, hub.getSize());
-        assertFalse(hub.data.isInFetch());
-        assertEquals(hub.data.isInFetch(), HubSelectDelegate.isFetching(hub));
         
         assertFalse(HubSelectDelegate.isMoreData(hub));
         assertTrue(sel.hasBeenStarted());

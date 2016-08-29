@@ -107,12 +107,12 @@ public class OAObjectInfoDelegateTest extends OAUnitTest {
         
         // if a hub is being loaded, then it should not act like a change, and loc.hubEmps should still be weakRef 
         hubEmps.setLoading(true);
-        OAThreadLocalDelegate.setLoadingObject(true);
+        OAThreadLocalDelegate.setLoading(true);
         emp = new Employee();
         hubEmps.add(emp);
         emp.save();
         hubEmps.setLoading(false);
-        OAThreadLocalDelegate.setLoadingObject(false);
+        OAThreadLocalDelegate.setLoading(false);
         obj = OAObjectPropertyDelegate.getProperty(loc, Location.P_Employees);
         assertTrue(obj instanceof WeakReference);
         obj = OAObjectPropertyDelegate.getProperty(program, Location.P_Locations);

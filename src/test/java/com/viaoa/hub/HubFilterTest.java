@@ -62,32 +62,48 @@ public class HubFilterTest extends OAUnitTest {
 
         PointsAwardLevel pal = new PointsAwardLevel();
         hubMaster.add(pal);
-        // should have cause hubFilters to be closed
+        // should have caused hubFilters to be closed
     }
 
     public void _test(final Hub<PointsAwardLevel> hubMasterMain) {
         System.out.println("HubFilterTest, thread="+Thread.currentThread().getName());
         for (int i=0; i<50; i++) {
             final Hub<PointsAwardLevel> hubMaster = hubMasterMain.createSharedHub();
-            Hub<PointsAwardLevel> hubFiltered = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
+            final Hub<PointsAwardLevel> hubFiltered = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
             //hubMaster.copyInto(hubFiltered);
 
+            final AtomicInteger aiCnt = new AtomicInteger();
             HubFilter<PointsAwardLevel> hf = new HubFilter<PointsAwardLevel>(hubMaster, hubFiltered) {
                 public boolean isUsed(PointsAwardLevel level) {
                     return true;
                 }
+                @Override
+                protected void addObject(PointsAwardLevel obj, boolean bIsInitialzing) {
+                    aiCnt.incrementAndGet();
+                    int x = hubFiltered.getSize();
+                    super.addObject(obj, bIsInitialzing);
+                    int x2 = hubFiltered.getSize();
+                    if (x+1 != x2) {
+                        int xx = 4;
+                        xx++;//qqqqq
+                    }
+                }
             }; 
+/*qqqqq            
             hf.addDependentProperty("id");
             if (i % 5 == 0) hf.addDependentProperty(PointsAwardLevelPP.location().id());
-            
+*/            
             int x = hubFiltered.getSize();
-            
-
             if (i % 5 == 0) {
                 for (int j=0; j<1; j++) System.gc();
             }
             
             //System.out.println("i="+i+", hubFiltered.getSize="+hubFiltered.getSize());
+
+if (hubFiltered.getSize() != 200) {
+    int xx = 4;
+    xx++;
+}
             
             assertEquals(200, hubFiltered.getSize());
             // hf.close();
@@ -99,7 +115,7 @@ public class HubFilterTest extends OAUnitTest {
     @Test
     public void test2() {
         OAObjectHubDelegate.ShowWarnings = false;
-        final int max = 5;
+        final int max = 5;//qqqqqqq change back to 5
         
 
         final Hub<PointsAwardLevel> hubMaster1 = new Hub<PointsAwardLevel>(PointsAwardLevel.class);
@@ -140,7 +156,7 @@ public class HubFilterTest extends OAUnitTest {
                         countDownLatch.countDown();
                     }
                 }
-            });
+            }, "ThreadX."+i);
             t.start();
         }
         

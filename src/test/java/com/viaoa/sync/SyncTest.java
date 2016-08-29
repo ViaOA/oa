@@ -39,10 +39,10 @@ public class SyncTest extends OAUnitTest {
         
 
         // create sample object on server
-        OAThreadLocalDelegate.setLoadingObject(true);
+        OAThreadLocalDelegate.setLoading(true);
         serverTest = new Server();
         serverTest.setId(1);
-        OAThreadLocalDelegate.setLoadingObject(false);
+        OAThreadLocalDelegate.setLoading(false);
         
         serverTest.setName("test");
         

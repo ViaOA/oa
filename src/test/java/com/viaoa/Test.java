@@ -71,7 +71,7 @@ public class Test {
 
         env = new Environment();
         
-        OAThreadLocalDelegate.setLoadingObject(true);
+        //OAThreadLocalDelegate.setLoading(true);
         
         // env.setName("env");  keep null until done
         
@@ -98,7 +98,7 @@ public class Test {
                 }
             }
         }
-        OAThreadLocalDelegate.setLoadingObject(false);
+        //OAThreadLocalDelegate.setLoading(false);
         System.out.println("server ready");
     }
 

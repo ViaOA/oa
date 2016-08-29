@@ -65,8 +65,6 @@ public class Test {
 
         env = new Environment();
         
-        OAThreadLocalDelegate.setLoadingObject(true);
-        
         // env.setName("env");  keep null until done
         
         env.setNew(false);
@@ -92,7 +90,6 @@ public class Test {
                 }
             }
         }
-        OAThreadLocalDelegate.setLoadingObject(false);
         System.out.println("server ready");
     }
 

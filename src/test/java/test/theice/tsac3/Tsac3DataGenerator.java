@@ -29,8 +29,6 @@ public class Tsac3DataGenerator {
     }
     
     public void createSampleData() {
-        OAThreadLocalDelegate.setLoadingObject(true);
-
         for (int i=0; i<10; i++) {
             ServerType st = new ServerType();
             st.setName("ServerType."+i);
@@ -90,7 +88,6 @@ public class Tsac3DataGenerator {
             }
             site.save(OAObject.CASCADE_ALL_LINKS);
         }
-        OAThreadLocalDelegate.setLoadingObject(false);
     }
 
     public void runSampleThread() {

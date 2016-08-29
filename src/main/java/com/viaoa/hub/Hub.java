@@ -2176,5 +2176,12 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         return HubEventDelegate.canChangeProperty(this, obj, prop, oldValue, newValue);
     }
     
+    public void setLoading(boolean b) {
+        OAThreadLocalDelegate.setLoading(b);
+    }
+    public boolean isLoading() {
+        return OAThreadLocalDelegate.isLoading();
+    }
+    
     // public transient boolean DEBUG; // for debugging
 }

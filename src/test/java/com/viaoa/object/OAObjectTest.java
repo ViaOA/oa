@@ -21,13 +21,12 @@ public class OAObjectTest extends OAUnitTest {
     @Test
     public void constructorTest() {
         reset();
-        assertFalse(OAThreadLocalDelegate.isLoadingObject());
+        assertFalse(OAThreadLocalDelegate.isLoading());
         Server server = new Server();
         
-        assertFalse(OAThreadLocalDelegate.isLoadingObject());
+        assertFalse(OAThreadLocalDelegate.isLoading());
         assertTrue(server.isNew());
         assertTrue(server.isChanged());
-        assertFalse(OAThreadLocalDelegate.isSkipObjectInitialize());
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(Server.class);
         String[] ps = oi.getPrimitiveProperties();

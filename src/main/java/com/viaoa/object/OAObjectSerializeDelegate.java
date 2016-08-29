@@ -66,6 +66,13 @@ public class OAObjectSerializeDelegate {
                         continue;
                     }
                 }
+                
+                if (value instanceof IODummy) value = null;
+                if (value instanceof Hub) {
+                    Hub hx = (Hub) value;
+                    if (hx.getObjectClass().equals(IODummy.class)) value = null;
+                }
+                
             }
             OAObjectPropertyDelegate.unsafeSetPropertyIfEmpty(oaObj, key, value);  // HubSerializeDelegate._readResolve could have set this first (as weakref)
         }

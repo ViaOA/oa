@@ -221,7 +221,8 @@ public class OAObjectHubDelegate {
         WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
         int cnt = 0;
         for (int i = 0; refs != null && i < refs.length; i++) {
-            if (refs[i] != null && refs[i].get() == hub) return true;
+            WeakReference wr = refs[i];
+            if (wr != null && wr.get() == hub) return true;
         }
         return false;
     }

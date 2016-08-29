@@ -1,5 +1,6 @@
 package test.theice.tsac;
 
+import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
@@ -21,7 +22,6 @@ public class DataGenerator {
     }
     
     public void createSampleData1() {
-        OAThreadLocalDelegate.setLoadingObject(true);
 
         for (int i=0; i<10; i++) {
             ApplicationType st = new ApplicationType();
@@ -83,7 +83,6 @@ public class DataGenerator {
             }
             site.save(OAObject.CASCADE_ALL_LINKS);
         }
-        OAThreadLocalDelegate.setLoadingObject(false);
     }
 
     public void runRandomChangesThread() {
