@@ -164,7 +164,8 @@ public class HubData implements java.io.Serializable {
             getHubDatax().refresh = refresh;
         }
     }
-    
+
+//20160828qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq remove this???QQQQQQQQQQQQQQQQQQQQQQQQQ    
     private static ConcurrentHashMap<HubData, HubData> hmLoadingAllData = new ConcurrentHashMap<HubData, HubData>(11, .85f);
     public boolean isLoadingAllData() {
         return hmLoadingAllData.contains(this);
@@ -174,16 +175,6 @@ public class HubData implements java.io.Serializable {
         else hmLoadingAllData.remove(this);
     }
 
-    private static ConcurrentHashMap<HubData, HubData> hmInFetch = new ConcurrentHashMap<HubData, HubData>(11, .85f);
-    public boolean isInFetch() {
-        return hmInFetch.contains(this);
-    }
-    public void setInFetch(boolean bInFetch) {
-        if (bInFetch) hmInFetch.put(this, this);
-        else hmInFetch.remove(this);
-    }
-
-    
     private static ConcurrentHashMap<HubData, HubData> hmSelectAllHub = new ConcurrentHashMap<HubData, HubData>(11, .85f);
     public boolean isSelectAllHub() {
         return hmSelectAllHub.contains(this);

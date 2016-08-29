@@ -208,7 +208,7 @@ public class OAObjectReflectDelegate {
             return;
         }
 
-        boolean bIsLoading = OAThreadLocalDelegate.isLoadingObject();
+        boolean bIsLoading = OAThreadLocalDelegate.isLoading();
 
         String propNameU = propName.toUpperCase();
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
@@ -1529,7 +1529,6 @@ public class OAObjectReflectDelegate {
         if (obj instanceof OANotExist) return false;
         
         if (obj instanceof Hub) {
-            if (((Hub) obj).isLoading()) return false;
             return ((Hub) obj).getSize() == 0;
         }
 
@@ -1677,13 +1676,13 @@ public class OAObjectReflectDelegate {
         }
 
         try {
-            OAThreadLocalDelegate.setLoadingObject(true);
+            OAThreadLocalDelegate.setLoading(true);
             OAThreadLocalDelegate.setSuppressCSMessages(true);
             newObject = (OAObject) createNewObject(oaObj.getClass());
             _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
         }
         finally {
-            OAThreadLocalDelegate.setLoadingObject(false);
+            OAThreadLocalDelegate.setLoading(false);
             OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
         return newObject;
@@ -1703,12 +1702,12 @@ public class OAObjectReflectDelegate {
 
     public static void copyInto(OAObject oaObj, OAObject newObject, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew) {
         try {
-            OAThreadLocalDelegate.setLoadingObject(true);
+            OAThreadLocalDelegate.setLoading(true);
             OAThreadLocalDelegate.setSuppressCSMessages(true);
             _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
         }
         finally {
-            OAThreadLocalDelegate.setLoadingObject(false);
+            OAThreadLocalDelegate.setLoading(false);
             OAThreadLocalDelegate.setSuppressCSMessages(false);
         }
     }

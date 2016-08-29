@@ -280,7 +280,7 @@ static PrintWriter printWriter;
             }
 
             if (!bDirty) {
-                OAThreadLocalDelegate.setDataSourceLoadingObject(true);
+                OAThreadLocalDelegate.setLoading(true);
             }
             else bDataSourceLoadingObject = false;
  
@@ -395,7 +395,7 @@ static PrintWriter printWriter;
             ++cnter;
             
             if (bDataSourceLoadingObject) {
-                OAThreadLocalDelegate.setDataSourceLoadingObject(false);
+                OAThreadLocalDelegate.setLoading(false);
                 bDataSourceLoadingObject = false;
             }
             if (bLoadedObject) oaObject.afterLoad();
@@ -417,7 +417,7 @@ static PrintWriter printWriter;
                 oaObject.setChanged(false);
             }
             if (bDataSourceLoadingObject) {
-                OAThreadLocalDelegate.setDataSourceLoadingObject(false);
+                OAThreadLocalDelegate.setLoading(false);
             }
         }
     }    

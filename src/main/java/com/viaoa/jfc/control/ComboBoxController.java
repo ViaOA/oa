@@ -1,13 +1,9 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-*/
+/* Copyright 1999-2015 Vince Via vvia@viaoa.com Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed
+ * to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License. */
 package com.viaoa.jfc.control;
 
 import java.awt.*;
@@ -22,6 +18,7 @@ import com.viaoa.object.OAObject;
 
 /**
  * Functionality for binding JComboBox to OA.
+ * 
  * @author vvia
  */
 public class ComboBoxController extends JFCController implements FocusListener {
@@ -127,8 +124,7 @@ public class ComboBoxController extends JFCController implements FocusListener {
     /**
      * Hub event to updated selected value.
      */
-    public @Override
-    void afterChangeActiveObject(HubEvent evt) {
+    public @Override void afterChangeActiveObject(HubEvent evt) {
         if (getHub() == null) return;
         Object oaObject = getHub().getActiveObject(); // use hub instead of
                                                       // actualHub
@@ -157,8 +153,7 @@ public class ComboBoxController extends JFCController implements FocusListener {
     /**
      * Hub property change event that causes ComboBox to be repainted.
      */
-    public @Override
-    void afterPropertyChange(HubEvent e) {
+    public @Override void afterPropertyChange(HubEvent e) {
         if (isForThisHub(e) && comboBox != null && e.getPropertyName().equalsIgnoreCase(getHubListenerPropertyName())) {
             comboBox.repaint();
         }
@@ -167,8 +162,7 @@ public class ComboBoxController extends JFCController implements FocusListener {
     /**
      * Hub insert event to update row in ComboBox.
      */
-    public @Override
-    void afterInsert(HubEvent e) {
+    public @Override void afterInsert(HubEvent e) {
         if (!isForThisHub(e)) return;
         final int pos = e.getPos();
         if (SwingUtilities.isEventDispatchThread()) {
@@ -186,9 +180,9 @@ public class ComboBoxController extends JFCController implements FocusListener {
     /**
      * Hub add event to add a row in ComboBox.
      */
-    public @Override
-    void afterAdd(HubEvent e) {
-        if (!isForThisHub(e) || HubSelectDelegate.isFetching(getHub())) return;
+    @Override
+    public void afterAdd(HubEvent e) {
+        if (!isForThisHub(e)) return;
         final Object obj = e.getObject();
 
         Hub h = getHub();
@@ -209,8 +203,8 @@ public class ComboBoxController extends JFCController implements FocusListener {
     /**
      * Hub add event to remove a row in ComboBox.
      */
-    public @Override
-    void afterRemove(HubEvent e) {
+    @Override
+    public void afterRemove(HubEvent e) {
         if (!isForThisHub(e)) return;
         final int pos = e.getPos();
         if (pos < 0) return;
@@ -227,11 +221,10 @@ public class ComboBoxController extends JFCController implements FocusListener {
     }
 
     /**
-     * Hub event to notify that a new list of objects has been loaded into the
-     * Hub. The ComboBox will be updated to show new list.
+     * Hub event to notify that a new list of objects has been loaded into the Hub. The ComboBox will be
+     * updated to show new list.
      */
-    public @Override
-    void onNewList(HubEvent e) {
+    public @Override void onNewList(HubEvent e) {
         if (!isForThisHub(e)) return;
         if (myComboBoxModel == null) return;
         final int size = getHub().getSize();
@@ -251,11 +244,9 @@ public class ComboBoxController extends JFCController implements FocusListener {
     }
 
     /**
-     * Hub event to notify that Hub has been sorted. The ComboBox will be
-     * updated to show new list.
+     * Hub event to notify that Hub has been sorted. The ComboBox will be updated to show new list.
      */
-    public @Override
-    void afterSort(HubEvent e) {
+    public @Override void afterSort(HubEvent e) {
         onNewList(e);
     }
 
@@ -316,7 +307,8 @@ public class ComboBoxController extends JFCController implements FocusListener {
                     msg = isValid(obj, obj);
                 }
                 if (msg != null) {
-                    JOptionPane.showMessageDialog(SwingUtilities.getRoot(comboBox), "Invalid selection\n" + msg, "Invalid selection", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(SwingUtilities.getRoot(comboBox), "Invalid selection\n" + msg, "Invalid selection",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -379,21 +371,17 @@ public class ComboBoxController extends JFCController implements FocusListener {
 
     public void focusLost(FocusEvent e) {
     }
-    
+
     public void onItemSelected(int row) {
     }
-
 
     // 20120928 replaces method from 7/11, which was not getting the linked value correctly
     protected Object getLinkedToValue() {
         Hub h = getHub();
         if (h == null) return null;
-        
-        /*
-        Object obj = h.getAO();
-        if (obj != null) return obj;
-        */
-        
+
+        /*Object obj = h.getAO(); if (obj != null) return obj; */
+
         Hub hx = h.getLinkHub();
         if (hx == null) return null;
 
@@ -402,28 +390,19 @@ public class ComboBoxController extends JFCController implements FocusListener {
 
         return objx;
     }
-/*was:    
-    / **
-     * 20120711 This is in case the value is not in the Hub. Need to get it from
-     * the linked to Hub
-     * /
-    protected Object getRealValue() {
-        Hub h = getHub();
-        if (h == null) return null;
-        Object obj = h.getAO();
-        if (obj != null) return obj;
 
-        Hub hx = h.getLinkHub();
-        if (hx == null) return null;
-
-        Object objx = h.getMasterObject();
-        if (!(objx instanceof OAObject)) return null;
-
-        objx = OAObjectReflectDelegate.getProperty((OAObject) objx, HubDetailDelegate.getPropertyFromDetailToMaster(h));
-
-        return objx;
-    }
-*/
+    /* was: / ** 20120711 This is in case the value is not in the Hub. Need to get it from the linked to
+     * Hub / protected Object getRealValue() { Hub h = getHub(); if (h == null) return null; Object obj
+     * = h.getAO(); if (obj != null) return obj;
+     * 
+     * Hub hx = h.getLinkHub(); if (hx == null) return null;
+     * 
+     * Object objx = h.getMasterObject(); if (!(objx instanceof OAObject)) return null;
+     * 
+     * objx = OAObjectReflectDelegate.getProperty((OAObject) objx,
+     * HubDetailDelegate.getPropertyFromDetailToMaster(h));
+     * 
+     * return objx; } */
 
     /** called by MyListCellRenderer.getListCellRendererComponent */
     protected Component getRenderer(Component renderer, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -484,8 +463,7 @@ public class ComboBoxController extends JFCController implements FocusListener {
         }
 
         /**
-         * will either call OAComboBox.getRenderer() or
-         * Hub2ComboBox.getRenderer()
+         * will either call OAComboBox.getRenderer() or Hub2ComboBox.getRenderer()
          */
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (ComboBoxController.this.list == null) ComboBoxController.this.list = list;

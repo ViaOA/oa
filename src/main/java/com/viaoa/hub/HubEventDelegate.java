@@ -89,21 +89,19 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, false);
 	    
         // 20160304
-	    if (!thisHub.isFetching()) {
-	        if (obj instanceof OAObject && !((OAObject)obj).isLoading()) {
-        	    OAObject objx = thisHub.getMasterObject();
-        	    if (objx != null) {
-                    String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-                    if (s != null) {
-            	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-            	        if (oi.getHasTriggers()) {
-                            if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
-                	        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
-            	        }
-                    }
-        	    }
-	        }
-	    }
+        if (obj instanceof OAObject && !((OAObject)obj).isLoading()) {
+    	    OAObject objx = thisHub.getMasterObject();
+    	    if (objx != null) {
+                String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+                if (s != null) {
+        	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+        	        if (oi.getHasTriggers()) {
+                        if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
+            	        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+        	        }
+                }
+    	    }
+        }
 	}
 
 	public static void fireBeforeRemoveAllEvent(Hub thisHub) {
@@ -143,16 +141,14 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, true);
 	    
         // 20160304
-        if (!thisHub.isFetching()) {
-            OAObject objx = thisHub.getMasterObject();
-            if (objx != null) {
-                String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-                if (s != null) {
-                    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                    if (oi.getHasTriggers()) {
-                        if (hubEvent == null) hubEvent = new HubEvent(thisHub);
-                        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
-                    }
+        OAObject objx = thisHub.getMasterObject();
+        if (objx != null) {
+            String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+            if (s != null) {
+                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                if (oi.getHasTriggers()) {
+                    if (hubEvent == null) hubEvent = new HubEvent(thisHub);
+                    oi.onChange(thisHub.getMasterObject(), s, hubEvent);
                 }
             }
         }
@@ -174,6 +170,8 @@ public class HubEventDelegate {
 	    }
 	}
 	public static void fireAfterAddEvent(Hub thisHub, final Object obj, int pos) {
+	    if (OAThreadLocalDelegate.isLoading()) return;
+	    
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
         HubEvent hubEvent = null;
@@ -215,21 +213,19 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, false);
 	    
         // 20160304
-	    if (!thisHub.isFetching()) {
-            if (obj instanceof OAObject && !((OAObject)obj).isLoading()) {
-                OAObject objx = thisHub.getMasterObject();
-                if (objx != null) {
-                    String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-                    if (s != null) {
-                        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                        if (oi.getHasTriggers()) {
-                            if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
-                            oi.onChange(thisHub.getMasterObject(), s, hubEvent);
-                        }
+        if (obj instanceof OAObject) {
+            OAObject objx = thisHub.getMasterObject();
+            if (objx != null) {
+                String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+                if (s != null) {
+                    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                    if (oi.getHasTriggers()) {
+                        if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
+                        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
                     }
                 }
             }
-	    }
+        }
 	}
 	public static void fireBeforeInsertEvent(Hub thisHub, Object obj, int pos) {
 	    HubListener[] hl = getAllListeners(thisHub);
@@ -248,6 +244,8 @@ public class HubEventDelegate {
 	    }
 	}
 	public static void fireAfterInsertEvent(Hub thisHub, final Object obj, int pos) {
+        if (OAThreadLocalDelegate.isLoading()) return;
+
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
         HubEvent hubEvent = null;
@@ -288,17 +286,15 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, false);
 
         // 20160304
-        if (!thisHub.isFetching()) {
-            if (obj instanceof OAObject && !((OAObject)obj).isLoading()) {
-                OAObject objx = thisHub.getMasterObject();
-                if (objx != null) {
-                    String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
-                    if (s != null) {
-                        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
-                        if (oi.getHasTriggers()) {
-                            if (hubEvent != null) hubEvent = new HubEvent(thisHub, obj, pos);
-                            oi.onChange(thisHub.getMasterObject(), s, hubEvent);
-                        }
+        if (obj instanceof OAObject) {
+            OAObject objx = thisHub.getMasterObject();
+            if (objx != null) {
+                String s = HubDetailDelegate.getPropertyFromMasterToDetail(thisHub);
+                if (s != null) {
+                    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
+                    if (oi.getHasTriggers()) {
+                        if (hubEvent != null) hubEvent = new HubEvent(thisHub, obj, pos);
+                        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
                     }
                 }
             }
@@ -606,15 +602,6 @@ public class HubEventDelegate {
 	    // 20160118 use this instead of newListCount
 	    HubDataDelegate.incChangeCount(thisHub);
 	    //was:  thisHub.data.setNewListCount(thisHub.data.getNewListCount()+1);
-	}
-
-	public static void fireAfterFetchMoreEvent(Hub thisHub) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
-	    if (x > 0) {
-		    HubEvent hubEvent = new HubEvent(thisHub,null);
-	        for (int i=0; i<x; i++) hl[i].afterFetchMore(hubEvent);
-	    }
 	}
 
 	private static HubListenerTree getHubListenerTree(Hub thisHub) {

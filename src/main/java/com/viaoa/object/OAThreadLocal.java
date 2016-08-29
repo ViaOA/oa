@@ -47,27 +47,17 @@ public class OAThreadLocal {
     protected int hubListenerTreeCount;  // tracks how deep listeners are for a single listener
     
     protected String ignoreTreeListenerProperty;
-	
-	/**
-	 *  If set, then OAObject.initialize methods are not called.  Used by DataSource when creating new objects.
-	 *  @see OAObjectDelegate#initialize(OAObject)
-	 */
-	protected int skipObjectInitialize;
 
 	/**
-	 *  Flag to know that an objects properties are being loaded by an internal source, to be set to original values.
+	 * Counter flag to know that an object is being loaded from DataSource.
+	 *  
+     * Used by OAObject when loading an object from a ds - dont verify, call listeners, send sync events.
+     * Used by Hub when it is added/inserted to a Hub by a ds - dont verify, add to vecAdd
 	 */
-	protected int loadingObject;
+	protected int loading;
 
-	/**
-	 *  Flag to know if OAObjectEventDelegate.firePropertyChange() should not run.
-	 *  If this is true, then all property changes that affect the management of the object and references to it, will not be done.
-	 *  This is used by DataSource when it is creating/loading objects.
-	 *  @see OAObjectEventDelegate#firePropertyChange(OAObject, String, Object, Object, boolean, boolean)
-	 */
-	protected int skipFirePropertyChange;
-	
-	// counter
+
+	// counter flag
 	protected int suppressCSMessages;
 	
     /**

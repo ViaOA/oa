@@ -75,7 +75,7 @@ public class HubDelegate {
 	    if (thisHub == null || object == null) return true;
 	
 	    if (object instanceof OAObject) {
-	        if (thisHub.isLoading()) return true;
+	        if (OAThreadLocalDelegate.isLoading()) return true;
 	    }
 	
 	    Object object2;

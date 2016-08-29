@@ -140,7 +140,7 @@ public class HubCSDelegate {
 	    }
 
         // 20160630
-        final boolean bIsLoading = OAThreadLocalDelegate.isLoadingObject(); 
+        final boolean bIsLoading = OAThreadLocalDelegate.isLoading(); 
         if (bIsLoading) {
             if (!OAObjectHubDelegate.isInHub(master)) {
                 if (OASyncDelegate.isServer(master)) {

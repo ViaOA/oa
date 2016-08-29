@@ -1803,29 +1803,11 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see OASelect
      * @see #loadAllData
      * @see #hasMoreData
-     * @see #isFetching
      */
     public void select(OASelect select) { // This is the main select method for
         // Hub that all of the other select
         // methods call.
         HubSelectDelegate.select(this, select);
-    }
-
-    /**
-     * Set by HubSelectDelegate when objects are being loaded from DataSource.
-     */
-    public boolean isFetching() {
-        return HubSelectDelegate.isFetching(this);
-    }
-
-    /**
-     * Checks OAThreadInfoDelegate.isLoadingObject()
-     */
-    public boolean isLoading() {
-        return data.isInFetch() || OAThreadLocalDelegate.isLoadingObject();
-    }
-    public void setLoading(boolean b) {
-        data.setInFetch(b);
     }
 
     /**

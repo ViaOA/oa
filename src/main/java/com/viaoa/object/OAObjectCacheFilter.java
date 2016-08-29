@@ -141,24 +141,18 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             return;
         }
 
-        try {
-            hub.setLoading(true);
-            hub.clear();
-            // need to check loaded objects 
-            OAObjectCacheDelegate.visit(clazz, new OACallback() {
-                @SuppressWarnings("unchecked")
-                @Override
-                public boolean updateObject(Object obj) {
-                    if (isUsed((T) obj)) {
-                        hub.add((T) obj);
-                    }
-                    return true;
+        hub.clear();
+        // need to check loaded objects 
+        OAObjectCacheDelegate.visit(clazz, new OACallback() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public boolean updateObject(Object obj) {
+                if (isUsed((T) obj)) {
+                    hub.add((T) obj);
                 }
-            });
-        }
-        finally {
-            hub.setLoading(false);
-        }
+                return true;
+            }
+        });
     }
     
     

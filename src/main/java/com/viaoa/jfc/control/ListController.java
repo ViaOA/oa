@@ -460,7 +460,7 @@ public class ListController extends JFCController implements ListSelectionListen
         Hub Event that will add the object to the List.
     */
     public @Override void afterAdd(HubEvent e) {
-        if (getHub() != null && !HubSelectDelegate.isFetching(getHub())) invoker(e.getPos(), true);
+        if (getHub() != null) invoker(e.getPos(), true);
     }
 
     
@@ -509,9 +509,6 @@ public class ListController extends JFCController implements ListSelectionListen
         }
     }
 
-    public @Override void afterFetchMore(HubEvent e) {
-    	onNewList(e);
-    }
     /**
         Hub Event that will refresh the List.
     */

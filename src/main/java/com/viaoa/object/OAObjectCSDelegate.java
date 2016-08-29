@@ -343,8 +343,7 @@ public class OAObjectCSDelegate {
         
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
         
-        if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
-        if (OAThreadLocalDelegate.isSkipObjectInitialize()) return;
+        if (OAThreadLocalDelegate.isLoading()) return;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
@@ -383,8 +382,7 @@ public class OAObjectCSDelegate {
         //LOG.finer("properyName="+propertyName+", obj="+obj+", newValue="+newValue);
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
         
-        if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
-        if (OAThreadLocalDelegate.isSkipObjectInitialize()) return;
+        if (OAThreadLocalDelegate.isLoading()) return;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);

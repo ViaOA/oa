@@ -72,11 +72,9 @@ public class OAObjectDelegate {
     	String[] ps = oi.getPrimitiveProperties();
         int x = (ps==null) ? 0 : ((int) Math.ceil(ps.length / 8.0d));
         oaObj.nulls = new byte[x];
-    	
-    	if (OAThreadLocalDelegate.isSkipObjectInitialize()) {
-    	    return;
-    	}
 
+        if (OAThreadLocalDelegate.isLoading()) return;
+        
     	boolean bInitializeWithCS = !oi.getLocalOnly() && OASync.isClient(oaObj.getClass());    	
     	initialize(oaObj, oi, oi.getInitializeNewObjects(), oi.getUseDataSource(), oi.getAddToCache(), bInitializeWithCS, true);
     }
@@ -91,7 +89,8 @@ public class OAObjectDelegate {
      */
     private static void initialize(OAObject oaObj, OAObjectInfo oi, boolean bInitializeNulls, boolean bInitializeWithDS, boolean bAddToCache, boolean bInitializeWithCS, boolean bSetChangedToFalse) {
     	try {
-    		OAThreadLocalDelegate.setLoadingObject(true);
+    		
+    	    OAThreadLocalDelegate.setLoading(true);
             if (oi == null) oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
             
             if (bInitializeNulls) {
@@ -143,7 +142,7 @@ public class OAObjectDelegate {
             */
     	}
 	    finally {
-	    	OAThreadLocalDelegate.setLoadingObject(false);
+	    	OAThreadLocalDelegate.setLoading(false);
 	    }
         if (bAddToCache) {  // 20090525 needs to run after setLoadingObject(false), so that add event is handled correctly.
             OAObjectCacheDelegate.addToSelectAllHubs(oaObj);
@@ -203,14 +202,14 @@ public class OAObjectDelegate {
         String[] ids = oi.getIdProperties();
         if (ids == null) return;
         
-        OAThreadLocalDelegate.setSkipFirePropertyChange(true);
+        OAThreadLocalDelegate.setLoading(true);
         try {
             for (String id : ids) {
                 OAObjectReflectDelegate.setProperty(oaObj, id, null, null);
             }
         }
         finally {
-            OAThreadLocalDelegate.setSkipFirePropertyChange(false);
+            OAThreadLocalDelegate.setLoading(false);
         }
 
         //OAObjectCSDelegate.initialize(oaObj);

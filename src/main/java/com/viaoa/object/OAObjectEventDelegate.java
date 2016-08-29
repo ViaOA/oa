@@ -44,8 +44,8 @@ public class OAObjectEventDelegate {
 	        Object oldObj, final Object newObj, final boolean bLocalOnly, final boolean bSetChanged) {
 	    
 	    if (oaObj == null || propertyName == null) return;
-	    if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
-	    final boolean bIsLoading = OAThreadLocalDelegate.isLoadingObject(); 
+
+	    final boolean bIsLoading = OAThreadLocalDelegate.isLoading(); 
 	    if (bIsLoading) {
 	        if (!OAObjectHubDelegate.isInHub(oaObj)) {  // 20110719: could be in the OAObjectCache.SelectAllHubs
 	            // no listeners, need to load quick as possible
@@ -173,9 +173,11 @@ public class OAObjectEventDelegate {
             }
         }
         
-        sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
+        if (!bIsLoading) {
+            sendHubBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
+        }
         
-        if (!bLocalOnly) {
+        if (!bLocalOnly && !bIsLoading) {
             // 20140314 if it is in newObjectCache (this computer only), then dont send prop changes
             if (!OAObjectCSDelegate.isInNewObjectCache(oaObj)) {
                 OAObjectCSDelegate.fireBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
@@ -202,7 +204,6 @@ public class OAObjectEventDelegate {
     }
 	protected static void firePropertyChange(final OAObject oaObj, final String propertyName, Object oldObj, Object newObj, boolean bLocalOnly, boolean bSetChanged, boolean bUnknownValues) {
 	    if (oaObj == null || propertyName == null) return;
-	    if (OAThreadLocalDelegate.isSkipFirePropertyChange()) return;
 	    
 	    String propertyU = propertyName.toUpperCase();
 	    
@@ -291,7 +292,7 @@ public class OAObjectEventDelegate {
     	if (!bIsChangeProp) oaObj.changedFlag = true;
 
     	// 20100406
-        boolean bIsLoading = OAThreadLocalDelegate.isLoadingObject();
+        boolean bIsLoading = OAThreadLocalDelegate.isLoading();
         
         if (!bIsLoading) {
             OAObjectKey key = OAObjectKeyDelegate.getKey(oaObj);

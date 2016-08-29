@@ -532,7 +532,7 @@ public class OAXMLReader1 extends DefaultHandler {
                 
                 if (object == null) {
                     try {
-                        OAThreadLocalDelegate.setLoadingObject(true);
+                        OAThreadLocalDelegate.setLoading(true);
                         object = createNewObject(c);
                         // set property ids
                         if (matchProps == null || matchProps.length == 0) { 
@@ -555,7 +555,7 @@ public class OAXMLReader1 extends DefaultHandler {
                         throw new SAXException("cant create object for class "+c.getName()+" Error:"+e, e);
                     }
                     finally {
-                        OAThreadLocalDelegate.setLoadingObject(false);
+                        OAThreadLocalDelegate.setLoading(false);
                     }
                 }
                 else {
@@ -694,152 +694,156 @@ public class OAXMLReader1 extends DefaultHandler {
         if (object == null) return false;
         boolean bResult = true;
         boolean bLoadingObject = false;
-        if (object.getNew()) {
-            bLoadingObject = true;
-            OAThreadLocalDelegate.setLoadingObject(true);
-            if (OAObjectCSDelegate.isServer(object)) OAThreadLocalDelegate.setSuppressCSMessages(true);
-            // no, needs to have OAObjectEventDelegate.firePropertyChange() process property changes
-            //   since it has already created the object w/o setLoading(true), which means that there are null primitive properties
-            //     that would not be "unset" if firePropertyChange() was not ran.
-        }
-        final Class c = (Class) hash.remove(XML_CLASS);
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
-
-        Enumeration enumx = hash.keys();
-
-        for ( ;enumx.hasMoreElements(); ) {
-            Object k = enumx.nextElement();
-            Object v = hash.get(k);
-            if (v == object) continue;
-            
-            k = getPropertyName(object, (String)k);
-            if (k == null) continue;
-            // 20150730
-            if (v instanceof Holder) {
-                Holder h = (Holder) v;
-                HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
-                if (hm != null) {
-                    v = hm.get(h.key);
-                }
+        try {
+            if (object.getNew()) {
+                bLoadingObject = true;
+                OAThreadLocalDelegate.setLoading(true);
+                if (OAObjectCSDelegate.isServer(object)) OAThreadLocalDelegate.setSuppressCSMessages(true);
+                // no, needs to have OAObjectEventDelegate.firePropertyChange() process property changes
+                //   since it has already created the object w/o setLoading(true), which means that there are null primitive properties
+                //     that would not be "unset" if firePropertyChange() was not ran.
             }
-            
-            
-            if (v instanceof Vector) {
-                if (!bResult) continue;
-                Vector vec = (Vector) v;
-
-                // change guid objects to real objects
-                int x = vec.size();
-                for (int ix=0; ix < x; ix++) {
-                    Object o = vec.elementAt(ix);
-                    if (o instanceof String && ((String)o).startsWith(XML_GUID)) {
-                        String guid = ((String)o).substring(XML_GUID.length());
-                        o = hashGuid.get(guid);
-                        if (o == null) {
-                            bResult = false;
-                            //System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
-                        }
-                        else vec.set(ix, o);   // replace
+            final Class c = (Class) hash.remove(XML_CLASS);
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
+    
+            Enumeration enumx = hash.keys();
+    
+            for ( ;enumx.hasMoreElements(); ) {
+                Object k = enumx.nextElement();
+                Object v = hash.get(k);
+                if (v == object) continue;
+                
+                k = getPropertyName(object, (String)k);
+                if (k == null) continue;
+                // 20150730
+                if (v instanceof Holder) {
+                    Holder h = (Holder) v;
+                    HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
+                    if (hm != null) {
+                        v = hm.get(h.key);
                     }
-                    else if (o instanceof Holder) {
-                        // 20150730
-                        Holder h = (Holder) o;
-                        HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
-                        if (hm != null) {
-                            o = hm.get(h.key);
+                }
+                
+                
+                if (v instanceof Vector) {
+                    if (!bResult) continue;
+                    Vector vec = (Vector) v;
+    
+                    // change guid objects to real objects
+                    int x = vec.size();
+                    for (int ix=0; ix < x; ix++) {
+                        Object o = vec.elementAt(ix);
+                        if (o instanceof String && ((String)o).startsWith(XML_GUID)) {
+                            String guid = ((String)o).substring(XML_GUID.length());
+                            o = hashGuid.get(guid);
                             if (o == null) {
                                 bResult = false;
+                                //System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
                             }
                             else vec.set(ix, o);   // replace
                         }
-                    }
-                }
-
-                // 2006/05/22 was: Hub h = object.getHub((String)k);
-                Hub h = (Hub) object.getProperty((String) k); 
-                if (h == null) {
-                    if (vec.size() > 0) System.out.println("ERROR in OAXMLReader: Object:"+object+" Property:"+k+"  error:returned null value, should be a Hub");
-                }
-                else {
-                    h.loadAllData();
-                    // remove objects in Hub that are not in Vector
-                    for (int i=0; ;i++) {
-                        Object obj = h.elementAt(i);
-                        if (obj == null) break;
-                        if (vec.indexOf(obj) < 0) {
-                            h.remove(obj);
-                            vecRemoved.addElement(obj);
-                            i--;
+                        else if (o instanceof Holder) {
+                            // 20150730
+                            Holder h = (Holder) o;
+                            HashMap<OAObjectKey, OAObject> hm = hmMatch.get(h.c);
+                            if (hm != null) {
+                                o = hm.get(h.key);
+                                if (o == null) {
+                                    bResult = false;
+                                }
+                                else vec.set(ix, o);   // replace
+                            }
                         }
                     }
     
-                    // add objects in Vector that are not in Hub
-                    x = vec.size();
-                    for (int ix=0; ix < x; ix++) {
-                        Object o = vec.elementAt(ix);
-                        
-                        if (o instanceof Holder) {
-                            Holder hx = (Holder) o;
-                            HashMap<OAObjectKey, OAObject> hm = hmMatch.get(hx.c);
-                            if (hm != null) {
-                                o = hm.get(hx.key);
-                            }
-                            else {
-                                // 20150730 should not happen, this can be removed later                                
-                                System.out.println("OAXMLReader error, value was not in hmMatch");
-                                continue; //qqq
+                    // 2006/05/22 was: Hub h = object.getHub((String)k);
+                    Hub h = (Hub) object.getProperty((String) k); 
+                    if (h == null) {
+                        if (vec.size() > 0) System.out.println("ERROR in OAXMLReader: Object:"+object+" Property:"+k+"  error:returned null value, should be a Hub");
+                    }
+                    else {
+                        h.loadAllData();
+                        // remove objects in Hub that are not in Vector
+                        for (int i=0; ;i++) {
+                            Object obj = h.elementAt(i);
+                            if (obj == null) break;
+                            if (vec.indexOf(obj) < 0) {
+                                h.remove(obj);
+                                vecRemoved.addElement(obj);
+                                i--;
                             }
                         }
-                        
-                        if (h.getObject(o) == null) h.add(o);
-                        // position objects in Hub to match order of objects in Vector
-                        int pos = h.getPos(o);
-                        if (pos != ix) h.move(pos, ix);
+        
+                        // add objects in Vector that are not in Hub
+                        x = vec.size();
+                        for (int ix=0; ix < x; ix++) {
+                            Object o = vec.elementAt(ix);
+                            
+                            if (o instanceof Holder) {
+                                Holder hx = (Holder) o;
+                                HashMap<OAObjectKey, OAObject> hm = hmMatch.get(hx.c);
+                                if (hm != null) {
+                                    o = hm.get(hx.key);
+                                }
+                                else {
+                                    // 20150730 should not happen, this can be removed later                                
+                                    System.out.println("OAXMLReader error, value was not in hmMatch");
+                                    continue; //qqq
+                                }
+                            }
+                            
+                            if (h.getObject(o) == null) h.add(o);
+                            // position objects in Hub to match order of objects in Vector
+                            int pos = h.getPos(o);
+                            if (pos != ix) h.move(pos, ix);
+                        }
+                    }                
+                }
+                else if (OAObjectInfoDelegate.isHubProperty(oi, (String)k)) {
+                    // empty hub, otherwise "v" would have been a Vector
+                }
+                else if (v != null && (v instanceof String) && ((String)v).startsWith(XML_GUID)) {
+                    String guid = ((String)v).substring(XML_GUID.length());
+                    v = hashGuid.get(guid);
+                    if (v == null) {
+                        bResult = false;
+                        // System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
                     }
-                }                
-            }
-            else if (OAObjectInfoDelegate.isHubProperty(oi, (String)k)) {
-                // empty hub, otherwise "v" would have been a Vector
-            }
-            else if (v != null && (v instanceof String) && ((String)v).startsWith(XML_GUID)) {
-                String guid = ((String)v).substring(XML_GUID.length());
-                v = hashGuid.get(guid);
-                if (v == null) {
-                    bResult = false;
-                    // System.out.println("Error: could not find object in hashGuid *****");//qqqqqqq
+                    else {
+                        v = getValue(object, (String)k, v);  // hook method for subclass
+                        object.setProperty((String)k, v);
+                    }
                 }
-                else {
-                    v = getValue(object, (String)k, v);  // hook method for subclass
-                    object.setProperty((String)k, v);
-                }
-            }
-            else if (v instanceof OAObjectKey) {
-                // try to find "real" object
-                Class cx = OAObjectInfoDelegate.getPropertyClass(c, (String) k);
-                v = OAObjectCacheDelegate.get(cx, (OAObjectKey) v);
-                if (v == null) {
-                    bResult = false;
-                }
-                else {
-                    v = getValue(object, (String)k, v);  // hook method for subclass
-                    object.setProperty((String)k, v);
-                }
-            }
-            else {
-                if (v instanceof String) {
+                else if (v instanceof OAObjectKey) {
+                    // try to find "real" object
                     Class cx = OAObjectInfoDelegate.getPropertyClass(c, (String) k);
-                    if (cx != null && !cx.equals(String.class) ) {
-                        v = convertToObject((String)k, (String) v, cx);
+                    v = OAObjectCacheDelegate.get(cx, (OAObjectKey) v);
+                    if (v == null) {
+                        bResult = false;
+                    }
+                    else {
+                        v = getValue(object, (String)k, v);  // hook method for subclass
+                        object.setProperty((String)k, v);
                     }
                 }
-                v = getValue(object, (String)k, v);  // hook method for subclass
-                object.setProperty((String)k, v);
+                else {
+                    if (v instanceof String) {
+                        Class cx = OAObjectInfoDelegate.getPropertyClass(c, (String) k);
+                        if (cx != null && !cx.equals(String.class) ) {
+                            v = convertToObject((String)k, (String) v, cx);
+                        }
+                    }
+                    v = getValue(object, (String)k, v);  // hook method for subclass
+                    object.setProperty((String)k, v);
+                }
             }
         }
-        if (bLoadingObject) {
-            if (bResult) object.afterLoad();
-            OAThreadLocalDelegate.setLoadingObject(false);
-            if (OAObjectCSDelegate.isServer(object)) OAThreadLocalDelegate.setSuppressCSMessages(false);
+        finally {
+            if (bLoadingObject) {
+                if (bResult) object.afterLoad();
+                OAThreadLocalDelegate.setLoading(false);
+                if (OAObjectCSDelegate.isServer(object)) OAThreadLocalDelegate.setSuppressCSMessages(false);
+            }
         }
         return bResult;
     }

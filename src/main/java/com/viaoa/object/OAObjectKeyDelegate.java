@@ -151,7 +151,7 @@ public class OAObjectKeyDelegate {
                 }
             }
             else {
-                if (!OAThreadLocalDelegate.isLoadingObject()) {
+                if (!OAThreadLocalDelegate.isLoading()) {
                     // make sure object does not already exist in datasource
                     OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
                     if (oi.getUseDataSource()) {

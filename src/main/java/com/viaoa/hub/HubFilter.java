@@ -635,7 +635,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         HubData hd = null;
         try {
             if (hub != null) {
-                hub.setLoading(true);
                 try {
                     aiClearing.incrementAndGet();
                     // clear needs to be called, so that each oaObj.weakHub[] will be updated correctly
@@ -649,7 +648,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                 }
 
                 hd = hub.data;
-                hd.setInFetch(true);
             }
             
             try {
@@ -666,8 +664,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     	    }
     	}
     	finally {
-    		if (hd != null && bCompleted) hd.setInFetch(false);
-            if (hub != null && bCompleted) hub.setLoading(false);
             if (bServerSideOnly) {
                 OARemoteThreadDelegate.sendMessages(false);
             }

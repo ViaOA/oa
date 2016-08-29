@@ -123,10 +123,6 @@ public class HubDetailDelegate {
         }
         if (dm.liDetailToMaster == null) return;
 
-        // 20090705
-        if (thisHub.data.isInFetch()) return;
-        
-        
         // 20120920 if thisHub is a detailHub of type=One, then need to update the masterObj.linkProp
         OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster);
         if (liRev != null && liRev.getType() == OALinkInfo.ONE) {
@@ -152,7 +148,6 @@ public class HubDetailDelegate {
         
         if (Hub.class.isAssignableFrom(method.getReturnType())) {
             if (detailObject instanceof OAObjectKey) return;
-            if (thisHub.data.isInFetch()) return;  // otherwise, a recursive loop could happen
             
             // 20140616 if hub is not loaded and isClient, then dont need to load
             if (!OASyncDelegate.isServer(thisHub)) {
@@ -375,7 +370,7 @@ public class HubDetailDelegate {
             }
         }
         else if (detail.type == HubDetail.OAOBJECT || detail.type == HubDetail.OBJECT) {
-            HubAddRemoveDelegate.internalAdd(detailHub, (OAObject) obj, false, false);
+            HubAddRemoveDelegate.internalAdd(detailHub, (OAObject) obj, false);
             detailHub.data.setDupAllowAddRemove(false);
         }
         else {
@@ -383,7 +378,7 @@ public class HubDetailDelegate {
             int j = Array.getLength(obj);
             for (int k=0; k<j; k++) {
                 Object objx = Array.get(obj,k);
-                HubAddRemoveDelegate.internalAdd(detailHub, objx, false, false);
+                HubAddRemoveDelegate.internalAdd(detailHub, objx, false);
             }
             detailHub.data.setDupAllowAddRemove(false);
         }

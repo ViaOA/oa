@@ -330,7 +330,7 @@ public class OAXMLReader {
             }
     
             if (objNew == null) {
-                OAThreadLocalDelegate.setLoadingObject(true);
+                OAThreadLocalDelegate.setLoading(true);
                 try {
                     objNew = createNewObject(toClass);
                     // set property ids
@@ -342,7 +342,7 @@ public class OAXMLReader {
                     }
                 }
                 finally {
-                    OAThreadLocalDelegate.setLoadingObject(false);
+                    OAThreadLocalDelegate.setLoading(false);
                 }
             }
             if (guid != null && objNew != null) hashGuid.put(guid, objNew);
@@ -351,7 +351,7 @@ public class OAXMLReader {
         
         
         final boolean bLoadingNew = objNew.getNew() && !bIsPreloading; 
-        if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(true);
+        if (bLoadingNew) OAThreadLocalDelegate.setLoading(true);
         
         if (!bIsPreloading) beforeLoadObject(objNew, hm);
         for (Map.Entry<String, Object> e : hm.entrySet()) {
@@ -405,9 +405,9 @@ public class OAXMLReader {
                 
                 for (HashMap hmx : (ArrayList<HashMap>)v) {
                     
-                    if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(false);
+                    if (bLoadingNew) OAThreadLocalDelegate.setLoading(false);
                     Object objx = _processChildren(hmx, li==null?OAObject.class:li.getToClass(), bIsPreloading, level+1);
-                    if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(true);
+                    if (bLoadingNew) OAThreadLocalDelegate.setLoading(true);
                     
                     if (!bIsPreloading) {
                         h.add(objx);
@@ -422,13 +422,13 @@ public class OAXMLReader {
                 // hashmap for another object
                 HashMap<String, Object> hmx = (HashMap<String, Object>) v;
                 Class c = li == null ? OAObject.class : li.getToClass();
-                if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(false);
+                if (bLoadingNew) OAThreadLocalDelegate.setLoading(false);
                 Object objx = _processChildren(hmx, c, bIsPreloading, level+1);
-                if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(true);
+                if (bLoadingNew) OAThreadLocalDelegate.setLoading(true);
                 if (!bIsPreloading) objNew.setProperty(k, objx);
             }
         }
-        if (bLoadingNew) OAThreadLocalDelegate.setLoadingObject(false);
+        if (bLoadingNew) OAThreadLocalDelegate.setLoading(false);
         if (!bIsPreloading) {
             objNew = getRealObject(objNew);
             if (objNew != null) {

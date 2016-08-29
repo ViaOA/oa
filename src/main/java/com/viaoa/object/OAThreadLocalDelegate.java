@@ -40,12 +40,10 @@ public class OAThreadLocalDelegate {
 	
 	private static final ThreadLocal<OAThreadLocal> threadLocal = new ThreadLocal<OAThreadLocal>();
 	
-	private static AtomicInteger TotalIsLoadingObject = new AtomicInteger();
+	private static AtomicInteger TotalIsLoading = new AtomicInteger();
 	private static AtomicInteger TotalObjectCacheAddMode = new AtomicInteger();
 	private static AtomicInteger TotalObjectSerializer = new AtomicInteger();
-	private static AtomicInteger TotalSkipObjectInitialize = new AtomicInteger();
 	private static AtomicInteger TotalSuppressCSMessages = new AtomicInteger();
-	private static AtomicInteger TotalSkipFirePropertyChange = new AtomicInteger();
 	private static AtomicInteger TotalDelete = new AtomicInteger();
     private static AtomicInteger TotalTransaction = new AtomicInteger();
     private static AtomicInteger TotalCaptureUndoablePropertyChanges = new AtomicInteger();
@@ -106,42 +104,49 @@ public class OAThreadLocalDelegate {
 	    return ti.transaction;
 	}
 	
-	// Loading -----------------------
-	public static boolean isLoadingObject() {
+	/**
+	 * 
+	 * @see OAThreadLocal#loading
+	 */
+	public static boolean isLoading() {
 		boolean b; 
-		if (OAThreadLocalDelegate.TotalIsLoadingObject.get() == 0) {
+		if (OAThreadLocalDelegate.TotalIsLoading.get() == 0) {
 			// LOG.finest("fast");
 			b = false;
 		}
 		else {
-			b = isLoadingObject(OAThreadLocalDelegate.getThreadLocal(false));
+			b = isLoading(OAThreadLocalDelegate.getThreadLocal(false));
 			// LOG.finest(""+b);
 		}
 		return b;
 	}
-    protected static boolean isLoadingObject(OAThreadLocal ti) {
+    protected static boolean isLoading(OAThreadLocal ti) {
         if (ti == null) return false;
-        return ti.loadingObject > 0;
+        return ti.loading > 0;
     }
-	public static void setLoadingObject(boolean b) {
+	public static boolean setLoading(boolean b) {
 		// LOG.finer(""+b);
-		setLoadingObject(OAThreadLocalDelegate.getThreadLocal(b), b);
+	    return setLoading(OAThreadLocalDelegate.getThreadLocal(b), b);
 	}
     private static long msLoadingObject;
-	protected static void setLoadingObject(OAThreadLocal ti, boolean b) {
-		if (ti == null) return;
+	protected static boolean setLoading(OAThreadLocal ti, boolean b) {
+		if (ti == null) return false;
 		int x,x2;
+		boolean bPreviousValue;
 		if (b) {
-			x = ++ti.loadingObject;
-			x2 = OAThreadLocalDelegate.TotalIsLoadingObject.getAndIncrement();
+		    bPreviousValue = (ti.loading > 0);
+			x = ++ti.loading;
+			x2 = OAThreadLocalDelegate.TotalIsLoading.getAndIncrement();
 		}
 		else {
-    		x = --ti.loadingObject;
-    		x2 = OAThreadLocalDelegate.TotalIsLoadingObject.decrementAndGet();
+            bPreviousValue = (ti.loading > 0);
+    		x = --ti.loading;
+    		x2 = OAThreadLocalDelegate.TotalIsLoading.decrementAndGet();
 		}
         if (x > 50 || x < 0 || x2 > 50 || x2 < 0) {
             msLoadingObject = throttleLOG("TotalIsLoadingObject="+x2+", ti="+x, msLoadingObject);
         }
+        return bPreviousValue;
 	}
 	
 	
@@ -235,57 +240,6 @@ public class OAThreadLocalDelegate {
 	}
 	
 	
-	/**
-	 * Convenience method, used by DataSource when loading OAObjects, so that OAObject.initialize is skipped,
-	 * no property changes are sent, and object loading flag is set. 
-	 * @param b true if object is being loaded, false when done.
-	 */
-	public static void setDataSourceLoadingObject(boolean b) {
-        OAThreadLocalDelegate.setSkipObjectInitialize(b);
-        OAThreadLocalDelegate.setSkipFirePropertyChange(b); // qqqq change: need to be on for "dirty" reads ?, turned off for news  qqqqqqqqqqq
-        OAThreadLocalDelegate.setLoadingObject(b);  // object will not send events, wont be added to cache (will be added manually)
-	}
-	
-	
-	// SkipInitialize -----------------------
-	public static boolean isSkipObjectInitialize() {
-		boolean b;
-		if (OAThreadLocalDelegate.TotalSkipObjectInitialize.get() == 0) {
-			// LOG.finest("fast");
-			b = false;
-		}
-		else {
-			b = isSkipObjectInitialize(OAThreadLocalDelegate.getThreadLocal(false));
-			// LOG.finest(""+b);
-		}
-		return b;
-	}
-	public static boolean isSkipObjectInitialize(OAThreadLocal ti) {
-		if (ti == null) return false;
-		return ti.skipObjectInitialize > 0;
-	}
-    public static void setSkipObjectInitialize(boolean b) {
-        // LOG.finer(""+b);
-        setSkipObjectInitialize(OAThreadLocalDelegate.getThreadLocal(b), b);
-    }
-    private static long msSkipObjectInitialize;
-	public static void setSkipObjectInitialize(OAThreadLocal ti, boolean b) {
-		if (ti == null) return;
-		int x, x2;
-		if (b) {
-			x = ++ti.skipObjectInitialize;
-            x2 = OAThreadLocalDelegate.TotalSkipObjectInitialize.incrementAndGet();
-		}
-		else {
-            x = --ti.skipObjectInitialize;
-			x2 = OAThreadLocalDelegate.TotalSkipObjectInitialize.decrementAndGet();
-		}
-        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) {
-            msSkipObjectInitialize = throttleLOG("TotalSkipInitialize ="+x2+", ti="+x, msSkipObjectInitialize);
-        }
-	}
-	
-
 
 	// SuppressCSMessages -----------------------
 	public static boolean isSuppressCSMessages() {
@@ -324,45 +278,6 @@ public class OAThreadLocalDelegate {
             msSuppressCSMessages = throttleLOG("TotalSuppressCSMessages ="+x2+", ti="+x, msSuppressCSMessages);
         }
 	}
-	
-	// SuppressFirePropertyChange -----------------------
-	public static boolean isSkipFirePropertyChange() {
-		boolean b;
-		if (OAThreadLocalDelegate.TotalSkipFirePropertyChange.get() == 0) {
-			b = false;
-			// LOG.finest("fast");
-		}
-		else {
-			b = isSkipFirePropertyChange(OAThreadLocalDelegate.getThreadLocal(false));
-			// LOG.finest(""+b);
-		}
-		return b;
-	}
-    public static boolean isSkipFirePropertyChange(OAThreadLocal ti) {
-        if (ti == null) return false;
-        return ti.skipFirePropertyChange > 0;
-    }
-	public static void setSkipFirePropertyChange(boolean b) {
-		// LOG.finer(""+b);
-		setSkipFirePropertyChange(OAThreadLocalDelegate.getThreadLocal(b), b);
-	}
-    private static long msSkipFirePropertyChange;
-	public static void setSkipFirePropertyChange(OAThreadLocal ti, boolean b) {
-		if (ti == null) return;
-		int x, x2;
-		if (b) {
-			x = ++ti.skipFirePropertyChange;
-			x2 = OAThreadLocalDelegate.TotalSkipFirePropertyChange.incrementAndGet();
-		}
-		else {
-			x = --ti.skipFirePropertyChange;
-			x2 = OAThreadLocalDelegate.TotalSkipFirePropertyChange.decrementAndGet();
-		}
-        if (x > 10 || x < 0 || x2 > 15 || x2 < 0) {
-            msSkipFirePropertyChange = throttleLOG("SkipFirePropertyChange ="+x2+", ti="+x, msSkipFirePropertyChange);
-        }
-	}
-
 	
 	
 

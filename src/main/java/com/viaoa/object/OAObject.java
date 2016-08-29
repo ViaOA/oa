@@ -485,7 +485,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         @see OAObjectDelegate#isLoading
      */
     public boolean isLoading() {
-    	return OAThreadLocalDelegate.isLoadingObject();
+    	return OAThreadLocalDelegate.isLoading();
     }
 
     /**

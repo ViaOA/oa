@@ -3823,18 +3823,10 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
 
     public @Override void afterAdd(HubEvent e) {
-        if (getHub() != null && !HubSelectDelegate.isFetching(getHub())) {
+        if (getHub() != null) {
             insertInvoker(e.getPos());
             table.setChanged(e.getPos(), -1);
         }
-    }
-
-    public @Override void afterFetchMore(HubEvent e) {
-        // 20160818
-        int x = getHub().getSize();
-        if (x > 0) x--;
-        table.oaTableModel.fireTableRowsUpdated(0, x);
-        //was: onNewList(e);
     }
 }
 

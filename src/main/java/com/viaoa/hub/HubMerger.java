@@ -186,20 +186,14 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll, boolean bIncludeRootHub) {
 
-        HubData hd = null;
         long ts = System.currentTimeMillis();
         try {
             // 20120624 hubCombined could be a detail hub.
             OAThreadLocalDelegate.setSuppressCSMessages(true);
             OAThreadLocalDelegate.setGetDetailMerger(HubMerger.this);
-            if (hubCombinedObjects != null && !hubCombinedObjects.data.isInFetch()) {
-                hd = hubCombinedObjects.data;
-                hd.setInFetch(true);
-            }
             _init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
         }
         finally {
-            if (hd != null) hd.setInFetch(false);
             OAThreadLocalDelegate.setSuppressCSMessages(false);
             OAThreadLocalDelegate.setGetDetailMerger(null);
         }
@@ -1515,18 +1509,10 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         }
 
         public void _onNewList2(HubEvent e) {
-            HubData hd = null;
             try {
-                if (hubCombined != null && this.hub != hubCombined) {
-                    if (!hubCombined.data.isInFetch()) {
-                        hd = hubCombined.data;
-                        hd.setInFetch(true);
-                    }
-                }
                 _onNewList();
             }
             finally {
-                if (hd != null) hd.setInFetch(false);
             }
             if (hubCombined != null && this.hub != hubCombined) {
                 if (hubCombined.getSharedHub() != this.hub) {
@@ -1648,9 +1634,6 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                 if (!bIncludeRootHub) { // 20131209
                     return;
                 }
-            }
-            if (hub.isLoading()) {
-                return;
             }
             try {
                 // 20120903 removed/commented this, and need to have hub event sent out for remove
@@ -1846,50 +1829,42 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             }
 
             if (hubCombined != null) {
-                HubData hd = hubCombined.data;
-                boolean b = hd.isInFetch();
-                try {
-                    hd.setInFetch(true);
-                    if (!bShareEndHub) {
-                        try {
-                            OAThreadLocalDelegate.setHubMergerIsChanging(true);
-                            hubCombined.clear();
-                        }
-                        finally {
-                            OAThreadLocalDelegate.setHubMergerIsChanging(false);
-                        }
+                if (!bShareEndHub) {
+                    try {
+                        OAThreadLocalDelegate.setHubMergerIsChanging(true);
+                        hubCombined.clear();
                     }
-                    
-                    long ts = System.currentTimeMillis();
-                    _afterChangeActiveObject();
-                    
-                    ts = System.currentTimeMillis() - ts;
-                    String s = ("HM."+id+") onChangeAO hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
-                    s += ", combinedHub="+hubCombined;
-                    s += ", time="+ts+"ms";
-                    
-                    if (!bUseBackgroundThread) {
-                        if (bUseAll) {
-                            int x = hubRoot.size();
-                            if (x > 50) {
-                                if (x > 150 || propertyPath.indexOf(".") > 0) {
-                                    s += ", ALERT";
-                                }
+                    finally {
+                        OAThreadLocalDelegate.setHubMergerIsChanging(false);
+                    }
+                }
+                
+                long ts = System.currentTimeMillis();
+                _afterChangeActiveObject();
+                
+                ts = System.currentTimeMillis() - ts;
+                String s = ("HM."+id+") onChangeAO hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
+                s += ", combinedHub="+hubCombined;
+                s += ", time="+ts+"ms";
+                
+                if (!bUseBackgroundThread) {
+                    if (bUseAll) {
+                        int x = hubRoot.size();
+                        if (x > 50) {
+                            if (x > 150 || propertyPath.indexOf(".") > 0) {
+                                s += ", ALERT";
                             }
                         }
-                        if (hubCombined.getSize() > 250) {
-                            s += ", ALERT";
-                        }
-                        if (ts > 1000) {
-                            s += ", ALERT";
-                        }
                     }
-                    OAPerformance.LOG.fine(s);
-                    LOG.fine(s);
+                    if (hubCombined.getSize() > 250) {
+                        s += ", ALERT";
+                    }
+                    if (ts > 1000) {
+                        s += ", ALERT";
+                    }
                 }
-                finally {
-                    hd.setInFetch(b);
-                }
+                OAPerformance.LOG.fine(s);
+                LOG.fine(s);
             }
             // 20110419 param was true, but this should only send to other hubs that share this one
             HubEventDelegate.fireOnNewListEvent(hubCombined, false);

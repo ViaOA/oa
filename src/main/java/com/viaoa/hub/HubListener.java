@@ -139,10 +139,6 @@ public interface HubListener<T> extends EventListener {
         @see Hub#select Hub.select
     */
 
-    
-    public void afterFetchMore(HubEvent<T> e);
-    
-    
     /**
         Event sent from Hub when sort is performed.
         @see Hub#sort Hub.sort

@@ -11,6 +11,7 @@
 package com.viaoa.hub;
 
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,7 +37,6 @@ public class HubSelectDelegate {
         if (sel == null) return 0;
         int x = sel.getFetchAmount();
         x = fetchMore(thisHub, sel, x);
-        HubEventDelegate.fireAfterFetchMoreEvent(thisHub);
         return x;
     }
     /** Internal method to retrieve objects from last select() */
@@ -46,7 +46,38 @@ public class HubSelectDelegate {
     }
     private static int cntWarning;
     
+    private static ConcurrentHashMap<Hub, Integer> hmHubFetch = new ConcurrentHashMap<Hub, Integer>(11, .85f);
+
+    
     protected static int fetchMore(Hub thisHub, OASelect sel, int famt) {
+        try {
+            // get fetch lock
+            for (;;) {
+                synchronized (hmHubFetch) {
+                    if (hmHubFetch.get(thisHub) == null) {
+                        hmHubFetch.put(thisHub, 0);
+                        break;
+                    }
+                    try {
+                        hmHubFetch.put(thisHub, 1);
+                        hmHubFetch.wait(5);
+                    }
+                    catch (Exception e) {
+                    }
+                }
+            }
+            return _fetchMore(thisHub, sel, famt);
+        }
+        finally {
+            synchronized (hmHubFetch) {
+                int x = hmHubFetch.remove(thisHub);
+                if (x > 0) hmHubFetch.notifyAll();
+            }
+        }
+    }
+    
+    
+    protected static int _fetchMore(Hub thisHub, OASelect sel, int famt) {
         if (sel == null) return 0;
         int fa = sel.getFetchAmount();  // default amount to load
 
@@ -57,18 +88,8 @@ public class HubSelectDelegate {
         if (famt > 0) fa = famt;
         int cnt = 0;
 
-        for (int i=0; hubData.isInFetch(); i++) {
-            try {
-                Thread.sleep(25);
-                if (i == 10) return 0;
-            }
-            catch (Exception e) {
-            }
-        }
         
         try {
-            hubData.setInFetch(true);
-        	
 			int capacity = hubData.vector.capacity(); // number of available 'slots'
             int size = hubData.vector.size(); // number of elements
             
@@ -89,11 +110,17 @@ public class HubSelectDelegate {
 							if (capacity <= 0) capacity = size+1;
 						}
 						*/
-						capacity += 75;  // this will override the default behaviour of how the Vector grows itself (which is to double in size)
+						capacity += (capacity > 250) ? 75 : capacity;  // this will override the default behaviour of how the Vector grows itself (which is to double in size)
 //LOG.config("resizing, from:"+size+", to:"+capacity+", hub:"+thisHub);                        
 						HubDataDelegate.ensureCapacity(thisHub, capacity);
 					}
-                	HubAddRemoveDelegate.add(thisHub, obj);
+	                try {
+	                    OAThreadLocalDelegate.setLoading(true);
+	                    HubAddRemoveDelegate.add(thisHub, obj);
+	                }
+	                finally {
+	                    OAThreadLocalDelegate.setLoading(false);
+	                }
                     size++;
                     cnt++;
                 }
@@ -106,30 +133,11 @@ public class HubSelectDelegate {
         	throw new RuntimeException(ex);
         }
         finally {
-            hubData.setInFetch(false);
             hubData.changed = holdDataChanged;
         }
         return cnt;
     }
 
-    
-    /**
-        Used to know if objects are currently being loaded from datasource from last select().
-    */
-    public static boolean isFetching(Hub thisHub) {
-        return thisHub.data.isInFetch();
-    }
-    public static void setFetching(Hub thisHub, boolean bIsFetching) {
-        thisHub.data.setInFetch(bIsFetching);
-    }
-
-    public static boolean isLoading(Hub thisHub) {
-        return thisHub.data.isInFetch();
-    }
-    public static void setLoading(Hub thisHub, boolean bIsLoading) {
-        thisHub.data.setInFetch(bIsLoading);
-    }
-	
 	/**
 	    Find out if more objects are available from last select from OADataSource.
 	    @see Hub#needsToSelect
