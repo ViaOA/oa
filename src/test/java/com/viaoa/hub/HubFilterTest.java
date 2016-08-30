@@ -80,13 +80,7 @@ public class HubFilterTest extends OAUnitTest {
                 @Override
                 protected void addObject(PointsAwardLevel obj, boolean bIsInitialzing) {
                     aiCnt.incrementAndGet();
-                    int x = hubFiltered.getSize();
                     super.addObject(obj, bIsInitialzing);
-                    int x2 = hubFiltered.getSize();
-                    if (x+1 != x2) {
-                        int xx = 4;
-                        xx++;//qqqqq
-                    }
                 }
             }; 
             hf.addDependentProperty("id");

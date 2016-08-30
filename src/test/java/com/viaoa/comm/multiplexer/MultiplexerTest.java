@@ -8,7 +8,7 @@ import com.viaoa.OAUnitTest;
 
 public class MultiplexerTest extends OAUnitTest {
     static final int[] Maxes = {
-        1200000, 200000, 15000, 501, 232, 14, 1 
+        1000000, 123000, 15000, 501, 232, 14, 1 
     };
 
 
@@ -21,11 +21,23 @@ public class MultiplexerTest extends OAUnitTest {
         MultiplexerClientTest ctest = new MultiplexerClientTest();
         ctest.test(Maxes);
         
-        Thread.sleep(1000);
+        Thread.sleep(1600);
+        ctest.stop();
+        
+        for (int i=0; i<40; i++) {
+            Thread.sleep(250);
+            int x1 = ctest.getCount();
+            int x2 = ctest.getRunningCount();
+            if (x2 == 0) break;
+            int x3 = stest.getRunningCount();
+            int xx = 4;
+            xx++;
+        }
+
         stest.stop();
         
         int x = ctest.getCount();
-        assertTrue(x > 1000);
+        assertTrue("x="+x+", should be > 1000", x > 1000);
     }
 
     

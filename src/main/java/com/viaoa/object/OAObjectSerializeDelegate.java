@@ -323,6 +323,12 @@ public class OAObjectSerializeDelegate {
                 obj = ((WeakReference) obj).get();
                 if (obj == null) continue;
             }
+
+            if (obj instanceof Hub) {
+                if ( ((Hub) obj).getObjectClass().equals(IODummy.class)) {
+                    continue;
+                }
+            }
             
             if (obj != null && !(obj instanceof OAObject) && !(obj instanceof OAObjectKey) && !(obj instanceof Hub) && !(obj instanceof byte[])) {
                 stream.writeObject(key);

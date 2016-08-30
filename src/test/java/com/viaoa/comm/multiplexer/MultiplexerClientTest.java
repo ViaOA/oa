@@ -11,6 +11,7 @@ import com.viaoa.comm.multiplexer.MultiplexerClient;
 
 public class MultiplexerClientTest extends OAUnitTest {
     private AtomicInteger aiCount = new AtomicInteger();
+    private AtomicInteger aiRunnngCount = new AtomicInteger();
     
     public void test(int ... msgSizes) throws Exception {
         final MultiplexerClient mc = new MultiplexerClient("localhost", 1101);
@@ -23,6 +24,7 @@ public class MultiplexerClientTest extends OAUnitTest {
             Thread t = new Thread() {
                 @Override
                 public void run() {
+                    aiRunnngCount.incrementAndGet();
                     try {
                         _test(id, mc, msgSize);
                     }
@@ -30,10 +32,13 @@ public class MultiplexerClientTest extends OAUnitTest {
                         System.out.println("Exception with client virtual socket, exception="+e);
                         e.printStackTrace();
                     }
+                    finally {
+                        aiRunnngCount.decrementAndGet();
+                    }
                 }
             };
             t.setDaemon(true);
-            t.setName("Thread."+i+".value."+msgSize);
+            t.setName("ClientTestThread."+i+".value."+msgSize);
             t.start();
         }
     }
@@ -42,7 +47,9 @@ public class MultiplexerClientTest extends OAUnitTest {
     public void stop() {
         bStopCalled = true;
     }
-    
+    public int getRunningCount() {
+        return aiRunnngCount.get();        
+    }
     
     public void _test(final int id, final MultiplexerClient mc, final int msgSize) throws Exception {
         final Socket socket = mc.createSocket("test");
@@ -57,16 +64,17 @@ public class MultiplexerClientTest extends OAUnitTest {
         
         long tot = 0;
         byte[] bs = new byte[msgSize];
-        
-        for (int i=0;  ;i++) {
+        int i = 0;
+        for (;  ;i++) {
             dos.writeInt(msgSize);
             dos.write(bs);
 
+            if (bStopCalled) break;
             int x = dis.readInt();
             dis.readFully(bs);
 
             tot += msgSize;
-            if (bStopCalled || i % 500 == 0) {
+            if (bStopCalled || i % 100 == 0) {
                 System.out.println("client, id="+id+", cnt="+i+", bs="+msgSize+", totBytes="+tot+", allCnt="+aiCount.get());
             }
             
@@ -74,6 +82,7 @@ public class MultiplexerClientTest extends OAUnitTest {
             if (bStopCalled) break;
         }
         dos.writeInt(-1);
+        System.out.println("closing client, id="+id+", cnt="+i+", bs="+msgSize+", totBytes="+tot+", allCnt="+aiCount.get());
         socket.close();
     }
     

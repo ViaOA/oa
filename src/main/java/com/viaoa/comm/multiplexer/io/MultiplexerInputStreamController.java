@@ -87,7 +87,6 @@ public abstract class MultiplexerInputStreamController {
         return msLastRead;
     }
     
-    
     /**
      * Call by MultiplexerSocketController thread that manages the input stream. This will read the
      * header and then allow the correct vsocket to read the data from the real socket. If the header
@@ -97,6 +96,7 @@ public abstract class MultiplexerInputStreamController {
         long msLastStackDump = 0;
         for (int cntx = 0; !_bIsClosed; cntx++) {
             int readId = _dataInputStream.readInt(); // socket.id or 0 for command
+            
             msLastRead = System.currentTimeMillis();
             _nextReadLen = _dataInputStream.readInt(); // the length of data for the vsocket to read.
 

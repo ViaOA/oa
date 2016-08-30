@@ -21,6 +21,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -59,7 +60,7 @@ public class MultiplexerSocketController {
     /**
      * sequential id assigned by MultiplexerServerSocketController.
      */
-    private int _connectionId;
+    private volatile int _connectionId;
 
     /**
      * "real" socket, shared by vsockets.
@@ -78,7 +79,7 @@ public class MultiplexerSocketController {
     /** thread that manages the "real" socket, named "MultiplexerSocketController" */
     private transient Thread _thread;
     /** boolean flag to know that close has been done. */
-    private AtomicBoolean _abClosing = new AtomicBoolean(false);
+    private final AtomicBoolean _abClosing = new AtomicBoolean(false);
 
     /** used to manage the real socket outputstream */
     private volatile MultiplexerOutputStreamController _outputStreamController;
@@ -97,9 +98,9 @@ public class MultiplexerSocketController {
     private final AtomicInteger _aiSocketIdSeq = new AtomicInteger(1); // must not use 0, since 0 is used in the header for commands.
 
     /* *
-     * Collection of all open MultiplexerSockets, by Id
+     * Collection of all open virtualSockets for the real socket, by Id
      */
-    private Hashtable<Integer, VirtualSocket> _hashtableSocket;
+    private final ConcurrentHashMap<Integer, VirtualSocket> _hmVirtualSocket = new ConcurrentHashMap<Integer, VirtualSocket>(53, .75f); 
 
     private transient InetAddress _inetAddress;
     private int _status; // see STATUS_* above
@@ -125,7 +126,6 @@ public class MultiplexerSocketController {
         this._bIsClient = true;
         this._socket = socket;
 
-        
         // perform handshake/verification in this thread.
         performHandshake();
         /*was
@@ -284,7 +284,7 @@ public class MultiplexerSocketController {
             _inputStreamController = new MultiplexerInputStreamController(_connectionId) {
                 @Override
                 protected VirtualSocket getSocket(int id) {
-                    VirtualSocket vs = getSocketHashtable().get(id);
+                    VirtualSocket vs = getVirtualSocketHashMap().get(id);
                     return vs;
                 }
 
@@ -302,7 +302,7 @@ public class MultiplexerSocketController {
 
                 @Override
                 protected void closeSocket(int id, boolean bSendCommand) {
-                    VirtualSocket vs = getSocketHashtable().get(id);
+                    VirtualSocket vs = getVirtualSocketHashMap().get(id);
                     try {
                         if (vs != null) vs.close(bSendCommand);
                     }
@@ -504,7 +504,7 @@ public class MultiplexerSocketController {
                 return super.isOutputShutdown() || (s != null && s.isOutputShutdown());
             }
         };
-        getSocketHashtable().put(id, vs);
+        getVirtualSocketHashMap().put(id, vs);
 
         if (_bIsClient) {
             getOutputStreamController().sendCommand(CMD_CreateVSocket, id, serverSocketName);
@@ -520,7 +520,7 @@ public class MultiplexerSocketController {
         synchronized (vs._lockObject) {
             vs._lockObject.notify();
         }
-        getSocketHashtable().remove(vs._id);
+        getVirtualSocketHashMap().remove(vs._id);
     }
 
     /**
@@ -587,14 +587,11 @@ public class MultiplexerSocketController {
             if (_outputStreamController != null) {
                 getOutputStreamController().close();
             }
-            if (_hashtableSocket != null) {
-                VirtualSocket[] vss = getMultiplexerSockets();
-                for (VirtualSocket vs : vss) {
-                    synchronized (vs._lockObject) {
-                        vs._lockObject.notify();
-                    }
+            VirtualSocket[] vss = getMultiplexerSockets();
+            for (VirtualSocket vs : vss) {
+                synchronized (vs._lockObject) {
+                    vs._lockObject.notify();
                 }
-                _hashtableSocket = null;
             }
         }
     }
@@ -604,21 +601,15 @@ public class MultiplexerSocketController {
      */
     public VirtualSocket[] getMultiplexerSockets() {
         VirtualSocket[] vss = new VirtualSocket[0];
-        if (_hashtableSocket != null) {
-            vss = (VirtualSocket[]) getSocketHashtable().values().toArray(vss);
-        }
+        vss = (VirtualSocket[]) getVirtualSocketHashMap().values().toArray(vss);
         return vss;
     }
     public int getLiveSocketCount() {
-        if (_hashtableSocket == null) return 0;
-        return _hashtableSocket.size();
+        return getVirtualSocketHashMap().size();
     }
 
-    private Hashtable<Integer, VirtualSocket> getSocketHashtable() {
-        if (_hashtableSocket == null) {
-            _hashtableSocket = new Hashtable<Integer, VirtualSocket>(53, .75f); // all open MultiplexerSockets, by Id
-        }
-        return _hashtableSocket;
+    private ConcurrentHashMap<Integer, VirtualSocket> getVirtualSocketHashMap() {
+        return _hmVirtualSocket;
     }
 
     public boolean isClosed() {

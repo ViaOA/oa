@@ -116,6 +116,7 @@ public class MultiplexerOutputStreamController {
     public long getWriteSize() {
         return aiWriteSize.get();
     }
+
     
     /**
      * Called by vsockets, to write to the "real" outputstream. A header is created that includes the
@@ -125,6 +126,7 @@ public class MultiplexerOutputStreamController {
      */
     void write(VirtualSocket vs, byte[] bs, int off, int fullLength) throws IOException {
         // make sure that data is sent in chunks
+        
         int pos = 0;
         do {
             int len = fullLength - pos;

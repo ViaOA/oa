@@ -2,6 +2,7 @@ package com.viaoa.comm.multiplexer;
 
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -62,17 +63,27 @@ public class MultiplexerServerTest extends OAUnitTest {
                 _test(socket);
             }
         };
+        t.setName("ServerTestThread.value.x");
         t.start();
     }
 
     protected void _test(final Socket socket) {
         try {
+            aiRunnngCount.incrementAndGet();
             _test2(socket);
         }
         catch (Exception e) {
             System.out.println("Exception with server virtual socket, exception="+e);
             e.printStackTrace();
         }
+        finally {
+            aiRunnngCount.decrementAndGet();
+        }
+    }
+
+    private AtomicInteger aiRunnngCount = new AtomicInteger();
+    public int getRunningCount() {
+        return aiRunnngCount.get();        
     }
     
     private int grandTotal;
@@ -87,9 +98,15 @@ public class MultiplexerServerTest extends OAUnitTest {
         byte[] bs = null;
         for (int i=0; !bStopCalled; i++) {
             
+if (i == 500) {
+    int xx = 4;
+    xx++;
+}
             int x = dis.readInt();
             if (x < 0) break;
-            
+            if (i == 0) {
+                Thread.currentThread().setName("ServerTestThread.value."+x);
+            }
             if (bs == null) bs = new byte[x];
 
             dis.readFully(bs);
