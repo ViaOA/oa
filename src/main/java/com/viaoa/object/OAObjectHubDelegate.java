@@ -82,7 +82,7 @@ public class OAObjectHubDelegate {
         return false;
     }
     
-    // 20150105 the obj.weakhubs can be shared, so it can not be nulled out
+    // 20160105 the obj.weakhubs can be shared, so it can not be nulled out
     /**
      * Called by Hub when an OAObject is removed from a Hub.
      */
@@ -290,7 +290,7 @@ public class OAObjectHubDelegate {
                 }
             }
             else {
-                final int currentSize = oaObj.weakhubs.length;
+                int currentSize = oaObj.weakhubs.length;
 
                 // check for empty slot at the end
                 for (pos = currentSize - 1; pos >= 0; pos--) {
@@ -308,11 +308,13 @@ public class OAObjectHubDelegate {
                     
                     // found last used slot
                     if (pos < currentSize - 1) {
-                        pos++; // first empty slot
-                        break;
+                        if (pos >= 3) {
+                            pos++; // uses the first empty slot from the right
+                            break;
+                        }
+                        currentSize = pos+1;  // try to find another, else it needs to create a new array - since the current one could be shared by others 
                     }
 
-                    // no room
                     
                     // 20160105 if currentSize<3, check to see if it can use the same as another obj in hub
                     if (currentSize < 3) {
