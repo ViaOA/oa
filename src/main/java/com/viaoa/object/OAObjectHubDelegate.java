@@ -11,8 +11,6 @@
 package com.viaoa.object;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -20,7 +18,6 @@ import com.viaoa.hub.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAArray;
-import com.viaoa.util.OANullObject;
 
 /**
  * Used by Hub to manage the list of Hubs that an OAObject is a member of.

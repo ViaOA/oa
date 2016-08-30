@@ -43,8 +43,7 @@ public class HubFilterTest extends OAUnitTest {
         assertEquals(hls[0], hls2[0]);
     }
 
-//qqqqqqqqqqq    
-//    @Test
+    @Test
     public void test() {
         init();
 
@@ -76,10 +75,6 @@ public class HubFilterTest extends OAUnitTest {
             final AtomicInteger aiCnt = new AtomicInteger();
             HubFilter<PointsAwardLevel> hf = new HubFilter<PointsAwardLevel>(hubMaster, hubFiltered) {
                 public boolean isUsed(PointsAwardLevel level) {
-if (hubFiltered.contains(level)) {
-    int xx = 4;
-    xx++;
-}
                     return true;
                 }
                 @Override
@@ -94,10 +89,8 @@ if (hubFiltered.contains(level)) {
                     }
                 }
             }; 
-/*qqqqq            
             hf.addDependentProperty("id");
             if (i % 5 == 0) hf.addDependentProperty(PointsAwardLevelPP.location().id());
-*/            
             int x = hubFiltered.getSize();
             if (i % 5 == 0) {
                 for (int j=0; j<1; j++) System.gc();
@@ -105,13 +98,8 @@ if (hubFiltered.contains(level)) {
             
             //System.out.println("i="+i+", hubFiltered.getSize="+hubFiltered.getSize());
 
-if (hubFiltered.getSize() != 200) {
-    int xx = 4;
-    xx++;
-}
-            
             assertEquals(200, hubFiltered.getSize());
-            // hf.close();
+            hf.close();
 
             x = HubEventDelegate.getListenerCount(hubMaster);
         }
@@ -120,7 +108,7 @@ if (hubFiltered.getSize() != 200) {
     @Test
     public void test2() {
         OAObjectHubDelegate.ShowWarnings = false;
-        final int max = 5;//qqqqqqq change back to 5
+        final int max = 5;
         
 
         final Hub<PointsAwardLevel> hubMaster1 = new Hub<PointsAwardLevel>(PointsAwardLevel.class);

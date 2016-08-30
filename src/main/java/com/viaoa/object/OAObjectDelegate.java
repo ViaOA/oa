@@ -18,7 +18,6 @@ import java.util.logging.*;
 import com.viaoa.hub.*;
 import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
-import com.viaoa.util.*;
 
 /**
  * This is the central Delegate class that performs services for OAObjects.

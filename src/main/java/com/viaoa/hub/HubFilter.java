@@ -195,7 +195,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     // 20160827
     public void addTrigger(String propPath) {
         final String name = "HubFilter" + (aiUniqueNameCnt.incrementAndGet());
-        hubMaster.addHubListener(new HubListenerAdapter<T>() {
+        hubMaster.addTriggerListener(new HubListenerAdapter<T>() {
             @Override
             public void afterPropertyChange(HubEvent<T> e) {
                 if (!name.equalsIgnoreCase(e.getPropertyName())) return;
@@ -530,10 +530,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     protected void update(T obj, boolean bIsInitialzing) {
         if (bClosed) return;
         Hub<T> hub = getHub();
-if (hub.contains(obj)) {
-    int xx = 4;
-    xx++;//qqqqqqqqqqqq
-}
         if (aiClearing.get() != 0) {
             return;
         }
@@ -551,22 +547,9 @@ if (hub.contains(obj)) {
                             if (hubMaster == null || hubMaster.contains(obj)) {
                                 addObject(obj, bIsInitialzing);
                             }
-                            else {
-                                int xx = 4;
-                                xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
-                            }
-                        }
-                        else {
-                            int xx = 4;
-                            xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
                         }
                     }
                     else {
-
-                        int xx = 4;
-                        xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
-                        
-                        
                         // 2004/08/07 see if object is used by AO in HubLink
                         if (hubLink != null) {
                             Object objx = hubLink.getAO();
@@ -594,14 +577,6 @@ if (hub.contains(obj)) {
                         }
                     }
                 }
-                else {
-                    int xx = 4;
-                    xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
-                }
-            }
-            else {
-                int xx = 4;
-                xx++;//qqqqqqqqqqqqqqqqqqqqqqqqqq
             }
         }
         finally {
@@ -698,7 +673,7 @@ if (hub.contains(obj)) {
         if (bCompleted) afterInitialize();
     }    
     
-public int cntQQQ = 0;    
+    
     private boolean _initialize(final int cnt) {
         Hub<T> hub = getHub();
         if (hub == null) return false;
@@ -706,31 +681,14 @@ public int cntQQQ = 0;
         int i = 0;
         for (; hubMaster!=null;i++) {
             T obj = hubMaster.elementAt(i);
-cntQQQ++;//qqqqqqqqqq            
             if (obj == null) {
                 break;
             }
             if (aiInitializeCount.get() != cnt) {
                 return false;
             }
-    if (hub.getSize() != i) {
-        int xx = 4;
-        xx++;//qqqqqqqqq
-    }
             update(obj, true);
-if (hub.getSize() != i+1) {
-    int xx = 4;
-    xx++;//qqqqqqqqq
-}
         }
-if (i != hubMaster.getSize()) {
-    int xx = 4;
-    xx++;//qqqqqqqqqqq
-}
-if (i < 200) {
-    int xx = 4;
-    xx++;//qqqqqqqqqqq
-}
         
         // get linkToHub.prop value
         if (hubLink != null) {

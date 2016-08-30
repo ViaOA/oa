@@ -13,11 +13,6 @@ package com.viaoa.hub;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import com.viaoa.object.*;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
