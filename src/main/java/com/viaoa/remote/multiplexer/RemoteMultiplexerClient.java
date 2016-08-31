@@ -110,6 +110,16 @@ public class RemoteMultiplexerClient {
         return multiplexerClient;
     }
 
+    private volatile boolean bClosed;
+    public void close() {
+        bClosed = true;
+    }
+    @Override
+    protected void finalize() throws Throwable {
+        close();
+        super.finalize();
+    }
+    
     /**
      * Register a remote object to be called for server broadcasts.
      * 
@@ -209,6 +219,8 @@ public class RemoteMultiplexerClient {
         return multiplexerClient.getSocket();
     }
 
+    
+    
     /** create a name that will be unique on the server. */
     protected String createBindName(RequestInfo ri) {
 
@@ -893,7 +905,7 @@ public class RemoteMultiplexerClient {
     protected void setupRequestQueueThread() {
         Thread t = new Thread(new Runnable() {
             public void run() {
-                for (;;) {
+                for (;!bClosed;) {
                     try {
                         RequestInfo  ri = queRequestInfo.take();
                         
@@ -921,7 +933,7 @@ public class RemoteMultiplexerClient {
     protected void setupSyncRequestQueueThread() {
         Thread t = new Thread(new Runnable() {
             public void run() {
-                for (;;) {
+                for (;!bClosed;) {
                     try {
                         RequestInfo ri = queSyncRequestInfo.take(); // blocks
                         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {                        
@@ -1062,7 +1074,7 @@ public class RemoteMultiplexerClient {
                     }
                 }
                 final long tsStart = System.currentTimeMillis();
-                for (int i=0;!stopCalled; i++) {
+                for (int i=0;!stopCalled && !bClosed; i++) {
                     try {
                         Tuple<RequestInfo, Runnable> tup = queSyncRunnable.take(); // blocks
                         if (tup == null) continue;
