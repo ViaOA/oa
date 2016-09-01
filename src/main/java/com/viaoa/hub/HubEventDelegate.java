@@ -681,13 +681,15 @@ public class HubEventDelegate {
         clearGetAllListenerCache(thisHub);
 	}
 	
+	private final static HubListener[] hlEmpty = new HubListener[0];
 	/**
 	    Returns list of registered listeners.
 	    @see #addListener
 	*/
 	protected static HubListener[] getHubListeners(Hub thisHub) {
-	    if (thisHub.datau.getListenerTree() == null) return new HubListener[0];
+	    if (thisHub.datau.getListenerTree() == null) return hlEmpty;
 	    HubListener[] hl = thisHub.datau.getListenerTree().getHubListeners();
+	    if (hl == null) hl = hlEmpty;
 	    return hl;
 	}
 

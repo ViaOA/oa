@@ -523,6 +523,7 @@ public class HubDetailDelegate {
         return hubx;
     }
     public static Hub getHubWithMasterObject(final Hub thisHub) {
+        if (thisHub.datam == null) return null; // could be deserializing and not fully loaded
         if (thisHub.datam.masterObject != null) return thisHub;
 
         OAFilter<Hub> filter = new OAFilter<Hub>() {
@@ -815,6 +816,7 @@ public class HubDetailDelegate {
     */
     public static void setMasterObject(Hub thisHub, OAObject masterObject, OALinkInfo liDetailToMaster) {
         // OAObject needs to know which hubs are under it
+        if (thisHub.datam == null) return; // could be deserializing and not fully loaded
         thisHub.datam.liDetailToMaster = liDetailToMaster;
         if (masterObject == thisHub.datam.masterObject) return;
         thisHub.datam.masterObject = masterObject;

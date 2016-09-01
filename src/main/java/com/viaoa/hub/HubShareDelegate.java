@@ -113,9 +113,11 @@ public class HubShareDelegate {
         
         // find a HubFilter in the listener list
         HubListener[] hls = HubEventDelegate.getHubListeners(h);
-        for (HubListener hl : hls) {
-            if (hl instanceof HubCopy) {
-                return (HubCopy) hl;
+        if (hls != null) {
+            for (HubListener hl : hls) {
+                if (hl instanceof HubCopy) {
+                    return (HubCopy) hl;
+                }
             }
         }
         return null;
@@ -130,9 +132,11 @@ public class HubShareDelegate {
         
         // find a HubFilter in the listener list
         HubListener[] hls = HubEventDelegate.getHubListeners(h);
-        for (HubListener hl : hls) {
-            if (hl instanceof HubFilter) {
-                return (HubFilter) hl;
+        if (hls != null) {
+            for (HubListener hl : hls) {
+                if (hl instanceof HubFilter) {
+                    return (HubFilter) hl;
+                }
             }
         }
         return null;
@@ -143,7 +147,7 @@ public class HubShareDelegate {
         
         // find a HubShareAO in the listener list
         HubListener[] hls = HubEventDelegate.getHubListeners(h);
-        if (hls == null) return null;
+        if (hls == null || hls.length == 0) return null;
         for (HubListener hl : hls) {
             if (hl instanceof HubShareAO) {
                 return (HubShareAO) hl;

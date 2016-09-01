@@ -4,6 +4,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import com.viaoa.OAUnitTest;
 
+import test.hifive.model.oa.Employee;
+import test.hifive.model.oa.Location;
+
 public class HubTest extends OAUnitTest {
 
     @Test
@@ -38,8 +41,25 @@ public class HubTest extends OAUnitTest {
     class Row {
     }
     
+    @Test
+    public void testIterator() {
+        Location loc = new Location();
+        for (int i=0; i<50; i++) {
+            Employee emp = new Employee();
+            loc.getEmployees().add(emp);
+        }
+        int cnt = 0;
+        for (Employee emp : loc.getEmployees()) {
+            cnt++;
+        }
+        assertEquals(50, cnt);
+
+        cnt = 0;
+        for (Employee emp : loc.getEmployees()) {
+            cnt++;
+            emp.delete();
+        }
+        assertEquals(50, cnt);
+    }
 }
-
-
-
 
