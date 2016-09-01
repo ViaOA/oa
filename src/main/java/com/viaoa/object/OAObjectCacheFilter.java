@@ -3,8 +3,11 @@ package com.viaoa.object;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
+import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAFilter;
 
@@ -24,6 +27,8 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     
     // list of propPaths to listen for
     private String[] dependentPropertyPaths;
+    
+    protected boolean bServerSideOnly;
     
     
     
@@ -65,7 +70,13 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                 final Hub<T> hub = wrHub.get();
                 if (hub == null) return;
                 if (isUsed((T) obj)) {
+                    if (bServerSideOnly) { 
+                        OARemoteThreadDelegate.sendMessages(true);
+                    }
                     hub.add((T) obj);
+                    if (bServerSideOnly) { 
+                        OARemoteThreadDelegate.sendMessages(false);
+                    }
                 }
             }
             @Override
@@ -82,6 +93,9 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         }  // else the hub must have been preselected
     }
 
+    
+    
+    
     public OAObjectCacheFilter(Hub<T> hub, OAFilter<T> filter, String ... dependentPropPaths) {
         if (hub == null) throw new RuntimeException("hub can not be null");
         clazz = hub.getObjectClass();
@@ -98,6 +112,14 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             refresh();
         }  // else the hub must have been preselected
     }
+    
+    /**
+     * This is so that changes on the hub will be published to the clients, even if initiated on OAClientThread. 
+     */
+    public void setServerSideOnly(boolean b) {
+        bServerSideOnly = b;
+    }
+    
     
     /**
      * Add a filter that is used to determine if an object from the cache will be added to hub.
@@ -180,6 +202,9 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         setupTrigger();
 
         if (!bRefresh) return;
+        if (bServerSideOnly) { 
+            OARemoteThreadDelegate.sendMessages(true);
+        }
         OAObjectCacheDelegate.visit(clazz, new OACallback() {
             @Override
             public boolean updateObject(Object obj) {
@@ -188,6 +213,9 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                 return true;
             }
         });
+        if (bServerSideOnly) { 
+            OARemoteThreadDelegate.sendMessages(false);
+        }
     }
     
     protected void setupTrigger() {
@@ -214,6 +242,9 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                     };
                     finder.setUseOnlyLoadedData(false);
 
+                    if (bServerSideOnly) { 
+                        OARemoteThreadDelegate.sendMessages(true);
+                    }
                     OAObjectCacheDelegate.visit(clazz, new OACallback() {
                         @SuppressWarnings("unchecked")
                         @Override
@@ -229,10 +260,19 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                             return true;
                         }
                     });
+                    if (bServerSideOnly) { 
+                        OARemoteThreadDelegate.sendMessages(false);
+                    }
                 }
                 else {
+                    if (bServerSideOnly) { 
+                        OARemoteThreadDelegate.sendMessages(true);
+                    }
                     if (isUsed((T) rootObject)) hub.add((T) rootObject);
                     else hub.remove((T) rootObject);
+                    if (bServerSideOnly) { 
+                        OARemoteThreadDelegate.sendMessages(false);
+                    }
                 }
             }
         };
