@@ -111,6 +111,8 @@ public class HubDetailDelegate {
         if (thisHub == null || detailObject == null) return;
         if (!(detailObject instanceof OAObject)) return;
 
+        if (OAThreadLocalDelegate.isLoading()) return;
+        
         HubDataMaster dm;
         if (objMaster != null) {
             dm = getDataMaster(thisHub, objMaster.getClass());

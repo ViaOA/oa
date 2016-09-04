@@ -1829,18 +1829,19 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             }
 
             if (hubCombined != null) {
-                if (!bShareEndHub) {
-                    try {
-                        OAThreadLocalDelegate.setHubMergerIsChanging(true);
+                long ts = System.currentTimeMillis();
+                try {
+                    OAThreadLocalDelegate.setHubMergerIsChanging(true);
+                    if (!bShareEndHub) {
                         hubCombined.clear();
                     }
-                    finally {
-                        OAThreadLocalDelegate.setHubMergerIsChanging(false);
-                    }
+                    _afterChangeActiveObject();
+                
+                }
+                finally {
+                    OAThreadLocalDelegate.setHubMergerIsChanging(false);
                 }
                 
-                long ts = System.currentTimeMillis();
-                _afterChangeActiveObject();
                 
                 ts = System.currentTimeMillis() - ts;
                 String s = ("HM."+id+") onChangeAO hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
