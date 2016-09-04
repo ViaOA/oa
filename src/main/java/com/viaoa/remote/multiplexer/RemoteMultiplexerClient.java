@@ -1114,7 +1114,7 @@ public class RemoteMultiplexerClient {
             }
         };
         t.setDaemon(true);
-        t.setName("Remote.RunnableQueue."+aiSyncRunnableQueueThreadTotal.getAndIncrement());
+        t.setName("Remote.SyncRunnableQueue."+aiSyncRunnableQueueThreadTotal.getAndIncrement());
         t.start();
         //LOG.fine("thread name=" + t.getName());
     }

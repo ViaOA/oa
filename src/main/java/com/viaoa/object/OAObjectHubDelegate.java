@@ -262,7 +262,6 @@ public class OAObjectHubDelegate {
         synchronized (oaObj) {
             int pos;
             if (oaObj.weakhubs == null) {
-                
                 // 20160105 check to use same as another object in hub
                 int x = Math.min(4, hub.getCurrentSize());
                 for (int i=0; i<x; i++) {
@@ -302,6 +301,16 @@ public class OAObjectHubDelegate {
                     if (h == hub) {
                         return false;
                     }
+                    
+                    // 20160904 make sure that hub is not already in the list
+                    for (int i=0; i<pos; i++) {
+                        if (oaObj.weakhubs[i] == null) continue;
+                        h = oaObj.weakhubs[i].get();
+                        if (h == hub) {
+                            return false;
+                        }
+                    }
+                    
                     
                     // found last used slot
                     if (pos < currentSize - 1) {

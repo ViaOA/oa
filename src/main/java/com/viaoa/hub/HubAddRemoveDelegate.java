@@ -434,7 +434,7 @@ public class HubAddRemoveDelegate {
         // 20160426 make sure that it has not been removed 
         if (obj instanceof OAObject) {
             if (OAObjectHubDelegate.isInHub((OAObject)obj, thisHub)) {
-                // moved before listeners are notified.  Else listeners could ask for more objects
+                // this code has been moved before the listeners are notified.  Else listeners could ask for more objects
                 HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
                 
                 // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
