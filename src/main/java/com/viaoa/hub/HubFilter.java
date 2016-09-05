@@ -754,27 +754,25 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         afterAdd(e.getObject());
     }
     public void afterAdd(T obj) {
-        if (aiUpdating.get() == 0) {
-            if (hubMaster != null && !hubMaster.contains(obj)) {
-                // 20160904 dont allow it to reassign if it is masterObject does not match
-                Object objMaster = hubMaster.getMasterObject();
-                if (objMaster != null) {
-                    OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hubMaster);
-                    if (li != null) {
-                        OALinkInfo rli = li.getReverseLinkInfo();
-                        if (li != null) {
-                            if (li.getOwner()) {
-                                Object objx = li.getValue(obj);
-                                if (objx != null && objx != objMaster ) {
-                                    return;
-                                }
-                            }
+        if (aiUpdating.get() != 0) return;
+        if (hubMaster == null || hubMaster.contains(obj)) return;
+        // 20160904 dont allow it to reassign if it is masterObject does not match
+        Object objMaster = hubMaster.getMasterObject();
+        if (objMaster != null) {
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hubMaster);
+            if (li != null) {
+                OALinkInfo rli = li.getReverseLinkInfo();
+                if (li != null) {
+                    if (li.getOwner()) {
+                        Object objx = li.getValue(obj);
+                        if (objx != null && objx != objMaster ) {
+                            return;
                         }
                     }
                 }
-                hubMaster.add(obj);
             }
-        }        
+        }
+        hubMaster.add(obj);
     }
     
     public @Override void afterPropertyChange(HubEvent<T> e) {
