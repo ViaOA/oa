@@ -412,6 +412,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                 if (bClosed || bNewListFlag) {
                     return;
                 }
+                afterChangeActiveObject(null);
                 initialize();
             }
 
