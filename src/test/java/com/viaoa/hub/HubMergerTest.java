@@ -47,7 +47,6 @@ public class HubMergerTest extends OAUnitTest {
             }
         };
         finder.find();
-
         
         assertEquals(x, cntFinder);
     }
