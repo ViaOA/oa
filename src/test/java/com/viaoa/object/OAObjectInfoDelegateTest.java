@@ -121,6 +121,7 @@ public class OAObjectInfoDelegateTest extends OAUnitTest {
         // a change to emp in hubEmps, loc.hubEmps needs to not use weakRef
         emp.setLastName("x");
         obj = OAObjectPropertyDelegate.getProperty(loc, Location.P_Employees);
+        if (obj instanceof WeakReference) obj = ((WeakReference) obj).get();
         assertEquals(hubEmps, obj);
         
         // location cache should also change

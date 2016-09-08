@@ -138,7 +138,7 @@ public class OAInFilter implements OAFilter {
 
         boolean bResult;
         if (hubIn != null) {
-            bResult = hubIn.contains(obj);
+            bResult = hubIn.contains(objFind);
         }
         else if (finder != null) {
             Object objx = finder.findFirst(fromObject);
