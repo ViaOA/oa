@@ -654,16 +654,20 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
             
             try {
-                //OAThreadLocalDelegate.setLoadingObject(true);
-                bCompleted = _initialize(cnt);
+                try {
+                    if (!bServerSideOnly) OAThreadLocalDelegate.setLoading(true);
+                    bCompleted = _initialize(cnt);
+                }
+                finally {
+                    if (!bServerSideOnly) OAThreadLocalDelegate.setLoading(false);
+                }
                 if (hub != null && bCompleted) {
                     bNewListFlag = true;                   
-                    HubEventDelegate.fireOnNewListEvent(hub, true);
+                    if (!bServerSideOnly) HubEventDelegate.fireOnNewListEvent(hub, true);
                 }
             }
             finally {
                 if (hub != null && bCompleted) bNewListFlag = false;                   
-                //OAThreadLocalDelegate.setLoadingObject(false);
     	    }
     	}
     	finally {

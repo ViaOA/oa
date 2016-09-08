@@ -151,7 +151,8 @@ public class HubLinkTest extends OAUnitTest {
 
         // ServerTypes for silo
         Hub<ServerType> hubServerType = new Hub<ServerType>(ServerType.class);
-        new HubMerger(hubSilo, hubServerType, SiloPP.siloType().serverTypes().pp, false);
+        
+        HubMerger hmx = new HubMerger(hubSilo, hubServerType, SiloPP.siloType().serverTypes().pp, false);
         hubServerType.setLinkHub(hubServer, Server.P_ServerType, true, true);
 
         Hub<ServerType> hubServerType2 = modelTsac.getServerTypes().createShared();

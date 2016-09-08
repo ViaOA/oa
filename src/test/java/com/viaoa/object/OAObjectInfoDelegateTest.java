@@ -126,12 +126,14 @@ public class OAObjectInfoDelegateTest extends OAUnitTest {
         
         // location cache should also change
         obj = OAObjectPropertyDelegate.getProperty(program, Program.P_Locations);
+        if (obj instanceof WeakReference) obj = ((WeakReference) obj).get();
         assertEquals(hubLocs, obj);
         
         hubEmps.saveAll();
         obj = OAObjectPropertyDelegate.getProperty(loc, Location.P_Employees);
         assertTrue(obj instanceof WeakReference);
         obj = OAObjectPropertyDelegate.getProperty(program, Program.P_Locations);
+        if (obj instanceof WeakReference) obj = ((WeakReference)obj).get();
         assertEquals(hubLocs, obj);
 
         hubLocs.saveAll();

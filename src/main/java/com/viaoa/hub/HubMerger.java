@@ -69,6 +69,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     private boolean bIsRecusive;
     private boolean bIncludeRootHub;
     private boolean bUseBackgroundThread;
+    private boolean bLoadingCombined;
     
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -1041,13 +1042,25 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             // 20131209
             if (node == nodeRoot && bIncludeRootHub) {
                 if (hubCombined != null && !hubCombined.contains(parent)) {
-                    hubCombined.add(parent);
+                    try {
+                        if (bLoadingCombined) OAThreadLocalDelegate.setLoading(true);
+                        hubCombined.add(parent);
+                    }
+                    finally {
+                        if (bLoadingCombined) OAThreadLocalDelegate.setLoading(false);
+                    }
                 }
             }
 
             if (node.child == null) {
                 if (!bShareEndHub && hubCombined != null && !hubCombined.contains(parent)) {
-                    hubCombined.add(parent);
+                    try {
+                        if (bLoadingCombined) OAThreadLocalDelegate.setLoading(true);
+                        hubCombined.add(parent);
+                    }
+                    finally {
+                        if (bLoadingCombined) OAThreadLocalDelegate.setLoading(false);
+                    }
                 }
             }
             else if (node.child.liFromParentToChild.getType() == OALinkInfo.ONE) { // store in Node.data.hub
@@ -1470,11 +1483,18 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             try {
                 if (hub == hubRoot) {
                     OAThreadLocalDelegate.setHubMergerIsChanging(true);
+                    if (!bServerSideOnly) bLoadingCombined = true; //20160908
                 }
                 _onNewList2(e);
             }
             finally {
-                if (hub == hubRoot) OAThreadLocalDelegate.setHubMergerIsChanging(false);
+                if (hub == hubRoot) {
+                    OAThreadLocalDelegate.setHubMergerIsChanging(false);
+                    if (bLoadingCombined) {
+                        bLoadingCombined = false;
+                        HubEventDelegate.fireOnNewListEvent(hubCombined, false);
+                    }
+                }
             }
             //20150630
             if ((node == nodeRoot && bIncludeRootHub) || (node.child == null)) {
@@ -1835,11 +1855,16 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                     if (!bShareEndHub) {
                         hubCombined.clear();
                     }
+                    if (!bServerSideOnly) bLoadingCombined = true; //20160908
                     _afterChangeActiveObject();
                 
                 }
                 finally {
                     OAThreadLocalDelegate.setHubMergerIsChanging(false);
+                    if (bLoadingCombined) {
+                        bLoadingCombined = false;
+                        HubEventDelegate.fireOnNewListEvent(hubCombined, false);
+                    }
                 }
                 
                 
