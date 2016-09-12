@@ -110,7 +110,7 @@ public class OAObject implements java.io.Serializable, Comparable {
                 System.getProperty("java.vm.name")
         ));
         */
-        System.out.println("oa_3.5.34_" + version);
+        System.out.println("oa_3.5.35_" + version);
     }
     
     

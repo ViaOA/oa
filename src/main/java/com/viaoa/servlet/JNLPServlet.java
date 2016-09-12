@@ -176,9 +176,7 @@ public class JNLPServlet extends HttpServlet
                     if (v == null) v = "";
                     
                     if ("server".equalsIgnoreCase(n)) {
-                        String s2 = OAString.field(hostNameAndPort, ":", 2);
-                        if (OAString.isEmpty(s2)) s2 = hostNameAndPort;
-                        v = s2;
+                        v = OAString.field(hostNameAndPort, ":", 1);
                     }
                     
                     s += n+"="+v+"</argument><argument>";
