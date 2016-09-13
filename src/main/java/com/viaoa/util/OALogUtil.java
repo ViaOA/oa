@@ -50,6 +50,16 @@ public class OALogUtil {
         log.setLevel(Level.FINE);
         log.addHandler(ch);
     }    
+
+    /**
+        **** SAMPLE ****
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(Level.FINEST);
+        Logger log = Logger.getLogger("com.cpex.web.salesforce.mft");
+        log.setLevel(Level.FINEST);
+        log.addHandler(ch);
+
+     */
     
     
     public static void consoleOnly(Level level, String name) {
