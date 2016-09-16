@@ -674,7 +674,7 @@ public class OAString {
             char ch = s.charAt(i);
             char ch2 = (i+1==x ? 0 : s.charAt(i+1));
             
-            if (Character.isUpperCase(ch) && (i == 0 || Character.isUpperCase(ch2))) {
+            if (Character.isUpperCase(ch) && (i == 0 || (ch2==0 || Character.isUpperCase(ch2))) ) {
                 if (sb == null) sb = new StringBuilder(x);
                 sb.append(Character.toLowerCase(ch));
             }
