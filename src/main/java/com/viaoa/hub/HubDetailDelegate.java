@@ -111,7 +111,9 @@ public class HubDetailDelegate {
         if (thisHub == null || detailObject == null) return;
         if (!(detailObject instanceof OAObject)) return;
 
-        if (OAThreadLocalDelegate.isLoading()) return;
+        // 20160920 this needs to run even if loading.
+        ///   ex: using copy, loading from xml, etc
+        // if (OAThreadLocalDelegate.isLoading()) return;
         
         HubDataMaster dm;
         if (objMaster != null) {
