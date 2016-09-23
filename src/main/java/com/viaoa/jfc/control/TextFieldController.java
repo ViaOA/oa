@@ -46,7 +46,7 @@ public class TextFieldController extends JFCController implements FocusListener,
     //20151002 moved to jfccontroller private int propertyInfoMax=-2;
     private int max=-1;
     private OAPlainDocument document;
-    protected char conversion;  // 'U'pper, 'L'ower, 'T'itle, 'P'assword
+    protected char conversion;  // 'U'pper, 'L'ower, 'T'itle, 'P'assword/SHA, 'E'ncrpyted
     
     /**
         Create an unbound TextField.
@@ -327,7 +327,7 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
     }
 
     /**
-     * 'U'pper, 'L'ower, 'T'itle, 'P'assword
+     * 'U'pper, 'L'ower, 'T'itle, 'P'assword/SHA, 'E'ncrypted
      */
     public void setConversion(char conv) {
         conversion = conv;
@@ -458,6 +458,14 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
             }
             else if (conversion == 'P' || conversion == 'p') {
                 text = OAString.getSHAHash(text);
+            }
+            else if (conversion == 'E' || conversion == 'E') {
+                try {
+                    text = OAEncryption.encrypt(text);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("encryption failed", e);
+                }
             }
 
             if (text.equals(prevText)) return;
