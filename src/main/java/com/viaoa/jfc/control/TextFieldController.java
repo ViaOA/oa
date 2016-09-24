@@ -46,7 +46,16 @@ public class TextFieldController extends JFCController implements FocusListener,
     //20151002 moved to jfccontroller private int propertyInfoMax=-2;
     private int max=-1;
     private OAPlainDocument document;
-    protected char conversion;  // 'U'pper, 'L'ower, 'T'itle, 'P'assword/SHA, 'E'ncrpyted
+    
+    /**
+     * 'U'ppercase, 
+     * 'L'owercase, 
+     * 'T'itle, 
+     * 'J'ava identifier
+     * 'E'ncrpted password/encrypt
+     * 'S'HA password
+     */
+    protected char conversion;
     
     /**
         Create an unbound TextField.
@@ -327,7 +336,12 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
     }
 
     /**
-     * 'U'pper, 'L'ower, 'T'itle, 'P'assword/SHA, 'E'ncrypted
+     * 'U'ppercase, 
+     * 'L'owercase, 
+     * 'T'itle, 
+     * 'J'ava identifier
+     * 'E'ncrpted password/encrypt
+     * 'S'HA password
      */
     public void setConversion(char conv) {
         conversion = conv;
@@ -445,6 +459,7 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
         
         if (text != null && conversion != 0) {
             String hold = text;
+            
             if (conversion == 'U' || conversion == 'u') {
                 text = text.toUpperCase();
             }
@@ -455,6 +470,12 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
                 if (text.toLowerCase().equals(text) || text.toUpperCase().equals(text)) {
                     text = OAString.toTitleCase(text);
                 }
+            }
+            else if (conversion == 'J' || conversion == 'j') {
+                text = OAString.makeJavaIndentifier(text);
+            }
+            else if (conversion == 'S' || conversion == 's') {
+                text = OAString.getSHAHash(text);
             }
             else if (conversion == 'P' || conversion == 'p') {
                 text = OAString.getSHAHash(text);
