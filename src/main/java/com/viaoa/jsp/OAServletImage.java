@@ -107,7 +107,7 @@ public class OAServletImage extends OAHtmlElement {
         String src = null;
         OAObject obj = null;
 
-        src = getHtmlSource(hub.getAO());
+        if (hub != null) src = getHtmlSource(hub.getAO());
 
         if (src == null) src = "";
         if (src.length() == 0) sb.append("$('#"+id+"').addClass('oaMissingImage');\n");

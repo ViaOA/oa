@@ -112,7 +112,12 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     }
 
     /**
-     * Same as textfield, default is 'P'assword
+     * 'U'ppercase, 
+     * 'L'owercase, 
+     * 'T'itle, 
+     * 'J'ava identifier
+     * 'E'ncrpted password/encrypt
+     * 'S'HA password
      */
     public void setConversion(char conv) {
         getController().setConversion(conv);
