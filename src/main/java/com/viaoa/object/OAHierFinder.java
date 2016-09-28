@@ -106,7 +106,8 @@ public class OAHierFinder<F extends OAObject> {
             OAObject parent = (OAObject) liRecursive.getValue(obj);
             if (parent != null) {
                 if (findFirstValue(parent, filter, pos)) return true;
-                return false;
+                // 20160928 keep checking 
+                // return false;
             }
         }
         
