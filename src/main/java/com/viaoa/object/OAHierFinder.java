@@ -116,11 +116,11 @@ public class OAHierFinder<F extends OAObject> {
         String[] props = propertyPath.getProperties();
         if (props != null && pos < props.length) {
             OALinkInfo[] lis  = propertyPath.getLinkInfos();
-            if (lis == null || pos >= lis.length) return false;
-            
-            final OALinkInfo li = lis[pos];
-            OAObject objx = (OAObject) li.getValue(obj);
-            if (findFirstValue(objx, filter, pos+1)) return true;
+            if (lis != null && pos < lis.length) {
+                final OALinkInfo li = lis[pos];
+                OAObject objx = (OAObject) li.getValue(obj);
+                if (findFirstValue(objx, filter, pos+1)) return true;
+            }
         }
 
         
@@ -134,7 +134,6 @@ public class OAHierFinder<F extends OAObject> {
                 if (findFirstValue(parent, filter, pos)) return true;
             }
         }
-        
         
         return false;
     }
