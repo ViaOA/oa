@@ -114,8 +114,6 @@ public class OAHierFinder<F extends OAObject> {
         */
         
         String[] props = propertyPath.getProperties();
-        if (props == null || pos >= props.length) return false;
-
         if (props != null && pos < props.length) {
             OALinkInfo[] lis  = propertyPath.getLinkInfos();
             if (lis == null || pos >= lis.length) return false;
