@@ -1,5 +1,11 @@
 
 
+20161003 create github project and import into Eclipse
+    create new repo in github
+    add the readme file, so that it will create the master branch
+    eclipse: file/import/git project
+
+
 
 20160502 create multiple module ICE project
     1: create a new repo in stash  (ex: tsac/tslm)
