@@ -100,19 +100,7 @@ public class OAHierFinder<F extends OAObject> {
             }
         }        
 
-        /* 20160928 was:
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
-        OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);
-        if (liRecursive != null) {
-            OAObject parent = (OAObject) liRecursive.getValue(obj);
-            if (parent != null) {
-                if (findFirstValue(parent, filter, pos)) return true;
-                // 20160928 keep checking 
-                // return false;
-            }
-        }
-        */
-        
+
         String[] props = propertyPath.getProperties();
         if (props != null && pos < props.length) {
             OALinkInfo[] lis  = propertyPath.getLinkInfos();
@@ -123,8 +111,6 @@ public class OAHierFinder<F extends OAObject> {
             }
         }
 
-        
-        // 20160928 moved here
         // check recursive parent 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
         OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);
