@@ -67,7 +67,7 @@ public class OAPopupList extends OAList {
     public void valueChanged() {
         super.valueChanged();
         super.onItemSelected(getSelectedIndex());
-        popup.setVisible(false);
+        if (popup != null) popup.setVisible(false);
     }
 }
 
