@@ -1,0 +1,98 @@
+
+
+
+
+
+20161014  Sample code for using Basic auth
+    
+
+
+/**qqqqqqqqqq    
+ 
+    protected boolean verifyUser(HttpServletRequest req, HttpServletResponse res) {
+        res.setContentType("text/html");
+        // Get Authorization header
+        String auth = req.getHeader("Authorization");
+        if (allowUser(auth)) return true;
+        
+        // Not allowed, so report he's unauthorized
+        res.setHeader("WWW-Authenticate", "BASIC realm=\"realmName\"");
+        res.sendError(res.SC_UNAUTHORIZED);
+        return false;
+    }
+
+    protected boolean allowUser(String auth) throws IOException {
+        if (auth == null) {
+            return false; // no auth
+        }
+        if (!auth.toUpperCase().startsWith("BASIC ")) {
+            return false; // we only do BASIC
+        }
+        // Get encoded user and password, comes after "BASIC "
+        String userpassEncoded = auth.substring(6);
+        // Decode it, using any base 64 decoder
+        
+        sun.misc.BASE64Decoder dec = new sun.misc.BASE64Decoder();
+        String userpassDecoded = new String(dec.decodeBuffer(userpassEncoded));
+
+        // Check our user list to see if that user and password are "allowed"
+        if ("authorized".equals(validUsers.get(userpassDecoded))) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+
+
+        // see: https://gist.github.com/neolitec/8953607
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null) {
+            StringTokenizer st = new StringTokenizer(authHeader);
+            if (st.hasMoreTokens()) {
+                String basic = st.nextToken();
+
+                if (basic.equalsIgnoreCase("Basic")) {
+                    try {
+                        String credentials = new String(Base64.decodeBase64(st.nextToken()), "UTF-8");
+                        LOG.debug("Credentials: " + credentials);
+                        int p = credentials.indexOf(":");
+                        if (p != -1) {
+                            String _username = credentials.substring(0, p).trim();
+                            String _password = credentials.substring(p + 1).trim();
+
+                            if (!username.equals(_username) || !password.equals(_password)) {
+                                unauthorized(response, "Bad credentials");
+                            }
+
+                            filterChain.doFilter(servletRequest, servletResponse);
+                        }
+                        else {
+                            unauthorized(response, "Invalid authentication token");
+                        }
+                    }
+                    catch (UnsupportedEncodingException e) {
+                        throw new Error("Couldn't retrieve authentication", e);
+                    }
+                }
+            }
+        }
+        else {
+            unauthorized(response);
+        }
+    }
+    private void unauthorized(HttpServletResponse response, String message) throws IOException {
+        response.setHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
+        response.sendError(401, message);
+    }
+
+    private void unauthorized(HttpServletResponse response) throws IOException {
+        unauthorized(response, "Unauthorized");
+    }
+**/

@@ -31,8 +31,8 @@ import com.viaoa.util.filter.OANotEmptyFilter;
  *  
  */
 public class OAHierFinder<F extends OAObject> {
-    private String property;
-    private String strPropertyPath;
+    private final String property;
+    private final String strPropertyPath;
     private OAPropertyPath propertyPath;
     private Object foundValue;
     private boolean bIncludeFromObject;

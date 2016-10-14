@@ -437,14 +437,16 @@ public class OAObjectPropertyDelegate {
             if (!bWaitIfNeeded) return false;
             for (int i=0; ;i++) {
                 if (i > 6) {
-                    LOG.log(Level.WARNING, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue", new Exception("wait time exceeded"));
+                    LOG.log(Level.FINE, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue", new Exception("wait time exceeded"));
                     return false;  // bail out, ouch
                 }
-                if (i == 0) OARemoteThreadDelegate.startNextThread();
+                if (i == 0) {
+                    OARemoteThreadDelegate.startNextThread();
+                }
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-                    lock.wait(250);
+                    lock.wait(50);  // 20161014 was 250 
                 }
                 catch (Exception e) {
                 }

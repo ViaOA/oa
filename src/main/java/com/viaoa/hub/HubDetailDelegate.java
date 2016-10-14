@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import com.viaoa.object.*;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAFilter;
+import com.viaoa.util.OAString;
 
 /**
  * Delegate that manages master/detail functionality for Hubs.
@@ -340,8 +341,11 @@ public class HubDetailDelegate {
             if (HubSortDelegate.isSorted(detailHub)) { 
                 String s = HubSortDelegate.getSortProperty(detailHub);
                 if (s != null) {
-                    boolean b = HubSortDelegate.getSortAsc(detailHub);
-                    h.sort(s, b);
+                    String s2 = HubSortDelegate.getSortProperty(h);
+                    if (!OAString.equals(s, s2, true)) {
+                        boolean b = HubSortDelegate.getSortAsc(detailHub);
+                        h.sort(s, b);
+                    }
                 }
             }
     
