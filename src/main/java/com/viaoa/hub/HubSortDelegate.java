@@ -102,7 +102,9 @@ public class HubSortDelegate {
         
         if (!bAlreadySortedAndLocalOnly) {  // otherwise, no other client has this hub yet
             if (thisHub.datam.masterObject != null) {
-                HubCSDelegate.sort(thisHub, propertyPaths, bAscending, comp);
+                if (propertyPaths != null || comp != null) { // otherwise it was a cancel
+                    HubCSDelegate.sort(thisHub, propertyPaths, bAscending, comp);
+                }
             }
         }
         return true;
@@ -132,7 +134,14 @@ public class HubSortDelegate {
 		if (thisHub.data.getSortListener() == null) return;
 		HubSelectDelegate.loadAllData(thisHub);
 	    thisHub.data.changeCount++;
-	    Collections.sort(thisHub.data.vector, thisHub.data.getSortListener().comparator);
+	    for (int i=0; i<3; i++) {
+	        try {
+    	        Collections.sort(thisHub.data.vector, thisHub.data.getSortListener().comparator);
+    	        break;
+	        }
+	        catch (ConcurrentModificationException e) {
+	        }
+	    }
 	}
     private static void afterPerformSort(Hub thisHub) {
         HubEventDelegate.fireAfterSortEvent(thisHub);
