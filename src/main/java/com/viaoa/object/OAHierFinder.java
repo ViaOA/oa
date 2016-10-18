@@ -69,8 +69,11 @@ public class OAHierFinder<F extends OAObject> {
         return findFirst(fromObject, new OAEmptyFilter());
     }
     
-    
     protected boolean findFirstValue(final OAObject obj, OAFilter filter, final int pos) {
+        return findFirstValue(obj, filter, pos, false);
+    }
+    
+    protected boolean findFirstValue(final OAObject obj, OAFilter filter, final int pos, final boolean bRecursiveCheckOnly) {
         if (obj == null) return false;
         
         boolean b = true;
@@ -101,6 +104,19 @@ public class OAHierFinder<F extends OAObject> {
         }        
 
 
+        // check recursive parent 
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
+        OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);
+        if (liRecursive != null) {
+            OAObject parent = (OAObject) liRecursive.getValue(obj);
+            if (parent != null) {
+                if (findFirstValue(parent, filter, pos, true)) return true;
+            }
+        }
+        
+        
+        if (bRecursiveCheckOnly) return false;
+        
         String[] props = propertyPath.getProperties();
         if (props != null && pos < props.length) {
             OALinkInfo[] lis  = propertyPath.getLinkInfos();
@@ -111,9 +127,7 @@ public class OAHierFinder<F extends OAObject> {
             }
         }
 
-        // check recursive parent 
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
-        OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);
+        // go up using recursive parent 
         if (liRecursive != null) {
             OAObject parent = (OAObject) liRecursive.getValue(obj);
             if (parent != null) {
