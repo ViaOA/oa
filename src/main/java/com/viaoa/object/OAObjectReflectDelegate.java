@@ -107,8 +107,25 @@ public class OAObjectReflectDelegate {
         }
         StringTokenizer st = new StringTokenizer(propName, ".", false);
 
+        boolean b = false;
         for (;;) {
-            String tok = st.nextToken();
+            String tok = st.nextToken().trim();
+            
+            // 20161019 ignore class cast, ex: (com.test.Employee)emp.lname
+            if (tok.length() == 0) continue;
+            if (tok.charAt(0) == '(') {
+                b = true;
+                continue;
+            }
+            if (b) {
+                int x = tok.indexOf(')');
+                if (x < 0) continue;
+                b = false;
+                if (x+1 == tok.length()) continue;
+                tok = tok.substring(x+1);
+                tok = tok.trim();
+            }
+            
             Object value = _getProperty(hubLast, oaObj, tok);
             if (value == null || !st.hasMoreTokens()) return value;
             if (!(value instanceof OAObject)) {

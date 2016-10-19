@@ -1990,6 +1990,9 @@ public class OAString {
     public static boolean notEmpty(Object obj) {
         return !isEmpty(obj, false);
     }
+    public static boolean isNotEmpty(Object obj) {
+        return !isEmpty(obj, false);
+    }
     
 
     /**
