@@ -230,18 +230,24 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
     /** HubListener interface method, used to listen to changes to master Hub. */
     public @Override void afterInsert(HubEvent e) {
         if (!OAThreadLocalDelegate.isLoading()) {
-            update();
+            if (!OAThreadLocalDelegate.isHubMergerChanging()) {  // else wait for newList
+                update();
+            }
         }
     }
     /** HubListener interface method, used to listen to changes to master Hub. */
     public @Override void afterAdd(HubEvent e) {
         if (!OAThreadLocalDelegate.isLoading()) {
-            update();
+            if (!OAThreadLocalDelegate.isHubMergerChanging()) {  // else wait for newList
+                update();
+            }
         }
     }
     /** HubListener interface method, used to listen to changes to master Hub. */
     public @Override void afterRemove(HubEvent e) {
-        update();
+        if (!OAThreadLocalDelegate.isHubMergerChanging()) {  // else wait for newList
+            update();
+        }
     }
     /** HubListener interface method, used to listen to changes to master Hub. */
     public @Override void onNewList(HubEvent e) {
