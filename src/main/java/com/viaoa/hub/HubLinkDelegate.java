@@ -32,7 +32,14 @@ public class HubLinkDelegate {
     protected static void setLinkHub(Hub thisHub, String propertyFrom, Hub linkToHub, String propertyTo, boolean linkPosFlag, boolean bAutoCreate, boolean bAutoCreateAllowDups) {
         // 20110809 add bAutoCreateAllowDups
         if (linkToHub == thisHub) return;
-	
+
+//qqqqqqqqqqqqqqqqq        
+        if (linkToHub.getObjectClass().getName().indexOf("EmployeeAward") >= 0) {
+            int xx = 4;
+            xx++;
+        }
+        
+        
 	    if (thisHub.datau.getLinkToHub() != null) {
 	        if (thisHub.datau.getLinkToHub() == linkToHub) {
 	            if (thisHub.datau.isAutoCreate() == bAutoCreate && thisHub.datau.isAutoCreateAllowDups() == bAutoCreateAllowDups) {
@@ -539,6 +546,10 @@ public class HubLinkDelegate {
         updateLinkedToHub(fromHub, linkToHub, obj, null);
     }
     protected static void updateLinkedToHub(final Hub fromHub, Hub linkToHub, Object obj, String changedPropName) {
+        updateLinkedToHub(fromHub, linkToHub, obj, changedPropName, true);
+    }
+    protected static void updateLinkedToHub(final Hub fromHub, Hub linkToHub, Object obj, String changedPropName, boolean bAdjustMaster) {
+    
 		if (fromHub.datau.isAutoCreate()) return;
 
         obj = HubLinkDelegate.getPropertyValueInLinkedToHub(fromHub, obj);  // link property value
@@ -550,7 +561,7 @@ public class HubLinkDelegate {
             // see if this hub is linked to a master (bForce)
     
             if (obj != null && fromHub.datau.getLinkFromGetMethod() == null) {
-                int pos = HubDataDelegate.getPos(fromHub, obj, true, false);  // adjust master, bUpdateLink
+                int pos = HubDataDelegate.getPos(fromHub, obj, bAdjustMaster, false);  // adjust master, bUpdateLink
                 if (pos < 0 && HubDelegate.isValid(fromHub)) {
                     // add to fromHub
                     //   - only if it does not have a masterObject

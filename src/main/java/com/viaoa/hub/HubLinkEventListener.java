@@ -21,6 +21,7 @@ class HubLinkEventListener extends HubListenerAdapter implements java.io.Seriali
 	Hub linkToHub;
 	Hub fromHub;
 	boolean bUpdateWeakHub;
+	boolean bIsCalc;
 	
 	public HubLinkEventListener(Hub fromHub, Hub linkToHub) {
 	    this.fromHub = fromHub;
@@ -33,17 +34,18 @@ class HubLinkEventListener extends HubListenerAdapter implements java.io.Seriali
                 bUpdateWeakHub = true;
             }
         }
+        if (li != null && li.getCalculated()) bIsCalc = true;
 	}
 	
 	public @Override void afterChangeActiveObject(HubEvent hubEvent) {
-		HubLinkDelegate.updateLinkedToHub(fromHub, linkToHub, hubEvent.getObject());
+		HubLinkDelegate.updateLinkedToHub(fromHub, linkToHub, hubEvent.getObject(), null, !bIsCalc);
 	}
 	
 	public @Override void afterPropertyChange(HubEvent hubEvent) {
 	    if (hubEvent.getObject() == linkToHub.getActiveObject()) {
 	    	String prop = hubEvent.getPropertyName(); 
             if (prop != null && prop.equalsIgnoreCase(fromHub.datau.getLinkToPropertyName())) {
-            	HubLinkDelegate.updateLinkedToHub(fromHub, linkToHub, hubEvent.getObject(), prop);
+            	HubLinkDelegate.updateLinkedToHub(fromHub, linkToHub, hubEvent.getObject(), prop, !bIsCalc);
             }
 	    }
 	}
@@ -52,13 +54,15 @@ class HubLinkEventListener extends HubListenerAdapter implements java.io.Seriali
 	//     if so, then need to add it
 	@Override
 	public void onNewList(HubEvent e) {
-	    if (!bUpdateWeakHub) return;
-	    for (Object objx : linkToHub) {
-	        OAObject oaObj = (OAObject) objx;
-	        if (!OAObjectHubDelegate.addHub(oaObj, linkToHub, true)) {
-	            break;
-	        }
-        }
+	    if (bUpdateWeakHub) {
+    	    for (Object objx : linkToHub) {
+    	        OAObject oaObj = (OAObject) objx;
+    	        if (!OAObjectHubDelegate.addHub(oaObj, linkToHub, true)) {
+    	            break;
+    	        }
+            }
+	    }
+        HubLinkDelegate.updateLinkedToHub(fromHub, linkToHub, linkToHub.getAO(), null, false);
 	}
 }
 
