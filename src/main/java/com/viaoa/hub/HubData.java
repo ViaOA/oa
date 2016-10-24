@@ -95,8 +95,9 @@ public class HubData implements java.io.Serializable {
     }
 */    
     public Vector getVecAdd() {
-        if (hubDatax == null) return null;
-        return hubDatax.vecAdd;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.vecAdd;
     }
     public void setVecAdd(Vector vecAdd) {
         if (hubDatax != null || vecAdd != null) {
@@ -104,8 +105,9 @@ public class HubData implements java.io.Serializable {
         }
     }
     public Vector getVecRemove() {
-        if (hubDatax == null) return null;
-        return hubDatax.vecRemove;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.vecRemove;
     }
     public void setVecRemove(Vector vecRemove) {
         if (hubDatax != null || vecRemove != null) {
@@ -115,8 +117,9 @@ public class HubData implements java.io.Serializable {
     
     // see also: HubDataMaster.getSortProperty(), which uses linkinfo.sortProperty
     public String getSortProperty() {
-        if (hubDatax == null) return null;
-        return hubDatax.sortProperty;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.sortProperty;
     }
     public void setSortProperty(String sortProperty) {
         if (hubDatax != null || sortProperty != null) {
@@ -124,8 +127,9 @@ public class HubData implements java.io.Serializable {
         }
     }
     public boolean isSortAsc() {
-        if (hubDatax == null) return true;
-        return hubDatax.sortAsc;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return true;
+        return hdx.sortAsc;
     }
     public void setSortAsc(boolean sortAsc) {
         if (hubDatax != null || !sortAsc) {
@@ -133,8 +137,9 @@ public class HubData implements java.io.Serializable {
         }
     }
     public HubSortListener getSortListener() {
-        if (hubDatax == null) return null;
-        return hubDatax.sortListener;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.sortListener;
     }
     public void setSortListener(HubSortListener sortListener) {
         if (hubDatax != null || sortListener != null) {
@@ -144,8 +149,9 @@ public class HubData implements java.io.Serializable {
     
     
     public OASelect getSelect() {
-        if (hubDatax == null) return null;
-        return hubDatax.select;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.select;
     }
     public void setSelect(OASelect select) {
         if (hubDatax != null || select != null) {
@@ -156,8 +162,9 @@ public class HubData implements java.io.Serializable {
         }
     }
     public boolean isRefresh() {
-        if (hubDatax == null) return false;
-        return hubDatax.refresh;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return false;
+        return hdx.refresh;
     }
     public void setRefresh(boolean refresh) {
         if (hubDatax != null || refresh) {
@@ -186,8 +193,9 @@ public class HubData implements java.io.Serializable {
 
     // note: could also be in HubDataMaster.
     public String getUniqueProperty() {
-        if (hubDatax == null) return null;
-        return hubDatax.uniqueProperty;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.uniqueProperty;
     }
     public void setUniqueProperty(String uniqueProperty) {
         if (hubDatax != null || uniqueProperty != null) {
@@ -195,8 +203,9 @@ public class HubData implements java.io.Serializable {
         }
     }
     public Method getUniquePropertyGetMethod() {
-        if (hubDatax == null) return null;
-        return hubDatax.uniquePropertyGetMethod;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.uniquePropertyGetMethod;
     }
     public void setUniquePropertyGetMethod(Method uniquePropertyGetMethod) {
         if (hubDatax != null || uniquePropertyGetMethod != null) {
@@ -204,8 +213,9 @@ public class HubData implements java.io.Serializable {
         }
     }
     public boolean isDisabled() {
-        if (hubDatax == null) return false;
-        return hubDatax.disabled;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return false;
+        return hdx.disabled;
     }
     public void setDisabled(boolean disabled) {
         if (hubDatax != null || disabled) {
@@ -214,8 +224,9 @@ public class HubData implements java.io.Serializable {
     }
 
     public Hashtable getHashProperty() {
-        if (hubDatax == null) return null;
-        return hubDatax.hashProperty;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.hashProperty;
     }
     public void setHashProperty(Hashtable hashProperty) {
         if (hubDatax != null || hashProperty != null) {
@@ -224,8 +235,9 @@ public class HubData implements java.io.Serializable {
     }
     public OAObjectInfo getObjectInfo() {
         OAObjectInfo oi;
-        if (hubDatax != null) {
-            oi = hubDatax.objectInfo;
+        HubDatax hdx = hubDatax;
+        if (hdx != null) {
+            oi = hdx.objectInfo;
             if (oi != null) return oi;
         }
         oi = OAObjectInfoDelegate.getObjectInfo(objClass);
@@ -240,8 +252,9 @@ public class HubData implements java.io.Serializable {
     }
 
     public HubAutoSequence getAutoSequence() {
-        if (hubDatax == null) return null;
-        return hubDatax.autoSequence;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.autoSequence;
     }
     public void setAutoSequence(HubAutoSequence autoSequence) {
         if (hubDatax != null || autoSequence != null) {
@@ -250,8 +263,9 @@ public class HubData implements java.io.Serializable {
     }
     
     public HubAutoMatch getAutoMatch() {
-        if (hubDatax == null) return null;
-        return hubDatax.autoMatch;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return null;
+        return hdx.autoMatch;
     }
     public void setAutoMatch(HubAutoMatch autoMatch) {
         if (hubDatax != null || autoMatch != null) {
@@ -260,10 +274,11 @@ public class HubData implements java.io.Serializable {
     }
 
     public boolean isOAObjectFlag() {
-        if (hubDatax != null) {
-            if (hubDatax.oaObjectFlag) return true;
+        HubDatax hdx = hubDatax;
+        if (hdx != null) {
+            if (hdx.oaObjectFlag) return true;
             boolean b = objClass != null && OAObject.class.isAssignableFrom(objClass);
-            hubDatax.oaObjectFlag = b;
+            hdx.oaObjectFlag = b;
             return b;
         }
         return objClass != null && OAObject.class.isAssignableFrom(objClass);
@@ -274,8 +289,9 @@ public class HubData implements java.io.Serializable {
 
 
     public boolean isDupAllowAddRemove() {
-        if (hubDatax == null) return true; // default
-        return hubDatax.dupAllowAddRemove;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return true; // default
+        return hdx.dupAllowAddRemove;
     }
     public void setDupAllowAddRemove(boolean dupAllowAddRemove) {
         if (hubDatax != null || !dupAllowAddRemove) {
@@ -290,8 +306,9 @@ public class HubData implements java.io.Serializable {
      * @return
      */
     public boolean getTrackChanges() {
-        if (hubDatax == null) return false;
-        return hubDatax.bTrackChanges;
+        HubDatax hdx = hubDatax;
+        if (hdx == null) return false;
+        return hdx.bTrackChanges;
     }
     public void setTrackChanges(boolean bTrackChanges) {
         if (hubDatax != null || bTrackChanges) {
