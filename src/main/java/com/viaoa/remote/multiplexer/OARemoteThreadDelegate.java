@@ -86,6 +86,14 @@ public class OARemoteThreadDelegate {
         ((OARemoteThread) t).setSendMessages(b);
         return bx;
     }
+
+    public static boolean isRemoteThreadSendingMessages() {
+        Thread t = Thread.currentThread();
+        if (!(t instanceof OARemoteThread)) return false;
+        boolean bx = ((OARemoteThread) t).getSendMessages();
+        return bx;
+    }
+    
     
     public static boolean shouldEventsBeQueued() {
         Thread t = Thread.currentThread();

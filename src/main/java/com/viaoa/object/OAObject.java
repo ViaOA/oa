@@ -957,5 +957,28 @@ public class OAObject implements java.io.Serializable, Comparable {
         Object objx = hf.findFirstNotEmpty(this);
         return objx;
     }
+
+    /**
+     * Makes sure that the following code is only ran on the server.
+     * Any oasync changes will be sent to clients.
+     * @see #endServerOnly()
+     */
+    public boolean beginServerOnly() {
+        if (isLoading()) return false;
+        if (!OASyncDelegate.isServer(getClass())) return false;
+        OARemoteThreadDelegate.sendMessages(true);
+        return true;
+    }
+    public boolean startServerOnly() {
+        return beginServerOnly();
+    }
+    public void endServerOnly() {
+        if (isLoading()) return;
+        if (!OASyncDelegate.isServer(getClass())) return;
+        if (OARemoteThreadDelegate.isRemoteThreadSendingMessages()) {
+            OARemoteThreadDelegate.sendMessages(false);
+        }
+    }
+    
     
 }
