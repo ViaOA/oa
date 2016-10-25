@@ -521,7 +521,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         String s = (thisClass.getSimpleName()+", name="+trigger.name+", listenPropName="+listenProperty+", revPropPath="+revPropPath+", trigger.cnt="+x+", total="+aiAllTrigger.get());
         LOG.fine(s);
         if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
-        if (x > 180) {
+        else if (x > 180) {
             LOG.warning(s);
         }
         
