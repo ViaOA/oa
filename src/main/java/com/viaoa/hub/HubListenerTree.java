@@ -214,7 +214,7 @@ public class HubListenerTree {
             else {
                 // insert before first last
                 boolean b = false;
-                for (int i=listeners.length-1; i<=0; i--) {
+                for (int i=listeners.length-1; i>=0; i--) {
                     if (listeners[i].getLocation() != HubListener.InsertLocation.LAST) {
                         if (OAArray.indexOf(listeners, hl) < 0) {
                             listeners = (HubListener []) OAArray.insert(HubListener.class, listeners, hl, i+1);
