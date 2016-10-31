@@ -31,6 +31,9 @@ public class OALinkInfo { //implements java.io.Serializable {
     public static final int ONE = 0;
     public static final int MANY = 1;
 
+    public static final int TYPE_ONE = 0;
+    public static final int TYPE_MANY = 1;
+    
     String name;
     Class toClass;
     int type;

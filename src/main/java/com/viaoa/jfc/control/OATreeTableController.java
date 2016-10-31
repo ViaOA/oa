@@ -28,7 +28,11 @@ import com.viaoa.jfc.table.OATableComponent;
 import com.viaoa.jfc.table.OATreeTableCellEditor;
 import com.viaoa.jfc.tree.OATreeModel;
 import com.viaoa.jfc.tree.OATreeNodeData;
+import com.viaoa.object.OALinkInfo;
+import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectInfo;
 import com.viaoa.hub.*;
+import com.viaoa.hub.HubListener.InsertLocation;
 
 /**
  * Creates a Tree to use as a column in a Table.
@@ -50,14 +54,22 @@ import com.viaoa.hub.*;
         ...
  */
 public class OATreeTableController extends OATree implements OATableComponent {
-    private Hub hub;
+    private Hub hubRoot;
+    private Hub hubTable;
 
     /**
      * @param hub Hub that will be populated with all of the objects that are visible in the tree.
      */
+    public OATreeTableController(Hub hubRoot, Hub hub) {
+        super(8, 14, false);
+        this.hubRoot = hubRoot;
+        this.hubTable = hub;
+        setup();
+    }
     public OATreeTableController(Hub hub) {
         super(8, 14, false);
-        this.hub = hub;
+        this.hubRoot = null;
+        this.hubTable = hub;
         setup();
     }
 
@@ -151,7 +163,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
 
     @Override
     public Hub getHub() {
-        return OATreeTableController.this.hub;
+        return OATreeTableController.this.hubTable;
     }
 
     @Override
@@ -184,41 +196,112 @@ public class OATreeTableController extends OATree implements OATableComponent {
     private volatile boolean bIgnoreFlag;
     private Object lastRemoved;
     
+    
+    protected void refreshHub() {
+        if (bIgnoreFlag) return;
+        try {
+            bIgnoreFlag = true;
+            _doRefreshHub();
+        }
+        finally {
+            bIgnoreFlag = false;
+        }
+    }
+    protected void _doRefreshHub() {
+        hubTable.clear();
+        for (int row = 0;; row++) {
+            TreePath tp2 = OATreeTableController.this.getPathForRow(row);
+            if (tp2 == null) break;
+            Object[] objs = tp2.getPath();
+            if (objs.length < 1) break;
+            OATreeNodeData tnd = (OATreeNodeData) objs[objs.length - 1];
+            Object objx = tnd.getObject();
+            hubTable.add(objx);
+        }
+    }
+    
     void setup() {
-        if (hub == null) {
+        if (hubTable == null) {
             return;
         }
         
-        hub.addHubListener(new HubListenerAdapter() {
+        OAObjectInfo oi = hubTable.getOAObjectInfo();
+        final OALinkInfo liMany = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
+        final OALinkInfo liOne = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
+        
+        HubListener hl = new HubListenerAdapter() {
+            OAObject activeObject;
+            OAObject prevActiveObject;
+
             @Override
-            public void beforeRemove(HubEvent e) {
-                bIgnoreFlag = true;
+            public void afterChangeActiveObject(HubEvent e) {
+                prevActiveObject = activeObject;
+                activeObject = (OAObject) hubTable.getAO();
             }
-        });
+            
+            @Override
+            public void afterRemove(HubEvent e) {
+                refreshHub();
+            }
+            @Override
+            public void afterInsert(HubEvent e) {
+                // afterAdd(e);
+            }
+            @Override
+            public void afterAdd(HubEvent e) {
+                if (bIgnoreFlag) return;
+                
+                OAObject ao  = activeObject;
+                if (ao == e.getObject()) ao = prevActiveObject;
+                
+                if (activeObject != null) {
+                    if (liOne.getValue(e.getObject()) == null) {
+                        Hub hub = (Hub) liMany.getValue(activeObject);
+                        hub.add(e.getObject());
+                    }
+                }
+                else {
+Hub hx = hubRoot;                    
+                    if (hubRoot != null) hubRoot.add(e.getObject());
+int xx =4;
+xx++;
+                }
+                refreshHub();
+            }
+        };
+        hl.setLocation(InsertLocation.LAST);
+        hubTable.addHubListener(hl);
+
+        
         
         OATreeModel model = (OATreeModel) this.getModel();
 
         model.addTreeModelListener(new TreeModelListener() {
             @Override
             public void treeStructureChanged(TreeModelEvent e) {
-                hub.clear();
-                for (int row = 0;; row++) {
-                    TreePath tp2 = OATreeTableController.this.getPathForRow(row);
-                    if (tp2 == null) break;
-                    Object[] objs = tp2.getPath();
-                    if (objs.length < 1) break;
-                    OATreeNodeData tnd = (OATreeNodeData) objs[objs.length - 1];
-                    Object objx = tnd.getObject();
-                    hub.add(objx);
-                }
+                refreshHub();
             }
 
             @Override
             public void treeNodesRemoved(TreeModelEvent e) {
+                refreshHub();
+            }
+
+            /* was
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e) {
                 if (bIgnoreFlag) {
-                    bIgnoreFlag = false;
                     return;
                 }
+                try {
+                    bIgnoreFlag = true;
+                    _treeNodesRemoved(e);
+                }
+                finally {
+                    bIgnoreFlag = false;
+                }
+            }
+            void _treeNodesRemoved(TreeModelEvent e) {
                 TreePath tp = e.getTreePath();
                 int row = OATreeTableController.this.getRowForPath(tp);
                 
@@ -230,7 +313,14 @@ public class OATreeTableController extends OATree implements OATableComponent {
                     hub.remove(row + ints[i] + 1);
                 }
             }
+            */
 
+            @Override
+            public void treeNodesInserted(TreeModelEvent e) {
+                refreshHub();
+            }
+            
+            /*was
             @Override
             public void treeNodesInserted(TreeModelEvent e) {
                 TreePath tp = e.getTreePath();
@@ -251,9 +341,11 @@ public class OATreeTableController extends OATree implements OATableComponent {
                     hub.insert(objx, row + ints[i] + 1);
                 }
             }
+            */
 
             @Override
             public void treeNodesChanged(TreeModelEvent e) {
+                refreshHub();
             }
         });
 
@@ -272,8 +364,8 @@ public class OATreeTableController extends OATree implements OATableComponent {
                 if (tp2 == null) {
                     row++;
                     for ( ;; ) {
-                        if (hub.getAt(row) == null) break;
-                        hub.removeAt(row);
+                        if (hubTable.getAt(row) == null) break;
+                        hubTable.removeAt(row);
                     }
                     return;
                 }
@@ -283,10 +375,10 @@ public class OATreeTableController extends OATree implements OATableComponent {
                 OATreeNodeData tnd = (OATreeNodeData) objs[objs.length - 1];
                 
                 Object objx = tnd.getObject();
-                int row2 = hub.getPos(objx);
+                int row2 = hubTable.getPos(objx);
                 if (row2 < 0) return;
                 for (int i = row2 - 1; i > row; i--) {
-                    hub.remove(i);
+                    hubTable.remove(i);
                 }
             }
 
@@ -304,8 +396,8 @@ public class OATreeTableController extends OATree implements OATableComponent {
                     if (objs.length < 1) break;
                     OATreeNodeData tnd = (OATreeNodeData) objs[objs.length - 1];
                     Object objx = tnd.getObject();
-                    if (hub.contains(objx)) break;
-                    hub.insert(objx, row);
+                    if (hubTable.contains(objx)) break;
+                    hubTable.insert(objx, row);
                 }
             }
         });
