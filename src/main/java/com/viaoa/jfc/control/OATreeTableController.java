@@ -12,6 +12,8 @@ package com.viaoa.jfc.control;
 
 import java.awt.Component;
 import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -73,6 +75,10 @@ public class OATreeTableController extends OATree implements OATableComponent {
         setup();
     }
 
+    public Hub getRootHub() {
+        return hubRoot;
+    }
+    
     protected int visibleRow;
 
     public void setBounds(int x, int y, int w, int h) {
@@ -208,16 +214,38 @@ public class OATreeTableController extends OATree implements OATableComponent {
         }
     }
     protected void _doRefreshHub() {
-        hubTable.clear();
-        for (int row = 0;; row++) {
+        // hubTable.clear();
+        int row = 0;
+        for ( ;; row++) {
             TreePath tp2 = OATreeTableController.this.getPathForRow(row);
             if (tp2 == null) break;
             Object[] objs = tp2.getPath();
             if (objs.length < 1) break;
             OATreeNodeData tnd = (OATreeNodeData) objs[objs.length - 1];
             Object objx = tnd.getObject();
-            hubTable.add(objx);
+            
+            if (hubTable.getAt(row) != objx) {
+                hubTable.removeAt(row);
+            }
+            if (row >= hubTable.size()) {
+                hubTable.add(objx);
+            }
+            else {
+                hubTable.insert(objx, row);
+            }
         }
+        for (;;row++) {
+            if (hubTable.getAt(row) == null) break;
+            hubTable.removeAt(row);
+        }
+    }
+
+    private OALinkInfo liOne, liMany;
+    public OALinkInfo getOneLinkInfo() {
+        return liOne;
+    }
+    public OALinkInfo getManyLinkInfo() {
+        return liMany;
     }
     
     void setup() {
@@ -226,8 +254,8 @@ public class OATreeTableController extends OATree implements OATableComponent {
         }
         
         OAObjectInfo oi = hubTable.getOAObjectInfo();
-        final OALinkInfo liMany = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
-        final OALinkInfo liOne = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
+        liMany = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
+        liOne = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
         
         HubListener hl = new HubListenerAdapter() {
             OAObject activeObject;
@@ -254,17 +282,32 @@ public class OATreeTableController extends OATree implements OATableComponent {
                 OAObject ao  = activeObject;
                 if (ao == e.getObject()) ao = prevActiveObject;
                 
-                if (activeObject != null) {
+                if (ao != null) {
                     if (liOne.getValue(e.getObject()) == null) {
-                        Hub hub = (Hub) liMany.getValue(activeObject);
+                        Hub hub = (Hub) liMany.getValue(ao);
                         hub.add(e.getObject());
+                        
+                        int row = hubTable.getPos(ao);
+                        if (!OATreeTableController.this.isExpanded(row)) {
+                            bIgnoreFlag = true;
+                            try {
+                                ArrayList al = new ArrayList();
+                                for (Object obj=ao; obj!=null; ) {
+                                    al.add(obj);
+                                    obj = liOne.getValue(obj);
+                                }
+                                Collections.reverse(al);
+                                Object[] objs = al.toArray();
+                                OATreeTableController.this.expand(objs);
+                            }
+                            finally {
+                                bIgnoreFlag = false;
+                            }
+                        }
                     }
                 }
                 else {
-Hub hx = hubRoot;                    
                     if (hubRoot != null) hubRoot.add(e.getObject());
-int xx =4;
-xx++;
                 }
                 refreshHub();
             }

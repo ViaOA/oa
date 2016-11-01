@@ -105,6 +105,7 @@ import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.hub.HubSelectDelegate;
 import com.viaoa.jfc.border.CustomLineBorder;
 import com.viaoa.jfc.control.JFCController;
+import com.viaoa.jfc.control.OATreeTableController;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.jfc.table.OATableCellEditor;
 import com.viaoa.jfc.table.OATableCellRenderer;
@@ -812,7 +813,33 @@ if (!getKeepSorted()) hub.cancelSort();
 
             if (rect != null && pt.y > (rect.y + (rect.height / 2))) row++;
 
-            if (hub.getObjectClass().isAssignableFrom(dragObject.getClass())) {
+//qqqqqqqqqqqqqqqq
+            // 20161101 allow dnd with treetable
+            OATreeTableController ttc = null;
+            for (OATableColumn tc : columns) {
+                OATableComponent comp = tc.getOATableComponent();
+                if (comp instanceof OATreeTableController) {
+                    ttc = (OATreeTableController) comp;
+                    break;
+                }
+            }
+            
+            if (ttc != null) {
+                if (hub.getAt(row) == null) {
+                    Hub h = ttc.getRootHub();
+                    Object objx = h.getMasterObject();
+                    if (objx != null) {
+                        if (!objx.getClass().equals(ttc.getOneLinkInfo().getToClass())) objx = null;
+                    }
+                    ((OAObject)dragObject).setProperty(ttc.getOneLinkInfo().getName(), objx);
+                }
+                else {
+                    Hub h = (Hub) ttc.getManyLinkInfo().getValue(hub.getAt(row));
+                    h.add(dragObject);
+                }
+                ttc.refresh();
+            }
+            else if (hub.getObjectClass().isAssignableFrom(dragObject.getClass())) {
                 if (!getAllowDrop(dragHub, dragObject, hub)) {
                     return;
                 }
