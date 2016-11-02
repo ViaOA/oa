@@ -224,9 +224,8 @@ public class OATreeTableController extends OATree implements OATableComponent {
             OATreeNodeData tnd = (OATreeNodeData) objs[objs.length - 1];
             Object objx = tnd.getObject();
             
-            if (hubTable.getAt(row) != objx) {
-                hubTable.removeAt(row);
-            }
+            if (hubTable.getAt(row) == objx) continue;
+            hubTable.removeAt(row);
             if (row >= hubTable.size()) {
                 hubTable.add(objx);
             }
@@ -234,15 +233,15 @@ public class OATreeTableController extends OATree implements OATableComponent {
                 hubTable.insert(objx, row);
             }
         }
-        for (;;row++) {
+        for (;;) {
             if (hubTable.getAt(row) == null) break;
             hubTable.removeAt(row);
         }
 //qqqqqqqqqqqqqqqq        
-if (bDEBUG) System.out.println("refresh => "+hubTable.size());        
+//if (bDEBUG) System.out.println("refresh => "+hubTable.size());        
         
     }
-public boolean bDEBUG = false;
+//public boolean bDEBUG = false;
 
     private OALinkInfo liOne, liMany;
     public OALinkInfo getOneLinkInfo() {
