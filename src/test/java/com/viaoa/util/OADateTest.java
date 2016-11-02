@@ -20,5 +20,17 @@ public class OADateTest extends OAUnitTest {
         assertEquals(d1+x, d2);
         
     }
+
+    @Test
+    public void msUntilMidnight() {
+
+        OADateTime dtNow = new OADateTime();
+        OADate d = new OADate(dtNow.addDays(1));
+        long ms = d.getTime() - dtNow.getTime();
+        
+        assertTrue(ms > 0);
+        
+    }
+    
     
 }
