@@ -238,7 +238,11 @@ public class OATreeTableController extends OATree implements OATableComponent {
             if (hubTable.getAt(row) == null) break;
             hubTable.removeAt(row);
         }
+//qqqqqqqqqqqqqqqq        
+if (bDEBUG) System.out.println("refresh => "+hubTable.size());        
+        
     }
+public boolean bDEBUG = false;
 
     private OALinkInfo liOne, liMany;
     public OALinkInfo getOneLinkInfo() {
@@ -397,6 +401,8 @@ public class OATreeTableController extends OATree implements OATableComponent {
         OATreeTableController.this.addTreeExpansionListener(new TreeExpansionListener() {
             @Override
             public void treeCollapsed(TreeExpansionEvent event) {
+                refreshHub();
+/*qq                
                 TreePath tp = event.getPath();
                 if (tp == null) return;
 
@@ -423,10 +429,13 @@ public class OATreeTableController extends OATree implements OATableComponent {
                 for (int i = row2 - 1; i > row; i--) {
                     hubTable.remove(i);
                 }
+*/                
             }
 
             @Override
             public void treeExpanded(TreeExpansionEvent event) {
+refreshHub();
+/*
                 TreePath tp = event.getPath();
                 if (tp == null) return;
 
@@ -442,6 +451,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
                     if (hubTable.contains(objx)) break;
                     hubTable.insert(objx, row);
                 }
+*/                
             }
         });
     }
