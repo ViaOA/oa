@@ -13,11 +13,11 @@ import com.viaoa.util.OAString;
 
 import test.hifive.HifiveDataGenerator;
 import test.hifive.delegate.ModelDelegate;
+import test.hifive.model.oa.Company;
 import test.hifive.model.oa.Employee;
 import test.hifive.model.oa.Location;
 import test.hifive.model.oa.Program;
 import test.hifive.model.oa.propertypath.ProgramPP;
-import test.theice.tsac3.model.oa.*;
 
 public class HubMergerTest extends OAUnitTest {
     private int cntFinder;
@@ -76,8 +76,95 @@ public class HubMergerTest extends OAUnitTest {
         
         int xx = 4;
         xx++;
-        
-
     }
 
+    
+    @Test
+    public void testA() {
+        Hub<Company> hubCompany = new Hub<Company>(Company.class);
+        Company company = new Company();
+        hubCompany.add(company);
+        
+        Hub<Program> hubx = new Hub<Program>();
+        Program p = new Program();
+        company.getPrograms().add(p);
+
+        Location l = new Location();
+        l.setCode("Aaaaa");
+        p.getLocations().add(l);
+
+        Location l2 = new Location();
+        l2.setCode("Bbbbb");
+        p.getLocations().add(l2);
+
+        Location lx = new Location();
+        lx.setCode("Cccccccc");
+        l.getLocations().add(lx);
+
+        lx = new Location();
+        lx.setCode("Dddddd");
+        l.getLocations().add(lx);
+        
+        Hub<Location> hubLoc = hubx.getDetailHub(Program.P_Locations);
+        Hub<Location> hubFlattened = new Hub<Location>(Location.class);
+
+        HubMerger hm = new HubMerger(hubCompany, hubFlattened, "Programs.Locations", false);
+        assertEquals(0, hubFlattened.getSize());
+        
+        hubCompany.setPos(0);
+        assertEquals(4, hubFlattened.getSize());
+
+        hubCompany.setPos(-1);
+        assertEquals(0, hubFlattened.getSize());
+    }
+    
+    @Test
+    public void testB() {
+        Hub<Program> hubx = new Hub<Program>();
+        Program p = new Program();
+        hubx.add(p);
+
+        Location l = new Location();
+        l.setCode("Aaaaa");
+        p.getLocations().add(l);
+
+        Location l2 = new Location();
+        l2.setCode("Bbbbb");
+        p.getLocations().add(l2);
+
+        l2 = new Location();
+        l2.setCode("Bbbbb2");
+        p.getLocations().add(l2);
+        
+        Location lx = new Location();
+        lx.setCode("Cccccccc");
+        l.getLocations().add(lx);
+
+        lx = new Location();
+        lx.setCode("Dddddd");
+        l.getLocations().add(lx);
+        
+        Location lz = new Location();
+        lz.setCode("Eeeeee");
+        lx.getLocations().add(lz);
+        
+        Hub<Location> hubLoc = hubx.getDetailHub(Program.P_Locations);
+        Hub<Location> hubFlattened = new Hub<Location>(Location.class);
+
+        HubMerger hm = new HubMerger(hubLoc, hubFlattened, Location.P_Locations, true, true, true);
+        hm.DEBUG = true;
+        
+        for (int i=0; i<5; i++) {
+            hubx.setPos(0);
+            assertEquals(6, hubFlattened.getSize());
+            hubx.setPos(-1);
+            assertEquals(0, hubFlattened.getSize());
+        }        
+    }
+    
+    public static void main(String[] args) throws Exception {
+        HubMergerTest test = new HubMergerTest();
+        test.testB();
+    }
+    
 }

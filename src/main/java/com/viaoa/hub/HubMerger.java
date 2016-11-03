@@ -1529,6 +1529,10 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         }
 
         public void _onNewList2(HubEvent e) {
+            // 20161103 if root, then all can be removed. Must do this for rootHubs that are recursive
+            if (hub == hubRoot) {
+                hubCombined.clear();
+            }
             try {
                 _onNewList();
             }
