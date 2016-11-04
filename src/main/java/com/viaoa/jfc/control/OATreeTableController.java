@@ -206,7 +206,9 @@ public class OATreeTableController extends OATree implements OATableComponent {
     
     protected void refreshHub() {
         if (bIgnoreFlag) return;
-        if (OAThreadLocalDelegate.isLoading()) return;
+        if (OAThreadLocalDelegate.isLoading()) {
+            if (hubTable.size() > 0) return;
+        }
         
         try {
             bIgnoreFlag = true;
@@ -217,7 +219,6 @@ public class OATreeTableController extends OATree implements OATableComponent {
         }
     }
     protected void _doRefreshHub() {
-        // hubTable.clear();
         int row = 0;
         for ( ;; row++) {
             TreePath tp2 = OATreeTableController.this.getPathForRow(row);
@@ -340,7 +341,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
                     OAThreadLocalDelegate.setLoading(true);
                     refreshHub();
                 }
-                catch (Exception ex) {
+                finally {
                     OAThreadLocalDelegate.setLoading(false);
                 }
             }

@@ -39,11 +39,14 @@ public class SyncTest extends OAUnitTest {
         
 
         // create sample object on server
-        OAThreadLocalDelegate.setLoading(true);
-        serverTest = new Server();
-        serverTest.setId(1);
-        OAThreadLocalDelegate.setLoading(false);
-        
+        try {
+            OAThreadLocalDelegate.setLoading(true);
+            serverTest = new Server();
+            serverTest.setId(1);
+        }
+        finally {
+            OAThreadLocalDelegate.setLoading(false);
+        }
         serverTest.setName("test");
         
         int xx = 4;
