@@ -33,6 +33,7 @@ import com.viaoa.jfc.tree.OATreeNodeData;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.hub.*;
 import com.viaoa.hub.HubListener.InsertLocation;
 
@@ -205,6 +206,8 @@ public class OATreeTableController extends OATree implements OATableComponent {
     
     protected void refreshHub() {
         if (bIgnoreFlag) return;
+        if (OAThreadLocalDelegate.isLoading()) return;
+        
         try {
             bIgnoreFlag = true;
             _doRefreshHub();
@@ -251,6 +254,16 @@ public class OATreeTableController extends OATree implements OATableComponent {
         return liMany;
     }
     
+    @Override
+    protected void finalize() throws Throwable {
+        if (hl != null && hubTable != null) hubTable.removeHubListener(hl);
+        if (hl2 != null && hubRoot != null) hubRoot.removeHubListener(hl2);
+        super.finalize();
+    }
+    
+    private HubListener hl;
+    private HubListener hl2;
+    
     void setup() {
         if (hubTable == null) {
             return;
@@ -260,7 +273,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
         liMany = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
         liOne = oi.getRecursiveLinkInfo(OALinkInfo.ONE);
         
-        HubListener hl = new HubListenerAdapter() {
+        hl = new HubListenerAdapter() {
             OAObject activeObject;
             OAObject prevActiveObject;
 
@@ -272,11 +285,12 @@ public class OATreeTableController extends OATree implements OATableComponent {
             
             @Override
             public void afterRemove(HubEvent e) {
-                refreshHub();
+                // removed, since another treeTableController could be removing during a refresh
+                // refreshHub();
             }
             @Override
             public void afterInsert(HubEvent e) {
-                // afterAdd(e);
+                afterAdd(e);
             }
             @Override
             public void afterAdd(HubEvent e) {
@@ -318,6 +332,20 @@ public class OATreeTableController extends OATree implements OATableComponent {
         hl.setLocation(InsertLocation.LAST);
         hubTable.addHubListener(hl);
 
+        hl2 = new HubListenerAdapter() {
+            @Override
+            public void onNewList(HubEvent e) {
+                hubTable.clear();
+                try {
+                    OAThreadLocalDelegate.setLoading(true);
+                    refreshHub();
+                }
+                catch (Exception ex) {
+                    OAThreadLocalDelegate.setLoading(false);
+                }
+            }
+        };        
+        hubRoot.addHubListener(hl2);
         
         
         OATreeModel model = (OATreeModel) this.getModel();
