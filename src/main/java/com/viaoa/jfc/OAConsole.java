@@ -45,6 +45,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
     private int columns;
     private HubListener hubListener;
     private Hub hubFromMerger;
+    private int maxRows = 500;
     
     public OAConsole(Hub hub, String property, int columns) {
         super(new Hub<Console>(Console.class));
@@ -57,16 +58,31 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
         setup();
     }
 
+    
     @Override
     public void setSelectHub(Hub hub) {
         super.setSelectHub(hub);
     }
+
+    public void setMaxRows(int x) {
+        this.maxRows = x;
+    }
+    public int getMaxRows() {
+        return maxRows;
+    }
+    
     
     public void close() {
         if (hubListener != null && hubListen != null) {
             hubListen.removeHubListener(hubListener);
         }
         if (hmConsole != null) hmConsole.clear();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        close();
     }
     
     public void setup() {
@@ -122,7 +138,7 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
                 Object val = e.getNewValue();
                 if (val == null) val = "";
                 console.setText(""+val);
-                if (hub.getSize() > 2500) {
+                if (hub.getSize() > maxRows) {
                     hub.remove(0);
                 }
                 hub.add(console);
