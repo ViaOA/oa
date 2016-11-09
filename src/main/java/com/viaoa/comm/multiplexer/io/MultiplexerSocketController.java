@@ -24,6 +24,7 @@ import java.util.Hashtable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -174,6 +175,7 @@ public class MultiplexerSocketController {
                     MultiplexerSocketController.this.getInputStreamController().readRealSocketLoop();
                 }
                 catch (Exception e) {
+                    LOG.log(Level.FINE, "error in socket thread for connection "+_connectionId, e);
                     // if (Log.DEBUG) Log.debug("MultiplexerSocketController: error reading real socket, " + e +", vsc.id="+MultiplexerSocketController.this._vscId);
                     if (!wasCloseAlreadyCalled()) {
                         onSocketException(e);
@@ -236,7 +238,8 @@ public class MultiplexerSocketController {
     protected boolean verifyServerSideHandshake() throws IOException {
         boolean bResult = false;
 
-        for (int i = 0;; i++) {
+        int i = 0;
+        for ( ;; i++) {
             byte b = (byte) _socket.getInputStream().read();
             if (b != (byte) Signature.charAt(i)) {
                 _socket.getInputStream().read(new byte[2048]); // consume the rest of the available message
@@ -246,6 +249,9 @@ public class MultiplexerSocketController {
                 bResult = true;
                 break;
             }
+        }
+        if (!bResult) {
+            LOG.fine("verify handshake failed on char #"+i);
         }
         return bResult;
     }
@@ -261,6 +267,7 @@ public class MultiplexerSocketController {
         if (_outputStreamController == null) {
             synchronized (_LockStreamController) {
                 if (_outputStreamController == null) {
+                    LOG.fine("creating outputstream controller");
                     _outputStreamController = new MultiplexerOutputStreamController() {
                         @Override
                         protected void onSocketException(Exception e) {
