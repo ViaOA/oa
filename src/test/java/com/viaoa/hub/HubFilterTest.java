@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.OAUnitTest;
+import com.viaoa.annotation.OACalculatedProperty;
 import com.viaoa.object.OAObjectCacheFilter;
 import com.viaoa.object.OAObjectHubDelegate;
 
@@ -268,10 +269,44 @@ public class HubFilterTest extends OAUnitTest {
         assertEquals(4, hubFiltered.size());
     }
     
-    
-    
-    
-    
+    @Test
+    public void testC() {
+        Hub<Value> hubValue = new Hub<Value>(Value.class);
+        hubValue.add(new Value());
+        
+        Hub<Value> hubValueFiltered = new Hub<Value>(Value.class);
+        final Hub<EmployeeAward> hubEmployeeAward = new Hub<EmployeeAward>(EmployeeAward.class);
+        
+        EmployeeAward ea = new EmployeeAward();
+        AwardType at = new AwardType();
+        at.setValue(50);
+        ea.setAwardType(at);
+        
+        Hub<AwardType> hubAwardType = new Hub<AwardType>();
+        hubAwardType.add(at);
+
+        hubEmployeeAward.add(ea);
+        hubEmployeeAward.setPos(0);
+        
+        
+        final AtomicInteger ai = new AtomicInteger();
+        final HubFilter<Value> hfCardValue = new HubFilter<Value>(hubValue, hubValueFiltered, true) {
+            public boolean isUsed(Value object) {
+                ai.incrementAndGet();
+                return true;
+            }
+        };
+// {P_AwardType+"."+AwardType.P_Value, P_AwardCardOrders+"."+AwardCardOrder.P_Value, P_IsOpen, P_InternationalVisaAmount, P_AddOnProductSelectedDate, P_EmployeeAwardCharities+"."+EmployeeAwardCharity.P_Value})
+        
+        hfCardValue.addDependentProperty(hubEmployeeAward, EmployeeAward.P_Balance, true);
+        
+//qqqqqqqq test closing HubFilter to see if it is cleaned up        
+        
+        ai.set(0);
+        at.setValue(51);
+        
+        assertEquals(1, ai.get());
+    }
     
     public static void XXmain(String[] args) throws Exception {
         /*

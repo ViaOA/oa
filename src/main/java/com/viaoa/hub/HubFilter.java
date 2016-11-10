@@ -231,11 +231,17 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
         });
     }
+    
+    
     /** 
      * Add a dependent property from a Hub, which will call refresh
      * when prop changes or when hub.AO changes
      */
-    public void addDependentProperty(Hub hub, String prop) {
+    public void addDependentProperty(final Hub hub, String prop) {
+        addDependentProperty(hub, prop, true);
+    }
+    
+    public void addDependentProperty(final Hub hub, String prop, final boolean bActiveObjectOnly) {
         if (bClosed) return;
         if (prop == null || prop.length() == 0) return;
         if (hub == null) return;
@@ -254,14 +260,15 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
             @Override
             public void afterPropertyChange(HubEvent e) {
+                if (bActiveObjectOnly && e.getObject() != hub.getAO()) return;
                 if (propName.equalsIgnoreCase(e.getPropertyName())) {
                     HubFilter.this.refresh();
                 }
             }
         };
 
-        if (prop.indexOf('.') < 0) hub.addHubListener(hl);
-        else hub.addHubListener(hl, propName, new String[] {prop});
+        if (prop.indexOf('.') < 0) hub.addHubListener(hl, prop, bActiveObjectOnly);
+        else hub.addHubListener(hl, propName, new String[] {prop}, bActiveObjectOnly);
     }
     
     /**
