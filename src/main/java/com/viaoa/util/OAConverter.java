@@ -50,6 +50,8 @@ public class OAConverter {
         addConverter( com.viaoa.util.OADate.class, new OAConverterOADate() );
         addConverter( com.viaoa.util.OATime.class, new OAConverterOATime() );
 
+        addConverter( Calendar.class, new OAConverterCalendar() );
+        
         addConverter( java.awt.Point.class, new OAConverterPoint() );
         addConverter( java.awt.Dimension.class, new OAConverterDimension() );
         addConverter( java.awt.Rectangle.class, new OAConverterRectangle() );

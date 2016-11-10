@@ -284,10 +284,11 @@ public class OADateTimeTest extends OAUnitTest {
         xx++;
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        
         OATime t = new OATime(8, 49, 0);
         OADateTime dtNow = new OADateTime();
-        
+
         OATime tNow = new OATime(dtNow);
         
         OADateTime dt1 = new OADateTime(t.getTime());
