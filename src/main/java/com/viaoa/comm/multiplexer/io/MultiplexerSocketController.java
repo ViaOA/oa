@@ -126,22 +126,10 @@ public class MultiplexerSocketController {
         if (socket == null) throw new IllegalArgumentException("socket can not be null");
         this._bIsClient = true;
         this._socket = socket;
+        this._msStarted = System.currentTimeMillis();
 
         // perform handshake/verification in this thread.
         performHandshake();
-        /*was
-        try {
-            performHandshake();
-        }
-        catch (SocketException e) {
-            onSocketException(e);
-            return;
-        }
-        catch (IOException e) {
-            onSocketException(e);
-            return;
-        }
-        */
 
         // start the real socket reader thread.
         startSocketReaderThread(false);
@@ -158,6 +146,7 @@ public class MultiplexerSocketController {
         this._bIsClient = false;
         this._socket = socket;
         this._connectionId = id;
+        this._msStarted = System.currentTimeMillis();
         LOG.fine("new client connection, id="+id);
         // start real socket reader thread, and have it validate/handshake in that thread.
         startSocketReaderThread(true);
@@ -189,7 +178,6 @@ public class MultiplexerSocketController {
     }
 
     private void performHandshake() throws Exception {
-        _msStarted = System.currentTimeMillis();
         _inetAddress = _socket.getInetAddress();
         _socket.setTcpNoDelay(true);
 

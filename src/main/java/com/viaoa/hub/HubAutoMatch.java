@@ -181,7 +181,6 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
                 }
             }
         }
-
         // Step 3: remove objects not in hubMasterx
         for (int i=0; ;i++) {
             Object obj = hubx.elementAt(i);
@@ -198,10 +197,10 @@ public class HubAutoMatch<TYPE, PROPTYPE> extends HubListenerAdapter implements 
             if (hubMasterx.getObject(value) == null) {
 //hubMasterx.getObject(value);//qqqqqqqqqqqqqqqqq
                 if (okToRemove(obj, value)) {
+                    hubx.remove(i);  // 20161111 added remove in case delete does not remove from this hub (bug found in some data)
                     if (obj instanceof OAObject) {
                         ((OAObject)obj).delete();
                     }
-                    else hubx.remove(i);
                     i--;
                 }
             }

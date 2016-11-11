@@ -37,7 +37,7 @@ public class MultiplexerServerSocketController {
     /**
      * used by timeout thread to check for connections that have been timedout and disconnect them.
      */
-    private Object TIMEOUTLOCK = new Object();
+    private final Object TIMEOUTLOCK = new Object();
 
     /**
      * "real" serversocket used for accepting "real" client connections.
@@ -278,8 +278,8 @@ public class MultiplexerServerSocketController {
             try {
                 if (!sc.isValid()) {
                     long ms = sc.getStartTimeMS();
-                    if (msNow - ms > 5000) {
-                        // Log.error("MultiplexerServerSocketController: connection timeout, closing now, vsc.Id="+sc.getId());
+                    if (ms > 0 && ((msNow - ms) > 5000)) {
+                        LOG.fine("MultiplexerServerSocketController: connection timeout, closing now, Id="+sc.getId());
                         sc.close(true);
                     }
                     else {
