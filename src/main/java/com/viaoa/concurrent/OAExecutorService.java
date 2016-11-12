@@ -19,9 +19,10 @@ public class OAExecutorService {
         getExecutorService();
     }
     
-    public void submit(Runnable r) {
+    public Future submit(Runnable r) {
         aiTotalSubmitted.incrementAndGet();
-        getExecutorService().submit(r);
+        Future f = getExecutorService().submit(r);
+        return f;
     }
     public Future submitAndWait(Runnable r, int maxWait, TimeUnit tu) throws Exception {
         aiTotalSubmitted.incrementAndGet();
