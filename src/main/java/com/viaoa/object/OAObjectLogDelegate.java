@@ -13,7 +13,7 @@ package com.viaoa.object;
 import java.util.Hashtable;
 import java.util.logging.*;
 
-import sun.util.LocaleServiceProviderPool.LocalizedObjectGetter;
+//import sun.util.LocaleServiceProviderPool.LocalizedObjectGetter;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.util.*;
