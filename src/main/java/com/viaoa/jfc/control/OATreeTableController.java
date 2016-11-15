@@ -333,21 +333,22 @@ public class OATreeTableController extends OATree implements OATableComponent {
         hl.setLocation(InsertLocation.LAST);
         hubTable.addHubListener(hl);
 
-        hl2 = new HubListenerAdapter() {
-            @Override
-            public void onNewList(HubEvent e) {
-                hubTable.clear();
-                try {
-                    OAThreadLocalDelegate.setLoading(true);
-                    refreshHub();
+        if (hubRoot != null) {
+            hl2 = new HubListenerAdapter() {
+                @Override
+                public void onNewList(HubEvent e) {
+                    hubTable.clear();
+                    try {
+                        OAThreadLocalDelegate.setLoading(true);
+                        refreshHub();
+                    }
+                    finally {
+                        OAThreadLocalDelegate.setLoading(false);
+                    }
                 }
-                finally {
-                    OAThreadLocalDelegate.setLoading(false);
-                }
-            }
-        };        
-        hubRoot.addHubListener(hl2);
-        
+            };        
+            hubRoot.addHubListener(hl2);
+        }        
         
         OATreeModel model = (OATreeModel) this.getModel();
 
