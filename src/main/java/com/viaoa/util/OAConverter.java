@@ -42,9 +42,10 @@ public class OAConverter {
         addConverter( Boolean.class, new OAConverterBoolean() );
         addConverter( BigDecimal.class, new OAConverterBigDecimal() ); 
 
-        addConverter( java.util.Date.class, new OAConverterDate() );
+        addConverter( java.sql.Date.class, new OAConverterSqlDate() );
         addConverter( java.sql.Time.class, new OAConverterTime() );
         addConverter( java.sql.Timestamp.class, new OAConverterTimestamp() );
+        addConverter( java.util.Date.class, new OAConverterDate() );
 
         addConverter( com.viaoa.util.OADateTime.class, new OAConverterOADateTime() );
         addConverter( com.viaoa.util.OADate.class, new OAConverterOADate() );

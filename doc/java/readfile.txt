@@ -1,6 +1,17 @@
 
 
-using string as sourc:
+
+read from resource file
+        if (mapNameData.size() > 0) return mapNameData;
+
+        String[] lines = OAFile.readResourceTextFile(Resource.class, "NameDataMap.txt");
+        for (String line : lines) {
+            line = line.trim();
+
+
+
+
+using string as source:
 
     private static String cleanupOutput(String output) {
         BufferedReader br = new BufferedReader(new StringReader(output));

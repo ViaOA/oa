@@ -10,7 +10,8 @@
 */
 package com.viaoa.util.converter;
 
-import java.util.*;
+import java.sql.Date;
+
 import com.viaoa.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
@@ -31,7 +32,7 @@ import com.viaoa.util.*;
     @see OAConverter
     @see OADateTime
 */
-public class OAConverterDate implements OAConverterInterface {
+public class OAConverterSqlDate implements OAConverterInterface {
     // !!!!! REMEMBER:  date.month values are 0-11
 
     /**
@@ -57,13 +58,17 @@ public class OAConverterDate implements OAConverterInterface {
             if ( ((String)value).length() == 0) return null;
             OADateTime dt = (OADateTime) OADateTime.valueOf((String)value, fmt);
             if (dt == null) return null;
-            return dt.getDate();
+            Date d = new Date(dt.getTime());
+            return d;
         }
         
-		if (value instanceof byte[]) return new java.util.Date(new java.math.BigInteger((byte[]) value).longValue());
-        
+		if (value instanceof byte[]) {
+		    return new Date(new java.math.BigInteger((byte[]) value).longValue());
+		}
+		
         if (value instanceof OADateTime) {
-            return ((OADateTime)value).getDate();
+            Date d = new Date(((OADateTime)value).getTime());
+            return d;
         }
         
         if (value instanceof Number) {

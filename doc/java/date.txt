@@ -1,5 +1,17 @@
 
 
+
+
+
+        timeZone = TimeZone.getTimeZone(stz);
+        SimpleDateFormat dateTimeParser = new SimpleDateFormat("MMM dd, yyyy h:mm:ss a");
+        Calendar cal = new GregorianCalendar(timeZone);
+        cal.setTimeInMillis(dateTimeParser.parse(value).getTime());
+
+
+qqqqqqqqqqqqqqqqq
+
+
 Calendar cal = Calendar.getInstance();
 
 
