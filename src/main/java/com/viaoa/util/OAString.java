@@ -1586,13 +1586,13 @@ public class OAString {
         @see OAConverterNumber
     */
     public static boolean isNumber(String str) {
-        if (str == null) return false;
+        if (str == null || str.length() == 0) return false;
         Double d = (Double) OAConverter.convert(Double.class, str);
         return d != null;
     }
 
     public static boolean isInteger(String str) {
-        if (str == null) return false;
+        if (str == null || str.length() == 0) return false;
         Long d = (Long) OAConverter.convert(Long.class, str);
         return d != null;
     }
@@ -1605,7 +1605,7 @@ public class OAString {
         @see OAConverterOADate
     */
     public static boolean isDate(String s) {
-        if (s == null) return false;
+        if (s == null || s.length() == 0) return false;
         OADate d = (OADate) OAConverter.convert(OADate.class, s);
         return d != null;
     }
@@ -1617,7 +1617,7 @@ public class OAString {
         @see OAConverterOATime
     */
     public static boolean isTime(String s) {
-        if (s == null) return false;
+        if (s == null || s.length() == 0) return false;
         OATime d = (OATime) OAConverter.convert(OATime.class, s);
         return d != null;
     }
@@ -1629,7 +1629,7 @@ public class OAString {
         @see OAConverterOADateTime
     */
     public static boolean isDateTime(String s) {
-        if (s == null) return false;
+        if (s == null || s.length() == 0) return false;
         OADateTime d = (OADateTime) OAConverter.convert(OADateTime.class, s);
         return d != null;
     }
