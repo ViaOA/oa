@@ -34,6 +34,11 @@ public class Database {
         Returns that Table that is mapped to a Class.
     */
     public Table getTable(Class clazz) {
+        if (clazz == null) {
+            int xx = 4;
+            xx++;
+            return null;
+        }
         return (Table) hash.get(clazz);
     }
 

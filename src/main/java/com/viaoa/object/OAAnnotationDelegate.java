@@ -327,7 +327,7 @@ public class OAAnnotationDelegate {
     public static Class getHubObjectClass(OAMany annotation, Method method) {
         Class cx = OAObjectReflectDelegate.getHubObjectClass(method);
         if (cx == null && annotation != null) {
-            // cx = annotation.toClass();
+            cx = annotation.toClass();
         }
         return cx;
     }
