@@ -1,6 +1,12 @@
 
 
+        HashMap<Integer, Object> hmNewReplacement = new HashMap<Integer, Object>();
+        for (Entry<Integer, Object> entry : hmNewReplacement.entrySet()) {
+            
+        }
 
+
+qqqqqqqqqq
 > convert hash.values to array
 
     public VirtualSocket[] getMultiplexerSockets() {
