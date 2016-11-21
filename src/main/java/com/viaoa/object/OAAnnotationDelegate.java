@@ -17,8 +17,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.annotation.*;
-import com.viaoa.ds.OADataSource;
-import com.viaoa.ds.OASelect;
 import com.viaoa.ds.jdbc.db.*;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
@@ -327,7 +325,10 @@ public class OAAnnotationDelegate {
     public static Class getHubObjectClass(OAMany annotation, Method method) {
         Class cx = OAObjectReflectDelegate.getHubObjectClass(method);
         if (cx == null && annotation != null) {
-            cx = annotation.toClass();
+            Class cz = annotation.toClass();
+            if (cz != null && !cz.equals(Object.class)) {
+                cx = cz;
+            }
         }
         return cx;
     }

@@ -24,11 +24,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME) 
 public @interface OAMany {
-    
-    public static final class DEFAULT { // hack for fake class
-    }; 
-    
-    Class toClass() default DEFAULT.class;  // see: OAAnnotationDelegate.getHubObjectClass(..), OAObjectReflectDelegate.getHubObjectClass(..)
+    Class toClass() default Object.class;
+  
     String displayName() default "";
     String description() default "";
     
