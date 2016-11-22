@@ -289,6 +289,11 @@ public class OADateTimeTest extends OAUnitTest {
         OATime t = new OATime(8, 49, 0);
         OADateTime dtNow = new OADateTime();
 
+        String s = dtNow.toString("yyyy-MM-dd'T'HH:mm:ssX");
+        s = dtNow.toString("yyyy-MM-dd'T'HH:mm:ssXX");
+        s = dtNow.toString("yyyy-MM-dd'T'HH:mm:ssz");
+        
+        
         OATime tNow = new OATime(dtNow);
         
         OADateTime dt1 = new OADateTime(t.getTime());

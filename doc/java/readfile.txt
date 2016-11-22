@@ -1,6 +1,8 @@
 
 
 
+
+
 read from resource file
         if (mapNameData.size() > 0) return mapNameData;
 

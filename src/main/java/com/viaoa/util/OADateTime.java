@@ -23,6 +23,17 @@ import java.sql.Time;
 
     yyyyMMdd_HHmmss.SSS
              hhmmssa
+             
+    JSON
+        yyyy-MM-dd'T'HH:mm:ssX
+            Notice the X on the end. It will handle timezones in ISO 8601 standard
+            see: http://stackoverflow.com/questions/19112357/java-simpledateformatyyyy-mm-ddthhmmssz-gives-timezone-as-ist
+            ex: 2016-11-22T08:49:02-05
+        yyyy-MM-dd'T'HH:mm:ssXX
+            ex: 2016-11-22T08:50:12-0500            
+        yyyy-MM-dd'T'HH:mm:ssXXX
+            ex: 2016-11-22T08:49:02-05:00
+             
     <p>
     Formatting Symbols used for output display.
     <pre>
