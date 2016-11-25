@@ -116,7 +116,7 @@ public class OAObjectEventDelegate {
         if (linkInfo != null && oldObj != null && newObj != null && !oaObj.isNew() && linkInfo.getType() == OALinkInfo.ONE && !linkInfo.getCalculated()) {
             OALinkInfo revLinkInfo = OAObjectInfoDelegate.getReverseLinkInfo(linkInfo);
             if (revLinkInfo != null && revLinkInfo.getOwner()) {
-                String s = "owner is being reassigned, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj;
+                String s = "FYI (no exception), owner is being reassigned, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj;
                 RuntimeException e = new RuntimeException(s);
                 LOG.log(Level.WARNING, s, e);
                 // throw e;
