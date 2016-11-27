@@ -309,6 +309,21 @@ public class OAObjectCacheDelegate {
 	    }
 	}
 
+    protected static void fireAfterLoadEvent(Object obj) {
+        if (aiListenerCount.get() == 0) return;
+        if (obj == null) return;
+
+        final OAObjectCacheListener[] hl = getListeners(obj.getClass());
+        if (hl == null) return; 
+        final int x = hl.length;
+        if (x > 0) {
+            // LOG.finest("Hub="+thisHub+", object="+obj);
+            for (int i=0; i<x; i++) { 
+                hl[i].afterLoad((OAObject) obj);
+            }
+        }
+    }
+	
     public static void fireAfterAddEvent(Hub hub, Object obj) {
         if (aiListenerCount.get() == 0) return;
         if (obj == null) return;

@@ -23,5 +23,6 @@ public interface OAObjectCacheListener<T extends OAObject> {
     
     public void afterRemove(Hub<T> hub, T obj);
     
+    public void afterLoad(T obj);
     
 }

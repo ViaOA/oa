@@ -66,6 +66,7 @@ public class OAObjectCacheHubAdder<T extends OAObject> implements OAObjectCacheL
 
     @Override
     public void afterAdd(T obj) {
+        if (obj.isLoading()) return;
         if (obj != null) {
             if (isUsed(obj)) {
                 Hub<T> h = wfHub.get();
@@ -88,6 +89,11 @@ public class OAObjectCacheHubAdder<T extends OAObject> implements OAObjectCacheL
 
     @Override
     public void afterRemove(Hub<T> hub, T obj) {
+    }
+
+    @Override
+    public void afterLoad(T obj) {
+        afterAdd(obj);
     }
     
 }

@@ -66,6 +66,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             }
             @Override
             public void afterAdd(T obj) {
+                if (obj.isLoading()) return;
                 // new object is created
                 final Hub<T> hub = wrHub.get();
                 if (hub == null) return;
@@ -84,6 +85,10 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             }
             @Override
             public void afterRemove(Hub<T> hub, T obj) {
+            }
+            @Override
+            public void afterLoad(T obj) {
+                afterAdd(obj);
             }
         };        
         OAObjectCacheDelegate.addListener(clazz, cacheListener);

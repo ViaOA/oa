@@ -85,6 +85,11 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
             @Override
             public void afterRemove(Hub hub, OAObject obj) {
             }
+            @Override
+            public void afterLoad(OAObject obj) {
+                // TODO Auto-generated method stub
+                
+            }
         };
         OAObjectCacheDelegate.addListener(Server.class, hl);
         

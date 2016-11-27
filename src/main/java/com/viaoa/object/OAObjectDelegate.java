@@ -87,12 +87,11 @@ public class OAObjectDelegate {
      * @param bInitializeWithCS if true, then call OAObjectCSDelegate.initialize().
      */
     private static void initialize(OAObject oaObj, OAObjectInfo oi, boolean bInitializeNulls, boolean bInitializeWithDS, boolean bAddToCache, boolean bInitializeWithCS, boolean bSetChangedToFalse) {
+        final boolean bWasLoading = OAThreadLocalDelegate.setLoading(true);
     	try {
-    		
-    	    OAThreadLocalDelegate.setLoading(true);
             if (oi == null) oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-            
-            if (bInitializeNulls) {
+
+    	    if (bInitializeNulls) {
                 for (int i=0; i<oaObj.nulls.length; i++) {
                     oaObj.nulls[i] = (byte) ~oaObj.nulls[i];  
                 }
@@ -116,7 +115,7 @@ public class OAObjectDelegate {
 	        if (bAddToCache) {  // needs to run before any property could be set, so that OACS changes will find this new object.
 	        	OAObjectCacheDelegate.add(oaObj, false, false);  // 20090525, was true,true:  dont add to selectAllHub until after loadingObject is false
 	        }
-	        
+
 	        if (bInitializeWithCS) {
 	            // must be before DS init, since it could add to local client cache
 	        	OAObjectCSDelegate.initialize(oaObj);
@@ -143,6 +142,9 @@ public class OAObjectDelegate {
 	    finally {
 	    	OAThreadLocalDelegate.setLoading(false);
 	    }
+    	if (!bWasLoading) {
+    	    OAObjectCacheDelegate.fireAfterLoadEvent(oaObj);
+    	}
         if (bAddToCache) {  // 20090525 needs to run after setLoadingObject(false), so that add event is handled correctly.
             OAObjectCacheDelegate.addToSelectAllHubs(oaObj);
         }

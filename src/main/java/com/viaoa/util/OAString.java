@@ -2618,14 +2618,11 @@ public class OAString {
     
     
     public static String append(String orig, String append) {
-        return append(orig, append, " ");
+        return concat(orig, append, " ");
     }
 
     public static String append(String orig, String append, String sep) {
-        if (append == null) return orig;
-        if (orig == null) orig = "";
-        else orig += sep;
-        return orig + append;
+        return concat(orig, append, sep);
     }
 
     /*  See:  OACompare
@@ -2633,6 +2630,24 @@ public class OAString {
         return OACompare.isLike(value, matchValue);        
     }
     */
+    
+    public static String concat(String toText, String value) {
+        return concat(toText, value, " ");
+    }
+    public static String concat(String toText, String value, String sepChar) {
+        if (value == null) {
+            if (toText == null) return "";
+            return toText;
+        }
+        if (toText == null || toText.length() == 0) {
+            toText = value;
+        }
+        else {
+            toText += sepChar;
+            toText += value;
+        }
+        return toText;
+    }
     
     
     public static void main(String[] args) {
