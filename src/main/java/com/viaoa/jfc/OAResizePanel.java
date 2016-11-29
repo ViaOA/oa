@@ -53,8 +53,8 @@ public class OAResizePanel extends JPanel {
         
         if (bBoth) gcx.fill = gcx.BOTH;
         else gcx.fill = gcx.HORIZONTAL;
-        
-        /*
+
+        // 20161129 this will allow for using preferred, and max sizing
         JPanel panComp = new JPanel();
         BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
         panComp.setLayout(box);
@@ -63,10 +63,12 @@ public class OAResizePanel extends JPanel {
         gcx.weightx = gcx.weighty = ((double)percentage)/100.0d;
         gcx.gridwidth = 1;
         add(panComp, gcx);
-        */
+        
+/*was
         gcx.weightx = gcx.weighty = ((double)percentage)/100.0d;
         gcx.gridwidth = 1;
         add(comp, gcx);
+*/        
         
         gcx.gridwidth = GridBagConstraints.REMAINDER;
         gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;

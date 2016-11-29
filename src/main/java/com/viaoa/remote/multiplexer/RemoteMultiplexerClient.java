@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -907,7 +908,8 @@ public class RemoteMultiplexerClient {
             public void run() {
                 for (;!bClosed;) {
                     try {
-                        RequestInfo  ri = queRequestInfo.take();
+                        RequestInfo  ri = queRequestInfo.poll(4, TimeUnit.SECONDS);
+                        if (ri == null) continue;
                         
                         OARemoteThread t = getRemoteThread(ri, true);
                         synchronized (t.Lock) {
@@ -935,7 +937,8 @@ public class RemoteMultiplexerClient {
             public void run() {
                 for (;!bClosed;) {
                     try {
-                        RequestInfo ri = queSyncRequestInfo.take(); // blocks
+                        RequestInfo ri = queSyncRequestInfo.poll(4, TimeUnit.SECONDS); // blocks
+                        if (ri == null) continue;
                         if (ri.type == RequestInfo.Type.CtoS_QueuedBroadcast) {                        
                             if (ri.bind != null && ri.bind.isOASync) {
                                 if (ri.connectionId == multiplexerClient.getConnectionId()) {
@@ -1076,7 +1079,7 @@ public class RemoteMultiplexerClient {
                 final long tsStart = System.currentTimeMillis();
                 for (int i=0;!stopCalled && !bClosed; i++) {
                     try {
-                        Tuple<RequestInfo, Runnable> tup = queSyncRunnable.take(); // blocks
+                        Tuple<RequestInfo, Runnable> tup = queSyncRunnable.poll(5, TimeUnit.SECONDS); // blocks
                         if (tup == null) continue;
                         Runnable r = tup.b;
                         if (r == null) continue;

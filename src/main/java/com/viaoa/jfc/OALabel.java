@@ -279,17 +279,19 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
                 cols = getColumns() * 2; 
             }
         }
-        if (cols > 0) d.width = OATable.getCharWidth(this, getFont(), cols);
-        
-        // also check size of text, so that label is not bigger then the text it needs to display
-        String s = getText();
-        if (s == null) s = " ";
 
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
         
-        FontMetrics fm = getFontMetrics(getFont());
-        d.width = Math.min(d.width, fm.stringWidth(s)+inx+2);
+        if (cols > 0) d.width = OATable.getCharWidth(this, getFont(), cols) + inx;
+        else {
+            // also check size of text, so that label is not bigger then the text it needs to display
+            String s = getText();
+            if (s == null) s = " ";
+            
+            FontMetrics fm = getFontMetrics(getFont());
+            d.width = Math.min(d.width, fm.stringWidth(s)+inx+2);
+        }
         
         // dont size under pref size
         Dimension dx = getPreferredSize();
