@@ -69,6 +69,8 @@ public class VerifyDelegate {
 	        }
 	        
 	        Column[] columns = t.getColumns();
+            DBMetaData dbx = ds.getDBMetaData();
+
 	        for (int j=0; j<columns.length; j++) {
 	            Column c = columns[j];
 	            rs = dbmd.getColumns(null,null,t.name.toUpperCase(),c.columnName.toUpperCase());
@@ -77,7 +79,19 @@ public class VerifyDelegate {
 	    	        int iType = rs.getInt(5);
 	    	        String sType = rs.getString(6);
 	    	        int iSize = rs.getInt(7);
+
+                    if (iType == java.sql.Types.NVARCHAR && dbx != null && dbx.databaseType == dbx.SQLSERVER) {
+                        iType = java.sql.Types.VARCHAR;
+                    }
 	    	        
+                    if (iType == java.sql.Types.FLOAT || iType == java.sql.Types.DOUBLE || iType == java.sql.Types.DECIMAL) {
+                        int x = c.getSqlType();
+                        if (x == java.sql.Types.FLOAT || x == java.sql.Types.DOUBLE || x == java.sql.Types.DECIMAL) {
+                            iType = x;
+                        }
+                    }
+                    
+                    
 	    	        if (c.getSqlType() == 0) {
 	    	        	if (c.propertyName != null && c.propertyName.trim().length() != 0) {
 	    	        	    LOG.warning("DB WARNING: Column missing TYPE "+t.name+"."+c.columnName+" property: " + c.propertyName);
@@ -116,7 +130,6 @@ public class VerifyDelegate {
 		    	        		b = true;
 		    	        	}
 	    	        	}
-	    	        	DBMetaData dbx = ds.getDBMetaData();
                         if (!b && iType == java.sql.Types.VARCHAR && dbx != null && dbx.databaseType == dbx.SQLSERVER) {
                             if (c.getSqlType() == java.sql.Types.CLOB && iSize > Math.pow(10, 9)) {
                                 b = true;
