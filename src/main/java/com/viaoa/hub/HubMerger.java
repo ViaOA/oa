@@ -222,7 +222,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             }
         }
 
-        if (hubCombined.size() > 2000 || ts > 2500) {
+        if ((hubCombined != null && hubCombined.size() > 2000) || ts > 2500) {
             Exception e = new Exception("HubMerger performance concern");
             OAPerformance.LOG.log(Level.WARNING, s, e);
         }
