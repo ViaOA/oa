@@ -288,11 +288,20 @@ public class OAHTMLDocument extends HTMLDocument {
     private void removeUnneededHTMLAttributes(Element parentElement, MutableAttributeSet attribSet) {
         // remove any HTML.Attributes that were converted to CSS.Attributes
         
-        Enumeration enumx = attribSet.getAttributeNames();
-        ArrayList al = new ArrayList();
-        while (enumx.hasMoreElements()) {
-            Object key = enumx.nextElement();
-            al.add(key);
+        ArrayList al = null;
+        for (int i=0; i<5;i++) {  // fixes concurrency issue
+            try {
+                Enumeration enumx = attribSet.getAttributeNames();
+                al = new ArrayList();
+                while (enumx.hasMoreElements()) {
+                    Object key = enumx.nextElement();
+                    al.add(key);
+                }
+            }
+            catch (Exception e) {
+                continue;
+            }
+            break;
         }
         
         for (Object key : al) {
