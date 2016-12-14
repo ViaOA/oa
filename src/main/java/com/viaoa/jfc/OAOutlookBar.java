@@ -256,7 +256,11 @@ public class OAOutlookBar extends JPanel implements ActionListener {
                 newVisibleBar = i;
             }
         }
-        visibleBar = newVisibleBar;
+        
+        if (visibleBar != newVisibleBar) {
+            visibleBar = newVisibleBar;
+            onBarSelected(arrayList.get(visibleBar), visibleBar);
+        }
 
         int cnt = 0;
         for (int i = 0; i <= visibleBar; i++) {
