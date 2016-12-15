@@ -28,12 +28,22 @@ import com.viaoa.util.filter.*;
  * @param <F> type of hub or OAObject to use as the root (from)
  * @param <T> type of hub for the to class (to).
  * 
- * example:
+ * examples:<code>
     // from Router, find all UserLogin for a userId
     OAFinder<Router, UserLogin> f = new OAFinder<Router, UserLogin>(Router.P_UserLogins);
     String cpp = UserLoginPP.user().userId().pp;
     f.addLikeFilter(cpp, userId);
     UserLogin userLogin = f.findFirst(router);
+    
+    OAFinder<Program, Employee> f = new OAFinder<Program, Employee>(ProgramPP.locations().employees().pp) {
+        protected void onFound(Employee obj) {
+            //todo: 
+        }
+    };
+    f.find(program);
+    
+    
+    </code>
  * 
  */
 public class OAFinder<F extends OAObject, T extends OAObject> {
