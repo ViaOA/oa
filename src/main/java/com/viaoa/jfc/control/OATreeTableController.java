@@ -220,6 +220,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
     }
     protected void _doRefreshHub() {
         int row = 0;
+        boolean bValid = hubTable.isValid();
         for ( ;; row++) {
             TreePath tp2 = OATreeTableController.this.getPathForRow(row);
             if (tp2 == null) break;
@@ -230,11 +231,13 @@ public class OATreeTableController extends OATree implements OATableComponent {
             
             if (hubTable.getAt(row) == objx) continue;
             hubTable.removeAt(row);
-            if (row >= hubTable.size()) {
-                hubTable.add(objx);
-            }
-            else {
-                hubTable.insert(objx, row);
+            if (bValid) {
+                if (row >= hubTable.size()) {
+                    hubTable.add(objx);
+                }
+                else {
+                    hubTable.insert(objx, row);
+                }
             }
         }
         for (;;) {
