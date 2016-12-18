@@ -29,7 +29,7 @@ import com.viaoa.util.OAString;
 
 /**
  * 
- * This to handle jpg images that jdk cant handle, that OA can
+ * This is used to handle jpg images that jdk cant handle, that OA can
  * 
  * used by OAHTMLTextPane.setFixedSizeBackgroundImage
  */
