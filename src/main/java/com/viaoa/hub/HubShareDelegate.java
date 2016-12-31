@@ -193,17 +193,20 @@ public class HubShareDelegate {
     private static Hub _getFirstSharedHub(final Hub thisHub, final Hub findHub, 
             final OAFilter<Hub> filter, final boolean bIncludeFilteredHubs, 
             final int cnter, boolean bOnlyIfSharedAO, boolean bIncludeHubShareAO) {
-        if (filter == null || filter.isUsed(thisHub)) {
-            return thisHub;
-        }
+        if (filter == null) return thisHub;
         
+        if (!bOnlyIfSharedAO || HubShareDelegate.isUsingSameSharedAO(findHub, thisHub)) {
+            if (filter.isUsed(thisHub)) {
+                return thisHub;
+            }
+        }
+
         WeakReference<Hub>[] refs = HubShareDelegate.getSharedWeakHubs(thisHub);
         for (int i=0; refs != null && i<refs.length; i++) {
             WeakReference<Hub> ref = refs[i];
             if (ref == null) continue;
             Hub h2 = ref.get();
             if (h2 == null)  continue;
-            if (bOnlyIfSharedAO && !HubShareDelegate.isUsingSameSharedAO(findHub, h2)) continue;
             
             Hub hx = _getFirstSharedHub(h2, findHub, filter, bIncludeFilteredHubs, cnter+1, bOnlyIfSharedAO, bIncludeHubShareAO);
             if (hx != null) return hx;

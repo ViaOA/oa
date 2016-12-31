@@ -505,7 +505,7 @@ public class HubEventDelegate {
 	    
 	    if (s != null && newValue != null && s.equalsIgnoreCase(propertyName)) {
 	        if (!HubDelegate.verifyUniqueProperty(thisHub, oaObj)) {
-	        	throw new RuntimeException("Property "+s+" already exists");
+	        	throw new RuntimeException("Property "+s+" already exists in "+oaObj.getClass().getSimpleName());
 	        }
 	    }
 	

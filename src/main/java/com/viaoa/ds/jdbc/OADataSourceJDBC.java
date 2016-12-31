@@ -400,6 +400,12 @@ public class OADataSourceJDBC extends OADataSource {
         int x = Delegate.getPropertyMaxLength(this, c, propertyName);
         return x;
     }
+    
+    @Override
+    public void setGuid(String guid) {
+        super.setGuid(guid);
+        getDBMetaData().guid = guid;
+    }
 }
 
 

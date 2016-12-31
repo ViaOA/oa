@@ -397,12 +397,14 @@ public class HubListenerTree {
                 Method m = methods[j];
                 Class returnClass = m.getReturnType();
                 Class hubClass;
+                boolean bIsHub = false;
                 
                 if (OAObject.class.isAssignableFrom(returnClass)) {
                     if (j == pps.length-1) hubClass = null; 
                     else hubClass = classes[j];
                 }
                 else if (Hub.class.isAssignableFrom(returnClass)) {
+                    bIsHub = true;
                     hubClass = classes[j];
                     if (Hub.class.equals(hubClass)) {
                         OAMany om = m.getAnnotation(OAMany.class);
@@ -454,8 +456,11 @@ public class HubListenerTree {
                         newTreeNode.getCalcPropertyNames().add(origPropertyName);
 
                         String spp = "(" + hubClass.getName() + ")" + property;
-                        if (j == pps.length-1) {
-                            // 20120823 if this is the last hub, then need to listen for each add/remove
+                        
+                        // 20161222
+                        if (bIsHub) {
+                        //was:
+                        // if (j == pps.length-1) {  // 20120823 if this is the last hub, then need to listen for each add/remove
                             final HubListenerTreeNode nodeThis = node;
                             OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {
@@ -543,8 +548,10 @@ public class HubListenerTree {
                                 node.hmListener.put(origHubListener, hls);
                             }
                             
+ 
                             OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {
+                                /* 20161222 was:                                
                                 @Override
                                 protected void beforeRemoveRealHub(HubEvent e) {
                                     // get the parent reference object from the Hub.masterObject, since the 
@@ -559,6 +566,7 @@ public class HubListenerTree {
                                     newTreeNode.lastRemoveObject = null; // in case it is not cleared
                                     super.afterAddRealHub(e);
                                 }
+                                */                                
                             };
                             newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
                         }

@@ -178,7 +178,7 @@ public class HubDetailDelegate {
                     ((Hub)obj).remove(objMaster);
                 }
             }
-            else {  // add
+            else if (obj != null) {  // add
                 // 20101228 
                 //was: if ( ((Hub)obj).getPos(objMaster) < 0 ) {
                 if ( !((Hub)obj).contains(objMaster) ) {

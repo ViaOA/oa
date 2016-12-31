@@ -113,7 +113,7 @@ public class AutonumberDelegate {
                     else {
                         DBMetaData dbmd = ds.getDBMetaData();
                         String query = "";
-                        if (dbmd.guid != null && dbmd.guid.length() > 0) {
+                        if (pkColumn.guid && dbmd.guid != null && dbmd.guid.length() > 0) {
                         	query = getMaxGuidQuery(dbmd, table, pkColumn);
                         }
                         else {

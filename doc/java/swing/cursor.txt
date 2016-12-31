@@ -1,4 +1,22 @@
+
+
+
+    Toolkit tk = Toolkit.getDefaultToolkit();
+    try {
+        Image img = Resource.getJarIcon("AutoCheckCursor.gif").getImage();
+        cursorAutoSelect = tk.createCustomCursor(img, new Point(8,23), "AUTOSELECT");
         
+        img = Resource.getJarIcon("SelectCursor.gif").getImage();
+        cursorSelect = tk.createCustomCursor(img, new Point(8,2), "SELECT");
+    }
+    catch (Exception e) {
+        System.out.println("====> "+e);
+    }
+
+    getTemplatePanel().setCursor(cursorSelect);
+
+
+qqqqqqqqq        
         
 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 

@@ -413,7 +413,8 @@ public class HubAddRemoveDelegate {
             return false;
         }
         
-        if (!OAThreadLocalDelegate.isLoading()) {
+        boolean bIsLoading = OAThreadLocalDelegate.isLoading();
+        if (!bIsLoading) {
             if (!OARemoteThreadDelegate.isRemoteThread()) {
                 String s = canAddMsg(thisHub, obj);
                 if (s != null) {
@@ -435,7 +436,14 @@ public class HubAddRemoveDelegate {
         if (obj instanceof OAObject) {
             if (OAObjectHubDelegate.isInHub((OAObject)obj, thisHub)) {
                 // this code has been moved before the listeners are notified.  Else listeners could ask for more objects
-                HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
+                
+                // 20161226 dont set prop if loading and link is a M2M
+                if (thisHub.datam.masterObject != null) {
+                    if (!bIsLoading || thisHub.datam.liDetailToMaster.getType() == OALinkInfo.ONE) {
+                        HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
+                    }
+                }
+                //was: HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
                 
                 // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
                 Hub rootHub = thisHub.getRootHub();

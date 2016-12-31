@@ -1469,7 +1469,9 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             if ((hub != hubRoot) || OASync.isServer()) {
                 return;
             }
-            if (bUseBackgroundThread) return; // let run in the background
+            if (bUseBackgroundThread) {
+                return; // let run in the background
+            }
             
             synchronized (lockNewList) {
                 for (;;) {
