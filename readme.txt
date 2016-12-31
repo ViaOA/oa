@@ -1,12 +1,11 @@
-<html>
-<body>
 
-Via Object Automation is the core Java library used for building full stack, scalable, synchronized, distributed applications that 
-include server app,
-website (jsp,webservice,rest,auth,etc), client app (ex: java swing), that works with any datasource (jdbc,xml,etc)
+Object Automation (OA) is the core java library for building applications faster then
+any other development tool or framework.  Combined with the visual designer, OABuilder, 
+applications that would take months to create can be done in hours, and result in 
+commercial level applications.
 
-<br><br>
-Visit <a href="www.viaoa.com">www.viaoa.com</a> for docs, and to learn about OABuilder, the visual designer for building, and
-generating full scale applications.
-</body>
-</html>
+Visit www.viaoa.com for more on OA, and to learn about OABuilder
+
+
+
+
