@@ -1,4 +1,16 @@
 
+20170106
+	html editor does not have content assist for css, need to install this add on.
+	    wtp web resources
+	    install
+	        http://oss.opensagres.fr/eclipse-wtp-webresources/1.1.0/
+	    see: https://github.com/angelozerr/eclipse-wtp-webresources/wiki/Installation-Update-Site
+
+20170106 install neon
+	add quickmarks from mars installation
+		C:\Users\vvia\eclipse\java-neon\eclipse\dropins
+		need to also do this, *see note below: "need to install the eclipse 2.0 plugin ..."	
+
 
 20161003 create github project and import into Eclipse
     create new repo in github
@@ -62,7 +74,7 @@ Quickmarks plugin installation
         http://sourceforge.net/projects/eclipse-tools/files/quickmarks
         select: v.3.0.2
     
-    **!!! The quickmarks is an old 2.0 plugin and is not supported by eclipse regular install
+    need to also do this, since quickmarks is an old style (2.0) plugin and is not supported by eclipse regular install
         > need to install the eclipse 2.0 plugin support
             http://stackoverflow.com/questions/24467105/tools-for-eclipse-2-0-plugins-upgrade
                 >> follow this:
