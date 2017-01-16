@@ -1,5 +1,14 @@
 
 
+
+
+20160105 html notes
+
+attrib "title=" will be a tooltip
+
+
+qqqqqqqqqq
+
 DOM Events
     http://www.w3schools.com/jsref/dom_obj_event.asp    
 
