@@ -26,7 +26,7 @@
 	</target>
 
     <target name="Sign">
-        <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" />
     </target>
 	
 	<!-- 20130317 removed depends rmic -->
@@ -116,7 +116,7 @@
         <jar basedir="/temp/javahelp" manifest="manifest.mf" destfile="dist/jh.jar" casesensitive="true" update="false"  />
     </target>
     <target name="SignHelp" depends="JarHelp">
-        <signjar jar="dist/jh.jar" alias="viaoa" keystore="keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/jh.jar" alias="viaoa" keystore="../oabuilder_git/keystore/viaoa.jks" storepass="vince1" />
     </target>
 
     
@@ -129,11 +129,11 @@
         <jar basedir="/temp/itext" destfile="dist/itext.jar" manifest="manifest.mf" casesensitive="true" update="false"  />
     </target>
     <target name="SignItext" depends="">
-        <signjar jar="dist/itext.jar" alias="viaoa" keystore="keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/itext.jar" alias="viaoa" keystore="../oabuilder_git/keystore/viaoa.jks" storepass="vince1" />
     </target>
 	
     <target name="SignSizeOf" depends="">
-        <signjar jar="dist/sizeof.jar" alias="viaoa" keystore="keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/sizeof.jar" alias="viaoa" keystore="../oabuilder_git/keystore/viaoa.jks" storepass="vince1" />
     </target>
 	
 	
@@ -155,6 +155,7 @@
         </genkey>       
     </target>
 
+	<!-- moved to OABuilder project
     <target name="KeyStore_ViaOA">
         <delete file="keystore/viaoa.jks" />
         <genkey alias="viaoa" storepass="vince1" keyalg="RSA" keysize="2048" keystore="keystore/viaoa.jks" validity="1500" verbose="true">
@@ -168,7 +169,7 @@
             </dname>
         </genkey>       
     </target>
-
+    -->
     
     
 </project> 
