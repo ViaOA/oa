@@ -1,4 +1,26 @@
 
+    public void test() throws Exception {
+        final String dirName = "C:\\Users\\vvia\\git\\udm\\udm-core\\runtime\\test";
+        
+        File file = new File(dirName);
+        String[] files = file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return (name.indexOf(".csv") >= 0 && name.indexOf("-NameValue-") >= 0);
+            }
+        });
+
+        for (String fname : files) {
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(dirName+"\\"+fname), "UTF-8");
+            BufferedReader reader = new BufferedReader(isr);
+    
+            String line = reader.readLine();
+        }        
+    }
+
+qqqqqqqq
+
+
 http://java.dzone.com/articles/fast-java-file-serialization
 
 
