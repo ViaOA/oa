@@ -18,7 +18,7 @@ public class HubUniqueIndex<TYPE> {
     private final OAPropertyPath<TYPE> propertyPath;
     
     public HubUniqueIndex(Hub<TYPE> hub, String prop) {
-        this(hub, prop, true);
+        this(hub, prop, false);
     }
     
     public HubUniqueIndex(Hub<TYPE> hub, String prop, boolean bCaseSensitive) {
@@ -35,13 +35,13 @@ public class HubUniqueIndex<TYPE> {
                 if (object == null) return;
                 Object old = e.getOldValue();
                 if (old != null) {
-                    if (HubUniqueIndex.this.bCaseSensitive && old instanceof String) old = ((String)old).toUpperCase(); 
+                    if (!HubUniqueIndex.this.bCaseSensitive && old instanceof String) old = ((String)old).toUpperCase(); 
                     hm.remove(old);
                 }
                 
                 Object value = propertyPath.getValue(object);
                 if (value != null) {
-                    if (HubUniqueIndex.this.bCaseSensitive && value instanceof String) value = ((String)value).toUpperCase(); 
+                    if (!HubUniqueIndex.this.bCaseSensitive && value instanceof String) value = ((String)value).toUpperCase(); 
                     hm.put(value, object);
                 }
             }
@@ -60,7 +60,7 @@ public class HubUniqueIndex<TYPE> {
                 if (object == null) return;
                 Object value = propertyPath.getValue(object);
                 if (value != null) {
-                    if (HubUniqueIndex.this.bCaseSensitive && value instanceof String) value = ((String)value).toUpperCase(); 
+                    if (!HubUniqueIndex.this.bCaseSensitive && value instanceof String) value = ((String)value).toUpperCase(); 
                     hm.remove(value);
                 }
             }
@@ -80,7 +80,7 @@ public class HubUniqueIndex<TYPE> {
         if (object == null) return;
         Object value = propertyPath.getValue(object);
         if (value != null) {
-            if (HubUniqueIndex.this.bCaseSensitive && value instanceof String) value = ((String)value).toUpperCase(); 
+            if (!HubUniqueIndex.this.bCaseSensitive && value instanceof String) value = ((String)value).toUpperCase(); 
             hm.put(value, object);
         }
     }
@@ -103,7 +103,7 @@ public class HubUniqueIndex<TYPE> {
 
     public TYPE get(Object id) {
         if (id == null) return null;
-        if (bCaseSensitive && id instanceof String) id = ((String)id).toUpperCase(); 
+        if (!bCaseSensitive && id instanceof String) id = ((String)id).toUpperCase(); 
         return hm.get(id);
     }
     

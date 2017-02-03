@@ -219,6 +219,7 @@ public abstract class RemoteDataSource {
 
                 
                 OAFilter filter = null;
+                /* 20170201 not needed, needs to filter on whereClause                
                 if (bHasFilter) {
                     // if client has a filter, then create a dummy one here
                     filter = new OAFilter() {
@@ -226,7 +227,8 @@ public abstract class RemoteDataSource {
                             return true;
                         };
                     };
-                }                
+                }
+                 */                                
                 iterator = ds.select(clazz, 
                     queryWhere, params, queryOrder,
                     (OAObject) whereObject, propFromWhereObject, extraWhere,
