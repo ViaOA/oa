@@ -77,7 +77,8 @@ public class ConverterDelegate {
 			break;
 		case Types.TIMESTAMP:
 			clazz = OADateTime.class;
-			if (dbmd.databaseType == dbmd.SQLSERVER) clazz = Number.class;
+			// 20170206 removed for sqlserver, that now has a DateTime
+			// if (dbmd.databaseType == dbmd.SQLSERVER) clazz = Number.class;
 			break;
 			
 		case Types.LONGVARBINARY:
