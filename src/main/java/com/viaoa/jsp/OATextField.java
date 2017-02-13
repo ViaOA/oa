@@ -33,6 +33,7 @@ import com.viaoa.util.OADate;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
+import com.viaoa.util.OATime;
 
 /**
  * Controls an html input type=text, 
@@ -66,7 +67,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     protected boolean required;
     protected String value;
     protected String lastValue;
-    protected boolean bIsDate;
+    protected boolean bIsDate, bIsTime, bIsDateTime;
     protected String regex;
     private boolean bFocus;
     protected String forwardUrl;
@@ -489,6 +490,14 @@ public class OATextField implements OAJspComponent, OATableEditor {
             // see: http://docs.jquery.com/UI/Datepicker/formatDate
             sb.append("$('#"+id+"').datepicker({ dateFormat: 'mm/dd/yy' });");
         }
+        if (isDateTime()) {
+            // see: http://docs.jquery.com/UI/Datepicker/formatDate
+            sb.append("$('#"+id+"').datetimepicker({ mask:true, format: 'mm/dd/yy H:i' });");
+        }
+        if (isTime()) {
+            // see: http://docs.jquery.com/UI/Datepicker/formatDate
+            sb.append("$('#"+id+"').datetimepicker({ mask:true, datepicker:false, format:'mm/dd/yy' });");
+        }
         if (!OAString.isEmpty(inputMask)) {
             sb.append("$('#"+id+"').mask('"+inputMask+"');");
         }
@@ -510,6 +519,18 @@ public class OATextField implements OAJspComponent, OATableEditor {
     }
     public void setDate(boolean b) {
         this.bIsDate = b;
+    }
+    public boolean isDateTime() {
+        return bIsDateTime;
+    }
+    public void setDateTime(boolean b) {
+        this.bIsDateTime = b;
+    }
+    public boolean isTime() {
+        return bIsTime;
+    }
+    public void setTime(boolean b) {
+        this.bIsTime = b;
     }
     
     
@@ -604,17 +625,26 @@ public class OATextField implements OAJspComponent, OATableEditor {
     }
     public void setPropertyPath(String propertyPath) {
         this.propertyPath = propertyPath;
-        boolean b = isDate();
+        boolean bDate = isDate();
+        boolean bDateTime = isDateTime();
+        boolean bTime = isTime();
+        
         if (hub != null && !OAString.isEmpty(propertyPath)) {
             for (OAPropertyInfo pi : hub.getOAObjectInfo().getPropertyInfos()) {
                 if (!propertyPath.equalsIgnoreCase(pi.getName())) continue;
-                if (pi.getClassType().equals(OADate.class) || pi.getClassType().equals(OADateTime.class)) {
-                    b = true;
+                if (pi.getClassType().equals(OADateTime.class)) {
+                    bDateTime = true;
+                }
+                else if (pi.getClassType().equals(OADate.class)) {
+                    bDate = true;
+                }
+                else if (pi.getClassType().equals(OATime.class)) {
+                    bTime = true;
                 }
                 break;
             }
         }        
-        setDate(b);
+        setDate(bDate);
     }
     public String getVisiblePropertyPath() {
         return visiblePropertyPath;
