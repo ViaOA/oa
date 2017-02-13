@@ -490,15 +490,15 @@ public class OATextField implements OAJspComponent, OATableEditor {
             // see: http://docs.jquery.com/UI/Datepicker/formatDate
             sb.append("$('#"+id+"').datepicker({ dateFormat: 'mm/dd/yy' });");
         }
-        if (isDateTime()) {
-            // see: http://docs.jquery.com/UI/Datepicker/formatDate
-            sb.append("$('#"+id+"').datetimepicker({ mask:true, format: 'mm/dd/yy H:i' });");
+        else if (isDateTime()) {
+            // http://trentrichardson.com/examples/timepicker/
+            sb.append("$('#"+id+"').datetimepicker({ timeFormat: 'hh:mm:ss tt' });");
         }
-        if (isTime()) {
-            // see: http://docs.jquery.com/UI/Datepicker/formatDate
-            sb.append("$('#"+id+"').datetimepicker({ mask:true, datepicker:false, format:'mm/dd/yy' });");
+        else if (isTime()) {
+            // http://trentrichardson.com/examples/timepicker/
+            sb.append("$('#"+id+"').timepicker({ timeFormat: 'hh:mm:ss tt' });");
         }
-        if (!OAString.isEmpty(inputMask)) {
+        else if (!OAString.isEmpty(inputMask)) {
             sb.append("$('#"+id+"').mask('"+inputMask+"');");
         }
 
