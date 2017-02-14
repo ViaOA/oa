@@ -50,4 +50,6 @@ public interface OAJspComponent extends java.io.Serializable{
 
     /** used for anonymous subclasses to customize submit */
     String onSubmit(String forwardUrl);
+    
+    
 }
