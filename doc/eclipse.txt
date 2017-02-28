@@ -79,7 +79,7 @@ Quickmarks plugin installation
             http://stackoverflow.com/questions/24467105/tools-for-eclipse-2-0-plugins-upgrade
                 >> follow this:
                 You can install support for 2.0 style plugins using Help > Install New Software.
-                Select the 'Eclipse Project Updates' site (example:  http://download.eclipse.org/eclipse/updates/4.??).
+                Select the 'Eclipse Project Updates' site (example:  http://download.eclipse.org/eclipse/updates/4.4).
                 You will find 'Eclipse 2.0 Style Plugin Support' in the 'Eclipse Tests, Examples and Extras' section.
                 See Eclipse bug 421979 for some more discussion.        
     
