@@ -643,7 +643,9 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 }
                 break;
             }
-        }        
+        }
+        setDateTime(bDateTime);
+        setTime(bTime);
         setDate(bDate);
     }
     public String getVisiblePropertyPath() {
