@@ -505,7 +505,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
             String dfmt = fmt.substring(0, pos).trim();
             String tfmt = fmt.substring(pos).trim();
             
-            sb.append("$('#"+id+"').datetimepicker({ dateFormat: '"+dfmt+"',timeFormat: '"+tfmt+"' });");
+            sb.append("$('#"+id+"').datetimepicker({ dateFormat: '"+dfmt+"', timeFormat: '"+tfmt+"' });");
         }
         else if (isDate()) {
             // see: http://docs.jquery.com/UI/Datepicker/formatDate
