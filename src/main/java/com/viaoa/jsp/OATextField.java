@@ -323,22 +323,20 @@ public class OATextField implements OAJspComponent, OATableEditor {
         sb.append(getAjaxScript());
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
         
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-        /*was
-        if ( (bAjaxSubmit || HubDetailDelegate.hasDetailHubs(hub)) && OAString.isEmpty(getForwardUrl()) ) {
-            sb.append("$('#"+id+"').change(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
-        }
-        else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-            sb.append("$('#"+id+"').change(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
-        }
-        */
-        if (bAjaxSubmit && OAString.isEmpty(getForwardUrl()) ) {
+        //20170302 changed blur event to jquery change, since popups could take focus (time/date pickers)
+        //20170302 changed to use onClose event if using date/time picker
+        
+        if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl()) ) {
             if (!getAutoComplete()) {
-                sb.append("$('#"+id+"').blur(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+                if (!isDateTime() && isDate() && isTime()) {
+                    sb.append("$('#"+id+"').change(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+                }
             }
         }
-        else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-            sb.append("$('#"+id+"').blur(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+        else if (getSubmit() || OAString.notEmpty(getForwardUrl())) {
+            if (!isDateTime() && isDate() && isTime()) {
+                sb.append("$('#"+id+"').change(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+            }
         }
 
         if (isRequired()) {
@@ -391,7 +389,6 @@ public class OATextField implements OAJspComponent, OATableEditor {
             sb.append("});\n");
         }
         
-        // sb.append("$('#"+id+"').on('blur', ajaxSubmit);\n");
         String js = sb.toString();
         return js;
     }
@@ -466,7 +463,12 @@ public class OATextField implements OAJspComponent, OATableEditor {
                     ids += "_guid."+key.getGuid();
                 }
             }
-            if (obj != null) value = obj.getPropertyAsString(propertyPath);
+            if (obj != null) {
+                if (isDateTime() || isDate() || isTime()) {
+                    value = obj.getPropertyAsString(propertyPath, getFormat());
+                }
+                else value = obj.getPropertyAsString(propertyPath);
+            }
         }
         else {
             value = getValue();
@@ -486,43 +488,85 @@ public class OATextField implements OAJspComponent, OATableEditor {
         if (bVisible) sb.append("$('#"+id+"').show();");
         else sb.append("$('#"+id+"').hide();");
 
+        
         String fmt = getFormat();
         
-        if (isDateTime()) {
-            // http://trentrichardson.com/examples/timepicker/
+        if (isDateTime() || isDate() || isTime()) {
             if (OAString.isEmpty(fmt)) {
-                fmt = OADateTime.getGlobalOutputFormat();
+                if (isDateTime()) {
+                    fmt = OADateTime.getGlobalOutputFormat();
+                }
+                else if (isDate()) {
+                    fmt = OADate.getGlobalOutputFormat();
+                }
+                else fmt = OATime.getGlobalOutputFormat();
             }
-            fmt = OAString.convert(fmt, "aa", "TT");
-            fmt = OAString.convert(fmt, "a", "TT");
-
-            int pos = fmt.indexOf('H');
+            
+            // see: http://docs.jquery.com/UI/Datepicker/formatDate
+            // http://trentrichardson.com/examples/timepicker/
+            // https://github.com/trentrichardson/jQuery-Timepicker-Addon
+            String dfmt = null;
+            String tfmt = null;
+            
+            int pos = fmt.indexOf('M');
+            if (pos < 0) {
+                pos = fmt.indexOf('y');
+            }
+            
+            if (pos >= 0) {
+                pos = fmt.indexOf('H');
+                if (pos < 0) {
+                    pos = fmt.indexOf('h');
+                }
+                if (pos >= 0) {
+                    dfmt = fmt.substring(0, pos).trim();
+                }
+                else dfmt = fmt;
+                if (dfmt.indexOf("MMM") >= 0) {
+                    dfmt = OAString.convert(dfmt, "MMMM", "MM");
+                    dfmt = OAString.convert(dfmt, "MMM", "M");
+                }
+                else dfmt = OAString.convert(dfmt, "M", "m");
+                dfmt = OAString.convert(dfmt, "yy", "y");
+                dfmt = OAString.convert(dfmt, "E", "D");
+            }
+            
+            pos = fmt.indexOf('H');
             if (pos < 0) {
                 pos = fmt.indexOf('h');
-                if (pos < 0) pos = 0;
+            }
+            if (pos >= 0) {
+                tfmt = fmt.substring(pos).trim();
+                tfmt = OAString.convert(tfmt, "aa", "TT");
+                tfmt = OAString.convert(tfmt, "a", "TT");
             }
             
-            String dfmt = fmt.substring(0, pos).trim();
-            String tfmt = fmt.substring(pos).trim();
+            if (!isDateTime()) {
+                if (!isDate()) dfmt = null;
+                if (!isTime()) tfmt = null;
+            }
             
-            sb.append("$('#"+id+"').datetimepicker({ dateFormat: '"+dfmt+"', timeFormat: '"+tfmt+"' });");
-        }
-        else if (isDate()) {
-            // see: http://docs.jquery.com/UI/Datepicker/formatDate
-            if (OAString.isEmpty(fmt)) {
-                fmt = OADate.getGlobalOutputFormat();
+            if (!OAString.isEmpty(dfmt) && !OAString.isEmpty(tfmt)) {
+                sb.append("$('#"+id+"').datetimepicker({ ");
+                sb.append("dateFormat: '"+dfmt+"'");
+                sb.append(", timeFormat: '"+tfmt+"'");
             }
-            sb.append("$('#"+id+"').datepicker({ dateFormat: '"+fmt+"' });");
-        }
-        else if (isTime()) {
-            // http://trentrichardson.com/examples/timepicker/
-            if (OAString.isEmpty(fmt)) {
-                fmt = OATime.getGlobalOutputFormat();
-                // fmt = "hh:mm TT"; // hh:mm:ss TT
+            else if (!OAString.isEmpty(dfmt)) {
+                sb.append("$('#"+id+"').datepicker({ dateFormat: '"+dfmt+"'");
             }
-            fmt = OAString.convert(fmt, "aa", "TT");
-            fmt = OAString.convert(fmt, "a", "TT");
-            sb.append("$('#"+id+"').timepicker({ timeFormat: '"+fmt+"' });");
+            else if (!OAString.isEmpty(tfmt)) {
+                sb.append("$('#"+id+"').timepicker({ timeFormat: '"+tfmt+"'");
+            }
+
+            if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl()) ) {
+                if (!getAutoComplete()) {
+                    sb.append(", onClose: function() { $('#oacommand').val('"+id+"'); ajaxSubmit(); return false;}");
+                }
+            }
+            else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                sb.append(", onClose: function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;}");
+            }
+            sb.append(" });");
         }
         else if (!OAString.isEmpty(inputMask)) {
             sb.append("$('#"+id+"').mask('"+inputMask+"');");
