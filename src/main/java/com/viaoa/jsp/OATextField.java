@@ -488,19 +488,22 @@ public class OATextField implements OAJspComponent, OATableEditor {
 
         String fmt = getFormat();
         
-qqqqqqqq ONLY Set this once ....  qqqqqq        
         if (isDateTime()) {
             // http://trentrichardson.com/examples/timepicker/
             if (OAString.isEmpty(fmt)) {
                 fmt = OADateTime.getGlobalOutputFormat();
             }
-            
-qqqqqqqq not working correctly            
             fmt = OAString.convert(fmt, "aa", "TT");
             fmt = OAString.convert(fmt, "a", "TT");
+
+            int pos = fmt.indexOf('H');
+            if (pos < 0) {
+                pos = fmt.indexOf('h');
+                if (pos < 0) pos = 0;
+            }
             
-            String dfmt = fmt;
-            String tfmt = fmt;
+            String dfmt = fmt.substring(0, pos).trim();
+            String tfmt = fmt.substring(pos).trim();
             
             sb.append("$('#"+id+"').datetimepicker({ dateFormat: '"+dfmt+"',timeFormat: '"+tfmt+"' });");
         }
