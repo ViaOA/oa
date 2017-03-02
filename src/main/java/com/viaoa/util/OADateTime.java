@@ -94,7 +94,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     protected static String staticOutputFormat;
 
     /** default parse formats */
-    protected static Vector vecParseFormat;
+    private static Vector vecDateTimeParseFormat;
 
     static {
         setLocale(Locale.getDefault());
@@ -103,7 +103,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     private static Locale locale;
     public static void setLocale(Locale loc) {
         locale = loc;
-        vecParseFormat = new Vector(15,10);
+        vecDateTimeParseFormat = new Vector(15,10);
         String s = getFormat(DateFormat.SHORT, locale);
         boolean bMonthFirst = true;
         boolean bYearFirst = false;
@@ -115,68 +115,72 @@ public class OADateTime implements java.io.Serializable, Comparable {
         if (bMonthFirst) {
             staticOutputFormat = "MM/dd/yyyy hh:mma";
             // the "yy" formats must be before the "yyyy" formats because "yyyy" will convert "05/04/65" -> "05/04/0065"
-            vecParseFormat.addElement("MM/dd/yy hh:mm:ss.Sa");
-            vecParseFormat.addElement("MM/dd/yy hh:mm:ssa");
-            vecParseFormat.addElement("MM/dd/yy hh:mma");
+            vecDateTimeParseFormat.addElement("MM/dd/yy hh:mm:ss.Sa");
+            vecDateTimeParseFormat.addElement("MM/dd/yy hh:mm:ssa");
+            vecDateTimeParseFormat.addElement("MM/dd/yy hh:mma");
 
-            vecParseFormat.addElement("MM/dd/yy HH:mm:ss.S");
-            vecParseFormat.addElement("MM/dd/yy HH:mm:ss");
-            vecParseFormat.addElement("MM/dd/yy HH:mm");
+            vecDateTimeParseFormat.addElement("MM/dd/yy hh:mm:ss.S a");
+            vecDateTimeParseFormat.addElement("MM/dd/yy hh:mm:ss a");
+            vecDateTimeParseFormat.addElement("MM/dd/yy hh:mm a");
+            
+            vecDateTimeParseFormat.addElement("MM/dd/yy HH:mm:ss.S");
+            vecDateTimeParseFormat.addElement("MM/dd/yy HH:mm:ss");
+            vecDateTimeParseFormat.addElement("MM/dd/yy HH:mm");
 
-            vecParseFormat.addElement("MM/dd/yyyy hh:mm:ss.Sa");
-            vecParseFormat.addElement("MM/dd/yyyy hh:mm:ssa");
-            vecParseFormat.addElement("MM/dd/yyyy hh:mma");
+            vecDateTimeParseFormat.addElement("MM/dd/yyyy hh:mm:ss.Sa");
+            vecDateTimeParseFormat.addElement("MM/dd/yyyy hh:mm:ssa");
+            vecDateTimeParseFormat.addElement("MM/dd/yyyy hh:mma");
 
-            vecParseFormat.addElement("MM/dd/yyyy HH:mm:ss.S");
-            vecParseFormat.addElement("MM/dd/yyyy HH:mm:ss");
-            vecParseFormat.addElement("MM/dd/yyyy HH:mm");
+            vecDateTimeParseFormat.addElement("MM/dd/yyyy HH:mm:ss.S");
+            vecDateTimeParseFormat.addElement("MM/dd/yyyy HH:mm:ss");
+            vecDateTimeParseFormat.addElement("MM/dd/yyyy HH:mm");
         }
         else if (bYearFirst) {
             staticOutputFormat = "yyyy/MM/dd hh:mma";
             // the "yy" formats must be before the "yyyy" formats because "yyyy" will convert "05/04/65" -> "05/04/0065"
-            vecParseFormat.addElement("yy/MM/dd hh:mm:ss.Sa");
-            vecParseFormat.addElement("yy/MM/dd hh:mm:ssa");
-            vecParseFormat.addElement("yy/MM/dd hh:mma");
+            vecDateTimeParseFormat.addElement("yy/MM/dd hh:mm:ss.Sa");
+            vecDateTimeParseFormat.addElement("yy/MM/dd hh:mm:ssa");
+            vecDateTimeParseFormat.addElement("yy/MM/dd hh:mma");
 
-            vecParseFormat.addElement("yy/MM/dd HH:mm:ss.S");
-            vecParseFormat.addElement("yy/MM/dd HH:mm:ss");
-            vecParseFormat.addElement("yy/MM/dd HH:mm");
+            vecDateTimeParseFormat.addElement("yy/MM/dd HH:mm:ss.S");
+            vecDateTimeParseFormat.addElement("yy/MM/dd HH:mm:ss");
+            vecDateTimeParseFormat.addElement("yy/MM/dd HH:mm");
 
-            vecParseFormat.addElement("yyyy/MM/dd hh:mm:ss.Sa");
-            vecParseFormat.addElement("yyyy/MM/dd hh:mm:ssa");
-            vecParseFormat.addElement("yyyy/MM/dd hh:mma");
+            vecDateTimeParseFormat.addElement("yyyy/MM/dd hh:mm:ss.Sa");
+            vecDateTimeParseFormat.addElement("yyyy/MM/dd hh:mm:ssa");
+            vecDateTimeParseFormat.addElement("yyyy/MM/dd hh:mma");
 
-            vecParseFormat.addElement("yyyy/MM/dd HH:mm:ss.S");
-            vecParseFormat.addElement("yyyy/MM/dd HH:mm:ss");
-            vecParseFormat.addElement("yyyy/MM/dd HH:mm");
+            vecDateTimeParseFormat.addElement("yyyy/MM/dd HH:mm:ss.S");
+            vecDateTimeParseFormat.addElement("yyyy/MM/dd HH:mm:ss");
+            vecDateTimeParseFormat.addElement("yyyy/MM/dd HH:mm");
         }
         else {  // day first
             staticOutputFormat = "dd/MM/yyyy hh:mma";
             // the "yy" formats must be before the "yyyy" formats because "yyyy" will convert "05/04/65" -> "05/04/0065"
-            vecParseFormat.addElement("dd/MM/yy hh:mm:ss.Sa");
-            vecParseFormat.addElement("dd/MM/yy hh:mm:ssa");
-            vecParseFormat.addElement("dd/MM/yy hh:mma");
+            vecDateTimeParseFormat.addElement("dd/MM/yy hh:mm:ss.Sa");
+            vecDateTimeParseFormat.addElement("dd/MM/yy hh:mm:ssa");
+            vecDateTimeParseFormat.addElement("dd/MM/yy hh:mma");
 
-            vecParseFormat.addElement("dd/MM/yy HH:mm:ss.S");
-            vecParseFormat.addElement("dd/MM/yy HH:mm:ss");
-            vecParseFormat.addElement("dd/MM/yy HH:mm");
+            vecDateTimeParseFormat.addElement("dd/MM/yy HH:mm:ss.S");
+            vecDateTimeParseFormat.addElement("dd/MM/yy HH:mm:ss");
+            vecDateTimeParseFormat.addElement("dd/MM/yy HH:mm");
 
-            vecParseFormat.addElement("dd/MM/yyyy hh:mm:ss.Sa");
-            vecParseFormat.addElement("dd/MM/yyyy hh:mm:ssa");
-            vecParseFormat.addElement("dd/MM/yyyy hh:mma");
+            vecDateTimeParseFormat.addElement("dd/MM/yyyy hh:mm:ss.Sa");
+            vecDateTimeParseFormat.addElement("dd/MM/yyyy hh:mm:ssa");
+            vecDateTimeParseFormat.addElement("dd/MM/yyyy hh:mma");
 
-            vecParseFormat.addElement("dd/MM/yyyy HH:mm:ss.S");
-            vecParseFormat.addElement("dd/MM/yyyy HH:mm:ss");
-            vecParseFormat.addElement("dd/MM/yyyy HH:mm");
+            vecDateTimeParseFormat.addElement("dd/MM/yyyy HH:mm:ss.S");
+            vecDateTimeParseFormat.addElement("dd/MM/yyyy HH:mm:ss");
+            vecDateTimeParseFormat.addElement("dd/MM/yyyy HH:mm");
         }
         // SQL date formats
-        vecParseFormat.addElement("yyyy-MM-dd HH:mm:ss");
-        vecParseFormat.addElement("yyyy-MM-dd");
+        vecDateTimeParseFormat.addElement("yyyy-MM-dd HH:mm:ss");
+        vecDateTimeParseFormat.addElement("yyyy-MM-dd");
         
-        vecParseFormat.addElement(getFormat(DateFormat.SHORT));
-        vecParseFormat.addElement(getFormat(DateFormat.MEDIUM));
-        vecParseFormat.addElement(getFormat(DateFormat.LONG));
-        vecParseFormat.addElement(getFormat(DateFormat.DEFAULT));
+        vecDateTimeParseFormat.addElement(getFormat(DateFormat.SHORT));
+        vecDateTimeParseFormat.addElement(getFormat(DateFormat.MEDIUM));
+        vecDateTimeParseFormat.addElement(getFormat(DateFormat.LONG));
+        vecDateTimeParseFormat.addElement(getFormat(DateFormat.DEFAULT));
     }
     
     /**
@@ -1072,9 +1076,9 @@ public class OADateTime implements java.io.Serializable, Comparable {
     */
      public static OADateTime valueOf(String strDateTime, String fmt) {
         if (strDateTime == null) return null;
-        Date d = valueOfMain(strDateTime, fmt, vecParseFormat, staticOutputFormat);
+        Date d = valueOfMain(strDateTime, fmt, vecDateTimeParseFormat, staticOutputFormat);
         if (d == null) {
-            d = valueOfMain(fixDate(strDateTime), fmt, vecParseFormat, staticOutputFormat);
+            d = valueOfMain(fixDate(strDateTime), fmt, vecDateTimeParseFormat, staticOutputFormat);
             if (d == null) return null;
         }
         return new OADateTime(d);
@@ -1218,21 +1222,21 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @see #setFormat
     */
     public static void addGlobalParseFormat(String fmt) {
-        vecParseFormat.addElement(fmt);
+        vecDateTimeParseFormat.addElement(fmt);
     }
     /**
         Remove a global parse format.
         @see addGlobalParseFormat
     */
     public static void removeGlobalParseFormat(String fmt) {
-        vecParseFormat.removeElement(fmt);
+        vecDateTimeParseFormat.removeElement(fmt);
     }
     /**
         Remove a all globally used parse format.
         @see addGlobalParseFormat
     */
     public static void removeAllGlobalParseFormats() {
-        vecParseFormat.removeAllElements();
+        vecDateTimeParseFormat.removeAllElements();
     }
 
     /**

@@ -486,17 +486,40 @@ public class OATextField implements OAJspComponent, OATableEditor {
         if (bVisible) sb.append("$('#"+id+"').show();");
         else sb.append("$('#"+id+"').hide();");
 
-        if (isDate()) {
-            // see: http://docs.jquery.com/UI/Datepicker/formatDate
-            sb.append("$('#"+id+"').datepicker({ dateFormat: 'mm/dd/yy' });");
-        }
-        else if (isDateTime()) {
+        String fmt = getFormat();
+        
+qqqqqqqq ONLY Set this once ....  qqqqqq        
+        if (isDateTime()) {
             // http://trentrichardson.com/examples/timepicker/
-            sb.append("$('#"+id+"').datetimepicker({ timeFormat: 'hh:mm:ss tt' });");
+            if (OAString.isEmpty(fmt)) {
+                fmt = OADateTime.getGlobalOutputFormat();
+            }
+            
+qqqqqqqq not working correctly            
+            fmt = OAString.convert(fmt, "aa", "TT");
+            fmt = OAString.convert(fmt, "a", "TT");
+            
+            String dfmt = fmt;
+            String tfmt = fmt;
+            
+            sb.append("$('#"+id+"').datetimepicker({ dateFormat: '"+dfmt+"',timeFormat: '"+tfmt+"' });");
+        }
+        else if (isDate()) {
+            // see: http://docs.jquery.com/UI/Datepicker/formatDate
+            if (OAString.isEmpty(fmt)) {
+                fmt = OADate.getGlobalOutputFormat();
+            }
+            sb.append("$('#"+id+"').datepicker({ dateFormat: '"+fmt+"' });");
         }
         else if (isTime()) {
             // http://trentrichardson.com/examples/timepicker/
-            sb.append("$('#"+id+"').timepicker({ timeFormat: 'hh:mm:ss tt' });");
+            if (OAString.isEmpty(fmt)) {
+                fmt = OATime.getGlobalOutputFormat();
+                // fmt = "hh:mm TT"; // hh:mm:ss TT
+            }
+            fmt = OAString.convert(fmt, "aa", "TT");
+            fmt = OAString.convert(fmt, "a", "TT");
+            sb.append("$('#"+id+"').timepicker({ timeFormat: '"+fmt+"' });");
         }
         else if (!OAString.isEmpty(inputMask)) {
             sb.append("$('#"+id+"').mask('"+inputMask+"');");
@@ -504,6 +527,14 @@ public class OATextField implements OAJspComponent, OATableEditor {
 
         String js = sb.toString();
         return js;
+    }
+
+    protected String format;
+    public String getFormat() {
+        return format;
+    }
+    public void setFormat(String fmt) {
+        this.format = fmt;
     }
     
     protected String convertValue(String value) {

@@ -39,25 +39,25 @@ public class OATime extends OADateTime {
     protected static String timeOutputFormat = "hh:mma";
 
     /** default parse formats */
-    protected static Vector vecTimeFormat = new Vector(10,10);
+    private static Vector vecTimeParseFormat = new Vector(10,10);
 
     static {
-        vecTimeFormat.addElement("hh:mm:ss.S a");
-        vecTimeFormat.addElement("hh:mm:ss a");
-        vecTimeFormat.addElement("hh:mm a");
+        vecTimeParseFormat.addElement("hh:mm:ss.S a");
+        vecTimeParseFormat.addElement("hh:mm:ss a");
+        vecTimeParseFormat.addElement("hh:mm a");
 
-        vecTimeFormat.addElement("hh:mm:ss.Sa");
-        vecTimeFormat.addElement("hh:mm:ssa");
-        vecTimeFormat.addElement("hh:mma");
+        vecTimeParseFormat.addElement("hh:mm:ss.Sa");
+        vecTimeParseFormat.addElement("hh:mm:ssa");
+        vecTimeParseFormat.addElement("hh:mma");
 
-        vecTimeFormat.addElement("HH:mm:ss.S");
-        vecTimeFormat.addElement("HH:mm:ss");
-        vecTimeFormat.addElement("HH:mm");
+        vecTimeParseFormat.addElement("HH:mm:ss.S");
+        vecTimeParseFormat.addElement("HH:mm:ss");
+        vecTimeParseFormat.addElement("HH:mm");
 
     
-        vecTimeFormat.addElement("hha");
-        vecTimeFormat.addElement("hh a");
-        vecTimeFormat.addElement("HH");
+        vecTimeParseFormat.addElement("hha");
+        vecTimeParseFormat.addElement("hh a");
+        vecTimeParseFormat.addElement("HH");
     }
     
 
@@ -234,7 +234,7 @@ public class OATime extends OADateTime {
             if (c == 'A' || c == 'a' || c == 'P' || c == 'p') time += "m";
         }
 
-        Date d = valueOfMain(time, fmt, vecTimeFormat, timeOutputFormat);
+        Date d = valueOfMain(time, fmt, vecTimeParseFormat, timeOutputFormat);
         if (d == null) {
             return null;
         }
@@ -277,21 +277,21 @@ public class OATime extends OADateTime {
         @see OADate#setFormat
     */
     public static void addGlobalParseFormat(String fmt) {
-        vecTimeFormat.addElement(fmt);
+        vecTimeParseFormat.addElement(fmt);
     }
     /**
         Removes a default global parse format that is used when converting a String to OATime.
         @see OADate#setFormat
     */
     public static void removeGlobalParseFormat(String fmt) {
-        vecTimeFormat.removeElement(fmt);
+        vecTimeParseFormat.removeElement(fmt);
     }
     /**
         Removes all global parse formats that are used when converting a String to OATime.
         @see OADate#setFormat
     */
     public static void removeAllGlobalParseFormats() {
-        vecTimeFormat.removeAllElements();
+        vecTimeParseFormat.removeAllElements();
     }
 
     /**
