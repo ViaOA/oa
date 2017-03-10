@@ -2,6 +2,8 @@ package com.viaoa.util;
 
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import org.junit.Test;
@@ -24,6 +26,7 @@ public class OADateTimeTest extends OAUnitTest {
 
     @Test
     public void compareTest() {
+        Date dx = new Date();
         OADateTime dt = new OADateTime();
         OADate d = new OADate(dt);
         OATime t = new OATime(dt);
@@ -36,8 +39,11 @@ public class OADateTimeTest extends OAUnitTest {
         assertTrue(dt.compareTo(t) == 0);
         
         OADateTime dt2 = new OADateTime(dt);
-        dt2 = dt2.addMilliSeconds(1);
         int x = dt2.compareTo(d);
+        assertTrue(x == 0);
+        
+        dt2 = dt2.addMilliSeconds(1);
+        x = dt2.compareTo(d);
         assertTrue(x == 0);
         x = dt2.compareTo(dt);
         assertTrue(x > 0);
@@ -177,8 +183,13 @@ public class OADateTimeTest extends OAUnitTest {
 
         dt.getCalendar().add(Calendar.HOUR, 3);
         
-        dt.cal.add(Calendar.ZONE_OFFSET, 5);
-        x = dt.getCalendar().get(Calendar.ZONE_OFFSET);
+        GregorianCalendar c = dt._cal();
+
+        c.add(Calendar.ZONE_OFFSET, 5);
+        
+        x = c.get(Calendar.ZONE_OFFSET);
+
+        dt._release(c);
         
         System.out.println("=>"+dt.toString("MMddyyy HH:mm:ss a"));
         System.out.println("=>"+x);

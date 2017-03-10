@@ -194,6 +194,7 @@ public abstract class OAPool<TYPE> {
     }
     
     public void release(TYPE resource) {
+        if (resource == null) return;
         boolean bRelease = false;
         synchronized (alResource) {
             for (Pool p: alResource) {

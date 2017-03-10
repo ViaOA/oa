@@ -13,7 +13,6 @@ package com.viaoa.util;
 import java.util.*;
 import java.text.*;
 
-
 /**
     Time class that combines Calendar, Time and SimpleDateFormat into a single class.
     <p>
@@ -256,7 +255,6 @@ public class OATime extends OADateTime {
     }
 
 
-
     /**
         Sets the default global format used when converting OADate to String.
         @see OADate#setFormat
@@ -294,40 +292,6 @@ public class OATime extends OADateTime {
         vecTimeParseFormat.removeAllElements();
     }
 
-    /**
-        Always returns 0.
-    */
-    public int getYear() {
-        return 0;
-    }
-    /**
-        Always returns 0.
-    */
-    public int getMonth() {
-        return 0;
-    }
-    /**
-        Always returns 0.
-    */
-    public int getDay() {
-        return 0;
-    }
-/**
-    public void setYear(int y) {
-        if (y > 0) throw new RuntimeException("cant set year on an OATime object");
-    }
-
-    public void setMonth(int m) {
-        if (m > 0) throw new RuntimeException("cant set month on an OATime object");
-    }
-
-    public void setDay(int d) {
-        if (d > 0) throw new RuntimeException("cant set day on an OATime object");
-    }
-    public void setDate(int yr, int m, int d) {
-        throw new RuntimeException("cant set date on an OATime object");
-    }
-****/
     
     public static void main(String[] args) {
         // this is the start time - grep "Opened file" *error*.log        
@@ -341,29 +305,4 @@ public class OATime extends OADateTime {
         System.out.println(" ==> "+dt.toString("HH:mm:ss.SSS"));        
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

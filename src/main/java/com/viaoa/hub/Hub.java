@@ -139,8 +139,12 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Create a new hub with a single object, and make it AO
      */
     public Hub(OAObject obj) {
-        this( obj == null ? (Class) null : obj.getClass(), 5);
-        this.setPos(0);
+        Class objClass = ((obj == null) ? (Class) null : obj.getClass());
+        data = new HubData(objClass, 5);
+        datau = new HubDataUnique();
+        dataa = new HubDataActive();
+        datam = new HubDataMaster();
+        if (obj != null) this.setPos(0);
     }
     
     /**
