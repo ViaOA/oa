@@ -160,7 +160,7 @@ public class OADateTimeTest extends OAUnitTest {
 //qqqqqqqqqqqqqqqqqqqq    
 
     // this verifies that betweenDays works correctly with leap years and DLS (daylight savings) DLS will have a 23hr day and a 25hr day
-    public static void mainX(String[] args) {
+    public static void main1(String[] args) {
         OADate d1 = new OADate(1201, Calendar.SEPTEMBER, 27);
         OADate d2 = new OADate(d1);
         for (int i=0; i<500000; i++) {
@@ -175,28 +175,30 @@ public class OADateTimeTest extends OAUnitTest {
         System.out.println("Done => "+d2);
     }
 
-    public static void mainZ(String[] args) {
+    public static void main2(String[] args) {
         OADateTime dt = new OADateTime(1965, Calendar.MAY, 4, 12, 0, 0);
         int x = dt.getCalendar().get(Calendar.ZONE_OFFSET);
         System.out.println("=>"+dt.toString("MMddyyy HH:mm:ss a"));
         System.out.println("=>"+x);
 
+        /*
         dt.getCalendar().add(Calendar.HOUR, 3);
         
-        GregorianCalendar c = dt._cal();
+        GregorianCalendar c = dt._getCal();
 
         c.add(Calendar.ZONE_OFFSET, 5);
         
         x = c.get(Calendar.ZONE_OFFSET);
 
-        dt._release(c);
+        dt._releaseCal(c);
         
         System.out.println("=>"+dt.toString("MMddyyy HH:mm:ss a"));
         System.out.println("=>"+x);
+        */
     }
     
     
-    public static void mainA(String[] args) {
+    public static void mainC(String[] args) {
         OADateTime dt = new OADateTime(2015, 6, 1);
         TimeZone tz = dt.getTimeZone();
         long t1 = dt.getTime();
@@ -216,8 +218,8 @@ public class OADateTimeTest extends OAUnitTest {
             System.out.println("   => "+dt2.toString("MM/dd/yyyy HH:mm:ss a z")+"  "+tz2.getDisplayName());
             
             OADateTime dt3 = dt.convertTo(tz2);
-            long t3 = dt2.getTime();
-            int h3 = dt2.getHour();
+            long t3 = dt3.getTime();
+            int h3 = dt3.getHour();
             
             System.out.println("   => "+dt3.toString("MM/dd/yyyy HH:mm:ss a z"));
             int xx = 4;
@@ -225,7 +227,7 @@ public class OADateTimeTest extends OAUnitTest {
         }
     }
     
-    public static void mainB(String[] args) {
+    public static void mainD(String[] args) {
         OADateTime dtLocal = new OADateTime();
         
         TimeZone tzLocal = dtLocal.getTimeZone();
@@ -258,7 +260,7 @@ public class OADateTimeTest extends OAUnitTest {
     }
     
     // DST check
-    public static void mainC(String[] args) {
+    public static void mainE(String[] args) {
         OADateTime dt1 = new OADateTime(2015, 10, 1, 0, 0, 0);
         System.out.println("  =>"+dt1.toString("MM/dd/yyyy HH:mm:ss a z"));
         
@@ -276,7 +278,7 @@ public class OADateTimeTest extends OAUnitTest {
     }
     
     // DST check2
-    public static void mainD(String[] args) {
+    public static void mainF(String[] args) {
         // before dst ends
         OADateTime dtHere = new OADateTime(2015, 10, 1, 0, 0, 0);
         System.out.println("  =>"+dtHere.toString("MM/dd/yyyy HH:mm:ss a z"));
