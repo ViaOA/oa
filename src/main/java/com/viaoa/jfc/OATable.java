@@ -1934,18 +1934,18 @@ if (!getKeepSorted()) hub.cancelSort();
             }
             OATable t = OATable.this;
             if (t != null) {
-                t.repaint();
+                t.repaint(100);
                 JTableHeader th = t.getTableHeader();
-                if (th != null) th.repaint();
+                if (th != null) th.repaint(100);
                 OATable tx = t.getLeftTable();
                 if (tx != null) {
                     th = tx.getTableHeader();
-                    if (th != null) th.repaint();
+                    if (th != null) th.repaint(100);
                 }
                 tx = t.getRightTable();
                 if (tx != null) {
                     th = tx.getTableHeader();
-                    if (th != null) th.repaint();
+                    if (th != null) th.repaint(100);
                 }
             }
         }
@@ -2011,7 +2011,7 @@ if (!getKeepSorted()) hub.cancelSort();
                         Rectangle cellRect;
                         cellRect = getCellRect(pos, col, true);
                         scrollRectToVisible(cellRect);
-                        repaint();
+                        repaint(100);
 
                         pos = hub.getPos(hub.getActiveObject());
                         if (pos < 0) getSelectionModel().clearSelection();
@@ -2243,7 +2243,7 @@ if (!getKeepSorted()) hub.cancelSort();
         if (headerRenderer != null) {
             if (hubFilterMaster == null) headerRenderer.remove(headerRenderer.label);
             else headerRenderer.add(headerRenderer.label, BorderLayout.CENTER);
-            repaint();
+            repaint(100);
         }
         if (hubFilter != null) {
             hubFilter.close();
@@ -2698,7 +2698,7 @@ if (!getKeepSorted()) hub.cancelSort();
                 break;
             }
         }
-        getTableHeader().repaint();
+        getTableHeader().repaint(100);
     }
 
     public void removeSort() {
@@ -2707,7 +2707,7 @@ if (!getKeepSorted()) hub.cancelSort();
             tc = (OATableColumn) columns.elementAt(i);
             tc.sortOrder = 0;
         }
-        getTableHeader().repaint();
+        getTableHeader().repaint(100);
     }
 
     public int getDisplayedColumnCount() {
@@ -2918,12 +2918,12 @@ if (!getKeepSorted()) hub.cancelSort();
             }
         }
         OATable.this.performSort();
-        OATable.this.getTableHeader().repaint();
+        OATable.this.getTableHeader().repaint(100);
         if (OATable.this.tableLeft != null) {
-            OATable.this.tableLeft.getTableHeader().repaint();
+            OATable.this.tableLeft.getTableHeader().repaint(100);
         }
         else if (OATable.this.tableRight != null) {
-            OATable.this.tableRight.getTableHeader().repaint();
+            OATable.this.tableRight.getTableHeader().repaint(100);
         }
     }
 
@@ -3185,7 +3185,7 @@ if (!getKeepSorted()) hub.cancelSort();
         if (mouseOverRow == row && mouseOverColumn == column) return;
         mouseOverRow = row;
         mouseOverColumn = column;
-        repaint();
+        repaint(50);
         /* 20160203 change to repaint, since treetable was not refreshing correctly on treenode column and mouseOver of the selected row
         if (rectMouseOver != null) {
             repaint(rectMouseOver);
@@ -3381,7 +3381,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 Object obj = e.getObject();
                 if (obj == null || hub == null) return;
                 // 20150424
-                if (table.chkSelection != null) table.repaint();
+                if (table.chkSelection != null) table.repaint(200);
                 if (getRunningValueChanged()) return;
                 int pos = hub.getPos(obj);
 
@@ -3399,7 +3399,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
                 Container cont = table.getParent();
                 for (int i=0; i<3 && cont!=null; i++) {
-                    cont.repaint();
+                    cont.repaint(200);
                     cont = cont.getParent();
                 }
             }
@@ -3409,7 +3409,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
 
             public @Override void afterRemove(HubEvent e) {
-                if (table.chkSelection != null) table.repaint();
+                if (table.chkSelection != null) table.repaint(100);
                 if (getRunningValueChanged()) return;
                 int pos = HubDataDelegate.getPos(hub, e.getObject(), false, false);
                 // int pos = hub.getPos(e.getObject());
@@ -3428,7 +3428,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 }
                 Container cont = table.getParent();
                 for (int i=0; i<3 && cont!=null; i++) {
-                    cont.repaint();
+                    cont.repaint(200);
                     cont = cont.getParent();
                 }
             }
@@ -3438,18 +3438,20 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
                 table.myClearSelectionAndLeadAnchor();
                 rebuildListSelectionModel();
-                if (table.chkSelection != null) table.repaint();
+                if (table.chkSelection != null) table.repaint(100);
             }
         };
         hubSelect.addHubListener(hlSelect);
         rebuildListSelectionModel();
     }
 
+    private AtomicInteger aiRebuildListSelectionModel = new AtomicInteger();
     protected void rebuildListSelectionModel() {
         for (int i=0; i<5; i++) {
+            int cnt = aiRebuildListSelectionModel.incrementAndGet();
             try {
                 aiIgnoreValueChanged.incrementAndGet();
-                _rebuildListSelectionModel();
+                _rebuildListSelectionModel(cnt);
                 break;
             }
             catch (Exception e) { 
@@ -3460,7 +3462,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
         }
     }
-    private void _rebuildListSelectionModel() {
+    private void _rebuildListSelectionModel(final int cnt) {
         ListSelectionModel lsm = table.getSelectionModel();
         lsm.clearSelection();
 
@@ -3476,6 +3478,8 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             if (obj == null) {
                 break;
             }
+            if (cnt != aiRebuildListSelectionModel.incrementAndGet()) break;
+            
             int pos = hub.indexOf(obj); // dont use hub.getPos(), since it will adjust "linkage"
             if (pos < 0) {
                 // only remove if it is not in the hubFilterMaster (if used)
@@ -3567,7 +3571,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         _bIsRunningValueChanged = false;
         Container cont = table.getParent();
         for (int i=0; i<3 && cont!=null; i++) {
-            cont.repaint();
+            cont.repaint(200);
             cont = cont.getParent();
         }
     }
@@ -3612,7 +3616,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             // table.repaint();
         }
         // table.repaint();
-
         rebuildListSelectionModel();
     }
 
@@ -3620,7 +3623,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
         // 20110616
         if (table.tableLeft != null || table.tableRight != null) {
-            table.repaint();
+            table.repaint(100);
         }
 
         table.oaTableModel.fireTableRowsUpdated(e.getPos(), e.getToPos());
@@ -3633,6 +3636,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             table.scrollRectToVisible(cellRect);
         }
         else {
+            aiRebuildListSelectionModel.incrementAndGet();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     table.scrollRectToVisible(cellRect);
@@ -3740,7 +3744,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
 
             if (cellRect != null) table.scrollRectToVisible(cellRect);
-            table.repaint();
+            table.repaint(100);
         }
     }
 
@@ -3748,14 +3752,15 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         if (!(e.getObject() instanceof OAObject)) return;
 
         // was: if ( ((OAObject)e.getObject()).isProperty(e.getPropertyName())) {
-        table.repaint();
+        table.repaint(100);
     }
 
     protected void removeInvoker(final int pos) {
+        aiRebuildListSelectionModel.incrementAndGet();
         // 20110616
         if (table.tableRight != null) {
             rebuildListSelectionModel();
-            table.repaint();
+            table.repaint(100);
             return;
         }
 
@@ -3799,6 +3804,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
     @Override
     public void afterRemove(HubEvent e) {
+        aiRebuildListSelectionModel.incrementAndGet();
         rebuildListSelectionModel();
         // 20101229 need to reset the activeRow
         int row = getHub().getPos();
@@ -3809,11 +3815,12 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     }
 
     protected void insertInvoker(final int pos) {
+        aiRebuildListSelectionModel.incrementAndGet();
 
         // 20110616
         if (table.tableRight != null) {
             // need to make sure that selectionModel is not changed
-            table.repaint();
+            table.repaint(100);
             rebuildListSelectionModel();
             return;
         }
@@ -4071,9 +4078,9 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
                     compFilter = null;
                     focusListener = null;
                 }
-                table.getTableHeader().repaint();
-                if (table.getLeftTable() != null) table.getLeftTable().getTableHeader().repaint();
-                if (table.getRightTable() != null) table.getRightTable().getTableHeader().repaint();
+                table.getTableHeader().repaint(100);
+                if (table.getLeftTable() != null) table.getLeftTable().getTableHeader().repaint(100);
+                if (table.getRightTable() != null) table.getRightTable().getTableHeader().repaint(100);
             }
             @Override
             public void focusGained(FocusEvent e) {
@@ -4094,9 +4101,9 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
             
         compFilter.setBounds(rect);
         compFilter.requestFocusInWindow();
-        this.table.repaint();
-        table.getTableHeader().repaint();
-        if (table.getLeftTable() != null) table.getLeftTable().getTableHeader().repaint();
-        if (table.getRightTable() != null) table.getRightTable().getTableHeader().repaint();
+        this.table.repaint(100);
+        table.getTableHeader().repaint(100);
+        if (table.getLeftTable() != null) table.getLeftTable().getTableHeader().repaint(100);
+        if (table.getRightTable() != null) table.getRightTable().getTableHeader().repaint(100);
     }
 }
