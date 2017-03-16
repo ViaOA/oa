@@ -1367,9 +1367,11 @@ public class ButtonController extends JFCController implements ActionListener {
                 break;
             case Paste:
                 flag = false;
-                OAObject objx = getClipboardObject();
-                if (hub != null && objx != null && objx.getClass().equals(hub.getObjectClass())) {
-                    if (!hub.contains(objx)) flag = true;
+                if (hub != null) {
+                    OAObject objx = getClipboardObject();
+                    if (objx != null && objx.getClass().equals(hub.getObjectClass())) {
+                        if (!hub.contains(objx)) flag = true;
+                    }
                 }
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
                     flag = (hub.getSize() == 0);

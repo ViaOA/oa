@@ -3447,7 +3447,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
     private AtomicInteger aiRebuildListSelectionModel = new AtomicInteger();
     protected void rebuildListSelectionModel() {
-        for (int i=0; i<5; i++) {
+        for (int i=0; i<3; i++) {
             int cnt = aiRebuildListSelectionModel.incrementAndGet();
             try {
                 aiIgnoreValueChanged.incrementAndGet();
@@ -3478,7 +3478,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             if (obj == null) {
                 break;
             }
-            if (cnt != aiRebuildListSelectionModel.incrementAndGet()) break;
+            if (cnt != aiRebuildListSelectionModel.get()) break;
             
             int pos = hub.indexOf(obj); // dont use hub.getPos(), since it will adjust "linkage"
             if (pos < 0) {
@@ -3814,14 +3814,13 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
     }
 
-    protected void insertInvoker(final int pos) {
-        aiRebuildListSelectionModel.incrementAndGet();
+    protected void insertInvoker(final int pos, final boolean bIsAdd) {
 
         // 20110616
         if (table.tableRight != null) {
             // need to make sure that selectionModel is not changed
             table.repaint(100);
-            rebuildListSelectionModel();
+            if (!bIsAdd) rebuildListSelectionModel();
             return;
         }
 
@@ -3833,10 +3832,10 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             finally {
                 table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
             }
-            rebuildListSelectionModel();
+            if (!bIsAdd) rebuildListSelectionModel();
         }
         else {
-            rebuildListSelectionModel();
+            if (!bIsAdd) aiRebuildListSelectionModel.incrementAndGet();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
@@ -3846,19 +3845,19 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                     finally {
                         table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
                     }
-                    rebuildListSelectionModel();
+                    if (!bIsAdd) rebuildListSelectionModel();
                 }
             });
         }
     }
 
     public @Override void afterInsert(HubEvent e) {
-        insertInvoker(e.getPos());
+        insertInvoker(e.getPos(), false);
     }
 
     public @Override void afterAdd(HubEvent e) {
         if (getHub() != null) {
-            insertInvoker(e.getPos());
+            insertInvoker(e.getPos(), true);
             table.setChanged(e.getPos(), -1);
         }
     }

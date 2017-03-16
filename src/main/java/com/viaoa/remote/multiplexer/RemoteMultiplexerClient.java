@@ -1006,7 +1006,10 @@ public class RemoteMultiplexerClient {
      * Called by oaRemoteThead.addRunnable()
      */
     private void addSyncRunnable(RequestInfo ri, Runnable r) {
-        LOG.finer("adding runnable, queSize="+(queSyncRunnable.size()+1));
+        int x = queSyncRunnable.size();
+        if (x > 500) {
+            LOG.fine("adding runnable, queSize="+(queSyncRunnable.size()+1));
+        }
         try {
             queSyncRunnable.put(new Tuple(ri, r));
         }
