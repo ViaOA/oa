@@ -337,7 +337,7 @@ public class OADataSourceClient extends OADataSource {
             this.clazz = c;
             this.id = id;
             this.filter = filter;
-            next20();
+            getMoreFromServer();
         }
         public MyIterator(OAObjectKey key) {
             this.key = key;
@@ -353,13 +353,13 @@ public class OADataSourceClient extends OADataSource {
                     if (cache[cachePos] == null) return false;
                     if (filter == null || filter.isUsed(cache[cachePos])) return true;
                 }
-                next20();
+                getMoreFromServer();
             }
             
             return false;
         }
 
-        protected synchronized void next20() {
+        protected synchronized void getMoreFromServer() {
             cachePos = 0;
             cache = (Object[]) getRemoteClient().datasource(IT_NEXT, new Object[] {id} );
             if (cache != null && cache.length == 0) cache = null;

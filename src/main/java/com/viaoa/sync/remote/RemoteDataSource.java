@@ -319,7 +319,7 @@ public abstract class RemoteDataSource {
         if (iterator == null) return null;
         
         ArrayList<Object> al = new ArrayList();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 65; i++) {
             if (!iterator.hasNext()) break;
             Object obj = iterator.next();
             al.add(obj);
