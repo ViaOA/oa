@@ -100,6 +100,7 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubAODelegate;
 import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubEvent;
+import com.viaoa.hub.HubEventDelegate;
 import com.viaoa.hub.HubFilter;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.hub.HubSelectDelegate;
@@ -116,6 +117,7 @@ import com.viaoa.jfc.table.OATableListener;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OANullObject;
@@ -2252,8 +2254,23 @@ if (!getKeepSorted()) hub.cancelSort();
         if (hubFilterMaster == null) return;
 
         hubFilter = new HubFilter(hubFilterMaster, getHub(), true) {
+            boolean bIsFilterBeingUsed=true;
+            @Override
+            public void initialize() {
+                bIsFilterBeingUsed = false;
+                for (OATableColumn tc : getAllTableColumns()) {
+                    OATableFilterComponent tfc = tc.getFilterComponent();
+                    if (tfc != null && tfc.isBeingUsed()) {
+                        bIsFilterBeingUsed = true;
+                        break;
+                    }
+                }                
+                super.initialize();
+                bIsFilterBeingUsed = true;
+            }
             @Override
             public boolean isUsed(Object obj) {
+                if (!bIsFilterBeingUsed) return true;
                 for (OATableColumn tc : getAllTableColumns()) {
                     OATableFilterComponent tfc = tc.getFilterComponent();
                     if (tfc != null && !tfc.isUsed(obj)) {
@@ -3510,6 +3527,13 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             return;
         }
 
+        _valueChanged(e);
+    }    
+    
+    private AtomicInteger aiValueChanged = new AtomicInteger();
+    public void _valueChanged(ListSelectionEvent e) {
+        final int cntx = aiValueChanged.incrementAndGet();
+
         int row1 = e.getFirstIndex();
         int row2 = e.getLastIndex();
         if (row2 < 0) row2 = row1;
@@ -3519,42 +3543,40 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         if (hubSelect != null) {
             ListSelectionModel lsm = table.getSelectionModel();
 
-            int newAoPos = -1;
-
-            for (int i = row1;;) {
-                Object obj = table.hub.elementAt(i);
-                if (obj != null) {
-                    if (lsm.isSelectedIndex(i)) {
-                        if (!hubSelect.contains(obj)) {
-                            hubSelect.add(obj);
-                            newAoPos = i;
+            boolean bWasEmpty = hubSelect.getSize() == 0;
+            if (bWasEmpty) OAThreadLocalDelegate.setLoading(true);
+            try {
+                for (int i = row1;;) {
+                    Object obj = table.hub.elementAt(i);
+                    boolean b = lsm.isSelectedIndex(i);
+                    if (obj != null) {
+                        if (b) {
+                            if (bWasEmpty || !hubSelect.contains(obj)) {
+                                hubSelect.add(obj);
+                            }
                         }
-                        else if (newAoPos < 0) newAoPos = i;
+                        else {
+                            hubSelect.remove(obj);
+                        }
+                    }
+                    if (row2 > row1) {
+                        i++;
+                        if (i > row2) break;
+                    }
+                    else {
+                        i--;
+                        if (i < row2) break;
                     }
                 }
-                if (row2 > row1) {
-                    i++;
-                    if (i > row2) break;
-                }
-                else {
-                    i--;
-                    if (i < row2) break;
+            }
+            finally {
+                if (bWasEmpty) {
+                    OAThreadLocalDelegate.setLoading(false);
+                    HubEventDelegate.fireOnNewListEvent(hubSelect, true);
                 }
             }
-            for (Object obj : hubSelect) {
-                int pos = table.hub.getPos(obj);
-                if (pos >= 0 && !lsm.isSelectedIndex(pos)) {
-                    hubSelect.remove(obj);
-                }
-            }
-
-            if (newAoPos < 0) {
-                newAoPos = getHub().getPos(hubSelect.getAt(0));
-            }
-
-            // newAoPos = table.getEditingRow();
-            // if (newAoPos < 0) newAoPos = table.getSelectedRow();
-            newAoPos = table.getSelectionModel().getLeadSelectionIndex();
+            int newAoPos = getHub().getPos(hubSelect.getAt(hubSelect.size()-1));
+            //newAoPos = table.getSelectionModel().getLeadSelectionIndex();
 
             getHub().setAO(newAoPos);
         }

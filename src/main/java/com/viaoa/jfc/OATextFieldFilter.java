@@ -209,5 +209,10 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
     public void reset() {
         setText("");
     }
+    @Override
+    public boolean isBeingUsed() {
+        String text = getText();
+        return (text != null && text.length() > 0);
+    }
 }
 

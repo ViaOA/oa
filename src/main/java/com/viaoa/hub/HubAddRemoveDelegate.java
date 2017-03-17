@@ -370,14 +370,16 @@ public class HubAddRemoveDelegate {
             }
         }
         
-        if (thisHub.data.getSortListener() != null) {
+        final boolean bIsLoading = OAThreadLocalDelegate.isLoading(); 
+
+        if (!bIsLoading && thisHub.data.getSortListener() != null) {
             // use getCurrentSize to guess that it will go at the end, in 
             //  cases where this is loaded in order.
             insert(thisHub, obj, thisHub.getCurrentSize());  
             return;
         }
         
-        if (!OARemoteThreadDelegate.isRemoteThread()) {
+        if (!bIsLoading && !OARemoteThreadDelegate.isRemoteThread()) {
             if (!canAdd(thisHub, obj)) {
                 throw new RuntimeException("Cant add object, can add retured false");
             }
@@ -386,16 +388,16 @@ public class HubAddRemoveDelegate {
         
         boolean b = false;
         try {
-           OAThreadLocalDelegate.lock(thisHub);
-            b = _add(thisHub, obj);
+           if (!bIsLoading) OAThreadLocalDelegate.lock(thisHub);
+            b = _add(thisHub, obj, bIsLoading);
         }
         finally {
-            OAThreadLocalDelegate.unlock(thisHub);
+            if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
         if (b) _afterAdd(thisHub, obj);
     }
     
-    private static boolean _add(final Hub thisHub, final Object obj) {
+    private static boolean _add(final Hub thisHub, final Object obj, final boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
             return internalAdd(thisHub, obj, true);
@@ -413,7 +415,6 @@ public class HubAddRemoveDelegate {
             return false;
         }
         
-        boolean bIsLoading = OAThreadLocalDelegate.isLoading();
         if (!bIsLoading) {
             if (!OARemoteThreadDelegate.isRemoteThread()) {
                 String s = canAddMsg(thisHub, obj);
