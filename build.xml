@@ -29,21 +29,23 @@
         <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="../oabuilder_git/keystore/viaoa.jks" storepass="vince1" />
     </target>
 	
-	<!-- 20130317 removed depends rmic -->
+
+	
     <target name="Jar" depends="UpdateBinFiles" description="Jar Project">
         <jar basedir="bin" destfile="dist/${FileName}.jar"  manifest="manifest.mf" update="false" 
             excludes="test/**, **/builder/**, **/website/**, **/doc-files/**, **/vetjobstest/**, **/theice/**, **/tmgsc/**, **/*Test.class, **/*Test$*.class" 
         />
-        
-        <!-- jar basedir="../OAEditor/bin" destfile="dist/${FileName}.jar"  update="true"/ -->
-	</target>
+    </target>
+	
 
     <target name="JarSizeOf" description="Jar SizeOf">
         <jar basedir="bin" destfile="dist/sizeof.jar"  update="false" includes="**/SizeOf*.class" manifest="sizeof.mf"/>
     </target>
 	
+
+	
 	<target name="UpdateBinFiles" description="update files from src to bin that are needed by OA jar file">
-		<copy overwrite="true" todir="bin">
+        <copy overwrite="true" todir="bin">
 			<fileset dir="src">
 				<include name="*.gif/**"/>
 				<include name="*.jpg/**"/>
