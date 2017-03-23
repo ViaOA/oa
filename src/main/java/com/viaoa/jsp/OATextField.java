@@ -323,18 +323,15 @@ public class OATextField implements OAJspComponent, OATableEditor {
         sb.append(getAjaxScript());
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
         
-        //20170302 changed blur event to jquery change, since popups could take focus (time/date pickers)
-        //20170302 changed to use onClose event if using date/time picker
-        
         if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl()) ) {
             if (!getAutoComplete()) {
-                if (!isDateTime() && isDate() && isTime()) {
+                if (!isDateTime() && !isDate() && !isTime()) {  // date/time will use close (see below)
                     sb.append("$('#"+id+"').change(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
                 }
             }
         }
         else if (getSubmit() || OAString.notEmpty(getForwardUrl())) {
-            if (!isDateTime() && isDate() && isTime()) {
+            if (!isDateTime() && !isDate() && !isTime()) {
                 sb.append("$('#"+id+"').change(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
             }
         }
