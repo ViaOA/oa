@@ -48,9 +48,9 @@
 <%
     String id = "formDemo";
     form = oasession.getForm(id);
-    // form = null;    
+     form = null;    
     if (form == null) {
-        form = new OAForm(id, "demo.jsp");
+        form = new OAForm(id, "demoDateTimePicker.jsp");
         oasession.addForm(form);
 
         Hub<User> hubUser = new Hub<User>(User.class);
@@ -67,6 +67,7 @@
         
         txt = new OATextField("txtLastLogin", hubUser, User.PROPERTY_LastLogin, 0, 35);
         txt.setFormat("MM/dd/yyyy hh:mm:ss a");
+        
         // txt.setAjaxSubmit(true);
         // txt.setSubmit(true);
         form.add(txt);

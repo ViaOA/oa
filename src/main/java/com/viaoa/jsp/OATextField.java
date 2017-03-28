@@ -326,15 +326,16 @@ public class OATextField implements OAJspComponent, OATableEditor {
         if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl()) ) {
             if (!getAutoComplete()) {
                 if (!isDateTime() && !isDate() && !isTime()) {  // date/time will use close (see below)
-                    sb.append("$('#"+id+"').change(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+                    sb.append("$('#"+id+"').blur(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
                 }
             }
         }
         else if (getSubmit() || OAString.notEmpty(getForwardUrl())) {
             if (!isDateTime() && !isDate() && !isTime()) {
-                sb.append("$('#"+id+"').change(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+                sb.append("$('#"+id+"').blur(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
             }
         }
+        
 
         if (isRequired()) {
             sb.append("$('#"+id+"').addClass('oaRequired');\n");
@@ -398,18 +399,26 @@ public class OATextField implements OAJspComponent, OATableEditor {
         // see: OAForm.getInitScript for using "requires[]" and "errors[]"
 
         if (isRequired()) {
-            sb.append("if ($('#"+id+"').val() == '') { requires.push('"+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}");
+            sb.append("if ($('#"+id+"').val() == '') { requires.push('"+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}\n");
         }
 
         int max = getMaxWidth();
         if (max > 0) {
-            sb.append("if ($('#"+id+"').val().length > "+max+") { errors.push('length greater then "+max+" characters for "+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}");
+            sb.append("if ($('#"+id+"').val().length > "+max+") { errors.push('length greater then "+max+" characters for "+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}\n");
         }        
    
         String s = getRegexMatch();
         if (!OAString.isEmpty(s)) {
-            sb.append("regex = new RegExp(/"+s+"/); val = $('#"+id+"').val(); if (!val.match(regex)) { errors.push('invalid "+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}");
+            sb.append("regex = new RegExp(/"+s+"/); val = $('#"+id+"').val(); if (!val.match(regex)) { errors.push('invalid "+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}\n");
         }
+
+        // 20170327
+        if (isDateTime()) {
+            sb.append("if ($('#"+id+"').val().length > 0) $('#"+id+"_ts').val(Date.parse($('#"+id+"').val()));\n");
+        }
+        
+        
+        
         if (sb.length() == 0) return null;
         return sb.toString();
     }
@@ -482,8 +491,8 @@ public class OATextField implements OAJspComponent, OATableEditor {
         if (maxWidth > 0) sb.append("$('#"+id+"').attr('maxlength', '"+maxWidth+"');\n");
         if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
         else sb.append("$('#"+id+"').attr('disabled', 'disabled');\n");
-        if (bVisible) sb.append("$('#"+id+"').show();");
-        else sb.append("$('#"+id+"').hide();");
+        if (bVisible) sb.append("$('#"+id+"').show();\n");
+        else sb.append("$('#"+id+"').hide();\n");
 
         
         String fmt = getFormat();
@@ -563,10 +572,15 @@ public class OATextField implements OAJspComponent, OATableEditor {
             else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
                 sb.append(", onClose: function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;}");
             }
-            sb.append(" });");
+            sb.append(" });\n");
+            
+            //20170327
+            if (isDateTime() && !bAutoComplete && getForm() != null) {
+                sb.append("$('#"+getForm().getId()+"').prepend(\"<input type='hidden' id='"+id+"_ts' name='"+id+".ts' value=''>\");\n");
+            }
         }
         else if (!OAString.isEmpty(inputMask)) {
-            sb.append("$('#"+id+"').mask('"+inputMask+"');");
+            sb.append("$('#"+id+"').mask('"+inputMask+"');\n");
         }
 
         String js = sb.toString();

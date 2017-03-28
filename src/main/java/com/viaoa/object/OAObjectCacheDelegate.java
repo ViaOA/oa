@@ -926,12 +926,10 @@ public class OAObjectCacheDelegate {
                 Object object = ref.get();
                 if (object != null && object != fromObject) {
                     if (!bSkipNew || !b || !((OAObject)object).getNew()) {
-                        if (finder != null) {
-                            if (finder.findFirst((OAObject) object) != null) {
-                                if (alResults == null) return object;
-                                alResults.add(object);
-                                if (alResults.size() >= fetchAmount) return object;
-                            }
+                        if (finder == null || finder.findFirst((OAObject) object) != null) {
+                            if (alResults == null) return object;
+                            alResults.add(object);
+                            if (alResults.size() >= fetchAmount) return object;
                         }
                     }
                 }            
