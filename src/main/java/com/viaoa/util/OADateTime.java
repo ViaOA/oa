@@ -38,14 +38,20 @@ import java.sql.Time;
     <pre>
     G  era designator          (Text)              AD
     y  year                    (Number)            1996
-    M  month in year           (Text & Number)     July & 07
+    M  month in year           (Number)            1, 2, 3, 4 .. 10, 11, 12 
+    MM                         (Number)            01, 02, 03, 04 ... 10, 11, 12
+    MMM                        (Text)              Jan, Feb, ... Dec
+    MMMM                       (Text)              January, February, ... December
     d  day in month            (Number)            10
     h  hour in am/pm (1~12)    (Number)            12
     H  hour in day (0~23)      (Number)            0
     m  minute in hour          (Number)            30
     s  second in minute        (Number)            55
     S  millisecond             (Number)            978
-    E  day in week             (Text)              Tuesday
+    E  day in week             (Text)              Tues
+    EE 
+    EEE
+    EEEE  day in week          (Text)              Tuesday
     D  day in year             (Number)            189
     F  day of week in month    (Number)            2 (2nd Wed in July)
     w  week in year            (Number)            27
@@ -53,7 +59,8 @@ import java.sql.Time;
     a  am/pm marker            (Text)              PM
     k  hour in day (1~24)      (Number)            24
     K  hour in am/pm (0~11)    (Number)            0
-    z  time zone               (Text)              Pacific Standard Time
+    z  time zone               (Text)              PST
+    zzzz                                           Pacific Standard Time
     '  escape for text         (Delimiter)
     '' single quote            (Literal)           '
 
@@ -63,8 +70,17 @@ import java.sql.Time;
     "h:mm a"                          ->>  12:08 PM
     "hh 'o''clock' a, zzzz"           ->>  12 o'clock PM, Pacific Daylight Time
     "K:mm a, z"                       ->>  0:00 PM, PST
-    "yyyy.MMMMM.dd GGG hh:mm aaa"    ->>  1996.July.10 AD 12:08 PM
+    "yyyy.MMMMM.dd GGG hh:mm aaa"     ->>  1996.July.10 AD 12:08 PM
     "yyyy.MM.dd HH:mm:ss.SSS"
+    
+    
+    "E dd M yyyy hh:mm:ss a z"          ->> Thu 30 3 2017 11:58:21 AM EDT
+    "EE dd MM yyyy hh:mm:ss a zz"       ->> Thu 30 03 2017 11:58:52 AM EDT
+    "EEE dd MMM yyyy hh:mm:ss a zzz"    ->> Thu 30 Mar 2017 11:59:35 AM EDT
+    "EEEE dd MMMM yyyy hh:mm:ss a zzzz" ->> Thursday 30 March 2017 12:00:33 PM Eastern Daylight Time
+    
+    
+    
     </pre>
 
     <br>

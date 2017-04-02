@@ -297,7 +297,7 @@ public class OADateTimeTest extends OAUnitTest {
         xx++;
     }
     
-    public static void main(String[] args) throws Exception {
+    public static void mainG(String[] args) throws Exception {
         
         OATime t = new OATime(8, 49, 0);
         OADateTime dtNow = new OADateTime();
@@ -320,6 +320,19 @@ public class OADateTimeTest extends OAUnitTest {
         xx++;
     }
     
+    public static void main(String[] args) throws Exception {
+        
+        OADateTime dtNow = new OADateTime();
+        String s = dtNow.toString("EEEE dd MMMM yyyy hh:mm:ss a zzzz");
+        
+        s = "Wed 29 Mar 2017 03:09:40 PM EDT";
+        String fmt = "EEE dd MMM yyyy hh:mm:ss a z";
+        OADateTime dt = new OADateTime(s, fmt);
+        s = dt.toString(fmt);
+        
+        int xx = 4;
+        xx++;
+    }
 }
 
 

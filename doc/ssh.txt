@@ -15,23 +15,5 @@
 qqqqqqqqq
 
 Unix
-   ex:  "/home/helpdesk/.ssh"
+   ex:  "/home/userId/.ssh"
    
-PROD svc_trad
------BEGIN RSA PRIVATE KEY-----
-MIICXQIBAAKBgQDW12Q/ubiubtbR6J0LaNSDH8ODRnKVOEjOajra4c6vMDCGTy+N
-760GvemmGOk1EcVCD/bLNxc2TJWzZ3JBTNIGw6wduBYoWqmJNWDwEbS9R8s0SutL
-A0bscUVSd3Fmul/LHPu+2aAx8cfno5YhYzHLZhQmzsjPQbd1UKTthxPHWQIDAQAB
-AoGAFz+vxYWfiqDL9mMpu3ZYqOfjDG2vMJ6qoku0msMczrB0T9R53O421yfuBN9l
-PSzzH7cCifMoO+QFvyhOoOpjP81NztnWaJoPaVx6ZimrKqP+TLA+Nwiu7YoYtobU
-840EjqFCFSosG5LtTAdRrP7LyV+Y6M7FBuGneFwixjrb0JECQQD4VKdkMmHZfxVj
-H5u7e0Loagdx59RC3eVFevy8wZjsmBR7xkavXkU8z8Cs4QPUM30lC2YYj90nEQi6
-yH040fyvAkEA3Xn3InaspGViNb9I7X7F6vgJPIlWcs2WFAeIbQZZygWrKFSR22Au
-3xlmLvURabaJ6JYYFAIpvblEK8Rih6ZOdwJAX68eoHjZQxi4gO0Y8HBaI3tXSwhs
-vScKxG7TG1ftOJyQp/CKI+BLBVd3giVheE4uliuCN0yXhgoGNxIxTcd7eQJBANzz
-AVbTd/Zl4m1mULYGRCLeojBPfvv3F6MRxMuni0odD5yjigOGWBxgNW3hNSb2YWy0
-2H6VjdjljBnxyK41fo8CQQCGSKxZF/hwOd9+LMospYfYmD1fDyjUV6dX/wZg5I1i
-SNHQkG5fUK7eEynLL/Ls3Vg8c/tF8mkrx2zA504P0jJU
------END RSA PRIVATE KEY-----
-  
-  ==> "/home/helpdesk/.ssh/id_rsa"     

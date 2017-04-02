@@ -10,6 +10,7 @@
 */
 package com.viaoa.object;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -160,6 +161,24 @@ public class OAAnnotationDelegate {
             pi.setImportMatch(oaprop.isImportMatch());
             pi.setPassword(oaprop.isPassword());
             pi.setOAProperty(oaprop);
+            
+            if (oaprop.isNameValue()) {
+                Hub<String> h = pi.getNameValues();
+                try {
+                    Field f = clazz.getField("hub"+OAString.mfcu(name));
+                    Object objx = f.get(null);
+                    if (objx instanceof Hub) {
+                        for (Object o : ((Hub) objx)) {
+                            if (o instanceof String) {
+                                h.add((String)o);
+                            }
+                        }
+                    }
+                }
+                catch (Exception e) {
+                }
+            }
+            
         }
         
       

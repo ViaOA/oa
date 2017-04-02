@@ -11,6 +11,7 @@
 package com.viaoa.object;
 
 import com.viaoa.annotation.OAProperty;
+import com.viaoa.hub.Hub;
 
 public class OAPropertyInfo implements java.io.Serializable {
     static final long serialVersionUID = 1L;    
@@ -33,6 +34,7 @@ public class OAPropertyInfo implements java.io.Serializable {
     private boolean isUnicode;
     private boolean isImportMatch;
     private boolean isPassword;
+    private Hub<String> hubNameValue;
 
 	
 	public OAPropertyInfo() {
@@ -147,6 +149,11 @@ public class OAPropertyInfo implements java.io.Serializable {
     }
     public OAProperty getOAProperty() {
         return oaProperty;
+    }
+    
+    public Hub<String> getNameValues() {
+        if (hubNameValue == null) hubNameValue = new Hub<String>(String.class);  
+        return hubNameValue;
     }
 }
 
