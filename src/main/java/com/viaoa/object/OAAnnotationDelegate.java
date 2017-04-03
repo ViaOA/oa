@@ -178,9 +178,7 @@ public class OAAnnotationDelegate {
                 catch (Exception e) {
                 }
             }
-            
         }
-        
       
         // calcProperties
         ArrayList<OACalcInfo> alCalc = oi.getCalcInfos();
@@ -207,6 +205,7 @@ public class OAAnnotationDelegate {
                 ci.setPropeties(annotation.properties());
             }
             ci.setOACalculatedProperty(annotation);
+            ci.setClassType(m.getReturnType());
         }
 
         // linkInfos

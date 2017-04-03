@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.viaoa.annotation.OACalculatedProperty;
 import com.viaoa.ds.OASelect;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OACalcInfo;
@@ -218,7 +219,19 @@ public class JsonServlet extends HttpServlet {
                 result += "\"type\": \""+pp.getClassType().getSimpleName()+"\", ";
                 result += "\"max\": \""+pp.getMaxLength()+"\", ";
                 result += "\"displayName\": \""+OAString.toString(pp.getDisplayName())+"\", ";
-                result += "\"displayLength\": \""+pp.getDisplayLength()+"\"}";
+                result += "\"displayLength\": \""+pp.getDisplayLength()+"\", ";
+                
+                if (pp.isNameValue()) {
+                    result += ", \"nameValues\": [\n";
+                    int cntx = 0;
+                    for (String nv : pp.getNameValues()) {
+                        if (cntx > 0) result += ", ";
+                        result += "{\"name\": \""+nv+"\", ";
+                        result += "\"value\": \""+(cntx++)+"\"}";
+                    }
+                    result += "]";
+                }
+                result += "}";
             }
             result += "\n  ],\n";
 
@@ -226,7 +239,12 @@ public class JsonServlet extends HttpServlet {
             cnt = 0;
             for (OACalcInfo cp : oi.getCalcInfos()) {
                 if (cnt++ > 0) result += ",\n";
-                result += "    {\"name\": \""+cp.getName()+"\"}";
+                result += "    {\"name\": \""+cp.getName()+"\", ";
+                OACalculatedProperty cpx = cp.getOACalculatedProperty();
+                result += "\"type\": \""+cp.getClassType().getSimpleName()+"\", ";
+                result += "\"displayName\": \""+OAString.toString(cpx.displayName())+"\", ";
+                result += "\"displayLength\": \""+cpx.displayLength()+"\"";
+                result += "}";
             }
             result += "\n  ],\n";
             

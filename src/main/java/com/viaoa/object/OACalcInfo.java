@@ -56,6 +56,7 @@ public class OACalcInfo implements java.io.Serializable {
     String name;
     String[] properties;  // dependent properties
     private OACalculatedProperty oaCalculatedProperty;
+    private Class classType;
 
     /** 20131027
      *  true if this calcProp is for the whole Hub, and the method has a static method with a Hub param
@@ -81,6 +82,13 @@ public class OACalcInfo implements java.io.Serializable {
         this.bIsForHub = bIsForHub;
     }
 
+    public Class getClassType() {
+        return classType;
+    }
+    public void setClassType(Class classType) {
+        this.classType = classType;
+    }
+    
     /** get Calculated Property name */
     public String getName() {
         return name;
@@ -103,28 +111,5 @@ public class OACalcInfo implements java.io.Serializable {
     public void setOACalculatedProperty(OACalculatedProperty c) {
         oaCalculatedProperty = c;
     }
-    
-/* 20101218 replaced by HubListenerTree
-    
-    // set by HubEventDelegate.addHubListener(..., property) when a calc property is being used and prop changes need to be checked (here).    
-    private int listenerCount;
-    
-    // used internal by OAObject and Hub to know how many listeners for each calc property
-    public void addToListenerCount() {
-        listenerCount++;   
-    }
-    // used internal by OAObject and Hub to know how many listeners for each calc property
-    public void removeFromListenerCount() {
-        listenerCount--;   
-        if (listenerCount < 0) {
-            LOG.warning("listenerCount < 0, setting back to 0");
-            listenerCount = 0;
-        }
-    }
-    // used internal by OAObject and Hub to know how many listeners for each calc property 
-    protected int getListenerCount() {
-        return listenerCount;
-    }
-*/    
 }
 
