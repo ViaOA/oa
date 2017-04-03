@@ -10,6 +10,8 @@
 */
 package com.viaoa.object;
 
+import java.util.HashSet;
+
 import com.viaoa.util.*;
 import com.viaoa.util.filter.OAEmptyFilter;
 import com.viaoa.util.filter.OANotEmptyFilter;
@@ -72,8 +74,12 @@ public class OAHierFinder<F extends OAObject> {
     protected boolean findFirstValue(final OAObject obj, OAFilter filter, final int pos) {
         return findFirstValue(obj, filter, pos, false);
     }
-    
+
     protected boolean findFirstValue(final OAObject obj, OAFilter filter, final int pos, final boolean bRecursiveCheckOnly) {
+        return findFirstValue(obj, filter, pos, bRecursiveCheckOnly, 0);
+    }
+    
+    private boolean findFirstValue(final OAObject obj, OAFilter filter, final int pos, final boolean bRecursiveCheckOnly, final int cntRecursive) {
         if (obj == null) return false;
         
         boolean b = true;
@@ -103,17 +109,16 @@ public class OAHierFinder<F extends OAObject> {
             }
         }        
 
-
         // check recursive parent 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj.getClass());
         OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.ONE);
         if (liRecursive != null) {
+            if (cntRecursive > 50) return false;
             OAObject parent = (OAObject) liRecursive.getValue(obj);
             if (parent != null) {
-                if (findFirstValue(parent, filter, pos, true)) return true;
+                if (findFirstValue(parent, filter, pos, true, cntRecursive+1)) return true;
             }
         }
-        
         
         if (bRecursiveCheckOnly) return false;
         
