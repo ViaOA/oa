@@ -14,23 +14,27 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import javax.servlet.http.*;
 
-/** 
-    Object used by one user session.  
+/**
+    Object used by one user session.
     @see OAApplication#createSession()
 */
 public class OASession extends OABase {
     private static final long serialVersionUID = 1L;
-    
-    protected OAApplication application; 
-    
+
+    protected OAApplication application;
+
     protected transient WeakReference<HttpServletRequest> wrefRequest;  // set by oaform.jsp
     protected transient WeakReference<HttpServletResponse> wrefResponse;
 
 
     protected transient ArrayList<OAForm> alBreadcrumbForm = new ArrayList<OAForm>();
     protected transient ArrayList<OAForm> alForm = new ArrayList<OAForm>();
-    
-    
+
+    // number of seconds from UTC (from JavaScript, date.getTimezoneOffset() )
+    private int msTimezoneOffset = -1;
+    private TimeZone timeZone;
+
+
     public OASession() {
     }
 
@@ -39,7 +43,7 @@ public class OASession extends OABase {
         alForm.clear();
         alBreadcrumbForm.clear();
     }
-    
+
     public void setApplication(OAApplication app) {
         this.application = app;
     }
@@ -53,14 +57,14 @@ public class OASession extends OABase {
         }
         return alBreadcrumbForm;
     }
-    
+
     public void setLastBreadCrumbForm(OAForm f) {
-    	int x = getBreadcrumbForms().indexOf(f);
+        int x = getBreadcrumbForms().indexOf(f);
         if (x < 0) alBreadcrumbForm.add(f);
         else {
-	        while (alBreadcrumbForm.size() > (x+1)) {
-	        	alBreadcrumbForm.remove(x+1);
-	        }
+            while (alBreadcrumbForm.size() > (x+1)) {
+                alBreadcrumbForm.remove(x+1);
+            }
         }
     }
     public void setBreadCrumbForms(OAForm f) {
@@ -69,14 +73,14 @@ public class OASession extends OABase {
         alBreadcrumbForm.add(f);
     }
     public void clearBreadCrumbForms() {
-    	getBreadcrumbForms().clear();
+        getBreadcrumbForms().clear();
     }
-    
+
     public OAForm[] getBreadCrumbForms() {
-    	return (OAForm[]) getBreadcrumbForms().toArray(new OAForm[getBreadcrumbForms().size()]);
+        return (OAForm[]) getBreadcrumbForms().toArray(new OAForm[getBreadcrumbForms().size()]);
     }
-    
-    
+
+
     public OAForm createForm(String id) {
         removeForm(getForm(id));
         OAForm f = new OAForm(id, null);
@@ -144,7 +148,7 @@ public class OASession extends OABase {
         c.setMaxAge(Integer.MAX_VALUE);
         resp.addCookie(c);
     }
-    /** uses Servlet.Request to get a cookie. 
+    /** uses Servlet.Request to get a cookie.
         For this to work oaform.jsp & oabeans.jsp need to call setResponse() & setRequest()
     */
     public String getCookie(String name) {
@@ -163,5 +167,29 @@ public class OASession extends OABase {
         if (req == null) return null;
         return req.getHeader("User-Agent");
     }
-}
 
+
+    // called by OAForm
+    public void setBrowserTimeZoneOffset(int ms) {
+        if (ms != msTimezoneOffset) {
+            msTimezoneOffset = ms;
+            timeZone = null;
+        }
+    }
+    public int getBrowserTimeZoneOffset() {
+        if (msTimezoneOffset == -1) {
+            long ms = TimeZone.getDefault().getOffset(System.currentTimeMillis());
+            msTimezoneOffset = (int) ms;
+        }
+        return msTimezoneOffset;
+    }
+    public TimeZone getBrowserTimeZone() {
+        if (timeZone == null) {
+            String[] ss = TimeZone.getAvailableIDs(getBrowserTimeZoneOffset());
+            if (ss != null && ss.length > 0) {
+                timeZone = TimeZone.getTimeZone(ss[0]);
+            }
+        }
+        return timeZone;
+    }
+}

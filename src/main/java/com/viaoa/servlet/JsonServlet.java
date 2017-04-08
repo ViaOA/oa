@@ -37,10 +37,10 @@ import com.viaoa.util.OAString;
 
 /**
  * Get JSON data.
- * 
+ *
  * Example:
  * //localhost:8080/servlet/json?c=Site&query="environments.silos.servers.applications.applicationType.code like 'fix*'"
- * 
+ *
  * /json = context
  * c|class = name of class for search
  * query = object query
@@ -48,7 +48,7 @@ import com.viaoa.util.OAString;
  *
  * //localhost:8080/servlet/json?c=Site&id=2
  * id = pkey Id
- * 
+ *
  * @author vincevia
  */
 public class JsonServlet extends HttpServlet {
@@ -70,12 +70,12 @@ public class JsonServlet extends HttpServlet {
         String propName = null;
         String query = null;
         boolean bSendAllData = false;
-        
+
 
         boolean bDescribe = req.getParameterMap().containsKey("describe");
         String badParams = null;
-        
-        
+
+
         for (Object n : req.getParameterMap().keySet()) {
             String s = (String) n;
             if (s.equalsIgnoreCase("c")) className = req.getParameter(s);
@@ -98,14 +98,14 @@ public class JsonServlet extends HttpServlet {
         }
 
         LOG.finer(String.format("class=%s, id=%s, property=%s, query=%s", className, id, propName, query));
-        
+
         if (badParams != null) {
             LOG.fine("badParams="+badParams);
             resp.getOutputStream().write(("bad params="+badParams).getBytes());
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
+
         if (className == null || className.length() == 0) {
             LOG.fine("className is required");
             resp.sendRedirect("/jsonHelp.html");
@@ -113,10 +113,10 @@ public class JsonServlet extends HttpServlet {
             return;
         }
 
-        
+
         // Set content type
         resp.setContentType("application/json");  // more generic:  "text/html"
-        
+
         /*
         if (id == null || id.length() == 0) {
             LOG.fine("id is required");
@@ -124,7 +124,7 @@ public class JsonServlet extends HttpServlet {
             return;
         }
         */
-        
+
 
         Class c;
         try {
@@ -167,7 +167,7 @@ public class JsonServlet extends HttpServlet {
                 sel.select("ID = ?", new Object[] { id });
                 newObject = sel.next();
                 sel.cancel();
-                
+
                 if (newObject == null) {
                     LOG.fine("object not found, class=" + (packageName + className) + ", id=" + id);
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -192,9 +192,9 @@ public class JsonServlet extends HttpServlet {
             OAJsonWriter json = new OAJsonWriter() {
                 @Override
                 public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OALinkInfo li) {
-                    String sx = getCurrentPath();                
+                    String sx = getCurrentPath();
                     if (!bOnlySendId && (sx == null || sx.length() == 0)) return true;  // send all for root object
-     
+
                     if (bOnlySendId || li == null) {  // only send "Id"
                         return ("id".equalsIgnoreCase(propertyName));
                     }
@@ -204,14 +204,16 @@ public class JsonServlet extends HttpServlet {
             if (newObject instanceof Hub) result = json.write( (Hub) newObject);
             else result = json.write( (OAObject) newObject);
         }
-        
+
         if (bDescribe) {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
-            result += "{ \"class\": {\n";
-            result += "  \"name\": "+oi.getForClass().getSimpleName()+",\n";
+            result += "{\n";
+            //was: result += "{ \"class\": {\n";
+            result += "  \"name\": \""+oi.getForClass().getSimpleName()+"\",\n";
             result += "  \"displayName\":\""+oi.getDisplayName()+"\",\n";
-            
+
             result += "  \"properties\": [\n";
+
             int cnt = 0;
             for (OAPropertyInfo pp : oi.getPropertyInfos()) {
                 if (cnt++ > 0) result += ",\n";
@@ -219,8 +221,8 @@ public class JsonServlet extends HttpServlet {
                 result += "\"type\": \""+pp.getClassType().getSimpleName()+"\", ";
                 result += "\"max\": \""+pp.getMaxLength()+"\", ";
                 result += "\"displayName\": \""+OAString.toString(pp.getDisplayName())+"\", ";
-                result += "\"displayLength\": \""+pp.getDisplayLength()+"\", ";
-                
+                result += "\"displayLength\": \""+pp.getDisplayLength()+"\"";
+
                 if (pp.isNameValue()) {
                     result += ", \"nameValues\": [\n";
                     int cntx = 0;
@@ -231,6 +233,7 @@ public class JsonServlet extends HttpServlet {
                     }
                     result += "]";
                 }
+
                 result += "}";
             }
             result += "\n  ],\n";
@@ -247,7 +250,7 @@ public class JsonServlet extends HttpServlet {
                 result += "}";
             }
             result += "\n  ],\n";
-            
+
             cnt = 0;
             result += "  \"references\": [\n";
             for (OALinkInfo li : oi.getLinkInfos()) {
@@ -261,7 +264,6 @@ public class JsonServlet extends HttpServlet {
                 result += "\"calculated\": \""+li.getCalculated()+"\"}";
             }
             result += "\n  ]\n";
-            
             result += "}\n";
         }
 
@@ -273,8 +275,8 @@ public class JsonServlet extends HttpServlet {
         resp.addHeader("Cache-Control", "post-check=0, pre-check=0");
         // Set standard HTTP/1.0 no-cache header.
         resp.setHeader("Pragma", "no-cache");
-        
-        
+
+
         // Open the file and output streams
         OutputStream out = resp.getOutputStream();
 
@@ -287,7 +289,7 @@ public class JsonServlet extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
     }
 
-    
+
 
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -295,7 +297,7 @@ public class JsonServlet extends HttpServlet {
         // don't create a new session yet.
         HttpSession session = request.getSession(false);
         super.service(request, response);
-/*        
+/*
         String requestedPage = request.getParameter(Constants.REQUEST);
         if (session != null) {
             // retrieve authentication parameter from the session
@@ -312,7 +314,7 @@ public class JsonServlet extends HttpServlet {
             // process the unauthenticated request
             unauthenticatedUser(response, requestedPage);
         }
-*/        
+*/
     }
 
 }

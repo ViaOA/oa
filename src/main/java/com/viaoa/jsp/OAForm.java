@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.html.Util;
+import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
 
 /*
@@ -29,7 +30,7 @@ $(document).ready(function() {
         transition : 'slide'
     });
 });
-</script>        
+</script>
 
 // ID used for messages
     oaFormMessage
@@ -38,21 +39,21 @@ $(document).ready(function() {
 
 // javascript methods available
     oaShowMessage(msg)
-    
-    
+
+
     divs will be created with these IDs
       '#oaformDialog'
-    
+
 // hidden form inputs
     oaform = formId
     oacommand = command that is submitting form
-    oachanged = the id of the last changed component   
-    
+    oachanged = the id of the last changed component
+
 */
 
 
 /**
- * Controls an html form and it's components 
+ * Controls an html form and it's components
  * Form submission
  * support for multipart
  * messages, errorMessage, hiddenMessages
@@ -60,8 +61,8 @@ $(document).ready(function() {
  * send script to page (addScript)
  * manage ajax or regular submit
  * calls each component 3 times on submission: before, onSubmit, getReturn js script
- * 
- * 
+ *
+ *
  * @author vvia
  *
  */
@@ -73,28 +74,28 @@ public class OAForm extends OABase implements Serializable {
     protected OASession session;
     protected String id;
     protected String url;  // jsp name
-    
-    protected String forwardUrl; 
-    
+
+    protected String forwardUrl;
+
     /** add script to be returned to browser on initialize. */
     public String jsAddScript;
     /** add script to be returned to browser, only once on initialize (then cleared) */
     public String jsAddScriptOnce;
-    
+
     public enum Type {
         None,
         Bootstrap
     }
     protected Type type = Type.None;
-    
+
     public void setType(Type t) {
         this.type = t;
     }
     public Type getType() {
         return type;
     }
-    
-    
+
+
     public OAForm() {
     }
     public OAForm(String id, String url) {
@@ -108,7 +109,7 @@ public class OAForm extends OABase implements Serializable {
     public void setSession(OASession s) {
         this.session = s;;
     }
-    
+
     public void setId(String id) {
         this.id = id;
     }
@@ -138,16 +139,19 @@ public class OAForm extends OABase implements Serializable {
             comp.reset();
         }
     }
-    
+
+
+//qqqqqqqqqqqq have form submit send this dateObj.getTimezoneOffset()  ... minutes
+
 
     /** javascript to include during the first initialization, (then cleared) */
     public void addScript(String js) {
         addScript(js, true);
-    }    
+    }
     /** add script to be returned to browser when page is initialized. */
     public void addScript(String js, boolean bOnce) {
         if (OAString.isEmpty(js)) return;
-        
+
         // nees to end in ';'
         if (!js.endsWith(";")) {
             int x = js.length() - 1;
@@ -172,8 +176,8 @@ public class OAForm extends OABase implements Serializable {
             jsAddScript += js + "\n";
         }
     }
-    
-    
+
+
     /** finds out if any of the values have changed */
     public boolean isChanged() {
         for (int i=0; ;i++) {
@@ -187,7 +191,7 @@ public class OAForm extends OABase implements Serializable {
     /** finds out the name of components that have changed */
     public OAJspComponent[] getChangedComponents() {
         ArrayList<OAJspComponent> al = new ArrayList<OAJspComponent>();
-        
+
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
@@ -232,7 +236,7 @@ public class OAForm extends OABase implements Serializable {
         return forwardUrl;
     }
 
-    /** called after beforeSubmit/onSubmit/afterSubmit 
+    /** called after beforeSubmit/onSubmit/afterSubmit
         This is used inside JSP to process a submit;
      */
     protected String onJspSubmit(OAJspComponent submitComponent, String forwardUrl) {
@@ -246,20 +250,20 @@ public class OAForm extends OABase implements Serializable {
     // javascript code to initialize client/browser
     public String getInitScript() {
         getSession().put("oaformLast", this);  // used by oadebug.jsp, oaenable.jsp to know the last page that was viewed
-        
+
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(1024);
 
         sb.append("<script>\n");
-        
+
         // outside JS methods
         sb.append("function oaShowMessage(title, msg) {\n");
         sb.append("    $('#oaformDialog').dialog('option', 'title', title);\n");
         sb.append("    $('#oaformDialog').html(msg);\n");
         sb.append("    $('#oaformDialog').dialog('open');\n");
         sb.append("}\n");
-        
-        
+
+
         sb.append("$(document).ready(function() {\n");
 
         // form dialog
@@ -274,18 +278,21 @@ public class OAForm extends OABase implements Serializable {
         sb.append("          { text: 'Ok', click: function() { $(this).dialog('close'); } }\n");
         sb.append("         ]\n");
         sb.append("    });");
-        
+
         sb.append("$('body').append(\"<div id='oaWait'><img src='image/oawait.gif'></div>\");");
 
         sb.append("    $('#"+id+"').attr('method', 'post');\n");
         sb.append("    $('#"+id+"').attr('action', 'oaform.jsp');\n");
         sb.append("    $('#"+id+"').prepend(\"<input type='hidden' name='oaform' value='"+getId()+"'>\");\n");
-        
+
         // hidden command used by label,button when it is submitted
         sb.append("    $('#"+id+"').prepend(\"<input id='oacommand' type='hidden' name='oacommand' value=''>\");\n");
 
         // hidden command that can be used to know if any data on page has been changed
         sb.append("    $('#"+id+"').prepend(\"<input id='oachanged' type='hidden' name='oachanged' value=''>\");\n");
+
+        // hidden input for browser javascript date.timezoneOffset  (its sign [+/-] is opposite of java timezone offset)
+        sb.append("    $('#"+id+"').prepend(\"<input id='jsDateTzOffset' type='hidden' name='jsDateTzOffset' value='\"+((new Date()).getTimezoneOffset())+\"'>\");\n");
 
 
         if (getDebug()) {
@@ -296,39 +303,39 @@ public class OAForm extends OABase implements Serializable {
             sb.append("    $('#"+id+"').removeClass('oaDebug');\n");
             sb.append("    $('.oaBindable').removeClass('oaDebug');\n");
         }
-        
+
         // else sb.append("    $('#"+id+"').removeClass('oaDebug');\n");
-        
+
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
             String s = comp.getScript();
-            
+
             if (getDebug()) sb.append("    $('#"+comp.getId()+"').addClass('oaDebug');\n");
             else sb.append("    $('#"+comp.getId()+"').removeClass('oaDebug');\n");
-            
+
             if (!OAString.isEmpty(s)) sb.append(s + "\n");
             if (comp instanceof OAJspMultipartInterface) {
                 sb.append("    $('#"+id+"').attr('enctype', 'multipart/form-data');\n");
                 // 20130602 support submit fileInput
                 sb.append("    $('#"+id+"').attr('action', 'oaform.jsp?oaform="+getId()+"');\n");
-                
-//qqqqqqqqqqqqqqqqq                
+
+//qqqqqqqqqqqqqqqqq
 // qqqqqqq from html.OAImage, need to get clicked button ? not sure
                 // if it is in data submitted
 //String s = "\"oaform.jsp?oaform="+getForm().getUrl()+"&"+getName()+"=1\"";
 //s += " onMouseOver=\"this.href='oaform.jsp?oaform="+getForm().getUrl()+"&"+getName()+"=1&oatop='+setOA()+'&oatarget='+this.target+'&oaname='+window.name;\"";
-                
+
                 //20141017 removed:
                 //break;
             }
         }
         getMessages(sb);
         sb.append("\n");
-        
+
         // add form submit, to verify components
         sb.append("    $('#"+id+"').on('submit', oaSubmit);\n");
-        
+
         sb.append("    function oaSubmit() {\n");
         sb.append("        var errors = [];\n");
         sb.append("        var requires = [];\n");
@@ -341,7 +348,7 @@ public class OAForm extends OABase implements Serializable {
             String s = comp.getVerifyScript();
             if (!OAString.isEmpty(s)) sb.append("    " + s + "\n");
         }
-        
+
         sb.append("if (requires.length > 0) {\n");
         sb.append("    var msg = '';\n");
         sb.append("    for (var i=0; i<requires.length; i++) {\n");
@@ -366,7 +373,7 @@ public class OAForm extends OABase implements Serializable {
         sb.append("    }\n");
         sb.append("    oaShowMessage('Errors on page', msg);\n");
         sb.append("    return false;\n");
-        sb.append("}\n");   
+        sb.append("}\n");
         sb.append("        return true;\n");
         sb.append("    }\n");
 
@@ -384,7 +391,7 @@ public class OAForm extends OABase implements Serializable {
 //        sb.append("        if (cntWait == 1) $('#oaWait').hide().fadeIn(1500, function(){ if (cntWait < 1) {cntWait=0;$('#oaWait').hide();}});");
         sb.append("    }\n");
 
-        
+
         if (!OAString.isEmpty(jsAddScript)) {
             sb.append("    " + jsAddScript + "\n");
         }
@@ -392,23 +399,23 @@ public class OAForm extends OABase implements Serializable {
             sb.append("    " + jsAddScriptOnce + "\n");
             jsAddScriptOnce = null;
         }
-        
-        
+
+
         String js = sb.toString();
         if (js.indexOf(".focus()") < 0) {
             sb.append("    $('input:enabled:first').focus();\n");
         }
-        
+
         sb.append("\n});\n"); // end jquery.ready ****
 
-        
+
         sb.append("</script>\n");
         js = sb.toString();
-        
+
         return js;
     }
-    
-    private boolean bLastDebug; 
+
+    private boolean bLastDebug;
     public String getAjaxScript() {
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(1024);
@@ -425,7 +432,7 @@ public class OAForm extends OABase implements Serializable {
                 sb.append("    $('.oaBindable').removeClass('oaDebug');\n");
             }
         }
-        
+
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
@@ -442,12 +449,12 @@ public class OAForm extends OABase implements Serializable {
             jsAddScriptOnce = null;
         }
         sb.append("$('#oacommand').val('');"); // set back to blank
-        
+
         String js = sb.toString();
         if (js == null) js = "";
-        
+
         bLastDebug = bDebugx;
-        
+
         // js = OAString.convert(js, "\n", "\\n");
         return js;
     }
@@ -468,7 +475,7 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getErrors();
         }
         _addMessages(sb, "oaFormErrorMessage", msg1, msg2, this.getErrors());
-        
+
         msg1 = msg2 = null;
         if (session != null) {
             msg1 = session.getApplication().getHiddenMessages();
@@ -476,50 +483,50 @@ public class OAForm extends OABase implements Serializable {
         }
         _addMessages(sb, "oaFormHiddenMessage", msg1, msg2, this.getHiddenMessages());
     }
-    
+
     private void _addMessages(StringBuilder sb, String cssName, String[] msgs1, String[] msgs2, String[] msgs3) {
         String msg = "";
-        if (msgs1 != null) { 
+        if (msgs1 != null) {
             for (String s : msgs1) {
                 if (msg.length() > 0) msg += "<br>";
                 msg += s;
             }
         }
-        if (msgs2 != null) { 
+        if (msgs2 != null) {
             for (String s : msgs2) {
                 if (msg.length() > 0) msg += "<br>";
                 msg += s;
             }
         }
-        if (msgs3 != null) { 
+        if (msgs3 != null) {
             for (String s : msgs3) {
                 if (msg.length() > 0) msg += "<br>";
                 msg += s;
             }
         }
-        
+
         boolean bDebugx = getDebug();
         if (bLastDebug != bDebugx) {
             if (getDebug()) sb.append("    $('#"+cssName+"').addClass('oaDebug');\n");
             else sb.append("    $('#"+cssName+"').removeClass('oaDebug');\n");
         }
-        
+
         msg = Util.convert(msg, "'", "\'");
         if (msg.length() > 0) {
-            sb.append("if ($('#"+cssName+"').length) {"); 
-            sb.append("  $('#"+cssName+"').show();"); 
+            sb.append("if ($('#"+cssName+"').length) {");
+            sb.append("  $('#"+cssName+"').show();");
             sb.append("} else {");
-            sb.append("    oaShowMessage('', '"+msg+"');\n"); 
-            sb.append("}"); 
+            sb.append("    oaShowMessage('', '"+msg+"');\n");
+            sb.append("}");
         }
-        else sb.append("$('#"+cssName+"').hide();"); 
-        sb.append("$('#"+cssName+"').html('"+msg+"');"); 
+        else sb.append("$('#"+cssName+"').hide();");
+        sb.append("$('#"+cssName+"').html('"+msg+"');");
     }
-    
+
     public ArrayList<OAJspComponent> getComponents() {
         return alComponent;
     }
-    
+
     public OAJspComponent getComponent(String id) {
         if (id == null) return null;
         for (int i=0; ;i++) {
@@ -558,9 +565,9 @@ public class OAForm extends OABase implements Serializable {
         }
         catch (Exception e) {}
 
-        
+
         HashMap<String, String[]> hmNameValue = new HashMap<String, String[]>();
-        
+
         String contentType = request.getContentType();
         if ((contentType != null) && (contentType.indexOf("multipart/form-data") >= 0)) {
             try {
@@ -578,18 +585,26 @@ public class OAForm extends OABase implements Serializable {
                 hmNameValue.put(name,values);
             }
         }
-        
+
+        String[] ss = hmNameValue.get("jsDateTzOffset");
+        if (session != null && ss != null && ss.length > 0) {
+            int tzSecs = OAConv.toInt(ss[0]); // minutes
+            tzSecs *= 60 * 1000;
+            tzSecs *= -1; // tz offset are different between javascript and java.  Need to multiple by -1.
+            session.setBrowserTimeZoneOffset(tzSecs);
+        }
+
         boolean bProcess = beforeSubmit();
-        
+
         String forward = null;
-        
+
         if (bProcess) {
             forward = forwardUrl;
             if (OAString.isEmpty(forward)) forward = this.getUrl();
             OAJspComponent compSubmit = onSubmit(request, response, hmNameValue);
-    
+
             forward = afterSubmit(forward);
-            
+
             String s = onJspSubmit(compSubmit, forward);
             if (!OAString.isEmpty(s)) forward = s;
         }
@@ -607,7 +622,7 @@ public class OAForm extends OABase implements Serializable {
         }
         return processForward(session, request, response, null);
     }
-    
+
     /**
      * Called by oaforward.jsp to be able to have a link call submit method without doing a form submit.
      */
@@ -617,7 +632,7 @@ public class OAForm extends OABase implements Serializable {
             request.setCharacterEncoding("UTF-8");
         }
         catch (Exception e) {}
-        
+
         String forward = forwardUrl;
         String s = request.getParameter("oacommand");
         OAJspComponent comp = getComponent(s);
@@ -626,10 +641,10 @@ public class OAForm extends OABase implements Serializable {
         comp._onSubmit(request, response, hmNameValue);
         s = comp._afterSubmit(forward);
         if (!OAString.isEmpty(s)) forward = s;
-        
+
         return forward;
     }
-       
+
 
     // Parse Multipart posted forms ============================================================
     protected void processMultipart(ServletRequest request, HashMap<String, String[]> hmNameValue) throws Exception {
@@ -638,7 +653,7 @@ public class OAForm extends OABase implements Serializable {
         String contentType = request.getContentType();
         String sep = "--" + contentType.substring(contentType.indexOf("boundary=")+9);
         sep += "\r\n";
-        
+
         BufferedInputStream bis = new BufferedInputStream(request.getInputStream());
 
         for (int i=0;;i++) {
@@ -646,16 +661,16 @@ public class OAForm extends OABase implements Serializable {
             if (s == null) break;
 
             /*
-				Content-Disposition: form-data; name="txtCreate"\r\n10/21/2008\r\n
-				Content-Disposition: form-data; name="fiFile"; filename=""
-			 	; filename=""
+                Content-Disposition: form-data; name="txtCreate"\r\n10/21/2008\r\n
+                Content-Disposition: form-data; name="fiFile"; filename=""
+                 ; filename=""
             */
             String[] nameValue = processMultipart(s);
             /*
-				[0]=txtCreate [1]=10/21/2008
-			 	[0]=fiFile [1]=; filename="budget.txt"
-	        */
-                
+                [0]=txtCreate [1]=10/21/2008
+                 [0]=fiFile [1]=; filename="budget.txt"
+            */
+
             if (nameValue == null) continue;
             String name = nameValue[0];
             String[] values = (String[]) hmNameValue.get(name);
@@ -671,24 +686,24 @@ public class OAForm extends OABase implements Serializable {
             OAJspComponent comp = getComponent(name);
             if (comp == null) continue;
             if (!(comp instanceof OAJspMultipartInterface)) continue;
-            
-        	if (nameValue.length < 2) continue; 
-    		String fname = nameValue[1];
-    		int x = fname.indexOf('\"');
-    		if (x >= 0) fname = fname.substring(x+1);
-    		fname = com.viaoa.util.OAString.convert(fname, "\"", null);
-        	if (OAString.isEmpty(fname)) continue;
-        	
-    	    OutputStream os = ((OAJspMultipartInterface)comp).getOutputStream(len, fname);
-    	    if (os == null) {
-    	        os = new OutputStream() {
-    	            @Override
-    	            public void write(int b) throws IOException {
-    	                // no op
-    	            }
-    	        };
-    	    }
-    	    BufferedOutputStream bos = new BufferedOutputStream(os);
+
+            if (nameValue.length < 2) continue;
+            String fname = nameValue[1];
+            int x = fname.indexOf('\"');
+            if (x >= 0) fname = fname.substring(x+1);
+            fname = com.viaoa.util.OAString.convert(fname, "\"", null);
+            if (OAString.isEmpty(fname)) continue;
+
+            OutputStream os = ((OAJspMultipartInterface)comp).getOutputStream(len, fname);
+            if (os == null) {
+                os = new OutputStream() {
+                    @Override
+                    public void write(int b) throws IOException {
+                        // no op
+                    }
+                };
+            }
+            BufferedOutputStream bos = new BufferedOutputStream(os);
             getNextMultipart(bis, bos, "\r\n"+sep);  // this will write to bos
             bos.flush();
             bos.close();
@@ -703,10 +718,10 @@ public class OAForm extends OABase implements Serializable {
         // Content-Disposition: form-data; name="txtText"[13][10][13][10]test[13][10]
 
         if (pos < 0) return null;
-        
+
         line = line.substring(pos + s.length());
-        // "txtText"[13][10][13][10]test[13][10]        
-        
+        // "txtText"[13][10][13][10]test[13][10]
+
         pos = line.indexOf('\r');
         if (pos < 0) {
             pos = line.indexOf('\n');
@@ -715,18 +730,18 @@ public class OAForm extends OABase implements Serializable {
                 if (pos < 0) return null;
             }
         }
-        
+
         String name = line.substring(0,pos);
         // "txtText"
-        
+
         name = name.replace('"',' ');
         name = name.trim();  // txtText
 
 
         String value = line.substring(pos);
-        // [13][10][13][10]test[13][10]        
-        
-        
+        // [13][10][13][10]test[13][10]
+
+
         // skip 2 CRLF
         for (int j=0;j < 4 && value.length() > 0;) {
             char c = value.charAt(0);
@@ -736,17 +751,17 @@ public class OAForm extends OABase implements Serializable {
             }
             else break;
         }
-        // test[13][10]        
-        
-        
+        // test[13][10]
+
+
         pos = value.indexOf('\r');
         if (pos >= 0) value = value.substring(0,pos);
         // test
-        
+
         return new String[] { name, value };
     }
-    
-    
+
+
     /* returns all data up to sep and "eats" the sep */
     protected String getNextMultipart(BufferedInputStream bis, BufferedOutputStream bos, String sep) throws IOException {
         if (sep == null) return null;
@@ -756,7 +771,7 @@ public class OAForm extends OABase implements Serializable {
 
         String sep2 = null;
         if (bos == null) sep2 = "\r\nContent-Type:";  // this marks the beginning of a file
-        
+
         int sepLen = sep.length();
         int sep2Len = (sep2!=null)?sep2.length():0;
 
@@ -807,7 +822,7 @@ public class OAForm extends OABase implements Serializable {
         return new String(sb);
     }
 
-    
+
     public OATextField getTextField(String id) {
         OAJspComponent comp = getComponent(id);
         if (comp instanceof OATextField) return (OATextField) comp;
@@ -878,8 +893,7 @@ public class OAForm extends OABase implements Serializable {
         if (comp instanceof OAServletImage) return (OAServletImage) comp;
         return null;
     }
-    
-}
 
+}
 
 
