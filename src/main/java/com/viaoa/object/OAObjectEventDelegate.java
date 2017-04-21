@@ -122,6 +122,19 @@ public class OAObjectEventDelegate {
                 // throw e;
             }
         }
+
+//qqqqqqqqqqqqqqqq
+// 20170420 check to see if owner is being reassigned to null
+    if (linkInfo != null && oldObj instanceof OAObject && newObj == null && !oaObj.isDeleted() && !oaObj.isNew() && linkInfo.getType() == OALinkInfo.ONE && !linkInfo.getCalculated()) {
+        OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo((OAObject)oldObj);
+        if (!oix.getLookup() && !oix.getPreSelect()) {
+            String s = "FYI (no exception), reference is being set to null, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj+", old value="+oldObj;
+            RuntimeException e = new RuntimeException(s);
+            LOG.log(Level.WARNING, s, e);
+        }
+    }
+        
+        
         
         if (linkInfo == null && !OARemoteThreadDelegate.isRemoteThread()) {
             OAPropertyInfo propInfo = OAObjectInfoDelegate.getPropertyInfo(oi, propertyU);
@@ -517,12 +530,21 @@ public class OAObjectEventDelegate {
     	                    }
 	            	    }
 	                }
+
 	                if (newObj != null) {
-	                    obj = OAObjectReflectDelegate.getProperty((OAObject)newObj, revLinkInfo.name);
-	                    if (obj != oaObj) {
-	                    	OAObjectReflectDelegate.setProperty((OAObject)newObj, revLinkInfo.name, oaObj, null);
-	                    }
-	                }
+    	                // 20170411
+    	                if (revLinkInfo.getOwner()) {
+        	                OAObjectPropertyDelegate.setPropertyCAS((OAObject) newObj, revLinkInfo.name, oaObj, null);
+        	                OAObjectReflectDelegate.setProperty((OAObject)newObj, revLinkInfo.name, oaObj, null);
+    	                }
+    	                else {
+        	                //was
+        	                obj = OAObjectReflectDelegate.getProperty((OAObject)newObj, revLinkInfo.name);
+        	                if (obj != oaObj) {
+        	                    OAObjectReflectDelegate.setProperty((OAObject)newObj, revLinkInfo.name, oaObj, null);
+        	                }
+    	                }
+	                }	                
 	            }
 	        }
 	        catch (Exception e) {

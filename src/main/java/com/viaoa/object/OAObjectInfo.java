@@ -74,6 +74,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
     protected volatile boolean bSetLinkToOwner;
     protected OALinkInfo liLinkToOwner;  // set by OAObjectInfoDelegate.getLinkToOwner
     
+    protected boolean bLookup;
+    
     
     public OAObjectInfo() {
         this(new String[] { });
@@ -836,5 +838,19 @@ public class OAObjectInfo { //implements java.io.Serializable {
             ti.bNoReverseFinder = true;
             _onChange2(fromObject, prop, ti, hubEvent);
         }
+    }
+    
+    public void setLookup(boolean b) {
+        this.bLookup = b;
+    }
+    public boolean getLookup() {
+        return bLookup;
+    }
+    protected boolean bPreSelect;
+    public void setPreSelect(boolean b) {
+        this.bPreSelect = b;
+    }
+    public boolean getPreSelect() {
+        return this.bPreSelect;
     }
 }

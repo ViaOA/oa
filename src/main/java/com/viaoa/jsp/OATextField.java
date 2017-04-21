@@ -245,8 +245,9 @@ public class OATextField implements OAJspComponent, OATableEditor {
                                 if (sess != null) {
                                     OADateTime dt = OADateTime.valueOf(value, fmt);
                                     TimeZone tz = sess.getBrowserTimeZone();
-                                    dt.setTimeZone(tz);
-                                    value = dt.toString(fmt);
+                                    
+                                    OADateTime d2 = new OADateTime(dt.getTime()); // use this timezone
+                                    value = d2.toString(fmt);
                                 }
                             }
                         }

@@ -71,6 +71,8 @@ public class OAAnnotationDelegate {
                 // 20140118 rootTreePropertyPaths
                 String[] pps = oaclass.rootTreePropertyPaths();
                 oi.setRootTreePropertyPaths(pps);
+                oi.setLookup(oaclass.isLookup());
+                oi.setPreSelect(oaclass.isPreSelect());
             }
         }
         // prop ids
