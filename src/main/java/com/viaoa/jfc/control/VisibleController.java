@@ -28,7 +28,8 @@ public class VisibleController extends HubPropController {
     public VisibleController(JComponent comp) {
         super();
         this.component = comp;
-        update();
+        // 20170515 can cause loop
+        // update();
     }    
     public VisibleController(JComponent comp, Hub hub) {
         super(hub);

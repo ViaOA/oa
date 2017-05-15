@@ -30,7 +30,8 @@ public class EnabledController extends HubPropController {
     public EnabledController(JComponent comp) {
         super();
         this.component = comp;
-        update();
+        // 20170515 can cause loop
+        // update();
     }    
     public EnabledController(JComponent comp, Hub hub) {
         super(hub);

@@ -206,6 +206,16 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         super.setEnabled(enabled);
     }
     
+    // 20170515    
+    @Override
+    public void setVisible(boolean aFlag) {
+        if (control != null) {
+            control.getVisibleController().directlySet(true, aFlag);
+        }
+        super.setVisible(aFlag);
+    }
+    
+    
     /**
      * Other Hub/Property used to determine if component is enabled.
      * @param hub 

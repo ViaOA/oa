@@ -985,6 +985,7 @@ public class JFCController extends HubListenerAdapter {
                     return JFCController.this.isEnabled(bIsCurrentlyEnabled);
                 }
             };
+            controlEnabled.update();
         }
         return controlEnabled;
     }
@@ -1005,6 +1006,7 @@ public class JFCController extends HubListenerAdapter {
                     return JFCController.this.isVisible(bIsCurrentlyVisible);
                 }
             };
+            controlVisible.update();
         }
         return controlVisible;
     }

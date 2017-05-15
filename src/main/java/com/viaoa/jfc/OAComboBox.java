@@ -151,7 +151,19 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     }    
     public void setVisible(Hub hub, String prop, Object compareValue) {
         control.getVisibleController().add(hub, prop, compareValue);
-    }    
+    }
+    
+    
+    // 20170515    
+    @Override
+    public void setVisible(boolean aFlag) {
+        if (control != null) {
+            control.getVisibleController().directlySet(true, aFlag);
+        }
+        super.setVisible(aFlag);
+    }
+    
+/* was:    
     private boolean bManualVisible;
     private boolean bManualVisibleValue;
     @Override
@@ -160,10 +172,13 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
         bManualVisible = true;
         bManualVisibleValue = b;
     }
+*/    
     protected boolean isVisible(boolean bIsCurrentlyVisible) {
+/*        
         if (bManualVisible) {
             return bManualVisibleValue;
         }
+*/        
         return bIsCurrentlyVisible;
     }
     
