@@ -10,9 +10,7 @@
 */
 package com.viaoa.jsp;
 
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,14 +24,12 @@ import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
 
-/*qqqqqqqqqqqqqqqqqq replaced by OAListItems.java qqqqqqqqqqqq*/
-
 /**
- * Used with an HTML <UL> or <OL> to replace the <LI> with hub objects.
+ * Used with an HTML <UL/OL> or <OL/OL> to replace the <LI> with hub objects.
  * 
  * @author vvia
  */
-public class OAListing implements OAJspComponent {
+public class OAListItems implements OAJspComponent {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;
@@ -46,14 +42,14 @@ public class OAListing implements OAJspComponent {
     private String forwardUrl;
     protected String nullDescription = "";
 
-//qqqqqqq these are not all finished    
+    //qqqqqqq todo, these are not all finished    
     protected String format;
     protected int lineWidth, maxRows, minLineWidth;
     
     protected String propertyPath;
     protected String visiblePropertyPath;
     
-    public OAListing(String id, Hub hub, String propertyPath) {
+    public OAListItems(String id, Hub hub, String propertyPath) {
         this.id = id;
         this.hub = hub;
         setPropertyPath(propertyPath);
@@ -125,6 +121,7 @@ public class OAListing implements OAJspComponent {
 
     private String submitUpdateScript;
     
+
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
@@ -139,7 +136,7 @@ public class OAListing implements OAJspComponent {
 
         for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
             name = (String) ex.getKey();
-            if (!name.equalsIgnoreCase("oalisting"+id)) continue;
+            if (!name.equalsIgnoreCase("oalistitems"+id)) continue;
             values = ex.getValue();
             break;
         }
@@ -153,7 +150,7 @@ public class OAListing implements OAJspComponent {
         Object obj = hub.getAt(row);
         onClick(obj);
         
-        submitUpdateScript = "$('#oalisting"+id+"').val('');";
+        submitUpdateScript = "$('#oalistitems"+id+"').val('');";
         submitUpdateScript += "$('#"+id+" li').removeClass('oaSelected');";
 
         String s;
@@ -206,13 +203,28 @@ public class OAListing implements OAJspComponent {
         lastAjaxSent = null;
         submitUpdateScript = null;
         StringBuilder sb = new StringBuilder(1024);
-        sb.append("$('form').prepend(\"<input id='oalisting"+id+"' type='hidden' name='oalisting"+id+"' value=''>\");\n");
+        sb.append("$('form').prepend(\"<input id='oalistitems"+id+"' type='hidden' name='oalistitems"+id+"' value=''>\");\n");
+        
+        String s = getScript2();
+        
+        if (s != null) sb.append(s);
         
         sb.append(getAjaxScript());
     
+        
+        if (OAString.isNotEmpty(maxHeigth)) {
+            sb.append("$('#"+id+"').css(\"max-height\", \""+maxHeigth+"\");");
+        }
+        
+        
         String js = sb.toString();
         return js;
     }
+    
+    protected String getScript2() {
+        return null;
+    }
+    
 
     @Override
     public String getVerifyScript() {
@@ -255,21 +267,28 @@ public class OAListing implements OAJspComponent {
             sb.append("</li>");
         }        
         
-        
         String strListing = sb.toString();
         strListing = Util.convert(strListing, "\\", "\\\\");
         strListing = Util.convert(strListing, "'", "\\'");
         
         
         sb = new StringBuilder(strListing.length() + 2048);
-        sb.append("$('#"+id+"').addClass('oaListing');\n");
+        sb.append("$('#"+id+"').addClass('oaListItems');\n");
         sb.append("$('#"+id+"').html('"+strListing+"');\n");
         
 
-        sb.append("function oaListing"+id+"Click() {\n");
+        sb.append("function oaListItems"+id+"Click() {\n");
         sb.append("    var v = $(this).attr('oarow');\n");
+        
         sb.append("    if (v == null) return;\n");
-        sb.append("    $('#oalisting"+id+"').val(v);\n");
+        sb.append("    $('#oalistitems"+id+"').val(v);\n");
+        
+        s = getOnLineClickJs();
+        if (s != null) {
+            sb.append("    var liValue = $('#oalistitems"+id+"').val();"); 
+            sb.append("    "+s);
+        }
+        
         if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
             sb.append("    ajaxSubmit();\n");
         }
@@ -279,11 +298,11 @@ public class OAListing implements OAJspComponent {
         sb.append("}\n");
         
         if (getEnabled()) {
-            sb.append("$('#"+id+" li').click(oaListing"+id+"Click);\n");
+            sb.append("$('#"+id+" li').click(oaListItems"+id+"Click);\n");
         }
         sb.append("$('#"+id+"').addClass('oaSubmit');\n");
 
-        sb.append("$('#oalisting"+id+"').val('');"); // set back to blank
+        sb.append("$('#oalistitems"+id+"').val('');"); // set back to blank
         
         String js = sb.toString();
         
@@ -292,6 +311,9 @@ public class OAListing implements OAJspComponent {
         return js;
     }
 
+    protected String getOnLineClickJs() {
+        return null;
+    }
 
     @Override
     public void setEnabled(boolean b) {
@@ -326,8 +348,19 @@ public class OAListing implements OAJspComponent {
     
     public String getHtml(Object obj, int pos) {
         if (obj == null || pos < 0) return getNullDescription();
+
         String value = ((OAObject) obj).getPropertyAsString(getPropertyPath(), getFormat());
         
         return value;
     }
+
+
+    protected String maxHeigth; // ex:  200px,  12em
+    public void setMaxHeight(String val) {
+        this.maxHeigth = val;
+    }
+    public String getMaxHeigth() {
+        return this.maxHeigth;
+    }
+
 }

@@ -1,13 +1,9 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-*/
+/* Copyright 1999-2017 Vince Via vvia@viaoa.com Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed
+ * to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License. */
 package com.viaoa.jsp;
 
 import java.lang.reflect.Method;
@@ -37,15 +33,9 @@ import com.viaoa.util.OAString;
 import com.viaoa.util.OATime;
 
 /**
- * Controls an html input type=text,
- * bind to OA hub, using property path
- * set size, maxwidth
- * show/hide, that can be bound to property
- * enabled, that can be bound to property
- * ajax submit on change
- * handle required validation
- * input mask
- * support for calendar popup
+ * Controls an html input type=text, bind to OA hub, using property path set size, maxwidth show/hide,
+ * that can be bound to property enabled, that can be bound to property ajax submit on change handle
+ * required validation input mask support for calendar popup
  *
  * @author vvia
  *
@@ -73,7 +63,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     private boolean bFocus;
     protected String forwardUrl;
     protected boolean bAutoComplete;
-    protected char conversion;  // 'U'pper, 'L'ower, 'T'itle, 'P'assword
+    protected char conversion; // 'U'pper, 'L'ower, 'T'itle, 'P'assword
 
     /** javascript regex */
 
@@ -81,7 +71,6 @@ public class OATextField implements OAJspComponent, OATableEditor {
     // original
     // (?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?������]))
     public final static String RegexMatch_URL = "(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?������]))";
-
 
     // http://ntt.cc/2008/05/10/over-10-useful-javascript-regular-expression-functions-to-improve-your-web-applications-efficiency.html
     public final static String RegexMatch_Digits = "^\\s*\\d+\\s*$";
@@ -101,8 +90,6 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public final static String RegexMatch_Time12hr = "^(0?[1-9]|1[012]):[0-5][0-9]$";
     public final static String RegexMatch_Time24hr = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$";
 
-
-
     // see jquery maskedinput js lib
     public final static String MaskInput_Phone = "(999) 999-9999";
     public final static String MaskInput_DateMMDDYYYY = "99/99/9999";
@@ -110,11 +97,10 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public final static String MaskInput_TimeHMS = "99:99:99";
     public final static String MaskInput_TimeHM = "99:99";
 
-
-
     public OATextField(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0, 0);
     }
+
     public OATextField(String id, Hub hub, String propertyPath, int width, int maxWidth) {
         this.id = id;
         this.hub = hub;
@@ -126,7 +112,6 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public OATextField(String id) {
         this.id = id;
     }
-
 
     @Override
     public boolean isChanged() {
@@ -150,6 +135,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public void setForm(OAForm form) {
         this.form = form;
     }
+
     @Override
     public OAForm getForm() {
         return this.form;
@@ -160,8 +146,6 @@ public class OATextField implements OAJspComponent, OATableEditor {
         return true;
     }
 
-    private boolean bWasSubmitted;
-
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
 
@@ -170,7 +154,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
             String[] ss = hmNameValue.get("oacommand");
             if (ss != null && ss.length > 0) s = ss[0];
         }
-        bWasSubmitted  = (id != null && id.equals(s));
+        boolean bWasSubmitted = (id != null && id.equals(s));
 
         String name = null;
         OAObject obj = null;
@@ -178,40 +162,40 @@ public class OATextField implements OAJspComponent, OATableEditor {
         String value = null;
 
         if (hmNameValue != null) {
-        for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
-            name = ex.getKey();
-            if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
+            for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
+                name = ex.getKey();
+                if (!name.toUpperCase().startsWith(id.toUpperCase())) continue;
 
-            values = ex.getValue();
-            if (values == null || values.length == 0 || OAString.isEmpty(values[0])) {
-                value = null;
-            }
-            else value = values[0];
-
-            if (name.equalsIgnoreCase(id)) {
-                if (hub != null) {
-                    obj = (OAObject) hub.getAO();
+                values = ex.getValue();
+                if (values == null || values.length == 0) {
+                    value = null;
                 }
-                break;
-            }
-            else {
-                if (name.toUpperCase().startsWith(id.toUpperCase()+"_")) {
-                    s = name.substring(id.length()+1);
-                    if (s.startsWith("guid.")) {
-                        s = s.substring(5);
-                        OAObjectKey k = new OAObjectKey(null, OAConv.toInt(s), true);
-                        obj = OAObjectCacheDelegate.get(hub.getObjectClass(), k);
-                    }
-                    else {
-                        obj = OAObjectCacheDelegate.get(hub.getObjectClass(), s);
-                    }
-                    if (obj == null) {
-                        LOG.warning("Object not found in cache, request param name="+name+", hub="+hub);
+                else value = values[0];
+
+                if (name.equalsIgnoreCase(id)) {
+                    if (hub != null) {
+                        obj = (OAObject) hub.getAO();
                     }
                     break;
                 }
+                else {
+                    if (name.toUpperCase().startsWith(id.toUpperCase() + "_")) {
+                        s = name.substring(id.length() + 1);
+                        if (s.startsWith("guid.")) {
+                            s = s.substring(5);
+                            OAObjectKey k = new OAObjectKey(null, OAConv.toInt(s), true);
+                            obj = OAObjectCacheDelegate.get(hub.getObjectClass(), k);
+                        }
+                        else {
+                            obj = OAObjectCacheDelegate.get(hub.getObjectClass(), s);
+                        }
+                        if (obj == null) {
+                            LOG.warning("Object not found in cache, request param name=" + name + ", hub=" + hub);
+                        }
+                        break;
+                    }
+                }
             }
-        }
         }
 
         value = convertInputText(value);
@@ -223,11 +207,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
 
         if (hub != null) {
             if (obj != null) {
-                if (value != null && value.length() == 0) {
-                    value = null;
-                }
                 try {
-
                     String fmt = getFormat();
 
                     if (bIsDateTime && !OAString.isEmpty(value)) {
@@ -246,7 +226,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                                     OADateTime dt = OADateTime.valueOf(value, fmt);
                                     TimeZone tz = sess.getBrowserTimeZone();
                                     dt.setTimeZone(tz);
-                                    
+
                                     OADateTime d2 = new OADateTime(dt.getTime()); // use this computer's timezone
                                     value = d2.toString(fmt);
                                 }
@@ -254,18 +234,19 @@ public class OATextField implements OAJspComponent, OATableEditor {
                         }
                     }
 
-                    String old = obj.getPropertyAsString(propertyPath, fmt);
-
-                    obj.setProperty(propertyPath, value, fmt);
-
-                    if (!OAString.isEqual(old, value)) {
-                        lastAjaxSent = null;
+                    if (!OAString.isEqual(value, lastValue)) {
+                        if (value != null && (value.length() == 0 && lastValue == null)) {
+                        }
+                        else {
+                            obj.setProperty(propertyPath, value, fmt);
+                            lastAjaxSent = null;
+                        }
                     }
                 }
                 catch (Throwable ex) {
                     s = getName();
                     if (OAString.isEmpty(s)) s = getId();
-                    getForm().addError("Error setting "+s+" - "+ex);
+                    getForm().addError("Error setting " + s + " - " + ex);
                 }
             }
         }
@@ -298,25 +279,19 @@ public class OATextField implements OAJspComponent, OATableEditor {
         return text;
     }
 
-
     /**
      * 'U'pper, 'L'ower, 'T'itle, 'P'assword
      */
     public void setConversion(char conv) {
         conversion = conv;
     }
+
     public char getConversion() {
         return conversion;
     }
 
-
     @Override
     public String _afterSubmit(String forwardUrl) {
-        if (bWasSubmitted) {
-            String furl = getForwardUrl();
-            if (furl != null) forwardUrl = furl;
-            return onSubmit(forwardUrl);
-        }
         return forwardUrl;
     }
 
@@ -328,6 +303,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public void setForwardUrl(String forwardUrl) {
         this.forwardUrl = forwardUrl;
     }
+
     public String getForwardUrl() {
         return this.forwardUrl;
     }
@@ -335,12 +311,15 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public void setAjaxSubmit(boolean b) {
         bAjaxSubmit = b;
     }
+
     public boolean getAjaxSubmit() {
         return bAjaxSubmit;
     }
+
     public void setSubmit(boolean b) {
         bSubmit = b;
     }
+
     public boolean getSubmit() {
         return bSubmit;
     }
@@ -352,44 +331,45 @@ public class OATextField implements OAJspComponent, OATableEditor {
         sb.append(getAjaxScript());
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
 
-        if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl()) ) {
+        if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
             if (!getAutoComplete()) {
-                if (!isDateTime() && !isDate() && !isTime()) {  // date/time will use close (see below)
-                    sb.append("$('#"+id+"').blur(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+                if (!isDateTime() && !isDate() && !isTime()) { // date/time will use close (see below)
+                    sb.append("$('#" + id + "').blur(function(e) {if($(this).ignore){$(this).ignore=false;return;}$('#oacommand').val('" + id + "'); ajaxSubmit();return false;});\n");
+                    sb.append("$('#" + id + "').keypress(function(e) { if (e.keyCode != 13) return; e.preventDefault(); $('#oacommand').val('" + id + "'); $(this).ignore=true;ajaxSubmit();$(this).ignore=false;return false;});\n");
                 }
             }
         }
         else if (getSubmit() || OAString.notEmpty(getForwardUrl())) {
             if (!isDateTime() && !isDate() && !isTime()) {
-                sb.append("$('#"+id+"').blur(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+                sb.append("$('#" + id + "').blur(function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;});\n");
             }
         }
 
-
         if (isRequired()) {
-            sb.append("$('#"+id+"').addClass('oaRequired');\n");
-            sb.append("$('#"+id+"').attr('required', 'true');\n");
+            sb.append("$('#" + id + "').addClass('oaRequired');\n");
+            sb.append("$('#" + id + "').attr('required', 'true');\n");
         }
-        sb.append("$('#"+id+"').blur(function() {$(this).removeClass('oaError');}); \n");
+        sb.append("$('#" + id + "').blur(function() {$(this).removeClass('oaError');}); \n");
 
         if (getSubmit() || getAjaxSubmit()) {
-            sb.append("$('#"+id+"').addClass('oaSubmit');\n");
+            sb.append("$('#" + id + "').addClass('oaSubmit');\n");
         }
 
         if (bAutoComplete) {
-            sb.append("var cache"+id+" = {}, lastXhr"+id+";\n");
-            sb.append("$( '#"+id+"' ).autocomplete({\n");
+            sb.append("var cache" + id + " = {}, lastXhr" + id + ";\n");
+            sb.append("$( '#" + id + "' ).autocomplete({\n");
             sb.append("minLength: 3,\n");
             sb.append("source: function( request, response ) {\n");
             sb.append("    var term = request.term;\n");
-            sb.append("    if ( term in cache"+id+" ) {\n");
-            sb.append("        response( cache"+id+"[ term ] );\n");
+            sb.append("    if ( term in cache" + id + " ) {\n");
+            sb.append("        response( cache" + id + "[ term ] );\n");
             sb.append("        return;\n");
             sb.append("    }\n");
             sb.append("    \n");
-            sb.append("    lastXhr"+id+" = $.getJSON( 'oaautocomplete.jsp?oaform="+form.getId()+"&id="+getId()+"', request, function( data, status, xhr ) {\n");
-            sb.append("        cache"+id+"[ term ] = data;\n");
-            sb.append("        if ( xhr === lastXhr"+id+" ) {\n");
+            sb.append("    lastXhr" + id + " = $.getJSON( 'oaautocomplete.jsp?oaform=" + form.getId() + "&id=" + getId()
+                    + "', request, function( data, status, xhr ) {\n");
+            sb.append("        cache" + id + "[ term ] = data;\n");
+            sb.append("        if ( xhr === lastXhr" + id + " ) {\n");
             sb.append("            response( data );\n");
             sb.append("        }\n");
             sb.append("    });\n");
@@ -398,8 +378,8 @@ public class OATextField implements OAJspComponent, OATableEditor {
             if (getAjaxSubmit()) {
                 sb.append(",\n");
                 sb.append("select: function( event, ui ) {\n");
-                sb.append("    $('#"+getId()+"').val(ui.item.value);\n");
-                sb.append("    $('#oacommand').val('"+getId()+"');\n");
+                sb.append("    $('#" + getId() + "').val(ui.item.value);\n");
+                sb.append("    $('#oacommand').val('" + getId() + "');\n");
                 sb.append("    ajaxSubmit();\n");
                 sb.append("}\n");
             }
@@ -408,10 +388,10 @@ public class OATextField implements OAJspComponent, OATableEditor {
 
         int max = getMaxWidth();
         if (max > 0) {
-            sb.append("$('#"+getId()+"').keyup(function(event) {\n");
+            sb.append("$('#" + getId() + "').keyup(function(event) {\n");
             sb.append("    var text = $(this).val();\n");
-            sb.append("    if (text.length > "+max+") {\n");
-            sb.append("        $(this).val(text.slice(0, "+max+"));\n");
+            sb.append("    if (text.length > " + max + ") {\n");
+            sb.append("        $(this).val(text.slice(0, " + max + "));\n");
             sb.append("    }\n");
             sb.append("});\n");
         }
@@ -420,7 +400,6 @@ public class OATextField implements OAJspComponent, OATableEditor {
         return js;
     }
 
-
     @Override
     public String getVerifyScript() {
         StringBuilder sb = new StringBuilder(1024);
@@ -428,49 +407,50 @@ public class OATextField implements OAJspComponent, OATableEditor {
         // see: OAForm.getInitScript for using "requires[]" and "errors[]"
 
         if (isRequired()) {
-            sb.append("if ($('#"+id+"').val() == '') { requires.push('"+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}\n");
+            sb.append("if ($('#" + id + "').val() == '') { requires.push('" + (name != null ? name : id) + "'); $('#" + id
+                    + "').addClass('oaError');}\n");
         }
 
         int max = getMaxWidth();
         if (max > 0) {
-            sb.append("if ($('#"+id+"').val().length > "+max+") { errors.push('length greater then "+max+" characters for "+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}\n");
+            sb.append("if ($('#" + id + "').val().length > " + max + ") { errors.push('length greater then " + max + " characters for "
+                    + (name != null ? name : id) + "'); $('#" + id + "').addClass('oaError');}\n");
         }
 
         String s = getRegexMatch();
         if (!OAString.isEmpty(s)) {
-            sb.append("regex = new RegExp(/"+s+"/); val = $('#"+id+"').val(); if (!val.match(regex)) { errors.push('invalid "+(name!=null?name:id)+"'); $('#"+id+"').addClass('oaError');}\n");
+            sb.append("regex = new RegExp(/" + s + "/); val = $('#" + id + "').val(); if (!val.match(regex)) { errors.push('invalid "
+                    + (name != null ? name : id) + "'); $('#" + id + "').addClass('oaError');}\n");
         }
 
         // 20170327
         if (isDateTime()) {
-            sb.append("if ($('#"+id+"').val().length > 0) $('#"+id+"_ts').val(Date.parse($('#"+id+"').val()));\n");
+            sb.append("if ($('#" + id + "').val().length > 0) $('#" + id + "_ts').val(Date.parse($('#" + id + "').val()));\n");
         }
-
-
 
         if (sb.length() == 0) return null;
         return sb.toString();
     }
 
     private String name;
+
     /** used when displaying error message for this textfield */
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
 
     private String lastAjaxSent;
 
-
-
     @Override
     public String getAjaxScript() {
         String js = getTextJavaScript();
 
         if (bFocus) {
-            js += ("$('#"+id+"').focus();\n");
+            js += ("$('#" + id + "').focus();\n");
             bFocus = false;
         }
 
@@ -495,7 +475,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                     ids += "_" + objs[0];
                 }
                 else {
-                    ids += "_guid."+key.getGuid();
+                    ids += "_guid." + key.getGuid();
                 }
             }
             if (obj != null) {
@@ -539,20 +519,20 @@ public class OATextField implements OAJspComponent, OATableEditor {
             value = getValue();
         }
         if (value == null) value = "";
-        sb.append("$('#"+id+"').attr('name', '"+ids+"');\n");
+        sb.append("$('#" + id + "').attr('name', '" + ids + "');\n");
 
         value = convertValue(value);
 
-        lastValue = value;
+        if (value == null) lastValue = null;
+        else lastValue = value;
 
-        sb.append("$('#"+id+"').val('"+value+"');\n");
-        if (width > 0) sb.append("$('#"+id+"').attr('size', '"+width+"');\n");
-        if (maxWidth > 0) sb.append("$('#"+id+"').attr('maxlength', '"+maxWidth+"');\n");
-        if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
-        else sb.append("$('#"+id+"').attr('disabled', 'disabled');\n");
-        if (bVisible) sb.append("$('#"+id+"').show();\n");
-        else sb.append("$('#"+id+"').hide();\n");
-
+        sb.append("$('#" + id + "').val('" + value + "');\n");
+        if (width > 0) sb.append("$('#" + id + "').attr('size', '" + width + "');\n");
+        if (maxWidth > 0) sb.append("$('#" + id + "').attr('maxlength', '" + maxWidth + "');\n");
+        if (getEnabled()) sb.append("$('#" + id + "').removeAttr('disabled');\n");
+        else sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
+        if (bVisible) sb.append("$('#" + id + "').show();\n");
+        else sb.append("$('#" + id + "').hide();\n");
 
         String fmt = getFormat();
 
@@ -612,37 +592,38 @@ public class OATextField implements OAJspComponent, OATableEditor {
             }
 
             if (!OAString.isEmpty(dfmt) && !OAString.isEmpty(tfmt)) {
-                sb.append("$('#"+id+"').datetimepicker({ ");
-                sb.append("dateFormat: '"+dfmt+"'");
-                sb.append(", timeFormat: '"+tfmt+"'");
+                sb.append("$('#" + id + "').datetimepicker({ ");
+                sb.append("dateFormat: '" + dfmt + "'");
+                sb.append(", timeFormat: '" + tfmt + "'");
                 if (tfmt != null && tfmt.toLowerCase().indexOf('z') >= 0) {
                     // sb.append(", timezoneList: [{label: 'EDT', value: '-240'}, {label: 'other', value: '-480'}]");
                 }
             }
             else if (!OAString.isEmpty(dfmt)) {
-                sb.append("$('#"+id+"').datepicker({ dateFormat: '"+dfmt+"'");
+                sb.append("$('#" + id + "').datepicker({ dateFormat: '" + dfmt + "'");
             }
             else if (!OAString.isEmpty(tfmt)) {
-                sb.append("$('#"+id+"').timepicker({ timeFormat: '"+tfmt+"'");
+                sb.append("$('#" + id + "').timepicker({ timeFormat: '" + tfmt + "'");
             }
 
-            if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl()) ) {
+            if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
                 if (!getAutoComplete()) {
-                    sb.append(", onClose: function() { $('#oacommand').val('"+id+"'); ajaxSubmit(); return false;}");
+                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}");
                 }
             }
             else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                sb.append(", onClose: function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;}");
+                sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;}");
             }
             sb.append(" });\n");
 
             //20170327
             if (isDateTime() && !bAutoComplete && getForm() != null) {
-                sb.append("$('#"+getForm().getId()+"').prepend(\"<input type='hidden' id='"+id+"_ts' name='"+id+".ts' value=''>\");\n");
+                sb.append("$('#" + getForm().getId() + "').prepend(\"<input type='hidden' id='" + id + "_ts' name='" + id
+                        + ".ts' value=''>\");\n");
             }
         }
         else if (!OAString.isEmpty(inputMask)) {
-            sb.append("$('#"+id+"').mask('"+inputMask+"');\n");
+            sb.append("$('#" + id + "').mask('" + inputMask + "');\n");
         }
 
         String js = sb.toString();
@@ -650,9 +631,11 @@ public class OATextField implements OAJspComponent, OATableEditor {
     }
 
     protected String format;
+
     public String getFormat() {
         return format;
     }
+
     public void setFormat(String fmt) {
         this.format = fmt;
     }
@@ -668,41 +651,42 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public boolean isDate() {
         return bIsDate;
     }
+
     public void setDate(boolean b) {
         this.bIsDate = b;
     }
+
     public boolean isDateTime() {
         return bIsDateTime;
     }
+
     public void setDateTime(boolean b) {
         this.bIsDateTime = b;
     }
+
     public boolean isTime() {
         return bIsTime;
     }
+
     public void setTime(boolean b) {
         this.bIsTime = b;
     }
 
-
-
     /**
-      Set regex
-          example for email:  "\S+@\S+\.\S+"
+     * Set regex example for email: "\S+@\S+\.\S+"
      */
     public void setRegexMatch(String regex) {
         this.regex = regex;
     }
+
     public String getRegexMatch() {
         return this.regex;
     }
 
-
-
     /**
-     * ex:  '(999) 999-9999'
+     * ex: '(999) 999-9999'
      *
-     * last char optional:  ("(99) 999-99-9?9")
+     * last char optional: ("(99) 999-99-9?9")
      *
      * see: http://digitalbush.com/projects/masked-input-plugin/
      *
@@ -711,6 +695,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public String getInputMask() {
         return inputMask;
     }
+
     public void setInputMask(String inputMask) {
         this.inputMask = inputMask;
     }
@@ -718,6 +703,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public boolean isRequired() {
         return required;
     }
+
     public void setRequired(boolean required) {
         this.required = required;
     }
@@ -726,6 +712,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public void setEnabled(boolean b) {
         this.bEnabled = b;
     }
+
     @Override
     public boolean getEnabled() {
         if (!bEnabled) return false;
@@ -745,6 +732,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public void setVisible(boolean b) {
         this.bVisible = b;
     }
+
     @Override
     public boolean getVisible() {
         if (!bVisible) return false;
@@ -761,19 +749,20 @@ public class OATextField implements OAJspComponent, OATableEditor {
     }
 
     public void setValue(String value) {
-        if (value != this.value || value == null || value.length()==0 || !value.equals(this.value)) {
+        if (value != this.value || value == null || value.length() == 0 || !value.equals(this.value)) {
             lastAjaxSent = null;
         }
         this.value = value;
     }
+
     public String getValue() {
         return this.value;
     }
 
-
     public String getPropertyPath() {
         return propertyPath;
     }
+
     public void setPropertyPath(String propertyPath) {
         this.propertyPath = propertyPath;
         boolean bDate = isDate();
@@ -799,20 +788,25 @@ public class OATextField implements OAJspComponent, OATableEditor {
         setTime(bTime);
         setDate(bDate);
     }
+
     public String getVisiblePropertyPath() {
         return visiblePropertyPath;
     }
+
     public void setVisiblePropertyPath(String visiblePropertyPath) {
         this.visiblePropertyPath = visiblePropertyPath;
     }
+
     public String getEnablePropertyPath() {
         return enablePropertyPath;
     }
+
     public void setEnablePropertyPath(String enablePropertyPath) {
         this.enablePropertyPath = enablePropertyPath;
     }
 
     private int dataSourceMax = -2;
+
     public int getDataSourceMaxWidth() {
         if (dataSourceMax == -2) {
             if (hub != null) {
@@ -820,7 +814,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 OADataSource ds = OADataSource.getDataSource(hub.getObjectClass());
                 if (ds != null) {
                     dataSourceMax = ds.getMaxLength(hub.getObjectClass(), getPropertyPath());
-                    Method method = OAReflect.getMethod(hub.getObjectClass(), "get"+propertyPath, 0);
+                    Method method = OAReflect.getMethod(hub.getObjectClass(), "get" + propertyPath, 0);
                     if (method != null) {
                         if (method.getReturnType().equals(String.class)) {
                             if (dataSourceMax > 254) dataSourceMax = -1;
@@ -832,6 +826,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
         }
         return dataSourceMax;
     }
+
     public int getMaxWidth() {
         getDataSourceMaxWidth();
         if (maxWidth <= 0) {
@@ -840,11 +835,13 @@ public class OATextField implements OAJspComponent, OATableEditor {
         if (dataSourceMax > 0 && maxWidth > dataSourceMax) return dataSourceMax;
         return maxWidth;
     }
-    /** max length of text.  If -1 (default) then unlimited.
-    */
+
+    /**
+     * max length of text. If -1 (default) then unlimited.
+     */
     public void setMaxWidth(int x) {
         maxWidth = x;
-        maxWidth = getMaxWidth();  // verify with Datasource
+        maxWidth = getMaxWidth(); // verify with Datasource
     }
 
     public void setFocus(boolean b) {
@@ -857,39 +854,36 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public void setAutoComplete(boolean b) {
         this.bAutoComplete = b;
     }
+
     public boolean getAutoComplete() {
         return bAutoComplete;
     }
+
     /**
      * Called by browser if autoComplete is true.
-     * @param value user input
+     * 
+     * @param value
+     *            user input
      * @return list of values to send back to browser.
      */
     public String[] getAutoCompleteText(String value) {
         return null;
     }
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-    /*
 
-scrolling with heading not moving
-   http://www.farinspace.com/jquery-scrollable-table-plugin/
-
-resize:
-http://www.audenaerde.org/simpleresizabletables.js
-
-
-resize heading:
-   http://quocity.com/colresizable/#samples
-
-resize heading (small) :::
-    http://jsfiddle.net/ydTCZ/
-
-*/
+    //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+    /* scrolling with heading not moving http://www.farinspace.com/jquery-scrollable-table-plugin/
+     * 
+     * resize: http://www.audenaerde.org/simpleresizabletables.js
+     * 
+     * 
+     * resize heading: http://quocity.com/colresizable/#samples
+     * 
+     * resize heading (small) ::: http://jsfiddle.net/ydTCZ/ */
     @Override
     public String getTableEditorHtml() {
         // let cell take up all space
-        width = 0;  // so that the "size" attribute wont be set
-        String s = "<input id='"+id+"' type='text' style='position:absolute; top:0px; left:1px; width:97%;'>";
+        width = 0; // so that the "size" attribute wont be set
+        String s = "<input id='" + id + "' type='text' style='position:absolute; top:4px; left:1px; width:97%;'>";
         return s;
     }
 }

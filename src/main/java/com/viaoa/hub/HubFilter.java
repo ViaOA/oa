@@ -994,8 +994,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         }
         else {
             int dcnt = OAString.dcount(propPath, '.');
-            String prop = OAString.field(propPath, '.', 1, dcnt-1);
-            final OAFinder find = new OAFinder(prop);
+            final String prop = OAString.field(propPath, '.', 1, dcnt-1);
             final String propLast = OAString.field(propPath, '.', dcnt);
 
             f = new OAFilter() {
@@ -1007,10 +1006,13 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                 }
             };
             
-            find.addFilter(f);
+            
+            final OAFilter fx = f;
             
             f = new OAFilter() {
                 public boolean isUsed(Object obj) {
+                    OAFinder find = new OAFinder(prop);
+                    find.addFilter(fx);
                     return find.canFindFirst((OAObject)obj);
                 }
             };

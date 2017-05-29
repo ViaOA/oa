@@ -53,7 +53,7 @@ public class OADialog extends OAHtmlElement {
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         submitButtonText = null;
-        bWasSubmitted = false;
+        boolean bWasSubmitted = false;
 
         String s = req.getParameter("oacommand");
         if (s == null && hmNameValue != null) {
@@ -70,12 +70,7 @@ public class OADialog extends OAHtmlElement {
 
     @Override
     public String _afterSubmit(String forwardUrl) {
-        if (bWasSubmitted) {
-            String furl = getForwardUrl();
-            if (furl != null) forwardUrl = furl;
-            return onSubmit(forwardUrl, submitButtonText); 
-        }
-        return null;
+        return forwardUrl;
     }
 
     public String onSubmit(String forwardUrl, String submitButtonText) {

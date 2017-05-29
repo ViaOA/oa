@@ -28,6 +28,9 @@ import com.viaoa.util.OAString;
  * Grid component that will scroll equal sized cells.
  * A template can be defined that will be filled out for each cell. Tags can then
  * be used to embed other components, like servletImages and htmlElemets, or property paths.
+ *
+ * 
+ * note: uses bootstrap, needs to be contained in a "container" or "container-fluid" parent (only one per page)
  * 
  * @author vvia
  */
@@ -62,6 +65,9 @@ public class OAGrid implements OAJspComponent {
     public void setPager(int scrollAmt, int maxCount, int pageDisplayCount, boolean bTop, boolean bBottom) {
         pager = new OATablePager(hub, scrollAmt, maxCount, pageDisplayCount, bTop, bBottom);
         pager.setObjectsPerRowCount(this.columns);
+    }
+    public OATablePager getPager() {
+        return pager;
     }
 
     public void setForwardUrl(String forwardUrl) {
@@ -107,14 +113,19 @@ public class OAGrid implements OAJspComponent {
     }
 
     private String submitUpdateScript;
+    private OAJspComponent jcSubmitted;
     
-    private boolean bWasSubmitted;
-
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
-        bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
+        jcSubmitted = null;
+        boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
         for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
-            e.getValue()._beforeSubmit();
+            OAJspComponent jc = e.getValue();
+            boolean b = jc._onSubmit(req, resp, hmNameValue);
+            if (b) {
+                jcSubmitted = jc;
+                bWasSubmitted = true;
+            }
         }
         return bWasSubmitted;
     }
@@ -156,17 +167,17 @@ public class OAGrid implements OAJspComponent {
     @Override
     public String _afterSubmit(String forwardUrl) {
         for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
-            e.getValue()._beforeSubmit();
-        }
-        if (bWasSubmitted) {
-            if (this.forwardUrl != null) forwardUrl = this.forwardUrl;
-            return onSubmit(forwardUrl); 
+            String s = e.getValue()._afterSubmit(forwardUrl);
+            if (s != null) forwardUrl = s;
         }
         return forwardUrl;
     }
 
     @Override
     public String onSubmit(String forwardUrl) {
+        if (jcSubmitted != null) {
+            return jcSubmitted.onSubmit(forwardUrl);
+        }
         return forwardUrl;
     }
 
@@ -204,8 +215,8 @@ public class OAGrid implements OAJspComponent {
 
     private String lastAjaxSent;
     
-    @Override
-    public String getAjaxScript() {
+    //@Override
+    public String getAjaxScript_OLD() {
 
         if (submitUpdateScript != null) {
             String s = submitUpdateScript;
@@ -271,8 +282,8 @@ public class OAGrid implements OAJspComponent {
         sb.append("</table>");
 
         String strTable = sb.toString();
-        strTable = Util.convert(strTable, "\\", "\\\\");
-        strTable = Util.convert(strTable, "'", "\\'");
+        // strTable = Util.convert(strTable, "\\", "\\\\");
+        // strTable = Util.convert(strTable, "'", "\\'");
         strTable = Util.convert(strTable, "\n", "\\n");
         strTable = Util.convert(strTable, "\r", "\\r");
         
@@ -320,6 +331,149 @@ public class OAGrid implements OAJspComponent {
         return js;
     }
 
+    @Override
+    public String getAjaxScript() {
+
+        if (submitUpdateScript != null) {
+            String s = submitUpdateScript;
+            submitUpdateScript = null;
+            return s;
+        }
+        StringBuilder sb = new StringBuilder(2048);
+        
+        
+        sb.append("<div id='oa"+id+"' class='oaGrid'>");
+        
+        if (pager != null && pager.isTop()) {
+            sb.append("<div class='row'>");
+            sb.append("<div class='col-sm-12 oatablePager'>");
+            sb.append(pager.getHtml());
+            sb.append("</div>");
+            sb.append("</div>");
+        }
+        
+        
+        int scrollAmt = (pager == null) ? ((int)(Math.ceil( ((double)hub.getSize())/columns))) : pager.getScrollAmount();
+        int topRow = (pager == null) ? 0 : pager.getTopRow();
+        
+        
+        int pos = topRow * columns;
+        
+        sb.append("<div class='row auto-clear'>");
+        for (int row=0; row < scrollAmt ;row++) {
+            
+            for (int col=0; col < columns; col++, pos++) {
+                Object obj = hub.getAt(pos);
+
+                int x = columns;
+                sb.append("<div class='oaGridCell col-lg-"+(12/x));
+
+                if (x > 1) {
+                    x--;
+                    sb.append(" col-md-"+(12/x));
+                    if (x > 1) {
+                        x--;
+                        sb.append(" col-sm-"+(12/x));
+                    }
+                }
+                
+                if (obj == hub.getAO()) sb.append(" oatableSelected");
+                sb.append("'");
+                
+                
+                if (obj != null) sb.append(" oarow='"+(pos)+"'");
+                
+                if (cellHeight > 0 || cellWidth > 0) {
+                    sb.append(" style='display: inline-block;");
+                    if (cellWidth > 0) {
+                        sb.append("width: "+cellWidth+"px;");
+                    }
+                    if (cellHeight > 0) {
+                        sb.append("height: "+cellHeight+"px;");
+                    }
+                    sb.append("overflow: hidden;'");
+                }
+                sb.append(">");
+                
+                String s = getHtml(obj, pos, row, col);
+                
+                if (s != null) {
+                    // will be wrapped in "
+                    /*
+                    s = OAString.convert(s, "\\'", "xQxq");
+                    s = OAString.convert(s, "\'", "\\'");
+                    s = OAString.convert(s, "xQxq", "\\'");
+                    */
+
+                    s = OAString.convert(s, "\\\"", "xQxq");
+                    s = OAString.convert(s, "\"", "\\\"");
+                    s = OAString.convert(s, "xQxq", "\\\"");
+                }
+                else s = "";
+                
+                sb.append(s+"</div>");
+            }
+        }
+        sb.append("</div>");
+            
+        if (pager != null && pager.isBottom()) {
+            sb.append("<div class='row'>");
+            sb.append("<div class='col-sm-12 oatablePager'>");
+            sb.append(pager.getHtml());
+            sb.append("</div>");
+            sb.append("</div>");
+        }
+        
+        sb.append("</div>");  // outer oaGrid
+
+        String strGrid = sb.toString();
+        //strGrid = Util.convert(strGrid, "\\", "\\\\");
+        //strGrid = Util.convert(strGrid, "'", "\\'");
+        strGrid = Util.convert(strGrid, "\n", "\\n");
+        strGrid = Util.convert(strGrid, "\r", "\\r");
+        
+        sb = new StringBuilder(strGrid.length() + 2048);
+        sb.append("$('#"+id+"').html(\""+strGrid+"\");\n");
+
+        sb.append("function oagrid"+id+"CellClick() {\n");
+        sb.append("    var v = $(this).attr('oarow');\n");
+        sb.append("    if (v == null) return;\n");
+        sb.append("    $('#oahidden"+id+"').val(v);\n");
+        
+        if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
+            sb.append("    ajaxSubmit();\n");
+        }
+        else {
+            sb.append("    $('form').submit();\n");
+        }
+        sb.append("}\n");
+        sb.append("$('#oa"+id+" div.oaGridCell').click(oagrid"+id+"CellClick);\n");
+
+        if (pager != null) {
+            sb.append("function oatablePager"+id+"Click() {\n");
+            sb.append("    var v = $(this).attr('class');\n");
+            sb.append("    if (v == 'oatablePagerDisable') return;\n");
+            sb.append("    if (v == 'oatablePagerSelected') return;\n");
+            sb.append("    \n");
+            sb.append("    v = $(this).attr('oaValue');\n");
+            sb.append("    if (typeof v == 'undefined') {\n");
+            sb.append("        v = $(this).html();\n");
+            sb.append("    }\n");
+            sb.append("    if (v == null) return;\n");
+            sb.append("    $('#oahidden"+id+"').val('P'+v);\n");
+            sb.append("    ajaxSubmit();\n");
+            sb.append("}\n");
+            sb.append("$('div#oa"+id+" .oatablePager ul li').click(oatablePager"+id+"Click);\n");
+        }
+        sb.append("$('#oahidden"+id+"').val('');\n"); // set back to blank
+        
+        String js = sb.toString();
+        
+        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
+        else lastAjaxSent = js;
+        return js;
+    }
+    
 
     @Override
     public void setEnabled(boolean b) {
@@ -452,7 +606,9 @@ public class OAGrid implements OAJspComponent {
                     OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), s);
                     fmt = pp.getFormat();
                 }
-                result += obj.getPropertyAsString(s, fmt);
+                
+                s = obj.getPropertyAsString(s, fmt);
+                result += s;
             }
             else {
                 if (comp instanceof OAHtmlElement) {
@@ -525,7 +681,6 @@ public class OAGrid implements OAJspComponent {
     public String getHtml(Object obj, int pos, int row, int col) {
         String img = getHtmlServletImage(obj, pos, row, col);
         
-
         String result = "";
         if (img != null) result = img;
         

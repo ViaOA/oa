@@ -104,10 +104,9 @@ public class OAButton implements OAJspComponent {
         return true;
     }
 
-    private boolean bWasSubmitted;
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
-        bWasSubmitted = (req.getParameterValues(id) != null);
+        boolean bWasSubmitted = (req.getParameterValues(id) != null);
         if (!bWasSubmitted && hmNameValue != null) {
             bWasSubmitted = hmNameValue.get(id) != null;
         }
@@ -125,14 +124,10 @@ public class OAButton implements OAJspComponent {
 
     @Override
     public String _afterSubmit(String forwardUrl) {
-        if (bWasSubmitted) {
-            String furl = getForwardUrl();
-            if (furl != null) forwardUrl = furl;
-            return onSubmit(forwardUrl); 
-        }
-        return null;
+        return forwardUrl;
     }
 
+    @Override
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }
@@ -199,7 +194,6 @@ public class OAButton implements OAJspComponent {
     public boolean getVisible() {
         return this.bVisible;
     }
-
 
     
 }

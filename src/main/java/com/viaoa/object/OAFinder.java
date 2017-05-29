@@ -14,7 +14,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
@@ -67,11 +66,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
 
     // stack
     private boolean bEnableStack;
+    
+    
     private int stackPos;
     private StackValue[] stack;
-
     private int maxFound;
-
     private F fromObject;
     private Hub<F> fromHub;
     private boolean bUseAll;

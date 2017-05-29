@@ -2,6 +2,7 @@
 
 
 
+color = String.format("#%02x%02x%02x", program.getPrimaryColor().getRed(), program.getPrimaryColor().getGreen(), program.getPrimaryColor().getBlue());
 
 String.format("%,5d) %,6d %,6d", ++cnt, ms, ms1);
 

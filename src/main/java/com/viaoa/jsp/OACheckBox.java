@@ -110,17 +110,14 @@ public class OACheckBox implements OAJspComponent, OATableEditor {
         return true;
     }
 
-    private boolean bWasSubmitted;
-    
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
-
         String s = req.getParameter("oacommand");
         if (s == null && hmNameValue != null) {
             String[] ss = hmNameValue.get("oacommand");
             if (ss != null && ss.length > 0) s = ss[0];
         }
-        bWasSubmitted  = (id != null && id.equals(s));
+        boolean bWasSubmitted  = (id != null && id.equals(s));
         
         String name = null;
         OAObject obj = null;
@@ -190,11 +187,6 @@ public class OACheckBox implements OAJspComponent, OATableEditor {
     
     @Override
     public String _afterSubmit(String forwardUrl) {
-        if (bWasSubmitted) {
-            String furl = getForwardUrl();
-            if (furl != null) forwardUrl = furl;
-            return onSubmit(forwardUrl); 
-        }
         return forwardUrl;
     }
 

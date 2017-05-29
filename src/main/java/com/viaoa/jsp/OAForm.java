@@ -598,20 +598,36 @@ public class OAForm extends OABase implements Serializable {
 
         String forward = null;
 
+//qqqqqqqqqqq        
         if (bProcess) {
-            forward = forwardUrl;
+            forward = getForwardUrl();
             if (OAString.isEmpty(forward)) forward = this.getUrl();
+            
             OAJspComponent compSubmit = onSubmit(request, response, hmNameValue);
-
+            
+            String s = onSubmit(compSubmit, forward);
+            if (OAString.isNotEmpty(s)) forward = s;
+            
             forward = afterSubmit(forward);
 
-            String s = onJspSubmit(compSubmit, forward);
+            s = onJspSubmit(compSubmit, forward);
             if (!OAString.isEmpty(s)) forward = s;
         }
         if (OAString.isEmpty(forward)) forward = this.getUrl();
         return forward;
     }
 
+    protected String onSubmit(OAJspComponent compSubmit, String forward) {
+        if (compSubmit != null) {
+            String s = compSubmit.getForwardUrl();
+            if (s != null) forward = s;
+            s = compSubmit.onSubmit(forward);
+            if (OAString.isNotEmpty(s)) forward = s;
+        }
+        return forward;
+        
+    }
+    
     public String processForward(OASession session, HttpServletRequest request, HttpServletResponse response) {
         HashMap<String,String[]> hmNameValue = new HashMap<String, String[]>();
         Enumeration enumx = request.getParameterNames();

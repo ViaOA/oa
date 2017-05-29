@@ -20,6 +20,7 @@ public class OATablePager implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
 
     protected int scrollAmt;
+    protected int columns;
     protected int currentPage;  /* zero based */
     protected int maxCount;
     protected int pageDisplayCount;
@@ -51,6 +52,7 @@ public class OATablePager implements java.io.Serializable {
     public boolean isBottom() {
         return bBottom;
     }
+    
     /**
      * This is used by OAGrid, which displays multiple objects per row.
      * @param amt number of objects per row
@@ -62,6 +64,9 @@ public class OATablePager implements java.io.Serializable {
 
     public void setCurrentPage(int x) {
         this.currentPage = x;
+    }
+    public int getCurrentPage() {
+        return currentPage;
     }
     
     public String getHtml() {
@@ -110,7 +115,7 @@ public class OATablePager implements java.io.Serializable {
 
             int x = currentPage - 1;
             if (x < 0) x = 0;
-            sb.append("<li oaValue='" + x + "'" + dis + ">"+('<')+"</li>");
+            sb.append("<li oaValue='" + x + "'" + dis + ">"+("&lt;")+"</li>");
 
             for (int i = beginPage; i <= endPage; i++) {
                 String s = (i == currentPage) ? " class='oatablePagerSelected'" : "";
@@ -124,7 +129,7 @@ public class OATablePager implements java.io.Serializable {
             x = currentPage + 1;
             if (x >= totalPages) x = currentPage;
             dis = (currentPage < (totalPages - 1)) ? "" : " class='oatablePagerDisable'";
-            sb.append("<li oaValue='" + x + "'" + dis + ">"+'>'+"</li>");
+            sb.append("<li oaValue='" + x + "'" + dis + ">"+"&gt;"+"</li>");
 
             dis = (currentPage + 1 != totalPages) ? "" : " class='oatablePagerDisable'";
             sb.append("<li oaValue='" + (totalPages - 1) + "'" + dis + ">\u00bb</a></li>");

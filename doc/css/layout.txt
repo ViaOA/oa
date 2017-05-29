@@ -1,10 +1,29 @@
 
+auto clear
+    https://stackoverflow.com/questions/26939104/clear-rows-when-doing-multi-responsive-columns-bootstrap
 
+
+20170525 centering in block
+<!DOCTYPE html>
+<html>
+<body>
+  <div style='border: 2px green solid; background: yellow; text-align: center;'>
+    <div style="display: inline-block; background: red; text-align: left;">
+      <div>Aaaaaaaaaa</div>
+      BBBBBBBBBBBB<br>cccccccccc
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+
+
+OLDER qqqqqqqq
 
 Read:
     http://positioniseverything.net/articles/onetruelayout/    
-    
-  
     
     
 >>>>>>> Header + LeftColumn + Fluid center + rightColumn

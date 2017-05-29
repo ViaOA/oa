@@ -29,13 +29,32 @@ public interface OAJspComponent extends java.io.Serializable{
     void setForm(OAForm form);
     OAForm getForm();
     
-    /** returns true to continue, false to not process the request */
+    /**
+     * Called by form.processSubmit for every jspcomponent   
+     *
+     * @returns true to continue, false to not process the request 
+     */
     boolean _beforeSubmit();
     
-    /** returns true if this component caused the form submit */
+    /** 
+     * Called after _beforeSubmit to find out which component called the submit.
+     * 
+     * returns true if this component caused the form submit 
+     * @see #onSubmit(String) to have the code ran for the component that submitted the form.
+     */
     boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hashNameValue);
 
-    /** return forward url */
+    /** 
+     * only called on the component that was responsible for the submit 
+     * 
+     */
+    String onSubmit(String forwardUrl);
+    
+    
+    /** 
+     * Called by form.processSubmit for every jspcomponent, after onSubmit is called.   
+     * return forward url 
+     */
     String _afterSubmit(String forwardUrl);
     
     String getScript();    // to initialize the html page
@@ -48,8 +67,5 @@ public interface OAJspComponent extends java.io.Serializable{
     void setVisible(boolean b);
     boolean getVisible();
 
-    /** used for anonymous subclasses to customize submit */
-    String onSubmit(String forwardUrl);
-    
-    
+    public String getForwardUrl();
 }

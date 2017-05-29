@@ -992,7 +992,7 @@ public class OAString {
 
 
     
-    /**  
+    /** fmt/format javadoc
         Used to format/mask Strings using a "Pick like" format/mask String.
         <p>
         

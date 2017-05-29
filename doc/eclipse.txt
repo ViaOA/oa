@@ -9,7 +9,7 @@
 20170106 install neon
 	add quickmarks from mars installation
 		C:\Users\vvia\eclipse\java-neon\eclipse\dropins
-		need to also do this, *see note below: ****>>>> "need to install the eclipse 2.0 plugin ..."	
+		** need to also do this, *see note **below**: "need to install the eclipse 2.0 plugin ..."	
 
 
 20161003 create github project and import into Eclipse

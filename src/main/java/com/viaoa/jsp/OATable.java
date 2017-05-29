@@ -20,10 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
-import com.viaoa.hub.HubDataDelegate;
-import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListener;
-import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
@@ -36,9 +33,6 @@ import com.viaoa.util.OAString;
 public class OATable implements OAJspComponent {
     private static final long serialVersionUID = 1L;
 
-// 20160118 todo:  need to have a new way to know if hub.newList, old way as hub.data.datax.newListCount       
-    
-    
     private Hub hub;
     private String id;
     private OAForm form;
@@ -51,14 +45,13 @@ public class OATable implements OAJspComponent {
     private OATablePager pager;
     private ArrayList<OATableColumn> alColumns = new ArrayList<OATableColumn>();
     private int lastHubPos=-1;
+    private Hub hubLast;
     private Hub hubSelect;
     private String selectTitle;
 
     private int scrollTop;
     private int scrollLeft;
-    private HubListener hubListener;
-    private volatile int newListCount; // for hub
-    private volatile int lastListCount;
+    private String lastAjaxSent;
 
     private int width;
     private int height;
@@ -68,23 +61,6 @@ public class OATable implements OAJspComponent {
     public OATable(String id, Hub hub) {
         this.id = id;
         this.hub = hub;
-//        newListCount = HubDataDelegate.getNewListCount(hub);
-        
-        hubListener = new HubListenerAdapter() {
-            @Override
-            public void onNewList(HubEvent e) {
-                newListCount++;
-            }
-            @Override
-            public void afterRemove(HubEvent e) {
-            }
-            @Override
-            public void afterAdd(HubEvent e) {
-            }
-            @Override
-            public void afterInsert(HubEvent e) {
-            }
-        };
     }
         
     
@@ -185,8 +161,6 @@ public class OATable implements OAJspComponent {
     }
 
     private String submitUpdateScript;
-    
-    private boolean bWasSubmitted;
     private String submitHref;
 
     @Override
@@ -197,7 +171,7 @@ public class OATable implements OAJspComponent {
                 ((OAJspComponent)te)._onSubmit(req, resp, hmNameValue);
             }
         }
-        bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
+        boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
         return bWasSubmitted;
     }
     
@@ -306,16 +280,12 @@ public class OATable implements OAJspComponent {
                 if (!OAString.isEmpty(s)) forwardUrl = s;
             }
         }
-        if (bWasSubmitted) {
-            if (submitHref != null) forwardUrl = this.submitHref;
-            else if (this.forwardUrl != null) forwardUrl = this.forwardUrl;
-            return onSubmit(forwardUrl); 
-        }
         return forwardUrl;
     }
 
     @Override
     public String onSubmit(String forwardUrl) {
+        if (submitHref != null) forwardUrl = this.submitHref;
         return forwardUrl;
     }
 
@@ -346,7 +316,7 @@ public class OATable implements OAJspComponent {
                 }
             }
         }
-        
+
         lastAjaxSent = null;
         submitUpdateScript = null;
         StringBuilder sb = new StringBuilder(1024);
@@ -367,19 +337,33 @@ public class OATable implements OAJspComponent {
         return null;
     }
 
-    private String lastAjaxSent;
-    
     @Override
     public String getAjaxScript() {
         int x;
 
-        if (lastListCount != newListCount) {
-            lastListCount = newListCount;
-            scrollLeft = scrollTop = 0;
-            if (pager != null) pager.setCurrentPage(0);
+        Hub h = hub.getSharedHub();
+        if (h != hubLast) {
+            if (hubLast != null) {
+                scrollLeft = scrollTop = 0;
+                if (pager != null) {
+                    pager.setCurrentPage(0);
+                }
+                if (hubSelect != null) hubSelect.clear();
+            }
+            hubLast = h;
         }
         
         int scrollAmt = (pager == null) ? hub.getSize() : pager.getScrollAmount();
+
+        if (hub.getPos() != lastHubPos) {
+            lastHubPos = hub.getPos();
+            if (pager != null) {
+                x = pager.getScrollAmount();
+                x = lastHubPos < 1 ? 0 : (int) Math.floor(lastHubPos/((double)x));
+                pager.setCurrentPage(x);
+            }
+        }
+        
         int topRow = (pager == null) ? 0 : pager.getTopRow();
         
         if (submitUpdateScript != null) {
@@ -400,15 +384,6 @@ public class OATable implements OAJspComponent {
             if (s != null) return s;
         }
         StringBuilder sb = new StringBuilder(2048);
-        
-        
-        if (hub.getPos() != lastHubPos) {
-            lastHubPos = hub.getPos();
-            if (pager != null) {
-                x = pager.getScrollAmount();
-                pager.setCurrentPage( (int) Math.ceil(lastHubPos/((double)x)) );
-            }
-        }
 
         int colCount = alColumns.size();
         int colSpan = colCount + 1;

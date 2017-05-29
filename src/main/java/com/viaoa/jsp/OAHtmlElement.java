@@ -11,20 +11,16 @@
 package com.viaoa.jsp;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
+import java.awt.Color;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
-import com.viaoa.object.OAObject;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OADate;
-import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAString;
+import com.viaoa.object.*;
+import com.viaoa.util.*;
 
 /**
  * Used to control any html element: 
@@ -32,6 +28,7 @@ import com.viaoa.util.OAString;
  * html text: min/max line width, max rows to display
  * click event: ajax or form submit 
  * forward URL: to act as a link
+ * helper methods to set attributes
  * 
  * @see #setConvertTextToHtml(boolean) set to false if text is already in html
  * @author vvia
@@ -52,6 +49,10 @@ public class OAHtmlElement implements OAJspComponent {
     protected ArrayList<OAHtmlAttribute> alAttribute; 
     protected String lastAjaxSent;
     private boolean bIsPlainText;  // true if the text is not HTML
+
+    private HashMap<String, String> hmStyle;
+    private HashSet<String> hsClassAdd;
+    private HashSet<String> hsClassRemove;
     
     public void addAttribute(OAHtmlAttribute attr) {
         if (attr == null) return;
@@ -156,7 +157,6 @@ public class OAHtmlElement implements OAJspComponent {
         return bSubmit;
     }
 
-    protected boolean bWasSubmitted;
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String,String[]> hmNameValue) {
         String s = req.getParameter("oacommand");
@@ -164,18 +164,14 @@ public class OAHtmlElement implements OAJspComponent {
             String[] ss = hmNameValue.get("oacommand");
             if (ss != null && ss.length > 0) s = ss[0];
         }
-        bWasSubmitted  = (id != null && id.equals(s));
+        boolean bWasSubmitted  = (id != null && id.equals(s));
         return bWasSubmitted; // true if this caused the form submit
     }
 
     @Override
     public String _afterSubmit(String forwardUrl) {
-        if (bWasSubmitted) {
-            String furl = getForwardUrl();
-            if (furl != null) forwardUrl = furl;
-            return onSubmit(forwardUrl); 
-        }
-        return null;
+        if (this.forwardUrl != null) forwardUrl = this.forwardUrl;
+        return forwardUrl;
     }
 
     public String onSubmit(String forwardUrl) {
@@ -270,7 +266,13 @@ public class OAHtmlElement implements OAJspComponent {
                 if (!OAString.isEmpty(s)) sb.append(s+"\n");
             }
         }
-        
+
+        String s = getStyleJs();
+        if (s != null) sb.append("$('#"+id+"').css("+s+");\n");
+
+        s = getClassJs();
+        if (s != null) sb.append(s+"\n");
+
         String js = sb.toString();
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
@@ -392,6 +394,70 @@ public class OAHtmlElement implements OAJspComponent {
         Object value = obj.getPropertyAsString(visiblePropertyPath);
         boolean b = OAConv.toBoolean(value);
         return b;
+    }
+
+
+    public void addStyle(String name, Color color) {
+        if (color == null) color = Color.white;
+        String s = JspUtil.convertToCss(color);
+        addStyle(name, s);
+    }
+    public void addStyle(String name, String value) {
+        if (name == null) return;
+        if (value == null) value = "";
+        if (hmStyle == null) hmStyle = new HashMap<String, String>();
+        hmStyle.put(name, value);
+    }
+    public void removeStyle(String name) {
+        addStyle(name, "inherit");
+    }
+
+    protected String getStyleJs() {
+        if (hmStyle == null) return null;
+        String s = null;
+        for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
+            String sx = ex.getKey();
+            String v = ex.getValue();
+            if (s == null) s = "{";
+            else s += ",";
+            s += "\"" + sx + ": " + "\"" + v + "\"";
+        }
+        if (s != null) s += "}";
+        return s;
+    }
+
+    
+    public void addClass(String name) {
+        if (name == null) return;
+        if (hsClassAdd == null) hsClassAdd = new HashSet<>();
+        hsClassAdd.add(name);
+    }
+    public void removeClass(String name) {
+        if (name == null) return;
+        if (hsClassAdd != null) {
+            hsClassAdd.remove(name);
+        }
+        if (hsClassRemove == null) hsClassRemove = new HashSet<>();
+        hsClassRemove.add(name);
+    }
+    protected String getClassJs() {
+        if (hsClassAdd == null) return null;
+        String s = null;
+        Iterator itx = hsClassAdd.iterator();
+        for ( ; itx.hasNext() ;  ) {
+            String sx = (String) itx.next();
+            if (s == null) s = "";
+            s += "$('#"+id+"').addClass(\""+sx+"\");";
+        }
+        
+        itx = hsClassRemove.iterator();
+        for ( ; itx.hasNext() ;  ) {
+            String sx = (String) itx.next();
+            if (s == null) s = "";
+            s += "$('#"+id+"').removeClass(\""+sx+"\");";
+        }
+        
+        return s;
     }
 
 }

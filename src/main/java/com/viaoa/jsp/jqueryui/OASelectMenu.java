@@ -8,53 +8,34 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-package com.viaoa.jsp;
+package com.viaoa.jsp.jqueryui;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.viaoa.annotation.OACalculatedProperty;
-import com.viaoa.annotation.OAProperty;
-import com.viaoa.html.Util;
-import com.viaoa.hub.Hub;
-import com.viaoa.hub.HubDetailDelegate;
-import com.viaoa.hub.HubLinkDelegate;
-import com.viaoa.object.OALinkInfo;
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectInfoDelegate;
-import com.viaoa.object.OAObjectKey;
-import com.viaoa.object.OAObjectKeyDelegate;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAConverter;
-import com.viaoa.util.OADate;
-import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAReflect;
-import com.viaoa.util.OAString;
+import com.viaoa.html.*;
+import com.viaoa.hub.*;
+import com.viaoa.jsp.OACombo;
+import com.viaoa.jsp.OAForm;
+import com.viaoa.jsp.OAJspComponent;
+import com.viaoa.jsp.OATableEditor;
+import com.viaoa.object.*;
+import com.viaoa.util.*;
+
+//qqqqqqqqq needs to know the js and css files that are required ..qqqqqqqq
 
 /**
- * Controls html select+options
- *
- * bind to hub, property
- * set column width
- * show/hide, that can be bound to property
- * enabled, that can be bound to property
- * ajax submit on change
- * handle required validation
- * recursive, displayed using indentation
- * option to set the null description
+ * converts an html select using a Bootstrap combobox
  * 
+ *  
  * @author vvia
- *
+ * @see OACombo
  */
-public class OACombo implements OAJspComponent, OATableEditor {
+public class OASelectMenu implements OAJspComponent, OATableEditor {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;
@@ -80,7 +61,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
 
     
     
-    public OACombo(String id, Hub hub, String propertyPath, int columns) {
+    public OASelectMenu(String id, Hub hub, String propertyPath, int columns) {
         this.id = id;
         this.hub = hub;
         this.propertyPath = propertyPath;
@@ -130,6 +111,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
         return true;
     }
 
+    private boolean bSubmittedComponent;  // did this component cause the form submit
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         String name = null;
@@ -141,7 +123,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
             String[] ss = hmNameValue.get("oacommand");
             if (ss != null && ss.length > 0) s = ss[0];
         }
-        boolean bSubmittedComponent  = (id != null && id.equals(s));
+        bSubmittedComponent  = (id != null && id.equals(s));
         boolean bWasSubmitted = false;  // was the combo submited with the form
 
         OAObject objLinkTo = null;
@@ -206,30 +188,26 @@ public class OACombo implements OAJspComponent, OATableEditor {
                 if (!alSelected.contains(objx)) hubSelect.remove(objx);
             }
         }
-        else {
-            if (objLinkTo != null) {
-                if (hub != null && (this.recursiveLinkInfo != null || lastActiveObject != objSelected)) {
-                    String linkProp = HubLinkDelegate.getLinkToProperty(hub);
-                    if (HubLinkDelegate.getLinkedOnPos(hub)) {
-                        objLinkTo.setProperty(linkProp, hub.getPos(objSelected));
-                    }
-                    else {
-                        String linkFromProp = HubLinkDelegate.getLinkFromProperty(hub);
-                        if (linkFromProp != null) {
-                            if (objSelected instanceof OAObject) {
-                                objSelected = ((OAObject)objSelected).getProperty(linkFromProp);
-                            }
-                        }
-                        if (!bAjaxSubmit || bSubmittedComponent) {
-                            objLinkTo.setProperty(linkProp, objSelected);
+        else if (objLinkTo != null) {
+            if (hub != null && lastActiveObject != objSelected) {
+                String linkProp = HubLinkDelegate.getLinkToProperty(hub);
+                if (HubLinkDelegate.getLinkedOnPos(hub)) {
+                    objLinkTo.setProperty(linkProp, hub.getPos(objSelected));
+                }
+                else {
+                    String linkFromProp = HubLinkDelegate.getLinkFromProperty(hub);
+                    if (linkFromProp != null) {
+                        if (objSelected instanceof OAObject) {
+                            objSelected = ((OAObject)objSelected).getProperty(linkFromProp);
                         }
                     }
+                    objLinkTo.setProperty(linkProp, objSelected);
                 }
             }
-            if (!bAjaxSubmit || bSubmittedComponent) {
-                if (hub != null) {
-                    hub.setAO(objSelected);
-                }
+        }
+        else if (bWasSubmitted) {
+            if (hub != null && (bSubmittedComponent || lastActiveObject != objSelected)) {
+                hub.setAO(objSelected);
             }
         }
         return bSubmittedComponent; // true if this caused the form submit
@@ -237,6 +215,11 @@ public class OACombo implements OAJspComponent, OATableEditor {
 
     @Override
     public String _afterSubmit(String forwardUrl) {
+        if (bSubmittedComponent) {
+            String furl = getForwardUrl();
+            if (furl != null) forwardUrl = furl;
+            return onSubmit(forwardUrl); 
+        }
         return forwardUrl;
     }
 
@@ -265,29 +248,44 @@ public class OACombo implements OAJspComponent, OATableEditor {
         return bSubmit;
     }
 
+    protected String maxHeigth; // ex:  200px,  12em
+    public void setMaxHeight(String val) {
+        this.maxHeigth = val;
+    }
+    public String getMaxHeigth() {
+        return this.maxHeigth;
+    }
+    
     private String lastAjaxSent;
     @Override
     public String getScript() {
         lastAjaxSent = null;
         StringBuilder sb = new StringBuilder(1024);
-        sb.append(getAjaxScript());
+        sb.append(getAjaxScript(true));
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
+
+        if (OAString.isNotEmpty(maxHeigth)) {
+            sb.append("$('#"+id+"').selectmenu().selectmenu(\"menuWidget\").css(\"max-height\", \""+maxHeigth+"\");");
+        }
+        else sb.append("$('#"+id+"').selectmenu();");
+        
         
         if ( (bAjaxSubmit || HubDetailDelegate.hasDetailHubs(hub)) && OAString.isEmpty(getForwardUrl()) ) {
-            sb.append("$('#"+id+"').on('change', function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+            sb.append("$('#"+id+"').on(\"selectmenuchange\", function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});");        
         }
         else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-            sb.append("$('#"+id+"').change(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+            sb.append("$('#"+id+"').on(\"selectmenuchange\", function() {$('#oacommand').val('"+id+"');$('form').submit();return false;});");        
         }
         
         if (getSubmit() || getAjaxSubmit() || HubDetailDelegate.hasDetailHubs(hub)) {
-            sb.append("$('#"+id+"').addClass('oaSubmit');\n");
+//            sb.append("$('#"+id+"').addClass('oaSubmit');\n");
         }
         
         if (isRequired()) {
-            sb.append("$('#"+id+"').addClass('oaRequired');\n");
+//            sb.append("$('#"+id+"').addClass('oaRequired');\n");
         }
-        sb.append("$('#"+id+"').blur(function() {$(this).removeClass('oaError');}); \n");
+//        sb.append("$('#"+id+"').blur(function() {$(this).removeClass('oaError');}); \n");
+
         
         String js = sb.toString();
         return js;
@@ -319,9 +317,13 @@ public class OACombo implements OAJspComponent, OATableEditor {
     
     @Override
     public String getAjaxScript() {
+        String s = getAjaxScript(false);
+        return s;
+    }
+    protected String getAjaxScript(boolean bInit) {
         StringBuilder sb = new StringBuilder(1024);
 
-        if (hub != null) lastActiveObject = hub.getAO();  //qqqq todo: could be recursive, and a child node was selected (not in hub)
+        if (hub != null) lastActiveObject = hub.getAO();
         
         //todo: qqqqq could be link on pos, link on property
         // todo: create script to only send change of selection
@@ -372,14 +374,17 @@ public class OACombo implements OAJspComponent, OATableEditor {
         
         if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
         else sb.append("$('#"+id+"').attr('disabled', 'disabled');\n");
+        /* removed, controlled by selectmenu        
         if (bVisible) sb.append("$('#"+id+"').show();\n");
         else sb.append("$('#"+id+"').hide();\n");
-        
+         */        
         if (bFocus) {
             sb.append("$('#"+id+"').focus();\n");
             bFocus = false;
         }
 
+        if (!bInit) sb.append("$('#"+id+"').selectmenu(\"refresh\");");        
+        
         String js = sb.toString();
         
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
@@ -480,7 +485,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
             else {
                 b = (hub.getAO() == obj || hub.getPos() == i);
             }
-
+            
             
             String sel = (b) ? "selected='selected'" : "";
 

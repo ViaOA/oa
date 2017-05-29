@@ -10,6 +10,7 @@
 */
 package com.viaoa.jsp;
 
+import java.awt.Color;
 import java.util.*;
 import com.viaoa.hub.*;
 import com.viaoa.object.OAObject;
@@ -557,6 +558,18 @@ j:      12
         return s;
     }
     
-    
+    /**
+     * Converts color to rgb value
+     * @param color
+     * @return rgb(r#,g#,b#)
+     */
+    public static String convertToCss(Color color) {
+       if (color == null) return null;
+       int r = color.getRed();
+       int g = color.getGreen();
+       int b = color.getBlue();
+       String s = "rgb(" + r + "," + g + "," + b + ")"; 
+       return s;
+   }
 }
 
