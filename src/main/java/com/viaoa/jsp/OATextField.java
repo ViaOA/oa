@@ -246,7 +246,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 catch (Throwable ex) {
                     s = getName();
                     if (OAString.isEmpty(s)) s = getId();
-                    getForm().addError("Error setting " + s + " - " + ex);
+                    getForm().addErrorMessage("Error setting " + s + " - " + ex);
                 }
             }
         }

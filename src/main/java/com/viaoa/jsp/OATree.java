@@ -43,8 +43,12 @@ public class OATree implements OAJspComponent, OATableEditor {
     private boolean bAjaxSubmit, bSubmit;
     private String name;
     private String forwardUrl;
-
-    private OAObject selectedObject;
+    private String sortBy;
+    private OAFilter filter;
+    private HashMap<Integer, OAObject> hashMap;
+    private String treeViewParams;
+   
+    private Object selectedObject;
     
     public OATree(String id, Hub hub, String propertyPath) {
         this.id = id;
@@ -59,6 +63,20 @@ public class OATree implements OAJspComponent, OATableEditor {
     public String getPropertyPath() {
         return this.propertyPath;
     }
+    
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
+    }
+    public String getSortBy() {
+        return this.sortBy;
+    }
+    public void setFilter(OAFilter filter) {
+        this.filter = filter;
+    }
+    public OAFilter getFilter() {
+        return filter;
+    }
+    
     
     @Override
     public boolean isChanged() {
@@ -120,6 +138,16 @@ public class OATree implements OAJspComponent, OATableEditor {
 
         selectedObject = null;
         
+        if (hashMap != null && values[0].length() > 1 && values[0].charAt(0) == 'g') {
+            int guid = OAConv.toInt(values[0].substring(1));
+            selectedObject = hashMap.get(guid);
+        }
+        else if (OAString.isNumber(values[0]) && hub != null) {
+            int x = OAConv.toInt(values[0]);
+            selectedObject = hub.getAt(x);
+        }
+        
+        /*
         Hub h = hub;
         for (int i=0; ;i++) {
             s = OAString.field(values[0], ".", i+1);
@@ -130,6 +158,7 @@ public class OATree implements OAJspComponent, OATableEditor {
             if (recursiveLinkInfo == null) break;
             h = (Hub) recursiveLinkInfo.getValue(selectedObject);
         }
+        */
         return true;
     }
 
@@ -157,6 +186,13 @@ public class OATree implements OAJspComponent, OATableEditor {
         return bSubmit;
     }
 
+    /** see bootstrap-treeview.js for list of settings
+     * 
+     * ex:  "showBorder: false, selectedColor: 'black', selectedBackColor: 'white'"
+     */
+    public void setTreeViewParams(String s) {
+        treeViewParams = s;
+    }
     
     
     @Override
@@ -166,8 +202,13 @@ public class OATree implements OAJspComponent, OATableEditor {
         sb.append("$('form').prepend(\"<input id='oatree"+id+"' type='hidden' name='oatree"+id+"' value=''>\");\n");
         // sb.append("$('#oatree"+id+"').val('');");
 
-        sb.append("$('#"+id+"').treeview({ levels: 1, showBorder: false, data: [\n");
-        sb.append(getData(hub, null)+"\n");
+        
+        sb.append("$('#"+id+"').treeview({ levels: 1, showBorder: false");
+        if (OAString.isNotEmpty(treeViewParams)) {
+            sb.append(", "+treeViewParams);
+        }
+        sb.append(", data: [\n");
+        sb.append(getData(hub)+"\n");
         sb.append("],\nonNodeSelected : function(event, node) {\n");
 
         
@@ -235,17 +276,58 @@ public class OATree implements OAJspComponent, OATableEditor {
         }
         return format;
     }
+
+    protected String getData(Hub hub) {
+        if (hub == null) {
+            return "";
+        }
+        hashMap = null;
+        if (hub.isOAObject()) {
+            hashMap = new HashMap<>();
+        }
+        return _getData(hub);
+    }
     
-    protected String getData(Hub hubx, final String objId) {
+    protected String _getData(Hub hubx) {
         if (hubx == null) {
             return "";
         }
+        
+        Object[] objs = hubx.toArray();
+
+        if (sortBy != null && hubx.isOAObject()) {
+            final OAPropertyPath pp = new OAPropertyPath(hubx.getObjectClass(), sortBy);
+            Arrays.sort(objs, new Comparator() {
+                @Override
+                public int compare(Object o1, Object o2) {
+                    if (o1 == o2) return 0;
+                    if (o1 == null) return -1;
+                    if (o2 == null) return 1;
+                    
+                    Object x1 = pp.getValue(o1);
+                    Object x2 = pp.getValue(o2);
+                    
+                    int x = OACompare.compare(x1, x2);
+                    return x;
+                }
+            });
+        }
+        
         String options = "";
-        for (int i=0; ;i++) {
+        int cnt = 0;
+        for (int i=0; i < objs.length; i++) {
+            Object obj = objs[i];
+            /*
             Object obj = hubx.getAt(i);
             if (obj == null) break;
+            */
+            if (filter != null) {
+                if (!filter.isUsed(obj)) {
+                    continue;
+                }
+            }
 
-            if (i > 0) options += ",";
+            if (cnt++ > 0) options += ",";
             options += "{";
             
             String value = null;
@@ -260,17 +342,19 @@ public class OATree implements OAJspComponent, OATableEditor {
             value = getText(i, obj, value);
             value = Util.convert(value, "\'", "\\' ");
 
-            String sid;
-            if (objId != null) sid = objId+"."+i;
-            else sid = ""+i;
-            
-            options += "text: '"+value+"', oaid: '"+sid+"'";
+            if (hashMap != null) {
+                options += "text: '"+value+"', oaid: 'g"+OAObjectDelegate.getGuid((OAObject)obj)+"'";
+                hashMap.put(OAObjectDelegate.getGuid((OAObject)obj), (OAObject) obj);
+            }
+            else {
+                options += "text: '"+value+"', oaid: '"+i+"'";
+            }
             
             if (recursiveLinkInfo != null) {
                 Hub h = (Hub) recursiveLinkInfo.getValue(obj);
                 if (h != null && h.size() > 0) {
                     options += ", nodes: [";
-                    options += getData(h, sid); 
+                    options += _getData(h); 
                     options += "]";
                 }
             }
@@ -302,7 +386,7 @@ public class OATree implements OAJspComponent, OATableEditor {
         return null;
     }
 
-    public OAObject getSelectedObject() {
+    public Object getSelectedObject() {
         return this.selectedObject;
     }
 
@@ -313,4 +397,5 @@ public class OATree implements OAJspComponent, OATableEditor {
     public void setForwardUrl(String forwardUrl) {
         this.forwardUrl = forwardUrl;
     }
+    
 }

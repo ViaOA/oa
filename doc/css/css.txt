@@ -1,20 +1,23 @@
 
 
 
-/* style the tree */
-#treeItemCategory ul li {
-    margin: 0;
-    padding: 0;
-    white-space: nowrap;
+.oaTextNoWrap {
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
     max-width: 18em; 
 }
 
+$('input:enabled:first').focus();
+
 word-wrap:
     
+
+color: rgba(25, 25, 25, 1) !important;
+
+border: none !important;
     
-    
+#categoryList")>table>tbody>tr>td>div ::contains('-')    
 
 
 http://www.w3schools.com/cssref

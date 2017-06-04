@@ -1532,7 +1532,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * Reorder objects in this Hub, sorted by the value(s) from propertyPath(s).
      * 
-     * @see sort(String,boolean)
+     * @see #sort(String,boolean)
      * @see HubSorter
      * @see #cancelSort
      */
@@ -1554,9 +1554,16 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Note: a HubSorter is used to continually keep the objects sorted. To
      * remove HubSorter, call cancelSort
      * 
+     * 
+     * example:
+     * hubEmp.sort("lastName, firstName")
+     * hubEmp.sort("lastName, age desc, weight desc")
+     * 
+     * @property propertyPaths, list of propertypaths, separated by comma, can also include " asc" or " desc" to override sort ordering.
      * @property bAscending true=sort ascending, false=descending
      * @see HubSorter
      * @see #cancelSort
+     * @see HubSortListener#
      */
     public void sort(String propertyPaths, boolean bAscending) {
         HubSortDelegate.sort(this, propertyPaths, bAscending, null);

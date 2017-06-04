@@ -1,4 +1,13 @@
 
+
+
+
+ response.sendRedirect("/login.jsp");  // tells the browser to go to new url
+
+instead of forward, which the webserver will return the output, but the browser will display the old url
+
+
+
 <%@page trimDirectiveWhitespaces="true"%>
 
 <%  // inside method java code

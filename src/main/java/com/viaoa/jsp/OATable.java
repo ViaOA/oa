@@ -324,6 +324,76 @@ public class OATable implements OAJspComponent {
         if (width > 0 && height > 0) {
             sb.append("$('form').prepend(\"<input id='oahidden"+id+"Scroller' type='hidden' name='oahidden"+id+"Scroller' value=''>\");\n");
         }
+
+//qqqqqqqqqqqqqqqqq        
+        sb.append("function oatable"+id+"RowClick() {\n");
+        sb.append("    var v = $(this).attr('oarow');\n");
+        sb.append("    if (v == null) return;\n");
+
+        // dont submit if it is already the AO
+        sb.append("    if ($(this).hasClass('oatableSelected')) {\n");
+        sb.append("        if (!$(this).attr('href')) return;\n");
+        sb.append("    }\n");
+        sb.append("    $('#oahidden"+id+"').val(v);\n");
+        if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
+            sb.append("    ajaxSubmit();\n");
+        }
+        else {
+            sb.append("    $('form').submit();\n");
+        }
+        sb.append("}\n");
+        
+        if (pager != null) {
+            sb.append("function oatable"+id+"PagerClick() {\n");
+            sb.append("    var v = $(this).attr('class');\n");
+            sb.append("    if (v == 'oatablePagerDisable') return;\n");
+            sb.append("    if (v == 'oatablePagerSelected') return;\n");
+            sb.append("    \n");
+            sb.append("    v = $(this).attr('oaValue');\n");
+            sb.append("    if (typeof v == 'undefined') {\n");
+            sb.append("        v = $(this).html();\n");
+            sb.append("    }\n");
+            sb.append("    if (v == null) return;\n");
+            sb.append("    $('#oahidden"+id+"').val('P'+v);\n");
+            sb.append("    ajaxSubmit();\n");
+            sb.append("}\n");
+        }
+        
+        // used by: $('table#oa"+id+" tr td a').click(oatable"+id+"Click1");
+        sb.append("function oatable"+id+"Click1() {\n");
+        sb.append("  var v = $(this).parents('tr').attr('oarow');\n");
+        sb.append("  if (v == null) return;\n");
+        sb.append("  $('#oahidden"+id+"').val(v);\n");
+
+        sb.append("  if ($(this).attr('target').length > 0) {\n");
+        sb.append("      return true;\n");
+        sb.append("  }\n");
+        sb.append("  if ($(this).attr('tabindex').length > 0) {\n");
+        sb.append("      return true;\n");
+        sb.append("  }\n");
+
+        sb.append("  $('#oacommand').val('href='+$(this).attr('href'));\n"); 
+        sb.append("  $('form').submit();\n");
+        sb.append("  return false;\n");
+        sb.append("}\n");
+
+        if (hubSelect != null) {
+            // used by: $('table#oa"+id+" tr td input:checkbox').click(oatable"+id+"Click2");
+            
+            sb.append("function oatable"+id+"Click2(event) {\n");
+            sb.append("  event.stopPropagation();");
+            sb.append("  return true;");
+            sb.append("}");
+
+            // used by: "$('table#oa"+id+" tr td:nth-child(2)').click(");
+            sb.append("function oatable"+id+"Click3(event) {\n");
+            // sb.append("        event.stopPropagation();");
+            sb.append("  return false;");
+            sb.append("}");
+        }
+        
+        
+        
         sb.append(getAjaxScript());
 
 
@@ -593,80 +663,20 @@ public class OATable implements OAJspComponent {
             sb.append("$('table#oa"+id+" tr:nth-child("+((hub.getPos()-topRow)+1)+")').attr('class', 'oatableSelected');\n");
         }
 
-        sb.append("function oatable"+id+"RowClick() {\n");
-        sb.append("    var v = $(this).attr('oarow');\n");
-        sb.append("    if (v == null) return;\n");
-
-        // dont submit if it is already the AO
-        sb.append("    if ($(this).hasClass('oatableSelected')) {\n");
-        sb.append("        if (!$(this).attr('href')) return;\n");
-        sb.append("    }\n");
-        sb.append("    $('#oahidden"+id+"').val(v);\n");
-        if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
-            sb.append("    ajaxSubmit();\n");
-        }
-        else {
-            sb.append("    $('form').submit();\n");
-        }
-        sb.append("}\n");
         sb.append("$('table#oa"+id+" tr').click(oatable"+id+"RowClick);\n");
         
         //20120915
-        sb.append("$('table#oa"+id+" tr td a').click(\n");
-        sb.append("  function() {\n");
-        sb.append("    var v = $(this).parents('tr').attr('oarow');\n");
-        sb.append("    if (v == null) return;\n");
-        sb.append("    $('#oahidden"+id+"').val(v);\n");
-
-        
-        sb.append("    if ($(this).attr('target').length > 0) {\n");
-        sb.append("        return true;\n");
-        sb.append("    }\n");
-        sb.append("    if ($(this).attr('tabindex').length > 0) {\n");
-        sb.append("        return true;\n");
-        sb.append("    }\n");
-        
-
-        sb.append("    $('#oacommand').val('href='+$(this).attr('href'));\n"); 
-        sb.append("    $('form').submit();\n");
-        sb.append("    return false;\n");
-        sb.append("  }\n");
-        sb.append(");\n");
-
+        sb.append("$('table#oa"+id+" tr td a').click(oatable"+id+"Click1);\n");
 
         if (hubSelect != null) {
-            sb.append("$('table#oa"+id+" tr td input:checkbox').click(");
-            sb.append("    function(event) {");
-            sb.append("        event.stopPropagation();");
-            sb.append("        return true;");
-            sb.append("    }");
-            sb.append(");");
-
-            sb.append("$('table#oa"+id+" tr td:nth-child(2)').click(");
-            sb.append("    function(event) {");
-            // sb.append("        event.stopPropagation();");
-            sb.append("        return false;");
-            sb.append("    }");
-            sb.append(");");
+            sb.append("$('table#oa"+id+" tr td input:checkbox').click(oatable"+id+"Click2);");
+            sb.append("$('table#oa"+id+" tr td:nth-child(2)').click(oatable"+id+"Click3);\n");
         }
         
         
         sb.append("$('#oa"+id+"').addClass('oaSubmit');\n");
 
         if (pager != null) {
-            sb.append("function oatable"+id+"PagerClick() {\n");
-            sb.append("    var v = $(this).attr('class');\n");
-            sb.append("    if (v == 'oatablePagerDisable') return;\n");
-            sb.append("    if (v == 'oatablePagerSelected') return;\n");
-            sb.append("    \n");
-            sb.append("    v = $(this).attr('oaValue');\n");
-            sb.append("    if (typeof v == 'undefined') {\n");
-            sb.append("        v = $(this).html();\n");
-            sb.append("    }\n");
-            sb.append("    if (v == null) return;\n");
-            sb.append("    $('#oahidden"+id+"').val('P'+v);\n");
-            sb.append("    ajaxSubmit();\n");
-            sb.append("}\n");
             sb.append("$('table#oa"+id+" .oatablePager ul li').click(oatable"+id+"PagerClick);\n");
         }
         sb.append("$('#oahidden"+id+"').val('');"); // set back to blank

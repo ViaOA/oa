@@ -167,16 +167,17 @@ public class OAHtmlElement implements OAJspComponent {
         boolean bWasSubmitted  = (id != null && id.equals(s));
         return bWasSubmitted; // true if this caused the form submit
     }
-
+    
     @Override
-    public String _afterSubmit(String forwardUrl) {
-        if (this.forwardUrl != null) forwardUrl = this.forwardUrl;
-        return forwardUrl;
-    }
-
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }
+
+    @Override
+    public String _afterSubmit(String forwardUrl) {
+        return forwardUrl;
+    }
+
     
     
     @Override

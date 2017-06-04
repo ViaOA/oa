@@ -26,7 +26,7 @@ import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
 
-/*qqqqqqqqqqqqqqqqqq replaced by OAListItems.java qqqqqqqqqqqq*/
+/*qqqqqqqqqqqqqqqqqq replaced by OAList.java qqqqqqqqqqqq*/
 
 /**
  * Used with an HTML <UL> or <OL> to replace the <LI> with hub objects.

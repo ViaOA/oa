@@ -256,17 +256,35 @@ public class OAForm extends OABase implements Serializable {
 
         sb.append("<script>\n");
 
+        
+       
         // outside JS methods
+
+/* hold        
+        // jquery version
         sb.append("function oaShowMessage(title, msg) {\n");
         sb.append("    $('#oaformDialog').dialog('option', 'title', title);\n");
         sb.append("    $('#oaformDialog').html(msg);\n");
         sb.append("    $('#oaformDialog').dialog('open');\n");
         sb.append("}\n");
+*/
+        
+        
+        
+//qqqqqqq        
+        // bootstrap version
+        sb.append("function oaShowMessage(title, msg) {\n");
+        sb.append("    $('#oaformDialog .modal-title').html(title);\n");
+        sb.append("    $('#oaformDialog .modal-body').html(msg);\n");
+        sb.append("    $('#oaformDialog').modal({keyboard: true});\n");
+        sb.append("}\n");
 
-
+        
         sb.append("$(document).ready(function() {\n");
 
         // form dialog
+/* hold        
+        // jquery version
         sb.append("    $('#"+id+"').prepend(\"<div id='oaformDialog'></div>\");\n");
         sb.append("    $('#oaformDialog').dialog({");
         sb.append("        autoOpen : false,");
@@ -278,7 +296,37 @@ public class OAForm extends OABase implements Serializable {
         sb.append("          { text: 'Ok', click: function() { $(this).dialog('close'); } }\n");
         sb.append("         ]\n");
         sb.append("    });");
+*/
+        
+//qqqqqqq        
+        // bootstrap version
+        sb.append("$('#"+id+"').prepend(\"");
+        sb.append("<div id='oaformDialog' class='modal fade' tabindex='-1'>");
+        sb.append("  <div class='modal-dialog'>");
+        sb.append("    <div class='modal-content'>");
+        sb.append("      <div class='modal-header'>");
+        sb.append("        <button type='button' class='close' data-dismiss='modal'><span>&times;</span></button>");
+        
+        sb.append("        <h4 class='modal-title'>");
+        //qqqq
+        sb.append("        </h4>");
 
+        sb.append("      </div>");
+        sb.append("      <div class='modal-body'>");
+        //qqqqqqq
+        sb.append("      </div>");
+        sb.append("      <div class='modal-footer'>");
+        sb.append("        <button type='button' class='btn btn-primary' data-dismiss='modal'>Ok</button>");
+        sb.append("      </div>");
+        sb.append("    </div>");
+        sb.append("  </div>");
+        sb.append("</div>");
+        sb.append("\");\n");
+        
+        
+        
+        
+        
         sb.append("$('body').append(\"<div id='oaWait'><img src='image/oawait.gif'></div>\");");
 
         sb.append("    $('#"+id+"').attr('method', 'post');\n");
@@ -377,6 +425,10 @@ public class OAForm extends OABase implements Serializable {
         sb.append("        return true;\n");
         sb.append("    }\n");
 
+        
+        
+        
+        /* was 20170531
         sb.append("    var cntWait = 0;\n");
         sb.append("    function ajaxSubmit(cmdName) {\n");
         sb.append("        cntWait++;\n");
@@ -387,11 +439,45 @@ public class OAForm extends OABase implements Serializable {
         sb.append("            if (data != null) eval(data);\n");
         sb.append("        }\n");
         sb.append("        $.post('oaajax.jsp', args, f, 'text');\n");  // text: return value type (will be javascript)
-//qqqqqqqqqqqqqqqqqqqqqq test the "oaWait" image
-//        sb.append("        if (cntWait == 1) $('#oaWait').hide().fadeIn(1500, function(){ if (cntWait < 1) {cntWait=0;$('#oaWait').hide();}});");
         sb.append("    }\n");
+        */
 
-
+        sb.append("var cntAjaxSubmit = 0;\n");
+        sb.append("function ajaxSubmit(cmdName) {\n");
+        sb.append("    cntAjaxSubmit++;\n");
+        sb.append("    var bUseAsync = (cntAjaxSubmit == 1);\n");
+        sb.append("    if (bUseAsync && cntAjaxSubmit == 1) {\n");
+        sb.append("        $('#oaWait').fadeIn(200, function(){ if (cntAjaxSubmit < 1) {cntAjaxSubmit=0;$('#oaWait').hide();}});\n");    
+        sb.append("    }\n");
+        sb.append("    var f1 = function(data) {\n");
+        sb.append("        if (--cntAjaxSubmit < 1) {\n");
+        sb.append("            cntAjaxSubmit=0; \n");
+        sb.append("            $('#oaWait').hide();\n");
+        sb.append("        }\n");
+        sb.append("        if (data != null) eval(data);\n");
+        sb.append("    }\n");
+        sb.append("    var f2 = function() {\n");
+        sb.append("        if (--cntAjaxSubmit < 1) {\n");
+        sb.append("            cntAjaxSubmit=0; \n");
+        sb.append("            $('#oaWait').hide();\n");
+        sb.append("        }\n");
+        sb.append("    }\n");
+        sb.append("    var args = $('#"+id+"').serialize();\n");
+        sb.append("    if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;\n");
+        sb.append("    $.ajax({\n");
+        sb.append("        type: 'POST',\n");
+        sb.append("        url: 'oaajax.jsp',\n");
+        sb.append("        data: args,\n");
+        sb.append("        success: f1,\n");
+        sb.append("        error: f2,\n");
+        sb.append("        dataType: 'text',\n");
+        sb.append("        timeout: 30000,\n");
+        sb.append("        async: bUseAsync,");
+        sb.append("      });\n");
+        sb.append("}\n");
+        
+        
+        
         if (!OAString.isEmpty(jsAddScript)) {
             sb.append("    " + jsAddScript + "\n");
         }
@@ -468,13 +554,15 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getMessages();
         }
         _addMessages(sb, "oaFormMessage", msg1, msg2, this.getMessages());
+        clearMessages();
 
         msg1 = msg2 = null;
         if (session != null) {
-            msg1 = session.getApplication().getErrors();
-            msg2 = session.getErrors();
+            msg1 = session.getApplication().getErrorMessages();
+            msg2 = session.getErrorMessages();
         }
-        _addMessages(sb, "oaFormErrorMessage", msg1, msg2, this.getErrors());
+        _addMessages(sb, "oaFormErrorMessage", msg1, msg2, this.getErrorMessages());
+        clearErrorMessages();
 
         msg1 = msg2 = null;
         if (session != null) {
@@ -482,9 +570,21 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getHiddenMessages();
         }
         _addMessages(sb, "oaFormHiddenMessage", msg1, msg2, this.getHiddenMessages());
+        clearHiddenMessages();
+        
+
+        // popup
+        msg1 = msg2 = null;
+        if (session != null) {
+            msg1 = session.getApplication().getPopupMessages();
+            msg2 = session.getPopupMessages();
+        }
+        _addMessages(sb, null, msg1, msg2, this.getPopupMessages());
+        clearPopupMessages();
+        
     }
 
-    private void _addMessages(StringBuilder sb, String cssName, String[] msgs1, String[] msgs2, String[] msgs3) {
+    private void _addMessages(StringBuilder sb, String id, String[] msgs1, String[] msgs2, String[] msgs3) {
         String msg = "";
         if (msgs1 != null) {
             for (String s : msgs1) {
@@ -507,20 +607,25 @@ public class OAForm extends OABase implements Serializable {
 
         boolean bDebugx = getDebug();
         if (bLastDebug != bDebugx) {
-            if (getDebug()) sb.append("    $('#"+cssName+"').addClass('oaDebug');\n");
-            else sb.append("    $('#"+cssName+"').removeClass('oaDebug');\n");
+            if (getDebug()) sb.append("    $('#"+id+"').addClass('oaDebug');\n");
+            else sb.append("    $('#"+id+"').removeClass('oaDebug');\n");
         }
 
         msg = Util.convert(msg, "'", "\'");
         if (msg.length() > 0) {
-            sb.append("if ($('#"+cssName+"').length) {");
-            sb.append("  $('#"+cssName+"').show();");
-            sb.append("} else {");
-            sb.append("    oaShowMessage('', '"+msg+"');\n");
-            sb.append("}");
+            if (id != null) {
+                sb.append("if ($('#"+id+"').length) {");
+                sb.append("  $('#"+id+"').show();");
+                sb.append("} else {");
+                sb.append("    oaShowMessage('', '"+msg+"');\n");
+                sb.append("}");
+            }
+            else {
+                sb.append("oaShowMessage('', '"+msg+"');\n");
+            }
         }
-        else sb.append("$('#"+cssName+"').hide();");
-        sb.append("$('#"+cssName+"').html('"+msg+"');");
+        else sb.append("$('#"+id+"').hide();");
+        sb.append("$('#"+id+"').html('"+msg+"');");
     }
 
     public ArrayList<OAJspComponent> getComponents() {
@@ -561,6 +666,8 @@ public class OAForm extends OABase implements Serializable {
         if (this.session == null) this.session = session;
 
         try {
+//qqqqqqqqqqqqqqqqqq
+//Thread.sleep(350);//qqqqqqqqq test            
             request.setCharacterEncoding("UTF-8");
         }
         catch (Exception e) {}
@@ -574,7 +681,7 @@ public class OAForm extends OABase implements Serializable {
                 processMultipart(request, hmNameValue);
             }
             catch (Exception e){
-                this.addError(e.toString());
+                this.addErrorMessage(e.toString());
             }
         }
         else {
@@ -594,12 +701,12 @@ public class OAForm extends OABase implements Serializable {
             session.setBrowserTimeZoneOffset(tzSecs);
         }
 
-        boolean bProcess = beforeSubmit();
+        boolean bShouldProcess = beforeSubmit();
 
         String forward = null;
 
-//qqqqqqqqqqq        
-        if (bProcess) {
+        
+        if (bShouldProcess) {
             forward = getForwardUrl();
             if (OAString.isEmpty(forward)) forward = this.getUrl();
             
@@ -613,7 +720,9 @@ public class OAForm extends OABase implements Serializable {
             s = onJspSubmit(compSubmit, forward);
             if (!OAString.isEmpty(s)) forward = s;
         }
-        if (OAString.isEmpty(forward)) forward = this.getUrl();
+        if (OAString.isEmpty(forward)) {
+            forward = this.getUrl();
+        }
         return forward;
     }
 
@@ -889,9 +998,9 @@ public class OAForm extends OABase implements Serializable {
         if (comp instanceof OAGrid) return (OAGrid) comp;
         return null;
     }
-    public OACombo getList(String id) {
+    public OAHtmlSelect getSelect(String id) {
         OAJspComponent comp = getComponent(id);
-        if (comp instanceof OAList) return (OAList) comp;
+        if (comp instanceof OAHtmlSelect) return (OAHtmlSelect) comp;
         return null;
     }
     public OAImage getImage(String id) {
@@ -909,6 +1018,17 @@ public class OAForm extends OABase implements Serializable {
         if (comp instanceof OAServletImage) return (OAServletImage) comp;
         return null;
     }
+    public OAList getList(String id) {
+        OAJspComponent comp = getComponent(id);
+        if (comp instanceof OAList) return (OAList) comp;
+        return null;
+    }
+    public OADialog getDialog(String id) {
+        OAJspComponent comp = getComponent(id);
+        if (comp instanceof OADialog) return (OADialog) comp;
+        return null;
+    }
+
 
 }
 

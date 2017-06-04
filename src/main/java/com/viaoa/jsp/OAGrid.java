@@ -202,7 +202,37 @@ public class OAGrid implements OAJspComponent {
         submitUpdateScript = null;
         StringBuilder sb = new StringBuilder(1024);
         sb.append("$('form').prepend(\"<input id='oahidden"+id+"' type='hidden' name='oahidden"+id+"' value=''>\");\n");
+        
         sb.append(getAjaxScript());
+        
+        sb.append("function oagrid"+id+"CellClick() {\n");
+        sb.append("    var v = $(this).attr('oarow');\n");
+        sb.append("    if (v == null) return;\n");
+        sb.append("    $('#oahidden"+id+"').val(v);\n");
+        
+        if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
+            sb.append("    ajaxSubmit();\n");
+        }
+        else {
+            sb.append("    $('form').submit();\n");
+        }
+        sb.append("}\n");
+
+        if (pager != null) {
+            sb.append("function oatablePager"+id+"Click() {\n");
+            sb.append("    var v = $(this).attr('class');\n");
+            sb.append("    if (v == 'oatablePagerDisable') return;\n");
+            sb.append("    if (v == 'oatablePagerSelected') return;\n");
+            sb.append("    \n");
+            sb.append("    v = $(this).attr('oaValue');\n");
+            sb.append("    if (typeof v == 'undefined') {\n");
+            sb.append("        v = $(this).html();\n");
+            sb.append("    }\n");
+            sb.append("    if (v == null) return;\n");
+            sb.append("    $('#oahidden"+id+"').val('P'+v);\n");
+            sb.append("    ajaxSubmit();\n");
+            sb.append("}\n");
+        }
         
         String js = sb.toString();
         return js;
@@ -434,37 +464,14 @@ public class OAGrid implements OAJspComponent {
         
         sb = new StringBuilder(strGrid.length() + 2048);
         sb.append("$('#"+id+"').html(\""+strGrid+"\");\n");
-
-        sb.append("function oagrid"+id+"CellClick() {\n");
-        sb.append("    var v = $(this).attr('oarow');\n");
-        sb.append("    if (v == null) return;\n");
-        sb.append("    $('#oahidden"+id+"').val(v);\n");
         
-        if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
-            sb.append("    ajaxSubmit();\n");
-        }
-        else {
-            sb.append("    $('form').submit();\n");
-        }
-        sb.append("}\n");
-        sb.append("$('#oa"+id+" div.oaGridCell').click(oagrid"+id+"CellClick);\n");
 
+        sb.append("$('#oa"+id+" div.oaGridCell').click(oagrid"+id+"CellClick);\n");
+        
         if (pager != null) {
-            sb.append("function oatablePager"+id+"Click() {\n");
-            sb.append("    var v = $(this).attr('class');\n");
-            sb.append("    if (v == 'oatablePagerDisable') return;\n");
-            sb.append("    if (v == 'oatablePagerSelected') return;\n");
-            sb.append("    \n");
-            sb.append("    v = $(this).attr('oaValue');\n");
-            sb.append("    if (typeof v == 'undefined') {\n");
-            sb.append("        v = $(this).html();\n");
-            sb.append("    }\n");
-            sb.append("    if (v == null) return;\n");
-            sb.append("    $('#oahidden"+id+"').val('P'+v);\n");
-            sb.append("    ajaxSubmit();\n");
-            sb.append("}\n");
             sb.append("$('div#oa"+id+" .oatablePager ul li').click(oatablePager"+id+"Click);\n");
         }
+        
         sb.append("$('#oahidden"+id+"').val('');\n"); // set back to blank
         
         String js = sb.toString();

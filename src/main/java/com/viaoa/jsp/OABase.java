@@ -20,10 +20,12 @@ public abstract class OABase implements Serializable {
     private static final long serialVersionUID = 1L;
 	
     protected HashMap<String, Object> hashmap = new HashMap<String, Object>(29, 0.75f);
-    protected transient ArrayList<String> alError = new ArrayList<String>(5);
-    protected transient ArrayList<String> alMessage = new ArrayList<String>(5);
-    protected transient ArrayList<String> alHidden = new ArrayList<String>(5);
 
+    protected transient ArrayList<String> alMessage = new ArrayList<String>(5);
+    protected transient ArrayList<String> alError = new ArrayList<String>(5);
+    protected transient ArrayList<String> alHidden = new ArrayList<String>(5);
+    protected transient ArrayList<String> alPopup = new ArrayList<String>(5);
+    
     protected boolean debug;
     protected boolean enabled=true;
     
@@ -46,6 +48,7 @@ public abstract class OABase implements Serializable {
         alError.clear();
         alMessage.clear();
         alHidden.clear();
+        alPopup.clear();
     }
     
     
@@ -93,9 +96,12 @@ public abstract class OABase implements Serializable {
         int x = alMessage.size();
         String[] s = new String[x];
         alMessage.toArray(s);
-        alMessage.clear();
         return s;
     }
+    public void clearMessages() {
+        alMessage.clear();
+    }
+    
     public void addHiddenMessage(String msg) {
         alHidden.add(msg);
     }
@@ -103,20 +109,39 @@ public abstract class OABase implements Serializable {
         int x = alHidden.size();
         String[] s = new String[x];
         alHidden.toArray(s);
-        alHidden.clear();
         return s;
+    }
+    public void clearHiddenMessages() {
+        alHidden.clear();
     }
 
     public void addError(String msg) {
+        addErrorMessage(msg);
+    }
+    public void addErrorMessage(String msg) {
         alError.add(msg);
     }
-    public String[] getErrors() {
+    public String[] getErrorMessages() {
         int x = alError.size();
         String[] s = new String[x];
         alError.toArray(s);
-        alError.clear();
         return s;
     }
+    public void clearErrorMessages() {
+        alError.clear();
+    }
     
+    public void addPopupMessage(String msg) {
+        alPopup.add(msg);
+    }
+    public String[] getPopupMessages() {
+        int x = alPopup.size();
+        String[] s = new String[x];
+        alPopup.toArray(s);
+        return s;
+    }
+    public void clearPopupMessages() {
+        alPopup.clear();
+    }
 }
 

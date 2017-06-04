@@ -67,35 +67,5 @@ public class OAApplication extends OABase implements Serializable {
         session.removeAttribute(this.getName()+".OA");
     }
     
-    @Override
-    public String[] getMessages() {
-        int x = alMessage.size();
-        String[] s = new String[x];
-        alMessage.toArray(s);
-        return s;
-    }
-    public void clearMessages() {
-        alMessage.clear();
-    }
-    @Override
-    public String[] getErrors() {
-        int x = alError.size();
-        String[] s = new String[x];
-        alError.toArray(s);
-        return s;
-    }
-    public void clearErrorMessages() {
-        alError.clear();
-    }
-    @Override
-    public String[] getHiddenMessages() {
-        int x = alHidden.size();
-        String[] s = new String[x];
-        alHidden.toArray(s);
-        return s;
-    }
-    public void clearHiddenMessages() {
-        alHidden.clear();
-    }
 }
 

@@ -27,6 +27,8 @@ public class OADialog extends OAHtmlElement {
     protected boolean bModal;
     protected Dimension dim, dimMin, dimMax;
     protected String title;
+    protected String closeButtonText = "Close";
+    private String submitButtonText;
     
     // list of button names. If selected, then the name/text will be set when onSubmit is called.
     private ArrayList<String> alButtons = new ArrayList<String>();  
@@ -49,7 +51,6 @@ public class OADialog extends OAHtmlElement {
         bVisible = true;
     }
 
-    private String submitButtonText;
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         submitButtonText = null;
@@ -67,12 +68,21 @@ public class OADialog extends OAHtmlElement {
         }
         return bWasSubmitted; // true if this caused the form submit
     }
-
+    
+    public String getSubmitButtonText() {
+        return submitButtonText;
+    }
+    
     @Override
     public String _afterSubmit(String forwardUrl) {
         return forwardUrl;
     }
 
+    @Override
+    public String onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl, submitButtonText);
+    }
+    
     public String onSubmit(String forwardUrl, String submitButtonText) {
         return forwardUrl;
     }
@@ -103,7 +113,7 @@ public class OADialog extends OAHtmlElement {
         this.title = title;
     }
 
-    protected String closeButtonText;
+    
     public void setCloseButtonText(String text) {
         this.closeButtonText = text;
     }
@@ -111,9 +121,21 @@ public class OADialog extends OAHtmlElement {
         return this.closeButtonText;
     }
     
-    
+    public void addButton(String text) {
+        alButtons.add(text);
+    }
+
     @Override
     public String getScript() {
+        return getBSScript();
+    }
+    @Override
+    public String getAjaxScript() {
+        return getBSAjaxScript();
+    }
+    
+    // JQuery version
+    public String getJQScript() {
         lastAjaxSent = null;
 
         StringBuilder sb = new StringBuilder(1024);
@@ -160,21 +182,15 @@ public class OADialog extends OAHtmlElement {
         
         // end of constructor
         sb.append("});\n");
-        
-        
-        s = getAjaxScript();
+
+        s = getJQAjaxScript();
         if (s != null) sb.append(s);
         String js = sb.toString();
         
         return js;
     }
 
-    public void addButton(String text) {
-        alButtons.add(text);
-    }
-    
-    @Override
-    public String getAjaxScript() {
+    public String getJQAjaxScript() {
         StringBuilder sb = new StringBuilder(1024);
         
         if (bVisible) {
@@ -189,6 +205,77 @@ public class OADialog extends OAHtmlElement {
         sb.append("$('#"+id+"').dialog('option', 'title', '"+s+"');\n");
         
 
+        String js = sb.toString();
+        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
+        else lastAjaxSent = js;
+
+        return js;
+    }
+    
+    
+    
+    public String getBSScript() {
+        lastAjaxSent = null;
+
+        StringBuilder sb = new StringBuilder(1024);
+
+        sb.append("(function() {\n");
+        sb.append("    var xx = $('#"+id+"').wrap(\"<div class='modal-body'></div>\").parent();\n");
+        sb.append("    xx.wrap(\"<div class='modal-content'></div>\");\n");
+        sb.append("    xx.before(\"<div class='modal-header'><button type='button' class='close' data-dismiss='modal'><span>&times;</span></button><h4 class='modal-title'>"+OAString.getNonNull(getTitle())+"</h4></div>\");\n");
+        
+        sb.append("    xx.after(\"<div class='modal-footer'>");
+        
+        
+        int cnt = 0;
+        for (String text : alButtons) {
+            if (text == null) text = "";
+            String idx = id+"_"+(cnt++)+text;
+            idx = idx.replace(' ', '_');
+            sb.append("<button id='"+(idx)+"' type='button' class='btn btn-default' data-dismiss='modal'>");
+            sb.append(text+"</button>");
+        }
+
+        if (OAString.isNotEmpty(getCloseButtonText())) sb.append("<button type='button' class='btn btn-default' data-dismiss='modal'>"+getCloseButtonText()+"</button>");
+        sb.append("</div>\");\n");
+        
+        sb.append("    xx = xx.parent();\n");
+        sb.append("    xx = xx.wrap(\"<div class='modal-dialog'></div>\").parent();\n");
+        sb.append("    xx.wrap(\"<div id='oaDialogdlgTest' class='modal fade' tabindex='-1'></div>\");\n");     
+        sb.append(" })();\n");
+        
+        cnt = 0;
+        for (String text : alButtons) {
+            if (text == null) text = "";
+            String idx = id+"_"+(cnt++)+text;
+            idx = idx.replace(' ', '_');
+            
+            if (bAjaxSubmit) {
+                sb.append("$('#"+idx+"').click(function() {$('#oacommand').val('"+id+" "+text+"');ajaxSubmit();});\n");
+            }
+            else if (getSubmit()) {
+                sb.append("$('#"+idx+"').click(function() { $('#oacommand').val('"+id+" "+text+"'); $('form').submit();});\n");
+            }
+        }        
+        
+        String s = getBSAjaxScript();
+        if (s != null) sb.append(s);
+        String js = sb.toString();
+        
+        return js;
+    }
+
+    public String getBSAjaxScript() {
+        StringBuilder sb = new StringBuilder(1024);
+        
+        if (bVisible) {
+            sb.append("$('#oaDialog"+id+"').modal({keyboard: true});");
+            bVisible = false;
+            lastAjaxSent = null;
+        }
+        else {
+            sb.append("$('#oaDialog"+id+"').modal('hide');");
+        }
         String js = sb.toString();
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;

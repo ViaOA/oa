@@ -61,7 +61,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
 
     protected Hub topHub;
     protected OALinkInfo recursiveLinkInfo;
-    protected Hub hubSelect;  // used by OAList
+    protected Hub hubSelect;  // used by OASelect
     
     protected String id;
     protected int columns;

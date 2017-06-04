@@ -94,7 +94,7 @@ import com.viaoa.util.*;
 
     @author Vince Via
     @see Hub for observable collection class that has "linkage" features for automatically managing relationships.
-    @see OASelect for datasource independent queries based on object and property paths.
+    @see OAHtmlSelect for datasource independent queries based on object and property paths.
 */
 public class OAObject implements java.io.Serializable, Comparable {
 

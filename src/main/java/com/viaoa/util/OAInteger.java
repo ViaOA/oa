@@ -1,4 +1,4 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+/*  Copyright 1999-2017 Vince Via vvia@viaoa.com
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -11,7 +11,33 @@
 package com.viaoa.util;
 
 public class OAInteger {
-
+    private int x;
+    
+    public OAInteger() {
+    }
+    public OAInteger(int x) {
+        this.x = x;
+    }
+    public int add(int x) {
+        this.x += x;
+        return this.x;
+    }
+    public int add() {
+        return this.add(1);
+    }
+    public int subtract(int x) {
+        this.x -= x;
+        return this.x;
+    }
+    public int subtract() {
+        return this.subtract(1);
+    }
+    public void set(int x) {
+        this.x = x;
+    }
+    public int get() {
+        return x;
+    }
     
     public static void viewBytes(byte i) {
         int[] ints = new int[1];

@@ -11,6 +11,7 @@
 package com.viaoa.jsp;
 
 import com.viaoa.hub.*;
+import com.viaoa.util.OAString;
 
 /**
  * OATable page control.
@@ -99,13 +100,13 @@ public class OATablePager implements java.io.Serializable {
 
         StringBuffer sb = new StringBuffer(256);
         if (maxCount > 0 && totalObjects >= maxCount) {
-            sb.append("<span class='oatablePagerMsg'>(only displaying the first " + maxCount + " selected)</span>");
+            sb.append("<span class='oatablePagerMsg'>(only displaying the first " + OAString.format(maxCount, "R,0") + " selected)</span>");
         }
         else {
-            sb.append("<span class='oatablePagerMsg'>(" + totalObjects + " selected)</span>");
+            sb.append("<span class='oatablePagerMsg'>(" + OAString.format(totalObjects, "R,0") + " selected)</span>");
         }
         if (totalPages > 0) {
-            sb.append("<span class='oatablePagerMsg'>Page " + (currentPage + 1) + " of " + totalPages + "</span>");
+            sb.append("<span class='oatablePagerMsg'>Page " + (currentPage + 1) + " of " + OAString.format(totalPages, "R,0") + "</span>");
             sb.append("<ul class='oatablePager'>");
         }
 

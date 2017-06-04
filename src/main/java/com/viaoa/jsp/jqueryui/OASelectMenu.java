@@ -111,7 +111,6 @@ public class OASelectMenu implements OAJspComponent, OATableEditor {
         return true;
     }
 
-    private boolean bSubmittedComponent;  // did this component cause the form submit
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         String name = null;
@@ -123,7 +122,7 @@ public class OASelectMenu implements OAJspComponent, OATableEditor {
             String[] ss = hmNameValue.get("oacommand");
             if (ss != null && ss.length > 0) s = ss[0];
         }
-        bSubmittedComponent  = (id != null && id.equals(s));
+        boolean bSubmittedComponent  = (id != null && id.equals(s));
         boolean bWasSubmitted = false;  // was the combo submited with the form
 
         OAObject objLinkTo = null;
@@ -215,11 +214,6 @@ public class OASelectMenu implements OAJspComponent, OATableEditor {
 
     @Override
     public String _afterSubmit(String forwardUrl) {
-        if (bSubmittedComponent) {
-            String furl = getForwardUrl();
-            if (furl != null) forwardUrl = furl;
-            return onSubmit(forwardUrl); 
-        }
         return forwardUrl;
     }
 

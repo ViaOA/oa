@@ -40,5 +40,5 @@ public class OASystem extends OABase implements Serializable {
         return oaapplication;
     }
 
-}
+ }
 

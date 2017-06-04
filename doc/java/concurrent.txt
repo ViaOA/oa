@@ -232,8 +232,8 @@
     // used by threads to swap values    
     
 
->> LinkedBlockingDeque<E>
 >> LinkedBlockingQueue<E>
+>> LinkedBlockingDeque<E>
 
         private static LinkedBlockingQueue<MRADServerCommand> queueBlocking = new LinkedBlockingQueue<MRADServerCommand>();
         ...
