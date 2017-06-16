@@ -58,11 +58,14 @@ public class OAPopupList extends OAList {
         
         
         sb.append("$('#"+idClick+"').click(function(e) {\n");
-        sb.append("    $('#"+idClick+"PopupListWrapper').toggle();\n");
+        sb.append("    $('#"+idClick+"PopupListWrapper').slideToggle(80);\n");
         sb.append("    return false;\n");
         sb.append("});\n");
         sb.append("window.onclick = function(event) {\n");
-        sb.append("    $('#"+idClick+"PopupListWrapper').hide();\n");
+        
+        sb.append("    if ($('#"+idClick+"PopupListWrapper').is(':visible')) ");         
+        sb.append("$('#"+idClick+"PopupListWrapper').slideToggle(80);\n");
+        // was:  sb.append("    $('#"+idClick+"PopupListWrapper').hide();\n");
         sb.append("}\n");
 
         String js = sb.toString();

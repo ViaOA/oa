@@ -46,6 +46,7 @@ public class OATree implements OAJspComponent, OATableEditor {
     private String sortBy;
     private OAFilter filter;
     private HashMap<Integer, OAObject> hashMap;
+    private HashSet<OAObject> hsExpanded;
     private String treeViewParams;
    
     private Object selectedObject;
@@ -120,6 +121,11 @@ public class OATree implements OAJspComponent, OATableEditor {
         bRefresh = true;
     }
     
+    public void collapseAll() {
+        hsExpanded = null;
+        refresh();
+    }
+    
     @Override
     public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         String s = req.getParameter("oacommand");
@@ -138,13 +144,33 @@ public class OATree implements OAJspComponent, OATableEditor {
 
         selectedObject = null;
         
-        if (hashMap != null && values[0].length() > 1 && values[0].charAt(0) == 'g') {
-            int guid = OAConv.toInt(values[0].substring(1));
-            selectedObject = hashMap.get(guid);
+        boolean bWasSelected = false;
+        if (hashMap != null && values[0].length() > 1) {
+            if (values[0].startsWith("select.g")) {
+                int guid = OAConv.toInt(values[0].substring(8));
+                selectedObject = hashMap.get(guid);
+                bWasSelected = true;
+            }
+            else if (values[0].startsWith("expand.g")) {
+                int guid = OAConv.toInt(values[0].substring(8));
+                OAObject obj = hashMap.get(guid);
+                if (obj != null) {
+                    if (hsExpanded == null) hsExpanded = new HashSet<>();
+                    hsExpanded.add(obj);
+                }
+            }
+            else if (values[0].startsWith("collapse.g")) {
+                int guid = OAConv.toInt(values[0].substring(10));
+                OAObject obj = hashMap.get(guid);
+                if (obj != null) {
+                    if (hsExpanded != null) hsExpanded.remove(obj);
+                }
+            }
         }
         else if (OAString.isNumber(values[0]) && hub != null) {
             int x = OAConv.toInt(values[0]);
             selectedObject = hub.getAt(x);
+            bWasSelected = true;
         }
         
         /*
@@ -159,7 +185,7 @@ public class OATree implements OAJspComponent, OATableEditor {
             h = (Hub) recursiveLinkInfo.getValue(selectedObject);
         }
         */
-        return true;
+        return bWasSelected;
     }
 
     
@@ -210,10 +236,9 @@ public class OATree implements OAJspComponent, OATableEditor {
         sb.append(", data: [\n");
         sb.append(getData(hub)+"\n");
         sb.append("],\nonNodeSelected : function(event, node) {\n");
-
         
         sb.append("$('#oacommand').val('"+id+"');\n");
-        sb.append("$('#oatree"+id+"').val(node.oaid);\n");
+        sb.append("$('#oatree"+id+"').val('select.'+node.oaid);\n");
         
         if (bAjaxSubmit) {
             sb.append("ajaxSubmit();return false;\n");
@@ -221,9 +246,22 @@ public class OATree implements OAJspComponent, OATableEditor {
         else if (getSubmit()) {
             sb.append("$('form').submit();return false;\n");
         }
-        
+        sb.append("}\n");  //end of onNodeSelected
+
+        sb.append(",\nonNodeExpanded : function(event, node) {\n");
+        sb.append("$('#oacommand').val('"+id+"');\n");
+        sb.append("$('#oatree"+id+"').val('expand.'+node.oaid);\n");
+        sb.append("ajaxSubmit2();return false;\n");
         sb.append("}\n");
-        sb.append("});\n");
+
+        sb.append(",\nonNodeCollapsed : function(event, node) {\n");
+        sb.append("$('#oacommand').val('"+id+"');\n");
+        sb.append("$('#oatree"+id+"').val('collapse.'+node.oaid);\n");
+        sb.append("ajaxSubmit2();return false;\n");
+        sb.append("}\n");
+ 
+        
+        sb.append("});\n");  // end of treeview
         
         String js = sb.toString();
         return js;
@@ -348,6 +386,20 @@ public class OATree implements OAJspComponent, OATableEditor {
             }
             else {
                 options += "text: '"+value+"', oaid: '"+i+"'";
+            }
+            
+            
+            String s = "";
+            if (hsExpanded !=null && hsExpanded.contains((OAObject) obj)) {
+                s = "expanded: true";
+            }
+            
+            if (obj == selectedObject) {
+                if (s.length() > 0) s += ", ";
+                s = "selected: true";
+            }
+            if (s.length() > 0) {
+                options += ", state: {"+s+"}";
             }
             
             if (recursiveLinkInfo != null) {

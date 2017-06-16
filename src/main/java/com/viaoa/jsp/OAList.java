@@ -326,7 +326,7 @@ public class OAList implements OAJspComponent {
         
         
         sb = new StringBuilder(strListing.length() + 2048);
-
+        
         sb.append("$('#"+id+"').addClass('oaList');\n");
         
         sb.append("$('#"+id+"').html('"+strListing+"');\n");
@@ -405,7 +405,11 @@ public class OAList implements OAJspComponent {
     public String getHtml(Object obj, int pos) {
         if (obj == null || pos < 0) return getNullDescription();
 
-        String value = ((OAObject) obj).getPropertyAsString(getPropertyPath(), getFormat());
+        String value;
+        if (obj instanceof OAObject) {
+            value = ((OAObject) obj).getPropertyAsString(getPropertyPath(), getFormat());
+        }
+        else value = obj.toString();
         
         return value;
     }

@@ -25,6 +25,7 @@ public abstract class OABase implements Serializable {
     protected transient ArrayList<String> alError = new ArrayList<String>(5);
     protected transient ArrayList<String> alHidden = new ArrayList<String>(5);
     protected transient ArrayList<String> alPopup = new ArrayList<String>(5);
+    protected transient ArrayList<String> alSnackbar = new ArrayList<String>(5);
     
     protected boolean debug;
     protected boolean enabled=true;
@@ -49,6 +50,7 @@ public abstract class OABase implements Serializable {
         alMessage.clear();
         alHidden.clear();
         alPopup.clear();
+        alSnackbar.clear();
     }
     
     
@@ -142,6 +144,19 @@ public abstract class OABase implements Serializable {
     }
     public void clearPopupMessages() {
         alPopup.clear();
+    }
+
+    public void addSnackbarMessage(String msg) {
+        alSnackbar.add(msg);
+    }
+    public String[] getSnackbarMessages() {
+        int x = alSnackbar.size();
+        String[] s = new String[x];
+        alSnackbar.toArray(s);
+        return s;
+    }
+    public void clearSnackbarMessages() {
+        alSnackbar.clear();
     }
 }
 

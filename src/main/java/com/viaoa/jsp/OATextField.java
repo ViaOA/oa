@@ -883,7 +883,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public String getTableEditorHtml() {
         // let cell take up all space
         width = 0; // so that the "size" attribute wont be set
-        String s = "<input id='" + id + "' type='text' style='position:absolute; top:4px; left:1px; width:97%;'>";
+        String s = "<input id='" + id + "' type='text' style='position:absolute; top:0px; left:1px; width:97%; max-height:97%'>";
         return s;
     }
 }
