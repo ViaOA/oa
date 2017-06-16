@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.ds.jdbc.query;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.PrintWriter;
@@ -104,7 +105,7 @@ public class ResultSetIterator implements OADataSourceIterator {
         this(ds, clazz, columns, query, null, max, null);
     }
     
-static int qqq;
+static volatile int qqq;
 static PrintWriter printWriter2;
 static PrintWriter printWriter;
 
@@ -140,7 +141,7 @@ static PrintWriter printWriter;
         if (bInit) return;
         bInit = true;
 
-        if ( ((++qqq)%DisplayMod==0)) {
+        if (((++qqq)%DisplayMod==0)) {
             String s = query;
             int pos = s.toUpperCase().indexOf("FROM");
             if (pos > 0) s = s.substring(pos);
