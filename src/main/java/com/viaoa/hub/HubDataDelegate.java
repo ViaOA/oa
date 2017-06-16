@@ -51,7 +51,7 @@ public class HubDataDelegate {
 	}
 	public static void resizeToFit(Hub thisHub) {
 		if (thisHub.data.vector == null) return; // could be called during serialization
-//LOG.config("resizing, from:"+thisHub.data.vector.capacity()+", to:"+x+", hub:"+thisHub);//qqqqqqqqqqqqqqqqqq                        
+//LOG.config("resizing, from:"+thisHub.data.vector.capacity()+", to:"+x+", hub:"+thisHub);//qqqqqqqq                        
 		thisHub.data.vector.trimToSize();
 	}
 
@@ -237,7 +237,6 @@ public class HubDataDelegate {
 	private static boolean _insert2(Hub thisHub, Object obj, int pos) {
         boolean b = OAThreadLocalDelegate.isLoading();
 
-        if (!b && thisHub.contains(obj)) return false;
     	thisHub.data.vector.insertElementAt(obj, pos);
 
     	if (!b) {
@@ -547,20 +546,89 @@ public class HubDataDelegate {
 	}
 */
     public static boolean contains(Hub hub, Object obj) {
+        if (hub == null || obj == null) return false;
         if (!(obj instanceof OAObject)) {
             if (!hub.data.isOAObjectFlag()) {
-                return hub.data.vector.contains(obj);
+                return containsDirect(hub, obj);
             }
             obj = OAObjectCacheDelegate.get(hub.getObjectClass(), obj);
             if (obj == null) return false;
         }        
         
-        if (hub.data.vector.size() < 20 || !hub.data.isOAObjectFlag()) {
-            return hub.data.vector.contains(obj);
+        if (hub.data.vector.size() < 20) {
+            return containsDirect(hub, obj);
+        }
+        if (!hub.data.isOAObjectFlag()) {
+            return containsDirect(hub, obj);
         }
         return OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, hub);
     }
     public static boolean containsDirect(Hub hub, Object obj) {
+        if (hub == null || obj == null) return false;
+        if (hub.data.getSortListener() != null) {
+            int x = findUsingQuickSort(hub, obj);
+            if (x == 1) return true;
+            if (x == 2) return false;
+            if (x == -1) return false;
+            if (x == -3) return false;
+        }
         return hub.data.vector.contains(obj);
+    }
+    
+    // 20170608
+    /**
+     * performs a quicksort search if the hub is loaded.
+     * @return
+     *    -1 obj=null, 
+     *    -2 if not sorted (and did not check)
+     *    -3 object is not same class as hub
+     *    1 found
+     *    2 not found
+     */
+    private static int findUsingQuickSort(Hub thisHub, Object obj) {
+        if (thisHub == null || obj == null) return -1;
+        if (thisHub.data.getSortListener() == null) return -2;
+        if (!thisHub.getObjectClass().equals(obj.getClass())) return -3;
+        
+        int head = -1;
+        int tail = thisHub.data.vector.size();
+        for ( ;; ) {
+            if (head+1 >= tail) {
+                break;
+            }
+            
+            int i = ((tail - head) / 2);
+            i += head;
+
+            if (i == head) i++;
+            else if (i == tail) i--;
+            
+            Object cobj = thisHub.elementAt(i);
+            if (obj == cobj || obj.equals(cobj)) return 1;
+            int c = thisHub.data.getSortListener().comparator.compare(obj, cobj);
+
+            if (c == 0) {
+                int iHold = i;
+                // see if it's already in the list
+                for ( ; i>=head; i--) {
+                    cobj = thisHub.elementAt(i);
+                    if (obj == cobj || obj.equals(cobj)) return 1;
+                    if (thisHub.data.getSortListener().comparator.compare(obj, cobj) != 0) break;;
+                }
+                for (i=iHold+1; i < tail;i++) {
+                    cobj = thisHub.elementAt(i);
+                    if (obj == cobj || obj.equals(cobj)) return 1;
+                    if (thisHub.data.getSortListener().comparator.compare(obj, cobj) != 0) break;;
+                }
+                break;
+            }
+            else if (c < 0) {
+                tail = i;
+            }
+            else {
+                head = i;
+            }
+        }
+        return 2;
     }
 }

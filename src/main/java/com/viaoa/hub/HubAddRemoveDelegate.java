@@ -416,12 +416,6 @@ public class HubAddRemoveDelegate {
         }
         
         if (!bIsLoading) {
-            if (!OARemoteThreadDelegate.isRemoteThread()) {
-                String s = canAddMsg(thisHub, obj);
-                if (s != null) {
-                    throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
-                }
-            }
             HubEventDelegate.fireBeforeAddEvent(thisHub, obj, thisHub.getCurrentSize());
         }
     
@@ -615,14 +609,6 @@ public class HubAddRemoveDelegate {
             }
         }
         
-
-        // 20140904
-        if (thisHub.contains(obj)) return -1;
-        /** if the change below for OAObjectHubDelegate.addHub is done after
-         * calling setPropertyToMasterHub, then indexOf will need to be used instead of contains(..)   
-         */
-        // if (thisHub.indexOf(obj) >= 0) return false; // always check, even if isLoadin=true, since it could be loading cached hub 
-        
         // 20140826 removed to make faster.  Another object could have the same objectId
         /*
         OAObjectKey key;
@@ -632,38 +618,50 @@ public class HubAddRemoveDelegate {
         // if (HubDataDelegate.getObject(thisHub, key) != null) return false;
 
         if (thisHub.data.getSortListener() != null) {
-            for (int j=-1; ; j++) {  // 201440820 first try the expected location
-                int i = j;
-                if (j == -1) {  // try [pos] first, to see if list is already sorted
-                    if (pos >= thisHub.data.vector.size()) {
-                        pos = thisHub.data.vector.size() - 1;
-                    }
-                    else {
-                        i = pos;
-                    }
-                    if (i < 0) {
-                        i = 0;
-                        j = 0;
-                    }
+            // 20170608 quicksort
+            int head = -1;
+            int tail = thisHub.data.vector.size();
+            for ( ;; ) {
+                if (head+1 >= tail) {
+                    pos = tail;
+                    break;
                 }
                 
-                if (i >= thisHub.data.vector.size()) { // dont fetch more
-                    pos = i;
-                    break;
-                }
+                int i = ((tail - head) / 2);
+                i += head;
+
+                if (i == head) i++;
+                else if (i == tail) i--;
+                
                 Object cobj = thisHub.elementAt(i);
+                if (obj == cobj || obj.equals(cobj)) return -1;
                 int c = thisHub.data.getSortListener().comparator.compare(obj, cobj);
-                if (c <= 0) {
+
+                if (c == 0) {
                     pos = i;
+                    // see if it's already in the list
+                    for ( ; i>=head; i--) {
+                        cobj = thisHub.elementAt(i);
+                        if (obj == cobj || obj.equals(cobj)) return -1;
+                        if (thisHub.data.getSortListener().comparator.compare(obj, cobj) != 0) break;;
+                    }
+                    for (i=pos+1; i < tail;i++) {
+                        cobj = thisHub.elementAt(i);
+                        if (obj == cobj || obj.equals(cobj)) return -1;
+                        if (thisHub.data.getSortListener().comparator.compare(obj, cobj) != 0) break;;
+                    }
                     break;
                 }
-                else if (i+1 == thisHub.data.vector.size()) {
-                    pos = i+1;
-                    break;
+                else if (c < 0) {
+                    tail = i;
+                }
+                else {
+                    head = i;
                 }
             }
         }
         else {
+            if (thisHub.contains(obj)) return -1;
             if (pos > 0) thisHub.elementAt(pos-1); // make sure object is loaded
         }
     
@@ -672,13 +670,6 @@ public class HubAddRemoveDelegate {
         int x = thisHub.getCurrentSize();
         if (pos > x) pos = x;
 
-        
-        String s = canAddMsg(thisHub, obj);
-        if (s != null) {
-            throw new RuntimeException("Hub.canAddMsg() returned error="+s+", Hub="+thisHub);
-        }
-
-        
         HubEventDelegate.fireBeforeInsertEvent(thisHub, obj, pos);
 
         // send message to OAServer
