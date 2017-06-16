@@ -197,7 +197,7 @@ public class ConnectionPool implements Runnable {
             if (con != null) return con;
             bExclusive = true;
         }
-        if (!dbmd.getAllowStatementPooling()) bExclusive = true;
+        if (!bExclusive && !dbmd.getAllowStatementPooling()) bExclusive = true;
         
         try {
             lock.lock();
