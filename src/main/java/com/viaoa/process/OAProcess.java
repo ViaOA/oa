@@ -1,131 +1,159 @@
 package com.viaoa.process;
 
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.viaoa.concurrent.OAExecutorService;
-import com.viaoa.hub.*;
 
 /**
- * Used to listen to one or more hubs + propertyPaths and run a process whenever a change is made. 
- * 
+ * Similiar to a future or promise to track a process.
  * @author vvia
+ *
  */
-public abstract class OAProcess {
-    private static Logger LOG = Logger.getLogger(OAProcess.class.getName());
+public abstract class OAProcess implements Runnable {
+    private volatile int currentStep;
 
-    private static final AtomicInteger aiCount = new AtomicInteger();
-    private ArrayList<MyListener> alMyListener;
-    private final OAExecutorService execService;
+    private boolean bBlock;
+    private long maxBlockTime;
     
+    private boolean bAllowCancel;
+    private volatile boolean bCancelled;
+    private volatile long cancelTime;
+    private volatile String cancelReason;
+
+    private final long createdTime;
+    private volatile long doneTime;
     
+    private String name, description;
+
+    private String[] steps;
+    private volatile long estimatedTime;
+    
+    private volatile Exception exception;
+    
+    private long maxTime;
+
     /**
      * 
-     * @param bUseThreadPool if false then use current thread.
      */
-    public OAProcess(boolean bUseThreadPool) {
-        if (bUseThreadPool) {
-            execService = new OAExecutorService();
-        }
-        else execService = null;
+    public OAProcess() {
+        createdTime = System.currentTimeMillis();
+    }
+
+    
+    public void setCanCancel(boolean b) {
+        this.bAllowCancel = b;
+    }
+    public boolean getCanCancel() {
+        return bAllowCancel;
+    }
+
+    public void setBlock(boolean b) {
+        this.bBlock = b;
+    }
+    public boolean getBlock() {
+        return bBlock;
     }
     
-
-    /**
-     * Called when it's time to process.
-     */
-    protected abstract void process(HubEvent evt) ;
-    
-
-    private void onProcess(final HubEvent evt) {
-        if (execService != null) {
-            execService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    OAProcess.this.process(evt);
-                }
-            });
-        }
-        else {
-            process(evt);
-        }
+    protected void setMaxBlockTime(long x) {
+        this.maxBlockTime = x;
+    }
+    public long getMaxBlockTime() {
+        return this.maxBlockTime;
     }
     
     
-    private static class MyListener {
-        Hub hub;
-        HubListener hl;
-
-        public MyListener(Hub h, HubListener hl) {
-            this.hub = h;
-            this.hl = hl;
-        }
+    public String getName() {
+        return name;
     }
-
-    public void addListener(Hub hub, String... propertyPaths) {
-        if (hub == null) return;
-        if (propertyPaths == null) {
-            addListener(hub, (String) null);
-        }
-        else {
-            final String name = "OAProcess." + aiCount.getAndIncrement();
-            HubListener hl = new HubListenerAdapter() {
-                @Override
-                public void afterPropertyChange(HubEvent e) {
-                    if (name.equalsIgnoreCase(e.getPropertyName())) {
-                        onProcess(e);
-                    }
-                }
-            };
-            hub.addHubListener(hl, name, propertyPaths);
-            MyListener ml = new MyListener(hub, hl);
-            if (alMyListener == null) alMyListener = new ArrayList<MyListener>();
-            alMyListener.add(ml);
-        }
+    public void setName(String s) {
+        this.name = s;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String s) {
+        this.description = s;
     }
     
-    public void addListener(Hub hub, final String propertyPath) {
-        if (hub == null) return;
-        HubListener hl;
-
-        if (propertyPath != null && propertyPath.indexOf(".") < 0) {
-            hl = new HubListenerAdapter() {
-                @Override
-                public void afterPropertyChange(HubEvent e) {
-                    if (propertyPath.equalsIgnoreCase(e.getPropertyName())) {
-                        onProcess(e);
-                    }
-                }
-            };
-        }
-        else {
-            final String name = "OARefresher." + aiCount.getAndIncrement();
-            hl = new HubListenerAdapter() {
-                @Override
-                public void afterPropertyChange(HubEvent e) {
-                    if (name.equalsIgnoreCase(e.getPropertyName())) {
-                        onProcess(e);
-                    }
-                }
-            };
-            hub.addHubListener(hl, name, new String[] { propertyPath });
-        }
-
-        MyListener ml = new MyListener(hub, hl);
-        if (alMyListener == null) alMyListener = new ArrayList<MyListener>();
-        alMyListener.add(ml);
+    public long getCreatedTime() {
+        return createdTime;
+    }
+    
+    public void cancel(String reason) {
+        this.bCancelled = true;
+        this.cancelTime = System.currentTimeMillis();
+        cancelReason = reason;
+    }
+    public boolean wasCancelled() {
+        return bCancelled;
+    }
+    public boolean getCancelled() {
+        return bCancelled;
+    }
+    public long getCancelTime() {
+        return cancelTime;
+    }
+    public String getCancelReason() {
+        return cancelReason;
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        if (alMyListener != null) {
-            for (MyListener ml : alMyListener) {
-                ml.hub.removeHubListener(ml.hl);
-            }
-        }
-        super.finalize();
-    };
+    public void done() {
+        doneTime = System.currentTimeMillis();
+    }
+    public boolean isDone() {
+        return (doneTime > 0);
+    }
+    public long getDoneTime() {
+        return doneTime;
+    }
+    
+    public Exception getException() {
+        return exception;
+    }
+    protected void setException(Exception ex) {
+        exception = ex;;
+    }
+    
+    
+    public String[] getSteps() {
+        return steps;
+    }
+    public void setSteps(String... steps) {
+        this.steps = steps;
+    }
+    public int getTotalSteps() {
+        return (steps == null ? 0 : steps.length);
+    }
+    
+    protected void setCurrentStep(int x) {
+        this.currentStep = x;
+    }
+    public int getCurrentStep() {
+        return this.currentStep;
+    }
 
+    protected void setEstimateTime(long x) {
+        this.estimatedTime = x;
+    }
+    public long getEstimateTime() {
+        return this.estimatedTime;
+    }
+    
+    public long getMaxTime() {
+        return this.maxTime;
+    }
+    public void setMaxTime(long x) {
+        this.maxTime = x;
+    }
+    
+    public boolean isBlockTimedout() {
+        long ms = System.currentTimeMillis();
+        return ((maxBlockTime + createdTime) > ms);
+    }
+    
+    public boolean isTimedout() {
+        if (maxTime < 1) return false;
+        long ms = System.currentTimeMillis();
+        return ((maxTime + createdTime) > ms);
+    }
+
+    
 }
+
