@@ -1,9 +1,20 @@
 
 
+$(document).ready(function(){
+  $('.bxslider').bxSlider();
+});
 
+var selector = $this.attr('data-target')
 
+var date_input=$('input[name="date"]');
 
+$('#popup').fadeToggle(250);  ... slideToggle
 
+$(element).is(":visible"); 
+
+$('#popup').css({left: '50vw', top: '50vh'});
+
+$("div.modalContent").delay(150).show(400);
 
 
 qqqqqqqqqqqqqqqqqqqqqqqqqqqqq

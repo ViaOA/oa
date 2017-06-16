@@ -1,5 +1,20 @@
 
 
+
+
+
+setTimeout(func, ms)  run once
+setInterval(func, ms)  run at each interval
+
+
+if ('innerHeight' in window) {
+  return window.innerHeight;
+} 
+else {
+  return document.documentElement.clientHeight;
+}
+
+
 Example code ************
 
 function parseUri (str) {

@@ -1,8 +1,11 @@
 
 
+https://www.tutorialspoint.com/jsp/jsp_syntax.htm
+
+<%-- This is JSP comment --%>
 
 
- response.sendRedirect("/login.jsp");  // tells the browser to go to new url
+response.sendRedirect("/login.jsp");  // tells the browser to go to new url
 
 instead of forward, which the webserver will return the output, but the browser will display the old url
 
