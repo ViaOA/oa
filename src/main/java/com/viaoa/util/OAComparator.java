@@ -54,7 +54,7 @@ public class OAComparator implements Comparator {
             init();
         }
 
-        if (methodss.length == 0) {
+        if (methodss == null || methodss.length == 0) {
             x = 0;
             if (o1 instanceof Comparable && o2 instanceof Comparable) {
                 x = ((Comparable)o1).compareTo(((Comparable)o2));
