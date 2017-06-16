@@ -13,6 +13,12 @@ import java.util.logging.Logger;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.OATime;
 
+
+/**
+ * ExecutorService that will run methods at a specific date/time.
+ * @author vvia
+ *
+ */
 public class OAScheduledExecutorService {
     private static Logger LOG = Logger.getLogger(OAScheduledExecutorService.class.getName());
     private ScheduledExecutorService scheduledExecutorService;
