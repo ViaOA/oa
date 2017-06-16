@@ -422,9 +422,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
 
         // check if recursive
         if (pos == 0) {
-            // 20151026 see if root object is recursive
+            // see if root object is recursive
             if (liRecursiveRoot != null) {
-                // 20160306
                 if (getUseOnlyLoadedData() && !liRecursiveRoot.isLoaded(obj)) {
                     onDataNotFound();
                     return;
@@ -436,19 +435,17 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
         else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length) {
             if (recursiveLinkInfos[pos - 1] != null) {
-                // 20160306
                 if (getUseOnlyLoadedData() && !recursiveLinkInfos[pos - 1].isLoaded(obj)) {
                     onDataNotFound();
                     return;
                 }
                 Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-                find(objx, pos); // go up a level to then go through hub
+                find(objx, pos);
                 if (bStop) return;
             }
         }
 
         if (linkInfos != null && pos < linkInfos.length) {
-            // 20160306
             if (getUseOnlyLoadedData() && !linkInfos[pos].isLoaded(obj)) {
                 onDataNotFound();
                 return;
