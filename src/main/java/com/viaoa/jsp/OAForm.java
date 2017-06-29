@@ -331,22 +331,28 @@ public class OAForm extends OABase implements Serializable {
        
         // outside JS methods
 
-        /* hold        
-        // jquery version
-        sb.append("function oaShowMessage(title, msg) {\n");
-        sb.append("    $('#oaformDialog').dialog('option', 'title', title);\n");
-        sb.append("    $('#oaformDialog').html(msg);\n");
-        sb.append("    $('#oaformDialog').dialog('open');\n");
-        sb.append("}\n");
-        */
         
-        // bootstrap version
-        sb.append("function oaShowMessage(title, msg) {\n");
+        sb.append("var oaShowMessage;");
+        sb.append("if ($().modal) {");
+        // bootstrap
+        sb.append("oaShowMessage = function(title, msg) {\n");
         sb.append("  $('#oaformDialog .modal-title').html(title);\n");
         sb.append("  $('#oaformDialog .modal-body').html(msg);\n");
         sb.append("  $('#oaformDialog').modal({keyboard: true});\n");
         sb.append("}\n");
 
+        sb.append("}");
+        sb.append("else {");
+        // jquery version
+        sb.append("oaShowMessage = function(title, msg) {\n");
+        sb.append("    $('#oaformDialog').dialog('option', 'title', title);\n");
+        sb.append("    $('#oaformDialog').html(msg);\n");
+        sb.append("    $('#oaformDialog').dialog('open');\n");
+        sb.append("}\n");
+        sb.append("}");
+        
+        
+        // bootstrap
         sb.append("function oaShowSnackbarMessage(msg) {\n");
         sb.append("    $('#oaFormSnackbarMessage').html(msg);\n");
         sb.append("    $('#oaFormSnackbarMessage').css({visibility:'visible', opacity: 0.0}).animate({opacity: 1.0},300);\n");
@@ -362,8 +368,30 @@ public class OAForm extends OABase implements Serializable {
         
         sb.append("$(document).ready(function() {\n");
 
+        
         // form dialog
-        /* hold        
+        sb.append("if ($().modal) {");
+        // bootstrap version
+        sb.append("$('#"+id+"').prepend(\"");
+        sb.append("<div id='oaformDialog' class='modal fade' tabindex='-1'>");
+        sb.append("  <div class='modal-dialog'>");
+        sb.append("    <div class='modal-content'>");
+        sb.append("      <div class='modal-header'>");
+        sb.append("        <button type='button' class='close' data-dismiss='modal'><span>&times;</span></button>");
+        sb.append("        <h4 class='modal-title'>");
+        sb.append("        </h4>");
+        sb.append("      </div>");
+        sb.append("      <div class='modal-body'>");
+        sb.append("      </div>");
+        sb.append("      <div class='modal-footer'>");
+        sb.append("        <button type='button' class='btn btn-primary' data-dismiss='modal'>Ok</button>");
+        sb.append("      </div>");
+        sb.append("    </div>");
+        sb.append("  </div>");
+        sb.append("</div>");
+        sb.append("\");\n");
+        sb.append("}");
+        sb.append("else {");
         // jquery version
         sb.append("    $('#"+id+"').prepend(\"<div id='oaformDialog'></div>\");\n");
         sb.append("    $('#oaformDialog').dialog({");
@@ -376,29 +404,7 @@ public class OAForm extends OABase implements Serializable {
         sb.append("          { text: 'Ok', click: function() { $(this).dialog('close'); } }\n");
         sb.append("         ]\n");
         sb.append("    });");
-        */
-
-        // bootstrap dialog version
-        sb.append("$('#"+id+"').prepend(\"");
-        sb.append("<div id='oaformDialog' class='modal fade' tabindex='-1'>");
-        sb.append("  <div class='modal-dialog'>");
-        sb.append("    <div class='modal-content'>");
-        sb.append("      <div class='modal-header'>");
-        sb.append("        <button type='button' class='close' data-dismiss='modal'><span>&times;</span></button>");
-        sb.append("        <h4 class='modal-title'>");
-        sb.append("        </h4>");
-        sb.append("      </div>");
-        sb.append("      <div class='modal-body'>");
-
-        sb.append("      </div>");
-        sb.append("      <div class='modal-footer'>");
-        sb.append("        <button type='button' class='btn btn-primary' data-dismiss='modal'>Ok</button>");
-        sb.append("      </div>");
-        sb.append("    </div>");
-        sb.append("  </div>");
-        sb.append("</div>");
-        sb.append("\");\n");
-        
+        sb.append("}");
         
         // bootstrap progress modal
         sb.append("$('#"+id+"').prepend(\"");

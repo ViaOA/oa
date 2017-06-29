@@ -27,6 +27,11 @@ public class OAObjectKeyDelegate {
 	    return oaObj.objectKey;
 	}
 
+	public static int getGuid(OAObject oaObj) {
+	    if(oaObj == null) return -1;
+	    return getKey(oaObj).guid;
+	}
+	
 	/**
 	 Create a new key based on a certain value "keyValue".
 	 This is used to build the key if the Id property has already been changed in the object

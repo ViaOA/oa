@@ -23,10 +23,13 @@ import com.viaoa.util.*;
 /**
  * 20170528 copied from OACombo ... currently, a work in progress to handle a recursive hub
  *      will be making it like jfc OATree, with nodes, etc qqqqqq
+ *
  *      
- *  see: https://github.com/jonmiles/bootstrap-treeview 
+ *  see: https://github.com/jonmiles/bootstrap-treeview
+ *       https://github.com/jonmiles/bootstrap-treeview 
  *       
- *       
+ *  <script type="text/javascript" language="javascript" src="vendor/bootstrap-treeview.js"></script>
+ *  
  * @author vvia
  */
 public class OATree implements OAJspComponent, OATableEditor {
@@ -151,6 +154,11 @@ public class OATree implements OAJspComponent, OATableEditor {
                 selectedObject = hashMap.get(guid);
                 bWasSelected = true;
             }
+            else if (values[0].startsWith("unselect.g")) {
+                int guid = OAConv.toInt(values[0].substring(10));
+                if (selectedObject == hashMap.get(guid)) selectedObject = null;
+                bWasSelected = true;
+            }
             else if (values[0].startsWith("expand.g")) {
                 int guid = OAConv.toInt(values[0].substring(8));
                 OAObject obj = hashMap.get(guid);
@@ -212,9 +220,12 @@ public class OATree implements OAJspComponent, OATableEditor {
         return bSubmit;
     }
 
-    /** see bootstrap-treeview.js for list of settings
+    /** 
      * 
-     * ex:  "showBorder: false, selectedColor: 'black', selectedBackColor: 'white'"
+     * see: https://github.com/jonmiles/bootstrap-treeview
+     * 
+     * ex:  "showBorder: false, selectedColor: 'black', selectedBackColor: 'white', showTags: true ", 
+
      */
     public void setTreeViewParams(String s) {
         treeViewParams = s;
@@ -227,19 +238,25 @@ public class OATree implements OAJspComponent, OATableEditor {
 
         sb.append("$('form').prepend(\"<input id='oatree"+id+"' type='hidden' name='oatree"+id+"' value=''>\");\n");
         // sb.append("$('#oatree"+id+"').val('');");
-
         
-        sb.append("$('#"+id+"').treeview({ levels: 1, showBorder: false");
+        sb.append(getScript2());
+        String js = sb.toString();
+        return js;
+    }
+        
+    public String getScript2() {
+        StringBuilder sb = new StringBuilder(1024);
+        sb.append("$('#"+id+"').treeview({ levels: 1");
         if (OAString.isNotEmpty(treeViewParams)) {
             sb.append(", "+treeViewParams);
         }
         sb.append(", data: [\n");
         sb.append(getData(hub)+"\n");
-        sb.append("],\nonNodeSelected : function(event, node) {\n");
-        
+        sb.append("]\n");
+
+        sb.append(",onNodeSelected : function(event, node) {\n");
         sb.append("$('#oacommand').val('"+id+"');\n");
         sb.append("$('#oatree"+id+"').val('select.'+node.oaid);\n");
-        
         if (bAjaxSubmit) {
             sb.append("ajaxSubmit();return false;\n");
         }
@@ -248,6 +265,23 @@ public class OATree implements OAJspComponent, OATableEditor {
         }
         sb.append("}\n");  //end of onNodeSelected
 
+/* qqqqqqqqqqqqqqqqq causing issues when another is select5ed qqqqqqqqqqqqq
+fork treeview.js and add changes so that unselected event can know if there is a new new selected node or not         
+        sb.append(",onNodeUnselected : function(event, node) {\n");
+       
+        sb.append("$('#oacommand').val('"+id+"');\n");
+        sb.append("$('#oatree"+id+"').val('unselect.'+node.oaid);\n");
+        if (bAjaxSubmit) {
+            sb.append("ajaxSubmit();return false;\n");
+        }
+        else if (getSubmit()) {
+            sb.append("$('form').submit();return false;\n");
+        }
+        sb.append("}\n");  //end of onNodeUnselected
+*/        
+        
+        
+        
         sb.append(",\nonNodeExpanded : function(event, node) {\n");
         sb.append("$('#oacommand').val('"+id+"');\n");
         sb.append("$('#oatree"+id+"').val('expand.'+node.oaid);\n");
@@ -286,9 +320,13 @@ public class OATree implements OAJspComponent, OATableEditor {
         bRefresh = false;
         StringBuilder sb = new StringBuilder(1024);
         // sb.append("$('#"+id+"').treeview('collapseAll');");
-        sb.append("$('#"+id+"').treeview('unSelectAll');");
+        // sb.append("$('#"+id+"').treeview('unSelectAll');");
         
-        return sb.toString();
+  //      sb.append("$('#"+id+"').remove();");
+
+        sb.append(getScript2());
+        String js = sb.toString();
+        return js;
     }
 
     
@@ -297,6 +335,17 @@ public class OATree implements OAJspComponent, OATableEditor {
     */
     protected String getText(int pos, Object object, String text) {
         return text;
+    }
+    
+    /**
+     * 
+     * shows a badge to on the right of the node.
+     * requires setTreeViewParams("showTags: true")
+     * 
+     * Return text tag for a node.
+     */
+    public String getTag(int pos, Object obj) {
+        return null;        
     }
     
     protected String format;
@@ -382,6 +431,11 @@ public class OATree implements OAJspComponent, OATableEditor {
 
             if (hashMap != null) {
                 options += "text: '"+value+"', oaid: 'g"+OAObjectDelegate.getGuid((OAObject)obj)+"'";
+                String s = getTag(i, obj);
+                if (OAString.isNotEmpty(s)) {
+                    // must be in format "['a', 'b', ..]"
+                    options += ", tags: ['"+s+"']";
+                }
                 hashMap.put(OAObjectDelegate.getGuid((OAObject)obj), (OAObject) obj);
             }
             else {
@@ -396,7 +450,7 @@ public class OATree implements OAJspComponent, OATableEditor {
             
             if (obj == selectedObject) {
                 if (s.length() > 0) s += ", ";
-                s = "selected: true";
+                s += "selected: true";
             }
             if (s.length() > 0) {
                 options += ", state: {"+s+"}";

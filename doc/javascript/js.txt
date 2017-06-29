@@ -1,6 +1,6 @@
 
 
-
+<a href="javascript:;" 
 
 
 setTimeout(func, ms)  run once

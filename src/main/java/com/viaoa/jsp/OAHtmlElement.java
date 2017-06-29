@@ -53,6 +53,16 @@ public class OAHtmlElement implements OAJspComponent {
     private HashMap<String, String> hmStyle;
     private HashSet<String> hsClassAdd;
     private HashSet<String> hsClassRemove;
+
+    protected String height; // ex:  200px,  12em
+    protected String width; // ex:  200px,  12em
+    protected String minHeight; // ex:  200px,  12em
+    protected String minWidth; // ex:  200px,  12em
+    protected String maxHeight; // ex:  200px,  12em
+    protected String maxWidth; // ex:  200px,  12em
+    
+    protected String overflow;
+    
     
     public void addAttribute(OAHtmlAttribute attr) {
         if (attr == null) return;
@@ -64,7 +74,17 @@ public class OAHtmlElement implements OAJspComponent {
     protected String format;
     protected int lineWidth, maxRows, minLineWidth; // in characters
    
-
+    
+    /**
+     * @param overflow visible, hidden, scroll, auto, etc 
+     */
+    public void setOverflow(String overflow) {
+        this.overflow = overflow;
+    }
+    public String getOverflow() {
+        return overflow;
+    }
+    
     public OAHtmlElement() {
     }
     
@@ -397,11 +417,17 @@ public class OAHtmlElement implements OAJspComponent {
         return b;
     }
 
+    public void addCss(String name, Color color) {
+        addStyle(name, color);
+    }
 
     public void addStyle(String name, Color color) {
         if (color == null) color = Color.white;
         String s = JspUtil.convertToCss(color);
         addStyle(name, s);
+    }
+    public void addCss(String name, String value) {
+        addStyle(name, value);
     }
     public void addStyle(String name, String value) {
         if (name == null) return;
@@ -414,17 +440,62 @@ public class OAHtmlElement implements OAJspComponent {
     }
 
     protected String getStyleJs() {
-        if (hmStyle == null) return null;
-        String s = null;
-        for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
-            String sx = ex.getKey();
-            String v = ex.getValue();
-            if (s == null) s = "{";
-            else s += ",";
-            s += "\"" + sx + ": " + "\"" + v + "\"";
+        ArrayList<String> al = new ArrayList<String>();
+        
+        if (hmStyle != null) {
+            for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
+                String sx = ex.getKey();
+                String v = ex.getValue();
+                al.add(sx + ":'" + v + "'");
+            }
         }
-        if (s != null) s += "}";
-        return s;
+
+        String s1 = getHeight();
+        String s2 = getMinHeight();
+        String s3 = getMaxHeight();
+
+        if (OAString.isNotEmpty(s1)) {
+            if (OAString.isEmpty(s2)) al.add("'min-height':'"+s1+"'");
+            if (OAString.isEmpty(s3)) al.add("'max-height':'"+s1+"'");
+        }
+        if (OAString.isNotEmpty(s2)) {
+            al.add("'min-height':'"+s2+"'");
+        }
+        if (OAString.isNotEmpty(s3)) {
+            al.add("'max-height':'"+s3+"'");
+        }
+
+        s1 = getWidth();
+        s2 = getMinWidth();
+        s3 = getMaxWidth();
+        boolean bWidth = OAString.isNotEmpty(s1) || OAString.isNotEmpty(s2) || OAString.isNotEmpty(s3);
+        
+        if (OAString.isNotEmpty(s1)) {
+            if (OAString.isEmpty(s2)) al.add("'min-width':'"+s1+"'");
+            if (OAString.isEmpty(s3)) al.add("'max-width':'"+s1+"'");
+        }
+        if (OAString.isNotEmpty(s2)) {
+            al.add("'min-width':'"+s2+"'");
+        }
+        if (OAString.isNotEmpty(s3)) {
+            al.add("'max-width':'"+s3+"'");
+        }
+
+        if (OAString.isNotEmpty(overflow)) {
+            al.add("overflow:'"+overflow+"'");
+            if (overflow.equalsIgnoreCase("hidden")) {
+                al.add("'text-overflow':'ellipsis'");
+            }
+        }
+
+        String css = null;
+        for (String s : al) {
+            if (css == null) css = "{";
+            else css += ",";
+            css += s;
+        }
+        if (css != null) css += "}";
+        return css;
     }
 
     
@@ -442,25 +513,64 @@ public class OAHtmlElement implements OAJspComponent {
         hsClassRemove.add(name);
     }
     protected String getClassJs() {
-        if (hsClassAdd == null) return null;
         String s = null;
-        Iterator itx = hsClassAdd.iterator();
-        for ( ; itx.hasNext() ;  ) {
-            String sx = (String) itx.next();
-            if (s == null) s = "";
-            s += "$('#"+id+"').addClass(\""+sx+"\");";
+        Iterator itx;
+        if (hsClassAdd != null) {
+            itx = hsClassAdd.iterator();
+            for ( ; itx.hasNext() ;  ) {
+                String sx = (String) itx.next();
+                if (s == null) s = "";
+                s += "$('#"+id+"').addClass('"+sx+"');";
+            }
         }
         
-        itx = hsClassRemove.iterator();
-        for ( ; itx.hasNext() ;  ) {
-            String sx = (String) itx.next();
-            if (s == null) s = "";
-            s += "$('#"+id+"').removeClass(\""+sx+"\");";
-        }
-        
+        if (hsClassRemove != null) {
+            itx = hsClassRemove.iterator();
+            for ( ; itx.hasNext() ;  ) {
+                String sx = (String) itx.next();
+                if (s == null) s = "";
+                s += "$('#"+id+"').removeClass('"+sx+"');";
+            }
+        }        
         return s;
     }
 
+    public void setMinHeight(String val) {
+        this.minHeight = val;
+    }
+    public String getMinHeight() {
+        return this.minHeight;
+    }
+    public void setMinWidth(String val) {
+        this.minWidth = val;
+    }
+    public String getMinWidth() {
+        return this.minWidth;
+    }
     
+    public void setMaxHeight(String val) {
+        this.maxHeight = val;
+    }
+    public String getMaxHeight() {
+        return this.maxHeight;
+    }
+    public void setMaxWidth(String val) {
+        this.maxWidth = val;
+    }
+    public String getMaxWidth() {
+        return this.maxWidth;
+    }
+    public void setHeight(String val) {
+        this.height = val;
+    }
+    public String getHeight() {
+        return this.height;
+    }
+    public void setWidth(String val) {
+        this.width = val;
+    }
+    public String getWidth() {
+        return this.width;
+    }
     
 }

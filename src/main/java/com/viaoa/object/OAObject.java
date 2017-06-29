@@ -821,6 +821,9 @@ public class OAObject implements java.io.Serializable, Comparable {
     public OAObjectKey getObjectKey() {
         return OAObjectKeyDelegate.getKey(this);
     }
+    public int getGuid() {
+        return OAObjectKeyDelegate.getGuid(this);
+    }
     
     // 20130630
     /**

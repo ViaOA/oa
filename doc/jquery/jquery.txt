@@ -1,5 +1,13 @@
 
 
+$("#datetimepicker6").on("dp.change", function (e) {
+    $('#datetimepicker7').data("DateTimePicker").minDate(e.date);
+});
+
+$("#pageContent").load("pages/page1.html");
+
+$('#radio1003').attr('checked', 'checked');
+
 $(document).ready(function(){
   $('.bxslider').bxSlider();
 });

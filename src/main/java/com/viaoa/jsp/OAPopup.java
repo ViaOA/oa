@@ -10,19 +10,7 @@
 */
 package com.viaoa.jsp;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.viaoa.html.Util;
-import com.viaoa.hub.Hub;
-import com.viaoa.object.OAObject;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
-
 
 /**
  * turn an html element into a popup.
@@ -30,36 +18,37 @@ import com.viaoa.util.OAString;
  * 
  * @author vvia
  */
-public class OAPopup implements OAJspComponent {
+public class OAPopup extends OAHtmlElement {
     private static final long serialVersionUID = 1L;
 
-    protected String id;
     protected String clickId;
-    protected OAForm form;
-    protected String maxHeight; // ex:  200px,  12em
-    protected String maxWidth; // ex:  200px,  12em
-    protected boolean bVisible;
     protected String top, right, bottom, left;
 
+    private String type = "'fade'";
+
+    private String lastAjaxSent2;
 
     /**
      * create popup that is centered;
      * @param id
      */
     public OAPopup(String id) {
-        this.id = id;
+        super(id);
+        setup();
     }
     public OAPopup(String id, String clickId) {
-        this.id = id;
+        super(id);
         this.clickId = clickId;
+        setup();
     }
     
     public OAPopup(String id, String top, String right, String bottom, String left) {
-        this.id = id;
+        super(id);
         this.top = top;
         this.right = right;
         this.bottom = bottom;
         this.left = left;
+        setup();
     }
 
     /**
@@ -71,6 +60,13 @@ public class OAPopup implements OAJspComponent {
         this(id, top, right, bottom, left);
         this.clickId = clickId;
     }
+
+    protected void setup() {
+        addClass("oaPopup");
+        addClass("oaShadow");
+        setVisible(false);
+    }
+    
     
     @Override
     public boolean isChanged() {
@@ -78,54 +74,19 @@ public class OAPopup implements OAJspComponent {
     }
 
     @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
     public void reset() {
         setVisible(false);
     }
     
-    @Override
-    public void setForm(OAForm form) {
-        this.form = form;
-    }
-    @Override
-    public OAForm getForm() {
-        return this.form;
-    }
-
-    @Override
-    public boolean _beforeSubmit() {
-        return true;
-    }
-
-
-    @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
-        return false;
-    }
-    
-    @Override
-    public String onSubmit(String forwardUrl) {
-        return forwardUrl;
-    }
-    
-    @Override
-    public String _afterSubmit(String forwardUrl) {
-        return forwardUrl;
-    }
-
-    private String type = "'fade'";
     
     @Override
     public String getScript() {
         lastAjaxSent = null;
 
         StringBuilder sb = new StringBuilder(2048);
-        sb.append("$('#"+id+"').addClass('oaPopup');\n");
-        sb.append("$('#"+id+"').addClass('oaShadow');\n");
+        
+        String s = super.getScript();
+        if (s != null) sb.append(s);
         
         String css = "";
         
@@ -169,12 +130,6 @@ public class OAPopup implements OAJspComponent {
             css += "left:'"+leftx+"'";
         }
 
-        String max = getMaxHeight();
-        if (OAString.isNotEmpty(max)) css += ", max-height:'"+max+"'";
-        
-        max = getMaxWidth();
-        if (OAString.isNotEmpty(max)) css += ", max-width:'"+max+"'";
-        
         sb.append("$('#"+id+"').css({"+css+"});\n");
         
         if (OAString.isNotEmpty(clickId)) {
@@ -187,17 +142,13 @@ public class OAPopup implements OAJspComponent {
         return js;
     }
     
-    @Override
-    public String getVerifyScript() {
-        return null;
-    }
 
-    private String lastAjaxSent;
-    
     @Override
     public String getAjaxScript() {
-        
         StringBuilder sb = new StringBuilder(256);
+        
+        String s = super.getAjaxScript();
+        if (s != null) sb.append(s);
         
         if (getVisible()) {
             sb.append("if (!$('#"+id+"').is(':visible')) $('#"+id+"').show("+type+", 325);\n");
@@ -207,48 +158,10 @@ public class OAPopup implements OAJspComponent {
         }
 
         String js = sb.toString();
-        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
-        lastAjaxSent = js;
+        if (lastAjaxSent2 != null && lastAjaxSent2.equals(js)) js = null;
+        lastAjaxSent2 = js;
         
-        return null;
+        return js;
     }
 
-    @Override
-    public void setEnabled(boolean b) {
-    }
-    @Override
-    public boolean getEnabled() {
-        return true;
-    }
-
-
-    @Override
-    public void setVisible(boolean b) {
-        lastAjaxSent = null;  
-        this.bVisible = b;
-    }
-    @Override
-    public boolean getVisible() {
-        return this.bVisible;
-    }
-
-
-    public void setMaxHeight(String val) {
-        this.maxHeight = val;
-    }
-    public String getMaxHeight() {
-        return this.maxHeight;
-    }
-
-    public void setMaxWidth(String val) {
-        this.maxWidth = val;
-    }
-    public String getMaxWidth() {
-        return this.maxWidth;
-    }
-
-    @Override
-    public String getForwardUrl() {
-        return null;
-    }
 }

@@ -7,6 +7,9 @@
 package com.viaoa.jsp;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -37,7 +40,19 @@ import com.viaoa.util.OATime;
  * that can be bound to property enabled, that can be bound to property ajax submit on change handle
  * required validation input mask support for calendar popup
  *
+ * For datetime, date, time formats - use OADateTime formats.
+ *
  * @author vvia
+
+Javascript requirements
+
+for jqueryui
+    <script type="text/javascript" language="javascript" src="vendor/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+for bootstrap    
+    <script type="text/javascript" language="javascript" src="vendor/moment/js/moment.min.js"></script>
+    <script type="text/javascript" language="javascript" src="vendor/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js?3"></script>
+
  *
  */
 public class OATextField implements OAJspComponent, OATableEditor {
@@ -62,8 +77,10 @@ public class OATextField implements OAJspComponent, OATableEditor {
     protected String regex;
     private boolean bFocus;
     protected String forwardUrl;
-    protected boolean bAutoComplete;
+    protected boolean bTypeAhead;  // using bootstrap typehead
+    protected boolean bAutoComplete;  // using jquery
     protected char conversion; // 'U'pper, 'L'ower, 'T'itle, 'P'assword
+    protected boolean bMultiValue;
 
     /** javascript regex */
 
@@ -328,11 +345,14 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public String getScript() {
         lastAjaxSent = null;
         StringBuilder sb = new StringBuilder(1024);
-        sb.append(getAjaxScript());
+
+        // 20170628 moved to below
+        // sb.append(getAjaxScript());
+        
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
 
         if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-            if (!getAutoComplete()) {
+            if (!getAutoComplete() && !getTypeAhead()) {
                 if (!isDateTime() && !isDate() && !isTime()) { // date/time will use close (see below)
                     sb.append("$('#" + id + "').blur(function(e) {if($(this).ignore){$(this).ignore=false;return;}$('#oacommand').val('" + id + "'); ajaxSubmit();return false;});\n");
                     sb.append("$('#" + id + "').keypress(function(e) { if (e.keyCode != 13) return; e.preventDefault(); $('#oacommand').val('" + id + "'); $(this).ignore=true;ajaxSubmit();$(this).ignore=false;return false;});\n");
@@ -347,7 +367,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
 
         if (isRequired()) {
             sb.append("$('#" + id + "').addClass('oaRequired');\n");
-            sb.append("$('#" + id + "').attr('required', 'true');\n");
+            sb.append("$('#" + id + "').attr('required', true);\n");
         }
         sb.append("$('#" + id + "').blur(function() {$(this).removeClass('oaError');}); \n");
 
@@ -355,7 +375,14 @@ public class OATextField implements OAJspComponent, OATableEditor {
             sb.append("$('#" + id + "').addClass('oaSubmit');\n");
         }
 
-        if (bAutoComplete) {
+        if (getMultiValue() && !getAutoComplete() && !getTypeAhead()) {
+            sb.append("$('#" + id + "').tagsinput();\n");
+        }
+        
+        
+        if (getAutoComplete()) {
+            // support for jqueryui autocomplete
+            
             sb.append("var cache" + id + " = {}, lastXhr" + id + ";\n");
             sb.append("$( '#" + id + "' ).autocomplete({\n");
             sb.append("minLength: 3,\n");
@@ -386,6 +413,48 @@ public class OATextField implements OAJspComponent, OATableEditor {
             sb.append("});\n");
         }
 
+        
+        if (getTypeAhead()) {
+            // support for bootstrap typeahead
+            sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
+            sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
+            sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
+            sb.append("  remote : {\n");
+            sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
+            sb.append("    wildcard: '%QUERY'\n");
+            sb.append("  }\n");
+            sb.append("});\n");
+            sb.append("" + id + "Bloodhound.initialize();\n");
+            
+            if (getMultiValue()) {
+                sb.append("$('#" + id + "').tagsinput({\n");
+                sb.append("  itemValue: 'id',\n");
+                sb.append("  itemText: 'value',\n");
+                sb.append("  typeaheadjs: [\n");
+                sb.append("    {minLength: 3, highlight: true},\n"); 
+                sb.append("    {\n");
+                sb.append("      name: '" + id + "TITA', limit: 400, \n");  // see: https://github.com/twitter/typeahead.js/issues/1232
+                sb.append("      displayKey: 'display',\n");
+                sb.append("      source: " + id + "Bloodhound.ttAdapter()\n");
+                sb.append("    }\n");
+                sb.append("  ]\n");
+                sb.append("});\n");
+            }
+            else {
+                // TypeAhead only
+                sb.append("$('#" + id + "').typeahead(null, {\n");
+                sb.append("    name: '" + id + "TA',\n");
+                sb.append("    display: 'display',\n");
+                sb.append("    source: " + id + "Bloodhound,\n");
+                sb.append("    hint: true,\n");
+                sb.append("    highlight: true,\n");
+                sb.append("    limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
+                sb.append("    minLength: 3\n");
+                sb.append("  });\n");
+            }
+        }
+        
+        
         int max = getMaxWidth();
         if (max > 0) {
             sb.append("$('#" + getId() + "').keyup(function(event) {\n");
@@ -395,6 +464,10 @@ public class OATextField implements OAJspComponent, OATableEditor {
             sb.append("    }\n");
             sb.append("});\n");
         }
+
+        // 20170628 moved from begin of method
+        sb.append(getAjaxScript());
+        
 
         String js = sb.toString();
         return js;
@@ -526,13 +599,32 @@ public class OATextField implements OAJspComponent, OATableEditor {
         if (value == null) lastValue = null;
         else lastValue = value;
 
-        sb.append("$('#" + id + "').val('" + value + "');\n");
+        // set existing value            
+        if (getMultiValue() && getTypeAhead()) {
+            // value only has "id", need to get the value to be displayed
+            for (int i=1;;i++) {
+                String s = OAString.field(value, ",", i);
+                if (s == null) break;
+                if (!OAString.isInteger(s)) continue;
+                String s2 = getTypeAheadValueForId(OAConv.toInt(s));
+                sb.append("$('#" + id + "').tagsinput('add', { \"id\": "+s+" , \"value\": \""+s2+"\"});\n");
+            }
+        }        
+        else {
+            sb.append("$('#" + id + "').val('" + value + "');\n");
+        }
+        
+        
+        
         if (width > 0) sb.append("$('#" + id + "').attr('size', '" + width + "');\n");
         if (maxWidth > 0) sb.append("$('#" + id + "').attr('maxlength', '" + maxWidth + "');\n");
         if (getEnabled()) sb.append("$('#" + id + "').removeAttr('disabled');\n");
         else sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
-        if (bVisible) sb.append("$('#" + id + "').show();\n");
-        else sb.append("$('#" + id + "').hide();\n");
+        
+        if (!getMultiValue()) {
+            if (bVisible) sb.append("$('#" + id + "').show();\n");
+            else sb.append("$('#" + id + "').hide();\n");
+        }
 
         String fmt = getFormat();
 
@@ -547,11 +639,14 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 else fmt = OATime.getGlobalOutputFormat();
             }
 
-            // see: http://docs.jquery.com/UI/Datepicker/formatDate
+            
+            // [BEGIN] Jquery date/time formats
+            // see: http://api.jqueryui.com/datepicker/#utility-formatDate
+            // http://docs.jquery.com/UI/Datepicker/formatDate
             // http://trentrichardson.com/examples/timepicker/
             // https://github.com/trentrichardson/jQuery-Timepicker-Addon
-            String dfmt = null;
-            String tfmt = null;
+            String dfmtJquery = null;
+            String tfmtJquery = null;
 
             int pos = fmt.indexOf('M');
             if (pos < 0) {
@@ -564,16 +659,16 @@ public class OATextField implements OAJspComponent, OATableEditor {
                     pos = fmt.indexOf('h');
                 }
                 if (pos >= 0) {
-                    dfmt = fmt.substring(0, pos).trim();
+                    dfmtJquery = fmt.substring(0, pos).trim();
                 }
-                else dfmt = fmt;
-                if (dfmt.indexOf("MMM") >= 0) {
-                    dfmt = OAString.convert(dfmt, "MMMM", "MM");
-                    dfmt = OAString.convert(dfmt, "MMM", "M");
+                else dfmtJquery = fmt;
+                if (dfmtJquery.indexOf("MMM") >= 0) {
+                    dfmtJquery = OAString.convert(dfmtJquery, "MMMM", "MM");
+                    dfmtJquery = OAString.convert(dfmtJquery, "MMM", "M");
                 }
-                else dfmt = OAString.convert(dfmt, "M", "m");
-                dfmt = OAString.convert(dfmt, "yy", "y");
-                dfmt = OAString.convert(dfmt, "E", "D");
+                else dfmtJquery = OAString.convert(dfmtJquery, "M", "m");
+                dfmtJquery = OAString.convert(dfmtJquery, "yy", "y");
+                dfmtJquery = OAString.convert(dfmtJquery, "E", "D");
             }
 
             pos = fmt.indexOf('H');
@@ -581,43 +676,154 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 pos = fmt.indexOf('h');
             }
             if (pos >= 0) {
-                tfmt = fmt.substring(pos).trim();
-                tfmt = OAString.convert(tfmt, "aa", "TT");
-                tfmt = OAString.convert(tfmt, "a", "TT");
+                tfmtJquery = fmt.substring(pos).trim();
+                tfmtJquery = OAString.convert(tfmtJquery, "aa", "TT");
+                tfmtJquery = OAString.convert(tfmtJquery, "a", "TT");
             }
 
             if (!isDateTime()) {
-                if (!isDate()) dfmt = null;
-                if (!isTime()) tfmt = null;
+                if (!isDate()) dfmtJquery = null;
+                if (!isTime()) tfmtJquery = null;
             }
 
-            if (!OAString.isEmpty(dfmt) && !OAString.isEmpty(tfmt)) {
+            
+            // [BEGIN] Bootstrap date/time formats
+            // see: http://momentjs.com/docs/#/displaying/format/            
+            String dfmtBS = null;
+            String tfmtBS = null;
+
+            pos = fmt.indexOf('M');
+            if (pos < 0) {
+                pos = fmt.indexOf('y');
+            }
+
+            if (pos >= 0) {
+                pos = fmt.indexOf('H');
+                if (pos < 0) {
+                    pos = fmt.indexOf('h');
+                }
+                if (pos >= 0) {
+                    dfmtBS = fmt.substring(0, pos).trim();
+                }
+                else dfmtBS = fmt;
+                dfmtBS = OAString.convert(dfmtBS, "y", "Y");
+                dfmtBS = OAString.convert(dfmtBS, "d", "D");
+                dfmtBS = OAString.convert(dfmtBS, "E", "d");  // day of week
+            }
+
+            pos = fmt.indexOf('H');
+            if (pos < 0) {
+                pos = fmt.indexOf('h');
+            }
+            if (pos >= 0) {
+                tfmtBS = fmt.substring(pos).trim();
+            }
+
+            if (!isDateTime()) {
+                if (!isDate()) dfmtBS = null;
+                if (!isTime()) tfmtBS = null;
+            }
+            
+            
+            if (!OAString.isEmpty(dfmtJquery) && !OAString.isEmpty(tfmtJquery)) {
+                // supports jquery.datetimepicker and bootstrap datetimepicker (customized version: had to change name to bsdatetimepicker)
+                // see:  https://eonasdan.github.io/bootstrap-datetimepicker/
+
+                sb.append("if ($().bsdatetimepicker) {\n");
+                sb.append("  $('#" + id + "').bsdatetimepicker({");
+                sb.append("format: '" + dfmtBS + " " + tfmtBS + "'");
+                sb.append(", sideBySide: true, showTodayButton: true, showClear: true, showClose: true});\n");
+
+                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                    if (!getAutoComplete() && !getTypeAhead()) {
+                        sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
+                        sb.append("  $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                    }
+                }
+                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                    sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
+                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); return false;});\n");
+                }
+                sb.append("}\n");  // end bootstrap
+                sb.append("else {\n");
                 sb.append("$('#" + id + "').datetimepicker({ ");
-                sb.append("dateFormat: '" + dfmt + "'");
-                sb.append(", timeFormat: '" + tfmt + "'");
-                if (tfmt != null && tfmt.toLowerCase().indexOf('z') >= 0) {
+                sb.append("dateFormat: '" + dfmtJquery + "'");
+                sb.append(", timeFormat: '" + tfmtJquery + "'");
+                if (tfmtJquery != null && tfmtJquery.toLowerCase().indexOf('z') >= 0) {
                     // sb.append(", timezoneList: [{label: 'EDT', value: '-240'}, {label: 'other', value: '-480'}]");
                 }
-            }
-            else if (!OAString.isEmpty(dfmt)) {
-                sb.append("$('#" + id + "').datepicker({ dateFormat: '" + dfmt + "'");
-            }
-            else if (!OAString.isEmpty(tfmt)) {
-                sb.append("$('#" + id + "').timepicker({ timeFormat: '" + tfmt + "'");
-            }
-
-            if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                if (!getAutoComplete()) {
-                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}");
+                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                    if (!getAutoComplete() && !getTypeAhead()) {
+                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}\n");
+                    }
                 }
+                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;}\n");
+                }
+                sb.append(" });\n");
+                sb.append("}\n");  // end jquery
             }
-            else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;}");
+            else if (!OAString.isEmpty(dfmtJquery)) {
+                sb.append("if ($().bsdatetimepicker) {\n");
+                sb.append("$('#" + id + "').bsdatetimepicker({");
+                sb.append("format: '" + dfmtBS + "'");
+                sb.append(", showTodayButton: true, showClear: true, showClose: true});\n");
+                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                    if (!getAutoComplete() && !getTypeAhead()) {
+                        sb.append("$('#" + id + "').on('dp.change', function (e) {");
+                        sb.append("$('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                    }
+                }
+                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                    sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
+                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); return false;});\n");
+                }
+                sb.append("}\n");  // end bootstrap
+                sb.append("else {\n");
+                sb.append("$('#" + id + "').datepicker({ dateFormat: '" + dfmtJquery + "'");
+                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                    if (!getAutoComplete() && !getTypeAhead()) {
+                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}\n");
+                    }
+                }
+                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;}\n");
+                }
+                sb.append("});\n");
+                sb.append("}\n");  // end jquery
             }
-            sb.append(" });\n");
+            else if (!OAString.isEmpty(tfmtJquery)) {
+                sb.append("if ($().bsdatetimepicker) {\n");
+                sb.append("  $('#" + id + "').bsdatetimepicker({ ");
+                sb.append("format: '" + tfmtBS + "'");
+                sb.append(", showClear: true, showClose: true});\n");
 
-            //20170327
-            if (isDateTime() && !bAutoComplete && getForm() != null) {
+                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                    if (!getAutoComplete() && !getTypeAhead()) {
+                        sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
+                        sb.append("  $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                    }
+                }
+                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                    sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
+                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); return false;});\n");
+                }
+                sb.append("}\n");  // end bootstrap
+                sb.append("else {\n");
+                sb.append("  $('#" + id + "').timepicker({ timeFormat: '" + tfmtJquery + "'");
+                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                    if (!getAutoComplete() && !getTypeAhead()) {
+                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}");
+                    }
+                }
+                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;}");
+                }
+                sb.append("});\n");
+                sb.append("}");  // end jquery
+            }
+
+            if (isDateTime() && !getAutoComplete() && !getTypeAhead() && getForm() != null) {
                 sb.append("$('#" + getForm().getId() + "').prepend(\"<input type='hidden' id='" + id + "_ts' name='" + id
                         + ".ts' value=''>\");\n");
             }
@@ -854,22 +1060,112 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public void setAutoComplete(boolean b) {
         this.bAutoComplete = b;
     }
-
     public boolean getAutoComplete() {
         return bAutoComplete;
+    }
+    public void setTypeAhead(boolean b) {
+        this.bTypeAhead = b;
+    }
+    public boolean getTypeAhead() {
+        return bTypeAhead;
     }
 
     /**
      * Called by browser if autoComplete is true.
+     * Uses oaautocomplete.jsp
      * 
-     * @param value
-     *            user input
+     * @param value user input
      * @return list of values to send back to browser.
      */
     public String[] getAutoCompleteText(String value) {
         return null;
     }
+    
+    /**
+     * Called by browser
+     * Uses oatypeahead.jsp
+     * 
+     * Must be json string using double quotes, and "id", "display" for values
+     *    ex:  String s = "{\"id\":1,\"display\":\"m-1-1\"},{\"id\":2,\"display\":\"m-2-1\"}"; 
+     * 
+     * @param value user input
+     * @return list of values to send back to browser.
+     */
+    public String getTypeAheadJson(String searchText) {
+        final OATypeAheadResult[] tars = getTypeAheadSearch(searchText);
+        if (tars == null) return null;
+        Arrays.sort(tars);
+        
+        String json = "";
+        // ex:  String s = "{\"id\":1,\"display\":\"m-1-1\"},{\"id\":2,\"display\":\"m-2-1\"}";
+        for (OATypeAheadResult tar : tars) {
+            if (json.length() > 0) json += ",";
+            String s = tar.dropdownDisplay;
+            if (s == null) {
+                s = tar.value;
+            }
+            
+            s.replace('\"', ' ');
+            
+            json += "{\"id\":"+tar.id+",\"value\":\""+tar.value+"\",\"display\":\""+s+"\"}";
+        }
+        return json;
+    }
+    /**
+     * For typeAhead, this needs to be overwritten to return the results of a search.
+     * @return typeAheadResults
+     */
+    protected OATypeAheadResult[] getTypeAheadSearch(String searchText) {
+        return null;
+    }
 
+    
+    /**
+     * For typeAhead, this needs to be overwritten to get the value to display for an "id" value.  
+     */
+    protected String getTypeAheadValueForId(int id) {
+        return "id="+id+" should show value";
+    }
+    
+    public static class OATypeAheadResult implements Comparable {
+        int id; 
+        Object object;
+        String value; 
+        String sortValue; 
+        String dropdownDisplay;
+        
+        public OATypeAheadResult(Object object, int id, String value, String dropdownDisplay, String sortValue) {
+            this.object = object;
+            this.id = id;
+            this.sortValue = sortValue;
+            this.value = value;
+            this.dropdownDisplay = dropdownDisplay;
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if (!(o instanceof OATypeAheadResult)) return 1;
+            OATypeAheadResult tar = (OATypeAheadResult) o;
+            String s1 = sortValue;
+            if (s1 == null) {
+                s1 = value;
+                if (s1 == null) {
+                    s1 = dropdownDisplay;
+                }
+            }
+            String s2 = tar.sortValue;
+            if (s2 == null) {
+                s2 = tar.value;
+                if (s2 == null) {
+                    s2 = tar.dropdownDisplay;
+                }
+            }
+            return OAString.compare(s1, s2);
+        }
+    }
+
+    
+    
     //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
     /* scrolling with heading not moving http://www.farinspace.com/jquery-scrollable-table-plugin/
      * 
@@ -886,4 +1182,12 @@ public class OATextField implements OAJspComponent, OATableEditor {
         String s = "<input id='" + id + "' type='text' style='position:absolute; top:0px; left:1px; width:97%; max-height:97%'>";
         return s;
     }
+    
+    public void setMultiValue(boolean b) {
+        this.bMultiValue = b;
+    }
+    public boolean getMultiValue() {
+        return this.bMultiValue;
+    }
+    
 }

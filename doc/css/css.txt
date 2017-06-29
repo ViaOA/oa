@@ -1,5 +1,24 @@
 
 
+#gridItem .oaGridCell .itemImage {
+    height: 145px; 
+    background-image: url(servlet/img?c=ImageStore&i=16706&p=bytes&mw=600);
+    background-repeat: no-repeat; 
+    background-position: center center; 
+    background-size: contain;
+    margin-bottom: 2px;
+}
+
+button generator
+    http://css3buttongenerator.com/
+
+transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+
+background: url('../img/bg-banner02.jpg') no-repeat fixed;  // fixed=dont scroll
+
+border-radius: 50% 
+border-radius: 6px 
+
 p:first-letter {
     font-size: 3.5em;
     line-height: 1em;

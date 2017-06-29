@@ -87,6 +87,18 @@ public class OASession extends OABase {
         addForm(f);
         return f;
     }
+    /**
+     * 
+     * @param id ex: "employee"
+     * @param page ex: "employee.jsp"
+     * @return
+     */
+    public OAForm createForm(String id, String page) {
+        removeForm(getForm(id));
+        OAForm f = new OAForm(id, page);
+        addForm(f);
+        return f;
+    }
     public void addForm(OAForm form) {
         if (form == null) return;
         // System.out.println("OASession.addForm() should be changed to put(form) or putForm(form)");
