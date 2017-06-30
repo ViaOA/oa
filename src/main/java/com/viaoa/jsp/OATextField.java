@@ -7,14 +7,7 @@
 package com.viaoa.jsp;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,17 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectKey;
-import com.viaoa.object.OAObjectKeyDelegate;
-import com.viaoa.object.OAPropertyInfo;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OADate;
-import com.viaoa.util.OADateTime;
-import com.viaoa.util.OAReflect;
-import com.viaoa.util.OAString;
-import com.viaoa.util.OATime;
+import com.viaoa.object.*;
+import com.viaoa.util.*;
 
 /**
  * Controls an html input type=text, bind to OA hub, using property path set size, maxwidth show/hide,
@@ -77,10 +61,11 @@ public class OATextField implements OAJspComponent, OATableEditor {
     protected String regex;
     private boolean bFocus;
     protected String forwardUrl;
-    protected boolean bTypeAhead;  // using bootstrap typehead
     protected boolean bAutoComplete;  // using jquery
     protected char conversion; // 'U'pper, 'L'ower, 'T'itle, 'P'assword
     protected boolean bMultiValue;
+    protected OATypeAhead typeAhead;
+    protected String[] lookupValues;
 
     /** javascript regex */
 
@@ -352,7 +337,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
 
         if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-            if (!getAutoComplete() && !getTypeAhead()) {
+            if (!getAutoComplete() && (getTypeAhead()==null)) {
                 if (!isDateTime() && !isDate() && !isTime()) { // date/time will use close (see below)
                     sb.append("$('#" + id + "').blur(function(e) {if($(this).ignore){$(this).ignore=false;return;}$('#oacommand').val('" + id + "'); ajaxSubmit();return false;});\n");
                     sb.append("$('#" + id + "').keypress(function(e) { if (e.keyCode != 13) return; e.preventDefault(); $('#oacommand').val('" + id + "'); $(this).ignore=true;ajaxSubmit();$(this).ignore=false;return false;});\n");
@@ -375,7 +360,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
             sb.append("$('#" + id + "').addClass('oaSubmit');\n");
         }
 
-        if (getMultiValue() && !getAutoComplete() && !getTypeAhead()) {
+        if (getMultiValue() && !getAutoComplete() && (getTypeAhead()==null)) {
             sb.append("$('#" + id + "').tagsinput();\n");
         }
         
@@ -414,27 +399,51 @@ public class OATextField implements OAJspComponent, OATableEditor {
         }
 
         
-        if (getTypeAhead()) {
+        if (getTypeAhead() != null || getLookupValues() != null) {
             // support for bootstrap typeahead
             sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
             sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
             sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
-            sb.append("  remote : {\n");
-            sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
-            sb.append("    wildcard: '%QUERY'\n");
-            sb.append("  }\n");
+            
+            if (getLookupValues() != null) {
+                // local: ['dog', 'pig', 'moose'],            
+                sb.append("  local: [");
+                int x = 0;
+                for (String s : getLookupValues()) {
+                    if (x++ > 0) sb.append(",");
+                    sb.append("'"+s+"'");;
+                }
+                sb.append("]\n");
+            }
+            else {
+                sb.append("  remote : {\n");
+                sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
+                sb.append("    wildcard: '%QUERY'\n");
+                sb.append("  }\n");
+            }            
+            
             sb.append("});\n");
             sb.append("" + id + "Bloodhound.initialize();\n");
             
             if (getMultiValue()) {
                 sb.append("$('#" + id + "').tagsinput({\n");
                 sb.append("  itemValue: 'id',\n");
-                sb.append("  itemText: 'value',\n");
+                sb.append("  itemText: 'display',\n");
                 sb.append("  typeaheadjs: [\n");
-                sb.append("    {minLength: 3, highlight: true},\n"); 
                 sb.append("    {\n");
-                sb.append("      name: '" + id + "TITA', limit: 400, \n");  // see: https://github.com/twitter/typeahead.js/issues/1232
-                sb.append("      displayKey: 'display',\n");
+                sb.append("      minLength: 3,\n");
+                sb.append("      hint: true,\n");
+                sb.append("      highlight: true,\n");
+                sb.append("    },\n");
+                sb.append("    {\n");
+                sb.append("      name: '" + id + "TITA',\n"); 
+                sb.append("      limit: 400,\n");  // see: https://github.com/twitter/typeahead.js/issues/1232
+                sb.append("      display: 'display',\n");
+                // sb.append("      displayKey: 'dropdowndisplay',\n");
+                sb.append("      templates: {\n");
+                sb.append("        suggestion: function(data) {return '<p>'+data.dropdowndisplay+'</p>';}\n");
+                sb.append("      },\n");
+                sb.append("      limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
                 sb.append("      source: " + id + "Bloodhound.ttAdapter()\n");
                 sb.append("    }\n");
                 sb.append("  ]\n");
@@ -445,6 +454,9 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 sb.append("$('#" + id + "').typeahead(null, {\n");
                 sb.append("    name: '" + id + "TA',\n");
                 sb.append("    display: 'display',\n");
+                sb.append("    templates: {\n");
+                sb.append("      suggestion: function(data) {return '<p>'+data.dropdowndisplay+'</p>';}\n");
+                sb.append("    },\n");
                 sb.append("    source: " + id + "Bloodhound,\n");
                 sb.append("    hint: true,\n");
                 sb.append("    highlight: true,\n");
@@ -600,13 +612,13 @@ public class OATextField implements OAJspComponent, OATableEditor {
         else lastValue = value;
 
         // set existing value            
-        if (getMultiValue() && getTypeAhead()) {
+        if (getMultiValue() && (getTypeAhead()!=null)) {
             // value only has "id", need to get the value to be displayed
             for (int i=1;;i++) {
                 String s = OAString.field(value, ",", i);
                 if (s == null) break;
                 if (!OAString.isInteger(s)) continue;
-                String s2 = getTypeAheadValueForId(OAConv.toInt(s));
+                String s2 = getTypeAheadDisplayValueForId(OAConv.toInt(s));
                 sb.append("$('#" + id + "').tagsinput('add', { \"id\": "+s+" , \"value\": \""+s2+"\"});\n");
             }
         }        
@@ -735,7 +747,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 sb.append(", sideBySide: true, showTodayButton: true, showClear: true, showClose: true});\n");
 
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && !getTypeAhead()) {
+                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
                         sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
                         sb.append("  $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
                     }
@@ -753,7 +765,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                     // sb.append(", timezoneList: [{label: 'EDT', value: '-240'}, {label: 'other', value: '-480'}]");
                 }
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && !getTypeAhead()) {
+                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
                         sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}\n");
                     }
                 }
@@ -769,7 +781,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 sb.append("format: '" + dfmtBS + "'");
                 sb.append(", showTodayButton: true, showClear: true, showClose: true});\n");
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && !getTypeAhead()) {
+                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
                         sb.append("$('#" + id + "').on('dp.change', function (e) {");
                         sb.append("$('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
                     }
@@ -782,7 +794,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 sb.append("else {\n");
                 sb.append("$('#" + id + "').datepicker({ dateFormat: '" + dfmtJquery + "'");
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && !getTypeAhead()) {
+                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
                         sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}\n");
                     }
                 }
@@ -799,7 +811,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 sb.append(", showClear: true, showClose: true});\n");
 
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && !getTypeAhead()) {
+                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
                         sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
                         sb.append("  $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
                     }
@@ -812,7 +824,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 sb.append("else {\n");
                 sb.append("  $('#" + id + "').timepicker({ timeFormat: '" + tfmtJquery + "'");
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && !getTypeAhead()) {
+                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
                         sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}");
                     }
                 }
@@ -823,7 +835,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 sb.append("}");  // end jquery
             }
 
-            if (isDateTime() && !getAutoComplete() && !getTypeAhead() && getForm() != null) {
+            if (isDateTime() && !getAutoComplete() && (getTypeAhead()!=null) && getForm() != null) {
                 sb.append("$('#" + getForm().getId() + "').prepend(\"<input type='hidden' id='" + id + "_ts' name='" + id
                         + ".ts' value=''>\");\n");
             }
@@ -1063,11 +1075,17 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public boolean getAutoComplete() {
         return bAutoComplete;
     }
-    public void setTypeAhead(boolean b) {
-        this.bTypeAhead = b;
+    public void setTypeAhead(OATypeAhead ta) {
+        this.typeAhead = ta;
     }
-    public boolean getTypeAhead() {
-        return bTypeAhead;
+    public OATypeAhead<?,?> getTypeAhead() {
+        return typeAhead;
+    }
+    public void setLookupValues(String[] lookupValues) {
+        this.lookupValues = lookupValues;
+    }
+    public String[] getLookupValues() {
+        return lookupValues;
     }
 
     /**
@@ -1092,81 +1110,49 @@ public class OATextField implements OAJspComponent, OATableEditor {
      * @return list of values to send back to browser.
      */
     public String getTypeAheadJson(String searchText) {
-        final OATypeAheadResult[] tars = getTypeAheadSearch(searchText);
-        if (tars == null) return null;
-        Arrays.sort(tars);
+        if (typeAhead == null) return null;
+
+        ArrayList al = typeAhead.search(searchText);
         
         String json = "";
         // ex:  String s = "{\"id\":1,\"display\":\"m-1-1\"},{\"id\":2,\"display\":\"m-2-1\"}";
-        for (OATypeAheadResult tar : tars) {
+        for (Object objx : al) {
+            OAObject obj = (OAObject) objx;
             if (json.length() > 0) json += ",";
-            String s = tar.dropdownDisplay;
-            if (s == null) {
-                s = tar.value;
-            }
+
+            OAObjectKey key = obj.getObjectKey();
+            Object[] ids = key.getObjectIds();
+            String id;
+            if (ids == null || ids.length == 0) id = obj.getGuid()+"";
+            else id = ids[0]+"";
             
-            s.replace('\"', ' ');
+
+            String displayValue = typeAhead.getDisplayValue(obj);
+            if (displayValue == null) displayValue = "";
+            displayValue.replace('\"', ' ');
+
+            String dd = typeAhead.getDropDownDisplayValue(obj);
+            if (dd == null) dd = "";
+            dd.replace('\"', ' ');
             
-            json += "{\"id\":"+tar.id+",\"value\":\""+tar.value+"\",\"display\":\""+s+"\"}";
+            json += "{\"id\":"+id+",\"display\":\""+displayValue+"\",\"dropdowndisplay\":\""+dd+"\"}";
         }
         return json;
     }
-    /**
-     * For typeAhead, this needs to be overwritten to return the results of a search.
-     * @return typeAheadResults
-     */
-    protected OATypeAheadResult[] getTypeAheadSearch(String searchText) {
-        return null;
-    }
 
     
-    /**
-     * For typeAhead, this needs to be overwritten to get the value to display for an "id" value.  
-     */
-    protected String getTypeAheadValueForId(int id) {
-        return "id="+id+" should show value";
+    protected String getTypeAheadDisplayValueForId(int id) {
+        if (typeAhead == null) return null;
+        Class c = typeAhead.getToClass();
+        if (c == null) return null;
+        OAObject obj = OAObjectCacheDelegate.get(c, id);
+        if (obj == null) return "id "+id+" not found";
+        String s = typeAhead.getDisplayValue(obj);
+        return s;
     }
     
-    public static class OATypeAheadResult implements Comparable {
-        int id; 
-        Object object;
-        String value; 
-        String sortValue; 
-        String dropdownDisplay;
-        
-        public OATypeAheadResult(Object object, int id, String value, String dropdownDisplay, String sortValue) {
-            this.object = object;
-            this.id = id;
-            this.sortValue = sortValue;
-            this.value = value;
-            this.dropdownDisplay = dropdownDisplay;
-        }
-
-        @Override
-        public int compareTo(Object o) {
-            if (!(o instanceof OATypeAheadResult)) return 1;
-            OATypeAheadResult tar = (OATypeAheadResult) o;
-            String s1 = sortValue;
-            if (s1 == null) {
-                s1 = value;
-                if (s1 == null) {
-                    s1 = dropdownDisplay;
-                }
-            }
-            String s2 = tar.sortValue;
-            if (s2 == null) {
-                s2 = tar.value;
-                if (s2 == null) {
-                    s2 = tar.dropdownDisplay;
-                }
-            }
-            return OAString.compare(s1, s2);
-        }
-    }
-
     
-    
-    //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+    //qqq
     /* scrolling with heading not moving http://www.farinspace.com/jquery-scrollable-table-plugin/
      * 
      * resize: http://www.audenaerde.org/simpleresizabletables.js

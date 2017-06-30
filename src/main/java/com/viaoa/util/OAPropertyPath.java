@@ -41,13 +41,13 @@ import com.viaoa.object.OAObjectInfoDelegate;
  * ex:  "dept.employees:newHires(7).orders.orderItems:overDue(30)"
  * 
  * created 20120809
- * @param <T> type of object that the property path is based on.
+ * @param <F> type of object that the property path is based on.
  * @see HubMerger which uses propertyPaths to create a Hub of all lastNode objects, and keeps it updated.
  * @see OAPropertyPathDelegate
  */
-public class OAPropertyPath<T> {
+public class OAPropertyPath<F> {
 
-    private Class<T> fromClass;
+    private Class<F> fromClass;
     private String propertyPath;
     private Method[] methods = new Method[0];
     private boolean bLastMethodHasHubParam; // true if method requires a Hub param
@@ -79,7 +79,7 @@ public class OAPropertyPath<T> {
     public OAPropertyPath(String propertyPath) {
         this.propertyPath = propertyPath;
     }
-    public OAPropertyPath(Class<T> fromClass, String propertyPath) {
+    public OAPropertyPath(Class<F> fromClass, String propertyPath) {
         this.propertyPath = propertyPath;
         this.fromClass = fromClass;
         
@@ -165,10 +165,10 @@ public class OAPropertyPath<T> {
         return recursiveLinkInfos;
     }
 
-    public Object getValue(T fromObject) {
+    public Object getValue(F fromObject) {
         return getValue(null, fromObject);
     }
-    public String getValueAsString(T fromObject) {
+    public String getValueAsString(F fromObject) {
         return getValueAsString(null, fromObject);
     }
     
@@ -177,10 +177,10 @@ public class OAPropertyPath<T> {
      * Notes: if any of the property's is null, then null is returned.
      * If any of the non-last properties is a Hub, then the AO will be used.
      */
-    public Object getValue(Hub<T> hub, T fromObject) {
+    public Object getValue(Hub<F> hub, F fromObject) {
         if (fromObject == null) return null;
         if (this.fromClass == null) {
-            setup( (Class<T>)fromObject.getClass());
+            setup( (Class<F>)fromObject.getClass());
         }
         if (methods == null || methods.length == 0) return 0;
         
@@ -215,18 +215,18 @@ public class OAPropertyPath<T> {
     /**
      * This will call getValue, and then call OAConv.toString using getFormat. 
      */
-    public String getValueAsString(Hub<T> hub, T fromObject) {
+    public String getValueAsString(Hub<F> hub, F fromObject) {
         Object obj = getValue(hub, fromObject);
         String s = OAConv.toString(obj, getFormat());
         return s;
     }
-    public String getValueAsString(Hub<T> hub, T fromObject, String format) {
+    public String getValueAsString(Hub<F> hub, F fromObject, String format) {
         Object obj = getValue(hub, fromObject);
         String s = OAConv.toString(obj, format);
         return s;
     }
     
-    public Class<T> getFromClass() {
+    public Class<F> getFromClass() {
         return fromClass;
     }
     

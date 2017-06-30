@@ -1145,7 +1145,7 @@ public class OAObjectReflectDelegate {
      *            then the current object references will not be loaded
      * @param cascade
      *            used to impl visitor pattern
-     * @param max maximum recursive objects to call loadAllRefereces on.        
+     * @param maxResults maximum recursive objects to call loadAllRefereces on.        
      */
     public static int loadAllReferences(OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
             boolean bIncludeCalc, OACallback callback, OACascade cascade, final int maxRefsToLoad) {
