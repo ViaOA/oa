@@ -33,7 +33,12 @@ public class OAList implements OAJspComponent {
     private static final long serialVersionUID = 1L;
 
     protected Hub hub;
+
+    // Important Note:  this could be a composite (ex: OAButtonList uses OAPopupList uses OAList)
+    //    and this "id" would be different then "getId()" ... see OAButtonList constructor
     protected String id;
+    
+    
     protected OAForm form;
     protected boolean bEnabled = true;
     protected boolean bVisible = true;
@@ -42,6 +47,8 @@ public class OAList implements OAJspComponent {
     protected String forwardUrl;
     protected String nullDescription = "";
     protected String maxHeigth; // ex:  200px,  12em
+    protected boolean bRequired;
+    protected String name;
 
     protected String format;
 //    protected int lineWidth, maxRows, minLineWidth;
@@ -51,6 +58,7 @@ public class OAList implements OAJspComponent {
     protected int columns, popupColumns;
     
     protected int rows;
+    protected int lastRow;
     
     public OAList(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0, 0);
@@ -114,6 +122,13 @@ public class OAList implements OAJspComponent {
         this.propertyPath = propertyPath;
     }
     
+    /** used when displaying error message for this textfield */
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
     
     @Override
     public void reset() {
@@ -160,7 +175,15 @@ public class OAList implements OAJspComponent {
     
     protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String,String[]> hmNameValue) {
         // Enumeration enumx = req.getParameterNames();
-
+        
+        String s = req.getParameter("oacommand");
+        if (s == null && hmNameValue != null) {
+            String[] ss = hmNameValue.get("oacommand");
+            if (ss != null && ss.length > 0) s = ss[0];
+        }
+        boolean bWasSubmitted = (id != null && (id.equalsIgnoreCase(s) || getId().equalsIgnoreCase(s)));
+        
+        
         String name = null;
         String[] values = null;
 
@@ -176,31 +199,27 @@ public class OAList implements OAJspComponent {
         }
 
         int row = OAConv.toInt(values[0]);
+        if (row == lastRow) return bWasSubmitted; // not changed
+        
         
         Object obj = hub.getAt(row);
-        onClick(obj);
+        if (hub != null) hub.setAO(obj);
+
         
-        submitUpdateScript = "$('#oalist"+id+"').val('');";
+        submitUpdateScript = "";
         submitUpdateScript += "$('#"+id+" li').removeClass('oaSelected');";
 
-        String s;
         if (hub.getPos() >= 0) {
+            submitUpdateScript += "$('#oalist"+id+"').val('"+hub.getPos()+"');";
             s = " li:nth-child("+(hub.getPos()+1)+")";
         }
         else {
+            submitUpdateScript += "$('#oalist"+id+"').val('');";
             s = " li:nth-child("+(hub.getSize()+1)+")";
         }
         submitUpdateScript += "$('#"+id+s+"').addClass('oaSelected');";
 
-        return true; // true if this caused the form submit
-    }
-    
-    /**
-     * can be overwritten to know when an item is selected.
-     * @param obj
-     */
-    public void onClick(Object obj) {
-        if (hub != null) hub.setAO(obj);
+        return bWasSubmitted; // true if this caused the form submit
     }
 
     @Override
@@ -233,15 +252,50 @@ public class OAList implements OAJspComponent {
         lastAjaxSent = null;
         submitUpdateScript = null;
         StringBuilder sb = new StringBuilder(1024);
+    
         sb.append("$('form').prepend(\"<input id='oalist"+id+"' type='hidden' name='oalist"+id+"' value=''>\");\n");
+
         
-        String s = getScript2();
+        sb.append("function oaList"+id+"Click() {\n");
+        sb.append("    var v = $(this).attr('oarow');\n");
+        
+        sb.append("    if (v == null) return;\n");
+        sb.append("    $('#oalist"+id+"').val(v);\n");
+        sb.append("    $('#oacommand').val('" + id + "');\n");
+        
+        
+        String s = getOnLineClickJs();
+        if (s != null) {
+            sb.append("    "+s);
+        }
+        
+        if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
+            sb.append("    ajaxSubmit();\n");
+        }
+        else {
+            sb.append("    $('form').submit();\n");
+        }
+        sb.append("}\n");
+        
+        s = getScript2();
         if (s != null) sb.append(s);
         
-        sb.append(getAjaxScript());
-    
+        s = getAjaxScript();
+        sb.append(s);
+        
         s = getScript3();
         if (s != null) sb.append(s);
+        
+        if (isRequired()) {
+            sb.append("$('#" + id + "').addClass('oaRequired');\n");
+            sb.append("$('#" + id + "').attr('required', true);\n");
+        }
+        sb.append("$('#" + id + "').blur(function() {$(this).removeClass('oaError');}); \n");
+
+        if (getSubmit() || getAjaxSubmit()) {
+            sb.append("$('#" + id + "').addClass('oaSubmit');\n");
+        }
+        
         
         if (OAString.isNotEmpty(maxHeigth)) {
             sb.append("$('#"+id+"').css(\"max-height\", \""+maxHeigth+"\");\n");
@@ -280,8 +334,15 @@ public class OAList implements OAJspComponent {
 
     @Override
     public String getVerifyScript() {
-        // TODO Auto-generated method stub
-        return null;
+        StringBuilder sb = new StringBuilder(1024);
+
+        if (isRequired()) {
+            sb.append("if ($('#oalist" + id + "').val() == '') { requires.push('" + (name != null ? name : id) + "'); $('#" + id
+                    + "').addClass('oaError');}\n");
+        }
+
+        if (sb.length() == 0) return null;
+        return sb.toString();
     }
 
     private String lastAjaxSent;
@@ -293,6 +354,7 @@ public class OAList implements OAJspComponent {
             String s = submitUpdateScript;
             submitUpdateScript = null;
             lastAjaxSent = null;
+            lastRow = hub.getPos();
             return s;
         }
         StringBuilder sb = new StringBuilder(2048);
@@ -333,32 +395,17 @@ public class OAList implements OAJspComponent {
         
         sb.append("$('#"+id+" li').addClass('oaTextNoWrap');\n");
         
-
-        sb.append("function oaList"+id+"Click() {\n");
-        sb.append("    var v = $(this).attr('oarow');\n");
-        
-        sb.append("    if (v == null) return;\n");
-        sb.append("    $('#oalist"+id+"').val(v);\n");
-        
-        s = getOnLineClickJs();
-        if (s != null) {
-            sb.append("    "+s);
-        }
-        
-        if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
-            sb.append("    ajaxSubmit();\n");
-        }
-        else {
-            sb.append("    $('form').submit();\n");
-        }
-        sb.append("}\n");
         
         if (getEnabled()) {
             sb.append("$('#"+id+" li').click(oaList"+id+"Click);\n");
         }
-        sb.append("$('#"+id+"').addClass('oaSubmit');\n");
 
-        sb.append("$('#oalist"+id+"').val('');\n"); // set back to blank
+
+        int pos = lastRow = hub.getPos();
+        if (pos < 0) {
+            sb.append("$('#oalist"+id+"').val('');\n"); // set back to blank
+        }        
+        else sb.append("    $('#oalist"+id+"').val('"+pos+"');\n");
         
         String js = sb.toString();
         
@@ -422,4 +469,13 @@ public class OAList implements OAJspComponent {
         return this.maxHeigth;
     }
 
+    public boolean isRequired() {
+        return bRequired;
+    }
+    public boolean getRequired() {
+        return bRequired;
+    }
+    public void setRequired(boolean required) {
+        this.bRequired = required;
+    }
 }

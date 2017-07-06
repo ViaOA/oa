@@ -76,8 +76,8 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
      */
     protected OAFinder<F,T> finder;
 
-    protected ArrayList<String> alSearchText;
-    
+    protected String searchText;
+    protected String[] searchTextSplit;
     
     protected int minInputLength;
     protected int maxResults;
@@ -136,9 +136,10 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         alTo = arrayToUse;
     }
     
-    
+
     /**
-     * 
+     * @param hub root hub used for searches, if there is a finderPropertyPath, then only the activeObject is used.
+     * @param params
      */
     public OATypeAhead(Hub<F> hub, OATypeAheadParams params) {
         if (hub == null) throw new IllegalArgumentException("hub can not be null");
@@ -203,8 +204,14 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         this.minInputLength = minInputLength;
         this.maxResults = params.maxResults;
     }
+
+    public String getSearchText() {
+        return this.searchText;
+    }
+
     
     public ArrayList<T> search(String searchText) {
+        this.searchText = searchText;
         try {
             final int cntSearch = aiSearch.incrementAndGet();
             if (finder != null) finder.stop();
@@ -217,21 +224,16 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
             rwLock.writeLock().unlock();
         }
     }
+ 
     
     protected ArrayList<T> _search(String searchText, final int cntSearch) {
         if (cntSearch != aiSearch.get()) return null;
         if (searchText == null) {
-            alSearchText = null;            
+            searchTextSplit = null;            
         }
         else {
-            searchText = searchText.toUpperCase();
-            alSearchText = new ArrayList<>();
-
-            StringTokenizer tokenizer = new StringTokenizer(searchText);
-            while (tokenizer.hasMoreTokens()) {
-                String s = tokenizer.nextToken();
-                alSearchText.add(s);
-            }
+            String s = searchText.trim().toUpperCase();
+            searchTextSplit = s.split(" ");
         }
         
         ArrayList<T> alToFound;
@@ -290,6 +292,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         this.minInputLength = x;
     }
 
+    /** callback during search */
     protected boolean isUsed(T obj) {
         boolean b = _isUsed(obj);
         if (b) {
@@ -298,29 +301,43 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         }
         return b;
     }
-    
-        
-    protected boolean _isUsed(T obj) {
+
+    /** callback during search to get the value to use for matching */
+    protected String getMatchValue(T obj) {
         Object objCompare;
         if (ppMatch != null) {
             objCompare = ppMatch.getValue(obj);
         }
         else objCompare = obj;
         
-        String str = OAConv.toString(objCompare); 
-        if (str != null) str = str.toUpperCase();
+        String str = OAConv.toString(objCompare);
+        return str;
+    }
         
-        if (alSearchText == null || alSearchText.size() == 0) {
-            return OAString.isEmpty(str);
-        }
-        if (OAString.isEmpty(str)) return false;
-        
-        for (String s : alSearchText) {
-            if (str.indexOf(s) >= 0) return true;
-        }
-        return false;
+    protected boolean _isUsed(T obj) {
+        String str = getMatchValue(obj); 
+        boolean b = isUsed(obj, str, getSearchText(), searchTextSplit);
+        return b;
     }
     
+    
+    protected boolean isUsed(T obj, String objSearchValue, String searchText, String[] searchTextSplit) {
+        if (objSearchValue != null) objSearchValue = objSearchValue.toUpperCase();
+        
+        if (searchTextSplit == null || searchTextSplit.length == 0) {
+            return OAString.isEmpty(objSearchValue);
+        }
+        if (OAString.isEmpty(objSearchValue)) return false;
+        
+        for (String s : searchTextSplit) {
+            if (objSearchValue.indexOf(s) >= 0) return true;
+        }
+        return false;
+        
+    }
+    
+    
+    /** callback during search to get the display value of a selected <T> object. */
     public String getDisplayValue(T obj) {
         String s;
         if (ppDisplay != null) {
@@ -331,6 +348,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         }
         return s;
     }
+    /** callback during search to get the dropdown display value of matching <T> objects.*/
     public String getDropDownDisplayValue(T obj) {
         String s;
         if (ppDropDownDisplay != null) {
@@ -341,6 +359,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         }
         return s;
     }
+    /** callback during search to get the sort value of matching <T> objects. */
     public String getSortValue(T obj) {
         String s;
         if (ppSortValue != null) {

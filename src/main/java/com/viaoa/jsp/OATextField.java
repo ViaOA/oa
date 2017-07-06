@@ -27,25 +27,16 @@ import com.viaoa.util.*;
  * For datetime, date, time formats - use OADateTime formats.
  *
  * @author vvia
-
-Javascript requirements
-
-for jqueryui
-    <script type="text/javascript" language="javascript" src="vendor/jquery-ui-1.12.1/jquery-ui.js"></script>
-
-for bootstrap    
-    <script type="text/javascript" language="javascript" src="vendor/moment/js/moment.min.js"></script>
-    <script type="text/javascript" language="javascript" src="vendor/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js?3"></script>
-
- *
  */
-public class OATextField implements OAJspComponent, OATableEditor {
+public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
     private static Logger LOG = Logger.getLogger(OATextField.class.getName());
-    protected Hub<?> hub;
+    protected Hub hub;
     protected String id;
     protected String propertyPath;
+    protected boolean bPropertyPathIsManyLink;
+    protected boolean bPropertyPathIsOneLink;
     protected String visiblePropertyPath;
     protected String enablePropertyPath;
     protected int width, maxWidth;
@@ -66,6 +57,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     protected boolean bMultiValue;
     protected OATypeAhead typeAhead;
     protected String[] lookupValues;
+    private String name;
 
     /** javascript regex */
 
@@ -240,7 +232,60 @@ public class OATextField implements OAJspComponent, OATableEditor {
                         if (value != null && (value.length() == 0 && lastValue == null)) {
                         }
                         else {
-                            obj.setProperty(propertyPath, value, fmt);
+                            if (getTypeAhead()!=null && bPropertyPathIsManyLink) {
+                                
+                                Object objx = ((OAObject)hub.getAO()).getProperty(propertyPath);
+                                if (objx instanceof Hub) {
+                                    Hub hub = (Hub) objx;
+                                
+                                    // tagsinput js will put Ids in comma separated string in value
+                                    final String[] ss = value.split(",");
+                                    for (int i=0; ss!=null && i<ss.length; i++) {
+                                        String sx = ss[i];
+                                        sx = sx.trim();
+                                        if (!OAString.isInteger(sx)) continue;
+                                        Class c = hub.getObjectClass();
+                                        if (c == null) continue;
+                                        objx = OAObjectCacheDelegate.get(c, OAConv.toInt(sx));
+                                        if (!hub.contains(objx)) hub.add(objx);
+                                    }
+                                    for (int i=0; ;i++) {
+                                        obj = (OAObject) hub.getAt(i);
+                                        if (obj == null) break;
+                                        
+                                        OAObjectKey key = obj.getObjectKey();
+                                        Object[] ids = key.getObjectIds();
+                                        String id;
+                                        if (ids == null || ids.length == 0) id = obj.getGuid()+"";
+                                        else id = ids[0]+"";
+                                        
+                                        boolean bFound = false;
+                                        for (int j=0; !bFound && ss!=null && j<ss.length; j++) {
+                                            String sx = ss[j];
+                                            if (id.equals(sx)) bFound = true;
+                                        }
+                                        if (!bFound) {
+                                            hub.remove(obj);
+                                            i--;
+                                        }
+                                    }
+                                }
+                            }
+                            else if (getTypeAhead() != null && bPropertyPathIsOneLink) {
+                                // tagsinput js will put Id in value
+                                Object val = null;
+                                if (OAString.isInteger(value)) {
+                                    OALinkInfo li = hub.getOAObjectInfo().getLinkInfo(propertyPath);
+                                    Class c = li.getToClass();
+                                    if (c != null) {
+                                        val = OAObjectCacheDelegate.get(c, OAConv.toInt(value));
+                                    }
+                                }
+                                obj.setProperty(propertyPath, val);
+                            }
+                            else {
+                                obj.setProperty(propertyPath, value, fmt);
+                            }
                             lastAjaxSent = null;
                         }
                     }
@@ -360,14 +405,9 @@ public class OATextField implements OAJspComponent, OATableEditor {
             sb.append("$('#" + id + "').addClass('oaSubmit');\n");
         }
 
-        if (getMultiValue() && !getAutoComplete() && (getTypeAhead()==null)) {
-            sb.append("$('#" + id + "').tagsinput();\n");
-        }
-        
         
         if (getAutoComplete()) {
             // support for jqueryui autocomplete
-            
             sb.append("var cache" + id + " = {}, lastXhr" + id + ";\n");
             sb.append("$( '#" + id + "' ).autocomplete({\n");
             sb.append("minLength: 3,\n");
@@ -397,73 +437,183 @@ public class OATextField implements OAJspComponent, OATableEditor {
             }
             sb.append("});\n");
         }
+        else if (getMultiValue() && getLookupValues()==null && getTypeAhead()==null && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
+            // free form multiple values
+            sb.append("$('#" + id + "').tagsinput();\n");
+        }
+        else if (getLookupValues() != null && !getMultiValue() && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
+            // pick one from typeAhead
+            sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
+            sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
+            sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
+            // local: ['dog', 'pig', 'moose'],            
+            sb.append("  local: [");
+            int x = 0;
+            for (String s : getLookupValues()) {
+                if (x++ > 0) sb.append(",");
+                sb.append("'"+s+"'");;
+            }
+            sb.append("]\n");
+            sb.append("});\n");
+            sb.append("" + id + "Bloodhound.initialize();\n");
 
-        
-        if (getTypeAhead() != null || getLookupValues() != null) {
-            // support for bootstrap typeahead
+            sb.append("$('#" + id + "').typeahead(null, {\n");
+            sb.append("    name: '" + id + "Popup',\n");
+            sb.append("    display: 'display',\n");
+            sb.append("    source: " + id + "Bloodhound,\n");
+            sb.append("    hint: true,\n");
+            sb.append("    highlight: true,\n");
+            sb.append("    limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
+            sb.append("    minLength: 1\n");
+            sb.append("});\n");
+        }
+        else if (getLookupValues() != null && getMultiValue() && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
+            // pick many using tagInput from typeAhead
+            sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
+            sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
+            sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
+            // local: ['dog', 'pig', 'moose'],            
+            sb.append("  local: [");
+            int x = 0;
+            for (String s : getLookupValues()) {
+                if (x++ > 0) sb.append(",");
+                sb.append("'"+s+"'");;
+            }
+            sb.append("]\n");
+            sb.append("});\n");
+            sb.append("" + id + "Bloodhound.initialize();\n");
+            
+            sb.append("$('#" + id + "').tagsinput({\n");
+            
+            if (!getMultiValue()) { 
+                sb.append("  maxTags: 1,\n");
+            }
+            
+            sb.append("  typeaheadjs: [\n");
+            sb.append("    {\n");
+            sb.append("      minLength: 1,\n");
+            sb.append("      hint: true,\n");
+            sb.append("      highlight: true\n");
+            sb.append("    },\n");
+            sb.append("    {\n");
+            sb.append("      name: '" + id + "Popup',\n"); 
+            sb.append("      limit: 400,\n");  // see: https://github.com/twitter/typeahead.js/issues/1232
+            sb.append("      source: " + id + "Bloodhound.ttAdapter()\n");
+            sb.append("    }\n");
+            sb.append("  ]\n");
+            sb.append("});\n");
+        }
+        else if (getTypeAhead() != null && !getMultiValue() && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
+            // typeAhead one and only and store display in property
             sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
             sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
             sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
             
-            if (getLookupValues() != null) {
-                // local: ['dog', 'pig', 'moose'],            
-                sb.append("  local: [");
-                int x = 0;
-                for (String s : getLookupValues()) {
-                    if (x++ > 0) sb.append(",");
-                    sb.append("'"+s+"'");;
-                }
-                sb.append("]\n");
-            }
-            else {
-                sb.append("  remote : {\n");
-                sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
-                sb.append("    wildcard: '%QUERY'\n");
-                sb.append("  }\n");
-            }            
+            sb.append("  remote : {\n");
+            sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
+            sb.append("    wildcard: '%QUERY'\n");
+            sb.append("  }\n");
+            
+            sb.append("});\n");
+            sb.append("" + id + "Bloodhound.initialize();\n");
+
+            int minLen = getTypeAhead().getMinimumInputLength();
+            if (minLen < 1) minLen = 3;
+            
+            sb.append("$('#" + id + "').typeahead(null, {\n");
+            sb.append("    name: '" + id + "Popup',\n");
+            sb.append("    display: 'display',\n");
+            sb.append("    templates: {\n");
+            sb.append("      suggestion: function(data) {return '<p>'+data.dropdowndisplay+'</p>';}\n");
+            sb.append("    },\n");
+            sb.append("    source: " + id + "Bloodhound,\n");
+            sb.append("    hint: true,\n");
+            sb.append("    highlight: true,\n");
+            sb.append("    limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
+            sb.append("    minLength: "+minLen+"\n");
+            sb.append("  });\n");
+            
+        }
+        else if (getTypeAhead() != null && getMultiValue() && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
+            // select multiple from ta list and store displayed value in one property
+            sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
+            sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
+            sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
+            
+            sb.append("  remote : {\n");
+            sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
+            sb.append("    wildcard: '%QUERY'\n");
+            sb.append("  }\n");
             
             sb.append("});\n");
             sb.append("" + id + "Bloodhound.initialize();\n");
             
-            if (getMultiValue()) {
-                sb.append("$('#" + id + "').tagsinput({\n");
-                sb.append("  itemValue: 'id',\n");
-                sb.append("  itemText: 'display',\n");
-                sb.append("  typeaheadjs: [\n");
-                sb.append("    {\n");
-                sb.append("      minLength: 3,\n");
-                sb.append("      hint: true,\n");
-                sb.append("      highlight: true,\n");
-                sb.append("    },\n");
-                sb.append("    {\n");
-                sb.append("      name: '" + id + "TITA',\n"); 
-                sb.append("      limit: 400,\n");  // see: https://github.com/twitter/typeahead.js/issues/1232
-                sb.append("      display: 'display',\n");
-                // sb.append("      displayKey: 'dropdowndisplay',\n");
-                sb.append("      templates: {\n");
-                sb.append("        suggestion: function(data) {return '<p>'+data.dropdowndisplay+'</p>';}\n");
-                sb.append("      },\n");
-                sb.append("      limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
-                sb.append("      source: " + id + "Bloodhound.ttAdapter()\n");
-                sb.append("    }\n");
-                sb.append("  ]\n");
-                sb.append("});\n");
+            int minLen = getTypeAhead().getMinimumInputLength();
+            if (minLen < 1) minLen = 3;
+            
+            sb.append("$('#" + id + "').tagsinput({\n");
+            sb.append("  itemValue: 'display',\n");  // <-- store display value
+            sb.append("  itemText: 'display',\n");
+            sb.append("  typeaheadjs: [\n");
+            sb.append("    {\n");
+            sb.append("      minLength: "+minLen+",\n");
+            sb.append("      hint: true,\n");
+            sb.append("      highlight: true\n");
+            sb.append("    },\n");
+            sb.append("    {\n");
+            sb.append("      name: '" + id + "Popup',\n"); 
+            sb.append("      limit: 400,\n");  // see: https://github.com/twitter/typeahead.js/issues/1232
+            sb.append("      display: 'display',\n");
+            sb.append("      templates: {\n");
+            sb.append("        suggestion: function(data) {return '<p>'+data.dropdowndisplay+'</p>';}\n");
+            sb.append("      },\n");
+            sb.append("      source: " + id + "Bloodhound.ttAdapter()\n");
+            sb.append("    }\n");
+            sb.append("  ]\n");
+            sb.append("});\n");
+        }
+        else if (getTypeAhead() != null && (bPropertyPathIsOneLink || bPropertyPathIsManyLink)) {
+            // use tagInput and ta, selected Ids will pass comma sep values when submitted
+            sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
+            sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
+            sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
+            
+            sb.append("  remote : {\n");
+            sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
+            sb.append("    wildcard: '%QUERY'\n");
+            sb.append("  }\n");
+            
+            sb.append("});\n");
+            sb.append("" + id + "Bloodhound.initialize();\n");
+            
+            int minLen = getTypeAhead().getMinimumInputLength();
+            if (minLen < 1) minLen = 3;
+            
+            // https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
+            sb.append("$('#" + id + "').tagsinput({\n");
+            
+            sb.append("  itemValue: 'id',\n");     // <-- store Id value
+            sb.append("  itemText: 'display',\n");
+            if (bPropertyPathIsOneLink) {  
+                sb.append("  maxTags: 1,\n");
             }
-            else {
-                // TypeAhead only
-                sb.append("$('#" + id + "').typeahead(null, {\n");
-                sb.append("    name: '" + id + "TA',\n");
-                sb.append("    display: 'display',\n");
-                sb.append("    templates: {\n");
-                sb.append("      suggestion: function(data) {return '<p>'+data.dropdowndisplay+'</p>';}\n");
-                sb.append("    },\n");
-                sb.append("    source: " + id + "Bloodhound,\n");
-                sb.append("    hint: true,\n");
-                sb.append("    highlight: true,\n");
-                sb.append("    limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
-                sb.append("    minLength: 3\n");
-                sb.append("  });\n");
-            }
+            sb.append("  typeaheadjs: [\n");
+            sb.append("    {\n");
+            sb.append("      minLength: "+minLen+",\n");
+            sb.append("      hint: true,\n");
+            sb.append("      highlight: true\n");
+            sb.append("    },\n");
+            sb.append("    {\n");
+            sb.append("      name: '" + id + "Popup',\n"); 
+            sb.append("      limit: 400,\n");  // see: https://github.com/twitter/typeahead.js/issues/1232
+            sb.append("      display: 'display',\n");
+            sb.append("      templates: {\n");
+            sb.append("        suggestion: function(data) {return '<p>'+data.dropdowndisplay+'</p>';}\n");
+            sb.append("      },\n");
+            sb.append("      source: " + id + "Bloodhound.ttAdapter()\n");
+            sb.append("    }\n");
+            sb.append("  ]\n");
+            sb.append("});\n");
         }
         
         
@@ -517,13 +667,11 @@ public class OATextField implements OAJspComponent, OATableEditor {
         return sb.toString();
     }
 
-    private String name;
 
     /** used when displaying error message for this textfield */
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -548,63 +696,112 @@ public class OATextField implements OAJspComponent, OATableEditor {
     protected String getTextJavaScript() {
         StringBuilder sb = new StringBuilder(1024);
 
-        String ids = id;
+        String newName = id;
         String value = null;
 
         if (hub != null && !OAString.isEmpty(propertyPath)) {
-            OAObject obj = (OAObject) hub.getAO();
-            if (obj != null) {
-                OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
-                Object[] objs = key.getObjectIds();
-                if (objs != null && objs.length > 0 && objs[0] != null) {
-                    ids += "_" + objs[0];
-                }
-                else {
-                    ids += "_guid." + key.getGuid();
+            if (getTypeAhead() != null && bPropertyPathIsManyLink) {
+                // https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
+                sb.append("$('#" + id + "').tagsinput('removeAll');\n");
+                
+                OAObject obj = (OAObject) hub.getActiveObject();
+                if (obj != null) {
+                    Hub h = (Hub) ((OAObject)obj).getProperty(propertyPath);
+ 
+                    // value is a comma separated list of Ids, js code will be sent also
+                    for (Object objx : h) {
+                        if (!(objx instanceof OAObject)) continue;
+                        obj = (OAObject) objx;
+                        
+                        OAObjectKey key = obj.getObjectKey();
+                        Object[] idxs = key.getObjectIds();
+                        String idx;
+                        if (idxs == null || idxs.length == 0) idx = obj.getGuid()+"";
+                        else idx = idxs[0]+"";
+                         
+                        String s2 = getTypeAhead().getDisplayValue(obj);
+                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+s2+"\"});\n");
+                    }
                 }
             }
-            if (obj != null) {
-                if (isDateTime() || isDate() || isTime()) {
-                    String fmt = getFormat();
-                    boolean b = true;
+            else if (getTypeAhead() != null && bPropertyPathIsOneLink) {
+                // https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
+                sb.append("$('#" + id + "').tagsinput('removeAll');\n");
 
-                    if (bIsDateTime) {
-                        b = false;
-                        if (!OAString.isEmpty(fmt)) {
-                            String s = fmt.toUpperCase();
-                            if (s.indexOf("X") >= 0 || s.indexOf("Z") >= 0) { // includes timezone in value
-                                b = true;
+                OAObject obj = (OAObject) hub.getActiveObject();
+                if (obj != null) {
+                    Object objx = ((OAObject)obj).getProperty(propertyPath);
+                    if (objx != null) {
+                        obj = (OAObject) objx;
+                        
+                        OAObjectKey key = obj.getObjectKey();
+                        Object[] idxs = key.getObjectIds();
+                        String idx;
+                        if (idxs == null || idxs.length == 0) idx = obj.getGuid()+"";
+                        else idx = idxs[0]+"";
+                         
+                        String s2 = getTypeAhead().getDisplayValue(obj);
+                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+s2+"\"});\n");
+                    }
+                }
+            }
+            else {
+                OAObject obj = (OAObject) hub.getAO();
+                if (obj != null) {
+                    OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
+                    Object[] objs = key.getObjectIds();
+                    if (objs != null && objs.length > 0 && objs[0] != null) {
+                        newName += "_" + objs[0];
+                    }
+                    else {
+                        newName += "_guid." + key.getGuid();
+                    }
+                }
+                if (obj != null) {
+                    if (isDateTime() || isDate() || isTime()) {
+                        String fmt = getFormat();
+                        boolean b = true;
+    
+                        if (bIsDateTime) {
+                            b = false;
+                            if (!OAString.isEmpty(fmt)) {
+                                String s = fmt.toUpperCase();
+                                if (s.indexOf("X") >= 0 || s.indexOf("Z") >= 0) { // includes timezone in value
+                                    b = true;
+                                }
                             }
-                        }
-                        if (!b) {
-                            b = true;
-                            OADateTime dt = (OADateTime) obj.getProperty(propertyPath);
-                            if (dt != null) {
-                                OAForm f = getForm();
-                                if (f != null) {
-                                    OASession sess = f.getSession();
-                                    if (sess != null) {
-                                        TimeZone tz = sess.getBrowserTimeZone();
-                                        dt = dt.convertTo(tz);
-                                        value = dt.toString(fmt);
-                                        b = false;
+                            if (!b) {
+                                b = true;
+                                OADateTime dt = (OADateTime) obj.getProperty(propertyPath);
+                                if (dt != null) {
+                                    OAForm f = getForm();
+                                    if (f != null) {
+                                        OASession sess = f.getSession();
+                                        if (sess != null) {
+                                            TimeZone tz = sess.getBrowserTimeZone();
+                                            dt = dt.convertTo(tz);
+                                            value = dt.toString(fmt);
+                                            b = false;
+                                        }
                                     }
                                 }
                             }
                         }
+                        if (b) {
+                            value = obj.getPropertyAsString(propertyPath, fmt);
+                        }
                     }
-                    if (b) {
-                        value = obj.getPropertyAsString(propertyPath, fmt);
+                    else {
+                        value = obj.getPropertyAsString(propertyPath);
                     }
                 }
-                else value = obj.getPropertyAsString(propertyPath);
             }
         }
         else {
             value = getValue();
         }
         if (value == null) value = "";
-        sb.append("$('#" + id + "').attr('name', '" + ids + "');\n");
+        sb.append("$('#" + id + "').attr('name', '" + newName + "');\n");
 
         value = convertValue(value);
 
@@ -612,28 +809,66 @@ public class OATextField implements OAJspComponent, OATableEditor {
         else lastValue = value;
 
         // set existing value            
-        if (getMultiValue() && (getTypeAhead()!=null)) {
-            // value only has "id", need to get the value to be displayed
+        if (getTypeAhead()!=null && (bPropertyPathIsManyLink || bPropertyPathIsOneLink)) {
+            // already done
+        }
+        else if (getLookupValues() != null && !getMultiValue()) {
+            // just set value
+            sb.append("$('#" + id + "').val('" + value + "');\n");
+        }
+        else if (getLookupValues() != null && getMultiValue()) {
+            // uses tagInput+ta+bloodhound with a string[] of values (not objs)
+            // values are separated by comma and need to be added separately
+            sb.append("$('#" + id + "').tagsinput('removeAll');\n");
             for (int i=1;;i++) {
-                String s = OAString.field(value, ",", i);
-                if (s == null) break;
-                if (!OAString.isInteger(s)) continue;
-                String s2 = getTypeAheadDisplayValueForId(OAConv.toInt(s));
-                sb.append("$('#" + id + "').tagsinput('add', { \"id\": "+s+" , \"value\": \""+s2+"\"});\n");
+                String sx = OAString.field(value, ",", i);
+                if (sx == null) break;
+                sx = sx.trim();
+                if (sx.length() == 0) continue;
+                sx = OAString.convert(sx, "\"", "");
+                if (sx.length() == 0) continue;
+                sb.append("$('#" + id + "').tagsinput('add', '"+sx+"');\n");
             }
-        }        
+        }
+        else if (getTypeAhead()!=null && getMultiValue()) {
+            // uses tagsInput+typeAhead+bloodhound and uses array objects <id,value>
+            // values are separated by comma and need to be added separately
+            sb.append("$('#" + id + "').tagsinput('removeAll');\n");
+            for (int i=1;;i++) {
+                String sx = OAString.field(value, ",", i);
+                if (sx == null) break;
+                sx = sx.trim();
+                if (sx.length() == 0) continue;
+                sx = OAString.convert(sx, "\"", "");
+                if (sx.length() == 0) continue;
+                // the object.id is not known for the value, will instead use display as the id
+                //   this is the same as getTypeAheadJson(..) return value
+                sb.append("$('#" + id + "').tagsinput('add', { \"id\": \""+sx+"\" , \"display\": \""+sx+"\"});\n");
+            }
+        }
+        else if (getMultiValue() && !bPropertyPathIsManyLink && !bPropertyPathIsOneLink) {
+            // values are separated by comma and need to be added
+            sb.append("$('#" + id + "').tagsinput('removeAll');\n");
+            for (int i=1;;i++) {
+                String sx = OAString.field(value, ",", i);
+                if (sx == null) break;
+                sx = sx.trim();
+                if (sx.length() == 0) continue;
+                sx = OAString.convert(sx, "\"", "");
+                if (sx.length() == 0) continue;
+                sb.append("$('#" + id + "').tagsinput('add', '"+sx+"');\n");
+            }
+        }
         else {
             sb.append("$('#" + id + "').val('" + value + "');\n");
         }
-        
-        
         
         if (width > 0) sb.append("$('#" + id + "').attr('size', '" + width + "');\n");
         if (maxWidth > 0) sb.append("$('#" + id + "').attr('maxlength', '" + maxWidth + "');\n");
         if (getEnabled()) sb.append("$('#" + id + "').removeAttr('disabled');\n");
         else sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
         
-        if (!getMultiValue()) {
+        if (!getMultiValue() && !bPropertyPathIsManyLink && !bPropertyPathIsOneLink) {
             if (bVisible) sb.append("$('#" + id + "').show();\n");
             else sb.append("$('#" + id + "').hide();\n");
         }
@@ -921,7 +1156,9 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public boolean isRequired() {
         return required;
     }
-
+    public boolean getRequired() {
+        return required;
+    }
     public void setRequired(boolean required) {
         this.required = required;
     }
@@ -1001,6 +1238,18 @@ public class OATextField implements OAJspComponent, OATableEditor {
                 }
                 break;
             }
+            
+            OAObjectInfo oi = hub.getOAObjectInfo();
+            OALinkInfo li = oi.getLinkInfo(propertyPath);
+            if (li != null) {
+                if (li.getType() == li.TYPE_MANY) {
+                    bPropertyPathIsManyLink = true;
+                }
+                else {
+                    bPropertyPathIsOneLink = true;
+                }
+            }
+            
         }
         setDateTime(bDateTime);
         setTime(bTime);
@@ -1078,7 +1327,7 @@ public class OATextField implements OAJspComponent, OATableEditor {
     public void setTypeAhead(OATypeAhead ta) {
         this.typeAhead = ta;
     }
-    public OATypeAhead<?,?> getTypeAhead() {
+    public OATypeAhead getTypeAhead() {
         return typeAhead;
     }
     public void setLookupValues(String[] lookupValues) {
@@ -1135,7 +1384,14 @@ public class OATextField implements OAJspComponent, OATableEditor {
             if (dd == null) dd = "";
             dd.replace('\"', ' ');
             
-            json += "{\"id\":"+id+",\"display\":\""+displayValue+"\",\"dropdowndisplay\":\""+dd+"\"}";
+            if (bPropertyPathIsManyLink || bPropertyPathIsOneLink) {
+                json += "{\"id\":"+id+",\"display\":\""+displayValue+"\",\"dropdowndisplay\":\""+dd+"\"}";
+            }
+            else {
+                // need to send id=displayValue, since they will be stored in property and not the id
+                //    and then used when it has to reset the txt value from this data
+                json += "{\"id\":\""+displayValue+"\",\"display\":\""+displayValue+"\",\"dropdowndisplay\":\""+dd+"\"}";
+            }
         }
         return json;
     }
@@ -1174,6 +1430,129 @@ public class OATextField implements OAJspComponent, OATableEditor {
     }
     public boolean getMultiValue() {
         return this.bMultiValue;
+    }
+
+    
+    @Override
+    public String[] getRequiredJsNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        al.add(OAJspDelegate.JS_jquery);
+        if (getAutoComplete()) {
+            al.add(OAJspDelegate.JS_jquery_ui);
+        }
+        if (getInputMask() != null) {
+            al.add(OAJspDelegate.JS_jquery_ui);
+            al.add(OAJspDelegate.JS_jquery_maskedinput);
+        }
+        
+        if (getMultiValue()) {
+            al.add(OAJspDelegate.JS_bootstrap);
+            al.add(OAJspDelegate.JS_bootstrap_tagsinput);
+        }
+        else if (getTypeAhead() != null && (bPropertyPathIsOneLink || bPropertyPathIsManyLink)) {
+            al.add(OAJspDelegate.JS_bootstrap);
+            al.add(OAJspDelegate.JS_bootstrap_tagsinput);
+        }
+
+        if (getTypeAhead() != null || getLookupValues() != null) {
+            al.add(OAJspDelegate.JS_bootstrap);
+            al.add(OAJspDelegate.JS_bootstrap_typeahead);
+        }
+        
+        if (isDateTime()) {
+            if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
+                al.add(OAJspDelegate.JS_jquery_ui);
+                al.add(OAJspDelegate.JS_jquery_timepicker);
+            }
+            else {
+                al.add(OAJspDelegate.JS_bootstrap);
+                al.add(OAJspDelegate.JS_moment);
+                al.add(OAJspDelegate.JS_bootstrap_datetimepicker);
+            }
+        }
+        else if (isDate()) {
+            if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
+                al.add(OAJspDelegate.JS_jquery_ui);
+            }
+            else {
+                al.add(OAJspDelegate.JS_bootstrap);
+                al.add(OAJspDelegate.JS_moment);
+                al.add(OAJspDelegate.JS_bootstrap_datetimepicker);
+            }
+        }
+        else if (isTime()) {
+            if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
+                al.add(OAJspDelegate.JS_jquery_ui);
+                al.add(OAJspDelegate.JS_jquery_timepicker);
+            }
+            else {
+                al.add(OAJspDelegate.JS_bootstrap);
+                al.add(OAJspDelegate.JS_moment);
+                al.add(OAJspDelegate.JS_bootstrap_datetimepicker);
+            }
+        }
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        ArrayList<String> al = new ArrayList<>();
+        if (getAutoComplete()) {
+            al.add(OAJspDelegate.CSS_jquery_ui);
+        }
+        if (getInputMask() != null) {
+        }
+        
+        if (getMultiValue()) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+            al.add(OAJspDelegate.CSS_bootstrap_tagsinput);
+        }
+        else if (getTypeAhead() != null && (bPropertyPathIsOneLink || bPropertyPathIsManyLink)) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+            al.add(OAJspDelegate.CSS_bootstrap_tagsinput);
+        }
+
+        if (getTypeAhead() != null || getLookupValues() != null) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+            al.add(OAJspDelegate.CSS_bootstrap_typeahead);
+        }
+        
+        if (isDateTime()) {
+            if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
+                al.add(OAJspDelegate.CSS_jquery_ui);
+                al.add(OAJspDelegate.CSS_jquery_timepicker);
+            }
+            else {
+                al.add(OAJspDelegate.CSS_bootstrap);
+                al.add(OAJspDelegate.CSS_bootstrap_datetimepicker);
+            }
+        }
+        else if (isDate()) {
+            if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
+                al.add(OAJspDelegate.CSS_jquery_ui);
+            }
+            else {
+                al.add(OAJspDelegate.CSS_bootstrap);
+                al.add(OAJspDelegate.CSS_bootstrap_datetimepicker);
+            }
+        }
+        else if (isTime()) {
+            if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
+                al.add(OAJspDelegate.CSS_jquery_ui);
+                al.add(OAJspDelegate.CSS_jquery_timepicker);
+            }
+            else {
+                al.add(OAJspDelegate.CSS_bootstrap);
+                // al.add(OAJspDelegate.JS_moment);
+                al.add(OAJspDelegate.CSS_bootstrap_datetimepicker);
+            }
+        }
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
     }
     
 }

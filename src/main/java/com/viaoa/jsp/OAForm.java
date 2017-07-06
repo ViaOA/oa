@@ -80,6 +80,8 @@ public class OAForm extends OABase implements Serializable {
     protected String url;  // jsp name
 
     protected String forwardUrl;
+    
+    private int jsLibrary; 
 
     /** add script to be returned to browser on initialize. */
     public String jsAddScript;
@@ -99,6 +101,17 @@ public class OAForm extends OABase implements Serializable {
         }
     }
     
+    /**
+     * set the preferred js library to use. 
+     * @param type see {@link OAApplication#JSLibrary_JQueryUI} {@link OAApplication#JSLibrary_Bootstrap}
+     */
+    public void setDefaultJsLibrary(int type) {
+        this.jsLibrary = type;
+    }
+    public int getDefaultJsLibrary() {
+        if (this.jsLibrary != 0 || getSession() == null) return this.jsLibrary;
+        return getSession().getDefaultJsLibrary();
+    }
     
     public enum Type {
         None,
@@ -1316,6 +1329,11 @@ public class OAForm extends OABase implements Serializable {
         if (comp instanceof OAButton) return (OAButton) comp;
         return null;
     }
+    public OAButtonList getButtonList(String id) {
+        OAJspComponent comp = getComponent(id);
+        if (comp instanceof OAButtonList) return (OAButtonList) comp;
+        return null;
+    }
     public OAHtmlElement getHtmlElement(String id) {
         OAJspComponent comp = getComponent(id);
         if (comp instanceof OAHtmlElement) return (OAHtmlElement) comp;
@@ -1390,6 +1408,131 @@ public class OAForm extends OABase implements Serializable {
         OAJspComponent comp = getComponent(id);
         if (comp instanceof OAPopupList) return (OAPopupList) comp;
         return null;
+    }
+
+    
+    protected final ArrayList<String> alCss = new ArrayList<>();
+    /**
+     * filepath to include on CSS files on the page
+     * @param filePath full path of page (relative to webcontent)
+     */
+    public void addCss(String filePath) {
+        if (filePath == null) return;
+        if (!alCss.contains(filePath)) alCss.add(filePath);
+        
+    }
+
+    protected final ArrayList<String> alJs = new ArrayList<>();
+    /**
+     * filepath to include on JS files on the page
+     * @param filePath full path of page (relative to webcontent)
+     */
+    public void addJs(String filePath) {
+        if (filePath == null) return;
+        if (!alJs.contains(filePath)) alJs.add(filePath);
+    }
+    
+    
+    protected final ArrayList<String> alRequiredCssName = new ArrayList<>();
+    /**
+     * add names of CSS to include on page
+     * @param name of css to include,  see {@link OAJspDelegate#registerRequiredCss(String, String)} 
+     */
+    public void addRequiredCssName(String name) {
+        if (name == null) return;
+        if (!alRequiredCssName.contains(name)) alRequiredCssName.add(name);
+        
+    }
+    protected final ArrayList<String> alRequiredJsName = new ArrayList<>();
+    /**
+     * add names of JS to include on page
+     * @param name of js to include,  see {@link OAJspDelegate#registerRequiredJs(String, String)} 
+     */
+    public void addRequiredJsName(String name) {
+        if (name == null) return;
+        if (!alRequiredJsName.contains(name)) alRequiredJsName.add(name);
+    }
+    
+    
+    public String getCssInsert() {
+        ArrayList<String> alName = new ArrayList<>();
+        
+        for (int i=0; ;i++) {
+            if (i >= alComponent.size()) break;
+            OAJspComponent comp = alComponent.get(i);
+            if (!(comp instanceof OAJspRequirementsInterface)) continue;
+            String[] ss = ((OAJspRequirementsInterface) comp).getRequiredCssNames();
+            if (ss == null) continue;
+
+            for (String s : ss) {
+                if (!alName.contains(s.toUpperCase())) alName.add(s.toUpperCase());
+            }
+        }
+        
+        // include oajsp.css after components
+        if (!alName.contains(OAJspDelegate.CSS_oajsp.toUpperCase())) alName.add(OAJspDelegate.CSS_oajsp.toUpperCase());
+
+        for (String s : alRequiredCssName) {
+            if (!alName.contains(s.toUpperCase())) alName.add(s.toUpperCase());
+        }
+        
+        ArrayList<String> alFilePath = new ArrayList<>();
+
+        for (String s : alName) {
+            s = OAJspDelegate.getCssFilePath(s);
+            if (s != null && !alFilePath.contains(s)) alFilePath.add(s);
+        }
+        
+        for (String s : alCss) {
+            if (s != null && !alFilePath.contains(s)) alFilePath.add(s);
+        }
+
+        StringBuilder sb = new StringBuilder(1024); 
+        for (String s : alFilePath) {
+            s = "<link rel=\"stylesheet\" type=\"text/css\" href=\""+s+"\">\n";
+            sb.append(s);
+        }
+        
+        return sb.toString();
+    }
+
+    public String getJsInsert() {
+        ArrayList<String> alName = new ArrayList<>();
+        
+        for (String s : alRequiredJsName) {
+            if (!alName.contains(s.toUpperCase())) alName.add(s.toUpperCase());
+        }
+        
+        for (int i=0; ;i++) {
+            if (i >= alComponent.size()) break;
+            OAJspComponent comp = alComponent.get(i);
+            if (!(comp instanceof OAJspRequirementsInterface)) continue;
+            String[] ss = ((OAJspRequirementsInterface) comp).getRequiredJsNames();
+            if (ss == null) continue;
+
+            for (String s : ss) {
+                if (!alName.contains(s.toUpperCase())) alName.add(s.toUpperCase());
+            }
+        }        
+        
+        ArrayList<String> alFilePath = new ArrayList<>();
+
+        for (String s : alName) {
+            s = OAJspDelegate.getJsFilePath(s);
+            if (s != null && !alFilePath.contains(s)) alFilePath.add(s);
+        }
+        
+        for (String s : alJs) {
+            if (s != null && !alFilePath.contains(s)) alFilePath.add(s);
+        }
+
+        StringBuilder sb = new StringBuilder(1024); 
+        for (String s : alFilePath) {
+            s = "<script type=\"text/javascript\" language=\"javascript\" src=\""+s+"\"></script>\n";
+            sb.append(s);
+        }
+        
+        return sb.toString();
     }
 
 }

@@ -51,17 +51,22 @@ public class OATextArea extends OATextField {
         int max = getMaxWidth();
         if (max > 30) {
             StringBuilder sb = new StringBuilder(300);
-            sb.append("$('#"+getId()+"').wrap('<div style=\"display: inline-block;\">');\n");
-            sb.append("$('#"+getId()+"').after('<div><span id=\""+getId()+"z\" style=\"padding: 2px 15px; font-style: italic;font-size:9px;\"></span></div>');\n");
+            sb.append("$('#"+getId()+"').wrap('<div id=\""+getId()+"Wrap\" class=\"oaTextAreaWrap\">');\n");
+            
+            
+            sb.append("$('#"+getId()+"').after('<div><span id=\""+getId()+"Message\" class=\"oaTextAreaMessage\"></span></div>');\n");
+            //was:  sb.append("$('#"+getId()+"').after('<div><span id=\""+getId()+"z\" style=\"padding: 2px 15px; font-style: italic;font-size:9px;\"></span></div>');\n");
+            
+            
             sb.append("$('#"+getId()+"').blur(function() {\n");
-            sb.append("    $('#"+getId()+"z').hide();\n");
+            sb.append("    $('#"+getId()+"Message').hide();\n");
             sb.append("});\n");
             sb.append("$('#"+getId()+"').focus(function() {\n");
-            sb.append("    $('#"+getId()+"z').show();\n");
+            sb.append("    $('#"+getId()+"Message').show();\n");
             sb.append("});\n");
             sb.append("$('#"+getId()+"').bind('input propertychange', function() {\n");
             sb.append("    var text = $(this).val();\n");
-            sb.append("    $('#"+getId()+"z').html(\" \"+text.length+\" out of "+max+"\");\n");
+            sb.append("    $('#"+getId()+"Message').html(\" \"+text.length+\" out of "+max+"\");\n");
             sb.append("});\n");
             js += sb.toString();
         }

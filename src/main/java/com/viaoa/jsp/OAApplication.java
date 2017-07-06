@@ -16,6 +16,7 @@ import java.io.*;
 import javax.servlet.http.HttpSession;
 
 import com.viaoa.hub.*;
+import com.viaoa.util.OAString;
 
 /**
  * Application level object.
@@ -28,6 +29,23 @@ public class OAApplication extends OABase implements Serializable {
     protected String url;
     protected String name;
 
+    public final static int JSLibrary_Unknown = 0;
+    public final static int JSLibrary_Bootstrap = 1;
+    public final static int JSLibrary_JQueryUI = 2;
+    private int jsLibrary; 
+    
+    /**
+     * set the preferred js library to use. 
+     * @param type see {@link OAApplication#JSLibrary_JQueryUI} {@link OAApplication#JSLibrary_Bootstrap}
+     */
+    public void setDefaultJsLibrary(int type) {
+        this.jsLibrary = type;
+    }
+    public int getDefaultJsLibrary() {
+        return jsLibrary;
+    }
+    
+    
     public OAApplication() {
     }
     
@@ -66,6 +84,6 @@ public class OAApplication extends OABase implements Serializable {
     public void removeSession(HttpSession session) {
         session.removeAttribute(this.getName()+".OA");
     }
-    
+
 }
 

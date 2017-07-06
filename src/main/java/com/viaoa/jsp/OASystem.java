@@ -23,6 +23,7 @@ public class OASystem extends OABase implements Serializable {
 
     public OASystem() {
     }
+
     
     public OAApplication getApplication(String applicationName, ServletContext application) {
         OAApplication oaapplication = (OAApplication) application.getAttribute(applicationName+".OA");
@@ -40,5 +41,5 @@ public class OASystem extends OABase implements Serializable {
         return oaapplication;
     }
 
- }
+}
 

@@ -89,11 +89,16 @@ public class OAEqualFilter implements OAFilter {
                 return obj != null;
             }
         }
-        if (pp != null) {
-            obj = pp.getValue(obj);
-        }
+        obj = getPropertyValue(obj);
         return OACompare.isEqual(obj, value, bIgnoreCase);
     }
     
+    protected Object getPropertyValue(Object obj) {
+        Object objx = obj;
+        if (pp != null) {
+            objx = pp.getValue(obj);
+        }
+        return objx;
+    }
 }
 

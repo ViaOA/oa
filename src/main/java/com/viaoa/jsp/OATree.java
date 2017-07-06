@@ -32,7 +32,7 @@ import com.viaoa.util.*;
  *  
  * @author vvia
  */
-public class OATree implements OAJspComponent, OATableEditor {
+public class OATree implements OAJspComponent, OATableEditor, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;
@@ -502,6 +502,16 @@ fork treeview.js and add changes so that unselected event can know if there is a
     }
     public void setForwardUrl(String forwardUrl) {
         this.forwardUrl = forwardUrl;
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        return new String[] {OAJspDelegate.CSS_bootstrap, OAJspDelegate.CSS_bootstrap_treeview};
+    }
+
+    @Override
+    public String[] getRequiredJsNames() {
+        return new String[] {OAJspDelegate.JS_bootstrap, OAJspDelegate.JS_bootstrap_treeview};
     }
     
 }

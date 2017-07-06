@@ -99,12 +99,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         OACascade cascade = null;
         if (bRequiresCasade) cascade = new OACascade(true);
         
-        try {
-            _load(object, 0, cascade);
-        }
-        finally {
-            cascade = null;
-        }
+        _load(object, 0, cascade);
     }
 
     private void _load(final Object obj, final int pos, final OACascade cascade) {
@@ -176,7 +171,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             
             if (x < 1) break;
             try {
-                Thread.sleep(100);
+                Thread.sleep(250);
             }
             catch (Exception e) {}
         }

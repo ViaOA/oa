@@ -19,29 +19,50 @@ import com.viaoa.object.OAObject;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.OAString;
 import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 
 /**
- * Creates a filter to see if the value from the propertyPath is less or equal to the filter value.
+ * Creates a filter to see if the value from the propertyPath is startsWith (string) the filter value.
+ * 
  * @author vvia
- * @see OACompare#isLessOrEqual(Object, Object)
+ * @see OACompare#isEqual(Object, Object)
  */
-public class OALessOrEqualFilter implements OAFilter {
-    private static Logger LOG = Logger.getLogger(OALessOrEqualFilter.class.getName());
+public class OAStartsWithFilter implements OAFilter {
+    private static Logger LOG = Logger.getLogger(OAStartsWithFilter.class.getName());
+    private Object value;
+    private boolean bIgnoreCase;
     private OAPropertyPath pp;
     private OAFinder finder;
 
-    private Object value;
-    public OALessOrEqualFilter(Object value) {
+    public OAStartsWithFilter(Object value) {
         this.value = value;
+        bSetup = true;
     }
-    public OALessOrEqualFilter(OAPropertyPath pp, Object value) {
+
+    public OAStartsWithFilter(OAPropertyPath pp, Object value) {
         this.pp = pp;
         this.value = value;
     }
-    public OALessOrEqualFilter(String pp, Object value) {
+    public OAStartsWithFilter(String pp, Object value) {
         this(pp==null?null:new OAPropertyPath(pp), value);
     }
+
+    public OAStartsWithFilter(Object value, boolean bIgnoreCase) {
+        this.value = value;
+        this.bIgnoreCase = bIgnoreCase;
+        bSetup = true;
+    }
+    
+    public OAStartsWithFilter(OAPropertyPath pp, Object value, boolean bIgnoreCase) {
+        this.pp = pp;
+        this.value = value;
+        this.bIgnoreCase = bIgnoreCase;
+    }
+    public OAStartsWithFilter(String pp, Object value, boolean bIgnoreCase) {
+        this(pp==null?null:new OAPropertyPath(pp), value, bIgnoreCase);
+    }
+    
 
     private boolean bSetup;
     private int cntError;
@@ -54,10 +75,11 @@ public class OALessOrEqualFilter implements OAFilter {
             FinderInfo fi = OAFilterDelegate.createFinder(obj.getClass(), pp);
             if (fi != null) {
                 this.finder = fi.finder;
-                OAFilter f = new OALessOrEqualFilter(fi.pp, value);
+                OAFilter f = new OAStartsWithFilter(fi.pp, value, bIgnoreCase);
                 finder.addFilter(f);
             }
         }
+        
         if (finder != null) {
             if (obj instanceof OAObject) {
                 obj = finder.findFirst((OAObject)obj);
@@ -69,9 +91,19 @@ public class OALessOrEqualFilter implements OAFilter {
             }
         }
         obj = getPropertyValue(obj);
-        return OACompare.isLessOrEqual(obj, value);
+        
+        String s1 = OAString.toString(obj);
+        String s2 = OAString.toString(value);
+        if (s1 == null || s2 == null) return false;
+        
+        if (bIgnoreCase) {
+            s1 = s1.toUpperCase();
+            s2 = s2.toUpperCase();
+        }
+        boolean b = s1.startsWith(s2);
+        return b;
     }
-
+    
     protected Object getPropertyValue(Object obj) {
         Object objx = obj;
         if (pp != null) {

@@ -23,7 +23,7 @@ import com.viaoa.util.OAString;
  * Create a dialog out of Html element.
  * @author vvia
  */
-public class OADialog extends OAHtmlElement {
+public class OADialog extends OAHtmlElement implements OAJspRequirementsInterface {
     protected boolean bModal;
     protected Dimension dim, dimMin, dimMax;
     protected String title;
@@ -281,5 +281,29 @@ public class OADialog extends OAHtmlElement {
         else lastAjaxSent = js;
 
         return js;
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        String[] ss;
+        if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
+            ss = new String[] {OAJspDelegate.CSS_jquery_ui};
+        }
+        else {
+            ss = new String[] {OAJspDelegate.CSS_bootstrap};
+        }
+        return ss;
+    }
+
+    @Override
+    public String[] getRequiredJsNames() {
+        String[] ss;
+        if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
+            ss = new String[] {OAJspDelegate.JS_jquery, OAJspDelegate.JS_jquery_ui};
+        }
+        else {
+            ss = new String[] {OAJspDelegate.JS_bootstrap};
+        }
+        return ss;
     }
 }

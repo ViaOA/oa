@@ -34,7 +34,21 @@ public class OASession extends OABase {
     private int msTimezoneOffset = -1;
     private TimeZone timeZone;
 
+    private int jsLibrary = OAApplication.JSLibrary_JQueryUI; 
+    
+    /**
+     * set the preferred js library to use. 
+     * @param type see {@link OAApplication#JSLibrary_JQueryUI} {@link OAApplication#JSLibrary_Bootstrap}
+     */
+    public void setDefaultJsLibrary(int type) {
+        this.jsLibrary = type;
+    }
+    public int getDefaultJsLibrary() {
+        if (this.jsLibrary != 0 || getApplication() == null) return this.jsLibrary;
+        return getApplication().getDefaultJsLibrary();
+    }
 
+    
     public OASession() {
     }
 
