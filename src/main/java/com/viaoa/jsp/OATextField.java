@@ -58,6 +58,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     protected OATypeAhead typeAhead;
     protected String[] lookupValues;
     private String name;
+    private boolean bClearButton;
 
     /** javascript regex */
 
@@ -381,6 +382,59 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
 
+        final int max = getMaxWidth();
+        
+        // 20170706 support for clear button
+        if (getClearButton()) {
+            sb.append("$('#"+getId()+"').addClass('oaTextFieldWithClear');\n");
+            sb.append("$('#"+getId()+"').wrap('<div id=\""+getId()+"Wrap\" class=\"oaTextFieldWrap\">');\n");
+            sb.append("$('#"+getId()+"').after('<span id=\""+getId()+"Clear\" class=\"glyphicon glyphicon-remove oaTextFieldClear\"></span>');\n");
+
+            sb.append("$('#"+getId()+"').keyup(function() {\n");
+            sb.append("    var text = $(this).val();\n");
+            sb.append("    $('#"+getId()+"Clear').css('visibility', ((text.length > 0)?'visible':'hidden'));\n");
+            if (max > 0) {
+                sb.append("    if (text.length > " + max + ") {\n");
+                sb.append("        $(this).val(text.slice(0, " + max + "));\n");
+                sb.append("    }\n");
+            }
+            sb.append("});\n");
+
+            sb.append("$('#"+getId()+"Clear').mousedown(function() {\n");
+
+            if (bAjaxSubmit) {
+                sb.append("    $('#"+getId()+"').ignore=true;\n");
+                sb.append("    $('#"+getId()+"').val('');\n");
+                sb.append("    $('#oacommand').val('" + getId() + "');\n");
+                sb.append("    ajaxSubmit();\n");
+                sb.append("    $('#"+getId()+"').ignore=false;\n");
+            }
+            else if (getSubmit()) {
+                sb.append("    $('#"+getId()+"').ignore=true;\n");
+                sb.append("    $('#"+getId()+"').val('');\n");
+                sb.append("    $('#oacommand').val('" + getId() + "');\n");
+                sb.append("    $('form').submit();\n");
+                sb.append("    $('#"+getId()+"').ignore=false;\n");
+            }
+            
+            sb.append("    if ($('#"+getId()+"').val().length == 0) return false;\n");
+            sb.append("    $('#"+getId()+"').val('');\n");
+            // sb.append("    $('#"+getId()+"').blur();\n");
+            sb.append("    $('#"+getId()+"Clear').css('visibility', 'hidden');\n");
+            sb.append("    $('#"+getId()+"').focus();\n");
+            sb.append("    return false;\n");
+            sb.append("});\n");
+        }
+        else if (max > 0) {
+            sb.append("$('#" + getId() + "').keyup(function(event) {\n");
+            sb.append("    var text = $(this).val();\n");
+            sb.append("    if (text.length > " + max + ") {\n");
+            sb.append("        $(this).val(text.slice(0, " + max + "));\n");
+            sb.append("    }\n");
+            sb.append("});\n");
+        }
+        
+        
         if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
             if (!getAutoComplete() && (getTypeAhead()==null)) {
                 if (!isDateTime() && !isDate() && !isTime()) { // date/time will use close (see below)
@@ -616,17 +670,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             sb.append("});\n");
         }
         
-        
-        int max = getMaxWidth();
-        if (max > 0) {
-            sb.append("$('#" + getId() + "').keyup(function(event) {\n");
-            sb.append("    var text = $(this).val();\n");
-            sb.append("    if (text.length > " + max + ") {\n");
-            sb.append("        $(this).val(text.slice(0, " + max + "));\n");
-            sb.append("    }\n");
-            sb.append("});\n");
-        }
-
         // 20170628 moved from begin of method
         sb.append(getAjaxScript());
         
@@ -681,7 +724,12 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     @Override
     public String getAjaxScript() {
         String js = getTextJavaScript();
+        if (js == null) js = "";
 
+        if (getClearButton()) {
+            js += "$('#"+getId()+"Clear').css('visibility', (($('#"+getId()+"').val().length > 0)?'visible':'hidden'));\n";
+        }
+        
         if (bFocus) {
             js += ("$('#" + id + "').focus();\n");
             bFocus = false;
@@ -1553,6 +1601,13 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
         String[] ss = new String[al.size()];
         return al.toArray(ss);
+    }
+    
+    public void setClearButton(boolean b) {
+        this.bClearButton = b;
+    }
+    public boolean getClearButton() {
+        return this.bClearButton;
     }
     
 }

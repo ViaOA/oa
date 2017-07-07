@@ -11,6 +11,7 @@
 package com.viaoa.jsp;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,7 +29,7 @@ import com.viaoa.hub.Hub;
  * @author vvia
  *
  */
-public class OAButton implements OAJspComponent {
+public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
 //qqqqqqq get command types/logic from OAButton
@@ -41,6 +42,7 @@ public class OAButton implements OAJspComponent {
     protected boolean bAjaxSubmit;
     protected String forwardUrl;
     protected boolean bSubmit;
+    protected boolean bSpinner;
     
     public OAButton(String id, Hub hub) {
         this.id = id;
@@ -119,6 +121,9 @@ public class OAButton implements OAJspComponent {
             }
             bWasSubmitted  = (id != null && id.equals(s));
         }
+        if (bWasSubmitted && getSpinner()) {
+            lastAjaxSent = null;
+        }
         return bWasSubmitted; // true if this caused the form submit
     }
 
@@ -143,20 +148,37 @@ public class OAButton implements OAJspComponent {
         if (getSubmit() || getAjaxSubmit()) {
             sb.append("$('#"+id+"').addClass('oaSubmit');\n");
         }
+
+        if (getSpinner()) {
+            sb.append("$('#"+id+"').addClass('ladda-button');\n");
+            sb.append("$('#"+id+"').attr('data-style', 'slide-right');\n");
+            sb.append("$('#"+id+"').html(\"<span class='ladda-label'>\"+$('#"+id+"').html()+\"</span><span class='ladda-spinner'></span>\");\n");
+        }
         
         if (bAjaxSubmit) {
-            sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+            if (getSpinner()) {
+                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');Ladda.create(this).start();ajaxSubmit();return false;});\n");
+            }
+            else {
+                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+            }
         }
         else if (getSubmit()) {
-            sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+            if (getSpinner()) {
+                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');Ladda.create(this).start(); $('form').submit(); return false;});\n");
+            }
+            else {
+                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+            }
         }
+        
         sb.append(getAjaxScript());
         String js = sb.toString();
         return js;
     }
 
     @Override
-    public String getVerifyScript() {
+    public String getVerifyScript() { 
         return null;
     }
 
@@ -169,6 +191,10 @@ public class OAButton implements OAJspComponent {
         else sb.append("$('#"+id+"').hide();");
         // sb.append("\n");
 
+        if (getSpinner()) {
+            sb.append("Ladda.create($('#"+id+"')[0]).stop();\n");
+        }
+        
         String js = sb.toString();
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
@@ -195,5 +221,36 @@ public class OAButton implements OAJspComponent {
         return this.bVisible;
     }
 
+    /**
+     * see: https://github.com/msurguy/ladda-bootstrap
+     * @param b
+     */
+    public void setSpinner(boolean b) {
+        this.bSpinner = b;
+    }
+    public boolean getSpinner() {
+        return bSpinner;
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        ArrayList<String> al = new ArrayList<>();
+        if (getSpinner()) {
+            al.add(OAJspDelegate.CSS_bootstrap_ladda);
+        }
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
+
+    @Override
+    public String[] getRequiredJsNames() {
+        ArrayList<String> al = new ArrayList<>();
+        if (getSpinner()) {
+            al.add(OAJspDelegate.JS_bootstrap_spin);
+            al.add(OAJspDelegate.JS_bootstrap_ladda);
+        }
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
     
 }

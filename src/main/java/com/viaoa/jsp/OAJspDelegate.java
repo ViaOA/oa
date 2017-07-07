@@ -17,6 +17,7 @@ public class OAJspDelegate {
     public static final String CSS_bootstrap_datetimepicker = "bootstrap-datetimepicker";
     public static final String CSS_bootstrap_tagsinput = "bootstrap-tagsinput";
     public static final String CSS_bootstrap_typeahead = "bootstrap-typeahead";
+    public static final String CSS_bootstrap_ladda = "bootstrap-ladda";
     public static final String CSS_oajsp = "oajsp";
 
     /**
@@ -43,6 +44,7 @@ public class OAJspDelegate {
         registerRequiredCssName(CSS_bootstrap_datetimepicker, "vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.css");
         registerRequiredCssName(CSS_bootstrap_tagsinput, "vendor/bootstrap-tagsinput/bootstrap-tagsinput.css");
         registerRequiredCssName(CSS_bootstrap_typeahead, "vendor/bootstrap-typeahead/bootstrap-typeahead.css");
+        registerRequiredCssName(CSS_bootstrap_ladda, "vendor/bootstrap-spinner/ladda-themeless.css");
         registerRequiredCssName(CSS_oajsp, "vendor/viaoa/oajsp.css");
     }
     
@@ -58,6 +60,8 @@ public class OAJspDelegate {
     public static final String JS_bootstrap_datetimepicker = "bootstrap-datetimepicker";
     public static final String JS_bootstrap_tagsinput = "bootstrap-tagsinput";
     public static final String JS_bootstrap_typeahead = "bootstrap-typeahead";
+    public static final String JS_bootstrap_ladda = "bootstrap-ladda";
+    public static final String JS_bootstrap_spin = "bootstrap-spin";
     
     static {
         registerRequiredJsName(JS_jquery, "vendor/jquery-3.1.1/jquery.js");
@@ -70,6 +74,8 @@ public class OAJspDelegate {
         registerRequiredJsName(JS_bootstrap_datetimepicker, "vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.js");
         registerRequiredJsName(JS_bootstrap_tagsinput, "vendor/bootstrap-tagsinput/bootstrap-tagsinput.js");
         registerRequiredJsName(JS_bootstrap_typeahead, "vendor/bootstrap-typeahead/bootstrap-typeahead.js");
+        registerRequiredJsName(JS_bootstrap_ladda, "vendor/bootstrap-spinner/ladda.js");
+        registerRequiredJsName(JS_bootstrap_spin, "vendor/bootstrap-spinner/spin.js");
     }
     
     
