@@ -60,6 +60,11 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     private String name;
     private boolean bClearButton;
 
+    protected String toolTip;
+    protected OATemplate templateToolTip;
+    private boolean bHadToolTip;
+    
+    
     /** javascript regex */
 
     // http://daringfireball.net/2010/07/improved_regex_for_matching_urls
@@ -375,6 +380,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     @Override
     public String getScript() {
         lastAjaxSent = null;
+        bHadToolTip = false;
         StringBuilder sb = new StringBuilder(1024);
 
         // 20170628 moved to below
@@ -384,7 +390,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
         final int max = getMaxWidth();
         
-        // 20170706 support for clear button
+        
+        
         if (getClearButton()) {
             sb.append("$('#"+getId()+"').addClass('oaTextFieldWithClear');\n");
             sb.append("$('#"+getId()+"').wrap('<div id=\""+getId()+"Wrap\" class=\"oaTextFieldWrap\">');\n");
@@ -723,21 +730,47 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
     @Override
     public String getAjaxScript() {
-        String js = getTextJavaScript();
-        if (js == null) js = "";
+        StringBuilder sb = new StringBuilder(1024);
+        String s = getTextJavaScript();
+        if (s != null) sb.append(s);
 
         if (getClearButton()) {
-            js += "$('#"+getId()+"Clear').css('visibility', (($('#"+getId()+"').val().length > 0)?'visible':'hidden'));\n";
+            sb.append("$('#"+getId()+"Clear').css('visibility', (($('#"+getId()+"').val().length > 0)?'visible':'hidden'));\n");
+        }
+        
+        // tooltip
+        String prefix = null;
+        String tt = getProcessedToolTip();
+        if (OAString.isNotEmpty(tt)) {
+            tt = OAString.convertForSingleQuotes(tt);
+            if (!bHadToolTip) {
+                bHadToolTip = true;
+                prefix = "$('#"+id+"').tooltip();\n";
+            }
+            
+            sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
+            sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
+        }
+        else {
+            if (bHadToolTip) {
+                sb.append("$('#"+id+"').tooltip('destroy');\n");
+                bHadToolTip = false;
+            }
         }
         
         if (bFocus) {
-            js += ("$('#" + id + "').focus();\n");
+            sb.append("$('#" + id + "').focus();\n");
             bFocus = false;
         }
 
+        String js = sb.toString();
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
 
+        if (prefix != null) {
+            js = prefix + OAString.notNull(js);
+        }
+        
         return js;
     }
 
@@ -911,14 +944,16 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             sb.append("$('#" + id + "').val('" + value + "');\n");
         }
         
-        if (width > 0) sb.append("$('#" + id + "').attr('size', '" + width + "');\n");
         if (maxWidth > 0) sb.append("$('#" + id + "').attr('maxlength', '" + maxWidth + "');\n");
-        if (getEnabled()) sb.append("$('#" + id + "').removeAttr('disabled');\n");
-        else sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
+        if (width > 0) sb.append("$('#" + id + "').attr('size', '" + width + "');\n");
+
+        
+        String s = getEnabledScript(getEnabled());
+        if (s != null) sb.append(s);
         
         if (!getMultiValue() && !bPropertyPathIsManyLink && !bPropertyPathIsOneLink) {
-            if (bVisible) sb.append("$('#" + id + "').show();\n");
-            else sb.append("$('#" + id + "').hide();\n");
+            s = getVisibleScript(bVisible);
+            if (s != null) sb.append(s);
         }
 
         String fmt = getFormat();
@@ -1486,11 +1521,11 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         ArrayList<String> al = new ArrayList<>();
 
         al.add(OAJspDelegate.JS_jquery);
+        al.add(OAJspDelegate.JS_jquery_ui);
+
         if (getAutoComplete()) {
-            al.add(OAJspDelegate.JS_jquery_ui);
         }
         if (getInputMask() != null) {
-            al.add(OAJspDelegate.JS_jquery_ui);
             al.add(OAJspDelegate.JS_jquery_maskedinput);
         }
         
@@ -1510,7 +1545,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         
         if (isDateTime()) {
             if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
-                al.add(OAJspDelegate.JS_jquery_ui);
                 al.add(OAJspDelegate.JS_jquery_timepicker);
             }
             else {
@@ -1521,7 +1555,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         else if (isDate()) {
             if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
-                al.add(OAJspDelegate.JS_jquery_ui);
             }
             else {
                 al.add(OAJspDelegate.JS_bootstrap);
@@ -1531,7 +1564,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         else if (isTime()) {
             if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
-                al.add(OAJspDelegate.JS_jquery_ui);
                 al.add(OAJspDelegate.JS_jquery_timepicker);
             }
             else {
@@ -1539,6 +1571,9 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 al.add(OAJspDelegate.JS_moment);
                 al.add(OAJspDelegate.JS_bootstrap_datetimepicker);
             }
+        }
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.JS_bootstrap);
         }
 
         String[] ss = new String[al.size()];
@@ -1598,6 +1633,9 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 al.add(OAJspDelegate.CSS_bootstrap_datetimepicker);
             }
         }
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+        }
 
         String[] ss = new String[al.size()];
         return al.toArray(ss);
@@ -1609,5 +1647,35 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public boolean getClearButton() {
         return this.bClearButton;
     }
-    
+
+    public void setToolTip(String tooltip) {
+        this.toolTip = tooltip;
+        templateToolTip = null;
+    }
+    public String getToolTip() {
+        return this.toolTip;
+    }
+    public String getProcessedToolTip() {
+        if (OAString.isEmpty(toolTip)) return toolTip;
+        if (templateToolTip == null) {
+            templateToolTip = new OATemplate();
+            templateToolTip.setTemplate(getToolTip());
+        }
+        OAObject obj = null;
+        if (hub != null) {
+            Object objx = hub.getAO();
+            if (objx instanceof OAObject) obj = (OAObject) objx;
+        }
+        String s = templateToolTip.process(obj, hub, null);
+        return s;
+    }
+
+    protected String getEnabledScript(boolean b) {
+        if (b) return ("$('#" + id + "').removeAttr('disabled');\n");
+        return ("$('#" + id + "').attr('disabled', 'disabled');\n");
+    }
+    protected String getVisibleScript(boolean b) {
+        if (b) return ("$('#" + id + "').show();\n");
+        return ("$('#" + id + "').hide();\n");
+    }
 }

@@ -19,6 +19,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.sun.org.apache.bcel.internal.generic.JSR_W;
 import com.viaoa.html.Util;
 import com.viaoa.process.OAProcess;
 import com.viaoa.util.OAConv;
@@ -91,6 +92,10 @@ public class OAForm extends OABase implements Serializable {
     private final ArrayList<FormProcess> alProcess = new ArrayList<>(3);
     private volatile boolean bFormProcessClosed;
 
+    protected final ArrayList<String> alRequiredCssName = new ArrayList<>();
+    protected final ArrayList<String> alRequiredJsName = new ArrayList<>();
+    
+    
     private static class FormProcess {
         OAProcess p; 
         boolean bShowInDialog;
@@ -508,8 +513,9 @@ public class OAForm extends OABase implements Serializable {
 
         // add form submit, to verify components
         sb.append("    $('#"+id+"').on('submit', oaSubmit);\n");
-
-        sb.append("    function oaSubmit() {\n");
+        sb.append("    var oaSubmitCancelled;\n");
+        sb.append("    function oaSubmit(event) {\n");
+        sb.append("        oaSubmitCancelled = true;\n");
         sb.append("        var errors = [];\n");
         sb.append("        var requires = [];\n");
         sb.append("        var regex;\n");
@@ -523,6 +529,7 @@ public class OAForm extends OABase implements Serializable {
         }
 
         sb.append("if (requires.length > 0) {\n");
+        sb.append("    event.preventDefault();\n");
         sb.append("    var msg = '';\n");
         sb.append("    for (var i=0; i<requires.length; i++) {\n");
         sb.append("        if (i > 0) {\n");
@@ -536,6 +543,7 @@ public class OAForm extends OABase implements Serializable {
         sb.append("}\n");
 
         sb.append("if (errors.length > 0) {\n");
+        sb.append("    event.preventDefault();\n");
         sb.append("    var msg = '';\n");
         sb.append("    for (var i=0; i<errors.length; i++) {\n");
         sb.append("        if (i > 0) {\n");
@@ -547,6 +555,7 @@ public class OAForm extends OABase implements Serializable {
         sb.append("    oaShowMessage('Errors on page', msg);\n");
         sb.append("    return false;\n");
         sb.append("}\n");
+        sb.append("        oaSubmitCancelled = false;\n");
         sb.append("        return true;\n");
         sb.append("    }\n");
 
@@ -1433,23 +1442,23 @@ public class OAForm extends OABase implements Serializable {
     }
     
     
-    protected final ArrayList<String> alRequiredCssName = new ArrayList<>();
     /**
      * add names of CSS to include on page
      * @param name of css to include,  see {@link OAJspDelegate#registerRequiredCss(String, String)} 
      */
     public void addRequiredCssName(String name) {
         if (name == null) return;
+        name = name.toUpperCase();
         if (!alRequiredCssName.contains(name)) alRequiredCssName.add(name);
         
     }
-    protected final ArrayList<String> alRequiredJsName = new ArrayList<>();
     /**
      * add names of JS to include on page
      * @param name of js to include,  see {@link OAJspDelegate#registerRequiredJs(String, String)} 
      */
     public void addRequiredJsName(String name) {
         if (name == null) return;
+        name = name.toUpperCase();
         if (!alRequiredJsName.contains(name)) alRequiredJsName.add(name);
     }
     
@@ -1499,8 +1508,11 @@ public class OAForm extends OABase implements Serializable {
     public String getJsInsert() {
         ArrayList<String> alName = new ArrayList<>();
         
+        alName.add(OAJspDelegate.JS_jquery);
+        
         for (String s : alRequiredJsName) {
-            if (!alName.contains(s.toUpperCase())) alName.add(s.toUpperCase());
+            s = s.toUpperCase();
+            if (!alName.contains(s)) alName.add(s);
         }
         
         for (int i=0; ;i++) {
@@ -1511,7 +1523,8 @@ public class OAForm extends OABase implements Serializable {
             if (ss == null) continue;
 
             for (String s : ss) {
-                if (!alName.contains(s.toUpperCase())) alName.add(s.toUpperCase());
+                s = s.toUpperCase();
+                if (!alName.contains(s)) alName.add(s);
             }
         }        
         
@@ -1535,6 +1548,7 @@ public class OAForm extends OABase implements Serializable {
         return sb.toString();
     }
 
+    
 }
 
 

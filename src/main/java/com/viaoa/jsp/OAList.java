@@ -10,6 +10,7 @@
 */
 package com.viaoa.jsp;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ import com.viaoa.util.OAString;
  * 
  * @author vvia
  */
-public class OAList implements OAJspComponent {
+public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
     protected Hub hub;
@@ -59,6 +60,12 @@ public class OAList implements OAJspComponent {
     
     protected int rows;
     protected int lastRow;
+    
+    protected String toolTip;
+    protected OATemplate templateToolTip;
+    private boolean bHadToolTip;
+    
+    
     
     public OAList(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0, 0);
@@ -251,6 +258,7 @@ public class OAList implements OAJspComponent {
     public String getScript() {
         lastAjaxSent = null;
         submitUpdateScript = null;
+        bHadToolTip = false;
         StringBuilder sb = new StringBuilder(1024);
     
         sb.append("$('form').prepend(\"<input id='oalist"+id+"' type='hidden' name='oalist"+id+"' value=''>\");\n");
@@ -281,7 +289,7 @@ public class OAList implements OAJspComponent {
         if (s != null) sb.append(s);
         
         s = getAjaxScript();
-        sb.append(s);
+        if (s != null) sb.append(s);
         
         s = getScript3();
         if (s != null) sb.append(s);
@@ -407,10 +415,36 @@ public class OAList implements OAJspComponent {
         }        
         else sb.append("    $('#oalist"+id+"').val('"+pos+"');\n");
         
+        
+        // tooltip
+        String prefix = null;
+        String tt = getProcessedToolTip();
+        if (OAString.isNotEmpty(tt)) {
+            tt = OAString.convertForSingleQuotes(tt);
+            if (!bHadToolTip) {
+                bHadToolTip = true;
+                prefix = "$('#"+id+"').tooltip();\n";
+            }
+            
+            sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
+            sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
+        }
+        else {
+            if (bHadToolTip) {
+                sb.append("$('#"+id+"').tooltip('destroy');\n");
+                bHadToolTip = false;
+            }
+        }
+
         String js = sb.toString();
         
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
+
+        if (prefix != null) {
+            js = prefix + OAString.notNull(js);
+        }
+
         return js;
     }
 
@@ -478,4 +512,54 @@ public class OAList implements OAJspComponent {
     public void setRequired(boolean required) {
         this.bRequired = required;
     }
+
+    public void setToolTip(String tooltip) {
+        this.toolTip = tooltip;
+        templateToolTip = null;
+    }
+    public String getToolTip() {
+        return this.toolTip;
+    }
+    public String getProcessedToolTip() {
+        if (OAString.isEmpty(toolTip)) return toolTip;
+        if (templateToolTip == null) {
+            templateToolTip = new OATemplate();
+            templateToolTip.setTemplate(getToolTip());
+        }
+        OAObject obj = null;
+        if (hub != null) {
+            Object objx = hub.getAO();
+            if (objx instanceof OAObject) obj = (OAObject) objx;
+        }
+        String s = templateToolTip.process(obj, hub, null);
+        return s;
+    }
+    
+    public String[] getRequiredJsNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        al.add(OAJspDelegate.JS_jquery);
+        al.add(OAJspDelegate.JS_jquery_ui);
+        
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.JS_bootstrap);
+        }
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+        }
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
+
+    
 }

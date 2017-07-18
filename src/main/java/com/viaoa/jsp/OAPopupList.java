@@ -85,13 +85,18 @@ public class OAPopupList extends OAList {
         }
         return s;
     }
+
+    private String lastAjaxSent;
     
     @Override
     public String getAjaxScript() {
-        String s = super.getAjaxScript();
-        if (s == null) s = "";
-        s += getScript3();
-        return s;
+        String js = super.getAjaxScript();
+        if (js == null) js = "";
+        js += getScript3();
+        
+        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
+        else lastAjaxSent = js;
+        return js;
     }
     
     public String getPopupId() {

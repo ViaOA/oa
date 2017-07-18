@@ -10,6 +10,7 @@
 */
 package com.viaoa.jsp;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +35,7 @@ import com.viaoa.util.OAString;
  * 
  * @author vvia
  */
-public class OAGrid implements OAJspComponent {
+public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;
@@ -52,6 +53,7 @@ public class OAGrid implements OAJspComponent {
     /** template that uses ${name} tags to insert values from list of added components. */
     private String template;
     private HashMap<String, OAJspComponent> hm = new HashMap<String, OAJspComponent>();
+
     
     public OAGrid(String id, Hub hub, int columns) {
         this.id = id;
@@ -721,6 +723,22 @@ public class OAGrid implements OAJspComponent {
     @Override
     public boolean getVisible() {
         return this.bVisible;
+    }
+
+    public String[] getRequiredJsNames() {
+        ArrayList<String> al = new ArrayList<>();
+        al.add(OAJspDelegate.JS_jquery);
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
     }
 
 }

@@ -25,16 +25,22 @@ import com.viaoa.util.*;
   
  *  <ul>Tags that are supported:  
  *  <li><%=prop[,width||fmt]%>  to use value from OAProperties, or one of the values from setProperty()
- *  <li><%=foreach [prop]%>  to loop through a list of values (hub elements)
+ *  
+ *  <li><%=foreach [prop]%>  to loop through a list of values (hub elements). Note: all tag properties in the scope of for loop will be based on this object.
  *  <li><%=end%>
+ *  
  *  <li><%=if prop%>  true if value is not null and length > 0, is 0 or false
  *  <li><%=end%>
+ *  
  *  <li><%=ifnot prop%>  true if value is not null and length > 0
  *  <li><%=end%>
+ *  
  *  <li><%=ifequals prop "value to match"%>
  *  <li><%=end%>
+ *  
  *  <li><%=format[X],'12 L'%>  where X can be used as a unique identifier, so that there can be multiple embedded formats.
  *  <li><%=end%>
+ *  
  *  <li><%=include name%> include another file in the same directory   ex: <%=include include%>
  *  </ul>
  *  
@@ -44,6 +50,7 @@ import com.viaoa.util.*;
  *  <li><%=#count [propName], fmt%> count of listed properties  
  *  </ul>
  *  
+ *  Note: tags are case insensitive
  *  
  *  Other special tag attributes:
  *  <tr header='true'>  used by first row of a table, that will be printed as heading when table spans multiple pages.
@@ -52,8 +59,10 @@ import com.viaoa.util.*;
  *  
  *  OAHTMLReport will internally set values for $DATE, $TIME, $PAGE parameters
  *  <br>
- * The html code uses special tags "<%= ? %>", where "?" is the name of the Property name, or object property path.
+ * The html code uses special tags "<%= ? %>", where "?" is the property name, or property path to use.
+ * 
  * By using setProperties and setObject, you can set the root object where the data is retrieved from.
+ * 
  * NOTE: Use a "$" prefix (ex: $PAGE) for tag names, to have them use the value from the setProperties name/value pairs.
  * Otherwise, the value of the tag will be taken from the object, using the name as the property path.
  */
@@ -86,6 +95,7 @@ public class OAHTMLConverter {
     }
     
     protected String getHtml(OAObject objRoot, Hub hubRoot, OAProperties props) {
+        setProperty("DATETIME", new OADateTime());
         setProperty("DATE", new OADate());
         setProperty("TIME", new OATime());
 

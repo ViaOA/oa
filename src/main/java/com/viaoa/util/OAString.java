@@ -2655,6 +2655,28 @@ public class OAString {
         String s2 = OAString.makeJavaIndentifier(s);
         System.out.println(s+" ==> "+s2);
     }
+
+    /**
+     * prepare a string to be surrounded by single quotes, by converting the inner "'" chars to "\\'"
+     */
+    public static String convertForSingleQuotes(String text) {
+        if (text == null) return null;
+        text = OAString.convert(text, "\\'", "|o|a|7");
+        text = OAString.convert(text, "'", "\\'");
+        text = OAString.convert(text, "|o|a|7", "\\\\'");
+        return text;
+    }
+
+    /**
+     * prepare a string to be surrounded by double quotes, by converting the inner "'" chars to "\\'"
+     */
+    public static String convertForDoubleQuotes(String text) {
+        if (text == null) return null;
+        text = OAString.convert(text, "\\\"", "|o|a|7");
+        text = OAString.convert(text, "\"", "\\\"");
+        text = OAString.convert(text, "|o|a|7", "\\\\\"");
+        return text;
+    }
 }
 
 

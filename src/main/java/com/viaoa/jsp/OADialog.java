@@ -11,13 +11,11 @@
 package com.viaoa.jsp;
 
 import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
 
-import com.viaoa.util.OAString;
+import com.viaoa.util.*;
 
 /**
  * Create a dialog out of Html element.
@@ -283,27 +281,42 @@ public class OADialog extends OAHtmlElement implements OAJspRequirementsInterfac
         return js;
     }
 
-    @Override
-    public String[] getRequiredCssNames() {
-        String[] ss;
+    public String[] getRequiredJsNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        al.add(OAJspDelegate.JS_jquery);
+
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.JS_bootstrap);
+        }
+
         if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
-            ss = new String[] {OAJspDelegate.CSS_jquery_ui};
+            al.add(OAJspDelegate.JS_jquery_ui);
         }
         else {
-            ss = new String[] {OAJspDelegate.CSS_bootstrap};
+            al.add(OAJspDelegate.JS_bootstrap);
         }
-        return ss;
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
     }
 
     @Override
-    public String[] getRequiredJsNames() {
-        String[] ss;
+    public String[] getRequiredCssNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+        }
         if (getForm() == null || getForm().getDefaultJsLibrary() == OAApplication.JSLibrary_JQueryUI) {
-            ss = new String[] {OAJspDelegate.JS_jquery, OAJspDelegate.JS_jquery_ui};
+            al.add(OAJspDelegate.CSS_jquery_ui);
         }
         else {
-            ss = new String[] {OAJspDelegate.JS_bootstrap};
+            al.add(OAJspDelegate.CSS_bootstrap);
         }
-        return ss;
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
     }
+    
+    
+
 }

@@ -18,6 +18,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OAObject;
+import com.viaoa.util.OAProperties;
+import com.viaoa.util.OAString;
 
 
 /**
@@ -43,6 +46,9 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     protected String forwardUrl;
     protected boolean bSubmit;
     protected boolean bSpinner;
+    protected String toolTip;
+    protected OATemplate templateToolTip;
+    private boolean bHadToolTip;
     
     public OAButton(String id, Hub hub) {
         this.id = id;
@@ -142,6 +148,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String getScript() {
         lastAjaxSent = null;
+        bHadToolTip = false;
         StringBuilder sb = new StringBuilder(1024);
         sb.append("$('#"+id+"').attr('name', '"+id+"');\n");
         
@@ -152,7 +159,8 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         if (getSpinner()) {
             sb.append("$('#"+id+"').addClass('ladda-button');\n");
             sb.append("$('#"+id+"').attr('data-style', 'slide-right');\n");
-            sb.append("$('#"+id+"').html(\"<span class='ladda-label'>\"+$('#"+id+"').html()+\"</span><span class='ladda-spinner'></span>\");\n");
+            sb.append("$('#"+id+"').html(\"<span class='ladda-label'>\"+$('#"+id+"').html()+\"</span>\");\n");
+            //see:  file:///C:/Projects/metronic_v4.7.5_copy/theme/admin_1/ui_buttons_spinner.html
         }
         
         if (bAjaxSubmit) {
@@ -165,14 +173,14 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         }
         else if (getSubmit()) {
             if (getSpinner()) {
-                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');Ladda.create(this).start(); $('form').submit(); return false;});\n");
+                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');var spinner = Ladda.create(this); spinner.start(); $('form').submit(); if (oaSubmitCancelled) spinner.stop(); return false;});\n");
             }
             else {
                 sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
             }
         }
         
-        sb.append(getAjaxScript());
+        sb.append(getAjaxScript(true));
         String js = sb.toString();
         return js;
     }
@@ -184,20 +192,47 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
 
     @Override
     public String getAjaxScript() {
+        return getAjaxScript(false);
+    }
+    public String getAjaxScript(boolean bInit) {
         StringBuilder sb = new StringBuilder(1024);
+
+        if (getSpinner()) { // before disable
+            sb.append("Ladda.create($('#"+id+"')[0]).stop();\n");
+        }
+        
         if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
         else sb.append("$('#"+id+"').attr('disabled', 'disabled');\n");
-        if (getVisible()) sb.append("$('#"+id+"').show();");
-        else sb.append("$('#"+id+"').hide();");
-        // sb.append("\n");
-
-        if (getSpinner()) {
-            sb.append("Ladda.create($('#"+id+"')[0]).stop();\n");
+        if (getVisible()) sb.append("$('#"+id+"').show();\n");
+        else sb.append("$('#"+id+"').hide();\n");
+        
+        // tooltip
+        String prefix = null;
+        String tt = getProcessedToolTip();
+        if (OAString.isNotEmpty(tt)) {
+            tt = OAString.convertForSingleQuotes(tt);
+            if (!bHadToolTip) {
+                bHadToolTip = true;
+                prefix = "$('#"+id+"').tooltip();\n";
+            }
+            
+            sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
+            sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
+        }
+        else {
+            if (bHadToolTip) {
+                sb.append("$('#"+id+"').tooltip('destroy');\n");
+                bHadToolTip = false;
+            }
         }
         
         String js = sb.toString();
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
+        
+        if (prefix != null) {
+            js = prefix + OAString.notNull(js);
+        }
         return js;
     }
 
@@ -238,6 +273,10 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         if (getSpinner()) {
             al.add(OAJspDelegate.CSS_bootstrap_ladda);
         }
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+        }
+
         String[] ss = new String[al.size()];
         return al.toArray(ss);
     }
@@ -245,12 +284,43 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String[] getRequiredJsNames() {
         ArrayList<String> al = new ArrayList<>();
+        al.add(OAJspDelegate.JS_jquery);
         if (getSpinner()) {
             al.add(OAJspDelegate.JS_bootstrap_spin);
             al.add(OAJspDelegate.JS_bootstrap_ladda);
         }
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.JS_bootstrap);
+        }
+        
         String[] ss = new String[al.size()];
         return al.toArray(ss);
+    }
+
+    public Hub getHub() {
+        return hub;
+    }
+    
+    public void setToolTip(String tooltip) {
+        this.toolTip = tooltip;
+        templateToolTip = null;
+    }
+    public String getToolTip() {
+        return this.toolTip;
+    }
+    public String getProcessedToolTip() {
+        if (OAString.isEmpty(toolTip)) return toolTip;
+        if (templateToolTip == null) {
+            templateToolTip = new OATemplate();
+            templateToolTip.setTemplate(getToolTip());
+        }
+        OAObject obj = null;
+        if (hub != null) {
+            Object objx = hub.getAO();
+            if (objx instanceof OAObject) obj = (OAObject) objx;
+        }
+        String s = templateToolTip.process(obj, hub, null);
+        return s;
     }
     
 }

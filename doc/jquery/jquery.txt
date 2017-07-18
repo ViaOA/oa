@@ -1,5 +1,21 @@
 
 
+$('#id ul li:eq(0)').addClass('active');
+    from OATabbedPane.java
+
+$( "form" ).submit(function( event ) {
+  if ( $( "input:first" ).val() === "correct" ) {
+    $( "span" ).text( "Validated..." ).show();
+    return;
+  }
+  $( "span" ).text( "Not valid!" ).show().fadeOut( 1000 );
+  event.preventDefault();
+});
+
+
+
+$('[data-toggle="tooltip"]').tooltip()
+
 $("#datetimepicker6").on("dp.change", function (e) {
     $('#datetimepicker7').data("DateTimePicker").minDate(e.date);
 });

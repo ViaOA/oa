@@ -504,14 +504,25 @@ fork treeview.js and add changes so that unselected event can know if there is a
         this.forwardUrl = forwardUrl;
     }
 
-    @Override
-    public String[] getRequiredCssNames() {
-        return new String[] {OAJspDelegate.CSS_bootstrap, OAJspDelegate.CSS_bootstrap_treeview};
+    public String[] getRequiredJsNames() {
+        ArrayList<String> al = new ArrayList<>();
+        al.add(OAJspDelegate.JS_jquery);
+
+        al.add(OAJspDelegate.JS_bootstrap);
+        al.add(OAJspDelegate.JS_bootstrap_treeview);
+        
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
     }
 
     @Override
-    public String[] getRequiredJsNames() {
-        return new String[] {OAJspDelegate.JS_bootstrap, OAJspDelegate.JS_bootstrap_treeview};
+    public String[] getRequiredCssNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        al.add(OAJspDelegate.CSS_bootstrap);
+        al.add(OAJspDelegate.CSS_bootstrap_treeview);
+        
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
     }
-    
 }

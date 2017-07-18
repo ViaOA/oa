@@ -140,6 +140,33 @@ public class OAStringTest extends OAUnitTest {
         assertEquals(s, s2);
     }
 
+    @Test
+    public void convertForSingleQuotesTest() {
+        String s = "'";
+        s = OAString.convertForSingleQuotes(s);
+        assertEquals(s, "\\'");
+        
+        s = "\\'";
+        s = OAString.convertForSingleQuotes(s);
+        assertEquals(s, "\\\\'");
+
+        s = "\\'x'";
+        s = OAString.convertForSingleQuotes(s);
+        assertEquals(s, "\\\\'x\\'");
+    }
     
-    
+    @Test
+    public void convertForDoubleQuotesTest() {
+        String s = "\"";
+        s = OAString.convertForDoubleQuotes(s);
+        assertEquals(s, "\\\"");
+        
+        s = "\\\"";
+        s = OAString.convertForDoubleQuotes(s);
+        assertEquals(s, "\\\\\"");
+
+        s = "\\\"x\"";
+        s = OAString.convertForDoubleQuotes(s);
+        assertEquals(s, "\\\\\"x\\\"");
+    }
 }

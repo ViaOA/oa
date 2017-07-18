@@ -72,6 +72,8 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
         return os;
     }
 
+    private String lastAjaxSent;
+    
     @Override
     public String getAjaxScript() {
         StringBuilder sb = new StringBuilder(1024);
@@ -81,7 +83,11 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
         
         sb.append("$('#"+id+"').attr('name', '"+id+"');\n");
         
-        s = sb.toString();
+        String js = sb.toString();
+        
+        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
+        else lastAjaxSent = js;
+        
         return s;
     }
 }

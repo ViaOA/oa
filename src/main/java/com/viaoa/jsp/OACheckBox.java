@@ -10,6 +10,7 @@
 */
 package com.viaoa.jsp;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -36,7 +37,7 @@ import com.viaoa.util.OAString;
  * 
  * @author vvia
  */
-public class OACheckBox implements OAJspComponent, OATableEditor {
+public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
     protected Hub<?> hub;
@@ -56,6 +57,11 @@ public class OACheckBox implements OAJspComponent, OATableEditor {
     protected String groupName;
     private boolean bFocus;
     protected String forwardUrl;
+    
+    protected String toolTip;
+    protected OATemplate templateToolTip;
+    private boolean bHadToolTip;
+    
     
     public OACheckBox(String id, Hub hub, String propertyPath) {
         this.id = groupName = id;
@@ -218,8 +224,10 @@ public class OACheckBox implements OAJspComponent, OATableEditor {
     @Override
     public String getScript() {
         lastAjaxSent = null;
+        bHadToolTip = false;
         StringBuilder sb = new StringBuilder(1024);
-        sb.append(getAjaxScript());
+        String s = getAjaxScript();
+        if (s != null) sb.append(s);
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
         if (bAjaxSubmit) {
             sb.append("$('#"+id+"').change(function() {$('#oacommand').val('"+id+"'); ajaxSubmit(); return false;});\n");
@@ -256,14 +264,6 @@ public class OACheckBox implements OAJspComponent, OATableEditor {
     
     @Override
     public String getAjaxScript() {
-        String js = getThisJavaScript();
-        
-        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
-        else lastAjaxSent = js;
-        return js;
-    }
-
-    protected String getThisJavaScript() {
         StringBuilder sb = new StringBuilder(1024);
         
         String ids = id;
@@ -308,8 +308,34 @@ public class OACheckBox implements OAJspComponent, OATableEditor {
         if (bVisible) sb.append("$('#"+id+"').show();");
         else sb.append("$('#"+id+"').hide();");
 
-
+        // tooltip
+        String prefix = null;
+        String tt = getProcessedToolTip();
+        if (OAString.isNotEmpty(tt)) {
+            tt = OAString.convertForSingleQuotes(tt);
+            if (!bHadToolTip) {
+                bHadToolTip = true;
+                prefix = "$('#"+id+"').tooltip();\n";
+            }
+            
+            sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
+            sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
+        }
+        else {
+            if (bHadToolTip) {
+                sb.append("$('#"+id+"').tooltip('destroy');\n");
+                bHadToolTip = false;
+            }
+        }
+        
         String js = sb.toString();
+        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
+        else lastAjaxSent = js;
+
+        if (prefix != null) {
+            js = prefix + OAString.notNull(js);
+        }
+        
         return js;
     }
     
@@ -381,4 +407,52 @@ public class OACheckBox implements OAJspComponent, OATableEditor {
         String s = "<input id='"+id+"' type='checkbox'>";
         return s;
     }
+
+    
+    public void setToolTip(String tooltip) {
+        this.toolTip = tooltip;
+        templateToolTip = null;
+    }
+    public String getToolTip() {
+        return this.toolTip;
+    }
+    public String getProcessedToolTip() {
+        if (OAString.isEmpty(toolTip)) return toolTip;
+        if (templateToolTip == null) {
+            templateToolTip = new OATemplate();
+            templateToolTip.setTemplate(getToolTip());
+        }
+        OAObject obj = null;
+        if (hub != null) {
+            Object objx = hub.getAO();
+            if (objx instanceof OAObject) obj = (OAObject) objx;
+        }
+        String s = templateToolTip.process(obj, hub, null);
+        return s;
+    }
+
+    public String[] getRequiredJsNames() {
+        ArrayList<String> al = new ArrayList<>();
+        al.add(OAJspDelegate.JS_jquery);
+
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.JS_bootstrap);
+        }
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+        }
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
+
 }

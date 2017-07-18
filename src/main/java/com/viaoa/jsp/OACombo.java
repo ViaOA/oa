@@ -54,7 +54,7 @@ import com.viaoa.util.OAString;
  * @author vvia
  *
  */
-public class OACombo implements OAJspComponent, OATableEditor {
+public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;
@@ -78,6 +78,9 @@ public class OACombo implements OAJspComponent, OATableEditor {
     private boolean bFocus;
     protected String forwardUrl;
 
+    protected String toolTip;
+    protected OATemplate templateToolTip;
+    private boolean bHadToolTip;
     
     
     public OACombo(String id, Hub hub, String propertyPath, int columns) {
@@ -269,6 +272,7 @@ public class OACombo implements OAJspComponent, OATableEditor {
     @Override
     public String getScript() {
         lastAjaxSent = null;
+        bHadToolTip = false;
         StringBuilder sb = new StringBuilder(1024);
         sb.append(getAjaxScript());
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
@@ -380,11 +384,33 @@ public class OACombo implements OAJspComponent, OATableEditor {
             bFocus = false;
         }
 
+        // tooltip
+        String prefix = null;
+        String tt = getProcessedToolTip();
+        if (OAString.isNotEmpty(tt)) {
+            tt = OAString.convertForSingleQuotes(tt);
+            if (!bHadToolTip) {
+                bHadToolTip = true;
+                prefix = "$('#"+id+"').tooltip();\n";
+            }
+            
+            sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
+            sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
+        }
+        else {
+            if (bHadToolTip) {
+                sb.append("$('#"+id+"').tooltip('destroy');\n");
+                bHadToolTip = false;
+            }
+        }
+
         String js = sb.toString();
-        
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
-        
+
+        if (prefix != null) {
+            js = prefix + OAString.notNull(js);
+        }
         return js;
     }
 
@@ -594,4 +620,49 @@ public class OACombo implements OAJspComponent, OATableEditor {
         return s;
     }
     
+    public void setToolTip(String tooltip) {
+        this.toolTip = tooltip;
+        templateToolTip = null;
+    }
+    public String getToolTip() {
+        return this.toolTip;
+    }
+    public String getProcessedToolTip() {
+        if (OAString.isEmpty(toolTip)) return toolTip;
+        if (templateToolTip == null) {
+            templateToolTip = new OATemplate();
+            templateToolTip.setTemplate(getToolTip());
+        }
+        OAObject obj = null;
+        if (hub != null) {
+            Object objx = hub.getAO();
+            if (objx instanceof OAObject) obj = (OAObject) objx;
+        }
+        String s = templateToolTip.process(obj, hub, null);
+        return s;
+    }
+
+    public String[] getRequiredJsNames() {
+        ArrayList<String> al = new ArrayList<>();
+        al.add(OAJspDelegate.JS_jquery);
+
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.JS_bootstrap);
+        }
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        ArrayList<String> al = new ArrayList<>();
+
+        if (OAString.isNotEmpty(getToolTip())) {
+            al.add(OAJspDelegate.CSS_bootstrap);
+        }
+
+        String[] ss = new String[al.size()];
+        return al.toArray(ss);
+    }
 }

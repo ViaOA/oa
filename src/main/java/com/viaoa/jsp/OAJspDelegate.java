@@ -18,6 +18,7 @@ public class OAJspDelegate {
     public static final String CSS_bootstrap_tagsinput = "bootstrap-tagsinput";
     public static final String CSS_bootstrap_typeahead = "bootstrap-typeahead";
     public static final String CSS_bootstrap_ladda = "bootstrap-ladda";
+    public static final String CSS_summernote = "summernote";
     public static final String CSS_oajsp = "oajsp";
 
     /**
@@ -32,7 +33,6 @@ public class OAJspDelegate {
     protected static final HashMap<String, String> hmJsFilePath = new HashMap<>();
     
     
-    
     static {
         registerRequiredCssName(CSS_jquery_ui, "vendor/jquery-ui-1.12.1/jquery-ui.css");
         registerRequiredCssName(CSS_jquery_ui_basetheme, "vendor/jquery-ui-1.12.1/jquery-ui.theme.css");
@@ -45,6 +45,7 @@ public class OAJspDelegate {
         registerRequiredCssName(CSS_bootstrap_tagsinput, "vendor/bootstrap-tagsinput/bootstrap-tagsinput.css");
         registerRequiredCssName(CSS_bootstrap_typeahead, "vendor/bootstrap-typeahead/bootstrap-typeahead.css");
         registerRequiredCssName(CSS_bootstrap_ladda, "vendor/bootstrap-spinner/ladda-themeless.css");
+        registerRequiredCssName(CSS_summernote, "vendor/summernote/summernote.css");
         registerRequiredCssName(CSS_oajsp, "vendor/viaoa/oajsp.css");
     }
     
@@ -62,6 +63,8 @@ public class OAJspDelegate {
     public static final String JS_bootstrap_typeahead = "bootstrap-typeahead";
     public static final String JS_bootstrap_ladda = "bootstrap-ladda";
     public static final String JS_bootstrap_spin = "bootstrap-spin";
+    public static final String JS_jquery_slimscroll = "jquery-slimscroll";
+    public static final String JS_summernote = "summernote";
     
     static {
         registerRequiredJsName(JS_jquery, "vendor/jquery-3.1.1/jquery.js");
@@ -76,6 +79,8 @@ public class OAJspDelegate {
         registerRequiredJsName(JS_bootstrap_typeahead, "vendor/bootstrap-typeahead/bootstrap-typeahead.js");
         registerRequiredJsName(JS_bootstrap_ladda, "vendor/bootstrap-spinner/ladda.js");
         registerRequiredJsName(JS_bootstrap_spin, "vendor/bootstrap-spinner/spin.js");
+        registerRequiredJsName(JS_jquery_slimscroll, "vendor/jquery-slimscroll/jquery.slimscroll.js");
+        registerRequiredJsName(JS_summernote, "vendor/summernote/summernote.js");
     }
     
     
@@ -109,5 +114,11 @@ public class OAJspDelegate {
         if (OAString.isEmpty(name)) return null;
         return hmJsFilePath.get(name.toUpperCase());
     }
+
+    public static final String LOCATION_Top = "top";
+    public static final String LOCATION_Bottom = "bottom";
+    public static final String LOCATION_Right = "right";
+    public static final String LOCATION_Left = "left";
+    
     
 }

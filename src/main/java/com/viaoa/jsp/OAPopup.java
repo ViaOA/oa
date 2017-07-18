@@ -159,7 +159,7 @@ public class OAPopup extends OAHtmlElement {
 
         String js = sb.toString();
         if (lastAjaxSent2 != null && lastAjaxSent2.equals(js)) js = null;
-        lastAjaxSent2 = js;
+        else lastAjaxSent2 = js;
         
         return js;
     }
