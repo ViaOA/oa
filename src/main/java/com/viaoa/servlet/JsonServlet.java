@@ -191,12 +191,13 @@ public class JsonServlet extends HttpServlet {
         if (newObject != null) {
             OAJsonWriter json = new OAJsonWriter() {
                 @Override
-                public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OALinkInfo li) {
+                public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OAPropertyInfo pi, OALinkInfo li) {
+                    if (pi != null && pi.isPassword()) return false;
                     String sx = getCurrentPath();
                     if (!bOnlySendId && (sx == null || sx.length() == 0)) return true;  // send all for root object
 
                     if (bOnlySendId || li == null) {  // only send "Id"
-                        return ("id".equalsIgnoreCase(propertyName));
+                        return pi != null && pi.getId(); //was: ("id".equalsIgnoreCase(propertyName));
                     }
                     return false;
                 }
@@ -254,6 +255,7 @@ public class JsonServlet extends HttpServlet {
             cnt = 0;
             result += "  \"references\": [\n";
             for (OALinkInfo li : oi.getLinkInfos()) {
+                if (li.getPrivateMethod()) continue;
                 if (cnt++ > 0) result += ",\n";
                 result += "    {\"name\": \""+li.getName()+"\", ";
                 result += "\"type\": \""+li.getToClass().getSimpleName()+"\", ";

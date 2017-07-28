@@ -100,7 +100,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
     
-    public static final int version = 161228;   // NOTE: also need to update manifest.mf
+    public static final int version = 170728;   // NOTE: also need to update manifest.mf
     static {
         /*
         Properties props = System.getProperties();
@@ -110,7 +110,7 @@ public class OAObject implements java.io.Serializable, Comparable {
                 System.getProperty("java.vm.name")
         ));
         */
-        System.out.println("oa_3.5.35_" + version);
+        System.out.println("oa_3.5.36_" + version);
     }
     
     
@@ -641,6 +641,11 @@ public class OAObject implements java.io.Serializable, Comparable {
     	Object obj = OAObjectReflectDelegate.getReferenceObject(this, linkPropertyName);
     	return obj;
     }
+    
+    public boolean isReferenceObjectNull(String name) {
+        boolean b = OAObjectReflectDelegate.isReferenceObjectNullOrEmpty(this, name);
+        return b;
+    }
 
     /**
         DataSource independent method to retrieve a blob/byte[] property.
@@ -768,7 +773,8 @@ public class OAObject implements java.io.Serializable, Comparable {
 
 //todo: needs to work for all properties, not just primitives ??
     public boolean isNull(String prop) {
-        return OAObjectReflectDelegate.getPrimitiveNull(this, prop);
+        boolean b = OAObjectReflectDelegate.getPrimitiveNull(this, prop);
+        return b;
     }
     
 

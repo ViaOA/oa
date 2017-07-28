@@ -75,6 +75,7 @@ public class ButtonController extends JFCController implements ActionListener {
     private boolean bMasterControl = true;
     private String confirmMessage;
     private String completedMessage;
+    private String returnMessage;
     private String consoleProperty;
     private JComponent focusComponent; // comp to get focus after click
     private String methodName;
@@ -180,6 +181,13 @@ public class ButtonController extends JFCController implements ActionListener {
         return completedMessage;
     }
 
+    public void setReturnMessage(String msg) {
+        returnMessage = msg;
+    }
+    public String getReturnMessage() {
+        return returnMessage;
+    }
+    
     public void setConsoleProperty(String prop) {
         consoleProperty = prop;
     }
@@ -446,11 +454,23 @@ public class ButtonController extends JFCController implements ActionListener {
         default_afterActionPerformed();
     }
     public void default_afterActionPerformed() {
+        
         String completedMessage = getCompletedMessage();
-        if (!OAString.isEmpty(completedMessage) && OAString.isEmpty(getConsoleProperty()) && compDisplay == null) {
+        
+        String returnMessage = getReturnMessage();
+        
+        String displayMessage = "";
+        if (completedMessage != null) displayMessage = completedMessage;
+        
+        if (returnMessage != null) {
+            if (displayMessage.length() > 0) displayMessage += " ";
+            displayMessage += returnMessage;
+        }
+        
+        if (!OAString.isEmpty(displayMessage) && OAString.isEmpty(getConsoleProperty()) && compDisplay == null) {
             JOptionPane.showMessageDialog(
                 OAJFCUtil.getWindow(button), 
-                completedMessage, "Command completed", 
+                displayMessage, "Command completed", 
                 JOptionPane.INFORMATION_MESSAGE);
         }
         
@@ -683,9 +703,15 @@ public class ButtonController extends JFCController implements ActionListener {
                     
                     String s = completedMessage;
                     if (exception != null) {
-                        s = "Command had an exception"; 
+                        s = "Command had an exception, "+exception.getMessage(); 
                     }
                     else if (OAString.isEmpty(s)) s = "Command has completed";
+
+                    String returnMessage = getReturnMessage();
+                    if (returnMessage != null) {
+                        if (s.length() > 0) s += " ";
+                        s += returnMessage;
+                    }
                     
                     dlgWait.setStatus(s);
                     dlgWait.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

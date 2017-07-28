@@ -182,7 +182,7 @@ public class OATabbedPane implements OAJspComponent, OAJspRequirementsInterface 
             sb.append("$('#"+id+"Content').html($('"+ti.url+"').html());\n");
         }
         else {
-            sb.append("$('#"+id+"Content').load('"+ti.url+"');\n");
+            sb.append("$('#"+id+"Content').load('"+ti.url+"?formId="+getForm().getId()+"&compId="+id+"');\n");
         }
         
         String js = sb.toString();

@@ -371,12 +371,9 @@ public class OAObjectCacheDelegate {
     }
 	public static void visit(OACallback callback) {
         LOG.fine("visit");
-    	Object[] cs = OAObjectHashDelegate.hashCacheClass.keySet().toArray();
-    	if (cs == null) return;
-    	int x = cs.length;
-    	for (int i=0; i<x; i++) {
-            visit(callback, (Class) cs[i]);
-    	}
+        for (Class c : OAObjectHashDelegate.hashCacheClass.keySet()) {
+            visit(callback, c);
+        }
 	}
 
 	public static void callback(Class clazz, OACallback callback) {
@@ -430,7 +427,12 @@ public class OAObjectCacheDelegate {
     }
     
     public static Class[] getClasses() {
-        Class[] cs = OAObjectHashDelegate.hashCacheClass.keySet().toArray(new Class[0]);
+        ArrayList<Class> al = new ArrayList<>();
+        for (Class c : OAObjectHashDelegate.hashCacheClass.keySet()) {
+            al.add(c);
+        }
+        Class[] cs = new Class[al.size()];
+        al.toArray(cs);
         return cs;
     }
     public static int getTotal(Class clazz) {

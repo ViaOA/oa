@@ -62,7 +62,7 @@ public class OAObjectJsonDelegate {
 	        Object value = OAObjectReflectDelegate.getProperty(oaObj, propName);
 	        // if (value == null) continue;
 	
-            boolean x = ow.shouldIncludeProperty(oaObj, propName, value, null);
+            boolean x = ow.shouldIncludeProperty(oaObj, propName, value, pi, null);
             if (!x) continue;
 	        
 	        
@@ -123,7 +123,7 @@ public class OAObjectJsonDelegate {
 	        // Object obj = ClassModifier.getPropertyValue(this, m);
 	        if (obj == null) continue;
 	
-    	        boolean x = ow.shouldIncludeProperty(oaObj, li.getName(), obj, li);
+    	        boolean x = ow.shouldIncludeProperty(oaObj, li.getName(), obj, null, li);
     	        
     	        if (x) {
     	            try {

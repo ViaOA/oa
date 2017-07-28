@@ -636,6 +636,13 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     public String getCompletedMessage() {
         return control.default_getCompletedMessage();
     }
+
+    public void setReturnMessage(String msg) {
+        control.setReturnMessage(msg);
+    }
+    public String getReturnMessage() {
+        return control.getReturnMessage();
+    }
     
     /**
        Object to update whenever button is clicked.

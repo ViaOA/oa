@@ -74,7 +74,8 @@ $(document).ready(function() {
 public class OAForm extends OABase implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    protected ArrayList<OAJspComponent> alComponent = new ArrayList<OAJspComponent>();
+    protected final ArrayList<OAJspComponent> alComponent = new ArrayList<OAJspComponent>();
+    protected final ArrayList<OAJspComponent> alNewAddComponent = new ArrayList<OAJspComponent>();
 
     protected OASession session;
     protected String id;
@@ -330,17 +331,23 @@ public class OAForm extends OABase implements Serializable {
 
     public String getScript() {
         String js = getInitScript();
-        
         String s = getAjaxCallbackScript();
         if (s != null) js += s;
         
         return js;
     }
 
+    
     // javascript code to initialize client/browser
+    /**
+     * @deprecated use {@link #getScript()} instead, to include support for ajax callback
+     * @return
+     */
     public String getInitScript() {
         getSession().put("oaformLast", this);  // used by oadebug.jsp, oaenable.jsp to know the last page that was viewed
 
+        alNewAddComponent.clear();
+        
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(2048);
 
@@ -559,23 +566,6 @@ public class OAForm extends OABase implements Serializable {
         sb.append("        return true;\n");
         sb.append("    }\n");
 
-        
-        
-        
-        /* was 20170531
-        sb.append("    var cntWait = 0;\n");
-        sb.append("    function ajaxSubmit(cmdName) {\n");
-        sb.append("        cntWait++;\n");
-        sb.append("        var args = $('#"+id+"').serialize();\n");
-        sb.append("        if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;\n");
-        sb.append("        var f = function(data) {\n");
-        sb.append("            if (--cntWait < 1) {cntWait=0; $('#oaWait').hide();}");
-        sb.append("            if (data) eval(data);\n");
-        sb.append("        }\n");
-        sb.append("        $.post('oaajax.jsp', args, f, 'text');\n");  // text: return value type (will be javascript)
-        sb.append("    }\n");
-        */
-
         sb.append("var cntAjaxSubmit = 0;\n");
         sb.append("function ajaxSubmit(cmdName) {\n");
         sb.append("  cntAjaxSubmit++;\n");
@@ -648,7 +638,18 @@ public class OAForm extends OABase implements Serializable {
         return js;
     }
 
+    /**
+     * Use to get any changes since the last time getScript was called.
+     */
+    public String getUpdateScript() {
+        String s = getAjaxScript();
+        return s;
+    }    
+    
     private boolean bLastDebug;
+    /**
+     * same as calling {@link #getUpdateScript()}
+     */
     public String getAjaxScript() {
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(1024);
@@ -669,13 +670,22 @@ public class OAForm extends OABase implements Serializable {
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
-            String s = comp.getAjaxScript();
+            
+            String s;
+            if (alNewAddComponent.contains(comp)) {
+                s = comp.getScript();
+            }
+            else {
+                s = comp.getAjaxScript();
+            }
+            
             if (!OAString.isEmpty(s)) sb.append(s + "\n");
             if (bLastDebug != bDebugx) {
                 if (bDebugx) sb.append("    $('#"+comp.getId()+"').addClass('oaDebug');\n");
                 else sb.append("    $('#"+comp.getId()+"').removeClass('oaDebug');\n");
             }
         }
+        alNewAddComponent.clear();
 
         if (!OAString.isEmpty(jsAddScriptOnce)) {
             sb.append(jsAddScriptOnce);
@@ -969,6 +979,9 @@ public class OAForm extends OABase implements Serializable {
         }
         if (!alComponent.contains(comp)) {
             alComponent.add(comp);
+        }
+        if (!alNewAddComponent.contains(comp)) {
+            alNewAddComponent.add(comp);
         }
         comp.setForm(this);
     }
@@ -1547,8 +1560,6 @@ public class OAForm extends OABase implements Serializable {
         
         return sb.toString();
     }
-
-    
 }
 
 

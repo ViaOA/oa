@@ -27,6 +27,13 @@ public class OAMail implements java.io.Serializable {
     private String userId;
     private String password;
     private boolean bDebug;
+
+    
+    public static class OAMailAttachment {
+        public byte[] bsData;
+        public String mimeType;
+        public String fileName;
+    }
     
 
     /**
@@ -95,11 +102,31 @@ public class OAMail implements java.io.Serializable {
     {
         sendSmtp(to, cc, from, subject, text, contentType, null, bsAttachment, mimeTypeBs, bsFileName);
     }
+    
     public void sendSmtp( 
             String[] to, String[] cc, String from, 
             String subject, String text,
             String contentType,
             String[] fileNames, byte[] bsAttachment, String mimeTypeBs, String bsFileName) throws Exception 
+    {
+        OAMailAttachment[] mas = null;
+        if (bsAttachment != null) {
+            mas = new OAMailAttachment[1];
+            OAMailAttachment ma = new OAMailAttachment();
+            ma.bsData = bsAttachment;
+            ma.fileName= bsFileName;
+            ma.mimeType = mimeTypeBs;
+            mas[0] = ma;
+        }
+        sendSmtp(to, cc, from, subject, text, contentType, fileNames, mas);
+    }
+    
+    
+    public void sendSmtp( 
+            String[] to, String[] cc, String from, 
+            String subject, String text,
+            String contentType,
+            String[] fileNames, OAMailAttachment[] attachments) throws Exception 
     {
         String msg = "";
         if (from == null) from = "";
@@ -177,14 +204,15 @@ public class OAMail implements java.io.Serializable {
         }
 
         
-        if (bsAttachment != null && bsAttachment.length > 0) {
-            ByteArrayDataSource bads = new ByteArrayDataSource(bsAttachment, mimeTypeBs);
-            MimeBodyPart mbp2 = new MimeBodyPart();
-            mbp2.setDataHandler(new DataHandler(bads));
-            mbp2.setFileName(bsFileName);
-            mp.addBodyPart(mbp2);    // add the Multipart to the message
+        if (attachments != null) {
+            for (OAMailAttachment attachment : attachments) {
+                ByteArrayDataSource bads = new ByteArrayDataSource(attachment.bsData, attachment.mimeType);
+                MimeBodyPart mbp2 = new MimeBodyPart();
+                mbp2.setDataHandler(new DataHandler(bads));
+                mbp2.setFileName(attachment.fileName);
+                mp.addBodyPart(mbp2);    // add the Multipart to the message
+            }
         }
-        
         
         message.setContent(mp);
         message.setSentDate(new java.util.Date());

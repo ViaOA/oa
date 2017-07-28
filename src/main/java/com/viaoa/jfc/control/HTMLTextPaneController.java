@@ -85,7 +85,12 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         Object obj = h.getAO();
         if (obj == null) return null;
         Class c = h.getObjectClass();
-        Method method = OAReflect.getMethod(c, "get"+propertyPath+"FieldClass");
+        // 20170721
+        Method method = OAReflect.getMethod(c, "getClassForTemplate"+propertyPath);
+        if (method == null) {
+            // was
+            method = OAReflect.getMethod(c, "get"+propertyPath+"FieldClass");
+        }
         if (method != null) {
             Class[] cs = method.getParameterTypes();
             if (cs != null && cs.length > 0) return null;

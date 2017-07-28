@@ -124,6 +124,6 @@ public class OACronProcessor {
                 LOG.log(Level.WARNING, "error processing from queue", e);
             }
         }
-        LOG.fine("stopped OARefresher thread, cntStartStop=" + iStartStop + ", thread name=" + Thread.currentThread().getName());
+        LOG.fine("stopped OACronProcessor thread, cntStartStop=" + iStartStop + ", thread name=" + Thread.currentThread().getName());
     }
 }

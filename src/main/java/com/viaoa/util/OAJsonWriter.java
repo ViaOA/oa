@@ -80,7 +80,7 @@ public class OAJsonWriter {
         This can be overwritten to control which properties are saved.
         default is true;
     */
-    public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OALinkInfo li) {
+    public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OAPropertyInfo pi, OALinkInfo li) {
         if (li != null) {
             if (li.getType() == li.ONE) {
                 if (!includeOneRef) return false;
