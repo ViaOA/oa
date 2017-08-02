@@ -13,6 +13,7 @@ package com.viaoa.object;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -425,10 +426,11 @@ public class OAObjectCacheDelegate {
         	vec.add(v.get(i));
         }
     }
-    
     public static Class[] getClasses() {
         ArrayList<Class> al = new ArrayList<>();
-        for (Class c : OAObjectHashDelegate.hashCacheClass.keySet()) {
+        Enumeration<Class> enumx = OAObjectHashDelegate.hashCacheClass.keys();
+        for (; enumx.hasMoreElements(); ) {
+            Class c = enumx.nextElement();
             al.add(c);
         }
         Class[] cs = new Class[al.size()];

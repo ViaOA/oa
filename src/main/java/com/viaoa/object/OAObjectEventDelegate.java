@@ -126,11 +126,13 @@ public class OAObjectEventDelegate {
 //qqqqqqqqqqqqqqqq
 // 20170420 check to see if owner is being reassigned to null
     if (linkInfo != null && oldObj instanceof OAObject && newObj == null && !oaObj.isDeleted() && !oaObj.isNew() && linkInfo.getType() == OALinkInfo.ONE && !linkInfo.getCalculated()) {
-        OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo((OAObject)oldObj);
-        if (!oix.getLookup() && !oix.getPreSelect()) {
-            String s = "FYI (no exception), reference is being set to null, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj+", old value="+oldObj;
-            RuntimeException e = new RuntimeException(s);
-            LOG.log(Level.WARNING, s, e);
+        if (!OAThreadLocalDelegate.isDeleting()) {
+            OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo((OAObject)oldObj);
+            if (!oix.getLookup() && !oix.getPreSelect()) {
+                String s = "FYI (no exception), reference is being set to null, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj+", old value="+oldObj;
+                RuntimeException e = new RuntimeException(s);
+                LOG.log(Level.WARNING, s, e);
+            }
         }
     }
         

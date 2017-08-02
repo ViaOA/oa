@@ -437,7 +437,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         for (String triggerPropPath : trigger.propertyPaths) {
             if (OAString.isEmpty(triggerPropPath)) continue;
             OAPropertyPath pp = new OAPropertyPath(thisClass, triggerPropPath);  
-            
+          
             // addTrigger for every prop in the propPath
             String propPath = "";
             String revPropPath = "";
@@ -694,7 +694,10 @@ public class OAObjectInfo { //implements java.io.Serializable {
         ts = System.currentTimeMillis() - ts;
         
         if (ts > 3) {
-            s = "over 3ms, fromObject="+fromObject.getClass().getSimpleName()+", name="+ti.trigger.name+", property="+ti.ppFromRootClass+", ts="+ts;
+            s = "over 3ms, fromObject=";
+            if (fromObject == null) s += fromObject; 
+            else s += fromObject.getClass().getSimpleName();
+            s += ", name="+ti.trigger.name+", property="+ti.ppFromRootClass+", ts="+ts;
             LOG.finer(s);
             OAPerformance.LOG.fine(s);
         }

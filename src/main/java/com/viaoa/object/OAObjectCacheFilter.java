@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
+import com.viaoa.process.OAChangeRefresher;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
@@ -158,6 +159,13 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
 
     
     /**
+     * called internally when the filter needs to be refreshed.  Default is to call refresh()
+     */
+    protected void callRefresh() {
+        refresh();
+    }
+    
+    /**
      * Clear hub and check all cached objects to see if they should be added to hub.
      * To be added, isUsedFromObjectCache() and isUsed() must return true.
      */
@@ -225,6 +233,8 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     
     protected void setupTrigger() {
         OATriggerListener<T> triggerListener = new OATriggerListener<T>() {
+            volatile OAChangeRefresher changeRefresher;
+            
             @Override
             public void onTrigger(final T rootObject, final HubEvent hubEvent, final String propertyPathFromRoot) throws Exception {
                 final Hub<T> hub = wrHub.get();
@@ -233,11 +243,33 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                 }
                 
                 if (rootObject == null) {
+                    // could not get from event object to T object(s)
+                    if (trigger != null && (trigger.bUseBackgroundThread || trigger.bUseBackgroundThreadIfNeeded) ) {
+                        if (changeRefresher == null) {
+                            synchronized (this) {
+                                if (changeRefresher == null) {
+                                    changeRefresher = new OAChangeRefresher() {
+                                        @Override
+                                        protected void process() throws Exception {
+                                            callRefresh();
+                                        }
+                                    };
+                                    changeRefresher.start();
+                                }
+                            }
+                        }
+                        changeRefresher.refresh();
+                    }
+                    else {
+                        callRefresh();
+                    }
+                    
+                    /* was:
                     Hub hubx = hubEvent.getHub();
                     final OAObject masterObject = hubx == null ? null : hubx.getMasterObject();
                     
                     // the reverse property could not be used to get objRoot 
-                    // - need see if any of the rootObjs + pp used the changed obj
+                    // - need to see if any of the rootObjs + pp used the changed obj
                     final OAFinder finder = new OAFinder(propertyPathFromRoot) {
                         protected boolean isUsed(OAObject obj) {
                             if (obj == hubEvent.getObject()) return true;
@@ -268,6 +300,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                     if (bServerSideOnly) { 
                         OARemoteThreadDelegate.sendMessages(false);
                     }
+                    */
                 }
                 else {
                     if (bServerSideOnly) { 
