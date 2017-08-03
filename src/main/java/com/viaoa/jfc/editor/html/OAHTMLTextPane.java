@@ -1421,4 +1421,12 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
             throw new IOException(e.getMessage());
         }
     }
+    
+    public Hub<String> getCustomFields() {
+        return getController().getCustomFields();
+    }
+    public void addDefaultCustomFields() {
+        getController().addDefaultCustomFields();
+    }
+
 }

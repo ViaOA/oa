@@ -2661,7 +2661,7 @@ public class OAHTMLTextPaneController extends OATextController {
     private InsertFieldDialog dlgInsertField;
     protected InsertFieldDialog getInsertFieldDialog() {
         if (dlgInsertField == null) {
-            dlgInsertField = new InsertFieldDialog(SwingUtilities.windowForComponent(editor), getObjectDefs());
+            dlgInsertField = new InsertFieldDialog(SwingUtilities.windowForComponent(editor), getObjectDefs(), getCustomFields(), getCustomCommands());
         }
         return dlgInsertField;
     }
@@ -2671,6 +2671,42 @@ public class OAHTMLTextPaneController extends OATextController {
         if (hubObjectDef == null) hubObjectDef = new Hub<ObjectDef>(ObjectDef.class);
         return hubObjectDef;
     }
+    private Hub<String> hubCustomField;
+    public Hub<String> getCustomFields() {
+        if (hubCustomField == null) {
+            hubCustomField = new Hub<String>(String.class);
+            addDefaultCustomFields();
+        }
+        return hubCustomField;
+    }
+    public void addDefaultCustomFields() {
+        if (hubCustomField != null) {
+            hubCustomField.add("Date");
+            hubCustomField.add("Time");
+            hubCustomField.add("Page");
+        }
+    }
+    
+    private Hub<String> hubCustomCommand;
+    public Hub<String> getCustomCommands() {
+        if (hubCustomCommand == null) {
+            hubCustomCommand = new Hub<>(String.class);
+            hubCustomCommand.add("format: <%=prop[,width||fmt]%>");
+            hubCustomCommand.add("for each: <%=foreach [prop]%>..<%=end%>");
+            hubCustomCommand.add("if statement: <%=if prop%>..<%=end%>");
+            hubCustomCommand.add("ifnot statement: <%=ifnot prop%>..<%=end%>");
+            hubCustomCommand.add("if equals statement: <%=ifequals prop \"value to match\"%>..<%=end%>");
+            hubCustomCommand.add("format block: <%=format[X],'12 L'%>..<%=end%>");
+            hubCustomCommand.add("include file: <%=include filename%>");
+            hubCustomCommand.add("counter in foreach: <%=#counter, fmt%>");
+            hubCustomCommand.add("sum: <%=#sum [prop] prop fmt%>");
+            hubCustomCommand.add("count: <%=#count prop, fmt%>");
+            //  hubCustomField.add("");
+        }
+        return hubCustomCommand;
+    }
+    
+    
     // 20130223
     public void onInsertField() {
         getObjectDefs().clear();
@@ -2684,24 +2720,51 @@ public class OAHTMLTextPaneController extends OATextController {
         ObjectDef od = ObjectDefDelegate.getObjectDef(hubObjectDef, c);
         hubObjectDef.setAO(od);
         
-        /* todo: add custom tages
-        hubField.add("$DATE");
-        hubField.add("$TIME");
-        hubField.add("$PAGE");
-        hubField.add("foreach");
-        hubField.add("if");
-        hubField.add("ifnot");
-        */
         // formatting
 
-        getInsertFieldDialog().getTextField().setText("");
+        InsertFieldDialog dlg = getInsertFieldDialog();
+        
+        dlg.getTextField().setText("");
+        
+        getCustomFields().setPos(-1);
+        String[] sx = cx.getCustomFields();
+        if (sx != null) {  // even if empty
+            getCustomFields().clear();
+            addDefaultCustomFields();
+            for (String s : sx) {
+                getCustomFields().add(s);
+            }
+        }
+
+        getCustomCommands().setPos(-1);
+        
         getInsertFieldDialog().setVisible(true);
         // getInsertFieldDialog().getPropertyPathTree().expand(od);  qqqq not working, since it's in a popup
         if (getInsertFieldDialog().wasCanceled()) return;
         String field = getInsertFieldDialog().getTextField().getText();
-        if (OAString.isEmpty(field)) return;
         
-        htmlEditor.insertString("<%="+field+"%>");
+        if (OAString.isEmpty(field)) {
+            field = getCustomFields().getAO();
+            if (!OAString.isEmpty(field)) {
+                field = "$"+field;
+            }
+        }
+        
+        String cmd = getCustomCommands().getAO();
+        if (getCustomFields().getAO() == null && OAString.isNotEmpty(cmd)) {
+            cmd = OAString.field(cmd, ":", 2, 99).trim();
+            if (OAString.isNotEmpty(field)) {
+                cmd = OAString.convert(cmd, "prop", field);
+            }
+            field = cmd;
+        }
+        else {
+            field = "<%="+field+"%>";
+        }
+        
+        if (!OAString.isEmpty(field)) {
+            htmlEditor.insertString(field);
+        }
     }
     
     public void onInsertTable() {

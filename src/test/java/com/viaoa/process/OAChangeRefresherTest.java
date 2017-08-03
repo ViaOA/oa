@@ -1,4 +1,4 @@
-package com.viaoa.concurrent;
+package com.viaoa.process;
 
 import static org.junit.Assert.*;
 
@@ -11,13 +11,13 @@ import com.viaoa.hub.Hub;
 import test.hifive.model.oa.Program;
 
 
-public class OARefresherTest {
+public class OAChangeRefresherTest {
     
     @Test
     public void test() throws Exception {
         final AtomicInteger ai = new AtomicInteger();
         
-        OARefresher r = new OARefresher() {
+        OAChangeRefresher r = new OAChangeRefresher() {
             @Override
             protected void process() throws Exception {
                 ai.incrementAndGet();
@@ -59,7 +59,7 @@ public class OARefresherTest {
     public void test2() throws Exception {
         final AtomicInteger ai = new AtomicInteger();
         
-        OARefresher r = new OARefresher() {
+        OAChangeRefresher r = new OAChangeRefresher() {
             @Override
             protected void process() throws Exception {
                 ai.incrementAndGet();

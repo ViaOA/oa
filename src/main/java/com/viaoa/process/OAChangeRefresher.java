@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
+import com.viaoa.util.OAString;
 
 /**
  * Used to listen to one or more hubs + propertyPaths and run a process whenever a change is made. Uses
@@ -26,6 +27,7 @@ public abstract class OAChangeRefresher {
     private final AtomicInteger aiChange = new AtomicInteger();
     private final AtomicInteger aiStartStop = new AtomicInteger();
     private final AtomicInteger aiThreadId = new AtomicInteger();
+    private final AtomicInteger aiName = new AtomicInteger();
     
     private final Object lock = new Object();
     private Thread thread;
@@ -66,7 +68,7 @@ public abstract class OAChangeRefresher {
             addListener(hub, (String) null);
         }
         else {
-            final String name = "OARefresher." + aiCount.getAndIncrement();
+            final String name = "OAChangeRefresher." + aiName.getAndIncrement();
             HubListener hl = new HubListenerAdapter() {
                 @Override
                 public void afterPropertyChange(HubEvent e) {
@@ -96,8 +98,8 @@ public abstract class OAChangeRefresher {
                 }
             };
         }
-        else {
-            final String name = "OARefresher." + aiCount.getAndIncrement();
+        if (OAString.isNotEmpty(propertyPath)) {
+            final String name = "OAChangeRefresher." + aiName.getAndIncrement();
             hl = new HubListenerAdapter() {
                 @Override
                 public void afterPropertyChange(HubEvent e) {
@@ -107,6 +109,35 @@ public abstract class OAChangeRefresher {
                 }
             };
             hub.addHubListener(hl, name, new String[] { propertyPath });
+        }
+        else {
+            hl = new HubListenerAdapter() {
+                @Override
+                public void afterAdd(HubEvent e) {
+                    refresh();
+                }
+
+                @Override
+                public void afterInsert(HubEvent e) {
+                    refresh();
+                }
+
+                @Override
+                public void afterNewList(HubEvent e) {
+                    refresh();
+                }
+
+                @Override
+                public void afterRemove(HubEvent e) {
+                    refresh();
+                }
+
+                @Override
+                public void afterRemoveAll(HubEvent e) {
+                    refresh();
+                }
+            };
+            hub.addHubListener(hl);
         }
 
         MyListener ml = new MyListener(hub, hl);
@@ -150,7 +181,7 @@ public abstract class OAChangeRefresher {
                 runThread();
             }
         };
-        thread.setName("OARefresher." + aiThreadId.incrementAndGet());
+        thread.setName("OAChangeRefresher." + aiThreadId.incrementAndGet());
         thread.setDaemon(true);
         thread.start();
     }

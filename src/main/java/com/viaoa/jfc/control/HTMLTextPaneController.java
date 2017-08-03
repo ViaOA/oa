@@ -85,8 +85,11 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         Object obj = h.getAO();
         if (obj == null) return null;
         Class c = h.getObjectClass();
+        
+        
+        // 20170803
         // 20170721
-        Method method = OAReflect.getMethod(c, "getClassForTemplate"+propertyPath);
+        Method method = OAReflect.getMethod(c, "get"+propertyPath+"TemplateRoot");
         if (method == null) {
             // was
             method = OAReflect.getMethod(c, "get"+propertyPath+"FieldClass");
@@ -105,6 +108,33 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         
         return c;
     }
+    
+    public String[] getCustomFields() {
+        Hub h = getHub();
+        if (h == null) return null;
+        Object obj = h.getAO();
+        if (obj == null) return null;
+        Class c = h.getObjectClass();
+        Method method = OAReflect.getMethod(c, "get"+propertyPath+"TemplateFields");
+        
+        if (method == null) return null;
+        
+        Class[] cs = method.getParameterTypes();
+        if (cs != null && cs.length > 0) return null;
+
+        try {
+            obj = method.invoke(obj, null); 
+        }
+        catch (Exception e) {
+        }
+
+        if (obj instanceof String[]) {
+            return (String[]) obj;
+        }
+        
+        return new String[0];
+    }
+    
     
     protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
         super.resetHubOrProperty();

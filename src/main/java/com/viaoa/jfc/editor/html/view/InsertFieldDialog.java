@@ -33,11 +33,18 @@ public class InsertFieldDialog extends JDialog {
     private Hub<ObjectDef> hub;
     private OATextField txt;
     private OATreeComboBox cbo;
+    private OAComboBox cboCustomFields;
+    private Hub<String> hubCustomFields;
+    private OAComboBox cboCustomCommands;
+    private Hub<String> hubCustomCommands;
+    
 
-    public InsertFieldDialog(Window parent, Hub<ObjectDef> hub) {
+    public InsertFieldDialog(Window parent, Hub<ObjectDef> hub, Hub<String> hubCustomFields, Hub<String> hubCustomCommands) {
         super(parent, "Insert Field", ModalityType.APPLICATION_MODAL);
 
         this.hub = hub;
+        this.hubCustomFields = hubCustomFields;
+        this.hubCustomCommands = hubCustomCommands;
         
         setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         setResizable(true);
@@ -79,9 +86,25 @@ public class InsertFieldDialog extends JDialog {
         gc.anchor = gc.NORTHWEST;
         JLabel lbl;
         
-        pan.add(new JLabel("Field:"), gc);
+        pan.add(new JLabel("Data Field:"), gc);
         gc.fill = gc.HORIZONTAL;
         pan.add(getComboBox(), gc);
+        gc.fill = gc.NONE;
+        gc.gridwidth = gc.REMAINDER;
+        pan.add(new JLabel(""), gc);
+        gc.gridwidth = 1;
+        
+        pan.add(new JLabel("Custom Field:"), gc);
+        gc.fill = gc.HORIZONTAL;
+        pan.add(getCustomFieldsComboBox(), gc);
+        gc.fill = gc.NONE;
+        gc.gridwidth = gc.REMAINDER;
+        pan.add(new JLabel(""), gc);
+        gc.gridwidth = 1;
+
+        pan.add(new JLabel("Custom Command:"), gc);
+        gc.fill = gc.HORIZONTAL;
+        pan.add(getCustomCommandsComboBox(), gc);
         gc.fill = gc.NONE;
         gc.gridwidth = gc.REMAINDER;
         pan.add(new JLabel(""), gc);
@@ -165,12 +188,25 @@ public class InsertFieldDialog extends JDialog {
             txt.setColumns(20);
         }
         return txt;
-    }    
+    }
+    
+    public OAComboBox getCustomFieldsComboBox() {
+        if (cboCustomFields != null) return cboCustomFields;
+        cboCustomFields = new OAComboBox(hubCustomFields, "", 20);
+        //cboCustomFields.setPopupColumns(24);
+        return cboCustomFields;
+    }
+
+    public OAComboBox getCustomCommandsComboBox() {
+        if (cboCustomCommands != null) return cboCustomCommands;
+        cboCustomCommands = new OAComboBox(hubCustomCommands, "", 20);
+        return cboCustomCommands;
+    }
 
     private OAPropertyPathTree tree;
     public OAPropertyPathTree getPropertyPathTree() {
         if (tree == null) {
-            tree = new OAPropertyPathTree(hub, false, true, true, false, true) {
+            tree = new OAPropertyPathTree(hub, false, true, true, true, true) {
                 @Override
                 public void propertyPathCreated(String propertyPath) {
                     getTextField().setText(propertyPath);
@@ -190,7 +226,9 @@ public class InsertFieldDialog extends JDialog {
     
     public static void main(String[] args) {
         Hub<ObjectDef> hub = new Hub<ObjectDef>(ObjectDef.class);
-        InsertFieldDialog dlg = new InsertFieldDialog(null, hub);
+        Hub<String> hub2 = new Hub<>(String.class);
+        Hub<String> hub3 = new Hub<>(String.class);
+        InsertFieldDialog dlg = new InsertFieldDialog(null, hub, hub2, hub3);
         dlg.setVisible(true);
     }
 }
