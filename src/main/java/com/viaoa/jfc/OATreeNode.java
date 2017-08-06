@@ -1129,8 +1129,14 @@ public class OATreeNode implements Cloneable {
     public void objectSelected(Object obj) {
         if (originalNode != null) originalNode.objectSelected(obj);
     }
+    
+    // 20170805 this is now running in the awtThread again
+    // was:
     /** This is called in the SwingWorker thread, to allow for background processing like
      * getting data from server.
+     */
+    /**
+     * called to know when a node has been selected 
      */
     public void beforeObjectSelected(Object obj) {
         if (originalNode != null) originalNode.beforeObjectSelected(obj);

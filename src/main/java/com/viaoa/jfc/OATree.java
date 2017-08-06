@@ -1263,7 +1263,24 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         if (!isValidSelection(e)) return;
         
         bValueChangedCalled = true; // flag used by mouseEvent to know if valueChanged is called.
+
+        // 20170805 does not need to run in swingworker, since the beforeObjectSelected method could be doing UI work
+        //   and any server call to get data is now handled in background thread
+        TreePath tp = e.getNewLeadSelectionPath();
+        if (tp != null) {
+            Object[] objs = tp.getPath();
+            OATreeNodeData tnd = (OATreeNodeData) objs[objs.length-1];
+            tnd.node.beforeObjectSelected(tnd.object);
+        }
+        try {
+            _valueChanged(e);
+        }
+        catch (Exception t) {
+            System.out.println("OATree.valueChanged.done exception="+t+" ... will ignore");
+            t.printStackTrace();
+        }
         
+        /*was
         // 20110131 add swingworker
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
             @Override
@@ -1302,6 +1319,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
             }
         };
         sw.execute();
+        */
     }
     private void _valueChanged(TreeSelectionEvent e) {    
         TreePath tp = e.getNewLeadSelectionPath();
