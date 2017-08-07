@@ -440,7 +440,9 @@ public class OAAnnotationDelegate {
                 Class returnClass = m.getReturnType();
                 if (returnClass == null) throw new Exception("method with fkey does not have a return class type, method is "+m.getName());
                 OATable toTable = (OATable) returnClass.getAnnotation(OATable.class);
-                if (toTable == null) throw new Exception("class for fkey doses not have a Table annotation defined, method is "+m.getName());
+                if (toTable == null) {
+                    throw new Exception("class for fkey does not have a Table annotation defined, method is "+m.getName());
+                }
                 
                 Table fkTable = database.getTable(returnClass);
                 if (fkTable == null) {

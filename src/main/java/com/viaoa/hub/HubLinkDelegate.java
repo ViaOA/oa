@@ -594,13 +594,14 @@ public class HubLinkDelegate {
 	
 	                    Hub[] hubs = HubShareDelegate.getAllSharedHubs(h);
 	                    int flag = 0;
-	                    for (int i=0; i < hubs.length && flag == 0; i++) {
+	                    for (int i=0; i < hubs.length && flag != 5; i++) {
 	                        if (hubs[i] == fromHub) continue;
-	                        if (hubs[i] == fromHub.getLinkHub()) flag = 5; // this hub is linked to hubs[i]
-	
-	                        if ( (hubs[i].getLinkHub() != null) || (hubs[i].datau.getVecHubDetail() != null && hubs[i].datau.getVecHubDetail().size() > 1)) {
-	                            if (hubs[i].getMasterHub() == h.getMasterHub()) flag = 1;
-	                            if (hubs[i].datam == h.datam) flag = 5; // || (hubs[i] == h) flag = 5;
+	                        if (hubs[i] == fromHub.getLinkHub()) {
+	                            flag = 5; // this hub is linked to hubs[i]
+	                        }
+	                        else if ( (hubs[i].getLinkHub() != null) || (hubs[i].datau.getVecHubDetail() != null && hubs[i].datau.getVecHubDetail().size() > 1)) {
+                                if (hubs[i].datam == h.datam) flag = 5; // || (hubs[i] == h) flag = 5;
+                                else if (hubs[i].getMasterHub() == h.getMasterHub()) flag = 1;
 	                        }
 	                    }
 	                    if (flag < 2 && h != fromHub) HubAODelegate.setActiveObject(h,null,-1,false,false,false); // bUpdateLink, force,bCalledByShareHub

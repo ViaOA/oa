@@ -95,7 +95,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         OAObjectCacheDelegate.addListener(clazz, cacheListener);
         
         if (hub.getSize() == 0) {
-            refresh();
+            refreshAndReselect();            
         }  // else the hub must have been preselected
     }
 
@@ -115,7 +115,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         
         if (filter != null) addFilter(filter, false);
         if (hub.getSize() == 0) {
-            refresh();
+            refreshAndReselect();            
         }  // else the hub must have been preselected
     }
     
@@ -157,12 +157,16 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         if (bCallRefresh) refresh();
     }
 
+
+    private void refreshAndReselect() {
+        refresh();
+        reselect();
+    }
     
     /**
-     * called internally when the filter needs to be refreshed.  Default is to call refresh()
+     * called internally so that data can be reselected from datasource.  Default is to call refresh()
      */
-    protected void callRefresh() {
-        refresh();
+    protected void reselect() {
     }
     
     /**
@@ -251,7 +255,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                                     changeRefresher = new OAChangeRefresher() {
                                         @Override
                                         protected void process() throws Exception {
-                                            callRefresh();
+                                            refreshAndReselect();            
                                         }
                                     };
                                     changeRefresher.start();
@@ -261,7 +265,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                         changeRefresher.refresh();
                     }
                     else {
-                        callRefresh();
+                        refreshAndReselect();            
                     }
                     
                     /* was:
