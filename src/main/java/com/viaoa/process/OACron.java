@@ -50,6 +50,8 @@ public abstract class OACron {
     private String description;
     private boolean bValid;
 
+    private String name;
+    
 
     public OACron(String strMins, String strHours, String strDayOfMonth, String strMonth, String strDayOfWeek) {
         this.strMins = strMins;
@@ -424,4 +426,11 @@ public abstract class OACron {
         return ints;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getName() {
+        return this.name;
+    }
+    
 }

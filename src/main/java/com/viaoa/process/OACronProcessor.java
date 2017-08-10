@@ -87,6 +87,7 @@ public class OACronProcessor {
     
     protected void process(final OACron cron) {
         if (cron == null) return;
+        LOG.fine("processing cron, name = "+cron.getName()+", description="+cron.getDescription());
         cron.process();
     }
     
@@ -105,20 +106,19 @@ public class OACronProcessor {
         for (;;) {
             try {
                 if (iStartStop != aiStartStop.get()) break;
-                synchronized (lock) {
-                    lock.wait(60 * 1000);
-                }
-                if (iStartStop != aiStartStop.get()) break;
                 
                 OADateTime dtNow = new OADateTime();
                 dtNow.setSecond(0);
+
                 for (OACron cron : alCron) {
                     OADateTime dt = cron.findNext(dtLast);
                     if (dt.compareTo(dtNow) == 0) {
                         onProcess(cron);
                     }
                 }
-                dtLast = dtNow.addMinutes(1);
+                synchronized (lock) {
+                    lock.wait(60 * 1000);
+                }
             }
             catch (Exception e) {
                 LOG.log(Level.WARNING, "error processing from queue", e);
