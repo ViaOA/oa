@@ -888,6 +888,12 @@ public class OADateTime implements java.io.Serializable, Comparable {
         if (ms > 0) _time += ms;
     }
 
+    public void clearSecondAndMilliSecond() {
+        Date dThis = new Date(_time);
+        Date dNew = new Date(dThis.getYear(), dThis.getMonth(), dThis.getDate(), dThis.getHours(), dThis.getMinutes(), 0);
+        _time = dNew.getTime();
+    }
+    
     /** Return value of milliseconds. */
     public int getMilliSecond() {
         Date dThis = new Date(_time);

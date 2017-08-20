@@ -468,9 +468,10 @@ public class ButtonController extends JFCController implements ActionListener {
         }
         
         if (!OAString.isEmpty(displayMessage) && OAString.isEmpty(getConsoleProperty()) && compDisplay == null) {
+            String s = OAString.lineBreak(displayMessage, 85, "\n", 20);
             JOptionPane.showMessageDialog(
                 OAJFCUtil.getWindow(button), 
-                displayMessage, "Command completed", 
+                s, "Command completed", 
                 JOptionPane.INFORMATION_MESSAGE);
         }
         
@@ -541,9 +542,10 @@ public class ButtonController extends JFCController implements ActionListener {
             System.out.println(msg+", exception="+e);
             if (e != null) e.printStackTrace();
 
+            String s = OAString.lineBreak(msg, 85, "\n", 20);
             JOptionPane.showMessageDialog(
                 OAJFCUtil.getWindow(button), 
-                msg, "Command failed", 
+                s, "Command failed", 
                 JOptionPane.ERROR_MESSAGE);
         }
     }

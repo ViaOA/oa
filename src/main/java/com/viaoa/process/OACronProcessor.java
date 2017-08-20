@@ -1,6 +1,7 @@
 package com.viaoa.process;
 
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,37 +16,29 @@ public class OACronProcessor {
     private static Logger LOG = Logger.getLogger(OACronProcessor.class.getName());
 
     private final OAExecutorService execService;
-    private ArrayList<OACron> alCron;
+    private CopyOnWriteArrayList<OACron> alCron;
 
     private Thread thread;
     private final Object lock = new Object();
     private final AtomicInteger aiStartStop = new AtomicInteger();
     private final AtomicInteger aiThreadId = new AtomicInteger();
     
-    private volatile OADateTime dtLast;
-
-    
-    /**
-     * 
-     * @param bUseThreadPool if false then use current thread.
-     */
-    public OACronProcessor(OADateTime dtLast) {
-        if (dtLast == null) this.dtLast = new OADateTime();
-        else this.dtLast = dtLast;
-        
-        execService = new OAExecutorService();
-        alCron = new ArrayList<OACron>();
-    }
     public OACronProcessor() {
-        this(null);
+        execService = new OAExecutorService();
+        alCron = new CopyOnWriteArrayList<OACron>();
     }
     
     public OACron[] getCrons() {
-        return (OACron[]) alCron.toArray();
+        return (OACron[]) alCron.toArray(new OACron[0]);
     }
 
     public void add(OACron cron) {
-        if (!alCron.contains(cron)) alCron.add(cron);
+        if (!alCron.contains(cron)) {
+            alCron.add(cron);
+            synchronized (lock) {
+                lock.notifyAll();
+            }
+        }
     }
     public void remove(OACron cron) {
         alCron.remove(cron);
@@ -84,14 +77,21 @@ public class OACronProcessor {
         LOG.fine("stop called, aiStartStop=" + aiStartStop);
     }
 
-    
+    /**
+     * called by onProcess using execService thread.
+     */
     protected void process(final OACron cron) {
         if (cron == null) return;
+        if (!cron.getEnabled()) return;
+        cron.setLast(new OADateTime());
         LOG.fine("processing cron, name = "+cron.getName()+", description="+cron.getDescription());
         cron.process();
     }
     
-    private void onProcess(final OACron cron) {
+    /**
+     * will use execService to then call {@link #process(OACron)}
+     */
+    protected void onProcess(final OACron cron) {
         execService.submit(new Runnable() {
             @Override
             public void run() {
@@ -103,21 +103,45 @@ public class OACronProcessor {
     protected void runThread() {
         final int iStartStop = aiStartStop.get();
         LOG.fine("created cron processor, cntStartStop=" + iStartStop + ", thread name=" + Thread.currentThread().getName());
+        
+        OADateTime dtLast = null;
+        final ArrayList<OACron> alLast = new ArrayList<>();
+                
+        
         for (;;) {
             try {
                 if (iStartStop != aiStartStop.get()) break;
                 
                 OADateTime dtNow = new OADateTime();
-                dtNow.setSecond(0);
+                dtNow.clearSecondAndMilliSecond();
+                
+                OADateTime dtCompare = dtNow.addMinutes(-1);
+                dtCompare.clearSecondAndMilliSecond();
 
+                if (dtLast == null || dtLast.before(dtCompare)) {
+                    alLast.clear();
+                }
+                dtLast = dtCompare;
+                
+                beforeProcess(dtNow);
                 for (OACron cron : alCron) {
-                    OADateTime dt = cron.findNext(dtLast);
-                    if (dt.compareTo(dtNow) == 0) {
+                    if (!cron.getEnabled()) continue;
+                    if (alLast.contains(cron)) {
+                        continue;
+                    }
+                    alLast.add(cron);
+
+                    OADateTime dt = new OADateTime(cron.findNext(dtCompare));
+                    dt.clearSecondAndMilliSecond();
+                    
+                    int d = dt.compareTo(dtNow);
+                    if (d == 0) {
                         onProcess(cron);
                     }
                 }
+                
                 synchronized (lock) {
-                    lock.wait(60 * 1000);
+                    lock.wait(30 * 1000);
                 }
             }
             catch (Exception e) {
@@ -125,5 +149,8 @@ public class OACronProcessor {
             }
         }
         LOG.fine("stopped OACronProcessor thread, cntStartStop=" + iStartStop + ", thread name=" + Thread.currentThread().getName());
+    }
+    
+    protected void beforeProcess(OADateTime dtNow) {
     }
 }

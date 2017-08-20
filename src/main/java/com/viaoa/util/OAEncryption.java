@@ -85,6 +85,12 @@ public class OAEncryption {
         bs = cipher.doFinal(bs);
         return bs;
     }
+
+    public static Cipher getCipher() throws Exception {
+        Cipher cipher = Cipher.getInstance("DES");
+        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey());
+        return cipher;
+    }
     
     /**
      * Decrypt bytes into a new byte array.

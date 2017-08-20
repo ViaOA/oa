@@ -1,4 +1,11 @@
 
+20170805 performance issues
+    add to eclipse.ini
+        -Xverify:none
+        https://stackoverflow.com/questions/316265/how-can-you-speed-up-eclipse
+        
+        
+
 20170106
 	html editor does not have content assist for css, need to install this add on.
 	    wtp web resources

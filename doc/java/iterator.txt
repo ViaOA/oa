@@ -1,29 +1,26 @@
 
 
+
+
+
 * hashMap
+
+        HashMap<Employee, ArrayList<EmployeeAward>> hm = new HashMap<>();
+        for (Entry<Employee, ArrayList<EmployeeAward>> entry : hm.entrySet()) {
+            Employee manager = entry.getKey();
+            ArrayList<EmployeeAward> al = entry.getValue();
+            ...
+        }
 
 
         for (Value value : hmInfo.values()) {
-            
+            ..            
         }
+
+
         for (String s : hmInfo.keySet()) {
+            ..
         }
-
-
-        Map<String, String> map = OAString.getHTMLAttributeMap(s);
-        for (Map.Entry<String, String> ex : map.entrySet()) {
-            String sx = ex.getKey();
-            if (!sx.equalsIgnoreCase("style")) continue;
-            
-        }
-
-
-
-* with HashMap
-        for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
-            e.getValue().setForm(form);
-        }
-
 
 * list
 

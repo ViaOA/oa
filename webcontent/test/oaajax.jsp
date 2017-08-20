@@ -36,7 +36,7 @@
 <%
     request.setCharacterEncoding("UTF-8");
 
-    if (true) {
+    if (!true) {
         System.out.println("oaajax.jsp ----------------- START -------------");
         System.out.println("realPath ="+application.getRealPath("TEST"));
         System.out.println("servletPath ="+request.getServletPath());

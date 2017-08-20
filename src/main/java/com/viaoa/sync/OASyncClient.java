@@ -141,7 +141,7 @@ public class OASyncClient {
      * @return
      */
     public Object getDetail(final OAObject masterObject, final String propertyName) {
-        //System.out.println("OAClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName+", levels="+levels);
+//System.out.println("OASyncClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName);
         LOG.fine("masterObject="+masterObject+", propertyName="+propertyName);
         
         int cntx = ++cntGetDetail;        

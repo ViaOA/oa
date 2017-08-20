@@ -1696,8 +1696,29 @@ public class OAString {
     /**
      * Shorten line to width amount of characters.  If longer then width, then "..." will be the end.
      */
+    public static String trunc(String orig, int width) {
+        return truncate(orig, width);
+    }
+    public static String truncate(String orig, int width) {
+        if (orig == null) return null;
+        if (width == 0) return "";
+        if (orig.length() < width) return orig;
+        
+        if (width > 2) {
+            orig = orig.substring(0,width-3) + "...";
+        }
+        else {
+            orig = ".";
+            if (width > 1) orig += ".";
+        }
+        return orig;
+    }
+    
+    /**
+     * Shorten line to width amount of characters.  If longer then width, then "..." will be the end.
+     */
     public static String lineBreak(String origLine, int width) {
-    	return lineBreak(origLine, width, null, 1);
+    	return truncate(origLine, width);
     }
     
     /**
@@ -2651,7 +2672,12 @@ public class OAString {
     
     
     public static void main(String[] args) {
-        String s = "abCDe_ 1.2-34.59:5";
+        String s = OAString.fmt("CustomerName", "8L.");
+        
+        s = OAString.fmt("CustomerName", "28L.");
+        
+        
+        s = "abCDe_ 1.2-34.59:5";
         String s2 = OAString.makeJavaIndentifier(s);
         System.out.println(s+" ==> "+s2);
     }

@@ -18,7 +18,7 @@ import com.viaoa.util.OAString;
         -     -     -   -    -
         |     |     |   |    |
         |     |     |   |    +----- day of week (0-6) (Sunday=0) - Java: 1-7 (Sunday=1)
-        |     |     |   +---------- month (1-12) - Java: 0-11
+        |     |     |   +---------- month (1-12) - Java: 0-11    
         |     |     +-------------- day of month (1-31), also allows "last"
         |     +-------------------- hour (0 - 23)
         +-------------------------- min (0 - 59)
@@ -31,6 +31,7 @@ import com.viaoa.util.OAString;
  @author vvia
  */
 public abstract class OACron {
+    // NOTE: all values are stored as cron values
     private OADateTime dtFrom;
     private String strMins;
     private String strHours;
@@ -47,13 +48,18 @@ public abstract class OACron {
 
     private boolean bIncludeLastDayOfMonth;
 
-    private String description;
     private boolean bValid;
 
     private String name;
+    private String description;
+    
+    private boolean bEnabled = true;
+    private OADateTime dtCreated;
+    private OADateTime dtLast;
     
 
     public OACron(String strMins, String strHours, String strDayOfMonth, String strMonth, String strDayOfWeek) {
+        this.dtCreated = new OADateTime();
         this.strMins = strMins;
         this.strHours = strHours;
         this.strDayOfMonth = strDayOfMonth;
@@ -65,6 +71,7 @@ public abstract class OACron {
         hrs = getInts(strHours);
         monthDays = getInts(strDayOfMonth, true);
         daysOfWeek = getInts(strDayOfWeek);
+        bIncludeLastDayOfMonth = false;
         months = getInts(strMonth);
 
         if (bValid) {
@@ -79,6 +86,11 @@ public abstract class OACron {
             }
             for (int x : daysOfWeek) {
                 if (x < 0 || x > 6) bValid = false;
+            }
+            
+            if (months == null || months.length == 0) { // any month
+                months = new int[12];
+                for (int i=0; i<12; i++) months[i] = i+1; // store as cron month is 1-12, java is 0-11
             }
             for (int x : months) {
                 if (x < 1 || x > 12) bValid = false;
@@ -120,7 +132,11 @@ public abstract class OACron {
         description = "";
         int x;
 
-        if (months.length > 0) {
+        if (months.length == 12) {
+            //if (description.length() > 0) description += "; and ";
+            //else description += "all months";
+        }
+        else if (months.length > 0) {
             if (description.length() > 0) description += "; and";
             else description += "when";
             description += " month is ";
@@ -128,7 +144,9 @@ public abstract class OACron {
             for (int i=0; i<months.length; i++) {
                 x = months[i];
                 if (i > 0) description += " or ";
-                if (x < 1 || x > 12) description += "Invalid:"+x;
+                if (x < 1 || x > 12) {
+                    description += "Invalid:"+x;
+                }
                 else {
                     OADate d = new OADate(2017, x-1, 1);
                     description += d.toString("MMM");
@@ -149,6 +167,12 @@ public abstract class OACron {
             if (bIncludeLastDayOfMonth) {
                 if (monthDays.length > 0) description += " or ";
                 description += "last day";
+            }
+        }
+        else {
+            if (daysOfWeek.length == 0) {
+                if (description.length() > 0) description += "; and ";
+                description += "every day";
             }
         }
 
@@ -185,6 +209,10 @@ public abstract class OACron {
                 else description += ""+x;
             }
         }
+        else {
+            if (description.length() > 0) description += "; and ";
+            description += "every hour";
+        }
 
 
         if (mins.length > 0) {
@@ -193,10 +221,14 @@ public abstract class OACron {
             description += " minute is ";
             for (int i=0; i<mins.length; i++) {
                 x = mins[i];
-                if (i > 0) description += " or ";
+                if (i > 0) description += ", ";
                 if (x < 0 || x > 59) description += "Invalid:"+x;
                 else description += ""+x;
             }
+        }
+        else {
+            if (description.length() > 0) description += "; and ";
+            description += "every minute";
         }
 
 
@@ -205,25 +237,36 @@ public abstract class OACron {
         return description;
     }
 
+    public OADateTime getLast() {
+        return dtLast;
+    }
+    public void setLast(OADateTime dt) {
+        this.dtLast = dt;
+    }
+    
+    public OADateTime getNext() {
+        return findNext(new OADateTime());
+    }
+    public OADateTime getNext(OADateTime dtFrom) {
+        return findNext(dtFrom);
+    }
+    
+    public OADateTime findNext() {
+        return findNext(new OADateTime());
+    }
     public OADateTime findNext(OADateTime dtFrom) {
         if (!isValid()) return null;
         if (dtFrom == null) dtFrom = new OADateTime();
         this.dtFrom = dtFrom;
 
-
         OADateTime dtFound = findNextMonth();
         return dtFound;
     }
-
 
     private OADateTime findNextMonth() {
         OADateTime dtFound = null;
 
         final int fromMonth = dtFrom.getMonth();
-        if (months == null || months.length == 0) { // any month
-            months = new int[12];
-            for (int i=0; i<12; i++) months[i] = i+1; // cron month is 1-12, java is 0-11
-        }
 
         OADateTime dtCheck = new OADateTime(dtFrom.getTime());
         for (int i=0; ;i++) {
@@ -233,8 +276,8 @@ public abstract class OACron {
 
                 if (i == 0 && m < dtFrom.getMonth()) continue;
 
-                dtCheck.setMonth(m);
                 dtCheck.setDay(1);
+                dtCheck.setMonth(m);
                 dtCheck.clearTime();
                 if (dtFound != null && dtFound.before(dtCheck)) continue;
                 OADateTime dtTo = dtCheck.addMonths(1);
@@ -246,8 +289,7 @@ public abstract class OACron {
             if (dtFound != null) break;
         }
         if (dtFound != null) {
-            dtFound.setSecond(0); // also clears ms
-            // dtFound.setMilliSecond(0);
+            dtFound.clearSecondAndMilliSecond();            
         }
         return dtFound;
     }
@@ -301,7 +343,7 @@ public abstract class OACron {
             int fromWd = dtHold.getDayOfWeek();
             for (int i=0; i<2; i++) {
                 for (int wd : daysOfWeek) {
-                    wd++;  // cron day is 1 greater then java day
+                    wd++;  // cron day is 0 based, java 1 based
 
                     int diff;
                     if (i > 0) {
@@ -313,7 +355,7 @@ public abstract class OACron {
                         else diff = wd - fromWd;
                     }
 
-                    dtCheck = dtHold.addDays(diff);
+                    if (diff != 0) dtCheck = dtHold.addDays(diff);
                     dtCheck.clearTime();
 
                     if (dtTo != null && dtTo.compareTo(dtCheck) <= 0) continue;
@@ -339,8 +381,7 @@ public abstract class OACron {
         }
         else {
             dtCheck.setMinute(0);
-            dtCheck.setSecond(0);
-            dtCheck.setMilliSecond(0);
+            dtCheck.clearSecondAndMilliSecond();            
             OADateTime dtx = new OADateTime(dtFrom);
             dtx.clearTime();
             dtx.set24Hour(dtFrom.get24Hour());
@@ -409,12 +450,16 @@ public abstract class OACron {
             if (ss.length == 2) {
                 if (!OAString.isInteger(ss[1])) {
                     bValid = false;
-                    ints = OAArray.add(ints, x);
+                    if (!OAArray.contains(ints, x)) {
+                        ints = OAArray.add(ints, x);
+                    }
                     continue;
                 }
                 int x2 = OAConv.toInt(ss[1]);
                 for (int i=x; i<=x2; i++) {
-                    ints = OAArray.add(ints, i);
+                    if (!OAArray.contains(ints, i)) {
+                        ints = OAArray.add(ints, i);
+                    }
                 }
             }
             else {
@@ -432,5 +477,18 @@ public abstract class OACron {
     public String getName() {
         return this.name;
     }
-    
+
+    public boolean getIsValid() {
+        return bValid;
+    }
+    public void setEnabled(boolean b) {
+        this.bEnabled = b;
+    }
+    public boolean getEnabled() {
+        return bEnabled;
+    }
+
+    public OADateTime getCreated() {
+        return dtCreated;
+    }
 }

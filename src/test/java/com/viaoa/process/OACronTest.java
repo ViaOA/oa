@@ -1,17 +1,21 @@
-package com.viaoa.util;
+package com.viaoa.process;
 
 import org.junit.Test;
 
-import com.viaoa.util.OACronUtil;
-import com.viaoa.util.OADateTime;
+import com.viaoa.process.OACron;
+import com.viaoa.util.*;
 import static org.junit.Assert.*;
 
 import java.util.Calendar;
 
-public class OACronUtilTest {
+public class OACronTest {
     @Test
     public void test1() {
-        OACronUtil cu = new OACronUtil("1", "0", "*", "*", "0");
+        OACron cu = new OACron("1", "0", "*", "*", "0") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
 
         OADateTime dtNow = new OADateTime();
@@ -30,7 +34,11 @@ public class OACronUtilTest {
 
     @Test
     public void test2() {
-        OACronUtil cu = new OACronUtil("1", "0", "*", "*", "0");
+        OACron cu = new OACron("1", "0", "*", "*", "0") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
 
         OADateTime dtFrom = new OADateTime(2017, Calendar.APRIL, 1, 0, 0);
@@ -44,7 +52,11 @@ public class OACronUtilTest {
 
     @Test
     public void test3() {
-        OACronUtil cu = new OACronUtil("1", "*", "*", "*", "*");
+        OACron cu = new OACron("1", "*", "*", "*", "*") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
 
         OADateTime dtFrom = new OADateTime(2017, Calendar.APRIL, 1, 0, 0, 0);
@@ -59,7 +71,11 @@ public class OACronUtilTest {
 
     @Test
     public void test4() {
-        OACronUtil cu = new OACronUtil("0", "0", "5,10", "*", "*");
+        OACron cu = new OACron("0", "0", "5,10", "*", "*") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         OADateTime dtFrom = new OADateTime();
         dtFrom.clearTime();
@@ -81,7 +97,11 @@ public class OACronUtilTest {
 
     @Test
     public void test5() {
-        OACronUtil cu = new OACronUtil("0", "0", "31", "*", "*");
+        OACron cu = new OACron("0", "0", "31", "*", "*") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         OADateTime dtFrom = new OADateTime();
         dtFrom.clearTime();
@@ -106,7 +126,11 @@ public class OACronUtilTest {
 
     @Test
     public void test6() {
-        OACronUtil cu = new OACronUtil("1,2,3,4,5", "*", "31", "*", "*");
+        OACron cu = new OACron("1,2,3,4,5", "*", "31", "*", "*") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         OADateTime dtFrom = new OADateTime();
         dtFrom.clearTime();
@@ -135,7 +159,11 @@ public class OACronUtilTest {
 
     @Test
     public void test7() {
-        OACronUtil cu = new OACronUtil("1", "1", "1", "1", "1");
+        OACron cu = new OACron("1", "1", "1", "1", "1") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         OADateTime dtFrom = new OADateTime();
         dtFrom.clearTime();
@@ -161,7 +189,11 @@ public class OACronUtilTest {
 
     @Test
     public void test8() {
-        OACronUtil cu = new OACronUtil("0, 30", "12-23", "*", "*", "1-5");
+        OACron cu = new OACron("0, 30", "12-23", "*", "*", "1-5") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         assertFalse(cu.getIncludeLastDayOfMonth());
         OADateTime dtFrom = new OADateTime();
@@ -209,7 +241,11 @@ public class OACronUtilTest {
 
     @Test
     public void test9() {
-        OACronUtil cu = new OACronUtil("3", "0", "*", "*", "0");
+        OACron cu = new OACron("3", "0", "*", "*", "0") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         OADateTime dtFrom = new OADateTime();
         dtFrom.clearTime();
@@ -229,7 +265,14 @@ public class OACronUtilTest {
             assertEquals(x, Calendar.SUNDAY);
 
             if (i > 0) {
-                assertEquals(7, dt.betweenDays(dtFrom));
+                int dif = dt.betweenDays(dtFrom);
+if (dif != 7) {
+    OADateTime dtx = cu.findNext(dtFrom);
+    //qqqqqqqq
+    int xx = 4;
+    xx++;
+}
+                assertEquals(7, dif);
             }
 
             dtFrom = dt;
@@ -239,13 +282,21 @@ public class OACronUtilTest {
 
     @Test
     public void test10() {
-        OACronUtil cu = new OACronUtil("3,99", "0", "*", "*", "0");
+        OACron cu = new OACron("3,99", "0", "*", "*", "0") {
+            @Override
+            protected void process() {
+            }
+        };
         assertFalse(cu.isValid());
     }
 
     @Test
     public void test11() {
-        OACronUtil cu = new OACronUtil("1", "1", "1,last", "*", "*");
+        OACron cu = new OACron("1", "1", "1,last", "*", "*") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         assertTrue(cu.getIncludeLastDayOfMonth());
         OADateTime dtFrom = new OADateTime();
@@ -274,7 +325,11 @@ public class OACronUtilTest {
 
     @Test
     public void test12() {
-        OACronUtil cu = new OACronUtil("1", null, null, null, null);
+        OACron cu = new OACron("1", null, null, null, null) {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         assertFalse(cu.getIncludeLastDayOfMonth());
         OADateTime dtFrom = new OADateTime();
@@ -286,7 +341,11 @@ public class OACronUtilTest {
 
     @Test
     public void testx() {
-        OACronUtil cu = new OACronUtil("1", "0", "*", "*", "0");
+        OACron cu = new OACron("1", "0", "*", "*", "0") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
 
         OADateTime dt;
@@ -310,7 +369,11 @@ public class OACronUtilTest {
 
         // Test #2 every 5 seconds
         dtFrom = new OADateTime();
-        cu = new OACronUtil("0,5,10,15,20,25,30,35,40,45,50,55", "*", "*", "*", "*");
+        cu = new OACron("0,5,10,15,20,25,30,35,40,45,50,55", "*", "*", "*", "*") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
 
         int[] is = cu.getMinutes();
@@ -330,7 +393,11 @@ public class OACronUtilTest {
         dtFrom.setSecond(0);
         dtFrom.setMilliSecond(0);
         long ts = dtFrom.getTime();
-        cu = new OACronUtil("*", "*", "*", "*", "*");
+        cu = new OACron("*", "*", "*", "*", "*") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         for (int i=0; i<1000; i++) {
             dt = cu.findNext(dtFrom);
@@ -343,7 +410,11 @@ public class OACronUtilTest {
 
         dtFrom = new OADateTime(2017, Calendar.APRIL, 24);
         dtFrom = new OADateTime();
-        cu = new OACronUtil("0,5,10,15,21", "1,2,3,4,5,23,22,21,20", "25", "*", "0,1,3,5");
+        cu = new OACron("0,5,10,15,21", "1,2,3,4,5,23,22,21,20", "25", "*", "0,1,3,5") {
+            @Override
+            protected void process() {
+            }
+        };
         assertTrue(cu.isValid());
         for (int i=0; i<1; i++) {
             dt = cu.findNext(dtFrom);  // sunday at 12:01am
