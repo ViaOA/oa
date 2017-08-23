@@ -104,6 +104,10 @@ public class OAObjectInfoDelegate {
         
         synchronized (Lock) {
             oi = (OAObjectInfo) OAObjectHashDelegate.hashObjectInfo.get(clazz);
+if (clazz.getName().indexOf("EmployeeAwardSearch") >= 0) {
+    int xx = 4;
+    xx++;
+}
             if (oi != null) return oi;
 
             if (!bSkip) {
@@ -169,6 +173,10 @@ public class OAObjectInfoDelegate {
         for (int i=0; props != null && i < props.length; i++) {
             String name = props[i];
             if (name == null) continue;
+if (name.equalsIgnoreCase("AwardType")) {
+    int xx = 4;
+    xx++;
+}
             Method m = getMethod(thisOI, "get"+name, 0);
             
             if (m == null) {

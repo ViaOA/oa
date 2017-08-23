@@ -1743,15 +1743,21 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 if (hubNode != null) {
                     if (tndUse.node.def.updateHub != hubNode && tndUse.node.def.updateHub.getSharedHub() != hubNode) {
                         if (hubNode.getSharedHub() != tndUse.node.def.updateHub) {
-                            // 20140421 dont change if hub is from a type=ONE
-                            boolean b = true;
+                            // 20140421,20170823 dont change if hub is from a type=ONE.  OAObject.setAO will handle it.
                             OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(tndUse.node.def.updateHub);
+                            OALinkInfo liRev;
+                            boolean b = true;
+                            
                             if (li != null) {
-                                OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                                if (liRev != null && liRev.getType() == li.ONE) {
-                                    b = false;
-                                }
+                                liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
                             }
+                            else {
+                                liRev = HubDetailDelegate.getLinkInfoFromMasterToDetail(tndUse.node.def.updateHub);
+                            }
+                            if (liRev != null && liRev.getType() == li.ONE) {
+                                b = false;
+                            }
+
                             if (b) {
                                 tndUse.node.def.updateHub.setSharedHub(hubNode, false);
                             }
@@ -1815,7 +1821,23 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                     Hub hx = tndx.node.def.updateHub;
                     if (!hsHub.contains(hx)) {
                         hsHub.add(hx);
-                        if (hx != h && hx.getSharedHub() != h) {
+                        
+                        // 20140421,20170823 dont change if hub is from a type=ONE.  OAObject.setAO will handle it.
+                        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hx);
+                        OALinkInfo liRev;
+                        boolean b = true;
+                        
+                        if (li != null) {
+                            liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                        }
+                        else {
+                            liRev = HubDetailDelegate.getLinkInfoFromMasterToDetail(hx);
+                        }
+                        if (liRev != null && liRev.getType() == li.ONE) {
+                            b = false;
+                        }
+
+                        if (b && hx != h && hx.getSharedHub() != h) {
                             hx.setSharedHub(h, false);
                         }
                     }

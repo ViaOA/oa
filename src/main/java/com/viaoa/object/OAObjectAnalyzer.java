@@ -20,7 +20,7 @@ public class OAObjectAnalyzer {
                 public boolean updateObject(Object object) {
                     OAObject obj = (OAObject) object;
                     Hub[] hubs = OAObjectHubDelegate.getHubReferences(obj);
-                    if (hubs == null) return false;
+                    if (hubs == null) return true;
                     int cnt = 0;
                     for (Hub h : hubs) {
                         if (h == null) continue;
@@ -30,7 +30,7 @@ public class OAObjectAnalyzer {
                     if (cnt > 10) {
                         System.out.println("   guid="+obj.getObjectKey().getGuid()+", cntHubs="+cnt);
                     }
-                    return false;
+                    return true;
                 }
             };
             OAObjectCacheDelegate.callback(cs, cb);

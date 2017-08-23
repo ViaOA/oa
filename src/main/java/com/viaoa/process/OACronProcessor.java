@@ -33,6 +33,7 @@ public class OACronProcessor {
     }
 
     public void add(OACron cron) {
+        LOG.fine("cron="+cron.getName()+", "+cron.getDescription());
         if (!alCron.contains(cron)) {
             alCron.add(cron);
             synchronized (lock) {
@@ -41,9 +42,10 @@ public class OACronProcessor {
         }
     }
     public void remove(OACron cron) {
+        LOG.fine("cron="+cron.getName()+", "+cron.getDescription());
         alCron.remove(cron);
     }
-    
+
     public boolean isRunning() {
         return (thread != null);
     }
@@ -78,24 +80,25 @@ public class OACronProcessor {
     }
 
     /**
-     * called by onProcess using execService thread.
+     * called by {@link #runProcessInAnotherThread(OACron, boolean)} using an execService thread.
      */
-    protected void process(final OACron cron) {
+    protected void callProcess(final OACron cron, boolean bManuallyCalled) {
         if (cron == null) return;
-        if (!cron.getEnabled()) return;
         cron.setLast(new OADateTime());
         LOG.fine("processing cron, name = "+cron.getName()+", description="+cron.getDescription());
-        cron.process();
+        cron.process(bManuallyCalled);
     }
+
     
     /**
-     * will use execService to then call {@link #process(OACron)}
+     * will use execService to then call {@link #process(OACron,boolean)}
      */
-    protected void onProcess(final OACron cron) {
+    public void callProcessInAnotherThread(final OACron cron, final boolean bManuallyCalled) {
+        if (cron == null) return;
         execService.submit(new Runnable() {
             @Override
             public void run() {
-                OACronProcessor.this.process(cron);
+                OACronProcessor.this.callProcess(cron, bManuallyCalled);
             }
         });
     }
@@ -136,7 +139,7 @@ public class OACronProcessor {
                     
                     int d = dt.compareTo(dtNow);
                     if (d == 0) {
-                        onProcess(cron);
+                        callProcessInAnotherThread(cron, false);
                     }
                 }
                 

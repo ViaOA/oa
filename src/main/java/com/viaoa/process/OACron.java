@@ -101,7 +101,7 @@ public abstract class OACron {
     /**
      * Called when it's time to process.
      */
-    protected abstract void process() ;
+    public abstract void process(final boolean bManuallyCalled);
     
     
     public int[] getMinutes() {
@@ -169,12 +169,6 @@ public abstract class OACron {
                 description += "last day";
             }
         }
-        else {
-            if (daysOfWeek.length == 0) {
-                if (description.length() > 0) description += "; and ";
-                description += "every day";
-            }
-        }
 
         if (daysOfWeek.length > 0) {
             if (description.length() > 0) description += "; and";
@@ -208,10 +202,6 @@ public abstract class OACron {
                 if (x < 0 || x > 23) description += "Invalid:"+x;
                 else description += ""+x;
             }
-        }
-        else {
-            if (description.length() > 0) description += "; and ";
-            description += "every hour";
         }
 
 

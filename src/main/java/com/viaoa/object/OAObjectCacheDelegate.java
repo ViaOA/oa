@@ -403,7 +403,7 @@ public class OAObjectCacheDelegate {
                 WeakReference ref = (WeakReference) me.getValue();
                 Object obj = ref.get();
                 if (obj != null) {
-                    callback.updateObject(obj);
+                    if (!callback.updateObject(obj)) break;
                 }
                 me = tm.higherEntry(me.getKey());
             }

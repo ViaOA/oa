@@ -160,6 +160,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
 
     private void refreshAndReselect() {
         refresh();
+        if (changeRefresher != null && changeRefresher.hasChanged()) return;
         reselect();
     }
     
@@ -186,6 +187,10 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             @SuppressWarnings("unchecked")
             @Override
             public boolean updateObject(Object obj) {
+                if (changeRefresher != null && changeRefresher.hasChanged()) {
+                    return false;
+                }
+
                 if (isUsed((T) obj)) {
                     hub.add((T) obj);
                 }
@@ -234,10 +239,12 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
             OARemoteThreadDelegate.sendMessages(false);
         }
     }
-    
+
+
+    private volatile OAChangeRefresher changeRefresher;
+
     protected void setupTrigger() {
         OATriggerListener<T> triggerListener = new OATriggerListener<T>() {
-            volatile OAChangeRefresher changeRefresher;
             
             @Override
             public void onTrigger(final T rootObject, final HubEvent hubEvent, final String propertyPathFromRoot) throws Exception {

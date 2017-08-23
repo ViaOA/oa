@@ -86,8 +86,14 @@ public class HubAODelegate {
 
 	    // 20140421 for detailHub where link.type=ONE
 	    OALinkInfo li = thisHub.datam.liDetailToMaster;
+	    OALinkInfo liRev;
 	    if (li != null) {
-	        OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+            liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+	    }
+	    else {
+            liRev = HubDetailDelegate.getLinkInfoFromMasterToDetail(thisHub);
+	    }
+	    if (liRev != null) {
 	        if (liRev != null && liRev.getType() == li.ONE) {
                 Object objMaster = HubDetailDelegate.getMasterObject(thisHub);
                 if (objMaster != null) {

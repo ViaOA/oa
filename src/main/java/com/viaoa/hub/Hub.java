@@ -1385,9 +1385,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         };
         OATrigger trigger = OATriggerDelegate.createTrigger(property, getObjectClass(), tl, new String[] {propertyPath}, true, false, false, true);
     }
-    public void removeTriggerListener(HubListener<TYPE> hl) {
-        //qqqqqqqqq to do qqqqqqqqqqqqqqqqq
-    }
     
     
     /**
@@ -1418,6 +1415,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public void addHubListener(HubListener<TYPE> hl) {
         HubEventDelegate.addHubListener(this, hl);
     }
+    public void addListener(HubListener<TYPE> hl) {
+        HubEventDelegate.addHubListener(this, hl);
+    }
 
     /**
      * Remove a Listener to this Hub.
@@ -1427,6 +1427,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see #addHubListener
      */
     public void removeHubListener(HubListener<TYPE> hl) {
+        HubEventDelegate.removeHubListener(this, hl);
+    }
+    public void removeListener(HubListener<TYPE> hl) {
         HubEventDelegate.removeHubListener(this, hl);
     }
 

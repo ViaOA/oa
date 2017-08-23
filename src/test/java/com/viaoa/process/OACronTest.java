@@ -13,7 +13,7 @@ public class OACronTest {
     public void test1() {
         OACron cu = new OACron("1", "0", "*", "*", "0") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -36,7 +36,7 @@ public class OACronTest {
     public void test2() {
         OACron cu = new OACron("1", "0", "*", "*", "0") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -54,7 +54,7 @@ public class OACronTest {
     public void test3() {
         OACron cu = new OACron("1", "*", "*", "*", "*") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -73,7 +73,7 @@ public class OACronTest {
     public void test4() {
         OACron cu = new OACron("0", "0", "5,10", "*", "*") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -99,7 +99,7 @@ public class OACronTest {
     public void test5() {
         OACron cu = new OACron("0", "0", "31", "*", "*") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -128,7 +128,7 @@ public class OACronTest {
     public void test6() {
         OACron cu = new OACron("1,2,3,4,5", "*", "31", "*", "*") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -161,7 +161,7 @@ public class OACronTest {
     public void test7() {
         OACron cu = new OACron("1", "1", "1", "1", "1") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -191,7 +191,7 @@ public class OACronTest {
     public void test8() {
         OACron cu = new OACron("0, 30", "12-23", "*", "*", "1-5") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -243,7 +243,7 @@ public class OACronTest {
     public void test9() {
         OACron cu = new OACron("3", "0", "*", "*", "0") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -284,7 +284,7 @@ if (dif != 7) {
     public void test10() {
         OACron cu = new OACron("3,99", "0", "*", "*", "0") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertFalse(cu.isValid());
@@ -294,7 +294,7 @@ if (dif != 7) {
     public void test11() {
         OACron cu = new OACron("1", "1", "1,last", "*", "*") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -327,7 +327,7 @@ if (dif != 7) {
     public void test12() {
         OACron cu = new OACron("1", null, null, null, null) {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -343,7 +343,7 @@ if (dif != 7) {
     public void testx() {
         OACron cu = new OACron("1", "0", "*", "*", "0") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -371,7 +371,7 @@ if (dif != 7) {
         dtFrom = new OADateTime();
         cu = new OACron("0,5,10,15,20,25,30,35,40,45,50,55", "*", "*", "*", "*") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -395,7 +395,7 @@ if (dif != 7) {
         long ts = dtFrom.getTime();
         cu = new OACron("*", "*", "*", "*", "*") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());
@@ -412,7 +412,7 @@ if (dif != 7) {
         dtFrom = new OADateTime();
         cu = new OACron("0,5,10,15,21", "1,2,3,4,5,23,22,21,20", "25", "*", "0,1,3,5") {
             @Override
-            protected void process() {
+            public void process(boolean bManuallyCalled) {
             }
         };
         assertTrue(cu.isValid());

@@ -810,7 +810,7 @@ public class OATreeNode implements Cloneable {
         _add(node, null);
     }
     
-    private void _add(OATreeNode originalNode, String propertyPath) {
+    private void _add(final OATreeNode originalNode, String propertyPath) {
         OATreeNode node = originalNode;
         if (node == this) {
             if (this.hub != null || !OAString.isEmpty(propertyPath)) {
@@ -818,6 +818,7 @@ public class OATreeNode implements Cloneable {
                 node = new OATreeNode(originalNode) {
                     @Override
                     public Icon getIcon(Object obj) {
+                        if (originalNode == null) return null;
                         return originalNode.getIcon(obj);
                     }
                     
@@ -832,6 +833,7 @@ public class OATreeNode implements Cloneable {
             node = new OATreeNode() {
                 @Override
                 public Icon getIcon(Object obj) {
+                    if (originalNode == null) return null;
                     return originalNode.getIcon(obj);
                 }
             };

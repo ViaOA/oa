@@ -158,11 +158,11 @@ public abstract class OAChangeRefresher {
     /**
      * used to know if refresh has been called since processing.
      */
-    protected boolean hasChanged() {
+    public boolean hasChanged() {
         int x = aiChange.get();
-        return (x == lastChange);
+        return (x != lastChange);
     }
-    protected boolean isChanged() {
+    public boolean isChanged() {
         int x = aiChange.get();
         return (x == lastChange);
     }
@@ -202,13 +202,15 @@ public abstract class OAChangeRefresher {
             try {
                 if (iStartStop != aiStartStop.get()) break;
                 synchronized (lock) {
-                    lock.wait(60 * 1000);
+                    if (!hasChanged()) {
+                        lock.wait(60 * 1000);
+                    }
                 }
                 if (iStartStop != aiStartStop.get()) break;
 
-                int x = aiChange.get();
-                if (x == lastChange) continue;
-                lastChange = x;
+                if (!hasChanged()) continue;
+                
+                lastChange = aiChange.get();
 
                 process();
             }

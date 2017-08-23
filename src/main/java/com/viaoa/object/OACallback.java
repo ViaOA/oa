@@ -18,7 +18,8 @@ package com.viaoa.object;
 public interface OACallback {
     
     /**
-     * Callback method used for methods that "visit" an object graph. 
+     * Callback method used for methods that "visit" an object graph.
+     * @return true to continue, else false to exit visiting 
     */
     public boolean updateObject(Object obj);
 }
