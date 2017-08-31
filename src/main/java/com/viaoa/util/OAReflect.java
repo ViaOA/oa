@@ -200,7 +200,7 @@ public class OAReflect {
                     // 20120807 if OAObject, which is the return value when using <generics>, ex: OALeftJoin
                     if (!bThrowException || (clazz != null && clazz.equals(OAObject.class))) return null;
                     //was: if (!bThrowException) return null;
-                    RuntimeException rex = new RuntimeException("OAReflect.getMethods() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+name+" path="+propertyPath);
+                    RuntimeException rex = new RuntimeException("Throwing exception, OAReflect.getMethods() cant find method. class="+(clazz==null?"null":clazz.getName())+" prop="+name+" path="+propertyPath);
                     rex.printStackTrace();
                     throw rex;
                 }

@@ -39,6 +39,15 @@ public class OAPopupList extends OAList {
         return idThis;
     }
 
+    
+    private String lastAjaxSent;
+    
+    @Override
+    public String getScript() {
+        lastAjaxSent = null;
+        return super.getScript();
+    }
+    
     @Override
     protected String getScript2() {
         StringBuilder sb = new StringBuilder(1024);
@@ -86,13 +95,12 @@ public class OAPopupList extends OAList {
         return s;
     }
 
-    private String lastAjaxSent;
-    
     @Override
     public String getAjaxScript() {
         String js = super.getAjaxScript();
         if (js == null) js = "";
-        js += getScript3();
+        String s = getScript3();
+        if (s != null) js += s;
         
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;

@@ -11,6 +11,8 @@
 package com.viaoa.hub;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.viaoa.object.*;
 import com.viaoa.util.*;
@@ -33,7 +35,8 @@ import com.viaoa.util.*;
 */
 public class HubSortListener extends HubListenerAdapter implements java.io.Serializable {
     static final long serialVersionUID = 1L;
-
+    private static Logger LOG = Logger.getLogger(HubSortListener.class.getName()); 
+    
     String sortPropertyName = null;  // uniquely generated PropertyName used by hubListener(..,prop) based on property and sort properties 
     private String[] sortPropertyPaths;  // parsed sort strings, used as dependent propertyPaths for hubListener
     String propertyPaths;  // orig sort string
@@ -94,6 +97,8 @@ public class HubSortListener extends HubListenerAdapter implements java.io.Seria
     protected void setupPropertyPaths() {
     	if (propertyPaths == null) return;
 
+        final Class clazz = hub.getObjectClass();
+
     	StringTokenizer st = new StringTokenizer(propertyPaths, ", ", true);
         
         sortPropertyPaths = null;
@@ -119,10 +124,11 @@ public class HubSortListener extends HubListenerAdapter implements java.io.Seria
                 // else could be property name
             }
             try {
-            	OAReflect.getMethods(hub.getObjectClass(), prop);
+            	OAReflect.getMethods(clazz, prop);
             }
             catch (RuntimeException e) {
                 // ignore
+                LOG.log(Level.WARNING, "error getting method, will continue.  Class="+clazz+", prop="+prop, e);
                 continue;
             }
             

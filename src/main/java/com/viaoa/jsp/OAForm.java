@@ -19,8 +19,6 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sun.org.apache.bcel.internal.generic.JSR_W;
-import com.viaoa.html.Util;
 import com.viaoa.process.OAProcess;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
@@ -1146,15 +1144,19 @@ public class OAForm extends OABase implements Serializable {
         }
         catch (Exception e) {}
 
-        String forward = forwardUrl;
-        String s = request.getParameter("oacommand");
-        OAJspComponent comp = getComponent(s);
-        if (comp == null) return forward;
+        String id = request.getParameter("oacommand");
+        OAJspComponent comp = getComponent(id);
+        if (comp == null) return getUrl();
+
+        String forward = comp.getForwardUrl();
 
         comp._onSubmit(request, response, hmNameValue);
-        s = comp._afterSubmit(forward);
-        if (!OAString.isEmpty(s)) forward = s;
-
+        forward = comp.onSubmit(forward);
+    
+        if (OAString.isEmpty(forward)) {
+            forward = this.getUrl();
+        }
+        
         return forward;
     }
 
@@ -1561,6 +1563,3 @@ public class OAForm extends OABase implements Serializable {
         return sb.toString();
     }
 }
-
-
-
