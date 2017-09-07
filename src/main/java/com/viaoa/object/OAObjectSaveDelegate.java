@@ -10,17 +10,13 @@
 */
 package com.viaoa.object;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import com.viaoa.util.*;
 import com.viaoa.hub.*;
-
 
 // 2007/10/31 qqqqqqqqqq NOTE: Have DataSource use  OAObjectReflectDelegate.getRawReference(oaObj, prop) to get reference properties ..............
 
@@ -36,18 +32,17 @@ public class OAObjectSaveDelegate {
         }
 
         OACascade cascade = new OACascade();
-    	save(oaObj, iCascadeRule, cascade, true);
+    	save(oaObj, iCascadeRule, cascade, true, true);
     }
 
     public static void save(OAObject oaObj, int iCascadeRule, OACascade cascade) {
-        save(oaObj, iCascadeRule, cascade, false);
+        save(oaObj, iCascadeRule, cascade, false, true);
     }
     
-    // also called by HubSaveDelegate
-    public static void save(OAObject oaObj, int iCascadeRule, OACascade cascade, boolean bIsFirst) {
-        if (cascade.getDepth() > 50) {
+    private static void save(OAObject oaObj, int iCascadeRule, OACascade cascade, boolean bIsFirst, boolean bCheckDepth) {
+        if (bCheckDepth && cascade.getDepth() > 50) {
             if (!cascade.wasCascaded(oaObj, false)) {
-                cascade.add(oaObj);
+                cascade.add(oaObj);  // add to overflow, (tail recursion)
             }
             return;
         }
@@ -94,7 +89,7 @@ public class OAObjectSaveDelegate {
                 cascade.setDepth(0);
                 if (al != null) {
                     for (Object obj : al) {
-                        save(((OAObject) obj), iCascadeRule, cascade, false);
+                        save(((OAObject) obj), iCascadeRule, cascade, false, true);
                     }
                 }
             }
@@ -197,9 +192,9 @@ public class OAObjectSaveDelegate {
 		                    }
 		                }
 		                else {
-		                	if (bValidCascade) save(oaRef, iCascadeRule, cascade);
+		                	if (bValidCascade) save(oaRef, iCascadeRule, cascade, false, false);
 		                	else {
-		                	    save(oaRef, OAObject.CASCADE_NONE, cascade); 
+		                	    save(oaRef, OAObject.CASCADE_NONE, cascade, false, false); 
 		                	}
 		                }
 		            }
@@ -314,9 +309,5 @@ public class OAObjectSaveDelegate {
         oaObj.afterSave();
         return true;
 	}
-	
 }
-
-
-
 
