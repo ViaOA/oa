@@ -20,8 +20,8 @@ import com.viaoa.object.*;
 import com.viaoa.util.*;
 
 /**
- *  Converts html text with custom properties and processing tags into pure html text, by
- *  using a supplied list of values to plug into the text.
+ *  Dynamically converts html text with custom property and processing tags into pure html text, by
+ *  using a supplied OAObject or Hub to plug into the text.
   
  *  <ul>Tags that are supported:  
  *  <li><%=prop[,width||fmt]%>  to use value from OAProperties, or one of the values from setProperty()
@@ -32,10 +32,26 @@ import com.viaoa.util.*;
  *  <li><%=if prop%>  true if value is not null and length > 0, is 0 or false
  *  <li><%=end%>
  *  
+ *  <li><%=if !prop%>  true if value is not null and length > 0
  *  <li><%=ifnot prop%>  true if value is not null and length > 0
  *  <li><%=end%>
  *  
+ *  <li><%=if prop == "value to match"%>
  *  <li><%=ifequals prop "value to match"%>
+ *  <li><%=end%>
+ *
+ *  <li><%=if prop > 99%>
+ *  <li><%=ifgt prop 99%>
+ *  <li><%=end%>
+ *  <li><%=if prop >= 99%>
+ *  <li><%=ifgte prop 99%>
+ *  <li><%=end%>
+ *  
+ *  <li><%=if prop < 99%>
+ *  <li><%=iflt prop 99%>
+ *  <li><%=end%>
+ *  <li><%=if prop <= 99%>
+ *  <li><%=iflte prop 99%>
  *  <li><%=end%>
  *  
  *  <li><%=format[X],'12 L'%>  where X can be used as a unique identifier, so that there can be multiple embedded formats.
@@ -57,14 +73,17 @@ import com.viaoa.util.*;
  *  <div pagebreak='no'>  block tag to disable page breaks.
  *  
  *  
- *  OAHTMLReport will internally set values for $DATE, $TIME, $PAGE parameters
+ *  OAHTMLReport will automatically set property values for $DATE, $TIME, $PAGE parameters
  *  <br>
  * The html code uses special tags "<%= ? %>", where "?" is the property name, or property path to use.
  * 
  * By using setProperties and setObject, you can set the root object where the data is retrieved from.
  * 
- * NOTE: Use a "$" prefix (ex: $PAGE) for tag names, to have them use the value from the setProperties name/value pairs.
+ * NOTE: Use a "$" prefix (ex: $PAGE) for tag names that use the value from the setProperties name/value pairs.
  * Otherwise, the value of the tag will be taken from the object, using the name as the property path.
+ * 
+ * 
+* @see #getProperty(OAObject, String) that can be overwritten to handle custom/dynamic values.
  */
 public class OAHTMLConverter {
 
@@ -111,7 +130,7 @@ public class OAHTMLConverter {
     }
 
     /**
-     * Internal properties, used in conjunction with OAProperties param from getHtml()
+     * set a property, that is then referenced using <%=$name%> in the html.
      */
     public void setProperty(String name, Object value) {
         if (name == null) return;
@@ -269,11 +288,55 @@ public class OAHTMLConverter {
             node.arg2 = OAString.field(tok.data, " ", 3);
         }
         else if (tok.tagType == TagType.If) {
-            node.tagType = TagType.If;
             node.arg1 = OAString.field(tok.data, " ", 2);
+            node.tagType = TagType.If;
+
+            // see if this is an expanded if, using operator
+            if (OAString.dcount(tok.data, " ") == 4) {
+                String op = OAString.field(tok.data, " ", 3);
+                node.arg2 = OAString.field(tok.data, " ", 4);
+                if (op.equals("==") || op.equals("=")) {
+                    node.tagType = TagType.IfEquals;
+                }
+                else if (op.equals("!=")) {
+                    node.tagType = TagType.IfNotEquals;
+                }
+                else if (op.equals(">")) {
+                    node.tagType = TagType.IfGt;
+                }
+                else if (op.equals(">=")) {
+                    node.tagType = TagType.IfGte;
+                }
+                else if (op.equals("<")) {
+                    node.tagType = TagType.IfLt;
+                }
+                else if (op.equals("<=")) {
+                    node.tagType = TagType.IfLte;
+                }
+            }
         }
         else if (tok.tagType == TagType.IfEquals) {
             node.tagType = TagType.IfEquals;
+            node.arg1 = OAString.field(tok.data, " ", 2);
+            node.arg2 = OAString.field(tok.data, " ", 3);
+        }
+        else if (tok.tagType == TagType.IfGt) {
+            node.tagType = TagType.IfGt;
+            node.arg1 = OAString.field(tok.data, " ", 2);
+            node.arg2 = OAString.field(tok.data, " ", 3);
+        }
+        else if (tok.tagType == TagType.IfGte) {
+            node.tagType = TagType.IfGte;
+            node.arg1 = OAString.field(tok.data, " ", 2);
+            node.arg2 = OAString.field(tok.data, " ", 3);
+        }
+        else if (tok.tagType == TagType.IfLt) {
+            node.tagType = TagType.IfLt;
+            node.arg1 = OAString.field(tok.data, " ", 2);
+            node.arg2 = OAString.field(tok.data, " ", 3);
+        }
+        else if (tok.tagType == TagType.IfLte) {
+            node.tagType = TagType.IfLte;
             node.arg1 = OAString.field(tok.data, " ", 2);
             node.arg2 = OAString.field(tok.data, " ", 3);
         }
@@ -311,6 +374,10 @@ public class OAHTMLConverter {
         IfNot,       // arg1=prop
         IfEquals,    // arg1=prop, arg2=value
         IfNotEquals, // arg1=prop, arg2=value
+        IfGt,        // arg1=prop, arg2=num
+        IfGte,        // arg1=prop, arg2=num
+        IfLt,        // arg1=prop, arg2=num
+        IfLte,        // arg1=prop, arg2=num
         ForEach,     // arg1=prop
         Equals,      // arg1=prop, arg2=value
         NotEquals,   // arg1=prop, arg2=value
@@ -337,8 +404,10 @@ public class OAHTMLConverter {
             if (tagType != null) {
                 b = (tagType == TagType.Format || tagType == TagType.If || tagType == TagType.IfNot
                         || tagType == TagType.IfNotEquals || tagType == TagType.ForEach
-                        || tagType == TagType.Equals || tagType == TagType.NotEquals);
-                        
+                        || tagType == TagType.Equals || tagType == TagType.NotEquals
+                        || tagType == TagType.IfGt || tagType == TagType.IfGte
+                        || tagType == TagType.IfLt || tagType == TagType.IfLte
+                        );
             }
             else b = false;
             return b;
@@ -430,6 +499,18 @@ public class OAHTMLConverter {
             }
             else if (tag.startsWith("ifnotequals ")) {
                 tok.tagType = TagType.IfNotEquals;
+            }
+            else if (tag.startsWith("ifgt ")) {
+                tok.tagType = TagType.IfGt;
+            }
+            else if (tag.startsWith("ifgte ")) {
+                tok.tagType = TagType.IfGte;
+            }
+            else if (tag.startsWith("iflt ")) {
+                tok.tagType = TagType.IfLt;
+            }
+            else if (tag.startsWith("iflte ")) {
+                tok.tagType = TagType.IfLte;
             }
             else { // get property value
                 tok.tagType = TagType.GetProp;
@@ -526,25 +607,52 @@ public class OAHTMLConverter {
                 break;
 
             case IfEquals:
-                int x = rootNode.arg1.indexOf(' ');
-                String prop;
-                String match;
-                if (x > 0) {
-                    prop = rootNode.arg1.substring(0, x);
-                    match = rootNode.arg1.substring(x + 1);
-                }
-                else {
-                    prop = rootNode.arg1;
-                    match = null;
-                }
+                s = getValue(obj, rootNode.arg1, 0, null, props);
 
-                s = getValue(obj, prop, 0, null, props);
-
-                bProcessChildren = (s == match) || (s != null && s.equals(match));
+                bProcessChildren = OAString.isEqual(s, rootNode.arg2);
                 break;
 
+            case IfGt:
+                s = getValue(obj, rootNode.arg1, 0, null, props);
+                if (OAString.isNumber(s) && OAString.isNumber(rootNode.arg2)) {
+                    double d1 = OAConv.toDouble(s);
+                    double d2 = OAConv.toDouble(rootNode.arg2);
+                    bProcessChildren = d1 > d2;
+                }
+                else bProcessChildren = false;
+                break;
+            case IfGte:
+                s = getValue(obj, rootNode.arg1, 0, null, props);
+                if (OAString.isNumber(s) && OAString.isNumber(rootNode.arg2)) {
+                    double d1 = OAConv.toDouble(s);
+                    double d2 = OAConv.toDouble(rootNode.arg2);
+                    bProcessChildren = d1 >= d2;
+                }
+                else bProcessChildren = false;
+                break;
+
+            case IfLt:
+                s = getValue(obj, rootNode.arg1, 0, null, props);
+                if (OAString.isNumber(s) && OAString.isNumber(rootNode.arg2)) {
+                    double d1 = OAConv.toDouble(s);
+                    double d2 = OAConv.toDouble(rootNode.arg2);
+                    bProcessChildren = d1 < d2;
+                }
+                else bProcessChildren = false;
+                break;
+
+            case IfLte:
+                s = getValue(obj, rootNode.arg1, 0, null, props);
+                if (OAString.isNumber(s) && OAString.isNumber(rootNode.arg2)) {
+                    double d1 = OAConv.toDouble(s);
+                    double d2 = OAConv.toDouble(rootNode.arg2);
+                    bProcessChildren = d1 <= d2;
+                }
+                else bProcessChildren = false;
+                break;
+                
             case GetProp:
-                prop = rootNode.arg1;
+                String prop = rootNode.arg1;
                 String fmt = rootNode.arg2;
 
                 int width = 0;
@@ -615,7 +723,7 @@ public class OAHTMLConverter {
     /**
      * Called to get the value of a property.
      * @param obj Object parameter from getHtml()
-     * @param name name of property parsed between <%=XX%> parameters.
+     * @param propertyName name of property parsed between <%=XX%> parameters.
      * @return
      */
     protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
@@ -664,6 +772,9 @@ public class OAHTMLConverter {
                     bFmt = false;
                 }
                 else {
+                    if (objx instanceof Hub) {
+                        objx = ((Hub) objx).getSize(); // default is to get size of hub
+                    }
                     result = OAConv.toString(objx);
 
                     // if not html, then convert [lf] to <br>

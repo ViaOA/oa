@@ -119,14 +119,14 @@ public class OAListing implements OAJspComponent {
     
     
     @Override
-    public boolean _beforeSubmit() {
+    public boolean _beforeFormSubmitted() {
         return true;
     }
 
     private String submitUpdateScript;
     
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
         return bWasSubmitted;
     }
@@ -177,7 +177,7 @@ public class OAListing implements OAJspComponent {
     }
     
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -329,5 +329,19 @@ public class OAListing implements OAJspComponent {
         String value = ((OAObject) obj).getPropertyAsString(getPropertyPath(), getFormat());
         
         return value;
+    }
+
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return null;
+    }
+    
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        return getHtml(obj, getHub().getPos(obj));
+    }
+
+    @Override
+    public void _beforeOnSubmit() {
     }
 }

@@ -150,11 +150,11 @@ public class OATable implements OAJspComponent {
     }
 
     @Override
-    public boolean _beforeSubmit() {
+    public boolean _beforeFormSubmitted() {
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
             if (te instanceof OAJspComponent) {
-                ((OAJspComponent)te)._beforeSubmit();
+                ((OAJspComponent)te)._beforeFormSubmitted();
             }
         }
         return true;
@@ -164,11 +164,11 @@ public class OATable implements OAJspComponent {
     private String submitHref;
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
             if (te instanceof OAJspComponent) {
-                ((OAJspComponent)te)._onSubmit(req, resp, hmNameValue);
+                ((OAJspComponent)te)._onFormSubmitted(req, resp, hmNameValue);
             }
         }
         boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
@@ -272,11 +272,11 @@ public class OATable implements OAJspComponent {
     }
 
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
             if (te instanceof OAJspComponent) {
-                String s = ((OAJspComponent)te)._afterSubmit(forwardUrl);
+                String s = ((OAJspComponent)te)._afterFormSubmitted(forwardUrl);
                 if (!OAString.isEmpty(s)) forwardUrl = s;
             }
         }
@@ -776,6 +776,21 @@ public class OATable implements OAJspComponent {
         return scrollLeft;
     }
     
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return null;
+    }
+    
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        return null;
+    }
+
+    @Override
+    public void _beforeOnSubmit() {
+    }
+
+
     public static void main(String[] args) {
         // if txt is long, then split into multiple lines
         String strTable = "this is \"\"\"\"\"\"\"a test\" \'\"a";

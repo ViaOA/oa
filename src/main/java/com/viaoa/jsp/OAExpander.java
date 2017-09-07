@@ -78,13 +78,13 @@ public class OAExpander implements OAJspComponent, OAJspRequirementsInterface {
     }
 
     @Override
-    public boolean _beforeSubmit() {
+    public boolean _beforeFormSubmitted() {
         return true;
     }
 
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         return false;
     }
     
@@ -94,7 +94,7 @@ public class OAExpander implements OAJspComponent, OAJspRequirementsInterface {
     }
     
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -271,4 +271,15 @@ public class OAExpander implements OAJspComponent, OAJspRequirementsInterface {
         return al.toArray(ss);
     }
 
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return null;
+    }
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        return null;
+    }
+    @Override
+    public void _beforeOnSubmit() {
+    }
 }

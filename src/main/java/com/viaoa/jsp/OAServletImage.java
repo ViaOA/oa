@@ -134,4 +134,11 @@ public class OAServletImage extends OAHtmlElement {
     public String getSource(Object object, String defaultSource) {
         return defaultSource;
     }
+    
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        String s = "<img src='" + getHtmlSource(obj) + "'>";
+        return s;
+    }
+    
 }

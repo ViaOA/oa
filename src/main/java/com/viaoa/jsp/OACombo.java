@@ -129,12 +129,12 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     }
 
     @Override
-    public boolean _beforeSubmit() {
+    public boolean _beforeFormSubmitted() {
         return true;
     }
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         String name = null;
         OAObject obj = null;
         String[] values = null;
@@ -239,7 +239,7 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     }
 
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -664,5 +664,17 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
 
         String[] ss = new String[al.size()];
         return al.toArray(ss);
+    }
+
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        return null;
+    }
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return null;
+    }
+    @Override
+    public void _beforeOnSubmit() {
     }
 }

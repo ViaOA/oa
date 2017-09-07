@@ -65,6 +65,9 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     protected String toolTip;
     protected OATemplate templateToolTip;
     private boolean bHadToolTip;
+
+    protected String confirmMessage;
+    protected OATemplate templateConfirmMessage;
     
     
     public void addAttribute(OAHtmlAttribute attr) {
@@ -160,7 +163,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     }
 
     @Override
-    public boolean _beforeSubmit() {
+    public boolean _beforeFormSubmitted() {
         return true;
     }
 
@@ -181,7 +184,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     }
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String,String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String,String[]> hmNameValue) {
         String s = req.getParameter("oacommand");
         if (s == null && hmNameValue != null) {
             String[] ss = hmNameValue.get("oacommand");
@@ -190,6 +193,10 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         boolean bWasSubmitted  = (id != null && id.equals(s));
         return bWasSubmitted; // true if this caused the form submit
     }
+
+    @Override
+    public void _beforeOnSubmit() {
+    }
     
     @Override
     public String onSubmit(String forwardUrl) {
@@ -197,7 +204,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     }
 
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -354,12 +361,22 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         if (value == null) value = "";
  
         int addSp = (minLineWidth <= 0) ? 0 : (minLineWidth - value.length()); 
-        if (addSp > 0) {
-            for (int i=0; i<addSp; i++) value += " ";
-        }
+        for (int i=0; i<addSp; i++) value += " ";
         
         return value;
     }
+    
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return getHtml(obj);
+    }
+    
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        return getHtml(obj);
+    }
+    
+    
     
     public String getVisiblePropertyPath() {
         return visiblePropertyPath;
@@ -649,5 +666,20 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         return al.toArray(ss);
     }
 
+    public void setConfirmMessage(String msg) {
+        this.confirmMessage = msg;
+    }
+    public String getConfirmMessage() {
+        return confirmMessage;
+    }
+    public String getProcessedConfirmMessage(OAObject obj) {
+        if (OAString.isEmpty(confirmMessage)) return confirmMessage;
+        if (templateConfirmMessage == null) {
+            templateConfirmMessage = new OATemplate();
+            templateConfirmMessage.setTemplate(getConfirmMessage());
+        }
+        String s = templateConfirmMessage.process(obj);
+        return s;
+    }
     
 }

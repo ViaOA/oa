@@ -41,7 +41,7 @@ public class OACascade {
   
     // 20140821 todo: allow for max depth, restrart
     private int depth;
-    private ArrayList<Object> al;
+    private ArrayList<Object> alOverflow;
 
     /**
      * 
@@ -68,14 +68,14 @@ public class OACascade {
         this.depth = d;
     }
     public void add(Object obj) {
-        if (al == null) al = new ArrayList<Object>();
-        al.add(obj);
+        if (alOverflow == null) alOverflow = new ArrayList<Object>();
+        alOverflow.add(obj);
     }
     public ArrayList<Object> getList() {
-        return al;
+        return alOverflow;
     }
     public void clearList() {
-        al = null;
+        alOverflow = null;
     }
     
     public OACascade() {

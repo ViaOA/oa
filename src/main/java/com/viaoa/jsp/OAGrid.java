@@ -22,6 +22,7 @@ import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
@@ -51,8 +52,10 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     private int columns;
 
     /** template that uses ${name} tags to insert values from list of added components. */
-    private String template;
-    private HashMap<String, OAJspComponent> hm = new HashMap<String, OAJspComponent>();
+    private String htmlTemplate;
+    private OATemplate template;
+    
+    private HashMap<String, OAJspComponent> hmChildren = new HashMap<String, OAJspComponent>();
 
     
     public OAGrid(String id, Hub hub, int columns) {
@@ -97,7 +100,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public void setForm(OAForm form) {
         this.form = form;
-        for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
+        for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
             e.getValue().setForm(form);
         }
     }
@@ -107,9 +110,9 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
 
     @Override
-    public boolean _beforeSubmit() {
-        for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
-            e.getValue()._beforeSubmit();
+    public boolean _beforeFormSubmitted() {
+        for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
+            e.getValue()._beforeFormSubmitted();
         }
         return true;
     }
@@ -118,12 +121,13 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     private OAJspComponent jcSubmitted;
     
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+        rowSubmitted = -1;
         jcSubmitted = null;
         boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
-        for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
+        for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
             OAJspComponent jc = e.getValue();
-            boolean b = jc._onSubmit(req, resp, hmNameValue);
+            boolean b = jc._onFormSubmitted(req, resp, hmNameValue);
             if (b) {
                 jcSubmitted = jc;
                 bWasSubmitted = true;
@@ -131,6 +135,8 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         }
         return bWasSubmitted;
     }
+    
+    private boolean bPageCommandUsed;
     
     protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         Enumeration enumx = req.getParameterNames();
@@ -152,13 +158,15 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
             int page = OAConv.toInt(value.substring(1));
             pager.currentPage = page;
             submitUpdateScript = null;
+            bPageCommandUsed = true;
             return true;
         }
+        bPageCommandUsed = false;
         
         int row = OAConv.toInt(value);
-        hub.setPos(row);
+        rowSubmitted = row;
         
-        submitUpdateScript = "$('#oahidden"+id+"').val('');";
+    //    submitUpdateScript = "$('#oahidden"+id+"').val('');";
 
         // submitUpdateScript += "$('table#"+id+" tr').removeAttr('oahold');";
         int topRow = (pager == null) ? 0 : pager.getTopRow();
@@ -167,19 +175,26 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
 
     @Override
-    public String _afterSubmit(String forwardUrl) {
-        for (Map.Entry<String, OAJspComponent> e : hm.entrySet()) {
-            String s = e.getValue()._afterSubmit(forwardUrl);
+    public String _afterFormSubmitted(String forwardUrl) {
+        for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
+            String s = e.getValue()._afterFormSubmitted(forwardUrl);
             if (s != null) forwardUrl = s;
         }
         return forwardUrl;
     }
 
+    private int rowSubmitted;
     @Override
     public String onSubmit(String forwardUrl) {
-        if (jcSubmitted != null) {
-            return jcSubmitted.onSubmit(forwardUrl);
+        if (rowSubmitted >= 0) {
+            hub.setPos(rowSubmitted);
+            rowSubmitted = -1;
         }
+        if (jcSubmitted != null) {
+            String s = jcSubmitted.onSubmit(forwardUrl);
+            if (OAString.isNotEmpty(s)) forwardUrl = s;  
+        }
+        if (bPageCommandUsed) return null; // stay on page
         return forwardUrl;
     }
 
@@ -247,121 +262,6 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
 
     private String lastAjaxSent;
     
-    //@Override
-    public String getAjaxScript_OLD() {
-
-        if (submitUpdateScript != null) {
-            String s = submitUpdateScript;
-            submitUpdateScript = null;
-            return s;
-        }
-        StringBuilder sb = new StringBuilder(2048);
-        
-        
-        sb.append("<table id='oa"+id+"' class='oatable'  border='0' cellpadding='0' cellspacing='0'>");
-        if (pager != null && pager.isTop()) {
-            sb.append("<thead><tr><td colspan='"+columns+"' class='oatablePager'>");
-            sb.append(pager.getHtml());
-            sb.append("</td></tr></thead>");
-        }
-        if (pager != null && pager.isBottom()) {
-            sb.append("<tfoot><tr><td colspan='"+columns+"' class='oatablePager'>");
-            sb.append(pager.getHtml());
-            sb.append("</td></tr></tfoot>");
-        }
-        
-        sb.append("<tbody>");
-        
-        int scrollAmt = (pager == null) ? ((int)(Math.ceil( ((double)hub.getSize())/columns))) : pager.getScrollAmount();
-        int topRow = (pager == null) ? 0 : pager.getTopRow();
-        
-        
-        int pos = topRow * columns;
-        
-        for (int row=0; row < scrollAmt ;row++) {
-            
-            sb.append("<tr>");
-            for (int col=0; col < columns; col++, pos++) {
-                Object obj = hub.getAt(pos);
-                
-                String s = "";
-                if (obj == hub.getAO()) s = " class='oatableSelected'";
-                
-                // 20130407
-                if (obj != null) s += " oarow='"+(pos)+"'";
-                //was:  s += " oarow='"+(pos)+"'";
-                
-                String style;
-                if (cellHeight > 0 || cellWidth > 0) {
-                    style = " style='display: inline-block;";
-                    if (cellWidth > 0) {
-                        style += "width: "+cellWidth+"px;";
-                    }
-                    if (cellHeight > 0) {
-                        style += "height: "+cellHeight+"px;";
-                    }
-                    style += "overflow: hidden;";
-                    style += "'";
-                }
-                else style = "";
-                
-                sb.append("<td"+s+style+">"+getHtml(obj, pos, row, col)+"</td>");
-            }
-            sb.append("</tr>");
-        }
-            
-        sb.append("</tbody>");
-        sb.append("</table>");
-
-        String strTable = sb.toString();
-        // strTable = Util.convert(strTable, "\\", "\\\\");
-        // strTable = Util.convert(strTable, "'", "\\'");
-        strTable = Util.convert(strTable, "\n", "\\n");
-        strTable = Util.convert(strTable, "\r", "\\r");
-        
-        sb = new StringBuilder(strTable.length() + 2048);
-        sb.append("$('#"+id+"').html('"+strTable+"');\n");
-
-        sb.append("$('table#oa"+id+" tbody tr').attr('class', 'oatableEven');");
-        
-        sb.append("function oagrid"+id+"CellClick() {\n");
-        sb.append("    var v = $(this).attr('oarow');\n");
-        sb.append("    if (v == null) return;\n");
-        sb.append("    $('#oahidden"+id+"').val(v);\n");
-        
-        if (getAjaxSubmit() && OAString.isEmpty(forwardUrl)) {
-            sb.append("    ajaxSubmit();\n");
-        }
-        else {
-            sb.append("    $('form').submit();\n");
-        }
-        sb.append("}\n");
-        sb.append("$('#oa"+id+" tr td[oarow]').click(oagrid"+id+"CellClick);\n");
-
-        if (pager != null) {
-            sb.append("function oatablePager"+id+"Click() {\n");
-            sb.append("    var v = $(this).attr('class');\n");
-            sb.append("    if (v == 'oatablePagerDisable') return;\n");
-            sb.append("    if (v == 'oatablePagerSelected') return;\n");
-            sb.append("    \n");
-            sb.append("    v = $(this).attr('oaValue');\n");
-            sb.append("    if (typeof v == 'undefined') {\n");
-            sb.append("        v = $(this).html();\n");
-            sb.append("    }\n");
-            sb.append("    if (v == null) return;\n");
-            sb.append("    $('#oahidden"+id+"').val('P'+v);\n");
-            sb.append("    ajaxSubmit();\n");
-            sb.append("}\n");
-            sb.append("$('table#oa"+id+" .oatablePager ul li').click(oatablePager"+id+"Click);\n");
-        }
-        sb.append("$('#oahidden"+id+"').val('');\n"); // set back to blank
-        
-        String js = sb.toString();
-        
-        if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
-        else lastAjaxSent = js;
-        return js;
-    }
 
     @Override
     public String getAjaxScript() {
@@ -431,12 +331,6 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                 
                 if (s != null) {
                     // will be wrapped in "
-                    /*
-                    s = OAString.convert(s, "\\'", "xQxq");
-                    s = OAString.convert(s, "\'", "\\'");
-                    s = OAString.convert(s, "xQxq", "\\'");
-                    */
-
                     s = OAString.convert(s, "\\\"", "xQxq");
                     s = OAString.convert(s, "\"", "\\\"");
                     s = OAString.convert(s, "xQxq", "\\\"");
@@ -480,6 +374,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
+        
         return js;
     }
     
@@ -544,133 +439,124 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         this.servletImagePropertyPath = propertyPath;
     }
     
-    /**
-     * Used by template to insert the img src value. 
-     * ex:  template: "<img src='${card}'>" 
-     */
-    public void add(String name, OAServletImage img) {
-        if (name != null && img != null) {
-            hm.put(name, img);
-            img.setForm(form);
+
+    public void add(OAJspComponent comp) {
+        if (comp != null) {
+            hmChildren.put(comp.getId(), comp);
+            comp.setForm(form);
         }
     }
-    /**
-     * Used by template to insert text. 
-     * ex:  template: "<div>${fullName}</div>" 
-     */
-    public void add(String name, OAHtmlElement ele) {
-        if (name != null && ele != null) {
-            hm.put(name, ele);
-            ele.setForm(form);
-        }
-    }
+    
 
     /**
-     * Uses ${name} to have HtmlElement and ServletImage components inserted.
-     * if 'name' is not found, then it will be used as a property path, using  ${propertyPath, fmt}
+     * @see #getTemplate()
      */
-    public void setTemplate(String template) {
-        this.template = template;
+    public void setHtmlTemplate(String htmlTemplate) {
+        this.htmlTemplate = htmlTemplate;
     }
-    public String getTemplate() {
-        return this.template;
+    public String getHtmlTemplate() {
+        return this.htmlTemplate;
+    }
+   
+
+    /**
+     * The following values are set and available:
+     * $OAPOS, $OACOL, $OAROW
+     * @see OATemplate
+     */
+    public OATemplate getTemplate() {
+        if (template != null) return template;
+        if (OAString.isEmpty(getHtmlTemplate())) return null;
+        
+        template = new OATemplate() {
+            @Override
+            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
+                String s;
+                OAJspComponent comp = hmChildren.get(propertyName);
+                if (comp == null) {
+                    s = super.getValue(obj, propertyName, width, fmt, props);
+                }
+                else {
+                    if (obj == getHub().getAO()) {
+                        s = comp.getEditorHtml(obj);
+                    }
+                    else {
+                        s = comp.getRenderHtml(obj);
+                    }
+                }
+                s = getTemplateValue(obj, propertyName, width, fmt, props, s);
+                return s;
+            }
+        };
+        template.setTemplate(getHtmlTemplate());
+        
+        return template;
+    }
+    public void setTemplate(OATemplate temp) {
+        this.template = temp;
     }
     
-   
-    public String getTemplate(Object objx, int pos, int row, int col) {
+    /**
+     * Callback from {@link #getTemplate(Object, int, int, int)}
+     */
+    public String getTemplateValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, String defaultValue) {
+        return defaultValue;
+    }
+    
+    /**
+     * This will use the OATemplate to create the html template for a single object.  
+     */
+    public String getTemplateHtml(Object objx, int pos, int row, int col) {
         if (!(objx instanceof OAObject)) return null;
-        if (template == null) return null;
         OAObject obj = (OAObject) objx;
         
-        String result = "";
+        if (getTemplate() == null) return null;
         
-        int p = 0;
-        int pLast = 0;
-        for (; pLast < template.length(); ) {
-            p = template.indexOf("${", pLast);
-            if (p < 0) {
-                result += template.substring(pLast);
-                break;
-            }
-            if (p > pLast) result += template.substring(pLast, p);
-            p += 2;
-            pLast = template.indexOf("}", p);
-            if (pLast < 0) break;
-            
-            String s = template.substring(p, pLast);
-            pLast++;
-            
-            OAJspComponent comp = hm.get(s);
-            if (comp == null) {
-                // use property path
-                int x = s.indexOf(',');
-                if (x < 0) x = s.indexOf(' ');
-                if (x < 0) x = s.indexOf(':');
-                String fmt = "";
-                if (x >= 0) {
-                    fmt = s.substring(x+1);
-                    s = s.substring(x);
-                }
-                if (OAString.isEmpty(fmt)) {
-                    OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), s);
-                    fmt = pp.getFormat();
-                }
-                
-                s = obj.getPropertyAsString(s, fmt);
-                result += s;
-            }
-            else {
-                if (comp instanceof OAHtmlElement) {
-                    s = ((OAHtmlElement) comp).getHtml(obj);
-                    if (s != null) result += s;
-                }
-                else if (comp instanceof OAServletImage) {
-                    s = ((OAServletImage) comp).getHtmlSource(obj);
-                    if (s != null) result += s;
-                }
-            }
-        }
-        return result;
+        template.setProperty("OAPOS", ""+pos);
+        template.setProperty("OACOL", ""+(col+1));
+        template.setProperty("OAROW", ""+(row+1));
+        
+        String s = template.process(obj);
+        
+        return s;
+        
     }
-    
-    
     
     
     public String getHtmlServletImage(Object obj, int pos, int row, int col) {
+        if (OAString.isEmpty(servletImagePropertyPath)) return null;
         String result = null;
-        if (!OAString.isEmpty(getServletImageBytePropertyName())) {
-            Object value = null;
-            
-            if (obj != null) {
-                value = ((OAObject)obj).getProperty(servletImagePropertyPath);
-            }
-            
-            if (value != null) {
-                String className = value.getClass().getName();
+        Object value = null;
+        
+        if (obj != null) {
+            value = ((OAObject)obj).getProperty(servletImagePropertyPath);
+        }
+        
+        if (value != null) {
+            String className = value.getClass().getName();
 
-                Object id = ((OAObject) value).getProperty("id");
-                
-                String src = String.format("/servlet/img?c=%s&id=%s&p=%s", className, id+"", getServletImageBytePropertyName());
-                if (imageHeight > 0) src = String.format("%s&mh=%d", src, imageHeight);
-                if (imageWidth > 0) src = String.format("%s&mw=%d", src, imageWidth);
-                result = "<img src='" + src +"'>";
-            }          
-            else {
-                String s = "<span";
-                if (imageHeight > 0 || imageWidth > 0) {
-                    s += " style='";
-                    if (imageWidth > 0) s += "width: "+imageWidth+"px;";
-                    if (imageHeight > 0) s += "height: "+imageHeight+"px;";
-                    s += "'";
-                }
-                s += "></span>";
-                result = s;
+            Object id = ((OAObject) value).getProperty("id");
+            
+            String src = String.format("/servlet/img?c=%s&id=%s&p=%s", className, id+"", getServletImageBytePropertyName());
+            if (imageHeight > 0) src = String.format("%s&mh=%d", src, imageHeight);
+            if (imageWidth > 0) src = String.format("%s&mw=%d", src, imageWidth);
+            result = "<img src='" + src +"'>";
+        }          
+        else {
+            String s = "<span";
+            if (imageHeight > 0 || imageWidth > 0) {
+                s += " style='";
+                if (imageWidth > 0) s += "width: "+imageWidth+"px;";
+                if (imageHeight > 0) s += "height: "+imageHeight+"px;";
+                s += "'";
             }
+            s += "></span>";
+            result = s;
         }
         return result;
     }
     
-    public String getHtmlData(Object obj, int pos, int row, int col) {
+    public String getHtmlPropertyPath(Object obj, int pos, int row, int col) {
         String result = null;
         String pp = getPropertyPath();
         if (!OAString.isEmpty(pp)) {
@@ -693,12 +579,12 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         String result = "";
         if (img != null) result = img;
         
-        String data = getHtmlData(obj, pos, row, col);
+        String data = getHtmlPropertyPath(obj, pos, row, col);
         if (data != null) {
             result += "<span>"+data+"</span>";
         }
         
-        String temp = getTemplate(obj, pos, row, col);
+        String temp = getTemplateHtml(obj, pos, row, col);
         if (temp != null) {
             result += temp;
         }
@@ -741,4 +627,15 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         return al.toArray(ss);
     }
 
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        return null;
+    }
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return null;
+    }
+    @Override
+    public void _beforeOnSubmit() {
+    }
 }

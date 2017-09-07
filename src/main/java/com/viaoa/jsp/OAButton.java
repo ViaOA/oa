@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
+import com.viaoa.util.OAConv;
 import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAString;
 
@@ -49,6 +50,9 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     protected String toolTip;
     protected OATemplate templateToolTip;
     private boolean bHadToolTip;
+    protected String confirmMessage;
+    protected OATemplate templateConfirmMessage;
+
     
     public OAButton(String id, Hub hub) {
         this.id = id;
@@ -108,12 +112,12 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     }
 
     @Override
-    public boolean _beforeSubmit() {
+    public boolean _beforeFormSubmitted() {
         return true;
     }
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         boolean bWasSubmitted = (req.getParameterValues(id) != null);
         if (!bWasSubmitted && hmNameValue != null) {
             bWasSubmitted = hmNameValue.get(id) != null;
@@ -130,14 +134,20 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         if (bWasSubmitted && getSpinner()) {
             lastAjaxSent = null;
         }
+        
         return bWasSubmitted; // true if this caused the form submit
     }
 
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
+    
+    @Override
+    public void _beforeOnSubmit() {
+    }
+    
     @Override
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
@@ -323,4 +333,59 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         return s;
     }
     
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        String s = "<button type='button' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+getRenderText(obj)+"</button>";
+        return s;
+    }
+    public String getRenderText(OAObject obj) {
+        String s = "Text";
+        return s;
+    }
+    public String getRenderStyle(OAObject obj) {
+        return "";
+    }
+    public String getRenderClass(OAObject obj) {
+        return "";
+    }
+    public String getRenderOnClick(OAObject obj) {
+        String js = "onClick='";
+        
+        String s = getProcessedConfirmMessage(obj);
+        if (OAString.isNotEmpty(s)) {
+            // will be wrapped in "
+            s = OAString.convert(s, "\\\"", "xQxq");
+            s = OAString.convert(s, "\"", "\\\"");
+            s = OAString.convert(s, "xQxq", "\\\"");
+
+            s = OAString.convert(s, "\\\'", "xQxq");
+            s = OAString.convert(s, "\'", "\\\'");
+            s = OAString.convert(s, "xQxq", "\\\'");
+            
+            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";
+        }
+
+        js += "$(\\\"#oacommand\\\").val(\\\""+id+"\\\");'";
+        return js;
+    }
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return getRenderHtml(obj);
+    }
+
+    public void setConfirmMessage(String msg) {
+        this.confirmMessage = msg;
+    }
+    public String getConfirmMessage() {
+        return confirmMessage;
+    }
+    public String getProcessedConfirmMessage(OAObject obj) {
+        if (OAString.isEmpty(confirmMessage)) return confirmMessage;
+        if (templateConfirmMessage == null) {
+            templateConfirmMessage = new OATemplate();
+            templateConfirmMessage.setTemplate(getConfirmMessage());
+        }
+        String s = templateConfirmMessage.process(obj);
+        return s;
+    }
 }

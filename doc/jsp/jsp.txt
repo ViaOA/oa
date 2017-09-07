@@ -7,6 +7,9 @@ https://www.tutorialspoint.com/jsp/jsp_syntax.htm
 
 response.sendRedirect("/login.jsp");  // tells the browser to go to new url
 
+if (s != null) ((HttpServletResponse)response).sendRedirect(s);
+
+
 instead of forward, which the webserver will return the output, but the browser will display the old url
 
 

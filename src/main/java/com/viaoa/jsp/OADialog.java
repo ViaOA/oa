@@ -50,7 +50,7 @@ public class OADialog extends OAHtmlElement implements OAJspRequirementsInterfac
     }
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         submitButtonText = null;
         boolean bWasSubmitted = false;
 
@@ -72,7 +72,7 @@ public class OADialog extends OAHtmlElement implements OAJspRequirementsInterfac
     }
     
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -111,7 +111,6 @@ public class OADialog extends OAHtmlElement implements OAJspRequirementsInterfac
         this.title = title;
     }
 
-    
     public void setCloseButtonText(String text) {
         this.closeButtonText = text;
     }
@@ -239,7 +238,7 @@ public class OADialog extends OAHtmlElement implements OAJspRequirementsInterfac
         
         sb.append("    xx = xx.parent();\n");
         sb.append("    xx = xx.wrap(\"<div class='modal-dialog'></div>\").parent();\n");
-        sb.append("    xx.wrap(\"<div id='oaDialogdlgTest' class='modal fade' tabindex='-1'></div>\");\n");     
+        sb.append("    xx.wrap(\"<div id='oaDialog"+id+"' class='modal fade' tabindex='-1'></div>\");\n");     
         sb.append(" })();\n");
         
         cnt = 0;

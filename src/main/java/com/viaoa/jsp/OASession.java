@@ -12,6 +12,8 @@ package com.viaoa.jsp;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.logging.Logger;
+
 import javax.servlet.http.*;
 
 /**
@@ -20,7 +22,8 @@ import javax.servlet.http.*;
 */
 public class OASession extends OABase {
     private static final long serialVersionUID = 1L;
-
+    private static Logger LOG = Logger.getLogger(OASession.class.getName());
+    
     protected OAApplication application;
 
     protected transient WeakReference<HttpServletRequest> wrefRequest;  // set by oaform.jsp
@@ -28,7 +31,7 @@ public class OASession extends OABase {
 
 
     protected transient ArrayList<OAForm> alBreadcrumbForm = new ArrayList<OAForm>();
-    protected transient ArrayList<OAForm> alForm = new ArrayList<OAForm>();
+    protected transient final ArrayList<OAForm> alForm = new ArrayList<OAForm>();
 
     // number of seconds from UTC (from JavaScript, date.getTimezoneOffset() )
     private int msTimezoneOffset = -1;
@@ -54,7 +57,9 @@ public class OASession extends OABase {
 
     public void removeAll() {
         super.removeAll();
-        alForm.clear();
+        synchronized (alForm) {
+            alForm.clear();
+        }
         alBreadcrumbForm.clear();
     }
 
@@ -115,22 +120,39 @@ public class OASession extends OABase {
     }
     public void addForm(OAForm form) {
         if (form == null) return;
-        // System.out.println("OASession.addForm() should be changed to put(form) or putForm(form)");
+        String id = form.getId();
+        if (id == null) return;
+
+        synchronized (alForm) {
+            for (int i=0; i<alForm.size(); i++) {
+                OAForm f = alForm.get(i);
+                if (id.equalsIgnoreCase(f.getId())) {
+                    LOG.warning("replacing form, id="+id+", from="+f+", to="+form);
+                }
+            }
+        }
+        
         removeForm(getForm(form.getId()));
-        alForm.add(form);
+        synchronized (alForm) {
+            alForm.add(form);
+        }
         form.setSession(this);
     }
     public OAForm getForm(String id) {
         if (id == null) return null;
-        for (int i=0; i<alForm.size(); i++) {
-            OAForm f = alForm.get(i);
-            if (id.equalsIgnoreCase(f.getId())) return f;
+        synchronized (alForm) {
+            for (int i=0; i<alForm.size(); i++) {
+                OAForm f = alForm.get(i);
+                if (id.equalsIgnoreCase(f.getId())) return f;
+            }
         }
         return null;
     }
     public void removeForm(OAForm form) {
         if (form != null) {
-            alForm.remove(form);
+            synchronized (alForm) {
+                alForm.remove(form);
+            }
         }
     }
 

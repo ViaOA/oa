@@ -21,6 +21,7 @@ import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
@@ -65,6 +66,9 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     protected OATemplate templateToolTip;
     private boolean bHadToolTip;
     
+    protected String htmlTemplate;
+    private OATemplate template;
+    private HashMap<String, OAJspComponent> hmChildren = new HashMap<String, OAJspComponent>();
     
     
     public OAList(String id, Hub hub, String propertyPath) {
@@ -145,6 +149,9 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public void setForm(OAForm form) {
         this.form = form;
+        for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
+            e.getValue().setForm(form);
+        }
     }
     @Override
     public OAForm getForm() {
@@ -167,7 +174,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     
     
     @Override
-    public boolean _beforeSubmit() {
+    public boolean _beforeFormSubmitted() {
         return true;
     }
 
@@ -175,7 +182,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
         return bWasSubmitted;
     }
@@ -235,7 +242,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     }
     
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -481,14 +488,19 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     }
     
     
-//qqqqqqq add format, length, etc
-    
     public String getHtml(Object obj, int pos) {
-        if (obj == null || pos < 0) return getNullDescription();
+        if (obj == null || pos < 0) {
+            return getNullDescription();
+        }
 
         String value;
         if (obj instanceof OAObject) {
             value = ((OAObject) obj).getPropertyAsString(getPropertyPath(), getFormat());
+            
+            String temp = getTemplateHtml(obj, pos);
+            if (temp != null) {
+                value = temp;
+            }
         }
         else value = obj.toString();
         
@@ -561,5 +573,112 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         return al.toArray(ss);
     }
 
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return null;
+    }
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        return null;
+    }
+    
+    @Override
+    public void _beforeOnSubmit() {
+    }
+
+
+//qqqqqqqqqqqqqqqqqqqqqqqqq
+    
+    public void add(OAJspComponent comp) {
+        if (comp != null) {
+            hmChildren.put(comp.getId(), comp);
+            comp.setForm(form);
+        }
+    }
+    
+    
+    /**
+     * @see #getTemplate()
+     */
+    public void setHtmlTemplate(String htmlTemplate) {
+        this.htmlTemplate = htmlTemplate;
+    }
+    public String getHtmlTemplate() {
+        return this.htmlTemplate;
+    }
+   
+
+    /**
+     * The following values are set and available:
+     * $OAPOS, $OACOL, $OAROW
+     * @see OATemplate
+     */
+    public OATemplate getTemplate() {
+        if (template != null) return template;
+        if (OAString.isEmpty(getHtmlTemplate())) return null;
+        
+        template = new OATemplate() {
+            @Override
+            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
+                String s;
+                OAJspComponent comp = hmChildren.get(propertyName);
+                if (comp == null) {
+                    s = super.getValue(obj, propertyName, width, fmt, props);
+                }
+                else {
+                    s = comp.getRenderHtml(obj);
+                }
+                s = getTemplateValue(obj, propertyName, width, fmt, props, s);
+                return s;
+            }
+        };
+        template.setTemplate(getHtmlTemplate());
+        
+        return template;
+    }
+    public void setTemplate(OATemplate temp) {
+        this.template = temp;
+    }
+    
+    /**
+     * Callback from {@link #getTemplate(Object, int, int, int)}
+     */
+    public String getTemplateValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, String defaultValue) {
+        return defaultValue;
+    }
+    
+    /**
+     * This will use the OATemplate to create the html template for a single object.  
+     */
+    public String getTemplateHtml(Object objx, int pos) {
+        if (!(objx instanceof OAObject)) return null;
+        OAObject obj = (OAObject) objx;
+        
+        if (getTemplate() == null) return null;
+        
+        template.setProperty("OAPOS", ""+pos);
+        template.setProperty("OACOL", ""+(1));
+        template.setProperty("OAROW", ""+(pos+1));
+        
+        String s = template.process(obj);
+        
+        return s;
+        
+    }
+    
+    
+    public String getHtmlPropertyPath(Object obj, int pos, int row, int col) {
+        String result = null;
+        String pp = getPropertyPath();
+        if (!OAString.isEmpty(pp)) {
+            if (obj != null) {
+                result = ((OAObject)obj).getPropertyAsString(pp);
+            }
+        }
+        return result;
+    }
+    
+
+    
     
 }

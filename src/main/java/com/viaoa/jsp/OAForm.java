@@ -63,7 +63,7 @@ $(document).ready(function() {
  * default forwardUrl
  * send script to page (addScript)
  * manage ajax or regular submit
- * calls each component 3 times on submission: before, onSubmit, getReturn js script
+ * calls each component 3 times on submission: before, beforeOnSubmit, onSubmit, getReturn js script
  *
  *
  * @author vvia
@@ -93,7 +93,9 @@ public class OAForm extends OABase implements Serializable {
 
     protected final ArrayList<String> alRequiredCssName = new ArrayList<>();
     protected final ArrayList<String> alRequiredJsName = new ArrayList<>();
-    
+
+    // where to redirect after displaying any error messages
+    protected String urlRedirect;
     
     private static class FormProcess {
         OAProcess p; 
@@ -293,7 +295,7 @@ public class OAForm extends OABase implements Serializable {
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
-            if (!comp._beforeSubmit()) return false;
+            if (!comp._beforeFormSubmitted()) return false;
         }
         return true;
     }
@@ -307,7 +309,7 @@ public class OAForm extends OABase implements Serializable {
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
-            if (comp._onSubmit(req, resp, hmNameValue)) compSubmit = comp;
+            if (comp._onFormSubmitted(req, resp, hmNameValue)) compSubmit = comp;
         }
         return compSubmit;
     }
@@ -315,7 +317,7 @@ public class OAForm extends OABase implements Serializable {
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
-            forwardUrl = comp._afterSubmit(forwardUrl);
+            forwardUrl = comp._afterFormSubmitted(forwardUrl);
         }
         return forwardUrl;
     }
@@ -480,6 +482,10 @@ public class OAForm extends OABase implements Serializable {
         // hidden command used by label,button when it is submitted
         sb.append("    $('#"+id+"').prepend(\"<input id='oacommand' type='hidden' name='oacommand' value=''>\");\n");
 
+        // hidden param used for a component 
+        sb.append("    $('#"+id+"').prepend(\"<input id='oaparam' type='hidden' name='oaparam' value=''>\");\n");
+        
+        
         // hidden command that can be used to know if any data on page has been changed
         sb.append("    $('#"+id+"').prepend(\"<input id='oachanged' type='hidden' name='oachanged' value=''>\");\n");
 
@@ -627,6 +633,12 @@ public class OAForm extends OABase implements Serializable {
             sb.append("    $('input:enabled:first').focus();\n");
         }
 
+        String s = getRedirect();
+        if (OAString.isNotEmpty(s)) {
+            setRedirect(null);
+            sb.append("window.location = '"+s+"';\n");            
+        }
+        
         sb.append("\n});\n"); // end jquery.ready ****
 
 
@@ -685,13 +697,14 @@ public class OAForm extends OABase implements Serializable {
         }
         alNewAddComponent.clear();
 
+        sb.append("$('#oacommand').val('');"); // set back to blank
+        sb.append("$('#oaparam').val('');"); // set back to blank
+
         if (!OAString.isEmpty(jsAddScriptOnce)) {
             sb.append(jsAddScriptOnce);
             jsAddScriptOnce = null;
         }
-        sb.append("$('#oacommand').val('');"); // set back to blank
-
-
+        
         String js = getProcessingScript();
         if (js != null) sb.append(js); 
         
@@ -700,6 +713,12 @@ public class OAForm extends OABase implements Serializable {
 
         String s = getAjaxCallbackScript();
         if (s != null) js += s;
+        
+        s = getRedirect();
+        if (OAString.isNotEmpty(s)) {
+            setRedirect(null);
+            js += "window.location = '"+s+"';";            
+        }
         
         bLastDebug = bDebugx;
 
@@ -813,7 +832,8 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getMessages();
             session.clearMessages();
         }
-        _addMessages(sb, "oaFormMessage", "Message", msg1, msg2, this.getMessages());
+        boolean b = _addMessages(sb, "oaFormMessage", "Message", msg1, msg2, this.getMessages());
+
         clearMessages();
 
         msg1 = msg2 = null;
@@ -822,10 +842,33 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getErrorMessages();
             session.clearErrorMessages();
         }
-        _addMessages(sb, "oaFormErrorMessage", "Error", msg1, msg2, this.getErrorMessages());
+        b = b || _addMessages(sb, "oaFormErrorMessage", "Error", msg1, msg2, this.getErrorMessages());
         clearErrorMessages();
         
+        
+        // popup
+        msg1 = msg2 = null;
+        if (session != null) {
+            msg1 = session.getApplication().getPopupMessages();
+            msg2 = session.getPopupMessages();
+            session.clearPopupMessages();
+        }
+        b = b || _addMessages(sb, null, null, msg1, msg2, this.getPopupMessages());
+        clearPopupMessages();
 
+        if (b) {  // have redirect show after message is displayed
+            String s = getRedirect();
+            if (OAString.isNotEmpty(s)) {
+                setRedirect(null);
+                s = "$('#oaformDialog').on('hidden.bs.modal', function () {"+
+                    "$('#oaWait').show();" + 
+                    "window.location = '"+s+"';"+            
+                    "});";
+                addScript(s);
+            }
+        }        
+        
+        
         msg1 = msg2 = null;
         if (session != null) {
             msg1 = session.getApplication().getHiddenMessages();
@@ -836,15 +879,6 @@ public class OAForm extends OABase implements Serializable {
         clearHiddenMessages();
         
 
-        // popup
-        msg1 = msg2 = null;
-        if (session != null) {
-            msg1 = session.getApplication().getPopupMessages();
-            msg2 = session.getPopupMessages();
-            session.clearPopupMessages();
-        }
-        _addMessages(sb, null, null, msg1, msg2, this.getPopupMessages());
-        clearPopupMessages();
         
 
         // snackbar
@@ -873,7 +907,8 @@ public class OAForm extends OABase implements Serializable {
     }
     
     
-    private void _addMessages(StringBuilder sb, String id, String title, String[] msgs1, String[] msgs2, String[] msgs3) {
+    private boolean _addMessages(StringBuilder sb, String id, String title, String[] msgs1, String[] msgs2, String[] msgs3) {
+        boolean bResult = (msgs1 != null && msgs1.length > 0) || (msgs2 != null && msgs2.length > 0) || (msgs3 != null && msgs3.length > 0);
         if (title == null) title = "";
         String msg = "";
         if (msgs1 != null) {
@@ -920,6 +955,7 @@ public class OAForm extends OABase implements Serializable {
                 sb.append("$('#"+id+"').hide();");
             }
         }
+        return bResult;
     }
 
     private void _addSnackbarMessages(StringBuilder sb, String id, String title, String[] msgs1, String[] msgs2, String[] msgs3) {
@@ -1117,6 +1153,7 @@ public class OAForm extends OABase implements Serializable {
         if (compSubmit != null) {
             String s = compSubmit.getForwardUrl();
             if (s != null) forward = s;
+            compSubmit._beforeOnSubmit();
             forward = compSubmit.onSubmit(forward);
         }
         return forward;
@@ -1134,6 +1171,7 @@ public class OAForm extends OABase implements Serializable {
         return processForward(session, request, response, null);
     }
 
+    
     /**
      * Called by oaforward.jsp to be able to have a link call submit method without doing a form submit.
      */
@@ -1150,7 +1188,8 @@ public class OAForm extends OABase implements Serializable {
 
         String forward = comp.getForwardUrl();
 
-        comp._onSubmit(request, response, hmNameValue);
+        comp._onFormSubmitted(request, response, hmNameValue);
+        comp._beforeOnSubmit();
         forward = comp.onSubmit(forward);
     
         if (OAString.isEmpty(forward)) {
@@ -1562,4 +1601,13 @@ public class OAForm extends OABase implements Serializable {
         
         return sb.toString();
     }
+    
+    public void setRedirect(String url) {
+        this.urlRedirect = url;
+    }
+    public String getRedirect() {
+        return urlRedirect;
+    }
+    
+    
 }

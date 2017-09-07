@@ -112,12 +112,12 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
     }
 
     @Override
-    public boolean _beforeSubmit() {
+    public boolean _beforeFormSubmitted() {
         return true;
     }
 
     @Override
-    public boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
+    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         String s = req.getParameter("oacommand");
         if (s == null && hmNameValue != null) {
             String[] ss = hmNameValue.get("oacommand");
@@ -192,7 +192,7 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
     }
     
     @Override
-    public String _afterSubmit(String forwardUrl) {
+    public String _afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -455,4 +455,23 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
         return al.toArray(ss);
     }
 
+    @Override
+    public String getRenderHtml(OAObject obj) {
+        boolean bValue;
+        if (obj != null && hub != null && !OAString.isEmpty(propertyPath)) {
+            Object objx = obj.getProperty(propertyPath);
+            bValue = (onValue == objx || (onValue != null && onValue.equals(objx)));
+        }
+        else {
+            bValue = false;
+        }
+        return bValue ? "true" : "false";
+    }
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return null;
+    }
+    @Override
+    public void _beforeOnSubmit() {
+    }
 }

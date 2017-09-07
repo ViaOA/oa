@@ -15,12 +15,14 @@ import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.viaoa.object.OAObject;
+
 /**
- * Interface used for implementing JSP controls.
+ * Interface used for implementing JSP controls, to be contained by OAForm.  
+ * OAForm handles the html form and interacts with the components.
  * @author vvia
- *
  */
-public interface OAJspComponent extends java.io.Serializable{
+public interface OAJspComponent extends java.io.Serializable {
 
     boolean isChanged();
     String getId();
@@ -30,23 +32,26 @@ public interface OAJspComponent extends java.io.Serializable{
     OAForm getForm();
     
     /**
-     * Called by form.processSubmit for every jspcomponent   
-     *
-     * @returns true to continue, false to not process the request 
+     * Called by form.beforeSubmit for every jspcomponent   
+     * @returns true to continue, false cancel the processing of the request 
      */
-    boolean _beforeSubmit();
+    boolean _beforeFormSubmitted();
     
     /** 
-     * Called after _beforeSubmit to find out which component called the submit.
+     * Called after _beforeFormSubmitted to find out which component called the submit.
      * 
      * returns true if this component caused the form submit 
      * @see #onSubmit(String) to have the code ran for the component that submitted the form.
      */
-    boolean _onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hashNameValue);
+    boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hashNameValue);
+
+    /** 
+     * only called on the component that was responsible for the submit, and called before {@link #onSubmit(String)} 
+     */
+    public void _beforeOnSubmit();
 
     /** 
      * only called on the component that was responsible for the submit 
-     * 
      */
     String onSubmit(String forwardUrl);
     
@@ -55,7 +60,7 @@ public interface OAJspComponent extends java.io.Serializable{
      * Called by form.processSubmit for every jspcomponent, after onSubmit is called.   
      * return forward url 
      */
-    String _afterSubmit(String forwardUrl);
+    String _afterFormSubmitted(String forwardUrl);
     
     String getScript();    // to initialize the html page
     String getVerifyScript();  // called on client before submit 
@@ -68,4 +73,16 @@ public interface OAJspComponent extends java.io.Serializable{
     boolean getVisible();
 
     public String getForwardUrl();
+
+    /**
+     * Called by containers to get html to edit.
+     */
+    String getEditorHtml(OAObject obj);
+    
+    /**
+     * Called by containers to get html to render a view only version.
+     * This is used to display the non-activeObjects, instead of using the actual editor component.
+     */
+    String getRenderHtml(OAObject obj);
+
 }
