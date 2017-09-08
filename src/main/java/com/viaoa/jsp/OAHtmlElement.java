@@ -199,6 +199,11 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     }
     
     @Override
+    public String _onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl);
+    }
+    
+    @Override
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }
@@ -628,7 +633,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         return this.toolTip;
     }
     public String getProcessedToolTip() {
-        if (OAString.isEmpty(toolTip)) return toolTip;
+        if (OAString.isEmpty(toolTip) || toolTip.indexOf("<") < 0) return toolTip;
         if (templateToolTip == null) {
             templateToolTip = new OATemplate();
             templateToolTip.setTemplate(getToolTip());
@@ -673,7 +678,8 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         return confirmMessage;
     }
     public String getProcessedConfirmMessage(OAObject obj) {
-        if (OAString.isEmpty(confirmMessage)) return confirmMessage;
+        if (OAString.isEmpty(confirmMessage) || confirmMessage.indexOf("<") < 0) return confirmMessage;
+        
         if (templateConfirmMessage == null) {
             templateConfirmMessage = new OATemplate();
             templateConfirmMessage.setTemplate(getConfirmMessage());

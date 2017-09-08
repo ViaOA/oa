@@ -284,8 +284,13 @@ public class OATable implements OAJspComponent {
     }
 
     @Override
-    public String onSubmit(String forwardUrl) {
+    public String _onSubmit(String forwardUrl) {
         if (submitHref != null) forwardUrl = this.submitHref;
+        return onSubmit(forwardUrl);
+    }
+    
+    @Override
+    public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }
 

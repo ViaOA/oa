@@ -197,6 +197,11 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
     }
 
     @Override
+    public String _onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl);
+    }
+    
+    @Override
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }

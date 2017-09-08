@@ -53,8 +53,12 @@ public interface OAJspComponent extends java.io.Serializable {
     /** 
      * only called on the component that was responsible for the submit 
      */
+    String _onSubmit(String forwardUrl);
+
+    /**
+     * Called by _onSubmit, to allow for subclassing.
+     */
     String onSubmit(String forwardUrl);
-    
     
     /** 
      * Called by form.processSubmit for every jspcomponent, after onSubmit is called.   

@@ -149,6 +149,11 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     }
     
     @Override
+    public String _onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl);
+    }
+    
+    @Override
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }
@@ -354,9 +359,9 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
             // will be wrapped in "
-            s = OAString.convert(s, "\\\"", "xQxq");
-            s = OAString.convert(s, "\"", "\\\"");
-            s = OAString.convert(s, "xQxq", "\\\"");
+            s = OAString.convert(s, "\\\\\"", "xQxq");
+            s = OAString.convert(s, "\"", "\\\\\"");
+            s = OAString.convert(s, "xQxq", "\\\\\"");
 
             s = OAString.convert(s, "\\\'", "xQxq");
             s = OAString.convert(s, "\'", "\\\'");

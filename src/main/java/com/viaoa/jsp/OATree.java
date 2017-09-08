@@ -203,6 +203,11 @@ public class OATree implements OAJspComponent, OATableEditor, OAJspRequirementsI
     }
     
     @Override
+    public String _onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl);
+    }
+    
+    @Override
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }

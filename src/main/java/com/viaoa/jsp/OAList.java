@@ -237,6 +237,11 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     }
 
     @Override
+    public String _onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl);
+    }
+    
+    @Override
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }

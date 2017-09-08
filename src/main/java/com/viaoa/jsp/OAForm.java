@@ -1154,7 +1154,7 @@ public class OAForm extends OABase implements Serializable {
             String s = compSubmit.getForwardUrl();
             if (s != null) forward = s;
             compSubmit._beforeOnSubmit();
-            forward = compSubmit.onSubmit(forward);
+            forward = compSubmit._onSubmit(forward);
         }
         return forward;
         
@@ -1190,7 +1190,7 @@ public class OAForm extends OABase implements Serializable {
 
         comp._onFormSubmitted(request, response, hmNameValue);
         comp._beforeOnSubmit();
-        forward = comp.onSubmit(forward);
+        forward = comp._onSubmit(forward);
     
         if (OAString.isEmpty(forward)) {
             forward = this.getUrl();

@@ -86,12 +86,15 @@ public class OALink extends OAHtmlElement {
     public String getRenderOnClick(OAObject obj) {
         String js = "onClick='";
         
+        // onClick will be enclosed in single quotes, and it is surrounded by double quotes
+        //    need to escape
+        
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
             // will be wrapped in "
-            s = OAString.convert(s, "\\\"", "xQxq");
-            s = OAString.convert(s, "\"", "\\\"");
-            s = OAString.convert(s, "xQxq", "\\\"");
+            s = OAString.convert(s, "\\\\\"", "xQxq");
+            s = OAString.convert(s, "\"", "\\\\\"");
+            s = OAString.convert(s, "xQxq", "\\\\\"");
 
             s = OAString.convert(s, "\\\'", "xQxq");
             s = OAString.convert(s, "\'", "\\\'");

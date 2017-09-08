@@ -223,6 +223,11 @@ public class OAComboBox implements OAJspComponent, OATableEditor {
     public String getForwardUrl() {
         return this.forwardUrl;
     }
+
+    @Override
+    public String _onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl);
+    }
     
     @Override
     public String onSubmit(String forwardUrl) {

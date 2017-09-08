@@ -119,11 +119,15 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
 
     private String submitUpdateScript;
     private OAJspComponent jcSubmitted;
+    private boolean bPageCommandUsed;
+    private int rowSubmitted;
     
     @Override
     public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         rowSubmitted = -1;
         jcSubmitted = null;
+        bPageCommandUsed = false;
+        
         boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
         for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
             OAJspComponent jc = e.getValue();
@@ -133,10 +137,9 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                 bWasSubmitted = true;
             }
         }
+        
         return bWasSubmitted;
     }
-    
-    private boolean bPageCommandUsed;
     
     protected boolean _myOnSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         Enumeration enumx = req.getParameterNames();
@@ -163,8 +166,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         }
         bPageCommandUsed = false;
         
-        int row = OAConv.toInt(value);
-        rowSubmitted = row;
+        rowSubmitted = OAConv.toInt(value);
         
     //    submitUpdateScript = "$('#oahidden"+id+"').val('');";
 
@@ -175,6 +177,26 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
 
     @Override
+    public String _onSubmit(String forwardUrl) {
+        if (rowSubmitted >= 0) hub.setPos(rowSubmitted);
+        if (jcSubmitted != null) {
+            String s = jcSubmitted.getForwardUrl();
+            if (OAString.isNotEmpty(s)) forwardUrl = s;  
+            s = jcSubmitted._onSubmit(forwardUrl);
+            if (OAString.isNotEmpty(s)) forwardUrl = s;  
+        }
+        if (bPageCommandUsed) forwardUrl = null; // stay on page
+        String s = onSubmit(forwardUrl);
+        if (OAString.isNotEmpty(s)) forwardUrl = s;  
+        return forwardUrl;
+    }
+    
+    @Override
+    public String onSubmit(String forwardUrl) {
+        return forwardUrl;
+    }
+
+    @Override
     public String _afterFormSubmitted(String forwardUrl) {
         for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
             String s = e.getValue()._afterFormSubmitted(forwardUrl);
@@ -182,22 +204,8 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         }
         return forwardUrl;
     }
-
-    private int rowSubmitted;
-    @Override
-    public String onSubmit(String forwardUrl) {
-        if (rowSubmitted >= 0) {
-            hub.setPos(rowSubmitted);
-            rowSubmitted = -1;
-        }
-        if (jcSubmitted != null) {
-            String s = jcSubmitted.onSubmit(forwardUrl);
-            if (OAString.isNotEmpty(s)) forwardUrl = s;  
-        }
-        if (bPageCommandUsed) return null; // stay on page
-        return forwardUrl;
-    }
-
+    
+    
     public void setAjaxSubmit(boolean b) {
         bAjaxSubmit = b;
         if (b) setSubmit(false);

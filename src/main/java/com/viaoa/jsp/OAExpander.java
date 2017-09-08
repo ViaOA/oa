@@ -87,6 +87,11 @@ public class OAExpander implements OAJspComponent, OAJspRequirementsInterface {
     public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         return false;
     }
+
+    @Override
+    public String _onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl);
+    }
     
     @Override
     public String onSubmit(String forwardUrl) {

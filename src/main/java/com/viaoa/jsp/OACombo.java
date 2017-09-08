@@ -251,6 +251,11 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     }
     
     @Override
+    public String _onSubmit(String forwardUrl) {
+        return onSubmit(forwardUrl);
+    }
+    
+    @Override
     public String onSubmit(String forwardUrl) {
         return forwardUrl;
     }
