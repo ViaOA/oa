@@ -570,6 +570,39 @@ j:      12
        int b = color.getBlue();
        String s = "rgb(" + r + "," + g + "," + b + ")"; 
        return s;
-   }
+    }
+   
+    
+    /**
+     * This is used to convert html code that will be sent to the browser.
+     * wrapped inside " ... "
+     */
+    public static String convertInnerHtmlQuotes(String text) {
+        if (text == null || text.length() == 0) return text;
+
+        // wrapped inside " ... "
+        text = OAString.convert(text, "\\\"", "xQxq");
+        text = OAString.convert(text, "\"", "\\\"");
+        text = OAString.convert(text, "xQxq", "\\\"");
+            
+        return text;
+    }
+    /**
+     * This is used to convert js code that will be sent to the browser.
+     * wrapped inside "' ... '"
+     */
+    public static String convertInnerJavaScriptQuotes(String text) {
+        if (text == null || text.length() == 0) return text;
+        text = OAString.convert(text, "\\\\\"", "xQxq");
+        text = OAString.convert(text, "\"", "\\\\\"");
+        text = OAString.convert(text, "xQxq", "\\\\\"");
+
+        text = OAString.convert(text, "\\\'", "xQxq");
+        text = OAString.convert(text, "\'", "\\\'");
+        text = OAString.convert(text, "xQxq", "\\\'");
+            
+        return text;
+    }
+    
 }
 

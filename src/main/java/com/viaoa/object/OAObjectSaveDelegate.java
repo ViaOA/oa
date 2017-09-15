@@ -51,7 +51,6 @@ public class OAObjectSaveDelegate {
         
         boolean b = (oaObj.newFlag || oaObj.changedFlag || bIsFirst);
         OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
-
         // cascadeSave() will check hash to see if object has already been checked
         if (b) {
             Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);

@@ -55,7 +55,7 @@ public class OALink extends OAHtmlElement {
                 sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
             }
             else {
-                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
             }
             sb.append("$('#"+id+"').addClass('oaSubmit');\n");
         }
@@ -90,16 +90,8 @@ public class OALink extends OAHtmlElement {
         //    need to escape
         
         String s = getProcessedConfirmMessage(obj);
+        s = JspUtil.convertInnerJavaScriptQuotes(s);
         if (OAString.isNotEmpty(s)) {
-            // will be wrapped in "
-            s = OAString.convert(s, "\\\\\"", "xQxq");
-            s = OAString.convert(s, "\"", "\\\\\"");
-            s = OAString.convert(s, "xQxq", "\\\\\"");
-
-            s = OAString.convert(s, "\\\'", "xQxq");
-            s = OAString.convert(s, "\'", "\\\'");
-            s = OAString.convert(s, "xQxq", "\\\'");
-            
             js += "if (!window.confirm(\\\""+s+"\\\")) return false;";
         }
 

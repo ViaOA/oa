@@ -188,10 +188,10 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         }
         else if (getSubmit()) {
             if (getSpinner()) {
-                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');var spinner = Ladda.create(this); spinner.start(); $('form').submit(); if (oaSubmitCancelled) spinner.stop(); return false;});\n");
+                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');var spinner = Ladda.create(this); spinner.start(); $('form').submit(); $('#oacommand').val(''); if (oaSubmitCancelled) spinner.stop(); return false;});\n");
             }
             else {
-                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
             }
         }
         
@@ -359,14 +359,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
             // will be wrapped in "
-            s = OAString.convert(s, "\\\\\"", "xQxq");
-            s = OAString.convert(s, "\"", "\\\\\"");
-            s = OAString.convert(s, "xQxq", "\\\\\"");
-
-            s = OAString.convert(s, "\\\'", "xQxq");
-            s = OAString.convert(s, "\'", "\\\'");
-            s = OAString.convert(s, "xQxq", "\\\'");
-            
+            s = JspUtil.convertInnerJavaScriptQuotes(s);
             js += "if (!window.confirm(\\\""+s+"\\\")) return false;";
         }
 

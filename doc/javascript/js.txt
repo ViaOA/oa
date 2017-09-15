@@ -1,6 +1,15 @@
 
 
-<a href="javascript:;" 
+
+var states = [];
+ var map = {};
+
+ $.each(data, function (i, state) {
+    map[state.stateName] = state;
+    states.push(state.stateName);
+ });
+
+<a href="javascript: code;" 
 
 
 setTimeout(func, ms)  run once

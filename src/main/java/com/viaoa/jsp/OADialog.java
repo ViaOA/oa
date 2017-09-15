@@ -170,7 +170,7 @@ public class OADialog extends OAHtmlElement implements OAJspRequirementsInterfac
                     sb.append("$('#oacommand').val('"+id+" "+text+"');ajaxSubmit();");
                 }
                 else if (bSubmit) {
-                    sb.append("$('#oacommand').val('"+id+" "+text+"'); $('form').submit();");
+                    sb.append("$('#oacommand').val('"+id+" "+text+"'); $('form').submit(); $('#oacommand').val('');");
                 }
                 sb.append("}}");
             }
@@ -248,10 +248,10 @@ public class OADialog extends OAHtmlElement implements OAJspRequirementsInterfac
             idx = idx.replace(' ', '_');
             
             if (bAjaxSubmit) {
-                sb.append("$('#"+idx+"').click(function() {$('#oacommand').val('"+id+" "+text+"');ajaxSubmit();});\n");
+                sb.append("$('#"+idx+"').click(function() {$('#oacommand').val('"+id+" "+text+"');ajaxSubmit();return false;});\n");
             }
             else if (getSubmit()) {
-                sb.append("$('#"+idx+"').click(function() { $('#oacommand').val('"+id+" "+text+"'); $('form').submit();});\n");
+                sb.append("$('#"+idx+"').click(function() { $('#oacommand').val('"+id+" "+text+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
             }
         }        
         

@@ -2,6 +2,15 @@ package com.viaoa.jsp;
 
 import com.viaoa.hub.Hub;
 
+
+/**
+ * 
+ * 
+ * 
+ *   <button id="blSortBy">OAButtonList sortBy here</button>
+ * @author vvia
+ *
+ */
 public class OAButtonList extends OAPopupList {
 
     public OAButtonList(String id, Hub hub, String propertyPath) {

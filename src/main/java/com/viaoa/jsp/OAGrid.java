@@ -298,7 +298,8 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         
         int pos = topRow * columns;
-        
+
+        // needs to be outside for responsive layout
         sb.append("<div class='row auto-clear'>");
         for (int row=0; row < scrollAmt ;row++) {
             
@@ -339,9 +340,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                 
                 if (s != null) {
                     // will be wrapped in "
-                    s = OAString.convert(s, "\\\"", "xQxq");
-                    s = OAString.convert(s, "\"", "\\\"");
-                    s = OAString.convert(s, "xQxq", "\\\"");
+                    s = JspUtil.convertInnerHtmlQuotes(s);
                 }
                 else s = "";
                 

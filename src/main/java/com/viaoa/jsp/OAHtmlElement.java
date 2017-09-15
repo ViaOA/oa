@@ -229,7 +229,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
                 sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
             }
             else {
-                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
             }
             
             sb.append("$('#"+id+"').addClass('oaSubmit');\n");

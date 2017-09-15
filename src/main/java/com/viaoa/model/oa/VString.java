@@ -21,6 +21,12 @@ public class VString extends OAObject {
     
     private String value;
     
+    public VString() {
+    }
+    public VString(String s) {
+        setValue(s);
+    }
+    
     @OAProperty(displayLength = 12)
     public String getValue() {
         return value;

@@ -318,6 +318,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return al;        
     }
     
+    public OAPropertyPath getPropertyPath() {
+        return this.propertyPath;
+    }
+    
     private boolean bSetup;
     protected void setup(Class c) {
         if (bSetup) return;

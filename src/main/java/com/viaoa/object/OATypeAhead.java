@@ -12,6 +12,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
+import com.viaoa.model.oa.VString;
+import com.viaoa.object.OATypeAhead.OATypeAheadParams;
 import com.viaoa.util.*;
 
 /**
@@ -60,7 +62,6 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
     protected OAPropertyPath ppDropDownDisplay;
     protected String dropDownDisplayFormat;
 
-    
     /**
      * additional custom finder for filtering <T> objects
      */
@@ -79,15 +80,42 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
     protected String searchText;
     protected String[] searchTextSplit;
     
-    protected int minInputLength;
+    protected int minInputLength = -1;
     protected int maxResults;
+    protected boolean showHint=false;
     
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final AtomicInteger aiSearch = new AtomicInteger(); 
     private final HashSet<Integer> hsGuid = new HashSet<>();
     
-
-
+    
+    /**
+     * Create a new TA using an array of strings, and update a String property.
+     * Example:  to update an address.country from a list of countries.
+     * String[] countries = ...
+     * OATypeAhead ta = OATypeAhead.createTypeAhead(countries, hubAddress, AddressPP.country());
+     * 
+     * Note: this is treated as a freeform, where user can enter a value that is not in the list.
+     * 
+     * @param values array of values to choose from
+     * @param hubTo hub where AO.propertyName will be updated with selected value from values.
+     * @param propertyName name of property that is to be updated.
+     */
+    public static OATypeAhead createTypeAhead(String[] values) {
+        if (values == null) values = new String[0];
+        Hub<VString> hub = new Hub<>(VString.class);
+        for (String s : values) {
+            hub.add(new VString(s));
+        }
+        //hub.sort(VString.P_Value);
+        
+        OATypeAheadParams tap = new OATypeAheadParams();
+        tap.matchPropertyPath = VString.P_Value;
+        OATypeAhead<VString, VString> ta = new OATypeAhead<>(hub, tap);
+        return ta;
+    }
+    
+    
     /**
      * Helper class to enter all of the params.
      * @author vvia
@@ -108,8 +136,12 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
 
         public OAFilter<T> filter;
         
-        protected int minInputLength;
+        public int minInputLength = -1;
         public int maxResults;
+        
+        /** flag to have TA show the full value on the textfield */
+        public boolean showHint=false;
+        
         
         void setup() {
             if (OAString.isEmpty(displayPropertyPath)) {
@@ -203,6 +235,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
 
         this.minInputLength = minInputLength;
         this.maxResults = params.maxResults;
+        this.showHint = params.showHint;
     }
 
     public String getSearchText() {
@@ -284,6 +317,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
 
     /**
      * minimum numbers of input chars before doing a search.
+     * 0 allows to show all.  -1 is default.
      */
     public int getMinimumInputLength() {
         return minInputLength;
@@ -292,6 +326,23 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         this.minInputLength = x;
     }
 
+    /**
+     * Maximum amount of results that will be returned at one time.
+     */
+    public int getMaxResults() {
+        return maxResults;
+    }
+    public void setMaxResults(int x) {
+        this.maxResults = x;
+    }
+    
+    public void setShowHint(boolean b) {
+        this.showHint = true;
+    }
+    public boolean getShowHint() {
+        return this.showHint;
+    }
+    
     /** callback during search */
     protected boolean isUsed(T obj) {
         boolean b = _isUsed(obj);
@@ -320,20 +371,19 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         return b;
     }
     
-    
     protected boolean isUsed(T obj, String objSearchValue, String searchText, String[] searchTextSplit) {
+        // searchText is included in case this method is overwritten
         if (objSearchValue != null) objSearchValue = objSearchValue.toUpperCase();
         
         if (searchTextSplit == null || searchTextSplit.length == 0) {
-            return OAString.isEmpty(objSearchValue);
+            return true; // OAString.isEmpty(objSearchValue);
         }
         if (OAString.isEmpty(objSearchValue)) return false;
         
         for (String s : searchTextSplit) {
-            if (objSearchValue.indexOf(s) >= 0) return true;
+            if (objSearchValue.indexOf(s.toUpperCase()) < 0) return false;
         }
-        return false;
-        
+        return true;
     }
     
     

@@ -56,7 +56,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     protected char conversion; // 'U'pper, 'L'ower, 'T'itle, 'P'assword
     protected boolean bMultiValue;
     protected OATypeAhead typeAhead;
-    protected String[] lookupValues;
     private String name;
     private boolean bClearButton;
 
@@ -457,7 +456,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         else if (getSubmit() || OAString.notEmpty(getForwardUrl())) {
             if (!isDateTime() && !isDate() && !isTime()) {
-                sb.append("$('#" + id + "').blur(function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;});\n");
+                sb.append("$('#" + id + "').blur(function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
             }
         }
 
@@ -503,77 +502,19 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             }
             sb.append("});\n");
         }
-        else if (getMultiValue() && getLookupValues()==null && getTypeAhead()==null && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
+        else if (getMultiValue() && getTypeAhead()==null && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
             // free form multiple values
             sb.append("$('#" + id + "').tagsinput();\n");
         }
-        else if (getLookupValues() != null && !getMultiValue() && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
-            // pick one from typeAhead
-            sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
-            sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
-            sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
-            // local: ['dog', 'pig', 'moose'],            
-            sb.append("  local: [");
-            int x = 0;
-            for (String s : getLookupValues()) {
-                if (x++ > 0) sb.append(",");
-                sb.append("'"+s+"'");;
-            }
-            sb.append("]\n");
-            sb.append("});\n");
-            sb.append("" + id + "Bloodhound.initialize();\n");
-
-            sb.append("$('#" + id + "').typeahead(null, {\n");
-            sb.append("    name: '" + id + "Popup',\n");
-            sb.append("    display: 'display',\n");
-            sb.append("    source: " + id + "Bloodhound,\n");
-            sb.append("    hint: true,\n");
-            sb.append("    highlight: true,\n");
-            sb.append("    limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
-            sb.append("    minLength: 1\n");
-            sb.append("});\n");
-        }
-        else if (getLookupValues() != null && getMultiValue() && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
-            // pick many using tagInput from typeAhead
-            sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
-            sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
-            sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
-            // local: ['dog', 'pig', 'moose'],            
-            sb.append("  local: [");
-            int x = 0;
-            for (String s : getLookupValues()) {
-                if (x++ > 0) sb.append(",");
-                sb.append("'"+s+"'");;
-            }
-            sb.append("]\n");
-            sb.append("});\n");
-            sb.append("" + id + "Bloodhound.initialize();\n");
-            
-            sb.append("$('#" + id + "').tagsinput({\n");
-            
-            if (!getMultiValue()) { 
-                sb.append("  maxTags: 1,\n");
-            }
-            
-            sb.append("  typeaheadjs: [\n");
-            sb.append("    {\n");
-            sb.append("      minLength: 1,\n");
-            sb.append("      hint: true,\n");
-            sb.append("      highlight: true\n");
-            sb.append("    },\n");
-            sb.append("    {\n");
-            sb.append("      name: '" + id + "Popup',\n"); 
-            sb.append("      limit: 400,\n");  // see: https://github.com/twitter/typeahead.js/issues/1232
-            sb.append("      source: " + id + "Bloodhound.ttAdapter()\n");
-            sb.append("    }\n");
-            sb.append("  ]\n");
-            sb.append("});\n");
-        }
         else if (getTypeAhead() != null && !getMultiValue() && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
-            // typeAhead one and only and store display in property
+            // typeAhead one
             sb.append("var " + id + "Bloodhound = new Bloodhound({\n");
             sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
             sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
+
+//qqqqqqqqqqqqqqqq            
+//          identify: function(obj) { return obj.id; },            
+            
             
             sb.append("  remote : {\n");
             sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
@@ -584,21 +525,28 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             sb.append("" + id + "Bloodhound.initialize();\n");
 
             int minLen = getTypeAhead().getMinimumInputLength();
-            if (minLen < 1) minLen = 3;
+            if (minLen < 0) minLen = 3;
             
-            sb.append("$('#" + id + "').typeahead(null, {\n");
+            sb.append("$('#" + id + "').typeahead({\n");
+            sb.append("    hint: "+(getTypeAhead().getShowHint()?"true":"false")+",\n");
+            sb.append("    highlight: true,\n");
+            sb.append("    minLength: "+minLen+"\n");
+            sb.append("}, {\n");
+            sb.append("    source: " + id + "Bloodhound,\n");
             sb.append("    name: '" + id + "Popup',\n");
+            sb.append("    limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
             sb.append("    display: 'display',\n");
             sb.append("    templates: {\n");
             sb.append("      suggestion: function(data) {return '<p>'+data.dropdowndisplay+'</p>';}\n");
-            sb.append("    },\n");
-            sb.append("    source: " + id + "Bloodhound,\n");
-            sb.append("    hint: true,\n");
-            sb.append("    highlight: true,\n");
-            sb.append("    limit: 400,\n"); // see: https://github.com/twitter/typeahead.js/issues/1232
-            sb.append("    minLength: "+minLen+"\n");
+            sb.append("    }\n");
+  
+            if (bAjaxSubmit) {
+                sb.append("  }).on('typeahead:select', function (obj, datum) {\n");  // https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md#custom-events
+                sb.append("    $('#" + getId() + "').val(datum.id);\n");
+                sb.append("    $('#oacommand').val('" + getId() + "');\n");
+                sb.append("    ajaxSubmit();\n");
+            }
             sb.append("  });\n");
-            
         }
         else if (getTypeAhead() != null && getMultiValue() && !bPropertyPathIsOneLink && !bPropertyPathIsManyLink) {
             // select multiple from ta list and store displayed value in one property
@@ -615,15 +563,18 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             sb.append("" + id + "Bloodhound.initialize();\n");
             
             int minLen = getTypeAhead().getMinimumInputLength();
-            if (minLen < 1) minLen = 3;
+            if (minLen < 0) minLen = 3;
             
             sb.append("$('#" + id + "').tagsinput({\n");
-            sb.append("  itemValue: 'display',\n");  // <-- store display value
+// 20170913       
+            sb.append("  itemValue: 'id',\n");  // <-- store id value
+//was:            sb.append("  itemValue: 'display',\n");  // <-- store display value
             sb.append("  itemText: 'display',\n");
+            sb.append("  freeInput: false,\n");
             sb.append("  typeaheadjs: [\n");
             sb.append("    {\n");
             sb.append("      minLength: "+minLen+",\n");
-            sb.append("      hint: true,\n");
+            sb.append("      hint: "+(getTypeAhead().getShowHint()?"true":"false")+",\n");
             sb.append("      highlight: true\n");
             sb.append("    },\n");
             sb.append("    {\n");
@@ -653,7 +604,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             sb.append("" + id + "Bloodhound.initialize();\n");
             
             int minLen = getTypeAhead().getMinimumInputLength();
-            if (minLen < 1) minLen = 3;
+            if (minLen < 0) minLen = 3;
             
             // https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/
             sb.append("$('#" + id + "').tagsinput({\n");
@@ -663,10 +614,11 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             if (bPropertyPathIsOneLink) {  
                 sb.append("  maxTags: 1,\n");
             }
+            sb.append("  freeInput: false,\n");
             sb.append("  typeaheadjs: [\n");
             sb.append("    {\n");
             sb.append("      minLength: "+minLen+",\n");
-            sb.append("      hint: true,\n");
+            sb.append("      hint: "+(getTypeAhead().getShowHint()?"true":"false")+",\n");
             sb.append("      highlight: true\n");
             sb.append("    },\n");
             sb.append("    {\n");
@@ -681,6 +633,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             sb.append("  ]\n");
             sb.append("});\n");
         }
+        
+        
         
         // 20170628 moved from begin of method
         sb.append(getAjaxScript());
@@ -898,24 +852,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         if (getTypeAhead()!=null && (bPropertyPathIsManyLink || bPropertyPathIsOneLink)) {
             // already done
         }
-        else if (getLookupValues() != null && !getMultiValue()) {
-            // just set value
-            sb.append("$('#" + id + "').val('" + value + "');\n");
-        }
-        else if (getLookupValues() != null && getMultiValue()) {
-            // uses tagInput+ta+bloodhound with a string[] of values (not objs)
-            // values are separated by comma and need to be added separately
-            sb.append("$('#" + id + "').tagsinput('removeAll');\n");
-            for (int i=1;;i++) {
-                String sx = OAString.field(value, ",", i);
-                if (sx == null) break;
-                sx = sx.trim();
-                if (sx.length() == 0) continue;
-                sx = OAString.convert(sx, "\"", "");
-                if (sx.length() == 0) continue;
-                sb.append("$('#" + id + "').tagsinput('add', '"+sx+"');\n");
-            }
-        }
         else if (getTypeAhead()!=null && getMultiValue()) {
             // uses tagsInput+typeAhead+bloodhound and uses array objects <id,value>
             // values are separated by comma and need to be added separately
@@ -957,7 +893,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         if (s != null) sb.append(s);
         
         if (!getMultiValue() && !bPropertyPathIsManyLink && !bPropertyPathIsOneLink) {
-            s = getVisibleScript(bVisible);
+            s = getVisibleScript(getVisible());
             if (s != null) sb.append(s);
         }
 
@@ -1077,7 +1013,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 }
                 else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
                     sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
-                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); return false;});\n");
+                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
                 }
                 sb.append("}\n");  // end bootstrap
                 sb.append("else {\n");
@@ -1093,7 +1029,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                     }
                 }
                 else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;}\n");
+                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}\n");
                 }
                 sb.append(" });\n");
                 sb.append("}\n");  // end jquery
@@ -1111,7 +1047,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 }
                 else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
                     sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
-                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); return false;});\n");
+                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
                 }
                 sb.append("}\n");  // end bootstrap
                 sb.append("else {\n");
@@ -1122,7 +1058,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                     }
                 }
                 else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;}\n");
+                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}\n");
                 }
                 sb.append("});\n");
                 sb.append("}\n");  // end jquery
@@ -1141,7 +1077,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 }
                 else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
                     sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
-                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); return false;});\n");
+                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
                 }
                 sb.append("}\n");  // end bootstrap
                 sb.append("else {\n");
@@ -1152,7 +1088,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                     }
                 }
                 else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); return false;}");
+                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}");
                 }
                 sb.append("});\n");
                 sb.append("}");  // end jquery
@@ -1402,6 +1338,9 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public void setFocus(boolean b) {
         this.bFocus = b;
     }
+    public void setFocus() {
+        this.bFocus = true;
+    }
 
     /**
      * True if autoCompelte should be enabled.
@@ -1418,12 +1357,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public OATypeAhead getTypeAhead() {
         return typeAhead;
     }
-    public void setLookupValues(String[] lookupValues) {
-        this.lookupValues = lookupValues;
-    }
-    public String[] getLookupValues() {
-        return lookupValues;
-    }
 
     /**
      * Called by browser if autoComplete is true.
@@ -1434,6 +1367,26 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
      */
     public String[] getAutoCompleteText(String value) {
         return null;
+    }
+
+    
+    public Object getTypeAheadObject(String searchText) {
+        if (typeAhead == null || searchText == null) return null;
+
+        ArrayList<OAObject> al = typeAhead.search(searchText);
+        if (al == null) return null;
+        if (al.size() == 0) return null;
+        
+        for (OAObject obj : al) {
+            String displayValue = typeAhead.getDisplayValue(obj);
+            if (searchText.equals(displayValue)) return obj;
+        }
+        return null;
+    }
+    public Object getTypeAheadObject() {
+        String searchText = getValue();
+        Object obj = getTypeAheadObject(searchText);
+        return obj;
     }
     
     /**
@@ -1472,7 +1425,12 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             if (dd == null) dd = "";
             dd.replace('\"', ' ');
             
-            if (bPropertyPathIsManyLink || bPropertyPathIsOneLink) {
+            boolean bUseId = (bPropertyPathIsManyLink || bPropertyPathIsOneLink);
+            if (!bUseId) {
+                bUseId = (hub == null || hub.getLinkPath() == null);    
+            }
+            
+            if (bUseId) {
                 json += "{\"id\":"+id+",\"display\":\""+displayValue+"\",\"dropdowndisplay\":\""+dd+"\"}";
             }
             else {
@@ -1543,7 +1501,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             al.add(OAJspDelegate.JS_bootstrap_tagsinput);
         }
 
-        if (getTypeAhead() != null || getLookupValues() != null) {
+        if (getTypeAhead() != null) {
             al.add(OAJspDelegate.JS_bootstrap);
             al.add(OAJspDelegate.JS_bootstrap_typeahead);
         }
@@ -1603,7 +1561,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             al.add(OAJspDelegate.CSS_bootstrap_tagsinput);
         }
 
-        if (getTypeAhead() != null || getLookupValues() != null) {
+        if (getTypeAhead() != null) {
             al.add(OAJspDelegate.CSS_bootstrap);
             al.add(OAJspDelegate.CSS_bootstrap_typeahead);
         }

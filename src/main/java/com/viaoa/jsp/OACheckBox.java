@@ -238,7 +238,7 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
             sb.append("$('#"+id+"').change(function() {$('#oacommand').val('"+id+"'); ajaxSubmit(); return false;});\n");
         }
         else if (getSubmit()) {
-            sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+            sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val('');return false;});\n");
         }
         if (getSubmit() || getAjaxSubmit()) {
             sb.append("$('#"+id+"').addClass('oaSubmit');\n");

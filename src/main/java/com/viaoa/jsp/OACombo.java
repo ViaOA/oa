@@ -286,7 +286,7 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             sb.append("$('#"+id+"').on('change', function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
         }
         else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-            sb.append("$('#"+id+"').change(function() { $('#oacommand').val('"+id+"'); $('form').submit(); return false;});\n");
+            sb.append("$('#"+id+"').change(function() { $('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
         }
         
         if (getSubmit() || getAjaxSubmit() || HubDetailDelegate.hasDetailHubs(hub)) {

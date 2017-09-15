@@ -70,6 +70,8 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     private OATemplate template;
     private HashMap<String, OAJspComponent> hmChildren = new HashMap<String, OAJspComponent>();
     
+    protected HashMap<Integer, String> hmHeading;
+    
     
     public OAList(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0, 0);
@@ -80,6 +82,14 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         setPropertyPath(propertyPath);
         this.columns = cols;
         this.rows = rows;
+    }
+
+    /**
+     * set the heading to use, beginning at a specific row.
+     */
+    public void addHeading(int row, String heading) {
+        if (hmHeading == null) hmHeading = new HashMap<>();
+        hmHeading.put(row, heading);
     }
     
     public int getColumns() {
@@ -95,7 +105,9 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         this.popupColumns = x;
     }
 
-    
+    /**
+     * how many rows to display.
+     */
     public int getRows() {
         return rows;
     }
@@ -294,6 +306,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         }
         else {
             sb.append("    $('form').submit();\n");
+            sb.append("    $('#oacommand').val('');\n");
         }
         sb.append("}\n");
         
@@ -379,11 +392,23 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         }
         StringBuilder sb = new StringBuilder(2048);
         
-        
+
+        // boolean bInOptGroup = false;
         for (int pos=0; ;pos++) {
             Object obj = hub.getAt(pos);
             if (obj == null) break;
 
+            boolean b = false;
+            if (hmHeading != null) {
+                String heading = hmHeading.get(pos);
+                if (heading != null) {
+//qqqqqqqqqqq heading not working ... optgroup is for <select>, need to create a class and <li class='heading'> .., and js to not click on it                    
+                    //if (bInOptGroup) sb.append("</optgroup>");
+                    // sb.append("<optgroup label=\""+heading+"\"></optgroup>");
+                    //bInOptGroup = true;
+                }
+            }
+            
             sb.append("<li");
             if (obj == hub.getAO()) sb.append(" class='oaSelected'");
             sb.append(" oarow='"+(pos)+"'>");
@@ -391,6 +416,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             if (s != null) sb.append(s);
             sb.append("</li>");
         }
+        //if (bInOptGroup) sb.append("</optgroup>");
 
         String s = getHtml(null, -1);
         if (s != null) {
@@ -668,9 +694,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         String s = template.process(obj);
         
         return s;
-        
     }
-    
     
     public String getHtmlPropertyPath(Object obj, int pos, int row, int col) {
         String result = null;
@@ -682,8 +706,4 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         }
         return result;
     }
-    
-
-    
-    
 }

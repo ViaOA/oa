@@ -379,6 +379,7 @@ public class OATable implements OAJspComponent {
 
         sb.append("  $('#oacommand').val('href='+$(this).attr('href'));\n"); 
         sb.append("  $('form').submit();\n");
+        sb.append("  $('#oacommand').val('');\n"); 
         sb.append("  return false;\n");
         sb.append("}\n");
 
