@@ -57,12 +57,14 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     
     protected String propertyPath;
     protected String visiblePropertyPath;
+    protected String headingPropertyPath;
     protected int columns, popupColumns;
     
     protected int rows;
     protected int lastRow;
     
     protected String toolTip;
+    protected String toolTipHtmlTemplate;
     protected OATemplate templateToolTip;
     private boolean bHadToolTip;
     
@@ -143,6 +145,13 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     }
     public void setPropertyPath(String propertyPath) {
         this.propertyPath = propertyPath;
+    }
+
+    public String getHeadingPropertyPath() {
+        return headingPropertyPath;
+    }
+    public void setHeadingPropertyPath(String propertyPath) {
+        this.headingPropertyPath = propertyPath;
     }
     
     /** used when displaying error message for this textfield */
@@ -237,14 +246,19 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
 
         if (hub.getPos() >= 0) {
             submitUpdateScript += "$('#oalist"+id+"').val('"+hub.getPos()+"');";
-            s = " li:nth-child("+(hub.getPos()+1)+")";
+            //was: s = " li:nth-child("+(hub.getPos()+1)+")";
         }
         else {
             submitUpdateScript += "$('#oalist"+id+"').val('');";
-            s = " li:nth-child("+(hub.getSize()+1)+")";
+            //was: s = " li:nth-child("+(hub.getSize()+1)+")";
         }
+        // use attr selector
+        s = " li[oarow=\\'"+hub.getPos()+"\\']";
         submitUpdateScript += "$('#"+id+s+"').addClass('oaSelected');";
 
+        // see if tooltip needs to be updated
+        
+        
         return bWasSubmitted; // true if this caused the form submit
     }
 
@@ -392,20 +406,28 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         }
         StringBuilder sb = new StringBuilder(2048);
         
-
-        // boolean bInOptGroup = false;
+        
+        String ppHeading = getHeadingPropertyPath();
+        String lastHeading = null;
+        
         for (int pos=0; ;pos++) {
             Object obj = hub.getAt(pos);
             if (obj == null) break;
 
             boolean b = false;
+            
+            String heading = null;
+            if (OAString.isNotEmpty(ppHeading) && obj instanceof OAObject) {
+                heading = ((OAObject) obj).getPropertyAsString(ppHeading, getFormat());
+                if (OAString.isNotEmpty(heading) && !OAString.isEqual(heading, lastHeading)) {
+                    sb.append("<li class='oaHeading'>"+heading+"</li>");
+                    lastHeading = heading;
+                }
+            }
             if (hmHeading != null) {
-                String heading = hmHeading.get(pos);
+                heading = hmHeading.get(pos);
                 if (heading != null) {
-//qqqqqqqqqqq heading not working ... optgroup is for <select>, need to create a class and <li class='heading'> .., and js to not click on it                    
-                    //if (bInOptGroup) sb.append("</optgroup>");
-                    // sb.append("<optgroup label=\""+heading+"\"></optgroup>");
-                    //bInOptGroup = true;
+                    sb.append("<li class='oaHeading'>"+heading+"</li>");
                 }
             }
             
@@ -436,6 +458,9 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         sb = new StringBuilder(strListing.length() + 2048);
         
         sb.append("$('#"+id+"').addClass('oaList');\n");
+        if (OAString.isNotEmpty(ppHeading) || (hmHeading != null && hmHeading.size() > 0)) {
+            sb.append("$('#"+id+"').addClass('oaIndent');\n");
+        }
         
         sb.append("$('#"+id+"').html('"+strListing+"');\n");
         
@@ -443,20 +468,36 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         
         
         if (getEnabled()) {
-            sb.append("$('#"+id+" li').click(oaList"+id+"Click);\n");
+            sb.append("$('#"+id+" li[oarow]').click(oaList"+id+"Click);\n");
+        }
+
+        int posx = lastRow = hub.getPos();
+        if (posx < 0) {
+            sb.append("$('#oalist"+id+"').val('');\n"); // set back to blank
+        }        
+        else sb.append("    $('#oalist"+id+"').val('"+posx+"');\n");
+
+        // tooltip for each row
+        if (OAString.isNotEmpty(getToolTipHtmlTemplate())) {        
+            for (int pos=0; ;pos++) {
+                Object obj = hub.getAt(pos);
+                if (obj == null) break;
+                if (!(obj instanceof OAObject)) continue;
+                
+                String tt = getProcessedToolTip((OAObject) obj);
+                if (OAString.isNotEmpty(tt)) {
+                    tt = OAString.convertForSingleQuotes(tt);
+                    sb.append("$('#"+id+" li[oarow=\\'"+pos+"\\']').tooltip();\n");
+                    sb.append("$('#"+id+" li[oarow=\\'"+pos+"\\']').data('bs.tooltip').options.title = '"+tt+"';\n");
+                    sb.append("$('#"+id+" li[oarow=\\'"+pos+"\\']').data('bs.tooltip').options.placement = 'right';\n");
+                }
+            }
         }
 
 
-        int pos = lastRow = hub.getPos();
-        if (pos < 0) {
-            sb.append("$('#oalist"+id+"').val('');\n"); // set back to blank
-        }        
-        else sb.append("    $('#oalist"+id+"').val('"+pos+"');\n");
-        
-        
         // tooltip
         String prefix = null;
-        String tt = getProcessedToolTip();
+        String tt = getToolTip();
         if (OAString.isNotEmpty(tt)) {
             tt = OAString.convertForSingleQuotes(tt);
             if (!bHadToolTip) {
@@ -563,16 +604,18 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     public String getToolTip() {
         return this.toolTip;
     }
-    public String getProcessedToolTip() {
-        if (OAString.isEmpty(toolTip)) return toolTip;
+    public void setToolTipHtmlTemplate(String tooltip) {
+        this.toolTipHtmlTemplate = tooltip;
+        templateToolTip = null;
+    }
+    public String getToolTipHtmlTemplate() {
+        return this.toolTipHtmlTemplate;
+    }
+    public String getProcessedToolTip(OAObject obj) {
+        if (OAString.isEmpty(toolTipHtmlTemplate)) return toolTipHtmlTemplate;
         if (templateToolTip == null) {
             templateToolTip = new OATemplate();
-            templateToolTip.setTemplate(getToolTip());
-        }
-        OAObject obj = null;
-        if (hub != null) {
-            Object objx = hub.getAO();
-            if (objx instanceof OAObject) obj = (OAObject) objx;
+            templateToolTip.setTemplate(getToolTipHtmlTemplate());
         }
         String s = templateToolTip.process(obj, hub, null);
         return s;
@@ -696,6 +739,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         return s;
     }
     
+    /*
     public String getHtmlPropertyPath(Object obj, int pos, int row, int col) {
         String result = null;
         String pp = getPropertyPath();
@@ -706,4 +750,5 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         }
         return result;
     }
+    */
 }
