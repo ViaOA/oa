@@ -66,12 +66,14 @@ public abstract class OACron {
         this.strMonth = strMonth;
         this.strDayOfWeek = strDayOfWeek;
 
+        // set to default, can get changed when calling getInts
         bValid = true;
+        bIncludeLastDayOfMonth = false;
+        
         mins = getInts(strMins);
         hrs = getInts(strHours);
         monthDays = getInts(strDayOfMonth, true);
         daysOfWeek = getInts(strDayOfWeek);
-        bIncludeLastDayOfMonth = false;
         months = getInts(strMonth);
 
         if (bValid) {

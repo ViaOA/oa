@@ -32,7 +32,7 @@ public abstract class OAChangeRefresher {
     private final Object lock = new Object();
     private Thread thread;
     private ArrayList<MyListener> alMyListener;
-    private volatile int lastChange = -1;
+    private volatile int lastChange;
 
     private static class MyListener {
         Hub hub;
@@ -44,6 +44,20 @@ public abstract class OAChangeRefresher {
         }
     }
 
+    /**
+     * create a new change refresher.
+     */
+    public OAChangeRefresher() {
+        this(false);
+    }
+    
+    /**
+     * ceate a new change refresher, with the option to have refress called once started.
+     * @param bInitialize if true, then the refresh process is called when start() is called.
+     */
+    public OAChangeRefresher(boolean bInitialize) {
+        if (bInitialize) lastChange = -1;
+    }
     
     /**
      * Called when it's time to process.
@@ -97,9 +111,10 @@ public abstract class OAChangeRefresher {
                     }
                 }
             };
+            hub.addHubListener(hl, propertyPath);
         }
-        if (OAString.isNotEmpty(propertyPath)) {
-            final String name = "OAChangeRefresher." + aiName.getAndIncrement();
+        else if (OAString.isNotEmpty(propertyPath)) {
+            final String name = "OAChangeRefresher" + aiName.getAndIncrement();
             hl = new HubListenerAdapter() {
                 @Override
                 public void afterPropertyChange(HubEvent e) {

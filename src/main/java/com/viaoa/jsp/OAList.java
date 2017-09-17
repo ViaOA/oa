@@ -48,7 +48,6 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     protected boolean bSubmit=false;
     protected String forwardUrl;
     protected String nullDescription = "";
-    protected String maxHeigth; // ex:  200px,  12em
     protected boolean bRequired;
     protected String name;
 
@@ -58,7 +57,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     protected String propertyPath;
     protected String visiblePropertyPath;
     protected String headingPropertyPath;
-    protected int columns, popupColumns;
+    protected int columns;
     
     protected int rows;
     protected int lastRow;
@@ -74,6 +73,9 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     
     protected HashMap<Integer, String> hmHeading;
     
+    // css styles
+    protected String width;
+    protected String maxHeight; // ex:  200px,  12em
     
     public OAList(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0, 0);
@@ -85,6 +87,13 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         this.columns = cols;
         this.rows = rows;
     }
+    public OAList(String id, Hub hub, String propertyPath, String width, String height) {
+        this.id = id;
+        this.hub = hub;
+        setPropertyPath(propertyPath);
+        this.width = width;
+        this.maxHeight = height;
+    }
 
     /**
      * set the heading to use, beginning at a specific row.
@@ -94,17 +103,32 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         hmHeading.put(row, heading);
     }
     
+    /**
+     * Set the css style for width, ex: "100%"
+     */
+    public void setWidth(String width) {
+        this.width = width;
+    }
+    public String getWidth() {
+        return this.width;
+    }
+
+    /**
+     * Set the css style for height, ex: "12em"
+     */
+    public void setHeight(String height) {
+        this.maxHeight = height;
+    }
+    public String getHeight() {
+        return this.maxHeight;
+    }
+
+    
     public int getColumns() {
         return columns;
     }
     public void setColumns(int x) {
         this.columns = x;
-    }
-    public int getPopupColumns() {
-        return popupColumns;
-    }
-    public void setPopupColumns(int x) {
-        this.popupColumns = x;
     }
 
     /**
@@ -344,8 +368,8 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         }
         
         
-        if (OAString.isNotEmpty(maxHeigth)) {
-            sb.append("$('#"+id+"').css(\"max-height\", \""+maxHeigth+"\");\n");
+        if (OAString.isNotEmpty(maxHeight)) {
+            sb.append("$('#"+id+"').css(\"max-height\", \""+maxHeight+"\");\n");
         }
         else if (rows > 0) {
             int x = (int) (rows * 1.25);
@@ -353,20 +377,28 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             sb.append("$('#"+id+" > li').css(\"line-height\", \"1.1em\");\n");
             sb.append("$('#"+id+"').css(\"max-height\", \""+x+"em\");\n");
         }
+
         
-        if (columns > 0 || popupColumns > 0) {
-            int x;
-            if (popupColumns < 1) x = (int) (columns * .75);
-            else x = (int) (popupColumns * .75);
-            
-            
+        if (width != null) {
+            sb.append("$('#"+id+"').css(\"width\", \""+width+"\");\n");
+            sb.append("$('#"+id+"').css(\"max-width\", \""+width+"\");\n");
+        }
+        else if (columns > 0) {
+            int x = (int) (columns * .75);
             sb.append("$('#"+id+"').css(\"width\", \""+(x+2)+"em\");\n");
             sb.append("$('#"+id+"').css(\"max-width\", \""+(x+3)+"em\");\n");
-            
-            sb.append("$('#"+id+" > li').css(\"width\", \""+x+"em\");\n");
-            sb.append("$('#"+id+" > li').css(\"max-width\", \""+x+"em\");\n");
         }
         
+        if (OAString.isNotEmpty(width)) {
+            sb.append("$('#"+id+"').css(\"width\", \""+width+"\");\n");
+            sb.append("$('#"+id+"').css(\"max-width\", \""+width+"\");\n");
+        }
+        else if (columns > 0) {
+            int x = (int) (columns * .75);
+            sb.append("$('#"+id+"').css(\"width\", \""+(x+2)+"em\");\n");
+            sb.append("$('#"+id+"').css(\"max-width\", \""+(x+3)+"em\");\n");
+        }
+
         String js = sb.toString();
         return js;
     }
@@ -581,10 +613,10 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
 
 
     public void setMaxHeight(String val) {
-        this.maxHeigth = val;
+        this.maxHeight = val;
     }
     public String getMaxHeigth() {
-        return this.maxHeigth;
+        return this.maxHeight;
     }
 
     public boolean isRequired() {

@@ -165,7 +165,8 @@ public class OAQueryFilter<T> implements OAFilter {
 
             OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
             
-            OAFilter f = new OAEqualFilter(pp, getValueToUse(nextToken), true);
+            OAEqualFilter f = new OAEqualFilter(pp, getValueToUse(nextToken));
+            f.setIgnoreCase(true);  // might want to make false, and then create a new "LIKE" operator
             stack.push(f);
             nextToken = nextToken();
         }

@@ -22,7 +22,7 @@ public class OAChangeRefresherTest {
             protected void process() throws Exception {
                 ai.incrementAndGet();
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                 }
                 catch (Exception e) {
                 }
@@ -30,6 +30,7 @@ public class OAChangeRefresherTest {
         };
         r.start();
         
+        Thread.sleep(100);
         assertEquals(0, ai.get());
         
         Hub h = new Hub(Program.class);
@@ -44,15 +45,14 @@ public class OAChangeRefresherTest {
             p.setCode(i+"");
         }
         
-        assertEquals(1, ai.get());
+        Thread.sleep(200);
+        assertEquals(2, ai.get());
         
-        Thread.sleep(1000);
-
         p.setCode("x");
 
-        Thread.sleep(300);
+        Thread.sleep(200);
 
-        assertEquals(2, ai.get());
+        assertEquals(3, ai.get());
     }    
     
     @Test

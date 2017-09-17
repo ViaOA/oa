@@ -561,8 +561,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     public void addEqualFilter(String pp, Object val) {
         addFilter(new OAEqualFilter(pp, val));
     }
-    public void addEqualFilter(String pp, Object val, boolean bIgnoreCase) {
-        addFilter(new OAEqualFilter(pp, val, bIgnoreCase));
+    public void addEqualFilter(String pp, Object matchValue, boolean bIgnoreCase) {
+        OAEqualFilter f = new OAEqualFilter(pp, matchValue);
+        f.setIgnoreCase(bIgnoreCase);
+        addFilter(f);
     }
     public void addGreaterFilter(String pp, Object val) {
         addFilter(new OAGreaterFilter(pp, val));

@@ -22,7 +22,7 @@ import test.hifive.model.oa.propertypath.ProgramPP;
 public class OACallbackMethodTest extends OAUnitTest {
 
     @Test
-    public void test() {
+    public void test() throws Exception {
         Employee emp = new Employee();
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(Employee.class);
@@ -45,6 +45,7 @@ public class OACallbackMethodTest extends OAUnitTest {
         
         Location loc = new Location();
         emp.setLocation(loc);
+        Thread.sleep(25); // triger is in another thread
         assertEquals(1, emp.cntCallback);
         AwardType at = new AwardType();
         loc.getAwardTypes().add(at);

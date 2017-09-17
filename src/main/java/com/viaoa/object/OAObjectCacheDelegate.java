@@ -888,16 +888,21 @@ public class OAObjectCacheDelegate {
             
             if (fi != null) {
                 finder = fi.finder;
-                filter = new OAEqualFilter(fi.pp, findValue, true);
+                filter = new OAEqualFilter(fi.pp, findValue);
+                ((OAEqualFilter) filter).setIgnoreCase(true);
             }
             else {
                 finder = new OAFinder();
-                filter = new OAEqualFilter(pp, findValue, true);
+                filter = new OAEqualFilter(pp, findValue);
+                ((OAEqualFilter) filter).setIgnoreCase(true);
             }
         }
         else {
             finder = new OAFinder();
-            if (findValue != null) filter = new OAEqualFilter(findValue, true);
+            if (findValue != null) {
+                filter = new OAEqualFilter((String)null, findValue);
+                ((OAEqualFilter) filter).setIgnoreCase(true);
+            }
         }
         if (filter != null) finder.addFilter(filter);
         return _find(fromObject, clazz, finder, bSkipNew, bThrowException, fetchAmount, alResults);

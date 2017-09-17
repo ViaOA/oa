@@ -29,39 +29,29 @@ import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
  */
 public class OAEqualFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OAEqualFilter.class.getName());
-    private Object value;
+    private Object matchValue;
     private boolean bIgnoreCase;
     private OAPropertyPath pp;
     private OAFinder finder;
 
-    public OAEqualFilter(Object value) {
-        this.value = value;
+    public OAEqualFilter(Object matchValue) {
+        this.matchValue = matchValue;
         bSetup = true;
     }
 
-    public OAEqualFilter(OAPropertyPath pp, Object value) {
-        this.pp = pp;
-        this.value = value;
+    public OAEqualFilter(String pp, Object matchValue) {
+        this(pp==null?null:new OAPropertyPath(pp), matchValue);
     }
-    public OAEqualFilter(String pp, Object value) {
-        this(pp==null?null:new OAPropertyPath(pp), value);
+    
+    public OAEqualFilter(OAPropertyPath pp, Object matchValue) {
+        this.pp = pp;
+        this.matchValue = matchValue;
     }
 
-    public OAEqualFilter(Object value, boolean bIgnoreCase) {
-        this.value = value;
-        this.bIgnoreCase = bIgnoreCase;
-        bSetup = true;
-    }
     
-    public OAEqualFilter(OAPropertyPath pp, Object value, boolean bIgnoreCase) {
-        this.pp = pp;
-        this.value = value;
-        this.bIgnoreCase = bIgnoreCase;
+    public void setIgnoreCase(boolean b) {
+        this.bIgnoreCase = b;
     }
-    public OAEqualFilter(String pp, Object value, boolean bIgnoreCase) {
-        this(pp==null?null:new OAPropertyPath(pp), value, bIgnoreCase);
-    }
-    
 
     private boolean bSetup;
     private int cntError;
@@ -74,7 +64,8 @@ public class OAEqualFilter implements OAFilter {
             FinderInfo fi = OAFilterDelegate.createFinder(obj.getClass(), pp);
             if (fi != null) {
                 this.finder = fi.finder;
-                OAFilter f = new OAEqualFilter(fi.pp, value, bIgnoreCase);
+                OAEqualFilter f = new OAEqualFilter(fi.pp, matchValue);
+                f.setIgnoreCase(bIgnoreCase);
                 finder.addFilter(f);
             }
         }
@@ -90,7 +81,7 @@ public class OAEqualFilter implements OAFilter {
             }
         }
         obj = getPropertyValue(obj);
-        return OACompare.isEqual(obj, value, bIgnoreCase);
+        return OACompare.isEqual(obj, matchValue, bIgnoreCase);
     }
     
     protected Object getPropertyValue(Object obj) {
