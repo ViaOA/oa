@@ -33,13 +33,6 @@ public class HubLinkDelegate {
         // 20110809 add bAutoCreateAllowDups
         if (linkToHub == thisHub) return;
 
-//qqqqqqqqqqqqqqqqq        
-        if (linkToHub.getObjectClass().getName().indexOf("EmployeeAward") >= 0) {
-            int xx = 4;
-            xx++;
-        }
-        
-        
 	    if (thisHub.datau.getLinkToHub() != null) {
 	        if (thisHub.datau.getLinkToHub() == linkToHub) {
 	            if (thisHub.datau.isAutoCreate() == bAutoCreate && thisHub.datau.isAutoCreateAllowDups() == bAutoCreateAllowDups) {
@@ -541,6 +534,7 @@ public class HubLinkDelegate {
      *   is changed (active object or linked to property).
      * This will handle recursive hubs, hubs that have master/detail that are linked to themselves, etc.
      * Called by HubLinkEventListener, which is created by Hub.setLinkHub(...) methods.
+     *    ... very tricky :)
      */
     protected static void updateLinkedToHub(Hub fromHub, Hub linkToHub, Object obj) {
         updateLinkedToHub(fromHub, linkToHub, obj, null);
@@ -554,7 +548,10 @@ public class HubLinkDelegate {
 
         obj = HubLinkDelegate.getPropertyValueInLinkedToHub(fromHub, obj);  // link property value
         if (fromHub.datau.isLinkPos()) {
-            fromHub.setActiveObject(obj);
+            HubAODelegate.setActiveObject(fromHub, obj,false,false,false); // adjustMaster, bUpdateLink, force
+        }
+        else if (obj == null && fromHub.datau.getLinkFromGetMethod() != null && fromHub.datau.getLinkToGetMethod() != null) {  // 20170919 link from prop to prop
+            HubAODelegate.setActiveObject(fromHub, null,false,false,false); // adjustMaster, bUpdateLink, force
         }
         else {
             // see if master can be set to null (flag)
@@ -652,8 +649,6 @@ public class HubLinkDelegate {
             
             // finally :), change the active object in the from hub.
             HubAODelegate.setActiveObject(fromHub, obj,false,false,bForce); // adjustMaster, bUpdateLink, force
-            
-// 20110905 might not need this, since Enable/Visible Controllers now listen to linkToHub           
         }
     }
     

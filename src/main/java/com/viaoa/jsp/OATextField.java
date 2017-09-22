@@ -512,10 +512,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             sb.append("  datumTokenizer : Bloodhound.tokenizers.obj.whitespace('display'),\n");
             sb.append("  queryTokenizer : Bloodhound.tokenizers.whitespace,\n");
 
-//qqqqqqqqqqqqqqqq            
-//          identify: function(obj) { return obj.id; },            
-            
-            
             sb.append("  remote : {\n");
             sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
             sb.append("    wildcard: '%QUERY'\n");
@@ -542,7 +538,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
   
             if (bAjaxSubmit) {
                 sb.append("  }).on('typeahead:select', function (obj, datum) {\n");  // https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md#custom-events
-                sb.append("    $('#" + getId() + "').val(datum.id);\n");
+                sb.append("    $('#" + getId() + "').val(datum.display);\n");
                 sb.append("    $('#oacommand').val('" + getId() + "');\n");
                 sb.append("    ajaxSubmit();\n");
             }
@@ -566,9 +562,9 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             if (minLen < 0) minLen = 3;
             
             sb.append("$('#" + id + "').tagsinput({\n");
-// 20170913       
+            // 20170913       
             sb.append("  itemValue: 'id',\n");  // <-- store id value
-//was:            sb.append("  itemValue: 'display',\n");  // <-- store display value
+            //was: sb.append("  itemValue: 'display',\n");  // <-- store display value
             sb.append("  itemText: 'display',\n");
             sb.append("  freeInput: false,\n");
             sb.append("  typeaheadjs: [\n");
@@ -1427,7 +1423,9 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             
             boolean bUseId = (bPropertyPathIsManyLink || bPropertyPathIsOneLink);
             if (!bUseId) {
-                bUseId = (hub == null || hub.getLinkPath() == null);    
+                if (hub == null || hub.getLinkPath() == null) {
+                    bUseId = true;
+                }
             }
             
             if (bUseId) {

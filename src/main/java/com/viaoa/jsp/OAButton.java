@@ -177,21 +177,28 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
             sb.append("$('#"+id+"').html(\"<span class='ladda-label'>\"+$('#"+id+"').html()+\"</span>\");\n");
             //see:  file:///C:/Projects/metronic_v4.7.5_copy/theme/admin_1/ui_buttons_spinner.html
         }
+
+        String confirm = getConfirmMessage();
+        if (OAString.isNotEmpty(confirm)) {
+            confirm = JspUtil.convertInnerJavaScriptQuotes(confirm);
+            confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
+        }
+        else confirm = "";
         
         if (bAjaxSubmit) {
             if (getSpinner()) {
-                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');Ladda.create(this).start();ajaxSubmit();return false;});\n");
+                sb.append("$('#"+id+"').click(function() {"+confirm+"$('#oacommand').val('"+id+"');Ladda.create(this).start();ajaxSubmit();return false;});\n");
             }
             else {
-                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+                sb.append("$('#"+id+"').click(function() {"+confirm+"$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
             }
         }
         else if (getSubmit()) {
             if (getSpinner()) {
-                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');var spinner = Ladda.create(this); spinner.start(); $('form').submit(); $('#oacommand').val(''); if (oaSubmitCancelled) spinner.stop(); return false;});\n");
+                sb.append("$('#"+id+"').click(function() {"+confirm+"$('#oacommand').val('"+id+"');var spinner = Ladda.create(this); spinner.start(); $('form').submit(); $('#oacommand').val(''); if (oaSubmitCancelled) spinner.stop(); return false;});\n");
             }
             else {
-                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
+                sb.append("$('#"+id+"').click(function() {"+confirm+"$('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
             }
         }
         

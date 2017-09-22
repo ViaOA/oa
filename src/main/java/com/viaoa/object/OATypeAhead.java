@@ -13,11 +13,12 @@ import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
 import com.viaoa.model.oa.VString;
-import com.viaoa.object.OATypeAhead.OATypeAheadParams;
 import com.viaoa.util.*;
 
 /**
  * Bootstrap TypeAhead support, used by TextField and MultiValueTextField to do searches.
+ * 
+ * For styling, see oajsp.css
  * 
  */
 public class OATypeAhead<F extends OAObject,T extends OAObject> {
@@ -193,6 +194,10 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
                 classTo = lis[lis.length-1].getToClass();
             }
         }
+
+        this.minInputLength = params.minInputLength;
+        this.maxResults = params.maxResults;
+        this.showHint = params.showHint;
         
         if (ppFinder != null) {
             finder = new OAFinder<F,T>(this.finderPropertyPath) {
@@ -204,7 +209,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
                     return OATypeAhead.this.isUsed(obj);
                 }
             };
-            finder.setMaxFound(maxResults);
+            finder.setMaxFound(params.maxResults);
         }
         
         
@@ -232,10 +237,6 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         }
 
         this.filter = params.filter;
-
-        this.minInputLength = minInputLength;
-        this.maxResults = params.maxResults;
-        this.showHint = params.showHint;
     }
 
     public String getSearchText() {
@@ -425,6 +426,9 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
     public Class getToClass() {
         return classTo;
     }
-    
+
+    public Hub getHub() {
+        return hub;
+    }
 }
 

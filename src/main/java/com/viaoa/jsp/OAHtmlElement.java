@@ -224,18 +224,24 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         
         String furl = getForwardUrl();
 
+        String confirm = getConfirmMessage();
+        if (OAString.isNotEmpty(confirm)) {
+            confirm = JspUtil.convertInnerHtmlQuotes(confirm);
+            confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
+        }
+        else confirm = "";
+        
         if (bSubmit || bAjaxSubmit) {
             if (bAjaxSubmit) {
-                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+                sb.append("$('#"+id+"').click(function() {"+confirm+"$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
             }
             else {
-                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
+                sb.append("$('#"+id+"').click(function() {"+confirm+"$('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
             }
-            
             sb.append("$('#"+id+"').addClass('oaSubmit');\n");
         }
         else if (!OAString.isEmpty(furl)) {
-            sb.append("$('#"+id+"').click(function() {window.location = 'oaforward.jsp?oaform="+getForm().getId()+"&oacommand="+id+"';return false;});\n");
+            sb.append("$('#"+id+"').click(function() {"+confirm+"window.location = 'oaforward.jsp?oaform="+getForm().getId()+"&oacommand="+id+"';return false;});\n");
             //was: sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');window.location = '"+furl+"';return false;});\n");
         }
         

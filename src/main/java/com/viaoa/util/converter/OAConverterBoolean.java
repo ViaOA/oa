@@ -71,10 +71,24 @@ public class OAConverterBoolean implements OAConverterInterface {
                 }
             }
             else {
-                if (str.length() == 1) {
+                if (str.length() == 0) {
+                    b = false;
+                }
+                else if (str.length() == 1) {
                     char c = str.charAt(0);
                     if (c == 'F' || c == 'f' || c == 'N' || c == 'n' || (Character.isDigit(c) && c == '0')) b = false;
                     else b = true;
+                }
+                else if (OAString.isNumber(str)) {
+                    b = false;
+                    int cnt = 0;
+                    for (int i=0; !b && i<str.length(); i++) {
+                        char c = str.charAt(i);
+                        if (c == '.') {
+                            if (cnt++ > 0) b = true;
+                        }
+                        else if (c != '0') b = true;
+                    }
                 }
                 else {
                     if (str.equalsIgnoreCase("false") || str.equalsIgnoreCase("no")) b = false;

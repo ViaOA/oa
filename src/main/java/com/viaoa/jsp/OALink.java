@@ -50,12 +50,19 @@ public class OALink extends OAHtmlElement {
             sb.append("$('#"+id+"').attr('href', '"+furl+"');\n");
         }
         
+        String confirm = getConfirmMessage();
+        if (OAString.isNotEmpty(confirm)) {
+            confirm = JspUtil.convertInnerJavaScriptQuotes(confirm);
+            confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
+        }
+        else confirm = "";
+        
         if (bSubmit || bAjaxSubmit) {
             if (bAjaxSubmit) {
-                sb.append("$('#"+id+"').click(function() {$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
+                sb.append("$('#"+id+"').click(function() {"+confirm+"$('#oacommand').val('"+id+"');ajaxSubmit();return false;});\n");
             }
             else {
-                sb.append("$('#"+id+"').click(function() { $('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
+                sb.append("$('#"+id+"').click(function() {"+confirm+"$('#oacommand').val('"+id+"'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
             }
             sb.append("$('#"+id+"').addClass('oaSubmit');\n");
         }

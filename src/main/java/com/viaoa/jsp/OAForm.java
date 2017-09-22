@@ -999,7 +999,7 @@ public class OAForm extends OABase implements Serializable {
             if (i >= alComponent.size()) break;
             OAJspComponent comp = alComponent.get(i);
             if (id.equalsIgnoreCase(comp.getId())) {
-                if (c == null || c.equals(comp.getClass())) {
+                if (c == null || c.isAssignableFrom(comp.getClass())) {
                     return comp;
                 }
             }
@@ -1031,8 +1031,11 @@ public class OAForm extends OABase implements Serializable {
 
         if (!OAString.isEmpty(id)) {
             OAJspComponent compx = getComponent(id);
-            if (compx != null && compx.getClass().equals(comp.getClass())) {
-                remove(id);
+            
+            if (compx != null) {
+                if ( comp.getClass().isAssignableFrom(compx.getClass()) || compx.getClass().isAssignableFrom(comp.getClass()) ) {
+                    remove(id);
+                }
             }
         }
         if (!alComponent.contains(comp)) {
@@ -1636,6 +1639,12 @@ public class OAForm extends OABase implements Serializable {
         this.urlRedirect = url;
     }
     public String getRedirect() {
+        return urlRedirect;
+    }
+    public void setRedirectUrl(String url) {
+        this.urlRedirect = url;
+    }
+    public String getRedirectUrl() {
         return urlRedirect;
     }
     
