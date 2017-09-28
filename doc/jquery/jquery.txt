@@ -1,5 +1,17 @@
 
 
+https://stackoverflow.com/questions/35942247/how-to-move-placeholder-to-top-on-focus-and-while-typing
+  $('input').focus(function(){
+    placeholder = $(this).attr('placeholder');
+    if(placeholder != undefined){
+      $(this).parent().prepend('<span class="input-placeholder">'+placeholder+'</span>');
+    }
+  });
+  $('input').blur(function(){
+    $(this).parent().find('.input-placeholder').remove();
+  });
+
+
 $('#id ul li:eq(0)').addClass('active');
     from OATabbedPane.java
 

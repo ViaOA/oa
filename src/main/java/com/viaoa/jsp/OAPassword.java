@@ -38,12 +38,6 @@ public class OAPassword extends OATextField {
     }
 
     @Override
-    protected String convertValue(String value) {
-        // if (OAString.isEmpty(value)) return "";
-        return "";
-    }
-
-    @Override
     public String getTableEditorHtml() {
         // let cell take up all space
         width = 0;  // so that the "size" attribute wont be set        

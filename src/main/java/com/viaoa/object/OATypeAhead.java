@@ -143,7 +143,6 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         /** flag to have TA show the full value on the textfield */
         public boolean showHint=false;
         
-        
         void setup() {
             if (OAString.isEmpty(displayPropertyPath)) {
                 displayPropertyPath = dropDownDisplayPropertyPath;
@@ -344,6 +343,8 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         return this.showHint;
     }
     
+
+   
     /** callback during search */
     protected boolean isUsed(T obj) {
         boolean b = _isUsed(obj);

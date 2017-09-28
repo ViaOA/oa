@@ -1,5 +1,20 @@
 
 
+
+
+
+.form-group.focused .control-label {
+    opacity: 1;
+    transform: scale(0.75);
+}
+
+width: calc(100% - 80px);
+
+.h1-responsive {
+    font-size: calc(3*(0.75em + 1vw)) !important;
+    margin-bottom: 10px !important;
+}
+
 #gridItem .oaGridCell .itemImage {
     height: 145px; 
     background-image: url(servlet/img?c=ImageStore&i=16706&p=bytes&mw=600);

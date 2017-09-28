@@ -202,6 +202,14 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
             String s = e.getValue()._afterFormSubmitted(forwardUrl);
             if (s != null) forwardUrl = s;
         }
+        return afterFormSubmitted(forwardUrl);
+    }
+    @Override
+    public String afterFormSubmitted(String forwardUrl) {
+        for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
+            String s = e.getValue().afterFormSubmitted(forwardUrl);
+            if (s != null) forwardUrl = s;
+        }
         return forwardUrl;
     }
     

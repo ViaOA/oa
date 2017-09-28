@@ -33,6 +33,8 @@ import java.sql.Time;
         yyyy-MM-dd'T'HH:mm:ssXXX
             ex: 2016-11-22T08:49:02-05:00
 
+    javascript Date.toString()    EEE MMM dd yyyy '00:00:00' 'GMT'Z '('z')'
+
     <p>
     Formatting Symbols used for output display.
 

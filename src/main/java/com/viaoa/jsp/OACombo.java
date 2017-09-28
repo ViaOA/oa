@@ -10,18 +10,10 @@
 */
 package com.viaoa.jsp;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.viaoa.annotation.OACalculatedProperty;
-import com.viaoa.annotation.OAProperty;
 import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDetailDelegate;
@@ -33,23 +25,21 @@ import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectKeyDelegate;
 import com.viaoa.util.OAConv;
-import com.viaoa.util.OAConverter;
-import com.viaoa.util.OADate;
+import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 
 /**
  * Controls html select+options
  *
  * bind to hub, property
- * set column width
  * show/hide, that can be bound to property
  * enabled, that can be bound to property
  * ajax submit on change
  * handle required validation
  * recursive, displayed using indentation
  * option to set the null description
+ *
  * 
  * @author vvia
  *
@@ -65,6 +55,7 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     
     protected String id;
     protected int columns;
+    protected int rows;
     protected String propertyPath;
     protected String visiblePropertyPath;
     protected String enablePropertyPath;
@@ -81,7 +72,18 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     protected String toolTip;
     protected OATemplate templateToolTip;
     private boolean bHadToolTip;
+
+    protected String htmlTemplate;
+    private OATemplate template;
     
+    private boolean bAllowSearch;
+
+    protected HashMap<Integer, String> hmHeading;
+    protected String headingPropertyPath;
+    
+    public OACombo(String id, Hub hub, String propertyPath) {
+        this(id, hub, propertyPath, 0);
+    }
     
     public OACombo(String id, Hub hub, String propertyPath, int columns) {
         this.id = id;
@@ -119,6 +121,13 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         lastAjaxSent = null;
     }
 
+    public void setRows(int x) {
+        rows = x;
+    }
+    public int getRows() {
+        return rows;
+    }
+    
     @Override
     public void setForm(OAForm form) {
         this.form = form;
@@ -240,6 +249,10 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
 
     @Override
     public String _afterFormSubmitted(String forwardUrl) {
+        return afterFormSubmitted(forwardUrl);
+    }
+    @Override
+    public String afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -279,7 +292,7 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         lastAjaxSent = null;
         bHadToolTip = false;
         StringBuilder sb = new StringBuilder(1024);
-        sb.append(getAjaxScript());
+        sb.append(_getAjaxScript(true));
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
         
         if ( (bAjaxSubmit || HubDetailDelegate.hasDetailHubs(hub)) && OAString.isEmpty(getForwardUrl()) ) {
@@ -298,10 +311,33 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         }
         sb.append("$('#"+id+"').blur(function() {$(this).removeClass('oaError');}); \n");
         
+        
+        sb.append("$('#"+id+"').selectpicker({\n");
+        sb.append("  style: 'btn-default',\n");
+        String s = OAString.defaultString(getNullDescription(), "select one");
+        s = OAString.convertForSingleQuotes(s);
+        sb.append("  noneSelectedText:'"+s+"',\n");
+        
+        if (getAllowSearch()) {
+            sb.append("  liveSearch: true,\n");
+        }
+        sb.append("  dropupAuto: false,\n");
+        
+        sb.append("  size: "+(rows > 0?rows:8)+"\n");
+        sb.append("});\n");
+        
+        
         String js = sb.toString();
         return js;
     }
 
+    public void setAllowSearch(boolean b) {
+        this.bAllowSearch = b;
+    }
+    public boolean getAllowSearch() {
+        return this.bAllowSearch ;
+    }
+    
     @Override
     public String getVerifyScript() {
         if (!isRequired()) return null;
@@ -326,8 +362,12 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     
     private Object lastActiveObject;
     
+    
     @Override
     public String getAjaxScript() {
+        return _getAjaxScript(false);
+    }
+    protected String _getAjaxScript(final boolean bIsInit) {
         StringBuilder sb = new StringBuilder(1024);
 
         if (hub != null) lastActiveObject = hub.getAO();  //qqqq todo: could be recursive, and a child node was selected (not in hub)
@@ -365,8 +405,9 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         }
         if (value != null) {
             if (options.length() == 0) {
-                for (int i=value.length(); i<columns; i++) value += " ";
-                value = Util.convert(value, " ", "&nbsp;");
+//qqqqqqqq let css max-width, text-overflow: ellipsis;                
+//                for (int i=value.length(); i<columns; i++) value += " ";
+//                value = Util.convert(value, " ", "&nbsp;");
             }
             boolean b;
             if (hubSelect != null) b = hubSelect.getSize() == 0;
@@ -376,7 +417,6 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             options += "<option value='oanull' "+sel+">"+value+"</option>";
         }        
         sb.append("$('#"+id+"').empty();\n");
-        options = convertOption(options);
         sb.append("$('#"+id+"').append(\"" + options + "\");\n");
         
         if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
@@ -409,24 +449,20 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             }
         }
 
+        if (!bIsInit) sb.append("$('#"+id+"').selectpicker('refresh');\n");
+
         String js = sb.toString();
+        
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
 
         if (prefix != null) {
             js = prefix + OAString.notNull(js);
         }
+        
         return js;
     }
 
-    protected String convertOption(String value) {
-        value = Util.convert(value, "\r\n", " ");
-        value = Util.convert(value, "\n", " ");
-        value = Util.convert(value, "\r", " ");
-        value = Util.convert(value, "\"", "\\\"");  // needs to be double quotes, since that it is how it is formatted.
-        return value;
-    }
-    
     /** 
      * this is called to render each option.
      * @param option is the string formatted value of object 
@@ -455,6 +491,9 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         if (hubx == null) {
             return "";
         }
+        boolean bHasOptGroup = false;
+        String ppHeading = getHeadingPropertyPath();
+        String lastHeading = null;
         String options = "";
         for (int i=0; ;i++) {
             Object obj = hubx.getAt(i);
@@ -471,19 +510,19 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             
             value = getOption(i, obj, value);
 
-            value = Util.convert(value, "\r\n", " ");
-            value = Util.convert(value, "\n", " ");
-            value = Util.convert(value, "\r", " ");
+
 
             if (columns > 0) {
-                value = OAString.lineBreak(value, columns, " ", 1);
+                //qqqqqqqq let css max-width, text-overflow: ellipsis;                
+                //  value = OAString.lineBreak(value, columns, " ", 1);
             }
             
             //value = com.viaoa.html.Util.toEscapeString(value);
             if (i == 0) {
-                int addSp = (columns <= 0) ? 0 : (columns - value.length());
-                for (int j=0; j<addSp; j++) value += " ";
-                value = Util.convert(value, " ", "&nbsp;");
+                //qqqqqqqq let css max-width, text-overflow: ellipsis;                
+                //int addSp = (columns <= 0) ? 0 : (columns - value.length());
+                //for (int j=0; j<addSp; j++) value += " ";
+                //value = Util.convert(value, " ", "&nbsp;");
             }
 
             String v = null; 
@@ -516,13 +555,46 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             String sel = (b) ? "selected='selected'" : "";
 
             if (indent > 0) {
+                /*qqqqqqq                
                 String s = ("&nbsp;&nbsp;&nbsp;");
                 for (int j=0; j<indent-1; j++) s += ("&nbsp;&nbsp;&nbsp;");
                 s += ("--&nbsp;");
                 value = s + value;
+                 */                
             }
             
-            options += "<option value='"+v+"' "+sel+">"+value+"</option>";
+            
+            if (hmHeading != null) {
+                String heading = hmHeading.get(i);
+                if (heading != null) {
+                    if (bHasOptGroup) options += "</optgroup>";
+                    heading = OAString.convertToHtml(heading);
+                    options += "<optgroup label='"+heading+"'>";
+                    bHasOptGroup = true;
+                }
+            }
+            
+            String heading = null;
+            if (OAString.isNotEmpty(ppHeading) && obj instanceof OAObject) {
+                heading = ((OAObject) obj).getPropertyAsString(ppHeading, getFormat());
+                heading = OAString.convertToHtml(heading);
+                if (!OAString.isEqual(heading, lastHeading)) {
+                    if (lastHeading != null) options += "</optgroup>";
+                    options += "<optgroup label='"+heading+"'>";
+                }
+                lastHeading = heading;
+            }
+            
+            
+            options += "<option value='"+v+"' "+sel;
+
+            String temp = getOptionDisplay(obj, i, value);
+            if (OAString.isNotEmpty(temp) && !OAString.equals(value, temp)) {
+                temp = OAString.convertToHtml(temp);
+                options += " data-content='"+temp+"'";
+            }
+            value = OAString.convertToHtml(value);
+            options += ">"+value+"</option>";
             
             
             if (recursiveLinkInfo != null) {
@@ -531,11 +603,13 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
                     options += getOptions(h, indent+1); 
                 }
             }
-            
         }
+        if (bHasOptGroup) options += "</optgroup>";
+        if (lastHeading != null) options += "</optgroup>";
         return options;
     }
     
+//qqqqqqqqqqqqq bootstrap-select has an option for this qqqqqqqqqqq    
     public String getNullDescription() {
         return nullDescription;
     }
@@ -649,11 +723,12 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
 
     public String[] getRequiredJsNames() {
         ArrayList<String> al = new ArrayList<>();
-        al.add(OAJspDelegate.JS_jquery);
 
-        if (OAString.isNotEmpty(getToolTip())) {
-            al.add(OAJspDelegate.JS_bootstrap);
-        }
+        al.add(OAJspDelegate.JS_jquery);
+        al.add(OAJspDelegate.JS_jquery_ui);
+        
+        al.add(OAJspDelegate.JS_bootstrap);
+        al.add(OAJspDelegate.JS_bootstrap_select);
 
         String[] ss = new String[al.size()];
         return al.toArray(ss);
@@ -663,9 +738,8 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     public String[] getRequiredCssNames() {
         ArrayList<String> al = new ArrayList<>();
 
-        if (OAString.isNotEmpty(getToolTip())) {
-            al.add(OAJspDelegate.CSS_bootstrap);
-        }
+        al.add(OAJspDelegate.CSS_bootstrap);
+        al.add(OAJspDelegate.CSS_bootstrap_select);
 
         String[] ss = new String[al.size()];
         return al.toArray(ss);
@@ -681,5 +755,80 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     }
     @Override
     public void _beforeOnSubmit() {
+    }
+
+    /**
+     * set the heading to use, beginning at a specific row.
+     */
+    public void addHeading(int row, String heading) {
+        if (hmHeading == null) hmHeading = new HashMap<>();
+        hmHeading.put(row, heading);
+    }
+    public String getHeadingPropertyPath() {
+        return headingPropertyPath;
+    }
+    public void setHeadingPropertyPath(String propertyPath) {
+        this.headingPropertyPath = propertyPath;
+    }
+
+    /**
+     * @see #getTemplate()
+     */
+    public void setHtmlTemplate(String htmlTemplate) {
+        this.htmlTemplate = htmlTemplate;
+    }
+    public String getHtmlTemplate() {
+        return this.htmlTemplate;
+    }
+   
+
+    /**
+     * The following values are set and available:
+     * $OAPOS, $OACOL, $OAROW
+     * @see OATemplate
+     */
+    public OATemplate getTemplate() {
+        if (template != null) return template;
+        if (OAString.isEmpty(getHtmlTemplate())) return null;
+        
+        template = new OATemplate() {
+            @Override
+            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
+                String s = super.getValue(obj, propertyName, width, fmt, props);
+                s = getTemplateValue(obj, propertyName, width, fmt, props, s);
+                return s;
+            }
+        };
+        template.setTemplate(getHtmlTemplate());
+        
+        return template;
+    }
+    public void setTemplate(OATemplate temp) {
+        this.template = temp;
+    }
+    
+    /**
+     * Callback from {@link #getTemplate(Object, int, int, int)}
+     */
+    public String getTemplateValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, String defaultValue) {
+        return defaultValue;
+    }
+    
+    /**
+     * This will use the OATemplate to create "data-content" value (optional).  
+     */
+    public String getOptionDisplay(Object objx, int pos, String value) {
+        if (!(objx instanceof OAObject)) return null;
+        OAObject obj = (OAObject) objx;
+        
+        if (getTemplate() == null) return value;
+        
+        template.setProperty("OAPOS", ""+pos);
+        template.setProperty("OACOL", ""+(1));
+        template.setProperty("OAROW", ""+(pos+1));
+        
+        String s = template.process(obj);
+        
+        return s;
     }
 }

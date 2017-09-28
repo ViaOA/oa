@@ -140,6 +140,10 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
 
     @Override
     public String _afterFormSubmitted(String forwardUrl) {
+        return afterFormSubmitted(forwardUrl);
+    }
+    @Override
+    public String afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 

@@ -12,6 +12,7 @@ package com.viaoa.jsp;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
+import com.viaoa.util.OAString;
 
 
 /**
@@ -22,6 +23,7 @@ import com.viaoa.object.OAObject;
  * 
  * this will change the <img src=".."> to use the "/servlet/img" url
  * 
+ * Note: to make responsive, set the max-height: 100%
  * 
  * @author vvia
  */
@@ -30,7 +32,7 @@ public class OAServletImage extends OAHtmlElement {
 
     protected String propertyPath;
     protected String bytePropertyName="bytes"; // name of property that has the bytes
-    protected int maxWidth, maxHeight;
+    protected int maxWidthServlet, maxHeightServlet;
 
     /**
      * @param propertyPath path to the object that stores the image
@@ -41,8 +43,8 @@ public class OAServletImage extends OAHtmlElement {
     public OAServletImage(String id, Hub hub, String propertyPath, int maxWidth, int maxHeight) {
         super(id, hub);
         setPropertyPath(propertyPath);
-        this.maxWidth = maxWidth;
-        this.maxHeight = maxHeight;
+        this.maxWidthServlet = maxWidth;
+        this.maxHeightServlet = maxHeight;
     }
     
     public String getPropertyPath() {
@@ -91,8 +93,8 @@ public class OAServletImage extends OAHtmlElement {
         if (value == null) return null;
                 
         src = String.format("/servlet/img?c=%s&id=%s&p=%s", className, value+"", getBytePropertyName());
-        if (maxHeight > 0) src = String.format("%s&mh=%d", src, maxHeight);
-        if (maxWidth > 0) src = String.format("%s&mw=%d", src, maxWidth);
+        if (maxHeightServlet > 0) src = String.format("%s&mh=%d", src, maxHeightServlet);
+        if (maxWidthServlet > 0) src = String.format("%s&mw=%d", src, maxWidthServlet);
 
         return src;
     }
@@ -112,11 +114,16 @@ public class OAServletImage extends OAHtmlElement {
         if (src == null) src = "";
         if (src.length() == 0) sb.append("$('#"+id+"').addClass('oaMissingImage');\n");
         else {
-            sb.append("$('#"+id+"').attr('src', '"+src+"');\n");
+            sb.append(convertSource(src)+"\n");
             sb.append("$('#"+id+"').removeClass('oaMissingImage');\n");
         }
-        sb.append("$('#"+id+"').removeAttr('width');\n");
-        sb.append("$('#"+id+"').removeAttr('height');\n");
+        if (OAString.isNotEmpty(width)) {
+            sb.append("$('#"+id+"').removeAttr('width');\n");
+        }
+        
+        if (OAString.isNotEmpty(height)) {
+            sb.append("$('#"+id+"').removeAttr('height');\n");
+        }
         
         String js = sb.toString();
 
@@ -126,6 +133,11 @@ public class OAServletImage extends OAHtmlElement {
         return js;
     }
 
+    protected String convertSource(String src) {
+        return "$('#"+id+"').attr('src', '"+src+"');";
+    }
+    
+    
     /**
      * Called to get the image source.
      * @param defaultSource default value that will be for the image src used for ImageServlet

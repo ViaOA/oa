@@ -210,10 +210,12 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
 
     @Override
     public String _afterFormSubmitted(String forwardUrl) {
+        return afterFormSubmitted(forwardUrl);
+    }
+    @Override
+    public String afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
-
-    
     
     @Override
     public String getScript() {
@@ -320,9 +322,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
                 html = Util.convert(html, "\r", " ");
             }
             
-            html = OAString.convert(html, "\\'", "\'");
-            html = OAString.convert(html, "\'", "\\'");
-            sb.append("$('#"+id+"').html('"+html+"');\n");
+            sb.append("$('#"+id+"').html('"+OAString.convertForSingleQuotes(html)+"');\n");
         }
         
         if (alAttribute != null) {
@@ -504,7 +504,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
             for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
                 String sx = ex.getKey();
                 String v = ex.getValue();
-                al.add(sx + ":'" + v + "'");
+                al.add("'"+sx + "':'" + v + "'");
             }
         }
 

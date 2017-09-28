@@ -14,6 +14,8 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -70,6 +72,8 @@ $(document).ready(function() {
  *
  */
 public class OAForm extends OABase implements Serializable {
+    private static Logger LOG = Logger.getLogger(OAForm.class.getName());
+    
     private static final long serialVersionUID = 1L;
 
     protected final ArrayList<OAJspComponent> alComponent = new ArrayList<OAJspComponent>();
@@ -490,7 +494,18 @@ public class OAForm extends OABase implements Serializable {
         sb.append("    $('#"+id+"').prepend(\"<input id='oachanged' type='hidden' name='oachanged' value=''>\");\n");
 
         // hidden input for browser javascript date.timezoneOffset  (its sign [+/-] is opposite of java timezone offset)
-        sb.append("    $('#"+id+"').prepend(\"<input id='jsDateTzOffset' type='hidden' name='jsDateTzOffset' value='\"+((new Date()).getTimezoneOffset())+\"'>\");\n");
+
+        
+        // 20170925 reworked browser time/tz
+        sb.append("    (function() {\n");
+        sb.append("      var dtNow = new Date();\n");
+        sb.append("      var tzOffsetJan = (new Date(dtNow.getFullYear(),0,1)).getTimezoneOffset();\n");
+        sb.append("      var tzOffsetJul = (new Date(dtNow.getFullYear(),6,1)).getTimezoneOffset();\n");
+        sb.append("      $('#"+id+"').prepend(\"<input id='jsDate' type='hidden' name='jsDate' value='\"+(dtNow.toString())+\"'>\");\n");
+        sb.append("      $('#"+id+"').prepend(\"<input id='jsTzRawOffset' type='hidden' name='jsTzRawOffset' value='\"+Math.max(tzOffsetJan,tzOffsetJul)+\"'>\");\n");
+        sb.append("      $('#"+id+"').prepend(\"<input id='jsDateSupportsDST' type='hidden' name='jsDateSupportsDST' value='\"+(tzOffsetJan != tzOffsetJul)+\"'>\");\n");
+        sb.append("    })();\n");
+        //was:  sb.append("    $('#"+id+"').prepend(\"<input id='jsDateTzOffset' type='hidden' name='jsDateTzOffset' value='\"+((new Date()).getTimezoneOffset())+\"'>\");\n");
 
 
         if (getDebug()) {
@@ -1148,14 +1163,28 @@ public class OAForm extends OABase implements Serializable {
             }
         }
 
-        ss = hmNameValue.get("jsDateTzOffset");
-        if (session != null && ss != null && ss.length > 0) {
-            int tzSecs = OAConv.toInt(ss[0]); // minutes
-            tzSecs *= 60 * 1000;
-            tzSecs *= -1; // tz offset are different between javascript and java.  Need to multiple by -1.
-            session.setBrowserTimeZoneOffset(tzSecs);
+        // Browser info
+        ss = hmNameValue.get("jsDate");
+        String jsDate = null;
+        if (ss != null && ss.length > 0) jsDate = ss[0];
+        
+        ss = hmNameValue.get("jsTzRawOffset");
+        String jsTzRawOffset = null;
+        if (ss != null && ss.length > 0) jsTzRawOffset = ss[0];
+        else jsTzRawOffset = "";
+        
+        ss = hmNameValue.get("jsDateSupportsDST");
+        String jsDateSupportsDST = null;
+        if (ss != null && ss.length > 0) jsDateSupportsDST = ss[0];
+        
+        try {
+            String s = request.getHeader("Accept-Language");
+            session.setBrowserInfo(jsDate, OAConv.toInt(jsTzRawOffset), OAConv.toBoolean(jsDateSupportsDST), s);
         }
-
+        catch (Exception e) {
+            LOG.log(Level.WARNING, "error setting browser info, jsDate="+jsDate+", jsTzRawOffset="+jsTzRawOffset+", jsDateSupportsDST="+jsDateSupportsDST, e);
+        }
+        
         boolean bShouldProcess = beforeSubmit();
 
         String forward = null;

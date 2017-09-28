@@ -62,6 +62,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     protected String toolTip;
     protected OATemplate templateToolTip;
     private boolean bHadToolTip;
+    protected String placeholder;
+    protected String floatLabel;
     
     
     /** javascript regex */
@@ -208,8 +210,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             if (obj != null) {
                 try {
                     String fmt = getFormat();
-
-                    if (bIsDateTime && !OAString.isEmpty(value)) {
+                    if ( (bIsDateTime || bIsTime) && !OAString.isEmpty(value)) {
                         boolean b = true;
                         if (!OAString.isEmpty(fmt)) {
                             s = fmt.toUpperCase();
@@ -222,12 +223,20 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                             if (f != null) {
                                 OASession sess = f.getSession();
                                 if (sess != null) {
-                                    OADateTime dt = OADateTime.valueOf(value, fmt);
-                                    TimeZone tz = sess.getBrowserTimeZone();
-                                    dt.setTimeZone(tz);
-
-                                    OADateTime d2 = new OADateTime(dt.getTime()); // use this computer's timezone
-                                    value = d2.toString(fmt);
+                                    if (bIsDateTime) {
+                                        OADateTime dt = OADateTime.valueOf(value, fmt);
+                                        TimeZone tz = sess.getBrowserTimeZone();
+                                        if (tz != null) dt.setTimeZone(tz);
+                                        OADateTime d2 = new OADateTime(dt.getTime()); // use this computer's timezone
+                                        value = d2.toString(fmt);
+                                    }
+                                    else {
+                                        OATime dt = (OATime) OATime.valueOf(value, fmt);
+                                        TimeZone tz = sess.getBrowserTimeZone();
+                                        if (tz != null) dt.setTimeZone(tz);
+                                        OATime d2 = new OATime(dt.getTime()); // use this computer/server timezone
+                                        value = d2.toString(fmt);
+                                    }
                                 }
                             }
                         }
@@ -344,6 +353,10 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
     @Override
     public String _afterFormSubmitted(String forwardUrl) {
+        return afterFormSubmitted(forwardUrl);
+    }
+    @Override
+    public String afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -385,6 +398,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public String getScript() {
         lastAjaxSent = null;
         bHadToolTip = false;
+        bFloatLabelJsInit = false;
         StringBuilder sb = new StringBuilder(1024);
 
         // 20170628 moved to below
@@ -393,7 +407,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         // sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
 
         final int max = getMaxWidth();
-        
         
         
         if (getClearButton()) {
@@ -470,7 +483,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             sb.append("$('#" + id + "').addClass('oaSubmit');\n");
         }
 
-        
         if (getAutoComplete()) {
             // support for jqueryui autocomplete
             sb.append("var cache" + id + " = {}, lastXhr" + id + ";\n");
@@ -631,7 +643,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         
         
-        
         // 20170628 moved from begin of method
         sb.append(getAjaxScript());
         
@@ -647,7 +658,12 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         // see: OAForm.getInitScript for using "requires[]" and "errors[]"
 
         if (isRequired()) {
-            sb.append("if ($('#" + id + "').val() == '') { requires.push('" + (name != null ? name : id) + "'); $('#" + id
+            String s = name;
+            if (OAString.isEmpty(s)) {
+                s = placeholder;
+                if (OAString.isEmpty(s)) s = id;
+            }
+            sb.append("if ($('#" + id + "').val() == '') { requires.push('" + s + "'); $('#" + id
                     + "').addClass('oaError');}\n");
         }
 
@@ -692,6 +708,11 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         if (getClearButton()) {
             sb.append("$('#"+getId()+"Clear').css('visibility', (($('#"+getId()+"').val().length > 0)?'visible':'hidden'));\n");
         }
+
+        s = getPlaceholder();
+        if (s != null) sb.append("$('#" + id + "').attr('placeholder', '"+OAString.convertForSingleQuotes(s)+"');\n");
+
+        getFloatLabelJs(sb);
         
         // tooltip
         String prefix = null;
@@ -756,7 +777,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                         else idx = idxs[0]+"";
                          
                         String s2 = getTypeAhead().getDisplayValue(obj);
-                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+s2+"\"});\n");
+                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+OAString.convertForDoubleQuotes(s2)+"\"});\n");
                     }
                 }
             }
@@ -777,7 +798,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                         else idx = idxs[0]+"";
                          
                         String s2 = getTypeAhead().getDisplayValue(obj);
-                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+s2+"\"});\n");
+                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+OAString.convertForDoubleQuotes(s2)+"\"});\n");
                     }
                 }
             }
@@ -798,7 +819,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                         String fmt = getFormat();
                         boolean b = true;
     
-                        if (bIsDateTime) {
+                        // 20170925 added isTime
+                        if (bIsDateTime || bIsTime) {
                             b = false;
                             if (!OAString.isEmpty(fmt)) {
                                 String s = fmt.toUpperCase();
@@ -816,6 +838,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                                         if (sess != null) {
                                             TimeZone tz = sess.getBrowserTimeZone();
                                             dt = dt.convertTo(tz);
+                                            if (isTime()) dt = new OATime(dt);
                                             value = dt.toString(fmt);
                                             b = false;
                                         }
@@ -839,10 +862,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         if (value == null) value = "";
         sb.append("$('#" + id + "').attr('name', '" + newName + "');\n");
 
-        value = convertValue(value);
-
-        if (value == null) lastValue = null;
-        else lastValue = value;
+        lastValue = value;
 
         // set existing value            
         if (getTypeAhead()!=null && (bPropertyPathIsManyLink || bPropertyPathIsOneLink)) {
@@ -857,8 +877,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 if (sx == null) break;
                 sx = sx.trim();
                 if (sx.length() == 0) continue;
-                sx = OAString.convert(sx, "\"", "");
-                if (sx.length() == 0) continue;
+                sx = OAString.convertForDoubleQuotes(sx);
                 // the object.id is not known for the value, will instead use display as the id
                 //   this is the same as getTypeAheadJson(..) return value
                 sb.append("$('#" + id + "').tagsinput('add', { \"id\": \""+sx+"\" , \"display\": \""+sx+"\"});\n");
@@ -872,13 +891,12 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 if (sx == null) break;
                 sx = sx.trim();
                 if (sx.length() == 0) continue;
-                sx = OAString.convert(sx, "\"", "");
-                if (sx.length() == 0) continue;
+                sx = OAString.convertForDoubleQuotes(sx);
                 sb.append("$('#" + id + "').tagsinput('add', '"+sx+"');\n");
             }
         }
         else {
-            sb.append("$('#" + id + "').val('" + value + "');\n");
+            sb.append("$('#" + id + "').val('" + OAString.convertForSingleQuotes(value) + "');\n");
         }
         
         if (maxWidth > 0) sb.append("$('#" + id + "').attr('maxlength', '" + maxWidth + "');\n");
@@ -998,7 +1016,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
                 sb.append("if ($().bsdatetimepicker) {\n");
                 sb.append("  $('#" + id + "').bsdatetimepicker({");
-                sb.append("format: '" + dfmtBS + " " + tfmtBS + "'");
+                sb.append("format: '" + OAString.convertForSingleQuotes(dfmtBS) + " " + OAString.convertForSingleQuotes(tfmtBS) + "'");
                 sb.append(", sideBySide: true, showTodayButton: true, showClear: true, showClose: true});\n");
 
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
@@ -1014,8 +1032,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 sb.append("}\n");  // end bootstrap
                 sb.append("else {\n");
                 sb.append("$('#" + id + "').datetimepicker({ ");
-                sb.append("dateFormat: '" + dfmtJquery + "'");
-                sb.append(", timeFormat: '" + tfmtJquery + "'");
+                sb.append("dateFormat: '" + OAString.convertForSingleQuotes(dfmtJquery) + "'");
+                sb.append(", timeFormat: '" + OAString.convertForSingleQuotes(tfmtJquery) + "'");
                 if (tfmtJquery != null && tfmtJquery.toLowerCase().indexOf('z') >= 0) {
                     // sb.append(", timezoneList: [{label: 'EDT', value: '-240'}, {label: 'other', value: '-480'}]");
                 }
@@ -1033,7 +1051,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             else if (!OAString.isEmpty(dfmtJquery)) {
                 sb.append("if ($().bsdatetimepicker) {\n");
                 sb.append("$('#" + id + "').bsdatetimepicker({");
-                sb.append("format: '" + dfmtBS + "'");
+                sb.append("format: '" + OAString.convertForSingleQuotes(dfmtBS) + "'");
                 sb.append(", showTodayButton: true, showClear: true, showClose: true});\n");
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
                     if (!getAutoComplete() && (getTypeAhead()!=null)) {
@@ -1062,7 +1080,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             else if (!OAString.isEmpty(tfmtJquery)) {
                 sb.append("if ($().bsdatetimepicker) {\n");
                 sb.append("  $('#" + id + "').bsdatetimepicker({ ");
-                sb.append("format: '" + tfmtBS + "'");
+                sb.append("format: '" + OAString.convertForSingleQuotes(tfmtBS) + "'");
                 sb.append(", showClear: true, showClose: true});\n");
 
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
@@ -1077,7 +1095,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 }
                 sb.append("}\n");  // end bootstrap
                 sb.append("else {\n");
-                sb.append("  $('#" + id + "').timepicker({ timeFormat: '" + tfmtJquery + "'");
+                sb.append("  $('#" + id + "').timepicker({ timeFormat: '" + OAString.convertForSingleQuotes(tfmtJquery) + "'");
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
                     if (!getAutoComplete() && (getTypeAhead()!=null)) {
                         sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}");
@@ -1111,14 +1129,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
     public void setFormat(String fmt) {
         this.format = fmt;
-    }
-
-    protected String convertValue(String value) {
-        value = Util.convert(value, "\r\n", " ");
-        value = Util.convert(value, "\n", " ");
-        value = Util.convert(value, "\r", " ");
-        value = Util.convert(value, "'", "\\'");
-        return value;
     }
 
     public boolean isDate() {
@@ -1651,5 +1661,46 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
     @Override
     public void _beforeOnSubmit() {
+    }
+    
+    public void setPlaceholder(String placeholder) {
+        this.placeholder = placeholder;
+        placeholder = null;
+    }
+    public String getPlaceholder() {
+        return this.placeholder;
+    }
+
+    public void setFloatLabel(String floatLabel) {
+        this.floatLabel = floatLabel;
+        floatLabel = null;
+    }
+    public String getFloatLabel() {
+        return this.floatLabel;
+    }
+
+    private boolean bFloatLabelJsInit;
+    protected void getFloatLabelJs(StringBuilder sb) {
+        String s = getFloatLabel();
+        if (OAString.isEmpty(s)) {
+            if (!bFloatLabelJsInit) return;
+        }
+        
+        if (!bFloatLabelJsInit) {
+            sb.append("$('#" + id + "').addClass('oaFloatLabel');\n");
+
+            if (OAString.isEmpty(getFloatLabel())) {
+                sb.append("$('#" + id + "').after('<span class='active'></span>');\n");
+            }
+            else {
+                sb.append("$('#" + id + "').after('<span></span>');\n");
+                sb.append("$('#"+id+"').on('propertychange change keyup paste input', function() { if ($('#"+id+"').val().length > 0) $('#"+id+" + span').addClass('active'); else $('#"+id+" + span').removeClass('active'); });\n");
+                sb.append("if ($('#"+id+"').val().length > 0) $('#"+id+" + span').addClass('active');\n");
+            }
+            bFloatLabelJsInit = true;
+        }
+        
+        s = getFloatLabel();
+        sb.append("$('#"+id+" + span').html('"+OAString.convertForSingleQuotes(s)+"');\n");            
     }
 }

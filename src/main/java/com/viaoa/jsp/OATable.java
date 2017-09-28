@@ -280,9 +280,23 @@ public class OATable implements OAJspComponent {
                 if (!OAString.isEmpty(s)) forwardUrl = s;
             }
         }
-        return forwardUrl;
+        return afterFormSubmitted(forwardUrl);
     }
 
+    @Override
+    public String afterFormSubmitted(String forwardUrl) {
+        for (OATableColumn tc : alColumns) {
+            OATableEditor te = tc.getEditor();
+            if (te instanceof OAJspComponent) {
+                String s = ((OAJspComponent)te).afterFormSubmitted(forwardUrl);
+                if (!OAString.isEmpty(s)) forwardUrl = s;
+            }
+        }
+        return forwardUrl;
+    }
+    
+    
+    
     @Override
     public String _onSubmit(String forwardUrl) {
         if (submitHref != null) forwardUrl = this.submitHref;

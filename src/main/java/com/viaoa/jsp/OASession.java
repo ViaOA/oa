@@ -12,9 +12,12 @@ package com.viaoa.jsp;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import javax.servlet.http.*;
+
+import com.viaoa.util.OAString;
 
 /**
     Object used by one user session.
@@ -33,8 +36,6 @@ public class OASession extends OABase {
     protected transient ArrayList<OAForm> alBreadcrumbForm = new ArrayList<OAForm>();
     protected transient final ArrayList<OAForm> alForm = new ArrayList<OAForm>();
 
-    // number of seconds from UTC (from JavaScript, date.getTimezoneOffset() )
-    private int msTimezoneOffset = -1;
     private TimeZone timeZone;
 
     private int jsLibrary = OAApplication.JSLibrary_JQueryUI; 
@@ -217,25 +218,57 @@ public class OASession extends OABase {
     }
 
 
-    // called by OAForm
-    public void setBrowserTimeZoneOffset(int ms) {
-        if (ms != msTimezoneOffset) {
-            msTimezoneOffset = ms;
+    // javascript data sent from browser (see OAForm)
+    private String browserDate;     // js Date.toString()    EEE MMM dd yyyy '00:00:00' 'GMT'Z '('z')'
+    private int browserRawTzOffset;    // in minutes
+    private boolean browserSupportsDST;
+    private String browserAcceptLanguage;
+    
+    public void setBrowserInfo(String date, int rawTzOffset, boolean bSupportsDST, String acceptLanguage) {
+        if (rawTzOffset != browserRawTzOffset || bSupportsDST != browserSupportsDST) { 
             timeZone = null;
         }
+        this.browserDate = date;
+        this.browserRawTzOffset = rawTzOffset;
+        this.browserSupportsDST = bSupportsDST;
+        this.browserAcceptLanguage = acceptLanguage;
     }
-    public int getBrowserTimeZoneOffset() {
-        if (msTimezoneOffset == -1) {
-            long ms = TimeZone.getDefault().getOffset(System.currentTimeMillis());
-            msTimezoneOffset = (int) ms;
-        }
-        return msTimezoneOffset;
-    }
+    
+    private final ConcurrentHashMap<Integer, TimeZone> hmTzDst = new ConcurrentHashMap<>(); 
+    private final ConcurrentHashMap<Integer, TimeZone> hmTzNoDst = new ConcurrentHashMap<>(); 
+    
     public TimeZone getBrowserTimeZone() {
-        if (timeZone == null) {
-            String[] ss = TimeZone.getAvailableIDs(getBrowserTimeZoneOffset());
-            if (ss != null && ss.length > 0) {
-                timeZone = TimeZone.getTimeZone(ss[0]);
+        if (timeZone != null) return timeZone;
+
+        final int msRawTzOffset = -(browserRawTzOffset * 60 * 1000);
+        
+        if (browserSupportsDST) {
+            timeZone = hmTzDst.get(msRawTzOffset);
+        }
+        else {
+            timeZone = hmTzNoDst.get(msRawTzOffset);
+        }
+        if (timeZone != null) return timeZone;
+        
+        String[] ss = TimeZone.getAvailableIDs(msRawTzOffset);
+        if (ss != null && ss.length > 0) {
+            TimeZone tz = null;
+            for (int i=0; ss != null && i < ss.length; i++) {
+                tz = TimeZone.getTimeZone(ss[i]);
+                if (tz.useDaylightTime() == browserSupportsDST) {
+                    timeZone = tz;
+                    break;
+                }
+                if (tz != null) timeZone = tz;  // fallback
+            }
+        }
+
+        if (timeZone != null) {
+            if (browserSupportsDST) {
+                hmTzDst.put(msRawTzOffset, timeZone);
+            }
+            else {
+                hmTzNoDst.put(msRawTzOffset, timeZone);
             }
         }
         return timeZone;

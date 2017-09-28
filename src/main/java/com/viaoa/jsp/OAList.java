@@ -298,6 +298,10 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     
     @Override
     public String _afterFormSubmitted(String forwardUrl) {
+        return afterFormSubmitted(forwardUrl);
+    }
+    @Override
+    public String afterFormSubmitted(String forwardUrl) {
         return forwardUrl;
     }
 
@@ -518,7 +522,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
                 
                 String tt = getProcessedToolTip((OAObject) obj);
                 if (OAString.isNotEmpty(tt)) {
-                    tt = OAString.convertForSingleQuotes(tt);
+                    tt = OAString.convertToHtml(tt);
                     sb.append("$('#"+id+" li[oarow=\\'"+pos+"\\']').tooltip();\n");
                     sb.append("$('#"+id+" li[oarow=\\'"+pos+"\\']').data('bs.tooltip').options.title = '"+tt+"';\n");
                     sb.append("$('#"+id+" li[oarow=\\'"+pos+"\\']').data('bs.tooltip').options.placement = 'right';\n");
@@ -531,7 +535,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         String prefix = null;
         String tt = getToolTip();
         if (OAString.isNotEmpty(tt)) {
-            tt = OAString.convertForSingleQuotes(tt);
+            tt = OAString.convertToHtml(tt);
             if (!bHadToolTip) {
                 bHadToolTip = true;
                 prefix = "$('#"+id+"').tooltip();\n";

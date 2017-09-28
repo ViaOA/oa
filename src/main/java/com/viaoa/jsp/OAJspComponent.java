@@ -51,12 +51,13 @@ public interface OAJspComponent extends java.io.Serializable {
     public void _beforeOnSubmit();
 
     /** 
-     * only called on the component that was responsible for the submit 
+     * This is only called on the component that was responsible for the submit 
      */
     String _onSubmit(String forwardUrl);
 
     /**
-     * Called by _onSubmit, to allow for subclassing.
+     * Called by _onSubmit, to allow for subclassing.  
+     * This is only called on the component that was responsible for the submit
      */
     String onSubmit(String forwardUrl);
     
@@ -65,6 +66,7 @@ public interface OAJspComponent extends java.io.Serializable {
      * return forward url 
      */
     String _afterFormSubmitted(String forwardUrl);
+    String afterFormSubmitted(String forwardUrl);
     
     String getScript();    // to initialize the html page
     String getVerifyScript();  // called on client before submit 

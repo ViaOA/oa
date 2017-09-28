@@ -60,6 +60,9 @@ public class OAString {
     public static String convertToXml(String value) {
         return convertToXML(value);
     }
+    public static String convertToHtml(String value) {
+        return convertToXML(value);
+    }
 
     /**
         converts null to "" and does other xml/html conversions for &lt;, &gt; &amp; &quot; &#39; 

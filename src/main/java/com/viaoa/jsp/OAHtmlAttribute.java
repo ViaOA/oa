@@ -84,12 +84,15 @@ public class OAHtmlAttribute {
                 if (obj == null) val = "";
                 else val = "" + obj;
             }
+            val = getValue(obj, val);
         }
         
         String s;
         
         String aName = getAttrName();
         if (OAString.isEmpty(aName)) return null;
+        
+        val = OAString.convertForSingleQuotes(val);
         
         if (!OAString.isEmpty(val)) s = "$('#"+id+"').attr('"+aName+"', '"+val+"');";
         else s = "$('#"+id+"').removeAttr('"+aName+"');";

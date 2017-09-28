@@ -18,6 +18,7 @@ import com.viaoa.util.OAString;
 /**
  * Controls an html img "src" attribute, to use from a property.
  * 
+ * Note: to make responsive, set the max-height: 100%
  * 
  * @author vvia
  */
@@ -27,6 +28,7 @@ public class OAImage extends OAHtmlElement {
     protected String propertyPath;
     protected String rootDirectory;
     protected String source;
+    
 
     /**
      * @param propertyPath path to the object that stores the image
@@ -108,7 +110,7 @@ public class OAImage extends OAHtmlElement {
         if (src == null) src = "";
         if (src.length() == 0) sb.append("$('#"+id+"').addClass('oaMissingImage');\n");
         else {
-            sb.append("$('#"+id+"').attr('src', '"+src+"');\n");
+            sb.append(convertSource(src)+"\n");
             sb.append("$('#"+id+"').removeClass('oaMissingImage');\n");
         }
         
@@ -119,6 +121,11 @@ public class OAImage extends OAHtmlElement {
 
         return js;
     }
+    
+    protected String convertSource(String src) {
+        return "$('#"+id+"').attr('src', '"+src+"');";
+    }
+
 
     /**
      * Called to get the image source.
