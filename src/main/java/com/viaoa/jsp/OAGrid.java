@@ -43,6 +43,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     private String id;
     private OAForm form;
     private boolean bEnabled = true;
+    protected String visiblePropertyPath;
     private boolean bVisible = true;
     private boolean bAjaxSubmit=true;
     private boolean bSubmit=false;
@@ -385,6 +386,10 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         sb.append("$('#oahidden"+id+"').val('');\n"); // set back to blank
         
+        if (getVisible()) sb.append("$('#" + id + "').show();\n");
+        else sb.append("$('#" + id + "').hide();\n");
+        
+        
         String js = sb.toString();
         
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
@@ -623,9 +628,20 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
     @Override
     public boolean getVisible() {
-        return this.bVisible;
-    }
+        if (!bVisible) return false;
+        if (hub == null) return bVisible;
 
+        if (OAString.isEmpty(visiblePropertyPath)) return bVisible;
+
+        OAObject obj = (OAObject) hub.getAO();
+        if (obj == null) return false;
+
+        Object value = obj.getPropertyAsString(visiblePropertyPath);
+        boolean b = OAConv.toBoolean(value);
+        return b;
+    }
+    
+    
     public String[] getRequiredJsNames() {
         ArrayList<String> al = new ArrayList<>();
         al.add(OAJspDelegate.JS_jquery);
@@ -652,5 +668,13 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
     @Override
     public void _beforeOnSubmit() {
+    }
+
+    public String getVisiblePropertyPath() {
+        return visiblePropertyPath;
+    }
+
+    public void setVisiblePropertyPath(String visiblePropertyPath) {
+        this.visiblePropertyPath = visiblePropertyPath;
     }
 }

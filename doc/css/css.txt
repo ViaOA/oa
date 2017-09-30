@@ -1,8 +1,6 @@
 
 
 
-
-
 .form-group.focused .control-label {
     opacity: 1;
     transform: scale(0.75);

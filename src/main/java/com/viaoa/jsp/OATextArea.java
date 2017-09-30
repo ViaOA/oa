@@ -59,12 +59,14 @@ public class OATextArea extends OATextField {
             
             
             sb.append("$('#"+getId()+"').blur(function() {\n");
-            sb.append("    $('#"+getId()+"Message').hide();\n");
+            sb.append("    $('#"+getId()+"Message').css('visibility', 'hidden');\n");
+            //sb.append("    $('#"+getId()+"Message').hide();\n");
             sb.append("});\n");
             sb.append("$('#"+getId()+"').focus(function() {\n");
-            sb.append("    $('#"+getId()+"Message').show();\n");
+            sb.append("    $('#"+getId()+"Message').css('visibility', 'visible');\n");
+            // sb.append("    $('#"+getId()+"Message').show();\n");
             sb.append("});\n");
-            sb.append("$('#"+getId()+"').bind('input propertychange', function() {\n");
+            sb.append("$('#"+getId()+"').bind('propertychange change keyup paste input', function() {\n");
             sb.append("    var text = $(this).val();\n");
             sb.append("    $('#"+getId()+"Message').html(\" \"+text.length+\" out of "+max+"\");\n");
             sb.append("});\n");

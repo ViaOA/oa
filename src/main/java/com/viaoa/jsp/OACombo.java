@@ -91,6 +91,13 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         this.propertyPath = propertyPath;
         this.columns = columns;
     }
+    public OACombo(String id, Hub hub, String propertyPath, int columns, int rows) {
+        this.id = id;
+        this.hub = hub;
+        this.propertyPath = propertyPath;
+        this.columns = columns;
+        this.rows = rows;
+    }
 
     public void setPropertyPath(String pp) {
         this.propertyPath = pp;
@@ -219,25 +226,6 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             }
         }
         else {
-            if (objLinkTo != null) {
-                if (hub != null && (this.recursiveLinkInfo != null || lastActiveObject != objSelected)) {
-                    String linkProp = HubLinkDelegate.getLinkToProperty(hub);
-                    if (HubLinkDelegate.getLinkedOnPos(hub)) {
-                        objLinkTo.setProperty(linkProp, hub.getPos(objSelected));
-                    }
-                    else {
-                        String linkFromProp = HubLinkDelegate.getLinkFromProperty(hub);
-                        if (linkFromProp != null) {
-                            if (objSelected instanceof OAObject) {
-                                objSelected = ((OAObject)objSelected).getProperty(linkFromProp);
-                            }
-                        }
-                        if (!bAjaxSubmit || bSubmittedComponent) {
-                            objLinkTo.setProperty(linkProp, objSelected);
-                        }
-                    }
-                }
-            }
             if (!bAjaxSubmit || bSubmittedComponent) {
                 if (hub != null) {
                     hub.setAO(objSelected);
@@ -311,6 +299,8 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         }
         sb.append("$('#"+id+"').blur(function() {$(this).removeClass('oaError');}); \n");
         
+//qqqqqqqqqqqqqqqqq 
+sb.append("if ($().selectpicker) {\n");
         
         sb.append("$('#"+id+"').selectpicker({\n");
         sb.append("  style: 'btn-default',\n");
@@ -326,6 +316,7 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         sb.append("  size: "+(rows > 0?rows:8)+"\n");
         sb.append("});\n");
         
+sb.append("}\n");
         
         String js = sb.toString();
         return js;
@@ -362,6 +353,12 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     
     private Object lastActiveObject;
     
+
+    /**
+     * Hook that is called before getting the select options.
+     */
+    protected void updateOptions() {
+    }
     
     @Override
     public String getAjaxScript() {
@@ -395,6 +392,8 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         sb.append("$('#"+id+"').attr('name', '"+ids+"');\n");
         
         String options = "";
+        
+        updateOptions();
         
         if (recursiveLinkInfo != null) options = getOptions(topHub, 0);
         else options = getOptions(hub, 0);
@@ -449,7 +448,14 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             }
         }
 
-        if (!bIsInit) sb.append("$('#"+id+"').selectpicker('refresh');\n");
+        
+        if (!bIsInit) {
+            
+//qqqqqqqqqqqqqqqqq 
+sb.append("if ($().selectpicker) {\n");
+            sb.append("$('#"+id+"').selectpicker('refresh');\n");
+sb.append("}\n");
+        }
 
         String js = sb.toString();
         
@@ -552,7 +558,7 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             }
 
             
-            String sel = (b) ? "selected='selected'" : "";
+            String sel = (b) ? " selected='selected'" : "";
 
             if (indent > 0) {
                 /*qqqqqqq                
@@ -586,7 +592,7 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             }
             
             
-            options += "<option value='"+v+"' "+sel;
+            options += "<option value='"+v+"'"+sel;
 
             String temp = getOptionDisplay(obj, i, value);
             if (OAString.isNotEmpty(temp) && !OAString.equals(value, temp)) {

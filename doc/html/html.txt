@@ -1,5 +1,7 @@
 
 
+<div id="imgPrepaidCard" class='itemImage' style='display: inline-block; background-image: url(/images/intl-visa-card.jpg);'></div>
+
 autocomplete="off"
 
 <a href="javascript:;" >
