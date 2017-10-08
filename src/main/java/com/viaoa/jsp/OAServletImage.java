@@ -100,6 +100,14 @@ public class OAServletImage extends OAHtmlElement {
     }
 
     
+    private String defaultImageFileName;
+    public void setDefaultImageFileName(String fname) {
+        this.defaultImageFileName = fname;
+    }
+    public String getDefaultImageFileName() {
+        return this.defaultImageFileName;
+    }
+    
     @Override
     public String getAjaxScript() {
         String s = super.getAjaxScript();
@@ -112,7 +120,14 @@ public class OAServletImage extends OAHtmlElement {
         if (hub != null) src = getHtmlSource(hub.getAO());
 
         if (src == null) src = "";
-        if (src.length() == 0) sb.append("$('#"+id+"').addClass('oaMissingImage');\n");
+        if (src.length() == 0) {
+            src = getDefaultImageFileName();
+            if (src == null) src = "";
+        }
+        
+        if (src.length() == 0) {
+            sb.append("$('#"+id+"').addClass('oaMissingImage');\n");
+        }
         else {
             sb.append(convertSource(src)+"\n");
             sb.append("$('#"+id+"').removeClass('oaMissingImage');\n");

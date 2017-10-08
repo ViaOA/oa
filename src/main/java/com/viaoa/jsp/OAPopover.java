@@ -9,6 +9,10 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
+/**
+ * Advanced toottip that is triggered by onHover, onFocus, or onClick.
+ * @author vvia
+ */
 public class OAPopover implements OAJspComponent, OAJspRequirementsInterface {
 
     private static final long serialVersionUID = 1L;

@@ -298,6 +298,10 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
             sb.append("$('#"+id+"').addClass('oaRequired');\n");
         }
         sb.append("$('#"+id+"').blur(function() {$(this).removeClass('oaError');}); \n");
+
+        if (rows > 0) sb.append("$('#"+id+"').attr('size', '"+getRows()+"');\n");
+        if (hubSelect != null) sb.append("$('#"+id+"').attr('multiple', 'multiple');\n");
+        else sb.append("$('#"+id+"').removeAttr('multiple');\n");
         
 //qqqqqqqqqqqqqqqqq 
 sb.append("if ($().selectpicker) {\n");
@@ -623,6 +627,7 @@ sb.append("}\n");
         nullDescription = s;
     }
 
+
     @Override
     public void setEnabled(boolean b) {
         this.bEnabled = b;
@@ -630,17 +635,34 @@ sb.append("}\n");
     @Override
     public boolean getEnabled() {
         if (!bEnabled) return false;
-        if (hub == null) return bEnabled;
+        if (hub == null) return true;
 
         if (!hub.isValid()) return false;
+
+        if (OAString.isEmpty(enablePropertyPath)) return true;
         
-        if (OAString.isEmpty(enablePropertyPath)) return bEnabled;
+        Hub h = hub.getLinkHub();
+        if (h == null) h = hub;
         
-        OAObject obj = (OAObject) hub.getAO();
-        if (obj == null) return bEnabled;
-        Object value = obj.getPropertyAsString(enablePropertyPath);
-        boolean b = OAConv.toBoolean(value);
+        OAObject obj = (OAObject) h.getAO();
+        if (obj == null) return false;
+        
+        Object value = obj.getProperty(enablePropertyPath);
+        boolean b;
+        if (value instanceof Hub) {
+            b = ((Hub) value).size() > 0;
+        }
+        else b = OAConv.toBoolean(value);
         return b;
+    }
+    public String getEnablePropertyPath() {
+        return enablePropertyPath;
+    }
+    /**
+     * @param enablePropertyPath name of property in the linkTo hub
+     */
+    public void setEnablePropertyPath(String enablePropertyPath) {
+        this.enablePropertyPath = enablePropertyPath;
     }
 
 
@@ -652,17 +674,36 @@ sb.append("}\n");
     @Override
     public boolean getVisible() {
         if (!bVisible) return false;
-        if (hub == null) return bVisible;
+        if (hub == null) return true;
+
+        if (OAString.isEmpty(visiblePropertyPath)) return true;
         
-        if (OAString.isEmpty(visiblePropertyPath)) return bVisible;
+        Hub h = hub.getLinkHub();
+        if (h == null) h = hub;
         
-        OAObject obj = (OAObject) hub.getAO();
+        OAObject obj = (OAObject) h.getAO();
         if (obj == null) return false;
-        
-        Object value = obj.getPropertyAsString(visiblePropertyPath);
-        boolean b = OAConv.toBoolean(value);
+
+        Object value = obj.getProperty(visiblePropertyPath);
+        boolean b;
+        if (value instanceof Hub) {
+            b = ((Hub) value).size() > 0;
+        }
+        else b = OAConv.toBoolean(value);
         return b;
     }
+    public String getVisiblePropertyPath() {
+        return visiblePropertyPath;
+    }
+    /**
+     * @param visiblePropertyPath name of property in the linkTo hub
+     */
+    public void setVisiblePropertyPath(String visiblePropertyPath) {
+        this.visiblePropertyPath = visiblePropertyPath;
+    }
+
+    
+    
     public boolean setRecursive(boolean b) {
         this.topHub = null;
         this.recursiveLinkInfo = null;
@@ -683,18 +724,6 @@ sb.append("}\n");
         return (recursiveLinkInfo != null);
     }
     
-    public String getVisiblePropertyPath() {
-        return visiblePropertyPath;
-    }
-    public void setVisiblePropertyPath(String visiblePropertyPath) {
-        this.visiblePropertyPath = visiblePropertyPath;
-    }
-    public String getEnablePropertyPath() {
-        return enablePropertyPath;
-    }
-    public void setEnablePropertyPath(String enablePropertyPath) {
-        this.enablePropertyPath = enablePropertyPath;
-    }
     public void setFocus(boolean b) {
         this.bFocus = b;
     }
@@ -836,5 +865,16 @@ sb.append("}\n");
         String s = template.process(obj);
         
         return s;
+    }
+
+    /**
+     * used to create a multiselect
+     */
+    public void setSelectHub(Hub<?> hubSelect) {
+        this.hubSelect = hubSelect;
+        if (rows < 1) rows = 8;
+    }
+    public Hub getSelectHub() {
+        return hubSelect;
     }
 }

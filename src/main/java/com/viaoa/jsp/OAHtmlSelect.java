@@ -18,42 +18,10 @@ import com.viaoa.hub.Hub;
  */
 public class OAHtmlSelect extends OACombo {
 
-    protected int rows;
-    
     public OAHtmlSelect(String id, Hub hub, String propertyPath, int columns) {
         super(id, hub, propertyPath, columns);
     }
-    public OAHtmlSelect(String id, Hub hub, String propertyPath, int rows, int columns) {
-        super(id, hub, propertyPath, columns);
-        this.rows = rows;
-    }
-    
-    /**
-     * used to create a multiselect
-     */
-    public void setSelectHub(Hub<?> hubSelect) {
-        this.hubSelect = hubSelect;
-        if (rows < 1) rows = 8;
-    }
-    public Hub getSelectHub() {
-        return hubSelect;
-    }
-    
-    public int getRows() {
-        return rows;
-    }
-    public void setRows(int rows) {
-        this.rows = rows;
-    }
-    
-    @Override
-    public String getScript() {
-        String s = super.getScript();
-        if (rows > 0) {
-            s += "$('#"+id+"').attr('size', '"+getRows()+"');\n";
-            if (hubSelect != null) s += "$('#"+id+"').attr('multiple', 'multiple');\n";
-            else s += "$('#"+id+"').removeAttr('multiple');\n";
-        }
-        return s;
+    public OAHtmlSelect(String id, Hub hub, String propertyPath, int columns, int rows) {
+        super(id, hub, propertyPath, columns, rows);
     }
 }

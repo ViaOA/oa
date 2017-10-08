@@ -52,6 +52,8 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     private boolean bHadToolTip;
     protected String confirmMessage;
     protected OATemplate templateConfirmMessage;
+    protected String enablePropertyPath;
+    protected String visiblePropertyPath;
 
     
     public OAButton(String id, Hub hub) {
@@ -269,19 +271,62 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     }
     @Override
     public boolean getEnabled() {
-        return bEnabled && (hub == null || hub.getAO() != null);
+        if (!bEnabled) return false;
+        if (hub == null) return true;
+
+        if (!hub.isValid()) return false;
+        
+        if (OAString.isEmpty(enablePropertyPath)) return true;
+
+        OAObject obj = (OAObject) hub.getAO();
+        if (obj == null) return false;
+        
+        Object value = obj.getProperty(enablePropertyPath);
+        boolean b;
+        if (value instanceof Hub) {
+            b = ((Hub) value).size() > 0;
+        }
+        else b = OAConv.toBoolean(value);
+        return b;
+    }
+    public String getEnablePropertyPath() {
+        return enablePropertyPath;
+    }
+    public void setEnablePropertyPath(String enablePropertyPath) {
+        this.enablePropertyPath = enablePropertyPath;
     }
 
-
+    
     @Override
     public void setVisible(boolean b) {
         this.bVisible = b;
     }
     @Override
     public boolean getVisible() {
-        return this.bVisible;
-    }
+        if (!bVisible) return false;
+        if (hub == null) return true;
 
+        if (OAString.isEmpty(visiblePropertyPath)) return true;
+        
+        OAObject obj = (OAObject) hub.getAO();
+        if (obj == null) return false;
+        
+        Object value = obj.getProperty(visiblePropertyPath);
+        boolean b;
+        if (value instanceof Hub) {
+            b = ((Hub) value).size() > 0;
+        }
+        else b = OAConv.toBoolean(value);
+        return b;
+    }
+    public String getVisiblePropertyPath() {
+        return visiblePropertyPath;
+    }
+    public void setVisiblePropertyPath(String visiblePropertyPath) {
+        this.visiblePropertyPath = visiblePropertyPath;
+    }
+    
+    
     /**
      * see: https://github.com/msurguy/ladda-bootstrap
      * @param b

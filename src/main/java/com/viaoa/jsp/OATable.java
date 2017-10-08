@@ -57,6 +57,7 @@ public class OATable implements OAJspComponent {
     private int height;
     private int charWidth = 8; // single X char width in pixels - default is to use table.charWidth
     
+    protected String visiblePropertyPath;
 
     public OATable(String id, Hub hub) {
         this.id = id;
@@ -741,6 +742,10 @@ public class OATable implements OAJspComponent {
             sb.append("});");
         }
         
+        
+        if (getVisible()) sb.append("$('#" + id + "').show();\n");
+        else sb.append("$('#" + id + "').hide();\n");
+        
         String js = sb.toString();
         
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
@@ -782,7 +787,17 @@ public class OATable implements OAJspComponent {
     }
     @Override
     public boolean getVisible() {
-        return this.bVisible;
+        if (!bVisible) return false;
+        if (hub == null) return bVisible;
+
+        if (OAString.isEmpty(visiblePropertyPath)) return bVisible;
+
+        OAObject obj = (OAObject) hub.getAO();
+        if (obj == null) return false;
+
+        Object value = obj.getPropertyAsString(visiblePropertyPath);
+        boolean b = OAConv.toBoolean(value);
+        return b;
     }
 
     public void setScrollPosition(int left, int top) {
@@ -832,5 +847,13 @@ public class OATable implements OAJspComponent {
         
         String s = ("$('#id').html('"+strTable+"');");
         System.out.println("==>"+s);
+    }
+
+    public String getVisiblePropertyPath() {
+        return visiblePropertyPath;
+    }
+
+    public void setVisiblePropertyPath(String visiblePropertyPath) {
+        this.visiblePropertyPath = visiblePropertyPath;
     }
 }

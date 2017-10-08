@@ -14,6 +14,8 @@ import com.viaoa.OAUnitTest;
 
 public class OADateTimeTest extends OAUnitTest {
 
+//qqqqqqqqqqq create test for new OADateTime(OADate, OATime)    
+    
     @Test
     public void dateTimeTest() {
         String s = "04/28/2015 18:59:32";

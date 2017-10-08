@@ -1197,7 +1197,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public void setEnabled(boolean b) {
         this.bEnabled = b;
     }
-
     @Override
     public boolean getEnabled() {
         if (!bEnabled) return false;
@@ -1208,29 +1207,49 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
         if (OAString.isEmpty(enablePropertyPath)) return bEnabled;
 
-        Object value = obj.getPropertyAsString(enablePropertyPath);
-        boolean b = OAConv.toBoolean(value);
+        Object value = obj.getProperty(enablePropertyPath);
+        boolean b;
+        if (value instanceof Hub) {
+            b = ((Hub) value).size() > 0;
+        }
+        else b = OAConv.toBoolean(value);
         return b;
     }
+    public String getEnablePropertyPath() {
+        return enablePropertyPath;
+    }
+    public void setEnablePropertyPath(String enablePropertyPath) {
+        this.enablePropertyPath = enablePropertyPath;
+    }
 
+    
     @Override
     public void setVisible(boolean b) {
         this.bVisible = b;
     }
-
     @Override
     public boolean getVisible() {
         if (!bVisible) return false;
-        if (hub == null) return bVisible;
+        if (hub == null) return true;
 
         if (OAString.isEmpty(visiblePropertyPath)) return bVisible;
 
         OAObject obj = (OAObject) hub.getAO();
         if (obj == null) return false;
-
-        Object value = obj.getPropertyAsString(visiblePropertyPath);
-        boolean b = OAConv.toBoolean(value);
+        
+        Object value = obj.getProperty(visiblePropertyPath);
+        boolean b;
+        if (value instanceof Hub) {
+            b = ((Hub) value).size() > 0;
+        }
+        else b = OAConv.toBoolean(value);
         return b;
+    }
+    public String getVisiblePropertyPath() {
+        return visiblePropertyPath;
+    }
+    public void setVisiblePropertyPath(String visiblePropertyPath) {
+        this.visiblePropertyPath = visiblePropertyPath;
     }
 
     public void setValue(String value) {
@@ -1286,21 +1305,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         setDate(bDate);
     }
 
-    public String getVisiblePropertyPath() {
-        return visiblePropertyPath;
-    }
-
-    public void setVisiblePropertyPath(String visiblePropertyPath) {
-        this.visiblePropertyPath = visiblePropertyPath;
-    }
-
-    public String getEnablePropertyPath() {
-        return enablePropertyPath;
-    }
-
-    public void setEnablePropertyPath(String enablePropertyPath) {
-        this.enablePropertyPath = enablePropertyPath;
-    }
 
     private int dataSourceMax = -2;
 

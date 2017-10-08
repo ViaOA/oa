@@ -463,15 +463,19 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     @Override
     public boolean getVisible() {
         if (!bVisible) return false;
-        if (OAString.isEmpty(visiblePropertyPath)) return bVisible;
+        if (OAString.isEmpty(visiblePropertyPath)) return true;
 
-        if (hub == null) return false;
+        if (hub == null) return true;
         
         OAObject obj = (OAObject) hub.getAO();
         if (obj == null) return false;
         
-        Object value = obj.getPropertyAsString(visiblePropertyPath);
-        boolean b = OAConv.toBoolean(value);
+        Object value = obj.getProperty(visiblePropertyPath);
+        boolean b;
+        if (value instanceof Hub) {
+            b = ((Hub) value).size() > 0;
+        }
+        else b = OAConv.toBoolean(value);
         return b;
     }
 

@@ -22,8 +22,8 @@ import com.viaoa.util.*;
 import com.viaoa.util.filter.*;
 
 /**
+ * Combines multiple hubs into one.
 */
-
 public class HubCombined<T> {
     private static Logger LOG = Logger.getLogger(HubCombined.class.getName());
     private static final long serialVersionUID = 1L;

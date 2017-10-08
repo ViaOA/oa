@@ -316,9 +316,10 @@ public class OADateTime implements java.io.Serializable, Comparable {
         if (d == null) d = new OADate();
         this._time = d.getTime();
         this.timeZone = d.timeZone;
-
+        
         if (t != null) {
-            this._time += t._time;
+            setTime(t);
+            //was: this._time += t._time;  // wrong: does not account for tz
         }
     }
 

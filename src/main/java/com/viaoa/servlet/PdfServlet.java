@@ -12,6 +12,7 @@ package com.viaoa.servlet;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
@@ -30,7 +31,15 @@ import com.viaoa.util.OAString;
  * Get byte[] for PDF from an Object Property
  * 
  * 
- * get params: c|class, i|id, p|prop|property)
+ * get params: c|class, i|id, p|prop|property, [fn|filename]
+ *      ex: /servlet/pdf?c=com.viaoa.model.oa.Employee&i=23&p=bsImage&fn=certificate.pdf
+ * 
+ * get param if using result from addRequest:  r
+ *      ex: /servlet/pdf?r=2fdae43fw
+ *         after calling addRequest("c=com.viaoa.model.oa.Employee&i=23&p=bsImage&fn=certificate.pdf")
+ *              which returned: "2fdae43fw"
+ *
+ * Note:  use #addRequest(..) to create an encode link.
  * 
  * @author vincevia
  */
@@ -40,6 +49,33 @@ public class PdfServlet extends HttpServlet {
     private String defaultPropertyName;
     private Class defaultClass;
 
+    private static final ConcurrentHashMap<String, RequestInfo> hmRandomRequestString = new ConcurrentHashMap<>();
+    
+
+    private static class RequestInfo {
+        Class clazz;
+        String id, property, fname;
+    }
+    
+    /**
+     * Create and register an encoded request string using the real request string.  
+     * Note: this is only valid during the lifetime of the pdf servlet instance.
+     * 
+     * @param requestValue request string to encode
+     * @return http request to use for the link
+     */
+    public static String createRandomRequestValue(Class clazz, String id, String property, String fname) {
+        if (clazz == null) return null;
+        String rand = OAString.createRandomString(14, 28, true, true, false);
+        RequestInfo ri = new RequestInfo();
+        ri.clazz = clazz;
+        ri.id = id;
+        ri.property = property;
+        ri.fname = fname;
+        hmRandomRequestString.put(rand, ri);
+        return rand;
+    }
+    
     public PdfServlet(String packageName, Class defaultClass, String defaultPropertyName) {
         if (!OAString.isEmpty(packageName)) this.packageName = packageName + ".";
         else packageName = "";
@@ -64,7 +100,24 @@ public class PdfServlet extends HttpServlet {
         }
         if (OAString.isEmpty(propName)) propName = defaultPropertyName;
 
-        LOG.finer(String.format("class=%s, id=%s, property=%s", className, id, propName));
+        String fileName = req.getParameter("fn");
+        if (fileName == null) {
+            fileName = req.getParameter("filename");
+        }
+
+        String rand = req.getParameter("r");
+        if (rand != null) {
+            RequestInfo ri = hmRandomRequestString.remove(rand);
+            if (ri != null) {
+                className = ri.clazz.getName();
+                id = ri.id;
+                propName = ri.property;
+                fileName = ri.fname;
+            }
+        }
+        
+        
+        LOG.finer(String.format("class=%s, id=%s, property=%s, fileName=%s", className, id, propName, fileName));
 
         // String filename = sc.getRealPath("image.gif");
 
@@ -151,7 +204,9 @@ public class PdfServlet extends HttpServlet {
         // Set content type
         resp.setContentType("application/pdf"); 
         
-        resp.addHeader("Content-Disposition","attachment; filename="+className+"_"+id+".pdf");
+        
+        if (OAString.isEmpty(fileName)) fileName = className+"_"+id+".pdf";
+        resp.addHeader("Content-Disposition","attachment; filename="+fileName);
         
         // Set to expire far in the past.
         resp.setHeader("Expires", "Sat, 6 May 1995 12:00:00 GMT");

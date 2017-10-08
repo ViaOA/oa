@@ -802,6 +802,7 @@ public class OAForm extends OABase implements Serializable {
             if (ss != null && step1 > 0 && (step1-1) < ss.length) step = ss[step1-1];
         }
         
+        sb.append("if ($().modal) {\n");  // qqqqqqqq removed once jquery-ui is no longer used
         if (!b) {
             sb.append("$('#oaFormProcess').modal('hide');\n");
         }
@@ -833,6 +834,7 @@ public class OAForm extends OABase implements Serializable {
             sb.append("$('#oaFormProcess').modal('show'); }\n");
             if (!bFormProcessClosed) requestAjaxCallback();
         }
+        sb.append("}\n");  // qqqqqqqq removed once jquery-ui is no longer used
         return sb.toString();
     }    
     
