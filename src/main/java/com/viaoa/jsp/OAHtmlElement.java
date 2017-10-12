@@ -228,7 +228,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
 
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = JspUtil.convertInnerHtmlQuotes(confirm);
+            confirm = JspUtil.escapeJsQuotes(confirm);
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -368,14 +368,27 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     public String getHtml(OAObject obj) {
         String value = null;
         
-        if (obj != null) value = obj.getPropertyAsString(htmlPropertyPath, getFormat());
+        if (obj != null) {
+            value = obj.getPropertyAsString(htmlPropertyPath, getFormat());
+        }
         if (value == null) value = "";
  
         int addSp = (minLineWidth <= 0) ? 0 : (minLineWidth - value.length()); 
-        for (int i=0; i<addSp; i++) value += " ";
+        for (int i=0; i<addSp; i++) value += " ";  //qqqqqq might need to use &nbsp;
+
+        value = getEscapedHtml(obj, value);
         
         return value;
     }
+    
+    /**
+     * Converts the data to html encoded by calling JspUtil.toEscapeString
+     */
+    public String getEscapedHtml(OAObject obj, String value) {
+        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        return value;
+    }
+    
     
     @Override
     public String getEditorHtml(OAObject obj) {
@@ -696,6 +709,18 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         }
         String s = templateConfirmMessage.process(obj);
         return s;
+    }
+
+    private boolean bEnableEscapeHtml = true;
+    /**
+     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
+     * @param b
+     */
+    public void setEnableEscapeHtml(boolean b) {
+        this.bEnableEscapeHtml = b;
+    }
+    public boolean getEnableEscapeHtml() {
+        return bEnableEscapeHtml;
     }
     
 }

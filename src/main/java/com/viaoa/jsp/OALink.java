@@ -52,7 +52,7 @@ public class OALink extends OAHtmlElement {
         
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = JspUtil.convertInnerJavaScriptQuotes(confirm);
+            confirm = JspUtil.escapeJsQuotes(confirm);
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -74,12 +74,34 @@ public class OALink extends OAHtmlElement {
         return js;
     }
 
-    
     @Override
     public String getRenderHtml(OAObject obj) {
-        String s = "<a href='#' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+getRenderText(obj)+"</a>";
+        String txt = getRenderText(obj);
+        txt = getEscapedHtml(obj, txt);
+        if (txt == null) txt = "";
+        String s = "<a href='#' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+txt+"</a>";
         return s;
     }
+    
+    /**
+     * Converts the data to html encoded by calling JspUtil.toEscapeString
+     */
+    public String getEscapedHtml(OAObject obj, String value) {
+        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        return value;
+    }
+    private boolean bEnableEscapeHtml = true;
+    /**
+     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
+     * @param b
+     */
+    public void setEnableEscapeHtml(boolean b) {
+        this.bEnableEscapeHtml = b;
+    }
+    public boolean getEnableEscapeHtml() {
+        return bEnableEscapeHtml;
+    }
+    
     public String getRenderText(OAObject obj) {
         String s = "Text";
         return s;
@@ -91,18 +113,17 @@ public class OALink extends OAHtmlElement {
         return "";
     }
     public String getRenderOnClick(OAObject obj) {
+        // onClick will be inside of double quotes
         String js = "onClick='";
         
-        // onClick will be enclosed in single quotes, and it is surrounded by double quotes
-        //    need to escape
-        
         String s = getProcessedConfirmMessage(obj);
-        s = JspUtil.convertInnerJavaScriptQuotes(s);
         if (OAString.isNotEmpty(s)) {
-            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";
+            s = JspUtil.escapeJsQuotes(s,1);
+            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";   // also could use \x22
         }
 
-        js += "$(\\\"#oacommand\\\").val(\\\""+id+"\\\");'";
+        js += "$(\\\"#oacommand\\\").val(\\\""+id+"\\\");"; 
+        js += "\'";
         return js;
     }
     @Override

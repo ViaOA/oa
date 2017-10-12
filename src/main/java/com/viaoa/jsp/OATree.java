@@ -437,6 +437,7 @@ fork treeview.js and add changes so that unselected event can know if there is a
             
             value = getText(i, obj, value);
             value = Util.convert(value, "\'", "\\' ");
+            value = getEscapedHtml(obj, value);
 
             if (hashMap != null) {
                 options += "text: '"+value+"', oaid: 'g"+OAObjectDelegate.getGuid((OAObject)obj)+"'";
@@ -477,6 +478,26 @@ fork treeview.js and add changes so that unselected event can know if there is a
         }
         return options;
     }
+    
+    /**
+     * Converts the data to html encoded by calling JspUtil.toEscapeString
+     */
+    public String getEscapedHtml(Object obj, String value) {
+        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        return value;
+    }
+    private boolean bEnableEscapeHtml = true;
+    /**
+     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
+     * @param b
+     */
+    public void setEnableEscapeHtml(boolean b) {
+        this.bEnableEscapeHtml = b;
+    }
+    public boolean getEnableEscapeHtml() {
+        return bEnableEscapeHtml;
+    }
+    
     
     @Override
     public void setEnabled(boolean b) {

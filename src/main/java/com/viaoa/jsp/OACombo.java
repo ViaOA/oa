@@ -519,8 +519,7 @@ sb.append("}\n");
             if (value == null) value = "";
             
             value = getOption(i, obj, value);
-
-
+            value = getEscapedHtml(obj, value);
 
             if (columns > 0) {
                 //qqqqqqqq let css max-width, text-overflow: ellipsis;                
@@ -627,6 +626,25 @@ sb.append("}\n");
         nullDescription = s;
     }
 
+    /**
+     * Converts the data to html encoded by calling JspUtil.toEscapeString
+     */
+    public String getEscapedHtml(Object obj, String value) {
+        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        return value;
+    }
+    
+    private boolean bEnableEscapeHtml = true;
+    /**
+     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
+     * @param b
+     */
+    public void setEnableEscapeHtml(boolean b) {
+        this.bEnableEscapeHtml = b;
+    }
+    public boolean getEnableEscapeHtml() {
+        return bEnableEscapeHtml;
+    }
 
     @Override
     public void setEnabled(boolean b) {

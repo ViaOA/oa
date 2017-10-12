@@ -1,6 +1,7 @@
 package com.viaoa.jsp;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OAObject;
 
 public class OALabel extends OAHtmlElement {
 
@@ -18,6 +19,11 @@ public class OALabel extends OAHtmlElement {
     public void setMaxWidth(String val) {
         super.setMaxWidth(val);
         setOverflow("hidden");  // oahtmlelement will then add al.add("'text-overflow':'ellipsis'");
+    }
+
+    @Override
+    public String getEditorHtml(OAObject obj) {
+        return getRenderHtml(obj);  // no real editor
     }
     
 }

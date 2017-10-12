@@ -218,12 +218,16 @@ public class JspUtil {
     public static String toEscapeString(String value) {
         if (value == null) return "";
         value = convert(value, '&', "&amp;");
-        value = convert(value, '"', "&quot;");
+        value = convert(value, '"', "&#34;");  // &quot;
         value = convert(value, '\'', "&#39;"); // &apos;  not yet supported
         value = convert(value, '<', "&lt;");
         value = convert(value, '>', "&gt;");
         return value;
     }
+    public static String escapeHtml(String text) {
+        return toEscapeString(text);
+    }
+    
 
     public static String convert(String value, char c, String replace) {
         return convert(value, c+"", replace);
@@ -572,37 +576,32 @@ j:      12
        return s;
     }
    
-    
     /**
-     * This is used to convert html code that will be sent to the browser.
-     * wrapped inside " ... "
+     * This is used to convert escaped js code that will be embedded in html.
+     * All of the single/double quotes will need to converted to html escape codes.
+     * 
+     *  https://stackoverflow.com/questions/97578/how-do-i-escape-a-string-inside-javascript-code-inside-an-onclick-handler
+     *  
+     *  @param levelsDeep the level that the code is embedded as, where 0 is top level.  Currently only needs to support 0 or 1.
      */
-    public static String convertInnerHtmlQuotes(String text) {
+    public static String escapeJsQuotes(String text) {
+        return escapeJsQuotes(text, 0);
+    }
+    public static String escapeJsQuotes(String text, int levelsDeep) {
         if (text == null || text.length() == 0) return text;
-
-        // wrapped inside " ... "
-        text = OAString.convert(text, "\\\"", "xQxq");
-        text = OAString.convert(text, "\"", "\\\"");
-        text = OAString.convert(text, "xQxq", "\\\"");
-            
+        
+        String s = "\\";
+        if (levelsDeep > 0) {
+            // currently only supports one level
+            s = "\\x5C"; // embedded backslash that will be convert to \ when it's popped
+        }
+        
+        text = OAString.convert(text, "\"", s+"x22");
+        
+        
+        text = OAString.convert(text, "\'", s+"x27");
         return text;
     }
-    /**
-     * This is used to convert js code that will be sent to the browser.
-     * wrapped inside "' ... '"
-     */
-    public static String convertInnerJavaScriptQuotes(String text) {
-        if (text == null || text.length() == 0) return text;
-        text = OAString.convert(text, "\\\\\"", "xQxq");
-        text = OAString.convert(text, "\"", "\\\\\"");
-        text = OAString.convert(text, "xQxq", "\\\\\"");
 
-        text = OAString.convert(text, "\\\'", "xQxq");
-        text = OAString.convert(text, "\'", "\\\'");
-        text = OAString.convert(text, "xQxq", "\\\'");
-            
-        return text;
-    }
-    
 }
 

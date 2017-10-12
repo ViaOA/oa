@@ -167,15 +167,35 @@ public class OATableColumn implements java.io.Serializable {
             }
         }
          */        
+        s = getEscapedHtml(object, s);
         return s;
     }
 
+    /**
+     * Converts the data to html encoded by calling JspUtil.toEscapeString
+     */
+    public String getEscapedHtml(Object obj, String value) {
+        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        return value;
+    }
+    
     public void setEditor(OATableEditor editor) {
         this.editor = editor;
     }
     public OATableEditor getEditor() {
         return this.editor;
     }
-    
+    private boolean bEnableEscapeHtml = true;
+    /**
+     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
+     * @param b
+     */
+    public void setEnableEscapeHtml(boolean b) {
+        this.bEnableEscapeHtml = b;
+    }
+    public boolean getEnableEscapeHtml() {
+        return bEnableEscapeHtml;
+    }
+
 }
 

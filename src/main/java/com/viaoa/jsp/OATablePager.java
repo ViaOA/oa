@@ -141,4 +141,16 @@ public class OATablePager implements java.io.Serializable {
         return new String(sb);
     }
 
+    private boolean bShowEmptyRows = true;
+    
+    /**
+     * Flag to know if empty rows should be created, to keep the table a consistent height.
+     */
+    public boolean getShowEmptyRows() {
+        return bShowEmptyRows;
+    }
+    public void setShowEmptyRows(boolean b) {
+        this.bShowEmptyRows = b;
+    }
+
 }

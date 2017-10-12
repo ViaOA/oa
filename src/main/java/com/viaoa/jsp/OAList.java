@@ -604,18 +604,38 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         String value;
         if (obj instanceof OAObject) {
             value = ((OAObject) obj).getPropertyAsString(getPropertyPath(), getFormat());
-            
+
             String temp = getTemplateHtml(obj, pos);
             if (temp != null) {
                 value = temp;
             }
         }
         else value = obj.toString();
+        value = getEscapedHtml(obj, value);
         
         return value;
     }
 
+    /**
+     * Converts the data to html encoded by calling JspUtil.toEscapeString
+     */
+    public String getEscapedHtml(Object obj, String value) {
+        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        return value;
+    }
 
+    private boolean bEnableEscapeHtml = true;
+    /**
+     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
+     * @param b
+     */
+    public void setEnableEscapeHtml(boolean b) {
+        this.bEnableEscapeHtml = b;
+    }
+    public boolean getEnableEscapeHtml() {
+        return bEnableEscapeHtml;
+    }
+    
     public void setMaxHeight(String val) {
         this.maxHeight = val;
     }

@@ -346,12 +346,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                 sb.append(">");
                 
                 String s = getHtml(obj, pos, row, col);
-                
-                if (s != null) {
-                    // will be wrapped in "
-                    s = JspUtil.convertInnerHtmlQuotes(s);
-                }
-                else s = "";
+                if (s == null) s = "";
                 
                 sb.append(s+"</div>");
             }
@@ -369,14 +364,16 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         sb.append("</div>");  // outer oaGrid
 
         String strGrid = sb.toString();
-        //strGrid = Util.convert(strGrid, "\\", "\\\\");
-        //strGrid = Util.convert(strGrid, "'", "\\'");
+        
+        strGrid = OAString.convert(strGrid, "\\\"", "xQxq");
+        strGrid = OAString.convert(strGrid, "\"", "\\\"");
+        strGrid = OAString.convert(strGrid, "xQxq", "\\\"");
+        
         strGrid = Util.convert(strGrid, "\n", "\\n");
         strGrid = Util.convert(strGrid, "\r", "\\r");
         
         sb = new StringBuilder(strGrid.length() + 2048);
         sb.append("$('#"+id+"').html(\""+strGrid+"\");\n");
-        
 
         sb.append("$('#oa"+id+" div.oaGridCell').click(oagrid"+id+"CellClick);\n");
         
@@ -494,6 +491,8 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                 OAJspComponent comp = hmChildren.get(propertyName);
                 if (comp == null) {
                     s = super.getValue(obj, propertyName, width, fmt, props);
+                    s = getTemplateValue(obj, propertyName, width, fmt, props, s);
+                    s = getEscapedHtml(obj, propertyName, s);
                 }
                 else {
                     if (obj == getHub().getAO()) {
@@ -502,8 +501,9 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                     else {
                         s = comp.getRenderHtml(obj);
                     }
+                    s = getTemplateValue(obj, propertyName, width, fmt, props, s);
                 }
-                s = getTemplateValue(obj, propertyName, width, fmt, props, s);
+                
                 return s;
             }
         };
@@ -514,9 +514,30 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     public void setTemplate(OATemplate temp) {
         this.template = temp;
     }
+    /**
+     * Called by template.getValue and this.getTemplateValue, to perform any conversions on the return value.
+     * By default,converts the data to html encoded by calling JspUtil.toEscapeString
+     */
+    public String getEscapedHtml(Object obj, String propertyName, String value) {
+        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        return value;
+    }
+    
+    private boolean bEnableEscapeHtml = true;
+    /**
+     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
+     * @param b
+     */
+    public void setEnableEscapeHtml(boolean b) {
+        this.bEnableEscapeHtml = b;
+    }
+    public boolean getEnableEscapeHtml() {
+        return bEnableEscapeHtml;
+    }
+    
     
     /**
-     * Callback from {@link #getTemplate(Object, int, int, int)}
+     * Callback from {@link #getTemplate(Object, int, int, int)}, before calling getEscapedHtml
      */
     public String getTemplateValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, String defaultValue) {
         return defaultValue;
@@ -600,6 +621,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         String data = getHtmlPropertyPath(obj, pos, row, col);
         if (data != null) {
+            data = JspUtil.escapeHtml(data);
             result += "<span>"+data+"</span>";
         }
         

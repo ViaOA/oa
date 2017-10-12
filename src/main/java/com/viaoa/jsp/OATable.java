@@ -569,6 +569,7 @@ public class OATable implements OAJspComponent {
             Object obj = hub.getAt(topRow+row);
             
             if (obj == null) {
+                if (pager != null && !pager.getShowEmptyRows()) break;
                 if (width > 0 && height > 0 && row > 0) break;
                 sb.append("<tr class='oatableDisable'>");
                 sb.append("<td style='width: "+getPxWidth(3)+"px;'><div style='width: "+getPxWidth(3)+"px;'> </div></td>");
@@ -621,8 +622,8 @@ public class OATable implements OAJspComponent {
                 if (s == null) s = col.getHtml(hub, obj, topRow+row, false);
                 if (s == null) s = "&nbsp;";
 
-                if (bComponent) sb.append("<td style='position:relative; width:"+getPxWidth(col)+"px;'><div style='width:"+getPxWidth(col)+"px; overflow:hidden;'>"+s+"</div></td>");
-                else sb.append("<td style='width:"+getPxWidth(col)+"px;'><div style='width:"+getPxWidth(col)+"px; overflow:hidden; white-space: nowrap;'>"+s+"</div></td>");
+                if (bComponent) sb.append("<td style='position:relative; width:"+getPxWidth(col)+"px;'><div style='width:"+getPxWidth(col)+"px; overflow:hidden; text-overflow: ellipsis;'>"+s+"</div></td>");
+                else sb.append("<td style='width:"+getPxWidth(col)+"px;'><div style='width:"+getPxWidth(col)+"px; overflow:hidden; text-overflow: ellipsis; white-space: nowrap;'>"+s+"</div></td>");
             }
             sb.append("</tr>");
             

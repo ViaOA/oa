@@ -1456,6 +1456,12 @@ public class OAForm extends OABase implements Serializable {
         if (comp instanceof OAButton) return (OAButton) comp;
         return null;
     }
+    public OAFileInput getFileInput(String id) {
+        OAJspComponent comp = getComponent(id, OAButton.class);
+        if (comp instanceof OAFileInput) return (OAFileInput) comp;
+        return null;
+    }
+    
     public OAButtonList getButtonList(String id) {
         OAJspComponent comp = getComponent(id, OAButtonList.class);
         if (comp instanceof OAButtonList) return (OAButtonList) comp;

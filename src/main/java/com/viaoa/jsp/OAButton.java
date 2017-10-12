@@ -186,7 +186,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
 
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = JspUtil.convertInnerJavaScriptQuotes(confirm);
+            confirm = JspUtil.escapeJsQuotes(confirm);
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -396,7 +396,10 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     
     @Override
     public String getRenderHtml(OAObject obj) {
-        String s = "<button type='button' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+getRenderText(obj)+"</button>";
+        String txt = getRenderText(obj);
+        txt = JspUtil.escapeHtml(txt);
+        if (txt == null) txt = "";
+        String s = "<button type='button' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+txt+"</button>";
         return s;
     }
     public String getRenderText(OAObject obj) {
@@ -410,18 +413,22 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         return "";
     }
     public String getRenderOnClick(OAObject obj) {
+        // onClick will be inside of double quotes
         String js = "onClick='";
         
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
-            // will be wrapped in "
-            s = JspUtil.convertInnerJavaScriptQuotes(s);
-            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";
+            s = JspUtil.escapeJsQuotes(s,1);
+            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";   // also could use \x22
         }
 
-        js += "$(\\\"#oacommand\\\").val(\\\""+id+"\\\");'";
+        js += "$(\\\"#oacommand\\\").val(\\\""+id+"\\\");"; 
+        js += "\'";
         return js;
     }
+    
+    
+    
     @Override
     public String getEditorHtml(OAObject obj) {
         return getRenderHtml(obj);

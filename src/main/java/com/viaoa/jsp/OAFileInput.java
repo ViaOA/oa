@@ -80,14 +80,12 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
         String s = super.getAjaxScript();
         if (s != null) sb.append(s);
         
-        
         sb.append("$('#"+id+"').attr('name', '"+id+"');\n");
         
         String js = sb.toString();
-        
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
         
-        return s;
+        return js;
     }
 }
