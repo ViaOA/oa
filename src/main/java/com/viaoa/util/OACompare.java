@@ -228,6 +228,12 @@ public class OACompare {
         int x = compare(value, fromValue);
         return x <= 0;
     }
+
+    public static int compare(int a, int b) {
+        if (a == b) return 0;
+        if (a > b) return 1;
+        return -1;
+    }
     
     public static int compare(Object value, Object matchValue) {
         if (value == null) {

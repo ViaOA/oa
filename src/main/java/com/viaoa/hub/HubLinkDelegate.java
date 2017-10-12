@@ -240,7 +240,12 @@ public class HubLinkDelegate {
             if (thisHub.datau.isLinkPos()) {  // allow number returned to set pos of active object, set by setLinkOnPos()
                 if (obj instanceof Number) {
                     int x = ((Number)obj).intValue();
-                    if (x != pos) {
+                    // need to check to see if prop value is null
+                    boolean b = false;
+                    if (x == pos && linkToObject instanceof OAObject) {
+                        b = (pos != -1) && ((OAObject) linkToObject).isNull(thisHub.datau.getLinkToPropertyName());
+                    }
+                    if (x != pos || b) {
                         thisHub.datau.getLinkToSetMethod().invoke(linkToObject, new Object[] { new Integer(pos) } );
                         if (pos == -1 && linkToObject instanceof OAObject) { // 20131101 setting to null
                             ((OAObject)linkToObject).setNull(thisHub.datau.getLinkToPropertyName());
