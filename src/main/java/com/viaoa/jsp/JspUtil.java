@@ -211,11 +211,12 @@ public class JspUtil {
     }
  
     
-    public static String toString(String value) {
-        return toEscapeString(value);
+    public static String toExcapeString(String value) {
+        return htmlEscape(value);
     }
+
     /** converts null to "" and other html conversions for &lt;, &gt; &amp; &quot; &#39; */
-    public static String toEscapeString(String value) {
+    public static String htmlEscape(String value) {
         if (value == null) return "";
         value = convert(value, '&', "&amp;");
         value = convert(value, '"', "&#34;");  // &quot;
@@ -224,8 +225,21 @@ public class JspUtil {
         value = convert(value, '>', "&gt;");
         return value;
     }
-    public static String escapeHtml(String text) {
-        return toEscapeString(text);
+    
+    public static String smartEscapeHtml(String text) {
+        if (text == null || text.length() == 0) return text;
+
+        int cnt1 = 0;
+        int cnt2 = 0;
+        
+        int x = text.length();
+        for (int i=0; i<x; i++) {
+            char c = text.charAt(i);
+            if (c == '<') cnt1++;
+            else if (c == '>') cnt2++;
+        }
+        if (cnt1 > 0 && cnt1 == cnt2) return text;  /// assuming it's ok
+        return htmlEscape(text);
     }
     
 
@@ -376,11 +390,11 @@ j:      12
     public static String toString(OAObject obj, String prop, Object value) {
         if (value == null) return "";
         if (obj != null && prop != null && obj.isNull(prop)) return "";
-        return toEscapeString(OAConverter.toString(value));
+        return smartEscapeHtml(OAConverter.toString(value));
     }
     public static String toString(Object value) {
         if (value == null) return "";
-        return toEscapeString(OAConverter.toString(value));
+        return smartEscapeHtml(OAConverter.toString(value));
     }
     
 

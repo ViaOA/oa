@@ -397,7 +397,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String getRenderHtml(OAObject obj) {
         String txt = getRenderText(obj);
-        txt = JspUtil.escapeHtml(txt);
+        txt = JspUtil.smartEscapeHtml(txt);
         if (txt == null) txt = "";
         String s = "<button type='button' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+txt+"</button>";
         return s;

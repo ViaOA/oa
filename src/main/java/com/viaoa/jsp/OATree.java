@@ -483,7 +483,7 @@ fork treeview.js and add changes so that unselected event can know if there is a
      * Converts the data to html encoded by calling JspUtil.toEscapeString
      */
     public String getEscapedHtml(Object obj, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
         return value;
     }
     private boolean bEnableEscapeHtml = true;

@@ -516,10 +516,10 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
     /**
      * Called by template.getValue and this.getTemplateValue, to perform any conversions on the return value.
-     * By default,converts the data to html encoded by calling JspUtil.toEscapeString
+     * By default,converts the data to html encoded by calling JspUtil.smartEscapeHtml
      */
     public String getEscapedHtml(Object obj, String propertyName, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
         return value;
     }
     
@@ -621,7 +621,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         String data = getHtmlPropertyPath(obj, pos, row, col);
         if (data != null) {
-            data = JspUtil.escapeHtml(data);
+            data = JspUtil.smartEscapeHtml(data);
             result += "<span>"+data+"</span>";
         }
         

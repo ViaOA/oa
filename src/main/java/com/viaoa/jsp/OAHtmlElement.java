@@ -385,7 +385,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
      * Converts the data to html encoded by calling JspUtil.toEscapeString
      */
     public String getEscapedHtml(OAObject obj, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.escapeHtml(value);
+        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
         return value;
     }
     
