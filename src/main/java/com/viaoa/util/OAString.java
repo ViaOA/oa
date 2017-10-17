@@ -2697,7 +2697,7 @@ public class OAString {
     }
 
     /**
-     * prepare a string to be surrounded by double quotes, by converting the inner "'" chars to "\\'"
+     * prepare a string to be surrounded by double quotes, by converting the inner "\"" chars to "\\\""
      */
     public static String convertForDoubleQuotes(String text) {
         if (text == null) return null;

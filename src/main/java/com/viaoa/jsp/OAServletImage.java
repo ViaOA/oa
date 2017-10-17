@@ -85,17 +85,27 @@ public class OAServletImage extends OAHtmlElement {
 
         OAObject obj = (OAObject) hub.getAO();
         Object value = obj.getProperty(propertyPath);
-        String className = null;
+        String className;
+
         if (value instanceof OAObject) {
             className = value.getClass().getName();
             value = ((OAObject) value).getProperty("id");
         }
+        else {
+            className = obj.getClass().getName();
+        }
         if (value == null) return null;
+        
+        int len = 0;
+        if (value instanceof byte[]) {
+            len = ((byte[]) value).length;
+        }
                 
         src = String.format("/servlet/img?c=%s&id=%s&p=%s", className, value+"", getBytePropertyName());
         if (maxHeightServlet > 0) src = String.format("%s&mh=%d", src, maxHeightServlet);
         if (maxWidthServlet > 0) src = String.format("%s&mw=%d", src, maxWidthServlet);
 
+        if (len > 0) src = String.format("%s&len=%d", src, len); // 20171014 make it unique so that imageServlet can create an ETAG for the browser to cache
         return src;
     }
 

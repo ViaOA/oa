@@ -122,9 +122,11 @@ import java.awt.image.PixelGrabber;
 import java.awt.image.RGBImageFilter;
 import java.awt.image.RenderedImage;
 import java.awt.image.RescaleOp;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -159,6 +161,10 @@ import com.viaoa.jfc.image.jpg.CMYKJPEGImageReader;
  */
 public class OAImageUtil {
 
+    
+    /**
+     * Use a byte array to create an image.  This uses ImageIO, which will determine the type of image format (png,gif,jpg).
+     */
     public static BufferedImage convertToBufferedImage(byte[] bs) throws IOException {
         if (bs == null) return null;
         BufferedImage bi;
@@ -294,7 +300,21 @@ public class OAImageUtil {
      * calls convertToJavaJPG(bi).
      */
     public static byte[] convertToBytes(BufferedImage bi) throws IOException {
-        byte[] bs = convertToJavaJPG(bi);
+        if (bi == null) return null;
+
+        boolean bAlpha = hasAlpha(bi);
+        
+/** 20171016 need alpha for transparency, otherwise jpg will show as black        
+        // 20171013 remove alphaChannel (and all of the jpeg headaches)
+        if (bAlpha) {
+            bi = removeAlphaChannel(bi);
+            bAlpha = false;
+        }
+*/        
+        byte[] bs;
+        if (!bAlpha) bs = convertToJavaJPG(bi);
+        else bs = convertToPNG(bi);
+        
         return bs;
     }
     /**
@@ -304,6 +324,7 @@ public class OAImageUtil {
      * IMPORTANT: If there is transparency (alpha channel), then it will work only for Java
      * programs that use the image.  
      * To use for outside of Java: if hasAlpha() is true, then convert to PNG, instead of jpg
+     * 
      */
     public static byte[] convertToJavaJPG(BufferedImage bi) throws IOException {
         if (bi == null) return null;
@@ -340,7 +361,6 @@ public class OAImageUtil {
     
     public static byte[] convertToJPG(Image img) throws IOException {
         BufferedImage bi = createBufferedImage(img);
-        byte[] bs = convertToBytes(bi);
         return convertToJPG(bi);
     }
     
@@ -444,7 +464,7 @@ public class OAImageUtil {
 
         BufferedImage bi = convertToBufferedImage(image);
 
-        double scaleIncrement = .60;
+        double scaleIncrement = .60;  // see: blog.nobel-joergensen.com/2008/12/20/downscaling-images-in-java/
         do {
             if (w > newWidth) {
                 w = (int) (w * scaleIncrement);
@@ -903,10 +923,12 @@ public class OAImageUtil {
         }
         return null;
     }
-    protected static BufferedImage loadImage(InputStream is) throws Exception {
+    public static BufferedImage loadImage(InputStream is) throws Exception {
+
         BufferedImage bi = null;
         try {
-            bi = ImageIO.read(is);
+            ImageInputStream input = ImageIO.createImageInputStream(is);
+            bi = ImageIO.read(input);
         }
         catch (IOException e) {
         }
@@ -1081,6 +1103,32 @@ public class OAImageUtil {
 
     
     public static void main(String[] args) throws Exception {
+        File file = new File("\\c:\\temp\\1.0.png");
+        
+        BufferedInputStream bs = new BufferedInputStream(new FileInputStream(file)); 
+        
+        boolean b = file.exists();
+        InputStream is = new FileInputStream(file);
+
+        ImageInputStream input = ImageIO.createImageInputStream(is);
+        
+        BufferedImage bi = ImageIO.read(input);
+        
+        //input = ImageIO.createImageInputStream(file);
+
+        Iterator<ImageReader> itx = ImageIO.getImageReaders(input);
+        
+        // Iterator<ImageReader> itx = ImageIO.getImageReadersByFormatName("png");
+        for ( ;itx.hasNext(); ) {
+            ImageReader ir = itx.next();
+            // bi = ir.read();
+            int xx = 4;
+            xx++;
+        }
+        System.out.println("Done");
+    }
+    
+    public static void mainA(String[] args) throws Exception {
         BufferedImage bi = loadImage("C:\\projects\\java\\OABuilder_git\\src\\com\\viaoa\\builder\\view\\image\\MoveMode.gif");
         
         if (bi != null) {
@@ -1140,7 +1188,11 @@ public class OAImageUtil {
         System.out.println("Done");
     }
 
-    
+    public static BufferedImage removeAlphaChannel(BufferedImage src) {
+        BufferedImage convertedImg = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
+        convertedImg.getGraphics().drawImage(src, 0, 0, null);
+        return convertedImg;
+   }    
     
     
 }

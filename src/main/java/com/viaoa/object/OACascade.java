@@ -24,10 +24,9 @@ import com.viaoa.hub.Hub;
  * Used for cascading methods, to be able to know if an object
  * has already been visited.
  * 
- * Since this is a recursive visitor, it could cause stack overflows.  To handle this, there is
+ * Since this is used for recursive visitors, it could cause stack overflows.  To handle this, there is
  * a depth that can be used.  When/if the max depth is reached, then objects can be added to an array
  * and then restarted once the stack unwinding is done.
- * 
  * 
  * @author vvia
  */

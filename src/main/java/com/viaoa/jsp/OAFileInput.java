@@ -40,6 +40,7 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
     private String name;
     protected String placeholder;
     private ArrayList<String> alAcceptFileExt;
+    private boolean bIsImage;
 
     // if using images, this will make sure that the final version is sized
     private int maxImageWidth, maxImageHeight;
@@ -78,13 +79,15 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
     }
     
 
-    protected void onImageUploaded() {
-        // used to create the object to hold image
+    protected void beforeImageUploaded(final int length, final String originalFileName) {
+    }
+    protected void afterImageUploaded(final int origLength, final String originalFileName, final int newLength) {
     }
     
+    // called by OAForm when there is a file to upload 
     @Override
     public OutputStream getOutputStream(final int length, final String originalFileName) {
-        onImageUploaded();
+        beforeImageUploaded(length, originalFileName);
         
         int x = getMaxFileSize();
         if (maxFileSize >= 0 && length > maxFileSize) {
@@ -106,16 +109,26 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
         }
 
         OutputStream os = null;
-        if (maxImageWidth > 0 || maxImageHeight > 0) {
-            // need to resize/scale image
+        if (getSaveAsImage()) {
+            // need convert and resize/scale image
             os = new ByteArrayOutputStream(length) {
                 @Override
                 public void close() throws IOException {
                     super.close();
                     byte[] bs = this.toByteArray();
 
-                    BufferedImage bi = OAImageUtil.convertToBufferedImage(bs);
-                    bi = OAImageUtil.scaleDownToSize(bi, maxImageWidth, maxImageHeight);
+                    BufferedImage bi;
+                    try {
+                        bi = OAImageUtil.loadImage(new ByteArrayInputStream(bs));
+                    }
+                    catch (Exception e) {
+                        throw new IOException("OAImageUtil.loadImage failed with exception", e);
+                    }
+                    
+                    // BufferedImage bi = OAImageUtil.convertToBufferedImage(bs);
+                    if (maxImageWidth > 0 || maxImageHeight > 0) {
+                        bi = OAImageUtil.scaleDownToSize(bi, maxImageWidth, maxImageHeight);
+                    }
                     bs = OAImageUtil.convertToBytes(bi);
                     
                     OutputStream os = _getOutputStream(bs.length, originalFileName);
@@ -140,6 +153,7 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
                         super.close();
                         byte[] bs = this.toByteArray();
                         objAO.setProperty(getPropertyPath(), bs);
+                        afterImageUploaded(length, originalFileName, bs.length);
                     }
                 };
                 return baos;
@@ -153,6 +167,7 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
                     @Override
                     public void close() throws IOException {
                         super.close();
+                        afterImageUploaded(length, originalFileName, length);
                     }
                 };
             }
@@ -163,12 +178,19 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
         else if (fname != null) {
             try {
                 File fx = new File(fname);
-                os = new FileOutputStream(fx);
+                os = new FileOutputStream(fx) {
+                    @Override
+                    public void close() throws IOException {
+                        super.close();
+                        afterImageUploaded(length, originalFileName, length);
+                    }
+                };
             }
             catch (Exception e) {
                 LOG.log(Level.WARNING, "error while creating file, file="+fname, e);
             }
         }
+        if (os == null) afterImageUploaded(length, originalFileName, length);
         return os;
     }
 
@@ -308,11 +330,17 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
     }
 
     /**
-     * Set max size of images that are saved.
-     * This will use OAImage to resize/scale before storing the file.
+     * OABuilder Apps that store images in blob/bs[] property expect images to be stored as Jpeg.  
      */
-    public void setMaxImageSize(int width, int height) {
-        maxImageWidth  = width;
-        maxImageHeight = height;
+    public void setSaveAsImage(int maxWidth, int maxHeight) {
+        maxImageWidth  = maxWidth;
+        maxImageHeight = maxHeight;
+        this.bIsImage = true;
+    }
+    public void setSaveAsImage() {
+        setSaveAsImage(0,0);
+    }
+    public boolean getSaveAsImage() {
+        return bIsImage;
     }
 }

@@ -8,6 +8,7 @@ package com.viaoa.jsp;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -1410,9 +1411,21 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
      * @return list of values to send back to browser.
      */
     public String getTypeAheadJson(String searchText) {
+        String json = null;
+        try {
+            json = _getTypeAheadJson(searchText);
+        }
+        catch (Exception e) {
+            LOG.log(Level.WARNING, "Error getting json for typeahead search, searchText="+searchText, e);
+            json = "{\"id\":0,\"display\":\""+ OAString.convertForDoubleQuotes(e.getMessage())+"\"}";
+        }
+        return json;
+    }
+    protected String _getTypeAheadJson(String searchText) {
         if (typeAhead == null) return null;
 
         ArrayList al = typeAhead.search(searchText);
+        if (al == null) return null;
         
         String json = "";
         // ex:  String s = "{\"id\":1,\"display\":\"m-1-1\"},{\"id\":2,\"display\":\"m-2-1\"}";
@@ -1429,11 +1442,17 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
             String displayValue = typeAhead.getDisplayValue(obj);
             if (displayValue == null) displayValue = "";
-            displayValue.replace('\"', ' ');
+            else {
+                displayValue = OAString.convertForDoubleQuotes(displayValue);
+                //was: displayValue.replace('\"', ' ');
+            }
 
             String dd = typeAhead.getDropDownDisplayValue(obj);
             if (dd == null) dd = "";
-            dd.replace('\"', ' ');
+            else {
+                dd = OAString.convertForDoubleQuotes(dd);
+                //was: dd.replace('\"', ' ');
+            }
             
             boolean bUseId = (bPropertyPathIsManyLink || bPropertyPathIsOneLink);
             if (!bUseId) {

@@ -14,6 +14,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.util.OAFilter;
 
 /**
@@ -465,12 +467,17 @@ public class HubShareDelegate {
 	        removeSharedHub(h, thisHub);
 	        if (h.dataa == thisHub.dataa) thisHub.dataa = new HubDataActive();
 	    }
-	
+	    else {
+	        // 20171015 need to remove objects from it
+            for (Object obj : thisHub) {
+                OAObjectHubDelegate.removeHub((OAObject)obj, thisHub, false);
+            }
+	    }
+	    
 	    Object activeObject = null;
 	    boolean shareActiveObject2 = true;
 	
 	    if (sharedMasterHub == null) {
-//vvvvvvvvvvvvvv dont replace if detailHub	        
 	    	thisHub.data = new HubData(thisHub.data.objClass);
 	    	thisHub.datam = new HubDataMaster();
 	    }

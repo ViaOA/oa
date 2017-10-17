@@ -1,5 +1,7 @@
 
 
+parallax affect
+    www.w3schools.com/howto/howto_css_parallax.asp
 
 .form-group.focused .control-label {
     opacity: 1;

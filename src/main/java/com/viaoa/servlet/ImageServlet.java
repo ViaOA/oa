@@ -48,18 +48,23 @@ import com.viaoa.util.OAString;
  */
 public class ImageServlet extends HttpServlet {
     private static Logger LOG = Logger.getLogger(JsonServlet.class.getName());
-    private String packageName;
-    private String defaultPropertyName;
+    private final String packageName;
+    private final String defaultPropertyName;
     private Class defaultClass;
 
     public ImageServlet(String packageName, Class defaultClass, String defaultPropertyName) {
         if (!OAString.isEmpty(packageName)) this.packageName = packageName + ".";
-        else packageName = "";
+        else this.packageName = "";
         this.defaultClass = defaultClass;
         this.defaultPropertyName = defaultPropertyName;
     }
 
-    private ConcurrentHashMap<String, Integer> hm = new ConcurrentHashMap<String, Integer>();
+    // keep track of the size of image, so that it wont have to resend to browser
+    private ConcurrentHashMap<String, Integer> hmLastSize = new ConcurrentHashMap<String, Integer>();
+    
+    // keep track of images that have been checked if they include alpha. 
+    private ConcurrentHashMap<String, Boolean> hmImageAlphaFlag = new ConcurrentHashMap<String, Boolean>();
+
     
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         // Get the absolute path of the image
@@ -82,9 +87,11 @@ public class ImageServlet extends HttpServlet {
         if (maxW == null) maxW = req.getParameter("maxw");
         String maxH = req.getParameter("mh");
         if (maxH == null) maxH = req.getParameter("maxh");
+
+        final String sizeOfImageInRequest = req.getParameter("len");  // sent by oaservletImage so that this can work with browser cache
         
         LOG.finer(String.format("class=%s, id=%s, property=%s, maxw=%s, maxh=%s", className, id, propName, maxW, maxH));
-        String etag = String.format("%s.%s.%s.%s", className, id, maxW, maxH);
+        final String etag = String.format("%s.%s.%s.%s.%s.%s", className, id, propName, maxW, maxH, sizeOfImageInRequest);
 
         /*
         Enumeration enumx = req.getHeaderNames();
@@ -181,23 +188,32 @@ public class ImageServlet extends HttpServlet {
         }
 
         // see if browser has image cached, and that it has not been changed
-        Object objx = hm.get(etag);
+        boolean bImageHasChanged = true;
+        Object objx = hmLastSize.get(etag);
         if (objx instanceof Integer) {
             int len = ((Integer) objx).intValue();
             if (len == bs.length) {
-                String sx = req.getHeader("If-None-Match");
-                if (sx != null && etag.equals(sx)) {
+                bImageHasChanged = false;
+                String etagRequest = req.getHeader("If-None-Match");
+                if (etagRequest != null) etagRequest = OAString.convert(etagRequest, "\"", "");
+                 
+                if (etagRequest != null && etag.equals(etagRequest)) {
                     long ts = req.getDateHeader("If-Modified-Since");
-                    OADateTime dt = new OADateTime(ts);
-                    if (dt.addHours(24).after(new OADateTime())) {
-                        resp.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-                        return;
+                    if (ts > 0) {
+                        OADateTime dt = new OADateTime(ts);
+                        if (dt.addHours(24).after(new OADateTime())) {
+                            resp.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+                            resp.setHeader("Last-Modified", req.getHeader("If-Modified-Since"));
+                            return;  // browser will use the image in it's cache
+                        }
                     }
                 }
             }
+            else {
+                hmImageAlphaFlag.remove(etag);
+            }
         }
-        hm.put(etag, bs.length);
-        
+        hmLastSize.put(etag, bs.length);
         
         int maxw = maxW == null ? 0 : OAConv.toInt(maxW);
         int maxh = maxH == null ? 0 : OAConv.toInt(maxH);
@@ -205,52 +221,51 @@ public class ImageServlet extends HttpServlet {
         if (maxw > 0 || maxh > 0) {
             BufferedImage bi = OAImageUtil.convertToBufferedImage(bs);
             bi = OAImageUtil.scaleDownToSize(bi, maxw, maxh);
-            bs = OAImageUtil.convertToBytes(bi);
+            bs = OAImageUtil.convertToBytes(bi);  // also removes alpha
         }
         
-
         // Open the file and output streams
         OutputStream out = resp.getOutputStream();
 
-        // 20120505
-        String imageType = "jpeg";
-
-        String idx = String.format("%s-%s-%s", className, id, propName);
-        boolean bCheck = (hmImageAlphaFlag.get(idx) == null);
-        if (bCheck) {
+        if (bImageHasChanged || (hmImageAlphaFlag.get(etag) == null)) {
             BufferedImage bi = OAImageUtil.convertToBufferedImage(bs);
             if (OAImageUtil.hasAlpha(bi)) {
-                imageType = "png";
-                bs = OAImageUtil.convertToPNG(bs);
+                hmImageAlphaFlag.put(etag, Boolean.TRUE);
             }
             else {
-                imageType = "jpeg";
-                hmImageAlphaFlag.put(idx, Boolean.TRUE);
+                hmImageAlphaFlag.put(etag, Boolean.FALSE);
             }
         }
+
+        String imageType;
+        if (hmImageAlphaFlag.get(etag)) {
+            imageType = "png";
+            bs = OAImageUtil.convertToPNG(bs);  // this is for cases where image bs[] is jpg+alpha
+        }
+        else {
+            imageType = "jpeg";
+        }
+        
+        
         resp.setContentLength(bs.length);
         
-        // String mimeType = sc.getMimeType("test."+imageType);
+        resp.setHeader("ETag", "\""+etag+"\""); 
         
         // Set content type
         resp.setContentType("image/"+imageType); 
         
-        
         resp.setDateHeader("Date", System.currentTimeMillis());
         resp.setDateHeader("Last-Modified", System.currentTimeMillis());
-        resp.setDateHeader("Expires", System.currentTimeMillis() + msOneDay);
-        resp.setHeader("Cache-Control", "max-age=3600, must-revalidate");        
-        resp.setHeader("Cache-Control", "private");        
-        resp.setHeader("ETag", etag);
         
-        // Copy the contents of the file to the output stream
+        int maxAgeSeconds;
+        if (OAString.isNotEmpty(sizeOfImageInRequest)) maxAgeSeconds = 60 * 60 * 24;  // 24hrs.  The request will include the size, making it a new value if the img is changed.
+        else maxAgeSeconds = 0;  // this will have the browser req everytime.  But it will send the etag, and the browser can send back 304 is img size has not changed.
+        resp.setHeader("Cache-Control", "private, max-age="+maxAgeSeconds+", must-revalidate");
+        
         out.write(bs);
-
         out.close();
         resp.setStatus(HttpServletResponse.SC_OK);
     }
-    // images that do not need to be converted to PNG
-    private ConcurrentHashMap<String, Boolean> hmImageAlphaFlag = new ConcurrentHashMap<String, Boolean>();
 
     
     private final long msLastModified = (new Date()).getTime();
