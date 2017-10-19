@@ -17,7 +17,6 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
@@ -228,7 +227,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
 
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = JspUtil.escapeJsQuotes(confirm);
+            confirm = OAJspUtil.createJsString(confirm, '\"', false, false);
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -278,11 +277,11 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         String prefix = null;
         String tt = getProcessedToolTip();
         if (OAString.isNotEmpty(tt)) {
-            tt = OAString.convertForSingleQuotes(tt);
             if (!bHadToolTip) {
                 bHadToolTip = true;
                 prefix = "$('#"+id+"').tooltip();\n";
             }
+            tt = OAJspUtil.createJsString(tt, '\'', false, false);
             
             sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
             sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
@@ -294,35 +293,20 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
             }
         }
         
-        
         String html = getHtml();
         if (html != null) {
             if (isPlainText()) {  // some html properties dont have < or > in them
-            //was: if (html.indexOf("<") < 0 && html.indexOf(">") < 0) {
                 if (maxRows == 1) {
                     if (lineWidth > 0) html = OAString.lineBreak(html, lineWidth, " ", 1);
-                    html = Util.convert(html, "\r\n", " ");
-                    html = Util.convert(html, "\n", " ");
-                    html = Util.convert(html, "\r", " ");
                 }
                 else {
                     if (maxRows > 1) {
                         html = OAString.lineBreak(html, lineWidth, "\n", maxRows);
                     }
                 }
-                html = Util.convert(html, "\r\n", "<BR>");
-                html = Util.convert(html, "\n", "<BR>");
-                html = Util.convert(html, "\r", "<BR>");
-                html = Util.convert(html, "  ", "&nbsp;&nbsp;");
             }
-            else {
-                // all html needs to be on one line, since it is output in javascript code
-                html = Util.convert(html, "\r\n", " ");
-                html = Util.convert(html, "\n", " ");
-                html = Util.convert(html, "\r", " ");
-            }
-            
-            sb.append("$('#"+id+"').html('"+OAString.convertForSingleQuotes(html)+"');\n");
+            html = OAJspUtil.createJsString(html, '\'', false, true);            
+            sb.append("$('#"+id+"').html('"+html+"');\n");
         }
         
         if (alAttribute != null) {
@@ -374,21 +358,10 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         if (value == null) value = "";
  
         int addSp = (minLineWidth <= 0) ? 0 : (minLineWidth - value.length()); 
-        for (int i=0; i<addSp; i++) value += " ";  //qqqqqq might need to use &nbsp;
+        for (int i=0; i<addSp; i++) value += " ";  //? might need to use &nbsp;
 
-        value = getEscapedHtml(obj, value);
-        
         return value;
     }
-    
-    /**
-     * Converts the data to html encoded by calling JspUtil.toEscapeString
-     */
-    public String getEscapedHtml(OAObject obj, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
-        return value;
-    }
-    
     
     @Override
     public String getEditorHtml(OAObject obj) {
@@ -710,17 +683,4 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         String s = templateConfirmMessage.process(obj);
         return s;
     }
-
-    private boolean bEnableEscapeHtml = true;
-    /**
-     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
-     * @param b
-     */
-    public void setEnableEscapeHtml(boolean b) {
-        this.bEnableEscapeHtml = b;
-    }
-    public boolean getEnableEscapeHtml() {
-        return bEnableEscapeHtml;
-    }
-    
 }

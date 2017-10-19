@@ -12,7 +12,7 @@ package com.viaoa.jsp;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAString;
+import com.viaoa.util.*;
 
 /**
  * Component for managing html links.
@@ -52,7 +52,7 @@ public class OALink extends OAHtmlElement {
         
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = JspUtil.escapeJsQuotes(confirm);
+            confirm = OAJspUtil.createJsString(confirm, '\"', false, false);
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -77,30 +77,11 @@ public class OALink extends OAHtmlElement {
     @Override
     public String getRenderHtml(OAObject obj) {
         String txt = getRenderText(obj);
-        txt = getEscapedHtml(obj, txt);
         if (txt == null) txt = "";
         String s = "<a href='#' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+txt+"</a>";
         return s;
     }
     
-    /**
-     * Converts the data to html encoded by calling JspUtil.toEscapeString
-     */
-    public String getEscapedHtml(OAObject obj, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
-        return value;
-    }
-    private boolean bEnableEscapeHtml = true;
-    /**
-     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
-     * @param b
-     */
-    public void setEnableEscapeHtml(boolean b) {
-        this.bEnableEscapeHtml = b;
-    }
-    public boolean getEnableEscapeHtml() {
-        return bEnableEscapeHtml;
-    }
     
     public String getRenderText(OAObject obj) {
         String s = "Text";
@@ -114,16 +95,15 @@ public class OALink extends OAHtmlElement {
     }
     public String getRenderOnClick(OAObject obj) {
         // onClick will be inside of double quotes
-        String js = "onClick='";
-        
+        String js = "";
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
-            s = JspUtil.escapeJsQuotes(s,1);
-            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";   // also could use \x22
+            s = OAJspUtil.createJsString(s, '\"', true, false);
+            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";  
         }
-
         js += "$(\\\"#oacommand\\\").val(\\\""+id+"\\\");"; 
-        js += "\'";
+        js = "onClick='" + js + "'";
+        
         return js;
     }
     @Override

@@ -17,14 +17,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAProperties;
-import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAString;
-
+import com.viaoa.util.*;
 
 /**
  * Used with an HTML <UL/OL> or <OL/OL> to replace the <LI> with hub objects.
@@ -471,6 +466,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             if (obj == hub.getAO()) sb.append(" class='oaSelected'");
             sb.append(" oarow='"+(pos)+"'>");
             String s = getHtml(obj, pos);
+            OAJspUtil.createHtml(s);
             if (s != null) sb.append(s);
             sb.append("</li>");
         }
@@ -487,8 +483,8 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         }        
         
         String strListing = sb.toString();
-        strListing = Util.convert(strListing, "\\", "\\\\");
-        strListing = Util.convert(strListing, "'", "\\'");
+        //strListing = Util.convert(strListing, "\\", "\\\\");
+        //strListing = Util.convert(strListing, "'", "\\'");
         
         
         sb = new StringBuilder(strListing.length() + 2048);
@@ -497,7 +493,8 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         if (OAString.isNotEmpty(ppHeading) || (hmHeading != null && hmHeading.size() > 0)) {
             sb.append("$('#"+id+"').addClass('oaIndent');\n");
         }
-        
+
+        strListing = OAJspUtil.createJsString(strListing, '\'', false, true);
         sb.append("$('#"+id+"').html('"+strListing+"');\n");
         
         sb.append("$('#"+id+" li').addClass('oaTextNoWrap');\n");
@@ -611,30 +608,10 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             }
         }
         else value = obj.toString();
-        value = getEscapedHtml(obj, value);
         
         return value;
     }
 
-    /**
-     * Converts the data to html encoded by calling JspUtil.toEscapeString
-     */
-    public String getEscapedHtml(Object obj, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
-        return value;
-    }
-
-    private boolean bEnableEscapeHtml = true;
-    /**
-     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
-     * @param b
-     */
-    public void setEnableEscapeHtml(boolean b) {
-        this.bEnableEscapeHtml = b;
-    }
-    public boolean getEnableEscapeHtml() {
-        return bEnableEscapeHtml;
-    }
     
     public void setMaxHeight(String val) {
         this.maxHeight = val;
@@ -760,6 +737,10 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
                 }
                 s = getTemplateValue(obj, propertyName, width, fmt, props, s);
                 return s;
+            }
+            @Override
+            protected String getOutputText(String s) {
+                return OAJspUtil.createJsString(s, '\"', false, true);
             }
         };
         template.setTemplate(getHtmlTemplate());

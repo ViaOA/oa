@@ -14,7 +14,6 @@ package com.viaoa.jsp;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OATypeAhead;
@@ -123,22 +122,15 @@ public class OAStyledTextArea extends OATextField {
             OAObject obj = (OAObject) hub.getAO();
             if (obj != null) {
                 val = obj.getPropertyAsString(propertyPath);
-                val = convertValue(val);
             }
         }        
         else val = getValue();
         if (val == null) val = "";
+
+        val = OAJspUtil.createJsString(val, '\'', false, true);
         
         js += "$('#"+getId()+"').summernote('code', '"+val+"');\n";
         return js;
-    }
-
-    protected String convertValue(String value) {
-        value = Util.convert(value, "\r\n", "\\n");
-        value = Util.convert(value, "\n", "\\n");
-        value = Util.convert(value, "\r", "\\n");
-        value = Util.convert(value, "'", "\\'");
-        return value;
     }
 
     public int getColumns() {

@@ -15,7 +15,6 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.viaoa.html.Util;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
@@ -274,7 +273,7 @@ public class OATree implements OAJspComponent, OATableEditor, OAJspRequirementsI
         }
         sb.append("}\n");  //end of onNodeSelected
 
-/* qqqqqqqqqqqqqqqqq causing issues when another is select5ed qqqqqqqqqqqqq
+/* qqqqqqqqqqqqqqqqq causing issues when another is selected qqqqqqqqqqqqq
 fork treeview.js and add changes so that unselected event can know if there is a new new selected node or not         
         sb.append(",onNodeUnselected : function(event, node) {\n");
        
@@ -290,7 +289,7 @@ fork treeview.js and add changes so that unselected event can know if there is a
 */        
         
         
-        
+        /* 20171019 removed, event not needed since nothing is selected and the nodes are already loaded on the browser
         sb.append(",\nonNodeExpanded : function(event, node) {\n");
         sb.append("$('#oacommand').val('"+id+"');\n");
         sb.append("$('#oatree"+id+"').val('expand.'+node.oaid);\n");
@@ -302,7 +301,7 @@ fork treeview.js and add changes so that unselected event can know if there is a
         sb.append("$('#oatree"+id+"').val('collapse.'+node.oaid);\n");
         sb.append("ajaxSubmit2();return false;\n");
         sb.append("}\n");
- 
+       */
         
         sb.append("});\n");  // end of treeview
         
@@ -436,13 +435,15 @@ fork treeview.js and add changes so that unselected event can know if there is a
             if (value == null) value = "";
             
             value = getText(i, obj, value);
-            value = Util.convert(value, "\'", "\\' ");
-            value = getEscapedHtml(obj, value);
+            value = OAJspUtil.createJsString(value, '\"');
+            value = OAString.convert(value, "\'", "\\\'");
 
             if (hashMap != null) {
                 options += "text: '"+value+"', oaid: 'g"+OAObjectDelegate.getGuid((OAObject)obj)+"'";
                 String s = getTag(i, obj);
                 if (OAString.isNotEmpty(s)) {
+                    s = OAJspUtil.createJsString(s, '\"');            
+                    s = OAString.convert(s, "\'", "\\\'");
                     // must be in format "['a', 'b', ..]"
                     options += ", tags: ['"+s+"']";
                 }
@@ -477,25 +478,6 @@ fork treeview.js and add changes so that unselected event can know if there is a
             options += "}";
         }
         return options;
-    }
-    
-    /**
-     * Converts the data to html encoded by calling JspUtil.toEscapeString
-     */
-    public String getEscapedHtml(Object obj, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
-        return value;
-    }
-    private boolean bEnableEscapeHtml = true;
-    /**
-     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
-     * @param b
-     */
-    public void setEnableEscapeHtml(boolean b) {
-        this.bEnableEscapeHtml = b;
-    }
-    public boolean getEnableEscapeHtml() {
-        return bEnableEscapeHtml;
     }
     
     

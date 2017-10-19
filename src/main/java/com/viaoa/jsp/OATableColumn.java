@@ -175,7 +175,7 @@ public class OATableColumn implements java.io.Serializable {
      * Converts the data to html encoded by calling JspUtil.toEscapeString
      */
     public String getEscapedHtml(Object obj, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
+        if (getEnableEscapeHtml()) value = OAJspUtil.createHtml(value);
         return value;
     }
     

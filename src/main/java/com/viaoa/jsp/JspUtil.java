@@ -211,11 +211,12 @@ public class JspUtil {
     }
  
     
+    /* replaced with OAHtmlUtil
     public static String toExcapeString(String value) {
         return htmlEscape(value);
     }
 
-    /** converts null to "" and other html conversions for &lt;, &gt; &amp; &quot; &#39; */
+    / ** converts null to "" and other html conversions for &lt;, &gt; &amp; &quot; &#39; * /
     public static String htmlEscape(String value) {
         if (value == null) return "";
         value = convert(value, '&', "&amp;");
@@ -241,7 +242,7 @@ public class JspUtil {
         if (cnt1 > 0 && cnt1 == cnt2) return text;  /// assuming it's ok
         return htmlEscape(text);
     }
-    
+*/    
 
     public static String convert(String value, char c, String replace) {
         return convert(value, c+"", replace);
@@ -376,7 +377,7 @@ j:      12
    
 
     
-    
+/** 20171017 removed, replaced with OAJsUtil.java  OAHtmlUtil.java   
     
     public static String toString(OAObject obj, String prop, int value) {
         return toString(obj,prop,new Integer(value));
@@ -396,7 +397,7 @@ j:      12
         if (value == null) return "";
         return smartEscapeHtml(OAConverter.toString(value));
     }
-    
+*/    
 
     public static String convertForFreeText(String keyword) {
         if (keyword == null) return "";
@@ -589,33 +590,5 @@ j:      12
        String s = "rgb(" + r + "," + g + "," + b + ")"; 
        return s;
     }
-   
-    /**
-     * This is used to convert escaped js code that will be embedded in html.
-     * All of the single/double quotes will need to converted to html escape codes.
-     * 
-     *  https://stackoverflow.com/questions/97578/how-do-i-escape-a-string-inside-javascript-code-inside-an-onclick-handler
-     *  
-     *  @param levelsDeep the level that the code is embedded as, where 0 is top level.  Currently only needs to support 0 or 1.
-     */
-    public static String escapeJsQuotes(String text) {
-        return escapeJsQuotes(text, 0);
-    }
-    public static String escapeJsQuotes(String text, int levelsDeep) {
-        if (text == null || text.length() == 0) return text;
-        
-        String s = "\\";
-        if (levelsDeep > 0) {
-            // currently only supports one level
-            s = "\\x5C"; // embedded backslash that will be convert to \ when it's popped
-        }
-        
-        text = OAString.convert(text, "\"", s+"x22");
-        
-        
-        text = OAString.convert(text, "\'", s+"x27");
-        return text;
-    }
-
 }
 

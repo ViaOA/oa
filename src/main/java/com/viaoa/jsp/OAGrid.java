@@ -18,13 +18,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAProperties;
-import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAString;
+import com.viaoa.util.*;
 
 /**
  * Grid component that will scroll equal sized cells.
@@ -346,6 +342,8 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                 sb.append(">");
                 
                 String s = getHtml(obj, pos, row, col);
+                
+                
                 if (s == null) s = "";
                 
                 sb.append(s+"</div>");
@@ -364,13 +362,15 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         sb.append("</div>");  // outer oaGrid
 
         String strGrid = sb.toString();
-        
+
+        /*was, not needed anymore        
         strGrid = OAString.convert(strGrid, "\\\"", "xQxq");
         strGrid = OAString.convert(strGrid, "\"", "\\\"");
         strGrid = OAString.convert(strGrid, "xQxq", "\\\"");
         
         strGrid = Util.convert(strGrid, "\n", "\\n");
         strGrid = Util.convert(strGrid, "\r", "\\r");
+        */        
         
         sb = new StringBuilder(strGrid.length() + 2048);
         sb.append("$('#"+id+"').html(\""+strGrid+"\");\n");
@@ -492,7 +492,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                 if (comp == null) {
                     s = super.getValue(obj, propertyName, width, fmt, props);
                     s = getTemplateValue(obj, propertyName, width, fmt, props, s);
-                    s = getEscapedHtml(obj, propertyName, s);
+                    s = OAJspUtil.createJsString(s, '\"', false, true);                    
                 }
                 else {
                     if (obj == getHub().getAO()) {
@@ -503,8 +503,12 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                     }
                     s = getTemplateValue(obj, propertyName, width, fmt, props, s);
                 }
-                
                 return s;
+            }
+            @Override
+            protected String getOutputText(String s) {
+                String sx = OAJspUtil.createJsString(s, '\"', false, false);
+                return sx;
             }
         };
         template.setTemplate(getHtmlTemplate());
@@ -513,26 +517,6 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
     public void setTemplate(OATemplate temp) {
         this.template = temp;
-    }
-    /**
-     * Called by template.getValue and this.getTemplateValue, to perform any conversions on the return value.
-     * By default,converts the data to html encoded by calling JspUtil.smartEscapeHtml
-     */
-    public String getEscapedHtml(Object obj, String propertyName, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
-        return value;
-    }
-    
-    private boolean bEnableEscapeHtml = true;
-    /**
-     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
-     * @param b
-     */
-    public void setEnableEscapeHtml(boolean b) {
-        this.bEnableEscapeHtml = b;
-    }
-    public boolean getEnableEscapeHtml() {
-        return bEnableEscapeHtml;
     }
     
     
@@ -621,7 +605,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         String data = getHtmlPropertyPath(obj, pos, row, col);
         if (data != null) {
-            data = JspUtil.smartEscapeHtml(data);
+            data = OAJspUtil.createJsString(data, '\"', false, true);
             result += "<span>"+data+"</span>";
         }
         

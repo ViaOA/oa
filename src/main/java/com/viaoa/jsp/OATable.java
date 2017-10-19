@@ -18,9 +18,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
-import com.viaoa.hub.HubListener;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
@@ -647,6 +645,7 @@ public class OATable implements OAJspComponent {
         }
         
         String strTable = sb.toString();
+        /*
         strTable = Util.convert(strTable, "\\", "\\\\");
 //20140130 this was commented out        
         strTable = Util.convert(strTable, "\r\n", "<br>");
@@ -654,6 +653,7 @@ public class OATable implements OAJspComponent {
         strTable = Util.convert(strTable, "\r", "<br>");
 //end        
         strTable = Util.convert(strTable, "'", "\\'");
+        */
         
 //qqqq 20140130        
         // if txt is long, then split into multiple lines
@@ -674,6 +674,9 @@ public class OATable implements OAJspComponent {
         }        
         
         sb = new StringBuilder(strTable.length() + 2048);
+        
+        strTable = OAJspUtil.createJsString(strTable, '\'', false, true);
+        
         sb.append("$('#"+id+"').html('"+strTable+"');\n");
 
         sb.append("$('table#oa"+id+" tbody tr').find('td:first').addClass('oatableColumnCount');\n");
@@ -830,7 +833,8 @@ public class OATable implements OAJspComponent {
     public static void main(String[] args) {
         // if txt is long, then split into multiple lines
         String strTable = "this is \"\"\"\"\"\"\"a test\" \'\"a";
-        strTable = Util.convert(strTable, "'", "\\'");
+        //strTable = Util.convert(strTable, "'", "\\'");
+        strTable = OAJspUtil.createJsString(strTable, '\'', false, true);
         
         int x = strTable.length();
         StringBuilder sbx = new StringBuilder(x+20);

@@ -10,8 +10,6 @@
 */
 package com.viaoa.jsp;
 
-
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 
 // attr: WRAP={"HARD","SOFT","OFF"}
@@ -76,14 +74,6 @@ public class OATextArea extends OATextField {
         return js;
     }
     
-    protected String convertValue(String value) {
-        value = Util.convert(value, "\r\n", "\\n");
-        value = Util.convert(value, "\n", "\\n");
-        value = Util.convert(value, "\r", "\\n");
-        value = Util.convert(value, "'", "\\'");
-        return value;
-    }
-
     public int getColumns() {
         return width;
     }

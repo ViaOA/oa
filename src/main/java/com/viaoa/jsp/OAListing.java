@@ -18,7 +18,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAConv;
@@ -266,12 +265,14 @@ public class OAListing implements OAJspComponent {
         
         
         String strListing = sb.toString();
-        strListing = Util.convert(strListing, "\\", "\\\\");
-        strListing = Util.convert(strListing, "'", "\\'");
+        //strListing = Util.convert(strListing, "\\", "\\\\");
+        //strListing = Util.convert(strListing, "'", "\\'");
         
         
         sb = new StringBuilder(strListing.length() + 2048);
         sb.append("$('#"+id+"').addClass('oaListing');\n");
+        
+        strListing = OAJspUtil.createJsString(strListing, '\'', false, true);
         sb.append("$('#"+id+"').html('"+strListing+"');\n");
         
 

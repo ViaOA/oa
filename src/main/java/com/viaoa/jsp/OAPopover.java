@@ -150,11 +150,11 @@ public class OAPopover implements OAJspComponent, OAJspRequirementsInterface {
         
         String msg = getProcessedMessage();
         if (msg == null) msg = "";
-        msg = OAString.convertForSingleQuotes(msg);
+        msg = OAJspUtil.createJsString(msg, '\'',false,true);            
 
         String title = getProcessedTitle();
         if (title == null) title = "";
-        title = OAString.convertForSingleQuotes(title);
+        title = OAJspUtil.createJsString(title, '\'',false,false);
         
         String trigger = "";
         if (getOnClick()) trigger = "click";
@@ -184,7 +184,7 @@ public class OAPopover implements OAJspComponent, OAJspRequirementsInterface {
             lastAjaxSent = js;
             if (bInit) {
                 // http://getbootstrap.com/javascript/#popovers
-                js = "$('#"+id+"').popover({content: '"+msg+"', placement: '"+loc+"', title: '"+title+"', trigger: '"+trigger+"'});\n";
+                js = "$('#"+id+"').popover({content: "+msg+", placement: '"+loc+"', title: "+title+", trigger: '"+trigger+"'});\n";
             }
         }
         

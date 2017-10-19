@@ -19,9 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAProperties;
-import com.viaoa.util.OAString;
+import com.viaoa.util.*;
 
 
 /**
@@ -186,7 +184,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
 
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = JspUtil.escapeJsQuotes(confirm);
+            confirm = OAJspUtil.createJsString(confirm, '\"', false, false);
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -238,12 +236,12 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         String prefix = null;
         String tt = getProcessedToolTip();
         if (OAString.isNotEmpty(tt)) {
-            tt = OAString.convertForSingleQuotes(tt);
             if (!bHadToolTip) {
                 bHadToolTip = true;
                 prefix = "$('#"+id+"').tooltip();\n";
             }
-            
+
+            tt = OAJspUtil.createJsString(tt, '\'', false, false);
             sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
             sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
         }
@@ -397,7 +395,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String getRenderHtml(OAObject obj) {
         String txt = getRenderText(obj);
-        txt = JspUtil.smartEscapeHtml(txt);
+        txt = OAJspUtil.createJsString(txt, '\"', false, true);
         if (txt == null) txt = "";
         String s = "<button type='button' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+txt+"</button>";
         return s;
@@ -412,23 +410,21 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     public String getRenderClass(OAObject obj) {
         return "";
     }
+    
     public String getRenderOnClick(OAObject obj) {
         // onClick will be inside of double quotes
-        String js = "onClick='";
-        
+        String js = "";
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
-            s = JspUtil.escapeJsQuotes(s,1);
-            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";   // also could use \x22
+            s = OAJspUtil.createJsString(s, '\"', true, false);
+            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";  
         }
-
-        js += "$(\\\"#oacommand\\\").val(\\\""+id+"\\\");"; 
-        js += "\'";
+        js += "$(\"#oacommand\").val(\""+id+"\");"; 
+        js = "onClick='" + js + "'";
+        
         return js;
     }
-    
-    
-    
+
     @Override
     public String getEditorHtml(OAObject obj) {
         return getRenderHtml(obj);

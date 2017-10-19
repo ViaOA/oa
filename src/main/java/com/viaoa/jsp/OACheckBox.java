@@ -20,12 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.hub.Hub;
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectKey;
-import com.viaoa.object.OAObjectKeyDelegate;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAString;
+import com.viaoa.object.*;
+import com.viaoa.util.*;
 
 /**
  * Controls an html input type=checkbox
@@ -321,12 +317,12 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
         String prefix = null;
         String tt = getProcessedToolTip();
         if (OAString.isNotEmpty(tt)) {
-            tt = OAString.convertForSingleQuotes(tt);
             if (!bHadToolTip) {
                 bHadToolTip = true;
                 prefix = "$('#"+id+"').tooltip();\n";
             }
             
+            tt = OAJspUtil.createJsString(tt, '\'',false,false);
             sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
             sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
         }

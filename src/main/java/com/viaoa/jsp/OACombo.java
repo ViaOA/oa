@@ -14,20 +14,11 @@ import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubLinkDelegate;
-import com.viaoa.object.OALinkInfo;
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectInfoDelegate;
-import com.viaoa.object.OAObjectKey;
-import com.viaoa.object.OAObjectKeyDelegate;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAProperties;
-import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAString;
+import com.viaoa.object.*;
+import com.viaoa.util.*;
 
 /**
  * Controls html select+options
@@ -309,7 +300,8 @@ sb.append("if ($().selectpicker) {\n");
         sb.append("$('#"+id+"').selectpicker({\n");
         sb.append("  style: 'btn-default',\n");
         String s = OAString.defaultString(getNullDescription(), "select one");
-        s = OAString.convertForSingleQuotes(s);
+        s = OAJspUtil.createJsString(s, '\'');
+        
         sb.append("  noneSelectedText:'"+s+"',\n");
         
         if (getAllowSearch()) {
@@ -408,7 +400,7 @@ sb.append("}\n");
         }
         if (value != null) {
             if (options.length() == 0) {
-//qqqqqqqq let css max-width, text-overflow: ellipsis;                
+//todo: qqqqqqqq let css max-width, text-overflow: ellipsis;                
 //                for (int i=value.length(); i<columns; i++) value += " ";
 //                value = Util.convert(value, " ", "&nbsp;");
             }
@@ -417,9 +409,12 @@ sb.append("}\n");
             else b = hub.getAO() == null;
             
             String sel = b ? "selected='selected'" : "";
+            value = OAJspUtil.createJsString(value, '\"', false, true);
             options += "<option value='oanull' "+sel+">"+value+"</option>";
         }        
         sb.append("$('#"+id+"').empty();\n");
+        
+        
         sb.append("$('#"+id+"').append(\"" + options + "\");\n");
         
         if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
@@ -436,11 +431,11 @@ sb.append("}\n");
         String prefix = null;
         String tt = getProcessedToolTip();
         if (OAString.isNotEmpty(tt)) {
-            tt = OAString.convertForSingleQuotes(tt);
             if (!bHadToolTip) {
                 bHadToolTip = true;
                 prefix = "$('#"+id+"').tooltip();\n";
             }
+            tt = OAJspUtil.createJsString(tt, '\'');
             
             sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
             sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
@@ -519,7 +514,6 @@ sb.append("}\n");
             if (value == null) value = "";
             
             value = getOption(i, obj, value);
-            value = getEscapedHtml(obj, value);
 
             if (columns > 0) {
                 //qqqqqqqq let css max-width, text-overflow: ellipsis;                
@@ -577,7 +571,8 @@ sb.append("}\n");
                 String heading = hmHeading.get(i);
                 if (heading != null) {
                     if (bHasOptGroup) options += "</optgroup>";
-                    heading = OAString.convertToHtml(heading);
+                    heading = OAJspUtil.createJsString(heading, '\"');
+                    heading = OAJspUtil.createHtmlString(heading, '\'');
                     options += "<optgroup label='"+heading+"'>";
                     bHasOptGroup = true;
                 }
@@ -586,7 +581,8 @@ sb.append("}\n");
             String heading = null;
             if (OAString.isNotEmpty(ppHeading) && obj instanceof OAObject) {
                 heading = ((OAObject) obj).getPropertyAsString(ppHeading, getFormat());
-                heading = OAString.convertToHtml(heading);
+                heading = OAJspUtil.createJsString(heading, '\"');
+                heading = OAJspUtil.createHtmlString(heading, '\'');
                 if (!OAString.isEqual(heading, lastHeading)) {
                     if (lastHeading != null) options += "</optgroup>";
                     options += "<optgroup label='"+heading+"'>";
@@ -594,15 +590,14 @@ sb.append("}\n");
                 lastHeading = heading;
             }
             
-            
             options += "<option value='"+v+"'"+sel;
 
             String temp = getOptionDisplay(obj, i, value);
             if (OAString.isNotEmpty(temp) && !OAString.equals(value, temp)) {
-                temp = OAString.convertToHtml(temp);
+                temp = OAJspUtil.createJsString(temp,'\"');
                 options += " data-content='"+temp+"'";
             }
-            value = OAString.convertToHtml(value);
+            value = OAJspUtil.createJsString(value, '\"', false, true);
             options += ">"+value+"</option>";
             
             
@@ -626,25 +621,6 @@ sb.append("}\n");
         nullDescription = s;
     }
 
-    /**
-     * Converts the data to html encoded by calling JspUtil.toEscapeString
-     */
-    public String getEscapedHtml(Object obj, String value) {
-        if (getEnableEscapeHtml()) value = JspUtil.smartEscapeHtml(value);
-        return value;
-    }
-    
-    private boolean bEnableEscapeHtml = true;
-    /**
-     * flag to know if {@link #getEscapedHtml(OAObject, String)} should convert html.  Default=true
-     * @param b
-     */
-    public void setEnableEscapeHtml(boolean b) {
-        this.bEnableEscapeHtml = b;
-    }
-    public boolean getEnableEscapeHtml() {
-        return bEnableEscapeHtml;
-    }
 
     @Override
     public void setEnabled(boolean b) {

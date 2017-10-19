@@ -12,7 +12,7 @@ package com.viaoa.jsp;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAString;
+import com.viaoa.util.*;
 
 /**
  * Used to set the Attribute value of an Html Element. 
@@ -92,7 +92,7 @@ public class OAHtmlAttribute {
         String aName = getAttrName();
         if (OAString.isEmpty(aName)) return null;
         
-        val = OAString.convertForSingleQuotes(val);
+        val = OAJspUtil.createJsString(val, '\'',false,false);
         
         if (!OAString.isEmpty(val)) s = "$('#"+id+"').attr('"+aName+"', '"+val+"');";
         else s = "$('#"+id+"').removeAttr('"+aName+"');";

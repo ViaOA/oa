@@ -220,7 +220,8 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
         }
 
         s = getPlaceholder();
-        if (s != null) sb.append("$('#" + id + "').attr('placeholder', '"+OAString.convertForSingleQuotes(s)+"');\n");
+        s = OAJspUtil.createJsString(s, '\'',false,false);
+        if (s != null) sb.append("$('#" + id + "').attr('placeholder', '"+s+"');\n");
         
         String js = sb.toString();
         return js;

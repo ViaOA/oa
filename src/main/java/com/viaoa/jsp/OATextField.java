@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.ds.OADataSource;
-import com.viaoa.html.Util;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
@@ -711,7 +710,9 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
 
         s = getPlaceholder();
-        if (s != null) sb.append("$('#" + id + "').attr('placeholder', '"+OAString.convertForSingleQuotes(s)+"');\n");
+        s = OAJspUtil.createJsString(s, '\'');        
+        
+        if (s != null) sb.append("$('#" + id + "').attr('placeholder', '"+s+"');\n");
 
         getFloatLabelJs(sb);
         
@@ -719,11 +720,11 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         String prefix = null;
         String tt = getProcessedToolTip();
         if (OAString.isNotEmpty(tt)) {
-            tt = OAString.convertForSingleQuotes(tt);
             if (!bHadToolTip) {
                 bHadToolTip = true;
                 prefix = "$('#"+id+"').tooltip();\n";
             }
+            tt = OAJspUtil.createJsString(tt, '\'');
             
             sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
             sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
@@ -778,7 +779,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                         else idx = idxs[0]+"";
                          
                         String s2 = getTypeAhead().getDisplayValue(obj);
-                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+OAString.convertForDoubleQuotes(s2)+"\"});\n");
+                        s2 = OAJspUtil.createJsString(s2, '\"');
+                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+s2+"\"});\n");
                     }
                 }
             }
@@ -799,7 +801,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                         else idx = idxs[0]+"";
                          
                         String s2 = getTypeAhead().getDisplayValue(obj);
-                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+OAString.convertForDoubleQuotes(s2)+"\"});\n");
+                        s2 = OAJspUtil.createJsString(s2, '\"', false, true);
+                        sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+s2+"\"});\n");
                     }
                 }
             }
@@ -878,7 +881,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 if (sx == null) break;
                 sx = sx.trim();
                 if (sx.length() == 0) continue;
-                sx = OAString.convertForDoubleQuotes(sx);
+                sx = OAJspUtil.createJsString(sx, '\"');
                 // the object.id is not known for the value, will instead use display as the id
                 //   this is the same as getTypeAheadJson(..) return value
                 sb.append("$('#" + id + "').tagsinput('add', { \"id\": \""+sx+"\" , \"display\": \""+sx+"\"});\n");
@@ -892,12 +895,13 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 if (sx == null) break;
                 sx = sx.trim();
                 if (sx.length() == 0) continue;
-                sx = OAString.convertForDoubleQuotes(sx);
+                sx = OAJspUtil.createJsString(sx, '\'');
                 sb.append("$('#" + id + "').tagsinput('add', '"+sx+"');\n");
             }
         }
         else {
-            sb.append("$('#" + id + "').val('" + OAString.convertForSingleQuotes(value) + "');\n");
+            value = OAJspUtil.createJsString(value, '\'');
+            sb.append("$('#" + id + "').val('" + value + "');\n");
         }
         
         if (maxWidth > 0) sb.append("$('#" + id + "').attr('maxlength', '" + maxWidth + "');\n");
@@ -1017,7 +1021,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
                 sb.append("if ($().bsdatetimepicker) {\n");
                 sb.append("  $('#" + id + "').bsdatetimepicker({");
-                sb.append("format: '" + OAString.convertForSingleQuotes(dfmtBS) + " " + OAString.convertForSingleQuotes(tfmtBS) + "'");
+                sb.append("format: '" + OAJspUtil.createJsString((dfmtBS + " " + tfmtBS), '\'') + "'");
                 sb.append(", sideBySide: true, showTodayButton: true, showClear: true, showClose: true});\n");
 
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
@@ -1033,8 +1037,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 sb.append("}\n");  // end bootstrap
                 sb.append("else {\n");
                 sb.append("$('#" + id + "').datetimepicker({ ");
-                sb.append("dateFormat: '" + OAString.convertForSingleQuotes(dfmtJquery) + "'");
-                sb.append(", timeFormat: '" + OAString.convertForSingleQuotes(tfmtJquery) + "'");
+                sb.append("dateFormat: '" + OAJspUtil.createJsString(dfmtJquery,'\'') + "'");
+                sb.append(", timeFormat: '" + OAJspUtil.createJsString(tfmtJquery,'\'') + "'");
                 if (tfmtJquery != null && tfmtJquery.toLowerCase().indexOf('z') >= 0) {
                     // sb.append(", timezoneList: [{label: 'EDT', value: '-240'}, {label: 'other', value: '-480'}]");
                 }
@@ -1052,7 +1056,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             else if (!OAString.isEmpty(dfmtJquery)) {
                 sb.append("if ($().bsdatetimepicker) {\n");
                 sb.append("$('#" + id + "').bsdatetimepicker({");
-                sb.append("format: '" + OAString.convertForSingleQuotes(dfmtBS) + "'");
+                sb.append("format: '" + OAJspUtil.createJsString(dfmtBS, '\'') + "'");
                 sb.append(", showTodayButton: true, showClear: true, showClose: true});\n");
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
                     if (!getAutoComplete() && (getTypeAhead()!=null)) {
@@ -1081,7 +1085,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             else if (!OAString.isEmpty(tfmtJquery)) {
                 sb.append("if ($().bsdatetimepicker) {\n");
                 sb.append("  $('#" + id + "').bsdatetimepicker({ ");
-                sb.append("format: '" + OAString.convertForSingleQuotes(tfmtBS) + "'");
+                sb.append("format: '" + OAJspUtil.createJsString(tfmtBS, '\'') + "'");
                 sb.append(", showClear: true, showClose: true});\n");
 
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
@@ -1096,7 +1100,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 }
                 sb.append("}\n");  // end bootstrap
                 sb.append("else {\n");
-                sb.append("  $('#" + id + "').timepicker({ timeFormat: '" + OAString.convertForSingleQuotes(tfmtJquery) + "'");
+                sb.append("  $('#" + id + "').timepicker({ timeFormat: '" + OAJspUtil.createJsString(tfmtJquery,'\'') + "'");
                 if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
                     if (!getAutoComplete() && (getTypeAhead()!=null)) {
                         sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}");
@@ -1417,7 +1421,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         catch (Exception e) {
             LOG.log(Level.WARNING, "Error getting json for typeahead search, searchText="+searchText, e);
-            json = "{\"id\":0,\"display\":\""+ OAString.convertForDoubleQuotes(e.getMessage())+"\"}";
+            json = "{\"id\":0,\"display\":\""+ OAJspUtil.createJsString(e.getMessage(),'"')+"\"}";
         }
         return json;
     }
@@ -1443,14 +1447,14 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             String displayValue = typeAhead.getDisplayValue(obj);
             if (displayValue == null) displayValue = "";
             else {
-                displayValue = OAString.convertForDoubleQuotes(displayValue);
+                displayValue = OAJspUtil.createJsString(displayValue, '\"',false,true);
                 //was: displayValue.replace('\"', ' ');
             }
 
             String dd = typeAhead.getDropDownDisplayValue(obj);
             if (dd == null) dd = "";
             else {
-                dd = OAString.convertForDoubleQuotes(dd);
+                dd = OAJspUtil.createJsString(dd, '\"',false,true);
                 //was: dd.replace('\"', ' ');
             }
             
@@ -1467,7 +1471,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             else {
                 // need to send id=displayValue, since they will be stored in property and not the id
                 //    and then used when it has to reset the txt value from this data
-                json += "{\"id\":\""+displayValue+"\",\"display\":\""+displayValue+"\",\"dropdowndisplay\":\""+dd+"\"}";
+                json += "{\"id\":"+displayValue+",\"display\":\""+displayValue+"\",\"dropdowndisplay\":\""+dd+"\"}";
             }
         }
         return json;
@@ -1724,6 +1728,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         
         s = getFloatLabel();
-        sb.append("$('#"+id+" + span').html('"+OAString.convertForSingleQuotes(s)+"');\n");            
+        sb.append("$('#"+id+" + span').html('"+OAJspUtil.createJsString(s,'\'',false,true)+"');\n");            
     }
 }

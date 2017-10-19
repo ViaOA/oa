@@ -14,20 +14,15 @@ import java.util.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.awt.*;
-import java.security.*;
-
 
 /**
     String <i>helper/utility</i> Class.
     @see OAConverter
 */
 public class OAString {
-
-	
     public static final String NL = System.getProperty("line.separator");     
     public static final String FS = File.separator;     
 	
-    
     /** 
         String trim method.<br>
         1: removes leading spaces<br>
@@ -2685,29 +2680,5 @@ public class OAString {
         System.out.println(s+" ==> "+s2);
     }
 
-    /**
-     * prepare a string to be surrounded by single quotes, by converting the inner "'" chars to "\\'"
-     */
-    public static String convertForSingleQuotes(String text) {
-        if (text == null) return null;
-        text = OAString.convert(text, "\\'", "|o|a|7");
-        text = OAString.convert(text, "'", "\\'");
-        text = OAString.convert(text, "|o|a|7", "\\\\'");
-        return text;
-    }
-
-    /**
-     * prepare a string to be surrounded by double quotes, by converting the inner "\"" chars to "\\\""
-     */
-    public static String convertForDoubleQuotes(String text) {
-        if (text == null) return null;
-        text = OAString.convert(text, "\\\"", "|o|a|7");
-        text = OAString.convert(text, "\"", "\\\"");
-        text = OAString.convert(text, "|o|a|7", "\\\\\"");
-        return text;
-    }
+    
 }
-
-
-
-

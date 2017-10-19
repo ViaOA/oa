@@ -533,7 +533,10 @@ public class OAHTMLConverter {
             if (!OAString.isEmpty(rootNode.arg2)) {
                 s = OAString.format(s, rootNode.arg2);
             }
-            if (s != null) sb.append(s);
+            if (s != null) {
+                s = getOutputText(s);
+                sb.append(s);
+            }
         }
         else {
             switch (rootNode.tagType) {
@@ -720,6 +723,13 @@ public class OAHTMLConverter {
         }
     }
 
+    /**
+     * Called to be able to convert before adding to output string.
+     */
+    protected String getOutputText(String s) {
+        return s;
+    }
+    
     /**
      * Called to get the value of a property.
      * @param obj Object parameter from getHtml()
