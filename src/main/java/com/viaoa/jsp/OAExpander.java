@@ -184,7 +184,7 @@ public class OAExpander implements OAJspComponent, OAJspRequirementsInterface {
                 bHadToolTip = true;
                 prefix = "$('#"+id+"').tooltip();\n";
             }
-            tt = OAJspUtil.createJsString(tt, '\'',false,false);            
+            tt = OAJspUtil.createJsString(tt, '\'');            
             sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
             sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
         }

@@ -409,7 +409,6 @@ sb.append("}\n");
             else b = hub.getAO() == null;
             
             String sel = b ? "selected='selected'" : "";
-            value = OAJspUtil.createJsString(value, '\"', false, true);
             options += "<option value='oanull' "+sel+">"+value+"</option>";
         }        
         sb.append("$('#"+id+"').empty();\n");
@@ -571,8 +570,7 @@ sb.append("}\n");
                 String heading = hmHeading.get(i);
                 if (heading != null) {
                     if (bHasOptGroup) options += "</optgroup>";
-                    heading = OAJspUtil.createJsString(heading, '\"');
-                    heading = OAJspUtil.createHtmlString(heading, '\'');
+                    heading = OAJspUtil.createEmbeddedHtmlString(heading, '\'');
                     options += "<optgroup label='"+heading+"'>";
                     bHasOptGroup = true;
                 }
@@ -581,8 +579,7 @@ sb.append("}\n");
             String heading = null;
             if (OAString.isNotEmpty(ppHeading) && obj instanceof OAObject) {
                 heading = ((OAObject) obj).getPropertyAsString(ppHeading, getFormat());
-                heading = OAJspUtil.createJsString(heading, '\"');
-                heading = OAJspUtil.createHtmlString(heading, '\'');
+                heading = OAJspUtil.createEmbeddedHtmlString(heading, '\'');
                 if (!OAString.isEqual(heading, lastHeading)) {
                     if (lastHeading != null) options += "</optgroup>";
                     options += "<optgroup label='"+heading+"'>";
@@ -594,10 +591,9 @@ sb.append("}\n");
 
             String temp = getOptionDisplay(obj, i, value);
             if (OAString.isNotEmpty(temp) && !OAString.equals(value, temp)) {
-                temp = OAJspUtil.createJsString(temp,'\"');
+                temp = OAJspUtil.createJsString(temp,'\'');
                 options += " data-content='"+temp+"'";
             }
-            value = OAJspUtil.createJsString(value, '\"', false, true);
             options += ">"+value+"</option>";
             
             

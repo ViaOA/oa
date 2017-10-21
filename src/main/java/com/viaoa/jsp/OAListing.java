@@ -272,8 +272,8 @@ public class OAListing implements OAJspComponent {
         sb = new StringBuilder(strListing.length() + 2048);
         sb.append("$('#"+id+"').addClass('oaListing');\n");
         
-        strListing = OAJspUtil.createJsString(strListing, '\'', false, true);
-        sb.append("$('#"+id+"').html('"+strListing+"');\n");
+        strListing = OAJspUtil.createJsString(strListing, '\"');
+        sb.append("$('#"+id+"').html(\""+strListing+"\");\n");
         
 
         sb.append("function oaListing"+id+"Click() {\n");

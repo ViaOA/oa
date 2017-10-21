@@ -184,7 +184,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
 
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = OAJspUtil.createJsString(confirm, '\"', false, false);
+            confirm = OAJspUtil.createJsString(confirm, '\"');
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -241,7 +241,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
                 prefix = "$('#"+id+"').tooltip();\n";
             }
 
-            tt = OAJspUtil.createJsString(tt, '\'', false, false);
+            tt = OAJspUtil.createJsString(tt, '\'');
             sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
             sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
         }
@@ -395,9 +395,17 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String getRenderHtml(OAObject obj) {
         String txt = getRenderText(obj);
-        txt = OAJspUtil.createJsString(txt, '\"', false, true);
         if (txt == null) txt = "";
-        String s = "<button type='button' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+txt+"</button>";
+
+        String classz = getRenderClass(obj);
+        if (OAString.isEmpty(classz)) classz = "";
+        else classz = " class='"+classz+"' ";
+        
+        String style = getRenderStyle(obj);
+        if (OAString.isEmpty(style)) style = "";
+        else style = " style='"+style+"' ";
+        
+        String s = "<button type='button' "+classz+style+getRenderOnClick(obj)+">"+txt+"</button>";
         return s;
     }
     public String getRenderText(OAObject obj) {
@@ -412,14 +420,14 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     }
     
     public String getRenderOnClick(OAObject obj) {
-        // onClick will be inside of double quotes
         String js = "";
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
-            s = OAJspUtil.createJsString(s, '\"', true, false);
-            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";  
+            s = OAJspUtil.createEmbeddedJsString(s, '\"');
+            js += "if (!window.confirm(\""+s+"\")) return false;";  
         }
         js += "$(\"#oacommand\").val(\""+id+"\");"; 
+        
         js = "onClick='" + js + "'";
         
         return js;

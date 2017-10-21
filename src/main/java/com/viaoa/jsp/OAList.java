@@ -466,7 +466,6 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             if (obj == hub.getAO()) sb.append(" class='oaSelected'");
             sb.append(" oarow='"+(pos)+"'>");
             String s = getHtml(obj, pos);
-            OAJspUtil.createHtml(s);
             if (s != null) sb.append(s);
             sb.append("</li>");
         }
@@ -494,8 +493,8 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             sb.append("$('#"+id+"').addClass('oaIndent');\n");
         }
 
-        strListing = OAJspUtil.createJsString(strListing, '\'', false, true);
-        sb.append("$('#"+id+"').html('"+strListing+"');\n");
+        strListing = OAJspUtil.createJsString(strListing, '\"');
+        sb.append("$('#"+id+"').html(\""+strListing+"\");\n");
         
         sb.append("$('#"+id+" li').addClass('oaTextNoWrap');\n");
         
@@ -740,7 +739,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             }
             @Override
             protected String getOutputText(String s) {
-                return OAJspUtil.createJsString(s, '\"', false, true);
+                return s;
             }
         };
         template.setTemplate(getHtmlTemplate());

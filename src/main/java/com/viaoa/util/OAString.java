@@ -53,10 +53,10 @@ public class OAString {
         @see #convertToXML(String,boolean)
     */
     public static String convertToXml(String value) {
-        return convertToXML(value);
+        return convertToXML(value, false, true);
     }
     public static String convertToHtml(String value) {
-        return convertToXML(value);
+        return convertToXML(value, false, true);
     }
 
     /**
@@ -73,7 +73,7 @@ public class OAString {
         @see #convertToXML(String,boolean)
     */
     public static String convertToXML(String value) {
-        return convertToXML(value, false);
+        return convertToXML(value, false, false);
     }
 
     /**
@@ -81,7 +81,7 @@ public class OAString {
         @see #convertToXML(String,boolean)
     */
     public static String encodeIllegalXML(String value) {
-        return convertToXML(value, true);
+        return convertToXML(value, true, false);
     }
 
 
@@ -120,6 +120,9 @@ public class OAString {
         @see #encodeIllegalXML
     */
     public static String convertToXML(String value, boolean bCData) {
+        return convertToXML(value, bCData, false);
+    }
+    public static String convertToXML(String value, boolean bCData, boolean bIsHtml) {
         if (value == null) return "";
 
         int x = value.length();
@@ -134,6 +137,17 @@ public class OAString {
                     case '\'': sb.append("&apos;"); continue;
                     case '<': sb.append("&lt;"); continue;
                     case '>': sb.append("&gt;"); continue;
+                    case '\n':  // 20171021
+                        if (bIsHtml) {
+                            sb.append("<br>"); 
+                            continue;  
+                        }
+                        break;
+                    case '\r': { // 20171021
+                        if (bIsHtml) {
+                            continue;  
+                        }
+                    }
                 }
             }
 

@@ -372,6 +372,8 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         strGrid = Util.convert(strGrid, "\r", "\\r");
         */        
         
+        strGrid = OAJspUtil.createJsString(strGrid, '"');
+        
         sb = new StringBuilder(strGrid.length() + 2048);
         sb.append("$('#"+id+"').html(\""+strGrid+"\");\n");
 
@@ -491,8 +493,11 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
                 OAJspComponent comp = hmChildren.get(propertyName);
                 if (comp == null) {
                     s = super.getValue(obj, propertyName, width, fmt, props);
-                    s = getTemplateValue(obj, propertyName, width, fmt, props, s);
-                    s = OAJspUtil.createJsString(s, '\"', false, true);                    
+                    String s1 = getTemplateValue(obj, propertyName, width, fmt, props, s);
+                    if (OAString.isEqual(s,s1)) {
+                        s = OAJspUtil.convertToHtml(s);
+                    }
+                    else s = s1;
                 }
                 else {
                     if (obj == getHub().getAO()) {
@@ -507,8 +512,8 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
             }
             @Override
             protected String getOutputText(String s) {
-                String sx = OAJspUtil.createJsString(s, '\"', false, false);
-                return sx;
+                //String sx = OAJspUtil.createJsString(s, '\"', false, false);
+                return s;
             }
         };
         template.setTemplate(getHtmlTemplate());
@@ -605,7 +610,6 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         String data = getHtmlPropertyPath(obj, pos, row, col);
         if (data != null) {
-            data = OAJspUtil.createJsString(data, '\"', false, true);
             result += "<span>"+data+"</span>";
         }
         

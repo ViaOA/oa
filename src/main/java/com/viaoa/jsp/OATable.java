@@ -675,9 +675,9 @@ public class OATable implements OAJspComponent {
         
         sb = new StringBuilder(strTable.length() + 2048);
         
-        strTable = OAJspUtil.createJsString(strTable, '\'', false, true);
+        strTable = OAJspUtil.createJsString(strTable, '\"');
         
-        sb.append("$('#"+id+"').html('"+strTable+"');\n");
+        sb.append("$('#"+id+"').html(\""+strTable+"\");\n");
 
         sb.append("$('table#oa"+id+" tbody tr').find('td:first').addClass('oatableColumnCount');\n");
 
@@ -834,7 +834,6 @@ public class OATable implements OAJspComponent {
         // if txt is long, then split into multiple lines
         String strTable = "this is \"\"\"\"\"\"\"a test\" \'\"a";
         //strTable = Util.convert(strTable, "'", "\\'");
-        strTable = OAJspUtil.createJsString(strTable, '\'', false, true);
         
         int x = strTable.length();
         StringBuilder sbx = new StringBuilder(x+20);
@@ -849,8 +848,9 @@ public class OATable implements OAJspComponent {
             sbx.append(strTable.substring(i, i+amt) + "\'+\n\'");
         }
         strTable = sbx.toString();
+        strTable = OAJspUtil.createJsString(strTable, '\"');
         
-        String s = ("$('#id').html('"+strTable+"');");
+        String s = ("$('#id').html(\""+strTable+"\");");
         System.out.println("==>"+s);
     }
 

@@ -227,7 +227,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
 
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = OAJspUtil.createJsString(confirm, '\"', false, false);
+            confirm = OAJspUtil.createJsString(confirm, '\"');
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -281,7 +281,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
                 bHadToolTip = true;
                 prefix = "$('#"+id+"').tooltip();\n";
             }
-            tt = OAJspUtil.createJsString(tt, '\'', false, false);
+            tt = OAJspUtil.createJsString(tt, '\'');
             
             sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
             sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
@@ -305,8 +305,8 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
                     }
                 }
             }
-            html = OAJspUtil.createJsString(html, '\'', false, true);            
-            sb.append("$('#"+id+"').html('"+html+"');\n");
+            html = OAJspUtil.createJsString(html, '\"');            
+            sb.append("$('#"+id+"').html(\""+html+"\");\n");
         }
         
         if (alAttribute != null) {
@@ -360,6 +360,8 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         int addSp = (minLineWidth <= 0) ? 0 : (minLineWidth - value.length()); 
         for (int i=0; i<addSp; i++) value += " ";  //? might need to use &nbsp;
 
+        if (!isPlainText()) value = OAJspUtil.convertToHtml(value);
+        
         return value;
     }
     

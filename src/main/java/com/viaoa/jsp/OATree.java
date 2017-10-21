@@ -435,16 +435,14 @@ fork treeview.js and add changes so that unselected event can know if there is a
             if (value == null) value = "";
             
             value = getText(i, obj, value);
-            value = OAJspUtil.createJsString(value, '\"');
-            value = OAString.convert(value, "\'", "\\\'");
+            value = OAJspUtil.createJsString(value, '\'');
 
             if (hashMap != null) {
                 options += "text: '"+value+"', oaid: 'g"+OAObjectDelegate.getGuid((OAObject)obj)+"'";
                 String s = getTag(i, obj);
                 if (OAString.isNotEmpty(s)) {
-                    s = OAJspUtil.createJsString(s, '\"');            
-                    s = OAString.convert(s, "\'", "\\\'");
                     // must be in format "['a', 'b', ..]"
+                    s = OAJspUtil.createJsString(s, '\'');
                     options += ", tags: ['"+s+"']";
                 }
                 hashMap.put(OAObjectDelegate.getGuid((OAObject)obj), (OAObject) obj);

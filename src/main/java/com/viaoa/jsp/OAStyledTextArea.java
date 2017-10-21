@@ -127,9 +127,9 @@ public class OAStyledTextArea extends OATextField {
         else val = getValue();
         if (val == null) val = "";
 
-        val = OAJspUtil.createJsString(val, '\'', false, true);
+        val = OAJspUtil.createJsString(val, '\"');
         
-        js += "$('#"+getId()+"').summernote('code', '"+val+"');\n";
+        js += "$('#"+getId()+"').summernote('code', \""+val+"\");\n";
         return js;
     }
 

@@ -150,11 +150,11 @@ public class OAPopover implements OAJspComponent, OAJspRequirementsInterface {
         
         String msg = getProcessedMessage();
         if (msg == null) msg = "";
-        msg = OAJspUtil.createJsString(msg, '\'',false,true);            
+        msg = OAJspUtil.createJsString(msg, '\'');            
 
         String title = getProcessedTitle();
         if (title == null) title = "";
-        title = OAJspUtil.createJsString(title, '\'',false,false);
+        title = OAJspUtil.createJsString(title, '\'');
         
         String trigger = "";
         if (getOnClick()) trigger = "click";

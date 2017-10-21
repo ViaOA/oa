@@ -801,7 +801,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                         else idx = idxs[0]+"";
                          
                         String s2 = getTypeAhead().getDisplayValue(obj);
-                        s2 = OAJspUtil.createJsString(s2, '\"', false, true);
+                        s2 = OAJspUtil.createJsString(s2, '\"');
                         sb.append("$('#" + this.id + "').tagsinput('add', { \"id\": "+idx+" , \"display\": \""+s2+"\"});\n");
                     }
                 }
@@ -1447,14 +1447,14 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             String displayValue = typeAhead.getDisplayValue(obj);
             if (displayValue == null) displayValue = "";
             else {
-                displayValue = OAJspUtil.createJsString(displayValue, '\"',false,true);
+                displayValue = OAJspUtil.createJsString(displayValue, '\"');
                 //was: displayValue.replace('\"', ' ');
             }
 
             String dd = typeAhead.getDropDownDisplayValue(obj);
             if (dd == null) dd = "";
             else {
-                dd = OAJspUtil.createJsString(dd, '\"',false,true);
+                dd = OAJspUtil.createJsString(dd, '\"');
                 //was: dd.replace('\"', ' ');
             }
             
@@ -1728,6 +1728,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         
         s = getFloatLabel();
-        sb.append("$('#"+id+" + span').html('"+OAJspUtil.createJsString(s,'\'',false,true)+"');\n");            
+        sb.append("$('#"+id+" + span').html(\""+OAJspUtil.createJsString(s,'\"')+"\");\n");            
     }
 }

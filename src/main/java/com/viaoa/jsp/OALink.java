@@ -52,7 +52,7 @@ public class OALink extends OAHtmlElement {
         
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = OAJspUtil.createJsString(confirm, '\"', false, false);
+            confirm = OAJspUtil.createJsString(confirm, '\"');
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -78,7 +78,16 @@ public class OALink extends OAHtmlElement {
     public String getRenderHtml(OAObject obj) {
         String txt = getRenderText(obj);
         if (txt == null) txt = "";
-        String s = "<a href='#' class='"+getRenderClass(obj)+"' style='"+getRenderStyle(obj)+"' "+getRenderOnClick(obj)+">"+txt+"</a>";
+
+        String classz = getRenderClass(obj);
+        if (OAString.isEmpty(classz)) classz = "";
+        else classz = " class='"+classz+"' ";
+        
+        String style = getRenderStyle(obj);
+        if (OAString.isEmpty(style)) style = "";
+        else style = " style='"+style+"' ";
+        
+        String s = "<a href='#' "+classz+style+getRenderOnClick(obj)+">"+txt+"</a>";
         return s;
     }
     
@@ -94,14 +103,14 @@ public class OALink extends OAHtmlElement {
         return "";
     }
     public String getRenderOnClick(OAObject obj) {
-        // onClick will be inside of double quotes
         String js = "";
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
-            s = OAJspUtil.createJsString(s, '\"', true, false);
-            js += "if (!window.confirm(\\\""+s+"\\\")) return false;";  
+            s = OAJspUtil.createEmbeddedJsString(s, '\"');
+            js += "if (!window.confirm(\""+s+"\")) return false;";  
         }
-        js += "$(\\\"#oacommand\\\").val(\\\""+id+"\\\");"; 
+        js += "$(\"#oacommand\").val(\""+id+"\");"; 
+        
         js = "onClick='" + js + "'";
         
         return js;
