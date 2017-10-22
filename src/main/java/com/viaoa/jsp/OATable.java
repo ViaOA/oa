@@ -655,7 +655,7 @@ public class OATable implements OAJspComponent {
         strTable = Util.convert(strTable, "'", "\\'");
         */
         
-//qqqq 20140130        
+/* 20171022 removed
         // if txt is long, then split into multiple lines
         x = strTable.length();
         if (x > 100) {
@@ -668,11 +668,11 @@ public class OATable implements OAJspComponent {
                     break;
                 }
                 if (strTable.charAt(i+amt-1) == '\\') amt--;
-                sbx.append(strTable.substring(i, i+amt) + "\'+\n\'");
+                sbx.append(strTable.substring(i, i+amt) + "\"+\n\"");
             }
             strTable = sbx.toString();
         }        
-        
+*/        
         sb = new StringBuilder(strTable.length() + 2048);
         
         strTable = OAJspUtil.createJsString(strTable, '\"');

@@ -413,7 +413,7 @@ sb.append("}\n");
         }        
         sb.append("$('#"+id+"').empty();\n");
         
-        
+        options = OAJspUtil.createJsString(options, '\"');
         sb.append("$('#"+id+"').append(\"" + options + "\");\n");
         
         if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");

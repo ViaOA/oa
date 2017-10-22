@@ -1,6 +1,6 @@
 
 
-
+color = String.format("#%02x%02x%02x", 116, 151, 238);
 
 color = String.format("#%02x%02x%02x", program.getPrimaryColor().getRed(), program.getPrimaryColor().getGreen(), program.getPrimaryColor().getBlue());
 
