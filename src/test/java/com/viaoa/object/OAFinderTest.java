@@ -215,7 +215,7 @@ public class OAFinderTest extends OAUnitTest {
         HifiveDataGenerator data = new HifiveDataGenerator();
         data.createSampleData();
         
-        Employee emp = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
+        Employee emp = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0); 
         emp.setLastName("xxx");
         
         OAFinder<Location, Employee> finder = new OAFinder<Location, Employee>(LocationPP.employees().pp);
@@ -227,6 +227,22 @@ public class OAFinderTest extends OAUnitTest {
         empx = finder.findFirst(ModelDelegate.getPrograms().getAt(0).getLocations());
         assertNull(empx);
         
+        reset();
+    }
+    @Test
+    public void recursiveFinderTest3() {
+        init();
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData();
+        
+        Employee emp = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
+        emp.setLastName("xxx");
+        
+        OAFinder<Location, Employee> finder = new OAFinder<Location, Employee>(LocationPP.employees().pp);
+        finder.addEqualFilter(Employee.P_LastName, "xxx");
+        Employee empx = finder.findFirst(ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0));
+        assertEquals(empx, emp);
+        emp.setLastName("");
         reset();
     }
 }

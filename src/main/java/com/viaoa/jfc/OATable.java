@@ -99,6 +99,7 @@ import javax.swing.table.TableColumn;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubAODelegate;
 import com.viaoa.hub.HubDataDelegate;
+import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubEventDelegate;
 import com.viaoa.hub.HubFilter;
@@ -116,6 +117,7 @@ import com.viaoa.jfc.table.OATableFilterComponent;
 import com.viaoa.jfc.table.OATableListener;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
+import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.OACompare;
@@ -846,12 +848,14 @@ if (!getKeepSorted()) hub.cancelSort();
                     return;
                 }
                 int pos = hub.getPos(dragObject);
-                if (pos >= 0 && !hub.isSorted()) {
-                    // move
-                    if (pos < row) row--;
-                    hub.move(pos, row);
-                    // 20091214
-                    OAUndoManager.add(OAUndoableEdit.createUndoableMove(null, hub, pos, row));
+                if (pos >= 0) {
+                    if (!hub.isSorted()) {
+                        // move
+                        if (pos < row) row--;
+                        hub.move(pos, row);
+                        // 20091214
+                        OAUndoManager.add(OAUndoableEdit.createUndoableMove(null, hub, pos, row));
+                    }
                 }
                 else {
                     if (hub.isSorted()) {

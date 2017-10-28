@@ -1990,11 +1990,4 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
     	if (root != null) root.updateUICalled();
     	cntUpdateUI++;
     }
-
-
-    
 }
-
-
-
-

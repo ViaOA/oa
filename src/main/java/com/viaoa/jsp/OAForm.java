@@ -334,13 +334,20 @@ public class OAForm extends OABase implements Serializable {
     }
 
     public String getScript() {
+        beforePageLoad();
         String js = getInitScript();
         String s = getAjaxCallbackScript();
         if (s != null) js += s;
+        afterPageLoad();
         
         return js;
     }
 
+    protected void beforePageLoad() {
+    }
+    protected void afterPageLoad() {
+    }
+    
     
     // javascript code to initialize client/browser
     /**

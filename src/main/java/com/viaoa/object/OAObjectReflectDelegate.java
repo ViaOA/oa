@@ -476,7 +476,7 @@ public class OAObjectReflectDelegate {
      * @param linkPropertyName name of property to retrieve. (case insensitive)
      * @param sortOrder
      * @param bSequence
-     *            if true, then create a hub sequencer to manager the order of the objects in the hub.
+     *            if true, then create a hub sequencer to manage the order of the objects in the hub.
      */
     public static Hub getReferenceHub(OAObject oaObj, String linkPropertyName, String sortOrder, boolean bSequence, Hub hubMatch) {
         /*
@@ -501,6 +501,31 @@ public class OAObjectReflectDelegate {
         if (obj instanceof Hub) {
             // 20141215 could be server side, that deserialized the object+references without setting up.
             hub = (Hub) obj;
+            
+            // sort, seq, asc
+            boolean bSortAsc = true;
+            String seqProperty;
+            if (bSequence) {
+                String s = linkInfo.getSeqProperty();
+                if (OAString.notEmpty(s)) seqProperty = s;
+                else seqProperty = sortOrder;
+                if (OAString.isEmpty(seqProperty)) {
+                    bSequence = false;
+                }
+            }
+            else {
+                seqProperty = linkInfo.getSeqProperty();
+                bSequence = OAString.notEmpty(seqProperty);
+            }
+            if (bSequence) {
+                sortOrder = null;
+                bSortAsc = false;
+            }
+            else if (OAString.isEmpty(sortOrder)) {
+                sortOrder = linkInfo.getSortProperty();
+                bSortAsc = linkInfo.isSortAsc();
+            }
+            
             
             // return if not server
             if (OASync.isServer(oaObj)) {
@@ -536,30 +561,6 @@ public class OAObjectReflectDelegate {
                     }
                 }
                 
-                // sort, seq, asc
-                boolean bSortAsc = true;
-                String seqProperty;
-                if (bSequence) {
-                    String s = linkInfo.getSeqProperty();
-                    if (OAString.notEmpty(s)) seqProperty = s;
-                    else seqProperty = sortOrder;
-                    if (OAString.isEmpty(seqProperty)) {
-                        bSequence = false;
-                    }
-                }
-                else {
-                    seqProperty = linkInfo.getSeqProperty();
-                    bSequence = OAString.notEmpty(seqProperty);
-                }
-                if (bSequence) {
-                    sortOrder = null;
-                    bSortAsc = false;
-                }
-                else if (OAString.isEmpty(sortOrder)) {
-                    sortOrder = linkInfo.getSortProperty();
-                    bSortAsc = linkInfo.isSortAsc();
-                }
-                
                 if (bSequence) {
                     if (HubDelegate.getAutoSequence(hub) == null) {
                         hub.setAutoSequence(seqProperty); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
@@ -571,18 +572,20 @@ public class OAObjectReflectDelegate {
                 }
             }
             else {
-                // client needs a sort listener
-                boolean bAsc = true;
-                String s = HubSortDelegate.getSortProperty(hub); // use sort order from orig hub
-                if (OAString.isEmpty(s)) s = sortOrder;
-                else bAsc = HubSortDelegate.getSortAsc(hub);
-                if (!bSequence && !OAString.isEmpty(s) && !HubSortDelegate.isSorted(hub)) {
-                    // client recvd hub that has sorted property, without sortListener, etc.
-                    // note: serialized hubs do not have sortListener created - must be manually done
-                    //      this is done here (after checking first), for cases where references are serialized in a CS call.
-                    //      - or during below, when it is directly called.
-                    HubSortDelegate.sort(hub, s, bAsc, null, true);// dont sort, or send out sort msg
-                    hub.resort(); // this will not send out event
+                // client might need a sort listener
+                if (!bSequence) {
+                    boolean bAsc = true;
+                    String s = HubSortDelegate.getSortProperty(hub); // use sort order from orig hub
+                    if (OAString.isEmpty(s)) s = sortOrder;
+                    else bAsc = HubSortDelegate.getSortAsc(hub);
+                    if (OAString.isNotEmpty(s) && !HubSortDelegate.isSorted(hub)) {
+                        // client recvd hub that has sorted property, without sortListener, etc.
+                        // note: serialized hubs do not have sortListener created - must be manually done
+                        //      this is done here (after checking first), for cases where references are serialized in a CS call.
+                        //      - or during below, when it is directly called.
+                        HubSortDelegate.sort(hub, s, bAsc, null, true);// dont sort, or send out sort msg
+                        hub.resort(); // this will not send out event
+                    }
                 }
             }
         }

@@ -267,8 +267,8 @@ public class HubCSDelegate {
 	    
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync(thisHub);
         if (rs != null) {
-            rs.moveObjectInHub(thisHub.getObjectClass(), 
-                    thisHub.datam.masterObject.getObjectKey(), 
+            rs.moveObjectInHub(objMaster.getClass(), 
+                    objMaster.getObjectKey(), 
                     HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), posFrom, posTo);
         }
 	}

@@ -128,7 +128,7 @@ public class OASession extends OABase {
             for (int i=0; i<alForm.size(); i++) {
                 OAForm f = alForm.get(i);
                 if (id.equalsIgnoreCase(f.getId())) {
-                    LOG.warning("replacing form, id="+id+", from="+f+", to="+form);
+                    LOG.fine("replacing form, id="+id+", from="+f+", to="+form);
                 }
             }
         }

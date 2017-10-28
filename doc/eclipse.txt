@@ -1,4 +1,8 @@
 
+
+20171026 add html editor
+    http://lizusefulstuff.blogspot.com/2012/07/how-to-add-html-editor-for-eclipse.html
+
 20170805 performance issues
     add to eclipse.ini
         -Xverify:none

@@ -102,9 +102,10 @@ public class HubSortDelegate {
         
         if (!bAlreadySortedAndLocalOnly) {  // otherwise, no other client has this hub yet
             if (thisHub.datam.masterObject != null) {
-                if (propertyPaths != null || comp != null) { // otherwise it was a cancel
+                // 20171028 need to send if sort is cancelled
+                //was: if (propertyPaths != null || comp != null) { // otherwise it was a cancel
                     HubCSDelegate.sort(thisHub, propertyPaths, bAscending, comp);
-                }
+                //}
             }
         }
         return true;

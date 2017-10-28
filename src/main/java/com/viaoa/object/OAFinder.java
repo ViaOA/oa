@@ -58,8 +58,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private boolean bAddOrFilter;
     private boolean bAddAndFilter;
     private OAFilter filter;
-    private boolean bRequiresCasade;
-    private OACascade cascade;
+    private OACascade[] cascades;
 
     private volatile boolean bStop;
     private ArrayList<T> alFound;
@@ -341,17 +340,9 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
 
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(c);
         liRecursiveRoot = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
-
-        bRequiresCasade = true;
-        if (linkInfos != null && linkInfos.length > 0) {
-            HashSet<Class> hs = new HashSet<Class>();
-            for (OALinkInfo li : linkInfos) {
-                if (hs.contains(li.getToClass())) {
-                    bRequiresCasade = false;
-                    break;
-                }
-                hs.add(li.getToClass());
-            }
+        
+        if (liRecursiveRoot != null && linkInfos != null && linkInfos.length > 0) {
+            if (linkInfos[0].getType() == OALinkInfo.ONE && linkInfos[0].getReverseLinkInfo().getType() == OALinkInfo.MANY && !linkInfos[0].getReverseLinkInfo().getRecursive()) liRecursiveRoot = null; 
         }
 
         // match filters
@@ -378,12 +369,17 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private void performFind(F obj) {
         if (obj == null) return;
 
-        if (bRequiresCasade) cascade = new OACascade();
+        if (linkInfos != null && linkInfos.length > 0) {
+            cascades = new OACascade[linkInfos.length];
+            for (int i=0; i<linkInfos.length; i++) {
+                cascades[i] = new OACascade();
+            }
+        }
         try {
             find(obj, 0);
         }
         finally {
-            cascade = null;
+            cascades = null;
         }
     }
 
@@ -422,7 +418,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
 
         if (!(obj instanceof OAObject)) return;
-        if (cascade != null && cascade.wasCascaded((OAObject) obj, true)) return;
+        
+        if (pos > 0 && cascades != null) {
+            if (cascades[pos-1].wasCascaded((OAObject) obj, true)) return;
+        }
 
         // check if recursive
         if (pos == 0) {
