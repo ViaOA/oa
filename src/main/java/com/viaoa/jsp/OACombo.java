@@ -20,6 +20,9 @@ import com.viaoa.hub.HubLinkDelegate;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
+// <select id="cbo"></select>
+
+
 /**
  * Controls html select+options
  *
@@ -591,7 +594,7 @@ sb.append("}\n");
 
             String temp = getOptionDisplay(obj, i, value);
             if (OAString.isNotEmpty(temp) && !OAString.equals(value, temp)) {
-                temp = OAJspUtil.createJsString(temp,'\'');
+                temp = OAJspUtil.createEmbeddedHtmlString(temp,'\'');
                 options += " data-content='"+temp+"'";
             }
             options += ">"+value+"</option>";

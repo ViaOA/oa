@@ -113,8 +113,8 @@ public class OAStyledTextArea extends OATextField {
 
 
     @Override
-    protected String getTextJavaScript() {
-        String js = super.getTextJavaScript();
+    protected String getTextJavaScript(final boolean bIsInitializing) {
+        String js = super.getTextJavaScript(bIsInitializing);
         if (js == null) js = "";
 
         String val = null;

@@ -267,10 +267,11 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     
     @Override
     public String getAjaxScript() {
+        if (OAString.isEmpty(id)) return null;
         StringBuilder sb = new StringBuilder(1024);
         
-        if (getVisible()) sb.append("$('#"+id+"').show();");
-        else sb.append("$('#"+id+"').hide();");
+        if (getVisible()) sb.append("$('#"+id+"').show();\n");
+        else sb.append("$('#"+id+"').hide();\n");
 
         
         // tooltip

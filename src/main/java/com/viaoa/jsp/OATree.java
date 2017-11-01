@@ -288,8 +288,7 @@ fork treeview.js and add changes so that unselected event can know if there is a
         sb.append("}\n");  //end of onNodeUnselected
 */        
         
-        
-        /* 20171019 removed, event not needed since nothing is selected and the nodes are already loaded on the browser
+        // need to have expanded nodes sent to server, so that it can rebuild correctly if user refreshes, or uses browser back
         sb.append(",\nonNodeExpanded : function(event, node) {\n");
         sb.append("$('#oacommand').val('"+id+"');\n");
         sb.append("$('#oatree"+id+"').val('expand.'+node.oaid);\n");
@@ -301,7 +300,6 @@ fork treeview.js and add changes so that unselected event can know if there is a
         sb.append("$('#oatree"+id+"').val('collapse.'+node.oaid);\n");
         sb.append("ajaxSubmit2();return false;\n");
         sb.append("}\n");
-       */
         
         sb.append("});\n");  // end of treeview
         

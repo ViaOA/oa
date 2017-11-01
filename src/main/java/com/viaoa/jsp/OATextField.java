@@ -79,6 +79,9 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public final static String RegexMatch_Decimal = "^\\s*(\\+|-)?((\\d+(\\.\\d+)?)|(\\.\\d+))\\s*$";
     public final static String RegexMatch_Currency = "^\\s*(\\+|-)?((\\d+(\\.\\d\\d)?)|(\\.\\d\\d))\\s*$";
     // public final static String RegexMatch_Email = "^\\s*[\\w\\-\\+_]+(\\.[\\w\\-\\+_]+)*\\@[\\w\\-\\+_]+\\.[\\w\\-\\+_]+(\\.[\\w\\-\\+_]+)*\\s*$";
+    
+    public final static String RegexMatch_SingleDigit = "^([0-9])$";
+    public final static String RegexMatch_DoubleDigit = "^([1-9][0-9])$";
 
     // http://www.zparacha.com/validate-email-address-using-javascript-regular-expression/
     public final static String RegexMatch_Email = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$";
@@ -92,11 +95,74 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public final static String RegexMatch_Time24hr = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$";
 
     // see jquery maskedinput js lib
-    public final static String MaskInput_Phone = "(999) 999-9999";
+    public final static String MaskInput_USPhoneNumber = "(999) 999-9999";
     public final static String MaskInput_DateMMDDYYYY = "99/99/9999";
     public final static String MaskInput_DateMMDDYY = "99/99/99";
     public final static String MaskInput_TimeHMS = "99:99:99";
     public final static String MaskInput_TimeHM = "99:99";
+    public final static String MaskInput_Integer = "9?999999";
+    public final static String MaskInput_Decimal = "9?dddddd";
+    public final static String MaskInput_SingleDigit = "9";
+    public final static String MaskInput_DoubleDigit = "99";
+
+
+    // AutoNumeric jquery plugin
+    // see: http://www.decorplanit.com/plugin/
+    // NOTE: use the older version that supports jquery.  The new version is huge and is not a jq plugin
+    //    https://plugins.jquery.com/autoNumeric/ 
+    private static class AutoNum {
+        String min;
+        String max;
+        char symbol;
+        boolean symbolPrefix;
+        int decimalPlaces;
+    }
+    protected AutoNum autoNum;
+    
+
+    /**
+     * Used to use the autoNumeric plugin 
+     * @param min value
+     * @param max value
+     * @param symbol example: $
+     * @param symbolPrefix true if symber is prefix, else it will be used as suffix
+     * @param decimalPlaces number of decimals places for input and display
+     */
+    public void setNumeric(String min, String max, char symbol, boolean symbolPrefix, int decimalPlaces) {
+        autoNum = new AutoNum();
+        autoNum.min = min;
+        if (max == null) max = "9999999999999";
+        autoNum.max = max;
+        autoNum.symbol = symbol;
+        autoNum.symbolPrefix = symbolPrefix;
+        autoNum.decimalPlaces = decimalPlaces;
+    }
+    
+    public void setDecimal(int deci) {
+        this.autoNum = new AutoNum();
+        setNumeric(null, null, (char) 0, true, deci);
+    }
+    public void setCurrency() {
+        this.autoNum = new AutoNum();
+        setNumeric(null, null, (char) '$', true, 2);
+    }
+    public void setInteger() {
+        this.autoNum = new AutoNum();
+        setNumeric(null, null, (char) 0, true, 0);
+    }
+    public void setPositiveDecimal(int deci) {
+        this.autoNum = new AutoNum();
+        setNumeric("0", null, (char) 0, true, deci);
+    }
+    public void setPositiveCurrency() {
+        this.autoNum = new AutoNum();
+        setNumeric("0", null, (char) '$', true, 2);
+    }
+    public void setPositiveInteger() {
+        this.autoNum = new AutoNum();
+        setNumeric("0", null, (char) 0, true, 0);
+    }
+
 
     public OATextField(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0, 0);
@@ -526,7 +592,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
             sb.append("  remote : {\n");
             sb.append("    url : 'oatypeahead.jsp?oaform="+getForm().getId()+"&id=" + id + "&term=%QUERY',\n");
-            sb.append("    wildcard: '%QUERY'\n");
+            sb.append("    wildcard: '%QUERY',\n");
+            sb.append("    cache: false\n");  // 20171030
             sb.append("  }\n");
             
             sb.append("});\n");
@@ -644,7 +711,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         
         
         // 20170628 moved from begin of method
-        sb.append(getAjaxScript());
+        sb.append(_getAjaxScript(true));
         
 
         String js = sb.toString();
@@ -701,21 +768,24 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
     @Override
     public String getAjaxScript() {
+        return _getAjaxScript(false);
+    }
+    protected String _getAjaxScript(final boolean bIsInitializing) {
         StringBuilder sb = new StringBuilder(1024);
-        String s = getTextJavaScript();
+        String s = getTextJavaScript(bIsInitializing);
         if (s != null) sb.append(s);
 
-        if (getClearButton()) {
+        if (bIsInitializing && getClearButton()) {
             sb.append("$('#"+getId()+"Clear').css('visibility', (($('#"+getId()+"').val().length > 0)?'visible':'hidden'));\n");
         }
 
         s = getPlaceholder();
-        if (s != null) {
+        if (bIsInitializing && s != null) {
             s = OAJspUtil.createJsString(s, '\'');        
             sb.append("$('#" + id + "').attr('placeholder', '"+s+"');\n");
         }
 
-        getFloatLabelJs(sb);
+        if (bIsInitializing) getFloatLabelJs(sb);
         
         // tooltip
         String prefix = null;
@@ -753,7 +823,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         return js;
     }
 
-    protected String getTextJavaScript() {
+    protected String getTextJavaScript(final boolean bIsInitializing) {
         StringBuilder sb = new StringBuilder(1024);
 
         String newName = id;
@@ -1019,107 +1089,132 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             if (!OAString.isEmpty(dfmtJquery) && !OAString.isEmpty(tfmtJquery)) {
                 // supports jquery.datetimepicker and bootstrap datetimepicker (customized version: had to change name to bsdatetimepicker)
                 // see:  https://eonasdan.github.io/bootstrap-datetimepicker/
-
-                sb.append("if ($().bsdatetimepicker) {\n");
-                sb.append("  $('#" + id + "').bsdatetimepicker({");
-                sb.append("format: '" + OAJspUtil.createJsString((dfmtBS + " " + tfmtBS), '\'') + "'");
-                sb.append(", sideBySide: true, showTodayButton: true, showClear: true, showClose: true});\n");
-
-                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
+                if (bIsInitializing) {
+                    sb.append("if ($().bsdatetimepicker) {\n");
+                    sb.append("  $('#" + id + "').bsdatetimepicker({");
+                    sb.append("format: '" + OAJspUtil.createJsString((dfmtBS + " " + tfmtBS), '\'') + "'");
+                    sb.append(", sideBySide: true, showTodayButton: true, showClear: true, showClose: true});\n");
+    
+                    if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                        if (!getAutoComplete() && (getTypeAhead()!=null)) {
+                            sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
+                            sb.append("  $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                        }
+                    }
+                    else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
                         sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
-                        sb.append("  $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                        sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
                     }
-                }
-                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
-                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
-                }
-                sb.append("}\n");  // end bootstrap
-                sb.append("else {\n");
-                sb.append("$('#" + id + "').datetimepicker({ ");
-                sb.append("dateFormat: '" + OAJspUtil.createJsString(dfmtJquery,'\'') + "'");
-                sb.append(", timeFormat: '" + OAJspUtil.createJsString(tfmtJquery,'\'') + "'");
-                if (tfmtJquery != null && tfmtJquery.toLowerCase().indexOf('z') >= 0) {
-                    // sb.append(", timezoneList: [{label: 'EDT', value: '-240'}, {label: 'other', value: '-480'}]");
-                }
-                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
-                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}\n");
+                    sb.append("}\n");  // end bootstrap
+                    sb.append("else {\n");
+                    sb.append("$('#" + id + "').datetimepicker({ ");
+                    sb.append("dateFormat: '" + OAJspUtil.createJsString(dfmtJquery,'\'') + "'");
+                    sb.append(", timeFormat: '" + OAJspUtil.createJsString(tfmtJquery,'\'') + "'");
+                    if (tfmtJquery != null && tfmtJquery.toLowerCase().indexOf('z') >= 0) {
+                        // sb.append(", timezoneList: [{label: 'EDT', value: '-240'}, {label: 'other', value: '-480'}]");
                     }
+                    if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                        if (!getAutoComplete() && (getTypeAhead()!=null)) {
+                            sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}\n");
+                        }
+                    }
+                    else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}\n");
+                    }
+                    sb.append(" });\n");
+                    sb.append("}\n");  // end jquery
                 }
-                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}\n");
-                }
-                sb.append(" });\n");
-                sb.append("}\n");  // end jquery
             }
             else if (!OAString.isEmpty(dfmtJquery)) {
-                sb.append("if ($().bsdatetimepicker) {\n");
-                sb.append("$('#" + id + "').bsdatetimepicker({");
-                sb.append("format: '" + OAJspUtil.createJsString(dfmtBS, '\'') + "'");
-                sb.append(", showTodayButton: true, showClear: true, showClose: true});\n");
-                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
-                        sb.append("$('#" + id + "').on('dp.change', function (e) {");
-                        sb.append("$('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                if (bIsInitializing) {
+                    sb.append("if ($().bsdatetimepicker) {\n");
+                    sb.append("$('#" + id + "').bsdatetimepicker({");
+                    sb.append("format: '" + OAJspUtil.createJsString(dfmtBS, '\'') + "'");
+                    sb.append(", showTodayButton: true, showClear: true, showClose: true});\n");
+                    if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                        if (!getAutoComplete() && (getTypeAhead()!=null)) {
+                            sb.append("$('#" + id + "').on('dp.change', function (e) {");
+                            sb.append("$('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                        }
                     }
-                }
-                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
-                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
-                }
-                sb.append("}\n");  // end bootstrap
-                sb.append("else {\n");
-                sb.append("$('#" + id + "').datepicker({ dateFormat: '" + dfmtJquery + "'");
-                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
-                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}\n");
+                    else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                        sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
+                        sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
                     }
+                    sb.append("}\n");  // end bootstrap
+                    sb.append("else {\n");
+                    sb.append("$('#" + id + "').datepicker({ dateFormat: '" + dfmtJquery + "'");
+                    if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                        if (!getAutoComplete() && (getTypeAhead()!=null)) {
+                            sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}\n");
+                        }
+                    }
+                    else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}\n");
+                    }
+                    sb.append("});\n");
+                    sb.append("}\n");  // end jquery
                 }
-                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}\n");
-                }
-                sb.append("});\n");
-                sb.append("}\n");  // end jquery
             }
             else if (!OAString.isEmpty(tfmtJquery)) {
-                sb.append("if ($().bsdatetimepicker) {\n");
-                sb.append("  $('#" + id + "').bsdatetimepicker({ ");
-                sb.append("format: '" + OAJspUtil.createJsString(tfmtBS, '\'') + "'");
-                sb.append(", showClear: true, showClose: true});\n");
-
-                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
+                if (bIsInitializing) {
+                    sb.append("if ($().bsdatetimepicker) {\n");
+                    sb.append("  $('#" + id + "').bsdatetimepicker({ ");
+                    sb.append("format: '" + OAJspUtil.createJsString(tfmtBS, '\'') + "'");
+                    sb.append(", showClear: true, showClose: true});\n");
+    
+                    if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                        if (!getAutoComplete() && (getTypeAhead()!=null)) {
+                            sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
+                            sb.append("  $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                        }
+                    }
+                    else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
                         sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
-                        sb.append("  $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;});\n");
+                        sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
                     }
-                }
-                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append("$('#" + id + "').on('dp.change', function (e) {\n");
-                    sb.append("  $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;});\n");
-                }
-                sb.append("}\n");  // end bootstrap
-                sb.append("else {\n");
-                sb.append("  $('#" + id + "').timepicker({ timeFormat: '" + OAJspUtil.createJsString(tfmtJquery,'\'') + "'");
-                if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
-                    if (!getAutoComplete() && (getTypeAhead()!=null)) {
-                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}");
+                    sb.append("}\n");  // end bootstrap
+                    sb.append("else {\n");
+                    sb.append("  $('#" + id + "').timepicker({ timeFormat: '" + OAJspUtil.createJsString(tfmtJquery,'\'') + "'");
+                    if (!getSubmit() && bAjaxSubmit && OAString.isEmpty(getForwardUrl())) {
+                        if (!getAutoComplete() && (getTypeAhead()!=null)) {
+                            sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); ajaxSubmit(); return false;}");
+                        }
                     }
+                    else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
+                        sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}");
+                    }
+                    sb.append("});\n");
+                    sb.append("}");  // end jquery
                 }
-                else if (getSubmit() || !OAString.isEmpty(getForwardUrl())) {
-                    sb.append(", onClose: function() { $('#oacommand').val('" + id + "'); $('form').submit(); $('#oacommand').val(''); return false;}");
-                }
-                sb.append("});\n");
-                sb.append("}");  // end jquery
             }
 
             if (isDateTime() && !getAutoComplete() && (getTypeAhead()!=null) && getForm() != null) {
-                sb.append("$('#" + getForm().getId() + "').prepend(\"<input type='hidden' id='" + id + "_ts' name='" + id
-                        + ".ts' value=''>\");\n");
+                if (bIsInitializing) {
+                    sb.append("$('#" + getForm().getId() + "').prepend(\"<input type='hidden' id='" + id + "_ts' name='" + id
+                            + ".ts' value=''>\");\n");
+                }
             }
         }
-        else if (!OAString.isEmpty(inputMask)) {
+        else if (bIsInitializing && autoNum != null) {
+            s = "";
+            if (autoNum.symbol > 0) {
+                s = OAString.concat(s, "aSign: '"+autoNum.symbol+"'", ", ");
+                if (!autoNum.symbolPrefix) s = OAString.concat(s, "pSign: 's'", ", "); 
+            }
+        
+            if (OAString.isNotEmpty(autoNum.min) || OAString.isNotEmpty(autoNum.max)) {  
+                if (OAString.isNotEmpty(autoNum.min)) s = OAString.concat(s, "vMin: '"+autoNum.min+"'", ", ");
+                if (OAString.isNotEmpty(autoNum.max)) s = OAString.concat(s, "vMax: '"+autoNum.max+"'", ", ");
+            }
+            if (autoNum.decimalPlaces > 0)  {
+                s = OAString.concat(s, "mDec: '"+autoNum.decimalPlaces+"'", ", ");
+                // s = OAString.concat(s, "aPad: 'true'", ", "); //default
+            }
+            sb.append("$('#" + id + "').autoNumeric('init',{"+s+"});\n");
+        }
+        else if (bIsInitializing && !OAString.isEmpty(inputMask)) {
+            if (inputMask.indexOf('d') >= 0) sb.append("$.mask.definitions['d'] = '[0-9.]';\n");
             sb.append("$('#" + id + "').mask('" + inputMask + "');\n");
         }
 
@@ -1573,6 +1668,9 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         if (OAString.isNotEmpty(getToolTip())) {
             al.add(OAJspDelegate.JS_bootstrap);
+        }
+        if (autoNum != null) {
+            al.add(OAJspDelegate.JS_jquery_autonumeric);
         }
 
         String[] ss = new String[al.size()];

@@ -23,6 +23,12 @@ import com.viaoa.hub.Hub;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
+/*
+ 
+<input id='chk' type='checkbox' name='chk' value='' checked>
+
+*/
+
 /**
  * Controls an html input type=checkbox
  * 

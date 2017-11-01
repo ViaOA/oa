@@ -449,7 +449,7 @@ public class OAForm extends OABase implements Serializable {
         sb.append("  <div class='modal-content'>");
         sb.append("    <div class='modal-header'>");
         sb.append("      <button id='oaFormProcessClose' type='button' class='close' data-dismiss='modal'>&times;</button>");
-        sb.append("      <h4 class='modal-title' id='myModalLabel'>Please Wait ... <span id='oaFormProcessTitle'></span></h4>");
+        sb.append("      <h4 class='modal-title' id='myModalLabel'><span id='oaFormProcessTitle'></span></h4>");
         sb.append("    </div>");
         sb.append("    <div class='modal-body center-block'>");
         sb.append("      <div class='progress'>");
@@ -722,11 +722,6 @@ public class OAForm extends OABase implements Serializable {
         sb.append("$('#oacommand').val('');"); // set back to blank
         sb.append("$('#oaparam').val('');"); // set back to blank
 
-        if (!OAString.isEmpty(jsAddScriptOnce)) {
-            sb.append(jsAddScriptOnce);
-            jsAddScriptOnce = null;
-        }
-        
         String js = getProcessingScript();
         if (js != null) sb.append(js); 
         
@@ -735,6 +730,11 @@ public class OAForm extends OABase implements Serializable {
 
         String s = getAjaxCallbackScript();
         if (s != null) js += s;
+
+        if (!OAString.isEmpty(jsAddScriptOnce)) {
+            sb.append(jsAddScriptOnce);
+            jsAddScriptOnce = null;
+        }
         
         s = getRedirect();
         if (OAString.isNotEmpty(s)) {
@@ -798,8 +798,10 @@ public class OAForm extends OABase implements Serializable {
             step1 = p.getCurrentStep();
             step2 = p.getTotalSteps();
             
-            if (p.isDone()) perc = 100;
-            else if (step1 > step2) perc = 98;
+            if (p.isDone()) {
+                perc = 100;
+            }
+            else if (step1 > step2) perc = 100;
             else if (step1 < 2) perc = 0;
             else {
                 perc = (int) ( ( (step1-1)/((double)step2) ) * 100.0);
@@ -828,7 +830,7 @@ public class OAForm extends OABase implements Serializable {
             
             sb.append("$('#oaFormProcessProgress').css({width: '"+perc+"%'}).html('"+perc+"%');\n");
             
-            if (cnt > 1 || (step1 == 0 && step2 == 0 && OAString.isEmpty(step))) {
+             if (cnt == 0 || (step1 == 0 && step2 == 0 && OAString.isEmpty(step))) {
                 sb.append("$('#oaFormProcessStep').html('');\n");
                 sb.append("$('#oaFormProcessMessage').html('');\n");
             }
@@ -1080,7 +1082,10 @@ public class OAForm extends OABase implements Serializable {
     private final AtomicInteger aiAjaxIdLastReceived = new AtomicInteger();
 
     
-    /** used to have the browser ajax callback in 2500ms */
+    /** used to have the browser ajax callback 
+     *
+     * @see OAForm#getCallbackMs() to set the time in miliseconds.
+     */
     public void requestAjaxCallback() {
         aiAjaxIdLastRequest.incrementAndGet();
     }    
@@ -1105,8 +1110,21 @@ public class OAForm extends OABase implements Serializable {
         aiAjaxIdLastUsed.set(aiAjaxIdLastRequest.get());
         
         String s = "$('#oaajaxid').val('"+aiAjaxIdLastUsed.get()+"');";
-        s = "window.setTimeout(function() {"+s+"ajaxSubmit2();}, 2500);";
+        s = "window.setTimeout(function() {"+s+"ajaxSubmit2();}, "+getCallbackMs()+");";
         return s;
+    }
+    
+    private int msForCallback = 2500;;
+    /**
+     * If requestAjaxCallback is true, then this is the amount of time(ms) before browser will call the server.
+     * default is 2500 (ms)
+     * @param ms miliseconds
+     */
+    public void setCallbackMs(int ms) {
+        if (ms > 0) msForCallback = ms;
+    }
+    public int getCallbackMs() {
+        return msForCallback;
     }
     
     

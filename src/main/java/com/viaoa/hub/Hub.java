@@ -651,6 +651,11 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public TYPE getAt(int pos) {
         return (TYPE) HubDataDelegate.getObjectAt(this, pos);
     }
+    public TYPE getLast() {
+        int pos = getSize() - 1;
+        if (pos < 0) return null;
+        return (TYPE) HubDataDelegate.getObjectAt(this, pos);
+    }
 
     /**
      * Returns true if object exists in Hub.

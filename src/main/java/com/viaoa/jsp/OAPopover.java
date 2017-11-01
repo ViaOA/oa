@@ -184,7 +184,7 @@ public class OAPopover implements OAJspComponent, OAJspRequirementsInterface {
             lastAjaxSent = js;
             if (bInit) {
                 // http://getbootstrap.com/javascript/#popovers
-                js = "$('#"+id+"').popover({content: "+msg+", placement: '"+loc+"', title: "+title+", trigger: '"+trigger+"'});\n";
+                js = "$('#"+id+"').popover({content: '"+msg+"', placement: '"+loc+"', title: '"+title+"', trigger: '"+trigger+"'});\n";
             }
         }
         
