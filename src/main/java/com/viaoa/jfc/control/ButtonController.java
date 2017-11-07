@@ -1408,7 +1408,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 break;
             default:
             }
-            if (!HubDelegate.isValid(hub)) flag = false;
+            if (flag && !HubDelegate.isValid(hub)) flag = false;
         }
         return flag;
     }

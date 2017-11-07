@@ -69,6 +69,7 @@ public class OAJspDelegate {
     public static final String JS_jquery_slimscroll = "jquery-slimscroll";
     public static final String JS_summernote = "summernote";
     public static final String JS_jquery_autonumeric = "jquery-autonumeric";
+    public static final String JS_jquery_validation = "jquery-validation";
     
     static {
         registerRequiredJsName(JS_jquery, "vendor/jquery-3.1.1/jquery.js");
@@ -87,9 +88,10 @@ public class OAJspDelegate {
         registerRequiredJsName(JS_jquery_slimscroll, "vendor/jquery-slimscroll/jquery.slimscroll.js");
         registerRequiredJsName(JS_summernote, "vendor/summernote/summernote.js");
         registerRequiredJsName(JS_jquery_autonumeric, "vendor/jquery-autonumeric/autoNumeric.js");
+        registerRequiredJsName(JS_jquery_validation, "vendor/jquery-validation/jquery.validate.js");
     }
-    
-    
+
+
     
     
     /**

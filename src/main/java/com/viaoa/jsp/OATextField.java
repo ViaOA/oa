@@ -879,7 +879,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             }
             else {
                 OAObject obj = (OAObject) hub.getAO();
-                if (obj != null) {
+                if (obj != null && nameIncludesObjectId) {
                     OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
                     Object[] objs = key.getObjectIds();
                     if (objs != null && objs.length > 0 && objs[0] != null) {
@@ -1829,4 +1829,92 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         s = getFloatLabel();
         sb.append("$('#"+id+" + span').html(\""+OAJspUtil.createJsString(s,'\"')+"\");\n");            
     }
+    
+    public String getValidationRules() {
+//qqqq note: validation uses attr name as identifier, not id.
+//      need to set nameIncludesObjectId=false
+//qqq oawed needs to set name=id        
+        if (!getRequired()) return null; 
+        StringBuilder sb = new StringBuilder(80);
+        sb.append(id+": {");
+        if (getRequired()) sb.append("required: true");
+        
+/*qqq add more later
+ 
+                                    $("#my-forms-wizard").validate({
+                                        onsubmit: false,
+                                        rules: {
+                                            txt10: {
+                                                required: true,
+                                                minlength: 3,
+                                                maxlength: 6,
+                                                min: 100,
+                                                max: 9999,
+                                                rangelength: [3, 6],
+                                                number: true,
+                                                pattern: /^AR\d{4}$/,
+                                                digits: true,
+                                                creditcard: true,
+                                                accept: "image/*",
+                                                extension:"doc|docx|pdf|txt",
+                                                alphanumeric: true,
+                                                integer: true
+                                            }
+                                        },
+                                        messages: {
+                                            txt10: {
+                                                required: "please enter your fullname",
+                                                minlength: "fullname needs to be {0} chars!!",
+                                                maxlength: "max len msg",
+                                                min: "min msg",
+                                                max: "max msg",
+                                                rangelength: "range msg",
+                                                number: "must be a num",
+                                                pattern: "pattern msg",
+                                                digits: "digits msg",
+                                                creditcard: "creditcard msg",
+                                                accept: "accept msg",
+                                                extension: "ext msg",
+                                                alphanumeric: "alphanum msg",
+                                                integer: "integer msg"
+                                            }
+                                        },    
+                                        highlight : function(element) {
+                                            $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
+                                        },
+                                        success : function(element) {
+                                            $(element).closest('.form-group').removeClass('has-error');
+                                            $(element).remove();
+                                        },
+                                        errorPlacement : function(error, element) {
+                                            element.parent().append(error);
+                                        }
+                                    });
+         
+         
+ */
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String getValidationMessages() {
+        if (!getRequired()) return null; 
+        StringBuilder sb = new StringBuilder(80);
+        sb.append(id+": {");
+
+        String s = name;
+        if (OAString.isEmpty(s)) {
+            s = placeholder;
+            if (OAString.isEmpty(s)) s = id;
+        }
+        sb.append("required: '"+s+" is required'");
+//qqqqqq  add more later            
+
+        sb.append("}");
+        return sb.toString();
+    }
+    
+//qqqqqqqq 20171105 temp so that the attr name is same as attr id (needed by validation.js) 
+    public boolean nameIncludesObjectId = true;
+    
 }

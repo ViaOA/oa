@@ -795,6 +795,12 @@ if (name.equalsIgnoreCase("AwardType")) {
             int x = propertyName.compareTo(ss[i]);
             if (x == 0) {
                 int pos = (i/8);
+                
+                if (pos >= oaObj.nulls.length) {
+                    int x2 = (ss==null) ? 0 : ((int) Math.ceil(ss.length / 8.0d));
+                    oaObj.nulls = new byte[x2];
+                }
+                
                 byte b = oaObj.nulls[pos];
                 int bit = i % 8;
 

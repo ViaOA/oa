@@ -544,6 +544,79 @@ public class OAForm extends OABase implements Serializable {
         getMessages(sb);
         sb.append("\n");
 
+        
+//qqqqqqqqqqqqqqqqqq see OATextField getValidationRules/messages for full example
+//qqqqqqqq need to set this form.addValidation=true         
+        // 20171104 add jquery.validate
+        if (addValidation) {
+            sb.append("if ($.validator) {\n");
+            sb.append("  $('#"+id+"').validate({\n");
+    
+            sb.append("    onsubmit: false");
+            
+            boolean b = false;
+            for (int i=0; ;i++) {
+                if (i >= alComponent.size()) break;
+                OAJspComponent comp = alComponent.get(i);
+                String s = comp.getScript();
+    
+                // todo:  add other components qqqqqqqqqqq 
+                if (comp instanceof OATextField) {
+                    s = ((OATextField) comp).getValidationRules();
+                    if (OAString.isNotEmpty(s)) {
+                        if (!b) {
+                            b = true;
+                            sb.append(", rules: {\n");
+                            sb.append(s);
+                        }
+                        else sb.append(", \n" +s);
+                    }
+                }
+            }
+            if (b) {
+                sb.append("}\n");
+            }            
+            
+            b = false;
+            for (int i=0; ;i++) {
+                if (i >= alComponent.size()) break;
+                OAJspComponent comp = alComponent.get(i);
+                String s = comp.getScript();
+    
+                // todo:  add other components qqqqqqqqqqq 
+                if (comp instanceof OATextField) {
+                    s = ((OATextField) comp).getValidationMessages();
+                    if (OAString.isNotEmpty(s)) {
+                        if (!b) {
+                            b = true;
+                            sb.append(", messages: {\n");
+                            sb.append(s);
+                        }
+                        else sb.append(", \n" +s);
+                    }
+                }
+            }
+            if (b) {
+                sb.append("}\n");
+            }            
+
+            sb.append(",\n");            
+            sb.append("highlight : function(element) {\n");
+            sb.append("    $(element).closest('.form-group').removeClass('has-success').addClass('has-error');\n");
+            sb.append("},\n");
+            sb.append("success : function(element) {\n");
+            sb.append("    $(element).closest('.form-group').removeClass('has-error');\n");
+            sb.append("    $(element).remove();\n");
+            sb.append("},\n");
+            sb.append("errorPlacement : function(error, element) {\n");
+            sb.append("    element.parent().append(error);\n");
+            sb.append("}\n");
+            
+            sb.append("  });\n");
+            sb.append("}\n");
+        }        
+        
+        
         // add form submit, to verify components
         sb.append("    $('#"+id+"').on('submit', oaSubmit);\n");
         sb.append("    var oaSubmitCancelled;\n");
@@ -561,6 +634,19 @@ public class OAForm extends OABase implements Serializable {
             if (!OAString.isEmpty(s)) sb.append("    " + s + "\n");
         }
 
+//qqqqqqqqqqqqqqq
+        // 20171104 add jquery.validate
+        if (addValidation) {
+            sb.append("if ($.validator) {\n");
+            sb.append("  if(!$('#"+id+"').valid()) {\n");
+            sb.append("    $('"+id+"').validate().focusInvalid();\n");
+            sb.append("    oaShowMessage('Can not submit', 'Required fields are missing');\n");
+            sb.append("    return false;\n");
+            sb.append("  }\n");
+        }        
+        sb.append("}\n");
+        
+        
         sb.append("if (requires.length > 0) {\n");
         sb.append("    event.preventDefault();\n");
         sb.append("    var msg = '';\n");
@@ -724,12 +810,9 @@ public class OAForm extends OABase implements Serializable {
 
         String js = getProcessingScript();
         if (js != null) sb.append(js); 
-        
-        js = sb.toString();
-        if (js == null) js = "";
 
         String s = getAjaxCallbackScript();
-        if (s != null) js += s;
+        if (s != null) sb.append(s);
 
         if (!OAString.isEmpty(jsAddScriptOnce)) {
             sb.append(jsAddScriptOnce);
@@ -739,12 +822,13 @@ public class OAForm extends OABase implements Serializable {
         s = getRedirect();
         if (OAString.isNotEmpty(s)) {
             setRedirect(null);
-            js += "window.location = '"+s+"';";            
+            sb.append("window.location = '"+s+"';");            
         }
+
+        js = sb.toString();
+        if (js == null) js = "";
         
         bLastDebug = bDebugx;
-
-        // js = OAString.convert(js, "\n", "\\n");
         return js;
     }
 
@@ -1657,7 +1741,10 @@ public class OAForm extends OABase implements Serializable {
     public String getJsInsert() {
         ArrayList<String> alName = new ArrayList<>();
         
-        alName.add(OAJspDelegate.JS_jquery);
+        if (!alName.contains(OAJspDelegate.JS_jquery)) alName.add(OAJspDelegate.JS_jquery);
+        if (addValidation) {
+            if (!alName.contains(OAJspDelegate.JS_jquery_validation)) alName.add(OAJspDelegate.JS_jquery_validation);
+        }
         
         for (String s : alRequiredJsName) {
             s = s.toUpperCase();
@@ -1710,5 +1797,7 @@ public class OAForm extends OABase implements Serializable {
         return urlRedirect;
     }
     
-    
+
+    //qqqqqq 20171105 temp
+    public boolean addValidation=false;
 }

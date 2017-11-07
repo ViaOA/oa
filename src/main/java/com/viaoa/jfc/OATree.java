@@ -274,6 +274,10 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         setAllowDrop(b);
         setAllowDrag(b);
     }
+    public void setAllowDnd(boolean b) {
+        setAllowDrop(b);
+        setAllowDrag(b);
+    }
 
     /**
         Flag that allows for dropping (DND) support, default=true.
@@ -623,12 +627,10 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 if (tn.titleFlag) continue;
 
                 Hub h2 = null;
-                if (node.titleFlag) {
+                if (node.titleFlag && tn.hub != null) {
                     h2 = tn.hub;
                 }
                 else if (tn.methodsToHub != null) {
-
-                    
                    // Temp Hack: 20101209 changed so that it will always get methods, since a treeNode could be reused (ex: recursive) and the methods could be wrong
                    //   this will be fixed later, when the method path is in the TreeNodeChild        
                    if (tn.methodsToHub != null) {
@@ -704,9 +706,10 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
 	                    OAUndoManager.add(OAUndoableEdit.createUndoableInsert(null, dragHub, dragObject, pos1));
 	                }
 	                else {
-	                	dragToHub.add(dragObject);
-                        // 20091214
-                        OAUndoManager.add(OAUndoableEdit.createUndoableAdd(null, dragHub, dragObject));
+	                	if (!dragToHub.contains(dragObject)) {
+	                	    dragToHub.add(dragObject);
+	                        OAUndoManager.add(OAUndoableEdit.createUndoableAdd(null, dragHub, dragObject));
+	                	}
 	                }
             	}
             }
@@ -1718,6 +1721,8 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
             // 20120228 if titleNode is selected, then find first child node to display
             OATreeNode tnUse = tnd.node;
             OATreeNodeData tndUse = tnd;
+            Hub hubAdditonalUpdate = null; // 20171106
+            
             if (bLastNode && tnd.node instanceof OATreeTitleNode) {
                 OATreeNode[] tns = tnd.node.getChildrenTreeNodes();
                 if (tns != null) {
@@ -1729,6 +1734,9 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                     }
                 }
                 int x = tnd.getChildCount();
+                if (x == 0) { // 20171106
+                    hubAdditonalUpdate = tnUse.def.updateHub;
+                }
                 for (int ii=0; tnUse != null && ii<x; ii++) {
                     OATreeNodeData tndx = tnd.getChild(ii);
                     if (tndx != null && tndx.node == tnUse) {
@@ -1800,8 +1808,13 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                     hsUpdateHub.add(tndUse.node.def.updateHub);
                 }
             }
+
+            if (hubAdditonalUpdate != null) {
+                HubAODelegate.setActiveObjectForce(hubAdditonalUpdate, null);
+            }
         }
 
+        
         // need to unselect Hub.ActiveObject for all nodes under the selected node
         OATreeNodeData tnd = (OATreeNodeData) lastSelection[lastSelection.length-1];
 

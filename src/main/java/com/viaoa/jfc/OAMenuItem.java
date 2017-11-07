@@ -74,7 +74,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
             
             // first, last, new,insert,add,nwe_manual, add_manual            
             
-            
             // get default enabledMode
             switch (command) {
             case Other:
@@ -90,6 +89,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
             case Add:
             case NewManual:
             case AddManual:
+            case Paste:
                 enabledMode = ButtonEnabledMode.HubIsValid;
                 break;
             default:
@@ -709,4 +709,9 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         return control.getDisplayComponent();
     }
 
+    @Override
+    public void setEnabled(boolean b) {
+        super.setEnabled(b);
+    }
+    
 }

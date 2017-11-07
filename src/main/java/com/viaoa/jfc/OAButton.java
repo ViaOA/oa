@@ -117,6 +117,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
             case Add:
             case NewManual:
             case AddManual:
+            case Paste:
                 enabledMode = ButtonEnabledMode.HubIsValid;
                 break;
             default:
