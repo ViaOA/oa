@@ -796,6 +796,9 @@ public class OAObjectReflectDelegate {
             }
         }
 
+/*20171108 moved below. The issue with this is that this adds the Hub to oaObj.props before it runs the
+ *    select (which loads data).  Another thread could get this empty hub before the objects are loaded.        
+ 
         // 20141204 added check to see if property is now there, in case it was deserialized and then
         //    the property was set by HubSerializeDelegate._readResolve
         if (bThisIsServer || OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, false) == null) {
@@ -807,7 +810,7 @@ public class OAObjectReflectDelegate {
                 OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
             }
         }
-        
+ */       
         if ((bThisIsServer || (bIsCalc && !bIsServerSideCalc)) && sortOrder != null && sortOrder.length() > 0) {
             if (hub.getSelect() != null) {
                 hub.setSelectOrder(sortOrder);
@@ -871,6 +874,17 @@ public class OAObjectReflectDelegate {
                 if (!OAString.isEmpty(s)) {
                     HubSortDelegate.sort(hub, s, bAsc, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
                 }
+            }
+        }
+
+        // 20171108 moved here from above
+        if (bThisIsServer || OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, false) == null) {
+            // set property
+            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+            }
+            else {
+                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
             }
         }
         return hub;

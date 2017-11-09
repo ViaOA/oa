@@ -75,13 +75,19 @@ public class HifiveDataGenerator {
         createEmployees(loc.getEmployees(), 0, maxEmpLevels);
         assertEquals(loc.getEmployees().getAt(0).getLocation(), loc);
     }
+    public int empIdCnt;
     private void createEmployees(Hub<Employee> hub, int level, int maxLevels) {
         Employee emp = new Employee();
+        emp.setId(++empIdCnt);
+        emp.setEmployeeCode(emp.getId()+"");
         cntEmployee++;
         hub.add(emp);
         if (level+1 < maxLevels) {
             createEmployees(emp.getEmployees(), level+1, maxLevels);
             assertEquals(emp.getEmployees().getAt(0).getParentEmployee(), emp);
+            for (Employee empx : emp.getEmployees()) {
+                empx.setLocation(emp.getLocation());
+            }
         }
         for (int i=0; i<2; i++) {
             createEmployeeAwards(emp.getEmployeeAwards());

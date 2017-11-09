@@ -46,6 +46,8 @@ public class OAObjectSaveDelegate {
             }
             return;
         }
+        if (OAThreadLocalDelegate.isDeleting(oaObj)) return; 
+
         if (cascade.wasCascaded(oaObj, true)) return;
         cascade.depthAdd();
         

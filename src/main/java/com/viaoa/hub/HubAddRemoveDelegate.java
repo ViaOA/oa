@@ -369,9 +369,8 @@ public class HubAddRemoveDelegate {
                 return;
             }
         }
-        
+ 
         final boolean bIsLoading = OAThreadLocalDelegate.isLoading(); 
-
         if (!bIsLoading && thisHub.data.getSortListener() != null) {
             // use getCurrentSize to guess that it will go at the end, in 
             //  cases where this is loaded in order.
@@ -434,19 +433,21 @@ public class HubAddRemoveDelegate {
                 
                 // 20161226 dont set prop if loading and link is a M2M
                 if (thisHub.datam.masterObject != null) {
-                    if (!bIsLoading || thisHub.datam.liDetailToMaster.getType() == OALinkInfo.ONE) {
+                    if (!bIsLoading && thisHub.datam.liDetailToMaster != null && thisHub.datam.liDetailToMaster.getType() == OALinkInfo.ONE) {
                         HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
                     }
                 }
                 //was: HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
                 
                 // if recursive and this is the root hub, then need to set parent to null (since object is now in root, it has no parent)
-                Hub rootHub = thisHub.getRootHub();
-                if (rootHub != null) {
-                    if (rootHub == thisHub) {
-                        OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
-                        if (liRecursive != null) {
-                            OAObjectReflectDelegate.setProperty((OAObject)obj, liRecursive.getName(), null, null);
+                if (!bIsLoading) { // 20171108
+                    Hub rootHub = thisHub.getRootHub();
+                    if (rootHub != null) {
+                        if (rootHub == thisHub) {
+                            OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
+                            if (liRecursive != null) {
+                                OAObjectReflectDelegate.setProperty((OAObject)obj, liRecursive.getName(), null, null);
+                            }
                         }
                     }
                 }

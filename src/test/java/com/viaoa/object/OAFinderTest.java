@@ -253,8 +253,6 @@ public class OAFinderTest extends OAUnitTest {
         HifiveDataGenerator data = new HifiveDataGenerator();
         data.createSampleData();
         
-        // should not 
-        
         String pp = "location.program.locations.employees";
         
         Employee emp = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
@@ -264,7 +262,18 @@ public class OAFinderTest extends OAUnitTest {
         finder.addEqualFilter(Employee.P_LastName, "xxx");
         
         Employee empx = finder.findFirst(emp);
-
+        assertEquals(emp, empx);
+        
+        
+        for (int i=1; i < data.empIdCnt; i++) {
+            System.out.print(" "+i);
+            if (i % 40 == 0) System.out.println("");
+            OAFinder<Program, Employee> f = new OAFinder<Program, Employee>(ProgramPP.locations().employees().pp);
+            f.addEqualFilter(Employee.P_EmployeeCode, i+"");
+            ArrayList<Employee> al = f.find(ModelDelegate.getPrograms());
+            assertTrue(al != null && al.size() == 1);
+        }
+        
         
         reset();
     }

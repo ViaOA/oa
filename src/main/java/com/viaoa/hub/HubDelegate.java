@@ -512,7 +512,7 @@ public class HubDelegate {
         
         if (liRev.getCacheSize() > 0) {
             if (bReferenceable || bSupportStorage) {
-                boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) master, liRev.getName(), !bReferenceable);
+                boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) master, liRev.getName(), !bReferenceable, hub);
                 if (!b) return; // already done, dont need to check/change parents
             }
         }

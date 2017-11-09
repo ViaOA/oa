@@ -1127,6 +1127,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             }
             @Override
             public void afterRemoveAll(HubEvent e) {
+                if (removeObjects == null)  return;
                 for (Object obj : removeObjects) {
                     remove((F) obj);
                 }

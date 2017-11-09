@@ -284,7 +284,7 @@ public class OAThreadLocalDelegate {
 	
 	// Deleting -----------------------
     
-    private static Vector vecDeleting = new Vector(10);
+    private final static Vector vecDeleting = new Vector(10);
 	/**
 	 * Is this thread currently deleting.
 	 */
