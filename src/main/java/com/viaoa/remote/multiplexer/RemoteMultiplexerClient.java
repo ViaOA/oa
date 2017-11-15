@@ -1348,7 +1348,7 @@ public class RemoteMultiplexerClient {
         }
         if (x < max) return;
         
-        LOG.fine("throttle begin  syncQue.size="+queSyncRequestInfo.size()+", remoteThread.cnt="+alRemoteThread.size());
+        LOG.fine("throttle begin syncQue.size="+queSyncRequestInfo.size()+", remoteThread.cnt="+alRemoteThread.size());
         for (int i=0; i<55; i++) {  // cant wait more then a second, since circQue checks msLastRead
             Thread.sleep(15);
             x = queSyncRequestInfo.size();
