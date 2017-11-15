@@ -498,10 +498,10 @@ public class OASyncServer {
                 return;
             }
         }
-        
+
         try {
             if (queRemoteRequestLogging != null) {
-                if (queRemoteRequestLogging.offer(ri, 5, TimeUnit.MILLISECONDS)) {
+                if (queRemoteRequestLogging.offer(ri, 2, TimeUnit.MILLISECONDS)) {
                     return;
                 }
             }
@@ -509,7 +509,7 @@ public class OASyncServer {
         catch (Exception e) {
             LOG.log(Level.WARNING, "error adding remote request to log queue", e);
         }
-        // LOG.fine("RemoteLog data: " + ri.toLogString());
+        LOG.fine("RemoteLog data: " + ri.toLogString());
     }
 
     
@@ -532,7 +532,7 @@ public class OASyncServer {
             return;
         }
         
-        queRemoteRequestLogging = new ArrayBlockingQueue<RequestInfo>(250);
+        queRemoteRequestLogging = new ArrayBlockingQueue<RequestInfo>(1000);
 
         String tname = "OASyncServer_logRequests";
         LOG.config("starting thread that writes logs, threadName=" + tname);
