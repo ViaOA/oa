@@ -10,6 +10,7 @@
 */
 package com.viaoa.sync.remote;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
@@ -53,19 +54,38 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
             //LOG.fine("remove guid="+guids[i]+" for "+sessionId);
         }
     }
-    
+
+    static final AtomicInteger aiCnt = new AtomicInteger();//qqqqqqqqqqqqqq
+
     @Override
     public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger) {
-        LOG.fine("masterClass="+masterClass+", prop="+property);
+        LOG.fine(aiCnt.incrementAndGet()+") masterClass="+masterClass+", prop="+property);
+/*qqqqqqqqqqqqqq        
+System.out.println("AStart: masterClass="+masterClass+", prop="+property);
+long ts1 = System.currentTimeMillis();
+*/
         Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys, bForHubMerger);
+/*        
+long ts2 = System.currentTimeMillis();
+System.out.println("AEnd: masterClass="+masterClass+", prop="+property+"  ===> "+(ts2-ts1));
+*/        
         return obj;
     }
 
     // 20151129 does not put in the msg queue, but will write the return value using the same vsocket that the msg queue thread uses.
     @Override
     public Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger) {
-        LOG.fine("masterClass="+masterClass+", prop="+property);
+        int cnt = aiCnt.incrementAndGet();
+        LOG.fine(cnt+") masterClass="+masterClass+", prop="+property);
+/*qqqqqqqqqqqqqq        
+System.out.println("Start: masterClass="+masterClass+", prop="+property);
+long ts1 = System.currentTimeMillis();
+*/
         Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys, bForHubMerger);
+/*        
+long ts2 = System.currentTimeMillis();
+System.out.println(cnt+") End: masterClass="+masterClass+", prop="+property+"  ===> "+(ts2-ts1));        
+*/        
         return obj;
     }
     
