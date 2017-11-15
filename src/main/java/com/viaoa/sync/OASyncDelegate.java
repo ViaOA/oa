@@ -677,4 +677,11 @@ public class OASyncDelegate {
      * 
      * public static OASyncCombinedClient getSyncCombinedClient() { return syncCombinedClient; } public
      * static void setSyncCombinedClient(OASyncCombinedClient cc) { syncCombinedClient = cc; } */
+
+    public static void setLoading() {
+        OAThreadLocalDelegate.setLoading(true);
+    }
+    public static void setLoading(boolean b) {
+        OAThreadLocalDelegate.setLoading(b);
+    }
 }
