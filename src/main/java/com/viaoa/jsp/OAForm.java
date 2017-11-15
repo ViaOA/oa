@@ -643,8 +643,8 @@ public class OAForm extends OABase implements Serializable {
             sb.append("    oaShowMessage('Can not submit', 'Required fields are missing');\n");
             sb.append("    return false;\n");
             sb.append("  }\n");
+            sb.append("}\n");
         }        
-        sb.append("}\n");
         
         
         sb.append("if (requires.length > 0) {\n");
@@ -772,7 +772,6 @@ public class OAForm extends OABase implements Serializable {
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(1024);
 
-        getMessages(sb);
         boolean bDebugx = getDebug();
         if (bLastDebug != bDebugx) {
             if (bDebugx) {
@@ -805,6 +804,7 @@ public class OAForm extends OABase implements Serializable {
         }
         alNewAddComponent.clear();
 
+        
         sb.append("$('#oacommand').val('');"); // set back to blank
         sb.append("$('#oaparam').val('');"); // set back to blank
 
@@ -818,13 +818,15 @@ public class OAForm extends OABase implements Serializable {
             sb.append(jsAddScriptOnce);
             jsAddScriptOnce = null;
         }
-        
+
         s = getRedirect();
         if (OAString.isNotEmpty(s)) {
             setRedirect(null);
             sb.append("window.location = '"+s+"';");            
         }
 
+        getMessages(sb);
+        
         js = sb.toString();
         if (js == null) js = "";
         
