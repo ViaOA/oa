@@ -415,15 +415,15 @@ public class OAObjectPropertyDelegate {
         boolean hasWait;
         Thread thread;
     }
-    public static void setPropertyLock(OAObject oaObj, String name) {
-        _setPropertyLock(oaObj, name, true);
+    public static boolean setPropertyLock(OAObject oaObj, String name) {
+        return _setPropertyLock(oaObj, name, true, false);
     }
     public static boolean attemptPropertyLock(OAObject oaObj, String name) {
-        return _setPropertyLock(oaObj, name, false);
+        return _setPropertyLock(oaObj, name, false, true);
     }
-    private static boolean _setPropertyLock(OAObject oaObj, String name, boolean bWaitIfNeeded) {
+    private static boolean _setPropertyLock(final OAObject oaObj, final String name, final boolean bWaitIfNeeded, final boolean bCheckIfThisThread) {
         if (oaObj == null || name == null) return false;
-        String key = OAObjectKeyDelegate.getKey(oaObj).getGuid() + "." + name.toUpperCase();
+        String key = OAObjectDelegate.getGuid(oaObj) + "." + name.toUpperCase();
         PropertyLock lock;
         synchronized (oaObj) {
             lock = hmLock.get(key);
@@ -435,11 +435,11 @@ public class OAObjectPropertyDelegate {
             }
         }
         synchronized (lock) {
-            if (lock.thread == Thread.currentThread()) return true;
+            if (lock.thread == Thread.currentThread()) return bCheckIfThisThread;
             if (!bWaitIfNeeded) return false;
             for (int i=0; ;i++) {
-                if (i > 6) {
-                    LOG.log(Level.FINE, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue", new Exception("wait time exceeded"));
+                if (i > 100) {
+                    LOG.log(Level.WARNING, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue", new Exception("wait time exceeded"));
                     return false;  // bail out, ouch
                 }
                 if (i == 0) {
@@ -448,17 +448,17 @@ public class OAObjectPropertyDelegate {
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-                    lock.wait(50);  // 20161014 was 250 
+                    lock.wait(50); 
                 }
                 catch (Exception e) {
                 }
             }
         }
-        return _setPropertyLock(oaObj, name, bWaitIfNeeded);  // create a new one
+        return _setPropertyLock(oaObj, name, bWaitIfNeeded, bCheckIfThisThread);  // create a new one
     }
     public static void releasePropertyLock(OAObject oaObj, String name) {
         if (oaObj == null || name == null) return;
-        String key = OAObjectKeyDelegate.getKey(oaObj).getGuid() + "." + name.toUpperCase();
+        String key = OAObjectDelegate.getGuid(oaObj) + "." + name.toUpperCase();
         PropertyLock lock;
         synchronized (oaObj) {
             lock = hmLock.remove(key);
