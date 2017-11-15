@@ -590,8 +590,9 @@ public class OAObjectReflectDelegate {
             }
         }
         else {
+            boolean b = false;
             try {
-                OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
+                b = OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
     
                 obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, true);
                 if (obj instanceof Hub) {
@@ -601,7 +602,7 @@ public class OAObjectReflectDelegate {
                 hub = _getReferenceHub(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch, oi, linkInfo);
             }
             finally {
-                OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
+                if (b) OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
             }
         }
 
@@ -820,6 +821,8 @@ public class OAObjectReflectDelegate {
             }
         }
 
+        final String matchProperty = linkInfo.getMatchProperty();
+
         // needs to loadAllData first, otherwise another thread could get the hub without using the lock
         if (bThisIsServer || (bIsCalc && !bIsServerSideCalc)) {
             if (!OAObjectCSDelegate.loadReferenceHubDataOnServer(hub, select)) { // load all data before passing to client
@@ -845,7 +848,6 @@ public class OAObjectReflectDelegate {
             }            
             
             // 20110505 autoMatch propertyPath
-            String matchProperty = linkInfo.getMatchProperty();
             if (matchProperty != null && matchProperty.length() > 0) {
                 if (hubMatch == null) {
                     String matchHubProperty = linkInfo.getMatchHub();
@@ -859,9 +861,12 @@ public class OAObjectReflectDelegate {
                         }
                     }
                 }
+                
+                /** 20171113 moved after hub is added 
                 if (hubMatch != null) {
                     hub.setAutoMatch(matchProperty, hubMatch, true);
                 }
+                */
             }
         }
         else {
@@ -887,6 +892,13 @@ public class OAObjectReflectDelegate {
                 OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
             }
         }
+        // 20171113 moved from above
+        if (hubMatch != null && (bThisIsServer || (bIsCalc && !bIsServerSideCalc))) {
+            if (matchProperty != null && matchProperty.length() > 0) {
+                hub.setAutoMatch(matchProperty, hubMatch, true);
+            }
+        }
+        
         return hub;
     }
 
@@ -1176,7 +1188,7 @@ public class OAObjectReflectDelegate {
         int cnt = 0;
         for (Object obj : hub) {
             int max = maxRefsToLoad > 0 ? (maxRefsToLoad-cnt) : 0;
-            cnt += _loadAllReferences(cnt, (OAObject) obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, cascade, max);
+            cnt += _loadAllReferences(cnt, (OAObject) obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, max);
             if (maxRefsToLoad > 0 && cnt >= maxRefsToLoad) break;
         }
         return cnt;
