@@ -124,7 +124,15 @@ public class RequestInfo {
     }
 
     public String toLogString() {
+        
         String msg = String.format("%1$tm/%1$td|%1$tH:%1$tM:%1$tS.%1$tL", new Date(msStart));
+
+        double d;
+        if (nsStart == 0 || nsEnd == 0) d = -1.0d;
+        else d = (nsEnd - nsStart) / 1000000;
+
+        msg += String.format("|%.1f",  d);
+        
         msg += "|" + connectionId;
         msg += "|" + bindName;
         msg += "|" + type;
@@ -208,6 +216,7 @@ public class RequestInfo {
     
     public static String getLogHeader() {
         String msg = "Date|Time";
+        msg += "|ms";
         msg += "|ConnectionId";
         msg += "|BindName";
         msg += "|Type";
