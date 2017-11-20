@@ -10,6 +10,8 @@
 */
 package com.viaoa.hub;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -431,9 +433,8 @@ public class HubAddRemoveDelegate {
             if (OAObjectHubDelegate.isInHub((OAObject)obj, thisHub)) {
                 // this code has been moved before the listeners are notified.  Else listeners could ask for more objects
                 
-                // 20161226 dont set prop if loading and link is a M2M
                 if (thisHub.datam.masterObject != null) {
-                    if (!bIsLoading && thisHub.datam.liDetailToMaster != null && thisHub.datam.liDetailToMaster.getType() == OALinkInfo.ONE) {
+                    if (!bIsLoading || thisHub.datam.liDetailToMaster.getType() == OALinkInfo.ONE) {
                         HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
                     }
                 }
@@ -758,6 +759,12 @@ public class HubAddRemoveDelegate {
         if (thisHub == null) return false;
         return thisHub.data.isDupAllowAddRemove();
     }
-    
+
+    /**
+     * This will load all of the objects into the hub without checking or sending events.
+     */
+    public static void unsafeAddAll(Hub hub, List list) {
+        hub.data.vector.addAll(list);
+    }
 }
 
