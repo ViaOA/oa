@@ -39,7 +39,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     protected boolean bPropertyPathIsOneLink;
     protected String visiblePropertyPath;
     protected String enablePropertyPath;
-    protected int width, maxWidth;
+    protected int width, minLength, maxLength;
     protected OAForm form;
     protected boolean bEnabled = true;
     protected boolean bVisible = true;
@@ -78,14 +78,17 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public final static String RegexMatch_Integer = "^\\s*(\\+|-)?\\d+\\s*$";
     public final static String RegexMatch_Decimal = "^\\s*(\\+|-)?((\\d+(\\.\\d+)?)|(\\.\\d+))\\s*$";
     public final static String RegexMatch_Currency = "^\\s*(\\+|-)?((\\d+(\\.\\d\\d)?)|(\\.\\d\\d))\\s*$";
-    // public final static String RegexMatch_Email = "^\\s*[\\w\\-\\+_]+(\\.[\\w\\-\\+_]+)*\\@[\\w\\-\\+_]+\\.[\\w\\-\\+_]+(\\.[\\w\\-\\+_]+)*\\s*$";
     
     public final static String RegexMatch_SingleDigit = "^([0-9])$";
     public final static String RegexMatch_DoubleDigit = "^([1-9][0-9])$";
 
     // http://www.zparacha.com/validate-email-address-using-javascript-regular-expression/
     public final static String RegexMatch_Email = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$";
+    //was: public final static String RegexMatch_Email = "^\\s*[\\w\\-\\+_]+(\\.[\\w\\-\\+_]+)*\\@[\\w\\-\\+_]+\\.[\\w\\-\\+_]+(\\.[\\w\\-\\+_]+)*\\s*$";
 
+    public final static String RegexMatch_CreditCard = "^\\s*\\d+\\s*$";  // qqq currently only checks if digits
+    
+    
     // http://stackoverflow.com/questions/123559/a-comprehensive-regex-for-phone-number-validation
     public final static String RegexMatch_USPhoneNumber = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$";
 
@@ -168,11 +171,11 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         this(id, hub, propertyPath, 0, 0);
     }
 
-    public OATextField(String id, Hub hub, String propertyPath, int width, int maxWidth) {
+    public OATextField(String id, Hub hub, String propertyPath, int width, int maxLength) {
         this.id = id;
         this.hub = hub;
         this.width = width;
-        this.maxWidth = maxWidth;
+        this.maxLength = maxLength;
         setPropertyPath(propertyPath);
     }
 
@@ -972,10 +975,26 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         }
         else {
             value = OAJspUtil.createJsString(value, '\'');
-            sb.append("$('#" + id + "').val('" + value + "');\n");
+            if (autoNum != null) {
+                if (autoNum.decimalPlaces > 0) {
+                    double d = OAConv.toDouble(value);
+                    value = OAConv.toString(d);
+                }
+                else {
+                    long x = OAConv.toLong(value);
+                    value = x+"";
+                }
+            }
+            if (autoNum != null && !bIsInitializing) {
+                sb.append("$('#" + id + "').autoNumeric('set', '"+value+"');\n");
+                //was: sb.append("$('#" + id + "').val($('#" + id + "').autoNumeric('set', '"+value+"'));\n");
+            }
+            else {
+                sb.append("$('#" + id + "').val('" + value + "');\n");
+            }
         }
         
-        if (maxWidth > 0) sb.append("$('#" + id + "').attr('maxlength', '" + maxWidth + "');\n");
+        if (getMaxLength() > 0) sb.append("$('#" + id + "').attr('maxlength', '" + getMaxLength() + "');\n");
         if (width > 0) sb.append("$('#" + id + "').attr('size', '" + width + "');\n");
 
         
@@ -1207,10 +1226,10 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
                 if (OAString.isNotEmpty(autoNum.min)) s = OAString.concat(s, "vMin: '"+autoNum.min+"'", ", ");
                 if (OAString.isNotEmpty(autoNum.max)) s = OAString.concat(s, "vMax: '"+autoNum.max+"'", ", ");
             }
-            if (autoNum.decimalPlaces > 0)  {
+            //if (autoNum.decimalPlaces > 0)  {
                 s = OAString.concat(s, "mDec: '"+autoNum.decimalPlaces+"'", ", ");
                 // s = OAString.concat(s, "aPad: 'true'", ", "); //default
-            }
+            //}
             sb.append("$('#" + id + "').autoNumeric('init',{"+s+"});\n");
         }
         else if (bIsInitializing && !OAString.isEmpty(inputMask)) {
@@ -1431,19 +1450,35 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
     public int getMaxWidth() {
         getDataSourceMaxWidth();
-        if (maxWidth <= 0) {
+        if (maxLength <= 0) {
             if (dataSourceMax >= 0) return dataSourceMax;
         }
-        if (dataSourceMax > 0 && maxWidth > dataSourceMax) return dataSourceMax;
-        return maxWidth;
+        if (dataSourceMax > 0 && maxLength > dataSourceMax) return dataSourceMax;
+        return maxLength;
     }
 
     /**
      * max length of text. If -1 (default) then unlimited.
      */
     public void setMaxWidth(int x) {
-        maxWidth = x;
-        maxWidth = getMaxWidth(); // verify with Datasource
+        maxLength = x;
+        maxLength = getMaxWidth(); // verify with Datasource
+    }
+
+    
+    public int getMaxLength() {
+        return getMaxWidth();
+    }
+    public void setMaxLength(int x) {
+        maxLength = x;
+        maxLength = getMaxWidth(); // verify with Datasource
+    }
+    
+    public int getMinLength() {
+        return minLength;
+    }
+    public void setMinLength(int x) {
+        minLength = x;
     }
 
     public void setFocus(boolean b) {
@@ -1831,13 +1866,39 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     }
     
     public String getValidationRules() {
-//qqqq note: validation uses attr name as identifier, not id.
+// IMPORTANT NOTE:  validation uses attr name as identifier, not id.
 //      need to set nameIncludesObjectId=false
-//qqq oawed needs to set name=id        
+//qqq oaweb needs to set name=id        
         if (!getRequired()) return null; 
         StringBuilder sb = new StringBuilder(80);
         sb.append(id+": {");
-        if (getRequired()) sb.append("required: true");
+        int cnt = 0;
+        if (getRequired()) {
+            if (cnt++ > 0) sb.append(",\n"); 
+            sb.append("required: true");
+        }
+        int x = getMaxLength();
+        if (x > 0) {
+            if (cnt++ > 0) sb.append(",\n"); 
+            sb.append("maxlength: "+x+"");
+        }
+        x = getMinLength();
+        if (x > 0) {
+            if (cnt++ > 0) sb.append(",\n"); 
+            sb.append("minlength: "+x+"");
+        }
+        
+        String s = getRegexMatch();
+        if (OAString.isNotEmpty(s)) {
+            if (s.equals(RegexMatch_Email)) {
+                if (cnt++ > 0) sb.append(",\n"); 
+                sb.append("email: true");
+            }
+            else if (s.equals(RegexMatch_CreditCard)) {
+                if (cnt++ > 0) sb.append(",\n"); 
+                sb.append("creditcard: true");
+            }
+        }
         
 /*qqq add more later
  
