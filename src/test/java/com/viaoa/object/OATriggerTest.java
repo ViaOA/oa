@@ -225,7 +225,7 @@ public class OATriggerTest extends OAUnitTest {
         //assertEquals(2, al.size());
         for (String s : al) {
             ArrayList<OATrigger> alt = oi.getTriggers(s);
-            assertEquals(1, alt.size());
+            assertTrue(alt.size() > 0);
         }
         
         String[] pps = new String[] {
@@ -248,7 +248,7 @@ public class OATriggerTest extends OAUnitTest {
         OATriggerDelegate.removeTrigger(t);
         
         al = oi.getTriggerPropertNames();
-        assertEquals(2, al.size());
+        assertTrue(al.size() > 1);
         
     }
     

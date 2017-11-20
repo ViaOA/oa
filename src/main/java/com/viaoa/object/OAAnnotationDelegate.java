@@ -368,7 +368,7 @@ public class OAAnnotationDelegate {
      * Load/update Database using annotations
      */
     private static void _createColumns(Database database, Class clazz) throws Exception {
-        Method[] methods = clazz.getDeclaredMethods();  // need to get all access types, since some could be private. qqqqqq does not get superclass methods
+        Method[] methods = clazz.getDeclaredMethods();  // need to get all access types, since some could be private.  does not get superclass methods
 
         OATable dbTable = (OATable) clazz.getAnnotation(OATable.class);
         if (dbTable == null) throw new Exception("Annotation for Table not defined for this class");
@@ -403,7 +403,7 @@ public class OAAnnotationDelegate {
                 column.primaryKey = true;
                 column.guid = oaid.guid();
                 column.assignNextNumber = oaid.autoAssign();
-                // c.assignedByDatabase = qqq
+                // c.assignedByDatabase = 
             }
             if (oaprop != null) {
                 column.unicode = oaprop.isUnicode();
@@ -417,7 +417,7 @@ public class OAAnnotationDelegate {
     
     private static void _updateTable(Database database, Class clazz) throws Exception {
 
-        Method[] methods = clazz.getDeclaredMethods();  // need to get all access types, since some could be private. qqqqqq does not get superclass methods
+        Method[] methods = clazz.getDeclaredMethods();  // need to get all access types, since some could be private. does not get superclass methods
 
         OATable dbTable = (OATable) clazz.getAnnotation(OATable.class);
         if (dbTable == null) throw new Exception("Annotation for Table not defined for this class"); 

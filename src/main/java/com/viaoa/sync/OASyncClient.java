@@ -143,6 +143,7 @@ public class OASyncClient {
     public Object getDetail(final OAObject masterObject, final String propertyName) {
 //System.out.println("OASyncClient.getDetail, masterObject="+masterObject+", propertyName="+propertyName);
         LOG.fine("masterObject="+masterObject+", propertyName="+propertyName);
+        long ts = System.currentTimeMillis();
         
         int cntx = ++cntGetDetail;        
         int xDup = OAObjectSerializeDelegate.cntDup;
@@ -156,14 +157,17 @@ public class OASyncClient {
         String[] additionalMasterProperties = null; 
         Object result = null;
 
-        
         OALinkInfo li = null;
         try {
-            HubMerger merger = OAThreadLocalDelegate.getGetDetailMerger();
+            // both Hub && pp are set by HubMerger, HubGroupBy
+            final Hub detailHub = OAThreadLocalDelegate.getGetDetailHub();
+            final String detailPropertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
+            final boolean bUsesDetail = (detailHub != null && detailPropertyPath != null); 
+            
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
                 result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                        additionalMasterProperties, siblingKeys, merger!=null);
+                        additionalMasterProperties, siblingKeys, bUsesDetail);
             }
             else {
                 // this will "ask" for additional data "around" the requested property
@@ -171,14 +175,14 @@ public class OASyncClient {
                 // send siblings to return back with same prop
                 li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
                 if (li == null || !li.getCalculated()) {
-                    siblingKeys = getDetailSiblings(masterObject, li, propertyName, merger);
+                    siblingKeys = getDetailSiblings(masterObject, li, propertyName, detailHub, detailPropertyPath);
                 }
-                if (merger == null) {
+                if (!bUsesDetail) {
                     additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
                 }
                 
                 result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                        additionalMasterProperties, siblingKeys, merger!=null);
+                        additionalMasterProperties, siblingKeys, bUsesDetail);
             }
         }
         catch (Exception e) {
@@ -239,9 +243,11 @@ public class OASyncClient {
             int iNew = OAObjectSerializeDelegate.cntNew; 
             int iDup = OAObjectSerializeDelegate.cntDup;
             
-            String s = String.format(
+            ts = System.currentTimeMillis() - ts;
+            String s = (ts > 750) ? " ALERT" : "";
+            s = String.format(
                 "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d/%,d, moreProps=%d, " +
-                "newCnt=%,d, dupCnt=%,d, totNewCnt=%,d, totDupCnt=%,d",
+                "newCnt=%,d, dupCnt=%,d, totNewCnt=%,d, totDupCnt=%,d, ms=%,d%s",
                 cntx, 
                 masterObject, 
                 propertyName, 
@@ -252,7 +258,9 @@ public class OASyncClient {
                 iNew-xNew, 
                 iDup-xDup,
                 iNew, 
-                iDup
+                iDup,
+                ts,
+                s
             );
             OAPerformance.LOG.fine(s);
             LOG.fine(s);
@@ -263,59 +271,57 @@ public class OASyncClient {
     /**
      * Find any other siblings to get the same property for sibling objects in same hub.
      */
-    protected OAObjectKey[] getDetailSiblings(final OAObject masterObject, final OALinkInfo linkInfo, final String property, final HubMerger merger) {
+    protected OAObjectKey[] getDetailSiblings(final OAObject masterObject, final OALinkInfo linkInfo, final String property, final Hub detailHub, final String detailPropertyPath) {
         // note: could be for a blob property
 
+        if (detailHub != null && detailPropertyPath != null) {
+            // set by HubMerger or HubGroupBy, where it will be loading from a Root Hub using a PropertyPath
+            Hub h = detailHub;
+            String spp = detailPropertyPath;
+            
+            OAPropertyPath pp = new OAPropertyPath(h.getObjectClass(), spp);
+            spp = null;
+            for (OALinkInfo li : pp.getLinkInfos()) {
+                if (property.equalsIgnoreCase(li.getName())) break;
+                if (spp == null) spp = li.getName();
+                else spp += "." + li.getName();
+            }
+            
+            OAFinder f = new OAFinder(h, spp) {
+                int cnt;
+                @Override
+                protected boolean isUsed(OAObject obj) {
+                    boolean b = !OAObjectPropertyDelegate.isPropertyLoaded(obj, property);
+                    if (b) {
+                        if (++cnt > 100) {
+                            stop();
+                        }
+                    }
+                    return b;
+                }
+            };
+            f.setUseOnlyLoadedData(true);
+            ArrayList al = f.find();
+            if (al == null || al.size() == 0) return null;
+            int x = al.size();
+            OAObjectKey[] keys = new OAObjectKey[x];
+            for (int i=0; i<x; i++) {
+                keys[i] = ((OAObject)al.get(i)).getObjectKey();
+            }
+            return keys;
+        }
+        
         Hub siblingHub = null;
-        final Hub hubThreadLocal = OAThreadLocalDelegate.getGetDetailHub();
-        if (hubThreadLocal != null && hubThreadLocal.contains(masterObject)) {
-            siblingHub = hubThreadLocal;
+        if (detailHub != null && detailHub.contains(masterObject)) {
+            siblingHub = detailHub;
         }
         if (siblingHub == null) {
-            if (merger == null) siblingHub = findBestSiblingHub(masterObject);
-            if (siblingHub == null) {
-                if (merger == null) return null;
-                
-                Hub h = merger.getRootHub();
-                if (h == null) return null;
-                String spp = merger.getPath();
-                if (spp == null) return null;
-                
-                OAPropertyPath pp = new OAPropertyPath(h.getObjectClass(), spp);
-                spp = null;
-                for (OALinkInfo li : pp.getLinkInfos()) {
-                    if (property.equalsIgnoreCase(li.getName())) break;
-                    if (spp == null) spp = li.getName();
-                    else spp += "." + li.getName();
-                }
-                
-                OAFinder f = new OAFinder(h, spp) {
-                    int cnt;
-                    @Override
-                    protected boolean isUsed(OAObject obj) {
-                        boolean b = !OAObjectPropertyDelegate.isPropertyLoaded(obj, property);
-                        if (b) {
-                            if (++cnt > 500) {
-                                stop();
-                            }
-                        }
-                        return b;
-                    }
-                };
-                f.setUseOnlyLoadedData(true);
-                ArrayList al = f.find();
-                if (al == null || al.size() == 0) return null;
-                int x = al.size();
-                OAObjectKey[] keys = new OAObjectKey[x];
-                for (int i=0; i<x; i++) {
-                    keys[i] = ((OAObject)al.get(i)).getObjectKey();
-                }
-                return keys;
-            }
+            siblingHub = findBestSiblingHub(masterObject);
+            if (siblingHub == null) return null;
         }
         
         ArrayList<OAObjectKey> al = new ArrayList<OAObjectKey>();
-        _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, hubThreadLocal!=null, merger);
+        _getDetailSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, detailHub!=null, detailHub, detailPropertyPath);
         
         if (al == null || al.size() == 0) return null;
         int x = al.size();
@@ -382,10 +388,12 @@ public class OASyncClient {
     
     
     private void _getDetailSiblings(HashSet<Object> hsValues, ArrayList<OAObjectKey> alResults, final OAObject masterObject, 
-            final Hub siblingHub, OALinkInfo linkInfo, String propertyName, final boolean bAgressive, final HubMerger merger) {
+            final Hub siblingHub, OALinkInfo linkInfo, String propertyName, final boolean bAgressive, final Hub detailHub, final String detailPropertyPath) {
         
-        _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive, merger);
-        if (alResults.size() > (merger!=null?500:25) || linkInfo == null) return;
+        final boolean bUsesDetail = detailHub != null && detailPropertyPath != null; 
+        
+        _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive, detailHub, detailPropertyPath);
+        if (alResults.size() > (bUsesDetail?500:25) || linkInfo == null) return;
 
         // go up to master.parent and get siblings from there
         OAObject parentMasterObject = siblingHub.getMasterObject();
@@ -435,17 +443,19 @@ public class OASyncClient {
 
             Hub h = (Hub) liRev.getValue(obj);
             if (h.getSize() > 0) {
-                _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive, merger);
+                _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive, detailHub, detailPropertyPath);
             }
-            if (alResults.size() > (merger!=null?500:100)) break;
+            if (alResults.size() > (bUsesDetail?500:100)) break;
         }        
     }    
     
     
     private void _getDetailSiblingsA(HashSet<Object> hsValues, ArrayList<OAObjectKey> al, 
-            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive, final HubMerger merger) {
+            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive, final Hub detailHub, final String detailPropertyPath) {
         // get the same property for siblings
 
+        final boolean bUsesDetail = detailHub != null && detailPropertyPath != null; 
+        
         // find best starting pos, either before or after
         int pos = siblingHub.getPos(masterObject);
         if (pos < 0) pos = 0;
@@ -485,7 +495,7 @@ public class OASyncClient {
                 }
                 else if (bIsMany || bIsOne2One) {                
                     al.add(key);
-                    if (merger != null) {
+                    if (bUsesDetail) {
                         if (al.size() > 500) break;
                     }
                     else if (al.size() >= (100*(bAgressive?3:1))) break;
@@ -498,7 +508,7 @@ public class OASyncClient {
                     value = OAObjectCacheDelegate.get(valueClass, value);
                     if (value == null) { // not on client
                         al.add(key);
-                        if (merger != null) {
+                        if (bUsesDetail) {
                             if (al.size() > 650) break;
                         }
                         else if (al.size() > (150*(bAgressive?3:1))) break;

@@ -86,9 +86,9 @@ public class OAThreadLocal {
     protected Tuple<Object, String>[] calcPropertyEvents;
     
     
-    
-    
     protected Hub getDetailHub; // hub that a get detail is being called for. This is a helper for getting detail from server
+    protected String getDetailPropertyPath; // propertyPath from getDetailHub, set by HubMerger and HubGroupBy
+
     
     public OAThreadLocal() {
         this.threadName = Thread.currentThread().getName();
@@ -103,8 +103,6 @@ public class OAThreadLocal {
     
     // 20160625
     protected int recursiveTriggerCount;
-
-    protected HubMerger getDetailMerger; // current HubMerger, that could be calling OASyncClient.getDetail
 
 }
 

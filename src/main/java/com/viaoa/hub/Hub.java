@@ -909,7 +909,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         this.data.setDisabled(!b);
     }
     
-    
     /**
      * Helper method that mimics Vector.addElement(), it calls Hub.add(obj,
      * false)

@@ -42,7 +42,6 @@ public class OAObjectInfoDelegate {
             oi = OAObjectHashDelegate.hashObjectInfo.get(clazz);
             if (oi != null) return oi;
         }
-        
         if (clazz == null || !OAObject.class.isAssignableFrom(clazz) || OAObject.class.equals(clazz)) {
             oi = OAObjectHashDelegate.hashObjectInfo.get(String.class); // fake out so that null is never returned
             if (oi != null) return oi;
@@ -104,10 +103,6 @@ public class OAObjectInfoDelegate {
         
         synchronized (Lock) {
             oi = (OAObjectInfo) OAObjectHashDelegate.hashObjectInfo.get(clazz);
-if (clazz.getName().indexOf("EmployeeAwardSearch") >= 0) {
-    int xx = 4;
-    xx++;
-}
             if (oi != null) return oi;
 
             if (!bSkip) {
@@ -648,7 +643,7 @@ if (name.equalsIgnoreCase("AwardType")) {
     public static Method[] getAllMethods(OAObjectInfo oi) {
         Class clazz = oi.thisClass;
         Map<String, Method> map = OAObjectHashDelegate.getHashClassMethod(clazz);
-        Method[] ms = new Method[map.size()];  // qqqq, not threadsafe, method could be null
+        Method[] ms = new Method[map.size()];  // todo: not threadsafe, method could be null
         int i = 0;
         for (String s : map.keySet()) {
             ms[i] = (Method) map.get(s);

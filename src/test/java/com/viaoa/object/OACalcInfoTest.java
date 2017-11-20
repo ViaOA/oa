@@ -4,6 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.viaoa.OAUnitTest;
 import com.viaoa.annotation.OACalculatedProperty;
@@ -27,7 +28,13 @@ public class OACalcInfoTest extends OAUnitTest {
         //OACalculatedProperty(displayName = "Display Name", displayLength = 15, properties = {P_Name, P_HostName, P_IpAddress})
 
         String[] ss = new String[] {Server.P_Name, Server.P_HostName, Server.P_IpAddress};
-        assertTrue( OAArray.isEqual(ci.getProperties(), ss) );
+        
+        boolean b = OAArray.isEqual(ci.getProperties(), ss);
+        if (!b) {
+            Arrays.sort(ss);
+            b = OAArray.isEqual(ci.getProperties(), ss);
+        }
+        assertTrue(b);
         
     }
     

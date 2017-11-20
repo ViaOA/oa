@@ -21,7 +21,10 @@ public abstract class SSLClient extends SSLBase {
     }
     
     protected SSLContext createSSLContext() throws Exception {
-        SSLContext sslContext = SSLContext.getInstance("SSLv3");
+        // 20171118
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+// SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        //was: SSLContext sslContext = SSLContext.getInstance("SSLv3");
 
         KeyStore keystore = KeyStore.getInstance("JKS");
 

@@ -187,16 +187,26 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     private void init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll, boolean bIncludeRootHub) {
 
+        this.hubRoot = hubRoot;
+        this.hubCombined = hubCombinedObjects;
+        this.propertyPath = propertyPath;
+        this.bShareActiveObject = bShareActiveObject;
+        this.bUseAll = bUseAll;
+        this.bIncludeRootHub = bIncludeRootHub;
+        
         long ts = System.currentTimeMillis();
+
+        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
         try {
             // 20120624 hubCombined could be a detail hub.
             OAThreadLocalDelegate.setSuppressCSMessages(true);
-            OAThreadLocalDelegate.setGetDetailMerger(HubMerger.this);
-            _init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
+            OAThreadLocalDelegate.setGetDetailHub(this.hubRoot, this.propertyPath);
+            _init();
         }
         finally {
             OAThreadLocalDelegate.setSuppressCSMessages(false);
-            OAThreadLocalDelegate.setGetDetailMerger(null);
+            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
         }
         ts = System.currentTimeMillis() - ts;
 
@@ -208,17 +218,17 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         if (!bUseBackgroundThread) {
             if (bUseAll) {
                 int x = hubRoot.size();
-                if (x > 50) {
-                    if (x > 150 || propertyPath.indexOf(".") > 0) {
-                        s += ", ALERT";
+                if (x > 100) {
+                    if (x > 350 || propertyPath.indexOf(".") > 0) {
+                        s += ", ALERT (large root hub)";
                     }
                 }
             }
             if (hubCombined != null && hubCombined.getSize() > 250) {
-                s += ", ALERT";
+                s += ", ALERT (large result hub)";
             }
             if (ts > 1000) {
-                s += ", ALERT";
+                s += ", ALERT (took over 1second)";
             }
         }
 
@@ -230,16 +240,8 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         LOG.fine(s);
     }
 
-    private void _init(Hub hubRoot, Hub hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
-            boolean bUseAll, boolean bIncludeRootHub) {
-        this.hubRoot = hubRoot;
-        this.hubCombined = hubCombinedObjects;
-        this.propertyPath = propertyPath;
-        this.bShareActiveObject = bShareActiveObject;
-        this.bUseAll = bUseAll;
-        this.bIncludeRootHub = bIncludeRootHub;
+    private void _init() {
         createNodes(); // this will create nodeRoot
-
         this.dataRoot = new Data(nodeRoot, null, hubRoot);
         nodeRoot.data = dataRoot;
     }
@@ -1555,12 +1557,18 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         }
 
         private void _onNewList() {
+            Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+            String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
             try {
+                OAThreadLocalDelegate.setGetDetailHub(HubMerger.this.hubRoot, HubMerger.this.propertyPath);
                 if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
+                else OAThreadLocalDelegate.setSuppressCSMessages(true);
                 _onNewList2();
             }
             finally {
                 if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
+                else OAThreadLocalDelegate.setSuppressCSMessages(false);
+                OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
             }
         }
         

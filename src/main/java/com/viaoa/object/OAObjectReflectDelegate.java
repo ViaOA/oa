@@ -225,7 +225,7 @@ public class OAObjectReflectDelegate {
             return;
         }
 
-        boolean bIsLoading = OAThreadLocalDelegate.isLoading();
+        final boolean bIsLoading = OAThreadLocalDelegate.isLoading();
 
         String propNameU = propName.toUpperCase();
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
@@ -988,14 +988,16 @@ public class OAObjectReflectDelegate {
     }
 
     public static void loadAllReferences(Hub hub, boolean bIncludeCalc) {
-        Hub hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
+        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        OAThreadLocalDelegate.setGetDetailHub(hub, null);
         try {
             for (Object obj : hub) {
                 if (obj instanceof OAObject) loadAllReferences((OAObject) obj, bIncludeCalc);
             }
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(hubx);
+            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
         }
     }
 
@@ -1094,6 +1096,9 @@ public class OAObjectReflectDelegate {
     public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, int maxRefsToLoad) {
         return _loadAllReferences(0, obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, null, maxRefsToLoad);
     }
+    public static int loadAllReferences(OAObject obj, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, int maxRefsToLoad, long maxEndTime) {
+        return _loadAllReferences(0, obj, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, null, maxRefsToLoad, maxEndTime);
+    }
 
     public static int loadAllReferences(Hub hub, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc) {
         return _loadAllReferences(0, hub, 0, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, null, null, 0);
@@ -1118,23 +1123,27 @@ public class OAObjectReflectDelegate {
 
     public static int loadAllReferences(final Hub hub, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback, OACascade cascade) {
         int cnt = 0;
-        Hub hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
+        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        OAThreadLocalDelegate.setGetDetailHub(hub, null);
         try {
             cnt = _loadAllReferences(0, hub, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, 0);
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(hubx);
+            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
         }
         return cnt;
     }
     public static int loadAllReferences(final Hub hub, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback, OACascade cascade, int maxRefsToLoad) {
         int cnt = 0;
-        Hub hubx = OAThreadLocalDelegate.setGetDetailHub(hub);
+        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        OAThreadLocalDelegate.setGetDetailHub(hub, null);
         try {
             cnt = _loadAllReferences(0, hub, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, maxRefsToLoad);
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(hubx);
+            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
         }
         return cnt;
     }
@@ -1194,9 +1203,14 @@ public class OAObjectReflectDelegate {
         return cnt;
         
     }    
-    
     private static int _loadAllReferences(int currentRefsLoaded, final OAObject obj, final int levelsLoaded, final int maxLevelsToLoad, final int additionalOwnedLevelsToLoad,
             final boolean bIncludeCalc, final OACallback callback, OACascade cascade, final int maxRefsToLoad) {
+        
+        return _loadAllReferences(currentRefsLoaded, obj, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, maxRefsToLoad, 0);
+    }
+    
+    private static int _loadAllReferences(int currentRefsLoaded, final OAObject obj, final int levelsLoaded, final int maxLevelsToLoad, final int additionalOwnedLevelsToLoad,
+            final boolean bIncludeCalc, final OACallback callback, OACascade cascade, final int maxRefsToLoad, final long maxEndTime) {
 
         if (cascade == null) cascade = new OACascade();
 
@@ -1213,19 +1227,20 @@ public class OAObjectReflectDelegate {
 
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
         for (OALinkInfo li : oi.getLinkInfos()) {
+            if (maxEndTime > 0 && System.currentTimeMillis() > maxEndTime) break;
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
             if (bOwnedOnly && !li.bOwner) continue;
 
-            
             Object objx = OAObjectPropertyDelegate.getProperty(obj, li.getName(), true, true);
             if (objx instanceof OANotExist || objx instanceof OAObjectKey) {  // not loaded from ds
                 currentRefsLoaded++;
             }
             
             objx = obj.getProperty(li.getName()); // load prop
+            if (maxLevelsToLoad > 0 && currentRefsLoaded >= maxRefsToLoad) break;
             if (objx == null) continue;
-
+            
             if (levelsLoaded + 1 >= maxLevelsToLoad) {
                 if (levelsLoaded + 1 >= (maxLevelsToLoad + additionalOwnedLevelsToLoad)) {
                     continue;
@@ -1233,7 +1248,9 @@ public class OAObjectReflectDelegate {
             }
 
             if (objx instanceof Hub) {
-                Hub hubx = OAThreadLocalDelegate.setGetDetailHub((Hub) objx);
+                Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+                String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+                OAThreadLocalDelegate.setGetDetailHub((Hub) objx, null);
                 try {
                     for (Object objz : (Hub) objx) {
                         currentRefsLoaded = _loadAllReferences(currentRefsLoaded, (OAObject) objz, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc,callback, cascade, maxRefsToLoad);
@@ -1241,7 +1258,7 @@ public class OAObjectReflectDelegate {
                     }
                 }
                 finally {
-                    OAThreadLocalDelegate.resetGetDetailHub(hubx);
+                    OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
                 }
             }
             else if (objx instanceof OAObject) {

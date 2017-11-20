@@ -23,10 +23,12 @@ public class HifiveDataGenerator {
     
     public void createSampleData() {
         // OAThreadLocalDelegate.setLoadingObject(true); // dont set, since it wont set recursive parents
-        
+        Hub<Program> hx1 = ModelDelegate.getPrograms();
         for (int i=0; i<5; i++) {
             Program program = new Program();
             program.setName("program."+i);
+
+            Hub<Program> hx2 = ModelDelegate.getPrograms();
             ModelDelegate.getPrograms().add(program);
             
             for (int i2=0; i2<3; i2++) {

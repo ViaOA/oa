@@ -33,8 +33,6 @@ import com.viaoa.util.OAString;
     OAObjectInfo contains information about an OAObject.
     This includes object id, links to other objects, calculated properties. 
     <p>
-    Note: this will be replaced by the com.viaoa.model Classes
-    <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 public class OAObjectInfo { //implements java.io.Serializable {

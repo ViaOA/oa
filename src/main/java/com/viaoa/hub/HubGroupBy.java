@@ -15,6 +15,7 @@ import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
@@ -1087,9 +1088,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         OAGroupBy gbNewFound = createGroupBy(a);
                         HubGroupBy.this.hubCombined.add(gbNewFound);
                     }
-                    for (F b : hubFrom) {
-                        add(b);
-                    }
+                    addAll();
                 }
             });
             for (G a : hubGroupBy) {
@@ -1162,9 +1161,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
                         HubGroupBy.this.hubCombined.add(gbNewFound);
                     }
                 }
-                for (F b : hubFrom) {
-                    add(b);
-                }
+                addAll();
             }
 
             @Override
@@ -1226,12 +1223,26 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             listenPropertyName = "hubGroupBy" + aiCnt.getAndIncrement();
             hubFrom.addHubListener(hl, listenPropertyName, new String[] { propertyPath });
         }
-
-        for (F bx : hubFrom) {
-            add(bx);
-        }
+        addAll();
     }
 
+    private void addAll() {
+        // this will tell the OASyncClient.getDetail which hub objects are being used
+        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        try {
+            OAThreadLocalDelegate.setSuppressCSMessages(true);
+            OAThreadLocalDelegate.setGetDetailHub(this.hubFrom, this.propertyPath);
+            for (F bx : hubFrom) {
+                add(bx);
+            }
+        }
+        finally {
+            OAThreadLocalDelegate.setSuppressCSMessages(false);
+            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+        }
+    }
+    
     private ArrayList<OAGroupBy> add(F b) {
         return add(b, false);
     }

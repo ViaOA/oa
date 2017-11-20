@@ -19,7 +19,6 @@ import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.hub.Hub;
-import com.viaoa.hub.HubMerger;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAArray;
@@ -53,7 +52,6 @@ public class OAThreadLocalDelegate {
     private static AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
     private static AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
     private static AtomicInteger TotalRecursiveTriggerCount = new AtomicInteger();
-    private static AtomicInteger TotalGetDetailMerger = new AtomicInteger();
     
     private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
     
@@ -905,26 +903,45 @@ static volatile int unlockCnt;
         if (ti == null) return null;
         return ti.getDetailHub;
     }
-    public static Hub setGetDetailHub(Hub h) {
-        return setGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h);
+    
+    public static String getGetDetailPropertyPath() {
+        String s; 
+        if (OAThreadLocalDelegate.TotalGetDetailHub.get() == 0) {
+            s = null;
+        }
+        else {
+            s = getGetDetailPropertyPath(OAThreadLocalDelegate.getThreadLocal(false));
+        }
+        return s;
     }
-    public static void resetGetDetailHub(Hub h) {
-        resetGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h);
-    }
-    private static long msGetDetailHub;
-    protected static Hub setGetDetailHub(OAThreadLocal ti, Hub hub) {
+    protected static String getGetDetailPropertyPath(OAThreadLocal ti) {
         if (ti == null) return null;
+        return ti.getDetailPropertyPath;
+    }
+    
+    public static void setGetDetailHub(Hub h, String pp) {
+        setGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, pp);
+    }
+    public static void resetGetDetailHub(Hub h, String pp) {
+        resetGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, pp);
+    }
+
+    private static long msGetDetailHub;
+    protected static void setGetDetailHub(OAThreadLocal ti, Hub hub, String pp) {
+        if (ti == null) return;
         Hub hubx = ti.getDetailHub;
         ti.getDetailHub = hub;
+        ti.getDetailPropertyPath = pp;
         int x = OAThreadLocalDelegate.TotalGetDetailHub.getAndIncrement();
         if (x > 50 || x < 0) {
             msGetDetailHub = throttleLOG("TotalGetDetailHub="+x, msGetDetailHub);
         }
-        return hubx;
     }
-    protected static void resetGetDetailHub(OAThreadLocal ti, Hub hub) {
+    // used to set back to a previous (or null) value
+    protected static void resetGetDetailHub(OAThreadLocal ti, Hub hub, String pp) {
         if (ti == null) return;
         ti.getDetailHub = hub;
+        ti.getDetailPropertyPath = pp;
         int x = OAThreadLocalDelegate.TotalGetDetailHub.decrementAndGet();
         if (x > 25 || x < 0) {
             msGetDetailHub = throttleLOG("TotalGetDetailHub="+x, msGetDetailHub);
@@ -1120,38 +1137,6 @@ static volatile int unlockCnt;
     }
     public static String getIgnoreTreeListenerProperty() {
         return getThreadLocal(true).ignoreTreeListenerProperty;            
-    }
-
-
-    public static HubMerger getGetDetailMerger() {
-        HubMerger m; 
-        if (OAThreadLocalDelegate.TotalGetDetailMerger.get() == 0) {
-            m = null;
-        }
-        else {
-            m = getGetDetailMerger(OAThreadLocalDelegate.getThreadLocal(false));
-        }
-        return m;
-    }
-    protected static HubMerger getGetDetailMerger(OAThreadLocal ti) {
-        if (ti == null) return null;
-        return ti.getDetailMerger;
-    }
-    public static HubMerger setGetDetailMerger(HubMerger hm) {
-        return setGetDetailMerger(OAThreadLocalDelegate.getThreadLocal(true), hm);
-    }
-    private static long msGetDetailMerger;
-    protected static HubMerger setGetDetailMerger(OAThreadLocal ti, HubMerger hubMerger) {
-        if (ti == null) return null;
-        HubMerger hubMergerx = ti.getDetailMerger;
-        ti.getDetailMerger = hubMerger;
-        int x;
-        if (hubMerger == null) x = OAThreadLocalDelegate.TotalGetDetailMerger.decrementAndGet();
-        else x = OAThreadLocalDelegate.TotalGetDetailMerger.getAndIncrement();
-        if (x > 50 || x < 0) {
-            msGetDetailMerger = throttleLOG("TotalGetDetailMerger="+x, msGetDetailMerger);
-        }
-        return hubMergerx;
     }
 
 }

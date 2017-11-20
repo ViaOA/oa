@@ -89,6 +89,7 @@ public class ClientGetDetail {
             final String property, final String[] masterProps, final OAObjectKey[] siblingKeys, final boolean bForHubMerger) {
 
         if (masterObjectKey == null || property == null) return null;
+        long ts = System.currentTimeMillis();
 
         Object masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         if (masterObject == null) {
@@ -132,15 +133,20 @@ public class ClientGetDetail {
             returnValue = os;
         }
 
-        String s = String.format(
-            "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d/%,d, masterProps=%s",
+        ts = System.currentTimeMillis() - ts;
+        String s = (ts > 500) ? " ALERT" : "";
+        
+        s = String.format(
+            "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d/%,d, masterProps=%s, ms=%,d%s",
             ++cntx, 
             masterObject.getClass().getSimpleName(), 
             property, 
             detailValue,
             cntSib,        
             (siblingKeys == null)?0:siblingKeys.length,
-            masterProps==null?"":(""+masterProps.length)
+            masterProps==null?"":(""+masterProps.length),
+            ts,
+            s
         );
         
         OAPerformance.LOG.fine(s);
@@ -167,7 +173,7 @@ public class ClientGetDetail {
         // include the references "around" this object and master object, along with any siblings
       
         // see OASyncClient.getDetail(..)
-        final long t1 = System.currentTimeMillis();
+        final long msStart = System.currentTimeMillis();
 
         boolean b = wasFullySentToClient(masterObject);
         final boolean bMasterWasPreviouslySent = b && (masterProperties == null || masterProperties.length == 0);
@@ -175,36 +181,31 @@ public class ClientGetDetail {
         if (masterProperties != null && masterObject instanceof OAObject) {
             for (String s : masterProperties) {
                 ((OAObject) masterObject).getProperty(s);
-                long tDiff = System.currentTimeMillis() - t1;
-                if (tDiff > 10L) break;
+                if (System.currentTimeMillis() > (msStart + 30)) {
+                    break;
+                }
             }
         }
-        
+
         Hub dHub = null;
         if (detailObject instanceof Hub) {
             dHub = (Hub) detailObject;
             if (dHub.isOAObject()) {
                 for (Object obj : dHub) {
+                    if (System.currentTimeMillis() > (msStart + 40)) {
+                        break;
+                    }
                     if (wasFullySentToClient(obj)) continue;
-                    
-                    long tDiff = System.currentTimeMillis() - t1;
                     if (OAObjectReflectDelegate.areAllReferencesLoaded((OAObject) obj, false)) continue;
-                    if (tDiff < 5L) {
-                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 5); 
-                    }
-                    else {
-                        OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 3);
-                        if (tDiff > 20L) break;
-                    }
+                    OAObjectReflectDelegate.loadAllReferences((OAObject) obj, 1, 0, false, 2, msStart+40);
                 }
             }
         }
         else if ((detailObject instanceof OAObject) && !wasFullySentToClient(detailObject)) {
-            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 0, false, 5);
+            OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 0, false, 5, msStart+40);
         }
         
         HashMap<OAObjectKey, Object> hmExtraData = null;
-        
         boolean bLoad = true;
         if (siblingKeys != null && siblingKeys.length > 0) {
             hmExtraData = new HashMap<OAObjectKey, Object>();
@@ -226,16 +227,18 @@ public class ClientGetDetail {
                     continue; // already sent with all refs
                 }
                 */
-                
+
                 Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
                     if (bLoad) {
-                        bLoad = ((System.currentTimeMillis() - t1) < (bForHubMerger?350:100));
+                        bLoad = ((System.currentTimeMillis() - msStart) < (bForHubMerger?85:50));
                     }
                     if (!bLoad) continue;
                 }
                 
-                if (bLoad) value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
+                if (bLoad) {
+                    value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
+                }
                 else if (value instanceof OAObjectKey) continue;
 
                 if (value instanceof Hub) {
@@ -247,7 +250,6 @@ public class ClientGetDetail {
                     }
                     tot += x;
                 }
-                
                 hmExtraData.put(key, value);
             }
         }
@@ -271,11 +273,10 @@ public class ClientGetDetail {
                 os.setExtraObject(masterObject);  // so master can be sent to client, and include any other masterProps
             }
         }
-    
+
         OAObjectSerializerCallback cb = createOAObjectSerializerCallback(os, masterObject, bMasterWasPreviouslySent, 
                 detailObject, dHub, propFromMaster, masterProperties, siblingKeys, hmExtraData);
         os.setCallback(cb);
-
         return os;
     }
     

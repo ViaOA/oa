@@ -17,11 +17,17 @@ import javax.net.ssl.SSLEngineResult.HandshakeStatus;
 public abstract class SSLBase {
     private static Logger LOG = Logger.getLogger(SSLBase.class.getName());
     
+    
+    // https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html
+    
     /**
      * Preferred encryption cipher to use for SSL sockets.
      */
-    public static final String[] PREFERRED_CIPHER_NAMES = new String[] { "SSL_RSA_WITH_RC4_128_MD5" };
+    public static final String[] PREFERRED_CIPHER_NAMES = new String[] { "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" };  // 20171118
+    //was: public static final String[] PREFERRED_CIPHER_NAMES = new String[] { "SSL_RSA_WITH_RC4_128_MD5" };
 
+    
+    
     protected SSLContext sslContext;
     protected SSLEngine sslEngine;
 

@@ -29,6 +29,10 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
     // base hub
     protected Hub<F> hub;
     protected ArrayList<T> alTo;    
+
+    /* flag to know if searches that use a finder only use the root Hub's AO */
+    private boolean bUseAOOnly;
+    
     /**
      *  pp from objects <F> to to objects <T>
      *  this is not used/needed if finder is not null.
@@ -143,6 +147,8 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         /** flag to have TA show the full value on the textfield */
         public boolean showHint=false;
         
+        public boolean useAOOnly=true;
+        
         void setup() {
             if (OAString.isEmpty(displayPropertyPath)) {
                 displayPropertyPath = dropDownDisplayPropertyPath;
@@ -168,9 +174,10 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         alTo = arrayToUse;
     }
     
-
+    
     /**
-     * @param hub root hub used for searches, if there is a finderPropertyPath, then only the activeObject is used.
+     * @param hub root hub used for searches
+     * @param bUseAOOnly use ActiveObject in hub for searches.
      * @param params
      */
     public OATypeAhead(Hub<F> hub, OATypeAheadParams params) {
@@ -183,6 +190,8 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
     protected void setup(OATypeAheadParams params) {
         if (params == null) return;
         params.setup();
+
+        this.bUseAOOnly = params.useAOOnly;
         
         this.finderPropertyPath = params.finderPropertyPath;
         classTo = (Class<T>) hub.getObjectClass();
@@ -293,9 +302,14 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
             }
         }
         else {
-            OAObject objFrom = hub.getAO();
-            if (objFrom == null) return null;
-            alToFound = finder.find(((F)objFrom));
+            if (bUseAOOnly) {
+                OAObject objFrom = hub.getAO();
+                if (objFrom == null) return null;
+                alToFound = finder.find(((F)objFrom));
+            }
+            else {
+                alToFound = finder.find(hub);
+            }
         }
         
         if (cntSearch != aiSearch.get()) return null;

@@ -3,9 +3,6 @@ package com.viaoa.hub;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-
-import com.viaoa.OAUnitTest;
-
 import test.hifive.HifiveDataGenerator;
 import test.hifive.HifiveUnitTest;
 import test.hifive.delegate.ModelDelegate;
@@ -124,5 +121,189 @@ public class HubDetailTest extends HifiveUnitTest {
         reset();
     }
     
+    @Test
+    public void detailHub5Test() {
+        reset();
+        
+        Hub<Company> hubCompany = new Hub<>();
+        Company company = null;
+        for (int i=0; i<5; i++) {
+            company = new Company();
+            if (i < 3) hubCompany.add(company);
+            for (int ii=0; ii<3; ii++) {
+                Program prog = new Program();
+                company.getPrograms().add(prog);
+                for (int iii=0; iii<3; iii++) {
+                    Location loc = new Location();
+                    prog.getLocations().add(loc);
+                }
+            }
+            for (int ii=0; ii<3; ii++) {
+                LocationType lt = new LocationType();
+                company.getLocationTypes().add(lt);
+            }
+        }
+        
+        Hub<Program> hubProgram = hubCompany.getDetailHub(Company.P_Programs);
+        Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
+        Hub<LocationType> hubLocationType = hubCompany.getDetailHub(Company.P_LocationTypes);
+        
+        hubCompany.setAO(0);
+        assertTrue(hubLocationType.getMasterObject() == hubCompany.getAt(0));
+
+        LocationType lt = company.getLocationTypes().getAt(0);
+        hubLocationType.setAO(lt);
+        
+        assertNull(hubLocationType.getAO());
+        assertNull(hubCompany.getAO());
+
+        hubLocationType.setLinkHub(hubLocation, Location.P_LocationType);
+        assertNull(hubLocationType.getAO());
+        
+        Program prog = hubCompany.getAt(0).getPrograms().getAt(0);
+        hubProgram.setAO(prog);
+        assertEquals(hubProgram.getAO(), prog);
+        assertEquals(hubCompany.getAO(), hubCompany.getAt(0));
+        assertEquals(hubCompany.getPos(), 0);
+     
+        hubLocation.setPos(0);
+        assertEquals(hubLocationType.getMasterObject(), hubCompany.getAO());
+        assertNull(hubLocation.getAt(0).getLocationType());
+        hubLocationType.setPos(0);
+        assertEquals(hubLocationType.getAO(), hubLocation.getAO().getLocationType());
+        
+        hubLocationType.setAO(company.getLocationTypes().getAt(0));
+        assertNull(hubLocationType.getAO());
+        
+        hubLocationType.setAO(hubCompany.getAt(0).getLocationTypes().getAt(0));
+        assertEquals(hubLocationType.getAO(), hubCompany.getAt(0).getLocationTypes().getAt(0));
+        assertEquals(hubCompany.getAO(), hubCompany.getAt(0));
+    }
+    
+    @Test
+    public void detailHub6Test() {
+        reset();
+        
+        Hub<Company> hubCompany = new Hub<>();
+        Company company = null;
+        for (int i=0; i<5; i++) {
+            company = new Company();
+            if (i < 3) hubCompany.add(company);
+            for (int ii=0; ii<3; ii++) {
+                Program prog = new Program();
+                company.getPrograms().add(prog);
+                for (int iii=0; iii<3; iii++) {
+                    Location loc = new Location();
+                    prog.getLocations().add(loc);
+                }
+            }
+            for (int ii=0; ii<3; ii++) {
+                LocationType lt = new LocationType();
+                company.getLocationTypes().add(lt);
+            }
+        }
+        
+        Hub<Location> hubLocation = new Hub<>(Location.class);
+        hubLocation.add(hubCompany.getAt(0).getPrograms().getAt(0).getLocations().getAt(0));
+        
+        Hub<Program> hubProgram = hubLocation.getDetailHub(Location.P_Program);
+        hubCompany = hubProgram.getDetailHub(Program.P_Company);
+        Hub<LocationType> hubLocationType = hubCompany.getDetailHub(Company.P_LocationTypes);
+
+        assertEquals(hubLocationType.getMasterObject(), hubCompany.getAO());
+        assertNull(hubLocationType.getAO());
+        
+        hubLocation.setAO(0);
+        assertNull(hubLocation.getAO().getLocationType());
+        assertNull(hubLocationType.getAO());
+        
+        hubLocationType.setPos(0);
+        assertEquals(hubLocationType.getAO(), hubLocationType.getAt(0));
+        assertNull(hubLocation.getAO().getLocationType());
+        
+        hubLocationType.setLinkHub(hubLocation, Location.P_LocationType);
+        assertNull(hubLocationType.getAO());
+        assertNull(hubLocation.getAO().getLocationType());
+
+        hubLocationType.setPos(0);
+        assertEquals(hubLocation.getAO().getLocationType(), hubLocationType.getAO());
+        assertEquals(hubLocationType.getAO(), hubLocationType.getAt(0));
+        
+    }
+
+    @Test
+    public void detailHub7Test() {
+        reset();
+        
+        Hub<Company> hubCompany = new Hub<>();
+        Company company = null;
+        for (int i=0; i<5; i++) {
+            company = new Company();
+            if (i < 3) hubCompany.add(company);
+            for (int ii=0; ii<3; ii++) {
+                Program prog = new Program();
+                company.getPrograms().add(prog);
+                for (int iii=0; iii<3; iii++) {
+                    Location loc = new Location();
+                    prog.getLocations().add(loc);
+                }
+            }
+            for (int ii=0; ii<3; ii++) {
+                LocationType lt = new LocationType();
+                company.getLocationTypes().add(lt);
+            }
+        }
+        Hub<Company> hubCompanyFirstThree = hubCompany;
+        
+        Hub<Location> hubLocation = new Hub<>(Location.class);
+        Location loc = hubCompanyFirstThree.getAt(0).getPrograms().getAt(0).getLocations().getAt(0);
+        Program prog = loc.getProgram();
+        Company comp  = prog.getCompany();
+
+        hubLocation.add(loc);
+        hubLocation.setAO(loc);
+        
+        Hub<Program> hubProgram = hubLocation.getDetailHub(Location.P_Program);
+        hubCompany = hubProgram.getDetailHub(Program.P_Company);
+        Hub<LocationType> hubLocationType = hubCompany.getDetailHub(Company.P_LocationTypes);
+
+        LocationType lt = company.getLocationTypes().getAt(0);
+        loc.setLocationType(lt); // assign to incorrect locType
+
+        assertEquals(loc.getProgram().getCompany(), hubCompanyFirstThree.getAt(0));
+
+        hubLocationType.setLinkHub(hubLocation, Location.P_LocationType);
+
+        assertEquals(loc.getProgram().getCompany(), hubCompanyFirstThree.getAt(0));
+        assertNull(hubLocationType.getAO());
+        assertEquals(loc.getLocationType(), lt);
+        
+        
+        loc = hubCompanyFirstThree.getAt(0).getPrograms().getAt(0).getLocations().getAt(2);
+        hubLocation.add(loc);
+        assertNull(loc.getLocationType());
+        loc.setLocationType(lt); // assign to incorrect locType
+        hubLocation.setAO(loc);
+        
+        assertEquals(loc.getProgram().getCompany(), hubCompanyFirstThree.getAt(0));
+        assertNull(hubLocationType.getAO());
+        assertEquals(loc.getLocationType(), lt);
+        
+        LocationType lt2 = loc.getProgram().getCompany().getLocationTypes().getAt(0);
+        loc.setLocationType(lt2);
+        assertEquals(hubLocationType.getAO(), lt2);
+        
+        loc.setLocationType(lt);
+        assertEquals(loc.getProgram().getCompany(), hubCompanyFirstThree.getAt(0));
+        assertNull(hubLocationType.getAO());
+        assertEquals(loc.getLocationType(), lt);
+    }
+    
+    
     
 }
+
+
+
+
+

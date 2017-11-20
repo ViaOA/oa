@@ -2,15 +2,12 @@ package com.viaoa.comm.ssl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.security.KeyStore;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLEngineResult;
-import javax.net.ssl.SSLEngineResult.HandshakeStatus;
-import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLServerSocketFactory;
 
 /**
  * SSLServer used to encrypt data
@@ -24,7 +21,10 @@ public abstract class SSLServer extends SSLBase {
     }
 
     protected SSLContext createSSLContext() throws Exception {
-        SSLContext sslContext = SSLContext.getInstance("SSLv3");
+        // 20171118
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+// SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        //was: SSLContext sslContext = SSLContext.getInstance("SSLv3");
 
         KeyStore keystore = KeyStore.getInstance("JKS");
 
@@ -51,4 +51,14 @@ public abstract class SSLServer extends SSLBase {
     protected void log(String msg) {
         System.out.println("SERVER: "+msg);
     }
+
+    public static void main(String[] args) throws Exception {
+        SSLServerSocketFactory ssf = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
+
+        String[] defaultCiphers = ssf.getDefaultCipherSuites();
+        String[] availableCiphers = ssf.getSupportedCipherSuites();
+        int xx = 4;
+        xx++;
+    }
+
 }

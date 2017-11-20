@@ -94,7 +94,8 @@ public class HubAODelegate {
             liRev = HubDetailDelegate.getLinkInfoFromMasterToDetail(thisHub);
 	    }
 	    if (liRev != null) {
-	        if (liRev != null && liRev.getType() == li.ONE) {
+            if (liRev.getType() == li.ONE && bUpdateLink) {  // 20171117
+	        //was: if (liRev.getType() == li.ONE) {
                 Object objMaster = HubDetailDelegate.getMasterObject(thisHub);
                 if (objMaster != null) {
                     Object value = OAObjectReflectDelegate.getProperty((OAObject)objMaster, liRev.getName());
