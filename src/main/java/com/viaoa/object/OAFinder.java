@@ -404,6 +404,12 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             }
             return;
         }
+
+        if (!(obj instanceof OAObject)) return;
+
+        if (pos > 0 && cascades != null) {
+            if (cascades[pos-1].wasCascaded((OAObject) obj, true)) return;
+        }
         
         if (linkInfos == null || pos >= linkInfos.length) {
             boolean bIsUsed;
@@ -415,12 +421,6 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
                 onFound((T) obj);
             }
             if (bStop) return;
-        }
-
-        if (!(obj instanceof OAObject)) return;
-        
-        if (pos > 0 && cascades != null) {
-            if (cascades[pos-1].wasCascaded((OAObject) obj, true)) return;
         }
 
         // check if recursive
