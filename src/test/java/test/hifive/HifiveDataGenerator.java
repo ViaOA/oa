@@ -31,7 +31,8 @@ public class HifiveDataGenerator {
             Hub<Program> hx2 = ModelDelegate.getPrograms();
             ModelDelegate.getPrograms().add(program);
             
-            for (int i2=0; i2<3; i2++) {
+//qqqqqqqq change 30 -> 3            
+            for (int i2=0; i2<30; i2++) {
                 createLocations(program.getLocations(), 0, 3, 3);
             }
         }        
@@ -74,8 +75,11 @@ public class HifiveDataGenerator {
         if (level+1 < maxLevels) {
             createLocations(loc.getLocations(), level+1, maxLevels, maxEmpLevels);
         }
-        createEmployees(loc.getEmployees(), 0, maxEmpLevels);
-        assertEquals(loc.getEmployees().getAt(0).getLocation(), loc);
+//qqqqqqqqqqq change 25 -> 5        
+        for (int i=0; i<25; i++) {
+            createEmployees(loc.getEmployees(), 1, maxEmpLevels);
+            assertEquals(loc.getEmployees().getAt(0).getLocation(), loc);
+        }
     }
     public int empIdCnt;
     private void createEmployees(Hub<Employee> hub, int level, int maxLevels) {
@@ -92,7 +96,8 @@ public class HifiveDataGenerator {
             }
         }
         for (int i=0; i<2; i++) {
-            createEmployeeAwards(emp.getEmployeeAwards());
+//qqqqqqqqqqqqqq            
+//            createEmployeeAwards(emp.getEmployeeAwards());
         }
     }
     private void createEmployeeAwards(Hub<EmployeeAward> hub) {

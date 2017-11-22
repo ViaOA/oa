@@ -108,6 +108,10 @@ import java.sql.Time;
 public class OADateTime implements java.io.Serializable, Comparable {
     private static final long serialVersionUID = 1L;
 
+    
+    private final static String FORMAT_long = "yyyy/MM/dd hh:mm:ss.S a";
+    
+    
     protected long _time;
     protected TimeZone timeZone;
 
@@ -159,6 +163,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         poolGregorianCalendar.release(cal);
     }
 
+    
     private static Locale locale;
     public static void setLocale(Locale loc) {
         locale = loc;

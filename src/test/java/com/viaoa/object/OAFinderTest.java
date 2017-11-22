@@ -1,6 +1,7 @@
 package com.viaoa.object;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 import org.junit.Test;
 
@@ -321,4 +322,33 @@ public class OAFinderTest extends OAUnitTest {
         
     }
 
+    public void test() {
+        init();
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData();
+        
+        Vector<String> vec = OAObjectCacheDelegate.getInfo();
+        for (String s : vec) {
+            System.out.println(s);
+        }
+        
+        Employee emp = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0).getEmployees().getAt(0);
+        emp.setLastName("xxx");
+        
+        for (int i=0; i<10; i++) {
+            long ts1 = System.currentTimeMillis();
+            
+            OAFinder<Location, Employee> finder = new OAFinder<Location, Employee>(LocationPP.employees().pp);
+            finder.addEqualFilter(Employee.P_LastName, "xxx");
+            finder.find(ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0));
+            
+            long ts2 = System.currentTimeMillis();
+            System.out.println(i+" "+(ts2-ts1));
+        }
+    }
+
+    public static void main(String[] args) {
+        OAFinderTest test = new OAFinderTest();
+        test.test();
+    }
 }
