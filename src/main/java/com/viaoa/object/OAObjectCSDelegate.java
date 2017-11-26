@@ -185,7 +185,7 @@ public class OAObjectCSDelegate {
         if (aiNewObjectCacheSize.get() == 0) return false;
         if (oaObj == null) return false;
         int guid = oaObj.getObjectKey().getGuid();
-        return hashNewObjectCache.contains(guid);
+        return hashNewObjectCache.containsKey(guid);
     }
 	
 	
