@@ -59,16 +59,24 @@ import com.viaoa.hub.HubListener.InsertLocation;
 public class OATreeTableController extends OATree implements OATableComponent {
     private Hub hubRoot;
     private Hub hubTable;
+    private Hub hubFlattened;
 
     /**
      * @param hub Hub that will be populated with all of the objects that are visible in the tree.
      */
     public OATreeTableController(Hub hubRoot, Hub hub) {
+        this(hubRoot, null, hub);
+    }
+    public OATreeTableController(Hub hubRoot, Hub hubFlattened, Hub hub) {
         super(8, 14, false);
         this.hubRoot = hubRoot;
         this.hubTable = hub;
+        this.hubFlattened = hubFlattened;
         setup();
     }
+    
+    
+    
     public OATreeTableController(Hub hub) {
         super(8, 14, false);
         this.hubRoot = null;
@@ -300,7 +308,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
             public void afterAdd(HubEvent e) {
                 if (bIgnoreFlag) return;
                 
-                OAObject ao  = activeObject;
+                OAObject ao = activeObject;
                 if (ao == e.getObject()) ao = prevActiveObject;
                 
                 if (ao != null) {
@@ -486,6 +494,49 @@ refreshHub();
 */                
             }
         });
-    }
 
+    
+        if (hubFlattened == null) return;
+
+        
+        // need to update tree table Hub.AO when hubFlattened.AO changes
+        hubFlattened.addHubListener(new HLA() {
+            @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                Object obj = hubFlattened.getAO();
+                if (obj == null) return;
+                expandTo(obj, true);
+            }
+            
+            void expandTo(Object obj, boolean bBottom) {
+                if (obj == null) return;
+                int pos = hubTable.getPos(obj);
+                if (pos >= 0) {
+                    if (bBottom) {
+                        OATreeTableController.this.setSelectionRow(pos);
+                        OATreeTableController.this.hubTable.setPos(pos);
+                    }
+                    else OATreeTableController.this.expandRow(pos);
+                    return;
+                }
+                Object objx = getOneLinkInfo().getValue(obj);
+                expandTo(objx, false);
+                if (bBottom) {
+                    pos = hubTable.getPos(obj);
+                    if (pos >= 0) {
+                        OATreeTableController.this.setSelectionRow(pos);
+                        OATreeTableController.this.hubTable.setPos(pos);
+                    }
+                }
+            }
+        });
+
+        hubTable.addHubListener(new HLA() {
+            @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                hubFlattened.setAO(e.getObject());                
+            }
+        });
+    }
 }
+
