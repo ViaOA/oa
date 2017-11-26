@@ -301,8 +301,6 @@ public class HubLinkTest extends OAUnitTest {
         
         EmployeeAward ea = new EmployeeAward();
         hubEmployeeAward.add(ea);
-        
-        assertNull(hubEmployee.getAO());
         assertNull(hubEmployee.getAO());
 
         hubEmployeeAward.setPos(0);

@@ -299,6 +299,62 @@ public class HubDetailTest extends HifiveUnitTest {
         assertEquals(loc.getLocationType(), lt);
     }
     
+    @Test
+    public void detailHubATest() {
+        reset();
+
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData();
+        
+        final Hub<Program> hubProgram = ModelDelegate.getPrograms();
+
+        Hub<Location> hubLocation = hubProgram.getDetailHub(Program.P_Locations);
+        
+        Hub<Location> hubLocation2 = new Hub<>(Location.class);
+        final Location loc = hubLocation.getAt(0).getLocations().getAt(0);
+        hubLocation2.add(loc);
+        
+        Hub<Location> hub = new Hub<>(Location.class);
+        hub.setSharedHub(hubLocation2, true);
+
+        Hub<Employee> hubEmployee = hub.getDetailHub(Location.P_Employees);
+        assertEquals(hubEmployee.getMasterHub(), hub);
+        
+        hubLocation2.setPos(0);
+        assertEquals(hub.getAO(), loc);
+        assertEquals(hubEmployee.getMasterHub(), hub);
+        assertNull(hubEmployee.getAO());
+        assertEquals(hubEmployee.getSize(), hubLocation2.getAO().getEmployees().getSize());
+        
+        hubProgram.setPos(0);
+        assertNull(hubLocation.getAO());
+        assertNotNull(hubLocation2.getAO());
+        assertEquals(hub.getAO(), loc);
+        assertNull(hubEmployee.getAO());
+        assertEquals(hubEmployee.getMasterHub(), hub);
+
+        assertEquals(hubLocation2.getSize(), 1);
+        assertEquals(hubLocation2.getAt(0), loc);
+        assertEquals(hubLocation2.getAO(), loc);
+        assertEquals(hub.getSize(), 1);
+        assertEquals(hub.getAt(0), loc);
+        assertEquals(hub.getAO(), loc);
+        
+        final Employee emp = hubProgram.getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0);
+        assertFalse(hubEmployee.contains(emp));
+
+        // should not change 
+        hubEmployee.setAO(emp);
+        
+        assertFalse(hubEmployee.getAO() == emp);
+        assertFalse(hubEmployee.contains(emp));
+
+        assertEquals(hub.getSize(), 1);
+        assertEquals(hub.getAt(0), loc);
+        
+        
+        reset();
+    }
     
     
 }
