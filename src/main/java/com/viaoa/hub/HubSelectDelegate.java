@@ -110,13 +110,26 @@ public class HubSelectDelegate {
 							if (capacity <= 0) capacity = size+1;
 						}
 						*/
-						capacity += (capacity > 250) ? 75 : capacity;  // this will override the default behaviour of how the Vector grows itself (which is to double in size)
+						capacity += (capacity > 250) ? 75 : capacity;  // this will override the default behavior of how the Vector grows itself (which is to double in size)
 //LOG.config("resizing, from:"+size+", to:"+capacity+", hub:"+thisHub);                        
 						HubDataDelegate.ensureCapacity(thisHub, capacity);
 					}
 	                try {
 	                    OAThreadLocalDelegate.setLoading(true);
 	                    HubAddRemoveDelegate.add(thisHub, obj);
+/***qqqqqqqqqqqqqqqq	                    
+if (sel.getNextCount() != thisHub.getCurrentSize()) {
+    //qqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+    long ts = System.currentTimeMillis();
+    if (ts > msLAST+2500) {
+        msLAST = ts;
+        LOG.log(Level.WARNING, "VINCE qqqqqqqqqqqqqqqqqqqqqq hub="+thisHub, new Exception("fetchMore hub.add counts not the same qqqqqqqqqqqqqqqqqq"));
+    }
+}
+*/
+	                    
 	                }
 	                finally {
 	                    OAThreadLocalDelegate.setLoading(false);
@@ -137,6 +150,8 @@ public class HubSelectDelegate {
         }
         return cnt;
     }
+  //qqqqqqqqqqqqqqqqqq
+    private static long msLAST;
 
 	/**
 	    Find out if more objects are available from last select from OADataSource.
