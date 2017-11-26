@@ -506,7 +506,7 @@ public class Location extends OAObject {
         recursive = false, 
         reverseName = Employee.P_Location, 
         cascadeSave = true,
-        cacheSize=20
+        cacheSize=10
     )
     public Hub<Employee> getEmployees() {
         Hub<Employee> hubEmployees = (Hub<Employee>) getHub(P_Employees);
