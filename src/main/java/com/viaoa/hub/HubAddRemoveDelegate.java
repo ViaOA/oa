@@ -13,6 +13,7 @@ package com.viaoa.hub;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThread;
@@ -395,9 +396,27 @@ public class HubAddRemoveDelegate {
         finally {
             if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
+//qqqqqqqqqqqqqqqqqqqqqqqqqqq
+if (!b) {
+    long ts = System.currentTimeMillis();
+    if (ts  > msLAST+ 5000)  {
+        msLAST = ts;
+        
+    if (obj.getClass().getSimpleName().equals("Employee")) {
+        if (thisHub.getMasterObject() != null && thisHub.getMasterObject().getClass().getSimpleName().equals("Location")) {
+
+            String s = thisHub.data.vector.contains(obj) ? "Object is in Vector" : "not in vector";
+            s += ", " + (OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, thisHub) ? "IN obj.hubs" : "NOT in obj.hubs");
+            
+    LOG.log(Level.WARNING, "VINCE qqqqqqqqqqqqqqqqqqqqqq", new Exception(s));
+        }
+    }
+    }
+}
+        
         if (b) _afterAdd(thisHub, obj);
     }
-    
+private static long msLAST;    
     private static boolean _add(final Hub thisHub, final Object obj, final boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
