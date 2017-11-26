@@ -1914,11 +1914,11 @@ public class OAObjectReflectDelegate {
     }
     
     // recursively checks 3 levels for replaced objects
-    private static boolean shouldMakeACopy(OAObject oaObj, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew, int cnt, HashSet<Integer> hmVisitor) {
+    private static boolean shouldMakeACopy(OAObject oaObj, String[] excludeProperties, OACopyCallback copyCallback, HashMap<Integer, Object> hmNew, int cnt, HashSet<Integer> hsVisitor) {
         if (oaObj == null) return false;
-        if (hmVisitor == null) hmVisitor = new HashSet<Integer>(101, .75f);
-        else if (hmVisitor.contains(OAObjectDelegate.getGuid(oaObj))) return false;
-        hmVisitor.add(OAObjectDelegate.getGuid(oaObj));
+        if (hsVisitor == null) hsVisitor = new HashSet<Integer>(101, .75f);
+        else if (hsVisitor.contains(OAObjectDelegate.getGuid(oaObj))) return false;
+        hsVisitor.add(OAObjectDelegate.getGuid(oaObj));
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
         List<OALinkInfo> alLinkInfo = oi.getLinkInfos();
@@ -1947,7 +1947,7 @@ public class OAObjectReflectDelegate {
                     if (objx != null) return true;
                     
                     if (cnt < 3 && obj instanceof OAObject ) {
-                        if (shouldMakeACopy((OAObject)obj, excludeProperties, copyCallback, hmNew, cnt+1, hmVisitor)) {
+                        if (shouldMakeACopy((OAObject)obj, excludeProperties, copyCallback, hmNew, cnt+1, hsVisitor)) {
                             return true;
                         }                    
                     }
@@ -1960,7 +1960,7 @@ public class OAObjectReflectDelegate {
                     if (objx != null) return true;
                     
                     if (cnt < 3 && obj instanceof OAObject ) {
-                        if (shouldMakeACopy((OAObject)obj, excludeProperties, copyCallback, hmNew, cnt+1, hmVisitor)) {
+                        if (shouldMakeACopy((OAObject)obj, excludeProperties, copyCallback, hmNew, cnt+1, hsVisitor)) {
                             return true;
                         }                    
                     }
