@@ -10,8 +10,20 @@ import test.theice.tsac3.model.oa.*;
 public class OAObjectDelegateTest extends OAUnitTest {
 
     @Test
-    public void test() {
+    public void getAutoAddTest() {
+        assertFalse(OAObjectDelegate.getAutoAdd(null));
+        
+        Server server = new Server();
+        assertTrue(OAObjectDelegate.getAutoAdd(server));
+        
+        server.setAutoAdd(false);
+        assertFalse(OAObjectDelegate.getAutoAdd(server));
+        
+        server.setAutoAdd(true);
+        assertTrue(OAObjectDelegate.getAutoAdd(server));
         
     }
+    
+    
     
 }

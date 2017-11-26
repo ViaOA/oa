@@ -678,7 +678,7 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     
     public boolean isSelectAll() {
     	boolean result = false;
-    	if (!bCancelled && OAString.isNotEmpty(getWhere()) && getFilter() == null && getFinder() == null && getMax() == 0 && getWhereObject() == null && getSearchHub() == null) {
+    	if (!bCancelled && OAString.isEmpty(getWhere()) && getFilter() == null && getFinder() == null && getMax() == 0 && getWhereObject() == null && getSearchHub() == null) {
 			result = true;
     	}
         return result;

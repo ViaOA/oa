@@ -423,9 +423,11 @@ public class HubDataDelegate {
                 else {
                     // 20171123
                     Hub rh = thisHub.getRootHub();
-                    boolean b = (rh != null && (thisHub == rh || thisHub.getSharedHub() != rh));
-                    if (b) {
-                        liRecursiveOne = null; // dont treat as recursive. This is when there are a collection of objects not used for recursion
+                    boolean b = (rh != null && (thisHub == rh || thisHub.getSharedHub() == rh));
+                    if (!b) {
+                        // dont treat as recursive. This is when there are a collection of objects not used for recursion
+                        //   ex: a Hub with only one location in it (no masterHub)
+                        liRecursiveOne = null; 
                     }
                 }
             }

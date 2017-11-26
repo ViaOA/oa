@@ -277,6 +277,7 @@ public class RecursiveTest extends OAUnitTest {
         
         hubProgram.setPos(0);
         program = hubProgram.getAO();
+        assertNotNull(program);
         assertEquals(program.getName(), "program.0");
         
         assertEquals(hubLocation.getMasterObject(), program); 

@@ -314,44 +314,54 @@ public class HubDetailTest extends HifiveUnitTest {
         final Location loc = hubLocation.getAt(0).getLocations().getAt(0);
         hubLocation2.add(loc);
         
-        Hub<Location> hub = new Hub<>(Location.class);
-        hub.setSharedHub(hubLocation2, true);
+        Hub<Location> hubLoc = new Hub<>(Location.class);
+        hubLoc.setSharedHub(hubLocation2, true);
 
-        Hub<Employee> hubEmployee = hub.getDetailHub(Location.P_Employees);
-        assertEquals(hubEmployee.getMasterHub(), hub);
+        Hub<Employee> hubEmployee = hubLoc.getDetailHub(Location.P_Employees);
+        assertEquals(hubEmployee.getMasterHub(), hubLoc);
         
         hubLocation2.setPos(0);
-        assertEquals(hub.getAO(), loc);
-        assertEquals(hubEmployee.getMasterHub(), hub);
+        assertEquals(hubLoc.getAO(), loc);
+        assertEquals(hubEmployee.getMasterHub(), hubLoc);
         assertNull(hubEmployee.getAO());
         assertEquals(hubEmployee.getSize(), hubLocation2.getAO().getEmployees().getSize());
         
         hubProgram.setPos(0);
         assertNull(hubLocation.getAO());
-        assertNotNull(hubLocation2.getAO());
-        assertEquals(hub.getAO(), loc);
+
+        assertEquals(hubLocation2.getAO(), loc);
+        assertEquals(hubLoc.getAO(), loc);
+        
         assertNull(hubEmployee.getAO());
-        assertEquals(hubEmployee.getMasterHub(), hub);
+        assertEquals(hubEmployee.getMasterHub(), hubLoc);
 
         assertEquals(hubLocation2.getSize(), 1);
         assertEquals(hubLocation2.getAt(0), loc);
         assertEquals(hubLocation2.getAO(), loc);
-        assertEquals(hub.getSize(), 1);
-        assertEquals(hub.getAt(0), loc);
-        assertEquals(hub.getAO(), loc);
+        assertEquals(hubLoc.getSize(), 1);
+        assertEquals(hubLoc.getAt(0), loc);
+        assertEquals(hubLoc.getAO(), loc);
         
         final Employee emp = hubProgram.getAt(0).getLocations().getAt(0).getLocations().getAt(0).getEmployees().getAt(0);
         assertFalse(hubEmployee.contains(emp));
 
         // should not change 
-        hubEmployee.setAO(emp);
+        hubEmployee.setAO(emp);  // should not change the hubLoc
         
         assertFalse(hubEmployee.getAO() == emp);
         assertFalse(hubEmployee.contains(emp));
 
-        assertEquals(hub.getSize(), 1);
-        assertEquals(hub.getAt(0), loc);
+        assertEquals(hubLoc.getSize(), 1);
+        assertEquals(hubLoc.getAt(0), loc);
         
+
+        Hub<Employee> hubEmp = hubLocation.getDetailHub(Location.P_Employees);
+        assertNull(hubEmp.getAO());
+        hubLocation.setPos(1);
+        
+        hubEmp.setAO(emp);
+        assertEquals(hubEmp.getAO(), emp);
+        assertEquals(hubLocation.getPos(), 0);
         
         reset();
     }

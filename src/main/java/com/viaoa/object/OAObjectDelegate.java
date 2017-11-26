@@ -543,7 +543,7 @@ public class OAObjectDelegate {
 	}
 	public static boolean getAutoAdd(OAObject oaObj) {
         if (oaObj == null) return false;
-        return hmAutoAdd.containsKey(oaObj.guid);
+        return !hmAutoAdd.containsKey(oaObj.guid);
 	}
 }
 
