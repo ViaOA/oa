@@ -175,7 +175,7 @@ public class HubData implements java.io.Serializable {
 //20160828qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq remove this???QQQQQQQQQQQQQQQQQQQQQQQQQ    
     private static ConcurrentHashMap<HubData, HubData> hmLoadingAllData = new ConcurrentHashMap<HubData, HubData>(11, .85f);
     public boolean isLoadingAllData() {
-        return hmLoadingAllData.contains(this);
+        return hmLoadingAllData.containsKey(this);
     }
     public void setLoadingAllData(boolean loadingAllData) {
         if (loadingAllData) hmLoadingAllData.put(this, this);
@@ -184,7 +184,7 @@ public class HubData implements java.io.Serializable {
 
     private static ConcurrentHashMap<HubData, HubData> hmSelectAllHub = new ConcurrentHashMap<HubData, HubData>(11, .85f);
     public boolean isSelectAllHub() {
-        return hmSelectAllHub.contains(this);
+        return hmSelectAllHub.containsKey(this);
     }
     public void setSelectAllHub(boolean bSelectAllHub) {
         if (bSelectAllHub) hmSelectAllHub.put(this, this);
