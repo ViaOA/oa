@@ -85,7 +85,7 @@ static int qq;
 
     private static ConcurrentHashMap<HubDataUnique, HubDataUnique> hmUpdatingActiveObject = new ConcurrentHashMap<HubDataUnique, HubDataUnique>(11, .85f);
     public boolean isUpdatingActiveObject() {
-        return hmUpdatingActiveObject.contains(this);
+        return hmUpdatingActiveObject.containsKey(this);
     }
     public void setUpdatingActiveObject(boolean bUpdatingActiveObject) {
         if (bUpdatingActiveObject) {
