@@ -420,12 +420,20 @@ public class HubDataDelegate {
                         liRecursiveOne = null;
                     }
                 }
+                else {
+                    // 20171123
+                    Hub rh = thisHub.getRootHub();
+                    boolean b = (rh != null && (thisHub == rh || thisHub.getSharedHub() != rh));
+                    if (b) {
+                        liRecursiveOne = null; // dont treat as recursive. This is when there are a collection of objects not used for recursion
+                    }
+                }
             }
 
             boolean bUseMaster = false;
             if (liRecursiveOne != null) {  // if recursive
                 Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, liRecursiveOne.getName());
-                if (parent == null) {  // must be in root hub
+                if (parent == null) {  // might be in root hub
                     Hub h = thisHub.getRootHub();  // could be owner of hub
                     if (h != null && h != thisHub && thisHub.datau.getSharedHub() != h) {
                         HubShareDelegate.setSharedHub(thisHub, h, false);
@@ -443,7 +451,7 @@ public class HubDataDelegate {
                             if (dm.liDetailToMaster != null) hashRecursiveHubDetail.put(thisHub, dm.liDetailToMaster);
                         }
                     	Object val = OAObjectReflectDelegate.getProperty((OAObject)parent, liMany.getName());
-                    	
+                    	// reassign the sharedHub to correct recursive hub in the hierarchy
                     	HubShareDelegate.setSharedHub(thisHub, (Hub) val, false, object);
                         pos = getPos((Hub)val, object, adjustMaster, bUpdateLink);
                 	}
@@ -631,5 +639,15 @@ public class HubDataDelegate {
             }
         }
         return 2;
+    }
+
+    public static boolean isHubBeingUsedAsRecursive(Hub thisHub) {
+        if (thisHub == null) return false;
+
+        OALinkInfo li = thisHub.datam.liDetailToMaster;
+        if (li == null) {
+            return (thisHub == thisHub.getRootHub());
+        }
+        return li.getReverseLinkInfo().getRecursive();
     }
 }
