@@ -13,8 +13,6 @@ package com.viaoa.hub;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-
-import com.viaoa.annotation.OAMany;
 import com.viaoa.object.*;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;

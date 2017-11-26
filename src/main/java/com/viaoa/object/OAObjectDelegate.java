@@ -503,7 +503,7 @@ public class OAObjectDelegate {
 	    if (oaObj == null) return;
 	    if (!bEnabled && !oaObj.isNew()) return;
 	    
-	    boolean bOld = !hmAutoAdd.contains(oaObj.guid);
+	    boolean bOld = !hmAutoAdd.containsKey(oaObj.guid);
 	    if (bOld == bEnabled) return;
 
 	    
@@ -543,7 +543,7 @@ public class OAObjectDelegate {
 	}
 	public static boolean getAutoAdd(OAObject oaObj) {
         if (oaObj == null) return false;
-        return hmAutoAdd.get(oaObj.guid) == null;
+        return hmAutoAdd.containsKey(oaObj.guid);
 	}
 }
 
