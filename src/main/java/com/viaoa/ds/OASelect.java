@@ -11,12 +11,10 @@
 package com.viaoa.ds;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.*;
-
 import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
+import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 
 /**
@@ -678,18 +676,11 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
         return b;
     }
     
-    
-    
     public boolean isSelectAll() {
     	boolean result = false;
-        String s = getWhere();
-        if (s == null || s.length() == 0) {
-        	if (getWhereObject() == null) {
-        		if (getMax() == 0) {
-        			if (!bCancelled) result = true;
-        		}
-        	}
-        }
+    	if (!bCancelled && OAString.isNotEmpty(getWhere()) && getFilter() == null && getFinder() == null && getMax() == 0 && getWhereObject() == null && getSearchHub() == null) {
+			result = true;
+    	}
         return result;
     }
     public synchronized boolean hasBeenStarted() {
