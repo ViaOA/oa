@@ -86,6 +86,7 @@ public class OASelectManager {
             if (t == 0) continue;
             
             if (t < time) {
+                LOG.warning("cancel select, after timeout.  Select="+sel.getSelectClass()+", where="+sel.getWhere());
                 sel.cancel();
                 it.remove();
             }
