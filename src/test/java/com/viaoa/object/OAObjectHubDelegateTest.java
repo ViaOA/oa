@@ -779,8 +779,42 @@ public class OAObjectHubDelegateTest extends OAUnitTest {
                 assertEquals(h1, h2);
             }
         }
-        
     }
+
+    @Test
+    public void test8() {
+        ArrayList<Hub<Employee>> alHub = new ArrayList<Hub<Employee>>();
+        Employee emp = new Employee();
+        for (int i=0; i<4; i++) {
+            Hub<Employee> hub = new Hub<Employee>(Employee.class);
+            alHub.add(hub);
+        }
+        WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(emp);
+        assertNull(refs);
+        
+        for (int i=0; i<2; i++) {
+            alHub.get(i).add(emp);
+            
+            int x = OAObjectHubDelegate.getHubReferenceCount(emp);
+            assertEquals(i+1, x);
+
+            refs = OAObjectHubDelegate.getHubReferencesNoCopy(emp);
+            assertEquals(i+1, refs.length);
+        }
+        
+        refs = OAObjectHubDelegate.getHubReferencesNoCopy(emp);
+        refs[0] = new WeakReference(null);
+        refs[1] = new WeakReference(null);
+        
+        alHub.get(2).add(emp);
+        
+        WeakReference<Hub<?>>[] refs2 = OAObjectHubDelegate.getHubReferencesNoCopy(emp);
+        assertNotEquals(refs, refs2);
+        
+        assertEquals(1, refs2.length);
+    }
+
+
 }
 
 

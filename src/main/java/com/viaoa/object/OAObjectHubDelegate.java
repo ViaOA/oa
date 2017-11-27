@@ -283,10 +283,8 @@ public class OAObjectHubDelegate {
                 }
             }
             else {
-                final int currentSize = oaObj.weakhubs.length;
-
                 // check for an empty slot at the end
-                for (pos = currentSize - 1; pos >= 0; pos--) {
+                for (pos = oaObj.weakhubs.length - 1; pos >= 0; pos--) {
                     if (oaObj.weakhubs[pos] == null) {
                         if (pos != 0) continue;
                     }
@@ -312,7 +310,7 @@ public class OAObjectHubDelegate {
                         }
                     }
 
-                    if (currentSize < 3) {  //  check to see if it can use the same as another obj in hub
+                    if (oaObj.weakhubs.length < 3) {  //  check to see if it can use the same as another obj in hub
                         int x = Math.min(4, hub.getCurrentSize());
                         for (int i=0; i<x; i++) {
                             OAObject objx = (OAObject) hub.getAt(i);
@@ -339,13 +337,14 @@ public class OAObjectHubDelegate {
                         }
                     }
                     
-                    if (!bReused && (currentSize < 4 || pos >= currentSize)) {
+                    if (!bReused && (oaObj.weakhubs.length < 4 || pos >= oaObj.weakhubs.length)) {
                         // need to expand
                         int newSize = pos + (pos / 10) + 1;
                         newSize = Math.min(newSize, pos + 20);
                         WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
     
-                        System.arraycopy(oaObj.weakhubs, 0, refs, 0, currentSize);
+                        int x = Math.min(oaObj.weakhubs.length, refs.length);
+                        System.arraycopy(oaObj.weakhubs, 0, refs, 0, x);
                         oaObj.weakhubs = refs;
                     }                    
                     break;
