@@ -347,8 +347,24 @@ public class OAFinderTest extends OAUnitTest {
         }
     }
 
+    @Test
+    public void test2() {
+        init();
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData();
+
+        Hub<Employee> h = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getEmployees();
+
+        OAFinder<Employee, Employee> finder = new OAFinder<>(h, null);
+        finder.setAllowRecursiveRoot(false);
+        ArrayList<Employee> al = finder.find();
+        
+        assertEquals(h.size(), al.size());
+    }
+    
+    
     public static void main(String[] args) {
         OAFinderTest test = new OAFinderTest();
-        test.test();
+        test.test2();
     }
 }
