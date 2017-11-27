@@ -420,7 +420,7 @@ private static long msLAST;
     private static boolean _add(final Hub thisHub, final Object obj, final boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            return internalAdd(thisHub, obj, true);
+            return internalAdd(thisHub, obj, true, true);
         }
 
         if (thisHub.data.objClass == null || thisHub.data.objClass.equals(OAObject.class)) {
@@ -442,7 +442,7 @@ private static long msLAST;
         if (thisHub.isOAObject()) {
             HubCSDelegate.addToHub(thisHub, (OAObject) obj);
         }
-        if (!internalAdd(thisHub, obj, true)) {
+        if (!internalAdd(thisHub, obj, true, false)) {
             //LOG.warning(" NOT ADDED <<<<<");
             return false;
         }
@@ -489,11 +489,11 @@ private static long msLAST;
 
     /** internal method to add to vector and hashtable
      */
-    protected static boolean internalAdd(final Hub thisHub, final Object obj, final boolean bHasLock) {
+    protected static boolean internalAdd(final Hub thisHub, final Object obj, final boolean bHasLock, final boolean bCheckContains) {
         if (obj == null) return false;
 
         // this will lock, sync(data), and startNextThread
-        if (!HubDataDelegate._add(thisHub, obj, bHasLock)) {
+        if (!HubDataDelegate._add(thisHub, obj, bHasLock, bCheckContains)) {
             return false;
         }
         
@@ -620,7 +620,7 @@ private static long msLAST;
     private static int _insert(final Hub thisHub, final Object obj, int pos) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
-            boolean b = internalAdd(thisHub, obj, true);
+            boolean b = internalAdd(thisHub, obj, true, true);
             return b?pos:-1;
         }
         if (thisHub.data.objClass == null || thisHub.data.objClass.equals(OAObject.class)) {

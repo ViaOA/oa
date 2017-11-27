@@ -179,11 +179,11 @@ public class HubDataDelegate {
 
 	
 	// called by HubAddRemoveDelegate.internalAdd
-    protected static boolean _add(Hub thisHub, Object obj, boolean bHasLock) {
+    protected static boolean _add(Hub thisHub, Object obj, boolean bHasLock, boolean bCheckContains) {
         boolean b = false;
         try {
             if (!bHasLock) OAThreadLocalDelegate.lock(thisHub);
-            b = _add2(thisHub, obj);
+            b = _add2(thisHub, obj, bCheckContains);
         }
         finally {
             if (!bHasLock ) OAThreadLocalDelegate.unlock(thisHub);
@@ -191,8 +191,8 @@ public class HubDataDelegate {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
         return b;
     }
-    private static boolean _add2(Hub thisHub, Object obj) {
-        if (thisHub.contains(obj)) return false;
+    private static boolean _add2(Hub thisHub, Object obj, final boolean bCheckContains) {
+        if (bCheckContains && thisHub.contains(obj)) return false;
     	thisHub.data.vector.addElement(obj);
         
         int xx = thisHub.data.vector.size();
