@@ -510,6 +510,10 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
         // 20140808
         if (hubSearch != null && finder == null) {
             finder = new OAFinder(hubSearch, null);
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterToDetail(hubSearch);
+            if (li != null && !li.getRecursive()) {
+                finder.setAllowRecursiveRoot(false);
+            }
         }
         
         // 20140129
