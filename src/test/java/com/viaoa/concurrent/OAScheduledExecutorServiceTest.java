@@ -70,7 +70,7 @@ public class OAScheduledExecutorServiceTest {
             x = f.getDelay(TimeUnit.SECONDS);
         }
         long ms2 = System.currentTimeMillis();
-        assertTrue( (ms2 - ms) > (delay * 1000));
+        assertTrue( (ms2 - ms) >= (delay * 1000));
         
         assertEquals(1, ai.get());
     }
