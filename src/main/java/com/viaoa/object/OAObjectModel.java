@@ -32,6 +32,7 @@ public class OAObjectModel {
     protected boolean bAllowRemove;
     protected boolean bAllowDelete;
     protected boolean bAllowClear;  // set to null / set AO to null
+    protected boolean bAllowRecursive;
     
 
     protected boolean bAllowCut;
@@ -39,6 +40,8 @@ public class OAObjectModel {
     protected boolean bAllowPaste;
     protected boolean bViewOnly;
     protected boolean bCreateUI;
+
+    
     
     protected String displayName;
     protected String displayNamePlural;
@@ -145,6 +148,13 @@ public class OAObjectModel {
         bAllowClear = b;
     }
 
+    public boolean getAllowRecursive() {
+        return bAllowRecursive;
+    }
+    public void setAllowRecursive(boolean b) {
+        bAllowRecursive = b;
+    }
+    
     public boolean getAllowCut() {
         return bAllowCut;
     }
