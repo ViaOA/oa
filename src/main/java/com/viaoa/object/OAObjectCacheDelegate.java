@@ -728,7 +728,7 @@ public class OAObjectCacheDelegate {
     
     
     /** 
-        Used to retreive any object based on its Object Id property value.
+        Used to retrieve any object based on its Object Id property value.
         @param key object to compare to, object or objects[] to compare this object's objectId(s) with or OAObjectKey to compare with this object's objectId
         @see OAObjectKey#OAObjectKey
         @see OAObject#equals
@@ -738,7 +738,7 @@ public class OAObjectCacheDelegate {
     }
 
     /** 
-        Used to retreive any object based on its Object Id property value.
+        Used to retrieve any object based on its Object Id property value.
         @see getObject(Class, Object)
     */
     public static OAObject get(Class clazz, int id) {
