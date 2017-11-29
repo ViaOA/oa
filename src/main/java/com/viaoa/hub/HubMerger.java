@@ -21,6 +21,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
+
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
 import com.viaoa.object.*;
@@ -81,9 +83,9 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
 
     // used to run onNewList in another thread that can be cancelled
     private final Object lockNewList = new Object();
-    private boolean bRunningNewList; 
+    private volatile boolean bRunningNewListThread; 
     private volatile boolean bNewListCancel;
-    private HubEvent hubEventBackgroundThread;
+    private volatile HubEvent hubEventBackgroundThread;
     
     private final int id;
     private static final AtomicInteger aiId = new AtomicInteger();
@@ -1430,8 +1432,8 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                     bNewListCancel = true;
                     hubEventBackgroundThread = hubEvent;
 
-                    if (bRunningNewList) return;
-                    bRunningNewList = true;
+                    if (bRunningNewListThread) return;
+                    bRunningNewListThread = true;
                 }
                 
                 getExecutorService().submit(new Runnable() {
@@ -1452,7 +1454,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                             
                             synchronized (lockNewList) {
                                 if (!bNewListCancel) {
-                                    bRunningNewList = false;
+                                    bRunningNewListThread = false;
                                     lockNewList.notifyAll();
                                     break;
                                 }
@@ -1471,15 +1473,20 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             if ((hub != hubRoot) || OASync.isServer()) {
                 return;
             }
-            if (bUseBackgroundThread) {
+
+            if (bUseBackgroundThread || SwingUtilities.isEventDispatchThread()) {
                 return; // let run in the background
             }
             
             synchronized (lockNewList) {
-                for (;;) {
-                    if (!bRunningNewList) break;
+                for (int i=0; i<10; i++) {
+                    if (!bRunningNewListThread) break;
+                    if (i > 5) {
+                        LOG.warning("HubMerger lockNewList timeout waiting for HubMerger thread to finish");
+                        break;
+                    }
                     try {
-                        lockNewList.wait();
+                        lockNewList.wait(100);
                     }
                     catch (Exception e) {
                     }
