@@ -67,6 +67,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
@@ -817,7 +818,6 @@ if (!getKeepSorted()) hub.cancelSort();
 
             if (rect != null && pt.y > (rect.y + (rect.height / 2))) row++;
 
-//qqqqqqqqqqqqqqqq
             // 20161101 allow dnd with treetable
             OATreeTableController ttc = null;
             for (OATableColumn tc : columns) {
@@ -827,6 +827,9 @@ if (!getKeepSorted()) hub.cancelSort();
                     break;
                 }
             }
+
+            int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(OATable.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+            if (x != 0) return;
             
             if (ttc != null) {
                 if (hub.getAt(row) == null) {
@@ -848,6 +851,7 @@ if (!getKeepSorted()) hub.cancelSort();
                     return;
                 }
                 int pos = hub.getPos(dragObject);
+
                 if (pos >= 0) {
                     if (!hub.isSorted()) {
                         // move
@@ -876,9 +880,11 @@ if (!getKeepSorted()) hub.cancelSort();
                 }
                 hub.setActiveObject(dragObject);
             }
-            e.dropComplete(true);
         }
         catch (Exception ex) {
+        }
+        finally {
+            e.dropComplete(true);
         }
     }
 

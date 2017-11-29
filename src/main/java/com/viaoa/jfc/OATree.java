@@ -694,8 +694,11 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
             }
             else {
             	if (HubAddRemoveDelegate.canAdd(dragToHub, dragObject)) {  // 2008/04/18
+                    int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(OATree.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+                    if (x != 0) return;
+            	    
 	            	if (HubRootDelegate.getRootHub(dragHub) != null && dragHub.getAO() == dragObject) {  // 2008/04/18
-						// this will make sure that a resursive root hub will not be changed to share a child hub.  Ex: Model -> ObjectGraphs (root) -> ObjectGraphs  <== updateHub used for which ever is the active Hub
+						// this will make sure that a recursive root hub will not be changed to share a child hub.  Ex: Model -> ObjectGraphs (root) -> ObjectGraphs  <== updateHub used for which ever is the active Hub
 						dragHub.setActiveObject(null); 
 					}
 	            	if (dragToObject != null) {
