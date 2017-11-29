@@ -17,7 +17,7 @@ import com.viaoa.object.OAObjectInfoDelegate;
 
 /**
  * Used for recursive Hubs, so that the hub is always using the rootHub.
- * The default behaviour when using a recursive Hub is that the hub will be shared to 
+ * The default behavior when using a recursive Hub is that the hub will be shared to 
  * whatever hub the AO is set to.  This will allow a hubRoot to always be the top level hub.
 
  * example:
@@ -109,7 +109,7 @@ public class HubRoot {
     
     public void close() {
         if (hubListener != null && hubMaster != null) {
-            hubMaster.addHubListener(hubListener);
+            hubMaster.removeHubListener(hubListener);
         }
     }
     
