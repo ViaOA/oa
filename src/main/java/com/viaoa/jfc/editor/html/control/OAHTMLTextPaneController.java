@@ -3288,8 +3288,10 @@ System.out.println("View Font="+fontView);//qqqqqqqqq
             for ( ; pos<sizes.length; pos++) {
                 if (sizes[pos] >= fontSize) break;
             }
-            getFontSizeComboBox().setSelectedIndex(pos);
-
+            try {
+                getFontSizeComboBox().setSelectedIndex(pos);
+            }
+            catch (Exception e) {}
 
             // set the "current color" for the fore/back ground colors
             getFontColorButton().setCurrentColor(StyleConstants.getForeground(asView));
