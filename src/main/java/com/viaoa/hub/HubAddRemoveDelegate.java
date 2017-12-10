@@ -397,7 +397,7 @@ public class HubAddRemoveDelegate {
             if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
 //qqqqqqqqqqqqqqqqqqqqqqqqqqq
-if (!b) {
+if (!b && !thisHub.data.vector.contains(obj)) {
     long ts = System.currentTimeMillis();
     if (ts  > msLAST+ 5000)  {
         msLAST = ts;

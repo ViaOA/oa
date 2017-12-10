@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAArray;
 
@@ -310,7 +311,7 @@ public class OAObjectHubDelegate {
                         }
                     }
 
-                    if (oaObj.weakhubs.length < 3) {  //  check to see if it can use the same as another obj in hub
+                    if (pos < 3) {  //  check to see if it can use the same as another obj in hub
                         int x = Math.min(4, hub.getCurrentSize());
                         for (int i=0; i<x; i++) {
                             OAObject objx = (OAObject) hub.getAt(i);
@@ -337,10 +338,13 @@ public class OAObjectHubDelegate {
                         }
                     }
                     
-                    if (!bReused && (oaObj.weakhubs.length < 4 || pos >= oaObj.weakhubs.length)) {
+                    if (!bReused && (pos < 3 || pos >= oaObj.weakhubs.length)) {  // else use open [pos]
                         // need to expand
-                        int newSize = pos + (pos / 10) + 1;
-                        newSize = Math.min(newSize, pos + 20);
+                        int newSize = pos + 1;
+                        if (pos > 15) {
+                            newSize += (newSize / 10); 
+                            newSize = Math.min(newSize, pos + 20);
+                        }
                         WeakReference<Hub<?>>[] refs = new WeakReference[newSize];
     
                         int x = Math.min(oaObj.weakhubs.length, refs.length);
@@ -364,7 +368,7 @@ public class OAObjectHubDelegate {
                 }
             }
             if (!bReused) {
-                // see if weakRef can be reused
+                // see if a weakRef=hub used by another object can be reused
                 boolean b = false;
                 int x = Math.min(4, hub.getCurrentSize());
                 for (int i=0; !b && i<x; i++) {
@@ -393,7 +397,7 @@ public class OAObjectHubDelegate {
         }
         if (bReused) aiReuseWeakRefArray.incrementAndGet();
 
-        if (bRemoveFromServerCache && OARemoteThreadDelegate.shouldSendMessages()) {
+        if (bRemoveFromServerCache && OASyncDelegate.isClient(oaObj.getClass()) && OARemoteThreadDelegate.shouldSendMessages()) {
             OAObjectCSDelegate.removeFromServerSideCache(oaObj);
         }
         return true;

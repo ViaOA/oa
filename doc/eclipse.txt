@@ -1,5 +1,17 @@
 
 
+20171209 changes for high res issue with icons
+eclipse.ini
+    -vmargs
+    -Dsun.java2d.dpiaware=true
+
+also, need to right click on eclipse desktop icon, compatibility tab, check "override high DPI scaling behavior", select from dropdown "System (enhanced)"
+
+
+20171205 new computer
+    https://stackoverflow.com/questions/2078476/how-to-share-eclipse-configuration-over-different-workspaces
+        * use advice about copying .metadata directories
+
 20171026 add html editor
     http://lizusefulstuff.blogspot.com/2012/07/how-to-add-html-editor-for-eclipse.html
 

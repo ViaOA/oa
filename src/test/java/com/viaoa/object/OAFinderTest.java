@@ -294,6 +294,7 @@ public class OAFinderTest extends OAUnitTest {
 
     public final void testGetEmployee() {
         String empCode = "123C";
+        String empCodeLower = "123c";
         String empCode2 = 123+"c";
         Program p = new Program();
         Location l = new Location();
@@ -320,6 +321,24 @@ public class OAFinderTest extends OAUnitTest {
         }
         assertEquals(1, x.getSize());
         
+        finder = new OAFinder<Program, Employee>(ProgramPP.locations().employees().pp);
+        f1 = new OAEqualFilter(Employee.P_EmployeeCode, empCode);
+        finder.addFilter(f1);
+        Employee emp = finder.findFirst(p);
+        assertNotNull(emp);
+        
+        finder = new OAFinder<Program, Employee>(ProgramPP.locations().employees().pp);
+        f1 = new OAEqualFilter(Employee.P_EmployeeCode, empCodeLower);
+        finder.addFilter(f1);
+        emp = finder.findFirst(p);
+        assertNull(emp);
+        
+        finder = new OAFinder<Program, Employee>(ProgramPP.locations().employees().pp);
+        f1 = new OAEqualFilter(Employee.P_EmployeeCode, empCodeLower);
+        ((OAEqualFilter)f1).setIgnoreCase(true);
+        finder.addFilter(f1);
+        emp = finder.findFirst(p);
+        assertNotNull(emp);
     }
 
     public void test() {

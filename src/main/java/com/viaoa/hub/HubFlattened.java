@@ -66,6 +66,8 @@ public class HubFlattened<TYPE extends OAObject> {
             }
             @Override
             public void afterAdd(HubEvent e) {
+                if (e == null) return;
+                if (linkInfo == null) return;
                 if (linkInfo.getValue(e.getObject()) != null) return;
                 hubRoot.add((TYPE) e.getObject());  // this will set it
             }
