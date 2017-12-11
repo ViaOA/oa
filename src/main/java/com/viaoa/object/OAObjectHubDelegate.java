@@ -341,7 +341,7 @@ public class OAObjectHubDelegate {
                     if (!bReused && (pos < 3 || pos >= oaObj.weakhubs.length)) {  // else use open [pos]
                         // need to expand
                         int newSize = pos + 1;
-                        if (pos > 15) {
+                        if (pos > 3) {
                             newSize += (newSize / 10); 
                             newSize = Math.min(newSize, pos + 20);
                         }

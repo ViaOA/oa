@@ -409,7 +409,13 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private void _find(Object obj, int pos) {
         if (obj == null) return;
         if (obj instanceof Hub) {
+int cnt = 0;            
             for (Object objx : (Hub) obj) {
+cnt++;
+if (cnt == 2900) {
+    int xx = 4;
+    xx++;
+}
                 find(objx, pos);
                 if (bStop) break;
             }
