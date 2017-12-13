@@ -88,6 +88,13 @@ public class OANotEqualFilter implements OAFilter {
             }
         }
         obj = getPropertyValue(obj);
+        
+        // 20171212 check to see if object is in a hub
+        if (obj instanceof Hub) {
+            Hub h = (Hub) obj;
+            return !h.contains(value);
+        }
+        
         return !OACompare.isEqual(obj, value, bIgnoreCase);
     }
 
