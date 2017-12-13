@@ -26,7 +26,7 @@
 	</target>
 
     <target name="Sign">
-        <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="../oabuilder_git/keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" />
     </target>
 	
 
