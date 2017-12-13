@@ -480,7 +480,7 @@ if (textField instanceof OATextField && ((OATextField)textField).bTest) {
             else if (conversion == 'P' || conversion == 'p') {
                 text = OAString.getSHAHash(text);
             }
-            else if (conversion == 'E' || conversion == 'E') {
+            else if (conversion == 'E' || conversion == 'e') {
                 try {
                     text = OAEncryption.encrypt(text);
                 }
