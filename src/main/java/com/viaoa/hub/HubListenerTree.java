@@ -101,7 +101,7 @@ public class HubListenerTree {
             }
 
             long ts2 = System.currentTimeMillis();//qqqqqqqqq
-            if ((ts2 - ts) > 2000) {  //qqqqqqqq should not happen, can be removed
+            if ((ts2 - ts) > 1000) {  //qqqqqqqq should not happen, can be removed
                 OAPerformance.LOG.warning("fyi: getRootValues took "+(ts2-ts)+"ms, rootHub="+HubListenerTree.this.root.hub+", propPath="+spp);
             }
             return objs;
