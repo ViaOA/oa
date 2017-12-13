@@ -221,6 +221,11 @@ public class OAEncryption {
     public static void main(String[] args) throws Exception {
         String s = "";
         
+        
+        String pw = getHash("00001201");
+        String pw2 = getMD5Hash("00001201");
+        String pw3 = OAEncryption.encrypt("00001201");
+        
         String smd = getMD5Hash("emp3364");
         
         smd = getMD5Hash("vince1");
