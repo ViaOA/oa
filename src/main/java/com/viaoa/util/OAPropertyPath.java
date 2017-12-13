@@ -262,7 +262,10 @@ public class OAPropertyPath<F> {
     }
     public String setup(final Hub hub, Class clazz, final boolean bIgnorePrivateLink) {
         bNeedsDataToVerify = false;
-        if (clazz == null) return null;
+        if (clazz == null) {
+            bNeedsDataToVerify = true;
+            return "Hub.objectClass not set";
+        }
         this.fromClass = clazz;
         String propertyPath = this.propertyPath;
         if (propertyPath == null) propertyPath = "";
