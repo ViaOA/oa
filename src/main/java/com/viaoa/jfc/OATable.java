@@ -585,7 +585,7 @@ if (!getKeepSorted()) hub.cancelSort();
     public Hub getViewableHub() {
         boolean bCallUpdate = false;
         if (hubViewable == null) {
-            hubViewable = new Hub();
+            hubViewable = new Hub(getHub().getObjectClass());
             bCallUpdate = true;
         }
         if (aiViewableChanged == null) {
