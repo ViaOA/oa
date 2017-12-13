@@ -19,6 +19,7 @@ import com.viaoa.annotation.OAMany;
 import com.viaoa.object.*;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OAPropertyPath;
+import com.viaoa.util.OAString;
 
 /**
  *  Used by Hub to manage listeners.
@@ -55,12 +56,62 @@ public class HubListenerTree {
         Object lastRemoveMasterObject;  // master object from last hub.remove event
         
         /*
-         *  This allows getting all of the root objects that need to be notified when a change is made.
+         *  This allows getting all of the root objects that need to be notified when a change is made to an object "down" the tree from it.
         */
         Object[] getRootValues(Object obj) {
-            if (obj == null) return new Object[0];
-            Object[] objs = getRootValues(new Object[] {obj});
+            // 20171212 reworked to include option to use a finder
+            long ts = System.currentTimeMillis();//qqqq
+            
+            String spp = null;
+            HubListenerTreeNode tn = this;
+            for ( ;tn != null; ) {
+                if (tn.property != null) {
+                    if (spp == null) spp = tn.property;
+                    else spp = tn.property + "." + spp;
+                }
+                tn = tn.parent;
+            }
 
+            boolean bUseOrig = true;
+            if (spp != null) {
+                OAPropertyPath pp = new OAPropertyPath(HubListenerTree.this.root.hub.getObjectClass(), spp);
+                OALinkInfo[] lis = pp.getLinkInfos();
+                if (lis != null && lis.length>0) {
+                    bUseOrig = false;
+                    for (OALinkInfo li : lis) {
+                        if (li.getReverseLinkInfo().getType() == OALinkInfo.TYPE_ONE) {
+                            bUseOrig = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            Object[] objs;
+            if (bUseOrig) objs = getRootValues_ORIG(obj, (spp != null));
+            else objs = null;
+            
+            if (objs == null && spp != null) {
+                OAFinder finder = new OAFinder();
+                finder.setAllowRecursiveRoot(false);
+                finder.addEqualFilter(spp, obj);
+                ArrayList al = finder.find(HubListenerTree.this.root.hub);
+                objs = new Object[al.size()];
+                al.toArray(objs);
+            }
+
+            long ts2 = System.currentTimeMillis();//qqqqqqqqq
+            if ((ts2 - ts) > 2000) {  //qqqqqqqq should not happen, can be removed
+                OAPerformance.LOG.warning("fyi: getRootValues took "+(ts2-ts)+"ms, rootHub="+HubListenerTree.this.root.hub+", propPath="+spp);
+            }
+            return objs;
+        }
+        
+        Object[] getRootValues_ORIG(Object obj, boolean bCanQuit) {
+            if (obj == null) return new Object[0];
+   
+            Object[] objs = getRootValues(new Object[] {obj});
+            
             // now make sure that all of the values are in the root.hub
             int cnt = 0;
             for (int i=0; objs != null && i<objs.length; i++) {
@@ -75,7 +126,7 @@ public class HubListenerTree {
             int j = 0;
             for (int i=0; i<objs.length; i++) {
                 if (objs[i] != null) {
-                    newObjs[j] = objs[i];
+                    newObjs[j++] = objs[i];
                 }
             }
             return newObjs;
@@ -84,7 +135,7 @@ public class HubListenerTree {
         
         private Object[] getRootValues(Object[] objs) {
             if (parent == null) return objs; // reached the root
-            if (objs == null) return null;  
+            if (objs == null) return new Object[0];  
 
             if (liReverse == null) {
                 Class c = parent.hub.getObjectClass();
@@ -147,7 +198,7 @@ public class HubListenerTree {
                         // 20160805  
                         if (root.hubMerger != null && !root.hubMerger.getUseAll()) {
                             Object objx = root.hubMerger.getRootHub().getAO();
-                            alNewObjects.add(objx);
+                            if (objx != null && alNewObjects.indexOf(objx) < 0) alNewObjects.add(objx);
                         }
                         else {
                             for (Object objx : ((Hub) value)) {
@@ -427,6 +478,8 @@ public class HubListenerTree {
                     hubClass = null;
                 }
 
+                final boolean bUseAll = (!bActiveObjectOnly || j>0);
+                
                 if (hubClass != null) {
                     boolean b = false;
                     for (int k=0; node.children != null && k < node.children.length; k++) { 
@@ -457,13 +510,11 @@ public class HubListenerTree {
 
                         String spp = "(" + hubClass.getName() + ")" + property;
                         
-                        // 20161222
+                        
                         if (bIsHub) {
-                        //was:
-                        // if (j == pps.length-1) {  // 20120823 if this is the last hub, then need to listen for each add/remove
                             final HubListenerTreeNode nodeThis = node;
                             OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
-                            newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {
+                            newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll) {
                                 @Override
                                 protected void beforeRemoveRealHub(HubEvent e) {
                                     // get the parent reference object from the Hub.masterObject, since the 
@@ -497,44 +548,58 @@ public class HubListenerTree {
                                         }
                                     }
                                     else {
-                                        // 20150616                                         
-                                        Object[] rootObjects = nodeThis.getRootValues(e.getHub().getMasterObject());
-                                        //was: Object[] rootObjects = nodeThis.parent.getRootValues(e.getHub().getMasterObject());
-                                        if (rootObjects != null && rootObjects.length > 0) {
-                                            for (Object obj : rootObjects) {
-                                                for (String s : newTreeNode.getCalcPropertyNames()) {
-                                                    HubEventDelegate.fireCalcPropertyChange(root.hub, obj, s);
+                                        if (bUseAll) {
+                                            Object[] rootObjects = nodeThis.getRootValues(e.getHub().getMasterObject());
+                                            if (rootObjects != null && rootObjects.length > 0) {
+                                                for (Object obj : rootObjects) {
+                                                    for (String s : newTreeNode.getCalcPropertyNames()) {
+                                                        HubEventDelegate.fireCalcPropertyChange(root.hub, obj, s);
+                                                    }
                                                 }
                                             }
                                         }
-                                        
+                                        else {
+                                            Object aObj = root.hub.getAO(); 
+                                            if (aObj != null) {
+                                                for (String s : newTreeNode.getCalcPropertyNames()) {
+                                                    HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, s);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             };
                             newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
                         }
                         else {
-                            // 20140527 need to listen to property
                             if (OAObject.class.isAssignableFrom(returnClass)) {
                                 HubListenerAdapter hl = new HubListenerAdapter() {
                                     @Override
                                     public void afterPropertyChange(HubEvent e) {
                                         if (!property.equalsIgnoreCase(e.getPropertyName())) return;
                                         
-                                        // 20150427
-                                        Object[] rootObjects = newTreeNode.parent.getRootValues(e.getObject());
-                                        if (rootObjects != null && rootObjects.length > 0) {
-                                            for (Object obj : rootObjects) {
-                                                for (String s : newTreeNode.getCalcPropertyNames()) {
-                                                    HubEventDelegate.fireCalcPropertyChange(root.hub, obj, s);
+                                        if (bUseAll) {
+                                            Object[] rootObjects = newTreeNode.parent.getRootValues(e.getObject());
+                                            if (rootObjects != null && rootObjects.length > 0) {
+                                                for (Object obj : rootObjects) {
+                                                    for (String s : newTreeNode.getCalcPropertyNames()) {
+                                                        HubEventDelegate.fireCalcPropertyChange(root.hub, obj, s);
+                                                    }
                                                 }
                                             }
                                         }
-                                        // was: HubEventDelegate.fireCalcPropertyChange(root.hub, e.getObject(), origPropertyName);
+                                        else {
+                                            Object aObj = root.hub.getAO(); 
+                                            if (aObj != null) {
+                                                for (String s : newTreeNode.getCalcPropertyNames()) {
+                                                    HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, s);
+                                                }
+                                            }
+                                        }
                                     }
                                 };
                                 hub.addHubListener(hl);                                
-                                // 20150126
+
                                 HubListener[] hls;
                                 if (node.hmListener == null) {
                                     node.hmListener = new HashMap<HubListener, HubListener[]>(3, .75f);
@@ -550,24 +615,7 @@ public class HubListenerTree {
                             
  
                             OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
-                            newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, !bActiveObjectOnly||j>0) {
-                                /* 20161222 was:                                
-                                @Override
-                                protected void beforeRemoveRealHub(HubEvent e) {
-                                    // get the parent reference object from the Hub.masterObject, since the 
-                                    //    reference in the object could be null once the remove is done
-                                    Hub h = (Hub) e.getSource();
-                                    newTreeNode.lastRemoveObject = e.getObject();
-                                    newTreeNode.lastRemoveMasterObject = h.getMasterObject();
-                                    super.beforeRemoveRealHub(e);
-                                }
-                                @Override
-                                protected void afterAddRealHub(HubEvent e) {
-                                    newTreeNode.lastRemoveObject = null; // in case it is not cleared
-                                    super.afterAddRealHub(e);
-                                }
-                                */                                
-                            };
+                            newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll);
                             newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
                         }
                         
@@ -606,7 +654,12 @@ public class HubListenerTree {
                                 nodeThis.lastRemoveObject = null; // in case it was not cleared
                                 if (!OAThreadLocalDelegate.isHubMergerChanging()) {
                                     Hub h = HubListenerTree.this.root.hub;
-                                    onEvent(nodeThis.getRootValues(e.getObject()));
+                                    if (bUseAll) {
+                                        onEvent(nodeThis.getRootValues(e.getObject()));
+                                    }
+                                    else {
+                                        onEvent(new Object[] {root.hub.getAO()});
+                                    }
                                 }
                             }
                             @Override
@@ -630,7 +683,12 @@ public class HubListenerTree {
                                 }
                                 // ignore if masterHub is adding, removing (newList, clear)                                
                                 if (!OAThreadLocalDelegate.isHubMergerChanging()) {
-                                    onEvent(nodeThis.getRootValues(e.getObject()));
+                                    if (bUseAll) {
+                                        onEvent(nodeThis.getRootValues(e.getObject()));
+                                    }
+                                    else {
+                                        onEvent(new Object[] {root.hub.getAO()});
+                                    }
                                 }
                             }
                             @Override // 20140423
@@ -677,10 +735,19 @@ public class HubListenerTree {
                             String prop = e.getPropertyName();
                             if (prop == null) return;
                             if (prop.equalsIgnoreCase(propx)) {
-                                Object[] rootObjects = nodeThis.getRootValues(e.getObject());
-                                if (rootObjects != null) {
-                                    for (Object obj : rootObjects) {
-                                        HubEventDelegate.fireCalcPropertyChange(root.hub, obj, origPropertyName);
+                                
+                                if (bUseAll) {
+                                    Object[] rootObjects = nodeThis.getRootValues(e.getObject());
+                                    if (rootObjects != null) {
+                                        for (Object obj : rootObjects) {
+                                            HubEventDelegate.fireCalcPropertyChange(root.hub, obj, origPropertyName);
+                                        }
+                                    }
+                                }
+                                else {
+                                    Object aObj = root.hub.getAO();
+                                    if (aObj != null) {
+                                        HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, origPropertyName);
                                     }
                                 }
                             }                
