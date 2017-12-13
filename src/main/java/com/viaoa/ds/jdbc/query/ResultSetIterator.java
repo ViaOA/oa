@@ -136,7 +136,7 @@ static PrintWriter printWriter;
         return this.bDirty;
     }
     
-    public static int DisplayMod = 500;    
+    public static int DisplayMod = 5000;    
     protected synchronized void init() {
         if (bInit) return;
         bInit = true;
