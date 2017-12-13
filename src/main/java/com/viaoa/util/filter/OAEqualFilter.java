@@ -30,7 +30,7 @@ import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 public class OAEqualFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OAEqualFilter.class.getName());
     private Object matchValue;
-    private boolean bIgnoreCase;
+    private boolean bIgnoreCase=true;
     private OAPropertyPath pp;
     private OAFinder finder;
 
@@ -49,6 +49,9 @@ public class OAEqualFilter implements OAFilter {
     }
 
     
+    /**
+     * Default is true.
+     */
     public void setIgnoreCase(boolean b) {
         this.bIgnoreCase = b;
     }
@@ -80,7 +83,14 @@ public class OAEqualFilter implements OAFilter {
                 return obj != null;
             }
         }
+        
         obj = getPropertyValue(obj);
+
+        // 20171212 check to see if object is in a hub
+        if (obj instanceof Hub) {
+            Hub h = (Hub) obj;
+            return h.contains(matchValue);
+        }
         return OACompare.isEqual(obj, matchValue, bIgnoreCase);
     }
     
