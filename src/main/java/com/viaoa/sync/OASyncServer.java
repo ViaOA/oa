@@ -28,6 +28,7 @@ import com.viaoa.object.OACascade;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerServer;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.model.*;
@@ -248,6 +249,10 @@ public class OASyncServer {
             @Override
             public void setCached(OAObject obj) {
                 cx.remoteSession.addToCache(obj);
+            }
+            @Override
+            protected void loadSibling(OAObject obj, String property) {
+                OASyncServer.this.loadSibling(obj, property);
             }
         };
         cx.remoteClient = rc;
@@ -618,6 +623,7 @@ public class OASyncServer {
         getServerInfo();
         getMultiplexerServer().start();
         getRemoteMultiplexerServer().start();
+        startLoadSiblingThread();
     }
     
     public void stop() throws Exception {
@@ -631,5 +637,66 @@ public class OASyncServer {
             getRemoteMultiplexerServer().performDGC();
         }
     }
+    
+    
+    // 20171217
+    private static class LoadSibling {
+        long ms;
+        OAObject obj;
+        String property;
+        public LoadSibling(OAObject obj, String property) {
+            this.ms = System.currentTimeMillis();
+            this.obj = obj;
+            this.property = property;
+        }
+    }
+    private final ArrayBlockingQueue<LoadSibling> queLoadSibling = new ArrayBlockingQueue<>(250);
+    /**
+     * called when a sibling cant be loaded for client getDetail request, because of timeout.
+     * This can be overwritten to have it done in a background thread.
+     */
+    protected void loadSibling(OAObject obj, String property) {
+        queLoadSibling.offer(new LoadSibling(obj, property));
+    }
+    
+    private Thread threadLoadSibling;
+    protected void startLoadSiblingThread() throws Exception {
+        LOG.fine("starting LoadSibling log thread");
+
+        String tname = "OASyncServer_LoadSibling";
+        LOG.config("starting thread that Load Sibling obj/props for a client getDetail request, threadName=" + tname);
+        threadLoadSibling = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                _runLoadSibling();
+            }
+        }, tname);
+        threadLoadSibling.setDaemon(true);
+        threadLoadSibling.setPriority(Thread.MIN_PRIORITY);
+        threadLoadSibling.start();
+    }
+    protected void _runLoadSibling() {
+        long msLastError = 0;
+        for (;;) {
+            long msNow = System.currentTimeMillis(); 
+            try {
+                LoadSibling ls = queLoadSibling.take();
+                if (ls.obj == null) continue;
+                if (msNow > ls.ms + 10000) {
+                    LOG.finer("not loading, too old,  obj="+ls.obj.getClass().getSimpleName()+", prop="+ls.property);
+                    continue;
+                }
+                LOG.finer("loading obj="+ls.obj.getClass().getSimpleName()+", prop="+ls.property);
+                OAObjectReflectDelegate.getProperty(ls.obj, ls.property); // load from DS
+            }
+            catch (Exception e) {
+                if (msNow > (msLastError + 5000)) {
+                    LOG.log(Level.WARNING, "Exception in LoadSibling thread", e);
+                    msLastError = msNow;
+                }
+            }
+        }
+    }
+
 }
 

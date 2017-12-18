@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -133,7 +134,8 @@ public class OASyncClient {
         t.start();
     }
     
-    public volatile int cntGetDetail;
+    private final AtomicInteger aiCntGetDetail = new AtomicInteger();
+    
     /**
      * This works on the server using ClientGetDetail, by using a customized objectSerializer
      * @param masterObject
@@ -145,7 +147,7 @@ public class OASyncClient {
         LOG.fine("masterObject="+masterObject+", propertyName="+propertyName);
         long ts = System.currentTimeMillis();
         
-        int cntx = ++cntGetDetail;        
+        final int cntx = aiCntGetDetail.incrementAndGet();        
         int xDup = OAObjectSerializeDelegate.cntDup;
         int xNew = OAObjectSerializeDelegate.cntNew;
 
@@ -166,7 +168,7 @@ public class OASyncClient {
             
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
-                result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
                         additionalMasterProperties, siblingKeys, bUsesDetail);
             }
             else {
@@ -181,7 +183,7 @@ public class OASyncClient {
                     additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
                 }
                 
-                result = getRemoteClient().getDetailNow(masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
                         additionalMasterProperties, siblingKeys, bUsesDetail);
             }
         }
@@ -246,10 +248,11 @@ public class OASyncClient {
             ts = System.currentTimeMillis() - ts;
             String s = (ts > 750) ? " ALERT" : "";
             s = String.format(
-                "%,d) OASyncClient.getDetail() Obj=%s, prop=%s, ref=%s, getSib=%,d/%,d, moreProps=%d, " +
+                "client=%d, id=%,d, Obj=%s, prop=%s, ref=%s, getSib=%,d/%,d, moreProps=%d, " +
                 "newCnt=%,d, dupCnt=%,d, totNewCnt=%,d, totDupCnt=%,d, ms=%,d%s",
+                getConnectionId(),
                 cntx, 
-                masterObject, 
+                masterObject.getClass().getSimpleName()+"."+masterObject.getProperty("id"), 
                 propertyName, 
                 result==null?"null":result.getClass().getSimpleName(),
                 cntSib,
@@ -393,7 +396,7 @@ public class OASyncClient {
         final boolean bUsesDetail = detailHub != null && detailPropertyPath != null; 
         
         _getDetailSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive, detailHub, detailPropertyPath);
-        if (alResults.size() > (bUsesDetail?500:25) || linkInfo == null) return;
+        if (alResults.size() > (bUsesDetail?200:25) || linkInfo == null) return;
 
         // go up to master.parent and get siblings from there
         OAObject parentMasterObject = siblingHub.getMasterObject();
@@ -445,12 +448,12 @@ public class OASyncClient {
             if (h.getSize() > 0) {
                 _getDetailSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive, detailHub, detailPropertyPath);
             }
-            if (alResults.size() > (bUsesDetail?500:100)) break;
+            if (alResults.size() > (bUsesDetail?200:100)) break;
         }        
     }    
     
     
-    private void _getDetailSiblingsA(HashSet<Object> hsValues, ArrayList<OAObjectKey> al, 
+    private void _getDetailSiblingsA(HashSet<Object> hsValues, ArrayList<OAObjectKey> alResults, 
             OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive, final Hub detailHub, final String detailPropertyPath) {
         // get the same property for siblings
 
@@ -480,7 +483,7 @@ public class OASyncClient {
             bIsMany = linkInfo.getType() == linkInfo.MANY;
         }
         
-        for (int i=0; i<650; i++) {
+        for (int i=0; i<350; i++) {
             Object obj = siblingHub.getAt(i+pos);
             if (obj == null) break;
             if (obj == masterObject) continue;
@@ -490,15 +493,15 @@ public class OASyncClient {
 
             if (value instanceof OANotExist) {
                 if (linkInfo == null) {  // must be blob
-                    al.add(key);
-                    if (al.size() >= 25) break;  // only get 25 extra blobs, ha
+                    alResults.add(key);
+                    if (alResults.size() >= 25) break;  // only get 25 extra blobs, ha
                 }
                 else if (bIsMany || bIsOne2One) {                
-                    al.add(key);
+                    alResults.add(key);
                     if (bUsesDetail) {
-                        if (al.size() > 500) break;
+                        if (alResults.size() > 200) break;
                     }
-                    else if (al.size() >= (100*(bAgressive?3:1))) break;
+                    else if (alResults.size() >= (100*(bAgressive?2:1))) break;
                 } 
                 // otherwise, it must be null
             }
@@ -507,11 +510,11 @@ public class OASyncClient {
                     hsValues.add(value);
                     value = OAObjectCacheDelegate.get(valueClass, value);
                     if (value == null) { // not on client
-                        al.add(key);
+                        alResults.add(key);
                         if (bUsesDetail) {
-                            if (al.size() > 650) break;
+                            if (alResults.size() > 200) break;
                         }
-                        else if (al.size() > (150*(bAgressive?3:1))) break;
+                        else if (alResults.size() > (100*(bAgressive?2:1))) break;
                     }
                 }
             }
@@ -608,9 +611,11 @@ public class OASyncClient {
         getClientInfo();
         getMultiplexerClient().setKeepAlive(115); 
 
-        
         LOG.fine("starting multiplexer client");
         getMultiplexerClient().start(); // this will connect to server using multiplexer
+        
+        LOG.fine("multiplexer client connected, connectionId="+getMultiplexerClient().getConnectionId());
+        
         clientInfo.setConnectionId(getMultiplexerClient().getConnectionId());
 
         if (bUpdateSyncDelegate) OASyncDelegate.setSyncClient(packagex, this);
