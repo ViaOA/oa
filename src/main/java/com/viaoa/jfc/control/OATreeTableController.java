@@ -220,13 +220,17 @@ public class OATreeTableController extends OATree implements OATableComponent {
         
         try {
             bIgnoreFlag = true;
+            OAThreadLocalDelegate.setLoading(true);  // 20171214
             _doRefreshHub();
         }
         finally {
+            OAThreadLocalDelegate.setLoading(false);
             bIgnoreFlag = false;
         }
     }
-    protected void _doRefreshHub() {
+    private boolean bDoRefreshHub;
+
+    private void _doRefreshHub() {
         int row = 0;
         boolean bValid = hubTable.isValid();
         for ( ;; row++) {
