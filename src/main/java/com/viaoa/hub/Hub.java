@@ -1199,7 +1199,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public Hub getDetailHub(String path) {
         Hub h = HubDetailDelegate.getDetailHub(this, path);
         return h;
-        
     }
 
     /**
