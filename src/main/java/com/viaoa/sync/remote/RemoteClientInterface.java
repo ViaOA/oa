@@ -26,15 +26,15 @@ public interface RemoteClientInterface {
 
     OAObject createCopy(Class objectClass, OAObjectKey objectKey, String[] excludeProperties);
     
-    Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, boolean bForHubMerger);
+    Object getDetail(int id, Class masterClass, OAObjectKey masterObjectKey, String property, boolean bForHubMerger);
     
-    Object getDetail(Class masterClass, OAObjectKey masterObjectKey, 
+    Object getDetail(int id, Class masterClass, OAObjectKey masterObjectKey, 
             String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger);
 
     // dont put in queue, but have it returned on vsocket for queued messages  
     //     All of the other methods are put in queue to be processed and have the return value set.
     @OARemoteMethod(returnOnQueueSocket=true)
-    Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, 
+    Object getDetailNow(int id, Class masterClass, OAObjectKey masterObjectKey, 
             String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger);
 
     

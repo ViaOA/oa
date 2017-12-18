@@ -26,13 +26,27 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     private static Logger LOG = Logger.getLogger(RemoteClientImpl.class.getName());
     // protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
     // protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
-    private ClientGetDetail clientGetDetail = new ClientGetDetail(); 
+    private ClientGetDetail clientGetDetail; 
     private RemoteDataSource remoteDataSource;
     private int sessionId;
     
     public RemoteClientImpl(int sessionId) {
         this.sessionId = sessionId;
+        clientGetDetail = new ClientGetDetail(sessionId) {
+            @Override
+            protected void loadSibling(OAObject obj, String property) {
+                RemoteClientImpl.this.loadSibling(obj, property);
+            }
+        };
     }
+    
+    /**
+     * called when a sibling cant be loaded for current request, because of timeout.
+     * This can be overwritten to have it done in a background thread.
+     */
+    protected void loadSibling(OAObject obj, String property) {
+    }
+    
     
     // 20160101
     public void close() {
@@ -55,43 +69,25 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         }
     }
 
-    static final AtomicInteger aiCnt = new AtomicInteger();//qqqqqqqqqqqqqq
 
     @Override
-    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger) {
-        LOG.fine(aiCnt.incrementAndGet()+") masterClass="+masterClass+", prop="+property);
-/*qqqqqqqqqqqqqq        
-System.out.println("AStart: masterClass="+masterClass+", prop="+property);
-long ts1 = System.currentTimeMillis();
-*/
-        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys, bForHubMerger);
-/*        
-long ts2 = System.currentTimeMillis();
-System.out.println("AEnd: masterClass="+masterClass+", prop="+property+"  ===> "+(ts2-ts1));
-*/        
+    public Object getDetail(int id, Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger) {
+        LOG.fine(id+") masterClass="+masterClass+", prop="+property);
+        Object obj = clientGetDetail.getDetail(id, masterClass, masterObjectKey, property, masterProps, siblingKeys, bForHubMerger);
         return obj;
     }
 
     // 20151129 does not put in the msg queue, but will write the return value using the same vsocket that the msg queue thread uses.
     @Override
-    public Object getDetailNow(Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger) {
-        int cnt = aiCnt.incrementAndGet();
-        LOG.fine(cnt+") masterClass="+masterClass+", prop="+property);
-/*qqqqqqqqqqqqqq        
-System.out.println("Start: masterClass="+masterClass+", prop="+property);
-long ts1 = System.currentTimeMillis();
-*/
-        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, masterProps, siblingKeys, bForHubMerger);
-/*        
-long ts2 = System.currentTimeMillis();
-System.out.println(cnt+") End: masterClass="+masterClass+", prop="+property+"  ===> "+(ts2-ts1));        
-*/        
+    public Object getDetailNow(int id, Class masterClass, OAObjectKey masterObjectKey, String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger) {
+        LOG.fine(id+") masterClass="+masterClass+", prop="+property);
+        Object obj = clientGetDetail.getDetail(id, masterClass, masterObjectKey, property, masterProps, siblingKeys, bForHubMerger);
         return obj;
     }
     
     @Override
-    public Object getDetail(Class masterClass, OAObjectKey masterObjectKey, String property, boolean bForHubMerger) {
-        Object obj = clientGetDetail.getDetail(masterClass, masterObjectKey, property, null, null, bForHubMerger);
+    public Object getDetail(int id, Class masterClass, OAObjectKey masterObjectKey, String property, boolean bForHubMerger) {
+        Object obj = clientGetDetail.getDetail(id, masterClass, masterObjectKey, property, null, null, bForHubMerger);
         return obj;
     }
 
