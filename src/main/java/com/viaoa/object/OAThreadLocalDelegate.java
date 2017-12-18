@@ -919,8 +919,14 @@ static volatile int unlockCnt;
         return ti.getDetailPropertyPath;
     }
     
+    public static void setGetDetailHub(Hub h) {
+        setGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, null);
+    }
     public static void setGetDetailHub(Hub h, String pp) {
         setGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, pp);
+    }
+    public static void resetGetDetailHub(Hub h) {
+        resetGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, null);
     }
     public static void resetGetDetailHub(Hub h, String pp) {
         resetGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, pp);
