@@ -70,12 +70,14 @@ public class DataGenerator {
             }
         };
 
+        OAObjectSerializer.bReadId = false;
         OAObjectSerializer wrap = (OAObjectSerializer) ois.readObject(); 
         serverRoot = (ServerRoot) wrap.getObject();
         String version = (String) ois.readObject();
         
         ois.close();
         fis.close();
+        OAObjectSerializer.bReadId = false;
 
         return serverRoot;
     }
