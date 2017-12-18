@@ -282,6 +282,7 @@ public class HubShareDelegate {
 	    Hub[] hubs = getAllSharedHubs(thisHub);
 	    for (int i=0; i<hubs.length; i++) {
 	        hubs[i].data = thisHub.data;  // use same data
+            hubs[i].datam = thisHub.datam;  // 20171218
 	        if (bShareActiveObject) {
 	            // all hubs that are shared with the "dHub" need to have dataa shared
 	            if (hubs[i].dataa == daOld) hubs[i].dataa = daNew;
@@ -513,8 +514,7 @@ public class HubShareDelegate {
 	        // 2006/05/31 moved from below
 	        addSharedHub(sharedMasterHub, thisHub); // adds to datau.vecSharedHub
 	        thisHub.data = sharedMasterHub.data;
-//vvvvvvvvvvvvvv dont replace if detailHub          
-	        thisHub.datam = sharedMasterHub.datam;
+	        thisHub.datam = sharedMasterHub.datam;  // 20171218
 	        // dont share "datau"
 	        // dont share "dataa" unless shareActiveObject is true
 	
@@ -544,6 +544,7 @@ public class HubShareDelegate {
 	    }
 	    for (int i=0; i<hubShared.length; i++) {
 	        hubShared[i].data = thisHub.data;  // share same data
+            hubShared[i].datam = thisHub.datam;  // 20171218
 	        if (hubShared[i].dataa == originalDataa) hubShared[i].dataa = thisHub.dataa;
 	    }
 	
