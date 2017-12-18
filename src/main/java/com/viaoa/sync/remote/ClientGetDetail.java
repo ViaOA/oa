@@ -38,12 +38,14 @@ import com.viaoa.util.OANotExist;
  */
 public class ClientGetDetail {
     private static Logger LOG = Logger.getLogger(ClientGetDetail.class.getName());
-
+    private final int clientId;
+    
     // tracks guid for all oaObjects serialized, the Boolean: true=all references have been sent, false=object has been sent (might not have all references)
     private final TreeMap<Integer, Boolean> treeSerialized = new TreeMap<Integer, Boolean>();
     private final ReentrantReadWriteLock rwLockTreeSerialized = new ReentrantReadWriteLock();
 
-    public ClientGetDetail() {
+    public ClientGetDetail(int clientId) {
+        this.clientId = clientId;
     }
     
     public void removeGuid(int guid) {
@@ -72,7 +74,7 @@ public class ClientGetDetail {
         treeSerialized.clear();
     }
     
-    private static volatile int cntx;
+//    private static volatile int cntx;
     private static volatile int errorCnt;
     /**
      * called by OASyncClient.getDetail(..), from an OAClient to the OAServer
@@ -85,7 +87,7 @@ public class ClientGetDetail {
      * @return the property reference, or an OAObjectSerializer that will wrap the reference, along with additional objects
      * that will be sent back to the client.
      */
-    public Object getDetail(final Class masterClass, final OAObjectKey masterObjectKey, 
+    public Object getDetail(final int id, final Class masterClass, final OAObjectKey masterObjectKey, 
             final String property, final String[] masterProps, final OAObjectKey[] siblingKeys, final boolean bForHubMerger) {
 
         if (masterObjectKey == null || property == null) return null;
@@ -100,9 +102,9 @@ public class ClientGetDetail {
                 return null;
             }
         }
-
+        
+        
         Object detailValue = OAObjectReflectDelegate.getProperty((OAObject) masterObject, property);
-
         
         Object returnValue;
         int cntSib=0;
@@ -113,12 +115,26 @@ public class ClientGetDetail {
                 if (((Hub) detailValue).getSize() > 100) b = false;
             }
         }
+
+        int cntMasterPropsLoaded=0;
+        if (masterProps != null && masterObject instanceof OAObject) {
+            for (String s : masterProps) {
+                if (System.currentTimeMillis() > (ts + 50)) {
+                    break;
+                }
+                ((OAObject) masterObject).getProperty(s);
+                cntMasterPropsLoaded++;
+            }
+        }
+        
         
         if (b) {
             returnValue = detailValue;
         }
         else {
-            OAObjectSerializer os = getSerializedDetail((OAObject)masterObject, detailValue, property, masterProps, siblingKeys, bForHubMerger);
+            OAObjectSerializer os = getSerializedDetail(ts, (OAObject)masterObject, detailValue, property, masterProps, cntMasterPropsLoaded, siblingKeys, bForHubMerger);
+            os.setClientId(clientId);
+            os.setId(id);
             
             os.setMax(1500);  // max number of objects to write
             os.setMaxSize(250000);  // max size of compressed data to write out
@@ -137,18 +153,16 @@ public class ClientGetDetail {
         String s = (ts > 500) ? " ALERT" : "";
         
         s = String.format(
-            "%,d) ClientGetDetail.getDetail() Obj=%s, prop=%s, returnValue=%s, getSib=%,d/%,d, masterProps=%s, ms=%,d%s",
-            ++cntx, 
+            "client=%d, id=%,d, Obj=%s, prop=%s, siblings=%,d/%,d, masterProps=%s, ms=%,d%s",
+            clientId, id, 
             masterObject.getClass().getSimpleName(), 
             property, 
-            detailValue,
             cntSib,        
             (siblingKeys == null)?0:siblingKeys.length,
-            masterProps==null?"":(""+masterProps.length),
+            masterProps==null?"":(""+cntMasterPropsLoaded+"/"+masterProps.length),
             ts,
             s
         );
-        
         OAPerformance.LOG.fine(s);
         LOG.fine(s);
         
@@ -167,29 +181,22 @@ public class ClientGetDetail {
      * send max X objects 
      * 
      */
-    protected OAObjectSerializer getSerializedDetail(final OAObject masterObject, final Object detailObject, final String propFromMaster, final String[] masterProperties, final OAObjectKey[] siblingKeys, final boolean bForHubMerger) {
+    protected OAObjectSerializer getSerializedDetail(final long msStart, final OAObject masterObject, final Object detailObject, final String propFromMaster, final String[] masterProperties, final int cntMasterPropsLoaded, final OAObjectKey[] siblingKeys, final boolean bForHubMerger) {
         // at this point, we know that the client does not have all of the master's references,
         // and we know that value != null, since getDetail would not have been called.
         // include the references "around" this object and master object, along with any siblings
       
         // see OASyncClient.getDetail(..)
-        final long msStart = System.currentTimeMillis();
 
         boolean b = wasFullySentToClient(masterObject);
         final boolean bMasterWasPreviouslySent = b && (masterProperties == null || masterProperties.length == 0);
 
-        if (masterProperties != null && masterObject instanceof OAObject) {
-            for (String s : masterProperties) {
-                ((OAObject) masterObject).getProperty(s);
-                if (System.currentTimeMillis() > (msStart + 30)) {
-                    break;
-                }
-            }
-        }
 
+        int tot = 0;
         Hub dHub = null;
         if (detailObject instanceof Hub) {
             dHub = (Hub) detailObject;
+            tot = dHub.size(); 
             if (dHub.isOAObject()) {
                 for (Object obj : dHub) {
                     if (System.currentTimeMillis() > (msStart + 40)) {
@@ -204,42 +211,37 @@ public class ClientGetDetail {
         else if ((detailObject instanceof OAObject) && !wasFullySentToClient(detailObject)) {
             OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 0, false, 5, msStart+40);
         }
+
         
         HashMap<OAObjectKey, Object> hmExtraData = null;
-        boolean bLoad = true;
-        if (siblingKeys != null && siblingKeys.length > 0) {
+        if (tot < 5000 && siblingKeys != null && siblingKeys.length > 0) {
             hmExtraData = new HashMap<OAObjectKey, Object>();
             // send back a lightweight hashmap (oaObjKey, value)
             Class clazz = masterObject.getClass();
-            int tot = 0;
-            
+            boolean bLoad = true;
             for (OAObjectKey key : siblingKeys) {
                 OAObject obj = OAObjectCacheDelegate.get(clazz, key);
                 if (obj == null) {
                     continue;
                 }
 
-                /*
-                rwLockTreeSerialized.readLock().lock();
-                Object objx = treeSerialized.get(key.getGuid());
-                rwLockTreeSerialized.readLock().unlock();
-                if (objx != null && ((Boolean) objx).booleanValue()) {
-                    continue; // already sent with all refs
-                }
-                */
-
-                Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, propFromMaster, true, true);
+                Object value = OAObjectPropertyDelegate.getProperty(obj, propFromMaster, true, true);
                 if (value instanceof OANotExist) {  // not loaded from ds
                     if (bLoad) {
-                        bLoad = ((System.currentTimeMillis() - msStart) < (bForHubMerger?85:50));
+                        bLoad = ((System.currentTimeMillis() - msStart) < (bForHubMerger?225:85));
                     }
-                    if (!bLoad) continue;
+                    if (!bLoad) {
+                        loadSibling(obj, propFromMaster);
+                        continue;
+                    }
                 }
                 
                 if (bLoad) {
                     value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
                 }
-                else if (value instanceof OAObjectKey) continue;
+                else if (value instanceof OAObjectKey) {
+                    continue;
+                }
 
                 if (value instanceof Hub) {
                     int x = ((Hub) value).getSize();
@@ -251,13 +253,16 @@ public class ClientGetDetail {
                     tot += x;
                 }
                 hmExtraData.put(key, value);
+                if (tot > 5000) {
+                    break;
+                }
             }
         }
         
-        b = ((hmExtraData != null && hmExtraData.size() > 0) || (masterProperties != null && masterProperties.length > 0));
+        b = ((hmExtraData != null && hmExtraData.size() > 5) || (cntMasterPropsLoaded > 5));
         if (!b) {
             if (detailObject instanceof Hub) {
-                if (((Hub) detailObject).getSize() > 100) b = true;
+                if (((Hub) detailObject).getSize() > 200) b = true;
             }
         }
         
@@ -278,6 +283,14 @@ public class ClientGetDetail {
                 detailObject, dHub, propFromMaster, masterProperties, siblingKeys, hmExtraData);
         os.setCallback(cb);
         return os;
+    }
+    
+    /**
+     * called when a sibling cant be loaded for current request, because of timeout.
+     * This can be overwritten to have it done in a background thread.
+     */
+    protected void loadSibling(OAObject obj, String property) {
+       
     }
     
     
