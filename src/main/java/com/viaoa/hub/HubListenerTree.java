@@ -513,7 +513,7 @@ public class HubListenerTree {
                         
                         if (bIsHub) {
                             final HubListenerTreeNode nodeThis = node;
-                            OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
+                            OAPerformance.LOG.finer("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll) {
                                 @Override
                                 protected void beforeRemoveRealHub(HubEvent e) {
@@ -614,7 +614,7 @@ public class HubListenerTree {
                             }
                             
  
-                            OAPerformance.LOG.fine("creating hubMerger for hub="+hub+", propPath="+spp);
+                            OAPerformance.LOG.finer("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll);
                             newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
                         }
