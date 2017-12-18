@@ -40,6 +40,8 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     static final long serialVersionUID = 1L;
     private static final Logger LOG = Logger.getLogger(OAObjectSerializer.class.getName());
     
+    private int clientId;  // 20171216
+    private int id;  // 20171216
     private Object object; // object to serialize
     private Object extraObject; // extra object to serialize
     
@@ -78,6 +80,19 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         transient Stack stack;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+    public int getId() {
+        return this.id;
+    }
+    public void setClientId(int id) {
+        this.clientId = id;
+    }
+    public int getClientId() {
+        return this.clientId;
+    }
+    
     /**
      * Max number of objects to serialize.
      */
@@ -382,7 +397,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * so that OAObject will then use it for serializing. 
      */
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
-    	stream.writeBoolean(bCompress);
     	try {
         	OAThreadLocalDelegate.setObjectSerializer(this);
         	_writeObject(stream);
@@ -411,6 +425,10 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * them, instead it will use an internal reference.
      */
     private void _writeObject(ObjectOutputStream stream) throws IOException {
+        long ts = System.currentTimeMillis();
+
+        stream.writeInt(getId()); // 20171216
+        stream.writeBoolean(bCompress);
         String msg;
         if (bCompress) {
         	deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);//BEST_SPEED BEST_COMPRESSION);
@@ -447,12 +465,14 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             long sizeBefore = deflater.getBytesRead();
             long sizeAfter = deflater.getBytesWritten();
             deflater.end();
-        	
+
+            long ts2 = System.currentTimeMillis();
+            
             msg = String.format(
-                "wrote object=%s, extra=%s, uncompressed=%,d, compressed=%,d, totalObjects=%,d", 
-                object==null?"null":object.getClass().getName(), 
-                extraObject==null?"null":extraObject.getClass().getName(),
-                sizeBefore, sizeAfter, totalObjectsWritten);
+                "client=%d, id=%,d, object=%s, extra=%s, uncompressed=%,d, compressed=%,d, totalObjects=%,d, %,dms", 
+                clientId, id, object, 
+                extraObject==null?"null":extraObject.getClass().getSimpleName(),
+                sizeBefore, sizeAfter, totalObjectsWritten, (ts2-ts));
         }
         else {
             stream.writeBoolean(object != null);
@@ -461,30 +481,20 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             if (extraObject != null) stream.writeObject(extraObject);
             finishWrite(stream);
 
+            long ts2 = System.currentTimeMillis();
             msg = String.format(
-                    "wrote object=%s, extra=%s, totalObjects=%,d", 
-                    object, 
+                    "client=%d, id=%,d, object=%s, extra=%s, totalObjects=%,d, %,dms", 
+                    clientId, id, object, 
                     extraObject==null?"null":extraObject.getClass().getSimpleName(),
-                    totalObjectsWritten 
+                    totalObjectsWritten, (ts2-ts)
                     );
         }
         stream.writeInt(totalObjectsWritten);
 
         wcnter++;
-        if (bCompress) {
-            LOG.fine(wcnter+") "+msg);
-        }
-        else LOG.finer(wcnter+") "+msg);
-        
-        /*test        
-        if (false) {            
-            if (totalObjectsWritten > 250 || (wcnter%250 == 0)) System.out.println(wcnter+") ObjectSerializer "+msg);
-        }
-        */
-        
-        if (bCompress) {
-            OAPerformance.LOG.fine(wcnter+") ObjectSerializer "+msg);
-        }
+        LOG.fine(wcnter+") "+msg);
+
+        OAPerformance.LOG.fine(wcnter+") "+msg);
     }
 
     
@@ -511,11 +521,17 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         }
     }
 
+    public static boolean bReadId = true; // 20171218, set to false to read older data 
     
     /**
      * Called by objectStream to deserialize a wrapper. 
      */
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        long ts = System.currentTimeMillis();
+        
+        if (bReadId) {
+            this.id = stream.readInt(); // 20171216
+        }
     	bCompress = stream.readBoolean();
     	String msg;
     	if (bCompress) {
@@ -529,7 +545,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             else {
                 rois = new RemoteObjectInputStream(iis, null);
             }
-        	
         	
             boolean b = rois.readBoolean();
         	if (b) object = rois.readObject();
@@ -547,11 +562,12 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         	long sizeBefore = inflater.getBytesRead();
         	long sizeAfter = inflater.getBytesWritten();
 
+            long ts2 = System.currentTimeMillis();
         	
-            msg = String.format("Read object=%s, extra=%s, compressed=%,d, uncompressed=%,d, totalObjects=%,d", 
-                    object, 
+            msg = String.format("id=%,d, object=%s, extra=%s, compressed=%,d, uncompressed=%,d, totalObjects=%,d, %,dms", 
+                    id, object, 
                     extraObject==null?"null":extraObject.getClass().getSimpleName(),
-                    sizeBefore, sizeAfter, totalObjectsWritten);
+                    sizeBefore, sizeAfter, totalObjectsWritten, (ts2-ts));
     	}
     	else {
             boolean b = stream.readBoolean();
@@ -562,22 +578,21 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             }
         	finishRead(stream);
             totalObjectsWritten = stream.readInt();
-            msg = String.format("Read object=%s, extra=%s, totalObjects=%,d", 
-                    object, 
+
+            long ts2 = System.currentTimeMillis();
+            msg = String.format("id=%,d, object=%s, extra=%s, totalObjects=%,d, %,dms", 
+                    id, object, 
                     extraObject==null?"null":extraObject.getClass().getSimpleName(),
-                    totalObjectsWritten);
+                    totalObjectsWritten, (ts2-ts));
     	}
+        if (totalObjectsWritten > 120000 || totalObjectsWritten < 0) {
+            msg = " ALERT, totalObjectsWritten is wrong";
+            LOG.warning(rcnter+") "+msg);
+        }
+    	
     	rcnter++;
         LOG.fine(rcnter+") "+msg);
-        /*test        
-        if (totalObjectsWritten > 25 || (rcnter%50 == 0)) {            
-            System.out.println(rcnter+") ObjectSerializer "+msg);
-        }
-        */
-        
-        if (bCompress) {
-            OAPerformance.LOG.fine(rcnter+") ObjectSerializer "+msg);
-        }
+        OAPerformance.LOG.fine(rcnter+") "+msg);
     }
     
     
