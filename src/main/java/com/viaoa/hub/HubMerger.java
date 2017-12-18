@@ -92,21 +92,22 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     
     
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath) {
-        this(hubRoot, hubCombinedObjects, propertyPath, false, null, true, false);
+        this(hubRoot, hubCombinedObjects, propertyPath, false, null, true, false, false);
     }
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bUseAll) {
-        this(hubRoot, hubCombinedObjects, propertyPath, false, null, bUseAll, false);
+        this(hubRoot, hubCombinedObjects, propertyPath, false, null, bUseAll, false, false);
     }
 
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll) {
-        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, false);
+        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, false, false);
     }
 
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, String selectOrder,
             boolean bUseAll) {
-        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, false);
+        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, false, false);
     }
 
+    
     public void setUseBackgroundThread(boolean b) {
         bUseBackgroundThread = b;
     }
@@ -139,7 +140,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
      */
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, 
         String propertyPath, boolean bShareActiveObject, String selectOrder,
-        boolean bUseAll, boolean bIncludeRootHub) 
+        boolean bUseAll, boolean bIncludeRootHub, boolean bUseBackgroundThread) 
     {
         id = aiId.getAndIncrement();
         if (hubRoot == null) {
@@ -151,12 +152,13 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             // 20150720 allow combinedHub to be null
             //throw new IllegalArgumentException("Combined hub can not be null");
         }
+        setUseBackgroundThread(bUseBackgroundThread);
         init(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, selectOrder, bUseAll, bIncludeRootHub);
     }
     
     public HubMerger(Hub<F> hubRoot, Hub<T> hubCombinedObjects, String propertyPath, boolean bShareActiveObject, boolean bUseAll,
             boolean bIncludeRootHub) {
-        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, bIncludeRootHub);
+        this(hubRoot, hubCombinedObjects, propertyPath, bShareActiveObject, null, bUseAll, bIncludeRootHub, false);
     }
 
     private boolean bCreatedFromOneObject;
@@ -213,11 +215,11 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         ts = System.currentTimeMillis() - ts;
 
         
-        String s = ("HM."+id+") new HubMerger hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
+        String s = ("HM."+id+") new HubMerger hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+getUseBackgroundThread());
         s += ", combinedHub="+hubCombined;
         s += ", time="+ts+"ms";
         
-        if (!bUseBackgroundThread) {
+        if (!getUseBackgroundThread()) {
             if (bUseAll) {
                 int x = hubRoot.size();
                 if (x > 100) {
@@ -235,10 +237,10 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         }
 
         if ((hubCombined != null && hubCombined.size() > 2000) || ts > 2500) {
-            Exception e = new Exception("HubMerger performance concern");
-            OAPerformance.LOG.log(Level.WARNING, s, e);
+            // Exception e = new Exception("HubMerger performance concern");
+            OAPerformance.LOG.log(Level.FINE, s);
         }
-        OAPerformance.LOG.fine(s);
+        OAPerformance.LOG.finer(s);
         LOG.fine(s);
     }
 
@@ -1474,7 +1476,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                 return;
             }
 
-            if (bUseBackgroundThread || SwingUtilities.isEventDispatchThread()) {
+            if (getUseBackgroundThread() || SwingUtilities.isEventDispatchThread()) {
                 return; // let run in the background
             }
             
@@ -1519,11 +1521,11 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             
             if (hub == hubRoot) {
                 ts = System.currentTimeMillis() - ts;
-                String s = ("HM."+id+") onNewList hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
+                String s = ("HM."+id+") onNewList hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+getUseBackgroundThread());
                 s += ", combinedHub="+hubCombined;
                 s += ", time="+ts+"ms";
                 
-                if (!bUseBackgroundThread) {
+                if (!getUseBackgroundThread()) {
                     if (bUseAll) {
                         int x = hubRoot.size();
                         if (x > 50) {
@@ -1539,7 +1541,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                         s += ", ALERT";
                     }
                 }
-                OAPerformance.LOG.fine(s);
+                OAPerformance.LOG.finer(s);
                 LOG.fine(s);
             }
         }
@@ -1895,11 +1897,11 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                 
                 
                 ts = System.currentTimeMillis() - ts;
-                String s = ("HM."+id+") onChangeAO hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+bUseBackgroundThread);
+                String s = ("HM."+id+") onChangeAO hub="+hubRoot+", propertyPath="+propertyPath+", useAll="+bUseAll+", useBackgroundThread="+getUseBackgroundThread());
                 s += ", combinedHub="+hubCombined;
                 s += ", time="+ts+"ms";
                 
-                if (!bUseBackgroundThread) {
+                if (!getUseBackgroundThread()) {
                     if (bUseAll) {
                         int x = hubRoot.size();
                         if (x > 50) {
@@ -1915,7 +1917,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                         s += ", ALERT";
                     }
                 }
-                OAPerformance.LOG.fine(s);
+                OAPerformance.LOG.finer(s);
                 LOG.fine(s);
             }
             // 20110419 param was true, but this should only send to other hubs that share this one
