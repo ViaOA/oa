@@ -520,7 +520,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         
         String s = (thisClass.getSimpleName()+", name="+trigger.name+", listenPropName="+listenProperty+", revPropPath="+revPropPath+", trigger.cnt="+x+", total="+aiAllTrigger.get());
         LOG.fine(s);
-        if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
+        if (false && OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
         else if (x > 180) {
             LOG.warning(s);
         }
@@ -609,7 +609,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 
                 String s = (thisClass.getSimpleName()+", name="+trigger.name+", prop="+tiFound.listenProperty+", revPropPath="+tiFound.ppToRootClass+", trigger.cnt="+x+", total="+aiAllTrigger.get());
                 LOG.fine(s);
-                if (OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
+                if (false && OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
             }
         }
     }
