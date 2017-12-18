@@ -11,122 +11,34 @@
 package com.viaoa.jfc;
 
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Event;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.dnd.*;
+import java.awt.event.*;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractButton;
-import javax.swing.ButtonGroup;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JViewport;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.border.*;
+import javax.swing.event.*;
 import javax.swing.plaf.UIResource;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
+import javax.swing.table.*;
 
-import com.viaoa.hub.Hub;
-import com.viaoa.hub.HubAODelegate;
-import com.viaoa.hub.HubDataDelegate;
-import com.viaoa.hub.HubDetailDelegate;
-import com.viaoa.hub.HubEvent;
-import com.viaoa.hub.HubEventDelegate;
-import com.viaoa.hub.HubFilter;
-import com.viaoa.hub.HubListenerAdapter;
-import com.viaoa.hub.HubSelectDelegate;
+import com.viaoa.hub.*;
 import com.viaoa.jfc.border.CustomLineBorder;
 import com.viaoa.jfc.control.JFCController;
 import com.viaoa.jfc.control.OATreeTableController;
 import com.viaoa.jfc.dnd.OATransferable;
-import com.viaoa.jfc.table.OATableCellEditor;
-import com.viaoa.jfc.table.OATableCellRenderer;
-import com.viaoa.jfc.table.OATableColumn;
-import com.viaoa.jfc.table.OATableComponent;
-import com.viaoa.jfc.table.OATableFilterComponent;
-import com.viaoa.jfc.table.OATableListener;
-import com.viaoa.jfc.undo.OAUndoManager;
-import com.viaoa.jfc.undo.OAUndoableEdit;
-import com.viaoa.object.OALinkInfo;
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAThreadLocalDelegate;
-import com.viaoa.util.OACompare;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OANullObject;
-import com.viaoa.util.OAProperties;
-import com.viaoa.util.OAReflect;
-import com.viaoa.util.OAString;
+import com.viaoa.jfc.table.*;
+import com.viaoa.jfc.undo.*;
+import com.viaoa.object.*;
+import com.viaoa.object.*;
+import com.viaoa.util.*;
 
 /**
  * Used for building a Table of columns/rows listing Objects. All columns are created by adding an
@@ -3587,7 +3499,6 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
             int newAoPos = getHub().getPos(hubSelect.getAt(hubSelect.size()-1));
             //newAoPos = table.getSelectionModel().getLeadSelectionIndex();
-
             getHub().setAO(newAoPos);
         }
         else {
@@ -3608,8 +3519,25 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
     }
 
+    private boolean bHasHadMaster;  // 20171217
     public @Override void onNewList(HubEvent e) {
-
+        if (!bHasHadMaster) {
+            if (table.hub.getMasterObject() != null) bHasHadMaster = true; 
+            else if (table.hubFilterMaster != null && table.hubFilterMaster.getMasterObject() != null) bHasHadMaster = true; 
+        }
+        
+        if (bHasHadMaster) {
+            Hub h = table.hubFilterMaster;
+            if (h == null) h = table.hub;
+            
+            if (h.getMasterObject() == null) {
+                table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            }
+            else {
+                table.setCursor(Cursor.getDefaultCursor());
+            }
+        }
+        
         boolean b = false;
         try {
             if (table.hubAdapter != null) {
