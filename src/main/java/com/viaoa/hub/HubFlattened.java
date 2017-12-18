@@ -56,7 +56,7 @@ public class HubFlattened<TYPE extends OAObject> {
         linkInfo = HubDetailDelegate.getLinkInfoFromDetailToMaster(hubRoot);
         
         
-        hm = new HubMerger(hubRoot, hubFlat, liMany.getName(), false, null, true, true);
+        hm = new HubMerger(hubRoot, hubFlat, liMany.getName(), false, null, true, true, true);
         
         // make sure that any new object added to hubFlat(from a new command)  has correct link to parent/master
         HubListener hl = new HubListenerAdapter() {
