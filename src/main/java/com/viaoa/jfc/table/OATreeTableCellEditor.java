@@ -15,6 +15,9 @@ import java.awt.event.*;
 import java.util.EventObject;
 
 import javax.swing.*;
+import javax.swing.plaf.TreeUI;
+import javax.swing.plaf.basic.BasicTreeUI;
+
 import com.viaoa.jfc.*;
 
 /**
@@ -38,7 +41,7 @@ public class OATreeTableCellEditor extends OATableCellEditor {
         if (!(anEvent instanceof MouseEvent)) return false;
         MouseEvent e = (MouseEvent) anEvent;
         if (e.getID() != MouseEvent.MOUSE_PRESSED) return false;
-
+        
         Object src = anEvent.getSource();
         if (!(src instanceof OATable)) return false;
         
@@ -46,18 +49,22 @@ public class OATreeTableCellEditor extends OATableCellEditor {
         
         int row = t.getHub().getPos();
         Rectangle rec = t.getCellRect(row, 0, true);
-        
+
+        // 20171215
+        if (anEvent instanceof AWTEvent) {
+            tree.dispatchEvent((AWTEvent) anEvent);
+        }
+        /**was:        
         if (tree.isExpanded(row)) {
             tree.collapseRow(row);
         }
         else {
             tree.expandRow(row);
         }
-        
+        */        
         return false;
     }
     
-//qqqqqqqqqqqqq    
     public boolean shouldSelectCell(EventObject anEvent) {
         return true;
     }
