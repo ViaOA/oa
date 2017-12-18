@@ -231,6 +231,27 @@ public class HubDetailDelegate {
     }
     
     
+    public static void preloadDetailData(final Hub thisHub, final int pos) {
+        if (thisHub == null || pos < 0) return;
+        int x = thisHub.datau.getVecHubDetail() == null ? 0 : thisHub.datau.getVecHubDetail().size();
+        
+        Object objMaster = thisHub.getAt(pos);
+        if (objMaster == null) return;
+        
+        // get objects that go with detail hub
+        for (int i=0; i<x; i++) {
+            HubDetail hd = (HubDetail) thisHub.datau.getVecHubDetail().elementAt(i);
+            Hub h = hd.hubDetail;
+            if (h == null) {
+                thisHub.datau.getVecHubDetail().removeElementAt(i);
+                x--;
+                i--;
+                continue;
+            }
+            OAObjectReflectDelegate.getProperty((OAObject) thisHub.dataa.activeObject, hd.liMasterToDetail.getName());
+        }
+    }
+    
     /**
         Internal method to update any detail hubs.  This is called whenever activeObject is
         changed, or the property value that is used for the link gets modified
