@@ -91,7 +91,8 @@ public class OAEqualFilter implements OAFilter {
             Hub h = (Hub) obj;
             return h.contains(matchValue);
         }
-        return OACompare.isEqual(obj, matchValue, bIgnoreCase);
+        boolean b = bIgnoreCase && (obj instanceof String) && (matchValue instanceof String);
+        return OACompare.isEqual(obj, matchValue, b);
     }
     
     protected Object getPropertyValue(Object obj) {
