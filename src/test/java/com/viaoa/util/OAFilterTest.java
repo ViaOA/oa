@@ -91,6 +91,9 @@ public class OAFilterTest extends OAUnitTest {
         OAEqualFilter f = new OAEqualFilter("a");
         
         assertTrue(f.isUsed("a"));
+        assertTrue(f.isUsed("A"));
+
+        f.setIgnoreCase(false);
         assertFalse(f.isUsed("A"));
         
         assertFalse(f.isUsed(null));
