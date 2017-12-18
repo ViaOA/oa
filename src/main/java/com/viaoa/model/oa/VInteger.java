@@ -19,7 +19,7 @@ public class VInteger extends OAObject {
     
     public static final String P_Value = "Value";
     
-    private int value;
+    public int value;
     
     public VInteger() {
     }
