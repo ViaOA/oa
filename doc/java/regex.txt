@@ -1,5 +1,8 @@
 
 
+// remove all non numeric
+    String position = this.id.replaceAll("[^0-9]", "");
+
 public static boolean isValidEmail(String enteredEmail){
         String EMAIL_REGIX = "^[\\\\w!#$%&’*+/=?`{|}~^-]+(?:\\\\.[\\\\w!#$%&’*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,6}$";
         Pattern pattern = Pattern.compile(EMAIL_REGIX);

@@ -1,5 +1,10 @@
 
 
+20171215
+    eclipse and jpa java change event handler waiting
+        windows/preferences/validators
+            uncheck jpa
+
 20171209 changes for high res issue with icons
 eclipse.ini
     -vmargs
