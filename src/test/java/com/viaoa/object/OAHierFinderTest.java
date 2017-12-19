@@ -74,5 +74,25 @@ public class OAHierFinderTest extends OAUnitTest {
         ProgramDocument docx = at.getCalcAnnouncementDocument();
         assertEquals(doc, docx);
     }
+    @Test 
+    public void test5() {
+        Program prog1 = new Program();
+        Program prog2 = new Program();
+        
+        Location loc1 = new Location();
+        loc1.setProgram(prog1);
+        
+        Location loc2 = new Location();
+        loc2.setProgram(prog2);
+        
+        Employee emp1 = new Employee();
+        Employee emp2 = new Employee();
+        emp1.setLocation(loc1);
+        emp2.setLocation(loc2);
+        emp2.setParentEmployee(emp1);
+        
+        Program p = emp2.getProgram();
+        assertEquals(prog2, p);
+    }
     
 }

@@ -6,7 +6,6 @@ import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.annotation.*;
-import com.viaoa.util.OADate;
 
 import test.hifive.model.oa.filter.*;
 import test.hifive.model.oa.propertypath.*;
@@ -1469,11 +1468,21 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
     
     @OAOne(
         isCalculated = true, 
+        dependentProperties = {Employee.P_Location+"."+Location.P_Program} 
+    )
+    public Program getProgram() {
+        OAHierFinder<Employee> hf = new OAHierFinder<Employee>(Location.P_Program, OAString.cpp(Employee.P_Location), false);
+        return (Program) hf.findFirst(this);
+    }
+
+    
+    @OAOne(
+        isCalculated = true, 
         reverseName = Program.P_Employees, 
         allowCreateNew = false, 
         allowAddExisting = false
     )
-    public Program getProgram() {
+    public Program getProgramX() {
         program = null;
         Location loc = getLocation();
         for ( ; program==null && loc!=null; loc=loc.getParentLocation()) {
