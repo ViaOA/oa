@@ -199,7 +199,7 @@ public class HubDataDelegate {
         if (xx > 499 && thisHub.datam.masterObject != null && (xx%100)==0) {
             if (xx < 1000 || (xx%1000)==0) LOG.fine("large Hub with masterObject, Hub="+thisHub);
             if ((xx%10000)==0) {
-                LOG.warning("large Hub with masterObject, Hub="+thisHub);
+                LOG.fine("large Hub with masterObject, Hub="+thisHub);
             }
         }
 
