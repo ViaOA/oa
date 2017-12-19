@@ -3522,8 +3522,8 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
     private boolean bHasHadMaster;  // 20171217
     public @Override void onNewList(HubEvent e) {
         if (!bHasHadMaster) {
-            if (table.hub.getMasterObject() != null) bHasHadMaster = true; 
-            else if (table.hubFilterMaster != null && table.hubFilterMaster.getMasterObject() != null) bHasHadMaster = true; 
+            if (table.hub.getMasterHub() != null) bHasHadMaster = true; 
+            else if (table.hubFilterMaster != null && table.hubFilterMaster.getMasterHub() != null) bHasHadMaster = true; 
         }
         
         if (bHasHadMaster) {
