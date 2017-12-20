@@ -44,6 +44,9 @@ public class OAObjectModel {
     protected String displayName;
     protected String displayNamePlural;
 
+    // flag to know if this model is used by JFC UI apps, in which case it can use Hubs that are loaded in swingWorker thread
+    protected boolean bForJfc;
+    
     public OAObjectModel() {
 //        if (isLoading()) return;
         setAllowGotoList(true);
@@ -206,6 +209,13 @@ public class OAObjectModel {
     }
     public void setAllowFilter(boolean b) {
         bAllowFilter = b;
+    }
+
+    public boolean getForJfc() {
+        return bForJfc;
+    }
+    public void setForJfc(boolean b) {
+        this.bForJfc = b;
     }
     
 }
