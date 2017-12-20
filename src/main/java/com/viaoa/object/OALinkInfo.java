@@ -53,6 +53,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     private boolean sortAsc=true;  // sort ascending
     private String seqProperty;  // sequence propetyPath
     private boolean isImportMatch;
+    private boolean couldBeLarge;
     
     // runtime
     protected transient int cacheSize;
@@ -307,6 +308,13 @@ public class OALinkInfo { //implements java.io.Serializable {
         this.isImportMatch = b;
     }
 
+    public boolean getCouldBeLarge() {
+        return couldBeLarge;
+    }
+    public void setCouldBeLarge(boolean b) {
+        this.couldBeLarge = b;
+    }
+    
     public void setOAOne(OAOne o) {
         this.oaOne = o;
     }

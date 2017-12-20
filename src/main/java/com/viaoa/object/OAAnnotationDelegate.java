@@ -269,6 +269,7 @@ public class OAAnnotationDelegate {
             li.setOwner(annotation.owner());
             li.setRecursive(annotation.recursive());
             li.setCacheSize(annotation.cacheSize());
+            li.setCouldBeLarge(annotation.couldBeLarge());
 
             s = annotation.matchHub();
             if (s != null && s.length() == 0) s = null;

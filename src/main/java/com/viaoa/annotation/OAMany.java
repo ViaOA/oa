@@ -77,6 +77,8 @@ public @interface OAMany {
     String[] dependentProperties() default {};
 
     String mergerPropertyPath() default "";
+    
+    boolean couldBeLarge() default false;
 }
 
 /*  OALinkInfo
