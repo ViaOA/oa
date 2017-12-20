@@ -4,6 +4,10 @@
     eclipse and jpa java change event handler waiting
         windows/preferences/validators
             uncheck jpa
+    uninstall jpa
+        https://stackoverflow.com/questions/19649847/eclipse-kepler-jpa-project-change-event-handler-waiting
+        Oxygen: [Preferences > Install/Update > Installed Software]
+        select the plugin "Dali Java Persistence Tools -JPA Support" and click "uninstall"
 
 20171209 changes for high res issue with icons
 eclipse.ini
