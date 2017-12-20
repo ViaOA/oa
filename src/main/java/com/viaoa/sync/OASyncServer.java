@@ -251,8 +251,8 @@ public class OASyncServer {
                 cx.remoteSession.addToCache(obj);
             }
             @Override
-            protected void loadSibling(OAObject obj, String property) {
-                OASyncServer.this.loadSibling(obj, property);
+            protected void loadDataInBackground(OAObject obj, String property) {
+                OASyncServer.this.loadDataInBackground(obj, property);
             }
         };
         cx.remoteClient = rc;
@@ -623,7 +623,7 @@ public class OASyncServer {
         getServerInfo();
         getMultiplexerServer().start();
         getRemoteMultiplexerServer().start();
-        startLoadSiblingThread();
+        startLoadDataInBackgroundThread();
     }
     
     public void stop() throws Exception {
@@ -650,17 +650,17 @@ public class OASyncServer {
             this.property = property;
         }
     }
-    private final ArrayBlockingQueue<LoadSibling> queLoadSibling = new ArrayBlockingQueue<>(250);
+    private final ArrayBlockingQueue<LoadSibling> queLoadDataInBackground = new ArrayBlockingQueue<>(250);
     /**
-     * called when a sibling cant be loaded for client getDetail request, because of timeout.
+     * called when props or sibling data cant be loaded for client getDetail request, because of timeout.
      * This can be overwritten to have it done in a background thread.
      */
-    protected void loadSibling(OAObject obj, String property) {
-        queLoadSibling.offer(new LoadSibling(obj, property));
+    protected void loadDataInBackground(OAObject obj, String property) {
+        queLoadDataInBackground.offer(new LoadSibling(obj, property));
     }
     
     private Thread threadLoadSibling;
-    protected void startLoadSiblingThread() throws Exception {
+    protected void startLoadDataInBackgroundThread() throws Exception {
         LOG.fine("starting LoadSibling log thread");
 
         String tname = "OASyncServer_LoadSibling";
@@ -668,19 +668,19 @@ public class OASyncServer {
         threadLoadSibling = new Thread(new Runnable() {
             @Override
             public void run() {
-                _runLoadSibling();
+                _runLoadDataInBackground();
             }
         }, tname);
         threadLoadSibling.setDaemon(true);
         threadLoadSibling.setPriority(Thread.MIN_PRIORITY);
         threadLoadSibling.start();
     }
-    protected void _runLoadSibling() {
+    protected void _runLoadDataInBackground() {
         long msLastError = 0;
         for (;;) {
             long msNow = System.currentTimeMillis(); 
             try {
-                LoadSibling ls = queLoadSibling.take();
+                LoadSibling ls = queLoadDataInBackground.take();
                 if (ls.obj == null) continue;
                 if (msNow > ls.ms + 10000) {
                     LOG.finer("not loading, too old,  obj="+ls.obj.getClass().getSimpleName()+", prop="+ls.property);

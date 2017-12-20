@@ -311,7 +311,6 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
                 }
             }
         }
-        
         if (callback != null) {
             b = callback.shouldSerializeReference(oaObj, propertyName, obj, b);
         }

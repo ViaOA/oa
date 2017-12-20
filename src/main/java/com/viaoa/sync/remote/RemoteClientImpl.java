@@ -34,17 +34,17 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         this.sessionId = sessionId;
         clientGetDetail = new ClientGetDetail(sessionId) {
             @Override
-            protected void loadSibling(OAObject obj, String property) {
-                RemoteClientImpl.this.loadSibling(obj, property);
+            protected void loadDataInBackground(OAObject obj, String property) {
+                RemoteClientImpl.this.loadDataInBackground(obj, property);
             }
         };
     }
     
     /**
-     * called when a sibling cant be loaded for current request, because of timeout.
+     * called when a other props or sibling data cant be loaded for current request, because of timeout.
      * This can be overwritten to have it done in a background thread.
      */
-    protected void loadSibling(OAObject obj, String property) {
+    protected void loadDataInBackground(OAObject obj, String property) {
     }
     
     

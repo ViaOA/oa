@@ -118,12 +118,16 @@ public class ClientGetDetail {
 
         int cntMasterPropsLoaded=0;
         if (masterProps != null && masterObject instanceof OAObject) {
+            boolean bx = false;
             for (String s : masterProps) {
-                if (System.currentTimeMillis() > (ts + 50)) {
-                    break;
+                bx = bx || (System.currentTimeMillis() > (ts + 50));
+                if (bx) {
+                    loadDataInBackground((OAObject)masterObject, s);
                 }
-                ((OAObject) masterObject).getProperty(s);
-                cntMasterPropsLoaded++;
+                else {
+                    ((OAObject) masterObject).getProperty(s);
+                    cntMasterPropsLoaded++;
+                }
             }
         }
         
@@ -136,8 +140,8 @@ public class ClientGetDetail {
             os.setClientId(clientId);
             os.setId(id);
             
-            os.setMax(1500);  // max number of objects to write
-            os.setMaxSize(250000);  // max size of compressed data to write out
+            os.setMax(1000);  // max number of objects to write
+            os.setMaxSize(200000);  // max size of compressed data to write out
             os.setMax(1000);  // max number of objects to write
     
             Object objx = os.getExtraObject();
@@ -226,12 +230,12 @@ public class ClientGetDetail {
                 }
 
                 Object value = OAObjectPropertyDelegate.getProperty(obj, propFromMaster, true, true);
-                if (value instanceof OANotExist) {  // not loaded from ds
+                if (value instanceof OANotExist || value instanceof OAObjectKey) {  // not loaded from ds
                     if (bLoad) {
                         bLoad = ((System.currentTimeMillis() - msStart) < (bForHubMerger?225:85));
                     }
                     if (!bLoad) {
-                        loadSibling(obj, propFromMaster);
+                        loadDataInBackground(obj, propFromMaster);
                         continue;
                     }
                 }
@@ -286,10 +290,10 @@ public class ClientGetDetail {
     }
     
     /**
-     * called when a sibling cant be loaded for current request, because of timeout.
+     * called when a property or sibling data cant be loaded for current request, because of timeout.
      * This can be overwritten to have it done in a background thread.
      */
-    protected void loadSibling(OAObject obj, String property) {
+    protected void loadDataInBackground(OAObject obj, String property) {
        
     }
     
