@@ -8,13 +8,13 @@ import com.viaoa.object.*;
  * If not, it will load using swingWorker thread.
  * @author vvia
  */
-public class HubSwingDetail {
+public class HubJfcDetail {
     private Hub hubMaster;
     private Hub hubDetail;
     private String prop;
     private OALinkInfo li;
 
-    public HubSwingDetail(Hub hubMaster, Hub hubDetail, String prop) {
+    public HubJfcDetail(Hub hubMaster, Hub hubDetail, String prop) {
         this.hubMaster = hubMaster;
         this.hubDetail = hubDetail;
         this.prop = prop;
