@@ -888,7 +888,6 @@ static volatile int unlockCnt;
     }
 
 
-    // TotalIsSendingEvent  20120104
     public static Hub getGetDetailHub() {
         Hub h; 
         if (OAThreadLocalDelegate.TotalGetDetailHub.get() == 0) {

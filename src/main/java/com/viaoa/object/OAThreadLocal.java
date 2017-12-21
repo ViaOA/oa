@@ -103,6 +103,5 @@ public class OAThreadLocal {
     
     // 20160625
     protected int recursiveTriggerCount;
-
 }
 

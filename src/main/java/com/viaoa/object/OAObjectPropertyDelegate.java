@@ -48,11 +48,12 @@ public class OAObjectPropertyDelegate {
             if (objx instanceof WeakReference) {
                 objx = ((WeakReference) objx).get();
                 if (objx == null) {
+                    // could be in cache, but not checking here
                     return false;
                 }
             }
             else if (objx instanceof OAObjectKey) return false;
-            return true; 
+            return true;   // could be null (/does not exist)
         }
         return false;
     }
