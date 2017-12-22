@@ -17,12 +17,9 @@ import com.viaoa.util.OAPropertyPath;
 public class OAObjectSiblingDelegate {
     private static final OAObject[] lastMasterObjects = new OAObject[10];
     private static final AtomicInteger aiLastMasterCnter = new AtomicInteger();
-
-    //qqqqqqqqqqqq  ONE: keys for to object to get (one side),
-    //qqqqqq MANY: keys are one side
     
     /**
-     * Returns first 100 found
+     * Used to find any siblings that also need the same property loaded.
      */
     public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int max) {
         Hub hub = OAThreadLocalDelegate.getGetDetailHub();
@@ -129,33 +126,6 @@ public class OAObjectSiblingDelegate {
     }
     
     
-    /**
-     * Find any other siblings to get the same property for sibling objects in same hub.
-     */
-    protected static OAObjectKey[] getSiblings(final OAObject masterObject, final OALinkInfo linkInfo, final String property, final Hub detailHub) {
-        // note: could be for a blob property
-        Hub siblingHub = null;
-        if (detailHub != null && detailHub.contains(masterObject)) {
-            siblingHub = detailHub;
-        }
-        if (siblingHub == null) {
-            siblingHub = findBestSiblingHub(masterObject);
-            if (siblingHub == null) return null;
-        }
-        
-        ArrayList<OAObjectKey> al = new ArrayList<OAObjectKey>();
-        _findSiblings(new HashSet(), al, masterObject, siblingHub, linkInfo, property, detailHub!=null, detailHub);
-        
-        lastMasterObjects[aiLastMasterCnter.getAndIncrement()%lastMasterObjects.length] = masterObject;
-        
-        if (al == null || al.size() == 0) return null;
-        int x = al.size();
-        OAObjectKey[] keys = new OAObjectKey[x];
-        al.toArray(keys);
-        return keys;
-    }
-
-
     // find the Hub that has the best set of siblings
     public static Hub findBestSiblingHub(OAObject masterObject) {
         Hub siblingHub = null;
@@ -209,139 +179,4 @@ public class OAObjectSiblingDelegate {
         }
         return siblingHub;
     }
-    
-    
-    
-    private static void _findSiblings(HashSet<Object> hsValues, ArrayList<OAObjectKey> alResults, final OAObject masterObject, 
-            final Hub siblingHub, OALinkInfo linkInfo, String propertyName, final boolean bAgressive, final Hub detailHub) {
-        
-        final boolean bUsesDetail = detailHub != null; 
-        
-        _findSiblingsA(hsValues, alResults, masterObject, siblingHub, linkInfo, propertyName, bAgressive, detailHub);
-        if (alResults.size() > (bUsesDetail?200:25) || linkInfo == null) return;
-
-        // go up to master.parent and get siblings from there
-        OAObject parentMasterObject = siblingHub.getMasterObject();
-        if (parentMasterObject == null) return;
-        
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(siblingHub);
-        if (li == null) return;
-             
-        OALinkInfo liRev = li.getReverseLinkInfo();
-        if (liRev == null) return;
-        if (liRev.getType() != OALinkInfo.MANY) return;
-        
-        Hub parentSiblingHub = findBestSiblingHub(parentMasterObject);
-        if (parentSiblingHub == null) return;
-        
-        int pos = parentSiblingHub.getPos(parentMasterObject);
-        
-        if (pos < 0) pos = 0;
-        else if (pos == 0) pos++;
-        else {
-            // might want to go before
-            OAObject obj = (OAObject) parentSiblingHub.getAt(pos-1);
-            if (!OAObjectPropertyDelegate.isPropertyLoaded(obj, liRev.getName())) {
-                pos -= 20;
-                if (pos < 0) pos = 0;
-            }
-            else {
-                Object objx = liRev.getValue(obj);
-                if (objx instanceof Hub) {
-                    Hub h = (Hub) objx;
-                    obj = (OAObject) h.getAt(0);
-                    if (obj != null && !OAObjectPropertyDelegate.isPropertyLoaded(obj, liRev.getName())) {
-                        pos -= 20;
-                        if (pos < 0) pos = 0;
-                    }
-                    else pos++;
-                }
-            }
-        }
-        
-        for (int i=0; i<250; i++) {
-            Object obj = parentSiblingHub.getAt(i+pos);
-            if (obj == null) break;
-            if (obj == parentMasterObject) continue;
-            
-            if (!OAObjectPropertyDelegate.isPropertyLoaded((OAObject)obj, liRev.getName())) continue;
-
-            Hub h = (Hub) liRev.getValue(obj);
-            if (h.getSize() > 0) {
-                _findSiblingsA(hsValues, alResults, masterObject, h, linkInfo, propertyName, bAgressive, detailHub);
-            }
-            if (alResults.size() > (bUsesDetail?200:100)) break;
-        }        
-    }    
-    
-    
-    private static void _findSiblingsA(HashSet<Object> hsValues, ArrayList<OAObjectKey> alResults, 
-            OAObject masterObject, Hub siblingHub, OALinkInfo linkInfo, String property, boolean bAgressive, final Hub detailHub) {
-        // get the same property for siblings
-
-        final boolean bUsesDetail = detailHub != null; 
-        
-        // find best starting pos, either before or after
-        int pos = siblingHub.getPos(masterObject);
-        if (pos < 0) pos = 0;
-        else if (pos == 0) pos++;
-        else {
-            // find out what direction to start at
-            OAObject obj = (OAObject) siblingHub.getAt(pos-1);
-            if (!OAObjectPropertyDelegate.isPropertyLoaded(obj, property)) {
-                pos -= (linkInfo == null)?5:20;
-                if (pos < 0) pos = 0;
-            }
-            else pos++;
-        }
-        
-        Class valueClass = null;
-        boolean bIsOne2One = false;
-        boolean bIsMany = false;
-
-        if (linkInfo != null) {
-            valueClass = linkInfo.getToClass();
-            bIsOne2One = OAObjectInfoDelegate.isOne2One(linkInfo);
-            bIsMany = linkInfo.getType() == linkInfo.MANY;
-        }
-        
-        for (int i=0; i<350; i++) {
-            Object obj = siblingHub.getAt(i+pos);
-            if (obj == null) break;
-            if (obj == masterObject) continue;
-
-            OAObjectKey key = OAObjectKeyDelegate.getKey((OAObject)obj);
-            Object value = OAObjectPropertyDelegate.getProperty((OAObject)obj, property, true, true);
-
-            if (value instanceof OANotExist) {
-                if (linkInfo == null) {  // must be blob
-                    alResults.add(key);
-                    if (alResults.size() >= 25) break;  // only get 25 extra blobs, ha
-                }
-                else if (bIsMany || bIsOne2One) {                
-                    alResults.add(key);
-                    if (bUsesDetail) {
-                        if (alResults.size() > 200) break;
-                    }
-                    else if (alResults.size() >= (100*(bAgressive?2:1))) break;
-                } 
-                // otherwise, it must be null
-            }
-            else if (value instanceof OAObjectKey) {
-                if (!hsValues.contains(value)) {
-                    hsValues.add(value);
-                    value = OAObjectCacheDelegate.get(valueClass, value);
-                    if (value == null) { // not on client
-                        alResults.add(key);
-                        if (bUsesDetail) {
-                            if (alResults.size() > 200) break;
-                        }
-                        else if (alResults.size() > (100*(bAgressive?2:1))) break;
-                    }
-                }
-            }
-            // note: if value is null and a Many, then it's value is an empty Hub
-        }
-    }
-    
-}
+}    
