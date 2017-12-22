@@ -11,22 +11,28 @@ import com.viaoa.util.OAPropertyPath;
 
 /**
  * Find other siblings objects that need the same property loaded.
- * Used when getting data from DS or Server. 
+ * Used by DS and CS to be able to get extra data and increase performance. 
  * @author vvia
  */
 public class OAObjectSiblingDelegate {
     private static final OAObject[] lastMasterObjects = new OAObject[10];
     private static final AtomicInteger aiLastMasterCnter = new AtomicInteger();
 
+    //qqqqqqqqqqqq  ONE: keys for to object to get (one side),
+    //qqqqqq MANY: keys are one side
+    
     /**
      * Returns first 100 found
      */
-    public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property) {
+    public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int max) {
         Hub hub = OAThreadLocalDelegate.getGetDetailHub();
         final String propertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        
         final OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(mainObject.getClass(), property);
+        
+        final ArrayList<OAObjectKey> alObjectKey = new ArrayList<>();
+        final HashSet<OAObjectKey> hsKeys = new HashSet<>();
 
-        ArrayList<OAObject> alSibling = new ArrayList<>();
         if (hub != null && propertyPath != null) {
             // set by HubMerger, HubGroupBy, LoadReferences, etc - where it will be loading from a Root Hub using a PropertyPath
             OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), propertyPath);
@@ -36,21 +42,25 @@ public class OAObjectSiblingDelegate {
                 if (spp == null) spp = li.getName();
                 else spp += "." + li.getName();
             }
-            findSiblings(alSibling, hub, spp, property, linkInfo);
+            findSiblings(alObjectKey, hub, spp, property, linkInfo, mainObject, hsKeys, max);
         }
         else {
             if (hub == null) {
                 hub = findBestSiblingHub(mainObject);
             }
+            
+            OALinkInfo lix = linkInfo;
             String spp = null;
             for ( ; hub!=null; ) {
-                findSiblings(alSibling, hub, spp, property, linkInfo);
-                if (alSibling.size() >= 100) break;
-                
-                OALinkInfo lix = HubDetailDelegate.getLinkInfoFromMasterToDetail(hub);
+                findSiblings(alObjectKey, hub, spp, property, linkInfo, mainObject, hsKeys,max);
+
+                if (alObjectKey.size() >= max) break;
+
+                lix = HubDetailDelegate.getLinkInfoFromMasterToDetail(hub);
+                if (lix == null) break;
                 if (spp == null) spp = lix.getName();
                 else spp = lix.getName() + "." + spp;
-
+                
                 Hub hx = hub.getMasterHub();
                 if (hx != null) {
                     hub = hx;
@@ -58,58 +68,64 @@ public class OAObjectSiblingDelegate {
                 else {
                     Object objx = hub.getMasterObject();
                     if (objx == null) break;
-                    hub = findBestSiblingHub(mainObject);
+                    hub = findBestSiblingHub((OAObject) objx);
                 }
+                
             }
         }        
         
-        int x = alSibling.size();
+        int x = alObjectKey.size();
         OAObjectKey[] keys = new OAObjectKey[x];
-        for (int i=0; i<x; i++) {
-            keys[i] = alSibling.get(i).getObjectKey();
-        }
+        alObjectKey.toArray(keys);
         
         return keys;
     }
     
-
-    
-    protected static void findSiblings(final ArrayList<OAObject> alSibling, Hub hub, String spp, final String property, final OALinkInfo linkInfo) {
+    protected static void findSiblings(final ArrayList<OAObjectKey> alObjectKey, Hub hub, String spp, final String property, final OALinkInfo linkInfo, final OAObject mainObject, final HashSet<OAObjectKey> hsKeys, final int max) {
         final boolean bIsMany = (linkInfo != null) && (linkInfo.getType() == OALinkInfo.TYPE_MANY);
-        final Class clazz = linkInfo != null ? null : linkInfo.getToClass();
+        final Class clazz = (linkInfo == null) ? null : linkInfo.getToClass();
+        
         OAFinder f = new OAFinder(hub, spp) {
             @Override
             protected boolean isUsed(OAObject obj) {
-                if (_isUsed(obj) && !alSibling.contains(obj)) {
-                    alSibling.add(obj);
-                    if (alSibling.size() == 100) {
-                        stop();
+                Object objx = OAObjectPropertyDelegate.getProperty(obj, property, true, true);
+                if (bIsMany) {
+                    if (!(objx instanceof Hub)) {
+                        OAObjectKey key = obj.getObjectKey();
+                        if (!alObjectKey.contains(key)) {
+                            alObjectKey.add(key);
+                            if (alObjectKey.size() >= max) {
+                                stop();
+                            }
+                        }
+                    }
+                }
+                else if (objx instanceof OAObjectKey) {
+                    OAObjectKey key = (OAObjectKey) objx;
+                    if (!hsKeys.contains(key)) {
+                        hsKeys.add(key);
+                        if (OAObjectCacheDelegate.get(clazz, key) == null) {
+                            alObjectKey.add(obj.getObjectKey());
+                            if (alObjectKey.size() >= max) {
+                                stop();
+                            }
+                        }
+                    }
+                }
+                else if (linkInfo == null) {  // must be blob
+                    if (objx instanceof OANotExist) {
+                        OAObjectKey key = obj.getObjectKey();
+                        alObjectKey.add(obj.getObjectKey());
+                        if (alObjectKey.size() >= max) {
+                            stop();
+                        }
                     }
                 }
                 return false;
             }
-            protected boolean _isUsed(OAObject obj) {
-                Object objx = OAObjectPropertyDelegate.getProperty(obj, property, false, true);
-                boolean b = false;
-                if (bIsMany) {
-                    if (!(objx instanceof Hub)) b = true;
-                }
-                else {
-                    if (linkInfo == null) {  // must be blob
-                        b = (objx == null);
-                    }
-                    else if (objx instanceof OAObjectKey) {
-                        OAObjectCacheDelegate.get(clazz, (OAObjectKey) objx);
-                        b = (objx == null);
-                    }
-                    // else  null or oaObj
-                }
-                return b;
-            }
         };
         f.setUseOnlyLoadedData(true);
         f.find();
-        
     }
     
     
