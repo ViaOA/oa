@@ -88,7 +88,8 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 25);
         assertEquals(25, oks.length);
 
-        
+        oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 10);
+        assertEquals(10, oks.length);
     }
 
 
