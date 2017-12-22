@@ -817,7 +817,6 @@ public class OAHTMLConverter {
     /**
      * Method that is called to get an object property value.
      * @param obj object that is currently active.  Either the report object or the object in foreach loop.
-     * @param props set of properties passed to report
      */
     protected Object getProperty(OAObject oaObj, String propertyName) {
         if (oaObj == null) return null;
