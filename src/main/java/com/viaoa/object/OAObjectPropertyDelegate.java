@@ -34,7 +34,7 @@ public class OAObjectPropertyDelegate {
 
     
     /**
-     * @return true if prop is loaded - does not need to be loaded from datasource, etc.
+     * @return true if prop is loaded, and does not need to be loaded from datasource, or from server (if this is client)
      */
     public static boolean isPropertyLoaded(OAObject oaObj, String name) {
         if (oaObj == null || name == null) return false;
@@ -48,12 +48,16 @@ public class OAObjectPropertyDelegate {
             if (objx instanceof WeakReference) {
                 objx = ((WeakReference) objx).get();
                 if (objx == null) {
-                    // could be in cache, but not checking here
                     return false;
                 }
             }
-            else if (objx instanceof OAObjectKey) return false;
-            return true;   // could be null (/does not exist)
+            else if (objx instanceof OAObjectKey) {
+                OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oaObj.getClass(), name);
+                if (li == null) return false;
+                Object objz = OAObjectCacheDelegate.get(li.getToClass(), (OAObjectKey) objx);
+                return (objz != null);
+            }
+            return true;   // real value is null (/does not exist)
         }
         return false;
     }
