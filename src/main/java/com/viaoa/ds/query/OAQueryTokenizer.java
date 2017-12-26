@@ -23,8 +23,6 @@ public class OAQueryTokenizer implements OAQueryTokenType {
     OAQueryToken token, lastToken;
     Vector vec;
 
-
-
     /** convert query to vector of tokens */
     public Vector convertToTokens(String query) {
         if (tokenManager == null) tokenManager = new OAQueryTokenManager();
@@ -54,7 +52,7 @@ public class OAQueryTokenizer implements OAQueryTokenType {
 
     // GT, GE, LT, LE, EQUAL, NOTEQUAL, LIKE
     protected void evaluateB() {
-        evaluateC();
+        evaluateB2();
         if (token.isOperator()) {
             vec.addElement(token);
             nextToken();
@@ -62,6 +60,41 @@ public class OAQueryTokenizer implements OAQueryTokenType {
         }
     }
 
+    // 20171222 support for IN(1,2,3) 
+    // IN
+    protected void evaluateB2() {
+        evaluateC();
+        if (token.type ==  OAQueryTokenType.IN) {
+            vec.addElement(token);
+
+            for (int i=0; ;i++) {
+                nextToken();
+                vec.addElement(token);
+                if (i == 0) {
+                    if (token.type != OAQueryTokenType.SEPERATORBEGIN) {
+                        throw new RuntimeException("IN operator expected begin '(',  query " + tokenManager.query);
+                    }
+                }
+                else if (i % 2 == 0) {
+                    if (token.type == OAQueryTokenType.SEPERATOREND) {
+                        break;
+                    }
+                    if (token.type != OAQueryTokenType.COMMA) {
+                        throw new RuntimeException("IN operator expected comma or ')',  query " + tokenManager.query);
+                    }
+                }
+                else {
+                    if (token.type != OAQueryTokenType.NUMBER) {
+                        throw new RuntimeException("IN operator expected number,  query " + tokenManager.query);
+                    }
+                }
+            }
+            nextToken();
+        }
+    }
+    
+    
+    
     // () used to surround
     protected void evaluateC() {
         if (token.type == OAQueryTokenType.SEPERATORBEGIN) {

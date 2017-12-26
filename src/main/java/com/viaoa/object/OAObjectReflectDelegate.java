@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -720,6 +721,8 @@ public class OAObjectReflectDelegate {
         }
 
         OASelect select = null;
+        String sibIds = null;
+
         if (hub != null) {
         }
         else if (!bThisIsServer && !oi.getLocalOnly() && (!bIsCalc || bIsServerSideCalc)) {
@@ -751,12 +754,54 @@ public class OAObjectReflectDelegate {
                 hub = new Hub(linkClass, oaObj, liReverse, false);
                 
                 if (!bIsCalc) {
+//qqqqqqqqqqqqqq
+                    // 20171225 support for selecting siblings at same time
+                    OAObjectKey[] siblingKeys;
+                    
+                    OALinkInfo rli = linkInfo.getReverseLinkInfo();
+                    if (linkInfo.getRecursive() || rli == null || rli.getType() == OALinkInfo.TYPE_MANY || rli.getPrivateMethod()) {
+                        // not supported in this release, M2M are supported in DS layer
+                        siblingKeys = null; 
+                    }
+                    else {
+                        int x;                    
+                        if (linkInfo.getCouldBeLarge()) x = 5;
+                        else x = 25;
+                        siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, x);
+                    }
+                    
+                    if (siblingKeys != null) {
+                        for (OAObjectKey keyx : siblingKeys) {
+                            Object[] idsx = keyx.getObjectIds();
+                            if (idsx == null || idsx.length != 1) continue;
+                            if (sibIds == null) sibIds = "" + idsx[0];
+                            else sibIds += "," + idsx[0];
+                        }
+                        if (sibIds != null) {
+                            Object[] idsx = oaObj.getKey().getObjectIds();
+                            if (idsx == null || idsx.length != 1) sibIds = null;
+                            else sibIds = idsx[0] + "," + sibIds;
+                        }
+                    }   
+                    
+                    select = new OASelect(hub.getObjectClass());
+                    if (sibIds != null) {
+                        select.setWhere(rli.getName() + " IN ("+sibIds+")");
+                    }
+                    else { 
+                        select.setWhereObject(oaObj);
+                        select.setPropertyFromWhereObject(linkInfo.getName());
+                    }
+    
+                    /* was:
                     select = new OASelect(hub.getObjectClass());
                     if (oaObj != null) {
                         select.setWhereObject(oaObj);
                         select.setPropertyFromWhereObject(linkInfo.getName());
                     }
-                }                
+                    */                    
+                }   
+                
                 //was: hub = new Hub(linkClass, oaObj, liReverse, true); // liReverse = liDetailToMaster
                 /* 2013/01/08 recursive if this object is the owner (or ONE to Many) and the select
                  * hub is recursive of a different class - need to only select root objects. All
@@ -797,21 +842,21 @@ public class OAObjectReflectDelegate {
             }
         }
 
-/*20171108 moved below. The issue with this is that this adds the Hub to oaObj.props before it runs the
- *    select (which loads data).  Another thread could get this empty hub before the objects are loaded.        
- 
-        // 20141204 added check to see if property is now there, in case it was deserialized and then
-        //    the property was set by HubSerializeDelegate._readResolve
-        if (bThisIsServer || OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, false) == null) {
-            // set property
-            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
-                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+        /*20171108 moved below. The issue with this is that this adds the Hub to oaObj.props before it runs the
+         *    select (which loads data).  Another thread could get this empty hub before the objects are loaded.        
+         
+            // 20141204 added check to see if property is now there, in case it was deserialized and then
+            //    the property was set by HubSerializeDelegate._readResolve
+            if (bThisIsServer || OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, false) == null) {
+                // set property
+                if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
+                }
+                else {
+                    OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
+                }
             }
-            else {
-                OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, hub);
-            }
-        }
- */       
+         */       
         if ((bThisIsServer || (bIsCalc && !bIsServerSideCalc)) && sortOrder != null && sortOrder.length() > 0) {
             if (hub.getSelect() != null) {
                 hub.setSelectOrder(sortOrder);
@@ -825,10 +870,54 @@ public class OAObjectReflectDelegate {
 
         // needs to loadAllData first, otherwise another thread could get the hub without using the lock
         if (bThisIsServer || (bIsCalc && !bIsServerSideCalc)) {
-            if (!OAObjectCSDelegate.loadReferenceHubDataOnServer(hub, select)) { // load all data before passing to client
-                HubSelectDelegate.loadAllData(hub, select);
-            }
+//qqqqqqqqqqqqqqq
+            // 20171225 support for selecting multiple at one time
+            if (sibIds != null) {
+                OALinkInfo rli = linkInfo.getReverseLinkInfo();
+                HashMap<OAObjectKey, Hub> hmHold = new HashMap<>();
+                
+                try {
+                    OAThreadLocalDelegate.setLoading(true);
+                    for ( ; select.hasMore(); ) {
+                        OAObject objx = select.next();
+                        // find masterObj to put it in
+                        Object valx = OAObjectPropertyDelegate.getProperty(objx, rli.getName(), false, false); 
+                        if (valx instanceof OAObject) valx = ((OAObject) valx).getKey();
+                        if (!(valx instanceof OAObjectKey)) continue;
+                        OAObjectKey okx = (OAObjectKey) valx;
+                        if (okx.equals(oaObj.getKey())) {
+                            hub.add(objx);
+                        }
+                        else {
+                            Hub hx = hmHold.get(okx);
+                            if (hx == null) {
+                                hx = new Hub(linkInfo.toClass);
+                                hmHold.put(okx, hx);
+                            }
+                            hx.add(objx);
+                        }                    
+                    }
+                }
+                finally {
+                    OAThreadLocalDelegate.setLoading(false);
+                }
 
+                // need to loop thru hmHold, and set Hubs for siblings
+                for (Entry<OAObjectKey, Hub> entry : hmHold.entrySet()) {
+                    OAObjectKey ok = entry.getKey();
+                    OAObject obj = OAObjectCacheDelegate.get(oaObj.getClass(), ok);
+                    if (obj == null) continue;
+                    Hub hx = entry.getValue();
+                    HubDetailDelegate.setMasterObject(hx, obj, rli);
+                    OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, hx);
+                }
+            }
+            else { 
+                if (!OAObjectCSDelegate.loadReferenceHubDataOnServer(hub, select)) { // load all data before passing to client
+                    HubSelectDelegate.loadAllData(hub, select);
+                }
+            }   
+        
             hub.cancelSelect();
             if (select != null) {
                 select.cancel();
@@ -1345,7 +1434,7 @@ public class OAObjectReflectDelegate {
     }
 
     // note: this acquired a lock before calling
-    private static Object _getReferenceObject(OAObject oaObj, String linkPropertyName, OAObjectInfo oi, OALinkInfo li) {
+    private static Object _getReferenceObject(final OAObject oaObj, final String linkPropertyName, final OAObjectInfo oi, final OALinkInfo li) {
         if (linkPropertyName == null) return null;
 
         boolean bIsServer = OASyncDelegate.isServer(oaObj);
@@ -1434,7 +1523,46 @@ public class OAObjectReflectDelegate {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {
-                    ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
+                    
+//qqqqqqqqq 20171222
+    OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75);
+    String sibIds = null;
+    if (siblingKeys != null) {
+        for (OAObjectKey keyx : siblingKeys) {
+            OAObject objx = OAObjectCacheDelegate.get(oaObj.getClass(), keyx);
+            if (objx == null) {
+                continue;
+            }
+            Object valx = OAObjectPropertyDelegate.getProperty(objx, linkPropertyName, false, false);
+            if (!(valx instanceof OAObjectKey)) continue;
+            Object[] idsx = ((OAObjectKey)valx).getObjectIds();
+            if (idsx == null || idsx.length != 1) continue;
+            if (sibIds == null) sibIds = "" + idsx[0];
+            else sibIds += "," + idsx[0];
+        }
+        if (sibIds != null) {
+            Object[] idsx = key.getObjectIds();
+            if (idsx == null || idsx.length != 1) sibIds = null;
+            else sibIds = idsx[0] + "," + sibIds;
+        }
+    }    
+    if (sibIds != null) {
+        OASelect sel = new OASelect(li.toClass);
+        sel.setWhere("id IN ("+sibIds+")");
+        sel.select();
+        for ( ; sel.hasMore(); ) {
+            OAObject refx = sel.next();  // this will load into objCache w/softRef
+            if (refx.getObjectKey().equals(key)) {
+                ref = refx;
+            }
+        }
+    }
+    else {
+        ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
+    }
+    //was: ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
+    
+    
                 }
             }
         }

@@ -26,6 +26,7 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAObjectSerializerCallback;
 import com.viaoa.object.OAPerformance;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.OANotExist;
 
 /**
@@ -103,8 +104,30 @@ public class ClientGetDetail {
             }
         }
         
+        // 20171224 need to put siblings and masterObject in a Hub and call OAThreadLocal.detailHub        
+        Hub hubHold = new Hub(masterClass);
+        hubHold.add(masterObject);
+        if (siblingKeys != null) {
+            for (OAObjectKey key : siblingKeys) {
+                OAObject obj = OAObjectCacheDelegate.get(masterClass, key);
+                if (obj != null) {
+                    hubHold.add(obj);
+                }
+            }
+        }
         
-        Object detailValue = OAObjectReflectDelegate.getProperty((OAObject) masterObject, property);
+        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        Object detailValue = null;
+        try {
+            OAThreadLocalDelegate.setGetDetailHub(hubHold, null);
+            detailValue = OAObjectReflectDelegate.getProperty((OAObject) masterObject, property);
+        }
+        finally {
+            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+        }
+        hubHold.clear();
+        hubHold = null;
         
         Object returnValue;
         int cntSib=0;

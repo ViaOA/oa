@@ -273,12 +273,39 @@ public class OAQueryFilter<T> implements OAFilter {
 
     // NOTLIKE
     private OAQueryToken parseForNotLike(OAQueryToken token) throws Exception {
-        OAQueryToken nextToken = parseBottom(token);
-        if (nextToken.type == OAQueryTokenType.NOTLIKE) {
+        OAQueryToken nextToken = parseForIn(token);
+        if (nextToken != null && nextToken.type == OAQueryTokenType.NOTLIKE) {
             nextToken = nextToken();
             if (nextToken == null) throw new Exception("token expected for !=");
             OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
             OAFilter f = new OANotLikeFilter(pp, getValueToUse(nextToken));
+            stack.push(f);
+            nextToken = nextToken();
+        }
+        return nextToken;
+    }
+
+    
+    // 20171222
+    // IN
+    private OAQueryToken parseForIn(OAQueryToken token) throws Exception {
+        OAQueryToken nextToken = parseBottom(token);
+        if (nextToken.type == OAQueryTokenType.IN) {
+            nextToken = nextToken();
+            if (nextToken == null) throw new Exception("token expected for IN");
+            OAPropertyPath pp = new OAPropertyPath(clazz, token.value);
+            
+            OAFilter f = null;
+            for (int i=0; ; i++) {
+                nextToken = nextToken();
+                if (nextToken.type == OAQueryTokenType.SEPERATOREND) break;
+                if (nextToken.type == OAQueryTokenType.SEPERATORBEGIN) continue;
+                if (nextToken.type == OAQueryTokenType.COMMA) continue;
+                
+                OAFilter fx = new OAEqualFilter(pp, getValueToUse(nextToken));
+                if (f == null) f = fx;
+                else f = new OAOrFilter(f, fx);
+            }
             stack.push(f);
             nextToken = nextToken();
         }
@@ -292,9 +319,6 @@ public class OAQueryFilter<T> implements OAFilter {
     private OAQueryToken nextToken() {
         if (vecToken == null || posToken >= vecToken.size()) return null;
         OAQueryToken t = (OAQueryToken) vecToken.elementAt(posToken++);
-        
-        if (t == null) return t;
-        
         return t;
     }
 
@@ -328,7 +352,7 @@ public class OAQueryFilter<T> implements OAFilter {
         query = "A == 1 && B = 2 && C == 3";
         query = "A == 1 && (B = 2 && C == 3)";
 
-        query = "(A == '1' && (B = 2 && (C == 3))) || X = 5 && Z = 9";
+        query = "(A == '1' && (B = 2 && (C == 3))) || X = 5 && Z = 9 || id in (1,2, 3, 4)";
         
         
         OAQueryFilter qf = new OAQueryFilter(Object.class, query, null);

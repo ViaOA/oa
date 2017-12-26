@@ -150,13 +150,17 @@ public class HubAutoSequence extends HubListenerAdapter implements java.io.Seria
         if (c == null) return;
         
         Method met = OAReflect.getMethod(c, "set"+propertyName);
+        if (met == null) {
+            throw new RuntimeException("setter method not found for property "+propertyName+", class="+c);
+        }
+
         Class[] classes = met.getParameterTypes();
         if (classes == null || classes.length != 1) {
-            throw new RuntimeException("setPropertyName(\"get"+propertyName+"\") property must accept a numeric parameter");
+            throw new RuntimeException("Property "+propertyName+" must accept a numeric parameter");
         }
         c = classes[0];
         if (!c.equals(int.class) && !c.equals(long.class) && !c.equals(char.class)) {
-            throw new RuntimeException("setPropertyName(\"set"+propertyName+"\") property must accept a numeric parameter");
+            throw new RuntimeException("Property "+propertyName+" must accept a numeric parameter");
         }
         propertySetMethod = met;
         resequence(0);

@@ -136,6 +136,10 @@ public class OAQueryTokenManager {
                     token.type = OAQueryTokenType.QUESTION;
                     bReturn = true;
                 }
+                else if (ch == ',') {
+                    token.type = OAQueryTokenType.COMMA;
+                    bReturn = true;
+                }
                 else {
                     sError = "Illegal token '"+ch+"'";
                     bReturn = true;
@@ -223,6 +227,7 @@ public class OAQueryTokenManager {
             else if (s.equals("NULL")) token.type = OAQueryTokenType.NULL;
             else if (s.equals("LIKE")) token.type = OAQueryTokenType.LIKE;
             else if (s.equals("NOTLIKE")) token.type = OAQueryTokenType.NOTLIKE;
+            else if (s.equals("IN")) token.type = OAQueryTokenType.IN;
         }
         return token;
     }

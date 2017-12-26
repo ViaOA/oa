@@ -22,41 +22,85 @@ public class OAObjectSiblingDelegate {
     /**
      * Used to find any siblings that also need the same property loaded.
      */
-    public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int max) {
-        if (mainObject == null || OAString.isEmpty(property) || max < 1) return null;
+    public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount) {
+        if (mainObject == null || OAString.isEmpty(property) || maxAmount < 1) return null;
 
         final OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(mainObject.getClass(), property);
         
-        Hub hub = OAThreadLocalDelegate.getGetDetailHub();
-        final String propertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        // set by Finder, HubMerger, HubGroupBy, LoadReferences, etc - where it will be loading from a Root Hub using a PropertyPath
+        Hub getDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+        String getDetailPropertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
+
+        String ppPrefix = null;
+        boolean bValid = false;
+        if (getDetailHub != null && getDetailPropertyPath != null) {
+            // see if property is in the detailPP
+            OAPropertyPath pp = new OAPropertyPath(getDetailHub.getObjectClass(), getDetailPropertyPath);
+            for (OALinkInfo li : pp.getLinkInfos()) {
+                if (property.equalsIgnoreCase(li.getName())) {
+                    bValid = true;
+                    break;
+                }
+                if (ppPrefix == null) ppPrefix = li.getName();
+                else ppPrefix += "." + li.getName();
+            }
+            if (!bValid) {
+                // see if property is off of the detailPP
+                ppPrefix = null;
+                for (OALinkInfo li : pp.getLinkInfos()) {
+                    Class c = li.getToClass();
+                    OALinkInfo lix = OAObjectInfoDelegate.getLinkInfo(c, mainObject.getClass());
+                    if (lix != null && !lix.getPrivateMethod()) {
+                        bValid = true;
+                        break;
+                    }
+                    if (ppPrefix == null) ppPrefix = li.getName();
+                    else ppPrefix += "." + li.getName();
+                }
+            }
+        }
+        
+        if (!bValid && getDetailHub != null && !getDetailHub.getObjectClass().equals(mainObject.getClass())) {
+            // need to get to mainObject.class
+            Class c = getDetailHub.getObjectClass();
+            OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(c, mainObject.getClass());
+            if (li == null || li.getPrivateMethod()) {
+                getDetailHub = null;
+                ppPrefix = null;
+            }
+            else {
+                ppPrefix = li.getName();
+                bValid = true;
+            }
+        }
         
         final ArrayList<OAObjectKey> alObjectKey = new ArrayList<>();
         final HashSet<OAObjectKey> hsKeys = new HashSet<>();
-
-        String spp = null;
-        if (hub != null && propertyPath != null) {
-            // set by HubMerger, HubGroupBy, LoadReferences, etc - where it will be loading from a Root Hub using a PropertyPath
-            OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), propertyPath);
-            for (OALinkInfo li : pp.getLinkInfos()) {
-                if (property.equalsIgnoreCase(li.getName())) break;
-                if (spp == null) spp = li.getName();
-                else spp += "." + li.getName();
-            }
+        
+        int max = maxAmount;
+        Hub hub = getDetailHub;
+        
+        if (bValid) {
         }
-        else if (hub == null) {
+        else if (getDetailHub == null || !getDetailHub.getObjectClass().equals(mainObject.getClass())) {
             hub = findBestSiblingHub(mainObject);
+            
+            if (hub == null);
+            else if (hub.getMasterHub() != null) max *= .70;
+            else if (hub.getMasterObject() != null) max *= .50;
+            else max *= .80;
         }
             
         OALinkInfo lix = linkInfo;
         for ( ; hub!=null; ) {
-            findSiblings(alObjectKey, hub, spp, property, linkInfo, mainObject, hsKeys, max);
+            findSiblings(alObjectKey, hub, ppPrefix, property, linkInfo, mainObject, hsKeys, max);
 
             if (alObjectKey.size() >= max) break;
 
             lix = HubDetailDelegate.getLinkInfoFromMasterToDetail(hub);
             if (lix == null) break;
-            if (spp == null) spp = lix.getName();
-            else spp = lix.getName() + "." + spp;
+            if (ppPrefix == null) ppPrefix = lix.getName();
+            else ppPrefix = lix.getName() + "." + ppPrefix;
             
             Hub hx = hub.getMasterHub();
             if (hx != null) {
@@ -83,6 +127,7 @@ public class OAObjectSiblingDelegate {
         OAFinder f = new OAFinder(hub, spp) {
             @Override
             protected boolean isUsed(OAObject obj) {
+                if (obj == mainObject) return false;
                 Object objx = OAObjectPropertyDelegate.getProperty(obj, property, true, true);
                 if (bIsMany) {
                     if (!(objx instanceof Hub)) {

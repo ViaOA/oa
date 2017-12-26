@@ -44,5 +44,7 @@ public interface OAQueryTokenType {
     public static final int QUESTION = 26;  // question mark "?"
     public static final int FUNCTIONBEGIN = 27;  // the '(' for a sql function, ex: lower(lastName)
     public static final int FUNCTIONEND = 28;    // the ')' for a sql function, ex: lower(lastName)
+    public static final int IN = 29; // operator IN(..,..)
+    public static final int COMMA = 30; // separator
 
 }

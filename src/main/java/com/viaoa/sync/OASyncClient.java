@@ -10,39 +10,20 @@
 */
 package com.viaoa.sync;
 
-import java.lang.ref.WeakReference;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.lang.ref.*;
+import java.net.*;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.hub.Hub;
-import com.viaoa.hub.HubDetailDelegate;
-import com.viaoa.hub.HubMerger;
-import com.viaoa.object.OAFinder;
-import com.viaoa.object.OALinkInfo;
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectHubDelegate;
-import com.viaoa.object.OAObjectInfoDelegate;
-import com.viaoa.object.OAObjectKey;
-import com.viaoa.object.OAObjectKeyDelegate;
-import com.viaoa.object.OAObjectPropertyDelegate;
-import com.viaoa.object.OAObjectReflectDelegate;
-import com.viaoa.object.OAObjectSerializeDelegate;
-import com.viaoa.object.OAObjectSerializer;
-import com.viaoa.object.OAObjectSiblingDelegate;
-import com.viaoa.object.OAPerformance;
-import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -53,12 +34,7 @@ import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.sync.remote.RemoteSyncImpl;
 import com.viaoa.sync.remote.RemoteSyncInterface;
-import com.viaoa.util.OADateTime;
-import com.viaoa.util.OALogUtil;
-import com.viaoa.util.OANotExist;
-import com.viaoa.util.OAPropertyPath;
-
-import test.hifive.model.oa.Employee;
+import com.viaoa.util.*;
 
 import static com.viaoa.sync.OASyncServer.*;
 
@@ -179,10 +155,9 @@ public class OASyncClient {
                 li = OAObjectInfoDelegate.getLinkInfo(masterObject.getClass(), propertyName);
                 
                 int max;
-                if (li == null) max = 14;
-                else if (li.getType() == OALinkInfo.TYPE_MANY) max = 60;
+                if (li == null) max = 20;
+                else if (li.getType() == OALinkInfo.TYPE_MANY) max = 50;
                 else max = 100;
-                if (!bUsesDetail) max /= 2;
 
                 siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max);
                 additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);

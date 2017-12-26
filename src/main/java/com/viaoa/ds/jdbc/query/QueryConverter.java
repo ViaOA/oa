@@ -922,7 +922,7 @@ public class QueryConverter {
             String newVar = "";
 
             if (token.type == OAQueryTokenType.VARIABLE && tokenNext != null && tokenNext.type == OAQueryTokenType.FUNCTIONBEGIN) {
-//20090608 to do later, have Datasource convert function name to correct name for the database that is being used.    
+                //20090608 todo, have Datasource convert function name to correct name for the database that is being used.    
                 newVar = token.value;
                 if (holdToken != null) {
                     newVar = holdToken.value + " " + newVar;

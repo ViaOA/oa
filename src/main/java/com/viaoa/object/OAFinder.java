@@ -173,7 +173,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      * Given the propertyPath, find all of the objects from a Hub.
      */
     public ArrayList<T> find(Hub<F> hubRoot) {
-        return find(hubRoot, null);
+        ArrayList<T> al = find(hubRoot, null);
+        return al;
     }
 
     public ArrayList<T> find(ArrayList<F> alRoot) {
@@ -211,12 +212,28 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return al;        
     }
     
+    // 20171224 update threadloc.getDetail
+    public ArrayList<T> find(Hub<F> hubRoot, F objectLastUsed) {
+        ArrayList<T> al = null;
+        Hub dh = null;
+        String dpp = null;
+        try {
+            dh = OAThreadLocalDelegate.getGetDetailHub();
+            dpp = OAThreadLocalDelegate.getGetDetailPropertyPath();
+            OAThreadLocalDelegate.setGetDetailHub(hubRoot, strPropertyPath);
+            al = _find(hubRoot, objectLastUsed);
+        }
+        finally {
+            OAThreadLocalDelegate.resetGetDetailHub(dh, dpp);
+        }
+        return al;
+    }
     
     /**
      * Given the propertyPath, find all of the objects from a Hub,
      * starting after objectLastFound
      */
-    public ArrayList<T> find(Hub<F> hubRoot, F objectLastUsed) {
+    protected ArrayList<T> _find(Hub<F> hubRoot, F objectLastUsed) {
         alFound = new ArrayList<T>();
         if (bEnableStack) stack = new StackValue[5];
 
@@ -397,6 +414,9 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     
     private void find(Object obj, int pos) {
         if (obj==null || bStop) return;
+        if (pos > 20) {
+            return;
+        }
         try {
             if (bEnableStack) push(obj, pos);
             _find(obj, pos);
