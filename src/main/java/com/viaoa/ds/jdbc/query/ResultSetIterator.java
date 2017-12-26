@@ -34,6 +34,7 @@ import com.viaoa.util.OATime;
 import com.viaoa.ds.OADataSourceIterator;
 import com.viaoa.ds.jdbc.*;
 import com.viaoa.ds.jdbc.db.*;
+import com.viaoa.hub.Hub;
 
 public class ResultSetIterator implements OADataSourceIterator {
     private static Logger LOG = Logger.getLogger(ResultSetIterator.class.getName());
@@ -219,10 +220,10 @@ static PrintWriter printWriter;
             
             bMore = rs != null && rs.next(); // goto first
             bIsSelecting = false;
-            if (!bMore) close();
+            if (!bMore) _close();
         }
         catch (Exception e) {
-            close();
+            _close();
             throw new RuntimeException(e + ", query: "+query, e);
         }
         finally {
@@ -232,15 +233,51 @@ static PrintWriter printWriter;
     
     public boolean hasNext() {
         if (!bInit) init();
-        return (bMore);
+        return (bMore || hubReadAhead != null);
     }
 
+    
+    // 20171222 add prefetch into hub, so that OAThreadLocalDelegate.setGetDetailHub could be used  
+    private Hub hubReadAhead;
+    private HashSet<Integer> hsObjectWasLoaded;
+    
     public synchronized Object next() {
-        if (!bInit) init();
-        if (rs == null) return null;
-        if (max > 0 && cnter > max) { 
+        if (!bMore && hubReadAhead == null) return null;
+
+        if (hubReadAhead == null) {
+            hubReadAhead = new Hub();
+            hsObjectWasLoaded = new HashSet<>(25, .75f);
+        }
+
+        hubReadAhead.remove(0);  // remove last one that was returned from next().  It needs to stay in hubReadAhead in case getSiblings is called
+        for (int i=hubReadAhead.size(); bMore && i<100; i++) {
+            _next();
+        }
+        
+        OAObject obj = (OAObject) hubReadAhead.getAt(0);
+        if (hsObjectWasLoaded.remove(obj.getGuid())) { 
+            Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+            String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+            try {
+                OAThreadLocalDelegate.setGetDetailHub(this.hubReadAhead, null);
+                obj.afterLoad();
+            }
+            finally {
+                OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+            }
+        }
+        if (!bMore && hubReadAhead.size() == 1) {
             close();
-            return null;
+        }
+        return obj;
+    }
+    
+    protected boolean _next() {
+        if (!bInit) init();
+        if (rs == null) return false;
+        if (max > 0 && cnter > max) { 
+            _close();
+            return false;
         }
     
         boolean bDataSourceLoadingObject = true;
@@ -276,7 +313,7 @@ static PrintWriter printWriter;
                     }
                     bMore = rs.next();  // goto next
                     rs2.close();
-                    if (!bMore) return null;
+                    if (!bMore) return false;
                 }
             }
 
@@ -399,13 +436,19 @@ static PrintWriter printWriter;
                 OAThreadLocalDelegate.setLoading(false);
                 bDataSourceLoadingObject = false;
             }
-            if (bLoadedObject) oaObject.afterLoad();
+
+            if (bLoadedObject) {
+                hsObjectWasLoaded.add(oaObject.getGuid());
+            }
+
 
             if (rs != null) {
                 bMore = rs.next();  // goto next
-                if (!bMore) close();
+                if (!bMore) _close();
             }
-            return oaObject;
+            hubReadAhead.add(oaObject);
+
+            return true;
         }
         catch (Exception e) {
             String s = String.format("Exception in next(), thread=%s, query=%s, bClosed=%b", Thread.currentThread().getName(), query, bClosed);
@@ -426,7 +469,7 @@ static PrintWriter printWriter;
 boolean bClosed;//qqqqqq temp for debugging
     // part of iterator interface
     public void remove() {
-        close();
+        _close();
     }
 
     public void finalize() throws Throwable {
@@ -436,7 +479,12 @@ boolean bClosed;//qqqqqq temp for debugging
 
     // 20110407 added synchronized, since OASelectManager could close iterator while it is performing next()
     public synchronized void close() {
-        bClosed = true;        
+        hubReadAhead = null;
+        bClosed = true;
+        bMore = false;
+        _close();
+    }
+    protected void _close() {
         try {
             if (rs != null) {
                 rs.close();
