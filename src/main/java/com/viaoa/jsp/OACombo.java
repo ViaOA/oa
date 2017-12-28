@@ -421,7 +421,7 @@ sb.append("}\n");
         
         if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
         else sb.append("$('#"+id+"').attr('disabled', 'disabled');\n");
-        if (bVisible) sb.append("$('#"+id+"').show();\n");
+        if (getVisible()) sb.append("$('#"+id+"').show();\n");
         else sb.append("$('#"+id+"').hide();\n");
         
         if (bFocus) {
