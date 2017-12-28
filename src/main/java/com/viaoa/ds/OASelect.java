@@ -85,7 +85,7 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     protected int fetchAmount=defalutFetchAmount;  // used by Hub to know how many to read at a time
     protected boolean bCancelled;
     protected boolean bHasBeenStarted;
-    protected long lastReadTime; // used with timeout
+    protected volatile long lastReadTime; // used with for determining timeout
     protected OAFilter<TYPE> oaFilter;  // this will be used by OASelect to filter iterator returned values
     protected OAFilter<TYPE> dsFilter;  // this will be sent to DataSource, which will use it if it does not support queries
     protected OAFinder<?, TYPE> finder; // will be used instead of calling datasource

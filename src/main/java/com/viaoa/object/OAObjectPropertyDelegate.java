@@ -444,7 +444,7 @@ public class OAObjectPropertyDelegate {
             if (!bWaitIfNeeded) return false;
             for (int i=0; ;i++) {
                 if (i > 100) {
-                    LOG.log(Level.WARNING, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue", new Exception("wait time exceeded"));
+                    LOG.log(Level.WARNING, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue", new Exception("fyi: wait time exceeded, will continue"));
                     return false;  // bail out, ouch
                 }
                 if (i == 0) {

@@ -92,7 +92,11 @@ public class OAObjectSiblingDelegate {
         }
             
         OALinkInfo lix = linkInfo;
-        for ( ; hub!=null; ) {
+        final HashSet<Hub> hsHubVisited = new HashSet<>();
+        for (int cnt=0 ; hub!=null; cnt++) {
+            if (hsHubVisited.contains(hub)) break;
+            hsHubVisited.add(hub);
+            
             findSiblings(alObjectKey, hub, ppPrefix, property, linkInfo, mainObject, hsKeys, max);
 
             if (alObjectKey.size() >= max) break;
@@ -104,9 +108,11 @@ public class OAObjectSiblingDelegate {
             
             Hub hx = hub.getMasterHub();
             if (hx != null) {
+                if (cnt > 3) break;
                 hub = hx;
             }
             else {
+                if (cnt > 2) break;
                 Object objx = hub.getMasterObject();
                 if (objx == null) break;
                 hub = findBestSiblingHub((OAObject) objx);

@@ -754,7 +754,6 @@ public class OAObjectReflectDelegate {
                 hub = new Hub(linkClass, oaObj, liReverse, false);
                 
                 if (!bIsCalc) {
-//qqqqqqqqqqqqqq
                     // 20171225 support for selecting siblings at same time
                     OAObjectKey[] siblingKeys;
                     
@@ -870,7 +869,6 @@ public class OAObjectReflectDelegate {
 
         // needs to loadAllData first, otherwise another thread could get the hub without using the lock
         if (bThisIsServer || (bIsCalc && !bIsServerSideCalc)) {
-//qqqqqqqqqqqqqqq
             // 20171225 support for selecting multiple at one time
             if (sibIds != null) {
                 OALinkInfo rli = linkInfo.getReverseLinkInfo();
@@ -1523,46 +1521,43 @@ public class OAObjectReflectDelegate {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {
-                    
-//qqqqqqqqq 20171222
-    OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75);
-    String sibIds = null;
-    if (siblingKeys != null) {
-        for (OAObjectKey keyx : siblingKeys) {
-            OAObject objx = OAObjectCacheDelegate.get(oaObj.getClass(), keyx);
-            if (objx == null) {
-                continue;
-            }
-            Object valx = OAObjectPropertyDelegate.getProperty(objx, linkPropertyName, false, false);
-            if (!(valx instanceof OAObjectKey)) continue;
-            Object[] idsx = ((OAObjectKey)valx).getObjectIds();
-            if (idsx == null || idsx.length != 1) continue;
-            if (sibIds == null) sibIds = "" + idsx[0];
-            else sibIds += "," + idsx[0];
-        }
-        if (sibIds != null) {
-            Object[] idsx = key.getObjectIds();
-            if (idsx == null || idsx.length != 1) sibIds = null;
-            else sibIds = idsx[0] + "," + sibIds;
-        }
-    }    
-    if (sibIds != null) {
-        OASelect sel = new OASelect(li.toClass);
-        sel.setWhere("id IN ("+sibIds+")");
-        sel.select();
-        for ( ; sel.hasMore(); ) {
-            OAObject refx = sel.next();  // this will load into objCache w/softRef
-            if (refx.getObjectKey().equals(key)) {
-                ref = refx;
-            }
-        }
-    }
-    else {
-        ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
-    }
-    //was: ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
-    
-    
+                    // 20171222
+                    OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75);
+                    String sibIds = null;
+                    if (siblingKeys != null) {
+                        for (OAObjectKey keyx : siblingKeys) {
+                            OAObject objx = OAObjectCacheDelegate.get(oaObj.getClass(), keyx);
+                            if (objx == null) {
+                                continue;
+                            }
+                            Object valx = OAObjectPropertyDelegate.getProperty(objx, linkPropertyName, false, false);
+                            if (!(valx instanceof OAObjectKey)) continue;
+                            Object[] idsx = ((OAObjectKey)valx).getObjectIds();
+                            if (idsx == null || idsx.length != 1) continue;
+                            if (sibIds == null) sibIds = "" + idsx[0];
+                            else sibIds += "," + idsx[0];
+                        }
+                        if (sibIds != null) {
+                            Object[] idsx = key.getObjectIds();
+                            if (idsx == null || idsx.length != 1) sibIds = null;
+                            else sibIds = idsx[0] + "," + sibIds;
+                        }
+                    }    
+                    if (sibIds != null) {
+                        OASelect sel = new OASelect(li.toClass);
+                        sel.setWhere("id IN ("+sibIds+")");
+                        sel.select();
+                        for ( ; sel.hasMore(); ) {
+                            OAObject refx = sel.next();  // this will load into objCache w/softRef
+                            if (refx.getObjectKey().equals(key)) {
+                                ref = refx;
+                            }
+                        }
+                    }
+                    else {
+                        ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
+                    }
+                    //was: ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
                 }
             }
         }

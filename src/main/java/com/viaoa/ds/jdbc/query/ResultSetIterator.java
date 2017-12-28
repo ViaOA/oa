@@ -106,9 +106,7 @@ public class ResultSetIterator implements OADataSourceIterator {
         this(ds, clazz, columns, query, null, max, null);
     }
     
-static volatile int qqq;
-static PrintWriter printWriter2;
-static PrintWriter printWriter;
+    public static final AtomicInteger aiCount = new AtomicInteger();
 
     /**
      * @param query2 used if the first query only returns pkIds.  
@@ -137,19 +135,22 @@ static PrintWriter printWriter;
         return this.bDirty;
     }
     
-    public static int DisplayMod = 5000;    
+    public static int DisplayMod = 25000;
+    public static volatile long msLastDisplay;
     protected synchronized void init() {
         if (bInit) return;
         bInit = true;
 
-        if (((++qqq)%DisplayMod==0)) {
+        aiCount.incrementAndGet();
+        if ( (aiCount.get() % DisplayMod == 0) || (msLastDisplay+10000 < System.currentTimeMillis())) {
             String s = query;
             int pos = s.toUpperCase().indexOf("FROM");
             if (pos > 0) s = s.substring(pos);
-            s = (qqq)+") ResultSetIterator: query="+s;
+            s = aiCount.get()+") ResultSetIterator: query="+s;
             
             LOG.fine(s);
             System.out.println(s);
+            msLastDisplay = System.currentTimeMillis();
         }
         /*
         if ( (qqq%(DisplayMod*4)==0)) {        

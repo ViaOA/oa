@@ -331,6 +331,11 @@ public class OAPropertyPath<F> {
         int cnter = 0;
         for ( ; posDot >= 0; prevPosDot=posDot+1) {
             cnter++;
+            
+            if (cnter > 20) {
+                throw new RuntimeException("cant parse propertyPath="+propertyPath+", class="+clazz);
+            }
+            
             posDot = propertyPathClean.indexOf('.', prevPosDot);
             int posCast = propertyPathClean.indexOf('(', prevPosDot);
             int posFilter = propertyPathClean.indexOf(':', prevPosDot);
