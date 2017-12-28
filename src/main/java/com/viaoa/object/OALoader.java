@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.concurrent.OAExecutorService;
+import com.viaoa.ds.OASelect;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
@@ -46,9 +47,12 @@ public class OALoader<F extends OAObject, T extends OAObject> {
 
     private final int threadCount;
     private volatile OAExecutorService executorService;
+    private final AtomicInteger aiThreadsUsed = new AtomicInteger(); 
 
     private final AtomicInteger aiVisitCnt = new AtomicInteger();
     private final AtomicInteger aiNotLoadedCnt = new AtomicInteger();
+    
+    private Hub<F> hubFrom;
     
     public OALoader(int threadCount, String propPath) {
         this.threadCount = Math.min(threadCount, 50);
@@ -77,11 +81,54 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         setup(hubRoot.getObjectClass());
         if (threadCount > 0) executorService = new OAExecutorService(threadCount, "OALoader");
 
-        for (F obj : hubRoot) {
-            _load(obj);
-            if (bStop) break;
+        this.hubFrom = hubRoot;
+        
+        Hub hubHold = OAThreadLocalDelegate.getGetDetailHub();
+        String ppHold = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        try {
+            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
+            for (F obj : hubRoot) {
+                _load(obj);
+                if (bStop) break;
+            }
+            this.hubFrom = null;
+        }
+        finally {
+            OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
+            aiThreadsUsed.decrementAndGet();
+            this.hubFrom = null;
         }
     }
+    
+    public void load(OASelect<F> sel) {
+        if (sel == null) return;
+
+        bStop = false;
+        setup(sel.getSelectClass());
+        if (threadCount > 0) executorService = new OAExecutorService(threadCount, "OALoader");
+        this.hubFrom = new Hub();
+
+        Hub hubHold = OAThreadLocalDelegate.getGetDetailHub();
+        String ppHold = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        try {
+            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
+            for ( ;!bStop && (sel.hasMore() || hubFrom.size()>0); ) {
+                for ( ;sel.hasMore() && hubFrom.size() < 200; ) {
+                    if (bStop) break;
+                    hubFrom.add(sel.next());
+                }
+                Object obj = hubFrom.getAt(0);
+                hubFrom.remove(0);
+                _load((F) obj);
+            }        
+        }
+        finally {
+            OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
+            aiThreadsUsed.decrementAndGet();
+            this.hubFrom = null;
+        }
+    }
+    
     
     public void load(F objectRoot) {
         if (objectRoot == null) return;
@@ -90,7 +137,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         setup(objectRoot.getClass());
         if (threadCount > 0) executorService = new OAExecutorService(threadCount, "OALoader");
 
+        hubFrom = new Hub(objectRoot.getClass());
+        hubFrom.add(objectRoot);
         _load(objectRoot);
+        hubFrom = null;
     }
     
     protected void _load(F object) {
@@ -126,14 +176,39 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             }
         }
         else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length && (recursiveLinkInfos[pos - 1] != null)) {
-            if (executorService != null && !recursiveLinkInfos[pos - 1].isLoaded(obj)) {
+            if (executorService != null && !recursiveLinkInfos[pos - 1].isLoaded(obj) && aiThreadsUsed.get() < threadCount) {
+                aiThreadsUsed.incrementAndGet();
                 aiNotLoadedCnt.incrementAndGet();
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
                         if (bStop) return;
-                        Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-                        _load(objx, pos, cascade);
+                        long ms = System.currentTimeMillis();
+                        try {
+                            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
+                            Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
+                            _load(objx, pos, cascade);
+                        }
+                        finally {
+                            OAThreadLocalDelegate.resetGetDetailHub(null, null);
+                            aiThreadsUsed.decrementAndGet();
+                        }
+                        
+                        // make sure that this thread does not "jam" up others by finishing too quickly
+                        ms = System.currentTimeMillis() - ms;
+                        String pp = OALoader.this.strPropertyPath;
+                        long x;
+                        if (pp == null || pp.indexOf('.') < 0) x = 2500;
+                        else x = 1000;
+                        
+                        x -= (int) (Math.random() * 400);
+                        if (ms < x) {  // have it sleep so that siblings that use hubFrom can get more data
+                            try {
+                                Thread.sleep(x - ms);
+                            }
+                            catch (Exception e) {
+                            } 
+                        }
                     }
                 });
             }
@@ -145,14 +220,22 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         }
 
         if (linkInfos != null && pos < linkInfos.length) {
-            if (executorService != null && !linkInfos[pos].isLoaded(obj)) {
+            if (executorService != null && !linkInfos[pos].isLoaded(obj) && aiThreadsUsed.get() < threadCount) {
+                aiThreadsUsed.incrementAndGet();
                 aiNotLoadedCnt.incrementAndGet();
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
                         if (bStop) return;
-                        Object objx = linkInfos[pos].getValue(obj);
-                        _load(objx, pos+1, cascade);
+                        try {
+                            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
+                            Object objx = linkInfos[pos].getValue(obj);
+                            _load(objx, pos+1, cascade);
+                        }
+                        finally {
+                            OAThreadLocalDelegate.resetGetDetailHub(null, null);
+                            aiThreadsUsed.decrementAndGet();
+                        }
                     }
                 });
                 return;
@@ -167,7 +250,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
     public void waitUntilDone() {
         for (;;) {
             if (executorService == null) break;
-            int x = executorService.getExecutorService().getActiveCount();
+            int x = executorService.getActiveThreads();
             
             if (x < 1) break;
             try {
