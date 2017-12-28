@@ -389,6 +389,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     // list of triggers per prop/link name
     protected ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerInfo>> hmTriggerInfo = new ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerInfo>>();
     private AtomicInteger aiTrigger = new AtomicInteger();
+    private AtomicInteger aiTriggerBackgroundThread = new AtomicInteger();
 
     private final static AtomicInteger aiAllTrigger = new AtomicInteger();
     /**
@@ -510,6 +511,9 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
 
         int x = aiTrigger.incrementAndGet();
+        if (trigger.bUseBackgroundThread) aiTriggerBackgroundThread.incrementAndGet();
+        int x2 = aiTriggerBackgroundThread.get();
+        
         aiAllTrigger.incrementAndGet();
         
         TriggerInfo ti = new TriggerInfo();
@@ -518,10 +522,10 @@ public class OAObjectInfo { //implements java.io.Serializable {
         ti.ppToRootClass = revPropPath;
         ti.listenProperty = listenProperty;
         
-        String s = (thisClass.getSimpleName()+", name="+trigger.name+", listenPropName="+listenProperty+", revPropPath="+revPropPath+", trigger.cnt="+x+", total="+aiAllTrigger.get());
+        String s = (thisClass.getSimpleName()+", name="+trigger.name+", listenPropName="+listenProperty+", revPropPath="+revPropPath+", trigger.cnt="+x+", trigger.background="+x2+", system total="+aiAllTrigger.get());
         LOG.fine(s);
         if (false && OAPerformance.IncludeTriggers) OAPerformance.LOG.fine(s);
-        else if (x > 180) {
+        else if ((x-x2) > 50) {
             LOG.warning(s);
         }
         

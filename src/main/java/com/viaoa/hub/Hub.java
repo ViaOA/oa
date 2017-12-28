@@ -1388,6 +1388,15 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         };
         OATrigger trigger = OATriggerDelegate.createTrigger(property, getObjectClass(), tl, new String[] {propertyPath}, true, false, false, true);
     }
+    public void addTriggerListener(HubListener<TYPE> hl, final String property, String propertyPath, boolean useBackgroundThread) {
+        OATriggerListener tl = new OATriggerListener() {
+            @Override
+            public void onTrigger(OAObject obj, HubEvent hubEvent, String propertyPath) throws Exception {
+                HubEventDelegate.fireCalcPropertyChange(Hub.this, obj, property);
+            }
+        };
+        OATrigger trigger = OATriggerDelegate.createTrigger(property, getObjectClass(), tl, new String[] {propertyPath}, true, false, useBackgroundThread, true);
+    }
     
     
     /**

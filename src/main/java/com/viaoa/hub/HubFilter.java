@@ -194,6 +194,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     
     // 20160827
     public void addTrigger(String propPath) {
+        this.addTrigger(propPath, false);
+    }
+    public void addTrigger(String propPath, boolean useBackgroundThread) {
         final String name = "HubFilter" + (aiUniqueNameCnt.incrementAndGet());
         hubMaster.addTriggerListener(new HubListenerAdapter<T>() {
             @Override
@@ -201,7 +204,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                 if (!name.equalsIgnoreCase(e.getPropertyName())) return;
                 update(e.getObject(), false);
             }
-        }, name, propPath);
+        }, name, propPath, useBackgroundThread);
     }
     
     
