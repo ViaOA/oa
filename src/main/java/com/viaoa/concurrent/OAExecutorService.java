@@ -2,8 +2,10 @@ package com.viaoa.concurrent;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +15,7 @@ import java.util.logging.Logger;
 import com.viaoa.util.OAString;
 
 /**
- * creates and ExecutorService to await commands to run.
+ * creates an ExecutorService to await commands to run.
  * @author vvia
  *
  */
@@ -23,9 +25,16 @@ public class OAExecutorService {
     private final AtomicInteger aiTotalSubmitted = new AtomicInteger();
     private final int size;
     private final String name;
+    private LinkedBlockingQueue<Runnable> que;
     
     public OAExecutorService() {
-        this(10, null);
+        this(0, null);
+    }
+
+    public OAExecutorService(String name) {
+        this.size = 0;
+        this.name = name;
+        getExecutorService();
     }
     
     public OAExecutorService(int size, String name) {
@@ -67,7 +76,7 @@ public class OAExecutorService {
         executorService.shutdown();
     }
     
-    public ThreadPoolExecutor getExecutorService() {
+    public ExecutorService getExecutorService() {
         if (executorService != null) return executorService;
         
         ThreadFactory tf = new ThreadFactory() {
@@ -77,25 +86,71 @@ public class OAExecutorService {
                 Thread t = new Thread(r);
                 String s = "";
                 if (OAString.isNotEmpty(name)) s = name+".";
-                t.setName("OAExecutorService.thread."+s+ai.getAndIncrement());
+                t.setName("OAExecutorService."+s+"."+ai.getAndIncrement());
                 t.setDaemon(true);
                 t.setPriority(Thread.NORM_PRIORITY);
                 return t;
             }
         };
         
-        // min/max must be equal, since new threads are only created when queue is full
-        executorService = new ThreadPoolExecutor(size, size, 60L, TimeUnit.SECONDS, 
-                new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE), tf) 
-        {
-            @Override
-            public Future<?> submit(Runnable task) {
-                LOG.fine("running task in thread="+Thread.currentThread().getName());
-                return super.submit(task);
-            }
-        };
-        executorService.allowCoreThreadTimeOut(true);
-        
+        if (size == 0) {
+            // executorService = Executors.newCachedThreadPool(tf);
+            executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), tf); 
+        }
+        else {
+            // min/max must be equal, since new threads are only created when queue is full
+            que = new LinkedBlockingQueue<Runnable>(Integer.MAX_VALUE);
+            executorService = new ThreadPoolExecutor(size, size, 60L, TimeUnit.SECONDS, que, tf); 
+            executorService.allowCoreThreadTimeOut(true);
+        }
         return executorService;
     }
+    
+    /**
+     * number of elements in the queue waiting on thread to pick it up.
+     */
+    public int getQueueSize() {
+        if (que == null) return 0;
+        return que.size();
+    }
+    public int getThreadPoolSize() {
+        if (executorService == null) return 0;
+        return executorService.getPoolSize();
+    }
+    public int getActiveThreads() {
+        if (executorService == null) return 0;
+        return executorService.getActiveCount();
+    }
+    
+    public static void main(String[] args) throws Exception {
+        Executors.newCachedThreadPool();
+
+        Executors.newFixedThreadPool(12);
+        
+        
+        ThreadPoolExecutor te = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                60L, TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>());
+
+        for (int i=0; i<10; i++) {
+            final int id = i;
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("Run START for "+id);
+                    try {
+                        Thread.sleep(10000);
+                    }
+                    catch (Exception e) {}
+                    System.out.println("Run DONE for "+id);
+                }
+            };
+            System.out.println("Created "+id);
+            te.submit(r);
+        }
+        
+        
+    }
+    
+    
 }
