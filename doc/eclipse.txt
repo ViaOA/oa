@@ -1,4 +1,6 @@
 
+20171228 speed up eclipse
+    http://www.nicolasbize.com/blog/7-tips-to-speed-up-eclipse/
 
 20171215
     eclipse and jpa java change event handler waiting
