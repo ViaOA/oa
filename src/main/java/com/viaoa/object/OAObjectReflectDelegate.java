@@ -777,7 +777,7 @@ public class OAObjectReflectDelegate {
                             else sibIds += "," + idsx[0];
                         }
                         if (sibIds != null) {
-                            Object[] idsx = oaObj.getKey().getObjectIds();
+                            Object[] idsx = oaObj.getObjectKey().getObjectIds();
                             if (idsx == null || idsx.length != 1) sibIds = null;
                             else sibIds = idsx[0] + "," + sibIds;
                         }
@@ -880,10 +880,10 @@ public class OAObjectReflectDelegate {
                         OAObject objx = select.next();
                         // find masterObj to put it in
                         Object valx = OAObjectPropertyDelegate.getProperty(objx, rli.getName(), false, false); 
-                        if (valx instanceof OAObject) valx = ((OAObject) valx).getKey();
+                        if (valx instanceof OAObject) valx = ((OAObject) valx).getObjectKey();
                         if (!(valx instanceof OAObjectKey)) continue;
                         OAObjectKey okx = (OAObjectKey) valx;
-                        if (okx.equals(oaObj.getKey())) {
+                        if (okx.equals(oaObj.getObjectKey())) {
                             hub.add(objx);
                         }
                         else {
