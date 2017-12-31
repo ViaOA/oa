@@ -460,10 +460,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             if (bEnableRecursiveRoot && liRecursiveRoot != null) {
                 if (getUseOnlyLoadedData() && !liRecursiveRoot.isLoaded(obj)) {
                     onDataNotFound();
-                    return;
                 }
-                Object objx = liRecursiveRoot.getValue(obj);
-                find(objx, pos); // go up a level to then go through hub
+                else {
+                    Object objx = liRecursiveRoot.getValue(obj);
+                    find(objx, pos); // go up a level to then go through hub
+                }
                 if (bStop) return;
             }
         }
@@ -471,10 +472,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             if (recursiveLinkInfos[pos - 1] != null) {
                 if (getUseOnlyLoadedData() && !recursiveLinkInfos[pos - 1].isLoaded(obj)) {
                     onDataNotFound();
-                    return;
                 }
-                Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-                find(objx, pos);
+                else {
+                    Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
+                    find(objx, pos);
+                }
                 if (bStop) return;
             }
         }

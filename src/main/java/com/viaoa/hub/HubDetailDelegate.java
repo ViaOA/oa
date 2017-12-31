@@ -252,6 +252,7 @@ public class HubDetailDelegate {
         }
     }
     
+    
     /**
         Internal method to update any detail hubs.  This is called whenever activeObject is
         changed, or the property value that is used for the link gets modified

@@ -10,11 +10,9 @@
 */
 package com.viaoa.ds;
 
-import java.util.Iterator;
+import java.util.*;
 
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectInfo;
-import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.*;
 import com.viaoa.util.OAFilter;
 
 public interface OADataSourceInterface {
@@ -91,4 +89,7 @@ public interface OADataSourceInterface {
     byte[] getPropertyBlobValue(OAObject obj, String propertyName);
 
     int getMaxLength(Class c, String propertyName);
+
+    // 20171228
+    HashMap<OAObjectKey, OAObjectKey[]> selectMany2Many(Class fromClass, String propFromMasterToDetail, OAObjectKey ... masterKeys);
 }

@@ -2235,9 +2235,35 @@ if (!getKeepSorted()) hub.cancelSort();
         };
         sw.execute();
     }
+    private final AtomicInteger aiRow = new AtomicInteger();
+    // 20171230
+    protected void setHubPos(final int row) {
+        aiRow.set(row);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                HubDetailDelegate.preloadDetailData(hub, row);        
+                return null;
+            }
+            @Override
+            protected void done() {
+                if (aiRow.get() == row) {
+                    try {
+                        hubAdapter._bIsRunningValueChanged = true;
+                        hub.setPos(row);
+                    }
+                    finally {
+                        hubAdapter._bIsRunningValueChanged = false;
+                    }
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            }
+        };
+        sw.execute();
+    }
     
     
-
     /**
      * Overwritten to set active object in Hub.
      */
@@ -2250,7 +2276,9 @@ if (!getKeepSorted()) hub.cancelSort();
         if (hub.getPos() != row) {
             try {
                 hubAdapter._bIsRunningValueChanged = true; // 20131113
-                hub.setPos(row);
+                // 20171230
+                setHubPos(row);
+                //was: hub.setPos(row);
             }
             finally {
                 hubAdapter._bIsRunningValueChanged = false;
@@ -3499,6 +3527,18 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
             int newAoPos = getHub().getPos(hubSelect.getAt(hubSelect.size()-1));
             //newAoPos = table.getSelectionModel().getLeadSelectionIndex();
+            
+// 20171230
+            _bIsRunningValueChanged = false;
+            table.setHubPos(newAoPos);
+        }
+        else {
+            _bIsRunningValueChanged = false;
+            int row = table.getSelectedRow();
+            table.setHubPos(row);
+        }
+            
+/**was:            
             getHub().setAO(newAoPos);
         }
         else {
@@ -3512,6 +3552,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             }
         }
         _bIsRunningValueChanged = false;
+*/        
         Container cont = table.getParent();
         for (int i=0; i<3 && cont!=null; i++) {
             cont.repaint(200);

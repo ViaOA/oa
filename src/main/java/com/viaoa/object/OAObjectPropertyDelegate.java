@@ -232,7 +232,10 @@ public class OAObjectPropertyDelegate {
         if (props != null) {
             for (int i=0; i<props.length; i+=2) {
                 if (name.equalsIgnoreCase((String)oaObj.properties[i])) {
-                    if (props[i+1] != null) return;
+                    if (props[i+1] != null) {
+                        if (!(props[i+1] instanceof WeakReference)) return;
+                        if ( ((WeakReference) props[i+1]).get() != null) return;
+                    }
                 }
             }
         }
@@ -257,7 +260,7 @@ public class OAObjectPropertyDelegate {
                     oaObj.properties = Arrays.copyOf(oaObj.properties, pos+2);
                 }
             }
-            if (oaObj.properties[pos+1] == null) {
+            if (oaObj.properties[pos+1] == null || ((oaObj.properties[pos+1] instanceof WeakReference) && (((WeakReference)oaObj.properties[pos+1]).get() == null))) {
                 oaObj.properties[pos+1] = value;
                 oaObj.properties[pos] = name;
             }
@@ -551,12 +554,18 @@ public class OAObjectPropertyDelegate {
             Object parent = li.getValue(obj); // parent
             if (!(parent instanceof OAObject)) continue;
 
+            if (!OAObjectPropertyDelegate.isPropertyLoaded((OAObject) parent, liRev.getName())) continue; // 20171230
+            
             if (liRev.getCacheSize() > 0) {
-                Hub hub = (Hub) liRev.getValue((OAObject) parent); // need to make sure that the hub is loaded
-                if (bReferenceable || bSupportStorage) {
-                    boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) parent, liRev.getName(), !bReferenceable, hub);
-                    if (!b) break;  // already changed, dont need to continue
+                Object objx = OAObjectPropertyDelegate.getProperty((OAObject) parent, liRev.getName(), true, false);
+                if (objx instanceof OANotExist) continue;
+                
+                if (objx instanceof WeakReference) {
+                    objx = ((WeakReference) objx).get(); 
                 }
+                if (!(objx instanceof Hub)) continue;
+                boolean b = OAObjectPropertyDelegate.setPropertyWeakRef((OAObject) parent, liRev.getName(), !bReferenceable, (Hub) objx);
+                if (!b) break;  // already changed, dont need to continue
             }
             if (bReferenceable) {
                 if (cascade == null) cascade = new OACascade();

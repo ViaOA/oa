@@ -722,6 +722,9 @@ public class OAObjectReflectDelegate {
 
         OASelect select = null;
         String sibIds = null;
+        OAObjectKey[] siblingKeys = null;
+        HashMap<OAObjectKey, Hub> hmSiblingHub = null;
+        final String matchProperty = linkInfo.getMatchProperty();
 
         if (hub != null) {
         }
@@ -755,11 +758,9 @@ public class OAObjectReflectDelegate {
                 
                 if (!bIsCalc) {
                     // 20171225 support for selecting siblings at same time
-                    OAObjectKey[] siblingKeys;
-                    
                     OALinkInfo rli = linkInfo.getReverseLinkInfo();
-                    if (linkInfo.getRecursive() || rli == null || rli.getType() == OALinkInfo.TYPE_MANY || rli.getPrivateMethod()) {
-                        // not supported in this release, M2M are supported in DS layer
+                    if (!bThisIsServer || linkInfo.getRecursive() || rli == null || rli.getType() == OALinkInfo.TYPE_MANY || rli.getPrivateMethod() || (hubMatch != null) || (matchProperty != null && matchProperty.length() > 0)) {
+                        // not supported in this release
                         siblingKeys = null; 
                     }
                     else {
@@ -770,11 +771,16 @@ public class OAObjectReflectDelegate {
                     }
                     
                     if (siblingKeys != null) {
+                        hmSiblingHub = new HashMap<>();
                         for (OAObjectKey keyx : siblingKeys) {
                             Object[] idsx = keyx.getObjectIds();
                             if (idsx == null || idsx.length != 1) continue;
                             if (sibIds == null) sibIds = "" + idsx[0];
                             else sibIds += "," + idsx[0];
+                            OAObject objx = OAObjectCacheDelegate.get(oaObj.getClass(), keyx);
+                            if (objx != null) {
+                                hmSiblingHub.put(keyx, new Hub(linkClass, objx, liReverse, false));
+                            }
                         }
                         if (sibIds != null) {
                             Object[] idsx = oaObj.getObjectKey().getObjectIds();
@@ -788,8 +794,10 @@ public class OAObjectReflectDelegate {
                         select.setWhere(rli.getName() + " IN ("+sibIds+")");
                     }
                     else { 
-                        select.setWhereObject(oaObj);
-                        select.setPropertyFromWhereObject(linkInfo.getName());
+                        if (bThisIsServer) {
+                            select.setWhereObject(oaObj);
+                            select.setPropertyFromWhereObject(linkInfo.getName());
+                        }
                     }
     
                     /* was:
@@ -834,7 +842,6 @@ public class OAObjectReflectDelegate {
                     }
                 }
                 */
-            
             }
             else {
                 hub = new Hub(linkClass, oaObj, null, false);
@@ -865,15 +872,12 @@ public class OAObjectReflectDelegate {
             }
         }
 
-        final String matchProperty = linkInfo.getMatchProperty();
 
         // needs to loadAllData first, otherwise another thread could get the hub without using the lock
         if (bThisIsServer || (bIsCalc && !bIsServerSideCalc)) {
             // 20171225 support for selecting multiple at one time
             if (sibIds != null) {
                 OALinkInfo rli = linkInfo.getReverseLinkInfo();
-                HashMap<OAObjectKey, Hub> hmHold = new HashMap<>();
-                
                 try {
                     OAThreadLocalDelegate.setLoading(true);
                     for ( ; select.hasMore(); ) {
@@ -886,28 +890,20 @@ public class OAObjectReflectDelegate {
                         if (okx.equals(oaObj.getObjectKey())) {
                             hub.add(objx);
                         }
-                        else {
-                            Hub hx = hmHold.get(okx);
-                            if (hx == null) {
-                                hx = new Hub(linkInfo.toClass);
-                                hmHold.put(okx, hx);
+                        else if (hmSiblingHub != null) {
+                            Hub hx = hmSiblingHub.get(okx);
+                            if (hx != null) {
+                                hx.add(objx);
                             }
-                            hx.add(objx);
+                            else {
+                                int xx = 4;
+                                xx++;//qqqqqqqqqqqqqq test: make sure this is not called
+                            }
                         }                    
                     }
                 }
                 finally {
                     OAThreadLocalDelegate.setLoading(false);
-                }
-
-                // need to loop thru hmHold, and set Hubs for siblings
-                for (Entry<OAObjectKey, Hub> entry : hmHold.entrySet()) {
-                    OAObjectKey ok = entry.getKey();
-                    OAObject obj = OAObjectCacheDelegate.get(oaObj.getClass(), ok);
-                    if (obj == null) continue;
-                    Hub hx = entry.getValue();
-                    HubDetailDelegate.setMasterObject(hx, obj, rli);
-                    OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, hx);
                 }
             }
             else { 
@@ -924,13 +920,27 @@ public class OAObjectReflectDelegate {
             
             if (bThisIsServer) {
                 if (bSequence) {
-                    if (HubDelegate.getAutoSequence(hub) == null) {
+                    if (HubDelegate.getAutoSequence(hub) == null) { 
                         hub.setAutoSequence(seqProperty); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
+                        if (hmSiblingHub != null) {
+                            // need to loop thru and set Hubs for siblings
+                            for (Entry<OAObjectKey, Hub> entry : hmSiblingHub.entrySet()) {
+                                Hub hx = entry.getValue();
+                                hx.setAutoSequence(seqProperty); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
+                            }
+                        }
                     }
                 }
-                else if (OAString.notEmpty(sortOrder) && HubSortDelegate.getSortListener(hub) == null){
+                else if (OAString.notEmpty(sortOrder) && HubSortDelegate.getSortListener(hub) == null) {
                     // keep the hub sorted on server only
                     HubSortDelegate.sort(hub, sortOrder, bSortAsc, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
+                    if (hmSiblingHub != null) {
+                        // need to loop thru and set Hubs for siblings
+                        for (Entry<OAObjectKey, Hub> entry : hmSiblingHub.entrySet()) {
+                            Hub hx = entry.getValue();
+                            HubSortDelegate.sort(hx, sortOrder, bSortAsc, null, true);
+                        }
+                    }
                 }
             }            
             
@@ -972,7 +982,7 @@ public class OAObjectReflectDelegate {
         // 20171108 moved here from above
         if (bThisIsServer || OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, false) == null) {
             // set property
-            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
+            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {  //qqqqqqqqqqqq need to do for each sibling hub?? qqqqqqqqq
                 OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
             }
             else {
@@ -986,6 +996,21 @@ public class OAObjectReflectDelegate {
             }
         }
         
+        if (hmSiblingHub != null) {
+            // need to loop thru and set Hubs for siblings
+            for (Entry<OAObjectKey, Hub> entry : hmSiblingHub.entrySet()) {
+                OAObjectKey ok = entry.getKey();
+                OAObject obj = OAObjectCacheDelegate.get(oaObj.getClass(), ok);
+                if (obj == null) continue;
+                Hub hx = entry.getValue();
+                if (OAObjectInfoDelegate.cacheHub(linkInfo, hx)) {
+                    OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, new WeakReference(hx));
+                }
+                else {
+                    OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, hx);
+                }
+            }
+        }
         return hub;
     }
 
@@ -1340,7 +1365,7 @@ public class OAObjectReflectDelegate {
                 OAThreadLocalDelegate.setGetDetailHub((Hub) objx, null);
                 try {
                     for (Object objz : (Hub) objx) {
-                        currentRefsLoaded = _loadAllReferences(currentRefsLoaded, (OAObject) objz, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc,callback, cascade, maxRefsToLoad);
+                        currentRefsLoaded = _loadAllReferences(currentRefsLoaded, (OAObject) objz, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc,callback, cascade, maxRefsToLoad, maxEndTime);
                         if (maxLevelsToLoad > 0 && currentRefsLoaded >= maxLevelsToLoad) break;
                     }
                 }
@@ -1349,7 +1374,7 @@ public class OAObjectReflectDelegate {
                 }
             }
             else if (objx instanceof OAObject) {
-                currentRefsLoaded = _loadAllReferences(currentRefsLoaded, (OAObject) objx, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, maxRefsToLoad);
+                currentRefsLoaded = _loadAllReferences(currentRefsLoaded, (OAObject) objx, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, maxRefsToLoad, maxEndTime);
             }
         }
         return currentRefsLoaded;
@@ -1419,7 +1444,19 @@ public class OAObjectReflectDelegate {
         Object result = null;
         try {
             OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
+//qqqqqqqqqqqqq            
+long msx = System.currentTimeMillis();                    
+            
             result = _getReferenceObject(oaObj, linkPropertyName, oi, li);
+            
+long msNow = System.currentTimeMillis();                    
+if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
+    int xx = (int) (msNow - msx); 
+    System.out.println("******** OAObjctReflectDelegate.getReferenceObject  "+oaObj.getClass().getSimpleName()+"."+linkPropertyName+"*********** >>>>>>>> ms="+(msNow-msx));
+    
+    xx++;
+}
+            
             OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, result, objOriginal, bDidNotExist, false);
         }
         finally {
@@ -1458,14 +1495,19 @@ public class OAObjectReflectDelegate {
             // == null.  check to see if it is One2One, and if a select must be used to get the object.
             if (li == null) return null;
             if (OAObjectInfoDelegate.isOne2One(li) && !oaObj.isNew()) {
+                OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
                 if (!bIsServer && !bIsCalc) {
                     if (oaObj.isDeleted()) { // 20151117
                         return null;
                     }
-                    ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
+                    if (liReverse != null && !liReverse.bPrivateMethod) {
+                        ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
+                    }
+                    else ref = null;
                 }
                 else if (!bIsCalc) {
-                    OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
+//qqqqqqqqqqqqq            
+long msx = System.currentTimeMillis();                    
                     if (liReverse != null && !liReverse.bPrivateMethod) {
                         OASelect sel = new OASelect(li.getToClass());
                         sel.setWhereObject(oaObj);
@@ -1474,6 +1516,12 @@ public class OAObjectReflectDelegate {
                         ref = sel.next();
                         sel.close();
                     }
+long msNow = System.currentTimeMillis();                    
+if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
+    int xx = (int) (msNow - msx);
+    xx++;
+}
+                    
                 }
             }
             else {
@@ -1496,6 +1544,7 @@ public class OAObjectReflectDelegate {
                         }
                         else {
                             OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
+long msx = System.currentTimeMillis();                    
                             if (liReverse != null) {
                                 OASelect sel = new OASelect(li.getToClass());
                                 sel.setWhere(liReverse.getName()+" = ?");
@@ -1504,6 +1553,12 @@ public class OAObjectReflectDelegate {
                                 ref = sel.next();
                                 sel.close();
                             }
+long msNow = System.currentTimeMillis();                    
+if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
+    int xx = (int) (msNow - msx);
+    xx++;
+}
+                            
                         }
                     }
                 }
@@ -1521,6 +1576,8 @@ public class OAObjectReflectDelegate {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {
+long msx = System.currentTimeMillis();                    
+                    
                     // 20171222
                     OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75);
                     String sibIds = null;
@@ -1543,6 +1600,11 @@ public class OAObjectReflectDelegate {
                             else sibIds = idsx[0] + "," + sibIds;
                         }
                     }    
+long msNow = System.currentTimeMillis();                    
+if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
+    int xx = (int) (msNow - msx);
+    xx++;
+}
                     if (sibIds != null) {
                         OASelect sel = new OASelect(li.toClass);
                         sel.setWhere("id IN ("+sibIds+")");
@@ -1557,6 +1619,12 @@ public class OAObjectReflectDelegate {
                     else {
                         ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
                     }
+msNow = System.currentTimeMillis();                    
+if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
+    int xx = (int) (msNow - msx);
+    xx++;
+}
+                    
                     //was: ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
                 }
             }
@@ -1569,7 +1637,15 @@ public class OAObjectReflectDelegate {
             }
             else {
                 ref = OAObjectReflectDelegate.createNewObject(li.getToClass());
+long msx = System.currentTimeMillis();
                 setProperty(oaObj, linkPropertyName, ref, null); // need to do this so oaObj.changed=true, etc.
+
+long msNow = System.currentTimeMillis();                    
+System.out.println("******** OAObjctReflectDelegate.getReferenceObject  "+oaObj.getClass().getSimpleName()+"."+linkPropertyName+"*********** ms="+(msNow-msx));
+if (msNow - msx > 1200) {//qqqqqqqqqqqqqqq
+    int xx = (int) (msNow - msx);
+    xx++;
+}
             }
         }
         return ref;

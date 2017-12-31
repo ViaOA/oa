@@ -92,7 +92,7 @@ public class ClientGetDetail {
             final String property, final String[] masterProps, final OAObjectKey[] siblingKeys, final boolean bForHubMerger) {
 
         if (masterObjectKey == null || property == null) return null;
-        long ts = System.currentTimeMillis();
+        final long msStart = System.currentTimeMillis();
 
         Object masterObject = OAObjectReflectDelegate.getObject(masterClass, masterObjectKey);
         if (masterObject == null) {
@@ -130,36 +130,51 @@ public class ClientGetDetail {
         hubHold = null;
         
         Object returnValue;
-        int cntSib=0;
-        
         boolean b = ((masterProps == null || masterProps.length == 0) && (siblingKeys == null || siblingKeys.length==0));
         if (b) {
             if (detailValue instanceof Hub) {
-                if (((Hub) detailValue).getSize() > 100) b = false;
+                if (((Hub) detailValue).getSize() > 200) b = false;
             }
         }
 
         int cntMasterPropsLoaded=0;
         if (masterProps != null && masterObject instanceof OAObject) {
-            boolean bx = false;
+            boolean bx = true;
             for (String s : masterProps) {
-                bx = bx || (System.currentTimeMillis() > (ts + 50));
+                bx = bx && (System.currentTimeMillis() < (msStart + 50));
                 if (bx) {
-                    loadDataInBackground((OAObject)masterObject, s);
-                }
-                else {
+long msx = System.currentTimeMillis();                    
                     ((OAObject) masterObject).getProperty(s);
                     cntMasterPropsLoaded++;
+long msNow = System.currentTimeMillis();                    
+if (msNow - msStart > 1000) {//qqqqqqqqqqqqqqq
+    int xx = (int) (msNow - msx);
+    xx++;
+}
+                }
+                else {
+//qqqqqqqqqq might be causing property lock issue                    
+//                    loadDataInBackground((OAObject)masterObject, s);
                 }
             }
         }
         
-        
-        if (b) {
+if (System.currentTimeMillis() - msStart > 1000) {//qqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+        int cntSib=0;
+        if (b && cntMasterPropsLoaded == 0) {
             returnValue = detailValue;
         }
         else {
-            OAObjectSerializer os = getSerializedDetail(ts, (OAObject)masterObject, detailValue, property, masterProps, cntMasterPropsLoaded, siblingKeys, bForHubMerger);
+            OAObjectSerializer os = getSerializedDetail(msStart, (OAObject)masterObject, detailValue, property, masterProps, cntMasterPropsLoaded, siblingKeys, bForHubMerger);
+            
+if (System.currentTimeMillis() - msStart > 1000) {//qqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+            
             os.setClientId(clientId);
             os.setId(id);
             
@@ -176,8 +191,8 @@ public class ClientGetDetail {
             returnValue = os;
         }
 
-        ts = System.currentTimeMillis() - ts;
-        String s = (ts > 500) ? " ALERT" : "";
+        long diff = System.currentTimeMillis() - msStart;
+        String s = (diff > 500) ? " ALERT" : "";
         
         s = String.format(
             "client=%d, id=%,d, Obj=%s, prop=%s, siblings=%,d/%,d, masterProps=%s, ms=%,d%s",
@@ -187,11 +202,16 @@ public class ClientGetDetail {
             cntSib,        
             (siblingKeys == null)?0:siblingKeys.length,
             masterProps==null?"":(""+cntMasterPropsLoaded+"/"+masterProps.length),
-            ts,
+            diff,
             s
         );
         OAPerformance.LOG.fine(s);
         LOG.fine(s);
+
+if (System.currentTimeMillis() - msStart > 2500) {//qqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
         
         return returnValue;
     }
@@ -239,6 +259,13 @@ public class ClientGetDetail {
             OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 0, false, 5, msStart+40);
         }
 
+if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+        
+        
+        
         
         HashMap<OAObjectKey, Object> hmExtraData = null;
         if (tot < 5000 && siblingKeys != null && siblingKeys.length > 0) {
@@ -258,10 +285,16 @@ public class ClientGetDetail {
                         bLoad = ((System.currentTimeMillis() - msStart) < (bForHubMerger?225:85));
                     }
                     if (!bLoad) {
-                        loadDataInBackground(obj, propFromMaster);
+//qqqqqqqqqqq take out for testing                        
+//                        loadDataInBackground(obj, propFromMaster);
                         continue;
                     }
                 }
+
+if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
                 
                 if (bLoad) {
                     value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
@@ -306,9 +339,19 @@ public class ClientGetDetail {
             }
         }
 
+if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+        
         OAObjectSerializerCallback cb = createOAObjectSerializerCallback(os, masterObject, bMasterWasPreviouslySent, 
                 detailObject, dHub, propFromMaster, masterProperties, siblingKeys, hmExtraData);
         os.setCallback(cb);
+if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+        
         return os;
     }
     

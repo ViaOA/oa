@@ -195,7 +195,17 @@ public class OAObjectEventDelegate {
         if (!bLocalOnly && !bIsLoading) {
             // 20140314 if it is in newObjectCache (this computer only), then dont send prop changes
             if (!OAObjectCSDelegate.isInNewObjectCache(oaObj)) {
+//qqqqqqqqqqqq
+long msx = System.currentTimeMillis();  
+                
                 OAObjectCSDelegate.fireBeforePropertyChange(oaObj, propertyName, oldObj, newObj);
+                
+long msNow = System.currentTimeMillis();                    
+if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
+    int xx = (int) (msNow - msx);
+    xx++;
+}
+                
             }
         }
 	}

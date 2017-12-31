@@ -480,6 +480,13 @@ public class HubListenerTree {
 
                 final boolean bUseAll = (!bActiveObjectOnly || j>0);
                 
+                String ppx = "";
+                for (int k=0; k<=j; k++) {
+                    if (ppx.length() > 0) ppx += ".";
+                    ppx += pps[k];
+                }
+                final String ppFromRoot = ppx;
+                
                 if (hubClass != null) {
                     boolean b = false;
                     for (int k=0; node.children != null && k < node.children.length; k++) { 
@@ -510,11 +517,17 @@ public class HubListenerTree {
 
                         String spp = "(" + hubClass.getName() + ")" + property;
                         
-                        
                         if (bIsHub) {
                             final HubListenerTreeNode nodeThis = node;
                             OAPerformance.LOG.finer("creating hubMerger for hub="+hub+", propPath="+spp);
+                            
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll) {
+//qqqqqqqq                                
+                                @Override
+                                protected void setGetDetailHub() {
+                                    OAThreadLocalDelegate.setGetDetailHub(HubListenerTree.this.root.hub, ppFromRoot);
+                                }
+                                
                                 @Override
                                 protected void beforeRemoveRealHub(HubEvent e) {
                                     // get the parent reference object from the Hub.masterObject, since the 
@@ -612,10 +625,15 @@ public class HubListenerTree {
                                 hls = (HubListener[]) OAArray.add(HubListener.class, hls, hl);
                                 node.hmListener.put(origHubListener, hls);
                             }
-                            
  
                             OAPerformance.LOG.finer("creating hubMerger for hub="+hub+", propPath="+spp);
-                            newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll);
+                            newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll) {
+//qqqqq                                
+                                @Override
+                                protected void setGetDetailHub() {
+                                    OAThreadLocalDelegate.setGetDetailHub(HubListenerTree.this.root.hub, ppFromRoot);
+                               }
+                            };
                             newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
                         }
                         

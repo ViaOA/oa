@@ -205,7 +205,8 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         try {
             // 20120624 hubCombined could be a detail hub.
             OAThreadLocalDelegate.setSuppressCSMessages(true);
-            OAThreadLocalDelegate.setGetDetailHub(this.hubRoot, this.propertyPath);
+            setGetDetailHub();
+            //was: OAThreadLocalDelegate.setGetDetailHub(this.hubRoot, this.propertyPath);
             _init();
         }
         finally {
@@ -250,6 +251,11 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         nodeRoot.data = dataRoot;
     }
 
+
+    protected void setGetDetailHub() {
+        OAThreadLocalDelegate.setGetDetailHub(this.hubRoot, this.propertyPath);
+    }
+    
     public Hub getRootHub() {
         return this.hubRoot;
     }
@@ -1569,7 +1575,8 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
             String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
             try {
-                OAThreadLocalDelegate.setGetDetailHub(HubMerger.this.hubRoot, HubMerger.this.propertyPath);
+                setGetDetailHub();
+                //was: OAThreadLocalDelegate.setGetDetailHub(HubMerger.this.hubRoot, HubMerger.this.propertyPath);
                 if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
                 else OAThreadLocalDelegate.setSuppressCSMessages(true);
                 _onNewList2();

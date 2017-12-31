@@ -406,6 +406,13 @@ public class OADataSourceJDBC extends OADataSource {
         super.setGuid(guid);
         getDBMetaData().guid = guid;
     }
+    
+    @Override
+    public HashMap<OAObjectKey, OAObjectKey[]> selectMany2Many(Class fromClass, String propFromMasterToDetail, OAObjectKey... masterKeys) {
+        
+//qqqqqqqqqqqqqqqqqqqqqqqq
+        return null;
+    }
 }
 
 

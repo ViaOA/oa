@@ -246,6 +246,7 @@ public class OASyncClient {
             );
             OAPerformance.LOG.fine(s);
             LOG.fine(s);
+System.out.println("OASyncClient.getDetail: "+s);//qqqqqqq            
         }
         return result;
     }
