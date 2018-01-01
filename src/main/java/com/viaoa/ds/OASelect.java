@@ -497,6 +497,14 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
         Used to perform select.
     */
     public synchronized void select() {
+        lastReadTime = System.currentTimeMillis();
+        _select();
+        long x = System.currentTimeMillis() - lastReadTime;
+        if (x > 2500) {
+            OAPerformance.LOG.fine("query took "+x+"ms, class="+getSelectClass()+", where="+getWhere()+", whereObj="+getWhereObject());
+        }
+    }
+    protected void _select() {
         if (bHasBeenStarted && !bCancelled) {
             closeQuery();  // cancel previous select
         }
