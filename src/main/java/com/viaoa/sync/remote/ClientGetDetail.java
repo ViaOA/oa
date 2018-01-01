@@ -143,26 +143,15 @@ public class ClientGetDetail {
             for (String s : masterProps) {
                 bx = bx && (System.currentTimeMillis() < (msStart + 50));
                 if (bx) {
-long msx = System.currentTimeMillis();                    
                     ((OAObject) masterObject).getProperty(s);
                     cntMasterPropsLoaded++;
-long msNow = System.currentTimeMillis();                    
-if (msNow - msStart > 1000) {//qqqqqqqqqqqqqqq
-    int xx = (int) (msNow - msx);
-    xx++;
-}
                 }
                 else {
-//qqqqqqqqqq might be causing property lock issue                    
-//                    loadDataInBackground((OAObject)masterObject, s);
+                    loadDataInBackground((OAObject)masterObject, s);
                 }
             }
         }
         
-if (System.currentTimeMillis() - msStart > 1000) {//qqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
         int cntSib=0;
         if (b && cntMasterPropsLoaded == 0) {
             returnValue = detailValue;
@@ -170,29 +159,22 @@ if (System.currentTimeMillis() - msStart > 1000) {//qqqqqqqqqqqqqqq
         else {
             OAObjectSerializer os = getSerializedDetail(msStart, (OAObject)masterObject, detailValue, property, masterProps, cntMasterPropsLoaded, siblingKeys, bForHubMerger);
             
-if (System.currentTimeMillis() - msStart > 1000) {//qqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
-            
             os.setClientId(clientId);
             os.setId(id);
             
-            os.setMax(1000);  // max number of objects to write
-            os.setMaxSize(200000);  // max size of compressed data to write out
-            os.setMax(1000);  // max number of objects to write
+            os.setMax(1200);  // max number of objects to write
+            os.setMaxSize(400000);  // max size of compressed data to write out
     
             Object objx = os.getExtraObject();
             if (objx instanceof HashMap) {
                 cntSib = ((HashMap) objx).size();
                 if (cntSib > 0 && (masterProps != null && masterProps.length > 0)) cntSib--;
             }
-            
             returnValue = os;
         }
 
         long diff = System.currentTimeMillis() - msStart;
-        String s = (diff > 500) ? " ALERT" : "";
+        String s = (diff > 1000) ? " ALERT" : "";
         
         s = String.format(
             "client=%d, id=%,d, Obj=%s, prop=%s, siblings=%,d/%,d, masterProps=%s, ms=%,d%s",
@@ -208,11 +190,6 @@ if (System.currentTimeMillis() - msStart > 1000) {//qqqqqqqqqqqqqqq
         OAPerformance.LOG.fine(s);
         LOG.fine(s);
 
-if (System.currentTimeMillis() - msStart > 2500) {//qqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
-        
         return returnValue;
     }
     
@@ -259,14 +236,6 @@ if (System.currentTimeMillis() - msStart > 2500) {//qqqqqqqqqqqqqqq
             OAObjectReflectDelegate.loadAllReferences((OAObject) detailObject, 1, 0, false, 5, msStart+40);
         }
 
-if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
-        
-        
-        
-        
         HashMap<OAObjectKey, Object> hmExtraData = null;
         if (tot < 5000 && siblingKeys != null && siblingKeys.length > 0) {
             hmExtraData = new HashMap<OAObjectKey, Object>();
@@ -285,16 +254,10 @@ if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
                         bLoad = ((System.currentTimeMillis() - msStart) < (bForHubMerger?225:85));
                     }
                     if (!bLoad) {
-//qqqqqqqqqqq take out for testing                        
-//                        loadDataInBackground(obj, propFromMaster);
+                        loadDataInBackground(obj, propFromMaster);
                         continue;
                     }
                 }
-
-if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
                 
                 if (bLoad) {
                     value = OAObjectReflectDelegate.getProperty(obj, propFromMaster); // load from DS
@@ -339,19 +302,9 @@ if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
             }
         }
 
-if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
-        
         OAObjectSerializerCallback cb = createOAObjectSerializerCallback(os, masterObject, bMasterWasPreviouslySent, 
                 detailObject, dHub, propFromMaster, masterProperties, siblingKeys, hmExtraData);
         os.setCallback(cb);
-if (System.currentTimeMillis() - msStart > 1200) {//qqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
-        
         return os;
     }
     
