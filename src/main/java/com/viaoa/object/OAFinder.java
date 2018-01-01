@@ -73,7 +73,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private F fromObject;
     private Hub<F> fromHub;
     private boolean bUseAll;
-    private boolean bEnableRecursiveRoot=true;
+    private boolean bEnableRecursiveRoot;
     
     /**
      * flag to know if it should only find data that is currently in memory.
@@ -103,7 +103,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     }
     /**
      * Flag to know if the root object/hub should allow for recursive duing the find.  
-     * Default is true.
+     * Default is false.
      */
     public boolean getAllowRecursiveRoot() {
         return this.bEnableRecursiveRoot;
