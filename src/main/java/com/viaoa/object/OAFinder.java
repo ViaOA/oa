@@ -219,12 +219,14 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         String dpp = null;
         try {
             dh = OAThreadLocalDelegate.getGetDetailHub();
-            dpp = OAThreadLocalDelegate.getGetDetailPropertyPath();
-            OAThreadLocalDelegate.setGetDetailHub(hubRoot, strPropertyPath);
+            if (dh != null) {
+                dpp = OAThreadLocalDelegate.getGetDetailPropertyPath();
+                OAThreadLocalDelegate.setGetDetailHub(hubRoot, strPropertyPath);
+            }
             al = _find(hubRoot, objectLastUsed);
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(dh, dpp);
+            if (dh != null) OAThreadLocalDelegate.resetGetDetailHub(dh, dpp);
         }
         return al;
     }
