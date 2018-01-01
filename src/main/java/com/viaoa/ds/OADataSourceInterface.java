@@ -90,6 +90,4 @@ public interface OADataSourceInterface {
 
     int getMaxLength(Class c, String propertyName);
 
-    // 20171228
-    HashMap<OAObjectKey, OAObjectKey[]> selectMany2Many(Class fromClass, String propFromMasterToDetail, OAObjectKey ... masterKeys);
 }

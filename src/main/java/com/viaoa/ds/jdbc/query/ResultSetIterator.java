@@ -467,7 +467,8 @@ public class ResultSetIterator implements OADataSourceIterator {
         }
     }    
     
-boolean bClosed;//qqqqqq temp for debugging
+    private boolean bClosed;
+    
     // part of iterator interface
     public void remove() {
         _close();

@@ -370,23 +370,8 @@ public class OAObjectCSDelegate {
                 }
             }
         }
-        
         OAObjectKey key = obj.getObjectKey();
-        
-//qqqqqqqqqqqq
-long msx = System.currentTimeMillis();  
-        
         rs.propertyChange(obj.getClass(), key, propertyName, newValue, bIsBlob);
-        
-long msNow = System.currentTimeMillis();
-//System.out.println("******** OAObjectCSDelegate.fireBeforePropertyChange  "+obj.getClass().getSimpleName()+"."+propertyName+"*******XXXXXX**** ms="+(msNow-msx));
-
-if (msNow - msx > 800) {//qqqqqqqqqqqqqqq
-    int xx = (int) (msNow - msx);
-    xx++;
-}
-        
-        
 	}
 	
     protected static void fireAfterPropertyChange(OAObject obj, OAObjectKey origKey, String propertyName, Object oldValue, Object newValue) {

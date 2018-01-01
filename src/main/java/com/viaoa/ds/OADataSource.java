@@ -756,12 +756,6 @@ public abstract class OADataSource implements OADataSourceInterface {
         return true;
     }
 
-    @Override
-    public HashMap<OAObjectKey, OAObjectKey[]> selectMany2Many(Class fromClass, String propFromMasterToDetail, OAObjectKey... masterKeys) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
 
 

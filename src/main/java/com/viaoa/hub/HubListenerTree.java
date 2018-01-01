@@ -93,7 +93,6 @@ public class HubListenerTree {
             
             if (objs == null && spp != null) {
                 OAFinder finder = new OAFinder();
-                finder.setAllowRecursiveRoot(false);
                 finder.addEqualFilter(spp, obj);
                 ArrayList al = finder.find(HubListenerTree.this.root.hub);
                 objs = new Object[al.size()];
@@ -522,9 +521,9 @@ public class HubListenerTree {
                             OAPerformance.LOG.finer("creating hubMerger for hub="+hub+", propPath="+spp);
                             
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll) {
-//qqqqqqqq                                
                                 @Override
                                 protected void setGetDetailHub() {
+                                    // 20171230
                                     OAThreadLocalDelegate.setGetDetailHub(HubListenerTree.this.root.hub, ppFromRoot);
                                 }
                                 
@@ -628,7 +627,6 @@ public class HubListenerTree {
  
                             OAPerformance.LOG.finer("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll) {
-//qqqqq                                
                                 @Override
                                 protected void setGetDetailHub() {
                                     OAThreadLocalDelegate.setGetDetailHub(HubListenerTree.this.root.hub, ppFromRoot);

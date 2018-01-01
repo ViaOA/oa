@@ -895,10 +895,6 @@ public class OAObjectReflectDelegate {
                             if (hx != null) {
                                 hx.add(objx);
                             }
-                            else {
-                                int xx = 4;
-                                xx++;//qqqqqqqqqqqqqq test: make sure this is not called
-                            }
                         }                    
                     }
                 }
@@ -982,7 +978,7 @@ public class OAObjectReflectDelegate {
         // 20171108 moved here from above
         if (bThisIsServer || OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, false) == null) {
             // set property
-            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {  //qqqqqqqqqqqq need to do for each sibling hub?? qqqqqqqqq
+            if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
                 OAObjectPropertyDelegate.setProperty(oaObj, linkPropertyName, new WeakReference(hub));
             }
             else {
@@ -1444,19 +1440,7 @@ public class OAObjectReflectDelegate {
         Object result = null;
         try {
             OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
-//qqqqqqqqqqqqq            
-long msx = System.currentTimeMillis();                    
-            
             result = _getReferenceObject(oaObj, linkPropertyName, oi, li);
-            
-long msNow = System.currentTimeMillis();                    
-if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
-    int xx = (int) (msNow - msx); 
-    System.out.println("******** OAObjctReflectDelegate.getReferenceObject  "+oaObj.getClass().getSimpleName()+"."+linkPropertyName+"*********** >>>>>>>> ms="+(msNow-msx));
-    
-    xx++;
-}
-            
             OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, result, objOriginal, bDidNotExist, false);
         }
         finally {
@@ -1506,8 +1490,6 @@ if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
                     else ref = null;
                 }
                 else if (!bIsCalc) {
-//qqqqqqqqqqqqq            
-long msx = System.currentTimeMillis();                    
                     if (liReverse != null && !liReverse.bPrivateMethod) {
                         OASelect sel = new OASelect(li.getToClass());
                         sel.setWhereObject(oaObj);
@@ -1516,12 +1498,6 @@ long msx = System.currentTimeMillis();
                         ref = sel.next();
                         sel.close();
                     }
-long msNow = System.currentTimeMillis();                    
-if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
-    int xx = (int) (msNow - msx);
-    xx++;
-}
-                    
                 }
             }
             else {
@@ -1544,7 +1520,6 @@ if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
                         }
                         else {
                             OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
-long msx = System.currentTimeMillis();                    
                             if (liReverse != null) {
                                 OASelect sel = new OASelect(li.getToClass());
                                 sel.setWhere(liReverse.getName()+" = ?");
@@ -1553,12 +1528,6 @@ long msx = System.currentTimeMillis();
                                 ref = sel.next();
                                 sel.close();
                             }
-long msNow = System.currentTimeMillis();                    
-if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
-    int xx = (int) (msNow - msx);
-    xx++;
-}
-                            
                         }
                     }
                 }
@@ -1576,8 +1545,6 @@ if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {
-long msx = System.currentTimeMillis();                    
-                    
                     // 20171222
                     OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75);
                     String sibIds = null;
@@ -1600,11 +1567,6 @@ long msx = System.currentTimeMillis();
                             else sibIds = idsx[0] + "," + sibIds;
                         }
                     }    
-long msNow = System.currentTimeMillis();                    
-if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
-    int xx = (int) (msNow - msx);
-    xx++;
-}
                     if (sibIds != null) {
                         OASelect sel = new OASelect(li.toClass);
                         sel.setWhere("id IN ("+sibIds+")");
@@ -1619,12 +1581,6 @@ if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
                     else {
                         ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
                     }
-msNow = System.currentTimeMillis();                    
-if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
-    int xx = (int) (msNow - msx);
-    xx++;
-}
-                    
                     //was: ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
                 }
             }
@@ -1637,15 +1593,7 @@ if (msNow - msx > 900) {//qqqqqqqqqqqqqqq
             }
             else {
                 ref = OAObjectReflectDelegate.createNewObject(li.getToClass());
-long msx = System.currentTimeMillis();
                 setProperty(oaObj, linkPropertyName, ref, null); // need to do this so oaObj.changed=true, etc.
-
-long msNow = System.currentTimeMillis();                    
-System.out.println("******** OAObjctReflectDelegate.getReferenceObject  "+oaObj.getClass().getSimpleName()+"."+linkPropertyName+"*********** ms="+(msNow-msx));
-if (msNow - msx > 1200) {//qqqqqqqqqqqqqqq
-    int xx = (int) (msNow - msx);
-    xx++;
-}
             }
         }
         return ref;
@@ -2365,7 +2313,6 @@ if (msNow - msx > 1200) {//qqqqqqqqqqqqqqq
     }
     
 //qqqqqqqqqqqqqq test this    
-//qqqqqqqq    
     // 20140404
     /**
      * get the "real" object that needs to be displayed, based on a parent/from Hub,

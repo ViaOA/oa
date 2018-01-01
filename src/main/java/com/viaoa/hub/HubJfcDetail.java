@@ -5,7 +5,7 @@ import com.viaoa.object.*;
 
 /**
  * This works similar to a HubDetail, except that it will first check to see if the data is loaded.
- * If not, it will load using swingWorker thread.
+ * If not, it will load using swingWorker thread before setting the detail Hub
  * @author vvia
  */
 public class HubJfcDetail {
